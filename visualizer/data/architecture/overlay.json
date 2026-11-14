@@ -1080,7 +1080,7 @@
       "match": [
         "src/cells/processes/hill_factors.py"
       ],
-      "plain": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Its first part is in the engine since 14 November 2026: the Hill factors, and the operator that applies them to junctions and to channels. It is development code, guarded by tests; its qualification comes later. It also answers feature request FR-6, species-driven control factors.",
+      "plain": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Its first two milestones are in the engine since 14 November 2026: the Hill factors, the operator that applies them to junctions and to channels, and a slower two-state regulatory state. It is development code, guarded by tests; its qualification comes later. It also answers feature request FR-6, species-driven control factors.",
       "sources": [
         {
           "path": "docs/INVENTORY_COUPLING_DESIGN.md"
@@ -1088,6 +1088,10 @@
         {
           "path": "PROGRESS.md",
           "where": "The coupling operator `species_regulated_availability@1` (D155/D156): milestone 1 landed"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Combined landing (14 November 2026)"
         },
         {
           "path": "PROGRESS.md",
@@ -1484,7 +1488,7 @@
       "layer": "operators",
       "status": "designed",
       "as_of": "2026-11-14",
-      "plain": "A closed compartment inside a cell: a finite node the cell owns, bounded by one patch of its membrane, with its own volume and its own rows of the shared inventory. The user's high priority (14 November 2026). Its design is accepted (D169, 14 November 2026); code comes next, in milestones.",
+      "plain": "A closed compartment inside a cell: a finite node the cell owns, bounded by one patch of its membrane, with its own volume and its own rows of the shared inventory. The user's high priority (14 November 2026). Its design is accepted (D169, 14 November 2026); its first milestone is in progress.",
       "sources": [
         {
           "path": "docs/CLOSED_COMPARTMENT_DESIGN.md"
@@ -1555,23 +1559,6 @@
       ]
     },
     {
-      "id": "fr.bath_schedule",
-      "label": "Scheduled bath composition (FR-10)",
-      "layer": "operators",
-      "status": "designed",
-      "as_of": "2026-11-14",
-      "plain": "A held bath whose composition changes on a schedule in the composite model, for a wash-in, a wash-out or a dose. Its design is accepted (D169, 14 November 2026); code comes next.",
-      "sources": [
-        {
-          "path": "docs/BATH_SCHEDULE_DESIGN.md"
-        },
-        {
-          "path": "docs/FEATURE_REQUESTS.md",
-          "where": "FR-10"
-        }
-      ]
-    },
-    {
       "id": "exp.parity",
       "label": "BETSE parity ladder",
       "layer": "experiments",
@@ -1608,11 +1595,15 @@
       "layer": "experiments",
       "status": "landed",
       "as_of": "2026-11-14",
-      "plain": "Pattern formation by reaction and diffusion: the qualification of the shared-inventory reactions. Its driver and development runs have landed with a proposed protocol; it is not registered, and nothing is judged yet.",
+      "plain": "Pattern formation by reaction and diffusion: the qualification of the shared-inventory reactions. Its driver and development runs have landed. Its protocol was revised after the lead's review and is still proposed: 55 judged criteria, and every one a development run can evaluate passes. It is not registered, and nothing is judged yet; a rehearsal comes next.",
       "sources": [
         {
           "path": "PROGRESS.md",
           "where": "D152 v1 milestone 3 landed"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Combined landing (14 November 2026)"
         },
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -1735,7 +1726,7 @@
       "layer": "experiments",
       "status": "designed",
       "as_of": "2026-11-14",
-      "plain": "Can the tissue model's channel laws carry an action potential along a chain of cells? An exploratory probe on the engine as it stands, run on 14 November 2026 as evidence for the excitable-tissue design; it is not a qualification, and its driver has no test of its own. As registered, at 0.05 F/m², it failed its first criterion: every perturbed segment blocked. A second probe at 0.01 F/m², post hoc but written before its runs, met all four criteria. A reference written blind matches the engine to 0.02 mV.",
+      "plain": "Can the tissue model's channel laws carry an action potential along a chain of cells? An exploratory probe on the engine as it stands, run on 14 November 2026 as evidence for the excitable-tissue design; it is not a qualification, and its driver has no test of its own. As registered, at 0.05 F/m², it failed its first criterion: every perturbed segment blocked. A second probe at 0.01 F/m², post hoc but written before its runs, met all four criteria. An independent reference's junction voltages, computed blind, match the engine's to 0.02 mV.",
       "sources": [
         {
           "path": "PROGRESS.md",
@@ -1945,7 +1936,7 @@
       "match": [
         "validation/coupling/**"
       ],
-      "plain": "Reference solutions for the regulated-availability operator, written by a separate agent that read no engine code. Their own tests are in the routine gate. The engine has not yet been judged against them.",
+      "plain": "Reference solutions for the regulated-availability operator, written by a separate agent that read no engine code. Their own tests are in the routine gate. The engine's check against them is the operator's third milestone, in progress.",
       "sources": [
         {
           "path": "validation/coupling/REFERENCES_USAGE.md"
@@ -2184,7 +2175,7 @@
         "label": "Shared-inventory reactions",
         "status": "landed",
         "as_of": "2026-11-14",
-        "plain": "Reactions between species in the tissue's one inventory, with exact energy bookings. Development code with no judged run; its qualification, MG0c, is in progress.",
+        "plain": "Reactions between species in the tissue's one inventory, with exact energy bookings. Development code with no judged run; its qualification, MG0c, has a revised protocol that is still proposed.",
         "sources": [
           {
             "path": "docs/SHARED_INVENTORY_REACTIONS_DESIGN.md"
@@ -2196,6 +2187,10 @@
           {
             "path": "docs/CURRENT_PLAN.md",
             "where": "Status on 14 November 2026, and the working order (D156)"
+          },
+          {
+            "path": "PROGRESS.md",
+            "where": "Combined landing (14 November 2026)"
           }
         ]
       },
@@ -2203,7 +2198,7 @@
         "label": "Regulated availability",
         "status": "landed",
         "as_of": "2026-11-14",
-        "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Milestone 1 landed on 14 November 2026: the operator with its refusals, the junction and channel targets, and a starting condition for each cell. It is development code, guarded by tests; its qualification comes later. Milestone 2 (the regulatory state compiled, restart, batches and compositions) is in progress.",
+        "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Milestones 1 and 2 landed on 14 November 2026: the operator with its refusals, the junction and channel targets, a starting condition for each cell, and the regulatory state with restart, batches and compositions. It is development code, guarded by tests; its qualification comes later. Milestone 3, the check against the independent references, is in progress.",
         "sources": [
           {
             "path": "PROGRESS.md",
@@ -2212,6 +2207,34 @@
           {
             "path": "docs/INVENTORY_COUPLING_DESIGN.md",
             "where": "7. Milestone 1 as built (14 November 2026)"
+          },
+          {
+            "path": "PROGRESS.md",
+            "where": "Combined landing (14 November 2026)"
+          },
+          {
+            "path": "docs/INVENTORY_COUPLING_DESIGN.md",
+            "where": "8. Milestone 2 as built (14 November 2026)"
+          }
+        ]
+      },
+      "scheduled_bath_composition@1": {
+        "label": "Scheduled bath",
+        "status": "landed",
+        "as_of": "2026-11-14",
+        "plain": "A held bath whose composition changes on a schedule in the composite model, for a wash-in, a wash-out or a dose. Each dose, its work and its compensating charge are booked in the operator's own records. Its first milestone landed on 14 November 2026, for feature request FR-10. It is development code, guarded by tests; its qualification comes later. A dose is admitted only in bounded steps: stairs of 100 times from nothing, and steps of 10 times between resolved levels.",
+        "sources": [
+          {
+            "path": "PROGRESS.md",
+            "where": "Combined landing (14 November 2026)"
+          },
+          {
+            "path": "docs/BATH_SCHEDULE_DESIGN.md",
+            "where": "7. Milestone 1 as built (14 November 2026)"
+          },
+          {
+            "path": "docs/FEATURE_REQUESTS.md",
+            "where": "FR-10"
           }
         ]
       }
@@ -3185,11 +3208,6 @@
     {
       "from": "fr.internal_transfer",
       "to": "fr.compartment_ph",
-      "kind": "extends"
-    },
-    {
-      "from": "fr.bath_schedule",
-      "to": "models.composite",
       "kind": "extends"
     },
     {

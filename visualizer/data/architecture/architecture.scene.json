@@ -5,20 +5,20 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-14",
-  "generated_at": "2026-11-14T21:57:41Z",
-  "revision": "8497ff37",
+  "generated_at": "2026-11-14T22:40:40Z",
+  "revision": "f2ada38d",
   "revision_date": "2026-11-14",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
   "source_base_url": "https://github.com/Eidosoma/Cells/blob/main/",
   "counts": {
-   "engine_files": 503,
-   "engine_files_placed": 503,
+   "engine_files": 504,
+   "engine_files_placed": 504,
    "parts": 214,
-   "relations": 806,
+   "relations": 816,
    "by_kind": {
-    "operator": 16,
-    "component": 109,
+    "operator": 17,
+    "component": 108,
     "state": 6,
     "gate": 8,
     "capability": 21,
@@ -27,10 +27,10 @@
    },
    "by_status": {
     "qualified": 35,
-    "landed": 14,
+    "landed": 15,
     "established": 61,
     "planned": 25,
-    "designed": 8,
+    "designed": 7,
     "failed": 1,
     "external": 4,
     "unstated": 66
@@ -350,12 +350,12 @@
     }
    ],
    "gained": {
-    "added": 28,
+    "added": 29,
     "removed": 2,
     "where": [
      [
       "models/operators",
-      20
+      21
      ],
      [
       "models",
@@ -372,10 +372,10 @@
      "at": "8497ff37",
      "text": "Reviews on 14 November 2026 found no channel, pump, transporter or junction law among them. One case, secretion and uptake, is the lead's to classify.",
      "doc": "visualizer/docs/PROTEIN_ATLAS_REVIEW.md",
-     "covers_all": true
+     "covers_all": false
     }
    },
-   "checked_at": "8497ff37"
+   "checked_at": "f2ada38d"
   },
   "counts": {
    "units": 49,
@@ -1811,7 +1811,7 @@
    "group": "operators",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Reactions between species in the tissue's one inventory, with exact energy bookings. Development code with no judged run; its qualification, MG0c, is in progress.",
+   "plain": "Reactions between species in the tissue's one inventory, with exact energy bookings. Development code with no judged run; its qualification, MG0c, has a revised protocol that is still proposed.",
    "detail": "Operator local_species_reactions@1: reactions on the shared species inventory (D152, version 1).",
    "facts": [
     [
@@ -1869,6 +1869,10 @@
     {
      "path": "docs/CURRENT_PLAN.md",
      "where": "Status on 14 November 2026, and the working order (D156)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "Combined landing (14 November 2026)"
     }
    ],
    "files": [
@@ -1882,7 +1886,7 @@
    "group": "operators",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Milestone 1 landed on 14 November 2026: the operator with its refusals, the junction and channel targets, and a starting condition for each cell. It is development code, guarded by tests; its qualification comes later. Milestone 2 (the regulatory state compiled, restart, batches and compositions) is in progress.",
+   "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Milestones 1 and 2 landed on 14 November 2026: the operator with its refusals, the junction and channel targets, a starting condition for each cell, and the regulatory state with restart, batches and compositions. It is development code, guarded by tests; its qualification comes later. Milestone 3, the check against the independent references, is in progress.",
    "detail": "Operator species_regulated_availability@1: coupling out of the inventory (D155 item 1, D156).",
    "facts": [
     [
@@ -1929,10 +1933,78 @@
     {
      "path": "docs/INVENTORY_COUPLING_DESIGN.md",
      "where": "7. Milestone 1 as built (14 November 2026)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "Combined landing (14 November 2026)"
+    },
+    {
+     "path": "docs/INVENTORY_COUPLING_DESIGN.md",
+     "where": "8. Milestone 2 as built (14 November 2026)"
     }
    ],
    "files": [
     "src/cells/models/operators/species_regulated_availability.py"
+   ]
+  },
+  {
+   "id": "op.scheduled_bath_composition@1",
+   "label": "Scheduled bath",
+   "kind": "operator",
+   "group": "operators",
+   "status": "landed",
+   "as_of": "2026-11-14",
+   "plain": "A held bath whose composition changes on a schedule in the composite model, for a wash-in, a wash-out or a dose. Each dose, its work and its compensating charge are booked in the operator's own records. Its first milestone landed on 14 November 2026, for feature request FR-10. It is development code, guarded by tests; its qualification comes later. A dose is admitted only in bounded steps: stairs of 100 times from nothing, and steps of 10 times between resolved levels.",
+   "detail": "Operator scheduled_bath_composition@1: a held bath's composition changed on the dt grid (FR-10).",
+   "facts": [
+    [
+     "Law",
+     "scheduled_bath_composition@1"
+    ],
+    [
+     "Class",
+     "ScheduledBathComposition"
+    ],
+    [
+     "Parts of the step",
+     "event map"
+    ],
+    [
+     "Schedule in a definition",
+     "bath_composition_events"
+    ],
+    [
+     "Own ledgers",
+     "bath_dose, bath_dose_free_energy, bath_neutrality"
+    ],
+    [
+     "State it owns",
+     "6 fields"
+    ],
+    [
+     "Provides",
+     "extracellular_amount_reference"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "src/cells/models/operators/bath_schedule.py"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "Combined landing (14 November 2026)"
+    },
+    {
+     "path": "docs/BATH_SCHEDULE_DESIGN.md",
+     "where": "7. Milestone 1 as built (14 November 2026)"
+    },
+    {
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "FR-10"
+    }
+   ],
+   "files": [
+    "src/cells/models/operators/bath_schedule.py"
    ]
   },
   {
@@ -3432,7 +3504,7 @@
    "group": "laws",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Its first part is in the engine since 14 November 2026: the Hill factors, and the operator that applies them to junctions and to channels. It is development code, guarded by tests; its qualification comes later. It also answers feature request FR-6, species-driven control factors.",
+   "plain": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Its first two milestones are in the engine since 14 November 2026: the Hill factors, the operator that applies them to junctions and to channels, and a slower two-state regulatory state. It is development code, guarded by tests; its qualification comes later. It also answers feature request FR-6, species-driven control factors.",
    "detail": "Hill activation and inhibition factors in log space (a neutral helper).",
    "facts": [
     [
@@ -3451,6 +3523,10 @@
     {
      "path": "PROGRESS.md",
      "where": "The coupling operator `species_regulated_availability@1` (D155/D156): milestone 1 landed"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "Combined landing (14 November 2026)"
     },
     {
      "path": "PROGRESS.md",
@@ -3878,7 +3954,7 @@
     ],
     [
      "Lines of Python",
-     "1,585"
+     "1,596"
     ],
     [
      "Model identifiers",
@@ -3908,7 +3984,7 @@
     "src/cells/models/pump_composite.py",
     "src/cells/models/pump_composite_adapter.py"
    ],
-   "weight": 1585
+   "weight": 1596
   },
   {
    "id": "models.resolved",
@@ -4508,7 +4584,7 @@
     ],
     [
      "Lines of Python",
-     "438"
+     "440"
     ]
    ],
    "sources": [
@@ -4524,7 +4600,7 @@
     "src/cells/models/operators/__init__.py",
     "src/cells/models/operators/contract.py"
    ],
-   "weight": 438
+   "weight": 440
   },
   {
    "id": "op.endogenous_lifecycle",
@@ -4548,7 +4624,7 @@
    "group": "operators",
    "status": "designed",
    "as_of": "2026-11-14",
-   "plain": "A closed compartment inside a cell: a finite node the cell owns, bounded by one patch of its membrane, with its own volume and its own rows of the shared inventory. The user's high priority (14 November 2026). Its design is accepted (D169, 14 November 2026); code comes next, in milestones.",
+   "plain": "A closed compartment inside a cell: a finite node the cell owns, bounded by one patch of its membrane, with its own volume and its own rows of the shared inventory. The user's high priority (14 November 2026). Its design is accepted (D169, 14 November 2026); its first milestone is in progress.",
    "sources": [
     {
      "path": "docs/CLOSED_COMPARTMENT_DESIGN.md"
@@ -4628,25 +4704,6 @@
    "weight": 0
   },
   {
-   "id": "fr.bath_schedule",
-   "label": "Scheduled bath composition (FR-10)",
-   "kind": "component",
-   "group": "operators",
-   "status": "designed",
-   "as_of": "2026-11-14",
-   "plain": "A held bath whose composition changes on a schedule in the composite model, for a wash-in, a wash-out or a dose. Its design is accepted (D169, 14 November 2026); code comes next.",
-   "sources": [
-    {
-     "path": "docs/BATH_SCHEDULE_DESIGN.md"
-    },
-    {
-     "path": "docs/FEATURE_REQUESTS.md",
-     "where": "FR-10"
-    }
-   ],
-   "weight": 0
-  },
-  {
    "id": "exp.parity",
    "label": "BETSE parity ladder",
    "kind": "component",
@@ -4688,11 +4745,15 @@
    "group": "experiments",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Pattern formation by reaction and diffusion: the qualification of the shared-inventory reactions. Its driver and development runs have landed with a proposed protocol; it is not registered, and nothing is judged yet.",
+   "plain": "Pattern formation by reaction and diffusion: the qualification of the shared-inventory reactions. Its driver and development runs have landed. Its protocol was revised after the lead's review and is still proposed: 55 judged criteria, and every one a development run can evaluate passes. It is not registered, and nothing is judged yet; a rehearsal comes next.",
    "sources": [
     {
      "path": "PROGRESS.md",
      "where": "D152 v1 milestone 3 landed"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "Combined landing (14 November 2026)"
     },
     {
      "path": "docs/CURRENT_PLAN.md",
@@ -4831,7 +4892,7 @@
    "group": "experiments",
    "status": "designed",
    "as_of": "2026-11-14",
-   "plain": "Can the tissue model's channel laws carry an action potential along a chain of cells? An exploratory probe on the engine as it stands, run on 14 November 2026 as evidence for the excitable-tissue design; it is not a qualification, and its driver has no test of its own. As registered, at 0.05 F/m², it failed its first criterion: every perturbed segment blocked. A second probe at 0.01 F/m², post hoc but written before its runs, met all four criteria. A reference written blind matches the engine to 0.02 mV.",
+   "plain": "Can the tissue model's channel laws carry an action potential along a chain of cells? An exploratory probe on the engine as it stands, run on 14 November 2026 as evidence for the excitable-tissue design; it is not a qualification, and its driver has no test of its own. As registered, at 0.05 F/m², it failed its first criterion: every perturbed segment blocked. A second probe at 0.01 F/m², post hoc but written before its runs, met all four criteria. An independent reference's junction voltages, computed blind, match the engine's to 0.02 mV.",
    "sources": [
     {
      "path": "PROGRESS.md",
@@ -5026,14 +5087,14 @@
    "facts": [
     [
      "Files",
-     "313"
+     "315"
     ],
     [
      "Lines of Python",
-     "75,148"
+     "75,762"
     ]
    ],
-   "weight": 75148
+   "weight": 75762
   },
   {
    "id": "val.division",
@@ -5073,10 +5134,10 @@
     ],
     [
      "Lines of Python",
-     "8,388"
+     "9,167"
     ]
    ],
-   "weight": 8388
+   "weight": 9167
   },
   {
    "id": "val.reactions",
@@ -5118,7 +5179,7 @@
    "group": "references",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Reference solutions for the regulated-availability operator, written by a separate agent that read no engine code. Their own tests are in the routine gate. The engine has not yet been judged against them.",
+   "plain": "Reference solutions for the regulated-availability operator, written by a separate agent that read no engine code. Their own tests are in the routine gate. The engine's check against them is the operator's third milestone, in progress.",
    "facts": [
     [
      "Files",
@@ -5177,23 +5238,23 @@
    "facts": [
     [
      "Files",
-     "738"
+     "747"
     ],
     [
      "Lines of Python",
-     "229,672"
+     "231,437"
     ],
     [
      "Tier 1 test files",
-     "323"
+     "324"
     ],
     [
      "Tier 2 test files",
-     "92"
+     "96"
     ],
     [
      "Tier 3 test files",
-     "219"
+     "223"
     ]
    ],
    "sources": [
@@ -5202,7 +5263,7 @@
      "where": "Milestones and provenance"
     }
    ],
-   "weight": 229672
+   "weight": 231437
   },
   {
    "id": "state.compartment",
@@ -27455,6 +27516,13 @@
   },
   {
    "from": "op.local_species_reactions@1",
+   "to": "op.scheduled_bath_composition@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_amount_reference"
+  },
+  {
+   "from": "op.local_species_reactions@1",
    "to": "op.scheduled_membrane_insertion@1",
    "kind": "conflicts",
    "weight": 2,
@@ -27550,6 +27618,13 @@
    "kind": "conflicts",
    "weight": 1,
    "label": "extracellular_volume"
+  },
+  {
+   "from": "op.scheduled_bath_composition@1",
+   "to": "op.scheduled_membrane_insertion@1",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "both provide extracellular_amount_reference"
   },
   {
    "from": "op.scheduled_cell_replacement@1",
@@ -27826,12 +27901,6 @@
    "kind": "extends",
    "weight": 1,
    "label": "the Myc and cyclin T1 paper, track two"
-  },
-  {
-   "from": "fr.bath_schedule",
-   "to": "models.composite",
-   "kind": "extends",
-   "weight": 1
   },
   {
    "from": "fr.compartment_ph",
@@ -28627,6 +28696,12 @@
   },
   {
    "from": "op.restricted_cleft_lumen@2",
+   "to": "models.composite",
+   "kind": "operator_of",
+   "weight": 1
+  },
+  {
+   "from": "op.scheduled_bath_composition@1",
    "to": "models.composite",
    "kind": "operator_of",
    "weight": 1
@@ -31347,6 +31422,12 @@
   },
   {
    "from": "op.contract",
+   "to": "op.scheduled_bath_composition@1",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.contract",
    "to": "op.scheduled_cell_replacement@1",
    "kind": "uses",
    "weight": 1
@@ -31772,6 +31853,54 @@
    "weight": 1
   },
   {
+   "from": "op.scheduled_bath_composition@1",
+   "to": "exec.registry",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.scheduled_bath_composition@1",
+   "to": "exec.specs",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "op.scheduled_bath_composition@1",
+   "to": "laws.electrodiffusion",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.scheduled_bath_composition@1",
+   "to": "models.composite",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.scheduled_bath_composition@1",
+   "to": "models.pump_tissue",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.scheduled_bath_composition@1",
+   "to": "num.other",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.scheduled_bath_composition@1",
+   "to": "num.water",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.scheduled_bath_composition@1",
+   "to": "op.contract",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
    "from": "op.scheduled_cell_replacement@1",
    "to": "exec.registry",
    "kind": "uses",
@@ -32046,12 +32175,6 @@
    "to": "op.contract",
    "kind": "uses",
    "weight": 2
-  },
-  {
-   "from": "op.species_regulated_availability@1",
-   "to": "op.membrane_entity_state@1",
-   "kind": "uses",
-   "weight": 1
   },
   {
    "from": "op.species_regulated_availability@1",
