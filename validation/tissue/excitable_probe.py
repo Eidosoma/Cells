@@ -84,6 +84,7 @@ from cells.core.surface_pump_v3_spec import control_values as v3_controls  # noq
 from cells.core.windows import WindowPolicy, iter_windows  # noqa: E402
 from cells.models import surface_pump_v3 as v3  # noqa: E402
 from cells.processes import junction_gate, voltage_gates  # noqa: E402
+from cells.processes.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
 from validation.stationary import worlds  # noqa: E402
 from validation.tissue import field_solver_choice  # noqa: E402
 from validation.tissue import surface_pump_v3_fixtures as fx  # noqa: E402
@@ -91,7 +92,14 @@ from validation.tissue import surface_pump_v3_fixtures as fx  # noqa: E402
 ARS = "imex_ars222_face_electromigration@1"
 EULER = "imex_euler_face_electromigration@1"
 H = fx.HEREDITY_STATES["H"]  # (Vm, Na, K, M, fastest relaxation time)
-REST_V = H[0]
+# The point every definition of a part uses: NaV1.2 and Kir2.1 permeabilities (m/s), specific
+# capacitance (F/m^2) and the rest (Vm, Na, K, M) its cells start from (gates at rest). The
+# default is the heredity cell at its H state; parts set it from their arguments (set_point),
+# and a point other than the heredity cell's takes its rest from a relaxation (relax_rest).
+POINT = dict(
+    nav_m_s=fx.HEREDITY_NAV_M_S, kir_m_s=fx.HEREDITY_KIR_M_S, cm_F_m2=0.05, rest=tuple(H[:4])
+)
+HEREDITY_CM_F_M2 = 0.05
 CELL_SPACING_M = 9.25e-6  # resolved_scale_world.geometry spacing (W225): for m/s only
 DT_LADDER = (1e-3, 5e-4, 2.5e-4, 1e-4, 5e-5, 2.5e-5, 1e-5, 5e-6, 2.5e-6, 1.25e-6, 6.25e-7)
 VOLTAGE_CHUNK = 128
@@ -213,6 +221,58 @@ def kv_gate(voltage):
     return [float(target[0, 0]), float(target[1, 0])]
 
 
+def kicked(rest, millivolts, cm):
+    """A rest state with Na added so that Vm rises by the given mV (charge C dV)."""
+    if cm == HEREDITY_CM_F_M2:
+        return fx.kicked((*rest, None), millivolts)
+    vm, na, k, mm = rest
+    delta = cm * fx.HEREDITY_AREA_M2 * 1e-3 * millivolts
+    return (vm + 1e-3 * millivolts, na + delta / CHARGE_PER_FMOL / fx.HEREDITY_VOLUME_PL, k, mm)
+
+
+def rescale_capacitance(raw, cm, states):
+    """heredity_cells' capacitance, initial charge and fixed charge at another specific
+    capacitance: C = cm A, q = C Vm, fixed = q / F - sum z n (its own arithmetic)."""
+    z = dict(fx.HEREDITY_SPECIES)
+    for cell, membrane, state in zip(
+        raw["model"]["cells"], raw["model"]["membranes"], states, strict=True
+    ):
+        capacitance = cm * fx.HEREDITY_AREA_M2
+        charge = capacitance * state[0]
+        amounts = cell["initial_amount_fmol"]
+        membrane["capacitance_F"] = capacitance
+        cell["initial_charge_C"] = charge
+        cell["fixed_charge_equivalent_fmol"] = charge / CHARGE_PER_FMOL - math.fsum(
+            z[sp] * amounts[sp] for sp in amounts
+        )
+
+
+def set_point(nav_m_s, kir_m_s, cm_F_m2, rest=None):
+    POINT.update(
+        nav_m_s=nav_m_s,
+        kir_m_s=kir_m_s,
+        cm_F_m2=cm_F_m2,
+        rest=tuple(H[:4]) if rest is None else tuple(rest),
+    )
+
+
+def relax_rest(kv_m_s, seconds=2.0):
+    """The point's quasi-steady rest: Vm after an unstimulated 2 s at 1 ms from H's
+    composition (gates at H's Vm); the composition is kept (it moves on minutes)."""
+    set_point(POINT["nav_m_s"], POINT["kir_m_s"], POINT["cm_F_m2"])
+    raw = definition(1, dt=1e-3, end_time=seconds, kv_m_s=kv_m_s, obs_dt=0.1)
+    r = execute(raw)
+    out = dict(refusal=r["refusal"], steps=r["steps"])
+    if r["times"]:
+        t, vm = np.asarray(r["times"]), np.asarray(r["vm"])[:, 0]
+        last = t >= t[-1] - 0.5
+        out.update(rest_V=float(vm[-1]), drift_last_0p5s_V=float(vm[-1] - vm[last][0]))
+    rest = (out.get("rest_V", H[0]), *H[1:4])
+    set_point(POINT["nav_m_s"], POINT["kir_m_s"], POINT["cm_F_m2"], rest)
+    out["rest"] = list(rest)
+    return out
+
+
 def junction_gate_block(gated):
     j = worlds.e07_junction()
     if gated:
@@ -264,10 +324,10 @@ def definition(
     control sets the availability of each cell's NaV1.2, Kv1.5 and Kir2.1 (CONTROLS). Events
     and observations are integer multiples of dt. D147: field_solver_choice.declare().
     """
-    rest = tuple(H[:4])
+    rest, cm = tuple(POINT["rest"]), POINT["cm_F_m2"]
     states = [rest] * n
     for i, mv in (kicks or {}).items():
-        states[i] = fx.kicked((*rest, None), mv)
+        states[i] = kicked(rest, mv, cm)
     steps = int(round(end_time / dt))
     stride = max(1, int(round(obs_dt / dt)))
     times = [k * dt for k in range(0, steps + 1, stride)]
@@ -279,10 +339,14 @@ def definition(
         end_time=steps * dt,
         solver=solver,
         observation_times=times,
+        nav_m_s=POINT["nav_m_s"],
+        kir_m_s=POINT["kir_m_s"],
         gate_voltages=[rest[0]] * n,
         temperature_K=temperature_K,
     )
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    if cm != HEREDITY_CM_F_M2:
+        rescale_capacitance(raw, cm, states)
     if kv_m_s > 0:
         gate = kv_gate(rest[0])
         for i in range(n):
@@ -348,6 +412,12 @@ def mechanisms(raw):
         junction_gate_law=sorted({p["gate"]["law"] for p in m["junctions"]}),
         junction_heat_booking=m.get("junction_heat_booking", "explicit_tableau"),
         dt_s=x["dt"],
+        point=dict(
+            nav_m_s=POINT["nav_m_s"],
+            kir_m_s=POINT["kir_m_s"],
+            cm_F_m2=POINT["cm_F_m2"],
+            rest=list(POINT["rest"]),
+        ),
         cells=len(m["cells"]),
         temperature_K=m["temperature_K"],
     )
@@ -700,7 +770,7 @@ def single_run(
             r["times"],
             np.asarray(r["vm"])[:, 0],
             after=after,
-            rest=REST_V if kick is not None else None,
+            rest=POINT["rest"][0] if kick is not None else None,
         )
         dv = np.diff(np.asarray(r["vm"])[:, 0]) / np.diff(np.asarray(r["times"]))
         rec["max_dVdt_from_t0_V_s"] = float(dv.max())
@@ -712,9 +782,22 @@ def part_single(args):
     path = Path(args.output) / "single.json"
     write_json(Path(args.output) / "plan.json", dict(provenance=provenance(), plan=PLAN))
     out["kv_scan"] = []
+    set_point(args.nav, args.kir, args.cm)
+    heredity = (args.nav, args.kir, args.cm) == (
+        fx.HEREDITY_NAV_M_S,
+        fx.HEREDITY_KIR_M_S,
+        HEREDITY_CM_F_M2,
+    )
+    rests = {}
     for kv in args.kv_values:
-        rec, _ = single_run(kv, kick=50.0)
-        out["kv_scan"].append(dict(kv_m_s=kv, **rec))
+        if heredity:  # The plan's run: the H state as declared.
+            set_point(args.nav, args.kir, args.cm)
+            rests[kv] = dict(rest=list(H[:4]), source="H state (heredity cell)")
+        else:
+            rests[kv] = dict(source="relaxation", **relax_rest(kv))
+        kick = 50.0 if args.kick_to is None else 1e3 * (args.kick_to - POINT["rest"][0])
+        rec, _ = single_run(kv, kick=kick)
+        out["kv_scan"].append(dict(kv_m_s=kv, rest=rests[kv], **rec))
         f = rec.get("features", {})
         log(
             f"kv {kv:g}: {f.get('class')} peak {f.get('peak_V')} end {f.get('end_V')} "
@@ -730,12 +813,20 @@ def part_single(args):
     ]
     kv = min(chosen) if chosen else None
     out["selected_kv_m_s"] = kv
+    out["point"] = dict(nav_m_s=args.nav, kir_m_s=args.kir, cm_F_m2=args.cm)
     out["selection_rule"] = PLAN["selection"]
     log(f"selected Kv1.5 {kv}")
     write_json(path, out)
     if kv is None:  # Still characterise the cell: rest, threshold and controls at kv = 0.
         kv = 0.0
         out["characterised_kv_m_s"] = kv
+    if heredity:
+        set_point(args.nav, args.kir, args.cm)
+    elif kv in rests:
+        set_point(args.nav, args.kir, args.cm, rests[kv]["rest"])
+    else:
+        rests[kv] = dict(source="relaxation", **relax_rest(kv))
+    out["characterised_rest"] = list(POINT["rest"])
     # Rest.
     rec, r = single_run(kv, dt=1e-3, end=4.0)
     vm, t = np.asarray(r["vm"])[:, 0], np.asarray(r["times"])
@@ -983,6 +1074,11 @@ def part_chain(args):
         arms=[],
     )
     path = Path(args.output) / "chain.json"
+    set_point(args.nav, args.kir, args.cm)
+    out["point"] = dict(nav_m_s=args.nav, kir_m_s=args.kir, cm_F_m2=args.cm, kv_m_s=args.kv)
+    out["rest"] = relax_rest(args.kv) if not args.h_rest else dict(rest=list(H[:4]), source="H")
+    log(f"chain point {out['point']} rest {POINT['rest'][0]}")
+    write_json(path, out)
 
     def dt_for(s, cap):
         return ladder_dt(
@@ -1149,7 +1245,10 @@ def part_device(args):
 
     out = dict(provenance=provenance(), plan=PLAN, part="device", batches=[])
     path = Path(args.output) / "device.json"
-    supra = args.kick
+    set_point(args.nav, args.kir, args.cm)
+    out["rest"] = relax_rest(args.kv) if not args.h_rest else dict(rest=list(H[:4]), source="H")
+    supra = 1e3 * (args.kick_to - POINT["rest"][0])
+    out["kick_mV"] = supra
     batches = [
         (
             "single cell, kick, dt 10 and 25 us",
@@ -1218,6 +1317,72 @@ def part_device(args):
         out["batches"].append(row)
         log(f"device {label}: {row['status']} {row.get('error', '')[:120]}")
         write_json(path, out)
+    out["peak_rss_mb"] = peak_rss_mb()
+    write_json(path, out)
+
+
+SCAN_ORDER = ("cm_F_m2", "nav_m_s", "kir_m_s", "kv_m_s")
+SCAN_GRID = dict(
+    cm_F_m2=(0.05, 0.01),
+    nav_m_s=(2.5e-7, 1e-6),
+    kir_m_s=(1e-8, 4e-8),
+    kv_m_s=(1e-7, 3e-7, 1e-6),
+)
+
+
+def part_scan(args):
+    """Post-hoc amendment (PLAN.md, 14 November): the admitted laws over their densities.
+
+    Every grid point, in the fixed order (least departure from the heredity cell first):
+    its rest from a 2 s relaxation; a kick to -20 mV; the fixed AP definition (overshoot,
+    repolarised within 5 mV of that rest within 60 ms, peak <= +55 mV, no refusal) at
+    ARS(2,2,2) 10 us. The selection is the first passing point; a point also needs a rest
+    below -60 mV. Every point runs, so the scan maps where the laws make an action potential.
+    """
+    import itertools
+
+    out = dict(
+        provenance=provenance(),
+        plan=PLAN,
+        part="scan",
+        order=SCAN_ORDER,
+        grid=SCAN_GRID,
+        kick_to_V=args.kick_to_scan,
+        points=[],
+    )
+    path = Path(args.output) / "scan.json"
+    for values in itertools.product(*(SCAN_GRID[k] for k in SCAN_ORDER)):
+        point = dict(zip(SCAN_ORDER, values, strict=True))
+        set_point(point["nav_m_s"], point["kir_m_s"], point["cm_F_m2"])
+        rest = relax_rest(point["kv_m_s"])
+        row = dict(point=point, rest=rest)
+        if rest["refusal"] is None and rest.get("rest_V", 0.0) < -0.060:
+            kick = 1e3 * (args.kick_to_scan - POINT["rest"][0])
+            rec, _ = single_run(point["kv_m_s"], kick=kick)
+            f = rec.get("features", {})
+            row.update(
+                kick_mV=kick,
+                record=rec,
+                passes=bool(
+                    not rec["refusal"]
+                    and f.get("class") == "action potential, repolarised"
+                    and f.get("peak_V", 1.0) <= 0.055
+                ),
+            )
+        else:
+            row["passes"] = False
+            row["reason"] = "no rest below -60 mV" if rest["refusal"] is None else "rest refused"
+        out["points"].append(row)
+        f = row.get("record", {}).get("features", {})
+        log(
+            f"scan {point}: rest {rest.get('rest_V')} {f.get('class')} peak {f.get('peak_V')} "
+            f"dV/dt {f.get('max_dVdt_V_s')} apd90 {f.get('apd90_s')} passes {row['passes']}"
+        )
+        write_json(path, out)
+    passing = [r for r in out["points"] if r["passes"]]
+    out["selected"] = passing[0]["point"] if passing else None
+    out["passing_points"] = [r["point"] for r in passing]
+    log(f"scan selected {out['selected']}")
     out["peak_rss_mb"] = peak_rss_mb()
     write_json(path, out)
 
@@ -1310,18 +1475,98 @@ def part_verdict(args):
         spread = (max(values) - min(values)) / min(values) if values else None
         short_cv = m.get("cv_cells_per_s")
         long_cv = spans.get(f"{40 // 3}-{(2 * 40) // 3}")
+        # Activation times at the two finest steps: within 5% of the mean delay per cell,
+        # over the cells beyond the stimulated set.
+        act_shift = None
+        if len(finest) == 2:
+            a0 = refine[finest[0]].get("measures", {}).get("activation_s", [])
+            a1 = refine[finest[1]].get("measures", {}).get("activation_s", [])
+            beyond = range(args.stim_cells, min(len(a0), len(a1)))
+            pairs = [(a0[i], a1[i]) for i in beyond if a0[i] is not None and a1[i] is not None]
+            delays = [d for d in refine[finest[0]]["measures"]["delay_per_cell_s"] if d]
+            if pairs and delays:
+                act_shift = max(abs(x - y) for x, y in pairs) / float(np.mean(delays))
         out["C4"] = dict(
             cv_by_dt=cvs,
             cv_two_finest_relative=dcv,
+            activation_shift_over_delay=act_shift,
             spans=spans,
             spans_spread=spread,
             short_vs_long=relative(short_cv, long_cv),
         )
-        out["C4"]["met"] = all(
-            v is not None and v < 0.02 for v in (dcv, spread, out["C4"]["short_vs_long"])
+        out["C4"]["met"] = (
+            all(v is not None and v < 0.02 for v in (dcv, spread, out["C4"]["short_vs_long"]))
+            and act_shift is not None
+            and act_shift < 0.05
+        )
+        # C5: every case's refusal (with its attribution), device checks, mechanisms, cost.
+        kinds = (
+            "sweep",
+            "controls",
+            "refinement",
+            "length",
+            "capture",
+            "recovery",
+            "block",
+            "arms",
+        )
+        cases = [(g, c) for g in kinds for c in chain.get(g, [])]
+        stopped = [
+            dict(
+                group=g,
+                s=c.get("s"),
+                control=c.get("control"),
+                label=c.get("label"),
+                dt_s=c.get("mechanisms", {}).get("dt_s"),
+                message=c["refusal"]["message"],
+                attribution=c.get("attribution", {}).get("at_last_accepted"),
+            )
+            for g, c in cases
+            if c.get("refusal")
+        ]
+        main_kinds = ("controls", "refinement", "length")
+        main_stopped = [r for r in stopped if r["group"] in main_kinds] + [
+            r for r in stopped if r["group"] == "sweep" and r["s"] == args.s_main
+        ]
+        out["C5"] = dict(
+            cases=len(cases),
+            refused=stopped,
+            main_cases_refused=len(main_stopped),
+            mechanisms=(main or {}).get("mechanisms"),
+            execute_ms_per_step=(main or {}).get("execute_ms_per_step"),
+            host_analysis_ms_per_step=(main or {}).get("host_analysis_ms_per_step"),
+            max_energy_balance_relative=max(
+                (
+                    c.get("diagnostics", {}).get("max_energy_balance_relative", 0.0)
+                    for _, c in cases
+                ),
+                default=None,
+            ),
         )
     if device:
         out["device"] = {b["label"]: b["status"] for b in device["batches"]}
+        if "C5" in out:
+            out["C5"]["device_batches"] = out["device"]
+            out["C5"]["met"] = out["C5"]["main_cases_refused"] == 0 and all(
+                v == "passed" for v in out["device"].values()
+            )
+    if args.scan_json:
+        scan = json.loads(Path(args.scan_json).read_text())
+        out["scan"] = dict(
+            selected=scan.get("selected"),
+            passing_points=scan.get("passing_points"),
+            points=[
+                dict(
+                    point=r["point"],
+                    rest_V=r["rest"].get("rest_V"),
+                    passes=r["passes"],
+                    features=r.get("record", {}).get("features"),
+                    refusal=r.get("record", {}).get("refusal"),
+                    reason=r.get("reason"),
+                )
+                for r in scan["points"]
+            ],
+        )
     write_json(root / "verdict.json", out)
     log(
         json.dumps(
@@ -1330,18 +1575,33 @@ def part_verdict(args):
     )
 
 
-PARTS = dict(single=part_single, chain=part_chain, device=part_device, verdict=part_verdict)
+PARTS = dict(
+    single=part_single,
+    scan=part_scan,
+    chain=part_chain,
+    device=part_device,
+    verdict=part_verdict,
+)
 
 
 def main(argv=None):
     a = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     a.add_argument("part", choices=sorted(PARTS))
     a.add_argument("--output", required=True)
+    a.add_argument("--kv", type=float, default=None, help="Kv1.5 (m/s): chain and device")
+    a.add_argument("--nav", type=float, default=fx.HEREDITY_NAV_M_S, help="NaV1.2 (m/s)")
+    a.add_argument("--kir", type=float, default=fx.HEREDITY_KIR_M_S, help="Kir2.1 (m/s)")
+    a.add_argument("--cm", type=float, default=HEREDITY_CM_F_M2, help="capacitance (F/m^2)")
     a.add_argument(
-        "--kv", type=float, default=1e-7, help="Kv1.5 permeability (m/s) for chain/device"
+        "--kick-to",
+        type=float,
+        default=None,
+        help="single: kick to this Vm (V) instead of 50 mV; device: required",
     )
+    a.add_argument("--kick-to-scan", type=float, default=-0.020)
+    a.add_argument("--h-rest", action="store_true", help="chain/device: start at H as declared")
+    a.add_argument("--scan-json", default=None, help="verdict: the scan's record")
     a.add_argument("--kv-values", type=float, nargs="+", default=[0.0, 1e-8, 3e-8, 1e-7, 3e-7])
-    a.add_argument("--kick", type=float, default=40.0, help="device part's kick (mV)")
     a.add_argument("--bisections", type=int, default=7)
     a.add_argument(
         "--s1s2-ms", type=float, nargs="+", default=[5, 8, 10, 12, 15, 20, 25, 30, 40, 60]
@@ -1365,6 +1625,10 @@ def main(argv=None):
         help="the chain's junction-heat booking (E07-v1's registered one by default)",
     )
     args = a.parse_args(argv)
+    if args.part in ("chain", "device") and args.kv is None:
+        a.error("chain and device need --kv explicitly")
+    if args.part == "device" and args.kick_to is None:
+        a.error("device needs --kick-to explicitly")
     log(f"part {args.part}: cells from {cells.__file__}; driver {__file__}")
     try:
         PARTS[args.part](args)
