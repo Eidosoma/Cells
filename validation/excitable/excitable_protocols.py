@@ -79,6 +79,11 @@ def ap_measures(run, V_rest, *, cell=0, t_from=0.0):
     out = dict(peak_V=V_peak, time_to_peak_s=t_peak, max_dVdt_V_per_s=dvdt,
                time_of_max_dVdt_s=t_up, overshoot=V_peak > 0.0)
     for x in (50, 90):
+        # An APD is defined for an action potential only: a run whose upstroke (the largest
+        # dV/dt, which must be positive) precedes its peak. Otherwise None (a passive decay).
+        if dvdt <= 0.0 or t_up > t_peak:
+            out[f"APD{x}_s"] = None
+            continue
         t_x = run.crossing(cell, V_peak - x / 100.0 * amp, direction=-1, t_from=t_peak)
         out[f"APD{x}_s"] = None if t_x is None else t_x - t_up
     if V_peak <= V_rest + 0.005:
