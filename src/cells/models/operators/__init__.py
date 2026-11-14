@@ -21,6 +21,7 @@ from cells.models.operators.restricted_lumen import RestrictedCleftLumen
 from cells.models.operators.restricted_lumen_v2 import RestrictedCleftLumenV2
 from cells.models.operators.species_exchange import ScheduledSpeciesExchange
 from cells.models.operators.species_reactions import LocalSpeciesReactions
+from cells.models.operators.species_regulated_availability import SpeciesRegulatedAvailability
 from cells.models.operators.species_turnover import ScheduledSpeciesTurnover
 
 OPERATORS = {
@@ -41,6 +42,7 @@ OPERATORS = {
         check_declarations(ScheduledSpeciesTurnover)(),
         check_declarations(ScheduledSpeciesExchange)(),
         check_declarations(LocalSpeciesReactions)(),
+        check_declarations(SpeciesRegulatedAvailability)(),
         check_declarations(ScheduledBathComposition)(),
     )
 }
