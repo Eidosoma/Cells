@@ -16,6 +16,9 @@ SPECIES = ("Na", "K", "Cl")
 Z = (1, 1, -1)
 TOL = rops.TOLERANCE_EPS * rops.EPS  # 64 eps
 CHARGE_PER_FMOL = 1e-15 * rops.F  # C per fmol of charge equivalent
+# The reference's own self-checks (a pass at 64 eps x magnitude) use the tight scale: the
+# magnitudes without A.8's charge term, which is for comparing with the engine.
+OWN = dict(charge_term=False)
 
 
 def charges_from_potentials(free, held, edges, phi):
@@ -167,7 +170,7 @@ def test_every_identity_holds_on_200_random_states_to_64_eps():
     worst = []
     for i in range(200):
         snapshot, division, _ = random_state(rng, held_potential=0.0 if i % 2 else None)
-        result = rops.apply(snapshot, division)
+        result = rops.apply(snapshot, division, **OWN)
         name, ratio = result.worst()
         worst.append(ratio)
         assert ratio <= rops.TOLERANCE_EPS, (i, name, ratio)
@@ -261,7 +264,7 @@ def test_a_symmetric_division_is_bitwise_and_books_exact_zeros():
     rng = np.random.default_rng(5)
     for _ in range(20):
         snapshot, division, _ = random_state(rng)
-        r = rops.apply(snapshot, symmetric(division))
+        r = rops.apply(snapshot, symmetric(division), **OWN)
         v, s = r.values, r.snapshot
         assert np.all(v["delta_fmol"] == 0.0) and v["mismatch_C"] == 0.0
         assert s.cells["D1"] == s.cells["D2"]
@@ -291,7 +294,7 @@ def test_the_unmixing_term_is_nonnegative_and_follows_its_leading_order():
         # Small contents so that delta / n is visible (about 1e-4 to 1e-2).
         snapshot, division, _ = random_state(rng, amount_scale=(0.05, 2.0), held_potential=0.0)
         try:
-            r = rops.apply(snapshot, division)
+            r = rops.apply(snapshot, division, **OWN)
         except rops.PartitionRefused as refused:  # delta beyond a daughter's share (A.6 step 7)
             assert "amount <= 0" in str(refused)
             continue
@@ -333,7 +336,7 @@ def test_without_mismatch_the_free_energy_change_vanishes_to_rounding():
             "bridge",
             2e-5,
         )
-        r = rops.apply(snapshot, plain)
+        r = rops.apply(snapshot, plain, **OWN)
         assert np.all(r.values["delta_fmol"] == 0.0)
         assert abs(r.values["free_energy_change_pJ"]) <= TOL * r.magnitudes["free_energy_change_pJ"]
         assert r.values["unmixing_pJ"] <= 1e-20 * abs(r.values["free_energy_parts_pJ"][2])
@@ -376,7 +379,7 @@ def test_the_isopotential_split_of_a_one_patch_per_node_chain(with_cleft):
         {k: (f"{k}1", f"{k}2", shares[k]) for k in snapshot.patches},
         carriers={"K": 0.6, "Cl": 0.4},
     )
-    r = rops.apply(snapshot, division)
+    r = rops.apply(snapshot, division, **OWN)
     before, after = r.values["potentials_before_V"], r.values["potentials_after_V"]
     mag0, mag = r.magnitudes["potentials_before_V"], r.magnitudes["potentials_after_V"]
     for d in ("D1", "D2"):

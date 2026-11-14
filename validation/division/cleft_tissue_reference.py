@@ -454,7 +454,7 @@ class TissueRun:
     at: dict  # time -> record (after the events at that time)
     onset_V: list  # per injection: {pulse k: V of its cell at the front edge}
     sample_V: list  # per injection: {pulse k: V one sample time after the front edge}
-    events: list  # per division applied: dict(time_s, division, before, result) (R-ops)
+    events: list  # per division: dict(time_s, division, before, map, result) (R-ops)
     initial: dict  # founder -> dict(V, background_fmol, charge_fmol)
     steps: int
     wall_s: float
@@ -830,7 +830,8 @@ class _Tissue:
 
     def divide(self, t, dname):
         """R-ops' map at the division's time, then the new liveness (A.6). Returns the pre-event
-        R-ops snapshot and R-ops' result."""
+        R-ops snapshot, the R-ops Division applied and R-ops' result (R-ops' default
+        magnitudes; only the result's values are used here)."""
         rops = _rops()
         w = self.world
         d = w.divisions[dname]
@@ -910,7 +911,7 @@ class _Tissue:
         if d.bridge:
             self.bridge_phase[d.bridge] = "live"
             self.bridge_state[d.bridge] = (tuple(d.daughters), spec, t)
-        return snapshot, result
+        return snapshot, division, result
 
     def pack(self, seg):
         return np.array([x for node in seg.nodes for x in self.state[node]] + [self.heat])
@@ -1019,8 +1020,10 @@ def _simulate(world, t_end, *, record=(), rtol=1e-10, method="Radau", atol=None)
     for t0, t1 in zip(points, points[1:], strict=False):
         for name, d in world.divisions.items():
             if name not in applied and d.time_s <= t0:
-                before, result = tissue.divide(t0, name)
-                events.append(dict(time_s=t0, division=name, before=before, result=result))
+                before, mapping, result = tissue.divide(t0, name)
+                events.append(
+                    dict(time_s=t0, division=name, before=before, map=mapping, result=result)
+                )
                 applied.add(name)
         tissue.onsets(t0)
         seg = _Segment(tissue, t0, t1)

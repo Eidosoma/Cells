@@ -19,7 +19,7 @@ reading of Appendix A, the Appendix A item is cited; disagreements go to the lea
 ```python
 from validation.division import partition_reference as rops
 result = rops.apply(snapshot, division)   # raises rops.PartitionRefused
-plain = rops.apply(snapshot, division, charge_term=False)  # magnitudes without A.8's amendment
+own = rops.apply(snapshot, division, charge_term=False)  # the reference's own (tighter) scale
 ```
 
 `apply` never modifies its inputs. All input dataclasses are frozen. Names of nodes and slots
@@ -164,7 +164,18 @@ interpreted, so any sign convention passes through.
   - `charges_before_C` and `charges_after_C` in `magnitudes` give every node charge's magnitude.
 - **Solved potentials:** |K_ff⁻¹| (|K_ff| |φ_f| + |Q_f| + T_f + |K_fb| |φ_b|). This is the componentwise forward-error scale of a backward-stable solve, with each cell's term T_i = |Q̄_i| + 1e-15 F Σ_s |z_s Δ_{s,i}| carried through |K_ff⁻¹|; T is 0 for a cleft. The post-event solve takes the post-event cells' terms, the daughters' from their split anchors and computed increments.
 - **Everything downstream** of the charges or the potentials carries these terms: patch voltages and charges, plate and image charges, ΔU, δq and δ, the daughters' amounts and increments, ΔG and W.
-- **Without the terms:** `apply(snapshot, division, charge_term=False)` gives the magnitudes without the amendment, for comparison; the values are the same either way. With every charge anchor and increment zero, the two coincide exactly.
+- **Without the terms:** `apply(snapshot, division, charge_term=False)` gives the magnitudes without the amendment; the values are the same either way. With every charge anchor and increment zero, the two coincide exactly.
+
+**Which scale each entry point uses by default:**
+
+| Entry point | Default | Scale |
+| --- | --- | --- |
+| `rops.apply(snapshot, division)` | `charge_term=True` | A.8 as amended: the scale for comparing with the engine. |
+| `rops.apply(..., charge_term=False)` | – | The reference's own, tighter scale. R-ops' and R-tissue's self-checks (identities at 64 eps × magnitude) use it. |
+| `rops.electrostatics(snapshot)` | `charge_term=True` | As `apply`. |
+| `rops.nodal_solve(free, held, edges, charges)` | `extra=None` | No charge term unless one is passed in `extra`. |
+| `rt.simulate_divisions` | calls `rops.apply` at its default | R-tissue uses only the result's values (the post-event snapshot); `run.events[i]["result"]` carries the default magnitudes. |
+| `rt.simulate_static` | – | Does not call R-ops. |
 - **Constants:** `rops.EPS` is machine epsilon and `rops.TOLERANCE_EPS` = 64.
 
 **`identities`**: `{name: (residual, magnitude)}`. Each residual is zero in exact arithmetic; it
@@ -382,7 +393,7 @@ for the amounts and pJ for the heat.
 | --- | --- |
 | `at` | `{t: record}` for each requested time. |
 | `onset_V`, `sample_V` | One dict per injection, `{pulse k: V of its cell}`: at the pulse's front edge, and one `sample_s` later. |
-| `events` | One dict per division applied: `time_s`, `division` (its name), `before` (the R-ops `Snapshot` of the live tissue just before it) and `result` (R-ops' `Result`). |
+| `events` | One dict per division applied: `time_s`; `division` (its name); `before`, the R-ops `Snapshot` of the live tissue just before it; `map`, the R-ops `Division` applied; and `result`, R-ops' `Result` at its default scale. `rops.apply(e["before"], e["map"], charge_term=False)` gives the same values on the reference's own scale. |
 | `initial` | `{founder: {V, background_fmol, charge_fmol}}` at t = 0. |
 | `steps`, `wall_s` | Integrator steps and wall time. |
 

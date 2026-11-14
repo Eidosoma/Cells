@@ -36,6 +36,15 @@ def run(world, t_end, record=()):
     return rt.simulate_divisions(world, t_end, record=record, atol=SMALL)
 
 
+def own_scale(event):
+    """R-ops at an event on the reference's own scale (charge_term=False: the magnitudes without
+    A.8's charge term), from the pre-event snapshot and the R-ops Division R-tissue applied. Its
+    values are the event's; the self-checks at 64 eps x magnitude use it."""
+    result = rops.apply(event["before"], event["map"], charge_term=False)
+    assert result.snapshot.cells == event["result"].snapshot.cells
+    return result
+
+
 def compact(
     *,
     f=0.5,
@@ -155,7 +164,7 @@ def test_a_symmetric_division_gives_identical_daughters_and_equal_trajectories()
         assert np.all(np.abs(n1 - n2) <= 1e3 * EPS * np.abs(n1))
         assert abs(rec["junctions"]["b"]["current_A"]) <= 1e-24
     assert worst <= 1e3  # Equal to rounding (elimination order), not bitwise (§7.3).
-    name, ratio = event["result"].worst()
+    name, ratio = own_scale(event).worst()
     assert ratio <= rops.TOLERANCE_EPS, (name, ratio)
 
 
@@ -166,7 +175,7 @@ def test_an_asymmetric_division_is_isopotential_with_charges_following_the_patch
     world = compact(f=0.4, a_old=0.3, a_furrow=0.7, carriers={"K": 0.7, "Cl": 0.3})
     r = run(world, 0.15, RECORDS[:5])
     (event,) = r.events
-    result = event["result"]
+    result = own_scale(event)
     name, ratio = result.worst()
     assert ratio <= rops.TOLERANCE_EPS, (name, ratio)
     v = result.values
@@ -391,7 +400,7 @@ def test_one_to_two_to_four_applies_r_ops_at_each_division_and_retires_bridges()
     r = run(four_cells(), 0.2, (0.04, 0.05, 0.1, 0.12, 0.13, 0.2))
     assert [e["division"] for e in r.events] == ["P", "A", "B"]
     for e in r.events:
-        name, ratio = e["result"].worst()
+        name, ratio = own_scale(e).worst()
         assert ratio <= rops.TOLERANCE_EPS, (e["division"], name, ratio)
     final = r.at[0.2]
     assert set(final["V"]) == {"A1", "A2", "B1", "B2"}
@@ -507,7 +516,7 @@ def test_the_compact_one_to_two_to_four_world_with_second_furrows():
     r = run(world, 0.3, times)
     assert [e["division"] for e in r.events] == ["P", "A", "B"]
     for e in r.events:
-        name, ratio = e["result"].worst()
+        name, ratio = own_scale(e).worst()
         assert ratio <= rops.TOLERANCE_EPS, (e["division"], name, ratio)
         before = e["result"].values["potentials_before_V"]
         after = e["result"].values["potentials_after_V"]
