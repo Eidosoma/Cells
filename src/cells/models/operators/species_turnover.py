@@ -38,16 +38,16 @@ Under RK4 the bound is the absolute 2e-8 pJ (no solver tolerance); RK4 is guarde
 keeps exact half-steps around @3's RK4 step ("split").
 
 Refusals. At the definition: a charged species, a production route on an outside node, a route on
-a held bath, a negative rate, a schedule change off the dt grid, at most 7 species per world (the
-lead's ruling 3), an occupant without its rates, a donor copy whose route values differ from the
-slot's, and every provider or closer of the volumes and activity masks (CONFLICTS_VIEW: version 1
-is transport on a static tissue, so water, the lumens, insertion and S5's partition and bridge are
-refused). At run time: non-finite values and any written amount that would not stay positive. Each
-half-step returns the finiteness and positivity of every amount it wrote as its validity, and the
-operator's own domain re-checks its species rows, since the composite re-runs @3's domain at the
-step end only for an operator whose view follows its split. The stationary analysis does not admit
-the composite (its own ID check), and version 1 keeps it so: trace and nM species need per-species
-Newton tolerances first (§8).
+a held bath, a negative rate, a schedule change off the dt grid, more than 16 species per world
+(FR-9 / D165; species_common), an occupant without its rates, a donor copy whose route values
+differ from the slot's, and every provider or closer of the volumes and activity masks
+(CONFLICTS_VIEW: version 1 is transport on a static tissue, so water, the lumens, insertion and S5's
+partition and bridge are refused). At run time: non-finite values and any written amount that would
+not stay positive. Each half-step returns the finiteness and positivity of every amount it wrote as
+its validity, and the operator's own domain re-checks its species rows, since the composite re-runs
+@3's domain at the step end only for an operator whose view follows its split. The stationary
+analysis does not admit the composite (its own ID check), and version 1 keeps it so: trace and nM
+species need per-species Newton tolerances first (§8).
 
 Idle: no route, statically idle; no positive rate in a half-step, the start state is selected;
 untouched entries are selected, never offset by zero, so @3's ion rows are bitwise unchanged. The

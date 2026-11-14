@@ -6,11 +6,12 @@ docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §1.1, §1.3, §1.4, §2.1, §2.2, §2
   (molecularity, coefficients, closure, sources and sinks, Michaelis-Menten's one substrate and its
   read-only catalyst, factors on driven laws only, every parameter's domain), the sites (a held
   bath, undeclared nodes) and the schedule (the dt grid, the horizon, time 0, coverage);
-* the composition: RK4; more than 7 species; an identity that differs from a D150 operator's, in
-  either order; a turnover route on a row the network writes (a catalyst's row is admitted); a cell
-  route on a slot that replacement@1 replaces (outside routes compose); and every provider or closer
-  of the declared volumes, masks and outside anchors, with the operators version 1 composes with
-  admitted (the contract's structure check, and one refusal through the parser).
+* the composition: RK4; more than 16 species (D150's cap, FR-9 / D165); an identity that differs
+  from a D150 operator's, in either order; a turnover route on a row the network writes (a
+  catalyst's row is admitted); a cell route on a slot that replacement@1 replaces (outside routes
+  compose); and every provider or closer of the declared volumes, masks and outside anchors, with
+  the operators version 1 composes with admitted (the contract's structure check, and one refusal
+  through the parser).
 """
 
 import copy
@@ -314,13 +315,18 @@ def test_rk4_is_refused_with_its_reasons():
     assert "no consumer needs it" in str(error.value)
 
 
-def test_more_than_seven_species_are_refused_with_the_reason():
+def test_more_than_sixteen_species_are_refused_with_the_reason():
+    """FR-9 / D165: D150's cap, now 16, every species counted (it was 7)."""
     raw = rfx.enzyme_network()  # 3 ions and S, E, C, P: 7.
+    for i in range(9):  # Nine more: 16, admitted.
+        raw = add_inventory_species(
+            raw, f"X{i}", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+        )
     parse_spec(raw)
     raw = add_inventory_species(
-        raw, "X", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+        raw, "Y", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
     )
-    with pytest.raises(ConfigError, match="at most 7 species per world") as error:
+    with pytest.raises(ConfigError, match="at most 16 species per world") as error:
         parse_spec(raw)
     assert "local_species_reactions@1 admits" in str(error.value)
 
