@@ -5275,6 +5275,21 @@ supplied the request (FR-1), and it is logged in
   state and @3's free inventory. Its internalisation step follows FR-2. Design first (D142), as
   a general feature (D144).
 
+## D160: Compartment pH (FR-4) is logged at the requester's priority 1, sequenced after FR-1
+
+2026-11-14. The user supplied the request (FR-4), logged in
+[FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering).
+- **The feature:** protons as a species, an acidifying pump drawing on fuel, and buffering
+  through the reaction operator.
+- **The doors it meets:**
+  - a proton row is already legal in @3;
+  - D152's charged closed reactions (buffering);
+  - the energy-pool coupling, shared with FR-2;
+  - FR-1's electrical treatment. A proton-carrying compartment cannot be electrically silent,
+    and the counterion pathway is explicit.
+- **The order:** after FR-1, as the request sequences it. Design first (D142), as a general
+  feature (D144).
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

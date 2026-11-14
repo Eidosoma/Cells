@@ -9,6 +9,7 @@ and a general feature, never one built for one study (D144).
 | [FR-1](#fr-1--a-closed-internal-compartment-on-the-shared-inventory) | A closed internal compartment on the shared inventory | **High** (user, 14 November 2026; the request's own label: priority 1, blocking) | Logged; design not started | A design note for a fixed-topology compartment (below) |
 | [FR-2](#fr-2--internalisation-of-membrane-and-its-populations) | Internalisation of membrane and its populations | Priority 2 (the request's label; logged by the user, 14 November 2026) | Logged; follows FR-1 | A design note after FR-1's, settling retrieval's energy source (below) |
 | [FR-3](#fr-3--the-site-occupancy-primitive) | The site-occupancy primitive | Priority 2 (the request's label; logged by the user, 14 November 2026) | Logged; specified as a door in D150 §2.5 | A design note from its own sources (below) |
+| [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Logged | A design note after FR-1's, with the energy-pool and charged-reaction doors (below) |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -174,3 +175,60 @@ Accessibility is where that enters a model without naming a receptor.
   follows FR-2.
 - **The sources.** The primitive must be designed from its own sources (kinetochore counting, the
   Hirano 2026 review in the paper backlog, receptor kinetics), not shaped by one consumer (D144).
+
+## FR-4 — Compartment pH: a proton species, an acidifying pump, buffering
+
+**Logged 14 November 2026, priority 1 (blocking)**, the request's label. The request itself sequences
+it last of the block, after FR-1's compartment exists and can hold material. The request below is the
+requesting study's text, condensed. The lead's mapping follows.
+
+**The request.** Protons as a species, with a pump that can acidify a compartment against its
+gradient, drawing on the existing fuel pools, plus buffering through the reaction operator.
+
+**Why it is general.**
+- endosomal and lysosomal acidification;
+- the mitochondrial proton-motive force, which the roadmap wants for energetics;
+- pH-dependent gating and enzyme activity;
+- bicarbonate handling.
+
+Cells has no pH anywhere today, and a whole-cell model needs it.
+
+**The charge problem, in the requester's corrected reading.** The lead checked each point in the
+code.
+- **A proton row is legal in @3 itself.** `surface_tissue_spec.py` admits integer valences in
+  [−8, 8], so a +1 species is a declarable ion row. The transport half starts from something that
+  exists.
+- **It cannot be a D150 or D152 inventory species.**
+  - `inventory_species.py` fixes `valence=0`.
+  - `parse_species` refuses a nonzero valence for all three species operators
+    (`species_common.py`).
+- **Buffering is D152's named door.** Its §3.2 lists, as later work, "closed reactions on charged
+  species with Σ_s z_s ν_sr = 0 exactly (integer valences), such as buffering".
+- **The counterion pathway is a physical modelling choice, not bookkeeping.** Acidifying a
+  compartment without a parallel ion flux charges it. The counterion pathways and the pump's
+  energy must be explicit.
+
+**Numerics the requester expects to matter, which the lead agrees with.**
+- pH 7.4 to 5.0 is 4e-5 to 1e-2 mM, against about 150 mM of ions. That is D150's µM–nM regime,
+  where the shared IMEX energy bound was 1.7 to 1,721 times a species' whole free-energy change.
+- D150's answer should transfer: a species-only guard world, a NumPy ΔG test per law, and
+  per-species material floors and anchors.
+- Buffering is an equilibrium with a large capacity ratio, expected to be the stiff part.
+
+**The lead's mapping (for its design note to test, not settled).**
+- **Three doors already drawn meet here:**
+  - D152's charged closed reactions, for buffering;
+  - the energy-pool coupling, for the pump's fuel (D150 question 11, D152 question 10, and FR-2's
+    retrieval energy);
+  - FR-1's electrical treatment, which a proton-carrying compartment makes unavoidable. It cannot
+    be electrically silent.
+- **The pump.** An acidifying pump is a new pump law on @3's patch: a V-ATPase-like stoichiometry,
+  cited, with neutral naming. Its energy comes from a declared fuel. The fuel pools exist only in
+  the older calcium and energy families, so drawing on them in the composite is the energy-pool
+  door.
+- **Stiffness.** D152 v1 refuses kinetics too stiff for the step (dt·L > 1). Buffering therefore
+  needs either the stiff-kinetics door (a positive implicit half-step) or a rapid-buffer
+  equilibrium treatment, each qualified. That is for the design note to choose.
+- **pH-dependent gating and enzymes.** These read a charged source. Under the coupling operator
+  (D156) that goes through its regulatory state, or through D152's read-only charged-species door.
+- **The order.** After FR-1 and with FR-2's energy design, as the request itself sequences it.
