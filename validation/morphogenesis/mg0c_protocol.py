@@ -30,7 +30,20 @@ STATUS = (
     "in development_runs, for the lead's review with the advisor; not registered, and no judged "
     "run is made before the lead registers it)"
 )
-JUDGED_PARTS = ("theory", "linear", "floor", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "sites")
+JUDGED_PARTS = (
+    "d147",
+    "theory",
+    "linear",
+    "floor",
+    "q1",
+    "q2",
+    "q3",
+    "q4",
+    "q5",
+    "q6",
+    "q7",
+    "sites",
+)
 DT_JUDGED = (mg.dt_key(mg.DTS[0]), mg.dt_key(mg.DTS[1]))  # Each with its half: the step term.
 LINEARISED_MAP_TOLERANCE = 1e-6  # Proposed a priori (question 3 for the lead).
 RATE_TOLERANCE = dict(q2=1e-3, q3=1e-2, q5=1e-2)  # Fit-limited, proposed a priori (question 4).
@@ -74,6 +87,22 @@ def criteria_and_controls(results):
     control deltas, from the development results' structure and controls."""
     p = results["parts"]
     out, deltas = [], {}
+    if p["d147"]["max_free_field_offsets"] > 0:
+        raise SystemExit(
+            "Refused: an MG0c world has free field offsets (D147): tell the lead first"
+        )
+    out.append(
+        criterion(
+            "D147_no_free_field_offsets",
+            ["parts.d147.max_free_field_offsets"],
+            "le",
+            0,
+            "D147: a definition with free field offsets declares field solver @3; every MG0c world "
+            "has none (each chain node shares the cell's capacitor component with the held bath), "
+            "so the declared @2 stands. Composite IDs skip D147's automatic choice, so the count "
+            "is checked here",
+        )
+    )
     for world in ("passive", "open"):
         base = f"parts.linear.{world}"
         out += [
@@ -528,6 +557,19 @@ def draft(output, paths):
             covers=[
                 "the energy guards of record (§3.4): the face-free world at rounding on every "
                 "booking path, and the per-law dG test against network_reference",
+                "the independent kinetic and dissipation comparisons (test_species_reactions_"
+                "reference_runs: whole runs against nr.run_half_steps, H and W against "
+                "dr.integrate_node), kept with their documented trace-scale limits (the reversal "
+                "onset, §3.3; the background guard; the stiff front's stall at about eps x its "
+                "anchor, §4.4), because W = dG + H: a closed ledger cannot show heat and work "
+                "separately (the coordinator's milestone-3 addition)",
+                "the composed world (test_species_reactions_composition): transport and reactions "
+                "see the same material under the declared splitting (the face-free export and "
+                "reactions against E R I R E at rounding, second order to the coupled solution); "
+                "supply counted once across writers (each species' inventory against its writers' "
+                "sources at every row); restart and a vector batch preserve its results; a "
+                "rejected step restores every field bitwise, the other writers' accumulators "
+                "included",
                 "the definition-time refusals, the batch signature, restart and vmap (§6.5)",
                 "guard 2's linear chain against the engine order's map, idle claim 3 (reported), "
                 "the development composition with D150's writers and replacement@1",
@@ -549,6 +591,9 @@ def draft(output, paths):
         ],
         what_mg0c_does_not_show=[
             "any biological claim (the parameters are synthetic)",
+            "local accuracy at a consumer's concentrations (concentration over time, integrated "
+            "exposure, effective control and threshold time): the coupling milestone's protocol, "
+            "not MG0c's (the coordinator, milestone 3)",
             "the selection between several unstable modes on wide domains (nonlinear)",
             "two-dimensional patterns (they need sparse field IDs, D150 §3)",
             "recovery after damage (E15's question)",
@@ -559,7 +604,7 @@ def draft(output, paths):
             "recorded and kept; a revised protocol gets a new id and is reported as weaker evidence"
         ),
         resources=RESOURCES,
-        development_runs=dict(runs=runs, units=UNITS),
+        development_runs=dict(runs=runs, units=UNITS, drafted_by=mg.source_identity()),
     )
     protocol["development_values"] = development_values(protocol, results)
     Path(output).write_text(json.dumps(protocol, indent=1) + "\n")
@@ -595,7 +640,12 @@ RESOURCES = (
     "CPUs 5 and 7 (CPU backend only), each unit capped at 4 GiB, detached through "
     "scripts/run_detached.sh; development wall times in development_runs"
 )
-UNITS = "set at drafting from the development runs (see development_runs.runs)"
+UNITS = dict(
+    a="CPU 5: theory, timing, linear, floor, q1, q2, sites",
+    b="CPU 7: q6, q3, q5, q7",
+    c="CPU 5, after a: q4",
+    note="development's split; the judged run keeps it, each unit into its own new directory",
+)
 
 
 if __name__ == "__main__":

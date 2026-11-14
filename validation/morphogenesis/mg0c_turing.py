@@ -30,6 +30,7 @@ anchor plus an increment, so a deviation is (anchor - reference) + increment, wh
 difference, of two nearby floats, is exact. Mode coefficients are cr.mode_coefficients of it.
 
 Parts (development runs take no --protocol):
+  d147    D147's solver check: every world's free field offsets and its declared field solver
   timing  compile and cost per step per chain size, and the window's working estimate
   theory  the analysis, the domains' discrete modes, the staircase, the subcritical control and the
           engine order's discrete-time rates; the declaration against tu's own network
@@ -1426,7 +1427,50 @@ def part_sites(quick):
     return out
 
 
+def part_d147(quick):
+    """D147's solver check (the coordinator's milestone-3 addition, before the protocol's draft):
+    validation/tissue/field_solver_choice.free_field_offsets(raw) and the declared field solver of
+    every MG0c world definition. Composite definitions skip D147's automatic choice, so the counts
+    are recorded, not applied. A floating capacitor component (one with no held bath) is a free
+    offset; every chain node shares the cell's capacitor component with the held bath."""
+    from validation.tissue import field_solver_choice as fsc
+
+    spacing = SPACING_M / length_scale_m()
+    sizes = sorted({*DOMAINS.values(), *(int(round(L / spacing)) for L in STAIRCASE)})
+    worlds = [(f"schnakenberg_chain_N{n}", chain_world(mode_profile(n, 1))) for n in sizes]
+    worlds.append(("subcritical_chain_N22", chain_world(mode_profile(22, 1), d=SUBCRITICAL)))
+    worlds.append(("face_free_N12", chain_world(noise_profile(12, 5), faces=False)))
+    sited = {("make", "node_3"): 0.0, ("clear", "node_7"): 2.0}
+    for label, world in (
+        ("passive_pair", passive_pair()),
+        ("open_pair", open_pair()),
+        ("sites_open_pair", open_pair(sited)),
+    ):
+        profile = {s: [c] * 12 for s, c in world["base_mM"].items()}
+        raw = chain_world(profile, network=world["network"], diffusivities=world["diffusivities"])
+        worlds.append((f"{label}_N12", raw))
+    worlds.append(("ions_only_chain_N12", chain_world({}, n_nodes=12)))
+    worlds.append(("several_sites_face_free", rfx.several_sites()))
+    records = [
+        dict(
+            world=label,
+            model=raw["model"]["id"],
+            free_field_offsets=fsc.free_field_offsets(raw),
+            declared_field_solver=raw["execution"]["field_solver"],
+            solver_for_auto=fsc.solver_for(raw),
+        )
+        for label, raw in worlds
+    ]
+    return dict(
+        worlds=records,
+        count=len(records),
+        max_free_field_offsets=max(r["free_field_offsets"] for r in records),
+        declared_field_solvers=sorted({r["declared_field_solver"] for r in records}),
+    )
+
+
 PARTS = dict(
+    d147=part_d147,
     timing=part_timing,
     theory=part_theory,
     linear=part_linear,

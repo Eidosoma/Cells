@@ -19,21 +19,44 @@ design §3.4 guard 2, §4.5 claim 3, §5).
   - D150's turnover clearing the catalyst E at ecs_0, a row the network only reads;
   - replacement@1 replacing cell_0 mid-run, with the network on outside routes only (cell routes
     on a replaced slot are refused, §2.1).
+* **The composed world's accounting and execution** (the coordinator's milestone-3 additions,
+  from an external architecture review the advisor confirmed):
+  - transport and reactions see the same material. Under the declared splitting, a face-free
+    linear composition of the first-order export and the reactions equals the composed map
+    E(dt/2) R(dt/2) I(dt) R(dt/2) E(dt/2) at rounding. E is the export's exact half-step (D150's
+    documented law), R is SSPRK(3,3)'s map from chain_reference.half_step_linear_map, and I is the
+    identity here. The composition converges at second order to the coupled system's exact
+    solution;
+  - supply is counted once across writers. Each network species' inventory over the cells and
+    finite nodes changes at every row by exactly its writers' booked sources, each once: the
+    reactions, the turnover, the replacement and the held bath's supply through the faces. At
+    ecs_0, S changes by the exchange's delivery, the reactions' consumption and the face's
+    outflow;
+  - restart (in process, around the event, and through a snapshot read in a fresh process) and a
+    vector batch preserve the composed world's results;
+  - a rejected step restores the complete state, every field bitwise, the other writers'
+    accumulators included.
 
 A few minutes of compiles: tier 3.
 """
 
 import json
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
+from scipy.linalg import expm
 
+from cells.core import pump_composite_spec as cs
 from cells.core.inventory_species import add_inventory_species
 from cells.core.runner import run
 from cells.core.specs import parse_spec
+from cells.models.registry import get_model
 from validation.morphogenesis import mg0c_turing as mg
 from validation.reactions import chain_reference as cr
 from validation.tissue import secreted_species_fixtures as fx
@@ -41,6 +64,11 @@ from validation.tissue import species_reactions_fixtures as rfx
 
 jax.config.update("jax_enable_x64", True)
 IONS = ("Na", "K", "Cl")
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def bits(value):
+    return np.asarray(value).tobytes()
 
 
 def record(test, **values):
@@ -143,7 +171,9 @@ def test_idle_claim_3_ion_rows_are_bitwise_with_the_network_active():
 EVENT = 0.006
 
 
-def composition(end=0.01, dt=1e-3):
+def composition(
+    end=0.01, dt=1e-3, *, export=0.2, template_rate=0.1, clear=0.05, kcat=1.0, kf=0.5, k_out=0.5
+):
     """Two cells and their nodes leaking to the bath (D150's swapped world, at its 1 ms step, which
     the junction gate's kinetic bound needs): S exported from both cells; E (the catalyst) and P
     at the nodes; replacement of cell_0 at EVENT; the network on outside routes only:
@@ -177,26 +207,26 @@ def composition(end=0.01, dt=1e-3):
             ("sec_0", "contact_0", "export", "first_order"),
             ("sec_1", "contact_1", "export", "first_order"),
         ],
-        [("sec_0", "cell_0", [(0.0, 0.2)]), ("sec_1", "cell_1", [(0.0, 0.2)])],
-        templates=[("T", {"sec_0": {"rate": 0.1}})],
+        [("sec_0", "cell_0", [(0.0, export)]), ("sec_1", "cell_1", [(0.0, export)])],
+        templates=[("T", {"sec_0": {"rate": template_rate}})],
     )
     raw = fx.with_turnover(
         raw,
         [("e_clear", "ecs_0", "clearance")],
-        [("e_clear", None, [(0.0, 0.05)])],
+        [("e_clear", None, [(0.0, clear)])],
         species=[dict(id="E", catalogue=None, evidence=None)],
     )
     raw["model"]["operators"][-1]["routes"][0]["species"] = "E"  # A row the network only reads.
     node0, node1, nodes = {"outside": ["ecs_0"]}, {"outside": ["ecs_1"]}, {"outside": "all"}
     reactions = [
-        rfx.michaelis_menten("conversion", node0, "S", {"P": 1}, 1.0, 5e-4, catalyst="E"),
-        rfx.passive("swap", node1, {"S": 1}, {"P": 1}, 0.5),
+        rfx.michaelis_menten("conversion", node0, "S", {"P": 1}, kcat, 5e-4, catalyst="E"),
+        rfx.passive("swap", node1, {"S": 1}, {"P": 1}, kf),
         rfx.mass_action(
             "removal",
             nodes,
             {"P": 1},
             {},
-            0.5,
+            k_out,
             factors=[rfx.hill("hill_inhibition", "S", 1e-3, 2.0)],
         ),
     ]
@@ -234,3 +264,293 @@ def test_a_development_composition_with_exchange_turnover_and_replacement():
     assert np.all(extents != 0)  # Every route acted.
     assert generation.tolist() == [1, 0]  # The event fired on cell_0 only.
     assert supplied == pytest.approx(1.2e-3)  # The newcomer's S pool.
+
+
+# ------------------------------------------------------------------ the composed world's accounting
+
+KE, KR, KD = 0.5, 1.0, 0.3  # The export, the conversion and the decay (1/s).
+
+
+def linear_composition(dt, end=2.0):
+    """Face-free (one 1 pL cell and its 1 pL node, no face): S exported from the cell at first
+    order (D150's law: J = k_e n_c, its exact half-step moving n_c (1 - e^{-k_e h})); at ecs_0, S
+    -> P at k_r and P -> 0 at k_d. The exchange is declared before the network, so the composite's
+    split order is E R I R E."""
+    raw = rfx.species_world(
+        ("P",),
+        profile=dict(S=dict(cell_0=1e-3, ecs_0=1e-4), P=dict(ecs_0=1e-5)),
+        faces=False,
+        dt=dt,
+        end=end,
+        observation_times=fx.grid_times(end, dt, end / 4),
+    )
+    raw = fx.with_exchange(
+        raw, [("sec", "contact_0", "export", "first_order")], [("sec", "cell_0", [(0.0, KE)])]
+    )
+    node = {"outside": ["ecs_0"]}
+    reactions = [
+        rfx.mass_action("convert", node, {"S": 1}, {"P": 1}, KR),
+        rfx.mass_action("decay", node, {"P": 1}, {}, KD),
+    ]
+    species = [rfx.species("S", moieties={"X": 1}), rfx.species("P", moieties={"X": 1})]
+    return rfx.with_reactions(raw, species, reactions, rfx.always(["convert", "decay"]))
+
+
+def linear_amounts(result):
+    """[T, 3]: S in the cell, S and P at ecs_0 (fmol), anchors plus increments."""
+    spec = result.spec
+    model = get_model(spec.model)
+    _, p = model.initial_values(spec)
+    ids = list(spec.model.species_ids)
+    s, q = ids.index("S"), ids.index("P")
+    o = [c.id for c in spec.model.extracellular].index("ecs_0")
+    h = result.history
+    cell = np.asarray(p.amount_reference)[s, 0] + np.asarray(h.amount_increment)[:, s, 0]
+    node_s = (
+        np.asarray(p.extracellular_amount_reference)[s, o]
+        + np.asarray(h.extracellular_amount_increment)[:, s, o]
+    )
+    node_p = (
+        np.asarray(p.extracellular_amount_reference)[q, o]
+        + np.asarray(h.extracellular_amount_increment)[:, q, o]
+    )
+    return np.stack([cell, node_s, node_p], axis=1)
+
+
+def test_exchange_and_reactions_see_the_same_material_under_the_declared_splitting():
+    K = np.array([[-KR, 0.0], [KR, -KD]])
+    G = np.array([[-KE, 0.0, 0.0], [KE, -KR, 0.0], [0.0, KR, -KD]])  # The coupled system.
+    errors, worst = [], 0.0
+    for dt in (0.05, 0.025):
+        result = run(parse_spec(linear_composition(dt)))  # Every host check on every row.
+        x = linear_amounts(result)
+        h = 0.5 * dt
+        e = np.exp(-KE * h)
+        E = np.array([[e, 0.0, 0.0], [1.0 - e, 1.0, 0.0], [0.0, 0.0, 1.0]])
+        M, q = cr.half_step_linear_map(K, h)
+        assert q is None or np.all(np.asarray(q) == 0)
+        R = np.eye(3)
+        R[1:, 1:] = np.asarray(M)
+        step = E @ R @ R @ E  # Applied right to left: E, R, I (identity here), R, E.
+        other = R @ E @ E @ R  # The other order, for contrast.
+        times = np.asarray(result.times)
+        steps = np.rint(times / dt).astype(int)
+        scale = float(np.max(np.abs(x)))
+        mapped = np.asarray([np.linalg.matrix_power(step, k) @ x[0] for k in steps])
+        swapped = np.asarray([np.linalg.matrix_power(other, k) @ x[0] for k in steps])
+        exact = np.asarray([expm(G * t) @ x[0] for t in times])
+        difference = float(np.max(np.abs(x - mapped))) / scale
+        worst = max(worst, difference)
+        assert difference <= 1e-13  # Rounding over 40 and 80 steps.
+        assert float(np.max(np.abs(x - swapped))) / scale > 1e3 * difference  # The order shows.
+        errors.append(float(np.max(np.abs(x - exact))) / scale)
+    record("same_material", against_composed_map=worst, against_exact=errors)
+    assert 3.6 <= errors[0] / errors[1] <= 4.4  # Second order to the coupled system's solution.
+
+
+def network_inventory(result, names):
+    """{species: [T] its amount over the active cells and the finite outside nodes (fmol)} and
+    {species: [T] the writers' booked sources, each once}; the replaced slot keeps its anchor."""
+    spec = result.spec
+    model = get_model(spec.model)
+    _, p = model.initial_values(spec)
+    h = result.history
+    ids = list(spec.model.species_ids)
+    finite = ~np.asarray(p.reservoir)
+    held = np.asarray(p.reservoir)
+    cells = np.asarray(p.active)
+    inventory, sources = {}, {}
+    for name in names:
+        s = ids.index(name)
+        cell = np.asarray(p.amount_reference)[s] + np.asarray(h.amount_increment)[:, s]
+        node = (
+            np.asarray(p.extracellular_amount_reference)[s]
+            + np.asarray(h.extracellular_amount_increment)[:, s]
+        )
+        inventory[name] = cell[:, cells].sum(axis=1) + node[:, finite].sum(axis=1)
+
+        def booked(field, columns, s=s):
+            return np.asarray(getattr(h, field))[:, s][:, columns].sum(axis=1)
+
+        sources[name] = dict(
+            reactions=booked("reaction_produced_fmol", cells)
+            - booked("reaction_consumed_fmol", cells)
+            + booked("reaction_outside_produced_fmol", finite)
+            - booked("reaction_outside_consumed_fmol", finite),
+            turnover=booked("turnover_produced_fmol", cells)
+            - booked("turnover_cleared_fmol", cells)
+            - booked("turnover_outside_cleared_fmol", finite),
+            replacement=booked("replacement_supplied_fmol", cells)
+            - booked("replacement_removed_fmol", cells),
+            held_bath=booked("reservoir_supplied", held),
+        )
+    return inventory, sources
+
+
+def test_supply_is_counted_once_across_writers_and_the_node_sees_what_transport_brings():
+    spec = parse_spec(composition())
+    result = run(spec)
+    names = ("S", "E", "P")
+    inventory, sources = network_inventory(result, names)
+    report = {}
+    for name in names:
+        total = sum(sources[name].values())
+        residual = inventory[name] - inventory[name][0] - total
+        scale = float(np.max(np.abs(inventory[name])))
+        report[name] = dict(
+            max_residual_of_scale=float(np.max(np.abs(residual))) / scale,
+            sources_at_end={k: float(v[-1]) for k, v in sources[name].items()},
+        )
+        assert np.all(np.abs(residual) <= 64 * np.finfo(float).eps * scale), name
+    # Each writer's term enters (so the closure is informative): S from the reactions, the
+    # replacement and the bath; E from the turnover; P from the reactions and the bath.
+    assert sources["S"]["reactions"][-1] < 0 < sources["S"]["replacement"][-1]
+    assert sources["E"]["turnover"][-1] < 0 and sources["P"]["reactions"][-1] != 0
+    assert sources["S"]["held_bath"][-1] != 0 and sources["P"]["held_bath"][-1] != 0
+    # At ecs_0, S changes by the export's delivery, the reactions' consumption and the face's
+    # outflow (face_0 from ecs_0 to the bath), at every row.
+    model = get_model(spec.model)
+    _, p = model.initial_values(spec)
+    h = result.history
+    ids = list(spec.model.species_ids)
+    s = ids.index("S")
+    o = [c.id for c in spec.model.extracellular].index("ecs_0")
+    f = [face.id for face in spec.model.faces].index("face_0")
+    node = np.asarray(h.extracellular_amount_increment)[:, s, o]
+    delivered = np.asarray(h.exchange_moved_fmol)[:, 0]  # sec_0: cell_0 to ecs_0.
+    consumed = np.asarray(h.reaction_outside_consumed_fmol)[:, s, o]
+    produced = np.asarray(h.reaction_outside_produced_fmol)[:, s, o]
+    outflow = np.asarray(h.face_transferred)[:, s, f]
+    residual = node - (delivered - consumed + produced - outflow)
+    scale = float(np.asarray(p.extracellular_amount_reference)[s, o])
+    report["ecs_0_S"] = dict(
+        max_residual_of_scale=float(np.max(np.abs(residual))) / scale,
+        delivered=float(delivered[-1]),
+        consumed=float(consumed[-1]),
+        outflow=float(outflow[-1]),
+    )
+    record("supply_counted_once", **report)
+    assert delivered[-1] > 0 and consumed[-1] > 0 and outflow[-1] != 0
+    assert np.all(np.abs(residual) <= 64 * np.finfo(float).eps * scale)
+
+
+FRESH = """
+import json, sys
+import jax
+jax.config.update("jax_enable_x64", True)
+import numpy as np
+from cells.core.runner import run
+from cells.io import load_snapshot
+loaded = load_snapshot(sys.argv[1])
+result = run(loaded.spec, loaded.checkpoint)
+np.savez(sys.argv[2], **{k: np.asarray(v) for k, v in result.history._asdict().items()})
+print(json.dumps(dict(start=int(loaded.checkpoint.step_index))))
+"""
+
+
+def test_restart_and_a_vector_batch_preserve_the_composed_worlds_results(tmp_path):
+    from cells.core.batch import BatchSpec, WorldSpec
+    from cells.core.vector_windows import run_vector_windowed
+    from cells.core.windows import WindowPolicy
+    from cells.io import write_snapshot
+
+    spec = parse_spec(composition())
+    result = run(spec)
+    for t in (0.003, EVENT, 0.008):  # Before, at and after the replacement event.
+        checkpoint = result.checkpoint_at(t)
+        resumed = run(spec, checkpoint)
+        for a, b in zip(resumed.history, result.history, strict=True):
+            assert bits(a) == bits(np.asarray(b)[checkpoint.step_index :]), t
+    checkpoint = result.checkpoint_at(0.008)
+    write_snapshot(tmp_path / "checkpoint", result.spec, checkpoint)
+    env = dict(
+        os.environ,
+        PYTHONPATH=os.pathsep.join([str(ROOT / "src"), str(ROOT)]),
+        JAX_ENABLE_X64="1",
+        JAX_PLATFORMS="cpu",
+    )
+    done = subprocess.run(
+        [sys.executable, "-B", "-c", FRESH, str(tmp_path / "checkpoint"), str(tmp_path / "h.npz")],
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=600,
+        check=False,
+    )
+    assert done.returncode == 0, done.stderr[-2000:]
+    start = json.loads(done.stdout.strip().splitlines()[-1])["start"]
+    assert start == checkpoint.step_index
+    fresh = np.load(tmp_path / "h.npz")
+    for name, value in result.history._asdict().items():
+        assert bits(fresh[name]) == bits(np.asarray(value)[start:]), name
+    variants = [
+        dict(),
+        dict(export=0.3, template_rate=0.05, clear=0.08, kcat=1.5, kf=0.8, k_out=0.4),
+        dict(export=0.1, template_rate=0.2, clear=0.02, kcat=0.7, kf=0.3, k_out=0.6),
+    ]
+    specs = [parse_spec(composition(**v)) for v in variants]
+    model = get_model(specs[0].model)
+    assert all(
+        model.batch_signature(s.model) == model.batch_signature(specs[0].model) for s in specs
+    )
+
+    def batch(order):
+        worlds = tuple(WorldSpec(i + 1, specs[j]) for i, j in enumerate(order))
+        return run_vector_windowed(
+            BatchSpec(worlds, len(worlds), 10**6, 2**31), WindowPolicy(4, "checkpoints")
+        )
+
+    forward, backward = batch([0, 1, 2]), batch([2, 1, 0])
+    worst = 0.0
+    for k, s in enumerate(specs):
+        final = forward.worlds[k + 1].final.state
+        for a, b in zip(final, backward.worlds[3 - k].final.state, strict=True):
+            assert bits(a) == bits(b), k
+        single = run(s).history
+        for name in type(final)._fields:
+            a, b = np.asarray(getattr(final, name)), np.asarray(getattr(single, name))[-1]
+            if a.dtype.kind != "f":
+                assert bits(a) == bits(b), (k, name)
+                continue
+            scale = float(np.max(np.abs(b), initial=0.0))
+            difference = float(np.max(np.abs(a - b), initial=0.0))
+            assert difference <= 1e-12 * scale + 1e-30, (k, name)
+            if scale > 0:
+                worst = max(worst, difference / scale)
+    record("restart_and_batch", restart="bitwise", batch_reversed="bitwise", batch_vs_scalar=worst)
+
+
+def test_a_rejected_step_restores_the_complete_state_of_the_composed_world():
+    """After the event, the step at the declared dt is admitted and moves every writer; with the
+    conversion's multiplier raised 1e7-fold (dt L far above 1) the step is refused and returns the
+    start state bit for bit: @3's fields, the exchange's, the turnover's, the replacement's and the
+    network's."""
+    spec = parse_spec(composition())
+    result = run(spec)
+    checkpoint = result.checkpoint_at(0.008)
+    model = get_model(spec.model)
+    layout = checkpoint.layout
+    state = type(checkpoint.state)(*(jnp.asarray(v) for v in checkpoint.state))
+    controls = cs.control_values(spec, [0.008])
+    control = type(controls)(*(jnp.asarray(v[0]) for v in controls))
+    step = jax.jit(lambda x, c, dt: model.checked_step(x, dt, c, layout, layout.active))
+    dt = jnp.asarray(spec.execution.dt)
+    moved, ok = step(state, control, dt)
+    assert bool(ok)
+    changed = {
+        name
+        for name, a, b in zip(type(state)._fields, moved, state, strict=True)
+        if bits(a) != bits(b)
+    }
+    assert {
+        "exchange_moved_fmol",
+        "turnover_outside_cleared_fmol",
+        "reaction_extent_fmol",
+        "extracellular_amount_increment",
+    } <= changed
+    big = control._replace(reaction_multiplier=control.reaction_multiplier * 1e7)
+    refused, ok = step(state, big, dt)
+    assert not bool(ok)
+    for name, a, b in zip(type(state)._fields, refused, state, strict=True):
+        assert bits(a) == bits(b), name
+    record("rejected_step", admitted_changed=sorted(changed), refused="every field bitwise")
