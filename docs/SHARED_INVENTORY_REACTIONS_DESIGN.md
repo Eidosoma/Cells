@@ -169,8 +169,8 @@ per-node and per-species chemical term, which D150 v1 builds.
    - **Probe C4, the engine as it is:** finding 3, neutral species on junctions and membranes. It
      is a separate track.
    - **Still to come:** the contract fit (C1) is now the code branch's first milestone (§10.4).
-9. **Limits** (§7). Version 1 is a static tissue with neutral species, at most 7 species, and
-   kinetics with dt · L ≤ 1.
+9. **Limits** (§7). Version 1 is a static tissue with neutral species, at most 16 species
+   (D150's cap, 7 until FR-9 / D165), and kinetics with dt · L ≤ 1.
    - It is refused beside water, the lumen, closers, RK4 and the stationary analysis.
    - Cell routes on slots that replacement@1 replaces are refused.
 10. **Effort:** about 6 agent-days (range 5 to 7), plus about an hour of CPU for MG0c's judged runs
@@ -514,7 +514,8 @@ binding E + S ⇌ C followed by a driven catalytic step C → E + P.
 - non-positive K_M, K, n, k_f or c0, and negative rate constants;
 - schedule changes off the dt grid;
 - the `CONFLICTS_VIEW` providers and closers (§5);
-- more than 7 species, D150's cap, refused with the cap named (D150 §2.6);
+- more than 16 species, D150's cap (7 until FR-9 / D165), refused with the cap named (D150 §2.6,
+  §13);
 - a turnover route on a (species, node) the network writes (§1.1);
 - a cell route on a slot that `scheduled_cell_replacement@1` replaces (§2.1);
 - RK4 (§4.6);
@@ -1479,7 +1480,8 @@ ruling, §9 question 8).
 - Volume providers (water, the lumen, replacement@2) and closers (insertion, partition, bridge).
 - RK4, the stationary analysis and the coarse modes.
 - Kinetics with dt · L > 1, refused at run time (§4.3, from C3); sub-steps.
-- More than 7 species per world (D150's cap).
+- More than 16 species per world (D150's cap, raised from 7 by FR-9 / D165 on the W4 probe; every
+  species counts, ions included).
 - Per-carrier parameter sets; reversible Michaelis–Menten; multi-substrate mechanisms; delays.
 - A turnover route on a reacting (species, node) (Q3).
 - A cell route on a slot that replacement@1 replaces (Q6).
@@ -1507,7 +1509,7 @@ ruling, §9 question 8).
 | Chemostats inside cells | A held species, an open passive law whose partner has a declared potential |
 | Energy pools | Driven routes drawing on finite energy pools, making their work a metabolic cost (D150 question 11) |
 | Regulation from other layers | The gene-regulation layer (held, D145) as a factor source or a production law, not an edit to these laws |
-| More than 7 species | D150's check of host-side summation order at 8 or more terms |
+| More than 16 species | Another probe of host-side summation order above 16 (the W4 probe checked it up to 16; FR-9 / D165, D150 §13) |
 | Occupancy and surface catalysis | D150 §2.5's primitive and its four requirements |
 | Reads of charged or permeant species (added at milestone 1, §11) | Factors and catalysts that read charged or permeant species, for example calcium-regulated production. Reads book nothing, so they need only a read-only species list beside the written one. E15's coupling from bioelectric to chemical signalling is the likely consumer |
 

@@ -33,7 +33,7 @@ experiment).
 
 | Item | Level today |
 | --- | --- |
-| The composite: @3 plus operators, the ownership and energy-role contract, bound step checks | Guarded. Numerically qualified on CPU through frozen-model guards; GPU agreement by tolerance in progress on the L4 (14 November). Judged in E07-v1 (`resolved_pump_replacement@1`) |
+| The composite: @3 plus operators, the ownership and energy-role contract, bound step checks | Guarded. Numerically qualified on CPU through frozen-model guards. GPU agreement by tolerance on the L4 (14 November): W1 and W2 pass, and G2-Q1 passes Q1–Q6; Q7, which is bitwise, fails because of the L4's own nondeterminism at 825 nodes and stays open (PROGRESS). Judged in E07-v1 (`resolved_pump_replacement@1`) |
 | Water plus replacement@2 with the entity volume ledger | Implemented and guarded; not qualified on the heredity sheet |
 | Lifecycle operators: S2 membrane state, S3 insertion and lumen, Rm1 injection, S5a partition and bridge closure | Numerically qualified, against independent references for S5a. Division is prescribed; nothing yet judges endogenous proliferation |
 | Secreted-species transport (D150 v1) | **Numerically qualified** (14 November): the held sphere with decay, the faces with exact radial conductances and turnover's clearance. Exchange, production and the occupant rule are guarded only, through the Q5 tests |

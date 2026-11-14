@@ -73,6 +73,123 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The architecture block's first items landed (14 November 2026):** D147 for composite
+  definitions, the J2 bright line restored, and FR-9's species cap raised to 16 (D165)
+  ([evidence](/mnt/workspaces/Cells/architecture-block-20261114-01/HANDOFF.md)).
+  - **D147 for composites (D156):** a composite follows its inner model's field-solver policy.
+    - It is enforced without changing `src`, since `declare()` would change no guard and no
+      registered program.
+    - It adds an operator-bearing case with free offsets, and the claim is narrowed to what was
+      probed.
+    - Tests: `test_field_solver_composite` (tier 1) and its runs (tier 2), and
+      `test_field_solver_enforcement` (76 tests, tier 1).
+  - **J2, found by the earlier D147 landing gate:** the enforcement test imported S3's cleft egg, a
+    J1 source, beside partition sources. The cleft egg moved to its own module, with no exemption.
+    J2: 27 passed.
+  - **FR-9 / D165:** `species_common.MAX_SPECIES` from 7 to 16, a D148 in-place change to D150's
+    shared code. The criteria and the stop rule were written first, in D150 §13.
+    - Tier 1, `test_species_cap.py`: the cap admits a nine-species charged world. On its layout
+      NumPy's pairwise order differs from the explicit species-order sum the ledgers use, and the
+      explicit sum equals the compiled one bitwise.
+    - Tier 2, `test_species_cap_runs.py`: 20 steps, with every host check on every accepted row.
+      NumPy's order differs on 17 of 21 rows; explicit equals compiled on all.
+    - The three refusal tests refuse 17 and admit 16. The coupling operator's cap test was updated
+      at the merge.
+    - D150's claim 3 stays reported. Worlds above 7 species are outside D150's judged scope, and
+      above 16 needs another probe.
+    - **Deviation, accepted:** D165 asked for a tier-1 guard world. The runner world is in tier 2,
+      since compilation alone takes about 15 s.
+  - **Gates:**
+    - crossrev from a clean snapshot of a6d65bf: identical in all seven sets (base, qualification,
+      injection, volume, division, species, reactions);
+    - tier 1 and 2 at 44a164b: 403 files, no changed outcome;
+    - tier 1 and 2 at the landing merge 2161f39: 414 files, no changed outcome
+      ([summary](/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/land-gate12-2161f396/summary.json)).
+  - **Next:** the crossrev baseline renewed at the landing commit (D148 criterion 4), with records
+    of their own for species and reactions; the operator matrix; the phase records; D154's writer
+    note.
+
+- **The coupling operator `species_regulated_availability@1` (D155/D156): milestone 1 landed
+  (14 November).** This is development code; its qualification comes later
+  ([note](docs/INVENTORY_COUPLING_DESIGN.md) §7;
+  [evidence](/mnt/workspaces/Cells/inventory-coupling-v1-20261114-01/HANDOFF.md)).
+  - **What landed:**
+    - the operator and every refusal in §1.11;
+    - the neutral Hill helper (`processes/hill_factors.py`), which matches D152's rates bit for bit
+      on the host;
+    - the junction and channel targets (CONTROL_FACTORS "junction" and "channel");
+    - FR-6's per-cell prior condition (a per-cell `initial`, and writes at t = 0).
+  - **The bitwise checks** on the seven-cell heredity sheet, over every @3 state field and every
+    observation column:
+    - M1: a factor equals the same availability scheduled, on junctions.
+    - P1: the same on channels, at 1/2, 0 and 1. So the channel target is accepted into scope.
+    - A3: identity, zero and multiple factors.
+    - Idleness against the world without the operator.
+  - **Crossrev:** main against the branch in all seven sets (base, qualification, injection,
+    volume, division, species, reactions): identical.
+  - **Landing:**
+    - tier 1 and 2 at fbcec48: 407 files, no changed outcome;
+    - tier 1 after merging main, at 9eafe05: 318 files, no changed outcome;
+    - the eight new test files in the tier record: two in tier 1, six in tier 2.
+  - **Next, milestone 2,** in progress: the regulatory state compiled; restart and windows; batches;
+    compositions; the factors manifest entry; A4 and A5 against the independent references, which
+    are being written.
+
+- **Checkpoint continuity's GPU extension of case 1 landed (D153, design §13.4; 14 November).** GPU
+  definitions are now admitted through the CPU-host probe, with `execution_device` patched, and the
+  admission record notes the patch
+  ([evidence](/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/impl/gpu-ext/)).
+  - **The code:** `src/cells/continuity.py`, which is host-only, with the probe, admission and
+    verification tools.
+    - A patched record also requires the probe's `jaxlib` to equal the resuming runtime's.
+    - The `to` runtime is the checkpoint's own, checked exactly on the GPU host.
+  - **A real L4 checkpoint:**
+    - It was admitted on the CPU host: P, B and H identical, the cuda module identical (1,799,725
+      characters).
+    - It then resumed on the L4 for its remaining four rounds, through a replacement event.
+    - The GPU-host loader checked the runtime and `jaxlib` exactly. Copies of the record with
+      `jaxlib` or the GPU platform version changed were refused.
+    - `verify_run` passed 17 of 17 checks, after a stand-in `inputs.json` for the probe's origin.
+      That is a limit for checkpoints written outside `dev_run.py`, noted as a follow-up.
+  - **Gates.**
+    - Crossrev identical in all five sets.
+    - Tier 1 and 2 at 266f5f1: 398 files, no changed outcome.
+    - Tier 1 after merging main, at 0644752: 316 files, no changed outcome.
+    - The new `test_continuity_gpu.py` (14 tests, 22.8 s) is added to the tier record at landing.
+      It had been run by the agent, not by the gates.
+- **The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7.**
+  C ran once on the L4 under the GPU lock, from a clean snapshot of main at 265ed66, against the
+  three registered backend variants. Every definition declared the GPU (117 min of GPU; nothing was
+  refused or killed) ([evidence](/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/c/)).
+  - **W1:** 25 of 25 items pass. **W2:** 24 of 24 pass.
+  - **G2-Q1:** Q1–Q6 pass. **Q7 fails.** Q7 judges replacement with no events against
+    `resolved_pump_tissue@3` bitwise on the 825-node tissue. On the L4, almost every state field
+    and diagnostic differs.
+  - **The deviation reports:** |A − C| is 0 on every judged quantity of W1 (25), W2 (72) and G2
+    (18). C reproduced the repeats A, B and D exactly.
+  - **The diagnosis (development evidence, not judged):** one process ran two plain `@3` runs and
+    one replacement run, which gives no terms under the three-repeat rule.
+    - `@3` against `@3`, the identical program, already differs bitwise: 17 of 22 state fields, up
+      to 1.6e-11 relative.
+    - Replacement against `@3` shows the same scatter, the same fields at the same sizes.
+    - So the failure is the L4's own nondeterminism at 825 nodes. Nothing in it is attributable to
+      the wrapper at this resolution.
+    - Three rounding-level residual diagnostics differ by up to 2.8× their own size.
+  - **A process finding.** The variant carried an item with no tolerance site (Q7 is bitwise) on a
+    world where the plan already said L4 repeats are not bitwise. So the variant method could not
+    widen it.
+  - **Status of the composition gate's GPU condition:** met for water (W1, W2) and for
+    replacement's Q1–Q6; **open for Q7.**
+  - **Next.**
+    - In the next L4 gap (about 5 min, never applied to the hold, whose snapshots check the XLA
+      flags), test whether this jaxlib has a deterministic execution setting under which `@3`
+      repeats bitwise at 825 nodes across processes. If it does, Q7 is judged as registered.
+    - Otherwise, a tolerance-based Q7 would be a new item, not a variant. It would need a judge
+      change and its own rule, registered after attribution and labelled weaker evidence: repeats
+      in separate processes with all pairs, per-field scales, residual diagnostics against their
+      own bounds, and a planted wrapper effect as a judged control. Whether to allow it is the
+      user's call (D148's last clause, by analogy).
+
 - **D152 v1 milestone 3 landed: MG0c's driver, its development runs and a PROPOSED protocol
   (14 November).** Not registered, and no judged run
   ([protocol](validation/morphogenesis/protocols/mg0c_turing_v1.json); design §11.3;

@@ -6,15 +6,15 @@ and a general feature, never one built for one study (D144).
 
 | ID | Feature | Priority | Status | Next step |
 | --- | --- | --- | --- | --- |
-| [FR-1](#fr-1--a-closed-internal-compartment-on-the-shared-inventory) | A closed internal compartment on the shared inventory | **High** (user, 14 November 2026; the request's own label: priority 1, blocking) | Logged; design not started | A design note for a fixed-topology compartment (below) |
+| [FR-1](#fr-1--a-closed-internal-compartment-on-the-shared-inventory) | A closed internal compartment on the shared inventory | **High** (user, 14 November 2026; the request's own label: priority 1, blocking) | **Design accepted** ([note](CLOSED_COMPARTMENT_DESIGN.md), D169) | Code: milestone 1 (the S1–S5 silence criteria), exchange's first judged acceptance |
 | [FR-2](#fr-2--internalisation-of-membrane-and-its-populations) | Internalisation of membrane and its populations | Priority 2 (the request's label; logged by the user, 14 November 2026) | Logged; follows FR-1 | A design note after FR-1's, settling retrieval's energy source (below) |
-| [FR-3](#fr-3--the-site-occupancy-primitive) | The site-occupancy primitive | Priority 2 (the request's label; logged by the user, 14 November 2026) | Logged; specified as a door in D150 §2.5 | A design note from its own sources (below) |
+| [FR-3](#fr-3--the-site-occupancy-primitive) | The site-occupancy primitive | Priority 2 (the request's label; logged by the user, 14 November 2026) | **Design accepted** ([note](SITE_OCCUPANCY_DESIGN.md), D169) | Code after FR-1; references from the full kinetics |
 | [FR-5](#fr-5--state-conditioned-transfer-across-an-internal-membrane-with-leak-and-reseal) | State-conditioned transfer across an internal membrane, with leak and reseal | Priority 1, blocking (the request's label; logged 14 November 2026). It depends on FR-1 and FR-4 | Logged | A design note after FR-1's and FR-4's (below) |
 | [FR-6](#fr-6--species-driven-control-factors) | Species-driven control factors | Priority 2 (the request's label; logged 14 November 2026) | **Addressed by an accepted design (D155, D156; [the coupling note](INVENTORY_COUPLING_DESIGN.md)); no code yet.** Three narrower items are recorded as consumer registrations | The channel target in the coupling operator's milestone 1 (in progress); the routing door; the regulatory state as a prior condition (below) |
 | [FR-7](#fr-7--abundance-to-function-exposed-in-the-composite) | Abundance-to-function, exposed in the composite | Priority 3, ordering and not scope (the request's label; logged 14 November 2026) | Logged; most of part (b) is the coupling operator's channel target | Considered when the closed molecular-to-physiology loop's unit is chosen (below) |
 | [FR-8](#fr-8--a-qualified-long-duration-mode) | A qualified long-duration mode | Priority 2 (the request's label; logged 14 November 2026) | Logged; it is the compute-limits gate's open long-time deliverable | Its acceptance gains an intervention applied during the slow phase; a long-time path for composite operators needs a design note (below) |
-| [FR-9](#fr-9--raise-the-7-species-cap) | Raise the 7-species cap | Priority 2, **blocking for world design** (the request's label; logged 14 November 2026). Measured safe to 16 (the W4 probe) | **Accepted: the raise to 16 is queued** as a D148 change to `species_common` (D165) | The D148 change with a guard world of 8 or more species; the requester's species list comes with its world definition |
-| [FR-10](#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family) | A dose schedule: scheduled bath composition in the pump family | Priority 2, small (the request's label; logged 14 November 2026) | Logged; the law and its accounting exist in a frozen family | A short design note re-expressing it as a composite operator (below) |
+| [FR-9](#fr-9--raise-the-7-species-cap) | Raise the 7-species cap | Priority 2, **blocking for world design** (the request's label; logged 14 November 2026). Measured safe to 16 (the W4 probe) | **Landed** (14 November): `MAX_SPECIES` is 16, a D148 change to `species_common` with guard worlds of 8 or more species (D165) | The D148 change with a guard world of 8 or more species; the requester's species list comes with its world definition |
+| [FR-10](#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family) | A dose schedule: scheduled bath composition in the pump family | Priority 2, small (the request's label; logged 14 November 2026) | **Design accepted** ([note](BATH_SCHEDULE_DESIGN.md), D169) | Code next; the staircase probe; a dose from nothing is a known limit |
 | [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Logged | A design note after FR-1's, with the energy-pool and charged-reaction doors (below) |
 
 ## FR-1 — A closed internal compartment on the shared inventory
@@ -88,6 +88,72 @@ checked the cited lines):
 
 **The plan entry.** It sits in CURRENT_PLAN's composition gate, high priority, after the work in
 flight.
+
+**The design notes (proposed, 14 November 2026):** [CLOSED_COMPARTMENT_DESIGN.md](CLOSED_COMPARTMENT_DESIGN.md)
+for FR-1 and [BATH_SCHEDULE_DESIGN.md](BATH_SCHEDULE_DESIGN.md) for FR-10.
+
+### The first admissible delivery world
+
+For the requester's world definition, which it is drafting now. It combines the two notes with D150's
+two operators. It has no reactions inside, no binding sites and no pH.
+
+**The operator list,** on `resolved_pump_composite@1` over `resolved_pump_tissue@3`, in this order:
+1. `scheduled_bath_composition@1` (FR-10): the dose at a held bath, as neutral formula units at
+   times on the dt grid after 0;
+2. `cell_owned_compartments@1` (FR-1): each compartment's node, bounding patch and owner;
+3. `scheduled_species_exchange@1` (D150): uptake into the cell, an import route on a patch that faces
+   a finite extracellular node, which a face joins to the dosed bath; and loading into the
+   compartment, an export route on the bounding patch;
+4. `scheduled_species_turnover@1` (D150): clearance in the compartment (degradation), and if wanted
+   at the extracellular node.
+
+**The topology it needs:**
+- Every cell keeps a patch on a held bath (the held-bath topology).
+- The dosed bath is joined by a face to a finite extracellular node. Exchange refuses a patch on a
+  held bath, so uptake runs from that node, not from the bath.
+- Each compartment is a finite node with no face, faced by one bounding patch of its owner. The patch
+  has zero ion permeability and no pump or channel. The content is electroneutral (a zero charge
+  anchor): the cargo at a trace, the ions at a declared complement.
+- **Species:** the ions and the neutral cargo, declared by `inventory_species.add_inventory_species`
+  (valence 0, impermeant on every membrane and junction). **The cap was 7 in all** when this
+  world was written (`species_common.MAX_SPECIES` at main's ced45c87). D165 raised it to 16 on 14
+  November 2026.
+
+**The refusals the definition meets,** each refused with its reason:
+- **Exchange:** a route on a patch facing a held bath; a charged or permeant species; saturable
+  loading (a saturable export); a negative rate; a schedule change off the dt grid; a provider of the
+  volumes, the areas or the masks; more species than the cap; a donor copy whose route values differ
+  from the slot's.
+- **Turnover:** production at an outside node (production is at cells only); a route on a held bath.
+- **The compartment declaration:**
+  - a compartment node with a face, or one that is a held bath or the gauge;
+  - more than one patch facing it, or a patch whose inside is not the owner;
+  - an ion route on the bounding patch, or a nonzero charge anchor;
+  - an owner whose capacitor component holds no held bath;
+  - any operator outside its admitted list;
+  - a replacement event on an owner's slot, or with an owner as its donor.
+- **The bath schedule:** a target that is not a held bath; a net-charged formula unit; an event at
+  time 0 or off the dt grid; a species that would not stay positive; water@1 with an anisosmotic step.
+- **Refused beside this world,** each with its door in the notes: D152's reactions (door S), membrane
+  state and FR-3's site occupancy (the membrane-state wall), FR-4's charged content (the charged
+  door), water and what requires it, insertion, the partition, the bridge and the lumens.
+
+**The onset.** A dose from nothing is D150's unresolved switch-on. FR-10's probe 1 measured it on the
+engine as it is, in this world's topology ([BATH_SCHEDULE_DESIGN.md](BATH_SCHEDULE_DESIGN.md) §3.2):
+- in a world whose ions move, it passes every check, with an onset-step energy residual of about 2%
+  of that step's species flows, unseen;
+- in a species-only world the energy ledger refuses it at row 1;
+- loading the compartment from a trace books at rounding, by exchange's exact bookings.
+
+So the definition can dose from nothing in a mixed world under the known limit, if the lead extends
+D150's ruling to doses (FR-10 §3.2, way (a)). Guard worlds dose between resolved levels, at a step
+ratio that registration pins; no probe has yet stepped a bath between two levels.
+
+**Status.** Exchange and turnover exist; the declaration and the bath schedule are designs, not code.
+FR-1's protocol is exchange's first judged acceptance. Until the two new operators land, the same
+transport runs today with the compartment as an anonymous face-free node (D150's face-free world)
+and the dose as a bath held at the dose from time 0. That form has no identity refusals and no dose
+time.
 
 ## FR-2 — Internalisation of membrane and its populations
 
@@ -434,6 +500,10 @@ condensed. The lead's decision follows.
 
 D150's unpromised claim 3 departs at rounding in a 12-species chain. The requester does not rely on
 cross-world bitwise identity.
+
+**Landed 14 November 2026** (merge 2161f39, tier 1 and 2 with no changed outcome). `MAX_SPECIES` is 16.
+The tier-1 guard is host-side (`tests/unit/test_species_cap.py`). The runner world `cell_charged_9`
+is in tier 2 (`tests/unit/test_species_cap_runs.py`), since compilation alone takes about 15 s.
 
 **The lead's decision (D165): accepted, and queued now.** The requester is the consumer that
 PROGRESS's "when a consumer needs it" waited for.

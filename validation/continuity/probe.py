@@ -1,8 +1,14 @@
 """The continuity probe: does a resume under another source run the same programs on the same
 inputs? (docs/CHECKPOINT_CONTINUITY_DESIGN.md, sections 3.1 and 4.2.)
 
-First landing: the vector-windows path, cohort snapshots of CPU definitions with jit: true.
+First landing: the vector-windows path, cohort snapshots of definitions with jit: true.
 Anything else answers cannot_decide, and the resume is refused.
+
+- **GPU cohorts are probed on the CPU host, with no GPU** (section 13.4: on the L4, the CPU
+  host's traces, bindings and host replay equalled the GPU host's, and its cuda cross-lowering
+  the GPU host's own). execution_device is patched to the CPU device (patch_execution_device),
+  P0 also lowers the program for cuda, the program the GPU compiles, and O runs on the CPU. The
+  summary records the patch (execution_device), and the admission record notes it.
 
 - **One process per source tree**, out of process, as
   ``PYTHONPATH=<tree>/src:<tool root> python -m validation.continuity.probe run ...``.
@@ -295,18 +301,83 @@ def read_scalar(path):
 
 
 def require_scope(spec):
-    """The first landing's definitions: CPU, jit: true, no projective block (section 3.1)."""
+    """The definitions decided: CPU or GPU (section 13.4), jit: true, no projective block.
+
+    Returns the cohort's backend (a batch holds one: parse_batch requires it).
+    """
+    backends = set()
     for world in spec.worlds:
         s = world.simulation
-        if s.execution.backend != "cpu":
-            raise CannotDecide(
-                f"world {world.world_id} is a {s.execution.backend} definition; the first "
-                "landing probes CPU definitions"
-            )
+        if s.execution.backend not in ("cpu", "gpu"):
+            raise CannotDecide(f"world {world.world_id} is a {s.execution.backend} definition")
         if s.execution.jit is not True:
             raise CannotDecide(f"world {world.world_id} is a jit: false definition")
         if getattr(s, "projective", None) is not None:
             raise CannotDecide(f"world {world.world_id} is a projective definition")
+        backends.add(s.execution.backend)
+    if len(backends) != 1:
+        raise CannotDecide(f"the cohort mixes backends {sorted(backends)}")
+    return backends.pop()
+
+
+# The device patch of a GPU cohort's probe (section 13.4): set once per process, recorded.
+PATCH = {}
+# The devices module and the modules of the checkpoint paths that bind its execution_device by
+# name (cells.core.state imports it inside initialise, so it finds the patched one); any other
+# loaded module that binds it is patched too.
+DEVICE_MODULES = (
+    "cells.core.devices",
+    "cells.core.state",
+    "cells.core.runner",
+    "cells.core.batch",
+    "cells.core.batch_windows",
+    "cells.core.vector_windows",
+    "cells.io",
+    "cells.window_io",
+    "cells.batch_window_io",
+)
+
+
+def patch_execution_device():
+    """A GPU cohort is probed on the CPU host: execution_device returns the CPU device.
+
+    Section 13.4's decision: the CPU host's traces, bindings and host replay of a GPU cohort
+    equal the GPU host's, and its cross-lowered cuda module equals the GPU host's own lowering,
+    so GPU definitions are probed here and use no GPU time. Every module that bound the
+    function by name, the devices module included, gets the patch; a module imported later
+    binds the patched one. A binding the patch missed fails closed: admit.py's probes run with
+    no visible GPU. Idempotent; returns the record the summary and the admission record keep.
+    """
+    if PATCH:
+        return PATCH
+    import jax
+
+    from cells.core import devices
+
+    for name in DEVICE_MODULES:
+        try:
+            importlib.import_module(name)
+        except ImportError as exc:
+            raise CannotDecide(f"the device patch needs {name}: {error(exc)}") from exc
+    original, cpu = devices.execution_device, jax.devices("cpu")[0]
+
+    def on_cpu(backend="cpu"):
+        original("cpu")  # Its own setup: float64 and the CPU platform.
+        return cpu
+
+    patched = []
+    for name, module in list(sys.modules.items()):
+        if getattr(module, "execution_device", None) is original:
+            module.execution_device = on_cpu
+            patched.append(name)
+    PATCH.update(
+        backend="gpu",
+        patched=True,
+        probe_device=cpu.platform,
+        modules_patched=len(patched),
+        lowering_platforms=["cpu", "cuda"],
+    )
+    return PATCH
 
 
 def read_cohort(path):
@@ -345,7 +416,8 @@ def read_cohort(path):
     if type(manifest["schema_version"]) is not int or manifest["schema_version"] != 1:
         raise ConfigError("Unsupported batch checkpoint schema")
     spec, _ = checkpoint_batch_limits(parse_batch(manifest["spec"]))
-    require_scope(spec)
+    if require_scope(spec) == "gpu":  # Before any child is read: initialise places states.
+        patch_execution_device()
     if manifest["spec_sha256"] != spec.fingerprint:
         raise ConfigError("Batch checkpoint specification checksum mismatch")
     records = manifest["worlds"]
@@ -376,18 +448,25 @@ class _Stop(Exception):
 
 
 class _Recorder:
-    """The jitted window, where the path looks it up: records its lowering, then stops."""
+    """The jitted window, where the path looks it up: records its lowering, then stops.
 
-    def __init__(self, real, record, out):
-        self.real, self.record, self.out = real, record, out
+    cross names platforms the program is also lowered for: cuda for a GPU cohort, whose
+    native lowering on the CPU host is not the program the GPU compiles (section 13.4).
+    """
+
+    def __init__(self, real, record, out, cross=()):
+        self.real, self.record, self.out, self.cross = real, record, out, cross
 
     def lower(self, *args, **kwargs):
         traced = self.real.trace(*args, **kwargs)
         hlo = traced.lower().as_text()
-        self.record.update(
-            arguments=arguments(args, kwargs),
-            program=program("vector_window", traced.jaxpr, hlo, self.out),
-        )
+        record = program("vector_window", traced.jaxpr, hlo, self.out)
+        for platform in self.cross:
+            text = traced.lower(lowering_platforms=(platform,)).as_text()
+            (self.out / "texts" / f"vector_window.{platform}.stablehlo.txt").write_text(text)
+            record[f"{platform}_stablehlo_sha256"] = sha(text.encode())
+            record[f"{platform}_stablehlo_chars"] = len(text)
+        self.record.update(arguments=arguments(args, kwargs), program=record)
         return _Lowered(self.record)
 
 
@@ -400,10 +479,10 @@ class _Lowered:
         raise _Stop
 
 
-def capture_entry(vw, spec, policy, checkpoints, out):
+def capture_entry(vw, spec, policy, checkpoints, out, cross=()):
     """P0: the program the vector-windows path compiles, from its own entry point."""
     record, real = {}, vw._compiled_vector_window
-    vw._compiled_vector_window = _Recorder(real, record, out)
+    vw._compiled_vector_window = _Recorder(real, record, out, cross)
     try:
         windows = vw.iter_vector_windows(spec, policy, checkpoints)
         try:
@@ -782,8 +861,11 @@ def _probe(args, out, summary, parts):
     tick = time.perf_counter()
     spec, checkpoints, manifest, children = read_cohort(args.checkpoint)
     saved = []
+    backend = spec.worlds[0].simulation.execution.backend
     for extra in args.saved_state:
         more, states, _, _ = read_cohort(extra)
+        if more.worlds[0].simulation.execution.backend != backend:
+            raise CannotDecide(f"the saved state {extra} is not a {backend} cohort")
         saved += [(str(extra), w.world_id, w.simulation, states[w.world_id]) for w in more.worlds]
     summary["timings"]["read_seconds"] = time.perf_counter() - tick
     summary["checkpoint"] = dict(
@@ -799,6 +881,9 @@ def _probe(args, out, summary, parts):
         ),
     )
     summary["reproduces_manifest"] = sources == manifest["source_hashes"]
+    # A GPU cohort's device patch (read_cohort applied it), or None for a CPU one.
+    summary["execution_device"] = dict(PATCH) if PATCH else None
+    cross = ("cuda",) if PATCH else ()
     model = get_model(spec.worlds[0].simulation.model)
     missing = [name for name in MODEL_PROTOCOL if not hasattr(model, name)]
     if missing:
@@ -810,7 +895,7 @@ def _probe(args, out, summary, parts):
     policy = WindowPolicy(args.window_steps, args.recording)
     if "P" in parts:
         tick = time.perf_counter()
-        summary["P0"] = capture_entry(vw, spec, policy, checkpoints, out)
+        summary["P0"] = capture_entry(vw, spec, policy, checkpoints, out, cross)
         summary["P"] = step_texts(spec, checkpoints, out)
         summary["timings"]["P_seconds"] = time.perf_counter() - tick
     tick = time.perf_counter()

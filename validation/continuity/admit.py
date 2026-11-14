@@ -10,9 +10,12 @@ finalise  admits a proposed record after review: names the admitter, seals recor
           (cells.continuity.seal), verifies it (parse_record) and writes record.json. Case 1 is
           decided by the probe and recorded by the lead; any registered run is the user's.
 
-First landing: case 1 on the vector-windows path, CPU definitions with jit: true. A runtime
+First landing: case 1 on the vector-windows path, definitions with jit: true. A runtime
 change, and case 2's four-process chain, are not proposed here: the runtime rules are parked,
-and a D148 record (case 2) is written by the lead (section 3.2).
+and a D148 record (case 2) is written by the lead (section 3.2). GPU definitions are probed on
+the CPU host with execution_device patched (section 13.4); the record notes the patch, and its
+``to`` runtime is the checkpoint's own (resuming_runtime), which the loader on the GPU host
+checks exactly.
 
 Each probe is one process per tree: PYTHONPATH=<tree>/src:<tool root>, where a tree is a
 source root holding src/cells (a frozen execution snapshot, validation/source_snapshot.py) and
@@ -118,10 +121,28 @@ def probe_environment(tree, tool_root):
         "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
         "PYTHONPATH": f"{Path(tree) / 'src'}:{tool_root}",
         "JAX_PLATFORMS": "cpu",
+        "CUDA_VISIBLE_DEVICES": "",  # No GPU: a device binding the patch missed fails closed.
         "PYTHONDONTWRITEBYTECODE": "1",
     }
     env.update({k: os.environ[k] for k in ENVIRONMENT if k in os.environ})
     return env
+
+
+def resuming_runtime(manifest_runtime, probe_runtime, patch):
+    """The ``to`` runtime the record binds, and the probe fields that must equal it.
+
+    For a CPU cohort it is the resuming tree's probe runtime, measured where the run resumes.
+    A GPU cohort is probed on the CPU host, which cannot measure the GPU host's runtime; the
+    first landing admits no runtime change, so the only admissible ``to`` is the checkpoint's
+    own runtime under the resuming tree's cells_version. The loader on the GPU host checks it
+    exactly, so a changed driver, package or device there refuses. The probe's jaxlib then
+    counts with its host-side fields: the cuda cross-lowering was shown equal to the GPU host's
+    own with jax and jaxlib unchanged (section 13.4).
+    """
+    if patch is None:
+        return probe_runtime, continuity.HOST_FIELDS
+    runtime = {**manifest_runtime, "cells_version": probe_runtime["cells_version"]}
+    return runtime, (*continuity.HOST_FIELDS, "packages.jaxlib")
 
 
 def launch_subprocess(command, env, log, label, args):
@@ -351,19 +372,23 @@ def propose(args, launcher=None):
     differing = [part for part, row in comparison.items() if not row["identical"]]
     if differing:
         return refuse(2, f"the probe parts differ: {differing}", comparison)
-    runtime = s1["runtime"]
+    patch = s1.get("execution_device")
+    if s0.get("execution_device") != patch:
+        return refuse(2, "the two probes patched the execution device differently")
+    runtime, fields = resuming_runtime(manifest["runtime"], s1["runtime"], patch)
     moved = set(continuity.differing_runtime_fields(manifest["runtime"], runtime)) - {
         "cells_version"
     }
     if moved:
         return refuse(2, f"runtime changes are parked in the first landing: {sorted(moved)}")
     host = [
-        f
-        for f in continuity.HOST_FIELDS
-        if continuity.flatten(s0["runtime"]).get(f) != continuity.flatten(runtime).get(f)
+        f"{label}: {f}"
+        for label, summary in summaries.items()
+        for f in fields
+        if continuity.flatten(summary["runtime"]).get(f) != continuity.flatten(runtime).get(f)
     ]
     if host:
-        return refuse(2, f"the two probes ran under different host-side runtimes: {host}")
+        return refuse(2, f"the probes' host-side runtime is not the resuming one: {host}")
     overlaps = {
         label: run_probe(
             args, trees[label], out / f"overlap-{label.lower()}", "O", f"{label}o", launcher
@@ -404,6 +429,14 @@ def propose(args, launcher=None):
             f"the overlap covers the whole remaining horizon ({rounds} rounds): the resume is "
             "decided on CPU"
         )
+    if patch is not None:
+        residual.append(
+            "GPU definitions, probed on the CPU host with execution_device patched (section "
+            "13.4): P compared the program's cuda cross-lowering, the program the GPU compiles; "
+            "O's outputs are CPU outputs, so the resumed GPU run varies only as the "
+            "uninterrupted GPU run would; the to runtime is the checkpoint's, which the loader "
+            "on the GPU host checks exactly"
+        )
     revisions = {label: tree_identity(trees[label]) for label in trees}
     proposed = {
         "kind": continuity.RECORD_KIND,
@@ -430,7 +463,11 @@ def propose(args, launcher=None):
             "runtime": runtime,
         },
         "changed_files": continuity.changed_files(manifest["source_hashes"], s1["source_hashes"]),
-        "probe": {"runtime": runtime, "host_fields_equal_to_runtime": True},
+        "probe": {
+            "runtime": s1["runtime"],
+            "host_fields_equal_to_runtime": True,
+            **({"execution_device": patch} if patch is not None else {}),
+        },
         "source_admission": {"case": "identical_programs"},
         "runtime_admission": {"case": "none", "fields": []},
         "scope": {

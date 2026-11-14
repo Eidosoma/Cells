@@ -12,7 +12,8 @@ Files:
   inner identity and ordered operator list);
 - `src/cells/models/pump_composite_adapter.py`: the @3 entity adapter;
 - `src/cells/models/operators/`: the contract and the operators (the secreted-species operators
-  share `species_common.py`: identity, the 7-species cap, the occupant rule);
+  share `species_common.py`: identity, the 16-species cap (FR-9 / D165, from 7), the occupant
+  rule);
 - `src/cells/core/inventory_species.py`: declares a neutral inventory species on @3's species axis
   (trace background, zero membrane and junction permeability, effective face diffusivity, its
   material floor);

@@ -77,12 +77,12 @@ piecewise-constant multiplier m >= 0 from time 0, changing at exact multiples of
 horizon; on a passive reaction it scales both directions. A route takes its site's schedule, else
 its reaction's.
 
-Refusals at the definition (§2.5): the cases above; a held-bath site; more than 7 species per world
-(D150's cap); an identity that differs from a D150 operator's; a turnover route on a (species, node)
-a reaction writes (one local-kinetics writer per row, §1.1); a cell route on a slot that
-scheduled_cell_replacement@1 replaces (§2.1); RK4 (§4.6); and every provider or closer of the
-declared volumes, masks and outside anchors (CONFLICTS_VIEW: water, the lumens, replacement@2 by its
-water, insertion@1 and @2, the partition and the bridge). The stationary analysis refuses the
+Refusals at the definition (§2.5): the cases above; a held-bath site; more than 16 species per
+world (D150's cap, FR-9 / D165); an identity that differs from a D150 operator's; a turnover route
+on a (species, node) a reaction writes (one local-kinetics writer per row, §1.1); a cell route on a
+slot that scheduled_cell_replacement@1 replaces (§2.1); RK4 (§4.6); and every provider or closer of
+the declared volumes, masks and outside anchors (CONFLICTS_VIEW: water, the lumens, replacement@2
+by its water, insertion@1 and @2, the partition and the bridge). The stationary analysis refuses the
 composite by its own ID check (§4.6).
 
 Benign padding (the lead's ruling Q11 (a)): padded nodes hold an amount of 1 and a volume of 1,

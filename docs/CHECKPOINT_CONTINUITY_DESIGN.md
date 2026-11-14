@@ -250,11 +250,14 @@ fingerprint differs from the driver's rebuilt definitions.
   batch_windows) answer "cannot decide" until the consolidation gives one path. A request
   that declares another path is refused. Probe 4 captured all five, so the extension is
   the consolidation's to make.
-- **CPU definitions only** (`execution.backend: "cpu"`), with `jit: true`.
-- **GPU definitions are not yet admitted.** For them, the probe would trace on CPU with
-  `execution_device` patched to the CPU device, and cross-lower the captured program for
-  `cuda` (probe 2). Device placement enters neither the jaxpr nor the bindings. This is not
-  probed.
+- **CPU and GPU definitions**, with `jit: true`. GPU definitions were added on 14 November 2026
+  by the GPU extension of case 1 (§13.4; the lead's update at landing).
+  - **How GPU definitions are probed:** on the CPU host, with `execution_device` patched to the
+    CPU device, and the captured program cross-lowered for `cuda`. Every question of §13.4 was
+    identical on the L4.
+  - **What the record holds:** the patch. The resuming GPU host checks the `to` runtime and the
+    probe's `jaxlib` exactly.
+  - **Device placement** enters neither the jaxpr nor the bindings.
 - **`jit: false` definitions are refused.** They execute eagerly, so there is no compiled
   program to compare.
 - **No call site passes a record yet**, neither the CLI nor any other engine call site.
@@ -1062,7 +1065,7 @@ bitwise on CPU.
 
 ### 13.4 Plan: a GPU batch snapshot traced twice from one source (next L4 gap)
 
-This blocks only the GPU extension of case 1; the first landing is CPU-only.
+This blocked only the GPU extension of case 1. The first landing was CPU-only, and the extension landed on 14 November 2026 after every question below came out identical.
 
 **Questions.**
 1. Does a `backend: "gpu"` cohort trace identically in two processes from one source on
@@ -1098,6 +1101,50 @@ This blocks only the GPU extension of case 1; the first landing is CPU-only.
 - **1 differs:** GPU definitions stay refused, and the difference is reported.
 - **Repeats:** the L4's non-repeatability doesn't enter. No GPU result is compared bitwise;
   only traces and CPU runs are.
+
+**Result (14 November, the L4 gap after the hold's segment 2).** The GPU part ran at
+12:39–12:41 UTC as one GPU process under the GPU lock, the CPU part on CPU 3, both from
+`source-s1-e8cdda0` (`impl/gpu-probe/out/`: `compare.json`, `queue.log`):
+1. a GPU cohort traces identically in two GPU-host processes: P0, P, B and H;
+2. the CPU-host trace, with `execution_device` patched, equals the GPU host's jaxprs,
+   constants, bindings and host replay;
+3. the cross-lowered `cuda` StableHLO equals the GPU host's own lowering (1,799,725
+   characters);
+4. the overlap repeats bitwise on the CPU for a GPU definition.
+
+So the first decision holds: **GPU definitions are probed on the CPU host and use no GPU
+time, and the record notes the patch.**
+
+**The GPU extension of case 1** (branch head `91ac058`, 14 November):
+- **Probe** (`probe.py`).
+  - A GPU cohort is decided, not refused. Before any child is read, `patch_execution_device()`
+    makes `execution_device` return the CPU device in every module that bound it, the devices
+    module included.
+  - P0 also cross-lowers the captured program for `cuda` and compares it, since that is the
+    program the GPU compiles; the native CPU lowering is compared too.
+  - O runs on the CPU. The summary records the patch.
+- **Admission** (`admit.py`).
+  - It refuses when the two probes' patches differ, and the record's `probe` gains
+    `execution_device`: the backend, the patch, the probe's device, the modules patched and the
+    lowering platforms.
+  - The `to` runtime is the checkpoint's own under S1's `cells_version`. The CPU host cannot
+    measure the GPU host's runtime, the first landing admits no runtime change, and the loader
+    on the GPU host checks it exactly.
+  - Both probes' host-side fields must equal it, with `jaxlib` added: question 3 held with jax
+    and jaxlib unchanged.
+  - A residual line states that O's outputs are CPU outputs.
+- **Loader** (`continuity.py`, the only `src` change, host-only). `probe.execution_device` is
+  optional, so the kind stays `@1`. It is required for a GPU definition and refused for a CPU
+  one; for a patched record the probe's `jaxlib` counts with its host-side fields.
+- **Evidence** (`impl/gpu-ext/`):
+  - The real L4 checkpoint (`gpu-probe/out/write/snap`, under `e8cdda0`) is admitted for
+    resumption under `91ac058`, decided on the CPU host: P, B and H identical, and O
+    identical over 2 of 4 remaining rounds.
+  - Its 20 changed files, main's work since `e8cdda0`, reach none of this cohort's programs,
+    bindings or host replay.
+  - Crossrev at `91ac058` is identical to the baseline of record in all five sets.
+- **Not run:** the resumed GPU run itself, which needs the L4. The loader's GPU path is tested
+  on this host with the device patched.
 
 ### 13.5 Correction for PROGRESS
 
