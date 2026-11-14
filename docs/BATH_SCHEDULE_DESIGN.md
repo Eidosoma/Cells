@@ -35,6 +35,13 @@ the readers of the bath composition with their files. **S** marks our own deriva
 
 ## 0. Summary
 
+**A departure from the lead's mapping, for the lead to rule on.** The mapping books the dose "as
+reservoir supply" with the composition change's external work explicit. This note keeps the dose out
+of @3's `reservoir_supplied` and makes the work a record, not a work field. That is @3's frame: a held
+bath's content is not part of @3's tissue, so neither its supply ledger nor its energy ledger has a
+place for it (§2.1, §2.2). The dose, the compensating charge and the work are all still booked
+explicitly, in the operator's own fields.
+
 1. **The operator.** At declared times on the dt grid, an event map sets a declared held bath's
    whole composition. The bath's held content is the operator's state. It reaches @3 through the
    view of @3's `extracellular_amount_reference` at that bath (§1).
@@ -50,7 +57,10 @@ the readers of the bath composition with their files. **S** marks our own deriva
 4. **Step checks see the worst composition** of the schedule through `inner_check_spec` (§2.4).
 5. **The walls** (§3):
    - D152's reactions read the field as declared, insertion@1 provides it, and closers pad it: each
-     is refused. The door is slot-scoped provision.
+     is refused. The door is slot-scoped provision (door S).
+   - **Door S bites early.** Any dose world with D152 anywhere is refused, including the requester's
+     natural first world: a bath dose, uptake, a compartment (FR-1) and reactions inside. Version 1's
+     workaround is degradation by turnover's clearance at the node.
    - Water@1 reads the declared bath, so with water only isosmotic steps are admitted. E07-v2's
      osmotic step needs a water version that reads the schedule.
 6. **Species doses are neutral,** with no compensation. A dose from the trace is D150's unresolved
@@ -77,6 +87,10 @@ the readers of the bath composition with their files. **S** marks our own deriva
 - **Per-world control data.** The held content n_b = c V_b in force at each change time,
   [species, outside], with V_b the bath's declared volume. These are never closed-over constants
   (D150's crossrev rule). The batch signature carries the scheduled bath IDs.
+  - Before a bath's first event, its control is the declared reference amounts themselves, copied,
+    never recomputed as c V_b. A recomputed value could differ by rounding and fire a spurious event
+    at the first step, which would break B5's idle promise.
+  - Each event's held content is computed once, on the host, as c V_b.
 - **A ramp** is a declared staircase of steps. There is no logistic law.
 
 ### 1.2 State, part and view
@@ -224,7 +238,10 @@ a step between resolved levels.
   slots it reads. The composite refuses only an intersection.
   - This operator's view equals the declared array off its baths. So D152, which reads finite nodes,
     and insertion, which provides onset nodes, would compose.
-  - FR-4's pH step with buffering inside a compartment needs this door.
+  - **It gates the requester's natural first world:** a bath dose, uptake into the cytosol, loading
+    into an FR-1 compartment and reactions inside. Without it, version 1 runs that world with
+    degradation by turnover's clearance at the compartment node instead of D152's reactions. FR-4's
+    pH step with buffering inside a compartment needs it later.
   - It is a host-only change to `contract.py` and `pump_composite.py`, under crossrev.
 
 **Composes:** @3, injection, D150's operators, replacement@1, membrane state, the coupling operator
@@ -276,13 +293,13 @@ step to be drafted; door S for FR-4.
 ## 6. Questions
 
 **For the lead:**
-1. **Records, not work fields,** for the dose's free energy and the compensating charge (§2.2).
-   Confirm.
-2. **Charged steps:** admitted under the older rule and reported, with worlds advised to declare the
+1. **The departure from the mapping** (§0): the dose kept out of @3's `reservoir_supplied`, and the
+   dose's free energy and the compensating charge as records, not work fields (§2.2). Confirm.
+2. **Door S's priority.** It gates the requester's natural first world, a dose with reactions inside
+   a compartment (§3), so it should come before FR-4 and alongside FR-1's code.
+3. **Charged steps:** admitted under the older rule and reported, with worlds advised to declare the
    counterion. Or refused, since physical media are neutral?
-3. **An event at time 0 is refused,** since the bath's declared composition is the initial one.
-4. **Door S's priority:** before FR-4, which needs it for a pH step with buffering inside a
-   compartment.
+4. **An event at time 0 is refused,** since the bath's declared composition is the initial one.
 5. **The two probe requests** (§4), before or after the code.
 
 **For the user:**
@@ -318,6 +335,6 @@ W_res − 10⁻³ Σ_s μ_s⁰ S_s.
 ## References
 
 - Hille B. *Ion Channels of Excitable Membranes*, 3rd ed. Sinauer, 2001: the constant-field flux and
-  the zero-current potential (A.3).
+  the zero-current potential (A.3). A textbook pointer; not fetched here.
 - The frozen family's law, cited by path in the basis above. Its scope there was guarded: ideal
   reservoirs only, full bath trajectories out of scope, evidence at ns–µs horizons (FR-10's record).

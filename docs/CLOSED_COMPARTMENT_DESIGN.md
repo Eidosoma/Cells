@@ -66,7 +66,7 @@ block, is put to the lead.
    - Loading is an export route, release an import route, and a passive permeation an
      export–import pair.
    - Every move books the same amount on both sides, so retained and cytosolic material stay
-     distinct and reconcile exactly.
+     distinct and reconcile to rounding.
    - **Limits:**
      - the pair is Strang-split, so its equilibrium carries a bias of −a(a + 2b) dt²/96 (**S**);
      - its fall in free energy is booked as signed work, not heat;
@@ -102,10 +102,13 @@ block, is put to the lead.
    - **FR-9:** compartments cost nodes, not species rows.
 8. **Composition** (§4).
    - *Composes:* @3, injection, D150's exchange and turnover (degradation at the node), D152's
-     reactions at the node, the coupling operator, replacement@1 away from owners, and FR-10's bath
-     schedule.
+     reactions at the node, the coupling operator, replacement@1 away from owners and away from
+     owners as donors, and FR-10's bath schedule.
    - *Refused, each with its door:* water and what requires it, closers, membrane state, insertion
      and the lumens.
+   - **A wall on the requester's first world:** FR-10's bath schedule and D152's reactions refuse
+     each other, through the view field the schedule provides. Version 1's workaround is
+     degradation by turnover; the door is FR-10's door S.
 9. **Accounting** (§5). There is one material ledger, @3's, at the node. At a fixed volume, @3's
    chemical term at the declared volume is the physical free energy, so no dilution or mixing term
    arises. The lumen's terms arrive with the volume door and FR-2.
@@ -229,7 +232,7 @@ its own node.
 6. **A held-bath topology (version 1).** The owner's capacitor component holds a held bath, so the
    compartment is a free node of the reduction (§3.5).
 7. **The composition** is on the admitted list of §4, which fails closed. Replacement@1 schedules
-   no event on an owner's slot.
+   no event on an owner's slot, and names no owner as a donor (§1.5).
 
 **Nested compartments are outside @3's topology.** A patch joins a cell to an outside node, so a
 compartment cannot be bounded by another compartment. Multivesicular bodies and the two mitochondrial
@@ -253,13 +256,18 @@ things would otherwise treat it as extracellular space:
   carrier (D150 §5.2). **Turnover at the node** is keyed per node. In version 1 the owner never
   changes, so the two keyings agree.
 - **Replacement of an owner is refused.** Replacement of any other slot composes.
+- **An owner as a donor is refused.** A donor copy takes the donor's cytosolic amounts only, so a
+  copy of an owner would arrive without its compartments, and the newcomer would not be a copy.
+  - D150's route-signature check would refuse such a copy too, since the owner's extra bounding
+    patch changes its multiset of patches (`species_common.ion_route_signature`). But that check runs
+    only when a D150 operator is declared, so the compartment's own check carries the rule.
 - **Division is refused,** since the partition is a closer.
 
 **The doors** (each needs its own design and qualification):
 
 | Door | What it needs |
 | --- | --- |
-| R. Replacement of an owner | The event also swaps each of the slot's compartments: the occupant's content leaves as waste, and the template declares the newcomer's (a donor copy copies the donor's), booked as replacement books the cell's rows. Node-keyed rates at a compartment re-key to the owner's carrier (D150's occupant rule) |
+| R. Replacement of an owner, and an owner as a donor | The event also swaps each of the slot's compartments: the occupant's content leaves as waste, and the template declares the newcomer's (a donor copy copies the donor's into the newcomer's compartments), booked as replacement books the cell's rows. Node-keyed rates at a compartment re-key to the owner's carrier (D150's occupant rule) |
 | D. Division of an owner | S5's "slots are storage": each daughter has pending compartment slots, a node and its bounding patch closed until the birth. At the birth the parent's compartment closes, and its content and anchors move to the daughters' as exact fractions (S5 §3.2's anchor rule), with declared fractions per compartment: 0 or 1 for an organelle that goes to one daughter, f for a pool. The adapter's entity hierarchy gains two rules: a closed cell closes its compartments, and a closed compartment closes its bounding patch. Stochastic partitioning of discrete organelles is out of scope |
 | C. Creation | FR-2's internalisation opens a pending compartment slot at an event (§7) |
 | F. Fusion and fission | A transfer between a compartment and another node across a fusion pore: exocytosis (FR-5) and endosome maturation (§7) |
@@ -414,11 +422,14 @@ compartments, with no new code.
 
 ### 3.2 The literature's organelle capacitor is this relation
 
-Two standard organelle-pH models compute the lumen's potential exactly this way. The sentences
-below were extracted from their open-access JATS XML (`sources/`).
+Two standard organelle-pH models compute the lumen's potential exactly this way. The sentences,
+equations and term definitions below were extracted from their open-access JATS XML (`sources/`).
 - **Grabe & Oster (2001), Eq. 3:** "We assume that the net charge localizes to the lumenal leaflet,
   so that we can treat the membrane as a parallel plate capacitor." In their notation,
-  Δψ = (F/C₀)(V/A)[Σ ν_i [cations]_i − Σ ν_i [anions]_i + β (pH_C − pH_L) − B].
+  Δψ = (F/C₀)(V/A)[Σ ν_i [cations]_i − Σ ν_i [anions]_i + β (pH_C − pH_L) − B], where "C₀ is the
+  capacitance per unit area of the membrane (C₀ · A is the total capacitance of the membrane)". Its
+  second term is the "Total amount of buffered and free protons in the lumen", and B the "Molar
+  concentration of all impermeant charges".
 - **Ishida et al. (2013), Eq. 4:** "Our model incorporates a physical model of the membrane
   potential (Rybak et al., 1997), which depends on the net accumulation of charged ions in the lumen
   of the compartment", with ΔΨ = F/(C₀ S) [V (Σ n_i [cation] − Σ n_j [anion] + β (pH_C − pH_L))
@@ -492,9 +503,12 @@ independent of the compartment's size. Here c is the larger of the two sides' co
 The text extraction drops the superscript minus signs of the table's exponents; they are restored
 here, and the table's volume and area agree with a 0.68 µm sphere.
 - For the chloride route, @3's per-cell bound sees G_b/(10 pF + C_b) ≈ 6.9 s⁻¹ for a 10 pF owner.
-- So an explicit 1 ms step at a realistic lysosomal chloride conductance lies beyond the explicit
-  part's stability (about 2 for a two-stage explicit tableau), and @3's checks would not refuse it in
-  advance. At best a step fails its domain afterwards. Probe P1 would show which happens.
+- @3's rule is dt × rate ≤ `EXPLICIT_STEP_BOUND` = 1.0, "half the Euler/RK2 real-axis limit of 2"
+  (`models/surface_pump.py`), at the definition and at every IMEX stage.
+- So at 1 ms a realistic lysosomal chloride conductance has dt × rate ≈ 4.8: beyond the rule, and
+  beyond the explicit part's real-axis stability limit of 2. @3's checks, seeing about 0.007, would
+  not refuse it in advance. At best a step fails its domain afterwards. Probe P1 would show which
+  happens.
 
 **The door, for FR-4 and FR-5.**
 1. **The bound sees face-free nodes.** A D148 round adds max over face-free finite nodes of
@@ -559,7 +573,7 @@ here, and the table's volume and area agree with a 0.68 µm sphere.
 | `local_species_reactions@1` (D152) | Composes | Reactions at the node: the face-free network world's precedent. D152's own refusals hold. Its rule Q6 does not arise, since owners are never replaced |
 | `species_regulated_availability@1` (D156) | Composes | Its sources are cell rows and its targets plasma-membrane elements. A channel target on the bounding patch cannot arise, since channels are refused there |
 | `scheduled_cell_replacement@1` | Composes away from owners | Events on an owner's slot are refused (§1.5); door R |
-| `scheduled_bath_composition@1` (FR-10) | Composes | It acts on held baths only ([its note](BATH_SCHEDULE_DESIGN.md)) |
+| `scheduled_bath_composition@1` (FR-10) | Composes, but not beside D152 | It acts on held baths only ([its note](BATH_SCHEDULE_DESIGN.md)). D152 lists the field that the bath schedule provides in its `CONFLICTS_VIEW`, so a dose world with reactions anywhere is refused: see below |
 | Water, the k-anion symport, replacement@2 | Refused | Volume: door V (§5.3). The symport and replacement@2 require water |
 | `membrane_entity_state@1`; insertion@1 and @2 | Refused | Field-input providers; exchange also refuses an area provider. They are FR-2's and FR-3's doors (§7) |
 | The partition; the bridge | Refused | Closers; door D |
@@ -567,6 +581,15 @@ here, and the table's volume and area agree with a 0.68 µm sphere.
 | The stationary analysis | Refused | It does not admit the composite (D150 ruling 2) |
 | RK4 | As each operator rules | D150 guards it, D152 refuses it; the declaration adds nothing |
 | Any operator not listed | Refused | The admitted list fails closed: a new operator may treat outside nodes as environment |
+
+**The requester's natural first world meets a wall.** A bath dose, uptake into the cytosol,
+loading into a compartment and reactions inside would combine FR-10's bath schedule with D152. D152
+reads `extracellular_amount_reference` as declared, and the bath schedule provides it, so the
+composition is refused, although the two act on disjoint nodes.
+- **Version 1's workarounds:** degradation inside by turnover's clearance at the node instead of
+  reactions; or a pre-loaded extracellular node instead of a bath dose.
+- **The door** is FR-10's door S, slot-scoped provision ([its note](BATH_SCHEDULE_DESIGN.md) §3). It
+  gates this world, so its priority comes before FR-4's.
 
 **The coupling operator's doors for compartments (D156; §7's FR-5 row).**
 - **A compartment source.** The coupling reads a concentration in the target's own cell. Reading
@@ -648,7 +671,7 @@ snapshot.
 | C1. Identity and refusals | Each refusal of §1.4 fires with its reason; the summary's identity block; a label change moves no binding (S2's guard) | Definitions |
 | C2. The declaration is pure identity | A composition with the declaration traces the same jaxprs, constants and bindings as without it; every existing crossrev set is identical | Constants-aware crossrev (D148) |
 | C3. Loading with retention | Export only, flux and first-order: the engine equals the closed form to rounding (one exact stage); per-route reconciliation to rounding | A.2 |
-| C4. Two-way first-order exchange | The engine against the closed form within the registered dt-study tolerance; the splitting term identified as −a(a + 2b) dt²/96 at the fixed point; the engine against the iterated step map to rounding | A.3, A.4 |
+| C4. Two-way first-order exchange | The engine against the closed form within the registered dt-study tolerance; the splitting term identified as −a(a + 2b) dt²/96 at the fixed point; the engine against the iterated step map to rounding. C4's world declares no saturable route, so its stage plan is A.4's | A.3, A.4 |
 | C5. Saturable release | The engine against the implicit closed form | A.5 |
 | C6. Degradation with loading | Exchange loading plus turnover clearance at the node: the linear two-node system with decay | A.6 |
 | C7. Reactions inside | Loading of S plus D152's first-order S → P at the node: a linear three-state system; D152's dt·L rule holds | A.7 |
@@ -689,6 +712,7 @@ snapshot.
 | F, fusion and fission (§1.5) | A transfer between a compartment and another node | FR-5's exocytosis |
 | Floating topology (§3.5) | The representative refusal, and a floating world's acceptance | Finite-extracellular tissues |
 | Coupling source and route (§4) | D156's source-semantics and routing doors | FR-5 |
+| S, slot-scoped provision (FR-10's note) | A provider and a reader of one view field declare their slots; only an intersection is refused | The requester's dose, uptake, compartment and reactions world (§4) |
 | Condensation (§3.6) | Face-free nodes eliminated from the dense solve: a new solver ID | Tissues with a compartment per cell |
 
 ## 9. Probe requests (for the lead; nothing was run)
@@ -742,13 +766,15 @@ beside D150's, D152's and D156's work on disjoint files. FR-10's operator is dis
    round now, and leave the implicit treatment to FR-4's note (§3.4)?
 6. **Scope:** held-bath topologies only in version 1, with the floating door (§3.5).
 7. **Probes P1 to P4:** which to run before the code (§9). P1 sizes FR-4's door; P4 settles C11.
+8. **Door S's priority** (FR-10's note): it gates the requester's natural first world, a dose with
+   reactions inside a compartment (§4), so it comes before FR-4.
 
 **For the user:**
-8. **A lumped pool** (§1.3). One compartment node is a well-mixed pool, per cell, of one kind of
+9. **A lumped pool** (§1.3). One compartment node is a well-mixed pool, per cell, of one kind of
    organelle. It distinguishes cargo inside the pool from cargo in the cytosol, but not one vesicle
    from another. Is that what the requesting study needs?
-9. **Nested compartments** (multivesicular bodies; the two mitochondrial membranes) lie outside @3's
-   topology (§1.4). Is any use of them expected?
+10. **Nested compartments** (multivesicular bodies; the two mitochondrial membranes) lie outside @3's
+    topology (§1.4). Is any use of them expected?
 
 ## Appendix A. Equations for the independent references
 
@@ -773,6 +799,11 @@ a = k_e and b = κ = 10¹⁵ k_u A / V_o.
 - E(τ): x → x e^{−aτ}. I(τ): x → 1 − (1 − x) e^{−bτ}.
 - One half-step of length h is S(h) = E(h/2) I(h) E(h/2). One composite step is S(dt/2) twice.
 - The fixed point is x* = α(1 − β)/(1 − α²β), with α = e^{−ah/2} and β = e^{−bh}.
+- **The stage plan.** Exchange gives the full h to its last stage. With no saturable route declared
+  anywhere in the operator, that stage is the first-order imports, which gives S(h) above (an idle
+  flux-export stage changes nothing). With a saturable route anywhere, the imports run as two halves
+  around it: the same map in exact arithmetic, a different one at rounding. So the step-map reference
+  follows the declared plan.
 
 **A.5 Saturable release.** dn_o/dt = −a c_o/(K_M + c_o), with a = A V_max. Then n_o′ solves
 b ln(n_o/n_o′) + (n_o − n_o′) = a t, with b = K_M V_o, and n_c gains what n_o loses.
@@ -813,6 +844,7 @@ touches, and turnover's clearance work is the node's ΔG. The energy closes as
   regulation of endosomal pH. *Biophys J* (1997). Cited by both papers above for the capacitor form;
   not read here.
 - Strang G. On the construction and comparison of difference schemes. *SIAM J Numer Anal*
-  1968;5(3):506–517. The splitting whose bias §2.3 computes.
+  1968;5(3):506–517. The splitting whose bias §2.3 computes. Cited from the D156 note's use; not
+  fetched here.
 - Alberts B, et al. *Molecular Biology of the Cell*, the chapter on intracellular compartments and
-  protein sorting: the topology of organelle lumens (§1.1).
+  protein sorting: the topology of organelle lumens (§1.1). A textbook pointer; not fetched here.
