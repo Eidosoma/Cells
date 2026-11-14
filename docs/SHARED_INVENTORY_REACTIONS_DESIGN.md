@@ -1,8 +1,9 @@
 # Reactions on the shared inventory (design)
 
 **Status: accepted, 14 November 2026 (the lead, with the advisor); rulings in §9.** Code follows
-D150 version 1's code (after S5a), as D152 orders. Milestone 1 (the contract fit) is accepted, with
-the lead's amendments in §11 (14 November 2026).
+D150 version 1's code (after S5a), as D152 orders. Milestones 1 and 2 are accepted and landed (§11,
+§11.1, §11.2). Milestone 3, MG0c's driver, its development runs and a PROPOSED protocol (§11.3),
+waits for the lead's review; no judged run is made before the lead registers the protocol.
 
 **History of this note:**
 - The lead's rulings on §9's questions are recorded against each question.
@@ -708,7 +709,11 @@ the lead with the advisor, 14 November 2026).
   passive route's equilibrium within that half-step. The route then reverses and goes to the
   quadrature, which samples the log-singular start.
   - This is not only the run's first step. The half-step depends only on the state and the
-    multipliers, so a driven route switched on mid-run from a trace reproduces it exactly.
+    multipliers, so a driven route switched on mid-run from a trace reproduces it exactly: the
+    half-step is bitwise at the same state, multipliers and step. Two compiled runs around a
+    mid-run switch-on agree to rounding (8.5e-21 pJ), not bitwise, because the runner's clock
+    forms the step as a difference of grid times (3 dt − 2 dt is 0.02500000000000001 s at
+    dt = 0.025 s). That is the runner, not the operator (amended at milestone 2, §11.2).
   - E15's switch-off at the damage, followed by a switch back on, is that case.
 - **Its size is a per-step factor.** The half-step books 5.4–5.6 times its true heat at a
   1e-12 mM trace (+436% to +459%), 3.4–3.7 times at 1e-9 (+243% to +267%) and 1.6–1.8 times at
@@ -864,9 +869,11 @@ shared bound cannot see. The guards therefore check the residual itself, not the
 
    **What they must show:**
    - each fails world 1 at the first row it touches;
-   - in a mixed heredity world, the shared bound does not see the scaled work or the dropped
-     standard term. The bound/booking ratio measured there goes into the docstring statement, as
-     D150's probe 2 part C did (§10.4, C2);
+   - in a mixed heredity world, the shared bound does not see the scaled work. It catches a
+     dropped standard term at µM, where it is 0.35 times the booking, and is blind to it at nM,
+     where it is 409 times (C2, measured at milestone 2; amended in place, §11.2). The face-free
+     world at rounding and the per-law ΔG test remain the guards of record. The bound/booking
+     ratio goes into the docstring statement, as D150's probe 2 part C did (§10.4, C2);
    - a wrong-sign heat is still caught there by the composite's dissipation check. Only the bound
      is blind to it.
 4. **A NumPy ΔG test per law,** written from Appendix A, not from engine code. For each law, order,
@@ -1983,6 +1990,184 @@ to rounding, above, so these are the engine's; the pins are proposals for the le
 - `stage_report` diagnoses a refused step on the host, since the runner's message is generic. No
   runner edit is proposed.
 - The docstring carries the full guard statement, with C2's ratios.
+
+### 11.2 Rulings at milestone 2 (the lead, 14 November 2026)
+
+Milestone 2 was accepted and landed (merge a4e2f7e). The lead ruled on its questions as follows,
+14 November 2026.
+1. **§3.4 guard 3, amended in place.** The shared bound catches a dropped standard term at µM
+   (0.35 times the booking) and is blind at nM (409 times). The face-free world at rounding and the
+   per-law ΔG test remain the guards of record.
+2. **§3.3, amended in place.** The half-step is bitwise at the same state, multipliers and step.
+   Two compiled runs around a mid-run switch-on agree to rounding (8.5e-21 pJ), not bitwise,
+   because the runner's clock forms the step as a difference of grid times. That is the runner, not
+   the operator.
+3. **The standard term's form, noted.** The engine books it in species form, Σ_s μ°'_s δ_s, and
+   the references in route form, Σ_r ΔG°'_r Δξ_r. The two agree to rounding.
+4. **`stage_report` is enough for version 1.** There is no D148 round for the runner's refusal
+   message.
+5. **The accuracy pins in §11.1 stay proposals,** and the tests keep their loose bounds. The lead
+   rules on them in the MG0c protocol review.
+
+**Milestone 3** adds, beside MG0c's driver, development runs and PROPOSED protocol, the items moved
+from milestone 2:
+- §3.4 guard 2, the species-only transport world with the network, its residual over the bound,
+  and the reaction–transport check against `strang_mode_map`;
+- a short compiled run of the composition with another writer: exchange, turnover on a read row,
+  and replacement@1 with outside routes;
+- idle claim 3, reported: the ion rows bitwise with the network active;
+- reactions at several sites with different multipliers.
+
+### 11.3 Milestone 3: MG0c's driver, development runs and the moved items (14 November 2026)
+
+Milestone 3 adds no engine code: `src/` is unchanged since the landed head a4e2f7e.
+- **Engine models run:** `resolved_pump_composite@1` over `resolved_pump_tissue@3` with
+  `local_species_reactions@1` (driven mass action; the passive law in guard 2's passive world).
+- **References:** `validation/reactions`, used only through `REFERENCES_USAGE.md`, fed the raw
+  declaration; every prediction computed at run time.
+- **Evidence:** `/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/` (HANDOFF.md,
+  `mg0c/`, `tests/`, `tiers/`). The development runs come from `snapshot-d4cee87` (dev-d4cee87-a,
+  -b and -c) and `snapshot-3e7399a` (the D147 part and the tier-3 files).
+
+**The code** (after the merge d5738a1):
+- `validation/morphogenesis/mg0c_turing.py`, MG0c's driver.
+  - Its own closed chain, from §6.4 and the usage note's convention: h = ℓ/2, face area V/h,
+    length h, quiescent ions, U and V through `cells.core.inventory_species`.
+  - Runs go through `run_windowed` with every host check. The energy residual is reported over the
+    composite's own bound.
+  - Deviations are (anchor − reference) + increment, carrying none of the representation's
+    rounding.
+  - The rules take D150's reviewed forms: S5's dt-study rule per element and record, the orders
+    and their stop rules, and judged controls with registered deltas.
+  - The parts: d147, timing, theory, linear (guard 2), floor, q1 to q7, sites.
+  - A judged run is refused unless the protocol is registered, the source is a clean snapshot and
+    the output directory is new. A judge entry merges the judged runs of one snapshot.
+- `validation/morphogenesis/mg0c_protocol.py` drafts the PROPOSED protocol
+  `validation/morphogenesis/protocols/mg0c_turing_v1.json` from the named development runs.
+- The tests:
+  - `tests/unit/test_mg0c_judged_refusal.py` (tier 1);
+  - `tests/unit/test_species_reactions_composition.py` (tier 3);
+  - a several-sites test in `test_species_reactions_reference_runs.py` (tier 3);
+  - `rfx.several_sites` and `rfx.reference_multipliers`.
+
+**Where the moved items are.** The figures in this table and in the coordinator's additions
+below come from the tier-3 files' run from `snapshot-3e7399a`, `tests/m3-3e7399a`:
+`_composition.py` 8 passed and `_reference_runs.py` 19 passed. The checkout's development checks
+gave the same values.
+
+| Item | Where | Development result |
+| --- | --- | --- |
+| §3.4 guard 2, the species-only transport world with the network | the driver's `linear` part (100 s; 50, 25, 12.5 ms); `_composition.py` (10 s) | The engine equals `strang_mode_map` iterated at 0.008–0.021 of the usage note's 1e-14 × steps × scale. Against D150's steps × ε rule it is 0.36–0.96, and long double shows that rounding to be the engine's own, accumulating linearly. Second order against `propagate_modes`: 6.6e-9 → 4.1e-10 of the scale, ratios 4.07/4.03. The energy residual is 6e-5 to 1.5e-3 of its bound |
+| A compiled composition with other writers | `_composition.py` | D150's exchange, turnover on a read row (the catalyst at ecs_0) and replacement@1 with outside routes. Every host check passes at the species' floors, every writer moves something, and the event fires |
+| Idle claim 3, reported | `_composition.py` | With the network active, and with U and V declared without it, every ion row and every field U and V do not enter is bitwise. Only `face_dissipated_energy_pJ` differs |
+| Several sites with different multipliers | exactly: `_reference_runs.py` (`rfx.several_sites`); on the chain: the driver's `sites` part | Exact: two cells and three nodes of unequal volumes, one site at zero and one schedule changed mid-run, against `nr.run_half_steps` with [R, N] multipliers. Amounts agree to 8.9e-16, energies to 2.5e-16 and extents to 1.5e-15. On the chain, against `integrate_chain` with [R, N] multipliers: 1.5e-5 → 9.4e-7, ratios 4.06/4.03 |
+
+**The coordinator's additions** (an external architecture review, confirmed by the advisor), in
+`_composition.py`:
+- **Transport and reactions see the same material.** A face-free composition of D150's
+  first-order export and the reactions equals the composed map E R I R E at rounding: 3.9e-15 of
+  the scale, while the other order is more than 1e3 times farther off. The composition converges
+  at second order to the coupled exact solution (5.4e-5 → 1.35e-5). Guard 2 shows the same for
+  @3's faces.
+- **Supply is counted once across writers.** Each species' inventory against its writers' sources
+  closes at every row to 1e-16 of its scale, with each writer's term present. At ecs_0, S's
+  delivery, consumption and face outflow close to 4e-18.
+- **Restart and batching preserve the results.** Restart is bitwise around the event and through a
+  fresh-process snapshot. The batch is bitwise against its reverse and equal to the scalar runs.
+- **A rejected step restores every field bitwise,** the exchange's, turnover's, replacement's and
+  network's accumulators included.
+- **D147 solver check, done before the draft.** Every MG0c world has zero free field offsets, with
+  @2 declared:
+  - 60 worlds in the driver's `d147` part (`snapshot-3e7399a`);
+  - 61 in the first check from `snapshot-d4cee87`, which also covered the composition test's world
+    (`mg0c/d147/`).
+
+  The zero is not vacuous: the composite layout carries the leaf. Every chain node shares the
+  cell's capacitor component with the held bath, so the chain has no floating component even
+  without a face to the bath. D147's automatic choice would also keep @2.
+- **Not MG0c's:** local accuracy at a consumer's concentrations belongs to the coupling
+  milestone's protocol.
+- **Kept as guards of record:** the independent kinetic and dissipation comparisons, with their
+  trace-scale limits.
+
+**MG0c's development runs:**
+
+| Item | Result | Against |
+| --- | --- | --- |
+| Theory | d_c 8.5676, band (0.2, 0.5), k̃² 0.318545, σ_max 0.057191 (e-fold 174.9 s, wavelength 111 µm). The domain table and the staircase are as §6.4, the discrete argmax equal to the continuum's at every L/ℓ from 4 to 30. The declaration equals `tu.schnakenberg_network` | `tu` |
+| Floor (the linearised map against the start) | At L/ℓ = 11, n = 2, rounding falls as about 1/a and the quadratic term rises as a² (the minimum, 8.5e-11, at 1e-6). At the 1e-7 start: 2.4e-10 (n = 2) and 8.8e-9 (n = 5, which decays by its record) | `cr.strang_mode_map` with K = kJ |
+| Q1 | Linearised map: 5e-11 to 1.3e-7. Exact: 3.3e-6 to 2.35e-3 at 50 ms and 2.1e-7 to 1.45e-4 at 12.5 ms, ratios 3.98–4.55 (fast modes on L/ℓ = 6 show orders up to 2.2). The dt rule is 0.44–0.46, no element exceeding. Controls caught k at 5e-8 to 2e-2 and D_V at 2e-7 to 1e-1 | `cr.mode_propagator` |
+| Q2 | Slowest mode 2, its fitted rate within 1.0e-8 of the engine order's. The deviation falls from 9.3e-4 to 1.6e-8 of c* (the prototype's 1.4e-8), never above its start | `cr.strang_mode_map` |
+| Q3 | Dominant modes 1, 2 and 3 on L/ℓ = 6, 11 and 16, from 50, 50 and 350 s to saturation (0.42–0.43 c*). Fitted rates within 1.7e-5, 4.1e-5 and 2.8e-6 of the discrete-time rates (σ_n is 4e-4 above them) | `tu`, `cr` |
+| Q4 | The staircase covers every L/ℓ from 4 to 30 in steps of 0.5: 53 lengths and 163 single-mode starts of 100 s. At every length the engine's fastest-growing start is the discrete argmax of σ_n, and its growing set is the admissible unstable set (none at 4 and 7.5–8.5, then modes 1 to 5). The smallest predicted |rate| among the candidates is 3.8e-5 /s, and the smallest top-two gap is 3.2e-4 /s. The fitted rates match the predicted ones to a median of 3e-9. The worst, up to 6%, are strongly decaying modes near k̃² = 0.1: there the two eigenvalues are close, so the transient outlasts the fit window. None of them is near the argmax or a change of sign | `tu.staircase` (discrete) |
+| Q5 | Every one of the 24 modes on L/ℓ = 6, 8, 11 and 16 decays at d = 8. The dt rule against the exact propagator at d = 8 is 0.44–0.47 (6.4e-6 to 1.2e-3 at 50 ms). Fitted rates are within 5e-10 to 6e-7 of the predicted ones, except the complex-eigenvalue modes (L/ℓ = 8, 11 and 16 at n = 1, and 16 at n = 2), whose oscillating norm fits 3e-3 to 0.40 off. Those rates are reported only | `cr.mode_propagator` at d = 8 |
+| Q6 | 5.4e-4, 1.4e-4 and 3.4e-5 of c* at 50, 25 and 12.5 ms over 3000 s (ratios 4.01, orders 2.005 at every record; the prototype's 4.8e-4/1.19e-4/2.97e-5). The rule is 0.446/0.445 over 528 elements, none exceeding. Controls caught k at 1e-5 and 1e-6, D_V at 1e-4 and 1e-5. The reference's own rtol difference is 8.3e-13 of c*. §6.4's 0.68 u0 (the prototype's B2) measures something else: in the reference's own integration of Q6's start at 3000 s, max |u − ū| is 0.43, the peak to peak 0.85 and the mode-2 coefficient 0.43. B2 is not specified fully, and the engine matches the reference to 5.4e-4 of c* | `cr.integrate_chain` |
+| Q7 | The face-free world's energy residual is 0.052 of the rounding allowance at every one of 4,000 rows. Restart through a snapshot read in a fresh process is bitwise. The batch of three seeds on L/ℓ = 6 is bitwise against its reverse and equal to the scalar runs. The worst accounting comes from every run that records it, which is every part's but Q4's: Q4's 163 runs pass every host check on every window but record only their rates. Over those runs the energy residual is 2.2e-3 of its bound and the network rows' material residuals 6.7e-3 of theirs | — |
+
+**The PROPOSED protocol.** It is `validation/morphogenesis/protocols/mg0c_turing_v1.json`, not
+registered. `mg0c_protocol.py` drafts it from dev-d4cee87-a, -b and -c and dev-3e7399a-d.
+- **Criteria:** 52 judged criteria, as metric paths for `mg0a_gradient.evaluate`, in
+  D150's reviewed forms:
+  - S5's dt-study rule at 50 and 25 ms, per element and record: 3 × the step term plus the
+    reference's own term;
+  - the orders' stop rules, with the orders themselves reported;
+  - the k and D_V controls at 76 registered deltas, each 10 × the larger of the smallest
+    deltas caught in development;
+  - a priori bounds where an exact discrete map exists: guard 2's 1e-14 × steps × the scale, and
+    Q1's linearised map at 1e-6;
+  - the structural items: Q2's to Q5's modes and the staircase;
+  - Q7's bitwise and rounding checks;
+  - D147.
+
+  Every criterion a development run can evaluate passes (`development_values`). The four
+  control criteria are evaluable only in a judged run, and the development's smallest caught
+  deltas stand beside them.
+- **Guards of record:** ten test files at the judged snapshot. They include the kinetic and
+  dissipation comparisons, with their trace-scale limits, and the composed world.
+- **The judged run:** the three unit groups, each into its own new directory from one clean
+  snapshot of main, then the judge entry over the merged results.
+- **Questions for the lead** (in the protocol):
+  1. Q7's batch over seeds instead of over domains.
+  2. The records' 600 s cap. It never binds in Q1, whose longest record is 590.5 s; in Q5 it binds
+     for the near-marginal modes, which would run to 640–1,100 s.
+  3. The linearised-map tolerance. No single tolerance separates the two scales with margin: the
+     worst floor at the 1e-7 start is 1.3e-7, while the smallest discretisation error is 2.1e-7
+     (L/ℓ = 16, n = 1 at 12.5 ms).
+  4. The fit-limited rate tolerances.
+  5. Q4's candidate modes.
+  6. Q6's control grid.
+  7. §11.1's pins.
+  8. Guard 2's rounding rule: 0.021 of the usage note's, against 0.96 of D150's at 8,000 steps.
+  9. The judged run's memory caps (unit b peaked at 3.5 GB of its 4 GiB).
+  10. The composition file's place: a judged guard, or a regression guard outside the judged list.
+      Its same-material test uses an exchange map the engine agent wrote from D150's documented
+      law, and its idle claim 3 is reported, not promised.
+
+**Findings for the lead:**
+1. **Q7's "vmap batch of the domains" cannot run.** A route's node is in the batch signature, so
+   the protocol proposes a batch of seeds on one domain.
+2. **Guard 2's rounding.** In the passive world the engine accumulates about 0.95 ε × the scale
+   per step. The long-double iteration shows this is the engine's own rounding, linear in steps,
+   with no composition term. D150's steps × ε rule would sit at 0.96; the usage note's sits at
+   0.021 (question 8).
+3. **The floor at the 1e-7 start** is the representation's rounding for decaying modes: up to
+   1.3e-7 at L/ℓ = 6, n = 6, at its record. For slow modes a start of 1e-6 would lower it. No
+   change is proposed; §6.4 sets 1e-7.
+4. **Q5's fitted rates fail for complex-eigenvalue modes**, whose norm oscillates. "At its predicted
+   rate" is judged by the dt rule against the exact propagator at d = 8.
+5. **The dt rule's power lies in its controls.** It sits at 4/9 for a clean second-order error,
+   D150's structural finding. Some controls are weak: D_V on L/ℓ = 6's fast modes at 50 ms is
+   caught only at 0.1, so it is registered at 1.0.
+6. **Memory.** Unit b's cgroup peak was 3.5 GB of its 4 GiB cap, from q7's vector batch (question
+   9).
+7. **The judged path has run only as a dry run** (not evidence; `mg0c/judge-dry-run-cc32976-b`).
+   - The judge entry, on copies of the development results rewritten as judged runs of one clean
+     snapshot, merged the four runs and evaluated all 52 criteria. Only the four control criteria
+     failed: `caught_at_registered` exists only in a judged run.
+   - With the registered deltas loaded, Q1's quick part (L/ℓ = 11; n = 1 at its full record)
+     caught both controls at 50 ms.
+   - The development launcher `mg0c/dev.sh` creates its output directory first, so it cannot start
+     a judged run, which refuses an existing directory.
 
 ## Appendix A. Equations for the independent references
 

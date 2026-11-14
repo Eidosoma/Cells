@@ -179,6 +179,30 @@ def test_a_passive_relaxation_ends_at_the_references_equilibrium():
     record("passive_relaxation", heat_pJ=heat, equilibrium_drop_pJ=-equilibrium.delta_G)
 
 
+def test_several_sites_with_their_own_multipliers_run_as_the_reference():
+    """Milestone 3 (moved from milestone 2): reactions at several sites of unequal volumes, each
+    with its own schedule (rfx.several_sites: cell_1 passive-only beside the mixed cell_0, a
+    multiplier of 2.5 at one node, one changed mid-run), against nr.run_half_steps with the same
+    [R, N] multipliers from the declared schedules."""
+    raw = rfx.several_sites()
+    multipliers = rfx.reference_multipliers(raw)
+    nodes = [n["id"] for n in rfx.reference_nodes(raw)]
+    cell_0, cell_1, ecs_2 = (nodes.index(n) for n in ("cell_0", "cell_1", "ecs_2"))
+    removal = 4
+    last = 2 * int(round(raw["experiment"]["end_time"] / raw["execution"]["dt"])) - 1
+    assert (multipliers(0)[removal, ecs_2], multipliers(last)[removal, ecs_2]) == (1.0, 0.3)
+    result, _ = against_reference(raw, multipliers, "several_sites")
+    e = engine_rows(result)
+    assert e["work"][-1][cell_1] == 0.0 < e["heat"][-1][cell_1]  # Passive-only: heat alone.
+    assert e["work"][-1][cell_0] != 0.0  # Mixed.
+    record(
+        "several_sites",
+        heat_pJ=e["heat"][-1].tolist(),
+        work_pJ=e["work"][-1].tolist(),
+        nodes=nodes,
+    )
+
+
 # ------------------------------------------------------------------ the scheme's accuracy
 
 

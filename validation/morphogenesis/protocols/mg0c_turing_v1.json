@@ -1,0 +1,1916 @@
+{
+ "schema": "cells.morphogenesis_protocol@1",
+ "id": "mg0c-turing-v1",
+ "title": "MG0c: Turing patterning at the predicted wavelength, local_species_reactions@1's first acceptance on resolved_pump_tissue@3's species transport",
+ "status": "PROPOSED (drafted 14 November 2026 by the D152 engine agent from the development runs named in development_runs, for the lead's review with the advisor; not registered, and no judged run is made before the lead registers it)",
+ "rung": "MG0c",
+ "question": "Does local_species_reactions@1, composed with @3's species transport on a closed chain, run the declared discrete system: the engine order's own map for linear networks and for Schnakenberg linearised, exact mode propagation and the nonlinear pattern to the scheme's step terms, only admissible modes growing, the predicted dominant mode and growth rate, the staircase of fastest modes against the domain's length, decay below the critical ratio, and closed accounting?",
+ "engine_models": [
+  "resolved_pump_composite@1 (src/cells/models/pump_composite.py)",
+  "resolved_pump_tissue@3 (src/cells/core/surface_pump_v3_spec.py, src/cells/models/surface_pump_v3.py), IMEX ARS(2,2,2), CPU, float64",
+  "local_species_reactions@1 (src/cells/models/operators/species_reactions.py): driven mass action; ideal_detailed_balance_mass_action@1 in guard 2's passive world",
+  "cells.core.inventory_species (D150) declares the network's species"
+ ],
+ "driver": "validation/morphogenesis/mg0c_turing.py",
+ "command": "From a fresh clean execution snapshot of main, through scripts/run_detached.sh: PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= python -m validation.morphogenesis.mg0c_turing PARTS --output RUN_DIR --protocol THIS_FILE, one unit per part group (development_runs.units), each into its own new RUN_DIR; then python -m validation.morphogenesis.mg0c_turing judge --output JUDGE_DIR --protocol THIS_FILE --results RUN_DIR/results.json ..., the verdict over the merged runs (one snapshot, every part once); then the guards of record (guards_of_record.tests) with pytest from the same snapshot",
+ "theory_sources": {
+  "turing": "Turing 1952, Phil Trans R Soc B 237:37, doi:10.1098/rstb.1952.0012",
+  "schnakenberg": "Schnakenberg 1979, J Theor Biol 81:389, doi:10.1016/0022-5193(79)90042-0",
+  "murray": "Murray 2003, Mathematical Biology II, ch. 2 (the conditions, the band, d_c)",
+  "crank": "Crank 1975, The Mathematics of Diffusion, ch. 14 (linear reaction-diffusion)"
+ },
+ "references": {
+  "independence": "validation/reactions (network_reference, chain_reference, turing_reference), written from the design's Appendix A and textbooks by an agent that never read the operator's code; the driver uses them only through validation/reactions/REFERENCES_USAGE.md and feeds them the raw declaration",
+  "predictions": "computed at run time, never typed: tu.turing_analysis, tu.domain_modes, tu.admissible_unstable_modes, tu.fastest_admissible_mode, tu.staircase (discrete at h); cr.chain_eigenvalues, cr.mode_coefficients, cr.mode_propagator, cr.propagate_modes, cr.strang_mode_map, cr.linear_rates, cr.integrate_chain",
+  "self_tests": "tests/unit/test_reaction_references.py (tier 1)"
+ },
+ "world": {
+  "builder": "validation/morphogenesis/mg0c_turing.py chain_world",
+  "chain": "N finite outside nodes of 0.5 pL at h = l/2 = 5 um, faces of area V/h = 1e-10 m^2 and length h; zero-flux ends (no face to the bath); quiescent ions; one quiescent cell with a capacitive patch on every node and one on the held bath",
+  "parameters": {
+   "a": 0.1,
+   "b": 0.9,
+   "d": 10.0,
+   "k_per_s": 0.1,
+   "c_star_mM": 0.001,
+   "D_U_m2_per_s": 1e-11,
+   "l_m": 9.999999999999999e-06,
+   "labelled": "synthetic and compressed (a textbook regime), not a biological claim"
+  },
+  "domains": {
+   "L6": 12,
+   "L8": 16,
+   "L11": 22,
+   "L16": 32
+  },
+  "dts_s": [
+   0.05,
+   0.025,
+   0.0125
+  ],
+  "explicit_rate_bound_per_s": 15.999999999999996,
+  "trace_mM": 1e-09,
+  "material_floor_fmol": 1e-20,
+  "single_mode_amplitude_of_c_star": 1e-07,
+  "noise_amplitude_of_c_star": 0.001,
+  "seeds": {
+   "q2": 152,
+   "q3": {
+    "6": 13,
+    "11": 18,
+    "16": 23
+   },
+   "q6": 11,
+   "q7_face_free": 5,
+   "q7_restart": 3,
+   "q7_batch": [
+    3,
+    4,
+    5
+   ]
+  },
+  "q1_records": "3 / |Re lambda| of each mode's slowest eigenvalue (the usage note's record), capped at 600 s, rounded to 50 ms, with records at 1/3 and 2/3 of it"
+ },
+ "predictions_at_drafting": {
+  "analysis": {
+   "band": [
+    0.2,
+    0.5
+   ],
+   "critical_ratio": 8.567627457812106,
+   "determinant": 1.0,
+   "diffusion_driven_instability": true,
+   "k2_fastest": 0.31854497287013483,
+   "sigma_max": 0.05719095841793668,
+   "stable_without_diffusion": true,
+   "trace": -0.19999999999999996,
+   "turing_inequality": [
+    7.0,
+    6.324555320336759
+   ],
+   "wavelength": 11.132545800452812
+  },
+  "wavelength_m": 0.00011132545800452811,
+  "e_fold_s": 174.85281374238556,
+  "domains": {
+   "L11": {
+    "unstable": [
+     2
+    ],
+    "fastest": 2
+   },
+   "L16": {
+    "unstable": [
+     3
+    ],
+    "fastest": 3
+   },
+   "L6": {
+    "unstable": [
+     1
+    ],
+    "fastest": 1
+   },
+   "L8": {
+    "unstable": [],
+    "fastest": null
+   }
+  },
+  "staircase": [
+   {
+    "L": 4.0,
+    "continuum": null,
+    "discrete": null
+   },
+   {
+    "L": 4.5,
+    "continuum": 1,
+    "discrete": 1
+   },
+   {
+    "L": 5.0,
+    "continuum": 1,
+    "discrete": 1
+   },
+   {
+    "L": 5.5,
+    "continuum": 1,
+    "discrete": 1
+   },
+   {
+    "L": 6.0,
+    "continuum": 1,
+    "discrete": 1
+   },
+   {
+    "L": 6.5,
+    "continuum": 1,
+    "discrete": 1
+   },
+   {
+    "L": 7.0,
+    "continuum": 1,
+    "discrete": 1
+   },
+   {
+    "L": 7.5,
+    "continuum": null,
+    "discrete": null
+   },
+   {
+    "L": 8.0,
+    "continuum": null,
+    "discrete": null
+   },
+   {
+    "L": 8.5,
+    "continuum": null,
+    "discrete": null
+   },
+   {
+    "L": 9.0,
+    "continuum": 2,
+    "discrete": 2
+   },
+   {
+    "L": 9.5,
+    "continuum": 2,
+    "discrete": 2
+   },
+   {
+    "L": 10.0,
+    "continuum": 2,
+    "discrete": 2
+   },
+   {
+    "L": 10.5,
+    "continuum": 2,
+    "discrete": 2
+   },
+   {
+    "L": 11.0,
+    "continuum": 2,
+    "discrete": 2
+   },
+   {
+    "L": 11.5,
+    "continuum": 2,
+    "discrete": 2
+   },
+   {
+    "L": 12.0,
+    "continuum": 2,
+    "discrete": 2
+   },
+   {
+    "L": 12.5,
+    "continuum": 2,
+    "discrete": 2
+   },
+   {
+    "L": 13.0,
+    "continuum": 2,
+    "discrete": 2
+   },
+   {
+    "L": 13.5,
+    "continuum": 2,
+    "discrete": 2
+   },
+   {
+    "L": 14.0,
+    "continuum": 3,
+    "discrete": 3
+   },
+   {
+    "L": 14.5,
+    "continuum": 3,
+    "discrete": 3
+   },
+   {
+    "L": 15.0,
+    "continuum": 3,
+    "discrete": 3
+   },
+   {
+    "L": 15.5,
+    "continuum": 3,
+    "discrete": 3
+   },
+   {
+    "L": 16.0,
+    "continuum": 3,
+    "discrete": 3
+   },
+   {
+    "L": 16.5,
+    "continuum": 3,
+    "discrete": 3
+   },
+   {
+    "L": 17.0,
+    "continuum": 3,
+    "discrete": 3
+   },
+   {
+    "L": 17.5,
+    "continuum": 3,
+    "discrete": 3
+   },
+   {
+    "L": 18.0,
+    "continuum": 3,
+    "discrete": 3
+   },
+   {
+    "L": 18.5,
+    "continuum": 3,
+    "discrete": 3
+   },
+   {
+    "L": 19.0,
+    "continuum": 3,
+    "discrete": 3
+   },
+   {
+    "L": 19.5,
+    "continuum": 4,
+    "discrete": 4
+   },
+   {
+    "L": 20.0,
+    "continuum": 4,
+    "discrete": 4
+   },
+   {
+    "L": 20.5,
+    "continuum": 4,
+    "discrete": 4
+   },
+   {
+    "L": 21.0,
+    "continuum": 4,
+    "discrete": 4
+   },
+   {
+    "L": 21.5,
+    "continuum": 4,
+    "discrete": 4
+   },
+   {
+    "L": 22.0,
+    "continuum": 4,
+    "discrete": 4
+   },
+   {
+    "L": 22.5,
+    "continuum": 4,
+    "discrete": 4
+   },
+   {
+    "L": 23.0,
+    "continuum": 4,
+    "discrete": 4
+   },
+   {
+    "L": 23.5,
+    "continuum": 4,
+    "discrete": 4
+   },
+   {
+    "L": 24.0,
+    "continuum": 4,
+    "discrete": 4
+   },
+   {
+    "L": 24.5,
+    "continuum": 4,
+    "discrete": 4
+   },
+   {
+    "L": 25.0,
+    "continuum": 5,
+    "discrete": 5
+   },
+   {
+    "L": 25.5,
+    "continuum": 5,
+    "discrete": 5
+   },
+   {
+    "L": 26.0,
+    "continuum": 5,
+    "discrete": 5
+   },
+   {
+    "L": 26.5,
+    "continuum": 5,
+    "discrete": 5
+   },
+   {
+    "L": 27.0,
+    "continuum": 5,
+    "discrete": 5
+   },
+   {
+    "L": 27.5,
+    "continuum": 5,
+    "discrete": 5
+   },
+   {
+    "L": 28.0,
+    "continuum": 5,
+    "discrete": 5
+   },
+   {
+    "L": 28.5,
+    "continuum": 5,
+    "discrete": 5
+   },
+   {
+    "L": 29.0,
+    "continuum": 5,
+    "discrete": 5
+   },
+   {
+    "L": 29.5,
+    "continuum": 5,
+    "discrete": 5
+   },
+   {
+    "L": 30.0,
+    "continuum": 5,
+    "discrete": 5
+   }
+  ],
+  "subcritical_max_sigma": {
+   "L11": {
+    "discrete_time_rates_per_s": [
+     -0.0466427514438791,
+     -0.002923347693907029,
+     -0.019624394124990577,
+     -0.06411909148998084,
+     -0.12713287685246466,
+     -0.2046833571626989
+    ],
+    "max_sigma_discrete": -0.02921522237741441
+   },
+   "L16": {
+    "discrete_time_rates_per_s": [
+     -0.02733497792349143,
+     -0.027417076685127918,
+     -0.0027253903957489096,
+     -0.012206412800216913,
+     -0.03644055622498949,
+     -0.07108700309390685
+    ],
+    "max_sigma_discrete": -0.027234276507898853
+   },
+   "L6": {
+    "discrete_time_rates_per_s": [
+     -0.0046997403885324805,
+     -0.04695715698442314,
+     -0.16427434987478637,
+     -0.32606684159515203,
+     -0.5170828126833484,
+     -0.7229923857739908
+    ],
+    "max_sigma_discrete": -0.046982394281031764
+   },
+   "L8": {
+    "discrete_time_rates_per_s": [
+     -0.027417076685127918,
+     -0.012206412800216913,
+     -0.07108700309390685,
+     -0.16427434987478637,
+     -0.28232248861935927,
+     -0.4188112731466743
+    ],
+    "max_sigma_discrete": -0.12202433672974104
+   }
+  },
+  "note": "for orientation only: the judged run recomputes every prediction"
+ },
+ "rules": {
+  "dt_study": "S5's form, per element and record (D150's protocol): the step term |q(dt) - q(dt/2)| at the same records, the tolerance 3 x (the step term + the reference term), the reference term 64 eps x the scale for an exact reference (the scale the largest |reference| over the item's records), plus the reference's own difference |rtol 1e-12 - rtol 1e-13| for DOP853; judged at 50 and 25 ms",
+  "what_the_rule_shows": "as D150's review found, the dt-study rule detects bias, not order: for a second-order error the pass fraction is structural, so the rule's power is its judged controls'; the orders are reported, and only their stop rules are judged",
+  "orders": "per record, log2 of successive max-norm differences |q(dt) - q(dt/2)| / |q(dt/2) - q(dt/4)|, where both lie above 64 eps x the scale; the stop rule: every measurable difference decreases",
+  "controls": "judged (D150's form): the judged run's output against the reference with k, and separately D_V, times (1 + delta) at the registered delta, 10 x the larger of the smallest deltas that caught k and D_V in development on a 1-2-5 grid from 1e-14 to 0.5 (Q6: 1e-9 to 1e-2 by decades), snapped up to the grid; each must fail the rule somewhere",
+  "judged_run": "once, after registration, from a fresh clean execution snapshot of main (validation/source_snapshot.py, no dirty patch), through scripts/run_detached.sh. A failure is recorded and diagnosed, never retuned",
+  "attempts": "an attempt killed by infrastructure before its verdict is written is not a verdict: it is recorded with its logs and rerun once from the same snapshot into a new directory (the driver refuses an existing one); a second goes to the lead. A part the engine refuses is a verdict: its criteria fail",
+  "resolved_start": "every run starts resolved: the uniform state with a mode of 1e-7 c* or seeded noise of 1e-3 c*, never a switch-on from the trace"
+ },
+ "criteria": [
+  {
+   "id": "D147_no_free_field_offsets",
+   "metrics": [
+    "parts.d147.max_free_field_offsets"
+   ],
+   "comparison": "le",
+   "threshold": 0,
+   "basis": "D147: a definition with free field offsets declares field solver @3; every MG0c world has none (each chain node shares the cell's capacitor component with the held bath), so the declared @2 stands. Composite IDs skip D147's automatic choice, so the count is checked here"
+  },
+  {
+   "id": "G2_passive_engine_order_map",
+   "metrics": [
+    "parts.linear.passive.dt50ms.map_over_usage_note_rule",
+    "parts.linear.passive.dt25ms.map_over_usage_note_rule",
+    "parts.linear.passive.dt12p5ms.map_over_usage_note_rule"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "|engine - strang_mode_map iterated| <= 1e-14 x steps x the scale at every record (REFERENCES_USAGE.md's accumulation, a priori; D150's steps x eps x the scale reported, question 8): the composite's order P(dt/2) I(dt) P(dt/2) with @3's species transport, mode by mode"
+  },
+  {
+   "id": "G2_passive_dt_rule",
+   "metrics": [
+    "parts.linear.passive.dt_rule.dt50ms.max_ratio",
+    "parts.linear.passive.dt_rule.dt25ms.max_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "S5's dt-study rule against propagate_modes (exact), per element and record"
+  },
+  {
+   "id": "G2_passive_orders",
+   "metrics": [
+    "parts.linear.passive.dt_rule.stop_rule_differences_decrease"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every measurable step-term difference decreases (the orders are reported)"
+  },
+  {
+   "id": "G2_passive_accounting",
+   "metrics": [
+    "parts.linear.passive.dt50ms.accounting.energy_over_bound",
+    "parts.linear.passive.dt50ms.accounting.material_over_bound",
+    "parts.linear.passive.dt25ms.accounting.energy_over_bound",
+    "parts.linear.passive.dt25ms.accounting.material_over_bound",
+    "parts.linear.passive.dt12p5ms.accounting.energy_over_bound",
+    "parts.linear.passive.dt12p5ms.accounting.material_over_bound"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "the energy and the network rows' material residuals inside their host bounds"
+  },
+  {
+   "id": "G2_open_engine_order_map",
+   "metrics": [
+    "parts.linear.open.dt50ms.map_over_usage_note_rule",
+    "parts.linear.open.dt25ms.map_over_usage_note_rule",
+    "parts.linear.open.dt12p5ms.map_over_usage_note_rule"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "|engine - strang_mode_map iterated| <= 1e-14 x steps x the scale at every record (REFERENCES_USAGE.md's accumulation, a priori; D150's steps x eps x the scale reported, question 8): the composite's order P(dt/2) I(dt) P(dt/2) with @3's species transport, mode by mode"
+  },
+  {
+   "id": "G2_open_dt_rule",
+   "metrics": [
+    "parts.linear.open.dt_rule.dt50ms.max_ratio",
+    "parts.linear.open.dt_rule.dt25ms.max_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "S5's dt-study rule against propagate_modes (exact), per element and record"
+  },
+  {
+   "id": "G2_open_orders",
+   "metrics": [
+    "parts.linear.open.dt_rule.stop_rule_differences_decrease"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every measurable step-term difference decreases (the orders are reported)"
+  },
+  {
+   "id": "G2_open_accounting",
+   "metrics": [
+    "parts.linear.open.dt50ms.accounting.energy_over_bound",
+    "parts.linear.open.dt50ms.accounting.material_over_bound",
+    "parts.linear.open.dt25ms.accounting.energy_over_bound",
+    "parts.linear.open.dt25ms.accounting.material_over_bound",
+    "parts.linear.open.dt12p5ms.accounting.energy_over_bound",
+    "parts.linear.open.dt12p5ms.accounting.material_over_bound"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "the energy and the network rows' material residuals inside their host bounds"
+  },
+  {
+   "id": "Q1_L6_linearised_map",
+   "metrics": [
+    "parts.q1.L6.n1.dt50ms.against_linearised_map",
+    "parts.q1.L6.n1.dt25ms.against_linearised_map",
+    "parts.q1.L6.n1.dt12p5ms.against_linearised_map",
+    "parts.q1.L6.n2.dt50ms.against_linearised_map",
+    "parts.q1.L6.n2.dt25ms.against_linearised_map",
+    "parts.q1.L6.n2.dt12p5ms.against_linearised_map",
+    "parts.q1.L6.n3.dt50ms.against_linearised_map",
+    "parts.q1.L6.n3.dt25ms.against_linearised_map",
+    "parts.q1.L6.n3.dt12p5ms.against_linearised_map",
+    "parts.q1.L6.n4.dt50ms.against_linearised_map",
+    "parts.q1.L6.n4.dt25ms.against_linearised_map",
+    "parts.q1.L6.n4.dt12p5ms.against_linearised_map",
+    "parts.q1.L6.n5.dt50ms.against_linearised_map",
+    "parts.q1.L6.n5.dt25ms.against_linearised_map",
+    "parts.q1.L6.n5.dt12p5ms.against_linearised_map",
+    "parts.q1.L6.n6.dt50ms.against_linearised_map",
+    "parts.q1.L6.n6.dt25ms.against_linearised_map",
+    "parts.q1.L6.n6.dt12p5ms.against_linearised_map"
+   ],
+   "comparison": "le",
+   "threshold": 1e-06,
+   "basis": "the engine against the linearised engine-order map (strang_mode_map with K = k J), relative to each record's largest coefficient: the implementation at the floor of the 1e-7 start (floor part)"
+  },
+  {
+   "id": "Q1_L6_dt_rule",
+   "metrics": [
+    "parts.q1.L6.n1.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L6.n1.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L6.n2.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L6.n2.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L6.n3.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L6.n3.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L6.n4.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L6.n4.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L6.n5.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L6.n5.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L6.n6.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L6.n6.dt_rule.dt25ms.max_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "S5's dt-study rule against mode_propagator (exact for the linearised system)"
+  },
+  {
+   "id": "Q1_L6_orders",
+   "metrics": [
+    "parts.q1.L6.n1.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L6.n2.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L6.n3.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L6.n4.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L6.n5.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L6.n6.dt_rule.stop_rule_differences_decrease"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every measurable step-term difference decreases (the orders are reported)"
+  },
+  {
+   "id": "Q1_L6_controls",
+   "metrics": [
+    "parts.q1.L6.n1.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L6.n1.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L6.n1.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L6.n1.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L6.n2.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L6.n2.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L6.n2.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L6.n2.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L6.n3.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L6.n3.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L6.n3.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L6.n3.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L6.n4.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L6.n4.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L6.n4.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L6.n4.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L6.n5.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L6.n5.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L6.n5.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L6.n5.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L6.n6.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L6.n6.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L6.n6.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L6.n6.dt_rule.dt25ms.controls.k.caught_at_registered"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "the exact propagator with k, and separately D_V, times (1 + delta) at the registered delta fails the dt-study rule somewhere (the rule can fail)"
+  },
+  {
+   "id": "Q1_L11_linearised_map",
+   "metrics": [
+    "parts.q1.L11.n1.dt50ms.against_linearised_map",
+    "parts.q1.L11.n1.dt25ms.against_linearised_map",
+    "parts.q1.L11.n1.dt12p5ms.against_linearised_map",
+    "parts.q1.L11.n2.dt50ms.against_linearised_map",
+    "parts.q1.L11.n2.dt25ms.against_linearised_map",
+    "parts.q1.L11.n2.dt12p5ms.against_linearised_map",
+    "parts.q1.L11.n3.dt50ms.against_linearised_map",
+    "parts.q1.L11.n3.dt25ms.against_linearised_map",
+    "parts.q1.L11.n3.dt12p5ms.against_linearised_map",
+    "parts.q1.L11.n4.dt50ms.against_linearised_map",
+    "parts.q1.L11.n4.dt25ms.against_linearised_map",
+    "parts.q1.L11.n4.dt12p5ms.against_linearised_map",
+    "parts.q1.L11.n5.dt50ms.against_linearised_map",
+    "parts.q1.L11.n5.dt25ms.against_linearised_map",
+    "parts.q1.L11.n5.dt12p5ms.against_linearised_map",
+    "parts.q1.L11.n6.dt50ms.against_linearised_map",
+    "parts.q1.L11.n6.dt25ms.against_linearised_map",
+    "parts.q1.L11.n6.dt12p5ms.against_linearised_map"
+   ],
+   "comparison": "le",
+   "threshold": 1e-06,
+   "basis": "the engine against the linearised engine-order map (strang_mode_map with K = k J), relative to each record's largest coefficient: the implementation at the floor of the 1e-7 start (floor part)"
+  },
+  {
+   "id": "Q1_L11_dt_rule",
+   "metrics": [
+    "parts.q1.L11.n1.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L11.n1.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L11.n2.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L11.n2.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L11.n3.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L11.n3.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L11.n4.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L11.n4.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L11.n5.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L11.n5.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L11.n6.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L11.n6.dt_rule.dt25ms.max_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "S5's dt-study rule against mode_propagator (exact for the linearised system)"
+  },
+  {
+   "id": "Q1_L11_orders",
+   "metrics": [
+    "parts.q1.L11.n1.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L11.n2.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L11.n3.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L11.n4.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L11.n5.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L11.n6.dt_rule.stop_rule_differences_decrease"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every measurable step-term difference decreases (the orders are reported)"
+  },
+  {
+   "id": "Q1_L11_controls",
+   "metrics": [
+    "parts.q1.L11.n1.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L11.n1.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L11.n1.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L11.n1.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L11.n2.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L11.n2.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L11.n2.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L11.n2.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L11.n3.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L11.n3.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L11.n3.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L11.n3.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L11.n4.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L11.n4.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L11.n4.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L11.n4.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L11.n5.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L11.n5.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L11.n5.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L11.n5.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L11.n6.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L11.n6.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L11.n6.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L11.n6.dt_rule.dt25ms.controls.k.caught_at_registered"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "the exact propagator with k, and separately D_V, times (1 + delta) at the registered delta fails the dt-study rule somewhere (the rule can fail)"
+  },
+  {
+   "id": "Q1_L16_linearised_map",
+   "metrics": [
+    "parts.q1.L16.n1.dt50ms.against_linearised_map",
+    "parts.q1.L16.n1.dt25ms.against_linearised_map",
+    "parts.q1.L16.n1.dt12p5ms.against_linearised_map",
+    "parts.q1.L16.n2.dt50ms.against_linearised_map",
+    "parts.q1.L16.n2.dt25ms.against_linearised_map",
+    "parts.q1.L16.n2.dt12p5ms.against_linearised_map",
+    "parts.q1.L16.n3.dt50ms.against_linearised_map",
+    "parts.q1.L16.n3.dt25ms.against_linearised_map",
+    "parts.q1.L16.n3.dt12p5ms.against_linearised_map",
+    "parts.q1.L16.n4.dt50ms.against_linearised_map",
+    "parts.q1.L16.n4.dt25ms.against_linearised_map",
+    "parts.q1.L16.n4.dt12p5ms.against_linearised_map",
+    "parts.q1.L16.n5.dt50ms.against_linearised_map",
+    "parts.q1.L16.n5.dt25ms.against_linearised_map",
+    "parts.q1.L16.n5.dt12p5ms.against_linearised_map",
+    "parts.q1.L16.n6.dt50ms.against_linearised_map",
+    "parts.q1.L16.n6.dt25ms.against_linearised_map",
+    "parts.q1.L16.n6.dt12p5ms.against_linearised_map"
+   ],
+   "comparison": "le",
+   "threshold": 1e-06,
+   "basis": "the engine against the linearised engine-order map (strang_mode_map with K = k J), relative to each record's largest coefficient: the implementation at the floor of the 1e-7 start (floor part)"
+  },
+  {
+   "id": "Q1_L16_dt_rule",
+   "metrics": [
+    "parts.q1.L16.n1.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L16.n1.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L16.n2.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L16.n2.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L16.n3.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L16.n3.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L16.n4.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L16.n4.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L16.n5.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L16.n5.dt_rule.dt25ms.max_ratio",
+    "parts.q1.L16.n6.dt_rule.dt50ms.max_ratio",
+    "parts.q1.L16.n6.dt_rule.dt25ms.max_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "S5's dt-study rule against mode_propagator (exact for the linearised system)"
+  },
+  {
+   "id": "Q1_L16_orders",
+   "metrics": [
+    "parts.q1.L16.n1.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L16.n2.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L16.n3.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L16.n4.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L16.n5.dt_rule.stop_rule_differences_decrease",
+    "parts.q1.L16.n6.dt_rule.stop_rule_differences_decrease"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every measurable step-term difference decreases (the orders are reported)"
+  },
+  {
+   "id": "Q1_L16_controls",
+   "metrics": [
+    "parts.q1.L16.n1.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L16.n1.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L16.n1.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L16.n1.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L16.n2.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L16.n2.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L16.n2.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L16.n2.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L16.n3.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L16.n3.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L16.n3.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L16.n3.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L16.n4.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L16.n4.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L16.n4.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L16.n4.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L16.n5.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L16.n5.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L16.n5.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L16.n5.dt_rule.dt25ms.controls.k.caught_at_registered",
+    "parts.q1.L16.n6.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q1.L16.n6.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q1.L16.n6.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q1.L16.n6.dt_rule.dt25ms.controls.k.caught_at_registered"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "the exact propagator with k, and separately D_V, times (1 + delta) at the registered delta fails the dt-study rule somewhere (the rule can fail)"
+  },
+  {
+   "id": "Q2_never_above_start",
+   "metrics": [
+    "parts.q2.max_deviation_never_above_start"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "no admissible unstable mode on L/l = 8: the deviation from uniform never exceeds its start"
+  },
+  {
+   "id": "Q2_slowest_mode",
+   "metrics": [
+    "parts.q2.slowest_mode",
+    "parts.q2.dominant_mode_at_end"
+   ],
+   "comparison": "within",
+   "threshold": [
+    2,
+    2
+   ],
+   "basis": "the slowest-decaying admissible mode (the references' discrete rates) dominates at the end"
+  },
+  {
+   "id": "Q2_rate",
+   "metrics": [
+    "parts.q2.rate_relative_difference"
+   ],
+   "comparison": "le",
+   "threshold": 0.001,
+   "basis": "the slowest mode's fitted decay rate against the engine order's discrete-time rate"
+  },
+  {
+   "id": "Q3_L6_dominant",
+   "metrics": [
+    "parts.q3.L6.expected_mode",
+    "parts.q3.L6.dominant_at_end"
+   ],
+   "comparison": "within",
+   "threshold": [
+    1,
+    1
+   ],
+   "basis": "the only admissible unstable mode (tu.fastest_admissible_mode, discrete at h) dominates at saturation"
+  },
+  {
+   "id": "Q3_L6_dominant_from",
+   "metrics": [
+    "parts.q3.L6.dominant_from_s"
+   ],
+   "comparison": "le",
+   "threshold": 500.0,
+   "basis": "and from the linear phase on: it is the dominant mode at every record from 500 s"
+  },
+  {
+   "id": "Q3_L6_rate",
+   "metrics": [
+    "parts.q3.L6.rate_relative_difference"
+   ],
+   "comparison": "le",
+   "threshold": 0.01,
+   "basis": "its fitted growth rate in the linear phase against the engine order's discrete-time rate (sigma_n reported beside it)"
+  },
+  {
+   "id": "Q3_L11_dominant",
+   "metrics": [
+    "parts.q3.L11.expected_mode",
+    "parts.q3.L11.dominant_at_end"
+   ],
+   "comparison": "within",
+   "threshold": [
+    2,
+    2
+   ],
+   "basis": "the only admissible unstable mode (tu.fastest_admissible_mode, discrete at h) dominates at saturation"
+  },
+  {
+   "id": "Q3_L11_dominant_from",
+   "metrics": [
+    "parts.q3.L11.dominant_from_s"
+   ],
+   "comparison": "le",
+   "threshold": 500.0,
+   "basis": "and from the linear phase on: it is the dominant mode at every record from 500 s"
+  },
+  {
+   "id": "Q3_L11_rate",
+   "metrics": [
+    "parts.q3.L11.rate_relative_difference"
+   ],
+   "comparison": "le",
+   "threshold": 0.01,
+   "basis": "its fitted growth rate in the linear phase against the engine order's discrete-time rate (sigma_n reported beside it)"
+  },
+  {
+   "id": "Q3_L16_dominant",
+   "metrics": [
+    "parts.q3.L16.expected_mode",
+    "parts.q3.L16.dominant_at_end"
+   ],
+   "comparison": "within",
+   "threshold": [
+    3,
+    3
+   ],
+   "basis": "the only admissible unstable mode (tu.fastest_admissible_mode, discrete at h) dominates at saturation"
+  },
+  {
+   "id": "Q3_L16_dominant_from",
+   "metrics": [
+    "parts.q3.L16.dominant_from_s"
+   ],
+   "comparison": "le",
+   "threshold": 500.0,
+   "basis": "and from the linear phase on: it is the dominant mode at every record from 500 s"
+  },
+  {
+   "id": "Q3_L16_rate",
+   "metrics": [
+    "parts.q3.L16.rate_relative_difference"
+   ],
+   "comparison": "le",
+   "threshold": 0.01,
+   "basis": "its fitted growth rate in the linear phase against the engine order's discrete-time rate (sigma_n reported beside it)"
+  },
+  {
+   "id": "Q4_staircase",
+   "metrics": [
+    "parts.q4.all_agree"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "at every L/l from 4 to 30 (step 0.5), the fastest-growing single-mode start on the engine is the discrete argmax of sigma_n (none at 4 and 7.5 to 8.5), and the growing set is the admissible unstable set"
+  },
+  {
+   "id": "Q5_L6_decays",
+   "metrics": [
+    "parts.q5.L6.n1.decays",
+    "parts.q5.L6.n2.decays",
+    "parts.q5.L6.n3.decays",
+    "parts.q5.L6.n4.decays",
+    "parts.q5.L6.n5.decays",
+    "parts.q5.L6.n6.decays"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "d = 8 < d_c: every single-mode start decays"
+  },
+  {
+   "id": "Q5_L6_dt_rule",
+   "metrics": [
+    "parts.q5.L6.n1.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L6.n2.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L6.n3.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L6.n4.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L6.n5.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L6.n6.dt_rule.dt50ms.max_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "at its predicted rate: S5's dt-study rule against mode_propagator at d = 8"
+  },
+  {
+   "id": "Q5_L8_decays",
+   "metrics": [
+    "parts.q5.L8.n1.decays",
+    "parts.q5.L8.n2.decays",
+    "parts.q5.L8.n3.decays",
+    "parts.q5.L8.n4.decays",
+    "parts.q5.L8.n5.decays",
+    "parts.q5.L8.n6.decays"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "d = 8 < d_c: every single-mode start decays"
+  },
+  {
+   "id": "Q5_L8_dt_rule",
+   "metrics": [
+    "parts.q5.L8.n1.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L8.n2.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L8.n3.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L8.n4.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L8.n5.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L8.n6.dt_rule.dt50ms.max_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "at its predicted rate: S5's dt-study rule against mode_propagator at d = 8"
+  },
+  {
+   "id": "Q5_L11_decays",
+   "metrics": [
+    "parts.q5.L11.n1.decays",
+    "parts.q5.L11.n2.decays",
+    "parts.q5.L11.n3.decays",
+    "parts.q5.L11.n4.decays",
+    "parts.q5.L11.n5.decays",
+    "parts.q5.L11.n6.decays"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "d = 8 < d_c: every single-mode start decays"
+  },
+  {
+   "id": "Q5_L11_dt_rule",
+   "metrics": [
+    "parts.q5.L11.n1.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L11.n2.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L11.n3.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L11.n4.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L11.n5.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L11.n6.dt_rule.dt50ms.max_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "at its predicted rate: S5's dt-study rule against mode_propagator at d = 8"
+  },
+  {
+   "id": "Q5_L16_decays",
+   "metrics": [
+    "parts.q5.L16.n1.decays",
+    "parts.q5.L16.n2.decays",
+    "parts.q5.L16.n3.decays",
+    "parts.q5.L16.n4.decays",
+    "parts.q5.L16.n5.decays",
+    "parts.q5.L16.n6.decays"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "d = 8 < d_c: every single-mode start decays"
+  },
+  {
+   "id": "Q5_L16_dt_rule",
+   "metrics": [
+    "parts.q5.L16.n1.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L16.n2.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L16.n3.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L16.n4.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L16.n5.dt_rule.dt50ms.max_ratio",
+    "parts.q5.L16.n6.dt_rule.dt50ms.max_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "at its predicted rate: S5's dt-study rule against mode_propagator at d = 8"
+  },
+  {
+   "id": "Q6_dt_rule",
+   "metrics": [
+    "parts.q6.dt_rule.dt50ms.max_ratio",
+    "parts.q6.dt_rule.dt25ms.max_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "S5's dt-study rule against cr.integrate_chain (DOP853 at rtol 1e-13, its own term |rtol 1e-12 - rtol 1e-13|), per node, species and record, to saturation"
+  },
+  {
+   "id": "Q6_orders",
+   "metrics": [
+    "parts.q6.dt_rule.stop_rule_differences_decrease"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every measurable step-term difference decreases (the orders are reported)"
+  },
+  {
+   "id": "Q6_controls",
+   "metrics": [
+    "parts.q6.dt_rule.dt50ms.controls.D_V.caught_at_registered",
+    "parts.q6.dt_rule.dt50ms.controls.k.caught_at_registered",
+    "parts.q6.dt_rule.dt25ms.controls.D_V.caught_at_registered",
+    "parts.q6.dt_rule.dt25ms.controls.k.caught_at_registered"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "the reference re-integrated with k, and separately D_V, times (1 + delta) at the registered delta fails the rule somewhere"
+  },
+  {
+   "id": "Q7_face_free",
+   "metrics": [
+    "parts.q7.face_free.energy_over_rounding"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "the face-free world (\u00a73.4 guard 1, MG0c's network): the energy residual within 2.5 eps x steps x the energy magnitudes at every row"
+  },
+  {
+   "id": "Q7_restart",
+   "metrics": [
+    "parts.q7.restart_bitwise"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "restart through a written snapshot read in a fresh process: bitwise"
+  },
+  {
+   "id": "Q7_batch",
+   "metrics": [
+    "parts.q7.batch_bitwise_against_reverse"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "a vector batch over seeds on one domain: bitwise against the reversed batch"
+  },
+  {
+   "id": "Q7_batch_scalar",
+   "metrics": [
+    "parts.q7.batch_against_scalar_relative"
+   ],
+   "comparison": "le",
+   "threshold": 1e-12,
+   "basis": "each world within 1e-12 of its scalar run (\u00a76.5)"
+  },
+  {
+   "id": "Q7_accounting",
+   "metrics": [
+    "accounting_summary.max_energy_over_bound",
+    "accounting_summary.max_material_over_bound"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "every run that records its accounting (every part's but Q4's, whose single-mode runs record only their rates): the energy residual and the network rows' material residuals (at the species' floors) inside their host bounds. Every run of every part, Q4's included, also passes every host check on every window, or it raises and its part fails"
+  },
+  {
+   "id": "S_dt_rule",
+   "metrics": [
+    "parts.sites.dt_rule.dt50ms.max_ratio",
+    "parts.sites.dt_rule.dt25ms.max_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "reactions at several sites with their own multipliers (one at zero) on the chain: S5's dt-study rule against cr.integrate_chain with the same [R, N] multipliers"
+  },
+  {
+   "id": "S_orders",
+   "metrics": [
+    "parts.sites.dt_rule.stop_rule_differences_decrease"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every measurable step-term difference decreases"
+  }
+ ],
+ "registered_control_deltas": {
+  "q1.L6.n1.dt50ms.D_V": 0.01,
+  "q1.L6.n1.dt50ms.k": 0.01,
+  "q1.L6.n1.dt25ms.D_V": 0.002,
+  "q1.L6.n1.dt25ms.k": 0.002,
+  "q1.L6.n2.dt50ms.D_V": 0.01,
+  "q1.L6.n2.dt50ms.k": 0.01,
+  "q1.L6.n2.dt25ms.D_V": 0.005,
+  "q1.L6.n2.dt25ms.k": 0.005,
+  "q1.L6.n3.dt50ms.D_V": 0.05,
+  "q1.L6.n3.dt50ms.k": 0.05,
+  "q1.L6.n3.dt25ms.D_V": 0.01,
+  "q1.L6.n3.dt25ms.k": 0.01,
+  "q1.L6.n4.dt50ms.D_V": 0.2,
+  "q1.L6.n4.dt50ms.k": 0.2,
+  "q1.L6.n4.dt25ms.D_V": 0.05,
+  "q1.L6.n4.dt25ms.k": 0.05,
+  "q1.L6.n5.dt50ms.D_V": 0.5,
+  "q1.L6.n5.dt50ms.k": 0.5,
+  "q1.L6.n5.dt25ms.D_V": 0.1,
+  "q1.L6.n5.dt25ms.k": 0.1,
+  "q1.L6.n6.dt50ms.D_V": 1.0,
+  "q1.L6.n6.dt50ms.k": 1.0,
+  "q1.L6.n6.dt25ms.D_V": 0.2,
+  "q1.L6.n6.dt25ms.k": 0.2,
+  "q1.L11.n1.dt50ms.D_V": 5e-05,
+  "q1.L11.n1.dt50ms.k": 5e-05,
+  "q1.L11.n1.dt25ms.D_V": 1e-05,
+  "q1.L11.n1.dt25ms.k": 1e-05,
+  "q1.L11.n2.dt50ms.D_V": 0.002,
+  "q1.L11.n2.dt50ms.k": 0.002,
+  "q1.L11.n2.dt25ms.D_V": 0.0005,
+  "q1.L11.n2.dt25ms.k": 0.0005,
+  "q1.L11.n3.dt50ms.D_V": 0.005,
+  "q1.L11.n3.dt50ms.k": 0.005,
+  "q1.L11.n3.dt25ms.D_V": 0.001,
+  "q1.L11.n3.dt25ms.k": 0.001,
+  "q1.L11.n4.dt50ms.D_V": 0.02,
+  "q1.L11.n4.dt50ms.k": 0.02,
+  "q1.L11.n4.dt25ms.D_V": 0.005,
+  "q1.L11.n4.dt25ms.k": 0.005,
+  "q1.L11.n5.dt50ms.D_V": 0.01,
+  "q1.L11.n5.dt50ms.k": 0.01,
+  "q1.L11.n5.dt25ms.D_V": 0.002,
+  "q1.L11.n5.dt25ms.k": 0.002,
+  "q1.L11.n6.dt50ms.D_V": 0.02,
+  "q1.L11.n6.dt50ms.k": 0.02,
+  "q1.L11.n6.dt25ms.D_V": 0.005,
+  "q1.L11.n6.dt25ms.k": 0.005,
+  "q1.L16.n1.dt50ms.D_V": 1e-05,
+  "q1.L16.n1.dt50ms.k": 1e-05,
+  "q1.L16.n1.dt25ms.D_V": 2e-06,
+  "q1.L16.n1.dt25ms.k": 2e-06,
+  "q1.L16.n2.dt50ms.D_V": 0.001,
+  "q1.L16.n2.dt50ms.k": 0.001,
+  "q1.L16.n2.dt25ms.D_V": 0.0002,
+  "q1.L16.n2.dt25ms.k": 0.0002,
+  "q1.L16.n3.dt50ms.D_V": 0.002,
+  "q1.L16.n3.dt50ms.k": 0.002,
+  "q1.L16.n3.dt25ms.D_V": 0.0005,
+  "q1.L16.n3.dt25ms.k": 0.0005,
+  "q1.L16.n4.dt50ms.D_V": 0.005,
+  "q1.L16.n4.dt50ms.k": 0.005,
+  "q1.L16.n4.dt25ms.D_V": 0.001,
+  "q1.L16.n4.dt25ms.k": 0.001,
+  "q1.L16.n5.dt50ms.D_V": 0.01,
+  "q1.L16.n5.dt50ms.k": 0.01,
+  "q1.L16.n5.dt25ms.D_V": 0.002,
+  "q1.L16.n5.dt25ms.k": 0.002,
+  "q1.L16.n6.dt50ms.D_V": 0.02,
+  "q1.L16.n6.dt50ms.k": 0.02,
+  "q1.L16.n6.dt25ms.D_V": 0.005,
+  "q1.L16.n6.dt25ms.k": 0.005,
+  "q6.dt50ms.D_V": 0.001,
+  "q6.dt50ms.k": 0.001,
+  "q6.dt25ms.D_V": 0.0001,
+  "q6.dt25ms.k": 0.0001
+ },
+ "guards_of_record": {
+  "tests": [
+   "tests/unit/test_species_reactions.py",
+   "tests/unit/test_species_reactions_refusals.py",
+   "tests/unit/test_species_reactions_halfstep.py",
+   "tests/unit/test_species_reactions_against_references.py",
+   "tests/unit/test_species_reactions_runs.py",
+   "tests/unit/test_species_reactions_guards.py",
+   "tests/unit/test_species_reactions_reference_runs.py",
+   "tests/unit/test_species_reactions_composition.py",
+   "tests/unit/test_mg0c_judged_refusal.py",
+   "tests/unit/test_reaction_references.py"
+  ],
+  "covers": [
+   "the energy guards of record (\u00a73.4): the face-free world at rounding on every booking path, and the per-law dG test against network_reference",
+   "the independent kinetic and dissipation comparisons (test_species_reactions_reference_runs: whole runs against nr.run_half_steps, H and W against dr.integrate_node), kept with their documented trace-scale limits (the reversal onset, \u00a73.3; the background guard; the stiff front's stall at about eps x its anchor, \u00a74.4), because W = dG + H: a closed ledger cannot show heat and work separately (the coordinator's milestone-3 addition)",
+   "the composed world (test_species_reactions_composition): transport and reactions see the same material under the declared splitting (the face-free export and reactions against E R I R E at rounding, second order to the coupled solution); supply counted once across writers (each species' inventory against its writers' sources at every row); restart and a vector batch preserve its results; a rejected step restores every field bitwise, the other writers' accumulators included",
+   "the definition-time refusals, the batch signature, restart and vmap (\u00a76.5)",
+   "guard 2's linear chain against the engine order's map, idle claim 3 (reported), the development composition with D150's writers and replacement@1",
+   "reactions at several sites with their own multipliers against nr.run_half_steps",
+   "the judged-run refusal"
+  ],
+  "verdict_rule": "pass when every test in these files passes, from the judged snapshot"
+ },
+ "reported_not_judged": [
+  "the discrete sigma_n and k_n against the continuum (theory.domains; second order in h)",
+  "the floor part: the linearised map's agreement against the start's amplitude",
+  "every item's observed orders, and the rule's within fractions",
+  "the timing part: cost per step and compile per chain size",
+  "Q3's sigma_n beside the discrete-time rate, the saturated amplitude, the dominant mode at every record",
+  "Q5's fitted rates beside the predicted ones",
+  "\u00a711.1's accuracy pins (proposals for the lead; the face-free guards' accuracy)"
+ ],
+ "what_mg0c_does_not_show": [
+  "any biological claim (the parameters are synthetic)",
+  "local accuracy at a consumer's concentrations (concentration over time, integrated exposure, effective control and threshold time): the coupling milestone's protocol, not MG0c's (the coordinator, milestone 3)",
+  "the selection between several unstable modes on wide domains (nonlinear)",
+  "two-dimensional patterns (they need sparse field IDs, D150 \u00a73)",
+  "recovery after damage (E15's question)"
+ ],
+ "questions_for_the_lead": [
+  "1. Q7's 'a vmap batch of the domains' cannot run: a route's node is part of the operator's batch signature (ruling Q11 (c)), so domains of different N are refused in one batch. Proposed: a vector batch over seeds on one domain (L/l = 6), bitwise against its reverse and within 1e-12 of each scalar run",
+  "2. The records: 3 / |Re lambda| of each mode's slowest eigenvalue, capped at 600 s. The cap never binds in Q1 (its longest record, L/l = 6 n = 1, is 590.5 s); it binds in Q5, where the near-marginal modes at d = 8 would run to 640, 1,030 and 1,100 s (L/l = 6 n = 1, 11 n = 2, 16 n = 3)",
+  "3. Q1's linearised-map tolerance (1e-6 relative, proposed). No single tolerance separates the two scales with margin: the worst floor at the 1e-7 start is 1.3e-7 (L/l = 6 n = 6 at 50 ms, a fast mode at e^-3 of its start), while the smallest discretisation error, the size an order mistake would take, is 8.2e-7 at 25 ms and 2.1e-7 at 12.5 ms (L/l = 16 n = 1). 1e-6 keeps every development value at 8 x or more below it but would not see an error of the smallest discretisation's size on that mode; the choice is the lead's",
+  "4. The fit-limited rate tolerances (Q2 1e-3, Q3 1e-2, relative to the engine order's discrete-time rate, not the continuous sigma_n, which differs by O(dt^2)); Q5's fitted rates reported only",
+  "5. Q4's candidate modes: every mode whose discrete k^2 lies in [0.1, 0.7] l^-2 (real eigenvalues; the band is (0.2, 0.5)), at least two per domain, 100 s each, fitted from 50 s",
+  "6. Q6's controls are integrated at rtol 1e-12 on a decade grid (each costs an integration)",
+  "7. \u00a711.1's accuracy pins: adopted as guards, or kept as proposals",
+  "8. Guard 2's rounding rule: REFERENCES_USAGE.md's 1e-14 x steps x the scale (development: 0.008 to 0.021), or D150's steps x eps x the scale (development: up to 0.96, at 8,000 steps in the passive world at 12.5 ms; the long-double iteration shows the engine's own rounding, linear in steps)",
+  "9. Memory: development unit b (q6, q3, q5, q7) peaked at 3.5 GB in its cgroup (q7's vector batch) against the 4 GiB cap; the judged run's cap is the coordinator's to set (5 GiB for that group, or q7 in a unit of its own)",
+  "10. The guards of record list test_species_reactions_composition.py. Its same-material test uses an exchange map written by the engine agent from D150's documented law (one author on both sides, as D150's step map, which the lead moved out of D150's judged list to a regression guard), and its idle claim 3 is reported, not promised. Judged guard, or a regression guard outside the judged list?"
+ ],
+ "outcome_rules": "pass when every judged criterion passes and the guards of record pass. A failure is recorded and kept; a revised protocol gets a new id and is reported as weaker evidence",
+ "resources": "CPUs 5 and 7 (CPU backend only), detached through scripts/run_detached.sh. Development: unit a 52 min and 2.6 GB, unit b 90 min and 3.5 GB (cgroup peak, against its 4 GiB cap: question 9), unit c 52 min and 1.1 GB, the d147 part 8 s",
+ "development_runs": {
+  "runs": [
+   {
+    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+    "source": {
+     "clean": true,
+     "git_revision": "d4cee8724968cb3dffed371a42c5e7472c0f2077",
+     "kind": "snapshot",
+     "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-d4cee87"
+    },
+    "parts": [
+     "floor",
+     "linear",
+     "q1",
+     "q2",
+     "sites",
+     "theory",
+     "timing"
+    ]
+   },
+   {
+    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-b/results.json",
+    "source": {
+     "clean": true,
+     "git_revision": "d4cee8724968cb3dffed371a42c5e7472c0f2077",
+     "kind": "snapshot",
+     "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-d4cee87"
+    },
+    "parts": [
+     "q3",
+     "q5",
+     "q6",
+     "q7"
+    ]
+   },
+   {
+    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-c/results.json",
+    "source": {
+     "clean": true,
+     "git_revision": "d4cee8724968cb3dffed371a42c5e7472c0f2077",
+     "kind": "snapshot",
+     "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-d4cee87"
+    },
+    "parts": [
+     "q4"
+    ]
+   },
+   {
+    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-3e7399a-d/results.json",
+    "source": {
+     "clean": true,
+     "git_revision": "3e7399a30cdbf7934ef3ac33c0b21b426d3e10aa",
+     "kind": "snapshot",
+     "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-3e7399a"
+    },
+    "parts": [
+     "d147"
+    ]
+   }
+  ],
+  "units": {
+   "a": "CPU 5: d147, theory, timing, linear, floor, q1, q2, sites",
+   "b": "CPU 7: q6, q3, q5, q7",
+   "c": "CPU 5, after a: q4",
+   "note": "development's split, d147 run separately (dev-3e7399a-d); the judged run keeps the split with d147 in unit a, each unit into its own new directory, then the judge entry. mg0c/dev.sh, the development launcher, creates its output directory first and so cannot start a judged run, which refuses an existing directory: a judged launcher writes its logs beside the run's directory"
+  },
+  "drafted_by": {
+   "kind": "checkout",
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a6b2e9cd180913a24",
+   "git_revision": "2f5e6ee7eae7a2321cae7504bc0dd81113430bbe",
+   "dirty": ""
+  }
+ },
+ "development_values": {
+  "D147_no_free_field_offsets": {
+   "passed": true,
+   "values": [
+    0
+   ]
+  },
+  "G2_passive_engine_order_map": {
+   "passed": true,
+   "values": [
+    0.008478460988836645,
+    0.02087089182034596,
+    0.021261204602440742
+   ]
+  },
+  "G2_passive_dt_rule": {
+   "passed": true,
+   "values": [
+    0.44231835902680866,
+    0.4433763636291379
+   ]
+  },
+  "G2_passive_orders": {
+   "passed": true,
+   "values": [
+    true
+   ]
+  },
+  "G2_passive_accounting": {
+   "passed": true,
+   "values": [
+    0.0014545639967493897,
+    0.004443911437081042,
+    0.00034425586540244135,
+    0.0066585406158609075,
+    8.4147768936009e-05,
+    0.005746724833171711
+   ]
+  },
+  "G2_open_engine_order_map": {
+   "passed": true,
+   "values": [
+    0.008023096076392733,
+    0.008088148206741863,
+    0.007817097663620487
+   ]
+  },
+  "G2_open_dt_rule": {
+   "passed": true,
+   "values": [
+    0.44414749584912216,
+    0.4442863048342999
+   ]
+  },
+  "G2_open_orders": {
+   "passed": true,
+   "values": [
+    true
+   ]
+  },
+  "G2_open_accounting": {
+   "passed": true,
+   "values": [
+    0.0005945057346532542,
+    0.003726475785198949,
+    0.00014058507210095654,
+    0.0023991622624815467,
+    5.712532130517171e-05,
+    0.002898822147790181
+   ]
+  },
+  "Q1_L6_linearised_map": {
+   "passed": true,
+   "values": [
+    4.476802035686277e-10,
+    4.2752676109059345e-10,
+    1.2626495754857773e-10,
+    1.3101155328852678e-08,
+    4.3205616139762235e-09,
+    2.6893849765772382e-09,
+    1.561862230569889e-08,
+    1.6734304068580506e-08,
+    7.69500278420178e-09,
+    3.378008857113367e-08,
+    1.3208313971662672e-08,
+    1.600308923909621e-08,
+    3.255526909733654e-09,
+    1.0478266387146738e-08,
+    4.784510720188954e-10,
+    1.2889105930032357e-07,
+    4.330494591688279e-08,
+    7.380213294337025e-09
+   ]
+  },
+  "Q1_L6_dt_rule": {
+   "passed": true,
+   "values": [
+    0.4440145439955629,
+    0.4442149476289164,
+    0.44419351964292675,
+    0.44400367266778823,
+    0.4435636145571465,
+    0.444021220114688,
+    0.4596211985680821,
+    0.45072597520565305,
+    0.4426833545464507,
+    0.4435937387231586,
+    0.43934285437061954,
+    0.44211739772768105
+   ]
+  },
+  "Q1_L6_orders": {
+   "passed": true,
+   "values": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "Q1_L6_controls": {
+   "evaluable": "in the judged run only (caught_at_registered)",
+   "smallest_caught_in_development": [
+    0.0001,
+    0.001,
+    2e-05,
+    0.0002,
+    0.001,
+    5e-05,
+    0.0005,
+    1e-05,
+    0.005,
+    0.0002,
+    0.001,
+    5e-05,
+    0.02,
+    0.0005,
+    0.005,
+    0.0002,
+    0.05,
+    0.005,
+    0.01,
+    0.001,
+    0.1,
+    0.02,
+    0.02,
+    0.005
+   ]
+  },
+  "Q1_L11_linearised_map": {
+   "passed": true,
+   "values": [
+    1.2555281764251703e-09,
+    3.243249245270509e-10,
+    1.7704607993605866e-10,
+    1.8246280293356422e-10,
+    2.2933666074373837e-10,
+    5.0089716778220305e-11,
+    6.911861096392643e-09,
+    5.528902293328672e-09,
+    1.0693462670094465e-09,
+    1.2232155167762282e-08,
+    6.868158520725732e-09,
+    2.1225391801157747e-09,
+    8.745574052792567e-09,
+    6.64226804260102e-09,
+    3.573734715241905e-09,
+    9.935095663552629e-09,
+    4.733537772201525e-09,
+    4.9019279161519216e-09
+   ]
+  },
+  "Q1_L11_dt_rule": {
+   "passed": true,
+   "values": [
+    0.44445270397340125,
+    0.4444500090741886,
+    0.44391922824069885,
+    0.4441650075433042,
+    0.44309715152122725,
+    0.44374993471087026,
+    0.4424015003433515,
+    0.4433693006148703,
+    0.4407391470181583,
+    0.44261508767638125,
+    0.44137284816002925,
+    0.4429703436630693
+   ]
+  },
+  "Q1_L11_orders": {
+   "passed": true,
+   "values": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "Q1_L11_controls": {
+   "evaluable": "in the judged run only (caught_at_registered)",
+   "smallest_caught_in_development": [
+    4.9999999999999996e-06,
+    4.9999999999999996e-06,
+    1e-06,
+    1e-06,
+    0.0001,
+    0.0002,
+    5e-05,
+    5e-05,
+    0.0005,
+    5e-05,
+    0.0001,
+    1e-05,
+    0.002,
+    0.0002,
+    0.0005,
+    5e-05,
+    0.001,
+    5e-05,
+    0.0002,
+    1e-05,
+    0.002,
+    0.0001,
+    0.0005,
+    2e-05
+   ]
+  },
+  "Q1_L16_linearised_map": {
+   "passed": true,
+   "values": [
+    1.027740279446534e-09,
+    4.323040031765949e-10,
+    7.661551662758983e-10,
+    2.442145590934518e-09,
+    5.063950133249871e-10,
+    2.6473909776463388e-09,
+    2.6169508556581456e-10,
+    2.3605378949555585e-10,
+    1.2734949051350598e-10,
+    2.2061110651193265e-08,
+    3.68605767678769e-09,
+    9.648016151388275e-10,
+    7.726881475456794e-09,
+    1.3978703893821684e-09,
+    2.0271535041906565e-09,
+    2.62319226302624e-09,
+    1.9140036609392164e-09,
+    2.070463112205816e-09
+   ]
+  },
+  "Q1_L16_dt_rule": {
+   "passed": true,
+   "values": [
+    0.4449500519827714,
+    0.44785885026421185,
+    0.4442007017631856,
+    0.4443152332641178,
+    0.4438859434809581,
+    0.4441464352463284,
+    0.44339487254130266,
+    0.44388949302567693,
+    0.4441333159602629,
+    0.4442553827611628,
+    0.4421150819775397,
+    0.4432361494026707
+   ]
+  },
+  "Q1_L16_orders": {
+   "passed": true,
+   "values": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "Q1_L16_controls": {
+   "evaluable": "in the judged run only (caught_at_registered)",
+   "smallest_caught_in_development": [
+    1e-06,
+    2e-07,
+    2e-07,
+    5e-08,
+    5e-05,
+    0.0001,
+    1e-05,
+    2e-05,
+    0.0001,
+    0.0002,
+    5e-05,
+    5e-05,
+    0.0005,
+    0.0002,
+    0.0001,
+    5e-05,
+    0.001,
+    5e-05,
+    0.0002,
+    1e-05,
+    0.002,
+    0.0002,
+    0.0005,
+    5e-05
+   ]
+  },
+  "Q2_never_above_start": {
+   "passed": true,
+   "values": [
+    true
+   ]
+  },
+  "Q2_slowest_mode": {
+   "passed": true,
+   "values": [
+    2,
+    2
+   ]
+  },
+  "Q2_rate": {
+   "passed": true,
+   "values": [
+    1.0381271081315698e-08
+   ]
+  },
+  "Q3_L6_dominant": {
+   "passed": true,
+   "values": [
+    1,
+    1
+   ]
+  },
+  "Q3_L6_dominant_from": {
+   "passed": true,
+   "values": [
+    50.0
+   ]
+  },
+  "Q3_L6_rate": {
+   "passed": true,
+   "values": [
+    1.745716831470699e-05
+   ]
+  },
+  "Q3_L11_dominant": {
+   "passed": true,
+   "values": [
+    2,
+    2
+   ]
+  },
+  "Q3_L11_dominant_from": {
+   "passed": true,
+   "values": [
+    50.0
+   ]
+  },
+  "Q3_L11_rate": {
+   "passed": true,
+   "values": [
+    4.144843620210866e-05
+   ]
+  },
+  "Q3_L16_dominant": {
+   "passed": true,
+   "values": [
+    3,
+    3
+   ]
+  },
+  "Q3_L16_dominant_from": {
+   "passed": true,
+   "values": [
+    350.0
+   ]
+  },
+  "Q3_L16_rate": {
+   "passed": true,
+   "values": [
+    2.7695203959024487e-06
+   ]
+  },
+  "Q4_staircase": {
+   "passed": true,
+   "values": [
+    true
+   ]
+  },
+  "Q5_L6_decays": {
+   "passed": true,
+   "values": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "Q5_L6_dt_rule": {
+   "passed": true,
+   "values": [
+    0.4440907469257883,
+    0.44423835955916546,
+    0.44687170133711807,
+    0.44951422931625973,
+    0.4426445782930546,
+    0.4403489093674809
+   ]
+  },
+  "Q5_L8_decays": {
+   "passed": true,
+   "values": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "Q5_L8_dt_rule": {
+   "passed": true,
+   "values": [
+    0.4442406014535347,
+    0.443540301751699,
+    0.4426253273809736,
+    0.4468717013356558,
+    0.4644795694017363,
+    0.4445078450639526
+   ]
+  },
+  "Q5_L11_decays": {
+   "passed": true,
+   "values": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "Q5_L11_dt_rule": {
+   "passed": true,
+   "values": [
+    0.44465609828696107,
+    0.44402414606881896,
+    0.44332099140570713,
+    0.44293444584063185,
+    0.4414767937467147,
+    0.46591120856619866
+   ]
+  },
+  "Q5_L16_decays": {
+   "passed": true,
+   "values": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "Q5_L16_dt_rule": {
+   "passed": true,
+   "values": [
+    0.44603420095178,
+    0.4442406014559325,
+    0.44399540395188536,
+    0.4435403017516578,
+    0.44374773760318476,
+    0.4426253273809736
+   ]
+  },
+  "Q6_dt_rule": {
+   "passed": true,
+   "values": [
+    0.4463637409337886,
+    0.4453649599040412
+   ]
+  },
+  "Q6_orders": {
+   "passed": true,
+   "values": [
+    true
+   ]
+  },
+  "Q6_controls": {
+   "evaluable": "in the judged run only (caught_at_registered)",
+   "smallest_caught_in_development": [
+    0.0001,
+    1e-05,
+    1e-05,
+    1e-06
+   ]
+  },
+  "Q7_face_free": {
+   "passed": true,
+   "values": [
+    0.05181121907314379
+   ]
+  },
+  "Q7_restart": {
+   "passed": true,
+   "values": [
+    true
+   ]
+  },
+  "Q7_batch": {
+   "passed": true,
+   "values": [
+    true
+   ]
+  },
+  "Q7_batch_scalar": {
+   "passed": true,
+   "values": [
+    0.0
+   ]
+  },
+  "Q7_accounting": {
+   "passed": true,
+   "values": [
+    0.0021941062155054186,
+    0.0066585406158609075
+   ]
+  },
+  "S_dt_rule": {
+   "passed": true,
+   "values": [
+    0.7555977805249244,
+    0.45952756680582696
+   ]
+  },
+  "S_orders": {
+   "passed": true,
+   "values": [
+    true
+   ]
+  }
+ }
+}
