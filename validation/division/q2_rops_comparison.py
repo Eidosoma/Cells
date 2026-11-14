@@ -56,9 +56,10 @@ bounded the ratio by construction.
 Q2 is open (the lead, 14 November). Within the control domain check alone the asymmetric world
 exceeds 64 eps x R-ops' present magnitudes (q2_domain_probe), and the difference scales with
 the increments' ionic content (q2_rounding_cause). R-ops' magnitudes for a cell's node charge,
-input and daughters alike, add |Q| + 1e-15 F sum |z dn| and carry it through R-ops' own solve
-(Appendix A.8). Once R-ops takes charge_term, every case runs under both scales (apply: the old
-without the term, the new with it); until then the old alone.
+input and daughters alike, add |Q-bar| + 1e-15 F sum |z dn| (Q-bar the charge anchor) and carry
+it through R-ops' own solve (Appendix A.8; in R-ops since 2a386d4). Every case runs under both
+scales, the scale always passed explicitly (apply: charge_term=False for the old, True for the
+new; SCALES) and recorded in each scale's report.
 
 The negative controls (the lead, 14 November: every family A.8 loosens, under both scales; frozen
 with the judged seeds). Cases: the asymmetric neighbour world's bound state; its near-zero seen
@@ -90,9 +91,9 @@ delta of DEFECTS (1e-16 to 1e-2 in quarter decades):
   (Delta_P - Delta_D1)(1 + delta), applied to the engine's state after its event (its D2
   increment and moved amount, and the image it books, plates1 - plates0, recomputed with the
   partition's capacitor_state). At first order it moves the amounts by delta Delta_D2, and the
-  charges and the image charge by delta F sum_s z_s Delta_D2,s, which is zero where D2's
-  increment is electroneutral: a miss there is read as such, as for W. The work bookings keep
-  the engine's undefected values, so the control's work entries are uninformative.
+  charges and the image charge by delta F sum_s z_s Delta_D2,s, which vanishes only where D2's
+  increment is electroneutral (the condition: each case records D2's net charge increment).
+  The work bookings keep the engine's undefected values, so its work entries are uninformative.
 For the two engine-side controls the delta at which the engine's own event checks refuse is
 reported, with the checks that refuse it: the event map's verdict for the mismatch scale, and
 for non-conservation the partition's event checks (isopotential, outside potentials, plate
@@ -105,11 +106,18 @@ image at every delta. The verdict requires all three.
 The near-zero rule applies unchanged to the judged sets: the judged run's near-zero cases are
 the judged sets' admitted draws within NEAR_ZERO_V of 0 V.
 The statistic is the smallest delta whose ratio passes 64, per family (CONTROL_GROUPS); the
-threshold: each control's target families (CONTROL_TARGETS) caught at or below THRESHOLD
-(1e-9) wherever the undefected case passes. Where the undefected ratio already exceeds 64 no
-defect is measurable at that scale, and the report says so; at the new scale each near-zero
-case must pass undefected and fail with the parent-charge defect. A control that misses the
-threshold is a finding, never a moved threshold.
+threshold: each judged control's target families (CONTROL_TARGETS) caught at or below
+THRESHOLD (1e-9) wherever the undefected case passes. Where the undefected ratio already
+exceeds 64 no defect is measurable at that scale, and the report says so; at the new scale
+each near-zero case must pass undefected.
+The third amendment (the lead, 14 November, after the new-scale result on the seen sets; the
+last before registration): a_k, the mismatch scale and transference (NEAR_ZERO_REPORTED) move
+charge in proportion to the patch charges, which vanish at 0 V while A.8's term does not, so on
+a near-zero case their smallest defect caught measures the vanishing effect, not Q2's power.
+They are judged on the fixed cases and, on the near-zero cases, reported beside their
+first-order size (first_order: the ratio a defect of THRESHOLD predicts from R-ops' own values
+and magnitudes). The parent charge, non-conservation, f and W are judged in every case. After
+registration a control that misses the threshold is a failed Q2, never a moved threshold.
 
 Disclosed out-of-domain run: comparisons-s5a9 (snapshot-s5a9, 6c2b118) drew uncompensated
 increments within 1e-3 of each amount. The asymmetric states reached 94.7 on the post-event
@@ -386,19 +394,20 @@ def charge_term():
     return "charge_term" in inspect.signature(rops.apply).parameters
 
 
+SCALES = {"old": False, "new": True}  # R-ops' charge_term at each scale (A.8's term).
+
+
 def scales():
-    """The scales R-ops offers: the old (charge form) always; the new (A.8's increment-form
-    term) once R-ops' amended magnitudes have landed."""
-    return ("old", "new") if charge_term() else ("old",)
+    """The scales R-ops offers: both once it takes charge_term (in R-ops since 2a386d4)."""
+    return tuple(SCALES) if charge_term() else ()
 
 
 def apply(snapshot, division, scale):
-    """R-ops' apply at one scale ("old": without A.8's term; "new": with it)."""
-    if charge_term():
-        return rops.apply(snapshot, division, charge_term=scale == "new")
-    if scale != "old":
+    """R-ops' apply at one scale, passed explicitly: charge_term=SCALES[scale] ("old": without
+    A.8's term; "new": with it). R-ops' own default is never used."""
+    if not charge_term():
         raise SystemExit("R-ops' amended magnitudes (A.8's increment-form term) have not landed")
-    return rops.apply(snapshot, division)
+    return rops.apply(snapshot, division, charge_term=SCALES[scale])
 
 
 def ratio(engine, reference, magnitude):
@@ -858,10 +867,42 @@ def booked_volume_defect(result, temperature_K, x):
     return SimpleNamespace(values=values, magnitudes=result.magnitudes, snapshot=result.snapshot)
 
 
+# event_checks copies the partition's event checks: event_map states them inline, so calling
+# the engine's own needs a src change (a follow-up, not made now). Each check as event_map
+# states it (ast.unparse) with event_checks' name for it, then the statements defining what
+# the checks read (kids, also assigned in its gate loops, aside). test_s5_protocol_binding
+# fails when event_map gains, loses or changes one (the lead's staleness guard, 14 November).
+ENGINE_EVENT_CHECKS = (
+    ("valid = xp.all(xp.where(due, jump <= scale, True))", "isopotential"),
+    (
+        "valid &= xp.all(xp.where(outside, xp.abs(phi1[n:] - phi0[n:]) <= scale, True))",
+        "outside_potentials",
+    ),
+    (
+        "valid &= xp.all(xp.abs(image) <= PLATE_RTOL * xp.abs(plates0) + PLATE_ATOL_C)",
+        "plate_charges",
+    ),
+    ("valid &= xp.all(xp.where(alive[None, :], amounts[:, kids] > 0, True))", "positive_amounts"),
+    ("valid &= xp.all(xp.isfinite(value))", "finite"),
+)
+ENGINE_EVENT_READS = (
+    "phi0, v0, c0, plates0, u0 = capacitor_state(state, before, xp=xp)",
+    "phi1, _, _, plates1, u1 = capacitor_state(new, after, xp=xp)",
+    "scale = POTENTIAL_RTOL * xp.max(xp.abs(phi0)) + POTENTIAL_ATOL_V",
+    "jump = xp.maximum(xp.abs(phi1[one] - phi0[parent]), xp.abs(phi1[two] - phi0[parent]))",
+    "outside = after.outside_active & ~p.reservoir",
+    "image = xp.where(p.reservoir, plates1 - plates0, 0.0)",
+    "amounts = p.amount_reference + increment",
+    "alive = xp.concatenate((due, due))",
+)
+
+
 def event_checks(world, d, before, new):
     """(the held nodes' image charge, {check: passed}): the partition's event checks re-applied
-    to a state after the event, as event_map applies them (its isopotential, outside-potential,
-    plate-charge, positivity and finiteness checks, its constants and capacitor_state)."""
+    to a state after the event, as event_map applies them (ENGINE_EVENT_CHECKS: its
+    isopotential, outside-potential, plate-charge, positivity and finiteness checks, with its
+    constants and capacitor_state). Its flags feed only the reported refusal sizes and the
+    construction checks; the image it returns is the partition's own capacitor_state's."""
     p, n = world.p, len(world.cells)
     phi0, _, _, plates0, _ = partition.capacitor_state(before, world.view(before), xp=np)
     q1 = world.view(new)
@@ -965,12 +1006,61 @@ def control_runs(world, d, state, due, after, base, division, snapshot, scale, l
     return runs
 
 
+# The third amendment: the controls whose defect moves charge in proportion to the patch
+# charges. On the near-zero cases they are reported beside their first-order size, not judged.
+NEAR_ZERO_REPORTED = ("a_k", "mismatch scale", "transference")
+
+
+def first_order(world, d, after, base, snapshot, division, control, x=THRESHOLD):
+    """{target family: the ratio a defect of size x predicts at first order} for a control of
+    NEAR_ZERO_REPORTED, from R-ops' own values and magnitudes (base, undefected). a_k moves
+    x q_k of charge from D2 to D1 (q_k the control patch's), the mismatch scale x dq (R-ops'
+    mismatch) and the transference x dq / (z_s F) of each carrier it trades; the mismatch
+    scale's potentials are the capacitor field's linear response to its displaced carriers
+    (R-ops' delta, through the engine's node_potentials). Each is ratio(change, 0, magnitude),
+    as compare reads its keys."""
+    v, mag = base.values, base.magnitudes
+    charges = min(mag["charge_D1_C"], mag["charge_D2_C"])
+    if control == "a_k":
+        return dict(charges=ratio(x * v["patch_q_before_C"][CONTROL_PATCH], 0.0, charges))
+    dq = v["mismatch_C"]
+    if control == "mismatch scale":
+        one, two = (world.cells.index(c) for c in d.daughters)
+        unit = np.array(after.amount_increment, copy=True)
+        unit[:, one] += np.asarray(v["delta_fmol"], float)
+        unit[:, two] -= np.asarray(v["delta_fmol"], float)
+        q1 = world.view(after)
+        response = adapter.node_potentials(
+            after._replace(amount_increment=unit), q1, xp=np
+        ) - adapter.node_potentials(after, q1, xp=np)
+        n = len(world.cells)
+        index = {c: k for k, c in enumerate(world.cells)} | {
+            c: n + k for k, c in enumerate(world.nodes)
+        }
+        potentials = max(
+            ratio(x * response[index[node]], 0.0, mag["potentials_after_V"][node])
+            for node in v["potentials_after_V"]
+        )
+        return dict(charges=ratio(x * dq, 0.0, charges), potentials=potentials)
+    z, names = np.ravel(world.p.valence), list(snapshot.species)
+    change = np.zeros(len(names))
+    for species, sign in zip(list(division.carriers)[:2], (1.0, -1.0), strict=True):
+        k = names.index(species)
+        change[k] = sign * x * dq / (z[k] * CHARGE_PER_FMOL)
+    scales_ = [
+        mag[f"{kind}_{tag}_fmol"] for kind in ("amounts", "increment") for tag in ("D1", "D2")
+    ]
+    scales_ += [mag["moved_fmol"][c] for c in d.daughters]
+    return dict(amounts=max(ratio(change, np.zeros_like(change), s) for s in scales_))
+
+
 def negative_controls(scale="old", seeds=None):
     """The negative controls at one scale (module docstring). Per case: the undefected ratios
     per family and the construction checks; per control, the smallest defect caught per family
     (None if none is, "baseline above 64" where the undefected case already fails) and whether
     every target family is caught at or below THRESHOLD; for the engine-side controls, the
-    smallest delta the engine's own event checks refuse and the checks that refuse it."""
+    smallest delta the engine's own event checks refuse and the checks that refuse it; for
+    NEAR_ZERO_REPORTED, the observed and first-order ratios at THRESHOLD per target family."""
     out = {}
     for label, world, state, due in control_cases(seeds):
         d = next(x for x in world.partition[1].divisions if x.id == "first")
@@ -1012,6 +1102,14 @@ def negative_controls(scale="old", seeds=None):
                     for x, r in ladder
                 ],
             )
+            if control in NEAR_ZERO_REPORTED:
+                rung = min(ladder, key=lambda e: abs(e[0] - THRESHOLD))[1]
+                entry[control]["observed_at_threshold"] = {
+                    g: max(rung[k] for k in CONTROL_GROUPS[g]) for g in CONTROL_TARGETS[control]
+                }
+                entry[control]["first_order_at_threshold"] = first_order(
+                    world, d, after, base, snapshot, division, control
+                )
             if log:
                 entry[control]["refused_by"] = refused["failing"] if refused else []
             if any("agrees" in e for e in log):
@@ -1030,7 +1128,7 @@ def negative_controls(scale="old", seeds=None):
 
 def run_all(scale, seeds):
     """Every Q2 case at one scale, the random sets drawn from seeds {world: {spread: seed}}."""
-    report = dict(cases={}, simultaneous={}, random={})
+    report = dict(scale=scale, charge_term=SCALES[scale], cases={}, simultaneous={}, random={})
     for label, world, state, due, division_id in cases():
         d = next(x for x in world.partition[1].divisions if x.id == division_id)
         result = apply(world.snapshot(state), world.division(d, state), scale)
@@ -1072,12 +1170,13 @@ def main(output):
     return report
 
 
-def verdict(report, item):
+def verdict(report, item, reported=NEAR_ZERO_REPORTED):
     """Q2's verdict at the new scale: every compared ratio of the cases, the simultaneous
-    divisions and the judged sets within 64; every control's target families caught at or
-    below THRESHOLD wherever the undefected case passes; each near-zero case passing
-    undefected and failing with the parent-charge defect; and each case's engine-side
-    construction faithful to the engine (construction_checks)."""
+    divisions and the judged sets within 64; every judged control's target families caught at
+    or below THRESHOLD; each near-zero case passing undefected; and each case's engine-side
+    construction faithful to the engine (construction_checks). On a near-zero case the
+    controls in reported are reported, not judged (the third amendment); reported=() gives the
+    frozen rule before it."""
     new = report["scales"]["new"]
     worst = [v["worst"] for v in new["cases"].values()]
     worst += [e["worst"] for v in new["simultaneous"].values() for e in v.values()]
@@ -1087,12 +1186,16 @@ def verdict(report, item):
     for label, entry in new["negative_controls"].items():
         near = " spread " in label  # A near-zero case, from the seen or the judged sets.
         for control in CONTROL_TARGETS:
+            if near and control in reported:
+                continue
             targets = entry[control]["targets_caught_at_threshold"]
             passed = all(targets.values()) and (not near or entry["baseline"]["any key"] <= 64)
             controls[f"{label}: {control}"] = passed
         controls[f"{label}: construction"] = entry["construction"]["faithful"]
     ok = comparisons and all(controls.values())
     return dict(
+        rule="the third amendment" if reported else "the frozen rule",
+        reported_on_near_zero=list(reported),
         largest_ratio=max(worst),
         comparisons_within_64=comparisons,
         controls=controls,

@@ -62,18 +62,24 @@ def test_the_egg_verdict():
     assert egg.verdict(dict(report, replay_diagnostics={}))["verdict"] == "fail"
 
 
-def q2_report(worst, caught, baseline, faithful=True):
-    entry = {"baseline": {"any key": baseline}, "construction": {"faithful": faithful}}
-    for control, targets in q2.CONTROL_TARGETS.items():
-        entry[control] = {"targets_caught_at_threshold": {g: caught for g in targets}}
+FIXED = "asymmetric neighbour world, bound state"
+NEAR = "asymmetric neighbour world, seen spread 1 draw 35"
+
+
+def q2_report(worst, caught, baseline, faithful=True, misses=()):
+    """A Q2 report; misses: (case, control) pairs whose targets miss the threshold."""
+    controls = {}
+    for label in (FIXED, NEAR):
+        entry = {"baseline": {"any key": baseline}, "construction": {"faithful": faithful}}
+        for control, targets in q2.CONTROL_TARGETS.items():
+            hit = caught and (label, control) not in misses
+            entry[control] = {"targets_caught_at_threshold": {g: hit for g in targets}}
+        controls[label] = entry
     new = {
         "cases": {"c": {"worst": worst}},
         "simultaneous": {"s": {"one then two": {"worst": worst}}},
         "random": {"w": {"spread 1": {"worst": worst}}},
-        "negative_controls": {
-            "asymmetric neighbour world, bound state": entry,
-            "asymmetric neighbour world, seen spread 1 draw 35": entry,
-        },
+        "negative_controls": controls,
     }
     return round_trip({"scales": {"new": new}})
 
@@ -87,3 +93,16 @@ def test_q2s_verdict():
     assert q2.verdict(q2_report(10.0, True, 65.0), item)["verdict"] == "fail"
     # An engine-side control's construction must reproduce the engine's own event.
     assert q2.verdict(q2_report(10.0, True, 1.0, faithful=False), item)["verdict"] == "fail"
+    # The third amendment: on a near-zero case a_k, the mismatch scale and transference are
+    # reported, not judged; the frozen rule (reported=()) judged them there too.
+    near_miss = q2_report(10.0, True, 1.0, misses={(NEAR, "mismatch scale")})
+    assert q2.verdict(near_miss, item)["verdict"] == "pass"
+    assert q2.verdict(near_miss, item, reported=())["verdict"] == "fail"
+    for control in q2.NEAR_ZERO_REPORTED:  # Judged on the fixed cases.
+        fixed_miss = q2_report(10.0, True, 1.0, misses={(FIXED, control)})
+        assert q2.verdict(fixed_miss, item)["verdict"] == "fail"
+    for control in set(q2.CONTROL_TARGETS) - set(q2.NEAR_ZERO_REPORTED):  # Judged everywhere.
+        assert (
+            q2.verdict(q2_report(10.0, True, 1.0, misses={(NEAR, control)}), item)["verdict"]
+            == "fail"
+        )
