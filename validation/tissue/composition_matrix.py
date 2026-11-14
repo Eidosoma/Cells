@@ -44,6 +44,7 @@ INNER = "resolved_pump_tissue@3"
 LAWS = tuple(OPERATORS)
 
 WATER = "ideal_osmosis_linear_compliance_water@1"
+SYMPORT = "k_anion_symport_mass_action@1"
 REPLACEMENT_1, REPLACEMENT_2 = "scheduled_cell_replacement@1", "scheduled_cell_replacement@2"
 INJECTION = "electrode_current_injection@1"
 STATE = "membrane_entity_state@1"
@@ -428,12 +429,14 @@ RULES = (
     dict(
         rule="an RK4 composition with a coupled operator holds no event maps, split-only parts or "
         "integer state",
-        laws=(WATER,),
+        laws=(WATER, SYMPORT, REPLACEMENT_2),
         level="data",
         check="src/cells/models/pump_composite.py::Composition.check_definition",
-        test=None,
+        test=TESTS + "test_pump_composite_rk4.py::"
+        "test_each_condition_is_refused_beside_each_kind_of_coupled_operator",
         tag=REAL,
-        why="RK4 integrates the coupled right-hand side unsplit (water@1, the symport's process)",
+        why="RK4 integrates the coupled right-hand side unsplit (water@1's coupled split part, "
+        "the symport's in-step process); replacement@2's events and integer state cannot join it",
     ),
     dict(
         rule="an onset node's volume is its declared anchor: its provider must declare "
@@ -706,10 +709,9 @@ def render(cells=None):
             level += ", marks " + ", ".join(f"{number(a)}→{number(b)}" for a, b in rule["marks"])
         elif rule.get("behind"):
             level += ", behind a refusal of the declarations"
-        test = f"`{rule['test']}`" if rule["test"] else "none found"
         lines.append(
-            f"| {rule['rule']} | {laws} | {level} | `{rule['check']}` | {test} | {rule['tag']} | "
-            f"{rule['why']} |"
+            f"| {rule['rule']} | {laws} | {level} | `{rule['check']}` | `{rule['test']}` | "
+            f"{rule['tag']} | {rule['why']} |"
         )
     lines += ["", END]
     return "\n".join(lines)

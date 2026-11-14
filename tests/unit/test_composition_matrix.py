@@ -7,8 +7,8 @@ list of rules at the definition. These tests fail when:
   `python -m validation.tissue.composition_matrix --write`;
 * structure_errors gives a message the module does not recognise;
 * a refusal has no tag, or a tag names no refusal (a new operator brings its tags);
-* a tag is neither real nor nominal, a nominal tag cites no code, or a cited check, code or test
-  does not exist;
+* a tag is neither real nor nominal, a nominal tag cites no code, a rule cites no test, or a
+  cited check, code or test does not exist;
 * a registered law is missing from the document's operator table;
 * a law-level rule marks a cell the declarations refuse (its mark would add nothing), or a rule
   behind a refusal of the declarations names a pair they admit.
@@ -43,7 +43,7 @@ def test_every_rule_cites_an_existing_check_and_test():
         assert rule["tag"] in (cm.REAL, cm.NOMINAL) and rule["level"] in ("law", "data"), rule
         assert all(law in cm.OPERATORS for law in rule["laws"]), rule["rule"]
         assert cm.defines(rule["check"]), rule["check"]
-        assert rule["test"] is None or cm.defines(rule["test"]), rule["test"]
+        assert rule["test"] and cm.defines(rule["test"]), (rule["rule"], rule["test"])
 
 
 def test_marks_fall_on_admitted_cells_and_second_walls_on_refused_ones(cells):
