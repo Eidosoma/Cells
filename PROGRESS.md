@@ -73,6 +73,26 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The secreted-species (D150 v1) protocol is registered (14 November).** The lead registered it
+  after check 1 and the D147 check. No judged run had been made before registration
+  ([evidence](/mnt/workspaces/Cells/secreted-species-v1-20261114-01/dryrun-1456a08/)).
+  - **Check 1:** judge, judge-q5 and combine ran on a registered dry-run copy from a clean snapshot
+    of main at 1456a08, with D152's operator included. All passed. 0 of 3,282 leaves differ from
+    the earlier dry run, excluding wall times and source pointers.
+  - **The D147 check:** `free_field_offsets` is 0 for all eight arms. They are composite
+    definitions declaring field solver @2, which D147's automatic choice would keep, so the
+    composite gap (D156) does not touch this run.
+  - **Registration.** It was made through the generator (`register`). The leaf diff against
+    1456a08's protocol shows the status changed and the 8-leaf registration record added, with
+    nothing else touched. The guard now reads the record.
+  - **Landing.**
+    - Tier 1 at the registration commit f2785cb: 314 files, no changed outcome.
+    - The merge 90cf2fd differs from f2785cb only in documentation (DECISIONS, CURRENT_PLAN,
+      PROGRESS, the review notes and the paper reviews), so that gate stands.
+  - **Next:** one fresh clean snapshot of main at 90cf2fd's landed commit, then judge, judge-q5
+    and combine once each. The lead launches each unit after checking the slice's headroom
+    (`rules.timing`).
+
 - **The secreted-species protocol's rehearsal on main, and its final pre-registration amendments
   (14 November).** The protocol is still PROPOSED, with no judged run
   ([evidence](/mnt/workspaces/Cells/secreted-species-v1-20261114-01/HANDOFF.md): `rehearsal-6f339ab/`,
