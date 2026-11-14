@@ -564,6 +564,8 @@ EPS = float(np.finfo(float).eps)
 REFERENCE_EPS = 64  # An exact reference's term: 64 eps x the scale (S5's and D150's floor).
 FACTOR = 3.0  # S5's dt-study rule: 3 x (the step term + the reference term).
 USAGE_NOTE_PER_STEP = 1e-14  # The usage note's accumulation against strang_mode_map: 1e-10 at 1e4.
+Q6_GRID = tuple(d for d in (m * 10.0**e for e in range(-9, 0) for m in (1, 2, 5)) if d <= 0.1)
+Q6_GRID_QUICK = (1e-8, 1e-6, 1e-4, 1e-2)
 DELTAS = (*(m * 10.0**e for e in range(-14, 0) for m in (1, 2, 5)), 0.5)  # A 1-2-5 grid.
 
 
@@ -616,6 +618,32 @@ def dt_rule(values, truth, scale, reference=None):
     return summary, tolerances
 
 
+PARAMETERS = ("k", "a", "b", "D_U", "D_V")  # Each must be caught by a judged control (the lead).
+
+
+def smallest_caught_bisected(value, tolerance, perturbed, deltas=DELTAS):
+    """smallest_caught for a costly perturbation (each one a reference integration): bisection on
+    the grid, assuming that a larger delta is caught whenever a smaller one is (true where the
+    error is about linear in delta); about log2 of the grid's length evaluations. None if the
+    largest is not caught."""
+
+    def caught(i):
+        return bool(np.any(np.abs(value - perturbed(deltas[i])) > tolerance))
+
+    low, high = 0, len(deltas) - 1
+    if not caught(high):
+        return None
+    if caught(low):
+        return deltas[low]
+    while high - low > 1:
+        middle = (low + high) // 2
+        if caught(middle):
+            high = middle
+        else:
+            low = middle
+    return deltas[high]
+
+
 def smallest_caught(value, tolerance, perturbed, deltas=DELTAS):
     """The smallest delta on the grid at which the rule catches the reference perturbed by it (its
     error exceeds the tolerance somewhere), or None. perturbed: delta -> the perturbed truth."""
@@ -629,16 +657,17 @@ def smallest_caught(value, tolerance, perturbed, deltas=DELTAS):
 REGISTERED_DELTAS = {}
 
 
-def controls(path, value, tolerance, perturbed, passes, deltas=DELTAS):
+def controls(path, value, tolerance, perturbed, passes, deltas=DELTAS, *, bisect=False):
     """The controls of one rule at one judged dt: per kind, the smallest caught delta on the grid
-    (development) and, in a judged run, whether the registered delta is caught. A control means
-    nothing where the unperturbed rule already fails (passes False): it is then recorded so, and
-    the protocol's draft refuses it."""
+    (development; bisected for a costly reference) and, in a judged run, whether the registered
+    delta is caught. A control means nothing where the unperturbed rule already fails (passes
+    False): it is then recorded so, and the protocol's draft refuses it."""
+    scan = smallest_caught_bisected if bisect else smallest_caught
     out = {}
     for kind, function in perturbed.items():
         entry = dict(
             rule_passes_unperturbed=bool(passes),
-            smallest_caught=smallest_caught(value, tolerance, function, deltas) if passes else None,
+            smallest_caught=scan(value, tolerance, function, deltas) if passes else None,
         )
         registered = REGISTERED_DELTAS.get(f"{path}.{kind}")
         if registered is not None:
@@ -915,9 +944,10 @@ def _mode_study(
     K, D, n_nodes, mode, record, dts, *, d=D_RATIO, path=None, fractions=(1 / 3, 2 / 3)
 ):
     """One single-mode start at every dt: the linearised map's agreement, the dt-study rule
-    against the exact propagator with its orders, and the k and D_V controls' smallest caught
-    deltas at each judged dt (with a path, the item's metric path). Returns (entry, the first
-    dt's coefficients and run)."""
+    against the exact propagator with its orders, and, with a path (the item's metric path), the
+    controls of all five parameters (k, a, b, D_U, D_V) at each judged dt, the item's engine
+    values, reference and tolerances (so a later control needs no engine run) and the mode's
+    structure (mode_structure). Returns (entry, the first dt's coefficients and run)."""
     from validation.reactions import chain_reference as cr
 
     entry, values, accounts = dict(record_s=record), [], {}
@@ -944,25 +974,77 @@ def _mode_study(
                 [np.asarray(cr.mode_propagator(Kx, Dx, lam, t)) @ a0 for t in times[1:]]
             )
 
+        perturbed = dict(
+            k=lambda x: exact_with(K * (1 + x), D),
+            a=lambda x: exact_with(schnakenberg_rates(d, A * (1 + x), B)[0], D),
+            b=lambda x: exact_with(schnakenberg_rates(d, A, B * (1 + x))[0], D),
+            D_U=lambda x: exact_with(K, D * np.asarray([1 + x, 1.0])),
+            D_V=lambda x: exact_with(K, D * np.asarray([1.0, 1 + x])),
+        )
         for i, tolerance in tolerances.items():
             entry["dt_rule"][dt_key(dts[i])]["controls"] = controls(
                 f"{path}.{dt_key(dts[i])}",
                 values[i],
                 tolerance,
-                dict(
-                    k=lambda x: exact_with(K * (1 + x), D),
-                    D_V=lambda x: exact_with(K, D * np.asarray([1.0, 1 + x])),
-                ),
+                perturbed,
                 rule[dt_key(dts[i])]["passes"],
             )
+        entry["arrays"] = dict(
+            records_s=[float(x) for x in times[1:]],
+            start=np.asarray(a0).tolist(),
+            truth=np.asarray(truth).tolist(),
+            engine={dt_key(dt): np.asarray(v).tolist() for dt, v in zip(dts, values, strict=True)},
+            tolerances={dt_key(dts[i]): np.asarray(v).tolist() for i, v in tolerances.items()},
+        )
+        entry["mode_structure"] = mode_structure(K, D, n_nodes, mode, a0, times[1:], d=d)
     errors = [entry[dt_key(dt)]["against_exact"] for dt in dts]
     entry["exact_ratios"] = [errors[i] / errors[i + 1] for i in range(len(errors) - 1)]
     return entry, accounts[dts[0]][:2]
 
 
+def mode_structure(K, D, n_nodes, mode, a0, records, *, d=D_RATIO):
+    """The mode's 2 x 2 system K - lambda_n D: its eigenvalues, the fast (more negative)
+    component's weight against the slow one in the start and at the first record (in the
+    eigenbasis), and each parameter's log-sensitivity of the slow eigenvalue times the last
+    record (|d lambda_slow / d ln p| t), which sets the size of a control's effect."""
+    lam = _lam(n_nodes, mode)
+
+    def eigen(Kx, Dx):
+        values, vectors = np.linalg.eig(Kx - lam * np.diag(Dx))
+        order = np.argsort(values.real)  # [fast, slow]
+        return values[order], vectors[:, order]
+
+    values, vectors = eigen(K, D)
+    complex_pair = bool(np.any(np.abs(values.imag) > 0))
+    weights = np.linalg.solve(vectors, np.asarray(a0, dtype=complex))
+    out = dict(
+        eigenvalues_per_s=[[float(v.real), float(v.imag)] for v in values],
+        complex_pair=complex_pair,
+    )
+    if not complex_pair:
+        ratio = abs(weights[0]) / max(abs(weights[1]), 1e-300)
+        out["fast_over_slow_at_start"] = float(ratio)
+        out["fast_over_slow_at_first_record"] = float(
+            ratio * np.exp((values[0].real - values[1].real) * records[0])
+        )
+    step = 1e-6
+    perturbed = dict(
+        k=(K * (1 + step), D),
+        a=(schnakenberg_rates(d, A * (1 + step), B)[0], D),
+        b=(schnakenberg_rates(d, A, B * (1 + step))[0], D),
+        D_U=(K, D * np.asarray([1 + step, 1.0])),
+        D_V=(K, D * np.asarray([1.0, 1 + step])),
+    )
+    out["slow_log_sensitivity_times_record"] = {
+        name: float(abs(eigen(*pair)[0][1].real - values[1].real) / step * records[-1])
+        for name, pair in perturbed.items()
+    }
+    return out
+
+
 def part_q1(quick):
     """Single-mode starts against the linearised engine-order map and the exact mode propagator
-    (the dt-study rule, its orders, and the k and D_V controls)."""
+    (the dt-study rule, its orders, and the five parameters' controls)."""
     K, D = schnakenberg_rates()
     dts = DTS[:2] if quick else DTS
     out = {}
@@ -1063,6 +1145,50 @@ def part_q3(quick):
     return out
 
 
+Q4_FIT_TOLERANCE = 1e-2  # Q3's relative fit tolerance (the lead's ruling 5: the simplest one).
+
+
+def q4_near_ties(predicted, tolerance=Q4_FIT_TOLERANCE):
+    """The near-tie rule (the lead's ruling 5), from the references' discrete-time rates alone:
+    {mode: rate}. The fastest two candidates are a near tie when their gap is below
+    2 x tolerance x the larger |rate| (each fitted rate may be off by tolerance relative). Returns
+    (near_tie, gap, the gap over that allowance, the smallest |rate| over tolerance x the largest
+    |rate|: the sign margin, reported)."""
+    rates = sorted(predicted.values(), reverse=True)
+    top = max(abs(r) for r in rates)
+    gap = rates[0] - rates[1] if len(rates) > 1 else None
+    allowance = 2 * tolerance * max(abs(rates[0]), abs(rates[1])) if gap is not None else None
+    sign = min(abs(r) for r in rates) / (tolerance * top)
+    return (
+        bool(gap is not None and gap < allowance),
+        gap,
+        None if gap is None else gap / allowance,
+        sign,
+    )
+
+
+def q4_verdict(points, tolerance=Q4_FIT_TOLERANCE):
+    """Q4's verdict over its points: every length agrees, near ties excluded up front (each
+    point's predicted_discrete_time_rates_per_s, from the references)."""
+    excluded, summary = [], dict(smallest_gap_over_allowance=None, smallest_sign_margin=None)
+    agree = True
+    for point in points:
+        predicted = {int(n): r for n, r in point["predicted_discrete_time_rates_per_s"].items()}
+        tie, gap, over, sign = q4_near_ties(predicted, tolerance)
+        if tie:
+            excluded.append(point["L"])
+        elif not point["agrees"]:
+            agree = False
+        if over is not None and (
+            summary["smallest_gap_over_allowance"] is None
+            or over < summary["smallest_gap_over_allowance"]
+        ):
+            summary.update(smallest_gap_over_allowance=over, smallest_gap_L=point["L"], gap=gap)
+        if summary["smallest_sign_margin"] is None or sign < summary["smallest_sign_margin"]:
+            summary.update(smallest_sign_margin=sign, smallest_sign_margin_L=point["L"])
+    return dict(all_agree_outside_near_ties=bool(agree), near_ties_excluded=excluded, **summary)
+
+
 def part_q4(quick):
     """The staircase: single-mode starts on L/l in [4, 30] (step 0.5) for every mode whose discrete
     k^2 lies in [0.1, 0.7] l^-2 (real eigenvalues; at least two modes); the fastest-growing on the
@@ -1120,6 +1246,8 @@ def part_q4(quick):
         points=out,
         all_agree=bool(all(p["agrees"] for p in out)),
         disagreements=[p["L"] for p in out if not p["agrees"]],
+        fit_tolerance=Q4_FIT_TOLERANCE,
+        **q4_verdict(out),
     )
 
 
@@ -1160,16 +1288,18 @@ def part_q5(quick):
     return out
 
 
-def _schnakenberg_network(k=RATE_K):
+def _schnakenberg_network(k=RATE_K, a=A, b=B):
     from validation.reactions import turing_reference as tu
 
-    return tu.schnakenberg_network(A, B, k, C_STAR_MM)
+    return tu.schnakenberg_network(a, b, k, C_STAR_MM)
 
 
 def part_q6(quick):
     """The nonlinear pattern on L/l = 11 against cr.integrate_chain (DOP853 at rtol 1e-13; its own
     term |rtol 1e-12 - rtol 1e-13|): the dt-study rule per node, species and record, its orders,
-    and the k and D_V controls (the reference re-integrated with each perturbed)."""
+    and the five parameters' controls (the reference re-integrated with each perturbed, the
+    smallest caught delta bisected on the 1-2-5 grid from 1e-9 to 1e-1); the engine values,
+    reference and tolerances stored."""
     from validation.reactions import chain_reference as cr
 
     n_nodes = DOMAINS[11]
@@ -1216,14 +1346,18 @@ def part_q6(quick):
         )
     rule, tolerances = dt_rule(values, ref, float(np.max(np.abs(ref))), np.abs(coarse - ref))
     out["dt_rule"] = rule
-    grid = (1e-8, 1e-6, 1e-4, 1e-2) if quick else (1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2)
+    grid = Q6_GRID_QUICK if quick else Q6_GRID
     started, cache = time.perf_counter(), {}
 
     def perturbed(kind, x):  # Each perturbed reference integrated once, for every judged dt.
         if (kind, x) not in cache:
-            network = _schnakenberg_network(RATE_K * (1 + x)) if kind == "k" else net
-            scaled = D * np.asarray([1.0, 1 + x]) if kind == "D_V" else D
-            cache[kind, x] = integrate(network, scaled, 1e-12)
+            network = {
+                "k": lambda: _schnakenberg_network(k=RATE_K * (1 + x)),
+                "a": lambda: _schnakenberg_network(a=A * (1 + x)),
+                "b": lambda: _schnakenberg_network(b=B * (1 + x)),
+            }.get(kind, lambda: net)()
+            scale = {"D_U": [1 + x, 1.0], "D_V": [1.0, 1 + x]}.get(kind, [1.0, 1.0])
+            cache[kind, x] = integrate(network, D * np.asarray(scale), 1e-12)
         return cache[kind, x]
 
     for i, tolerance in tolerances.items():
@@ -1231,12 +1365,21 @@ def part_q6(quick):
             f"q6.{dt_key(dts[i])}",
             values[i],
             tolerance,
-            {kind: (lambda x, kind=kind: perturbed(kind, x)) for kind in ("k", "D_V")},
+            {kind: (lambda x, kind=kind: perturbed(kind, x)) for kind in PARAMETERS},
             rule[dt_key(dts[i])]["passes"],
             grid,
+            bisect=True,
         )
     out["controls_s"] = time.perf_counter() - started
     out["controls_grid"] = list(grid)
+    out["controls_integrations"] = len(cache)
+    out["arrays"] = dict(
+        records_s=[float(x) for x in records[1:]],
+        truth=np.asarray(ref).tolist(),
+        reference_term=np.abs(coarse - ref).tolist(),
+        engine={dt_key(dt): np.asarray(v).tolist() for dt, v in zip(dts, values, strict=True)},
+        tolerances={dt_key(dts[i]): np.asarray(v).tolist() for i, v in tolerances.items()},
+    )
     errors = [out[dt_key(dt)]["max_error_of_c_star"] for dt in dts]
     out["ratios"] = [errors[i] / errors[i + 1] for i in range(len(errors) - 1)]
     return out
@@ -1627,6 +1770,8 @@ def main(argv=None):
         quick=args.quick,
         source=source_identity(),
         started_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        requested_parts=list(parts),
+        complete=False,  # True once every requested part has run (ok or not).
         parts={},
     )
     path = output / "results.json"
@@ -1643,6 +1788,8 @@ def main(argv=None):
         results["accounting_summary"] = accounting_summary(results)
         path.write_text(json.dumps(results, indent=1, sort_keys=True) + "\n")
         print(name, entry["ok"], round(entry["seconds"], 1), flush=True)
+    results["complete"] = True
+    path.write_text(json.dumps(results, indent=1, sort_keys=True) + "\n")
     if protocol is not None:  # The verdict is the judge entry's, over every judged run.
         results["verdict"] = "by the judge entry over the merged judged runs (judgement.json)"
         path.write_text(json.dumps(results, indent=1, sort_keys=True) + "\n")
