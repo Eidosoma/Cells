@@ -96,8 +96,9 @@ r_gj of the segment's nine junctions. Criteria S1–S4 (slowing; block of a trav
 step refinement at the segment; accounting and domains) were written first, in PLAN
 amendment 3.
 
-**At point 2 (0.05 F/m²), as registered: S1 failed, so the verdict does not stand on that
-run.** S2–S4 held.
+**At point 2 (0.05 F/m²), as registered: S1 failed.** The registered rule then reads: "If S1
+or S2 fails, the probe reports which, and the verdict does not stand on this probe." S2–S4
+held.
 - **Everything stopped before the exit.** Every perturbed case stopped before cell 24:
   - combined r = 0.5 to 0.05;
   - sodium-only 0.3 and 0.1;
@@ -138,23 +139,32 @@ amendment 4: post hoc, the last amendment, dated before its runs, with milder st
   driver's record names B (`ruling_input`), because of its stricter test. §12 asks the lead to
   confirm A, given the junction margin below.
 
-**The verdict, in the decision's terms: for the generic-cell work on @3, proceed with the
-existing mechanisms.** The evidence is amendment 4's S1–S4 at candidate A. It rests on a
-post-hoc amendment, and probe 2's registered run at point 2 did not support it.
+**The verdict, in the decision's terms: proceed with the existing mechanisms, for the
+generic-cell work on @3 at candidate A (0.01 F/m²) and s = 1000, with every junction at
+s·r_gj ≥ 20.**
+- **Its evidence** is amendment 4's S1–S4 at candidate A. Amendment 4 is post hoc, and probe
+  2's registered run at point 2 does not support the verdict.
+- **The junction limit below bounds that scope; it is not a missing mechanism.** Under the
+  verdict rule a mechanism is named only when S4 fails by a domain refusal, and no case was
+  refused.
 
-**The named limit that comes within reach is the junction gate law's 120 mV domain at block
-sites.**
+**The verdict's scope limit is the junction gate law's 120 mV domain at block sites.**
 - **Where it comes from.** `junction_voltage_relaxation@1`'s `domain_valid` refuses
   |Vj| > 120 mV on every junction, whatever its availability: pinned gates and closed
   junctions are included ("even blocked routes retain their physical domain"). @3 applies it
   to all junctions. The constant-field junction flux itself has no such limit.
 - **How close probe 2 came.** At a block site, Vj is the last firing cell's voltage less its
   blocked neighbour's. It grew as the boundary's coupling fell: 106 mV at r = 0.02 and
-  118.1 mV at r = 0.01. A weaker junction depolarises the neighbour less and loads the last
-  cell less.
+  118.1 mV at r = 0.01, that is at s·r_gj = 20 and 10 (about 2.1 and 1.0 nS). A weaker
+  junction depolarises the neighbour less and loads the last cell less.
 - **What lies past it.** A's unloaded peak-to-rest range is 136 mV: rest −79.6 mV, peaks up
-  to +56.7 mV, and after-hyperpolarisation to −87.6 mV. So **a boundary below r = 0.01 at A is
-  expected to be refused**. That case was not run; the expectation comes from the trend.
+  to +56.7 mV, and after-hyperpolarisation to −87.6 mV. So **a boundary below s·r_gj = 10 at A
+  is expected to be refused**. That case was not run; the expectation comes from the trend.
+- **The floor to plan on is s·r_gj ≥ 20,** the weakest boundary run with a clear margin
+  (106 mV). It is r_gj ≥ 0.02 at s = 1000, and about 0.07 at s = 300.
+- **Nothing at A ran at any s other than 1000.** At s = 300 weaker upstream coupling loads the
+  last firing cell less, so its peak and the block-site |Vj| may be higher. The floor there is
+  checked in the protocol's development runs (§6).
 - **Cardiac cells too.** The same holds for a block site of any cell whose peak-to-rest range
   exceeds 120 mV, cardiac cells included (rest about −80 to −85 mV, overshoot about +40 mV,
   §7.3).
@@ -164,8 +174,8 @@ sites.**
   to a neighbour in after-hyperpolarisation could therefore exceed 120 mV. B's segment
   response was not run.
 - **The mechanism to add** is a junction law, ungated or with its own stated domain, that
-  covers the full action-potential range. It is an M4 prerequisite. It is an M3 one too if
-  M3's grid goes below r_gj = 0.02 at A (§10, §12).
+  covers the full action-potential range: `junction_ungated@1` (§3.3, §3.4). It is an M4
+  prerequisite. It is an M3 one too if M3's grid goes below s·r_gj = 20 at A (§10, §12).
 
 ## 2. What the probes show about the engine
 
@@ -197,7 +207,7 @@ sites.**
 | Limit | Where it was found | Scope |
 | --- | --- | --- |
 | **The channel laws' −120 to +60 mV domain** (`channel_domain_valid`, for every active population of a cell, leaks included) | One scan corner, c_m 0.01, NaV1.2 1e-6, Kv1.5 1e-7: a 247 V/s upstroke reached +59.7 mV and was refused at every sub-step. The chosen 0.01 cell (A) peaks at +56.65 mV, 3.35 mV inside | Its neighbour at Kv1.5 1e-6 peaked at +45 mV and passed. At 0.05, point 2's mid-chain peak is +11 mV against +35 mV alone. §7.3 checks published overshoots against it |
-| **The junction gate law's ±120 mV domain** (`junction_voltage_relaxation@1`'s `domain_valid`, applied to every junction, pinned and closed ones included) | Probe 2 at A: at the blocking segment the entry junction reached 106 mV (r = 0.02) and 118.1 mV (r = 0.01) | Not refused, but 1.9 mV inside, and rising as the boundary's coupling falls. A boundary below r = 0.01 at A (range 136 mV) is expected to be refused, and so is a block site of any cell whose range exceeds 120 mV, cardiac cells included (§7.3). **The mechanism to add** (§1.2, §11) |
+| **The junction gate law's ±120 mV domain** (`junction_voltage_relaxation@1`'s `domain_valid`, applied to every junction, pinned and closed ones included) | Probe 2 at A: at the blocking segment the entry junction reached 106 mV (r = 0.02) and 118.1 mV (r = 0.01) | Not refused, but 1.9 mV inside, and rising as the boundary's coupling falls. A boundary below s·r_gj = 10 at A (range 136 mV) is expected to be refused, and so is a block site of any cell whose range exceeds 120 mV, cardiac cells included (§7.3). The floor to plan on is s·r_gj ≥ 20. **The mechanism to add:** `junction_ungated@1` (§1.2, §3.3, §11) |
 | **A low safety factor at 0.05 F/m²** | Probe 2 at point 2: every perturbed segment blocked; coupling-only 0.1 fired through at 3.9× slower and failed at the exit | A property of the 0.05 cell's weak, graded excitability. At 0.01 the same segment slows conduction up to 2× before it blocks (§1.2) |
 | **The default junction-heat booking** (`explicit_tableau`) | Refused by the host dissipation check mid-wave, at 4.29 ms in the chain | It books a negative increment where Vj crosses zero. `trapezoid_nonnegative@1`, the booking E07-v1 registered, runs clean |
 | **Large steps on the upstroke** | At point 2, ARS(2,2,2) at 0.25 ms and above refuses itself: dt × membrane_rate reaches 3.6 at 1 ms. The host energy-ledger check (relative residual above 2e-3) refuses at 100 µs at point 2, at 25 µs at the chain's stimulus onset, and at 0.25–1 ms in the heredity cell | 5 µs is accepted in chains and 50 µs in a single cell from a kick. The 25 µs chain refusal falls at the stimulus onset, so the wave's own largest step is not yet established. The planned 10 µs never ran: the driver's ladder excluded its own cap |
@@ -253,6 +263,8 @@ separately, so the route stays "pending M4".
   repeat bitwise against itself on the L4 (D168, G2-Q1's Q7).
 - **Operators carry over only with their guards.** Each composition over the new inner model
   gets its own guard (the lead's ruling on Q2).
+- **A junction route without the gate law's domain:** `junction_ungated@1` (§3.3, §3.4), so a
+  block site is not refused at |Vj| > 120 mV (§1.2).
 
 **Routes already weighed, as input to that note:**
 - **A composite split operator for the excitable currents** is unsuitable: it would split the
@@ -260,8 +272,8 @@ separately, so the route stays "pending M4".
 - **@3's `membrane_process` hook** is not admissible: its contract forbids conductance outside
   the family's bound.
 
-**The generic cell needs no new law** (§1), provided M3's coupling stays at r_gj ≥ 0.02 at A
-(§1.2). Its work runs on @3 itself.
+**The generic cell needs no new law** (§1), provided every junction stays at s·r_gj ≥ 20 at A
+(§1.2). Its work runs on @3 itself. Below that floor it needs `junction_ungated@1`.
 
 ### 3.3 The laws (new IDs, mechanism names, cited)
 
@@ -284,6 +296,7 @@ paper, the mouse currents are matched to the 56-law catalogue's process modules
 
 **The genuinely new mechanisms are short.** They are the fast sodium current's slow-recovery
 gate, the L-type current's Ca-dependent inactivation and, perhaps, Kv4-type Ito,f kinetics.
+For the junctions there is one more: a route without the gate law's 120 mV domain (§3.4).
 Everything else is moved from the catalogue under D167. The catalogue's laws keep their
 BETSE-parity status: moving one is not calibrating it.
 
@@ -292,7 +305,8 @@ serve:
 
 | Law (proposed ID) | Mechanism | For | Sources |
 | --- | --- | --- | --- |
-| *(none for the generic cell)* | The generic cell uses @3's five laws | Qualification (§6) | BETSE v1.5.0 classes, as in the equations appendix |
+| *(no channel law for the generic cell)* | The generic cell uses @3's five laws | Qualification (§6) | BETSE v1.5.0 classes, as in the equations appendix |
+| `junction_ungated@1` | The junction's constant-field flux at its availability, with no voltage gate. Its domain needs only finite voltages, since the constant-field flux is defined at every voltage | Block sites at A below s·r_gj = 20; any cell whose range exceeds 120 mV, cardiac cells included (§1.2) | @3's `constant_field@1` junction flux (equations appendix). The snapshot's only junction conductance law is `junction_voltage_relaxation@1`, so the catalogue holds no ungated route to move |
 | `fast_sodium_m3hj@1` | Fast sodium current with fast (h) and slow (j) inactivation, the j gate setting slow recovery; its own declared domain (§7.3) | Mouse, then human | Beeler and Reuter 1977 introduced the j gate; Luo and Rudy 1991 re-fitted it; the ten Tusscher and O'Hara models keep it. Bondarenko et al. 2004's mouse INa is a Markov model, so a Markov form is a second law if the comparison follows that model |
 | `l_type_calcium_cdi@1` | L-type Ca current with voltage activation and inactivation and Ca-dependent inactivation, built on the moved catalogue CaV law and the moved calcium handling | The plateau and APD; slow conduction under reduced coupling (Shaw and Rudy 1997) | Luo and Rudy 1994 (the dynamic model's two papers), and the species models. It needs cytosolic Ca, buffering and minimal release and uptake: D167 moves calcium handling with excitable tissue (M5) |
 | `transient_outward_potassium@1` (only if needed) | Kv4-type fast transient outward K current | Mouse Ito,f; human Ito | Bondarenko et al. 2004; O'Hara et al. 2011 |
@@ -313,6 +327,17 @@ serve:
 arm both act on availability.
 - **Coupling** is reported as g_j (nS) and g_j/C (1/s). Those, not the factor s, set the
   physics and the step bound.
+- **The gate law's domain binds v1, even pinned open.** Its `domain_valid` refuses
+  |Vj| > 120 mV on every junction, closed ones included. At A that limits planning to
+  s·r_gj ≥ 20 at every junction (§1.2).
+- **`junction_ungated@1` lifts that limit** (§3.3). It enters through the lead's inner-model
+  note (§3.2), and it is qualified by four checks:
+  - inside 120 mV it reproduces @3's pinned-open junction to rounding, in CPU runs of @3's
+    chain worlds;
+  - beyond 120 mV, a two-cell case matches the appendix's junction flux, computed
+    independently;
+  - charge and species are conserved, and its heat is booked non-negative;
+  - probe 2's segment case at A, with s·r_gj below 10, runs without refusal.
 - **Later:** a connexin-type gate (Vj-dependent, seconds), or heterogeneous junction
   abundance as contact state (CURRENT_PLAN's planned entity row). Each takes its own ID.
 
@@ -367,11 +392,12 @@ non-negative).
   2 Σ_j g_j/C below 1/dt at the step the upstroke needs (5 µs: Σ_j g_j/C below 100,000/s).
 - **If it fails, the solver is an M4 prerequisite.** That happens for mouse coupling on small
   cells.
-- **The generic cell at 0.01 F/m² already meets this in the sheet.** At s = 1000 the hexagon's
-  bound is 2.6 µs (the engine's `StepChecks`, 127 cells, 342 junctions), so 5 µs is refused.
-  M2 and M3 therefore take one of two settings, decided in the protocol:
+- **At the generic cell's 0.01 F/m² the condition already fails in the sheet at s = 1000.**
+  There the hexagon's bound is 2.6 µs (the engine's `StepChecks`, 127 cells, 342 junctions),
+  so 5 µs is refused. M2 and M3 therefore take one of two settings, decided in the protocol:
   - s = 1000 at 2.5 µs, which doubles the steps;
-  - a baseline of s = 300, whose bound is 8.7 µs, at 5 µs.
+  - a baseline of s = 300, whose bound is 8.7 µs, at 5 µs. Nothing at A has run at s = 300,
+    so this setting has no propagation, CV or segment evidence yet.
 
   Chains at s = 1000 stay at 5 µs (bound 7.8 µs).
 - **The junction-implicit solver is therefore an M3 option, not only an M4 one,** if the
@@ -525,6 +551,13 @@ The first qualification is **on the generic cell (0.01 F/m², candidate A of §1
 - **the segment cases at the generic cell,** with the block threshold bracketed between
   r = 0.5 and 0.02, and the junction voltage at the blocking boundary reported against
   120 mV;
+- **at s = 300, if the protocol takes it,** the segment cases and the floor s·r_gj ≥ 20 checked
+  again, since nothing at A has run there;
+- **a coupling sweep towards block at A that respects the junction domain.** Near block, a
+  uniform chain puts most of the action-potential range across the wavefront's junction:
+  probe 1 reached 95 mV at s = 10 on point 2's smaller range. A refusal at the junction domain
+  is reported as that limit, not as block, and the block bracket is stated only where no
+  junction refuses;
 - chains of 80 cells, with spans that exclude the first ten cells beyond the stimulus and the
   last ten;
 - CV at two stimulus strengths;
@@ -623,7 +656,8 @@ cells, so the longest circuits are 24–36 cells (rings 4–6).
 | Human, normal | 45–80 cm/s | 223–257 ms | 10–20 cm, so 1,000–2,000 cells | No: needs at least 10⁵ cells, so the sparse solver and GH200 |
 
 **What fits the sheet.**
-- **Block, as a yes/no outcome, fits at every coupling.**
+- **Block, as a yes/no outcome, fits at every coupling the junction domain admits** (at A,
+  every junction at s·r_gj ≥ 20, §1.2).
 - **A boundary-free CV at s = 1000 does not fit, on this evidence.** In the 0.05 chain, the
   stimulus transient covered about the first ten cells past the stimulus, and the sealed end the last
   seven or eight. The 20-cell chain never reached a steady delay, and the sheet is 13 cells
@@ -686,7 +720,7 @@ fractions × 7 arrangements, the scattered ones by seed).
 | **Sweep** | f ∈ {0, 0.05, 0.1, 0.2, 0.3, 0.5}. At fixed f, the arrangements are one compact disc, two discs, and scattered (5 seeds), with a clustering index (cluster-internal junction fraction) |
 | **Passive control arm** | The same sweep on the passive sheet (every voltage-gated population unavailable), with junction availability on the same schedule and a weak current or conductance stimulus. It reports electrotonic spread (space constant, input resistance, attenuation map) and so separates coupling geometry from excitability |
 | **Readouts** | Activation map; total activation time; activation delays across and beyond the cluster against the unperturbed sheet; block (cells not activated); capture; and, from §8, any re-entry in the slow regime. A local CV inside the cluster is reported only if §6's length checks show one exists at that coupling |
-| **Values** | A generic sweep: r_Na and r_gj over a declared grid, informed by probe 2's segment results (§1). At A the grid stops at r_gj = 0.02, because a boundary below r_gj = 0.01 is expected to be refused by the junction law's domain (§1.2). It goes lower only if that law comes first or the lead chooses B (§12). Every run reports its block-site junction voltage against 120 mV. The paper's Supplementary Tables 1–2 are not needed for it; they enter at M4, where a mouse comparison maps transcript fold changes to availabilities under a declared assumption |
+| **Values** | A generic sweep: r_Na and r_gj over a declared grid, informed by probe 2's segment results (§1). At A every junction keeps s·r_gj ≥ 20 (r_gj ≥ 0.02 at s = 1000, about 0.07 at s = 300), because a boundary below s·r_gj = 10 is expected to be refused by the junction gate law's domain (§1.2). The grid goes lower only if `junction_ungated@1` comes first (§3.3), or if the lead chooses B after its own segment run (§12). Every run reports its block-site junction voltage against 120 mV. The paper's Supplementary Tables 1–2 are not needed for it; they enter at M4, where a mouse comparison maps transcript fold changes to availabilities under a declared assumption |
 | **Predictions** | Registered before runs (D155 item 2). Candidates: (P1) at equal f, a compact cluster blocks at a higher r than scattered cells (source–sink); (P2) scattered cells slow conduction more at low f (Prudat and Kucera 2014's meandering); (P3) the passive arm's attenuation map predicts the excitable arm's block sites; (P4) where a cluster's boundary is a source–sink mismatch, partial uniform uncoupling can restore conduction (Rohr et al. 1997) |
 | **Gate** | After the qualification's judged run |
 
@@ -697,8 +731,8 @@ fractions × 7 arrangements, the scattered ones by seed).
 | M0 (done) | `resolved_pump_tissue@3` | The probe and this note | — |
 | M1 | `resolved_pump_tissue@3` | The conduction observables as a host analysis (§5); the rule (b) assay importer with its agreement check (§4.5); the trapezoid booking as a driver rule; the qualification protocol, PROPOSED, with §6's development runs. The importer is validation tooling used by a milestone that runs @3; if the lead reads it as tooling on its own, it needs the user's approval | About 4–6 agent-days, 1 CPU-hour |
 | M2 | `resolved_pump_tissue@3` | R-cell, R-cable, R-wave and R-limit by one fresh agent (for Tracks E and R); the protocol registered; the judged qualification on the generic 0.01 F/m² cell | About 4 agent-days (references), about 3 CPU-hours |
-| M3 | `resolved_pump_tissue@3` | The first experiment as a generic sweep, registered with its predictions; s = 1000 at 2.5 µs or s = 300 at 5 µs on the sheet (§4.2); r_gj ≥ 0.02 at A (§10) | About 3 agent-days; about 5 CPU-hours per stimulus site at s = 300, about 10 at s = 1000 and 2.5 µs, or under an L4-hour |
-| M4 | The inner model of the lead's inner-model note; compositions over it as `resolved_pump_composite@1` | The catalogue laws of §3.3 moved under D167, then the few new laws (§3.3) with component references; optionally `threshold_crossing_record@1` (§5) with its idle guard. **Prerequisites:** a junction law covering the full action-potential range, the named mechanism of §1.2 (M3's too, if its grid goes below r_gj = 0.02 at A); the lead's inner-model design note (§3.2); the user's D138 approval for assembling and comparing against a published whole-cell model (single cited laws need none); the paper's Supplementary Tables 1–2; and §4.2's condition, failing which the junction-implicit solver comes first | About 10–15 agent-days |
+| M3 | `resolved_pump_tissue@3` | The first experiment as a generic sweep, registered with its predictions; s = 1000 at 2.5 µs or s = 300 at 5 µs on the sheet (§4.2); s·r_gj ≥ 20 at every junction at A (§10) | About 3 agent-days; about 5 CPU-hours per stimulus site at s = 300, about 10 at s = 1000 and 2.5 µs, or under an L4-hour |
+| M4 | The inner model of the lead's inner-model note; compositions over it as `resolved_pump_composite@1` | The catalogue laws of §3.3 moved under D167, then the few new laws (§3.3) with component references; optionally `threshold_crossing_record@1` (§5) with its idle guard. **Prerequisites:** `junction_ungated@1`, the junction route of §1.2 and §3.3 (M3's too, if its grid goes below s·r_gj = 20 at A); the lead's inner-model design note (§3.2); the user's D138 approval for assembling and comparing against a published whole-cell model (single cited laws need none); the paper's Supplementary Tables 1–2; and §4.2's condition, failing which the junction-implicit solver comes first | About 10–15 agent-days |
 | M5 | That inner model with the calcium laws | Calcium handling moved from the old calcium families (D167's order), with Ca-dependent inactivation for the L-type current; then the human law set; re-entry on large sheets with the sparse solver and GH200 | A track of its own |
 
 **Refused in v1:**
@@ -746,11 +780,13 @@ fractions × 7 arrangements, the scattered ones by seed).
   prerequisites (§11).
 
 **Still open, for the lead:**
-1. **The generic cell's junction margin.** At A, a boundary below r_gj = 0.01 is expected to
+1. **The generic cell's junction margin.** At A, a boundary below s·r_gj = 10 is expected to
    be refused (§1.2).
-   - **Recommended:** confirm A, and stop M3's grid at r_gj = 0.02.
-   - **The alternatives:** B, after its own segment run (minutes on CPU); or the junction law
-     of §1.2 before M3, which needs the route Q1 holds pending.
+   - **Recommended:** confirm A, and keep every M3 junction at s·r_gj ≥ 20. If the protocol
+     takes s = 300, that floor (r_gj ≥ about 0.07) is checked first in its development runs,
+     since nothing at A has run there.
+   - **The alternatives:** B, after its own segment run (minutes on CPU); or
+     `junction_ungated@1` before M3, which needs the route Q1 holds pending.
 2. **The importer's carriage** from a Track R composite: volumes under water, and junction
    availability with replacement's formation factor. Recommended: the effective availability at
    the import time, frozen, with the factor's source recorded. Water's volumes are refused

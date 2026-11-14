@@ -240,9 +240,12 @@ Everything below is per cell unless stated.
   - whether cells 15 and 24 activate;
   - the segment delay t(24) − t(15);
   - CV over cells 6–14, 16–23 and 25–31;
-  - the last activated cell;
-  - the largest |V_i − V_{i+1}| over the nine segment junctions;
+  - the last activated cell, and the last cell whose V exceeds 0 mV;
+  - the largest |V_i − V_{i+1}| over the nine segment junctions, taken at every step;
   - the largest V anywhere.
+- **The values to confirm independently** are A's block-site junction voltages: 106 mV at
+  r = 0.02 and 118.1 mV at 0.01 (s_c·r_gj = 20 and 10). Report them against 120 mV, with the
+  largest V (+56.65 mV at most) against +60 mV.
 - **Block of a travelling wave** means cell 15 activates and cell 24 does not.
 
 ### 8.6 The 0.01 F/m² cells
