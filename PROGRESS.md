@@ -58,6 +58,81 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **E07-v1 judged (13–14 November): under donor-copy turnover the written disc did not renew.
+  The pattern followed neutral copying closely, and 8 of 15 scored predictions held.**
+  - **How it ran.** All 38 judged runs ran once each, from one clean snapshot of main at 4465b48,
+    after the E1 numerics gate passed at 5 ms (|ΔVm| ≤ 5.7 µV). Every unit exited 0, and no E07
+    process was killed. Scoring used the frozen scorer
+    (`validation/tissue/e07_v1_score.py` at 6b6912b), covering 38 of 38 runs with every
+    cross-check true
+    ([evidence](/mnt/workspaces/Cells/e07-v1-judged-20261113-01/): `summary.json`,
+    `scores.json`, `runs/*/seed*/outcome.json`, HANDOFF.md).
+  - **The pattern's fate.** The renewal criterion B1 (J ≥ 0.8 through full founder turnover)
+    was false in all 20 fast k1 runs and all 6 (b) runs, as predicted.
+    - J at the judged record was 0.25–0.65 in fast k1, 0.49–0.59 in central k1 at 1.7
+      turnovers, and 0.65–0.78 in fast k3 after one turnover.
+    - The paired copy-only null gives similar values: in the whole-sheet fast k1 37-cell disc
+      world, a median J of 0.50 (5–95%: 0.35–0.66) and P(B1) = 0.
+  - **The deviation from neutral copying was far smaller than predicted.**
+    - In all 30 inheritance runs (a), J was within about ±0.06 of its paired null (ΔJ −0.031 to
+      +0.059). At s 1.0 the predicted range was −0.35 to −0.05.
+    - At k1 with s 0.3 and 0.6, ΔJ was 0 in all but one run, with the D–H junction weight about
+      0.02 of nominal.
+    - 41 of 1,827 D copies were lost, which neutral copying cannot do. That makes the classes
+      small bias and erosion at s 1.0 and in fast k3: erosion 3/3 at fast k3 s 1.0 and small
+      bias 3/3 at s 0.6.
+    - Several of those runs have ΔJ > 0, up to +0.044, so where the lost copies sat is not yet
+      established. A descriptive readout is pending, and no mechanism is claimed.
+    - 3 of 4,853 H copies converted to D, where none was predicted.
+  - **The s 1.0 control.** With disc donors only, it lost 14 of 37 founders in two collective
+    falls at the rim (6 at 440 s, 8 at 520 s); J was 0.784 at the judged record, minimum 0.649.
+    The prediction was J ≥ 0.9 with no collective loss, at low confidence.
+    - This is one run, at 5 ms. E1's segments did not cover it, so a 1 ms development check is
+      pending.
+    - At s 0.6 the control held J = 1 throughout.
+  - **Naive isolated templates (b).** The sheet went all H within about one turnover at every τ
+    from 40 to 300 s.
+    - At s 0.6, recruitment of interior newcomers with five or more D neighbours fell with τ as
+      predicted: 9/11, 5/10 and 1/7.
+    - At s 1.0, conversions continued at 120 s and 300 s, beyond the predicted early-only
+      recruitment.
+    - tau* was 300 s at both s, a single draw.
+  - **The verdicts.**
+    - **Held (8 of 15):** E1; E3 at fast k1 s 0.3 and s 0.6; E4 at s 0.6; E5 at s 0.6; E6;
+      validity; B1.
+    - **Failed (7):** E3 at fast k1 s 1.0, central k1, fast k3 s 1.0, fast k3 s 0.6, and
+      recruitment; E4 at s 1.0; E5 at s 1.0.
+    - The design's §7 lists 14 rows; the scorer scores E4's two couplings separately.
+  - **Disclosures** (HANDOFF):
+    1. The verdicts rest on the scorer's ten readings. The lead accepted them before any
+       outcome existed (17:41–17:55 UTC on 13 November, with no outcome on disk).
+    2. The scored tau* follows E5's item, counting any converted interior newcomer. The
+       driver's five-or-more-D count is supplementary; both give 300 s.
+    3. E6's tolerances were set with the seed-101 dry-run values in view. Its A check tests the
+       law's quoted constants, not the engine.
+    4. Scoring ran from a scoring snapshot (1bfe041) and the loss readout from b351931. Both
+       hold the execution snapshot's driver unchanged, with added files only.
+    5. A few short jobs ran outside the CPU rule: a few seconds at nice 19, a once-a-minute
+       poll, and dry runs on CPU 1.
+    6. CPU 2's queue ran 2.6 h slower than CPU 3's, for an unestablished cause. This affects
+       cost estimates only.
+    7. The watcher restarted twice; no run was affected.
+  - **Landing checks.**
+    - Tier 1 at the merge f544ccc: 307 files. One outcome changed: `test_d147_drivers.py`.
+    - That static guard flagged the three new scripts for importing `heredity_pilot` without
+      declaring the field solver. The scorer and the loss readout import only `THRESHOLD_V`, and
+      the challenge-build check builds held-bath sheets only.
+    - They were added to its EXEMPT list with those reasons, as the guard provides; the frozen
+      scorer is untouched. The file then passed 11 of 11, as recorded.
+  - **Also landed.**
+    - The scorer's tests.
+    - The descriptive E4 loss readout (`validation/tissue/e07_v1_losses.py`), written after the
+      outcomes; it scores nothing.
+    - The E07-v2 challenge build check: four pairings admitted at definition time, nothing
+      stepped.
+    - The **PROPOSED** E07-v2 note ([E07_V2_DESIGN.md](docs/E07_V2_DESIGN.md)), for the lead's
+      review with the advisor; nothing registered.
+
 - **Secreted-species transport v1 (D150): milestones 1 and 2 landed (14 November).** This is
   development code; nothing is judged yet
   ([evidence](/mnt/workspaces/Cells/secreted-species-v1-20261114-01/HANDOFF.md); design §12 and
