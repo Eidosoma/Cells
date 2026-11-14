@@ -58,6 +58,21 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The checkpoint-continuity GPU probe (design §13.4): every question identical (14 November).** It
+  ran in the L4 gap after hold segment 2 ended, as one GPU process under the GPU lock (about
+  2 min, peak 1.5 GB), then the CPU part on CPU 3, from the frozen source `source-s1-e8cdda0`
+  ([evidence](/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/impl/gpu-probe/out/):
+  `compare.json`, `queue.log`).
+  1. A GPU cohort traces identically in two GPU-host processes: P0, P, B and H.
+  2. A CPU-host trace, with `execution_device` patched, equals the GPU host's jaxprs, constants,
+     bindings and host replay.
+  3. The cross-lowered `cuda` StableHLO equals the GPU host's own lowering (1,799,725
+     characters, identical).
+  4. The overlap repeats bitwise on the CPU for a GPU definition.
+  - **The decision §13.4 registered:** GPU definitions are probed on the CPU host and use no
+    GPU time; the record notes the patch. This unblocks the GPU extension of case 1, which is
+    to be built next.
+
 - **E07-v1 follow-ups (14 November).** Both are descriptive or development work, and no verdict or
   class changed ([readout](/mnt/workspaces/Cells/e07-v1-judged-20261113-01/loss-positions.json),
   [1 ms check](/mnt/workspaces/Cells/e07-v1-dtcheck-20261114-01/HANDOFF.md)).
