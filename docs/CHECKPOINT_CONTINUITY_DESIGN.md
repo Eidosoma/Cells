@@ -1,14 +1,15 @@
 # Checkpoint continuity (proposed design)
 
-Status: **proposed, 13 November 2026; the coordinator accepted the note, but the
-implementation waits on the blockers of §13.** No code exists yet.
+Status: **the first landing (§13.1) is implemented, 14 November 2026: branch head `bd279e8`
+(`worktree-agent-a643386127e63513c`), accepted by the coordinator and awaiting landing.**
 - The user approved the tooling on 13 November: "yes fix checkpoint continuty also"
   (PROGRESS).
 - The public validation package is not approved, and this note does not touch it.
-- The draft decision (number assigned at landing; Appendix A) is **held for the user's
-  answers** (§13.6).
+- The draft decision (number assigned at landing; Appendix A) lands with the implementation;
+  the user's answers to §13.6 are in §13.7.
 - §13 records the coordinator's answers and the results of the blocker probes.
-- Evidence: `/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/`.
+- Evidence: `/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/` (the implementation's
+  runs in `impl/`).
 
 **Engine models run:** none; this is tooling. The first consumer names its models (§10).
 
@@ -1156,11 +1157,17 @@ The draft decision (number assigned at landing) waits for the user's answers.
     the D148 dumps do;
   - it inspects no Python bytecode;
   - the resumed run carries no per-call hook or check.
+- **Confirmed.** After the lead told the user that it had taken their delegation to cover the
+  attestation question (the probe is within the rule, AGENTS.md unchanged), the user confirmed
+  it on 13 November: "sounds good".
 - **The AGENTS.md sentences are not added.** The provenance rule for a resumed run is carried
   by the decision in Appendix A, which lands with the implementation: the run names both
   sources and runtimes, and the record that admitted it. The user can still ask for the
   sentences.
-- **Implementation starts** on the first landing's scope (§13.1).
+- **Implemented** on the first landing's scope (§13.1), at branch head `bd279e8` (14 November):
+  `src/cells/continuity.py`, the loaders' `continuity=` argument, `validation/continuity/`
+  (probe, admit, verify_run and the first consumer's dev_run) and their tests. The evidence,
+  the first consumer's admitted and refused resumes included, is in `impl/`.
 
 ## Appendix A: the draft decision (number assigned at landing)
 
@@ -1175,6 +1182,10 @@ first landing's scope, vector windows on CPU, is in §13.1.
 > - **The approval.** The user's words were "yes fix checkpoint continuty also". This
 >   approves the versioned checkpoint migration that D145 listed as unapproved tooling. The
 >   public validation package stays unapproved.
+> - **The attestation question.** The user delegated it ("lets go as you see fit otherwise").
+>   After the lead told the user that it had taken the delegation to cover the question (the
+>   case-1 probe is within AGENTS.md's rule, AGENTS.md unchanged), the user confirmed it on
+>   13 November: "sounds good".
 > - **Refusal stays the default.** `load_snapshot` and `load_batch_snapshot` refuse any
 >   change of source or runtime unless given a continuity record
 >   (`cells.checkpoint_continuity@1`).
