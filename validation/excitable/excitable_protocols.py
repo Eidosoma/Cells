@@ -590,35 +590,6 @@ def main(argv=None):
                                   **wave_outcome(V2, 20, 1000.0, P_stim=c["lo"], rtol=rtol))
             log("  capture check", part["capture"]["propagates"], part["capture"]["decided_by"])
             save()
-    if "bracket_robust" in args.parts:  # §8.4's bracket and capture, horizon-independent
-        V2 = rests.get("point2", rest_potential("point2", rtol=rtol))
-        part = results["bracket_robust"] = dict(outcomes={})
-
-        def decided(s_c, **kw):
-            key = f"s_c={s_c:g}" + "".join(f",{k}={v:g}" for k, v in kw.items())
-            if key not in part["outcomes"]:
-                part["outcomes"][key] = wave_outcome(V2, 20, s_c, rtol=rtol, **kw)
-                log("   robust", key, part["outcomes"][key]["propagates"],
-                    part["outcomes"][key]["decided_by"])
-                save()
-            return bool(part["outcomes"][key]["propagates"])
-
-        grid = [3000.0, 1000.0, 300.0, 100.0, 30.0, 10.0, 3.0, 1.0, 0.3, 0.1]
-        seen = {s: decided(s) for s in grid}
-        part["brackets"] = []
-        for a, b in zip(sorted(seen), sorted(seen)[1:], strict=False):
-            if seen[a] != seen[b]:
-                pred = decided if not seen[a] else (lambda x: not decided(x))
-                found = bisect(pred, a, b, tol=tol["s_c"], log_scale=True, label="robust s_c")
-                found["kind"] = ("block below, propagation above" if not seen[a]
-                                 else "propagation below, block above")
-                part["brackets"].append(found)
-                save()
-        k = er.POINTS["point2"]["c_m"] / 0.05
-        part["capture_threshold"] = bisect(lambda P: decided(1000.0, P_stim=P), 1e-9 * k,
-                                          1e-6 * k, tol=tol["capture"], log_scale=True,
-                                          label="robust capture P")
-        save()
     if "segment_A_tight" in args.parts:  # the block-site values at rtol / 10, atol / 100
         tight = dict(rtol=rtol / 10.0, atol={k: v / 100.0 for k, v in er.ATOL.items()})
         results["segment_A_tight"] = {}
