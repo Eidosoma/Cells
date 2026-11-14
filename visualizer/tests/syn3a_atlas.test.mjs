@@ -89,11 +89,11 @@ test("it is a single cell: molecules and one cell, with a sentence where the oth
   for (const source of cell.sources) assert.ok(species.sources[source], `the level cites ${source}, which is not a source`);
 });
 
-test("what Cells models of it is said plainly: proposed, being worked on, and nothing in the engine", () => {
+test("what Cells models of it is said plainly: the minimal-cell track by the record's decision, and nothing in the engine", () => {
   assert.ok(STATES.includes(species.modelled.state));
   assert.equal(species.modelled.state, "proposed");
-  assert.match(species.modelled.text, /proposes this organism as the first whole-cell validation organism/);
-  assert.match(species.modelled.text, /being worked on/);
+  assert.match(species.modelled.text, /minimal-cell track \(decision D173, 14 November 2026\)/);
+  assert.match(species.modelled.text, /a note that proposes it as the first whole-cell validation organism/);
   assert.match(species.modelled.text, /Nothing of it is in the engine yet: the project's record holds an evidence audit and a proposal, in which no engine model ran/);
   // The note that proposes it is not in the repository, so no file of it is cited.
   assert.ok(!/SOTA_SYN3A|docs\//.test(speciesText), "the species file cites a path of the repository");
