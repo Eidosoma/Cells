@@ -37,11 +37,13 @@ records the state before the event and R-tissue the state after it):
 * each lumen's volume and composition;
 * the bridge current, D1 to D2, and each contact's current in R-tissue's direction (its
   record's cells[0] to cells[1]).
-Reported per world and quantity: the largest difference engine - R-tissue, and two terms beside
-it:
+Reported per world and quantity, over the records and at each record: the largest difference
+engine - R-tissue, and two terms beside it:
 * the engine's step term: the same world at dt and dt/2;
 * the reference term: R-tissue at its SMALL atol against 1000 times tighter (the lead's ruling).
-No tolerance is registered, so nothing is judged.
+Each quantity's scale, its largest |value| over the records, is reported for the rounding
+floor (the PROPOSED protocol, validation/division/s5_protocol.json). No tolerance is
+registered, so nothing is judged.
 
 Usage: python -m validation.division.q3_tissue_comparison OUTPUT_DIR [WORLD ...] (through
 scripts/run_detached.sh; every world by default).
@@ -359,11 +361,36 @@ def oriented(current, ends, to):
     return current if tuple(ends) == tuple(to) else -current
 
 
+QUANTITIES = ("V", "lumen_volume_pL", "lumen_mM", "bridge_A", "contact_A")
+
+
 def differences(a, b, records, bridges):
-    """{quantity: largest |a - b|} over the records (absolute, in each quantity's units); each
-    junction's currents compared along b's direction."""
-    out = dict(V=0.0, lumen_volume_pL=0.0, lumen_mM=0.0, bridge_A=0.0, contact_A=0.0)
+    """{quantity: largest |a - b|} over the records (absolute, in each quantity's units)."""
+    rows = per_record(a, b, records, bridges)
+    return {k: max(rows[t][k] for t in records) for k in QUANTITIES}
+
+
+def scales(a, records, bridges):
+    """{quantity: its largest |value|} over the records: the scale of the rounding floor."""
+    out = dict.fromkeys(QUANTITIES, 0.0)
     for t in records:
+        for v in a[t]["V"].values():
+            out["V"] = max(out["V"], abs(v))
+        for vol, mm in a[t]["lumens"].values():
+            out["lumen_volume_pL"] = max(out["lumen_volume_pL"], abs(vol))
+            out["lumen_mM"] = max(out["lumen_mM"], float(np.max(np.abs(mm))))
+        for name, (_, current) in a[t]["junctions"].items():
+            key = "bridge_A" if name in bridges else "contact_A"
+            out[key] = max(out[key], abs(current))
+    return out
+
+
+def per_record(a, b, records, bridges):
+    """{t: {quantity: largest |a - b| at t}} (absolute, in each quantity's units); each
+    junction's currents compared along b's direction."""
+    rows = {}
+    for t in records:
+        out = dict.fromkeys(QUANTITIES, 0.0)
         assert set(a[t]["V"]) == set(b[t]["V"]), (t, "live cells differ")
         assert set(a[t]["lumens"]) == set(b[t]["lumens"]), (t, "live lumens differ")
         assert set(a[t]["junctions"]) == set(b[t]["junctions"]), (t, "live junctions differ")
@@ -376,7 +403,8 @@ def differences(a, b, records, bridges):
             to, theirs = b[t]["junctions"][name]
             key = "bridge_A" if name in bridges else "contact_A"
             out[key] = max(out[key], abs(oriented(current, ends, to) - theirs))
-    return out
+        rows[t] = out
+    return rows
 
 
 def compare(name):
@@ -399,12 +427,22 @@ def compare(name):
     tight = tissue_records(rt.simulate_divisions(world, END, record=records, atol=TIGHT), records)
     print(f"{name}: R-tissue (two runs): {time.perf_counter() - start:.1f} s", flush=True)
     bridges = bridge_ids(raw)
+    halved = engine[0.5 * DT][2]
     return dict(
         records_s=list(records),
         dt_s=DT,
         engine_minus_reference=differences(mine, reference, records, bridges),
-        engine_step_term=differences(mine, engine[0.5 * DT][2], records, bridges),
+        engine_step_term=differences(mine, halved, records, bridges),
         reference_term=differences(reference, tight, records, bridges),
+        scale=scales(mine, records, bridges),
+        per_record={
+            t: dict(
+                engine_minus_reference=per_record(mine, reference, records, bridges)[t],
+                engine_step_term=per_record(mine, halved, records, bridges)[t],
+                reference_term=per_record(reference, tight, records, bridges)[t],
+            )
+            for t in records
+        },
         sample=dict(
             t=records[-1],
             engine_V=mine[records[-1]]["V"],
