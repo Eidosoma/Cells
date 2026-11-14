@@ -73,6 +73,21 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Syn3A, the proposed minimal-cell track: the evidence audit (14 November 2026, the user's
+  request).** This is an assessment only; no engine model ran
+  ([note](docs/SYN3A_MINIMAL_CELL_TRACK.md);
+  [evidence](/mnt/workspaces/Cells/syn3a-20261114-01/HANDOFF.md)).
+  - **15 public resources checked at their primary sources,** and the user's brief's claims
+    verified or corrected.
+    - Pelletier 2021's data DOI does not resolve.
+    - The 2026 membrane archive is molecular dynamics only; its wet-lab data are in the journal's
+      source data.
+    - The 2024 lipid-diet study used a labelled derivative strain.
+  - **79 MB downloaded** into `/mnt/datasets/Cells/syn3a/`, with a manifest per source. The 4D
+    model's outputs await the user's approval (D138).
+  - **Proposed first milestone:** reconstituted-vesicle permeability, with fitting kept separate
+    from prediction. The open questions are the user's.
+
 - **The coupling operator's milestone 3, and Track E's independent references, landed (14
   November 2026).** Validation, tests and docs only, during MG0c's `src/` hold. Tier 1 at the merge
   8b7ad24: 326 files, no changed outcome ([summary](/mnt/workspaces/Cells/independent-references-20261114-01/land-gate1-8b7ad241/summary.json)).
