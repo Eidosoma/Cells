@@ -74,7 +74,14 @@ Judged execution: `/mnt/workspaces/Cells/e07-v1-judged-20261113-01/`. Its output
   - The founders fell in two collective falls, of 6 at 440 s and 8 at 520 s. Most were rim
     cells with 3–4 D neighbours of 6, and rim D copies followed at 710–1850 s
     (`e4-losses.json`).
-  - A 1 ms development check of those falls is pending. At s 0.6, J was 1 at every record.
+  - **The 1 ms development check** reran 0–600 s from the execution snapshot, with the
+    judged run's event times. It reproduced both falls, in the same cells at the same 10 s
+    records.
+    - At 2 s resolution, 1 ms and 5 ms place them alike: 6 founders at 436 s, then 6 at
+      512 s and 2 at 514 s.
+    - The D sets were identical at all 61 records, and |ΔVm| was at most 0.21 µV.
+    - Evidence: `/mnt/workspaces/Cells/e07-v1-dtcheck-20261114-01/dtcheck-compare.json`.
+  - At s 0.6, J was 1 at every record.
 - **Why s 1.0 is a boundary case.** The claim does not rest on the control alone.
   - At s 1.0, rim founders were lost in 8 of 13 (a) runs: fast k1 6 of 8, central k1 1 of 2,
     fast k3 1 of 3. At s 0.6 it was 1 of 13.
