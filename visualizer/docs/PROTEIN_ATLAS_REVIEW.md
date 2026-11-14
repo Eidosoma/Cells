@@ -96,8 +96,9 @@ of it.
 
 ## What the atlas now says
 
-- Its card gives the count the inventory's way: 25 identifiers gained, not 35. The first
-  count also took unquoted shorthand in comments (`insertion@1`, `lumen@2`, `water@1`).
+- Its card gives the count the inventory's way: 25 identifiers gained at `ced45c87`, not
+  35, and 28 at `8497ff37` after the addendum below. The first count also took unquoted
+  shorthand in comments (`insertion@1`, `lumen@2`, `water@1`).
 - It says a review found no channel, pump, transporter or junction law among them, and
   that one case is the lead's to classify. If the engine gains more, the card says how
   many are unreviewed.

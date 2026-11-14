@@ -141,7 +141,8 @@
       "plain": "The inventory names its candidate gene products by their human genes. Every other species is read against them.",
       "method": [
         "Each unit's candidate gene products are the law inventory's own.",
-        "Accessions, protein names and lengths are from reviewed human UniProt entries."
+        "Accessions, protein names and lengths are from reviewed human UniProt entries.",
+        "Where the inventory found a Xenopus laevis entry for the same gene, the product links to it. Those entries are links only, not products of their own."
       ]
     },
     "databases": {

@@ -294,3 +294,11 @@ snapshot and writes the same bytes every time; the test rebuilds and compares. A
 `--full-table FILE` to `build` for the whole table of predicted proteins and entries.
 The families, the units' notes and the claims about papers are tables at the top of the
 tool; the numbers in the notes are read from the evidence.
+
+The committed atlas was built by the tool as committed in `714cde36`, from the saved
+responses. The evidence folder's `inputs/` holds the tool and a provenance note as they
+were at the first build, with the tool still untracked and before the fourth finding
+was renamed. The note names revision `6102c0fa`. That revision is `543bab87` on this
+branch today: the same files but for one README passage, in a history that was later
+reworded. That build differs from the committed one in the six units listed above as
+`nothing to look for`, and in nothing else. The folder itself was left as it was.
