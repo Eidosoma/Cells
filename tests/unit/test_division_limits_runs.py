@@ -21,10 +21,11 @@ access face's area is 1.5e-13 m^2, so its resistance is comparable with a furrow
 
 Stated tolerances: the circuit quantities (coupling, cleft over d1, input resistance, R_j) to
 1%; the closed bridge against no bridge to 1e-9; the symmetric daughters to 64 eps x each
-field's scale (and each potential to 64 eps of itself). The development measurement
-(/mnt/workspaces/Cells/cell-division-s5-20261113-01/probe/limits-1.json, from the worktree at
-2845b3f) found the circuit quantities within 6e-4, the closed bridge's response identical to
-the bridge-free world's, and the symmetric daughters equal in every field and potential.
+field's scale (and each potential to 64 eps of itself). The margins are measured, unasserted,
+by validation/division/q4_limits_measure.py; its development run from a clean snapshot, named in
+the PROPOSED protocol (validation/division/s5_protocol.json), found the circuit quantities
+within 6e-4, the closed bridge's response identical to the bridge-free world's, and the
+symmetric daughters equal in every field and potential.
 A few minutes on one core (seven compiled runs).
 """
 

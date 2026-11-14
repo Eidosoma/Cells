@@ -42,8 +42,8 @@ engine - R-tissue, and two terms beside it:
 * the engine's step term: the same world at dt and dt/2;
 * the reference term: R-tissue at its SMALL atol against 1000 times tighter (the lead's ruling).
 Each quantity's scale, its largest |value| over the records, is reported for the rounding
-floor (the PROPOSED protocol, validation/division/s5_protocol.json). No tolerance is
-registered, so nothing is judged.
+floor (the PROPOSED protocol, validation/division/s5_protocol.json), and at each record how
+many of its entries are live. No tolerance is registered, so nothing is judged.
 
 Usage: python -m validation.division.q3_tissue_comparison OUTPUT_DIR [WORLD ...] (through
 scripts/run_detached.sh; every world by default).
@@ -385,6 +385,18 @@ def scales(a, records, bridges):
     return out
 
 
+def live(record, bridges):
+    """{quantity: how many entries are live at the record} (the engine's)."""
+    junctions = record["junctions"]
+    return dict(
+        V=len(record["V"]),
+        lumen_volume_pL=len(record["lumens"]),
+        lumen_mM=len(record["lumens"]),
+        bridge_A=sum(name in bridges for name in junctions),
+        contact_A=sum(name not in bridges for name in junctions),
+    )
+
+
 def per_record(a, b, records, bridges):
     """{t: {quantity: largest |a - b| at t}} (absolute, in each quantity's units); each
     junction's currents compared along b's direction."""
@@ -440,6 +452,7 @@ def compare(name):
                 engine_minus_reference=per_record(mine, reference, records, bridges)[t],
                 engine_step_term=per_record(mine, halved, records, bridges)[t],
                 reference_term=per_record(reference, tight, records, bridges)[t],
+                live=live(mine[t], bridges),
             )
             for t in records
         },
