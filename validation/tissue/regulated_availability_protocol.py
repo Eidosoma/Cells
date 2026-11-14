@@ -213,12 +213,16 @@ def draft(results, results_path):
             if x not in judged[key]:
                 criteria.append(
                     criterion(
-                        f"{world.upper()}_{arm}_{x}_order_reported",
-                        [f"derived.{world}.{arm}.{x}.in_band"],
+                        f"{world.upper()}_{arm}_{x}_reported",
+                        [
+                            f"derived.{world}.{arm}.{x}.errors",
+                            f"derived.{world}.{arm}.{x}.resolved",
+                        ],
                         "ge",
-                        1,
-                        "reported, not judged: no resolved pair, or (for s, a_eff and F) not "
-                        "every pair resolved in development",
+                        0,
+                        "reported, not judged (the errors over the ladder, then the resolved "
+                        "pairs): no resolved pair, or (for s, a_eff and F) not every pair "
+                        "resolved in development",
                         judged=False,
                     )
                 )
@@ -278,6 +282,8 @@ def draft(results, results_path):
         floor = parts[world][arm]["floor"]
         for x in OBSERVABLES:
             e = derived[world][arm][x]["at_first_dt"]
+            if e == 0.0:
+                continue  # Not an observable of this world (A5 has no state).
             pin = max(
                 2.0 * e,
                 FLOOR_FACTOR * floor.get(x, 0.0),
