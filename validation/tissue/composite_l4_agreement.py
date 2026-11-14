@@ -27,8 +27,12 @@ each protocol's worlds, quantities, references and judge. It adds measured backe
   own scatter beyond the repeats' shows there.
 
 Actions:
-  run --part {w1,w2,g2} --output FILE [--worlds NAME,...]
-      the part's judged quantities (raw engine values) with the backend used
+  run --part {w1,w2,g2} --output FILE [--worlds NAME,...] [--backend {cpu,gpu}]
+      the part's judged quantities (raw engine values) with the backend used and the run's
+      seconds. The registered definitions declare the CPU, and a definition's declared
+      backend selects its device, so an L4 repeat runs with --backend gpu (every
+      definition's execution backend set, nothing else); the CPU reference runs as
+      registered
   terms --part P --reference CPU --runs A B D --output FILE
       measured terms, with each repeat's backend term and each pair's run-to-run term; W2
       also reads the qualification's own w2-judge.json. Each of CPU, A, B and D is one file
@@ -52,6 +56,7 @@ import math
 import platform
 import sys
 from pathlib import Path
+from time import perf_counter
 
 import numpy as np
 
@@ -178,10 +183,51 @@ def judged_protocol(part, path):
 # ------------------------------------------------------------------ run
 
 
-def run_w1(worlds=None):
+def on_backend(tree, backend):
+    """A copy of a predictions tree with every definition's execution backend set to
+    `backend` (counted). The registered definitions declare the CPU, and a definition's
+    declared backend selects its device (cells.core.devices.execution_device), so an L4 run
+    must declare the GPU; nothing else changes."""
+    count = 0
+
+    def walk(value):
+        nonlocal count
+        if isinstance(value, list):
+            return [walk(v) for v in value]
+        if not isinstance(value, dict):
+            return value
+        out = {k: walk(v) for k, v in value.items()}
+        execution = out.get("execution")
+        if isinstance(execution, dict) and "backend" in execution:
+            out["execution"] = {**execution, "backend": backend}
+            count += 1
+        return out
+
+    return walk(tree), count
+
+
+def with_backend(tree, backend):
+    """(tree, record) for a judge's --backend: the tree itself when backend is None (the
+    registered path, untouched), else on_backend's copy and {declared, definitions_set}."""
+    if backend is None:
+        return tree, None
+    copy_, count = on_backend(tree, backend)
+    return copy_, dict(declared=backend, definitions_set=count)
+
+
+def predictions_for(part, backend):
+    """(predictions, protocol, definitions set) of the part, on `backend` if given."""
+    predictions, protocol = registered(part)
+    if backend is None:
+        return predictions, protocol, 0
+    predictions, count = on_backend(predictions, backend)
+    return predictions, protocol, count
+
+
+def run_w1(worlds=None, backend=None):
     from validation.tissue import pump_water_qualification as w1q
 
-    predictions, _ = registered("w1")
+    predictions, _, _ = predictions_for("w1", backend)
     out = dict(trajectories={}, stationary={})
     for name, path in w1q.TRAJECTORIES.items():
         if worlds and name not in worlds:
@@ -220,10 +266,10 @@ def w2_items(items):
     return out
 
 
-def run_w2(worlds=None):
+def run_w2(worlds=None, backend=None):
     from validation.tissue import pump_water_kcc_qualification as w2q
 
-    predictions, protocol = registered("w2")
+    predictions, protocol, _ = predictions_for("w2", backend)
     items = []
     for arm in predictions["arms"]:
         if not worlds or arm in worlds:
@@ -231,10 +277,10 @@ def run_w2(worlds=None):
     return w2_items(items)
 
 
-def run_g2(worlds=None):
+def run_g2(worlds=None, backend=None):
     from validation.tissue import cell_replacement_judge as judge
 
-    predictions, _ = registered("g2")
+    predictions, _, _ = predictions_for("g2", backend)
     out = {}
     for name, entry in predictions["cases"].items():
         if not worlds or name in worlds:
@@ -604,6 +650,12 @@ def main(argv=None):
     one.add_argument("--part", choices=tuple(RUNS), required=True)
     one.add_argument("--output", type=Path, required=True)
     one.add_argument("--worlds", type=lambda s: s.split(","), default=None)
+    one.add_argument(
+        "--backend",
+        choices=("cpu", "gpu"),
+        default=None,
+        help="set every definition's execution backend (an L4 run: gpu; default as registered)",
+    )
     files = lambda s: [Path(x) for x in s.split(",")]  # noqa: E731 (one run, comma-separated)
     two = sub.add_parser("terms")
     two.add_argument("--part", choices=tuple(RUNS), required=True)
@@ -624,9 +676,18 @@ def main(argv=None):
         import jax
 
         jax.config.update("jax_enable_x64", True)
-        quantities = RUNS[args.part](args.worlds)
+        started = perf_counter()
+        quantities = RUNS[args.part](args.worlds, args.backend)
+        info = backend_info() | dict(
+            declared=args.backend or "as registered",
+            definitions_set=predictions_for(args.part, args.backend)[2],
+        )
         record = dict(
-            part=args.part, worlds=args.worlds, backend=backend_info(), quantities=quantities
+            part=args.part,
+            worlds=args.worlds,
+            backend=info,
+            seconds=perf_counter() - started,
+            quantities=quantities,
         )
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(record, indent=1) + "\n")

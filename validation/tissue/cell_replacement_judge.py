@@ -180,14 +180,30 @@ def case_items(name, entry, spec, result, pinned, out):
             )
 
 
-def w37_case(out, rim, inner, step):
+def declared(raw, backend):
+    """raw itself (the registered path), or a copy whose every definition declares `backend`
+    (--backend: the registered definitions declare the CPU, and that picks the device)."""
+    if backend is None:
+        return raw
+    from validation.tissue import composite_l4_agreement as agreement
+
+    return agreement.on_backend(raw, backend)[0]
+
+
+def w37_raw(backend=None):
+    """W37's definition before its replacement events."""
+    raw = fx.heredity_sheet(6, 3, scale=0.3, dt=1e-3, end_time=3.0)
+    raw["experiment"]["observation_times"] = [0.0, 3.0]
+    raw["model"]["junction_heat_booking"] = qual.BOOKING
+    return declared(raw, backend)
+
+
+def w37_case(out, rim, inner, step, backend=None):
     """W37: the 127-cell D->H swap world of cell_replacement_cost swap (3000 steps)."""
     from cells.core.cell_replacement_spec import exact_event_times
     from validation.stationary import worlds
 
-    raw = fx.heredity_sheet(6, 3, scale=0.3, dt=1e-3, end_time=3.0)
-    raw["experiment"]["observation_times"] = [0.0, 3.0]
-    raw["model"]["junction_heat_booking"] = qual.BOOKING
+    raw = w37_raw(backend)
     cells, _ = worlds.hexagon(6)
     rings = [worlds.ring(c) for c in cells]
     rims = [i for i, r in enumerate(rings) if r == 3]
@@ -448,15 +464,18 @@ def q6(protocol, predictions, out):
     print("Q6", out["Q6"], flush=True)
 
 
-def q7(protocol, predictions, out, world=None, channel_scale=1.0):
+def q7_raw(channel_scale=1.0, backend=None):
+    """Q7's 825-node tissue with its channels scaled."""
     from validation.tissue import surface_pump_v3_study as study
 
-    if world is None:
-        raw = study.tissue_definition(dt=1e-3, end_time=0.2, observation_times=[0.0, 0.1, 0.2])
-        for channel in raw["model"]["channels"]:
-            channel["max_permeability_m_per_s"] *= channel_scale
-    else:
-        raw = world
+    raw = study.tissue_definition(dt=1e-3, end_time=0.2, observation_times=[0.0, 0.1, 0.2])
+    for channel in raw["model"]["channels"]:
+        channel["max_permeability_m_per_s"] *= channel_scale
+    return declared(raw, backend)
+
+
+def q7(protocol, predictions, out, world=None, channel_scale=1.0, backend=None):
+    raw = q7_raw(channel_scale, backend) if world is None else declared(world, backend)
     reference = run(parse_spec(raw))
     wrapped = run(parse_spec(fx.with_replacement(raw)))
     fields = {
@@ -539,9 +558,20 @@ def main(argv=None):
     )
     parser.add_argument("--predictions", type=Path, help="dry runs only (default: registered)")
     parser.add_argument("--parameters", type=Path, help="dry runs only: W37 and Q7 inputs (JSON)")
+    parser.add_argument(
+        "--backend",
+        choices=("cpu", "gpu"),
+        help="set every definition's execution backend on a copy (the predictions, W37 and "
+        "Q7; an L4 run: gpu); default: as registered",
+    )
     args = parser.parse_args(argv)
     args.output.mkdir(parents=True, exist_ok=False)
     protocol, predictions = load(args.protocol, args.predictions)
+    backend = None
+    if args.backend:  # The registered definitions declare the CPU; their backend picks the device.
+        from validation.tissue import composite_l4_agreement as agreement
+
+        predictions, backend = agreement.with_backend(predictions, args.backend)
     params = dict(REGISTERED)
     if args.parameters:
         params |= json.loads(args.parameters.read_text())
@@ -554,6 +584,9 @@ def main(argv=None):
         ),
         Q7=dict(channel_scale=params["q7_channel_scale"]),
     )
+    if args.backend:  # The two worlds the judge builds itself, outside the predictions.
+        kwargs["Q1"]["w37"]["backend"] = args.backend
+        kwargs["Q7"]["backend"] = args.backend
     for item in args.items:
         started = time.perf_counter()
         out = {k: dict(cases={}) for k in ("Q1", "Q2", "Q3", "Q4", "Q5")}
@@ -581,6 +614,7 @@ def main(argv=None):
                     protocol_acceptance=acceptance or "the registered protocol",
                     predictions=str(args.predictions or qual.PREDICTIONS),
                     parameters=params,
+                    **({} if backend is None else dict(backend=backend)),
                 ),
                 wall_s=time.perf_counter() - started,
                 **provenance(),
