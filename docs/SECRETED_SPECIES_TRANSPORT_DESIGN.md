@@ -2,8 +2,9 @@
 
 **Status: accepted by the lead with the advisor, 13 November 2026 (merged at ffc985a). Version 1
 code: milestones 1 and 2 landed on main, 14 November 2026 (merge bbbc922), with the lead's
-rulings at milestone 1 in §12. Development status: no judged run. Milestone 3 on the branch: the
-closed-form development run and a PROPOSED protocol, not registered (§12.2).** The main choices stand: one inventory in @3 as neutral species
+rulings at milestone 1 in §12. Milestone 3 landed on main (merges 780f5d9 and 0698713). Its
+protocol was registered by the lead (registrar) on 14 November 2026 (§12.2). No judged run had
+been made at registration.** The main choices stand: one inventory in @3 as neutral species
 rows, uptake as a plain sink (a), and identity on the operator declarations. The lead's
 pre-code checks (probes 2 to 5) were run the same day. Their results, the amendments they bring
 and the lead's rulings are in §11:
@@ -1688,6 +1689,18 @@ Its two findings became amendments before registration, recorded in the protocol
   - A harness timeout, a unit killed by its runtime limit, or a Q5 file ended by a signal counts
     as an infrastructure ending. It is rerun once from the same snapshot.
   - A test failure or error inside a completed run stays a verdict.
+
+**Registration** (14 November 2026). The lead (registrar) registered the protocol after the final
+review with the advisor.
+- `secreted_species_protocol.register`, the generator's path, changed the status to "registered by
+  the lead (registrar), 14 November 2026" and added the registration record, which the guard reads
+  beside the status. Nothing else changed: a leaf diff against the protocol on main at 1456a08 shows
+  only those two.
+- Before it, the dry run of judge, judge-q5 and combine on the pre-registration main (1456a08,
+  D152's operator included) matched the 0353b29 dry run leaf by leaf, apart from wall times and
+  source pointers. judge-q5's pytest processes ran on the unit's own CPU, inheriting its affinity.
+- The judged entries follow once each, in order (judge, judge-q5, combine), from one fresh clean
+  snapshot of main at the registration commit.
 
 ## Appendix A. Equations for the independent references
 

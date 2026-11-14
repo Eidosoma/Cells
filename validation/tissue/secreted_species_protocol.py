@@ -1,15 +1,19 @@
 """D150 version 1's qualification protocol: its draft from disclosed runs, its guard, its judge.
 
 docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §6, §7 and §12, with the lead's rulings of 13 and 14
-November. The protocol (validation/tissue/secreted_species_protocol.json) is PROPOSED: drafted here
-from the development runs named beside its numbers and revised after the lead's review with the
-advisor (14 November: the controls judged, the scope line, the closed form checked against the PDE,
-the step map a tier-2 regression guard outside Q5). Only the lead registers it, and registration
-changes its status alone.
+November. The protocol (validation/tissue/secreted_species_protocol.json) was drafted here from
+the development runs named beside its numbers, revised after the lead's review with the advisor
+(14 November: the controls judged, the scope line, the closed form checked against the PDE, the
+step map a tier-2 regression guard outside Q5) and amended before registration after the
+rehearsal on main. The lead registered it after the final review with the advisor: register
+changed its status and added its registration record (REGISTRATION), and nothing else.
 
 * judged_run_refusal / registered: the judge's first call. Before anything is computed or written,
-  it refuses an unregistered protocol and a source that is not a clean execution snapshot
-  (validation/source_snapshot.py), as S3's and S5's judges do.
+  it refuses an unregistered protocol (its status, and a registration record matching it) and a
+  source that is not a clean execution snapshot (validation/source_snapshot.py), as S3's and S5's
+  judges do.
+* register [PROTOCOL_JSON]: registration through the generator's path: the PROPOSED protocol
+  takes REGISTERED_STATUS and the REGISTRATION record; every other leaf stays as drafted.
 * draft DEVELOPMENT_DIR OUTPUT_JSON: the protocol from a development run's analysis.json
   (validation/tissue/secreted_species_analysis.py), every tolerance computed from it.
 * judge OUT (python -m validation.tissue.secreted_species_qualification judge OUT): the judged,
@@ -42,6 +46,26 @@ STATUS = (
     "PROPOSED (drafted 14 November 2026 from the development runs named beside its numbers and "
     "revised the same day after the lead's review with the advisor; not registered, and no judged "
     "run is made before the lead registers it)"
+)
+REGISTERED_STATUS = "registered by the lead (registrar), 14 November 2026"
+REGISTRATION = dict(  # The record the guard reads; register adds it beside the status.
+    status=REGISTERED_STATUS,
+    by="the lead (registrar)",
+    date="14 November 2026",
+    after=(
+        "the final review with the advisor. Before it, the rehearsal on main (6f339ab) "
+        "reproduced every frozen number bitwise, and the dry runs of judge, judge-q5 and combine "
+        "on registered dry-run copies reached their verdicts at 0353b29 and on the "
+        "pre-registration main (1456a08), the latter identical leaf by leaf to the former apart "
+        "from wall times and source pointers"
+    ),
+    registered_against="main at 1456a08",
+    judged_runs_before_registration=0,
+    changes="the status and this record alone (secreted_species_protocol.register)",
+    next=(
+        "the judged entries judge, judge-q5 and combine, in that order and once each, from one "
+        "fresh clean snapshot of main at the registration commit (rules.judged_run, rules.timing)"
+    ),
 )
 JUDGED_ARMS = ("dr2.5_dt1", "rk4_dr2.5_dt0.1")
 ORDER_ARMS = ("dr5_dt0.5", "dr2.5_dt0.5", "dr1.25_dt0.5", "dr2.5_dt0.25")
@@ -152,6 +176,9 @@ def judged_run_refusal(protocol, root=ROOT):
     status = protocol.get("status")
     if not (isinstance(status, str) and status.startswith("registered")):
         return "the D150 v1 protocol is not registered (its status does not begin 'registered')"
+    record = protocol.get("registration")
+    if not (isinstance(record, dict) and record.get("status") == status):
+        return "the D150 v1 protocol's registration record is missing or does not match its status"
     manifest = Path(root) / "SNAPSHOT.json"
     if not manifest.exists():
         return "a judged run comes from a clean execution snapshot of main, not a checkout"
@@ -931,9 +958,33 @@ def draft(development, output):
     return protocol
 
 
+# ------------------------------------------------------------------ the registration
+
+
+def register(protocol_path=PROTOCOL):
+    """Registration through the generator's path (the lead's): the drafted, PROPOSED protocol takes
+    REGISTERED_STATUS and, after it, the REGISTRATION record; every other leaf stays as drafted
+    (the development pointers included). Refused for a protocol already registered or one that
+    already carries a record."""
+    path = Path(protocol_path)
+    protocol = json.loads(path.read_text())
+    if not str(protocol.get("status")).startswith("PROPOSED") or "registration" in protocol:
+        raise SystemExit("Refused: only a PROPOSED protocol without a registration record")
+    out = {}
+    for key, value in protocol.items():
+        out[key] = REGISTERED_STATUS if key == "status" else value
+        if key == "status":
+            out["registration"] = dict(REGISTRATION)
+    path.write_text(json.dumps(out, indent=1, default=float) + "\n")
+    print(path)
+    return out
+
+
 if __name__ == "__main__":
     action, *args = sys.argv[1:]
     if action == "draft":
         draft(*args)
+    elif action == "register":
+        register(*args)
     else:
-        raise SystemExit(f"Unknown action {action!r} (draft)")
+        raise SystemExit(f"Unknown action {action!r} (draft or register)")

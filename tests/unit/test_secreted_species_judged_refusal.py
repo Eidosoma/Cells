@@ -2,8 +2,10 @@
 
 As S3's and S5's judges do (test_cleft_egg_engine.py, test_s5_judged_refusal.py):
 validation/tissue/secreted_species_protocol.registered, every judged entry's first call, refuses an
-unregistered protocol and a source that is not a clean execution snapshot before anything is
-computed or written, and every entry (judge, judge_q5, combine) refuses an existing output
+unregistered protocol (its status, and a registration record matching it) and a source that is not
+a clean execution snapshot before anything is computed or written; register changes a PROPOSED
+protocol's status and adds its record alone; and every entry (judge, judge_q5, combine) refuses an
+existing output
 directory (the attempt rule: every attempt writes its own). Tested on edited copies of the protocol
 with tmp_path roots, never through an entry on the registered protocol from a clean snapshot,
 which would start the judged run here. judge_q5 runs only throwaway test files written here, and
@@ -20,7 +22,12 @@ from validation.tissue import secreted_species_protocol as protocol
 
 
 def copy(tmp_path, name, status, **changes):
+    """The checked-in protocol with another status: a registered one carries its matching
+    registration record, any other none."""
     data = json.loads(protocol.PROTOCOL.read_text())
+    data.pop("registration", None)
+    if status.startswith("registered"):
+        data["registration"] = dict(status=status)
     path = tmp_path / name
     path.write_text(json.dumps(dict(data, status=status, **changes)))
     return path
@@ -35,20 +42,28 @@ def clean_snapshot(root, revision="1" * 40):
 
 
 def test_the_checked_in_protocol_is_refused_outside_a_clean_snapshot(tmp_path):
-    """Whatever its status: refused as unregistered while it is (PROPOSED now), and for the missing
-    snapshot once registered. Registration changes the status alone, so this test's outcome does not
-    change with it, and Q5 runs it at the judged snapshot."""
+    """Whatever its status: refused as unregistered while it is, and for the missing snapshot once
+    registered (its record matching its status). Registration changes the status and adds the
+    record alone, so this test's outcome does not change with it, and Q5 runs it at the judged
+    snapshot."""
     data = json.loads(protocol.PROTOCOL.read_text())
     refusal = protocol.judged_run_refusal(data, tmp_path)
     if data["status"].startswith("registered"):
+        assert data["status"] == protocol.REGISTERED_STATUS
+        assert data["registration"] == protocol.REGISTRATION
         assert "clean execution snapshot" in refusal
     else:
-        assert "not registered" in refusal
+        assert "not registered" in refusal and "registration" not in data
 
 
-def test_the_refusal_follows_s3s_and_s5s(tmp_path):
-    data = json.loads(protocol.PROTOCOL.read_text())
-    registered = dict(data, status="registered at a lead's commit (test)")
+def test_the_refusal_follows_s3s_and_s5s_and_reads_the_registration_record(tmp_path):
+    registered = json.loads(
+        copy(tmp_path, "registered.json", "registered at a lead's commit").read_text()
+    )
+    unrecorded = {k: v for k, v in registered.items() if k != "registration"}
+    mismatched = dict(registered, registration=dict(status="registered, another one"))
+    for changed in (unrecorded, mismatched):  # A registered status needs its matching record.
+        assert "registration record" in protocol.judged_run_refusal(changed, tmp_path)
     assert "clean execution snapshot" in protocol.judged_run_refusal(registered, tmp_path)
     clean = dict(status="complete", patch_sha256=hashlib.sha256(b"").hexdigest())
     (tmp_path / "SNAPSHOT.json").write_text(json.dumps(clean))
@@ -58,6 +73,18 @@ def test_the_refusal_follows_s3s_and_s5s(tmp_path):
     assert "uncommitted changes" in protocol.judged_run_refusal(registered, tmp_path)
     (tmp_path / "SNAPSHOT.json").write_text(json.dumps(dict(clean, status="partial")))
     assert "incomplete" in protocol.judged_run_refusal(registered, tmp_path)
+    # Registration through the generator's path: the status and the record alone, and only once.
+    proposed = copy(tmp_path, "proposed.json", "PROPOSED (test)")
+    before = json.loads(proposed.read_text())
+    after = protocol.register(proposed)
+    assert after["status"] == protocol.REGISTERED_STATUS
+    assert after["registration"] == protocol.REGISTRATION
+    assert {k: v for k, v in after.items() if k not in ("status", "registration")} == {
+        k: v for k, v in before.items() if k != "status"
+    }
+    assert json.loads(proposed.read_text()) == after
+    with pytest.raises(SystemExit, match="only a PROPOSED protocol"):
+        protocol.register(proposed)
 
 
 ENTRIES = (
