@@ -1,0 +1,136 @@
+{
+ "kind": "cells.pump_water_kcc_qualification_protocol@1",
+ "predictions": "validation/tissue/pump_water_kcc_predictions.json",
+ "judge": "validation/tissue/pump_water_kcc_qualification.py",
+ "registered": "before the judged run; the predictions were frozen first (01117a1)",
+ "stationary": {
+  "volume_relative": 1e-06,
+  "voltage_V": 1e-06,
+  "cycles_relative": 1e-05,
+  "step_map_correction": 1e-08
+ },
+ "stability": "the engine's dense classification must equal the sign of the reference spectrum's leading growth rate (stable or unstable)",
+ "rationale": "Engine and reference implement the same declared laws; both solve the stationary equations to about 1e-10 in their units, so these bounds test modelling equivalence with a wide margin over solver precision, not rounding. Stationary states need no time step, so no dt term enters. Whether a heredity disc renews is not an acceptance item.",
+ "backend_variant": {
+  "status": "registered by the lead (registrar), 14 November 2026, from the three-repeat L4 terms (A, B and D) before judged run C",
+  "base": "validation/tissue/pump_water_kcc_protocol.json",
+  "rule": "max(registered, up1(3 x (registered sum + backend + run-to-run))); fixed tolerances max(registered, up1(3 x (backend + run-to-run))); registered kept exactly when nothing is added; backend: the largest |reference - X| over the L4 repeats A, B and D; run-to-run: the largest difference between two of them",
+  "repeats": {
+   "labels": [
+    "A",
+    "B",
+    "D"
+   ],
+   "reference": [
+    "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/w2/cpu.json"
+   ],
+   "runs": {
+    "A": [
+     "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/w2/a.json"
+    ],
+    "B": [
+     "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/w2/b.json"
+    ],
+    "D": [
+     "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/w2/d.json"
+    ]
+   },
+   "backends": {
+    "A": {
+     "backend": "gpu",
+     "devices": [
+      "cuda:0"
+     ],
+     "jax": "0.11.1",
+     "python": "3.13.5",
+     "declared": "gpu",
+     "definitions_set": 1
+    },
+    "B": {
+     "backend": "gpu",
+     "devices": [
+      "cuda:0"
+     ],
+     "jax": "0.11.1",
+     "python": "3.13.5",
+     "declared": "gpu",
+     "definitions_set": 1
+    },
+    "D": {
+     "backend": "gpu",
+     "devices": [
+      "cuda:0"
+     ],
+     "jax": "0.11.1",
+     "python": "3.13.5",
+     "declared": "gpu",
+     "definitions_set": 1
+    }
+   }
+  },
+  "stop": false,
+  "stop_items": [],
+  "rows": [
+   {
+    "item": "cycles_relative",
+    "registered": 1e-05,
+    "registered_sum": null,
+    "backend": 2.2429528310185435e-15,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 2.2429528310185435e-15,
+     "B": 2.2429528310185435e-15,
+     "D": 2.2429528310185435e-15
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 1e-05,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "voltage_V",
+    "registered": 1e-06,
+    "registered_sum": null,
+    "backend": 4.204622761072585e-14,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 4.204622761072585e-14,
+     "B": 4.204622761072585e-14,
+     "D": 4.204622761072585e-14
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 1e-06,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "volume_relative",
+    "registered": 1e-06,
+    "registered_sum": null,
+    "backend": 1.5720555408230069e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 1.5720555408230069e-16,
+     "B": 1.5720555408230069e-16,
+     "D": 1.5720555408230069e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 1e-06,
+    "widening": 1.0,
+    "stop": false
+   }
+  ]
+ }
+}

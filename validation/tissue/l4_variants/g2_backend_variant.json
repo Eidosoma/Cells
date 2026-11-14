@@ -1,0 +1,817 @@
+{
+ "kind": "cells.qualification_protocol@1",
+ "id": "G2-Q1",
+ "title": "Qualification of resolved_pump_replacement@1 (scheduled cell replacement on resolved_pump_tissue@3)",
+ "status": "registered at 70f5456; tolerances pinned before the judged run",
+ "engine_model": "resolved_pump_replacement@1 (inner resolved_pump_tissue@3; junction_formation delayed_first_order_junction_formation@1)",
+ "design": "/mnt/workspaces/Cells/cell-replacement-g2-20261111-01/design-note-G2.md; qualification/protocol-G2-Q1-draft.md",
+ "predictions": {
+  "file": "validation/tissue/cell_replacement_q1_predictions.json",
+  "producer": "validation/tissue/cell_replacement_predictions.py (references only, no engine run)",
+  "references": "validation/tissue/cell_replacement_reference.py: R-ops, R-full (pump_water_reference with water closed), R-fast (mg0b_theory reduced chain); hand checks validation/tissue/test_cell_replacement_reference.py",
+  "worlds": "stored whole in the predictions file; the judged run parses exactly these definitions"
+ },
+ "judged_run": {
+  "once": true,
+  "source": "a clean snapshot of the registration commit (validation/source_snapshot.py)",
+  "hardware": "CPU, one core per process, x64",
+  "solver": "imex_ars222_face_electromigration@1 at dt 1 ms unless an item says otherwise",
+  "junction_heat_booking": "trapezoid_nonnegative@1 for Q3-Q5 (the default for Q1, Q2, Q6, Q7 as declared)",
+  "refusal": "a refused step or check fails its item and is reported with the check; nothing is retried or worked around"
+ },
+ "tolerance_rule": {
+  "method": "pinned: 3 x (engine step term + reference term + rounding term), per compared quantity and record, maximum over the records",
+  "engine_step_term": "|engine(dt 1 ms) - engine(dt 0.5 ms)| from a dt study run after registration and before the judged run (development, recorded with its own snapshot)",
+  "reference_term": "|reference - reference at tolerances x 0.1| (Radau/BDF), computed with the predictions",
+  "rounding_term": "the engine's own ledger bounds (Q1), 64 eps x magnitude (Q2)",
+  "q4_reduction_term": "|R-full - R-fast| per record, measured from the references (q4_reduction_term_V in the predictions); Q4 adds it to the sum"
+ },
+ "items": {
+  "Q1": {
+   "claim": "Every @3 ledger closes across replacement events with the replacement terms, on host (surface_pump.checked_rows) and device (surface_pump_checks.row_checks), for one, simultaneous, both-ends, second-generation and donor-copy events.",
+   "cases": "all W7 and C9 cases of the predictions, plus W37 (validation/tissue/cell_replacement_cost.py swap world, 3000 steps)",
+   "pass": "no ledger, domain or dissipation check fails on any accepted row, on host or device"
+  },
+  "Q2": {
+   "claim": "The engine's event map equals R-ops on each case's first event set applied to the declared initial state.",
+   "compared": "slot amounts, slot channel gates, incident junction gates, removed, supplied, replacement charge, image charge at held nodes, booked free energy",
+   "pass": "within 64 eps x magnitude per quantity (amounts and gates exact to rounding)"
+  },
+  "Q3": {
+   "claim": "After events, trajectories agree with R-full.",
+   "compared": "every cell's Vm and the replaced slots' amounts at every 0.1 s record over 10 s",
+   "cases": "W7 and C9, three formation rules",
+   "pass": "within the pinned tolerance at every record"
+  },
+  "Q4": {
+   "claim": "On the ungated chain C9, Vm after replacement agrees with the reduced chain R-fast, and the end state (D or H of every cell at 10 s) is the same.",
+   "cases": "C9 isolated template and donor copy, three formation rules",
+   "pass": "Vm within the pinned tolerance (reduction term included) at every record; identical end-state classification (threshold the U state, -39.45 mV)"
+  },
+  "Q5": {
+   "claim": "Newcomer trajectories converge with the split's observed order (formation half-steps around ARS(2,2,2)).",
+   "cases": "W7 short-lag and C9 isolated short-lag (amendment A3)",
+   "method": "dt 2, 1, 0.5, 0.25 ms; D(h) = max over the records after the first event of |slot Vm(h) - slot Vm(h/2)|; order log2(D(1 ms) / D(0.5 ms)) (amendment A3)",
+   "registered_before_A3": "dt 5, 2, 1, 0.5 ms on W7 short-lag and C9 donor short-lag, Richardson order from errors against 0.5 ms at 2 and 1 ms",
+   "pass": "observed order between 1.8 and 2.2"
+  },
+  "Q6": {
+   "claim": "Restart at t_e - dt, t_e and t_e + dt is bitwise; vmap cohorts of 2 and 8 worlds with different schedules reproduce their scalar runs.",
+   "pass": "bitwise for restart; within 1e-12 relative per state field for vmap"
+  },
+  "Q7": {
+   "claim": "Without events the model equals resolved_pump_tissue@3 bitwise on the 825-node world.",
+   "pass": "bitwise on every @3 state field, observation and check diagnostic over 200 steps (detached driver)"
+  }
+ },
+ "non_discriminating": "outside amounts in held-bath worlds (held baths); junction gates of ungated C9 junctions; named before the judged run",
+ "exclusions": [
+  "finite-ECM and floating-component worlds (refused at parse)",
+  "the water inner model (stage 3)",
+  "hour-scale runs",
+  "templates with route values in Q3 (R-full covers none)"
+ ],
+ "order": [
+  "1 references and hand checks committed",
+  "2 predictions frozen and committed (validation/tissue/cell_replacement_q1_predictions.json)",
+  "3 protocol registered by the lead on main",
+  "4 dt study and reference-term measurement (development) pin the tolerances into this file, committed before the judged run",
+  "5 judged run once; PROGRESS entry with links"
+ ],
+ "pinned_tolerances": {
+  "rule": "pinned: 3 x (engine step term + reference term + rounding term), per compared quantity and record, maximum over the records",
+  "engine_step_term": "|engine(dt 0.001) - engine(dt 0.0005)|, dt study /mnt/workspaces/Cells/cell-replacement-g2-20261111-01/qualification/dtstudy-02",
+  "reference_term": "|reference - reference at tolerances x 0.1|, /mnt/workspaces/Cells/cell-replacement-g2-20261111-01/qualification/refterm-01",
+  "dtstudy_revision": "15b5f7dc7e05d0f764acccf39cccc03f4c44ab24",
+  "refterm_revision": "15b5f7dc7e05d0f764acccf39cccc03f4c44ab24",
+  "cases": {
+   "W7/literature": {
+    "q3_membrane_voltage_V": {
+     "tolerance": 3e-06,
+     "unit": "V",
+     "max_step_term": 9.35552637706949e-07,
+     "max_reference_term": 3.405498105735205e-12
+    },
+    "q3_slot_amount_fmol": {
+     "tolerance": 5e-07,
+     "unit": "fmol",
+     "max_step_term": 1.5732747726815433e-07,
+     "max_reference_term": 4.18509671362699e-12
+    }
+   },
+   "C9/isolated/literature": {
+    "q3_membrane_voltage_V": {
+     "tolerance": 3e-06,
+     "unit": "V",
+     "max_step_term": 9.63958655307573e-07,
+     "max_reference_term": 1.7237739013964415e-12
+    },
+    "q3_slot_amount_fmol": {
+     "tolerance": 5e-07,
+     "unit": "fmol",
+     "max_step_term": 1.4545192428272458e-07,
+     "max_reference_term": 1.6555645743210334e-12
+    },
+    "q4_membrane_voltage_V": {
+     "tolerance": 0.003,
+     "unit": "V",
+     "max_step_term": 9.63958655307573e-07,
+     "max_reference_term": 2.2596327586832388e-11,
+     "max_reduction_term": 0.0009091620206932854
+    }
+   },
+   "C9/donor/literature": {
+    "q3_membrane_voltage_V": {
+     "tolerance": 3e-06,
+     "unit": "V",
+     "max_step_term": 9.63958655307573e-07,
+     "max_reference_term": 3.222422328974517e-14
+    },
+    "q3_slot_amount_fmol": {
+     "tolerance": 4.3635577284817373e-07,
+     "unit": "fmol",
+     "max_step_term": 1.4545192428272458e-07,
+     "max_reference_term": 2.842170943040401e-14
+    },
+    "q4_membrane_voltage_V": {
+     "tolerance": 0.003,
+     "unit": "V",
+     "max_step_term": 9.63958655307573e-07,
+     "max_reference_term": 2.2596327586832388e-11,
+     "max_reduction_term": 0.0009091620206932854
+    }
+   },
+   "W7/immediate": {
+    "q3_membrane_voltage_V": {
+     "tolerance": 4e-06,
+     "unit": "V",
+     "max_step_term": 1.1613271317933993e-06,
+     "max_reference_term": 7.147338276780602e-13
+    },
+    "q3_slot_amount_fmol": {
+     "tolerance": 5.31940878012449e-07,
+     "unit": "fmol",
+     "max_step_term": 1.7731356916073082e-07,
+     "max_reference_term": 7.602807272633072e-13
+    }
+   },
+   "C9/isolated/immediate": {
+    "q3_membrane_voltage_V": {
+     "tolerance": 4e-06,
+     "unit": "V",
+     "max_step_term": 1.244017472347425e-06,
+     "max_reference_term": 6.306483113505124e-13
+    },
+    "q3_slot_amount_fmol": {
+     "tolerance": 4.3635577284817373e-07,
+     "unit": "fmol",
+     "max_step_term": 1.4545192428272458e-07,
+     "max_reference_term": 9.947598300641403e-14
+    },
+    "q4_membrane_voltage_V": {
+     "tolerance": 0.1,
+     "unit": "V",
+     "max_step_term": 1.244017472347425e-06,
+     "max_reference_term": 4.52930908056981e-10,
+     "max_reduction_term": 0.03201686551030358
+    }
+   },
+   "C9/donor/immediate": {
+    "q3_membrane_voltage_V": {
+     "tolerance": 3e-06,
+     "unit": "V",
+     "max_step_term": 9.63958655307573e-07,
+     "max_reference_term": 3.3861802251067274e-14
+    },
+    "q3_slot_amount_fmol": {
+     "tolerance": 4.3635577284817373e-07,
+     "unit": "fmol",
+     "max_step_term": 1.4545192428272458e-07,
+     "max_reference_term": 2.842170943040401e-14
+    },
+    "q4_membrane_voltage_V": {
+     "tolerance": 0.003,
+     "unit": "V",
+     "max_step_term": 9.63958655307573e-07,
+     "max_reference_term": 2.5211589760321118e-11,
+     "max_reduction_term": 0.0009091620206932854
+    }
+   },
+   "W7/short_lag": {
+    "q3_membrane_voltage_V": {
+     "tolerance": 3e-06,
+     "unit": "V",
+     "max_step_term": 9.35552637706949e-07,
+     "max_reference_term": 1.1351614093157991e-12
+    },
+    "q3_slot_amount_fmol": {
+     "tolerance": 5e-07,
+     "unit": "fmol",
+     "max_step_term": 1.5732747726815433e-07,
+     "max_reference_term": 5.115907697472721e-13
+    }
+   },
+   "C9/isolated/short_lag": {
+    "q3_membrane_voltage_V": {
+     "tolerance": 3e-06,
+     "unit": "V",
+     "max_step_term": 9.63958655307573e-07,
+     "max_reference_term": 5.886124920806424e-13
+    },
+    "q3_slot_amount_fmol": {
+     "tolerance": 4.3635577284817373e-07,
+     "unit": "fmol",
+     "max_step_term": 1.4545192428272458e-07,
+     "max_reference_term": 2.2737367544323206e-13
+    },
+    "q4_membrane_voltage_V": {
+     "tolerance": 0.003,
+     "unit": "V",
+     "max_step_term": 9.63958655307573e-07,
+     "max_reference_term": 2.2596327586832388e-11,
+     "max_reduction_term": 0.0009091620206932854
+    }
+   },
+   "C9/donor/short_lag": {
+    "q3_membrane_voltage_V": {
+     "tolerance": 3e-06,
+     "unit": "V",
+     "max_step_term": 9.63958655307573e-07,
+     "max_reference_term": 3.1710745140856034e-14
+    },
+    "q3_slot_amount_fmol": {
+     "tolerance": 5e-07,
+     "unit": "fmol",
+     "max_step_term": 1.4545192428272458e-07,
+     "max_reference_term": 5.684341886080802e-14
+    },
+    "q4_membrane_voltage_V": {
+     "tolerance": 0.003,
+     "unit": "V",
+     "max_step_term": 9.63958655307573e-07,
+     "max_reference_term": 2.2596327586832388e-11,
+     "max_reduction_term": 0.0009091620206932854
+    }
+   }
+  }
+ },
+ "amendments": [
+  {
+   "id": "A1",
+   "before_judged_run": true,
+   "text": "Records: the frozen definitions declare record times as decimals (round(0.1 k, 10)); the engine observes only accepted boundaries, the float products k * dt. Each record is taken at its own boundary int(round(t / dt)) * dt (a shift below 1e-16 s) and compared with the prediction at t (cell_replacement_qualification.at_dt)."
+  },
+  {
+   "id": "A2",
+   "before_judged_run": true,
+   "text": "Pinning provenance: the dt study (qualification/dtstudy-02) ran at 15b5f7d, clean. The reference-term run (qualification/refterm-01) launched at 5fc5651 and records 15b5f7d, its HEAD when written; the one commit between them changes only the dt study's record mapping (A1), not the references. No engine output was compared with the frozen predictions before pinning."
+  },
+  {
+   "id": "A3",
+   "before_judged_run": true,
+   "text": "Q5 estimator and cases. The full-size dry run on non-registered inputs (qualification/dryrun-01) gave registered-estimator orders 1.67 (W7 short-lag) and 2.95 (C9 donor short-lag). The order diagnosis on those inputs (qualification/q5-diagnosis, dt 4 to 0.25 ms) shows W7's successive-difference order rising 0.64, 1.67, 2.05 at h = 2, 1, 0.5 ms: second order, but asymptotic only below 1 ms. C9 donor's step error is at most 1e-9 V (no transient: a D copy among D neighbours), so its estimate is noise (2.2, 2.9, 4.5). C9 isolated short-lag gives 1.89, 2.06, 2.07. A3 therefore uses dt 2, 1, 0.5, 0.25 ms, the finest successive-difference ratio, and C9 isolated short-lag in place of C9 donor short-lag; the window is unchanged. Decided on non-registered inputs only; the registered cases were not run."
+  }
+ ],
+ "backend_variant": {
+  "status": "registered by the lead (registrar), 14 November 2026, from the three-repeat L4 terms (A, B and D) before judged run C",
+  "base": "validation/tissue/cell_replacement_protocol.json",
+  "rule": "max(registered, up1(3 x (registered sum + backend + run-to-run))); fixed tolerances max(registered, up1(3 x (backend + run-to-run))); registered kept exactly when nothing is added; backend: the largest |reference - X| over the L4 repeats A, B and D; run-to-run: the largest difference between two of them",
+  "repeats": {
+   "labels": [
+    "A",
+    "B",
+    "D"
+   ],
+   "reference": [
+    "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/g2/cpu.json"
+   ],
+   "runs": {
+    "A": [
+     "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/g2/a.json"
+    ],
+    "B": [
+     "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/g2/b.json"
+    ],
+    "D": [
+     "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/g2/d.json"
+    ]
+   },
+   "backends": {
+    "A": {
+     "backend": "gpu",
+     "devices": [
+      "cuda:0"
+     ],
+     "jax": "0.11.1",
+     "python": "3.13.5",
+     "declared": "gpu",
+     "definitions_set": 9
+    },
+    "B": {
+     "backend": "gpu",
+     "devices": [
+      "cuda:0"
+     ],
+     "jax": "0.11.1",
+     "python": "3.13.5",
+     "declared": "gpu",
+     "definitions_set": 9
+    },
+    "D": {
+     "backend": "gpu",
+     "devices": [
+      "cuda:0"
+     ],
+     "jax": "0.11.1",
+     "python": "3.13.5",
+     "declared": "gpu",
+     "definitions_set": 9
+    }
+   }
+  },
+  "stop": false,
+  "stop_items": [],
+  "rows": [
+   {
+    "item": "W7/literature/q3_membrane_voltage_V",
+    "registered": 2.806657932428319e-06,
+    "registered_sum": 9.355526441427731e-07,
+    "backend": 4.2049697057677804e-14,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 4.2049697057677804e-14,
+     "B": 4.2049697057677804e-14,
+     "D": 4.2049697057677804e-14
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 3e-06,
+    "widening": 1.0688869367862015,
+    "stop": false
+   },
+   {
+    "item": "W7/literature/q3_slot_amount_fmol",
+    "registered": 4.7198243446899824e-07,
+    "registered_sum": 1.5732747815633275e-07,
+    "backend": 2.842170943040401e-14,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 2.842170943040401e-14,
+     "B": 2.842170943040401e-14,
+     "D": 2.842170943040401e-14
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 5e-07,
+    "widening": 1.0593614581494388,
+    "stop": false
+   },
+   {
+    "item": "C9/isolated/literature/q3_membrane_voltage_V",
+    "registered": 2.8918759918394876e-06,
+    "registered_sum": 9.639586639464959e-07,
+    "backend": 4.2049697057677804e-14,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 4.2049697057677804e-14,
+     "B": 4.2049697057677804e-14,
+     "D": 4.2049697057677804e-14
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 3e-06,
+    "widening": 1.0373888812886947,
+    "stop": false
+   },
+   {
+    "item": "C9/isolated/literature/q3_slot_amount_fmol",
+    "registered": 4.3635577284817373e-07,
+    "registered_sum": 1.4545192428272458e-07,
+    "backend": 2.842170943040401e-14,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 2.842170943040401e-14,
+     "B": 2.842170943040401e-14,
+     "D": 2.842170943040401e-14
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 5e-07,
+    "widening": 1.1458539822594962,
+    "stop": false
+   },
+   {
+    "item": "C9/isolated/literature/q4_membrane_voltage_V",
+    "registered": 0.0027275127102334568,
+    "registered_sum": 0.0009091709034111523,
+    "backend": 4.2049697057677804e-14,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 4.2049697057677804e-14,
+     "B": 4.2049697057677804e-14,
+     "D": 4.2049697057677804e-14
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 0.003,
+    "widening": 1.099903215388947,
+    "stop": false
+   },
+   {
+    "item": "C9/donor/literature/q3_membrane_voltage_V",
+    "registered": 2.8918759918394876e-06,
+    "registered_sum": 9.639586639464959e-07,
+    "backend": 1.5265566588595902e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 1.5265566588595902e-16,
+     "B": 1.5265566588595902e-16,
+     "D": 1.5265566588595902e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 3e-06,
+    "widening": 1.0373888812886947,
+    "stop": false
+   },
+   {
+    "item": "C9/donor/literature/q3_slot_amount_fmol",
+    "registered": 4.3635577284817373e-07,
+    "registered_sum": 1.4545192428272458e-07,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 4.3635577284817373e-07,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "C9/donor/literature/q4_membrane_voltage_V",
+    "registered": 0.0027275127102334568,
+    "registered_sum": 0.0009091709034111523,
+    "backend": 1.5265566588595902e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 1.5265566588595902e-16,
+     "B": 1.5265566588595902e-16,
+     "D": 1.5265566588595902e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 0.003,
+    "widening": 1.099903215388947,
+    "stop": false
+   },
+   {
+    "item": "W7/immediate/q3_membrane_voltage_V",
+    "registered": 3.483983161217674e-06,
+    "registered_sum": 1.1613277204058914e-06,
+    "backend": 1.734723475976807e-17,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 1.734723475976807e-17,
+     "B": 1.734723475976807e-17,
+     "D": 1.734723475976807e-17
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 4e-06,
+    "widening": 1.1481111747399992,
+    "stop": false
+   },
+   {
+    "item": "W7/immediate/q3_slot_amount_fmol",
+    "registered": 5.31940878012449e-07,
+    "registered_sum": 1.7731362600414968e-07,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 5.31940878012449e-07,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "C9/isolated/immediate/q3_membrane_voltage_V",
+    "registered": 3.7320540567306604e-06,
+    "registered_sum": 1.2440180189102201e-06,
+    "backend": 5.204170427930421e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 5.204170427930421e-16,
+     "B": 5.204170427930421e-16,
+     "D": 5.204170427930421e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 4e-06,
+    "widening": 1.0717958366080218,
+    "stop": false
+   },
+   {
+    "item": "C9/isolated/immediate/q3_slot_amount_fmol",
+    "registered": 4.3635577284817373e-07,
+    "registered_sum": 1.4545192428272458e-07,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 4.3635577284817373e-07,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "C9/isolated/immediate/q4_membrane_voltage_V",
+    "registered": 0.09605312764321637,
+    "registered_sum": 0.03201770921440546,
+    "backend": 5.204170427930421e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 5.204170427930421e-16,
+     "B": 5.204170427930421e-16,
+     "D": 5.204170427930421e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 0.1,
+    "widening": 1.0410905136940887,
+    "stop": false
+   },
+   {
+    "item": "C9/donor/immediate/q3_membrane_voltage_V",
+    "registered": 2.8918759918394876e-06,
+    "registered_sum": 9.639586639464959e-07,
+    "backend": 1.457167719820518e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 1.457167719820518e-16,
+     "B": 1.457167719820518e-16,
+     "D": 1.457167719820518e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 3e-06,
+    "widening": 1.0373888812886947,
+    "stop": false
+   },
+   {
+    "item": "C9/donor/immediate/q3_slot_amount_fmol",
+    "registered": 4.3635577284817373e-07,
+    "registered_sum": 1.4545192428272458e-07,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 4.3635577284817373e-07,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "C9/donor/immediate/q4_membrane_voltage_V",
+    "registered": 0.0027275127102334568,
+    "registered_sum": 0.0009091709034111523,
+    "backend": 1.457167719820518e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 1.457167719820518e-16,
+     "B": 1.457167719820518e-16,
+     "D": 1.457167719820518e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 0.003,
+    "widening": 1.099903215388947,
+    "stop": false
+   },
+   {
+    "item": "W7/short_lag/q3_membrane_voltage_V",
+    "registered": 2.806657932428319e-06,
+    "registered_sum": 9.355526441427731e-07,
+    "backend": 1.734723475976807e-17,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 1.734723475976807e-17,
+     "B": 1.734723475976807e-17,
+     "D": 1.734723475976807e-17
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 3e-06,
+    "widening": 1.0688869367862015,
+    "stop": false
+   },
+   {
+    "item": "W7/short_lag/q3_slot_amount_fmol",
+    "registered": 4.7198243446899824e-07,
+    "registered_sum": 1.5732747815633275e-07,
+    "backend": 8.881784197001252e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 8.881784197001252e-16,
+     "B": 8.881784197001252e-16,
+     "D": 8.881784197001252e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 5e-07,
+    "widening": 1.0593614581494388,
+    "stop": false
+   },
+   {
+    "item": "C9/isolated/short_lag/q3_membrane_voltage_V",
+    "registered": 2.8918759918394876e-06,
+    "registered_sum": 9.639586639464959e-07,
+    "backend": 1.9081958235744878e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 1.9081958235744878e-16,
+     "B": 1.9081958235744878e-16,
+     "D": 1.9081958235744878e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 3e-06,
+    "widening": 1.0373888812886947,
+    "stop": false
+   },
+   {
+    "item": "C9/isolated/short_lag/q3_slot_amount_fmol",
+    "registered": 4.3635577284817373e-07,
+    "registered_sum": 1.4545192428272458e-07,
+    "backend": 0.0,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 0.0,
+     "B": 0.0,
+     "D": 0.0
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 4.3635577284817373e-07,
+    "widening": 1.0,
+    "stop": false
+   },
+   {
+    "item": "C9/isolated/short_lag/q4_membrane_voltage_V",
+    "registered": 0.0027275127102334568,
+    "registered_sum": 0.0009091709034111523,
+    "backend": 1.9081958235744878e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 1.9081958235744878e-16,
+     "B": 1.9081958235744878e-16,
+     "D": 1.9081958235744878e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 0.003,
+    "widening": 1.099903215388947,
+    "stop": false
+   },
+   {
+    "item": "C9/donor/short_lag/q3_membrane_voltage_V",
+    "registered": 2.8918759918394876e-06,
+    "registered_sum": 9.639586639464959e-07,
+    "backend": 1.491862189340054e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 1.491862189340054e-16,
+     "B": 1.491862189340054e-16,
+     "D": 1.491862189340054e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 3e-06,
+    "widening": 1.0373888812886947,
+    "stop": false
+   },
+   {
+    "item": "C9/donor/short_lag/q3_slot_amount_fmol",
+    "registered": 4.3635577284817373e-07,
+    "registered_sum": 1.4545192428272458e-07,
+    "backend": 8.881784197001252e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 8.881784197001252e-16,
+     "B": 8.881784197001252e-16,
+     "D": 8.881784197001252e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 5e-07,
+    "widening": 1.1458539822594962,
+    "stop": false
+   },
+   {
+    "item": "C9/donor/short_lag/q4_membrane_voltage_V",
+    "registered": 0.0027275127102334568,
+    "registered_sum": 0.0009091709034111523,
+    "backend": 1.491862189340054e-16,
+    "run_to_run": 0.0,
+    "backend_each": {
+     "A": 1.491862189340054e-16,
+     "B": 1.491862189340054e-16,
+     "D": 1.491862189340054e-16
+    },
+    "run_to_run_pairs": {
+     "A-B": 0.0,
+     "A-D": 0.0,
+     "B-D": 0.0
+    },
+    "tolerance": 0.003,
+    "widening": 1.099903215388947,
+    "stop": false
+   }
+  ]
+ }
+}
