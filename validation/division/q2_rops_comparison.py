@@ -35,24 +35,31 @@ Cases:
   growth, abundances and gates. The daughters' population abundances and gates are compared
   too, from R-ops' post-event snapshot.
 
-The random states' sampling rule (the lead's ruling: inside @3's domain). Each draw (perturbed)
-changes each live cell's content by uniform fractions within 1e-3 of each amount, made neutral
-by M (the permeant anion), plus a net charge, carried by K, uniform within 10% of the cell's
-declared charge; the patches, populations and contact get random histories, growth,
+The random states' sampling rule. The lead ruled them inside @3's domain: states that pass
+@3's own domain check and the composite's charge bound. Each draw (perturbed) changes each live
+cell's content by uniform fractions within 1e-3 of each amount, made neutral by M (the permeant
+anion), plus a net charge, carried by K, uniform within 10% of the cell's declared charge; the
+patches, populations and contact get random histories (on admitted routes only), growth,
 abundances and gates. A draw is admitted only if it passes the composite's own domain check
 with the control at the event (@3's domain at the view, each operator's domain and control
-checks, and the readouts' validity) and the charge bound: every live cell's net charge within
-CHARGE_BAND (10%) of its declared charge. A rejected draw is redrawn, and the report counts
-draws and rejections. The tolerance is 64 eps x R-ops' magnitudes throughout; no magnitude is
-taken from the engine's representation.
+checks, and the readouts' validity) and a band on each live cell's net charge, within
+CHARGE_BAND (10%) of its declared charge. The band is this driver's reading of "the charge
+bound", not a bound the engine checks; it awaits the lead's ruling, with q2_domain_probe's
+measurements (inside the engine's checks alone, the asymmetric world exceeds 64). A rejected
+draw is redrawn, and the report counts draws and rejections. The tolerance is 64 eps x R-ops'
+magnitudes throughout; no magnitude is taken from the engine's representation.
 
 Disclosed out-of-domain run: comparisons-s5a9 (snapshot-s5a9, 6c2b118) drew uncompensated
-increments within 1e-3 of each amount: net charges about four times the membrane's, potentials
-near 0.3 V. The asymmetric states reached 94.7 on the post-event potentials (and 73.6 on the
-moved amounts, 33.0 on a daughter's charge). The cause: the engine forms node charges in
-increment form (anchor + F sum z dn), and its rounding there scales with the increments' ionic
-content, which R-ops' charge-form magnitudes do not count. (That run also passed population
-abundances per area; 5234ba8 passes units.)
+increments within 1e-3 of each amount. The asymmetric states reached 94.7 on the post-event
+potentials (and 73.6 on the moved amounts, 33.0 on a daughter's charge). Those draws (as
+q2_domain_probe redraws them) pass @3's bare domain check but fail the composite's control
+domain check in 197 of 200 (|V| up to 1.3 V against the contact gate law's 0.12 V domain), and
+the charge band in all 200 (net charge up to 61 times the declared). The cause of the ratio:
+the engine forms node charges in increment form (anchor + F sum z dn), and its rounding there
+scales with the increments' ionic content, which R-ops' charge-form magnitudes do not count.
+(That run also passed population abundances per area; 5234ba8 passes units. q2-s5a10's draws
+held histories on routes @3 does not admit, which its domain check refuses; 987fa28 draws them
+on admitted routes only, and the ratios are unchanged.)
 
 Usage: python -m validation.division.q2_rops_comparison OUTPUT_DIR. It is NumPy only, about a
 minute.
@@ -77,7 +84,7 @@ from validation.division import partition_reference as rops
 
 STATUS = "Development comparison for Q2 (S5a); not judged"
 RANDOM_STATES = 200
-CHARGE_BAND = 0.1  # The charge bound: |Q - Q_declared| <= 0.1 |Q_declared| for every live cell.
+CHARGE_BAND = 0.1  # The net-charge band: |Q - Q_declared| <= 0.1 |Q_declared|, each live cell.
 MAX_DRAWS = 20  # Draws allowed for one admitted random state.
 EPS = float(np.finfo(float).eps)
 
