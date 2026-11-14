@@ -49,18 +49,22 @@ Judged execution: `/mnt/workspaces/Cells/e07-v1-judged-20261113-01/`. Its output
     erosion with D-loss 5.7–6.8% and ΔJ from −0.031 to +0.044.
   - So a retention claim in v2 keeps v1's paired null. Turnover's own engine contribution
     is small.
-- **s 1.0 does not maintain the disc even with disc donors.** The (c) control at s 1.0 lost
-  14 founders and 6 D copies. J was 0.784 at the judged record (minimum 0.649), and the
-  largest fall was 8 cells in one 10 s step at 520 s. At s 0.6, J was 1 at every record.
-  v2's challenges therefore run first at s 0.6; s 1.0 is a boundary case.
-- **Naive templates erase the mark within about one turnover.** The (b) sheets were all H at
-  940–1050 s (s 0.6) and 550–630 s (s 1.0). The conversions of interior newcomers that arrived
-  with five or more D neighbours were:
+- **At s 1.0 the disc was not maintained even with disc donors, in the one run.** The (c)
+  control at s 1.0 lost 14 founders and 6 D copies. J was 0.784 at the judged record
+  (minimum 0.649), and the largest fall was 8 cells in one 10 s step at 520 s. At s 0.6, J was
+  1 at every record. This is one run per s. v2's challenges therefore run first at s 0.6,
+  and s 1.0 is a boundary case.
+- **Naive templates erased the mark within about one turnover at every τ run** (40, 120 and
+  300 s; v1 ran no isolated newcomers at the literature brackets). The (b) sheets were all H
+  at 940–1050 s (s 0.6) and 550–630 s (s 1.0). The conversions of interior newcomers that
+  arrived with five or more D neighbours were:
   - at s 0.6: 9/11, 5/10 and 1/7 at τ 40, 120 and 300 s;
   - at s 1.0: 5/7, 5/9 and 2/8.
 
-  tau* was 300 s at both s, from a single draw. A block refill by naive templates can
-  therefore restore only through fast formation.
+  tau* was 300 s at both s, from a single draw.
+- **The open question for a block refill.** Whether a small block of naive templates inside
+  a surviving mark restores is a hypothesis v1 does not answer. Its whole-sheet refills went
+  all H even at τ 40 s, where most interior newcomers with D neighbours converted.
 - **Coupling after turnover is the law's.** A after the first turnover was 0.200–0.206 in
   fast k1 and 0.146–0.151 in central k1, and 0.609–0.618 within fast k3's first turnover. It
   equals the law over the same records. Weight / A was 0.102–0.106 on D–H junctions and
@@ -201,12 +205,18 @@ scored three ways (E15 §2).
 - matched appearance with a different history: a recently written disc against a long-held
   one under the same lesion. It separates history-held from attractor-held recovery.
 
-**What v1 predicts for it.** At τ 40 s, most interior newcomers with five or more D neighbours
-converted. At the literature brackets, the mark was erased. A small interior refill
-restoring at fast formation, and failing at fast or central brackets, would be the expected
-negative result: the mark is generated and maintained but not restored. Version 0 has no
-regulatory network, secreted signal or mechanics. The heredity cell's law set stands in for
-"the same network" and is labelled so.
+**What v1 suggests, as a hypothesis.** At τ 40 s most interior newcomers with five or more D
+neighbours converted, but the whole sheet still went all H. v1 ran no isolated newcomers at
+the literature brackets.
+- **The hypothesis.** A small interior refill might restore at fast formation and fail at
+  the fast or central bracket.
+- **The informative negative result.** A mark that is generated and maintained but not
+  restored.
+
+Version 0 has no regulatory network, secreted signal or mechanics. The heredity cell's law
+set stands in for "the same network" and is labelled so. E15 §3 asks for 1-D chain screens
+before the sheet. This note leaves them out, because v2's frame is v1's sheet; they could
+come before the lesion arms if the lead wants them.
 
 ## 6. Arms, a sketch for review (not registered)
 
@@ -216,7 +226,7 @@ regulatory network, secreted signal or mechanics. The heredity cell's law set st
 | No-turnover controls | 0.6, 1.0 | none | each challenge and lesion | 1 each (deterministic) |
 | Second cue | 0.6 (1.0 boundary) | fast k1 | 2 s and 0.5 s; written region and naive region | 4 |
 | Injected current | 0.6 | fast k1 | single cell and block, inside W | 4 |
-| E15 v0 refill | 0.6 | fast k1 donor copies outside the block; the block by naive templates at τ 40, 120, 900 s | interior block; boundary block | 2–4 |
+| E15 v0 refill | 0.6 | fast k1 donor copies elsewhere; the block by naive templates. One formation law per run, so the bracket applies to every junction restart. The fast bracket first, then τ 40 and 120 s as v1's ladder | interior block; boundary block | 2–4 |
 | E15 v0 state lesion | 0.6 | fast k1 | injection block inside W; cue block outside W | 2–4 |
 
 **Cost.**
@@ -264,17 +274,21 @@ The electrode was in cell 63, the disc's centre, at −20 pA, with carriers {K, 
   holds is refused in the step.
 - The write cue before replacement is the same declaration with earlier times and was not
   built separately.
-- Not built: a dense block refill, one electrode per block cell, and the injection-only
-  control.
+- Not built:
+  - a dense block refill;
+  - a schedule mixing isolated templates and donor copies;
+  - one electrode per block cell;
+  - the injection-only control.
 
 ## 8. Features it needs that do not exist yet
 
 | Need | For | Status |
 | --- | --- | --- |
-| A bath composition step in the pump family | 4.3, the osmotic step | Absent. Bath steps exist only in the older surface families (`core/surface_bath_events_binding.py` and the `*_bath_events` models) |
+| A bath composition step in the pump family | 4.3, the osmotic step | None found. A search found bath steps only in the older surface families (`core/surface_bath_events_binding.py` and the `*_bath_events` models) |
+| Formation parameters per event or per template | a block at one τ beside donor copies at another | Absent. `with_replacement` declares one `junction_formation` block per definition, and neither templates nor events carry one. §6 uses one law per run |
 | Replacement over water qualified on the heredity sheet | 4.3 | `scheduled_cell_replacement@2` over `ideal_osmosis_linear_compliance_water@1` landed on 13 November; G2-Q1 covers @1 on held-bath worlds only |
 | Injection over water | an injected current with water | Refused: `[water, injection@1]` |
-| A dense block refill inside G2-Q1's scope | §5 refills | Unverified: needs a definition-time build, then a numerics check |
+| A dense block refill inside G2-Q1's scope, and a schedule mixing templates and donor copies | §5 refills | Unverified: both need a definition-time build, then a numerics check |
 | Removal with a vacancy, an excision operator for the composite | later E15 versions | Absent (E15 §1.7); not needed for version 0 |
 | Readouts (validation side): the clearance criterion, W at release, challenge responses, fresh against long-held labels from the replacement generation, pattern metrics and recovery time | every arm | To write. `src/cells/assays/recovery.py` exists as an observer |
 
