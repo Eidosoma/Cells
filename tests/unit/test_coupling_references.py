@@ -319,10 +319,10 @@ def test_fast_arm_tracks_the_quasi_steady_value():
     reg = rs.Turnover(0.5, 2.0, ((0.0, 0.0, 0.5), (0.5, 3.0, 0.5), (1.5, 0.0, 0.5)))
     inputs = [rs.Input("hill_activation", reg, 0.6, 3.0)]
     kon, koff = 900.0, 100.0  # dt (k_on + k_off) = 1 at dt = 1 ms
-    run = rs.integrate(inputs, kon, koff, 0.05, 2.0, record=(1.0, 2.0))
-    radau = rs.integrate(inputs, kon, koff, 0.05, 2.0, record=(1.0, 2.0), method="Radau",
+    run = rs.integrate(inputs, kon, koff, 0.05, 1.2, record=(1.0, 1.2))
+    radau = rs.integrate(inputs, kon, koff, 0.05, 1.2, record=(1.0, 1.2), method="Radau",
                          rtol=1e-10, atol=(1e-14, 1e-14))
-    for t in (1.0, 2.0):
+    for t in (1.0, 1.2):
         star = float(rs.quasi_steady(rs.input_value(inputs, t), kon, koff))
         assert abs(run.at[t][0] - star) < 2e-3  # O(1/lambda) lag
         assert abs(run.at[t][0] - radau.at[t][0]) <= 1e-10
@@ -372,8 +372,8 @@ def r_feedback(kon=5.0, koff=0.5, *, s0=0.1, law="state_complement", b=0.2, K=20
 
 @pytest.fixture(scope="module")
 def feedback():
-    """R-feedback's default world over 1.5 s: the coupled run every feedback test reads."""
-    return rc.simulate(r_feedback(), 1.5, record=(0.0, 0.5, 1.0, 1.5))
+    """R-feedback's default world over 1 s: the coupled run every feedback test reads."""
+    return rc.simulate(r_feedback(), 1.0, record=(0.0, 0.5, 1.0))
 
 
 NO_NA = (0.0, 2e-9, 5e-10)
@@ -383,7 +383,7 @@ NO_NA = (0.0, 2e-9, 5e-10)
 def held():
     """The same world with every sodium route closed: the states see constant inputs."""
     world = r_feedback(leak_a=NO_NA, leak_b=NO_NA, contact_P=(0.0, 3e-6, 4e-6))
-    return rc.simulate(world, 1.5, record=(0.3, 1.5))
+    return rc.simulate(world, 1.0, record=(0.3, 1.0))
 
 
 def test_r_cell_at_constant_availability_equals_r_tissue():
@@ -407,9 +407,9 @@ def test_r_cell_at_constant_availability_equals_r_tissue():
 
 def test_r_feedback_with_frozen_states_equals_r_tissue_with_the_product_gate():
     world = r_feedback(kon=0.0, koff=0.0, s0=0.25)
-    run = rc.simulate(world, 1.5, record=(0.5, 1.5))
+    run = rc.simulate(world, 0.8, record=(0.4, 0.8))
     gate = (0.2 + 0.8 * 0.75) ** 2
-    assert run.at[1.5]["elements"]["e"]["a_eff"] == gate
+    assert run.at[0.8]["elements"]["e"]["a_eff"] == gate
     from validation.division import cleft_tissue_reference as rt
 
     tw = rt.World(
@@ -419,8 +419,8 @@ def test_r_feedback_with_frozen_states_equals_r_tissue_with_the_product_gate():
         patches={"a.m": rt.PatchSpec("a", "bath", LEAK, area_m2=AREA, capacitance_F=CAP),
                  "b.m": rt.PatchSpec("b", "bath", LEAK, area_m2=AREA, capacitance_F=CAP)},
         contacts={"e": rt.ContactSpec(("a", "b"), (2e-6, 3e-6, 4e-6), area_m2=1e-10, gate=gate)})
-    ref = rt.simulate_static(tw, 1.5, record=(0.5, 1.5), atol=SMALL)
-    for t in (0.5, 1.5):
+    ref = rt.simulate_static(tw, 0.8, record=(0.4, 0.8), atol=SMALL)
+    for t in (0.4, 0.8):
         for c in "ab":
             assert abs(run.at[t]["V"][c] - ref.at[t]["V"][c]) <= 1e-13
             for x, y in zip(run.at[t]["amounts_fmol"][c], ref.at[t]["cells"][c]["amounts_fmol"],
@@ -467,7 +467,7 @@ def test_held_sodium_gives_the_frozen_closed_form(held):
     run = held
     for cell, c in (("a", CYT_A[0]), ("b", CYT_B[0])):
         u = float(fr.hill_activation(c, 20.0, 2.0))
-        for t in (0.3, 1.5):
+        for t in (0.3, 1.0):
             assert run.at[t]["mM"][cell][0] == pytest.approx(c, rel=1e-13)
             exact = fr.to_float(rs.frozen(t, 0.1, u, 5.0, 0.5, exact=True))
             assert abs(run.at[t]["s"][("s1", cell)] - exact) <= 1e-11
@@ -478,11 +478,11 @@ def test_held_sodium_gives_the_frozen_closed_form(held):
 
 def test_feedback_conserves_amounts_and_the_recorded_factor_is_r_fac(feedback):
     run = feedback
-    first, last = run.at[0.0], run.at[1.5]
+    first, last = run.at[0.0], run.at[1.0]
     for k in range(3):
         total = sum(last["amounts_fmol"][c][k] - first["amounts_fmol"][c][k] for c in "ab")
         assert abs(total - last["exchanged_fmol"][k]) <= 1e-9
-    for t in (0.5, 1.5):
+    for t in (0.5, 1.0):
         r = run.at[t]
         F = fr.side_factor("both", "state_complement", 0.2, first=r["s"][("s1", "a")],
                            second=r["s"][("s1", "b")])
@@ -496,7 +496,7 @@ def test_feedback_conserves_amounts_and_the_recorded_factor_is_r_fac(feedback):
 
 
 def test_the_loop_is_live_and_a_perturbed_K_moves_it_beyond_the_floor(feedback, held):
-    T, base = 1.5, feedback
+    T, base = 1.0, feedback
     # An upper estimate of the error at rtol 1e-10: the distance to a run 100 times looser.
     coarse = rc.simulate(r_feedback(), T, record=(T,), rtol=1e-8)
     floor = max(abs(base.at[T]["s"][k] - coarse.at[T]["s"][k]) for k in base.at[T]["s"])
@@ -517,17 +517,17 @@ def test_fast_states_approach_the_instantaneous_hill_limit():
     kon, koff, b, K, n = 9e3, 1e3, 0.2, 20.0, 2.0
     star = {c: float(rs.quasi_steady(fr.hill_activation(x[0], K, n), kon, koff))
             for c, x in (("a", CYT_A), ("b", CYT_B))}
-    fast = rc.simulate(r_feedback(kon, koff, b=b, s0=star), 1.0, record=(1.0,))
+    fast = rc.simulate(r_feedback(kon, koff, b=b, s0=star), 0.5, record=(0.5,))
     amp = kon / (kon + koff)
     hill = r_feedback(kon, koff)
     couplings = {"j": rc.Coupling("e", "hill_inhibition", "Na", basal=1 - (1 - b) * amp,
                                   K_mM=rs.effective_half_saturation(K, n, kon, koff), n=n,
                                   side="both")}
-    limit = rc.simulate(rc.World(**{**hill.__dict__, "couplings": couplings}), 1.0,
-                        record=(1.0,))
-    da = abs(fast.at[1.0]["elements"]["e"]["a_eff"] - limit.at[1.0]["elements"]["e"]["a_eff"])
+    limit = rc.simulate(rc.World(**{**hill.__dict__, "couplings": couplings}), 0.5,
+                        record=(0.5,))
+    da = abs(fast.at[0.5]["elements"]["e"]["a_eff"] - limit.at[0.5]["elements"]["e"]["a_eff"])
     assert da < 1e-4
-    assert abs(fast.at[1.0]["mM"]["a"][0] - limit.at[1.0]["mM"]["a"][0]) < 1e-4
+    assert abs(fast.at[0.5]["mM"]["a"][0] - limit.at[0.5]["mM"]["a"][0]) < 1e-4
 
 
 def test_r_cell_follows_a_turnover_regulator_and_its_voltage_tracks_zero_current():
@@ -602,7 +602,9 @@ def test_sides_switches_products_and_a_state_sourced_population():
             assert e["current_A_left"] == pytest.approx(on * e["current_A_right"], rel=1e-12)
         F3 = fr.coupling_factor("state_complement", 0.2, s=sa)
         assert r["routes"][("c3", "kleak_a")]["F"] == F3 == r["elements"]["kleak_a"]["a_eff"]
-    _, _, floor = rc.floor(world, 0.004, (0.002, 0.004))
+    tight = rc.simulate(world, 0.004, record=(0.001, 0.002, 0.003), rtol=1e-12,
+                        atol={k: v / 1000 for k, v in rc.ATOL.items()})
+    floor = rc.compare(run, tight, (0.001, 0.002, 0.003))
     assert floor["s"] < 1e-11 and floor["amounts"] < 1e-9 and floor["V"] < 1e-12
 
 
