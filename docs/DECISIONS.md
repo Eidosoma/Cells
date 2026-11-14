@@ -5560,6 +5560,32 @@ wording.
 - **Still open:** the fuel design, which may come to the user. Syn3A's metabolism needs reactions
   that can make and spend fuel.
 
+## D173: Syn3A becomes the minimal-cell track; no contact with authors
+
+2026-11-14, the user, after the advisor reviewed the options from the Syn3A audit
+([SYN3A_MINIMAL_CELL_TRACK.md](SYN3A_MINIMAL_CELL_TRACK.md)): "go on as you suggest but no
+contacting the authors and we will search for the missing data also help if needed lets go".
+
+- **Adopted as a track,** and run beside the current work. It does not displace FR-4 and FR-5,
+  which the requester labels blocking. Its engine features join D172's single restructure round.
+- **The first milestone is fixed after:**
+  - probe P0, a capability probe: a vesicle without channels or pumps under water@1, started from
+    the stepped state, with a scale check of the ledger floors and step bounds;
+  - the Frallicciardi 2022 audit (CC BY): numeric traces, size distributions, the signal model, and
+    other conditions on the same membrane;
+  - a check whether D150's exchange already acts as gradient-driven permeation, which may leave
+    only water seeing neutral molecules as missing.
+- **Recorded caution** (the advisor): the proposed first milestone uses protein-free synthetic
+  vesicles, so it tests membrane physics, not Syn3A. The living-cell lipid-diet data come from a
+  tagged strain, and their authors attribute the effects to lipid–protein interactions.
+- **Never contact authors.** The missing Pelletier 2021 division data are searched for in public
+  sources only, by the user's side and the agent.
+- **Agreed:** values from non-commercial papers are cited, but their tables are never copied into
+  the repository. The 4D model's outputs come at the metabolism stage (D138).
+- ***M. pneumoniae* is audited soon,** amended the same evening by the user: "But also M. pneumoniae
+  soon for validation if we have more real public data there". The Syn3A agent audits it next,
+  for real measured public data to validate against, and says whether it should lead any stage.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
