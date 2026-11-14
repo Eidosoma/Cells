@@ -5,20 +5,20 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-14",
-  "generated_at": "2026-11-14T18:43:42Z",
-  "revision": "2d2d9816",
+  "generated_at": "2026-11-14T21:17:32Z",
+  "revision": "8497ff37",
   "revision_date": "2026-11-14",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
   "source_base_url": "https://github.com/Eidosoma/Cells/blob/main/",
   "counts": {
-   "engine_files": 501,
-   "engine_files_placed": 501,
-   "parts": 212,
-   "relations": 791,
+   "engine_files": 503,
+   "engine_files_placed": 503,
+   "parts": 214,
+   "relations": 806,
    "by_kind": {
-    "operator": 15,
-    "component": 108,
+    "operator": 16,
+    "component": 109,
     "state": 6,
     "gate": 8,
     "capability": 21,
@@ -27,10 +27,10 @@
    },
    "by_status": {
     "qualified": 35,
-    "landed": 11,
+    "landed": 15,
     "established": 61,
     "planned": 25,
-    "designed": 9,
+    "designed": 7,
     "failed": 1,
     "external": 4,
     "unstated": 66
@@ -350,12 +350,12 @@
     }
    ],
    "gained": {
-    "added": 25,
+    "added": 28,
     "removed": 2,
     "where": [
      [
       "models/operators",
-      17
+      20
      ],
      [
       "models",
@@ -372,10 +372,10 @@
      "at": "ced45c87",
      "text": "A review on 14 November 2026 found no channel, pump, transporter or junction law among them. One case, secretion and uptake, is the lead's to classify.",
      "doc": "visualizer/docs/PROTEIN_ATLAS_REVIEW.md",
-     "covers_all": true
+     "covers_all": false
     }
    },
-   "checked_at": "2d2d9816"
+   "checked_at": "8497ff37"
   },
   "counts": {
    "units": 49,
@@ -1311,7 +1311,7 @@
    "group": "operators",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Production and clearance of secreted molecules, inside cells and between them. Implemented and guarded. Its first-order clearance is part of the numerically qualified secreted-species transport (D150 v1); production is guarded by tests only. The shared species code holds at most 7 species today; a rise to 16 is accepted and queued (FR-9, D165).",
+   "plain": "Production and clearance of secreted molecules, inside cells and between them. Implemented and guarded. Its first-order clearance is part of the numerically qualified secreted-species transport (D150 v1); production is guarded by tests only. The shared species code holds up to 16 species since 14 November 2026 (FR-9, D165); the transport's judged scope stays at 7 species or fewer.",
    "detail": "Operator scheduled_species_turnover@1: production and first-order clearance of neutral species.",
    "facts": [
     [
@@ -1369,6 +1369,10 @@
     {
      "path": "docs/FEATURE_REQUESTS.md",
      "where": "FR-9"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The architecture block's first items landed (14 November 2026)"
     }
    ],
    "files": [
@@ -1509,6 +1513,66 @@
    ],
    "files": [
     "src/cells/models/operators/species_reactions.py"
+   ]
+  },
+  {
+   "id": "op.species_regulated_availability@1",
+   "label": "Regulated availability",
+   "kind": "operator",
+   "group": "operators",
+   "status": "landed",
+   "as_of": "2026-11-14",
+   "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Milestone 1 landed on 14 November 2026: the operator with its refusals, the junction and channel targets, and a starting condition for each cell. It is development code, guarded by tests; its qualification comes later. Milestone 2 (the regulatory state compiled, restart, batches and compositions) is in progress.",
+   "detail": "Operator species_regulated_availability@1: coupling out of the inventory (D155 item 1, D156).",
+   "facts": [
+    [
+     "Law",
+     "species_regulated_availability@1"
+    ],
+    [
+     "Class",
+     "SpeciesRegulatedAvailability"
+    ],
+    [
+     "Parts of the step",
+     "event map, split half-steps"
+    ],
+    [
+     "Step method",
+     "exact_two_state_half_steps@1"
+    ],
+    [
+     "Under an RK4 inner step",
+     "split"
+    ],
+    [
+     "Schedule in a definition",
+     "coupling_controls, regulatory_writes"
+    ],
+    [
+     "State it owns",
+     "6 fields"
+    ],
+    [
+     "Reads as declared",
+     "volume, extracellular_volume, active, outside_active, membrane_active"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "src/cells/models/operators/species_regulated_availability.py"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The coupling operator `species_regulated_availability@1` (D155/D156): milestone 1 landed"
+    },
+    {
+     "path": "docs/INVENTORY_COUPLING_DESIGN.md",
+     "where": "7. Milestone 1 as built (14 November 2026)"
+    }
+   ],
+   "files": [
+    "src/cells/models/operators/species_regulated_availability.py"
    ]
   },
   {
@@ -2038,7 +2102,7 @@
    "group": "execution",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Lets a checkpoint written by one version of the code resume under another, but only through a recorded admission. Refusal stays the default. In place for CPU runs; the GPU extension is being built.",
+   "plain": "Lets a checkpoint written by one version of the code resume under another, but only through a recorded admission. Refusal stays the default. In place for CPU vector windows, and on the GPU for its first case, whose extension landed on 14 November 2026.",
    "detail": "Checkpoint continuity: one recorded admission per resume across a source change.",
    "facts": [
     [
@@ -2057,6 +2121,10 @@
     {
      "path": "PROGRESS.md",
      "where": "Checkpoint continuity, first landing (D153)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "Checkpoint continuity's GPU extension of case 1 landed (D153"
     },
     {
      "path": "docs/CURRENT_PLAN.md",
@@ -3002,12 +3070,27 @@
    "label": "Coupling out of the inventory",
    "kind": "component",
    "group": "laws",
-   "status": "designed",
+   "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "A species amount in the inventory sets how available a junction or channel is, so chemistry can change electrical behaviour. The design is accepted (14 November 2026): junctions first, with channels pending. Nothing is implemented yet. It also answers feature request FR-6, species-driven control factors.",
+   "plain": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Its first part is in the engine since 14 November 2026: the Hill factors, and the operator that applies them to junctions and to channels. It is development code, guarded by tests; its qualification comes later. It also answers feature request FR-6, species-driven control factors.",
+   "detail": "Hill activation and inhibition factors in log space (a neutral helper).",
+   "facts": [
+    [
+     "Files",
+     "1"
+    ],
+    [
+     "Lines of Python",
+     "41"
+    ]
+   ],
    "sources": [
     {
      "path": "docs/INVENTORY_COUPLING_DESIGN.md"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The coupling operator `species_regulated_availability@1` (D155/D156): milestone 1 landed"
     },
     {
      "path": "PROGRESS.md",
@@ -3026,7 +3109,10 @@
      "where": "FR-6"
     }
    ],
-   "weight": 0
+   "files": [
+    "src/cells/processes/hill_factors.py"
+   ],
+   "weight": 41
   },
   {
    "id": "laws.excitable",
@@ -3035,11 +3121,18 @@
    "group": "laws",
    "status": "designed",
    "as_of": "2026-11-14",
-   "plain": "General physics for tissue that carries a travelling electrical wave, to be qualified against cable theory. A design note comes first.",
+   "plain": "General physics for tissue that carries a travelling electrical wave, to be qualified against cable theory. The design note is accepted narrowly (D170, 14 November 2026), for its first two milestones on the tissue model as it stands. The probe registered for the acceptance failed its first criterion, so the acceptance rests on a second probe, post hoc but written before its runs. The junction floor stays provisional. No new engine code yet.",
    "sources": [
     {
+     "path": "docs/EXCITABLE_TISSUE_DESIGN.md"
+    },
+    {
      "path": "docs/DECISIONS.md",
-     "where": "D155"
+     "where": "D155, and D170: Track E's design note accepted narrowly, for M1 and M2 on @3"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "Track E (excitable tissue, D155): the design note accepted narrowly"
     },
     {
      "path": "docs/CURRENT_PLAN.md",
@@ -4055,7 +4148,7 @@
     ],
     [
      "Lines of Python",
-     "436"
+     "438"
     ]
    ],
    "sources": [
@@ -4071,7 +4164,7 @@
     "src/cells/models/operators/__init__.py",
     "src/cells/models/operators/contract.py"
    ],
-   "weight": 436
+   "weight": 438
   },
   {
    "id": "op.endogenous_lifecycle",
@@ -4376,17 +4469,20 @@
    "label": "Conduction probe",
    "kind": "component",
    "group": "experiments",
-   "status": "designed",
+   "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Can the channel laws the composite admits carry an action potential along a chain of cells? A probe on the engine as it stands is in progress, with its success criteria set before it runs.",
+   "plain": "Can the tissue model's channel laws carry an action potential along a chain of cells? An exploratory probe on the engine as it stands, not a qualification (14 November 2026). As registered, at 0.05 F/m², it failed its first criterion: every perturbed segment blocked. A second probe at 0.01 F/m², post hoc but written before its runs, met all four criteria. A reference written blind matches the engine to 0.02 mV.",
    "sources": [
     {
-     "path": "docs/DECISIONS.md",
-     "where": "D156"
+     "path": "PROGRESS.md",
+     "where": "Track E (excitable tissue, D155): the design note accepted narrowly"
     },
     {
-     "path": "docs/CURRENT_PLAN.md",
-     "where": "Status on 14 November 2026, and the working order (D156)"
+     "path": "docs/DECISIONS.md",
+     "where": "D156, and D170: Track E's design note accepted narrowly, for M1 and M2 on @3"
+    },
+    {
+     "path": "docs/EXCITABLE_TISSUE_DESIGN.md"
     }
    ],
    "weight": 0
@@ -4570,14 +4666,14 @@
    "facts": [
     [
      "Files",
-     "311"
+     "313"
     ],
     [
      "Lines of Python",
-     "73,057"
+     "75,148"
     ]
    ],
-   "weight": 73057
+   "weight": 75148
   },
   {
    "id": "val.division",
@@ -4656,6 +4752,43 @@
    "weight": 2496
   },
   {
+   "id": "val.coupling",
+   "label": "Coupling references",
+   "kind": "component",
+   "group": "references",
+   "status": "landed",
+   "as_of": "2026-11-14",
+   "plain": "Reference solutions for the regulated-availability operator, written by a separate agent that read no engine code. Their own tests are in the routine gate. The engine has not yet been judged against them.",
+   "facts": [
+    [
+     "Files",
+     "6"
+    ],
+    [
+     "Lines of Python",
+     "1,985"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "validation/coupling/REFERENCES_USAGE.md"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "Track R's independent references landed (14 November 2026)"
+    }
+   ],
+   "files": [
+    "validation/coupling/REFERENCES_USAGE.md",
+    "validation/coupling/cells_reference.py",
+    "validation/coupling/factor_reference.py",
+    "validation/coupling/piecewise_ode.py",
+    "validation/coupling/reference_crosschecks.py",
+    "validation/coupling/state_reference.py"
+   ],
+   "weight": 1985
+  },
+  {
    "id": "val.other",
    "label": "Other validation areas",
    "kind": "component",
@@ -4684,19 +4817,19 @@
    "facts": [
     [
      "Files",
-     "721"
+     "738"
     ],
     [
      "Lines of Python",
-     "227,254"
+     "229,672"
     ],
     [
      "Tier 1 test files",
-     "316"
+     "323"
     ],
     [
      "Tier 2 test files",
-     "84"
+     "92"
     ],
     [
      "Tier 3 test files",
@@ -4709,7 +4842,7 @@
      "where": "Milestones and provenance"
     }
    ],
-   "weight": 227254
+   "weight": 229672
   },
   {
    "id": "state.compartment",
@@ -5576,7 +5709,7 @@
    "group": "biology",
    "order": 1,
    "plain": "The current focus: a coherent model of one cell, where many processes share the same inventories.",
-   "note": "The cell drawn is one cell of the sheet, which stands for skin-like tissue. Its round shape is the picture's choice: the engine gives a cell a volume and a membrane area, not a shape. The neighbours drawn round it are scenery.",
+   "note": "The cell drawn is one cell of the sheet, which stands for skin-like tissue; it is not a model of a planarian's skin cell. Its shape is the picture's choice: six flat sides where it meets its neighbours, an outer face and a base, and the height of the sheet's cells. The engine gives a cell a volume and a membrane area, not a shape. The cut removes the outer face, which is kept as a dashed outline. The neighbours, that outline and the lined plate under the layer are scenery. The plate marks where a flatworm's skin rests on a basement membrane, which Cells does not model.",
    "sources": [
     {
      "path": "docs/CURRENT_PLAN.md",
@@ -16610,6 +16743,13 @@
    "label": "volume, extracellular_volume"
   },
   {
+   "from": "op.ideal_osmosis_linear_compliance_water@1",
+   "to": "op.species_regulated_availability@1",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "volume, extracellular_volume"
+  },
+  {
    "from": "op.isopotential_partition@1",
    "to": "op.local_species_reactions@1",
    "kind": "conflicts",
@@ -16633,6 +16773,13 @@
   {
    "from": "op.isopotential_partition@1",
    "to": "op.scheduled_species_turnover@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "active"
+  },
+  {
+   "from": "op.isopotential_partition@1",
+   "to": "op.species_regulated_availability@1",
    "kind": "conflicts",
    "weight": 1,
    "label": "active"
@@ -16715,6 +16862,13 @@
    "label": "extracellular_volume"
   },
   {
+   "from": "op.restricted_cleft_lumen@1",
+   "to": "op.species_regulated_availability@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
    "from": "op.restricted_cleft_lumen@2",
    "to": "op.scheduled_cell_replacement@1",
    "kind": "conflicts",
@@ -16731,6 +16885,13 @@
   {
    "from": "op.restricted_cleft_lumen@2",
    "to": "op.scheduled_species_turnover@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
+   "from": "op.restricted_cleft_lumen@2",
+   "to": "op.species_regulated_availability@1",
    "kind": "conflicts",
    "weight": 1,
    "label": "extracellular_volume"
@@ -16771,6 +16932,13 @@
    "label": "outside_active, membrane_active"
   },
   {
+   "from": "op.scheduled_membrane_insertion@1",
+   "to": "op.species_regulated_availability@1",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "outside_active, membrane_active"
+  },
+  {
    "from": "op.scheduled_membrane_insertion@2",
    "to": "op.scheduled_species_exchange@1",
    "kind": "conflicts",
@@ -16780,6 +16948,13 @@
   {
    "from": "op.scheduled_membrane_insertion@2",
    "to": "op.scheduled_species_turnover@1",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "outside_active, membrane_active"
+  },
+  {
+   "from": "op.scheduled_membrane_insertion@2",
+   "to": "op.species_regulated_availability@1",
    "kind": "conflicts",
    "weight": 2,
    "label": "outside_active, membrane_active"
@@ -17838,6 +18013,12 @@
    "weight": 1
   },
   {
+   "from": "op.species_regulated_availability@1",
+   "to": "models.composite",
+   "kind": "operator_of",
+   "weight": 1
+  },
+  {
    "from": "op.ideal_osmosis_linear_compliance_water@1",
    "to": "state.compartment",
    "kind": "provides",
@@ -17997,10 +18178,10 @@
   },
   {
    "from": "exp.conduction",
-   "to": "models.composite",
+   "to": "models.pump_tissue",
    "kind": "runs",
    "weight": 1,
-   "label": "probes the channel laws the composite admits"
+   "label": "runs the tissue model @3 with its five channel laws"
   },
   {
    "from": "exp.d150",
@@ -20546,6 +20727,12 @@
    "weight": 1
   },
   {
+   "from": "op.contract",
+   "to": "op.species_regulated_availability@1",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
    "from": "op.cytoplasmic_bridge_closure@1",
    "to": "exec.specs",
    "kind": "uses",
@@ -21182,6 +21369,42 @@
    "weight": 1
   },
   {
+   "from": "op.species_regulated_availability@1",
+   "to": "exec.specs",
+   "kind": "uses",
+   "weight": 4
+  },
+  {
+   "from": "op.species_regulated_availability@1",
+   "to": "laws.inventory_coupling",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.species_regulated_availability@1",
+   "to": "laws.other",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.species_regulated_availability@1",
+   "to": "op.contract",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "op.species_regulated_availability@1",
+   "to": "op.membrane_entity_state@1",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.species_regulated_availability@1",
+   "to": "op.scheduled_species_turnover@1",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
    "from": "models.composite",
    "to": "models.pump_tissue",
    "kind": "wraps",
@@ -21383,6 +21606,13 @@
    "kind": "writes",
    "weight": 1,
    "label": "extracellular_amount_increment"
+  },
+  {
+   "from": "op.species_regulated_availability@1",
+   "to": "state.contact",
+   "kind": "writes",
+   "weight": 1,
+   "label": "scales the junction availability"
   }
  ],
  "timeline": null,
