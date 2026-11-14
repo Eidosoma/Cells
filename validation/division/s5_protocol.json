@@ -2,7 +2,7 @@
  "kind": "cells.cell_division_s5_protocol@1",
  "id": "s5a-partition-bridge-insertion2-lumen2",
  "title": "S5a: isopotential_partition@1, cytoplasmic_bridge_closure@1, scheduled_membrane_insertion@2 and restricted_cleft_lumen@2 against R-ops, R-tissue and the analytic limits",
- "status": "PROPOSED, not registered: drafted 14 November 2026 for the lead's review with the advisor. No judged run has been made. Q2's scale is pending in R-ops (Appendix A.8, the increment form's term): Q2's frozen draws were fixed before it lands.",
+ "status": "PROPOSED, not registered: drafted 14 November 2026 for the lead's review with the advisor; the lead's rulings of 14 November written in. No judged run has been made. Q2's judged seeds and its negative controls are frozen together in this commit, before R-ops' amended magnitudes (Appendix A.8, the increment form's term, pending in R-ops) land.",
  "engine_models": [
   "resolved_pump_composite@1",
   "resolved_pump_tissue@3",
@@ -20,12 +20,27 @@
  },
  "rules": {
   "tolerances": "Every tolerance number is computed from a development run named beside it (validation/division/s5_protocol.py draft); development runs are not judged.",
-  "judged_run": "once per item, after registration, from a fresh clean execution snapshot of main (validation/source_snapshot.py, no dirty patch). Each judged driver refuses an unregistered protocol and a run outside a clean snapshot (to be added at registration). A failure is recorded and diagnosed, never retuned.",
+  "judged_run": "once per item, after registration, from a fresh clean execution snapshot of main (validation/source_snapshot.py, no dirty patch). A failure is recorded and diagnosed, never retuned.",
+  "judge_entries": {
+   "guard": "validation/division/s5_protocol.registered, each entry's first call: it refuses an unregistered protocol and a source that is not a clean execution snapshot before anything is computed or written (S3's rule); tests/unit/test_s5_judged_refusal.py tests it on edited copies",
+   "Q1 and Q11": "python -m validation.division.egg_division_world OUT --judge",
+   "Q2": "python -m validation.division.q2_rops_comparison judge OUT (also refused until R-ops takes charge_term)",
+   "Q3": "python -m validation.division.q3_tissue_comparison judge OUT",
+   "Q5": "python -m validation.division.q5_order judge OUT",
+   "Q4, Q6-Q9": "the test files at the judged snapshot",
+   "Q10": "none: reported, not judged",
+   "development": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/test_s5_judged_refusal.log",
+    "snapshot_revision": "1e73543",
+    "pre_merge": false,
+    "tests": "5 passed in 2.14s"
+   }
+  },
+  "landing_order": "this protocol's frozen commit lands on main first, then the amended R-ops; A.8's 'pending in R-ops' is removed in that second landing (the lead, 14 November)",
   "development_runs": {
    "q2": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a20/q2_rops_comparison/q2_rops.json",
-    "snapshot_revision": "5e6f9cb",
-    "pre_merge": false
+    "path": null,
+    "pending": "the observations-only commit after the freeze"
    },
    "q3": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q3_tissue_comparison/q3_tissue.json",
@@ -43,18 +58,33 @@
     "pre_merge": false
    },
    "q5": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/comparisons-s5a9/q5_order/q5_order.json",
-    "snapshot_revision": "6c2b118",
-    "pre_merge": true
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/q5_order/q5_order.json",
+    "snapshot_revision": "1e73543",
+    "pre_merge": false
+   },
+   "q5_bridge_coupling": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/bridge-coupling-order.json",
+    "snapshot_revision": null,
+    "pre_merge": false
+   },
+   "q7a": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/test_division_idle_sheet_runs.log",
+    "snapshot_revision": "1e73543",
+    "pre_merge": false
+   },
+   "refusal": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/test_s5_judged_refusal.log",
+    "snapshot_revision": "1e73543",
+    "pre_merge": false
    },
    "q10_dt": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/gaps-s5a13/q10_sensitivity_dt0.25ms/q10_sensitivity.json",
-    "snapshot_revision": "0ae7bef",
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/q10_dt0.25ms/q10_sensitivity.json",
+    "snapshot_revision": "1e73543",
     "pre_merge": false
    },
    "q10_half": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/q10-s5a14-dt0.000125/q10_sensitivity.json",
-    "snapshot_revision": "e448687",
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/q10_dt0.125ms/q10_sensitivity.json",
+    "snapshot_revision": "1e73543",
     "pre_merge": false
    },
    "egg": {
@@ -76,6 +106,16 @@
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/comparisons-s5a9/q2_rops_comparison/q2_rops.json",
     "snapshot_revision": "6c2b118",
     "pre_merge": true
+   },
+   "q2_before_freeze": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a20/q2_rops_comparison/q2_rops.json",
+    "snapshot_revision": "5e6f9cb",
+    "pre_merge": false
+   },
+   "a8_ratios": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-references-20261113-01/a8-ratios/a8_ratios.json",
+    "snapshot_revision": null,
+    "pre_merge": false
    },
    "regression": {
     "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/regression-s5a9/results.txt",
@@ -137,162 +177,224 @@
   "cases": [
    "each world's events: the compact symmetric and asymmetric worlds, the neighbour contact, the bridge world's first and second divisions, the asymmetric furrow world with a bridge, the second-onset world's first division",
    "the simultaneous second divisions as the engine applies them (bridge world, second-onset world), against R-ops applying them one after the other, in both orders",
-   "the frozen draws (below)"
+   "the random sets (below)",
+   "the negative controls (below)"
   ],
-  "frozen_draws": {
+  "random_sets": {
    "worlds": [
     "symmetric neighbour world: tests/partition_fixtures.divided(neighbour=True)",
-    "asymmetric neighbour world: divided(neighbour=True, f=0.75, area_fraction=0.6, carriers={Na: 0.3, K: 0.5, M: 0.2})"
+    "asymmetric neighbour world (f 0.75, a 0.6, three carriers): divided(neighbour=True, f=0.75, area_fraction=0.6, carriers={Na: 0.3, K: 0.5, M: 0.2})"
    ],
    "spreads_declared_charges": [
     0.1,
     1.0,
     3.0
    ],
-   "draws_per_world_and_spread": 200,
-   "seed": "numpy default_rng(20261113), fresh per world and spread",
-   "sampler": "validation/division/q2_rops_comparison.perturbed",
-   "rule": "every draw the composite's control domain check admits, with the control at the event, is compared; no other bound applies, and no draw is redrawn",
-   "open_question": "one seed feeds all six sets: both worlds draw the same stream (so their admitted counts match, 200, 148 and 59), and the three spreads differ only in the net-charge term. These are q2_domain_probe's draws, whose old-scale results are known (9.06, 860.56, 152.62). Distinct seeds per world and spread would be independent sets. The lead's choice, before R-ops' amended magnitudes land."
+   "draws_per_set": 200,
+   "sampler": "validation/division/q2_rops_comparison.perturbed, one fresh numpy default_rng per world and spread",
+   "count_rule": "every draw the composite's control domain check admits, with the control at the event, is compared; no other bound applies, no draw is redrawn, and the admitted counts are reported",
+   "seen": {
+    "seed": 20261113,
+    "role": "development evidence (q2_domain_probe's draws; their old-scale results were seen). Once the amended R-ops lands they are rerun under both scales (apply(..., charge_term=False) for the old) and disclosed"
+   },
+   "judged": {
+    "seeds": {
+     "symmetric neighbour world": {
+      "spread 0.1": 867424677,
+      "spread 1": 731592983,
+      "spread 3": 186581497
+     },
+     "asymmetric neighbour world (f 0.75, a 0.6, three carriers)": {
+      "spread 0.1": 336021742,
+      "spread 1": 1277804744,
+      "spread 3": 1727379153
+     }
+    },
+    "role": "the judged sets, assigned by the lead; read only by q2_rops_comparison.judge behind its guard. Nobody runs them, at either scale, before the judged run"
+   }
   },
-  "tolerance": "64 eps x R-ops' own magnitude per compared quantity (the lead's ruling). For a cell's node charge, input and daughters alike, R-ops' magnitude adds |Q| + 1e-15 F sum |z dn|, the increment form's term, carried through its own solve (Appendix A.8, pending in R-ops); clefts unchanged. A key without an R-ops magnitude compares at 64 eps x (|engine| + |R-ops|).",
+  "tolerance": "64 eps x R-ops' own magnitude per compared quantity (the lead's ruling). For a cell's node charge, input and daughters alike, R-ops' magnitude adds |Q| + 1e-15 F sum |z dn|, the increment form's term (the lead's ruling of 14 November: not A.1's whole content, about 1,370 times larger on these draws), carried through its own solve (Appendix A.8, pending in R-ops); clefts unchanged. A key without an R-ops magnitude compares at 64 eps x (|engine| + |R-ops|).",
+  "a8_loosening": {
+   "path": "/mnt/workspaces/Cells/cell-division-s5-references-20261113-01/a8-ratios/a8_ratios.json",
+   "snapshot_revision": null,
+   "pre_merge": false,
+   "note": "the references agent's measure of A.8's loosening (new/old per output key): every magnitude that depends on a charge or potential (charges, potentials, image charge, capacitor energy, and through delta q the mismatch, delta, the increments and moved amounts, the daughters' amounts, the free energy and W); volumes, backgrounds, anchors, areas and capacitances unchanged. The factor on Q2's own draws comes from the seen sets' rerun"
+  },
   "negative_controls": {
-   "cases": "the asymmetric neighbour world's bound state and its admitted spread-1 draw whose daughter sits nearest 0 V after the event; the asymmetric furrow world",
-   "defects": "R-ops given a_k + delta for membrane_0 (potentials cannot show it: a patch's charge and capacitance split together), and the parent's node charge + delta |Q_P|; delta from 1e-16 to 1e-2 in quarter decades",
-   "report": "the smallest delta caught (ratio above 64) on the daughters' charges, on the potentials and on any key, under the old and the new scales",
-   "proposed_pass": "where the case's undefected ratio passes, a_k + 1e-9 is caught on the charges, and the parent's charge + 1e-9 |Q_P| on the charges and the potentials (for the lead to set)"
+   "frozen": "with the judged seeds, in one commit (the lead, 14 November)",
+   "defects": {
+    "a_k": "R-ops given membrane_0's share a_k + delta; a patch's charge and capacitance split together, so it reaches the charges and never the potentials",
+    "parent charge": "R-ops given the parent's node charge Q_P + delta |Q_declared| (the snapshot's charge anchor), which does not vanish as Q_P nears 0",
+    "f": "R-ops given the volume fraction f + delta",
+    "transference": "R-ops given the first carrier's t + delta and the second's t - delta, their sum kept 1"
+   },
+   "deltas": [
+    1e-16,
+    1.7782794100389228e-16,
+    3.1622776601683793e-16,
+    5.623413251903491e-16,
+    1e-15,
+    1.7782794100389227e-15,
+    3.1622776601683794e-15,
+    5.623413251903491e-15,
+    1e-14,
+    1.7782794100389227e-14,
+    3.1622776601683796e-14,
+    5.6234132519034906e-14,
+    1e-13,
+    1.7782794100389227e-13,
+    3.162277660168379e-13,
+    5.62341325190349e-13,
+    1e-12,
+    1.7782794100389228e-12,
+    3.1622776601683794e-12,
+    5.6234132519034904e-12,
+    1e-11,
+    1.7782794100389227e-11,
+    3.1622776601683794e-11,
+    5.6234132519034906e-11,
+    1e-10,
+    1.778279410038923e-10,
+    3.1622776601683795e-10,
+    5.623413251903491e-10,
+    1e-09,
+    1.7782794100389228e-09,
+    3.1622776601683795e-09,
+    5.623413251903491e-09,
+    1e-08,
+    1.7782794100389228e-08,
+    3.162277660168379e-08,
+    5.6234132519034905e-08,
+    1e-07,
+    1.7782794100389227e-07,
+    3.162277660168379e-07,
+    5.62341325190349e-07,
+    1e-06,
+    1.778279410038923e-06,
+    3.162277660168379e-06,
+    5.623413251903491e-06,
+    1e-05,
+    1.778279410038923e-05,
+    3.1622776601683795e-05,
+    5.623413251903491e-05,
+    0.0001,
+    0.00017782794100389227,
+    0.00031622776601683794,
+    0.0005623413251903491,
+    0.001,
+    0.0017782794100389228,
+    0.0031622776601683794,
+    0.005623413251903491,
+    0.01
+   ],
+   "families": {
+    "charges": [
+     "charge_D1_C",
+     "charge_D2_C"
+    ],
+    "potentials": [
+     "potentials_after_V"
+    ],
+    "image": [
+     "image_charge_C"
+    ],
+    "amounts": [
+     "amounts_D1_fmol",
+     "amounts_D2_fmol",
+     "increment_D1_fmol",
+     "increment_D2_fmol",
+     "moved_fmol"
+    ],
+    "work": [
+     "work_pJ"
+    ]
+   },
+   "targets": {
+    "a_k": [
+     "charges"
+    ],
+    "parent charge": [
+     "charges",
+     "potentials"
+    ],
+    "f": [
+     "amounts",
+     "work"
+    ],
+    "transference": [
+     "amounts"
+    ]
+   },
+   "statistic": "per control and family, the smallest delta whose ratio passes 64 (None if none does; 'baseline above 64' where the undefected case already fails at that scale)",
+   "threshold": 1e-09,
+   "pass": "every control's target families caught at or below the threshold wherever the undefected case passes; at the new scale each near-zero case passes undefected and fails with the parent-charge defect. A control that misses the threshold is a finding, never a moved threshold",
+   "scales": "old and new (R-ops' charge_term)",
+   "cases": [
+    "the asymmetric neighbour world's bound state",
+    "the near-zero seen draws (below)",
+    "the asymmetric furrow world after its onset (two patches a cell)"
+   ],
+   "near_zero": {
+    "rule": "the asymmetric world's admitted seen draws whose parent patch lies within 0.005 V of 0 V before the event (a state-only rule)",
+    "members": [
+     [
+      1.0,
+      35
+     ],
+     [
+      1.0,
+      45
+     ],
+     [
+      1.0,
+      77
+     ],
+     [
+      1.0,
+      111
+     ],
+     [
+      1.0,
+      143
+     ],
+     [
+      1.0,
+      149
+     ],
+     [
+      1.0,
+      171
+     ],
+     [
+      1.0,
+      180
+     ],
+     [
+      1.0,
+      191
+     ],
+     [
+      3.0,
+      32
+     ]
+    ],
+    "worst_seen": [
+     1.0,
+     35
+    ],
+    "disclosure": "the rule was chosen after the seen states had been seen: a 1 mV rule kept two draws (spread 1, draws 35 and 77); 5 mV adds seven more and the spread-3 worst (draw 32). The driver recomputes the members from the rule and asserts them"
+   }
   },
-  "judged_run": "q2_rops_comparison once at the judged snapshot, with R-ops' amended magnitudes; every case reported under both the old and the new scale",
+  "judged_run": "q2_rops_comparison judge once at the judged snapshot, with R-ops' amended magnitudes: the cases, the simultaneous divisions, the judged sets and the controls under both scales; the verdict at the new scale",
   "development_old_scale": {
+   "path": null,
+   "pending": "the observations-only commit after the freeze"
+  },
+  "before_the_freeze": {
    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a20/q2_rops_comparison/q2_rops.json",
    "snapshot_revision": "5e6f9cb",
    "pre_merge": false,
-   "fixed_cases": {
-    "compact symmetric": 0.3928037841814018,
-    "compact asymmetric": 0.3928037841814018,
-    "neighbour contact": 0.3928037841814018,
-    "furrow asymmetric with a bridge": 0.39248487553257416,
-    "bridge world, first division": 0.3928037841814018,
-    "bridge world, d1's division": 0.3928037841814018,
-    "second-onset world, first division": 0.3700960158589251
-   },
-   "simultaneous": {
-    "bridge world": {
-     "second_d1 then second_d2": 0.08763523984678251,
-     "second_d2 then second_d1": 0.08763523984678251
-    },
-    "second-onset world": {
-     "second_d1 then second_d2": 0.3317319526255406,
-     "second_d2 then second_d1": 0.3317319526255406
-    }
-   },
-   "frozen_draws": {
-    "symmetric neighbour world": {
-     "spread 0.1": {
-      "seed": 20261113,
-      "spread": 0.1,
-      "draws": 200,
-      "admitted": 200,
-      "worst": 0.8074262156392855,
-      "worst_key": "potentials_after_V"
-     },
-     "spread 1": {
-      "seed": 20261113,
-      "spread": 1.0,
-      "draws": 200,
-      "admitted": 148,
-      "worst": 0.9277553511335904,
-      "worst_key": "potentials_after_V"
-     },
-     "spread 3": {
-      "seed": 20261113,
-      "spread": 3.0,
-      "draws": 200,
-      "admitted": 59,
-      "worst": 0.677170229401472,
-      "worst_key": "potentials_after_V"
-     }
-    },
-    "asymmetric neighbour world (f 0.75, a 0.6, three carriers)": {
-     "spread 0.1": {
-      "seed": 20261113,
-      "spread": 0.1,
-      "draws": 200,
-      "admitted": 200,
-      "worst": 9.05964296133899,
-      "worst_key": "potentials_after_V"
-     },
-     "spread 1": {
-      "seed": 20261113,
-      "spread": 1.0,
-      "draws": 200,
-      "admitted": 148,
-      "worst": 860.5552472480347,
-      "worst_key": "potentials_after_V"
-     },
-     "spread 3": {
-      "seed": 20261113,
-      "spread": 3.0,
-      "draws": 200,
-      "admitted": 59,
-      "worst": 152.6151550304683,
-      "worst_key": "potentials_after_V"
-     }
-    }
-   },
-   "negative_controls": {
-    "asymmetric neighbour world, bound state": {
-     "baseline": {
-      "charges": 0.0,
-      "potentials": 0.3928037841814018,
-      "any key": 0.3928037841814018
-     },
-     "a_k of membrane_0 (share 0.6) + delta": {
-      "charges": 5.6234132519034906e-14,
-      "potentials": null,
-      "any key": 1e-14
-     },
-     "the parent's node charge + delta |Q_P|": {
-      "charges": 1e-13,
-      "potentials": 3.1622776601683796e-14,
-      "any key": 3.1622776601683796e-14
-     }
-    },
-    "asymmetric neighbour world, the spread-1 draw nearest 0 V": {
-     "baseline": {
-      "charges": 199.62608383118828,
-      "potentials": 860.5552472480347,
-      "any key": 860.5552472480347
-     },
-     "a_k of membrane_0 (share 0.6) + delta": {
-      "charges": "baseline above 64",
-      "potentials": "baseline above 64",
-      "any key": "baseline above 64"
-     },
-     "the parent's node charge + delta |Q_P|": {
-      "charges": "baseline above 64",
-      "potentials": "baseline above 64",
-      "any key": "baseline above 64"
-     }
-    },
-    "asymmetric furrow world (two patches a cell)": {
-     "baseline": {
-      "charges": 0.0,
-      "potentials": 0.38111195082804156,
-      "any key": 0.39248487553257416
-     },
-     "a_k of membrane_0 (share 0.6) + delta": {
-      "charges": 5.6234132519034906e-14,
-      "potentials": null,
-      "any key": 1e-14
-     },
-     "the parent's node charge + delta |Q_P|": {
-      "charges": 1e-13,
-      "potentials": 3.1622776601683796e-14,
-      "any key": 3.1622776601683796e-14
-     }
-    }
-   }
+   "note": "the same cases and seen sets at the old scale (fixed 0.39; simultaneous 0.088 and 0.33; symmetric 0.81, 0.93, 0.68; asymmetric 9.06, 860.56, 152.62), with the earlier controls (a_k and |Q_P|-scaled parent charge only)"
   },
   "disclosed_runs": {
    "out_of_domain_94.7": {
@@ -667,6 +769,15 @@
    "closed bridge (a = 0): the trans-cleft T-network's coupling, cleft ratio and input resistance to 1%, and the bridge-free world's response to 1e-9 (test_division_limits_runs.py)",
    "sealed cleft (A/L = 0): R_j = 1/G_f1 + 1/G_f2 = 2 r_new / A_face to 1%, the coupling to 1% (test_division_limits_runs.py)"
   ],
+  "circuit_world": {
+   "accepted": "the lead, 14 November",
+   "changes": [
+    "every membrane permeability x 100: each patch keeps its reversal potential, and the membrane time constant goes from about 1.5 s to 15 ms, so the limit is reached in a short run",
+    "no insertion after the division: the geometry holds still",
+    "the access face's area 1.5e-13 m^2: its resistance comparable with a furrow's"
+   ],
+   "base": "S5's compact furrow world (cleft_divided, symmetric, passive)"
+  },
   "development": {
    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/test_division_limits_runs.log",
    "snapshot_revision": "67b22b0",
@@ -826,12 +937,18 @@
  "Q5": {
   "claim": "The observed order is about 2 after partitions.",
   "driver": "validation/division/q5_order.py at 0.5, 0.25 and 0.125 ms",
-  "rule": "each measurable component's observed order log2(e1 / e2) lies in the band [1.8, 2.3] (proposed); components whose change is within 64 eps of the quantity's scale are rounding and counted apart",
-  "stop_condition": "stop and report if any measurable component's step term fails to decrease from the (0.5, 0.25 ms) pair to the (0.25, 0.125 ms) pair (S3's)",
+  "reported_not_banded": "the observed orders are reported (S3's registered form); only the stop rules are judged (the lead, 14 November)",
+  "measurable": "a component whose two step terms, |q(0.5) - q(0.25)| and |q(0.25) - q(0.125)|, both lie above Q3's floor, 64 eps x the quantity's scale (its largest |value| over every component, record and step), defined before the judged run; the lumen volumes fall outside it",
+  "stop_rules": [
+   "every measurable component's step term decreases from the (0.5, 0.25 ms) pair to the (0.25, 0.125 ms) pair",
+   "a quantity that does not converge stops the run for a report"
+  ],
+  "dropped_band": "a band of [1.8, 2.3] was proposed after the development orders (1.99 to 2.06) had been seen, and is dropped",
+  "bridge_coupling_offset": "the split injection's offset of the bridge's fast mode has observed order 2.3 to 2.6 (bridge_coupling_order.py); a higher order is not a defect, and it is reported as it is",
   "development": {
-   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/comparisons-s5a9/q5_order/q5_order.json",
-   "snapshot_revision": "6c2b118",
-   "pre_merge": true,
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/q5_order/q5_order.json",
+   "snapshot_revision": "1e73543",
+   "pre_merge": false,
    "steps_s": [
     0.0005,
     0.00025,
@@ -844,74 +961,120 @@
    ],
    "quantities": {
     "furrow 1->2 patch_voltage_V": {
+     "scale": 0.07933828670305601,
+     "floor": 1.127464865690172e-15,
      "measurable": 12,
      "rounding_only": 0,
      "every_step_term_decreases": true,
      "order_min": 1.99004170162792,
+     "order_median": 1.997249756788486,
      "order_max": 1.9995491853789393
     },
     "furrow 1->2 cell_amount_fmol": {
+     "scale": 76.65111342138192,
+     "floor": 1.0892778365897289e-12,
      "measurable": 18,
      "rounding_only": 6,
      "every_step_term_decreases": true,
      "order_min": 1.989492648979736,
+     "order_median": 1.9992967680384697,
      "order_max": 1.9994876546593714
     },
     "furrow 1->2 lumen_volume_pL": {
+     "scale": 0.01019,
+     "floor": 1.448086095479084e-16,
      "measurable": 0,
      "rounding_only": 3,
      "every_step_term_decreases": true,
      "order_min": null,
+     "order_median": null,
      "order_max": null
     },
     "furrow 1->2 lumen_concentration_mM": {
-     "measurable": 10,
-     "rounding_only": 2,
+     "scale": 145.00063143177547,
+     "floor": 2.0605829068895144e-12,
+     "measurable": 8,
+     "rounding_only": 4,
      "every_step_term_decreases": true,
      "order_min": 1.9971301063922107,
-     "order_max": 2.0564871913464735
+     "order_median": 2.003470348078327,
+     "order_max": 2.0468956252244617
     },
     "furrow 1->2 bridge_exchange_fmol": {
+     "scale": 3.3437799874948747e-07,
+     "floor": 4.751797160188964e-21,
      "measurable": 9,
      "rounding_only": 3,
      "every_step_term_decreases": true,
      "order_min": 1.9995820083812628,
+     "order_median": 1.9995822433629886,
      "order_max": 1.9995824366764374
     },
     "furrow 1->2->4 patch_voltage_V": {
+     "scale": 0.07927566370306785,
+     "floor": 1.12657493933551e-15,
      "measurable": 36,
      "rounding_only": 0,
      "every_step_term_decreases": true,
      "order_min": 1.998607222172854,
+     "order_median": 1.9991322519583643,
      "order_max": 1.9996849506577499
     },
     "furrow 1->2->4 cell_amount_fmol": {
+     "scale": 25.550021792634478,
+     "floor": 3.6308764766537363e-13,
      "measurable": 36,
      "rounding_only": 12,
      "every_step_term_decreases": true,
      "order_min": 1.9985620756165208,
+     "order_median": 1.9992905057554295,
      "order_max": 1.9996607212372266
     },
     "furrow 1->2->4 lumen_volume_pL": {
+     "scale": 0.010190000000000001,
+     "floor": 1.4480860954790843e-16,
      "measurable": 0,
      "rounding_only": 9,
      "every_step_term_decreases": true,
      "order_min": null,
+     "order_median": null,
      "order_max": null
     },
     "furrow 1->2->4 lumen_concentration_mM": {
-     "measurable": 35,
-     "rounding_only": 1,
+     "scale": 145.00063422501455,
+     "floor": 2.060582946583829e-12,
+     "measurable": 33,
+     "rounding_only": 3,
      "every_step_term_decreases": true,
      "order_min": 1.9988590284670682,
-     "order_max": 2.0346263431096325
+     "order_median": 1.9996874746717508,
+     "order_max": 2.0325756035448705
     },
     "furrow 1->2->4 bridge_exchange_fmol": {
+     "scale": 3.895673156976452e-07,
+     "floor": 5.536084525170469e-21,
      "measurable": 9,
      "rounding_only": 3,
      "every_step_term_decreases": true,
      "order_min": 1.9998296230987753,
+     "order_median": 1.9998296302611296,
      "order_max": 1.9998297376406358
+    }
+   },
+   "bridge_coupling_offset": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/bridge-coupling-order.json",
+    "snapshot_revision": null,
+    "pre_merge": false,
+    "report": {
+     "relative_excess": {
+      "0.001": 0.07844218570191752,
+      "0.0005": 0.01573967093547668,
+      "0.00025": 0.0025790289288172286
+     },
+     "observed_orders": [
+      2.3172243559664465,
+      2.6095055182165803
+     ]
     }
    }
   }
@@ -928,10 +1091,19 @@
   "claim": "Idle and unchanged (the lead's ruling).",
   "items": [
    "an idle partition and an idle bridge are bitwise the composition without them (test_partition.py, test_partition_runs.py, test_bridge_closure.py): built",
-   "the 19-cell sheet at the 64-node cap with idle division operators, bitwise: not built",
-   "S3's cleft egg on insertion@2 and lumen@2 under a registered operator variant of S3's protocol (S3's tolerances unchanged; its judge gains the variant's acceptance); the comparison with S3's judged run reported: not built",
-   "crossrev: every existing set identical, S5's own set recorded (crossrev-s5a11, crossrev-s5a10-division): built"
-  ]
+   "(a) the 19-cell heredity sheet padded to the 64-node cap (32 + 32 slots) with idle division operators, bitwise against the same sheet without them; one slot past the cap refused (test_division_idle_sheet_runs.py): built",
+   "(b) S3's cleft egg on insertion@2 and lumen@2: deferred (design decision 24). Its gate is a registered operator variant in S3's protocol family, with a J1 judge entry point whose default is today's path and S3's registered readings shown bitwise unchanged",
+   "crossrev: every existing set identical, S5's own set recorded (crossrev-s5a11, crossrev-s5a10-division; the lead's renewed baseline of record at the landing tree covers all five sets): built"
+  ],
+  "acceptance_list_change": "until (b) passes, insertion@2 and lumen@2 are qualified in division worlds only, and S3's egg stays on insertion@1 and lumen@1 (the lead tells the user)",
+  "development": {
+   "q7a": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/test_division_idle_sheet_runs.log",
+    "snapshot_revision": "1e73543",
+    "pre_merge": false,
+    "tests": "2 passed in 63.04s (0:01:03)"
+   }
+  }
  },
  "Q8": {
   "claim": "Each refusal, with its message.",
@@ -944,18 +1116,19 @@
  "Q10": {
   "claim": "Sensitivity to the partition time and to a_0 (design \u00a74.2).",
   "driver": "validation/division/q10_sensitivity.py",
-  "judged_dt_s": 0.00025,
-  "tolerance_rule": "per world and quantity, 3 x the nominal run's step term |Q(0.25 ms) - Q(0.125 ms)|, with Q3's floor (64 eps x the quantity's largest |value|) where the step term falls below it (proposed); a change within it is insensitive, otherwise t_p and a_0 enter that quantity's band",
-  "note": "the nominal bridge exchange is exactly 0 (the bridge closes at 3 ms, before the current starts), so its tolerance is 0 and any exchange a variant opens is a change; without injection every arm's change is exactly 0",
-  "tolerances": {
+  "reported_not_judged": "the lead, 14 November",
+  "dt_s": 0.00025,
+  "nominal": "t_p 2 ms, a_0 1x, the bridge closing linearly over 2 ms: it is open from 2 to 4 ms and the current flows from 3 ms, so the nominal exchange is not zero against zero; every arm runs one parameter at a time against the nominal",
+  "noise_floor": "per world and quantity, 3 x the nominal's step term |Q(0.25 ms) - Q(0.125 ms)|, or 64 eps x the quantity's largest |value| where that is larger; a change below it is reported as within noise",
+  "development": {
    "quarter": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/gaps-s5a13/q10_sensitivity_dt0.25ms/q10_sensitivity.json",
-    "snapshot_revision": "0ae7bef",
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/q10_dt0.25ms/q10_sensitivity.json",
+    "snapshot_revision": "1e73543",
     "pre_merge": false
    },
    "eighth": {
-    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/q10-s5a14-dt0.000125/q10_sensitivity.json",
-    "snapshot_revision": "e448687",
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/q10_dt0.125ms/q10_sensitivity.json",
+    "snapshot_revision": "1e73543",
     "pre_merge": false
    },
    "worlds": {
@@ -965,7 +1138,7 @@
       "cell_amount_fmol": 5.9756644077424426e-12,
       "bridge_exchange_fmol": 0.0
      },
-     "tolerance": {
+     "noise_floor": {
       "patch_voltage_V": 2.1792205540105414e-10,
       "cell_amount_fmol": 1.7926993223227328e-11,
       "bridge_exchange_fmol": 0.0
@@ -974,151 +1147,151 @@
       "t_p=1 ms": {
        "patch_voltage_V": {
         "max_abs_change": 0.0,
-        "tolerance": 2.1792205540105414e-10,
-        "within": true
+        "noise_floor": 2.1792205540105414e-10,
+        "within_noise": true
        },
        "cell_amount_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 1.7926993223227328e-11,
-        "within": true
+        "noise_floor": 1.7926993223227328e-11,
+        "within_noise": true
        },
        "bridge_exchange_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 0.0,
-        "within": true
+        "noise_floor": 0.0,
+        "within_noise": true
        }
       },
       "t_p=3 ms": {
        "patch_voltage_V": {
         "max_abs_change": 0.0,
-        "tolerance": 2.1792205540105414e-10,
-        "within": true
+        "noise_floor": 2.1792205540105414e-10,
+        "within_noise": true
        },
        "cell_amount_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 1.7926993223227328e-11,
-        "within": true
+        "noise_floor": 1.7926993223227328e-11,
+        "within_noise": true
        },
        "bridge_exchange_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 0.0,
-        "within": true
+        "noise_floor": 0.0,
+        "within_noise": true
        }
       },
-      "a_0=0.4x at t_p=3 ms": {
+      "a_0=0.4x": {
        "patch_voltage_V": {
         "max_abs_change": 0.0,
-        "tolerance": 2.1792205540105414e-10,
-        "within": true
+        "noise_floor": 2.1792205540105414e-10,
+        "within_noise": true
        },
        "cell_amount_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 1.7926993223227328e-11,
-        "within": true
+        "noise_floor": 1.7926993223227328e-11,
+        "within_noise": true
        },
        "bridge_exchange_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 0.0,
-        "within": true
+        "noise_floor": 0.0,
+        "within_noise": true
        }
       },
-      "a_0=1.8x at t_p=3 ms": {
+      "a_0=1.8x": {
        "patch_voltage_V": {
         "max_abs_change": 0.0,
-        "tolerance": 2.1792205540105414e-10,
-        "within": true
+        "noise_floor": 2.1792205540105414e-10,
+        "within_noise": true
        },
        "cell_amount_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 1.7926993223227328e-11,
-        "within": true
+        "noise_floor": 1.7926993223227328e-11,
+        "within_noise": true
        },
        "bridge_exchange_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 0.0,
-        "within": true
+        "noise_floor": 0.0,
+        "within_noise": true
        }
       }
      }
     },
     "1->2 + injection": {
      "nominal_step_term": {
-      "patch_voltage_V": 1.6148166970264555e-09,
-      "cell_amount_fmol": 1.3301360013429075e-10,
-      "bridge_exchange_fmol": 0.0
+      "patch_voltage_V": 5.100952496506217e-08,
+      "cell_amount_fmol": 3.979465645898017e-09,
+      "bridge_exchange_fmol": 4.0083480659710655e-09
      },
-     "tolerance": {
-      "patch_voltage_V": 4.8444500910793664e-09,
-      "cell_amount_fmol": 3.9904080040287226e-10,
-      "bridge_exchange_fmol": 0.0
+     "noise_floor": {
+      "patch_voltage_V": 1.530285748951865e-07,
+      "cell_amount_fmol": 1.1938396937694051e-08,
+      "bridge_exchange_fmol": 1.2025044197913196e-08
      },
      "development_changes": {
       "t_p=1 ms": {
        "patch_voltage_V": {
-        "max_abs_change": 0.0,
-        "tolerance": 4.8444500910793664e-09,
-        "within": true
+        "max_abs_change": 2.4683546610559937e-06,
+        "noise_floor": 1.530285748951865e-07,
+        "within_noise": false
        },
        "cell_amount_fmol": {
-        "max_abs_change": 0.0,
-        "tolerance": 3.9904080040287226e-10,
-        "within": true
+        "max_abs_change": 1.9257916505921457e-07,
+        "noise_floor": 1.1938396937694051e-08,
+        "within_noise": false
        },
        "bridge_exchange_fmol": {
-        "max_abs_change": 0.0,
-        "tolerance": 0.0,
-        "within": true
+        "max_abs_change": 1.9364758095751317e-07,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
        }
       },
       "t_p=3 ms": {
        "patch_voltage_V": {
-        "max_abs_change": 4.750382910326256e-06,
-        "tolerance": 4.8444500910793664e-09,
-        "within": false
+        "max_abs_change": 1.4927318711277504e-05,
+        "noise_floor": 1.530285748951865e-07,
+        "within_noise": false
        },
        "cell_amount_fmol": {
-        "max_abs_change": 3.706214641852057e-07,
-        "tolerance": 3.9904080040287226e-10,
-        "within": false
+        "max_abs_change": 1.1643251127679832e-06,
+        "noise_floor": 1.1938396937694051e-08,
+        "within_noise": false
        },
        "bridge_exchange_fmol": {
-        "max_abs_change": 3.7268229089162724e-07,
-        "tolerance": 0.0,
-        "within": false
+        "max_abs_change": 1.168455299067438e-06,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
        }
       },
-      "a_0=0.4x at t_p=3 ms": {
+      "a_0=0.4x": {
        "patch_voltage_V": {
-        "max_abs_change": 2.7603021167804664e-06,
-        "tolerance": 4.8444500910793664e-09,
-        "within": false
+        "max_abs_change": 1.4576638315139112e-06,
+        "noise_floor": 1.530285748951865e-07,
+        "within_noise": false
        },
        "cell_amount_fmol": {
-        "max_abs_change": 2.153568843255016e-07,
-        "tolerance": 3.9904080040287226e-10,
-        "within": false
+        "max_abs_change": 1.1372585362323662e-07,
+        "noise_floor": 1.1938396937694051e-08,
+        "within_noise": false
        },
        "bridge_exchange_fmol": {
-        "max_abs_change": 2.1655670314234823e-07,
-        "tolerance": 0.0,
-        "within": false
+        "max_abs_change": 1.14357398836111e-07,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
        }
       },
-      "a_0=1.8x at t_p=3 ms": {
+      "a_0=1.8x": {
        "patch_voltage_V": {
-        "max_abs_change": 3.299915413423893e-06,
-        "tolerance": 4.8444500910793664e-09,
-        "within": false
+        "max_abs_change": 1.8398068094421793e-06,
+        "noise_floor": 1.530285748951865e-07,
+        "within_noise": false
        },
        "cell_amount_fmol": {
-        "max_abs_change": 2.5745745801941666e-07,
-        "tolerance": 3.9904080040287226e-10,
-        "within": false
+        "max_abs_change": 1.4354046840026058e-07,
+        "noise_floor": 1.1938396937694051e-08,
+        "within_noise": false
        },
        "bridge_exchange_fmol": {
-        "max_abs_change": 2.589013719239767e-07,
-        "tolerance": 0.0,
-        "within": false
+        "max_abs_change": 1.4434019617653043e-07,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
        }
       }
      }
@@ -1129,7 +1302,7 @@
       "cell_amount_fmol": 3.0517810500896303e-12,
       "bridge_exchange_fmol": 0.0
      },
-     "tolerance": {
+     "noise_floor": {
       "patch_voltage_V": 2.233276896745906e-10,
       "cell_amount_fmol": 9.155343150268891e-12,
       "bridge_exchange_fmol": 0.0
@@ -1138,151 +1311,151 @@
       "t_p=1 ms": {
        "patch_voltage_V": {
         "max_abs_change": 0.0,
-        "tolerance": 2.233276896745906e-10,
-        "within": true
+        "noise_floor": 2.233276896745906e-10,
+        "within_noise": true
        },
        "cell_amount_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 9.155343150268891e-12,
-        "within": true
+        "noise_floor": 9.155343150268891e-12,
+        "within_noise": true
        },
        "bridge_exchange_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 0.0,
-        "within": true
+        "noise_floor": 0.0,
+        "within_noise": true
        }
       },
       "t_p=3 ms": {
        "patch_voltage_V": {
         "max_abs_change": 0.0,
-        "tolerance": 2.233276896745906e-10,
-        "within": true
+        "noise_floor": 2.233276896745906e-10,
+        "within_noise": true
        },
        "cell_amount_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 9.155343150268891e-12,
-        "within": true
+        "noise_floor": 9.155343150268891e-12,
+        "within_noise": true
        },
        "bridge_exchange_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 0.0,
-        "within": true
+        "noise_floor": 0.0,
+        "within_noise": true
        }
       },
-      "a_0=0.4x at t_p=3 ms": {
+      "a_0=0.4x": {
        "patch_voltage_V": {
         "max_abs_change": 0.0,
-        "tolerance": 2.233276896745906e-10,
-        "within": true
+        "noise_floor": 2.233276896745906e-10,
+        "within_noise": true
        },
        "cell_amount_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 9.155343150268891e-12,
-        "within": true
+        "noise_floor": 9.155343150268891e-12,
+        "within_noise": true
        },
        "bridge_exchange_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 0.0,
-        "within": true
+        "noise_floor": 0.0,
+        "within_noise": true
        }
       },
-      "a_0=1.8x at t_p=3 ms": {
+      "a_0=1.8x": {
        "patch_voltage_V": {
         "max_abs_change": 0.0,
-        "tolerance": 2.233276896745906e-10,
-        "within": true
+        "noise_floor": 2.233276896745906e-10,
+        "within_noise": true
        },
        "cell_amount_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 9.155343150268891e-12,
-        "within": true
+        "noise_floor": 9.155343150268891e-12,
+        "within_noise": true
        },
        "bridge_exchange_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 0.0,
-        "within": true
+        "noise_floor": 0.0,
+        "within_noise": true
        }
       }
      }
     },
     "1->2->4 + injection": {
      "nominal_step_term": {
-      "patch_voltage_V": 1.0840704584014205e-09,
-      "cell_amount_fmol": 4.4721559788740706e-11,
-      "bridge_exchange_fmol": 0.0
+      "patch_voltage_V": 5.0814266350229786e-08,
+      "cell_amount_fmol": 1.9830217468097544e-09,
+      "bridge_exchange_fmol": 4.0083480659710655e-09
      },
-     "tolerance": {
-      "patch_voltage_V": 3.2522113752042614e-09,
-      "cell_amount_fmol": 1.3416467936622212e-10,
-      "bridge_exchange_fmol": 0.0
+     "noise_floor": {
+      "patch_voltage_V": 1.5244279905068936e-07,
+      "cell_amount_fmol": 5.949065240429263e-09,
+      "bridge_exchange_fmol": 1.2025044197913196e-08
      },
      "development_changes": {
       "t_p=1 ms": {
        "patch_voltage_V": {
-        "max_abs_change": 0.0,
-        "tolerance": 3.2522113752042614e-09,
-        "within": true
+        "max_abs_change": 2.4590589890877146e-06,
+        "noise_floor": 1.5244279905068936e-07,
+        "within_noise": false
        },
        "cell_amount_fmol": {
-        "max_abs_change": 0.0,
-        "tolerance": 1.3416467936622212e-10,
-        "within": true
+        "max_abs_change": 9.597075489864437e-08,
+        "noise_floor": 5.949065240429263e-09,
+        "within_noise": false
        },
        "bridge_exchange_fmol": {
-        "max_abs_change": 0.0,
-        "tolerance": 0.0,
-        "within": true
+        "max_abs_change": 1.9364758095751317e-07,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
        }
       },
       "t_p=3 ms": {
        "patch_voltage_V": {
-        "max_abs_change": 4.7324932791886765e-06,
-        "tolerance": 3.2522113752042614e-09,
-        "within": false
+        "max_abs_change": 1.4869514844306764e-05,
+        "noise_floor": 1.5244279905068936e-07,
+        "within_noise": false
        },
        "cell_amount_fmol": {
-        "max_abs_change": 1.846971464658509e-07,
-        "tolerance": 1.3416467936622212e-10,
-        "within": false
+        "max_abs_change": 5.801673239602678e-07,
+        "noise_floor": 5.949065240429263e-09,
+        "within_noise": false
        },
        "bridge_exchange_fmol": {
-        "max_abs_change": 3.7268229089162724e-07,
-        "tolerance": 0.0,
-        "within": false
+        "max_abs_change": 1.168455299067438e-06,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
        }
       },
-      "a_0=0.4x at t_p=3 ms": {
+      "a_0=0.4x": {
        "patch_voltage_V": {
-        "max_abs_change": 2.749907011170838e-06,
-        "tolerance": 3.2522113752042614e-09,
-        "within": false
+        "max_abs_change": 1.4521743654793973e-06,
+        "noise_floor": 1.5244279905068936e-07,
+        "within_noise": false
        },
        "cell_amount_fmol": {
-        "max_abs_change": 1.073219060288011e-07,
-        "tolerance": 1.3416467936622212e-10,
-        "within": false
+        "max_abs_change": 5.66746471974966e-08,
+        "noise_floor": 5.949065240429263e-09,
+        "within_noise": false
        },
        "bridge_exchange_fmol": {
-        "max_abs_change": 2.1655670314234823e-07,
-        "tolerance": 0.0,
-        "within": false
+        "max_abs_change": 1.14357398836111e-07,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
        }
       },
-      "a_0=1.8x at t_p=3 ms": {
+      "a_0=1.8x": {
        "patch_voltage_V": {
-        "max_abs_change": 3.287488042527653e-06,
-        "tolerance": 3.2522113752042614e-09,
-        "within": false
+        "max_abs_change": 1.83287822681788e-06,
+        "noise_floor": 1.5244279905068936e-07,
+        "within_noise": false
        },
        "cell_amount_fmol": {
-        "max_abs_change": 1.2830248863338056e-07,
-        "tolerance": 1.3416467936622212e-10,
-        "within": false
+        "max_abs_change": 7.1532596734869e-08,
+        "noise_floor": 5.949065240429263e-09,
+        "within_noise": false
        },
        "bridge_exchange_fmol": {
-        "max_abs_change": 2.589013719239767e-07,
-        "tolerance": 0.0,
-        "within": false
+        "max_abs_change": 1.4434019617653043e-07,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
        }
       }
      }
@@ -1295,7 +1468,7 @@
       "lumen_volume_pL": 0.0,
       "lumen_concentration_mM": 1.2050804798491299e-11
      },
-     "tolerance": {
+     "noise_floor": {
       "patch_voltage_V": 2.919876840312696e-10,
       "cell_amount_fmol": 2.383160335739376e-11,
       "bridge_exchange_fmol": 0.0,
@@ -1306,181 +1479,181 @@
       "t_p=3 ms": {
        "patch_voltage_V": {
         "max_abs_change": 0.0,
-        "tolerance": 2.919876840312696e-10,
-        "within": true
+        "noise_floor": 2.919876840312696e-10,
+        "within_noise": true
        },
        "cell_amount_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 2.383160335739376e-11,
-        "within": true
+        "noise_floor": 2.383160335739376e-11,
+        "within_noise": true
        },
        "bridge_exchange_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 0.0,
-        "within": true
+        "noise_floor": 0.0,
+        "within_noise": true
        },
        "lumen_volume_pL": {
         "max_abs_change": 0.0,
-        "tolerance": 1.4281908988778014e-16,
-        "within": true
+        "noise_floor": 1.4281908988778014e-16,
+        "within_noise": true
        },
        "lumen_concentration_mM": {
         "max_abs_change": 0.0,
-        "tolerance": 3.61524143954739e-11,
-        "within": true
+        "noise_floor": 3.61524143954739e-11,
+        "within_noise": true
        }
       },
-      "a_0=0.4x at t_p=3 ms": {
+      "a_0=0.4x": {
        "patch_voltage_V": {
         "max_abs_change": 0.0,
-        "tolerance": 2.919876840312696e-10,
-        "within": true
+        "noise_floor": 2.919876840312696e-10,
+        "within_noise": true
        },
        "cell_amount_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 2.383160335739376e-11,
-        "within": true
+        "noise_floor": 2.383160335739376e-11,
+        "within_noise": true
        },
        "bridge_exchange_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 0.0,
-        "within": true
+        "noise_floor": 0.0,
+        "within_noise": true
        },
        "lumen_volume_pL": {
         "max_abs_change": 0.0,
-        "tolerance": 1.4281908988778014e-16,
-        "within": true
+        "noise_floor": 1.4281908988778014e-16,
+        "within_noise": true
        },
        "lumen_concentration_mM": {
         "max_abs_change": 0.0,
-        "tolerance": 3.61524143954739e-11,
-        "within": true
+        "noise_floor": 3.61524143954739e-11,
+        "within_noise": true
        }
       },
-      "a_0=1.8x at t_p=3 ms": {
+      "a_0=1.8x": {
        "patch_voltage_V": {
         "max_abs_change": 0.0,
-        "tolerance": 2.919876840312696e-10,
-        "within": true
+        "noise_floor": 2.919876840312696e-10,
+        "within_noise": true
        },
        "cell_amount_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 2.383160335739376e-11,
-        "within": true
+        "noise_floor": 2.383160335739376e-11,
+        "within_noise": true
        },
        "bridge_exchange_fmol": {
         "max_abs_change": 0.0,
-        "tolerance": 0.0,
-        "within": true
+        "noise_floor": 0.0,
+        "within_noise": true
        },
        "lumen_volume_pL": {
         "max_abs_change": 0.0,
-        "tolerance": 1.4281908988778014e-16,
-        "within": true
+        "noise_floor": 1.4281908988778014e-16,
+        "within_noise": true
        },
        "lumen_concentration_mM": {
         "max_abs_change": 0.0,
-        "tolerance": 3.61524143954739e-11,
-        "within": true
+        "noise_floor": 3.61524143954739e-11,
+        "within_noise": true
        }
       }
      }
     },
     "furrow 1->2 + injection": {
      "nominal_step_term": {
-      "patch_voltage_V": 1.5416491278008593e-09,
-      "cell_amount_fmol": 1.290345608140342e-10,
-      "bridge_exchange_fmol": 0.0,
+      "patch_voltage_V": 4.822155320882704e-08,
+      "cell_amount_fmol": 3.876756693443895e-09,
+      "bridge_exchange_fmol": 3.905025180056777e-09,
       "lumen_volume_pL": 0.0,
-      "lumen_concentration_mM": 1.0247802606500045e-11
+      "lumen_concentration_mM": 1.0293099705904751e-11
      },
-     "tolerance": {
-      "patch_voltage_V": 4.624947383402578e-09,
-      "cell_amount_fmol": 3.871036824421026e-10,
-      "bridge_exchange_fmol": 0.0,
+     "noise_floor": {
+      "patch_voltage_V": 1.4466465962648112e-07,
+      "cell_amount_fmol": 1.1630270080331684e-08,
+      "bridge_exchange_fmol": 1.1715075540170331e-08,
       "lumen_volume_pL": 1.4281908988778014e-16,
-      "lumen_concentration_mM": 3.0743407819500135e-11
+      "lumen_concentration_mM": 3.0879299117714254e-11
      },
      "development_changes": {
       "t_p=3 ms": {
        "patch_voltage_V": {
-        "max_abs_change": 4.481863854891022e-06,
-        "tolerance": 4.624947383402578e-09,
-        "within": false
+        "max_abs_change": 1.4115919022436585e-05,
+        "noise_floor": 1.4466465962648112e-07,
+        "within_noise": false
        },
        "cell_amount_fmol": {
-        "max_abs_change": 3.6044471585228166e-07,
-        "tolerance": 3.871036824421026e-10,
-        "within": false
+        "max_abs_change": 1.134947964942512e-06,
+        "noise_floor": 1.1630270080331684e-08,
+        "within_noise": false
        },
        "bridge_exchange_fmol": {
-        "max_abs_change": 3.6240012632331337e-07,
-        "tolerance": 0.0,
-        "within": false
+        "max_abs_change": 1.1388748046785673e-06,
+        "noise_floor": 1.1715075540170331e-08,
+        "within_noise": false
        },
        "lumen_volume_pL": {
         "max_abs_change": 0.0,
-        "tolerance": 1.4281908988778014e-16,
-        "within": true
+        "noise_floor": 1.4281908988778014e-16,
+        "within_noise": true
        },
        "lumen_concentration_mM": {
-        "max_abs_change": 4.632738637155853e-12,
-        "tolerance": 3.0743407819500135e-11,
-        "within": true
+        "max_abs_change": 1.2221335055073723e-11,
+        "noise_floor": 3.0879299117714254e-11,
+        "within_noise": true
        }
       },
-      "a_0=0.4x at t_p=3 ms": {
+      "a_0=0.4x": {
        "patch_voltage_V": {
-        "max_abs_change": 2.6068059606476623e-06,
-        "tolerance": 4.624947383402578e-09,
-        "within": false
+        "max_abs_change": 1.3743840531904583e-06,
+        "noise_floor": 1.4466465962648112e-07,
+        "within_noise": false
        },
        "cell_amount_fmol": {
-        "max_abs_change": 2.096471192203353e-07,
-        "tolerance": 3.871036824421026e-10,
-        "within": false
+        "max_abs_change": 1.105319924477044e-07,
+        "noise_floor": 1.1630270080331684e-08,
+        "within_noise": false
        },
        "bridge_exchange_fmol": {
-        "max_abs_change": 2.107866036985225e-07,
-        "tolerance": 0.0,
-        "within": false
+        "max_abs_change": 1.1113086588932983e-07,
+        "noise_floor": 1.1715075540170331e-08,
+        "within_noise": false
        },
        "lumen_volume_pL": {
         "max_abs_change": 0.0,
-        "tolerance": 1.4281908988778014e-16,
-        "within": true
+        "noise_floor": 1.4281908988778014e-16,
+        "within_noise": true
        },
        "lumen_concentration_mM": {
-        "max_abs_change": 2.6716406864579767e-12,
-        "tolerance": 3.0743407819500135e-11,
-        "within": true
+        "max_abs_change": 1.4210854715202004e-12,
+        "noise_floor": 3.0879299117714254e-11,
+        "within_noise": true
        }
       },
-      "a_0=1.8x at t_p=3 ms": {
+      "a_0=1.8x": {
        "patch_voltage_V": {
-        "max_abs_change": 3.126458481661487e-06,
-        "tolerance": 4.624947383402578e-09,
-        "within": false
+        "max_abs_change": 1.7375198413521753e-06,
+        "noise_floor": 1.4466465962648112e-07,
+        "within_noise": false
        },
        "cell_amount_fmol": {
-        "max_abs_change": 2.514394452646229e-07,
-        "tolerance": 3.871036824421026e-10,
-        "within": false
+        "max_abs_change": 1.3973653523180474e-07,
+        "noise_floor": 1.1630270080331684e-08,
+        "within_noise": false
        },
        "bridge_exchange_fmol": {
-        "max_abs_change": 2.5281488820725387e-07,
-        "tolerance": 0.0,
-        "within": false
+        "max_abs_change": 1.404960537282822e-07,
+        "noise_floor": 1.1715075540170331e-08,
+        "within_noise": false
        },
        "lumen_volume_pL": {
         "max_abs_change": 0.0,
-        "tolerance": 1.4281908988778014e-16,
-        "within": true
+        "noise_floor": 1.4281908988778014e-16,
+        "within_noise": true
        },
        "lumen_concentration_mM": {
-        "max_abs_change": 3.098854506333737e-12,
-        "tolerance": 3.0743407819500135e-11,
-        "within": true
+        "max_abs_change": 1.7905676941154525e-12,
+        "noise_floor": 3.0879299117714254e-11,
+        "within_noise": true
        }
       }
      }

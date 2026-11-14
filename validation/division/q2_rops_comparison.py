@@ -34,12 +34,15 @@ Cases:
   asymmetric one (f 0.75, a 0.6, three carriers): random increments, histories, patch growth,
   abundances and gates. The daughters' population abundances and gates are compared too, from
   R-ops' post-event snapshot;
-* the a_k negative control (negative_controls).
+* the negative controls (negative_controls).
 
-The frozen draws (the lead, 14 November; frozen before R-ops' amended magnitudes land). For each
+The random sets (the lead, 14 November; frozen before R-ops' amended magnitudes land). For each
 world and each net-charge spread of SPREADS (0.1, 1 and 3 declared charges): RANDOM_STATES (200)
-draws of perturbed from a fresh numpy generator seeded SEED (20261113), the draws
-q2_domain_probe makes. Every draw the composite's control domain check admits, with the
+draws of perturbed from a fresh numpy generator. The seen sets, seeded SEEN_SEED (20261113, the
+draws q2_domain_probe makes), are development evidence: main() runs them, at each scale R-ops
+offers. The judged sets take fresh seeds, the protocol's alone, which only judge() reads, behind
+its guard; nobody runs them before the judged run. Every draw the composite's control domain
+check admits, with the
 control at the event (@3's domain at the view, each operator's domain and control checks, and
 the readouts' validity, where the gating laws' voltage domains sit), is compared, and no other
 bound applies: no draw is redrawn. Each draw changes each live cell's content by uniform
@@ -53,22 +56,30 @@ bounded the ratio by construction.
 Q2 is open (the lead, 14 November). Within the control domain check alone the asymmetric world
 exceeds 64 eps x R-ops' present magnitudes (q2_domain_probe), and the difference scales with
 the increments' ionic content (q2_rounding_cause). R-ops' magnitudes for a cell's node charge,
-input and daughters alike, are to add |Q| + 1e-15 F sum |z dn| and carry it through R-ops' own
-solve (Appendix A.8, pending in R-ops); Q2 reruns under both scales then.
+input and daughters alike, add |Q| + 1e-15 F sum |z dn| and carry it through R-ops' own solve
+(Appendix A.8). Once R-ops takes charge_term, every case runs under both scales (apply: the old
+without the term, the new with it); until then the old alone.
 
-The negative controls (the lead, 14 November: aimed at the changed scale). In the asymmetric
-neighbour world (its bound state, and its admitted spread-1 draw whose daughter sits nearest
-0 V after the event) and the asymmetric furrow world, R-ops is applied with a defect against the
-engine's own event, for defects from 1e-16 to 1e-2 in quarter decades:
-* a_k: the parent patch membrane_0's share a_k + delta (to first order, an engine defect of
-  -delta). Its charge and capacitance split together, so each daughter patch keeps its
-  parent's voltage: the potentials do not depend on a_k at all, and only the charges (and the
-  areas, capacitances and moved amounts) can show it;
-* the parent's node charge, Q_P + delta |Q_P|, as R-ops receives it: a charge-formation defect,
-  which reaches the daughters' charges and their potentials.
-Reported per kind: the ratios with no defect, and the smallest delta caught (ratio above 64) on
-the daughters' charges, on the potentials and on any key; where the ratio with no defect is
-already above 64, no defect is measurable at that scale, and the report says so.
+The negative controls (the lead, 14 November: every family A.8 loosens, under both scales; frozen
+with the judged seeds). Cases: the asymmetric neighbour world's bound state; its near-zero seen
+draws NEAR_ZERO (admitted, the parent patch within NEAR_ZERO_V of 0 V before the event; the
+860.6 draw, WORST_SEEN, among them); the asymmetric furrow world. In each, R-ops is applied with
+a defect against the engine's own event (to first order, an engine defect of -delta), for each
+delta of DEFECTS (1e-16 to 1e-2 in quarter decades):
+* a_k: membrane_0's share a_k + delta. Its charge and capacitance split together, so each
+  daughter patch keeps its parent's voltage: it reaches the charges, never the potentials;
+* the parent charge: Q_P + delta |Q_declared| (the snapshot's charge anchor, so the defect does
+  not vanish as Q_P nears 0): the charges and the potentials;
+* f: the volume fraction f + delta: the amounts, increments, moved amounts and W;
+* transference: the first carrier's t + delta and the second's t - delta (their sum stays 1):
+  delta and the mismatch, which the engine exposes only through the increments and moved
+  amounts that carry them.
+The statistic is the smallest delta whose ratio passes 64, per family (CONTROL_GROUPS); the
+threshold: each control's target families (CONTROL_TARGETS) caught at or below THRESHOLD
+(1e-9) wherever the undefected case passes. Where the undefected ratio already exceeds 64 no
+defect is measurable at that scale, and the report says so; at the new scale each near-zero
+case must pass undefected and fail with the parent-charge defect. A control that misses the
+threshold is a finding, never a moved threshold.
 
 Disclosed out-of-domain run: comparisons-s5a9 (snapshot-s5a9, 6c2b118) drew uncompensated
 increments within 1e-3 of each amount. The asymmetric states reached 94.7 on the post-event
@@ -90,6 +101,7 @@ minute.
 """
 
 import dataclasses
+import inspect
 import json
 import sys
 from pathlib import Path
@@ -107,17 +119,61 @@ from tests import partition_fixtures as fx
 from validation.division import partition_reference as rops
 
 STATUS = "Development comparison for Q2 (S5a); not judged"
-RANDOM_STATES = 200  # Draws per world and spread (the frozen draws).
-SPREADS = (0.1, 1.0, 3.0)  # Net-charge half-widths, in declared charges (the frozen draws).
-SEED = 20261113  # A fresh generator per world and spread (q2_domain_probe's draws).
+RANDOM_STATES = 200  # Draws per world and spread, seen and judged sets alike.
+SPREADS = (0.1, 1.0, 3.0)  # Net-charge half-widths, in declared charges.
+# The seen sets (the lead, 14 November): development evidence, drawn from a fresh generator per
+# world and spread seeded SEEN_SEED (q2_domain_probe's draws). The judged sets' seeds are the
+# protocol's alone (validation/division/s5_protocol.json), read by judge() behind its guard.
+SEEN_SEED = 20261113
+SEED = SEEN_SEED  # q2_domain_probe and q2_rounding_cause draw the seen sets.
 CHARGE_BAND = 0.1  # The dropped net-charge band, |Q - Q_declared| <= 0.1 |Q_declared|: reported.
 SPREAD = 0.1  # perturbed's default half-width (q2_domain_probe and q2_rounding_cause).
-# The a_k control: defects 1e-16 to 1e-2 in a quarter-decade ladder.
+# The negative controls (frozen with the judged seeds, the lead, 14 November): defects 1e-16 to
+# 1e-2 in a quarter-decade ladder; the statistic, the smallest defect whose ratio passes 64; the
+# threshold, a target family caught at or below 1e-9.
 DEFECTS = tuple(10.0 ** (k / 4) for k in range(-64, -7))
-CONTROL_KEYS = dict(
+THRESHOLD = 1e-9
+CONTROL_GROUPS = dict(
     charges=("charge_D1_C", "charge_D2_C"),
     potentials=("potentials_after_V",),
+    image=("image_charge_C",),
+    amounts=(
+        "amounts_D1_fmol",
+        "amounts_D2_fmol",
+        "increment_D1_fmol",
+        "increment_D2_fmol",
+        "moved_fmol",
+    ),
+    work=("work_pJ",),
 )
+# {control: the families it must reach}. The engine exposes delta and the mismatch only through
+# the increments and moved amounts that carry them, so the transference control reaches them
+# there; an a_k defect moves charge but keeps each patch's voltage, so it cannot reach the
+# potentials.
+CONTROL_TARGETS = {
+    "a_k": ("charges",),
+    "parent charge": ("charges", "potentials"),
+    "f": ("amounts", "work"),
+    "transference": ("amounts",),
+}
+CONTROL_PATCH = "membrane_0"
+# The near-zero cases: the asymmetric world's admitted seen draws whose parent patch sits within
+# NEAR_ZERO_V of 0 V before the event (a state-only rule, chosen after the seen states had been
+# seen: a 1 mV rule kept two draws, 5 mV adds the spread-3 worst). (spread, draw index).
+NEAR_ZERO_V = 5e-3
+NEAR_ZERO = (
+    (1.0, 35),
+    (1.0, 45),
+    (1.0, 77),
+    (1.0, 111),
+    (1.0, 143),
+    (1.0, 149),
+    (1.0, 171),
+    (1.0, 180),
+    (1.0, 191),
+    (3.0, 32),
+)
+WORST_SEEN = (1.0, 35)  # The 860.6 draw (old scale), a member of NEAR_ZERO.
 EPS = float(np.finfo(float).eps)
 
 
@@ -280,6 +336,26 @@ RECORD = {  # R-ops' record kinds and the engine's record fields.
     "channel_transferred_fmol": ("partition_retired_channel_transferred_fmol", "channel"),
     "channel_heat_pJ": ("partition_retired_channel_heat_pJ", "channel"),
 }
+
+
+def charge_term():
+    """Whether R-ops carries A.8's increment-form term (its apply takes charge_term)."""
+    return "charge_term" in inspect.signature(rops.apply).parameters
+
+
+def scales():
+    """The scales R-ops offers: the old (charge form) always; the new (A.8's increment-form
+    term) once R-ops' amended magnitudes have landed."""
+    return ("old", "new") if charge_term() else ("old",)
+
+
+def apply(snapshot, division, scale):
+    """R-ops' apply at one scale ("old": without A.8's term; "new": with it)."""
+    if charge_term():
+        return rops.apply(snapshot, division, charge_term=scale == "new")
+    if scale != "old":
+        raise SystemExit("R-ops' amended magnitudes (A.8's increment-form term) have not landed")
+    return rops.apply(snapshot, division)
 
 
 def ratio(engine, reference, magnitude):
@@ -565,7 +641,7 @@ def live_history(snapshot):
     return dataclasses.replace(snapshot, history=history)
 
 
-def simultaneous(world, state, time, order):
+def simultaneous(world, state, time, order, scale="old"):
     """{key: worst ratio}: the engine's one event at time, every division due there applied
     together as the engine applies them, against R-ops applying them one by one in order."""
     due = np.asarray(control_at(world, time).partition_due)
@@ -577,7 +653,7 @@ def simultaneous(world, state, time, order):
     assert ok
     snapshot, results = world.snapshot(state), []
     for name in order:
-        result = rops.apply(snapshot, world.division(divisions[name], state))
+        result = apply(snapshot, world.division(divisions[name], state), scale)
         results.append(result)
         snapshot = live_history(result.snapshot)
     out = {}
@@ -610,17 +686,17 @@ def random_worlds():
     }
 
 
-def frozen_draws(world, spread):
-    """The frozen draws (module docstring): RANDOM_STATES draws of perturbed at spread, from a
-    fresh generator seeded SEED, and the draws the composite's control domain check admits."""
-    rng = np.random.default_rng(SEED)
+def frozen_draws(world, spread, seed=SEEN_SEED):
+    """RANDOM_STATES draws of perturbed at spread from a fresh generator seeded seed, and the
+    draws the composite's control domain check admits (every one compared, none redrawn)."""
+    rng = np.random.default_rng(seed)
     draws = [perturbed(world, rng, spread=spread) for _ in range(RANDOM_STATES)]
     return draws, [s for s in draws if admitted(world, s, fx.EVENT)[0]]
 
 
-def random_case(world, d, spread):
-    """Every admitted frozen draw at one spread against R-ops (module docstring)."""
-    draws, kept = frozen_draws(world, spread)
+def random_case(world, d, spread, seed=SEEN_SEED, scale="old"):
+    """Every admitted draw of one set against R-ops (module docstring)."""
+    draws, kept = frozen_draws(world, spread, seed)
     worst, voltage, deviation, outside = {}, 0.0, 0.0, 0
     for state in kept:
         outside += not admitted(world, state, fx.EVENT)[1]
@@ -632,13 +708,13 @@ def random_case(world, d, spread):
         )
         declared = np.asarray(world.p.initial_cell_charge_C)[cells]
         deviation = max(deviation, float(np.max(np.abs(net / declared - 1.0))))
-        result = rops.apply(world.snapshot(state), world.division(d, state))
+        result = apply(world.snapshot(state), world.division(d, state), scale)
         after, ok = world.event(state, (1.0,))
         assert ok
         for key, value in compare(world, d, state, after, result).items():
             worst[key] = max(worst.get(key, 0.0), value)
     return dict(
-        seed=SEED,
+        seed=seed,
         spread=spread,
         draws=len(draws),
         admitted=len(kept),
@@ -651,21 +727,36 @@ def random_case(world, d, spread):
     )
 
 
+ASYMMETRIC = "asymmetric neighbour world (f 0.75, a 0.6, three carriers)"
+
+
+def near_zero_draws(world):
+    """[(spread, index, state)] of NEAR_ZERO, the rule's members recomputed from the seen sets
+    (asserted equal to the frozen list, and to hold WORST_SEEN)."""
+    found = []
+    k = world.patches.index(CONTROL_PATCH)
+    for spread in SPREADS:
+        draws, _ = frozen_draws(world, spread)
+        for index, state in enumerate(draws):
+            if not admitted(world, state, fx.EVENT)[0]:
+                continue
+            q = world.view(state)
+            phi = adapter.node_potentials(state, q, xp=np)
+            node = len(world.cells) + int(world.p.membrane_outside[k])
+            if abs(float(phi[world.cells.index("cell_0")] - phi[node])) <= NEAR_ZERO_V:
+                found.append((spread, index, state))
+    assert tuple((s, i) for s, i, _ in found) == NEAR_ZERO, [(s, i) for s, i, _ in found]
+    assert WORST_SEEN in NEAR_ZERO
+    return found
+
+
 def control_cases():
-    """(label, world, pre-event state, due) of the a_k control (negative_controls)."""
-    raw = random_worlds()["asymmetric neighbour world (f 0.75, a 0.6, three carriers)"]
-    world = Bound(raw)
+    """(label, world, pre-event state, due) of the negative controls (module docstring)."""
+    world = Bound(random_worlds()[ASYMMETRIC])
     out = [("asymmetric neighbour world, bound state", world, world.state, (1.0,))]
-    d = next(x for x in world.partition[1].divisions if x.id == "first")
-    _, kept = frozen_draws(world, 1.0)
-
-    def nearest_zero(state):  # A daughter's post-event potential nearest 0 V.
-        after, _ = world.event(state, (1.0,))
-        phi = adapter.node_potentials(after, world.view(after), xp=np)
-        return min(abs(float(phi[world.cells.index(c)])) for c in d.daughters)
-
-    near = min(kept, key=nearest_zero)
-    out.append(("asymmetric neighbour world, the spread-1 draw nearest 0 V", world, near, (1.0,)))
+    for spread, index, state in near_zero_draws(world):
+        label = f"asymmetric neighbour world, seen spread {spread:g} draw {index}"
+        out.append((label, world, state, (1.0,)))
     carriers = {"Na": 0.5, "K": 0.5}
     raw = fx.cleft_divided(f=0.75, area_fraction=0.6, carriers=carriers, bridge=("linear", 0.001))
     world = Bound(raw)
@@ -673,87 +764,178 @@ def control_cases():
     return out
 
 
-def negative_controls(patch="membrane_0"):
-    """The negative controls (module docstring): for each case and each defect of DEFECTS, R-ops
-    applied with the defect against the engine's own event. Reported per defect kind: the
-    baseline (no defect) ratios, the smallest defect whose ratio passes 64 on the daughters'
-    charges, on the post-event potentials and on any key (None if none does), and the ladder."""
+def defects(division, snapshot, parent):
+    """{control: delta -> (snapshot, division)}: each defect given to R-ops against the engine's
+    own event (to first order, an engine defect of -delta)."""
+    one, two, share = division.patches[CONTROL_PATCH]
+    cell = snapshot.cells[parent]
+    declared = abs(cell.charge_reference_C)  # The declared charge: no zero as Q_P nears 0.
+    species = list(division.carriers)
+
+    def a_k(x):
+        changed = {**division.patches, CONTROL_PATCH: (one, two, share + x)}
+        return snapshot, dataclasses.replace(division, patches=changed)
+
+    def parent_charge(x):
+        moved = dataclasses.replace(cell, charge_C=cell.charge_C + x * declared)
+        return dataclasses.replace(snapshot, cells={**snapshot.cells, parent: moved}), division
+
+    def f(x):
+        return snapshot, dataclasses.replace(division, f=division.f + x)
+
+    def transference(x):  # t_1 + x, t_2 - x: the sum stays 1.
+        carriers = dict(division.carriers)
+        carriers[species[0]] += x
+        carriers[species[1]] -= x
+        return snapshot, dataclasses.replace(division, carriers=carriers)
+
+    return {
+        "a_k": a_k,
+        "parent charge": parent_charge,
+        "f": f,
+        "transference": transference,
+    }
+
+
+def negative_controls(scale="old"):
+    """The negative controls at one scale (module docstring). Per case: the undefected ratios
+    per family; per control, the smallest defect caught per family (None if none is, "baseline
+    above 64" where the undefected case already fails) and whether every target family is
+    caught at or below THRESHOLD."""
     out = {}
     for label, world, state, due in control_cases():
         d = next(x for x in world.partition[1].divisions if x.id == "first")
         division, snapshot = world.division(d, state), world.snapshot(state)
         after, ok = world.event(state, due)
         assert ok
-        one, two, share = division.patches[patch]
-        parent = snapshot.cells[d.parent]
-
-        def share_defect(x, one=one, two=two, share=share, division=division, snapshot=snapshot):
-            changed = {**division.patches, patch: (one, two, share + x)}
-            return snapshot, dataclasses.replace(division, patches=changed)
-
-        def charge_defect(x, parent=parent, division=division, snapshot=snapshot, name=d.parent):
-            cell = dataclasses.replace(parent, charge_C=parent.charge_C + x * abs(parent.charge_C))
-            return dataclasses.replace(snapshot, cells={**snapshot.cells, name: cell}), division
-
-        baseline = compare(world, d, state, after, rops.apply(snapshot, division))
-        groups = {**CONTROL_KEYS, "any key": tuple(baseline)}
+        baseline = compare(world, d, state, after, apply(snapshot, division, scale))
+        groups = {**CONTROL_GROUPS, "any key": tuple(baseline)}
         entry = dict(
             baseline={group: max(baseline[k] for k in keys) for group, keys in groups.items()}
         )
-        kinds = {
-            f"a_k of {patch} (share {share:g}) + delta": share_defect,
-            "the parent's node charge + delta |Q_P|": charge_defect,
-        }
-        for kind, defect in kinds.items():
-            ladder = [(x, compare(world, d, state, after, rops.apply(*defect(x)))) for x in DEFECTS]
-            caught = {  # A baseline above 64 already fails: no defect is measurable there.
+        for control, defect in defects(division, snapshot, d.parent).items():
+            ladder = [
+                (x, compare(world, d, state, after, apply(*defect(x), scale))) for x in DEFECTS
+            ]
+            caught = {
                 group: "baseline above 64"
                 if entry["baseline"][group] > 64
                 else min((x for x, r in ladder if max(r[k] for k in keys) > 64), default=None)
                 for group, keys in groups.items()
             }
-            rows = []
-            for x, r in ladder:
-                row = dict(delta=x, worst=max(r.values()), worst_key=max(r, key=r.get))
-                row.update({k: r[k] for keys in CONTROL_KEYS.values() for k in keys})
-                rows.append(row)
-            entry[kind] = dict(smallest_defect_caught=caught, ladder=rows)
-            print("negative control", label, kind, caught, flush=True)
+            targets = {
+                group: isinstance(caught[group], float) and caught[group] <= THRESHOLD
+                for group in CONTROL_TARGETS[control]
+            }
+            entry[control] = dict(
+                smallest_defect_caught=caught,
+                targets_caught_at_threshold=targets,
+                ladder=[
+                    dict(delta=x, worst=max(r.values()), worst_key=max(r, key=r.get))
+                    | {group: max(r[k] for k in keys) for group, keys in CONTROL_GROUPS.items()}
+                    for x, r in ladder
+                ],
+            )
+            print("control", scale, label, control, caught, flush=True)
         out[label] = entry
     return out
 
 
-def main(output):
-    jax.config.update("jax_enable_x64", True)
-    output = Path(output)
-    output.mkdir(parents=True, exist_ok=False)
-    report = dict(status=STATUS, tolerance_eps=64, cases={}, simultaneous={}, random={})
+def run_all(scale, seeds):
+    """Every Q2 case at one scale, the random sets drawn from seeds {world: {spread: seed}}."""
+    report = dict(cases={}, simultaneous={}, random={})
     for label, world, state, due, division_id in cases():
         d = next(x for x in world.partition[1].divisions if x.id == division_id)
-        result = rops.apply(world.snapshot(state), world.division(d, state))
+        result = apply(world.snapshot(state), world.division(d, state), scale)
         after, ok = world.event(state, due)
         ratios = compare(world, d, state, after, result)
         report["cases"][label] = dict(engine_ok=ok, worst=max(ratios.values()), ratios=ratios)
-        print(label, ok, f"{max(ratios.values()):.2f}", flush=True)
+        print(scale, label, ok, f"{max(ratios.values()):.2f}", flush=True)
     for label, world, state, time in simultaneous_cases():
         entry = {}
         for order in (("second_d1", "second_d2"), ("second_d2", "second_d1")):
-            ratios = simultaneous(world, state, time, order)
+            ratios = simultaneous(world, state, time, order, scale)
             entry[" then ".join(order)] = dict(worst=max(ratios.values()), ratios=ratios)
-            print("simultaneous", label, order, f"{max(ratios.values()):.2f}", flush=True)
         report["simultaneous"][label] = entry
     for label, raw in random_worlds().items():
         world = Bound(raw)
         d = next(x for x in world.partition[1].divisions if x.id == "first")
-        entry = {}
-        for spread in SPREADS:
-            entry[f"spread {spread:g}"] = random_case(world, d, spread)
-            worst = entry[f"spread {spread:g}"]["worst"]
-            print("random", label, spread, f"{worst:.2f}", flush=True)
-        report["random"][label] = entry
-    report["negative_controls"] = negative_controls()
-    (output / "q2_rops.json").write_text(json.dumps(report, indent=1) + "\n")
+        report["random"][label] = {
+            f"spread {s:g}": random_case(world, d, s, seeds[label][f"spread {s:g}"], scale)
+            for s in SPREADS
+        }
+    report["negative_controls"] = negative_controls(scale)
+    return report
+
+
+def seen_seeds():
+    return {w: {f"spread {s:g}": SEEN_SEED for s in SPREADS} for w in random_worlds()}
+
+
+def main(output):
+    """The development run: the seen sets, every case and control, at each scale R-ops offers."""
+    jax.config.update("jax_enable_x64", True)
+    output = Path(output)
+    output.mkdir(parents=True, exist_ok=False)
+    report = dict(status=STATUS, tolerance_eps=64, sets="seen", scales={})
+    for scale in scales():
+        report["scales"][scale] = run_all(scale, seen_seeds())
+        (output / "q2_rops.json").write_text(json.dumps(report, indent=1) + "\n")
+    return report
+
+
+def verdict(report, item):
+    """Q2's verdict at the new scale: every compared ratio of the cases, the simultaneous
+    divisions and the judged sets within 64; every control's target families caught at or
+    below THRESHOLD wherever the undefected case passes; and each near-zero case passing
+    undefected and failing with the parent-charge defect."""
+    new = report["scales"]["new"]
+    worst = [v["worst"] for v in new["cases"].values()]
+    worst += [e["worst"] for v in new["simultaneous"].values() for e in v.values()]
+    worst += [e["worst"] for v in new["random"].values() for e in v.values()]
+    comparisons = max(worst) <= 64
+    controls = {}
+    for label, entry in new["negative_controls"].items():
+        near = "seen spread" in label
+        for control in CONTROL_TARGETS:
+            targets = entry[control]["targets_caught_at_threshold"]
+            passed = all(targets.values()) and (not near or entry["baseline"]["any key"] <= 64)
+            controls[f"{label}: {control}"] = passed
+    ok = comparisons and all(controls.values())
+    return dict(
+        largest_ratio=max(worst),
+        comparisons_within_64=comparisons,
+        controls=controls,
+        threshold=item["negative_controls"]["threshold"],
+        verdict="pass" if ok else "fail",
+    )
+
+
+def judge(output, protocol_path=None, root=None):
+    """The judged run: refused first unless the S5 protocol is registered, the source a clean
+    snapshot (s5_protocol.registered) and R-ops' amended magnitudes landed; then the judged sets
+    (the protocol's seeds) and every case and control under both scales, with the verdict."""
+    from validation.division import s5_protocol
+
+    _, item = s5_protocol.registered(
+        "Q2", protocol_path or s5_protocol.PROTOCOL, root or s5_protocol.ROOT
+    )
+    if "new" not in scales():
+        raise SystemExit("Refused: R-ops' amended magnitudes (A.8) have not landed")
+    seeds = item["frozen_draws"]["judged"]["seeds"]
+    jax.config.update("jax_enable_x64", True)
+    output = Path(output)
+    output.mkdir(parents=True, exist_ok=False)
+    report = dict(status="Judged run of Q2", sets="judged", scales={})
+    for scale in ("old", "new"):
+        report["scales"][scale] = run_all(scale, seeds)
+    report["verdict"] = verdict(report, item)
+    (output / "q2_judged.json").write_text(json.dumps(report, indent=1) + "\n")
+    return report
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    if sys.argv[1:2] == ["judge"]:
+        judge(sys.argv[2])
+    else:
+        main(sys.argv[1])

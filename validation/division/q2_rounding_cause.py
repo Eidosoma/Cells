@@ -38,7 +38,6 @@ import numpy as np
 from cells.models import pump_composite_adapter as adapter
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
 from tests import partition_fixtures as fx
-from validation.division import partition_reference as rops
 from validation.division import q2_domain_probe as probe
 from validation.division import q2_rops_comparison as q2
 
@@ -106,7 +105,7 @@ def measured(world, d, state, factor):
     """(differences, content ratios, still admitted, Q2's potential ratio) at one factor."""
     state, ratios = scaled(world, state, factor)
     domain, _ = q2.admitted(world, state, fx.EVENT)
-    result = rops.apply(world.snapshot(state), world.division(d, state))
+    result = q2.apply(world.snapshot(state), world.division(d, state), "old")
     after, ok = world.event(state, (1.0,))
     assert ok
     ratio = q2.compare(world, d, state, after, result)["potentials_after_V"]

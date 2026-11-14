@@ -14,6 +14,7 @@ import json
 import pytest
 
 from validation.division import egg_division_world as egg
+from validation.division import q2_rops_comparison as q2
 from validation.division import q3_tissue_comparison as q3
 from validation.division import q5_order as q5
 from validation.division import s5_protocol
@@ -51,6 +52,7 @@ def test_the_refusal_follows_s3s(tmp_path):
 
 def entries(out, root):
     return {
+        "Q2": lambda path: q2.judge(out, path, root),
         "Q3": lambda path: q3.judge(out, path, root),
         "Q5": lambda path: q5.judge(out, path, root),
         "Q1 and Q11": lambda path: egg.main(
@@ -59,7 +61,7 @@ def entries(out, root):
     }
 
 
-@pytest.mark.parametrize("item", ("Q3", "Q5", "Q1 and Q11"))
+@pytest.mark.parametrize("item", ("Q2", "Q3", "Q5", "Q1 and Q11"))
 def test_each_judge_entry_refuses_first(item, tmp_path):
     out = tmp_path / "out"
     judge = entries(out, tmp_path)[item]
