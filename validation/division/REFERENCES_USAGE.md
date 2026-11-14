@@ -19,6 +19,7 @@ reading of Appendix A, the Appendix A item is cited; disagreements go to the lea
 ```python
 from validation.division import partition_reference as rops
 result = rops.apply(snapshot, division)   # raises rops.PartitionRefused
+plain = rops.apply(snapshot, division, charge_term=False)  # magnitudes without A.8's amendment
 ```
 
 `apply` never modifies its inputs. All input dataclasses are frozen. Names of nodes and slots
@@ -53,7 +54,7 @@ potentials come from the full capacitor network. Leave out pending and retired s
 | `volume_pL` | pL, > 0 | Declared volume. |
 | `background_fmol` | fmol of charge equivalent | Fixed background X (A.1). |
 | `charge_C` | C | **The node charge Q at the view, carried explicitly** (A.1, A.6 steps 2 and 6). This is the charge the capacitor solve uses: the sum of the cell-side charges C_k V_k of its patches, positive for a net positive cell. R-ops does not recompute it from the amounts. It should equal 1e-15 F (Σ z n + X) to rounding, and the `charge_content_*` identities report that consistency. |
-| `charge_reference_C` | C, default 0 | The declared **charge anchor** of design §3.3. It is only split (f, complement) into the daughters' anchors; it enters no solve and no identity. |
+| `charge_reference_C` | C, default 0 | The declared **charge anchor** Q̄ of design §3.3. It is split (f, complement) into the daughters' anchors and enters no solve value. With `increment_fmol` it sets the magnitude of the cell's node charge (A.8 as amended; see Magnitudes). |
 
 ### `Cleft` (finite outside node, no background)
 
@@ -142,6 +143,7 @@ interpreted, so any sign convention passes through.
 | `units_moved` | – | The same for population abundances. |
 | `junction_gates_before`, `junction_gates_after` | – | `{slot: gates}` for every junction slot the event touches. A slot that is not live reads 0: the parent's contacts and bridges after, the daughter contacts and the new bridge before. The bridge opens with its declared gates; the daughter contacts take g_e (the lead's addition to A.6 item 5). |
 | `record` | – | `{kind: {slot: value}}`: the retiring slots' history, moved out (A.6 item 5; design §3.5). |
+| `charges_before_C`, `charges_after_C` | *m* | `{free node: Q}`, every cell's and cleft's node charge before and after the event (C). |
 | `potentials_before_V`, `potentials_after_V` | *m* | `{node: φ}` over the held and free nodes, before and after the event. |
 | `patch_q_before_C`, `patch_q_after_C` | – | `{patch: q_k}`, the cell-side patch charges before and after. |
 | `plate_before_C`, `plate_after_C` | – | `{held node: plate charge}`, q_b = −Σ q_k over the patches facing it (A.2). |
@@ -153,9 +155,16 @@ interpreted, so any sign convention passes through.
 | `unmixing_leading_pJ` | – | Its leading order, 1e-3 RT Σ δ²/(2 n f (1 − f)). |
 | `work_pJ` | *m* | W = ΔG + 1e12 (ΔU − Σ_b φ_b Δq_b) (A.6 step 6). |
 
-**Magnitudes (A.8: pass at 64 eps × magnitude).**
+**Magnitudes (A.8, as amended by the lead's ruling of 14 November: pass at 64 eps × magnitude).**
 - **Ordinary quantities:** each magnitude is the sum of the absolute values of the terms entering the quantity.
-- **Solved potentials:** they enter with the componentwise forward-error scale of a backward-stable solve, |K_ff⁻¹| (|K_ff| |φ_f| + |Q_f| + |K_fb| |φ_b|).
+- **Node charges:** a cell's node charge has the magnitude M_i = |Q_i| + |Q̄_i| + 1e-15 F Σ_s |z_s Δ_{s,i}|.
+  - Q̄_i is the cell's declared charge anchor and Δ_i its increments: for an input cell, its `charge_reference_C` and `increment_fmol`; for a daughter, its split anchor and the increments the map computes (as written in `result.snapshot`).
+  - A cleft's charge has the magnitude |Q_c|.
+  - A daughter's magnitude also carries what enters its charge form: f M_P + mag(δq) for D1; M_P plus that for D2.
+  - `charges_before_C` and `charges_after_C` in `magnitudes` give every node charge's magnitude.
+- **Solved potentials:** |K_ff⁻¹| (|K_ff| |φ_f| + |Q_f| + T_f + |K_fb| |φ_b|). This is the componentwise forward-error scale of a backward-stable solve, with each cell's term T_i = |Q̄_i| + 1e-15 F Σ_s |z_s Δ_{s,i}| carried through |K_ff⁻¹|; T is 0 for a cleft. The post-event solve takes the post-event cells' terms, the daughters' from their split anchors and computed increments.
+- **Everything downstream** of the charges or the potentials carries these terms: patch voltages and charges, plate and image charges, ΔU, δq and δ, the daughters' amounts and increments, ΔG and W.
+- **Without the terms:** `apply(snapshot, division, charge_term=False)` gives the magnitudes without the amendment, for comparison; the values are the same either way. With every charge anchor and increment zero, the two coincide exactly.
 - **Constants:** `rops.EPS` is machine epsilon and `rops.TOLERANCE_EPS` = 64.
 
 **`identities`**: `{name: (residual, magnitude)}`. Each residual is zero in exact arithmetic; it
