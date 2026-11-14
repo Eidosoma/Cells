@@ -58,6 +58,129 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Reactions on the shared inventory (D152 v1): `local_species_reactions@1`, milestones 1 and 2,
+  landed (14 November).** This is development code, with no judged run; MG0c's qualification is
+  milestone 3 ([note](docs/SHARED_INVENTORY_REACTIONS_DESIGN.md) §11;
+  [evidence](/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/HANDOFF.md)).
+  - **What landed.**
+    - The operator and its declaration parser, with every refusal the note lists.
+    - The contract parts, including the standard-potential term the operator owns.
+    - The laws: mass action of orders 0–3, Michaelis–Menten with or without a catalyst, passive
+      detailed balance, and Hill factors.
+    - SSPRK(3,3) half-steps under the stage condition at θ = 1/2. dt·L > 1 is refused.
+    - Exact ΔG bookings, the per-step node class, and the mixed-node hybrid.
+  - **Against the independent references** (run through their usage note only):
+    - the per-law ΔG test of record agrees within the references' tolerances over 4 world
+      variants × 60 trials, with every law, class and branch reached;
+    - whole compiled face-free runs agree to ≤ 7e-15 in amounts and ≤ 2.5e-16 of scale in
+      energies;
+    - the development figures are reproduced: the share at onset +0.33% in the first half-step,
+      the background guard −6.32e-5 against the true −6.27e-5, and the reversal onset 5.4–5.6×
+      at a 1e-12 mM trace.
+  - **Guards.**
+    - The face-free energy world stays within 0.26 of the rounding allowance on every booking
+      path, and its three negative controls fail at the first row they touch.
+    - C2: the shared bound is 0.35× the booking at µM and 409× at nM.
+    - Benign padding: no NaN or infinity anywhere.
+    - Identical programs across parameter twins. The batch signature refuses different
+      structures.
+    - Idleness is bitwise against the live half-step. Restart is bitwise, including through a
+      snapshot.
+    - Vector batches are bitwise against their reverse.
+    - dt·L = 0.98 is admitted and 1.02 refused, with the state kept bitwise.
+  - **Crossrev of record:** all five sets and D150's species set are identical. The reactions set
+    has its first record.
+  - **Landing checks.**
+    - Tier 1 and 2 at the merge a4e2f7e: 397 files, no changed outcome.
+    - D152's three tier-3 files pass: runs 6, guards 14, reference runs 18.
+  - **For milestone 3:**
+    - §3.4 guard 2, the transport world with the network;
+    - a compiled composition with another writer;
+    - idle claim 3, reported;
+    - multi-site runs;
+    - MG0c's driver and a PROPOSED protocol.
+
+- **The checkpoint-continuity GPU probe (design §13.4): every question identical (14 November).** It
+  ran in the L4 gap after hold segment 2 ended, as one GPU process under the GPU lock (about
+  2 min, peak 1.5 GB), then the CPU part on CPU 3, from the frozen source `source-s1-e8cdda0`
+  ([evidence](/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/impl/gpu-probe/out/):
+  `compare.json`, `queue.log`).
+  1. A GPU cohort traces identically in two GPU-host processes: P0, P, B and H.
+  2. A CPU-host trace, with `execution_device` patched, equals the GPU host's jaxprs, constants,
+     bindings and host replay.
+  3. The cross-lowered `cuda` StableHLO equals the GPU host's own lowering (1,799,725
+     characters, identical).
+  4. The overlap repeats bitwise on the CPU for a GPU definition.
+  - **The decision §13.4 registered:** GPU definitions are probed on the CPU host and use no
+    GPU time; the record notes the patch. This unblocks the GPU extension of case 1, which is
+    to be built next.
+
+- **E07-v1 follow-ups (14 November).** Both are descriptive or development work, and no verdict or
+  class changed ([readout](/mnt/workspaces/Cells/e07-v1-judged-20261113-01/loss-positions.json),
+  [1 ms check](/mnt/workspaces/Cells/e07-v1-dtcheck-20261114-01/HANDOFF.md)).
+  - **Where losses sat,** over all 16 inheritance runs with any loss:
+    - Of the 41 lost D copies, 33 were strays outside the disc, 8 sat on the rim, and none was
+      interior.
+    - Of the 21 lost founders, 20 were rim cells and 1 interior.
+    - The erosion and small-bias classes therefore mix trimming of strays, which raises J, with
+      rim erosion, which lowers it. Fast k3 s 1.0 seed 1 (ΔJ +0.044) is pure trimming.
+  - **The s 1.0 control's collective falls at 1 ms.**
+    - The same cells fell at the same records as at 5 ms: 6 at 436 s, 6 at 512 s and 2 at 514 s
+      at 2 s resolution.
+    - The D sets were identical at all 61 records, with |ΔVm| ≤ 0.21 µV.
+    - A 5 ms rerun reproduced the judged run bitwise.
+    - The falls are not a step-size artefact. It is still one run.
+  - **The E07-v2 note** (still PROPOSED) carries the review fixes:
+    - §2 leads with the pattern's fate;
+    - fresh against long-held has its matched variables named, with a prediction;
+    - 1-D chain screens come before the lesion arms only.
+    - Its three questions are with the user.
+  - **Landing.** The D147 guard exempts the two new scripts, with reasons: one is THRESHOLD_V
+    only, and the other builds through e07_v1_run.build, which declares the solver. Tier 1 at
+    23c979f: 310 files, no changed outcome.
+
+- **Secreted-species v1 (D150), milestone 3 landed: the qualification protocol, PROPOSED
+  (14 November).** It is not registered, and no judged run has been made
+  ([protocol](validation/tissue/secreted_species_protocol.json); design §12.2;
+  [evidence](/mnt/workspaces/Cells/secreted-species-v1-20261114-01/HANDOFF.md)).
+  - **Scope.** The protocol judges @3's faces, with exact radial-shell conductances, and turnover's
+    first-order clearance around a held-bath source: the held sphere with decay.
+    - Q1: against the exact discrete solution, on the IMEX and RK4 arms. Two rules: the dt study,
+      and an a priori bound by the splitting's leading term.
+    - Q2: against the continuum closed form.
+    - Q3: the observed orders, judged by stop rules only.
+    - Q5: the guards of record, which are the RK4 face heat and the per-law ΔG tests, plus the
+      runs, ions, definitions and refusal test files.
+    - Exchange, production and the occupant rule enter only through Q5's test files.
+  - **Judged controls.**
+    - k and D put in error at a registered δ per rule and arm. In development every one was
+      caught, at 13–79 times tolerance.
+    - The planar-face arm against Q2. It fails at 28–248 times.
+  - **Development.**
+    - All eight arms pass every host check.
+    - Q1 on IMEX reaches 0.47 of tolerance under the dt study and 0.37 under the splitting term;
+      on RK4, 0.45 and 0.34.
+    - Q2 reaches 0.44–0.47. The orders are 1.92–1.93 in space and 2.00–2.09 in time.
+    - Pass fractions near 4/9 are structural for a second-order scheme; the controls are what
+      show the test can fail.
+    - The first-shell error equals the step map's fixed point to 5.8e-4 (reported).
+  - **The review (the lead, with the advisor).**
+    - Q1's claim is reworded to an a priori bound.
+    - The controls are judged, and the scope is stated.
+    - R-continuum is checked against the PDE itself: a fourth-order residual, both boundary
+      conditions and the start.
+    - The step map's agreement stays a tier-2 regression guard, not a judged item.
+  - **Found and fixed in development.**
+    - A radial-builder regrouping moved bindings by up to 5 ulp. The species crossrev caught it.
+    - A refusal test would have failed once the protocol was registered.
+  - **Landing:** tier 1 at the merge 780f5d9 310 files, no changed outcome; the new tier-2 step-map guard
+    2 passed.
+  - **Next:**
+    - a rehearsal on main: all five crossrev sets and the species set from a clean snapshot, and
+      a dry run of every judge entry;
+    - the lead's final check with the advisor;
+    - registration, then one judged run.
+
 - **D152's independent references landed (14 November).** An agent that never read the operator's
   code or the design's prototype wrote them from the note's Appendix A and §6
   ([usage](validation/reactions/REFERENCES_USAGE.md);

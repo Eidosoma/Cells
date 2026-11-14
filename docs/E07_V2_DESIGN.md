@@ -42,26 +42,56 @@ Judged execution: `/mnt/workspaces/Cells/e07-v1-judged-20261113-01/`. Its output
 `summary.json`, `scores.json` and `runs/*/seed*/outcome.json`. The scorer is
 `validation/tissue/e07_v1_score.py`, frozen at `6b6912b` before any judged outcome.
 
-- **The copy rule carries the mark.** In all 30 (a) runs the engine stayed close to its
-  paired copy-only null: ΔJ ran from −0.031 to +0.059 and D-loss from 0 to 9.8%. Of 4,853 H
-  copies, 3 converted.
-  - The erosion classes at s 1.0 come from D-loss, not from ΔJ. Fast k3 was 3 of 3
-    erosion with D-loss 5.7–6.8% and ΔJ from −0.031 to +0.044.
-  - So a retention claim in v2 keeps v1's paired null. Turnover's own engine contribution
-    is small.
-- **At s 1.0 the disc was not maintained even with disc donors, in the one run.** The (c)
-  control at s 1.0 lost 14 founders and 6 D copies. J was 0.784 at the judged record
-  (minimum 0.649).
-  - **The losses came in two collective falls**, of 6 founders at 440 s and 8 at 520 s. Most
-    were rim cells with 3–4 D neighbours of 6; the rim D copies followed at 710–1850 s
+- **The pattern did not survive whole-sheet turnover, and the null predicted as much.**
+  - B1 (J ≥ 0.8 through two turnovers) was false in all 20 fast k1 runs.
+  - J at the judged record was 0.25–0.65, the copy-only null's own range for these draws.
+- **The engine's deviation from the null was small.** Across the 30 (a) runs, ΔJ stayed
+  within about ±0.06 of the paired null (−0.031 to +0.059), far smaller than the predicted
+  −0.35 to −0.05. D-loss ran from 0 to 9.8%, and 3 of 4,853 H copies converted.
+  - **At k1 turnover's own engine contribution is small.** The D–H junction weight was about
+    0.02 of nominal: A ≈ 0.2 times a gate near 0.1.
+  - This note claims nothing beyond k1 for that contribution.
+- **The erosion classes, with their ΔJ.**
+
+  | Run | ΔJ | Lost D copies (interior, rim, stray) | Lost founders (interior, rim) |
+  | --- | --- | --- | --- |
+  | fast k1 s 1.0 seed 5 | +0.008 | 0, 1, 5 | 0, 2 |
+  | fast k1 s 1.0 seed 6 | −0.005 | 0, 2, 3 | 1, 2 |
+  | central k1 s 1.0 seed 2 | +0.030 | 0, 1, 3 | 0, 3 |
+  | fast k3 s 1.0 seed 1 | +0.044 | 0, 0, 3 | 0, 0 |
+  | fast k3 s 1.0 seed 2 | +0.026 | 0, 0, 2 | 0, 4 |
+  | fast k3 s 1.0 seed 3 | −0.031 | 0, 1, 1 | 0, 0 |
+
+  - **Source.** The loss positions come from a descriptive readout, `loss-positions.json`
+    (`validation/tissue/e07_v1_dloss.py`). It is reported beside the classes and does not
+    relabel them.
+  - **Across all (a) runs.** Of 41 lost D copies, 33 were strays outside the disc, 8 sat on
+    its rim and none was interior. Of 21 lost founders, 20 were rim cells.
+  - **Effect on J.** Losing a stray raises J by trimming the union. In fast k3 s 1.0 seed 1,
+    every loss was a stray.
+- **The s 1.0 control lost founders in collective falls: one run, at 5 ms.** The (c) control
+  at s 1.0 lost 14 founders and 6 D copies. J was 0.784 at the judged record (minimum 0.649).
+  - The founders fell in two collective falls, of 6 at 440 s and 8 at 520 s. Most were rim
+    cells with 3–4 D neighbours of 6, and rim D copies followed at 710–1850 s
     (`e4-losses.json`).
+  - **The 1 ms development check** reran 0–600 s from the execution snapshot, with the
+    judged run's event times. It reproduced both falls, in the same cells at the same 10 s
+    records.
+    - At 2 s resolution, 1 ms and 5 ms place them alike: 6 founders at 436 s, then 6 at
+      512 s and 2 at 514 s.
+    - The D sets were identical at all 61 records, and |ΔVm| was at most 0.21 µV.
+    - Evidence: `/mnt/workspaces/Cells/e07-v1-dtcheck-20261114-01/dtcheck-compare.json`.
   - At s 0.6, J was 1 at every record.
-  - This is one run per s. v2's challenges therefore run first at s 0.6, and s 1.0 is a
-    boundary case.
-- **Naive templates erased the mark within about one turnover at every τ run** (40, 120 and
-  300 s; v1 ran no isolated newcomers at the literature brackets). The (b) sheets were all H
-  at 940–1050 s (s 0.6) and 550–630 s (s 1.0). The conversions of interior newcomers that
-  arrived with five or more D neighbours were:
+- **Why s 1.0 is a boundary case.** The claim does not rest on the control alone.
+  - At s 1.0, rim founders were lost in 8 of 13 (a) runs: fast k1 6 of 8, central k1 1 of 2,
+    fast k3 1 of 3. At s 0.6 it was 1 of 13.
+  - The (b) sheets went all H earlier at s 1.0.
+
+  v2's challenges therefore run first at s 0.6.
+- **The isolated-newcomer sheets went all H at every τ run** (40, 120 and 300 s; v1 ran no
+  isolated newcomers at the literature brackets). That was at 940–1050 s at s 0.6 and
+  550–630 s at s 1.0, with the first turnover complete at 1016 s. The conversions of
+  interior newcomers that arrived with five or more D neighbours were:
   - at s 0.6: 9/11, 5/10 and 1/7 at τ 40, 120 and 300 s;
   - at s 1.0: 5/7, 5/9 and 2/8.
 
@@ -125,10 +155,29 @@ Each challenge comes after t_c and registers three things.
 - **A fit inside the fixed-volume window.** Every judged record falls within 70 min of the
   cue. v1's osmotic flag (10%) and censor (15%) are kept.
 - **A check that it is not the mark again.** The response of a fresh D cell is compared with
-  that of a long-held D cell under the same challenge. A fresh D cell is a D copy that
-  arrived within a declared time; a long-held one is a founder in W never replaced. Both are
-  named per world definition, from the schedule, before the run. If they respond alike, the
-  challenge reads the present state (attractor-held), not history.
+  that of a long-held D cell under the same challenge.
+  - **Who is which.** A fresh D cell is a D copy that arrived within a declared time; a
+    long-held one is a founder in W never replaced. Both are named per world definition,
+    from the schedule, before the run.
+  - **Nearly decided by construction.** A donor copy takes the donor's species amounts and
+    channel gates (D139), so at arrival its ionic state is a long-held D cell's. The two
+    differ mainly in two variables:
+    - **junction abundance A.** A copy's junctions restart from A0 = 0 through the lag. A
+      founder's junctions also restart whenever a neighbour is replaced, so the A of every
+      junction of each challenged cell is reported. Pairs are matched on the number of D
+      neighbours and on mean A within a declared tolerance, or the unmatched A is reported
+      beside the response;
+    - **osmotic loading.** A copy carries its donor's loading, while a founder's has built up
+      in place over the fixed-volume window. Each challenged cell's osmotic excess is
+      reported, and pairs are matched within a declared tolerance.
+  - **The prediction, stated before any run.**
+    - **Matched** for A and loading, fresh and long-held D cells respond alike within the
+      challenge's numerical tolerance.
+    - **Unmatched,** the fresh cell differs in the direction its lower coupling implies: a
+      larger Vm excursion, and a greater chance of flipping under the same hyperpolarising
+      step, because less current is shared with D neighbours.
+    - **Beyond that,** a difference A and loading do not explain would be history held
+      elsewhere. This model is not expected to show one.
 
 ### 4.1 A second cue
 
@@ -218,9 +267,19 @@ the literature brackets.
   restored.
 
 Version 0 has no regulatory network, secreted signal or mechanics. The heredity cell's law
-set stands in for "the same network" and is labelled so. E15 §3 asks for 1-D chain screens
-before the sheet. This note leaves them out, because v2's frame is v1's sheet; they could
-come before the lesion arms if the lead wants them.
+set stands in for "the same network" and is labelled so.
+
+**1-D chain screens come first, for the lesion arms only** (E15 §3; the lead's ruling, 14
+November).
+- **What they are.** Labelled development screens, not judged: E07's cell law on a line of
+  cells.
+- **What they are for.** They find the lesion regime, the block size and τ at which a refill
+  can return, before sheet CPU-hours are spent.
+- **Engine model.** The same `resolved_pump_replacement@1`, on a chain world built from
+  `worlds.e07_sheet_definition` with chain edges. That world does not exist yet and is
+  validation-side.
+- **Not for the challenges.** The second-cue and injected-current challenges go straight to
+  the sheet, since v1's frame exists.
 
 ## 6. Arms, a sketch for review (not registered)
 
@@ -230,7 +289,8 @@ come before the lesion arms if the lead wants them.
 | No-turnover controls | 0.6, 1.0 | none | each challenge and lesion | 1 each (deterministic) |
 | Second cue | 0.6 (1.0 boundary) | fast k1 | 2 s and 0.5 s; written region and naive region | 4 |
 | Injected current | 0.6 | fast k1 | single cell and block, inside W | 4 |
-| E15 v0 refill | 0.6 | fast k1 donor copies elsewhere; the block by naive templates. One formation law per run, so the bracket applies to every junction restart. The fast bracket first, then τ 40 and 120 s as v1's ladder | interior block; boundary block | 2–4 |
+| E15 v0 chain screens (development, not judged; first) | 0.6, 1.0 | a line of cells, isolated templates over a block | block sizes and τ, to find the regime | 1 each |
+| E15 v0 refill (after the screens) | 0.6 | fast k1 donor copies elsewhere; the block by naive templates. One formation law per run, so the bracket applies to every junction restart. The regime comes from the chain screens | interior block; boundary block | 2–4 |
 | E15 v0 state lesion | 0.6 | fast k1 | injection block inside W; cue block outside W | 2–4 |
 
 **Cost.**
@@ -294,20 +354,26 @@ The electrode was in cell 63, the disc's centre, at −20 pA, with carriers {K, 
 | Injection over water | an injected current with water | Refused: `[water, injection@1]` |
 | A dense block refill inside G2-Q1's scope, and a schedule mixing templates and donor copies | §5 refills | Unverified: both need a definition-time build, then a numerics check |
 | Removal with a vacancy, an excision operator for the composite | later E15 versions | Absent (E15 §1.7); not needed for version 0 |
+| A 1-D chain world for E07's cell law (validation side) | §5's development chain screens | To build from `worlds.e07_sheet_definition` with chain edges; no engine change |
 | Readouts (validation side): the clearance criterion, W at release, challenge responses, fresh against long-held labels from the replacement generation, pattern metrics and recovery time | every arm | To write. `src/cells/assays/recovery.py` exists as an observer |
 
 None of these is built for this experiment (D144). The bath step and injection over water
 are general composite features, each with its own design note (D142) and gate.
 
-## 9. Questions for the lead and the user
+## 9. Questions
 
-1. **What counts as "function" for a Cells cell** (the review's question 3)? This note takes
-   the response to a second cue and a current step, compared between fresh and long-held D
-   cells.
+**For the lead:**
+
 2. **Start points.** Should v2 start from sheet70's snapshots at the first 120 s point after
    t_c, or run the write phase in every run?
 3. **The 37-cell world.** May it add cue populations outside the disc for the naive-region
    challenge, or should that challenge use the 19-cell world only?
+
+**For the user:**
+
+1. **What counts as "function" for a Cells cell** (the review's question 3)? This note takes
+   the response to a second cue and a current step, compared between fresh and long-held D
+   cells.
 4. **E15 version 0.** Is a refill by naive templates the first damage kind, before any
    vacancy? And is the cue re-applied to the lesion acceptable as a labelled supplied answer?
 5. **Order.** Should the lesions run after the challenges, or alongside them in one

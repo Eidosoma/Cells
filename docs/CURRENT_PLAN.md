@@ -116,6 +116,7 @@ interfaces have one owner, the lead.
 | Live phase markers (a follow-on, not added to the fix in flight) | Binding, plan validation, compile and first window reported as they happen; preparation, execution, observation and output timed separately |
 | A bound-definition object, if the fix shows the need | Definition-invariant quantities bound once. State-dependent views (volumes under water, capacitance and masks under division) keep explicit update rules |
 | One production execution path | Vector windows for families with qualified device checks; the other paths declared as reference paths; shared admission and checkpoint validation |
+| A run-view output (D154: every experiment must eventually be visualizable) | One shared path writes, beside `definition.json`, each run's geometry, entity identity, record metadata, events, representation per layer and scale; a short design note first (D142), aligned with the visualizer's consumer schema |
 | A compile policy | A rule for traced inputs and built-in constants, plus a resource budget around the existing executable cache |
 
 **Note:** batch snapshots check every source file's hash. The W1 hold's prepared state
