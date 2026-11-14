@@ -1,0 +1,56 @@
+{
+ "kind": "synthetic.arm_outcome@0",
+ "arm": "synthetic-donor-s1.0",
+ "stop": "refusal",
+ "end_s": 30.0,
+ "planned_end_s": 60.0,
+ "refusal": {
+  "step": 6200,
+  "time_s": 31.0,
+  "failed": [
+   "field_not_converged"
+  ],
+  "state_kept": "the last accepted row before the refusal"
+ },
+ "residence_s": 60.0,
+ "turnovers_reached": [
+  false,
+  false
+ ],
+ "jaccard_after_turnover": [
+  null,
+  null
+ ],
+ "jaccard_after_turnover_basis": [
+  "refusal",
+  "refusal"
+ ],
+ "all_h_s": null,
+ "d_inside_end": 7,
+ "max_d_outside": 0,
+ "newcomers": 2,
+ "osmotic": {
+  "max_excess": 0.01
+ },
+ "b1_jaccard_0p8_through_two_turnovers": false,
+ "series": {
+  "t_s": [
+   0.0,
+   10.0,
+   20.0,
+   30.0
+  ],
+  "d_inside": [
+   7,
+   7,
+   7,
+   7
+  ],
+  "d_outside": [
+   0,
+   0,
+   0,
+   0
+  ]
+ }
+}

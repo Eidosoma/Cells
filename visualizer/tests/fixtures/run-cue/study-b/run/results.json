@@ -1,0 +1,24 @@
+{
+ "kind": "synthetic.pilot_results@0",
+ "worlds": {
+  "1": {
+   "seed": 3,
+   "written": false,
+   "d_inside_at_end": 0,
+   "last_time_s": 3.0
+  }
+ },
+ "failure": {
+  "error": "SyntheticCheckError('World 1: refused at accepted time 3.001')",
+  "world_id": 1,
+  "step_index": 3001,
+  "time_interval": [
+   3.0,
+   3.001
+  ],
+  "checks": [
+   "dissipation"
+  ],
+  "traceback": "Traceback (most recent call last):\n  File \"/mnt/nowhere/run-cue/source-01/validation/tissue/heredity_pilot.py\", line 1, in run_batch\n"
+ }
+}

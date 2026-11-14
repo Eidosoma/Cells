@@ -5446,8 +5446,12 @@ code check. The notes are [CLOSED_COMPARTMENT_DESIGN.md](CLOSED_COMPARTMENT_DESI
 
 ## D170: Track E's design note accepted narrowly, for M1 and M2 on @3
 
-2026-11-14. The lead reviewed [EXCITABLE_TISSUE_DESIGN.md](EXCITABLE_TISSUE_DESIGN.md) with the
-advisor, together with the probe records in [the evidence folder](/mnt/workspaces/Cells/excitable-tissue-20261114-01/HANDOFF.md).
+2026-11-14. The lead reviewed [EXCITABLE_TISSUE_DESIGN.md](EXCITABLE_TISSUE_DESIGN.md) together
+with the probe records in [the evidence folder](/mnt/workspaces/Cells/excitable-tissue-20261114-01/HANDOFF.md).
+
+**Correction (the same evening).** The ruling was written and landed before the advisor saw it,
+though this record first said it was reviewed with the advisor. The advisor then reviewed it,
+confirmed it, and corrected one other statement here: which comparisons were blind (below).
 
 **What failed.** The note's acceptance was conditional on one cheap probe. Probe 2 at 0.05 F/m²
 failed S1 as registered: every perturbed segment blocked before cell 24. Its registered rule
@@ -5464,8 +5468,9 @@ runs, at candidate A: c_m 0.01 F/m² (1 µF/cm²), with NaV1.2 1e-6, Kir2.1 1e-8
     delay per cell is steady at about 0.121 ms, and interior peaks stay near +40 mV.
   - A's +56.65 mV is the chain's end cell, which has one neighbour. The isolated cell peaks at
     +56.0 mV.
-- **The independent reference agrees.** It was written blind: its values were recorded before
-  it read the engine's (Radau, rtol 1e-10, 40 cells, s = 1000;
+- **The independent reference agrees.** Its junction voltages were blind: they were recorded
+  before it read the engine's. Its peak was not blind, since the lead had given it the engine's
+  +56.65 mV (Radau, rtol 1e-10, 40 cells, s = 1000;
   [comparison](/mnt/workspaces/Cells/independent-references-20261114-01/block-site-A/COMPARISON.md)).
   - At the entry junction it gives 106.012 mV at r = 0.02 and 118.079 mV at r = 0.01, against
     the engine's 106 and 118.1.
@@ -5512,6 +5517,48 @@ runs, at candidate A: c_m 0.01 F/m² (1 µF/cm²), with NaV1.2 1e-6, Kir2.1 1e-8
 **Track E's independent references** (`validation/excitable/`) are being written by the
 references agent from the appendix at 99fddc35. It computes block-site junction voltages
 independently, including below s·r_gj = 10, where the engine's junction law refuses.
+
+## D171: The subagent cap rises to seven
+
+2026-11-14, the user: "lets have the cap to 7". At most seven subagents work on disjoint files
+under the lead (AGENTS.md); D155 had set six. The seventh slot came from the user's request for
+a Syn3A minimal-cell agent (docs/SOTA_SYN3A.md, the user's brief) while all six were in use. The
+inner-model (@4) design note's agent, paused to keep within six, resumes. Memory per detached
+unit, `--oom-first`, and one GPU process at a time are unchanged.
+
+## D172: One inner model, made modular in place (the user)
+
+2026-11-14, the user, after the lead set out three routes for the requests to change @3
+(a fork per feature; @3 changed in place; a new @4 beside a frozen @3, which the lead
+recommended): "lets just have one model for now, we don't need backwards compatbility at this
+early stage", then "but lets keep the core design we do modular".
+
+**The route.**
+- There is one inner model. It is restructured in place into a modular design: laws, junction
+  laws, transporters, fuel and implicit solvers become declarations, traced only where a definition
+  declares them.
+- No second inner ID is kept beside @3.
+- Old compiled programs and old checkpoints need not be reproduced by new code. Old evidence stays
+  reproducible from its frozen snapshots and tags.
+- This amends D143's single named inner model and D147's new-ID rule, for the inner model only.
+
+**The lead's implementation, reviewed with the advisor on 14 November.** This is not the user's
+wording.
+- **A results gate replaces program identity for the restructure.** "No backwards compatibility"
+  drops old programs, not qualified results.
+  - Existing worlds' CPU outputs stay unchanged, bitwise or at a stated rounding.
+  - Registered protocols are re-run from a new snapshot.
+  - A planted change must fail the gate.
+- **The design note decides, by a probe,** whether @3's five laws stay one group (probably bitwise)
+  or become per-law modules (cleaner, perhaps at rounding). It also decides the label (keep
+  `resolved_pump_tissue@3` or rename once), and whether the L4 variants' terms need re-measuring.
+- **Order.**
+  - The restructure lands as one batched round at a quiet point, with main tagged just before.
+  - It lands after MG0c and Track R's qualification are judged.
+  - Track E's M2 is judged wholly before or wholly after it.
+  - In-flight `src/` branches re-gate after it.
+- **Still open:** the fuel design, which may come to the user. Syn3A's metabolism needs reactions
+  that can make and spend fuel.
 
 ## Implementation choices and remaining work
 
