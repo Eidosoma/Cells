@@ -43,6 +43,9 @@
   "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-17c3407/measured.json",
   "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-7cbff00/measured.json",
   "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-7d8c226/measured.json",
+  "/mnt/workspaces/Cells/e07-v1-judged-20261113-01/tiers/measure-merge/measured.json",
+  "/mnt/workspaces/Cells/reaction-references-20261114-01/tiers/measure-1/measured.json",
+  "/mnt/workspaces/Cells/reaction-references-20261114-01/tiers/measure-2/measured.json",
   "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tiers/measure-04499a8/measured.json"
  ],
  "measured_provenance": [
@@ -353,6 +356,27 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a4ff7607b6a2e4388",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-14T08:59:44+00:00"
+  },
+  {
+   "git_revision": "b2ed222f66acf6e2738a703f38294dd56bce7cd9",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261114-e07",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T10:40:26+00:00"
+  },
+  {
+   "git_revision": "bde22aeda2b5b55c64ad4ea64dc84aa3c7d566a8",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a41e532afaa537ef5",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T11:03:06+00:00"
+  },
+  {
+   "git_revision": "19ddd2a1d15c168e939a4e03823fb134d9582b55",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a41e532afaa537ef5",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T11:16:17+00:00"
   },
   {
    "git_revision": "04499a859f8029ed6bf4e8f10c299e2ff6cf8f99",
@@ -1190,6 +1214,14 @@
     }
    },
    {
+    "file": "tests/unit/test_e07_v1_score.py",
+    "seconds": 1.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
     "file": "tests/unit/test_emt.py",
     "seconds": 19.57,
     "exit_code": 0,
@@ -2016,6 +2048,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 63
+    }
+   },
+   {
+    "file": "tests/unit/test_reaction_references.py",
+    "seconds": 5.81,
+    "exit_code": 0,
+    "counts": {
+     "passed": 44
     }
    },
    {
