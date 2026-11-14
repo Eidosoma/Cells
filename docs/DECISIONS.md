@@ -5444,6 +5444,75 @@ code check. The notes are [CLOSED_COMPARTMENT_DESIGN.md](CLOSED_COMPARTMENT_DESI
 - **The code order** (D167): FR-10, then FR-1, then FR-3, each behind its milestones and the
   independent references.
 
+## D170: Track E's design note accepted narrowly, for M1 and M2 on @3
+
+2026-11-14. The lead reviewed [EXCITABLE_TISSUE_DESIGN.md](EXCITABLE_TISSUE_DESIGN.md) with the
+advisor, together with the probe records in [the evidence folder](/mnt/workspaces/Cells/excitable-tissue-20261114-01/HANDOFF.md).
+
+**What failed.** The note's acceptance was conditional on one cheap probe. Probe 2 at 0.05 F/m²
+failed S1 as registered: every perturbed segment blocked before cell 24. Its registered rule
+says the verdict does not stand on that probe.
+
+**What the acceptance rests on: amendment 4.** It is a second, post-hoc probe, written before its
+runs, at candidate A: c_m 0.01 F/m² (1 µF/cm²), with NaV1.2 1e-6, Kir2.1 1e-8 and Kv1.5 3e-7 m/s.
+- **S1–S4 were met:**
+  - segment delays of 1.08–2.02 times the control, and block at combined 0.02 and 0.01;
+  - outcomes identical at 5 and 2.5 µs;
+  - energy residual at most 2.1e-4, against a limit of 2e-3.
+- **The lead checked the records.**
+  - A's conduction velocity comes from cells 13–26, all activated after the stimulus ended. The
+    delay per cell is steady at about 0.121 ms, and interior peaks stay near +40 mV.
+  - A's +56.65 mV is the chain's end cell, which has one neighbour. The isolated cell peaks at
+    +56.0 mV.
+- **The independent reference agrees.** It was written blind: its values were recorded before
+  it read the engine's (Radau, rtol 1e-10, 40 cells, s = 1000;
+  [comparison](/mnt/workspaces/Cells/independent-references-20261114-01/block-site-A/COMPARISON.md)).
+  - At the entry junction it gives 106.012 mV at r = 0.02 and 118.079 mV at r = 0.01, against
+    the engine's 106 and 118.1.
+  - The largest V is +56.655 mV, at the end cell.
+  - Below s·r_gj = 10 the combined arm crosses 120 mV between 10 and 7.
+  - In the coupling-only arm (full sodium) the wave crosses the segment and fails at its exit
+    junction. The largest segment junction voltage there is 113.4 mV at s·r_gj = 20 and 120.6 mV
+    at 10, which is over the 120 mV domain.
+  - So 10 is not safe. At 20 the margins are 6.6 mV (coupling-only) and 14 mV (combined).
+
+**Rulings.**
+1. **The generic cell is A,** by the registered rule ("A, or B if A fails") applied to amendment
+   3's text.
+   - The driver's domain record names B, through C1's after-the-stimulus clause, which that text
+     lacks.
+   - A dated addendum beside the record says so. The record is not regenerated.
+2. **The scope is M1 and M2 on @3.** M3's grid is registered only after M1's first development
+   runs:
+   - the junction voltage at block sites on the sheet, at the s M3 will use;
+   - the block threshold between r = 0.5 and 0.02, coupling-only included;
+   - the peaks at lightly loaded cells (sheet edges and corners, the last cell before a block,
+     collision sites) against +60 mV.
+3. **The floor s·r_gj ≥ 20 is provisional.** It comes from chains at s = 1000 only. The
+   independent reference supports it there, and shows 10 is unsafe in the coupling-only arm. If
+   the sheet's block sites need values below it, `junction_ungated@1` becomes an M3
+   prerequisite, not an M4 one.
+4. **The fallback is pre-registered:** B if A is refused on the sheet in M1. B's segment run is
+   done in M1, so the fallback has evidence.
+5. **The importer** (open item 2):
+   - it carries the effective availability frozen at import time, with the factor's source
+     recorded;
+   - it refuses water's volumes until the assay's identity takes water;
+   - it refuses at definition time any junction below the floor, closed ones and those set by
+     Track R's factor included. @3 checks the junction domain whatever the availability.
+6. **The qualification's tolerances** come in M1's PROPOSED protocol, from development runs, with
+   D150's and MG0c's lessons.
+   - The probe driver may become the development driver once its step ladder includes its own
+     cap and probe 1's C4 and C5 measurement fixes are made.
+   - The judge is separate code that reads records.
+7. **GH200 time** comes when re-entry becomes a target (M5).
+8. **`junction_ungated@1`** joins the list for the inner-model (@4) design note, which the lead
+   commissions ([CURRENT_PLAN](CURRENT_PLAN.md)).
+
+**Track E's independent references** (`validation/excitable/`) are being written by the
+references agent from the appendix at 99fddc35. It computes block-site junction voltages
+independently, including below s·r_gj = 10, where the engine's junction law refuses.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
