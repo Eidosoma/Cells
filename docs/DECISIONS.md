@@ -5290,6 +5290,19 @@ supplied the request (FR-1), and it is logged in
 - **The order:** after FR-1, as the request sequences it. Design first (D142), as a general
   feature (D144).
 
+## D161: State-conditioned transfer across an internal membrane, with leak and reseal (FR-5), is logged
+
+2026-11-14. The user supplied the request (FR-5), at the requester's priority 1, logged in
+[FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-5--state-conditioned-transfer-across-an-internal-membrane-with-leak-and-reseal).
+- **The feature:** `resolved_repair@1`'s damage and resealing, applied to a compartment's bounding
+  patch, plus a transfer rate conditioned on the compartment's state (its pH). It needs the
+  accounting, not a fitted mechanism.
+- **It depends on:**
+  - FR-1's compartment and FR-4's pH;
+  - the coupling operator's routing door (D156);
+  - re-expressing the injury law in the composite, a case of the old-family decision (D156).
+- **Design first (D142),** as a general feature (D144).
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

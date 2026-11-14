@@ -9,6 +9,7 @@ and a general feature, never one built for one study (D144).
 | [FR-1](#fr-1--a-closed-internal-compartment-on-the-shared-inventory) | A closed internal compartment on the shared inventory | **High** (user, 14 November 2026; the request's own label: priority 1, blocking) | Logged; design not started | A design note for a fixed-topology compartment (below) |
 | [FR-2](#fr-2--internalisation-of-membrane-and-its-populations) | Internalisation of membrane and its populations | Priority 2 (the request's label; logged by the user, 14 November 2026) | Logged; follows FR-1 | A design note after FR-1's, settling retrieval's energy source (below) |
 | [FR-3](#fr-3--the-site-occupancy-primitive) | The site-occupancy primitive | Priority 2 (the request's label; logged by the user, 14 November 2026) | Logged; specified as a door in D150 §2.5 | A design note from its own sources (below) |
+| [FR-5](#fr-5--state-conditioned-transfer-across-an-internal-membrane-with-leak-and-reseal) | State-conditioned transfer across an internal membrane, with leak and reseal | Priority 1, blocking (the request's label; logged 14 November 2026). It depends on FR-1 and FR-4 | Logged | A design note after FR-1's and FR-4's (below) |
 | [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Logged | A design note after FR-1's, with the energy-pool and charged-reaction doors (below) |
 
 ## FR-1 — A closed internal compartment on the shared inventory
@@ -232,3 +233,50 @@ code.
 - **pH-dependent gating and enzymes.** These read a charged source. Under the coupling operator
   (D156) that goes through its regulatory state, or through D152's read-only charged-species door.
 - **The order.** After FR-1 and with FR-2's energy design, as the request itself sequences it.
+
+## FR-5 — State-conditioned transfer across an internal membrane, with leak and reseal
+
+**Logged 14 November 2026, priority 1 (blocking)**, the request's label. It depends on FR-1's
+compartment and FR-4's pH. The request below is the requesting study's text, condensed. The lead's
+mapping follows.
+
+**The request.** Two parts, both generalisations of things Cells has:
+1. `resolved_repair@1`'s damage fraction and prescribed closure law, applied to an internal
+   compartment's bounding patch instead of the plasma membrane;
+2. a transfer law across that patch whose rate reads the compartment's own state (its pH), so
+   that a species crosses when the compartment is in a declared condition and not otherwise.
+
+**Why it is general.**
+- mitochondrial permeability transition;
+- lysosomal membrane permeabilisation;
+- pore-forming toxins and complement;
+- bacterial escape from phagosomes;
+- exocytic fusion, which is the same accounting in reverse.
+
+**What is not asked for.** A fitted escape mechanism. The repair law is phenomenological, which is
+fine. What is needed is the accounting:
+- material that leaves a compartment arrives in the cytosol;
+- damage opens and closes;
+- the books close.
+
+Calibration is the requester's to supply, with measurements.
+
+**The lead's mapping (for its design note to test, not settled).**
+- **The injury law lives only in an older family.** `resolved_repair@1` (`surface_repair_spec.py`;
+  the law in `processes/membrane_injury.py`) is fixed-geometry injury on owned calcium tissue. Its
+  patches carry an initial damage, an injury rate, a resealing rate and per-species permeabilities.
+  It is not a composite operator.
+  - Applying it to a compartment's patch means re-expressing it in the composite, as an operator.
+  - That is a case of the open decision on moving old-family physics (D156: it waits for the
+    conduction probe's verdict). A targeted re-expression, on its consumer's need, fits D144.
+- **Damage as a control factor.** An open fraction on the patch's leak, or on the transfer's rate,
+  is kinetic state with no ledger. It is like the bridge's aperture, or the coupling operator's
+  regulatory state (D156). The material it lets through is booked by the transfer law.
+- **The state-conditioned rate is the coupling operator's routing door.** A rate on another
+  operator's transfer, read from the compartment's pH:
+  - it routes to another operator's control (D156's named door);
+  - it reads a charged source (FR-4's proton), through the regulatory state or D152's read-only
+    charged door.
+- **The accounting is FR-1's transfer bookings,** with both sides reconciled.
+- **Exocytic fusion** is FR-2's direction in reverse, with the compartment's contents released.
+- **The order.** After FR-1 and FR-4, with the routing door, as its dependencies require.
