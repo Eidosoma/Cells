@@ -52,7 +52,8 @@
   "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tiers/measure-6ab0cb0/measured.json",
   "/mnt/workspaces/Cells/secreted-species-v1-20261114-01/tiers/measure-q5entry/measured.json",
   "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/tiers/measure-merge/measured.json",
-  "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tiers/measure-2ba4dc1/measured.json"
+  "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tiers/measure-2ba4dc1/measured.json",
+  "/mnt/workspaces/Cells/inventory-coupling-v1-20261114-01/tiers/measure-merge/measured.json"
  ],
  "measured_provenance": [
   {
@@ -432,10 +433,17 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a6b2e9cd180913a24",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-14T16:13:38+00:00"
+  },
+  {
+   "git_revision": "7f179ff59a01ef42617e7e51f7c23b88e0c9fb9a",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261114-sra1",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T17:41:41+00:00"
   }
  ],
  "fast_seconds": 20.0,
- "cap_seconds": 90.0,
+ "cap_seconds": 150.0,
  "tiers": {
   "1": [
    {
@@ -1566,6 +1574,14 @@
     }
    },
    {
+    "file": "tests/unit/test_hill_factors.py",
+    "seconds": 2.82,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
     "file": "tests/unit/test_ionic_plan_admission.py",
     "seconds": 4.44,
     "exit_code": 0,
@@ -2633,6 +2649,14 @@
     }
    },
    {
+    "file": "tests/unit/test_species_regulated_availability.py",
+    "seconds": 5.83,
+    "exit_code": 0,
+    "counts": {
+     "passed": 76
+    }
+   },
+   {
     "file": "tests/unit/test_species_turnover.py",
     "seconds": 3.58,
     "exit_code": 0,
@@ -3545,6 +3569,54 @@
     "exit_code": 0,
     "counts": {
      "passed": 115
+    }
+   },
+   {
+    "file": "tests/unit/test_species_regulated_availability_bitwise.py",
+    "seconds": 45.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_species_regulated_availability_bitwise_both.py",
+    "seconds": 42.03,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_species_regulated_availability_bitwise_channel.py",
+    "seconds": 41.0,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_species_regulated_availability_bitwise_idle.py",
+    "seconds": 39.05,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_species_regulated_availability_bitwise_products.py",
+    "seconds": 44.16,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_species_regulated_availability_runs.py",
+    "seconds": 28.86,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
     }
    },
    {
