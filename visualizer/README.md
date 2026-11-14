@@ -206,6 +206,9 @@ counts fetching from the public atlases as data tooling (stage 5):
 - **Where each protein is found:** tissue and subcellular location from the Human Protein
   Atlas, kept apart from what the engine models.
 
+As the atlas gains units, it grows by stacking further glass shelves, one per membrane
+or compartment, in place of widening one sheet (the user, 14 November 2026).
+
 Ideas kept for after the basics (the user, 14 November 2026):
 
 - **Space–time block:** stack a sheet's records vertically, so a pattern that persists
