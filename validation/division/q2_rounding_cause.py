@@ -16,7 +16,10 @@ drawn state's; only their rounding can move. Compared after the event, as absolu
 engine - R-ops: the largest over the post-event potentials, each daughter's charge, and the
 largest over the clamps' image charges.
 
-Reported per world, spread and factor: the admitted draws and how many stay admitted when
+Reported per world and spread: A.1's whole ionic content against the increments', (sum_s
+|z_s n_s| + |X|) / sum_s |z_s dn_s| over the live cells of the drawn states (median, min, max),
+the factor by which a term built from the whole content would exceed one built from the
+increments. Per world, spread and factor: the admitted draws and how many stay admitted when
 scaled; the content ratio achieved (min, max); each quantity's median and largest difference;
 per draw, its difference over the drawn (factor 1) one: median, min and max where the drawn one
 is non-zero. And the draw with Q2's worst potential ratio at factor 1, at every factor. A ratio
@@ -110,6 +113,18 @@ def measured(world, d, state, factor):
     return differences(world, d, state, after, result), ratios, domain, ratio
 
 
+def contents(world, state):
+    """(sum |z n| + |X|) / sum |z dn| for each live cell (module docstring)."""
+    p, z = world.p, np.ravel(world.p.valence)
+    out = []
+    for i in np.flatnonzero(np.asarray(world.view(state).active)):
+        delta = np.asarray(state.amount_increment)[:, i]
+        amounts = np.asarray(p.amount_reference)[:, i] + delta
+        whole = np.sum(np.abs(z * amounts)) + abs(world.background[world.cells[i]])
+        out.append(float(whole / np.sum(np.abs(z * delta))))
+    return out
+
+
 def summarise(rows):
     """The report of one spread's admitted draws (module docstring)."""
     out = dict(admitted=len(rows))
@@ -159,7 +174,12 @@ def main(output):
             draws = [q2.perturbed(world, rng, spread=spread) for _ in range(probe.DRAWS)]
             admitted = [s for s in draws if q2.admitted(world, s, fx.EVENT)[0]]
             rows = [{f: measured(world, d, s, f) for f in FACTORS} for s in admitted]
-            entry[f"spread {spread:g}"] = summarise(rows)
+            ratios = [x for s in admitted for x in contents(world, s)]
+            entry[f"spread {spread:g}"] = summarise(rows) | dict(
+                whole_over_increment_content=dict(
+                    median=float(np.median(ratios)), min=min(ratios), max=max(ratios)
+                )
+            )
             print(label, spread, json.dumps(entry[f"spread {spread:g}"]), flush=True)
         report["worlds"][label] = entry
     with open(output, "w") as f:

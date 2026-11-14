@@ -14,7 +14,7 @@ Reported per sampler:
   outside the channel gate laws' domain, (-0.120, 0.060) V (processes/voltage_gates), or the
   contact's |V_j| above the junction gate law's 0.120 V (processes/junction_gate), with the
   draws where the control domain verdict and those two disagree (expected none);
-* how many pass Q2's charge bound (CHARGE_BAND);
+* how many lie within Q2's dropped 10% net-charge band (CHARGE_BAND);
 * the largest |V| of a live patch, and the largest |Q / Q_declared| of a live cell, over the
   draws and over those the control domain check admits;
 * over the draws the control domain check admits, Q2's comparison (64 eps x R-ops'

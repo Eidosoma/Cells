@@ -346,6 +346,13 @@ LAZY_EXEMPT = {  # {module: reason}
         "division_crossrev builds its own worlds and never calls it."
     ),
 }
+# {module: {J1 module it reaches: the reached modules that import it}}: the exemption's whole
+# reach, pinned, so a new path to a J1 module fails here.
+LAZY_PATHS = {
+    "validation.division.division_crossrev": {
+        "validation.tissue.injection_rm1": ("validation.tissue.composite_crossrev",),
+    },
+}
 # {module: (its runs as argv after the module name, {out} a fresh directory; files the runs
 # must write; the lazy path)}.
 LAZY_RUNS = {
@@ -398,8 +405,14 @@ def fresh(mode, target, runs, out):
 def test_lazy_exemptions_are_still_needed(module):
     _, partition = sources(module_file(module).read_text(), module)
     assert partition, f"{module} holds no partition source: remove it from LAZY_EXEMPT"
-    assert reached(module) & J1_MODULES, f"{module} reaches no J1 module: remove it"
-    assert set(LAZY_RUNS) == set(LAZY_EXEMPT)
+    found = reached(module)
+    paths = {
+        hit: tuple(sorted(m for m in found if module_file(m) and hit in imports_of(m)))
+        for hit in sorted(found & J1_MODULES)
+    }
+    assert paths, f"{module} reaches no J1 module: remove it from LAZY_EXEMPT"
+    assert paths == LAZY_PATHS[module], f"{module}'s J1 reach changed: {paths}"
+    assert set(LAZY_RUNS) == set(LAZY_PATHS) == set(LAZY_EXEMPT)
 
 
 @pytest.mark.parametrize("module", sorted(LAZY_EXEMPT))

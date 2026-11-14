@@ -35,19 +35,23 @@ Cases:
   growth, abundances and gates. The daughters' population abundances and gates are compared
   too, from R-ops' post-event snapshot.
 
-The random states' sampling rule. The lead ruled them inside @3's domain: states that pass
-@3's own domain check and the composite's charge bound. Each draw (perturbed) changes each live
-cell's content by uniform fractions within 1e-3 of each amount, made neutral by M (the permeant
-anion), plus a net charge, carried by K, uniform within 10% of the cell's declared charge; the
-patches, populations and contact get random histories (on admitted routes only), growth,
-abundances and gates. A draw is admitted only if it passes the composite's own domain check
-with the control at the event (@3's domain at the view, each operator's domain and control
-checks, and the readouts' validity) and a band on each live cell's net charge, within
-CHARGE_BAND (10%) of its declared charge. The band is this driver's reading of "the charge
-bound", not a bound the engine checks; it awaits the lead's ruling, with q2_domain_probe's
-measurements (inside the engine's checks alone, the asymmetric world exceeds 64). A rejected
-draw is redrawn, and the report counts draws and rejections. The tolerance is 64 eps x R-ops'
-magnitudes throughout; no magnitude is taken from the engine's representation.
+The random states' sampling rule (the lead, 14 November): a draw is admitted when it passes
+the composite's control domain check with the control at the event (@3's domain at the view,
+each operator's domain and control checks, and the readouts' validity, where the gating laws'
+voltage domains sit), and only then. Each draw (perturbed) changes each live cell's content by
+uniform fractions within 1e-3 of each amount, made neutral by M (the permeant anion), plus a
+net charge, carried by K, uniform within SPREAD of the cell's declared charge; the patches,
+populations and contact get random histories (on admitted routes only), growth, abundances and
+gates. A rejected draw is redrawn, and the report counts draws and rejections, and how many
+admitted draws lie outside the earlier 10% net-charge band (CHARGE_BAND), which the lead
+dropped: it kept |V| away from zero and so bounded the ratio by construction.
+
+Q2 is open (the lead, 14 November). Within the control domain check alone the asymmetric world
+exceeds 64 eps x R-ops' present magnitudes (q2_domain_probe), and the difference scales with
+the increments' ionic content (q2_rounding_cause). R-ops' magnitudes are to gain the content
+term of Appendix A.1's charge formula, and Q2 reruns under both scales then. SPREAD stays at
+0.1, where no admitted draw lies outside the dropped band, until the lead sets the rerun's
+spread.
 
 Disclosed out-of-domain run: comparisons-s5a9 (snapshot-s5a9, 6c2b118) drew uncompensated
 increments within 1e-3 of each amount. The asymmetric states reached 94.7 on the post-event
@@ -87,7 +91,8 @@ from validation.division import partition_reference as rops
 
 STATUS = "Development comparison for Q2 (S5a); not judged"
 RANDOM_STATES = 200
-CHARGE_BAND = 0.1  # The net-charge band: |Q - Q_declared| <= 0.1 |Q_declared|, each live cell.
+CHARGE_BAND = 0.1  # The dropped net-charge band, |Q - Q_declared| <= 0.1 |Q_declared|: reported.
+SPREAD = 0.1  # The net-charge draw's half-width, in declared charges (module docstring).
 MAX_DRAWS = 20  # Draws allowed for one admitted random state.
 EPS = float(np.finfo(float).eps)
 
@@ -366,7 +371,7 @@ def compare(world, d, before, after, result, *, skip=()):
     return out
 
 
-def perturbed(world, rng, *, spread=CHARGE_BAND):
+def perturbed(world, rng, *, spread=SPREAD):
     """A random pre-event state of the neighbour world: increments, histories, growth, gates;
     each cell's net charge drawn within spread of its declared charge."""
     s = world.state
@@ -445,8 +450,9 @@ def control_at(world, time):
 
 
 def admitted(world, state, time):
-    """(domain, charge) of a random draw (the sampling rule, module docstring): the composite's
-    own domain check with the control at time, and the charge bound on every live cell."""
+    """(control domain, within CHARGE_BAND) of a random draw: the composite's control domain check
+    with the control at time, which alone admits it (module docstring), and whether every live
+    cell's net charge lies within the dropped band."""
     p = world.p
     with np.errstate(all="ignore"):
         domain = world.model.domain_valid.with_control(
@@ -600,16 +606,16 @@ def main(output):
     ):
         world = Bound(raw)
         d = next(x for x in world.partition[1].divisions if x.id == "first")
-        worst, drawn, rejected = {}, 0, dict(domain=0, charge=0)
+        worst, drawn, rejected, outside = {}, 0, 0, 0
         voltage, deviation = 0.0, 0.0
         for _ in range(RANDOM_STATES):
             for _ in range(MAX_DRAWS):
                 state = perturbed(world, rng)
                 drawn += 1
-                domain, charge = admitted(world, state, fx.EVENT)
-                rejected["domain"] += not domain
-                rejected["charge"] += not charge
-                if domain and charge:
+                domain, banded = admitted(world, state, fx.EVENT)
+                rejected += not domain
+                if domain:
+                    outside += not banded
                     break
             else:
                 raise RuntimeError(f"No admitted draw in {MAX_DRAWS} on the {label}")
@@ -630,6 +636,8 @@ def main(output):
             states=RANDOM_STATES,
             draws=drawn,
             rejected=rejected,
+            outside_dropped_band=outside,
+            spread=SPREAD,
             max_abs_patch_voltage_V=voltage,
             max_net_charge_deviation=deviation,
             worst=max(worst.values()),
