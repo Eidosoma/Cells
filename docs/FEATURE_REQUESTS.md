@@ -89,6 +89,70 @@ checked the cited lines):
 **The plan entry.** It sits in CURRENT_PLAN's composition gate, high priority, after the work in
 flight.
 
+**The design notes (proposed, 14 November 2026):** [CLOSED_COMPARTMENT_DESIGN.md](CLOSED_COMPARTMENT_DESIGN.md)
+for FR-1 and [BATH_SCHEDULE_DESIGN.md](BATH_SCHEDULE_DESIGN.md) for FR-10.
+
+### The first admissible delivery world
+
+For the requester's world definition, which it is drafting now. It combines the two notes with D150's
+two operators. It has no reactions inside, no binding sites and no pH.
+
+**The operator list,** on `resolved_pump_composite@1` over `resolved_pump_tissue@3`, in this order:
+1. `scheduled_bath_composition@1` (FR-10): the dose at a held bath, as neutral formula units at
+   times on the dt grid after 0;
+2. `cell_owned_compartments@1` (FR-1): each compartment's node, bounding patch and owner;
+3. `scheduled_species_exchange@1` (D150): uptake into the cell, an import route on a patch that faces
+   a finite extracellular node, which a face joins to the dosed bath; and loading into the
+   compartment, an export route on the bounding patch;
+4. `scheduled_species_turnover@1` (D150): clearance in the compartment (degradation), and if wanted
+   at the extracellular node.
+
+**The topology it needs:**
+- Every cell keeps a patch on a held bath (the held-bath topology).
+- The dosed bath is joined by a face to a finite extracellular node. Exchange refuses a patch on a
+  held bath, so uptake runs from that node, not from the bath.
+- Each compartment is a finite node with no face, faced by one bounding patch of its owner. The patch
+  has zero ion permeability and no pump or channel. The content is electroneutral (a zero charge
+  anchor): the cargo at a trace, the ions at a declared complement.
+- **Species:** the ions and the neutral cargo, declared by `inventory_species.add_inventory_species`
+  (valence 0, impermeant on every membrane and junction). The cap is 16 in all once D165's raise
+  lands, and 7 until then.
+
+**The refusals the definition meets,** each refused with its reason:
+- **Exchange:** a route on a patch facing a held bath; a charged or permeant species; saturable
+  loading (a saturable export); a negative rate; a schedule change off the dt grid; a provider of the
+  volumes, the areas or the masks; more species than the cap; a donor copy whose route values differ
+  from the slot's.
+- **Turnover:** production at an outside node (production is at cells only); a route on a held bath.
+- **The compartment declaration:**
+  - a compartment node with a face, or one that is a held bath or the gauge;
+  - more than one patch facing it, or a patch whose inside is not the owner;
+  - an ion route on the bounding patch, or a nonzero charge anchor;
+  - an owner whose capacitor component holds no held bath;
+  - any operator outside its admitted list;
+  - a replacement event on an owner's slot, or with an owner as its donor.
+- **The bath schedule:** a target that is not a held bath; a net-charged formula unit; an event at
+  time 0 or off the dt grid; a species that would not stay positive; water@1 with an anisosmotic step.
+- **Refused beside this world,** each with its door in the notes: D152's reactions (door S), membrane
+  state and FR-3's site occupancy (the membrane-state wall), FR-4's charged content (the charged
+  door), water and what requires it, insertion, the partition, the bridge and the lumens.
+
+**The onset.** A dose from nothing is D150's unresolved switch-on. FR-10's probe 1 measured it on the
+engine as it is, in this world's topology ([BATH_SCHEDULE_DESIGN.md](BATH_SCHEDULE_DESIGN.md) §3.2):
+- in a world whose ions move, it passes every check, with an onset-step energy residual of about 2%
+  of that step's species flows, unseen;
+- in a species-only world the energy ledger refuses it at row 1;
+- loading the compartment from a trace books at rounding, by exchange's exact bookings.
+
+So the definition can dose from nothing in a mixed world under the known limit, if the lead extends
+D150's ruling to doses (FR-10 §3.2, way (a)). Guard worlds dose between resolved levels.
+
+**Status.** Exchange and turnover exist; the declaration and the bath schedule are designs, not code.
+FR-1's protocol is exchange's first judged acceptance. Until the two new operators land, the same
+transport runs today with the compartment as an anonymous face-free node (D150's face-free world)
+and the dose as a bath held at the dose from time 0. That form has no identity refusals and no dose
+time.
+
 ## FR-2 — Internalisation of membrane and its populations
 
 **Logged 14 November 2026, priority 2** (the request's label; the user: "first log this one"). The

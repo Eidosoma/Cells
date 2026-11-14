@@ -23,9 +23,9 @@ reads:
   compartment is D150's `scheduled_species_turnover@1`, and reactions inside are D152's
   `local_species_reactions@1`, both unchanged (§4).
 
-No model, solver or law changes. The one change to shared code is a host-only contract addition:
-an operator kind that declares entities and runs no part (§1.6). Its alternative, a composite-level
-block, is put to the lead.
+No model, solver or law changes. The one change to shared code is one widened, host-only admission
+in the contract's registration check, which also serves FR-3's part-less site owner (§1.6). It is an
+addition, not a change to existing behaviour.
 
 **Basis.**
 - The [secreted-species design](SECRETED_SPECIES_TRANSPORT_DESIGN.md) (D150): one inventory, the
@@ -61,7 +61,8 @@ block, is put to the lead.
      an optional label. It checks that @3's topology implies the ownership.
    - It refuses what would break identity: replacement events on an owner's slot, closers, volume
      providers, field-input providers, and ion routes on the bounding patch.
-   - It holds no state and runs no part. Its home in shared code is a choice for the lead (§1.6).
+   - It holds no state and runs no part. The contract refuses such an operator today, so it gains
+     one widened, host-only admission, which also serves FR-3's part-less site owner (§1.6).
 3. **The transfer law is D150's exchange, unchanged** (§2).
    - Loading is an export route, release an import route, and a passive permeation an
      export–import pair.
@@ -82,20 +83,24 @@ block, is put to the lead.
      patch voltage.
    - The node takes part in the capacitor solve, not in the Kirchhoff offset solve.
 5. **A neutral first version is electrically silent** (§3.3). The bounding patch carries no ion
-   route and the content is electroneutral, so q_comp stays 0 and V_b stays 0.
-   - *Promised:* the compartment's ion rows never change (bitwise), and V_b stays 0 to the field
-     solve's rounding.
+   route and the content is electroneutral, so q_comp stays 0 and V_b stays 0. **These claims are
+   unrun and pending milestone 1,** with each criterion fixed in §3.3 before any run.
+   - *Promised:* the compartment's ion rows never change (bitwise); V_b stays 0 to the field
+     solve's rounding; the same world with and without the declaration traces to identical program
+     text and constants, since the declaration runs no part.
    - *Reported, not promised:* the rest of the world equals the same world without the node only to
      rounding, because the dense solve gains a row.
-6. **The charged door (FR-4, FR-5) is a stability question first** (§3.4, **S**, a code reading).
+6. **The charged door (FR-4, FR-5) is a stability question first** (§3.4, **S**: an unrun code
+   reading, which probe P1 would measure).
    - @3 bounds membrane charge relaxation per cell, and relies on implicit face drift to hold
      outside nodes. A compartment has no face.
    - Its own rate, G_b/C_b = P F² c/(RT c_m), does not depend on its size. For Ishida et al.'s
      chloride permeability it is about 4.8 × 10³ s⁻¹. The per-cell bound sees about 7 s⁻¹ for a
      10 pF owner. So an explicit 1 ms step would be unstable, and @3's checks would not refuse it in
      advance.
-   - The door is an implicit treatment of the bounding patch (a new IMEX ID), with a D148 bound term
-     as its safety net. Probe P1 would measure it.
+   - The door is an implicit treatment of the bounding patch (a new IMEX ID), with a bound term as
+     its safety net: one D148 round with finding 3's, specified after P1.
+   - A sweep of the existing worlds found none exposed on @3's IMEX numerics.
 7. **The 64-node cap is untouched in version 1** (§3.6). A compartment provides no field input.
    - Each compartment is one dense field node. It counts against the dense solver's bound always,
      and against 64 once membrane state (FR-3) or insertion (FR-2) composes.
@@ -104,8 +109,9 @@ block, is put to the lead.
    - *Composes:* @3, injection, D150's exchange and turnover (degradation at the node), D152's
      reactions at the node, the coupling operator, replacement@1 away from owners and away from
      owners as donors, and FR-10's bath schedule.
-   - *Refused, each with its door:* water and what requires it, closers, membrane state, insertion
-     and the lumens.
+   - *Refused, each with its door:* water and what requires it, closers, membrane state (the
+     membrane-state wall, which FR-3's note names too), insertion, the lumens, and FR-3's
+     `site_occupancy@1` until its one-line admission.
    - **A wall on the requester's first world:** FR-10's bath schedule and D152's reactions refuse
      each other, through the view field the schedule provides. Version 1's workaround is
      degradation by turnover; the door is FR-10's door S.
@@ -113,14 +119,18 @@ block, is put to the lead.
    chemical term at the declared volume is the physical free energy, so no dilution or mixing term
    arises. The lumen's terms arrive with the volume door and FR-2.
 10. **Qualification** (§6). It is numerical first, against closed forms written from Appendix A by
-    an agent that never reads the code. The items cover:
+    an agent that never reads the code. It is also exchange's first judged acceptance, since D150's
+    judged scope was the faces and turnover's clearance. The items cover:
     - loading with retention;
     - two-way exchange with its predicted splitting term;
     - saturable release and degradation;
     - reactions inside, and the three-node uptake path;
     - electrical silence;
     - loading from a trace under RK4.
-11. **Effort** (§10): about 3.5 agent-days (range 3 to 4.5), plus CPU minutes.
+11. **Two limits, stated, not asked.** A node is a lumped pool, a validity limit: about 99 molecules
+    per lysosome at 1 µM is D150's continuum floor (§1.3). Nested compartments are a topology limit
+    of @3 (§1.4).
+12. **Effort** (§10): about 3.5 agent-days (range 3 to 4.5), plus CPU minutes.
 
 ## 1. The entity
 
@@ -198,6 +208,10 @@ For µM cargo in vesicles, the lumped pool is the regime of validity. "Particle 
 against "cargo in the cytosol" is then a pool amount against a cytosolic amount. Per-vesicle counts
 and stochastic loading are out of scope.
 
+**This is a validity limit of version 1, not a modelling choice.** About 99 molecules per lysosome at
+1 µM is D150's continuum floor. A study that needs one vesicle told from another needs a stochastic
+treatment, which no version here provides.
+
 A cell may own several compartments, for example a lysosome pool and a secretory-granule pool, each
 its own node.
 
@@ -232,11 +246,14 @@ its own node.
 6. **A held-bath topology (version 1).** The owner's capacitor component holds a held bath, so the
    compartment is a free node of the reduction (§3.5).
 7. **The composition** is on the admitted list of §4, which fails closed. Replacement@1 schedules
-   no event on an owner's slot, and names no owner as a donor (§1.5).
+   no event on an owner's slot, and names no owner as a donor (§1.5). Providers and closers of the
+   volumes, the areas, the capacitances and the masks are refused through the declaration's own
+   `CONFLICTS_VIEW`, by the composite's existing structure check (§1.6).
 
-**Nested compartments are outside @3's topology.** A patch joins a cell to an outside node, so a
+**Nested compartments are a topology limit.** A patch joins a cell to an outside node, so a
 compartment cannot be bounded by another compartment. Multivesicular bodies and the two mitochondrial
-membranes would need patches between two outside nodes, which @3 does not have.
+membranes would need patches between two outside nodes, which @3 does not have. No version here
+lifts that.
 
 ### 1.5 Identity: replacement, division and the lifecycle
 
@@ -277,29 +294,48 @@ things would otherwise treat it as extracellular space:
 bounding patch's column, its owner's carrier and its label. A viewer can then draw it inside its
 owner, not as extracellular space.
 
-### 1.6 Where the declaration lives: the one change to shared code
+### 1.6 Where the declaration lives: one widened admission in the contract
 
-**The constraint.** `contract.check_declarations` refuses an operator that contributes no part,
-unless it is a state owner with `ACCEPTS_WRITES` and `VIEW_FIELDS`. A pure declaration is neither.
+**What the code admits today** (read, not run).
+- `contract.check_declarations` (`models/operators/contract.py`, lines 336–342) refuses an operator
+  with no part unless it has both `ACCEPTS_WRITES` and `VIEW_FIELDS`. Every registered operator
+  passes through it at import (`models/operators/__init__.py`).
+- `membrane_entity_state@1` is today's only part-less operator. Its three owned fields are exactly
+  its three accepted writes, and it provides three view fields.
+- So a declaration that owns nothing is refused today. FR-3's part-less site owner, which owns
+  fields that later operators write but provides no view, would be refused too (FR-3's lead
+  question 13).
+- **The composite itself needs no change.** `Composition.__init__` builds its event, split,
+  provider, factor and closer lists from the declarations (`models/pump_composite.py`). An operator
+  in none of them contributes only the contract's idle defaults: no ledger term, no column and no
+  domain term.
 
-**Option (a), recommended: an entity-declaration kind of operator.**
-- `contract.py` gains a class flag, `ENTITY_DECLARATION = True`. It is admitted with no part and no
-  owned state, layout, control or view field, and with no ledger.
-- Such an operator is statically idle, so the composite skips it in the step. It contributes parsing,
-  definition checks and a summary.
-- The change is host-only. It changes no compiled program, and every existing composition's crossrev
-  stays identical. A composition with the declaration should trace the same programs as the same
-  composition without it: acceptance C2 checks that the declaration is pure identity.
-- Whether the composite handles an operator with no fields unchanged is a code question for the
-  implementation, not settled here.
+**The recommendation: one widened, host-only admission.**
+- **The rule.** An operator with no part is admitted when every field it owns is an accepted write
+  (its `STATE_AXES` lie within its `ACCEPTS_WRITES`). One that owns no field may not provide views,
+  factors or closures either.
+- **What it admits:**
+  - `membrane_entity_state@1`, unchanged, since its owned fields are its accepted writes;
+  - FR-3's part-less site owner, with or without a view;
+  - this declaration, which owns no field.
+- **What it still refuses:** a part-less operator that owns a field no part and no writer can
+  change; and a stateless operator that would change the inner layout or controls without state.
+- **D148 status.** It is an addition, not a change to existing behaviour. It is a check at
+  registration, on the host. Every operator registered today is admitted as before, and no program,
+  binding or number changes, so D148's four criteria hold trivially. Crossrev of every set stays
+  identical, which the landing shows.
+- **The declaration also uses `CONFLICTS_VIEW`** (the volumes, the area, the capacitance and the
+  masks), so the composite's existing structure check refuses every provider and closer of them.
+  The admitted list of §4 covers the rest.
 
-**Option (b): a composite-level `compartments` block** beside `operators` in `pump_composite_spec`.
+**The alternative: a composite-level `compartments` block** beside `operators` in
+`pump_composite_spec`.
 - Its absence would leave every definition byte-identical.
 - It is cleaner as "an entity, not a law". But it would be the composite's first entity table outside
   the operator list, the run identity would need a rule for it, and its later dynamic versions
   (volume as state, creation) would be operators anyway.
 
-**Why (a).**
+**Why the operator form.**
 - Entity owners are operators today: `membrane_entity_state@1` owns populations, insertion owns onset
   nodes, and the partition owns daughters.
 - Operators already find each other's declarations through `composite_spec.entries`. The lumen reads
@@ -461,17 +497,21 @@ which is why lumping is exact here (§1.3).
 - nothing else can charge the node. It has no face. Injection targets cells only
   (`current_injection.py`). Exchange, turnover and reactions move neutral species only.
 
-**What is promised** (each an acceptance item, C9):
-- **The compartment's ion rows never change, bitwise.** No route with a nonzero coefficient touches
-  them (**S**): the constant-field flux at zero permeability is zero, and no face or drift reaches
-  the node.
-- **V_b stays at −q/C_b = 0,** to the field solve's rounding, at every row.
-- **No capacitor energy flows through the patch:** ½ C_b V_b² stays 0.
+**The silence claims are pending milestone 1.** None has been run. Each criterion below is written
+before any run, as the coupling note's channel target was, and none is weakened afterwards. Their
+basis is the code reading of §3.1 (**S**).
 
-**What is reported, not promised.** The rest of the world equals the same world without the
-compartment node to rounding, not bitwise.
-- In exact arithmetic the potentials are identical: row j gives φ_j = φ_i, so the owner's row
-  reduces to the compartment-free one (**S**).
+| Claim | Kind | Criterion, fixed now |
+| --- | --- | --- |
+| S1. The compartment's ion rows never change | Promised, bitwise | At every accepted row, every ion row of the node's `extracellular_amount_increment` equals its initial value bitwise: in scalar, windowed, vector-window and batch runs, and across a restart through a snapshot. The reason: no route with a nonzero coefficient touches them; the constant-field flux at zero permeability is zero; no face or drift reaches the node |
+| S2. V_b stays at −q/C_b = 0 | Promised, to rounding | At every accepted row, \|V_b\| ≤ 64 ε max(\|φ_cell\|, \|φ_comp\|), and the node's capacitor-ledger row is within @3's charge tolerance |
+| S3. No capacitor energy flows through the patch | Promised, to rounding | ½ C_b V_b² ≤ ½ C_b (64 ε max \|φ\|)² at every row (S2's consequence) |
+| S4. The rest of the world against the same world without the node and its patch | Reported, not promised | The largest difference of every other field over the run, in ulps of the field. There is no pass rule |
+| S5. The declaration is pure identity | Promised, exact | The same world with and without the declaration traces to identical program text and constants: the jaxpr text of the checked step, the right-hand side and the device row checks, with scalar constants as literals; the dtype, shape and SHA-256 of every closed-over array; and the bindings (D148's "what crossrev compares"). The reason: the declaration runs no part |
+
+**Why S4 is reported only.**
+- In exact arithmetic the potentials are identical: row j gives φ_j = φ_i, so the owner's row reduces
+  to the compartment-free one (**S**).
 - But the dense capacitor and IMEX operators gain a row, and their factorisations round
   differently. This is D150's claim-3 situation: reported, with the reduce order program-specific.
 
@@ -479,6 +519,11 @@ compartment node to rounding, not bitwise.
 compartment's together. The compartment's row is unchanged, so V_b stays exact (**S**).
 
 ### 3.4 Why ion routes on the bounding patch are refused: the charged door
+
+**An unrun reading.** Everything in this section is arithmetic on a code reading (**S**). Probe P1
+(§9), with its criterion written in C4's form, would measure it. The bound term it points to is one
+D148 round with finding 3's, not yet specified. None of this blocks version 1, which refuses the ion
+routes.
 
 **The code reading (S).**
 - @3's definition-time bound (`surface_pump.explicit_rate_bound`) and its run-time stage rule
@@ -510,12 +555,34 @@ here, and the table's volume and area agree with a 0.68 µm sphere.
   not refuse it in advance. At best a step fails its domain afterwards. Probe P1 would show which
   happens.
 
+**No existing world on @3's IMEX numerics is exposed** (the lead's sweep; read-only, 14 November;
+`sweep/` in the evidence folder).
+- **The JSON sweep** (`face_free_sweep.py`, the walk of D152's sweep, static): 99 model blocks in
+  configs/, validation/ and tests/, the same at main's ced45c87 and on this branch. Ten finite
+  outside nodes that no face names each have an ion route on their facing patch (`gauge_check.out`):
+  - **seven are the gauge of a closed one-node world,** a fixed node, so the per-cell bound covers
+    the cell against it. Six are older families, RK4 only (resolved_cotransport@1, its water
+    version, resolved_energy@1, its water version, resolved_water@1 and @2). One is on @3's IMEX
+    numerics: `validation/tissue/pump_water_predictions.json`'s P5, resolved_pump_water@1 under
+    ARS(2,2,2), whose node `bath_0` is its gauge;
+  - **three are free face-free nodes with a chloride route,** the compartment's own topology:
+    resolved_redistribution@1, @2 and @3's configs (node `finite`, beside a held bath). They are an
+    older family, RK4 only, with a fixed step limit of 0.1 ms (`surface_tissue.check_steps`), off
+    @3's IMEX bound.
+- **The candidates the lead named:** the S3 and S5 lumens have access faces (`access` in
+  `validation/division/cleft_egg_engine.py`; the clefts' faces in `egg_division_world.py` and
+  `tests/partition_fixtures.py`). D150's and D152's face-free worlds have no ion permeability on
+  their contact patch.
+- So the gap is latent on @3's numerics: it would apply to a future definition with an ion route on
+  a free face-free node, which version 1 refuses.
+
 **The door, for FR-4 and FR-5.**
-1. **The bound sees face-free nodes.** A D148 round adds max over face-free finite nodes of
-   Σ_m G_m / C_node to `explicit_rate_bound` and `membrane_rate`. It is statically gated, so a world
-   with no face-free node carrying an ion route is unchanged.
+1. **The bound sees face-free nodes.** Its shape, to be specified in that D148 round after P1: a term
+   max over free face-free finite nodes of Σ_m G_m / C_node in `explicit_rate_bound` and
+   `membrane_rate`, statically gated, so a world with no such node carrying an ion route is
+   unchanged.
    - It touches the same two functions as the queued D148 round for neutral species on membranes and
-     junctions (finding 3, probe C4). The two should be one round.
+     junctions (finding 3, probe C4), so the two are one round (the lead's ruling).
    - It makes the steps honest, but the chloride route above would then need dt ≤ 1/(4.8 × 10³ s⁻¹),
      about 0.2 ms (**S**).
 2. **An implicit treatment.** The bounding patch's electrodiffusion joins the implicit part of the
@@ -543,6 +610,10 @@ here, and the table's volume and area agree with a 0.68 µm sphere.
 - **The door:** refuse a compartment that would be a representative (`field_fixed` at its node, read
   from the bound layout), with an acceptance item on a floating world. Probe P3.
 - **The gauge** is never a compartment: refusal 1.
+- **The D147 record** (the lead's item 4; part A of FR-10's probe 1, a host-side definition parse of
+  `field_solver_choice.free_field_offsets`, from the clean snapshot of main): **0** for the
+  species-only compartment world and **0** for the mixed one. A held-bath topology has no free offset,
+  so they keep field solver version 2, as D150's arms and MG0c's did.
 
 ### 3.6 The field-input node cap, node cost and the species budget
 
@@ -574,9 +645,11 @@ here, and the table's volume and area agree with a 0.68 µm sphere.
 | `local_species_reactions@1` (D152) | Composes | Reactions at the node: the face-free network world's precedent. D152's own refusals hold. Its rule Q6 does not arise, since owners are never replaced |
 | `species_regulated_availability@1` (D156) | Composes | Its sources are cell rows and its targets plasma-membrane elements. A channel target on the bounding patch cannot arise, since channels are refused there |
 | `scheduled_cell_replacement@1` | Composes away from owners | Events on an owner's slot are refused (§1.5); door R |
-| `scheduled_bath_composition@1` (FR-10) | Composes, but not beside D152 | It acts on held baths only ([its note](BATH_SCHEDULE_DESIGN.md)). D152 lists the field that the bath schedule provides in its `CONFLICTS_VIEW`, so a dose world with reactions anywhere is refused: see below |
+| `scheduled_bath_composition@1` (FR-10) | Composes, but not beside D152 | It acts on held baths only ([its note](BATH_SCHEDULE_DESIGN.md)). D152 lists the field that the bath schedule provides in its `CONFLICTS_VIEW`, so a dose world with reactions anywhere is refused. The conflict is nominal, at the field level only: see below |
 | Water, the k-anion symport, replacement@2 | Refused | Volume: door V (§5.3). The symport and replacement@2 require water |
-| `membrane_entity_state@1`; insertion@1 and @2 | Refused | Field-input providers; exchange also refuses an area provider. They are FR-2's and FR-3's doors (§7) |
+| `membrane_entity_state@1` | Refused: **the membrane-state wall** | Membrane state provides the patches' capacitance, so it is a field-input provider (§3.6). FR-3 makes it the owner of binding sites, so sites on a bounding patch wait for this wall's door; the 64-node cap and the held-bath topology then apply. FR-3's note names the same wall |
+| Insertion@1 and @2 | Refused | Field-input providers; exchange also refuses an area provider. FR-2's door (§7) |
+| `site_occupancy@1` (FR-3) | Refused: the list fails closed | **Door:** admitted by a host-only, one-line addition when FR-3's operator exists, on two conditions: binding and release only on a bounding patch's outward-facing populations, which face the lumen; and refusal of internalisation from a compartment-facing patch, read from this declaration. It also needs the membrane-state wall's door |
 | The partition; the bridge | Refused | Closers; door D |
 | The restricted lumens | Refused | They require insertion; a compartment is not a lumen's onset node |
 | The stationary analysis | Refused | It does not admit the composite (D150 ruling 2) |
@@ -587,6 +660,10 @@ here, and the table's volume and area agree with a 0.68 µm sphere.
 loading into a compartment and reactions inside would combine FR-10's bath schedule with D152. D152
 reads `extracellular_amount_reference` as declared, and the bath schedule provides it, so the
 composition is refused, although the two act on disjoint nodes.
+- **The conflict is nominal** (read, not run). Everywhere D152 reads the field it masks held baths:
+  `node_amounts` and `reactions_domain_valid` take finite nodes only (`outside_active & ~reservoir`,
+  `species_reactions.py`), and D152 refuses held-bath sites. Its `CONFLICTS_VIEW` entry is there for
+  insertion@1, which changes finite onset nodes' anchors: that conflict is real.
 - **Version 1's workarounds:** degradation inside by turnover's clearance at the node instead of
   reactions; or a pre-loaded extracellular node instead of a bath dose.
 - **The door** is FR-10's door S, slot-scoped provision ([its note](BATH_SCHEDULE_DESIGN.md) §3). It
@@ -653,6 +730,13 @@ against closed forms and exact discrete solutions in compressed worlds: a cell, 
 compartment, and an extracellular node where the uptake path needs one. Nothing is compared with
 biological data, and no paper's model is reproduced (D138, D151).
 
+**This protocol is also exchange's first judged acceptance.** D150's judged scope was @3's faces and
+turnover's first-order clearance. Exchange, turnover's production and the occupant rule entered only
+through its test files (D150 §12.2's scope line). So exchange@1 is integrated and guarded but not yet
+qualified. FR-1's items C3 to C5 and C8 judge exchange's laws (loading, release, saturable release,
+the pair's splitting term and the uptake path's import leg) against references that an agent who
+never reads the code writes from Appendix A. The protocol says so in its scope line.
+
 ### 6.2 The independent references
 
 - **Written by an agent that never reads the code,** from Appendix A alone, as S5's, D152's and
@@ -670,16 +754,16 @@ snapshot.
 | Item | Check | Reference |
 | --- | --- | --- |
 | C1. Identity and refusals | Each refusal of §1.4 fires with its reason; the summary's identity block; a label change moves no binding (S2's guard) | Definitions |
-| C2. The declaration is pure identity | A composition with the declaration traces the same jaxprs, constants and bindings as without it; every existing crossrev set is identical | Constants-aware crossrev (D148) |
+| C2. The declaration is pure identity (pending milestone 1) | §3.3's S5: the same world with and without the declaration traces to identical program text and constants, and identical bindings; every existing crossrev set is identical | Constants-aware crossrev (D148) |
 | C3. Loading with retention | Export only, flux and first-order: the engine equals the closed form to rounding (one exact stage); per-route reconciliation to rounding | A.2 |
 | C4. Two-way first-order exchange | The engine against the closed form within the registered dt-study tolerance; the splitting term identified as −a(a + 2b) dt²/96 at the fixed point; the engine against the iterated step map to rounding. C4's world declares no saturable route, so its stage plan is A.4's | A.3, A.4 |
 | C5. Saturable release | The engine against the implicit closed form | A.5 |
 | C6. Degradation with loading | Exchange loading plus turnover clearance at the node: the linear two-node system with decay | A.6 |
 | C7. Reactions inside | Loading of S plus D152's first-order S → P at the node: a linear three-state system; D152's dt·L rule holds | A.7 |
 | C8. The uptake path | An extracellular node to the cytosol (an import on a plasma patch) to the compartment (an export on the bounding patch): a three-node chain against its matrix exponential, every host check passing | A.8 |
-| C9. Electrical silence | The compartment's ion rows bitwise constant; V_b = 0 to rounding at every row; the rest of the world against the compartment-free world, reported to rounding | A.9 |
+| C9. Electrical silence (pending milestone 1) | §3.3's S1 to S4, with their criteria as fixed there before any run: the ion rows bitwise, V_b and the patch energy to rounding, the rest of the world reported | A.9 |
 | C10. Energy | A NumPy ΔG test per law at the compartment's volume; the RK4 face-free world within the absolute 2e-8 pJ; the IMEX species-only world | A.10 |
-| C11. Loading from a trace | Does D150's resolved-start rule bind? Its onset error was @3's face heat, and a compartment has no face; exchange books exact ΔG of each moved amount. Not assumed: a compartment loaded from a trace under RK4 (absolute bound) and IMEX | A.2, A.10 |
+| C11. Loading from a trace | D150's onset error was @3's face heat, and a compartment has no face; exchange books the exact ΔG of each moved amount. FR-10's probe 1 (arms D1 and D2, §9) found it booked at rounding on the engine as it is. The judged item repeats it: a compartment loaded from a trace under RK4 (the absolute bound) and IMEX, every row at rounding | A.2, A.10 |
 | C12. Restart and vmap | Restart at, before and after a schedule change, and through a snapshot: bitwise. A vector batch of worlds with different compartment volumes and rates: each world within 1e-12 of its scalar run, bitwise against the reversed batch | – |
 | C13. Negative controls | A misbooked move fails the compartment's outside ledger while the cytosol's passes; a misbooked work fails the RK4 world | – |
 
@@ -695,7 +779,7 @@ snapshot.
 | Request | What it needs from this design | What it adds |
 | --- | --- | --- |
 | **FR-2, internalisation** | The compartment entity, with door C: a pending compartment slot opened at an event, its content enclosed from the adjacent extracellular node (§5.3's mixing and move bookings), its bounding patch's area and capacitance taken from the plasma membrane | Retrieval's energy source (D158); insertion's reverse direction, with populations moving onto the bounding patch; the 64-node cap, since insertion is a field-input provider (§3.6) |
-| **FR-3, site occupancy** | Bound cargo keeps its identity: D150 §2.5's one material ledger spans bound sites on the bounding patch's populations and the free row at the node. Version 1 adds no bound state and closes no door: binding and release would be booked transfers between the two, as exchange's moves are | Sites as population state (`membrane_entity_state@1`), which brings the cap; accessibility as a factor |
+| **FR-3, site occupancy** | Bound cargo keeps its identity: D150 §2.5's one material ledger spans bound sites on the bounding patch's populations and the free row at the node. Version 1 adds no bound state and closes no door: binding and release would be booked transfers between the two, as exchange's moves are. `site_occupancy@1` is admitted beside a compartment by §4's door, past the membrane-state wall | Sites as population state (`membrane_entity_state@1`), which brings the cap; accessibility as a factor; its part-less site owner uses §1.6's widened admission |
 | **FR-4, compartment pH** | The charged door (§3.4): a proton row and counterions on the bounding patch, the capacitor relation of §3.2 with buffer charge, and the implicit or bounded patch | The acidifying pump and its fuel (the energy-pool door); buffering (D152's charged closed reactions and its stiff-kinetics door); the µM–nM numerics of D150 |
 | **FR-5, leak and reseal** | The transfer bookings of §2.2 and door T1's passive law for neutral species; @3's permeability on the bounding patch, with the charged door, for ions; the coupling's compartment source and rate route (§4) | The re-expressed injury law as an operator (D156's open decision); pores' stiffness, which needs §3.4's implicit treatment; exocytic fusion through door F |
 
@@ -714,28 +798,54 @@ snapshot.
 | Floating topology (§3.5) | The representative refusal, and a floating world's acceptance | Finite-extracellular tissues |
 | Coupling source and route (§4) | D156's source-semantics and routing doors | FR-5 |
 | S, slot-scoped provision (FR-10's note) | A provider and a reader of one view field declare their slots; only an intersection is refused | The requester's dose, uptake, compartment and reactions world (§4) |
+| The membrane-state wall (§4) | Membrane state beside a compartment: a field-input provider, so the 64-node cap and the held-bath topology | FR-3's sites on a bounding patch; FR-2 |
+| FR-3's `site_occupancy@1` (§4) | A one-line, host-only admission, on its two conditions | FR-3 |
 | Condensation (§3.6) | Face-free nodes eliminated from the dense solve: a new solver ID | Tissues with a compartment per cell |
 
-## 9. Probe requests (for the lead; nothing was run)
+## 9. Probes and records
 
-Each is small and read-only, on the engine as it is, from a clean snapshot. They would settle
-questions that this note answers by reading the code.
-- **P1, the charged rate gap.** The face-free world with a chloride permeability at the bounding
-  patch at Ishida et al.'s value (G_b/C_b ≈ 4.8 × 10³ s⁻¹), at 1 ms and at 0.1 ms. Does @3 refuse at
-  the definition, refuse at run time, or run unstable? It tests §3.4's reading and sizes the door.
+**What was run** (the lead's review round, 14 November; one unit, `cells-fr10-probe1`, from the
+clean snapshot of main at ced45c87, CPU 2, 3G; evidence in `probe1/`):
+- **The D147 record** (part A, a host-side definition parse): `free_field_offsets` is 0 for the
+  species-only compartment world and for the mixed one (the heredity chain with a compartment on
+  cell_5). Both are held-bath topologies, so D147 keeps field solver version 2.
+- **P4's question, loading a compartment from a trace** (arms D1 and D2): the face-free world, the
+  cytosol pre-loaded at 1e-3 mM, the compartment at a 1e-15 mM trace, an export route only.
+  - Both pass the runner and every row. Under ARS at 1 ms (D1), the energy residual is at most
+    5.9e-11 of its bound, and the onset step's residual 2.7e-16 of its own flows. Under RK4 at
+    0.1 ms (D2), against the absolute 2e-8 pJ, it is at most 3.0e-11 of the bound.
+  - So D150's resolved-start rule does not bind on a compartment's exchange routes: exchange books
+    the exact ΔG of each moved amount, and a compartment has no face. The rule still binds wherever a
+    face carries a switch-on, as at a dosed bath ([FR-10's note](BATH_SCHEDULE_DESIGN.md) §3.2).
+  - The unit exited 0 in 499 s, with a peak of 1.73 GB and `memory.events` all zero.
+- **The existing-worlds sweep** of §3.4 (static, `sweep/`).
+
+**Still requests** (small and read-only, on the engine as it is, from a clean snapshot):
+- **P1, the charged rate gap.** Its criterion, in C4's form, written before any run:
+  - *World:* the face-free compartment world, with a chloride permeability on the bounding patch at
+    Ishida et al.'s 1.2 × 10⁻⁵ cm/s, luminal chloride 110 mM against cytosolic 10 mM, other ions
+    impermeant there, everything else quiescent; dt 1 ms and 0.1 ms, 200 steps each.
+  - *Reference:* the exact two-volume relaxation, written independently: the constant-field chloride
+    flux across the bounding patch and the two capacitors (the plasma patch to the held bath, the
+    bounding patch), V_b = −q_comp/C_b, integrated by Radau at rtol 1e-10.
+  - *Measured:* the largest error of V_b and of the compartment's chloride against the reference,
+    per record; and which check refuses: the definition-time explicit bound, the run-time membrane
+    rate (dt × rate against `EXPLICIT_STEP_BOUND` = 1), @3's domain, or the field solve.
+  - *§3.4's reading is confirmed if* neither bound refuses the 1 ms run (both see about 0.007), the
+    1 ms run either is refused at run time or departs from the reference by more than 10% of V_b's
+    change within 20 steps, and the 0.1 ms run (dt × G_b/C_b = 0.48) follows the reference to its
+    dt-study tolerance. Otherwise §3.4 is corrected to what was measured.
 - **P2, the reported claim.** A heredity-sheet world with and without a compartment node: the ionic
-  fields' largest difference, against rounding. It tests §3.3's "rounding, not bitwise".
+  fields' largest difference, against rounding. It tests §3.3's S4.
 - **P3, a floating component.** A finite-extracellular world (with free offsets) in which the
   compartment has the lowest outside index of its component: which node `bind` chooses as
   representative, and whether the run differs from the reordered world. It tests §3.5.
-- **P4, loading from a trace.** The face-free world loading a compartment from a 1e-15 mM trace,
-  under RK4 at its absolute bound and under IMEX. It tests C11 before registration.
 
 ## 10. Effort and order
 
 | Part | Agent-days |
 | --- | --- |
-| The contract's entity-declaration kind, with its tests and crossrev (§1.6) | 0.5 |
+| The contract's widened admission of part-less operators, with its tests and crossrev (§1.6) | 0.5 |
 | `cell_owned_compartments@1`: parse, the topology refusals, the admitted list, the replacement refusal, the summary's identity block, tier-1 tests | 1.0 |
 | **Independent references, by a second agent that never reads the code** (Appendix A) | 0.75 |
 | Guards and worlds: C1 to C13, the protocol's registration, the judged run (detached, CPU minutes) | 1.25 |
@@ -755,27 +865,24 @@ beside D150's, D152's and D156's work on disjoint files. FR-10's operator is dis
 
 ## 11. Questions
 
-**For the lead:**
-1. **The entity:** a declared @3 outside node with no new layout structure (§1.1). Confirm.
-2. **The declaration's home:** an entity-declaration kind of operator (option (a), recommended), or a
-   composite-level block (option (b)) (§1.6).
-3. **The transfer law:** exchange@1 unchanged for version 1, with its three limits declared, and
-   door T1 deferred to FR-5 (§2).
-4. **The electrical treatment:** a free node of @3's capacitor network; version 1 refuses ion routes
-   on the bounding patch and requires electroneutral content (§3.3, §3.4).
-5. **The charged door's shape:** fold the face-free-node bound term into the queued finding-3 D148
-   round now, and leave the implicit treatment to FR-4's note (§3.4)?
-6. **Scope:** held-bath topologies only in version 1, with the floating door (§3.5).
-7. **Probes P1 to P4:** which to run before the code (§9). P1 sizes FR-4's door; P4 settles C11.
-8. **Door S's priority** (FR-10's note): it gates the requester's natural first world, a dose with
-   reactions inside a compartment (§4), so it comes before FR-4.
+**Settled in the lead's review with the advisor (14 November):**
+- The refusals of §1.4 are accepted, with the D147 record and the membrane-state wall named (§3.5,
+  §4).
+- The bound term is one D148 round with finding 3's, specified after P1. It does not block version 1
+  (§3.4).
+- Door S comes early, as a general contract feature (FR-10's note).
+- The lumped pool is a validity limit and nesting a topology limit, stated as such (§1.3, §1.4).
+  No question goes to the requester or the user.
 
-**For the user:**
-9. **A lumped pool** (§1.3). One compartment node is a well-mixed pool, per cell, of one kind of
-   organelle. It distinguishes cargo inside the pool from cargo in the cytosol, but not one vesicle
-   from another. Is that what the requesting study needs?
-10. **Nested compartments** (multivesicular bodies; the two mitochondrial membranes) lie outside @3's
-    topology (§1.4). Is any use of them expected?
+**For the lead:**
+1. **The declaration's home:** the operator form, with §1.6's one widened admission for part-less
+   operators, shared with FR-3's site owner. Confirm the rule and its D148 status (an addition).
+2. **The transfer law:** exchange@1 unchanged for version 1, with its three limits declared, door T1
+   deferred to FR-5, and FR-1's protocol as exchange's first judged acceptance (§2, §6.1).
+3. **The silence claims' criteria** (§3.3), fixed now for milestone 1. Confirm S1 to S5 and their
+   kinds before any run.
+4. **Probes P1 to P3** (§9): which to run before the code. P1 sizes FR-4's door. P4's question is
+   answered by FR-10's probe 1, arms D1 and D2.
 
 ## Appendix A. Equations for the independent references
 
