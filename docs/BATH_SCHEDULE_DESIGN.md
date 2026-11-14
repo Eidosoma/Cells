@@ -445,7 +445,7 @@ head c36a3fa, after the merge of main (species_regulated_availability@1's landin
 | B3, `tests/unit/test_bath_schedule_runs.py` (RK4 at 0.1 ms; a step from 1e-3 to 1.5e-3 mM at step 20 of 60) | Passed in 45 s, with every host check on every row. The record (`run-c36a3fa/b3-2/`) follows |
 | B5, idleness, `tests/unit/test_bath_schedule_idle.py` | Passed in 40 s: with no event, every inner field is bitwise equal to the composition without the operator |
 | Crossrev, every existing set, against the baseline of record at 21fb714 | Identical at 2a7e594 and at the head. Base: 36/36 jaxpr texts, 36/36 constants, 12/12 bindings. Qualification: 78/78, 78/78, 56/56. Injection and volume: 6/6, 6/6, 2/2 each. Division: 27/27, 27/27, 9/9, with its check holding |
-| The tier record | Pending. Two measures at the head ran while the machine was oversubscribed (load 15 to 19 on 8 CPUs), at 1.65 to 4.6 × the tests stage's times; a third waits for a quieter machine (HANDOFF) |
+| The tier record | Committed from the third measure at the head, as the lead ruled. All three measures ran on an oversubscribed machine (load 15 to 22 on 8 CPUs), so load pushed every file across a tier boundary: the smoke to tier 2 (24.5 s), and B3 and B5 past the 90 s cap to tier 3. The lead re-measures them at a quiet time (HANDOFF) |
 
 **B3's record:**
 - **The energy ledger is at rounding on every row.** Its largest residual is 8.5e-22 pJ before the
