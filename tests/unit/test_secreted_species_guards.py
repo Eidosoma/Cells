@@ -55,23 +55,25 @@ def record(test, **values):
             out.write(json.dumps(dict(test=test, **values), default=float) + "\n")
 
 
-def final_bound(result):
-    """The energy ledger's bound at the last row without its rounding term: 2e-8 pJ + rtol x the
-    accumulated heat and work (the energy-role table's fields)."""
+def bounds(result):
+    """[row] the energy ledger's bound without its rounding term: 2e-8 pJ + rtol x the accumulated
+    heat and work (the energy-role table's fields)."""
     from cells.models.surface_pump import ENERGY_RTOL
 
     model = get_model(result.spec.model)
     flows = sum(
-        float(np.sum(np.abs(np.asarray(getattr(result.history, k))[-1])))
+        np.sum(
+            np.abs(np.asarray(getattr(result.history, k))).reshape(len(result.times), -1), axis=1
+        )
         for k in model.ENERGY_FLOW_FIELDS
     )
     return 2e-8 + ENERGY_RTOL[result.spec.execution.solver] * flows
 
 
-def misbooked(history, field, route, fraction):
-    """The history with `fraction` of a route's booked work added from its second row on."""
+def misbooked(history, field, column, fraction):
+    """The history with one booked work in error by `fraction` at every row (systematic)."""
     values = np.array(getattr(history, field), copy=True)
-    values[1:, route] += fraction * values[-1, route]
+    values[:, column] *= 1.0 + fraction
     return history._replace(**{field: values})
 
 
@@ -79,32 +81,74 @@ def steps_of(result):
     return np.rint(np.asarray(result.times) / result.spec.execution.dt).astype(int)
 
 
-def test_a_misbooked_work_fails_the_species_only_world_and_passes_unseen_in_the_mixed_world():
-    from tests.unit.test_secreted_species_runs import secretion
+def face_free(operator, end=0.1):
+    """A species-only world whose energy flow is one law's work alone: a cell secreting into its
+    node (exchange), or a node clearing (turnover), with no face (so no face heat or bath work)."""
+    raw = fx.face_free(end=end, observation_times=fx.grid_times(end, 1e-3, end / 4))
+    if operator == "exchange":
+        return fx.with_exchange(
+            raw,
+            [("secrete", "contact_0", "export", "first_order")],
+            [("secrete", "cell_0", [(0.0, 0.1)])],
+        )
+    return fx.with_turnover(raw, [("clear", "ecs_0", "clearance")], [("clear", None, [(0.0, 0.5)])])
 
-    species_only = run(parse_spec(secretion(end=0.1)))
-    mixed = run(parse_spec(fx.chain_operators(fx.heredity_chain(secreted=True, end=0.1))))
+
+# The misbooked work of each law: (field, column in the face-free world, column in the mixed chain).
+WORKS = dict(
+    exchange=("exchange_work_pJ", 0, 0),  # The secretion route in both.
+    turnover=("turnover_outside_work_pJ", 1, fx.CHAIN + 2),  # ecs_0; ecs_2 after six baths.
+)
+
+
+@pytest.fixture(scope="module")
+def mixed_run():
+    return run(parse_spec(fx.chain_operators(fx.heredity_chain(secreted=True, end=0.1))))
+
+
+@pytest.mark.parametrize("operator", ["exchange", "turnover"])
+def test_a_misbooked_work_fails_the_species_only_world_and_passes_unseen_in_the_mixed_world(
+    operator, mixed_run
+):
+    """A systematic 1% error in one law's booked work, at every row. The IMEX bound is 2e-3 of the
+    accumulated heat and work, so a booking error of a law shows once it exceeds that share of the
+    species' own flows (the species-only world, here one law's flow), and is invisible where the
+    ions' flows set the bound (the mixed world: the known blindness at µM-nM). Where face heat
+    dominates the species' flows, the IMEX ledger is that much less sensitive to a law's work; the
+    RK4 worlds' absolute bound (2e-8 pJ) and the NumPy dG test per law cover it."""
+    field, own, chain = WORKS[operator]
+    species_only = run(parse_spec(face_free(operator)))
     report = {}
-    for label, result in (("species_only", species_only), ("mixed", mixed)):
+    for label, result, column in (
+        ("species_only", species_only, own),
+        ("mixed", mixed_run, chain),
+    ):
         model = get_model(result.spec.model)
         steps = steps_of(result)
         model.check_values(result.history, result.spec, steps=steps)  # As booked: passes.
-        wrong = misbooked(result.history, "exchange_work_pJ", 0, 0.01)
-        error = 0.01 * abs(float(np.asarray(result.history.exchange_work_pJ)[-1, 0]))
+        work = np.asarray(getattr(result.history, field))[:, column]
+        assert work[-1] != 0
+        ratio = 0.01 * np.abs(work) / bounds(result)
         record(
             "misbooked_work",
+            operator=operator,
             world=label,
-            misbooking_pJ=error,
-            final_bound_pJ=final_bound(result),
-            misbooking_over_bound=error / final_bound(result),
+            misbooking_final_pJ=0.01 * abs(work[-1]),
+            bound_final_pJ=bounds(result)[-1],
+            misbooking_over_bound_final=ratio[-1],
+            misbooking_over_bound_max=np.max(ratio),
         )
         try:
-            model.check_values(wrong, result.spec, steps=steps)
+            model.check_values(
+                misbooked(result.history, field, column, 0.01), result.spec, steps=steps
+            )
             report[label] = "passed"
-        except NumericalError as error:
-            report[label] = str(error)
-    assert report["species_only"].endswith("energy")
-    assert report["mixed"] == "passed"  # The ions' bound cannot see it: a known blindness.
+        except NumericalError as failure:
+            report[label] = str(failure)
+        report[label + "_ratio"] = (float(ratio[-1]), float(np.max(ratio)))
+    assert report["species_only"].endswith("energy"), report
+    assert report["species_only_ratio"][0] > 1, report  # Caught at the end, not only at an onset.
+    assert report["mixed"] == "passed" and report["mixed_ratio"][1] < 1e-2, report
 
 
 def jump_world(dt=1e-3, end=2.0):
@@ -127,16 +171,16 @@ def test_a_stiff_front_from_the_trace_stays_positive_through_the_step_map():
     ids = [o.id for o in spec.model.extracellular]
     cols = np.array([ids.index(f"shell_{i}") for i in range(GEOMETRY.shells)])
     anchor = np.asarray(p.extracellular_amount_reference)[s, cols]
-    record = {250: 0.25, 500: 0.5, 1000: 1.0, 2000: 2.0}
+    sampled = {250: 0.25, 500: 0.5, 1000: 1.0, 2000: 2.0}
     profiles, refused, positive = {}, 0, True
     for k in range(1, 2001):
         state, ok = step(state)
         refused += int(not bool(ok))
-        if k in record or k % 50 == 0:
+        if k in sampled or k % 50 == 0:
             amounts = anchor + np.asarray(state.extracellular_amount_increment)[s, cols]
             positive &= bool(np.all(amounts > 0))
-            if k in record:
-                profiles[record[k]] = amounts / GEOMETRY.volumes_pL
+            if k in sampled:
+                profiles[sampled[k]] = amounts / GEOMETRY.volumes_pL
     record(
         "stiff_front",
         refused=refused,
