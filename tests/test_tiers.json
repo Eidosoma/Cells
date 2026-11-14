@@ -60,7 +60,8 @@
   "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-enforce/measured.json",
   "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-ae1e18d/measured.json",
   "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-87260f0/measured.json",
-  "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-ef05cd2/measured.json"
+  "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-ef05cd2/measured.json",
+  "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tiers/measure-454fa75/measured.json"
  ],
  "measured_provenance": [
   {
@@ -496,6 +497,13 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a4ff7607b6a2e4388",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-14T17:50:07+00:00"
+  },
+  {
+   "git_revision": "454fa750b5ceef292e48d2e3b7993ccbf80b0a10",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a6b2e9cd180913a24",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T20:34:45+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1842,10 +1850,10 @@
    },
    {
     "file": "tests/unit/test_mg0c_judged_refusal.py",
-    "seconds": 1.93,
+    "seconds": 7.02,
     "exit_code": 0,
     "counts": {
-     "passed": 4
+     "passed": 11
     }
    },
    {
@@ -4694,8 +4702,14 @@
     "counts": {}
    },
    {
+    "file": "tests/unit/test_species_reactions_accuracy.py",
+    "seconds": 90.37,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
     "file": "tests/unit/test_species_reactions_composition.py",
-    "seconds": 90.11,
+    "seconds": 90.34,
     "exit_code": null,
     "counts": {}
    },
@@ -4707,13 +4721,19 @@
    },
    {
     "file": "tests/unit/test_species_reactions_reference_runs.py",
-    "seconds": 90.1,
+    "seconds": 90.13,
     "exit_code": null,
     "counts": {}
    },
    {
     "file": "tests/unit/test_species_reactions_runs.py",
     "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_species_reactions_same_material.py",
+    "seconds": 90.15,
     "exit_code": null,
     "counts": {}
    },
