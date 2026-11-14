@@ -161,6 +161,7 @@ class CellsViewer extends HTMLElement {
       this.stage.rig.setView(view);
     }
     if (query.get("isolate")) this.setIsolate(query.get("isolate"));
+    if (query.get("together")) this.current?.setTogether?.(query.get("together"));
     if (query.get("select")) this.select(query.get("select"), { fly: true });
     if (query.get("index")) this.toggleIndex(true);
     window.addEventListener("hashchange", () => {

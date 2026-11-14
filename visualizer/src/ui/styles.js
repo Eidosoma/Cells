@@ -146,7 +146,7 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .scalebar { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; justify-items: end; gap: 4px; pointer-events: none; }
 .scalebar-line { height: 5px; border: 1.5px solid var(--fg); border-top: 0; }
 .scalebar-text { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--fg); background: color-mix(in srgb, var(--bg) 78%, transparent); padding: 1px 6px; border-radius: 5px; }
-.has-panel .scalebar { right: calc(max(16px, env(safe-area-inset-right, 0px)) + 376px); }
+.has-panel .scalebar { right: calc(max(16px, env(safe-area-inset-right, 0px)) + 376px); bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
 .fallback { position: absolute; inset: 64px 0 0 0; padding-block: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); color: var(--muted); }
 
 /* ---------------------------------------------------------------- narrow screens */

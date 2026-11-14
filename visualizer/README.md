@@ -53,7 +53,8 @@ indicative.
 | Cell | 20 µm across | the same |
 | Nucleus | 6 µm across | the same |
 | Mitochondria | 120 capsules, about 0.6 µm wide and 2 µm long (a real cell holds hundreds or more) | 9, about 2 µm wide, three cut open to show the folds |
-| Endoplasmic reticulum | thin sheets close together, tubules through the cell, ribosomes as dots | four thick ribbons with ribosome beads |
+| Endoplasmic reticulum | thin sheets close together and tubules through the cell | four thick ribbons |
+| Ribosomes, vesicles | grey dots and clear bubbles: scenery, since protein synthesis and vesicles are not capabilities | grey beads and a few clear bubbles |
 | Membrane | a fine line (5 nm is far below one pixel) | a thick beaded band |
 | Channels, pumps, junction channels | thousands of dots; shapes about 10 nm across in the close-up | a few blocks set in the membrane |
 | Protein cages, ATP, ions, small molecules | dots and haze | a few beads and clusters |
@@ -175,6 +176,7 @@ Ideas kept for after the basics (the user, 14 November 2026):
   run view once replays exist.
 - Statuses are as of the date in the top bar; the map does not update itself.
 - Screenshots use software WebGL; performance on real hardware is not measured.
+- On a phone the top of the cell view is crowded: the view switches and the scale rail both sit there.
 - Established (slate) and landed (blue) differ mainly in saturation. The four status hues
   pass the colour-blindness checks on both backgrounds; slate is a neutral and is not part
   of that check, so the panel and the list always name the status in words.

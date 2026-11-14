@@ -215,6 +215,11 @@ export class CellLens {
         if (options.clip) material.clippingPlanes = CUT_PLANES;
         return this.neutral(zone, material, options);
       },
+      neutralPoints: ({ size = 1.4, opacity = 0.6 } = {}) => {
+        const material = new THREE.PointsMaterial({ size, sizeAttenuation: false, map: dotTexture(), alphaTest: 0.35, transparent: true, depthWrite: false });
+        material.userData = { dust: true };
+        return this.neutral(zone, material, { opacity });
+      },
       neutralLine: (options = {}) =>
         this.neutral(zone, options.dashed ? new THREE.LineDashedMaterial({ transparent: true, dashSize: 3, gapSize: 2.2 }) : new THREE.LineBasicMaterial({ transparent: true }), options),
       illustrate: (object, zoneName) => {
@@ -330,6 +335,7 @@ export class CellLens {
   scaleInfo() {
     const distance = this.stage.rig.distance;
     if (this.sizeMode === "schematic" && distance < 13) return { note: "Close-up not to scale" };
+    if (distance > 2400) return { micronsPerUnit: 1, note: "the outline is a placeholder" };
     return { micronsPerUnit: 1, note: this.sizeMode === "schematic" && distance < 190 ? "small parts enlarged" : null };
   }
 
@@ -540,7 +546,7 @@ export class CellLens {
       zone.root.visible = fade > 0.01;
       for (const part of zone.parts) part.look(fade, part.dim, part.hot);
       for (const material of zone.neutrals) {
-        material.opacity = material.userData.base * fade;
+        material.opacity = material.userData.base * fade * (material.userData.dust ? this.dustFade : 1);
         material.transparent = true;
       }
       for (const label of zone.labels) label.hidden = fade < 0.55;

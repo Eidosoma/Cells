@@ -340,7 +340,7 @@ export function buildCell(ctx, studsCtx, mode) {
     wall.material = sheet;
     wall.position.copy(NUCLEUS).setY(CUT - style.er.height * 0.12);
     er.add(wall);
-    // Ribosomes on the sheets (rough ER).
+    // Ribosomes on the sheets. Protein synthesis is not a capability, so they are scenery: neutral grey.
     const perLayer = real ? Math.round(span * radius * 22) : Math.round(span * radius * 1.7);
     for (let index = 0; index < perLayer; index++) {
       const angle = start + (span * (index + random() * 0.6)) / perLayer;
@@ -349,8 +349,8 @@ export function buildCell(ctx, studsCtx, mode) {
     }
   }
   if (real) {
-    er.add(dots(studs, er.points({ hue: "bioRibosome", size: 1.3, opacity: 0.85 })));
-    // The network reaches through the cell as tubules, and free ribosomes fill the cytosol.
+    ctx.illustrate(dots(studs, ctx.neutralPoints({ size: 1.3, opacity: 0.8 })));
+    // The network reaches through the cell as tubules; free ribosomes (scenery) fill the cytosol.
     const tubes = [];
     for (let strand = 0; strand < 70; strand++) {
       const point = NUCLEUS.clone().addScaledVector(unit(random), style.nucleusRadius + 0.4 + random() * 2.5);
@@ -365,9 +365,9 @@ export function buildCell(ctx, studsCtx, mode) {
     const web = new THREE.BufferGeometry();
     web.setAttribute("position", new THREE.Float32BufferAttribute(tubes, 3));
     er.add(new THREE.LineSegments(web, er.lineMaterial({ hue: "bioEr", opacity: 0.55 })));
-    er.add(dots(scatter(6000), er.points({ hue: "bioRibosome", size: 1.1, opacity: 0.4 })));
+    ctx.illustrate(dots(scatter(6000), ctx.neutralPoints({ size: 1.1, opacity: 0.35 })));
   } else {
-    er.add(instanced(new THREE.SphereGeometry(0.085, 8, 6), er.material({ hue: "bioRibosome", roughness: 0.4 }), studs.map((position) => ({ position }))));
+    ctx.illustrate(instanced(new THREE.SphereGeometry(0.085, 8, 6), ctx.neutral({ opacity: 0.8, depthWrite: true }), studs.map((position) => ({ position }))));
   }
 
   // ---------------------------------------------------------------- Golgi and trafficking: planned, so sketched as outlines
