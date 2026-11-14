@@ -74,6 +74,11 @@
           "date": "2026-11-14",
           "engine_revision": "6ae5b388",
           "note": "The map at main 6ae5b388: the scheduled bath is a registered operator (FR-10's first milestone, development code); the coupling operator's first two milestones are in; MG0c's protocol is revised and still proposed; the conduction probe's text says what was compared blind. The page is otherwise unchanged, and the 59 run files were not sent again. Checked at 3ce44705: 55 of 55 real-input checks on a clean checkout (one label check had failed once under heavy machine load and was made to wait for the label to hold still); 95 tests (94 pass, 1 skipped)"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "e2a86708",
+          "note": "JCVI-syn3A is a third species in the protein atlas: none of the inventory's 49 units is found in it (43 nothing found, 6 nothing to look for), and nine of its own membrane machines are listed apart. The map shows the Syn3A minimal-cell track as planned (D173), the coupling operator's third milestone and the excitable-tissue references. An interim view: the species switch that also changes the levels and the shapes is still being built. Checked at 38866504 on a clean checkout: 55 of 55 real-input checks; 113 tests (112 pass, 1 skipped). The 59 run files were not sent again"
         }
       ],
       "files": "out/cells-architecture.files.json lists the run files published beside the page (generated, not committed)"
