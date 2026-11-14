@@ -324,11 +324,13 @@ def definition(
     obs_dt=1e-3,
     cell_nav=None,
     junction_availability=None,
+    edges=None,
 ):
     """n heredity cells (own held baths) with Kv1.5; a chain of junctions at coupling s.
 
     cell_nav {cell: availability} and junction_availability {junction: availability} hold a
     segment's NaV1.2 and junction availabilities from t = 0 (probe 2, PLAN amendment 3).
+    edges [(a, b), ...] replaces the chain by that graph (M1's sheet); junction k joins edge k.
 
     kicks {cell: mV}; stim dict(cells, pulses [(on_step, off_step)], m_s) declares the
     stimulus populations on its cells (always declared when given, so worlds share shapes);
@@ -387,18 +389,19 @@ def definition(
             group["schedule"] = [dict(time=0.0, availability=float(cell_nav[int(cell)]))]
     x["channel_capacity"] = len(m["channels"])
     if s is not None and n > 1:
+        pairs = [(k, k + 1) for k in range(n - 1)] if edges is None else list(edges)
         j, gate = junction_gate_block(gated)
         m["junctions"] = [
             dict(
                 id=f"junction_{k}",
-                sender=f"cell_{k}",
-                receiver=f"cell_{k + 1}",
+                sender=f"cell_{a}",
+                receiver=f"cell_{b}",
                 area_m2=j["area_m2"],
                 permeability_m_per_s={sp: s * v for sp, v in j["permeability_m_per_s"].items()},
                 law="constant_field@1",
                 gate=dict(gate),
             )
-            for k in range(n - 1)
+            for k, (a, b) in enumerate(pairs)
         ]
         held = junction_availability or {}
         e["junction_controls"] = [
@@ -406,9 +409,9 @@ def definition(
                 junction_id=f"junction_{k}",
                 schedule=[dict(time=0.0, availability=float(held.get(k, 1.0)))],
             )
-            for k in range(n - 1)
+            for k in range(len(pairs))
         ]
-        x["edge_capacity"] = n - 1
+        x["edge_capacity"] = len(pairs)
     if booking is not None:
         m["junction_heat_booking"] = booking
     x["max_steps"] = steps + 16
@@ -1357,7 +1360,7 @@ def part_segment(args):
         for label, r_na, r_gj in cases:
             out["cases"].append(dict(dt_s=dt, **segment_case(args, label, r_na, r_gj, dt)))
             write_json(path, out)
-    if not any(
+    if not args.no_extension and not any(
         c.get("measures", {}).get("reaches_segment")
         and not c.get("measures", {}).get("exits_segment")
         for c in out["cases"]
@@ -1861,6 +1864,11 @@ def main(argv=None):
     a.add_argument("--combined", type=float, nargs="+", default=[0.5, 0.3, 0.2, 0.1, 0.05])
     a.add_argument("--sodium-only", type=float, nargs="+", default=[0.3, 0.1])
     a.add_argument("--coupling-only", type=float, nargs="+", default=[0.1, 0.03])
+    a.add_argument(
+        "--no-extension",
+        action="store_true",
+        help="segment: no extension to 0.02 and 0.01 (M1 keeps s * r_gj >= 20, D170)",
+    )
     a.add_argument("--kv-values", type=float, nargs="+", default=[0.0, 1e-8, 3e-8, 1e-7, 3e-7])
     a.add_argument("--bisections", type=int, default=7)
     a.add_argument(
