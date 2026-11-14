@@ -55,7 +55,7 @@ per-node and per-species chemical term, which D150 v1 builds.
 **Evidence and log:** `/mnt/workspaces/Cells/shared-inventory-reactions-20261114-01/`:
 - HANDOFF.md;
 - the clean snapshot `snapshot-ac5a251`;
-- probes 1, 2, 2b, 2c, 2d, C3, C3b, C4, C4b and C4c of §10;
+- probes 1, 2, 2b, 2c, 2d, 2e, 2f, 2g, C3, C3b, C4, C4b and C4c of §10;
 - the citation records in `sources/`.
 
 **S** marks our arithmetic or interpretation, as in the division and secreted-species designs.
@@ -111,6 +111,10 @@ per-node and per-species chemical term, which D150 v1 builds.
        equilibrium within a step, a refusal mode above about 4e-3 fmol at h L = 0.05 (probe 2e).
      - **The hybrid** is 0.06–0.33% at the onset, with the true heat's trace dependence, and
        non-negative at every probed crossing (probe 2f).
+     - **One measured known limit remains, the reversal onset** (probe 2g). A driven source lifts a
+       trace species across a passive equilibrium within one step. The step is overbooked 2.4–4.6×,
+       and the whole heat by 0.3–0.6%, trace-dependently. It is recorded under the resolved-start
+       rule, with options for the lead (§3.3).
    - **A finding: @3's chemical term has no standard potentials.** The operator therefore owns the
      standard-potential term and adds it to the energy ledger as a declared free-energy term, not a
      flow. Without it, a passive conversion with K ≠ 1 books negative heat (probe 2, B7).
@@ -139,7 +143,7 @@ per-node and per-species chemical term, which D150 v1 builds.
 8. **Pre-code probes** (§10).
    - **Probe 1, the engine as it is:** the MG0c transport world runs, its species-set step is
      admitted and second order, and the ions are bitwise unchanged.
-   - **Probes 2, 2b, 2c, 2d and C3, a NumPy prototype:** they confirm the numerics, the bookings and
+   - **Probes 2 to 2g, C3 and C3b, a NumPy prototype:** they confirm the numerics, the bookings and
      the dispersion design. The prototype is development evidence, not a reference of record.
      - Probe 2c tests the stage condition as corrected in review.
      - 2d measures the mixed-node onset.
@@ -564,13 +568,18 @@ share and the stage quadrature.**
 - **The exact change.** ΔG_i is the exact change of G_i over the operator's half-step at node i. It
   is computed in the stable increment form, anchored at the half-step's start, so a protein-scale
   change is never a difference of large sums.
-- **Single-class nodes:**
-  - with driven routes only, W = ΔG and H = 0;
-  - with passive routes only, H = −ΔG and W = 0, and the composite's dissipation check requires H to
-    be ≥ 0.
-- **Mixed nodes.** H_i = Σ_passive H_r, with each passive route's heat H_r chosen as below, and
-  W_i = ΔG_i + H_i. So W − H = ΔG holds exactly whatever H is. Probe 2d's largest |W − H − ΔG| was
-  2e-18 pJ.
+- **The node's class is selected per step from its controls,** by the step's multipliers, not by
+  the declared routes. It uses `where`, with no branching.
+  - **A node acts as driven** in a step when at least one driven route there has a nonzero
+    multiplier, and as passive when at least one passive route does.
+  - **So a node whose driven routes are all switched off books no work in that step.** This is what
+    E15's "switching off at the damage" does: the node is then passive-only, and its heat is −ΔG.
+- **Single-class nodes (in the step):**
+  - driven only: W = ΔG and H = 0;
+  - passive only: H = −ΔG and W = 0, and the composite's dissipation check requires H to be ≥ 0.
+- **Mixed nodes (in the step).** H_i = Σ_passive H_r, with each passive route's heat H_r chosen as
+  below, and W_i = ΔG_i + H_i. So W − H = ΔG holds exactly whatever H is. Probe 2d's largest
+  |W − H − ΔG| was 2e-18 pJ.
   - **A route that does not reverse within the step books its average-vector-field share**
     (McLachlan, Quispel & Robidoux 1999). "Does not reverse" means that its three stage fluxes and
     its end-state affinity share one sign.
@@ -586,17 +595,21 @@ share and the stage quadrature.**
   - **A route that reverses within the step books its stage quadrature**
     H_r = h Σ_k b_k RT J_r(Y_k) A_r(Y_k), which is non-negative by construction.
 - **Why each branch goes where it does.**
-  - **A route switching on from a trace never reverses.** There the share is accurate and the
-    quadrature is not (probe 2d below).
-  - **A route that reverses is near its equilibrium.** It has a moderate affinity and no trace
-    singularity, so there the quadrature is safe and the share is not. The share books only the
-    net extent, which the reversal cancels (probe 2e below).
+  - **A route switching on from a trace, driven by its own affinity, never reverses.** There the
+    share is accurate and the quadrature is not (probe 2d below).
+  - **A route that reverses is usually near its equilibrium,** with a moderate affinity. There the
+    quadrature is safe and the share is not, because the share books only the net extent, which the
+    reversal cancels (probe 2e below).
+  - **The exception: a reversal onset** (probe 2g; a known limit, below). A driven source can lift a
+    trace species across a passive equilibrium within one half-step. The route then reverses, goes
+    to the quadrature, and the quadrature samples the log-singular start.
 - **The selection costs nothing at run time.** It is per route and step, by sign tests with `where`
   and no branching. A driven reaction switched off by its multiplier contributes nothing, and the
   network's coupling is integrated whole.
 - **How accurate it is.**
-  - In the non-reversing branch it is second order in smooth runs (probe 2d's smooth mixed world:
-    ratios 3.70 and 3.87).
+  - In the non-reversing branch it is second order in smooth runs. In probe 2d's smooth mixed world
+    the hybrid took no step on the quadrature (probe 2g), so its ratios, 3.70 and 3.87, are the
+    share's.
   - At a reversing step the quadrature is positive but per-step inaccurate, more so as h L grows
     (below). Such steps are isolated crossings.
 
@@ -634,8 +647,9 @@ probe 2d).
   hold H and W to the true heat's own dependence (§3.4).
 - **For driven-only nodes nothing changes.** The state-function difference was already exact at any
   switch-on (probe 2's B5: a stage quadrature of ΔG_r J would be 27% off at a 1e-12 trace).
-- **So the operator's own bookings no longer carry D150's onset limit.** @3's face heat keeps it, so
-  production worlds should still start resolved where species diffuse (§3.4).
+- **So the operator's own bookings carry D150's onset limit only in the reversal onset** (below).
+  @3's face heat keeps it too, so production worlds should still start resolved where species
+  diffuse (§3.4).
 - **The hybrid at the onset is the share.** In probe 2f the binding never reversed at the onset, so
   no step went to the quadrature. Its numbers are the share's above, and its trace dependence is
   −6.32e-5 against the true −6.27e-5.
@@ -664,6 +678,38 @@ probe 2d).
     on it. The reversing steps go to the quadrature, which is positive but overbooks that one step,
     by 6–8% at h L = 0.05 and up to about 2× at 0.5.
 
+**A known limit: the reversal onset** (the advisor's last review; probe 2g).
+- **The world.** Passive R + L ⇌ C (k_on 1e3 mM⁻¹ s⁻¹, K_d 1e-3 mM) at one 1 pL node, with R at
+  1e-3 mM, C pre-loaded at 1e-4 mM and L at a trace. A driven source 0 → L at 1e-2 mM/s carries L
+  across its equilibrium (1e-4 mM) in about 0.01 s.
+- **What the hybrid books.** Where that crossing falls inside the first half-step, the route
+  reverses and goes to the quadrature, which samples the log-singular start.
+
+  | Trace | Half-step | Route reverses in step 1? | First-step H, hybrid | Whole H at 1 s, hybrid | Share alone, first step |
+  | --- | --- | --- | --- | --- | --- |
+  | 1e-12 mM | 0.025, 0.0125 s | yes, yes | +459%, +436% | +0.56%, +0.27% | −104% (negative), −53% |
+  | 1e-9 mM | same | yes, yes | +267%, +243% | +0.30%, +0.14% | −104% (negative), −53% |
+  | 1e-6 mM | same | yes, yes | +80%, +59% | +0.034%, +0.012% | −103% (negative), −53% |
+  | 1e-12 mM | 0.00625 s | no (the crossing falls in step 2) | −14% (the share) | −0.016% | – |
+
+  - **The trace dependence.** At h = 0.0125 s, a 10³ change of the trace (1e-12 to 1e-9) moves the
+    hybrid's whole heat by −1.3e-3, against −1.4e-7 for the true heat. W carries the same absolute
+    error, and the closure stays exact.
+- **How it is recorded.** As a known limit under the resolved-start rule:
+  - guard worlds and production worlds start every passive route's species resolved. That excludes
+    a trace species that a driven source carries across that route's equilibrium within one
+    half-step;
+  - §3.4's world 1 runs the case as a documented check of the limit's size, not as a pass/fail
+    item;
+  - the background guard does not cover H and W in this configuration.
+- **Not redesigned here; for the lead** (§9 question 2). The options:
+  - (a) accept it as this known limit, which is the simplest;
+  - (b) in the reversing branch, replace the first stage's affinity by its average-vector-field
+    mean over the first stage interval, which removes the trace singularity there. This is
+    unmeasured;
+  - (c) refuse at run time a reversing passive route whose step starts with a species below a
+    declared floor.
+
 **Why heat ≥ 0 holds:**
 - **At mixed nodes:**
   - **The reversing branch** is non-negative by construction: the quadrature of RT A J, with
@@ -679,7 +725,7 @@ probe 2d).
     - none in its near-equilibrium runs, with k_cat 1e-3, 0.1 and 1 s⁻¹ (hybrid smallest 6.7e-16,
       7.5e-12 and 2.3e-9 pJ). The binding started near its equilibrium, about 5% off, since the
       start was an approximate formula;
-    - none in its smooth mixed world.
+    - none in its smooth mixed world (probe 2g: no step went to the quadrature there).
 
     The dissipation check refuses a step whose heat falls, loudly.
 - **The trade, three ways:**
@@ -752,6 +798,9 @@ shared bound cannot see. The guards therefore check the residual itself, not the
        2e's crossing sweep. Every step's heat must be non-negative. The crossing step's heat must lie
        within a tolerance pinned from probe 2f's quadrature errors there, which are positive and grow
        with h L;
+     - **the reversal onset** (probe 2g's recipe; the known limit of §3.3), run as a documented check
+       of the limit's size against probe 2g's numbers, not as a pass/fail item. The guard and
+       production worlds themselves start resolved;
      - a closed passive relaxation, with total heat = G(start) − G(equilibrium);
      - every row's heat non-negative and non-decreasing.
 2. **The species-only transport world.** This is probe 1's closed chain with the network, the MG0c
@@ -783,6 +832,9 @@ shared bound cannot see. The guards therefore check the residual itself, not the
      at it;
    - H = −ΔG at passive-only nodes, and H ≥ 0 at every mixed node, on random states and on probe
      2e's crossing states;
+   - **the switched-off case:** at a node whose driven routes all have zero multipliers in the
+     step, W = 0 and H = −ΔG, even where a passive route would take the quadrature branch. A node
+     whose passive routes are all off books H = 0 and W = ΔG;
    - Δn = ν Δξ, and moiety totals change only through sources and sinks;
    - the standard term equals Σ ΔG°'_r Δξ_r;
    - zero multipliers select the start state bitwise;
@@ -797,9 +849,12 @@ shared bound cannot see. The guards therefore check the residual itself, not the
      and the hybrid's 6.32e-5.
    - Under the first draft's quadrature this guard would have failed (1.7e-2). That is the collision
      the lead's review found.
+   - **Its scope excludes the reversal onset** (§3.3's known limit). There the hybrid's heat moves
+     by −1.3e-3 for a 10³ trace change (probe 2g). The resolved-start rule keeps that configuration
+     out of the guard worlds.
 
 **Independence of the references** (the lead's ruling with the advisor, 14 November 2026).
-- **The prototype is development evidence, not a reference of record.** Probes 2 to 2d and C3 share
+- **The prototype is development evidence, not a reference of record.** Probes 2 to 2g, C3 and C3b share
   the operator's scheme and its author.
 - **Who writes the references.** Appendix A's ΔG tests (item 4) and MG0c's references (§6.4: the
   dispersion relation, the mode propagators, the SciPy pattern) are written by an agent that never
@@ -1011,7 +1066,7 @@ split.
   - that every accepted step stays positive;
   - that the stage condition refuses where it must;
   - that a species driven below about ε × its anchor stalls there, positive and unrefused.
-- **The prototype's representation.** The prototype (probes 2 to 2d, C3) stores amounts directly,
+- **The prototype's representation.** The prototype (probes 2 to 2g, C3, C3b) stores amounts directly,
   without an anchor. That is immaterial there:
   - no probed species falls more than a factor of about 40 below its start. The largest fall is
     C3's half-domain sink, 2.5e-5 against 1e-3 mM;
@@ -1449,7 +1504,16 @@ Rulings marked *ruled* are the lead's, with the advisor, 14 November 2026.
      - **The hybrid's sign:** non-negative by construction in the reversing branch and for
        unimolecular passive routes; measured and checked otherwise, with no negative step heat in
        any probe.
-   - *Recommendation:* adopt the per-route hybrid. The lead confirms or rejects it at acceptance.
+     - **What remains:** a measured known limit, the reversal onset (probe 2g). It arises when a
+       driven source lifts a trace species across a passive equilibrium within one half-step.
+       - The hybrid's quadrature branch then overbooks that step 2.4–4.6× (1e-12 trace), and the
+         whole heat by 0.27–0.56% at 1 s, trace-dependently.
+       - It is recorded under the resolved-start rule.
+       - The options for the lead: (a) accept it as that known limit; (b) the first stage's
+         affinity in the reversing branch by its average-vector-field mean, which is unmeasured;
+         (c) a run-time refusal of a reversing route that starts at a trace.
+   - *Recommendation:* adopt the per-route hybrid, with option (a) unless the lead prefers (b) after
+     a probe. The lead confirms or rejects it at acceptance.
 3. **One local-kinetics writer per (species, node):** refuse a turnover route on a reacting row
    (§1.1).
    - *Ruled:* confirmed for version 1, with a door later (§7.3).
@@ -1506,7 +1570,7 @@ No engine code was added or changed.
   `probe3/`.
 - **Execution:** each probe ran as its own unit through `scripts/run_detached.sh` (`--oom-first`,
   `--wait-headroom`). memory.events were all zero.
-- **The prototype probes (2 to 2d, C3, C3b) are development evidence, not references of record**
+- **The prototype probes (2 to 2g, C3, C3b) are development evidence, not references of record**
   (§3.4).
 
 | Probe | Question | Where | Exit, wall time, peak |
@@ -1518,6 +1582,7 @@ No engine code was added or changed.
 | 2d (`cells-sir-probe2d`) | The lead's blocking item: the mixed-node onset; the stage quadrature against the average-vector-field share | As probe 2, CPU 5, 1 GB cap | 0, 2 s, 46 MB |
 | 2e (`cells-sir-probe2e`) | The advisor's final review: the share's sign through an equilibrium crossing; with C3 and C3b rerun (W2's round L) | As probe 2, CPU 5, 1 GB cap | 0, 60 s, 53 MB |
 | 2f (`cells-sir-probe2f`) | The per-route hybrid on the onset, crossing and near-equilibrium cases | As probe 2, CPU 5, 1 GB cap | 0, 5 s, 47 MB |
+| 2g (`cells-sir-probe2g`) | The advisor's last review: a reversal onset (the hybrid's quadrature branch at a trace); probe 2d's smooth mixed world under the hybrid | As probe 2, CPU 5, 1 GB cap | 0, 2 s, 44 MB |
 | C3 (`cells-sir-probe-c3`) | Stiffness relative to the split step, dt · L from 0.25 to 20 | As probe 2, CPU 7, 1 GB cap | 0, 16 s, 49 MB |
 | C3b (`cells-sir-probe-c3b`) | C3's nonlinear binding world: its reference and its sub-steps | As probe 2, CPU 5, 1 GB cap | 0, 36 s, 53 MB |
 | C4 (`cells-sir-probe-c4`) | Finding 3: a neutral species on a junction or membrane, z around 1 and 2 | Clean snapshot of ac5a251, CPU 7, 3 GB cap | 0, 113 s, 0.63 GB |
@@ -1605,6 +1670,18 @@ for the table.
   k_cat 1e-3, 0.1 and 1 s⁻¹.
 - **Recommendation, adopted in §3.3:** the per-route hybrid.
 
+**Probe 2g, the reversal onset** (the advisor's last review; §3.3's known limit).
+- **The case.** A driven source lifts a trace species across a passive equilibrium within the first
+  half-step. The route reverses, the hybrid sends it to the quadrature, and the quadrature samples
+  the log-singular start.
+- **The size.** The first-step heat is overbooked by 2.4–4.6× at a 1e-12 trace, and the whole heat
+  at 1 s by 0.27–0.56%, trace-dependently: −1.3e-3 for a 10³ change, against the true −1.4e-7.
+- **When it vanishes.** At a step fine enough that the crossing falls after the first step.
+- **How it is recorded.** As a known limit under the resolved-start rule. Options (a) to (c) are the
+  lead's (§9 question 2).
+- **The smooth mixed world under the hybrid** took no step on the quadrature, so its order is the
+  share's: 3.70 and 3.87.
+
 **Probe C3, stiffness relative to the split step** (prototype; §4.3).
 - **The result.** All three worlds hold second order to dt · L of about 2 and fall toward first
   order beyond.
@@ -1627,9 +1704,9 @@ for the table.
 | --- | --- |
 | The definition | Never refuses: `explicit_rate_bound` is 0 in these worlds (no faces, impermeant ions), and the step checks pass at every z |
 | The run-time membrane-rate rule | dt × `membrane_rate` = 0 at every z: it is z²-weighted and cannot see X |
-| Species-only worlds, the host ledgers (C4, C4b) | Every run passes up to x = 0.04 (junction) and 0.05 (membrane), with errors against the exact relaxation of at most 1.0e-4 and 1.6e-4 of the initial difference. The energy ledger refuses at row 1 from x = 0.1 to 4 (the outside material ledger, at x ≈ 2 on the membrane) |
+| Species-only worlds, the host ledgers (C4, C4b) | Every run passes up to x = 0.04 (junction) and 0.05 (membrane), with errors against the exact relaxation of at most 1.0e-4 and 1.6e-4 of the initial difference. From x = 0.1 a host ledger refuses at row 1: the energy ledger, or the outside material ledger at x ≈ 2 on the membrane. The membrane was probed to x = 3. The junction at x = 4 was refused first by the step's own validity flag at step 1 |
 | Positivity | For x > 2 the difference grows (g > 1) until the domain refuses: step 6 at x = 2.2 (junction) and step 8 at x = 3 (membrane) |
-| A world whose shared bound is set by other flows (C4c: a second neutral species on a face, started smooth; about 26 pJ/s of face heat by design, **S**) | **Passes silently up to x = 1.** Every host check passes, with errors of 6.6e-4, 2.3e-2 and 1.3e-1 of the initial difference at x = 0.1, 0.5 and 1.0 (junction and membrane alike, over 30 steps). From x = 1.5 the energy ledger refuses at row 1, and the dissipation check at x = 3 |
+| A world whose shared bound is set by other flows (C4c: a second neutral species on a face, started smooth; about 26 pJ/s of face heat by design, **S**) | **Passes silently up to x = 1.** Every host check passes, with errors of 6.6e-4, 2.3e-2 and 1.3e-1 of the initial difference at x = 0.1, 0.5 and 1.0 (junction and membrane alike, over 30 steps). From x = 1.5 the energy ledger refuses at row 1; on the membrane at x = 3, the dissipation check |
 | The mixed variant with ion leaks (C4b) | Uninformative: the ions' own leak onset (dt × membrane_rate 0.56 and 0.28) failed the energy ledger at row 1 at every z |
 
 - **So the gap is real.** It is loud in species-only worlds, where the energy ledger is at the
@@ -1693,8 +1770,11 @@ The unidirectional fluxes are used, never the signed net rate of a passive route
     ΔG_i = RT Σ_s [δ_s (ln(a_s/V_i) − 1) + (a_s + δ_s) log1p(δ_s/a_s)] + Σ_s μ°'_s δ_s.
 
 **Bookings.**
-- **Single-class nodes:** driven only, W = ΔG and H = 0; passive only, H = −ΔG and W = 0.
-- **Mixed nodes:** H = Σ_passive H_r and W = ΔG + H, with the per-route hybrid:
+- **The node's class in a step comes from the step's multipliers.** A node is driven-active if a
+  driven route there has m_r > 0, and passive-active if a passive route does.
+- **Single-class nodes (in the step):** driven only, W = ΔG and H = 0; passive only, H = −ΔG and
+  W = 0.
+- **Mixed nodes (in the step):** H = Σ_passive H_r and W = ΔG + H, with the per-route hybrid:
   - **The non-reversing test.** A passive route does not reverse when sign J_r(Y1) = sign J_r(Y2) =
     sign J_r(Y3) = sign A_r(n'), all nonzero.
   - **The non-reversing branch: the average-vector-field share** (McLachlan, Quispel & Robidoux
