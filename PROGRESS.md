@@ -73,6 +73,18 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The visualizer merged into main (14 November 2026, the user's request).** It adds the
+  `visualizer` branch's 45 commits, all under `visualizer/`: the three.js viewer with its replay
+  and lenses, the run adapter, the planarian protein atlas from public sources, and their tests
+  and fixtures. Nothing outside `visualizer/` changed.
+  - **Gate:** the tree-scanning guards ran on the merge and passed: D147's drivers, the BETSE
+    boundary, J2's bright line, the source-profile boundary, the continuity bypass and the
+    source-order tests. That was 62 passed and 31 skipped, the skips being the existing D131 ones.
+  - **No full tier gate ran.** The tier runner collects `tests/` only, so the visualizer's own
+    tests are outside it.
+  - [Log](/mnt/workspaces/Cells/visualizer-merge-20261114/guards.log). The visualizer session
+    keeps developing on its branch.
+
 - **Combined landing (14 November 2026):** FR-10's milestone 1, the coupling operator's
   milestone 2 and MG0c's revised protocol. Tier 1 and 2 at the merge f0e154a: 420 files, no
   changed outcome ([summary](/mnt/workspaces/Cells/inventory-coupling-m2-20261114-01/land-gate12-f0e154a0/summary.json)). The coupling operator's two tier-3 files
