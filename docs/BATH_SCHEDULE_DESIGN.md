@@ -490,8 +490,8 @@ run, in HANDOFF. Evidence: `run-2a7e594/staircase/` (staircase.json, the probe i
   - So both numbers hold for these levels (up to 1e-2 mM), this face and these dt. A world dosed
     at other levels or faces measures its own (**S**).
 - **ARS's refusals are transient, RK4's persist.**
-  - RK4's energy bound is absolute (2e-8 pJ plus rounding). Once a residual exceeds it at an
-    event, every later row of the run is over it.
+  - RK4's energy bound is the absolute 2e-8 pJ, since its relative part is 0. Once a residual
+    exceeds it at an event, every later row of the run is over it.
   - ARS's bound has a relative part, 2e-3 of the integrated flows, which grows after the event.
     Its refused rows end within 46 rows.
 - **Not built: a refusal at the definition of steps beyond the pinned ratio.** As D169 records
