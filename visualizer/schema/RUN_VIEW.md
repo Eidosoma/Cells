@@ -227,6 +227,38 @@ A record's entry may give `shown_between`, `[low, high]` in the record's own uni
 limits its colour scale uses in every run of the experiment, so one value has one colour.
 A run that reaches beyond them widens the scale.
 
+**Several experiments.** One catalogue holds every experiment adapted into the folder,
+each with its runs; adapting one experiment leaves the others' entries and files in place.
+
+**What an experiment found** is two separate facts, both curated from the record, each
+with the record's own line and a source. The viewer shows them and derives neither.
+
+```json
+"outcome": {
+  "judged": true,
+  "status": "Judged, 13 and 14 November 2026",
+  "answer": "no",
+  "label": "The disc did not renew",
+  "text": "…the record's line…",
+  "sources": [{"path": "PROGRESS.md", "where": "…"}]
+}
+```
+
+- `judged` and `status`: whether the experiment ran under a registered protocol and was
+  judged, in a few words. Development or exploratory runs are `judged: false`.
+- `answer`: `yes` when the record says the thing the experiment set out to show held, or
+  that every item of its protocol passed; `no` when the record says it did not; `mixed`
+  when the record reports both; null when nothing is judged. `label` says it in a few
+  words, and `text` gives the record's line. Where the one-word answer is a reading of a
+  longer result, `text` carries the whole result.
+- A judged experiment whose answer is `no` is still a judged experiment: the two facts
+  are shown side by side, never merged into one "failed".
+
+**How a run ended.** A run of the catalogue carries `stop` in the run's own words, and
+`refusal` when the run's files record one. The experiment's entry may give `stops`, plain
+labels keyed by those words: `{"planned end": {"label": "Ran to its planned end"}}`. A run's
+`class` is optional: an experiment that records none has none, and the viewer shows none.
+
 ### How the page gets them
 
 - The page builder puts the catalogue into the scene as `scene.replays`. The Experiments

@@ -185,7 +185,13 @@ test("every engine part an experiment's replays point at is on the map", async (
   for (const [name, experiment] of Object.entries(replayOverlay.experiments)) {
     for (const id of experiment.engine_entities) assert.ok(ids.has(id), `${name}: ${id} is not a part of the scene`);
     assert.ok(experiment.label && experiment.plain && experiment.sources.length, `${name} needs a label, a plain line and a source`);
-    assert.ok(experiment.classes.every((item) => item.id && item.label && item.description), `${name}: every class is described`);
+    assert.ok((experiment.classes || []).every((item) => item.id && item.label && item.description), `${name}: every class is described`);
+    // What an experiment found is the record's, so it must say where the record says it.
+    const outcome = experiment.outcome;
+    assert.ok(outcome, `${name} says nothing about what it found`);
+    assert.equal(typeof outcome.judged, "boolean", `${name}: judged or not`);
+    assert.ok(outcome.status && outcome.text && outcome.sources?.length, `${name}: its outcome needs a status, the record's line and a source`);
+    assert.ok(outcome.judged ? ["yes", "no", "mixed"].includes(outcome.answer) && outcome.label : outcome.answer === null, `${name}: an answer only where something is judged`);
   }
   assert.ok(tracked.size > 0);
 });
