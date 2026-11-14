@@ -6,7 +6,8 @@ first side) and a regulatory state of Na in cell_0 and cell_3 (its complement, w
 junction_0's two sides) with a crossing level and one write. Every host check of every row passes
 (the runner), the observed factors equal an independent evaluation of the laws at each saved row,
 and the state, its write, its crossing record and the step counter behave as declared. A cell's
-prior condition (FR-6, D162) set by its own s0 and set by a write at time 0 give the same trajectory.
+prior condition (FR-6, D162) set by its own s0 and set by a write at time 0 give the same
+trajectory.
 """
 
 import numpy as np
@@ -22,15 +23,27 @@ def world(initial=0.2, writes=()):
         species=["R", "Na"],
         states=[
             rf.state(
-                "s", ["cell_0", "cell_3"], [("hill_activation", "Na", 12.0, 2.0)],
-                on=5.0, off=1.0, initial=initial, level=0.5,
+                "s",
+                ["cell_0", "cell_3"],
+                [("hill_activation", "Na", 12.0, 2.0)],
+                on=5.0,
+                off=1.0,
+                initial=initial,
+                level=0.5,
             )
         ],
         couplings=[
-            rf.hill_coupling("c_r", "junction", ["junction_0"], "R", "hill_inhibition", 1e-3, 1.0, side="first"),
+            rf.hill_coupling(
+                "c_r", "junction", ["junction_0"], "R", "hill_inhibition", 1e-3, 1.0, side="first"
+            ),
             rf.coupling(
-                "c_s", "junction", ["junction_0"], ("state", "s"), "state_complement",
-                side="both", basal=0.25,
+                "c_s",
+                "junction",
+                ["junction_0"],
+                ("state", "s"),
+                "state_complement",
+                side="both",
+                basal=0.25,
             ),
         ],
         writes=[("s", "cell_3", 0.008, 0.9), *writes],

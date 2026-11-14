@@ -1,4 +1,5 @@
-"""species_regulated_availability@1, milestone 1: a declared but idle operator changes nothing (D136).
+"""species_regulated_availability@1, milestone 1: a declared but idle operator changes nothing
+(D136).
 
 docs/INVENTORY_COUPLING_DESIGN.md §1.10, claim 2. On the seven-cell heredity sheet, the operator
 declared with no state and no coupling (statically idle) gives every @3 state field of every

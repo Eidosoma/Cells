@@ -56,8 +56,13 @@ def base(**kwargs):
                 "c_r", "junction", ["junction_0"], "R", "hill_inhibition", 1e-3, 1.0, side="first"
             ),
             rf.coupling(
-                "c_s", "junction", ["junction_0"], ("state", "s"), "state_complement",
-                side="both", basal=0.25,
+                "c_s",
+                "junction",
+                ["junction_0"],
+                ("state", "s"),
+                "state_complement",
+                side="both",
+                basal=0.25,
             ),
         ],
     )
@@ -110,7 +115,9 @@ def _add_species(count):
             raw,
             species=["R"],
             couplings=[
-                rf.hill_coupling("c", "junction", ["junction_0"], "R", "hill_activation", 1e-3, 1.0, side="first")
+                rf.hill_coupling(
+                    "c", "junction", ["junction_0"], "R", "hill_activation", 1e-3, 1.0, side="first"
+                )
             ],
         )
 
@@ -127,13 +134,28 @@ def _replaced(branch):
         template = crfx.template_from_cell(raw, "cell_1", "T")
         rep = crfx.with_replacement(raw, [template], [(0.008, "cell_1", "T", "c1_new")])
         comp = add_inventory_species(
-            cs.frozen_definition(rep), "R", trace_mM=1e-3, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+            cs.frozen_definition(rep),
+            "R",
+            trace_mM=1e-3,
+            diffusivity_m2_per_s=1e-10,
+            floor_fmol=1e-20,
         )
         if branch == "coupling":
             return rf.with_coupling(
                 comp,
                 species=["R"],
-                couplings=[rf.hill_coupling("c", "junction", ["junction_1"], "R", "hill_activation", 1e-3, 1.0, side="first")],
+                couplings=[
+                    rf.hill_coupling(
+                        "c",
+                        "junction",
+                        ["junction_1"],
+                        "R",
+                        "hill_activation",
+                        1e-3,
+                        1.0,
+                        side="first",
+                    )
+                ],
             )
         return rf.with_coupling(
             comp,
@@ -148,12 +170,18 @@ def _replaced(branch):
 def _watered():
     raw = crfx.heredity_sheet(radius=1, disc=0, end_time=0.02)
     raw["experiment"]["observation_times"] = [0.0, 0.02]
-    raw = add_inventory_species(raw, "R", trace_mM=1e-3, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20)
+    raw = add_inventory_species(
+        raw, "R", trace_mM=1e-3, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+    )
     comp = cs.frozen_definition(wfx.with_water(raw))
     return rf.with_coupling(
         comp,
         species=["R"],
-        couplings=[rf.hill_coupling("c", "junction", ["junction_0"], "R", "hill_activation", 1e-3, 1.0, side="first")],
+        couplings=[
+            rf.hill_coupling(
+                "c", "junction", ["junction_0"], "R", "hill_activation", 1e-3, 1.0, side="first"
+            )
+        ],
     )
 
 
@@ -165,7 +193,10 @@ def _identity_mismatch():
 
 
 REFUSALS = {
-    "unknown species": (_edit(lambda r: block(r)["species"].append(dict(id="Q", catalogue=None, evidence=None))), "does not declare"),
+    "unknown species": (
+        _edit(lambda r: block(r)["species"].append(dict(id="Q", catalogue=None, evidence=None))),
+        "does not declare",
+    ),
     "charged instantaneous source": (
         _edit(lambda r: _coupling(r).update(source={"species": "Na"})),
         "charged species",
@@ -175,35 +206,86 @@ REFUSALS = {
         _edit(lambda r: _coupling(r)["target"].update(operator="scheduled_species_turnover@1")),
         "inner model's controls only",
     ),
-    "leak control": (_edit(lambda r: _coupling(r)["target"].update(control="membrane")), "admitted targets"),
+    "leak control": (
+        _edit(lambda r: _coupling(r)["target"].update(control="membrane")),
+        "admitted targets",
+    ),
     "side on a channel": (
-        _edit(lambda r: _coupling(r)["target"].update(control="channel", ids=["kir_0"], side="first")),
+        _edit(
+            lambda r: _coupling(r)["target"].update(control="channel", ids=["kir_0"], side="first")
+        ),
         "channel target takes no side",
     ),
     "unknown channel": (
-        _edit(lambda r: _coupling(r)["target"].update(control="channel", ids=["kir_99"], side=None)),
+        _edit(
+            lambda r: _coupling(r)["target"].update(control="channel", ids=["kir_99"], side=None)
+        ),
         "unknown channel",
     ),
     "state not in the channel's cell": (
-        _edit(lambda r: _coupling(r, 1)["target"].update(control="channel", ids=["kir_1"], side=None)),
+        _edit(
+            lambda r: _coupling(r, 1)["target"].update(control="channel", ids=["kir_1"], side=None)
+        ),
         "is not declared",
     ),
-    "unknown junction": (_edit(lambda r: _coupling(r)["target"].update(ids=["junction_99"])), "unknown junction"),
+    "unknown junction": (
+        _edit(lambda r: _coupling(r)["target"].update(ids=["junction_99"])),
+        "unknown junction",
+    ),
     "element twice": (
         _edit(lambda r: _coupling(r)["target"].update(ids=["junction_0", "junction_0"])),
         "names an element twice",
     ),
-    "junction side": (_edit(lambda r: _coupling(r)["target"].update(side="sender")), "side is one of"),
+    "junction side": (
+        _edit(lambda r: _coupling(r)["target"].update(side="sender")),
+        "side is one of",
+    ),
     "species through a state law": (
-        _edit(lambda r: block(r).update(couplings=[rf.coupling("x", "junction", ["junction_0"], ("species", "R"), "state_fraction", side="first")])),
+        _edit(
+            lambda r: block(r).update(
+                couplings=[
+                    rf.coupling(
+                        "x",
+                        "junction",
+                        ["junction_0"],
+                        ("species", "R"),
+                        "state_fraction",
+                        side="first",
+                    )
+                ]
+            )
+        ),
         "through a Hill law",
     ),
     "state through a Hill law": (
-        _edit(lambda r: block(r).update(couplings=[dict(rf.coupling("x", "junction", ["junction_0"], ("state", "s"), "hill_activation", side="first"), half_saturation_mM=1.0, hill_coefficient=1.0)])),
+        _edit(
+            lambda r: block(r).update(
+                couplings=[
+                    dict(
+                        rf.coupling(
+                            "x",
+                            "junction",
+                            ["junction_0"],
+                            ("state", "s"),
+                            "hill_activation",
+                            side="first",
+                        ),
+                        half_saturation_mM=1.0,
+                        hill_coefficient=1.0,
+                    )
+                ]
+            )
+        ),
         "through a state law",
     ),
-    "half-saturation zero": (_edit(lambda r: _coupling(r).update(half_saturation_mM=0.0)), "positive"),
-    "coefficient negative": (_edit(lambda r: _coupling(r).update(hill_coefficient=-1.0)), "positive"),
+    "half-saturation zero": (
+        _edit(lambda r: _coupling(r).update(half_saturation_mM=0.0)),
+        "positive",
+    ),
+    "coefficient negative": (
+        _edit(lambda r: _coupling(r).update(hill_coefficient=-1.0)),
+        "positive",
+    ),
     "basal one": (_edit(lambda r: _coupling(r, 1).update(basal=1.0)), "[0, 1)"),
     "negative rate": (_edit(lambda r: _state(r).update(on_rate_per_s=-1.0)), "nonnegative"),
     "initial above one": (_edit(lambda r: _state(r).update(initial=1.5)), "initial value lies in"),
@@ -219,53 +301,108 @@ REFUSALS = {
         _edit(lambda r: _state(r).update(initial={"cell_0": 0.2, "cell_3": 0.2, "cell_5": 0.2})),
         "names each of its cells once",
     ),
-    "level above one": (_edit(lambda r: _state(r).update(crossing_level=2.0)), "crossing level lies in"),
+    "level above one": (
+        _edit(lambda r: _state(r).update(crossing_level=2.0)),
+        "crossing level lies in",
+    ),
     "state without input": (_edit(lambda r: _state(r).update(inputs=[])), "at least one input"),
-    "state not in the target's cell": (_edit(lambda r: _state(r).update(cells=["cell_0"])), "is not declared"),
-    "rate limit": (_edit(lambda r: _state(r).update(on_rate_per_s=900.0, off_rate_per_s=200.0)), "dt (k_on + k_off)"),
+    "state not in the target's cell": (
+        _edit(lambda r: _state(r).update(cells=["cell_0"])),
+        "is not declared",
+    ),
+    "rate limit": (
+        _edit(lambda r: _state(r).update(on_rate_per_s=900.0, off_rate_per_s=200.0)),
+        "dt (k_on + k_off)",
+    ),
     "switch not from zero": (
-        _edit(lambda r: r["experiment"]["coupling_controls"][0].update(schedule=[dict(time=0.005, enabled=1)])),
+        _edit(
+            lambda r: r["experiment"]["coupling_controls"][0].update(
+                schedule=[dict(time=0.005, enabled=1)]
+            )
+        ),
         "starts at 0",
     ),
     "switch value": (
-        _edit(lambda r: r["experiment"]["coupling_controls"][0].update(schedule=[dict(time=0.0, enabled=0.5)])),
+        _edit(
+            lambda r: r["experiment"]["coupling_controls"][0].update(
+                schedule=[dict(time=0.0, enabled=0.5)]
+            )
+        ),
         "enabled (1) or not (0)",
     ),
-    "missing switch schedule": (_edit(lambda r: r["experiment"]["coupling_controls"].pop()), "its schedule"),
+    "missing switch schedule": (
+        _edit(lambda r: r["experiment"]["coupling_controls"].pop()),
+        "its schedule",
+    ),
     "switch off the dt grid": (
-        _edit(lambda r: r["experiment"]["coupling_controls"][0]["schedule"].append(dict(time=0.0055, enabled=0))),
+        _edit(
+            lambda r: r["experiment"]["coupling_controls"][0]["schedule"].append(
+                dict(time=0.0055, enabled=0)
+            )
+        ),
         "exact multiple of dt",
     ),
     "switch outside the horizon": (
-        _edit(lambda r: r["experiment"]["coupling_controls"][0]["schedule"].append(dict(time=0.02, enabled=0))),
+        _edit(
+            lambda r: r["experiment"]["coupling_controls"][0]["schedule"].append(
+                dict(time=0.02, enabled=0)
+            )
+        ),
         "inside the horizon",
     ),
     "write off the dt grid": (
-        _edit(lambda r: r["experiment"]["regulatory_writes"].append(dict(state_id="s", cell_id="cell_0", time=0.0055, value=0.5))),
+        _edit(
+            lambda r: r["experiment"]["regulatory_writes"].append(
+                dict(state_id="s", cell_id="cell_0", time=0.0055, value=0.5)
+            )
+        ),
         "exact multiple of dt",
     ),
     "write outside the horizon": (
-        _edit(lambda r: r["experiment"]["regulatory_writes"].append(dict(state_id="s", cell_id="cell_0", time=0.03, value=0.5))),
+        _edit(
+            lambda r: r["experiment"]["regulatory_writes"].append(
+                dict(state_id="s", cell_id="cell_0", time=0.03, value=0.5)
+            )
+        ),
         "inside the horizon",
     ),
     "write at the horizon's end": (
-        _edit(lambda r: r["experiment"]["regulatory_writes"].append(dict(state_id="s", cell_id="cell_0", time=0.02, value=0.5))),
+        _edit(
+            lambda r: r["experiment"]["regulatory_writes"].append(
+                dict(state_id="s", cell_id="cell_0", time=0.02, value=0.5)
+            )
+        ),
         "0 <= t < end",
     ),
     "write above one": (
-        _edit(lambda r: r["experiment"]["regulatory_writes"].append(dict(state_id="s", cell_id="cell_0", time=0.005, value=1.5))),
+        _edit(
+            lambda r: r["experiment"]["regulatory_writes"].append(
+                dict(state_id="s", cell_id="cell_0", time=0.005, value=1.5)
+            )
+        ),
         "written value lies in",
     ),
     "two writes at one time": (
-        _edit(lambda r: r["experiment"]["regulatory_writes"].extend([dict(state_id="s", cell_id="cell_0", time=0.005, value=0.5)] * 2)),
+        _edit(
+            lambda r: r["experiment"]["regulatory_writes"].extend(
+                [dict(state_id="s", cell_id="cell_0", time=0.005, value=0.5)] * 2
+            )
+        ),
         "two writes",
     ),
     "write to an undeclared slot": (
-        _edit(lambda r: r["experiment"]["regulatory_writes"].append(dict(state_id="s", cell_id="cell_5", time=0.005, value=0.5))),
+        _edit(
+            lambda r: r["experiment"]["regulatory_writes"].append(
+                dict(state_id="s", cell_id="cell_5", time=0.005, value=0.5)
+            )
+        ),
         "undeclared state and cell",
     ),
     "unknown key": (_edit(lambda r: _coupling(r).update(gain=2.0)), "unknown="),
-    "duplicate coupling": (_edit(lambda r: block(r)["couplings"].append(copy.deepcopy(_coupling(r)))), "unique"),
+    "duplicate coupling": (
+        _edit(lambda r: block(r)["couplings"].append(copy.deepcopy(_coupling(r)))),
+        "unique",
+    ),
     "identity mismatch": (_identity_mismatch, "another identity"),
     "species cap": (_add_species(3), "at most 7 species"),
     "replaced slot": (_replaced("coupling"), "coupling c targets junction_1"),
@@ -345,7 +482,7 @@ def test_the_operators_version_1_composes_with_are_admitted(laws):
         assert not [e for e in errors if LAW in e], (order, errors)
 
 
-# ------------------------------------------------------------------ the parts, in NumPy (no compile)
+# ------------------------------------------------------------- the parts, in NumPy (no compile)
 
 
 @pytest.fixture(scope="module")
@@ -453,7 +590,9 @@ def test_the_event_map(bound):
     """At a step start: the crossing record from the state before writes and the counter, then a
     due write, the switches copied, the counter advanced; a stale write count refuses the step."""
     _, _, op, state, p = bound
-    lifted = state._replace(regulatory_state=np.asarray([0.6, 0.2]), coupling_step_count=np.asarray([7]))
+    lifted = state._replace(
+        regulatory_state=np.asarray([0.6, 0.2]), coupling_step_count=np.asarray([7])
+    )
     new, ok = op.event(lifted, control([0, 1], [0, 1], [0.0, 0.9]), p, xp=np)
     assert bool(ok)
     assert list(new.regulatory_crossing_step) == [7, -1]  # Level 0.5: crossed in cell_0 only.
@@ -497,8 +636,13 @@ def test_the_summary_reports_an_unrecorded_final_crossing(bound):
     assert summary["coupling_unrecorded_final_crossings"] == [["s", "cell_0"]]
     recorded = history.regulatory_crossing_step.copy()
     recorded[-1, 0] = 1
-    history = history.__class__(regulatory_state=history.regulatory_state, regulatory_crossing_step=recorded)
-    assert op.summary(spec, declaration, schedule, history)["coupling_unrecorded_final_crossings"] == []
+    history = history.__class__(
+        regulatory_state=history.regulatory_state, regulatory_crossing_step=recorded
+    )
+    assert (
+        op.summary(spec, declaration, schedule, history)["coupling_unrecorded_final_crossings"]
+        == []
+    )
 
 
 def test_a_non_finite_factor_refuses_the_step(bound):
@@ -506,7 +650,9 @@ def test_a_non_finite_factor_refuses_the_step(bound):
     assert bool(op.domain_valid(state, p, None, xp=np))
     rows = list(p.coupling_route_row)
     lost = np.asarray(state.amount_increment).copy()
-    lost[rows[0], p.coupling_route_cell[0]] = -2.0 * np.asarray(p.amount_reference)[rows[0], p.coupling_route_cell[0]]
+    lost[rows[0], p.coupling_route_cell[0]] = (
+        -2.0 * np.asarray(p.amount_reference)[rows[0], p.coupling_route_cell[0]]
+    )
     with np.errstate(invalid="ignore"):  # The log of a negative amount: the case refused.
         assert not bool(op.domain_valid(state._replace(amount_increment=lost), p, None, xp=np))
 

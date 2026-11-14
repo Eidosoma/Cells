@@ -29,8 +29,12 @@ def _world():
     cell = {"cells": ["cell_0"]}
     reactions = [
         rfx.mass_action("plain", cell, {}, {"Y": 1}, 1e-4),
-        rfx.mass_action("act", cell, {}, {"Y": 1}, 1e-4, factors=[rfx.hill("hill_activation", "S", 1e-3, 2.0)]),
-        rfx.mass_action("inh", cell, {}, {"Y": 1}, 1e-4, factors=[rfx.hill("hill_inhibition", "S", 1e-3, 2.0)]),
+        rfx.mass_action(
+            "act", cell, {}, {"Y": 1}, 1e-4, factors=[rfx.hill("hill_activation", "S", 1e-3, 2.0)]
+        ),
+        rfx.mass_action(
+            "inh", cell, {}, {"Y": 1}, 1e-4, factors=[rfx.hill("hill_inhibition", "S", 1e-3, 2.0)]
+        ),
     ]
     species = [rfx.species("S"), rfx.species("Y")]
     raw = rfx.with_reactions(raw, species, reactions, rfx.always(["plain", "act", "inh"]))
@@ -76,7 +80,9 @@ def test_jitted_helper_matches_the_host_helper():
     for kind in (hill_factors.ACTIVATION, hill_factors.INHIBITION):
         host = hill_factors.log_factor(log_x, k, n, kind, xp=np)
         device = np.asarray(
-            jax.jit(lambda a, b, c, kind=kind: hill_factors.log_factor(a, b, c, kind, xp=jnp))(log_x, k, n)
+            jax.jit(lambda a, b, c, kind=kind: hill_factors.log_factor(a, b, c, kind, xp=jnp))(
+                log_x, k, n
+            )
         )
         np.testing.assert_allclose(device, host, rtol=4 * eps, atol=4 * eps)
 
@@ -90,5 +96,7 @@ def test_forms_and_padding():
     inh = hill_factors.factor(np.log(x), k, n, hill_factors.INHIBITION, xp=np)
     np.testing.assert_allclose(act, x**n / (k**n + x**n), rtol=1e-14)
     np.testing.assert_allclose(inh, k**n / (k**n + x**n), rtol=1e-14)
-    assert np.isfinite(hill_factors.log_factor(np.log(1e-300), 1.0, 4.0, hill_factors.ACTIVATION, xp=np))
+    assert np.isfinite(
+        hill_factors.log_factor(np.log(1e-300), 1.0, 4.0, hill_factors.ACTIVATION, xp=np)
+    )
     assert hill_factors.factor(np.log(5.0), 1.0, 2.0, 0, xp=np) == 1.0  # Padding: exactly 1.

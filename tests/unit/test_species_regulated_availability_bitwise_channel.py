@@ -1,4 +1,5 @@
-"""species_regulated_availability@1, milestone 1, probe P1: the factored channel path is the scheduled one.
+"""species_regulated_availability@1, milestone 1, probe P1: the factored channel path is the
+scheduled one.
 
 docs/INVENTORY_COUPLING_DESIGN.md §1.10 and §4.4 (ruling 12), with the probe's criterion written
 before any run (inventory-coupling-v1-20261114-01/HANDOFF.md). The seven-cell heredity sheet, 30
@@ -52,7 +53,9 @@ def test_p1_the_factored_channel_path_is_the_scheduled_one():
             availability=value,
             a_step_fields_differing=fields,
             b_observation_columns_differing=columns,
-            observed_factor_exact=bool(np.all(np.asarray(result.observations.coupling_factor) == value)),
+            observed_factor_exact=bool(
+                np.all(np.asarray(result.observations.coupling_factor) == value)
+            ),
         )
     control, _ = rf.differing(held_runs["half"], held_runs["identity"])
     record["negative_control_half_against_one_step_fields_differing"] = control

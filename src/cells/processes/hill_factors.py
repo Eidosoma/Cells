@@ -1,6 +1,7 @@
 """Hill activation and inhibition factors in log space (a neutral helper).
 
-The factor forms of the shared-inventory reactions design (D152, docs/SHARED_INVENTORY_REACTIONS_DESIGN.md
+The factor forms of the shared-inventory reactions design (D152,
+docs/SHARED_INVENTORY_REACTIONS_DESIGN.md
 §2.2) and of the inventory-coupling design (docs/INVENTORY_COUPLING_DESIGN.md §1.3):
 
     activation  f = x^n / (K^n + x^n) = 1 / (1 + e^(-z))

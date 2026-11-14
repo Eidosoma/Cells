@@ -50,20 +50,19 @@ cap; a target operator other than "inner"; a control outside the admitted target
 repeated element; a side on a channel or a junction side other than first, second or both; a law
 that does not match its source kind; K <= 0, n <= 0, b outside [0, 1), negative rates, an initial
 value or crossing level outside [0, 1], an initial object that does not name each of the state's
-cells once; a state with no input; a state source not declared in a cell
-the coupling reads; a target, state cell or junction endpoint on a slot replacement@1 replaces;
-dt (k_on + k_off) > 1 (ruling 5); a switch schedule that does not start at 0 or holds a value other
-than 0 and 1; a later switch change off the dt grid or outside 0 < t < end; a write off the dt
-grid or outside 0 <= t < end, to an undeclared (state, cell), outside [0, 1], or twice at one time; and (CONFLICTS_VIEW, D150's
-static-tissue list) every provider of volumes and closer of masks. At run time a non-finite or
-out-of-range state or factor refuses the step (domain_valid, on every step's end state; also
-rate_checks, wherever the composite evaluates readouts), as does a stale write count (in the event
-map, as replacement's stale generation does).
+cells once; a state with no input; a state source not declared in a cell the coupling reads; a
+target, state cell or junction endpoint on a slot replacement@1 replaces; dt (k_on + k_off) > 1
+(ruling 5); a switch schedule that does not start at 0 or holds a value other than 0 and 1; a
+later switch change off the dt grid or outside 0 < t < end; a write off the dt grid or outside
+0 <= t < end, to an undeclared (state, cell), outside [0, 1], or twice at one time; and
+(CONFLICTS_VIEW, D150's static-tissue list) every provider of volumes and closer of masks. At run
+time a non-finite or out-of-range state or factor refuses the step (domain_valid, on every step's
+end state; also rate_checks, wherever the composite evaluates readouts), as does a stale write
+count (in the event map, as replacement's stale generation does).
 """
 
 from dataclasses import dataclass
 
-import jax.numpy as jnp
 import numpy as np
 
 from cells.core import pump_composite_spec as composite_spec
@@ -238,7 +237,9 @@ def _parse_initial(raw, name, where):
     """s0: one number for every cell of the state, or an object naming each of its cells once."""
     if isinstance(raw, dict):
         if set(raw) != set(where) or len(raw) != len(where):
-            raise ConfigError(f"{LAW_ID}: state {name}'s initial object names each of its cells once")
+            raise ConfigError(
+                f"{LAW_ID}: state {name}'s initial object names each of its cells once"
+            )
         return tuple(_fraction(raw[c], f"state {name}'s initial value in {c}") for c in where)
     value = _fraction(raw, f"state {name}'s initial value")
     return tuple(value for _ in where)
@@ -267,15 +268,25 @@ def _parse_states(raw, base, listed):
         name = identifier(entry["id"])
         if entry["law"] != STATE_LAW:
             raise ConfigError(f"{LAW_ID}: state {name} follows law {STATE_LAW}")
-        where = tuple(cells) if entry["cells"] == "all" else _id_list(entry["cells"], f"state {name}'s cells")
+        where = (
+            tuple(cells)
+            if entry["cells"] == "all"
+            else _id_list(entry["cells"], f"state {name}'s cells")
+        )
         unknown = [c for c in where if c not in cells]
         if unknown:
-            raise ConfigError(f"{LAW_ID}: state {name} is declared in an undeclared cell {unknown[0]!r}")
+            raise ConfigError(
+                f"{LAW_ID}: state {name} is declared in an undeclared cell {unknown[0]!r}"
+            )
         if type(entry["inputs"]) is not list or not entry["inputs"]:
             raise ConfigError(f"{LAW_ID}: state {name} reads at least one input")
         inputs = []
         for item in entry["inputs"]:
-            _fields(item, {"law", "species", "half_saturation_mM", "hill_coefficient"}, f"{LAW_ID} input")
+            _fields(
+                item,
+                {"law", "species", "half_saturation_mM", "hill_coefficient"},
+                f"{LAW_ID} input",
+            )
             if item["law"] not in SPECIES_LAWS:
                 raise ConfigError(f"{LAW_ID}: an input's law is one of " + ", ".join(SPECIES_LAWS))
             if item["species"] not in listed:
@@ -358,7 +369,9 @@ def _parse_couplings(raw, base, listed, states):
         ids = _id_list(t["ids"], f"coupling {name}'s target ids")
         unknown = [i for i in ids if i not in elements[t["control"]]]
         if unknown:
-            raise ConfigError(f"{LAW_ID}: coupling {name} names an unknown {t['control']} {unknown[0]!r}")
+            raise ConfigError(
+                f"{LAW_ID}: coupling {name} names an unknown {t['control']} {unknown[0]!r}"
+            )
         if t["control"] == "junction":
             if t["side"] not in SIDES:
                 raise ConfigError(f"{LAW_ID}: a junction's side is one of " + ", ".join(SIDES))
@@ -366,17 +379,26 @@ def _parse_couplings(raw, base, listed, states):
             raise ConfigError(f"{LAW_ID}: a {t['control']} target takes no side")
         target = Target("inner", t["control"], ids, t["side"])
         source = entry["source"]
-        if not isinstance(source, dict) or len(source) != 1 or next(iter(source)) not in ("species", "state"):
-            raise ConfigError(f"{LAW_ID}: coupling {name}'s source is {{'species': id}} or {{'state': id}}")
+        if (
+            not isinstance(source, dict)
+            or len(source) != 1
+            or next(iter(source)) not in ("species", "state")
+        ):
+            raise ConfigError(
+                f"{LAW_ID}: coupling {name}'s source is {{'species': id}} or {{'state': id}}"
+            )
         kind, origin = next(iter(source.items()))
         if kind == "species":
             if law not in SPECIES_LAWS:
                 raise ConfigError(f"{LAW_ID}: coupling {name} reads a species through a Hill law")
             if origin not in listed:
-                raise ConfigError(f"{LAW_ID}: coupling {name} reads {origin!r}, not a listed species")
+                raise ConfigError(
+                    f"{LAW_ID}: coupling {name} reads {origin!r}, not a listed species"
+                )
             if valence[origin] != 0:
                 raise ConfigError(
-                    f"{LAW_ID}: coupling {name} reads the charged species {origin!r} instantaneously; "
+                    f"{LAW_ID}: coupling {name} reads the charged species {origin!r} "
+                    "instantaneously; "
                     "@3's step moves it, so a factor held through the step would lag (first order) "
                     "and could close a loop @3's bound does not see: read it through a state (§1.4)"
                 )
@@ -428,7 +450,9 @@ def declaration_to_dict(declaration):
         species=[
             dict(
                 id=s.id,
-                catalogue=None if s.catalogue is None else dict(catalogue=s.catalogue[0], entry=s.catalogue[1]),
+                catalogue=None
+                if s.catalogue is None
+                else dict(catalogue=s.catalogue[0], entry=s.catalogue[1]),
                 evidence=s.evidence,
             )
             for s in declaration.species
@@ -457,12 +481,19 @@ def declaration_to_dict(declaration):
         couplings=[
             dict(
                 id=c.id,
-                target=dict(operator=c.target.operator, control=c.target.control, ids=list(c.target.ids), side=c.target.side),
+                target=dict(
+                    operator=c.target.operator,
+                    control=c.target.control,
+                    ids=list(c.target.ids),
+                    side=c.target.side,
+                ),
                 source={c.source_kind: c.source},
                 law=c.law,
                 basal=c.basal,
                 **(
-                    dict(half_saturation_mM=c.half_saturation_mM, hill_coefficient=c.hill_coefficient)
+                    dict(
+                        half_saturation_mM=c.half_saturation_mM, hill_coefficient=c.hill_coefficient
+                    )
                     if c.source_kind == "species"
                     else {}
                 ),
@@ -591,8 +622,12 @@ def bind(spec, declaration, schedule):
     k = len(slot_keys)
     layout = dict(
         regulatory_slot_cell=np.asarray([cells.index(c) for _, c in slot_keys], dtype=np.int64),
-        regulatory_on_rate=np.asarray([by_state[s].on_rate_per_s for s, _ in slot_keys], dtype=float),
-        regulatory_off_rate=np.asarray([by_state[s].off_rate_per_s for s, _ in slot_keys], dtype=float),
+        regulatory_on_rate=np.asarray(
+            [by_state[s].on_rate_per_s for s, _ in slot_keys], dtype=float
+        ),
+        regulatory_off_rate=np.asarray(
+            [by_state[s].off_rate_per_s for s, _ in slot_keys], dtype=float
+        ),
         regulatory_has_level=np.asarray(
             [by_state[s].crossing_level is not None for s, _ in slot_keys], dtype=bool
         ),
@@ -626,7 +661,9 @@ def bind(spec, declaration, schedule):
                     basal=coupling.basal,
                     coupling=c_index,
                 )
-                index = (junctions if coupling.target.control == "junction" else channels).index(element)
+                index = (junctions if coupling.target.control == "junction" else channels).index(
+                    element
+                )
                 on_element[coupling.target.control].setdefault(index, []).append(len(routes))
                 routes.append(route)
     layout.update(
@@ -736,7 +773,11 @@ def event_map(state, control, p, *, xp):
     ok = None
     if p.regulatory_slot_cell.shape[0] > 0:  # Static: states declared.
         s = state.regulatory_state
-        crossed = p.regulatory_has_level & (state.regulatory_crossing_step < 0) & (s >= p.regulatory_level)
+        crossed = (
+            p.regulatory_has_level
+            & (state.regulatory_crossing_step < 0)
+            & (s >= p.regulatory_level)
+        )
         applied = state.regulatory_writes_applied
         target = control.regulatory_write_count
         due = target == applied + 1
@@ -804,7 +845,8 @@ def check_replaced_slots(spec, declaration):
         if hit:
             raise ConfigError(
                 f"{LAW_ID}: state {state.id} is declared in {sorted(hit)[0]}, a slot "
-                f"{common.REPLACEMENT_LAW} replaces (version 1.1's reset rule; refused in version 1)"
+                f"{common.REPLACEMENT_LAW} replaces (version 1.1's reset rule; refused in "
+                "version 1)"
             )
     for coupling in declaration.couplings:
         for element in coupling.target.ids:
@@ -816,7 +858,8 @@ def check_replaced_slots(spec, declaration):
             hit = replaced & cells
             if hit:
                 raise ConfigError(
-                    f"{LAW_ID}: coupling {coupling.id} targets {element}, on {sorted(hit)[0]}, a slot "
+                    f"{LAW_ID}: coupling {coupling.id} targets {element}, on "
+                    f"{sorted(hit)[0]}, a slot "
                     f"{common.REPLACEMENT_LAW} replaces (refused in version 1)"
                 )
 
@@ -827,7 +870,8 @@ def check_rate_limit(spec, declaration):
         if dt * (state.on_rate_per_s + state.off_rate_per_s) > 1:
             raise ConfigError(
                 f"{LAW_ID}: state {state.id} has dt (k_on + k_off) = "
-                f"{dt * (state.on_rate_per_s + state.off_rate_per_s):.3g} > 1: a state that relaxes "
+                f"{dt * (state.on_rate_per_s + state.off_rate_per_s):.3g} > 1: a state that "
+                "relaxes "
                 "within one step makes @3's held value an endpoint value (ruling 5)"
             )
 
@@ -897,9 +941,20 @@ class SpeciesRegulatedAvailability(Operator):
         return (
             LAW_ID,
             tuple(s.id for s in declaration.species),
-            tuple((s.id, s.cells, tuple((i.law, i.species) for i in s.inputs)) for s in declaration.states),
             tuple(
-                (c.target.operator, c.target.control, c.target.ids, c.target.side, c.source_kind, c.source, c.law)
+                (s.id, s.cells, tuple((i.law, i.species) for i in s.inputs))
+                for s in declaration.states
+            ),
+            tuple(
+                (
+                    c.target.operator,
+                    c.target.control,
+                    c.target.ids,
+                    c.target.side,
+                    c.source_kind,
+                    c.source,
+                    c.law,
+                )
                 for c in declaration.couplings
             ),
         )
@@ -923,14 +978,20 @@ class SpeciesRegulatedAvailability(Operator):
             "coupling_step": STEP_ID,
             "coupling_mechanism": "regulation of availability (a factor in [b, 1] on the schedule)",
             "coupling_species": {
-                s.id: dict(catalogue=None if s.catalogue is None else list(s.catalogue), evidence=s.evidence)
+                s.id: dict(
+                    catalogue=None if s.catalogue is None else list(s.catalogue),
+                    evidence=s.evidence,
+                )
                 for s in declaration.species
             },
             "coupling_states": {
                 s.id: dict(
                     law=s.law,
                     cells=list(s.cells),
-                    inputs=[(i.law, i.species, i.half_saturation_mM, i.hill_coefficient) for i in s.inputs],
+                    inputs=[
+                        (i.law, i.species, i.half_saturation_mM, i.hill_coefficient)
+                        for i in s.inputs
+                    ],
                     on_rate_per_s=s.on_rate_per_s,
                     off_rate_per_s=s.off_rate_per_s,
                     initial=dict(zip(s.cells, s.initial, strict=True)),
