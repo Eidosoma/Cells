@@ -1239,6 +1239,11 @@ def verdict(report, item, reported=NEAR_ZERO_REPORTED):
     )
 
 
+def judged_seeds(item):
+    """The judged sets' seeds {world: {spread: seed}}, read from the protocol's Q2 item alone."""
+    return item["random_sets"]["judged"]["seeds"]
+
+
 def judge(output, protocol_path=None, root=None):
     """The judged run: refused first unless the S5 protocol is registered, the source a clean
     snapshot (s5_protocol.registered) and R-ops' amended magnitudes landed; then the judged sets
@@ -1250,7 +1255,7 @@ def judge(output, protocol_path=None, root=None):
     )
     if "new" not in scales():
         raise SystemExit("Refused: R-ops' amended magnitudes (A.8) have not landed")
-    seeds = item["frozen_draws"]["judged"]["seeds"]
+    seeds = judged_seeds(item)
     jax.config.update("jax_enable_x64", True)
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
