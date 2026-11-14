@@ -490,7 +490,7 @@
    ],
    "comparison": "le",
    "threshold": 0,
-   "basis": "D147: a definition with free field offsets declares field solver @3; every MG0c world has none (each chain node shares the cell's capacitor component with the held bath), so the declared @2 stands. Composite IDs skip D147's automatic choice, so the count is checked here"
+   "basis": "D147: a definition with free field offsets declares field solver @3, and since D156 a composite follows its inner model (@3, in D147's family); every MG0c world has none (each chain node shares the cell's capacitor component with the held bath), so the declared @2 stands. The count is checked here because MG0c's worlds are declared with @2, not through the automatic choice"
   },
   {
    "id": "G2_passive_engine_order_map",
@@ -2223,7 +2223,7 @@
   "drafted_by": {
    "kind": "checkout",
    "root": "/home/robert/Cells/.claude/worktrees/agent-a6b2e9cd180913a24",
-   "git_revision": "78f39573316d97a18f122bfd7778aeaaa1f1d6a5",
+   "git_revision": "786c5d0776aa4feaa3b4bfaddbee4dc6ad6af6de",
    "dirty": ""
   }
  },
