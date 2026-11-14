@@ -1,0 +1,1378 @@
+"""Track E's conduction probe on the engine as it is (D155 item 3): exploratory, not judged.
+
+Question. Can the channel laws resolved_pump_tissue@3 admits produce an action potential in one
+cell and propagate it along a short static chain of cells joined by @3's gap junctions, at a
+feasible step under @3's IMEX solvers and every host and device check? The verdict decides
+between proceeding with the existing mechanisms and naming the particular missing mechanism the
+excitable-tissue feature must add. This driver changes no engine source; it builds definitions
+from the validation fixtures and reads every number from the engine's own run path, observer,
+step checks, host checks and device checks.
+
+Success criteria, fixed before any run (the coordinator's update of 14 November 2026; the plan's
+operational definitions are in PLAN, also written to plan.json):
+  C1 Regeneration: excitation continues beyond the stimulated cells after the stimulus ends.
+  C2 Controls: passive (every voltage-gated population unavailable), subthreshold (a stimulus
+     below capture) and sodium-disabled (NaV1.2 unavailable) controls distinguish regeneration
+     from passive spread.
+  C3 Measures: activation time, conduction velocity, capture, recovery and block, each
+     measured explicitly.
+  C4 Robustness: timestep refinement stabilises those measures; chain-length and
+     boundary-distance checks show they are not a boundary artefact.
+  C5 Accounting and record: material, charge and energy checks keep passing (the model's host
+     checks on every accepted row; its device row checks on the vector-window path), and the
+     admitted mechanisms and the numerical cost are recorded with the result.
+Order: the single cell with its controls first (part single); the chain only if the single
+cell regenerates (part chain); then the verdict (part verdict), before any design note.
+
+Engine models run (nothing here adds physics):
+* resolved_pump_tissue@3: kv1p5_mh@1, kir2p1_mh2@1, nav1p2_m3h_regularized@1,
+  kleak_always_open@1 and naleak_always_open@1 populations; constant_field@1 leaks and
+  junctions; nak_atp_mass_action_positive@1 pumps; junction_voltage_relaxation@1 gates (pinned
+  open, or as declared); IMEX ARS(2,2,2) and Euler with exponential stage gates
+  (exponential_mean_rate_linear_target_gates@1), and @3's own RK4 path as its step reference.
+  Field solver: whatever validation/tissue/field_solver_choice.declare() gives (D147). Every
+  world here has held baths only, so no free field offsets: each world records its count and
+  declared solver.
+
+World. surface_pump_v3_fixtures.heredity_cells (the heredity pre-screen's cell: BETSE v1.5.0
+default-world coefficients, Na leak x0.2, Kir2.1 1e-8 m/s, NaV1.2 2.5e-7 m/s, 310 K, own held
+bath, its H state) plus one Kv1.5 population per cell, alone or in a chain joined by the E07-v1
+junction (validation/stationary/worlds.e07_junction: area 5.34e-11 m^2, BETSE default
+gap-junction permeabilities) multiplied by a coupling factor s. Parameters are synthetic, not a
+measured cell type.
+
+Stimuli. A kick (Na added so that Vm rises by the stated mV with gates at rest;
+surface_pump_v3_fixtures.kicked), or a 1 ms cation conductance: one kleak_always_open@1 and one
+naleak_always_open@1 population of equal permeability on each stimulated cell (reversal near
+0 mV), switched by @3's own channel_controls.
+
+Execution. cells.core.windows.iter_windows (each step's own refusal, the host checks on every
+accepted row, the model's observer every millisecond). Membrane and junction voltages at every
+accepted step come from the engine's own readouts (surface_pump_v3.readouts, compiled) on each
+window's accepted history, checked against the observer's rows. The device row checks run in
+cells.core.vector_windows.run_vector_windowed. Refusals are attributed with the engine's own
+functions at the last accepted state. Run through run_part.sh in the evidence folder.
+"""
+
+import argparse
+import copy
+import hashlib
+import json
+import math
+import resource
+import sys
+import time
+import traceback
+from pathlib import Path
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+
+jax.config.update("jax_enable_x64", True)
+
+import cells  # noqa: E402
+from cells.core.errors import NumericalError  # noqa: E402
+from cells.core.specs import ConfigError, parse_spec  # noqa: E402
+from cells.core.surface_pump_v3_spec import (  # noqa: E402
+    KLEAK_LAW_ID,
+    KV1P5_LAW_ID,
+    NALEAK_LAW_ID,
+    Control,
+)
+from cells.core.surface_pump_v3_spec import control_values as v3_controls  # noqa: E402
+from cells.core.windows import WindowPolicy, iter_windows  # noqa: E402
+from cells.models import surface_pump_v3 as v3  # noqa: E402
+from cells.processes import junction_gate, voltage_gates  # noqa: E402
+from validation.stationary import worlds  # noqa: E402
+from validation.tissue import field_solver_choice  # noqa: E402
+from validation.tissue import surface_pump_v3_fixtures as fx  # noqa: E402
+
+ARS = "imex_ars222_face_electromigration@1"
+EULER = "imex_euler_face_electromigration@1"
+H = fx.HEREDITY_STATES["H"]  # (Vm, Na, K, M, fastest relaxation time)
+REST_V = H[0]
+CELL_SPACING_M = 9.25e-6  # resolved_scale_world.geometry spacing (W225): for m/s only
+DT_LADDER = (1e-3, 5e-4, 2.5e-4, 1e-4, 5e-5, 2.5e-5, 1e-5, 5e-6, 2.5e-6, 1.25e-6, 6.25e-7)
+VOLTAGE_CHUNK = 128
+
+PLAN = dict(
+    status="fixed before any run (exploratory probe; no judged reading)",
+    definitions=dict(
+        activation="a cell's activation time: its first upward crossing of -30 mV after the "
+        "stimulus onset, linearly interpolated between accepted steps",
+        action_potential="an activation whose peak exceeds 0 mV (overshoot)",
+        repolarised="Vm back within 5 mV of the pre-stimulus rest within 60 ms of the upstroke",
+        single_cell_recovery="the shortest S1-S2 interval at which S2 (1 ms, twice the "
+        "stimulus threshold) gives a new upward crossing of -30 mV followed by an overshoot",
+        regenerates_single_cell="a suprathreshold kick gives an overshooting upstroke whose "
+        "max dV/dt after the kick exceeds 10 V/s, while the same kick with NaV1.2 unavailable "
+        "gives no regenerative rise after t = 0 (max dV/dt below 1 V/s) and no overshoot, and "
+        "the response is all-or-none across the kick threshold (peaks 0.5 mV either side "
+        "differ by > 50 mV)",
+        C1="in the chain, every cell from the 4th beyond the stimulated set to the far end "
+        "fires an action potential, each activating after the stimulus has ended",
+        C2="with the same stimulus, the passive, subthreshold and sodium-disabled controls "
+        "activate no cell beyond the first two outside the stimulated set, and their peak "
+        "depolarisation decreases with distance",
+        C3="activation times of every cell; CV as the inverse least-squares slope of activation "
+        "time over the middle third of the chain (cells/s; m/s at 9.25 um spacing); capture "
+        "as the stimulus permeability threshold for a wave reaching the far end; recovery as "
+        "the shortest S1-S2 interval giving a second wave at the far end; block as the "
+        "coupling bracket between a blocked and a propagating chain",
+        C4="CV at the two finest steps within 2%, activation times within 5% of the "
+        "delay per cell; CV over three spans of the 40-cell chain within 2% of each other and "
+        "of the 20-cell chain's middle third",
+        C5="no host-check, device-check or step refusal in an accepted case (a refusal is "
+        "recorded and attributed); law, solver and field-solver IDs, D147 offsets, steps, "
+        "compile and execute times recorded per case",
+    ),
+    selection="Kv1.5 permeability: the smallest of the scan whose suprathreshold kick (50 mV) "
+    "gives a repolarised action potential with peak <= +55 mV and no refusal at dt 10 us",
+    single_cell=[
+        "Kv1.5 scan 0, 1e-8, 3e-8, 1e-7, 3e-7 m/s, kick 50 mV, ARS(2,2,2) 10 us, 80 ms",
+        "rest: 4 s unstimulated at 1 ms",
+        "kick threshold by bisection on [0, 60] mV",
+        "controls at 2x the kick threshold: sodium-disabled, passive; subthreshold kick",
+        "dt refinement: ARS(2,2,2) 1 ms to 2.5 us, Euler 100 to 2.5 us, @3 RK4 2.5 and 1.25 us",
+        "stimulus threshold (1 ms cation conductance) by bisection; S1-S2 recovery at 2x",
+    ],
+    chain=[
+        "20 cells, cells 0-2 stimulated 1 ms (cation conductance 1e-6 m/s per ion), "
+        "coupling s in 10, 30, 100, 300, 1000, 3000 at dt = min(10 us, static bound)",
+        "at the main coupling: passive, subthreshold and sodium-disabled controls; capture "
+        "threshold; dt refinement (10, 5, 2.5 us); 40-cell length check; S1-S2 recovery; "
+        "block bracket by bisection on s; the default junction-heat booking and gated "
+        "junctions as arms",
+        "chain runs book junction heat with trapezoid_nonnegative@1 (E07-v1's registered "
+        "booking; the default explicit_tableau can book a negative increment where a junction "
+        "voltage crosses zero), and the default booking runs as an arm",
+        "device row checks (vector windows) on the main cases",
+    ],
+)
+
+
+def log(line):
+    print(time.strftime("%H:%M:%S"), line, flush=True)
+
+
+def jsonable(value):
+    if isinstance(value, dict):
+        return {str(k): jsonable(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [jsonable(v) for v in value]
+    if isinstance(value, (np.floating, float)):
+        v = float(value)
+        return v if math.isfinite(v) else repr(v)
+    if isinstance(value, np.integer):
+        return int(value)
+    if isinstance(value, np.bool_):
+        return bool(value)
+    if isinstance(value, np.ndarray):
+        return jsonable(value.tolist())
+    return value
+
+
+def write_json(path, value):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(jsonable(value), indent=1, sort_keys=True))
+    tmp.replace(path)
+
+
+def provenance():
+    root = Path(cells.__file__).resolve().parents[2]
+    manifest = root / "SNAPSHOT.json"
+    out = dict(
+        cells_file=cells.__file__,
+        driver=__file__,
+        argv=sys.argv,
+        jax=jax.__version__,
+        devices=[str(d) for d in jax.devices()],
+    )
+    if manifest.exists():
+        value = json.loads(manifest.read_text())
+        out.update(
+            snapshot_manifest_sha256=hashlib.sha256(manifest.read_bytes()).hexdigest(),
+            git_revision=value.get("git_revision"),
+            patch_sha256=value.get("patch_sha256"),
+        )
+    return out
+
+
+def peak_rss_mb():
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+
+
+# ----------------------------------------------------------------------------- definitions
+
+
+def kv_gate(voltage):
+    target, _ = voltage_gates.kinetics(np.array([voltage]), xp=np)
+    return [float(target[0, 0]), float(target[1, 0])]
+
+
+def junction_gate_block(gated):
+    j = worlds.e07_junction()
+    if gated:
+        par = junction_gate.Parameters(j["threshold_voltage_V"], j["minimum_open_fraction"])
+        target = float(junction_gate.kinetics(np.asarray(0.0), par, xp=np).target)
+        gate = dict(
+            law=junction_gate.LAW_ID,
+            threshold_voltage_V=j["threshold_voltage_V"],
+            minimum_open_fraction=j["minimum_open_fraction"],
+            initial_gate=target,
+        )
+    else:  # Pinned open (mg0b_domain_wall.GATE_OPEN): zero gate rate, no gate step bound.
+        gate = dict(
+            law=junction_gate.LAW_ID,
+            threshold_voltage_V=0.0,
+            minimum_open_fraction=1.0,
+            initial_gate=1.0,
+        )
+    return j, gate
+
+
+CONTROLS = {
+    "excitable": {},
+    "sodium_disabled": {"nav": 0.0},
+    "passive": {"nav": 0.0, "kv": 0.0, "kir": 0.0},
+}
+
+
+def definition(
+    n,
+    *,
+    dt,
+    end_time,
+    kv_m_s,
+    solver=ARS,
+    temperature_K=310.0,
+    kicks=None,
+    s=None,
+    gated=False,
+    stim=None,
+    booking=None,
+    control="excitable",
+    obs_dt=1e-3,
+):
+    """n heredity cells (own held baths) with Kv1.5; a chain of junctions at coupling s.
+
+    kicks {cell: mV}; stim dict(cells, pulses [(on_step, off_step)], m_s) declares the
+    stimulus populations on its cells (always declared when given, so worlds share shapes);
+    control sets the availability of each cell's NaV1.2, Kv1.5 and Kir2.1 (CONTROLS). Events
+    and observations are integer multiples of dt. D147: field_solver_choice.declare().
+    """
+    rest = tuple(H[:4])
+    states = [rest] * n
+    for i, mv in (kicks or {}).items():
+        states[i] = fx.kicked((*rest, None), mv)
+    steps = int(round(end_time / dt))
+    stride = max(1, int(round(obs_dt / dt)))
+    times = [k * dt for k in range(0, steps + 1, stride)]
+    if times[-1] != steps * dt:
+        times.append(steps * dt)
+    raw = fx.heredity_cells(
+        states,
+        dt=dt,
+        end_time=steps * dt,
+        solver=solver,
+        observation_times=times,
+        gate_voltages=[rest[0]] * n,
+        temperature_K=temperature_K,
+    )
+    m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    if kv_m_s > 0:
+        gate = kv_gate(rest[0])
+        for i in range(n):
+            m["channels"].append(fx.channel(f"kv_{i}", i, KV1P5_LAW_ID, "K", kv_m_s, 1.0, gate))
+            e["channel_controls"].append(
+                dict(channel_id=f"kv_{i}", schedule=[dict(time=0.0, availability=1.0)])
+            )
+    if stim is not None:
+        schedule = [dict(time=0.0, availability=0.0)]
+        for on, off in stim["pulses"]:
+            schedule += [
+                dict(time=on * dt, availability=1.0),
+                dict(time=off * dt, availability=0.0),
+            ]
+        for i in stim["cells"]:
+            for name, law, ion in (("stimk", KLEAK_LAW_ID, "K"), ("stimna", NALEAK_LAW_ID, "Na")):
+                m["channels"].append(fx.channel(f"{name}_{i}", i, law, ion, stim["m_s"], 1.0, []))
+                e["channel_controls"].append(
+                    dict(channel_id=f"{name}_{i}", schedule=copy.deepcopy(schedule))
+                )
+    for group in e["channel_controls"]:
+        kind = group["channel_id"].split("_")[0]
+        if kind in CONTROLS[control]:
+            group["schedule"] = [dict(time=0.0, availability=CONTROLS[control][kind])]
+    x["channel_capacity"] = len(m["channels"])
+    if s is not None and n > 1:
+        j, gate = junction_gate_block(gated)
+        m["junctions"] = [
+            dict(
+                id=f"junction_{k}",
+                sender=f"cell_{k}",
+                receiver=f"cell_{k + 1}",
+                area_m2=j["area_m2"],
+                permeability_m_per_s={sp: s * v for sp, v in j["permeability_m_per_s"].items()},
+                law="constant_field@1",
+                gate=dict(gate),
+            )
+            for k in range(n - 1)
+        ]
+        e["junction_controls"] = [
+            dict(junction_id=f"junction_{k}", schedule=[dict(time=0.0, availability=1.0)])
+            for k in range(n - 1)
+        ]
+        x["edge_capacity"] = n - 1
+    if booking is not None:
+        m["junction_heat_booking"] = booking
+    x["max_steps"] = steps + 16
+    return field_solver_choice.declare(raw)
+
+
+def mechanisms(raw):
+    """The admitted mechanisms of a definition and its D147 record."""
+    m, x = raw["model"], raw["execution"]
+    return dict(
+        model=m["id"],
+        time_integrator=x["solver"],
+        field_solver=x["field_solver"],
+        free_field_offsets=field_solver_choice.free_field_offsets(raw),
+        channel_laws=sorted({c["kinetic_law"] for c in m["channels"]}),
+        membrane_law=sorted({p["law"] for p in m["membranes"]}),
+        pump_law=sorted({p["pump"]["law"] for p in m["membranes"] if p.get("pump")}),
+        junction_law=sorted({p["law"] for p in m["junctions"]}),
+        junction_gate_law=sorted({p["gate"]["law"] for p in m["junctions"]}),
+        junction_heat_booking=m.get("junction_heat_booking", "explicit_tableau"),
+        dt_s=x["dt"],
+        cells=len(m["cells"]),
+        temperature_K=m["temperature_K"],
+    )
+
+
+def static_bounds(raw):
+    """The engine's own definition-level rate bounds (1/s) and the steps they admit."""
+    checks = v3.StepChecks(parse_spec(raw))
+    explicit, gate = float(checks.explicit_rate), float(checks.junction_rate)
+    return dict(
+        explicit_rate_per_s=explicit,
+        junction_gate_rate_per_s=gate,
+        largest_dt_explicit_s=1.0 / explicit if explicit else None,
+        largest_dt_gate_s=0.125 / gate if gate else None,
+    )
+
+
+def admissible(bounds):
+    limits = [v for v in (bounds["largest_dt_explicit_s"], bounds["largest_dt_gate_s"]) if v]
+    return min(limits) if limits else None
+
+
+def ladder_dt(limit, cap):
+    bound = cap if limit is None else min(limit, cap)
+    for dt in DT_LADDER:
+        if dt <= bound * (1 - 1e-12):
+            return dt
+    return DT_LADDER[-1]
+
+
+# ----------------------------------------------------------------------------- execution
+
+
+@jax.jit
+def _engine_voltages(states, controls, layout):
+    """The engine's membrane and junction voltages and validity at each accepted row."""
+
+    def one(state, control):
+        w = v3.readouts(state, control, layout)
+        r = w.field.rates
+        return r.membrane_voltage_V, r.junction_voltage_V, w.valid
+
+    return jax.vmap(one)(states, controls)
+
+
+def window_voltages(spec, window, skip_first):
+    times = np.asarray(window.times)
+    history = window.history
+    controls = v3_controls(spec, times)
+    rows = len(times)
+    vm, vj, ok = [], [], []
+    for start in range(0, rows, VOLTAGE_CHUNK):
+        index = np.minimum(np.arange(start, start + VOLTAGE_CHUNK), rows - 1)
+        states = type(history)(*(jnp.asarray(np.asarray(v)[index]) for v in history))
+        control = type(controls)(*(jnp.asarray(np.asarray(v)[index]) for v in controls))
+        a, b, c = _engine_voltages(states, control, window.final.layout)
+        keep = min(VOLTAGE_CHUNK, rows - start)
+        vm.append(np.asarray(a)[:keep])
+        vj.append(np.asarray(b)[:keep])
+        ok.append(np.asarray(c)[:keep])
+    first = 1 if skip_first else 0
+    return (
+        times[first:],
+        np.concatenate(vm)[first:],
+        np.concatenate(vj)[first:],
+        bool(np.all(np.concatenate(ok))),
+    )
+
+
+def execute(raw, *, window_steps=1024, stop=None):
+    """iter_windows: Vm and Vj at every accepted step, diagnostics, timings and any refusal."""
+    out = dict(
+        times=[],
+        vm=[],
+        vj=[],
+        diagnostics={},
+        timings={},
+        steps=0,
+        refusal=None,
+        observer_max_abs_dV=0.0,
+        readouts_valid=True,
+    )
+    last, started, spec = None, time.perf_counter(), None
+    voltage_seconds = 0.0
+    try:
+        spec = parse_spec(raw)
+        for window in iter_windows(spec, WindowPolicy(window_steps, "observations")):
+            before = time.perf_counter()
+            t, vm, vj, ok = window_voltages(spec, window, skip_first=bool(out["times"]))
+            voltage_seconds += time.perf_counter() - before
+            out["times"].extend(t.tolist())
+            out["vm"].extend(vm.tolist())
+            out["vj"].extend(vj.tolist())
+            out["readouts_valid"] &= ok
+            obs = window.observations
+            for row, when in enumerate(np.asarray(obs.times)):
+                k = np.flatnonzero(t == when)
+                if len(k):
+                    diff = np.max(np.abs(np.asarray(obs.membrane_voltage_V)[row] - vm[k[0]]))
+                    out["observer_max_abs_dV"] = max(out["observer_max_abs_dV"], float(diff))
+            for k, v in window.diagnostics.items():
+                out["diagnostics"][k] = max(out["diagnostics"].get(k, 0.0), float(v))
+            for k, v in window.timings.items():
+                out["timings"][k] = out["timings"].get(k, 0.0) + float(v)
+            out["steps"] = int(window.final.step_index)
+            last = window.final
+            if stop is not None and stop(out):
+                out["stopped_early_at_s"] = float(window.final.time)
+                break
+    except (NumericalError, ConfigError) as error:
+        out["refusal"] = dict(
+            kind=type(error).__name__,
+            message=str(error),
+            last_accepted_window_end_s=None if last is None else float(last.time),
+        )
+        if last is None and isinstance(error, NumericalError):
+            from cells.core.state import initialise
+
+            try:  # A refusal inside the first window: attribute from the initial state.
+                last = initialise(parse_spec(raw))
+            except (NumericalError, ConfigError):
+                last = None
+    out["timings"]["probe_voltage_seconds"] = voltage_seconds
+    out["wall_seconds"] = time.perf_counter() - started
+    out["last"] = last
+    return out
+
+
+def attribute(raw, checkpoint):
+    """Name a refused step's cause with the engine's own functions (host, numpy).
+
+    One-step windows from the last accepted window end reach the last accepted state S. At S:
+    readouts validity, the Vm and Vj ranges against the channel (-120..60 mV) and junction
+    (|Vj| <= 120 mV) domains, and dt x membrane_rate. Then the refused interval is retried on
+    the host as 1, 2, 4 and 8 sub-steps, with the same predicates at each retry's end.
+    """
+    spec = parse_spec(raw)
+    dt = spec.execution.dt
+    out, last, message = {}, checkpoint, None
+    try:
+        for window in iter_windows(spec, WindowPolicy(1, "observations"), checkpoint):
+            last = window.final
+    except (NumericalError, ConfigError) as error:
+        message = str(error)
+    out["one_step_refusal"] = message
+    out["last_accepted_time_s"] = float(last.time)
+    p = type(last.layout)(*(np.asarray(v) for v in last.layout))
+    control = Control(*(np.asarray(v[0]) for v in v3_controls(spec, [last.time])))
+    state = v3.STATE_TYPE(*(np.asarray(v) for v in last.state))
+
+    def predicates(st):
+        with np.errstate(all="ignore"):
+            w = v3.readouts(st, control, p, xp=np)
+            r = w.field.rates
+            vm = np.asarray(r.membrane_voltage_V)[np.asarray(p.membrane_active, dtype=bool)]
+            vj = np.asarray(r.junction_voltage_V)
+            if vj.size:
+                vj = vj[np.asarray(p.junction_active, dtype=bool)]
+            rate = float(v3.membrane_rate(st, control, p, xp=np))
+        return dict(
+            readouts_valid=bool(w.valid),
+            vm_min_V=float(vm.min()),
+            vm_max_V=float(vm.max()),
+            channel_domain_ok=bool(vm.min() >= -0.120 and vm.max() <= 0.060),
+            vj_abs_max_V=float(np.abs(vj).max()) if vj.size else 0.0,
+            junction_domain_ok=bool(np.abs(vj).max() <= 0.120) if vj.size else True,
+            membrane_rate_per_s=rate,
+            dt_times_membrane_rate=dt * rate,
+        )
+
+    out["at_last_accepted"] = predicates(state)
+    trials = {}
+    for parts in (1, 2, 4, 8):
+        h, st, accepted, error_text = dt / parts, state, True, None
+        try:
+            with np.errstate(all="ignore"):
+                for _ in range(parts):
+                    st, ok = v3.imex_step(st, h, control, p, xp=np)
+                    accepted &= bool(ok)
+                    if not ok:
+                        break
+        except Exception as error:  # A host retry is a diagnostic only.
+            error_text = repr(error)
+        trials[str(parts)] = dict(substep_s=h, accepted=accepted, error=error_text)
+        if accepted and error_text is None:
+            trials[str(parts)]["end"] = predicates(st)
+    out["host_retry"] = trials
+    return out
+
+
+# ----------------------------------------------------------------------------- measures
+
+
+def crossings(t, v, level, start=0):
+    """Every upward linear-interpolated crossing of level from index start."""
+    out = []
+    for i in range(max(start, 1), len(v)):
+        a, b = v[i - 1], v[i]
+        if a < level <= b:
+            out.append(float(t[i - 1] + (level - a) * (t[i] - t[i - 1]) / (b - a)))
+    return out
+
+
+def falling(t, v, level, start):
+    for i in range(max(start, 1), len(v)):
+        a, b = v[i - 1], v[i]
+        if a > level >= b:
+            return float(t[i - 1] + (level - a) * (t[i] - t[i - 1]) / (b - a))
+    return None
+
+
+def ap_features(t, v, *, after=0.0, rest=None):
+    """Rest, peak, upstroke and repolarisation of one cell's trace after a time."""
+    t, v = np.asarray(t), np.asarray(v)
+    first = int(np.searchsorted(t, after))
+    if rest is None:
+        rest = float(v[max(first - 1, 0)])
+    k = first + int(np.argmax(v[first:]))
+    peak = float(v[k])
+    dv = np.diff(v[first:]) / np.diff(t[first:]) if len(v) - first > 1 else np.zeros(1)
+    up = first + int(np.argmax(dv))
+    out = dict(
+        rest_V=rest,
+        peak_V=peak,
+        time_to_peak_s=float(t[k] - after),
+        max_dVdt_V_s=float(dv.max()),
+        upstroke_time_s=float(0.5 * (t[up] + t[min(up + 1, len(t) - 1)])),
+        end_V=float(v[-1]),
+        min_after_peak_V=float(v[k:].min()),
+    )
+    amplitude = peak - rest
+    for fraction in (0.5, 0.9):
+        cross = falling(t, v, peak - fraction * amplitude, k)
+        out[f"apd{int(fraction * 100)}_s"] = (
+            None if cross is None else cross - out["upstroke_time_s"]
+        )
+    back = falling(t, v, rest + 0.005, k)
+    out["repolarised"] = bool(back is not None and back - out["upstroke_time_s"] <= 0.06)
+    if peak > 0.0 and out["repolarised"]:
+        out["class"] = "action potential, repolarised"
+    elif peak > 0.0 and v[-1] > -0.040:
+        out["class"] = "overshoot, latched depolarised"
+    elif peak > 0.0:
+        out["class"] = "overshoot, not repolarised within 60 ms"
+    else:
+        out["class"] = "no overshoot"
+    return out
+
+
+def chain_measures(t, vm, *, stim_cells, stim_end, span=None):
+    """Activations, C1 and C2 tests, CV over a span, delays, peaks along the chain."""
+    t, vm = np.asarray(t), np.asarray(vm)
+    n = vm.shape[1]
+    acts = [crossings(t, vm[:, i], -0.030) for i in range(n)]
+    first = [a[0] if a else None for a in acts]
+    peaks = vm.max(axis=0).tolist()
+    beyond = [i for i in range(n) if i > max(stim_cells)]
+    c1_cells = [i for i in beyond if i >= max(stim_cells) + 4]
+    c1 = bool(c1_cells) and all(
+        first[i] is not None and first[i] > stim_end and peaks[i] > 0.0 for i in c1_cells
+    )
+    far = [i for i in beyond if i >= max(stim_cells) + 3]
+    c2_quiet = all(first[i] is None for i in far)
+    outside = [peaks[i] for i in beyond]
+    c2_decreasing = all(b <= a + 1e-6 for a, b in zip(outside, outside[1:], strict=False))
+    lo, hi = span if span is not None else (n // 3, (2 * n) // 3)
+    cv = None
+    if all(first[i] is not None for i in range(lo, hi + 1)):
+        slope = np.polyfit(np.arange(lo, hi + 1), [first[i] for i in range(lo, hi + 1)], 1)[0]
+        cv = 1.0 / slope if slope > 0 else None
+    reached = [i for i in range(n) if first[i] is not None]
+    return dict(
+        activation_s=first,
+        activations_per_cell=[len(a) for a in acts],
+        all_activations_s=acts,
+        peak_V=peaks,
+        last_activated_cell=max(reached) if reached else None,
+        propagated_to_end=first[-1] is not None,
+        captured=all(peaks[i] > 0.0 for i in stim_cells),
+        c1_regeneration=c1,
+        c2_no_spread=c2_quiet,
+        c2_peaks_decrease=c2_decreasing,
+        cv_span=[lo, hi],
+        cv_cells_per_s=cv,
+        cv_m_per_s=None if cv is None else cv * CELL_SPACING_M,
+        delay_per_cell_s=[
+            None if first[k] is None or first[k + 1] is None else first[k + 1] - first[k]
+            for k in range(n - 1)
+        ],
+    )
+
+
+def record(raw, r, **extra):
+    """A case's record: mechanisms, refusal, checks, cost."""
+    out = dict(
+        mechanisms=mechanisms(raw),
+        steps=r["steps"],
+        wall_seconds=r["wall_seconds"],
+        timings=r["timings"],
+        diagnostics=r["diagnostics"],
+        refusal=r["refusal"],
+        readouts_valid=r["readouts_valid"],
+        observer_max_abs_dV=r["observer_max_abs_dV"],
+        stopped_early_at_s=r.get("stopped_early_at_s"),
+        **extra,
+    )
+    if r["steps"] and r["timings"].get("execute_seconds"):
+        out["execute_ms_per_step"] = 1e3 * r["timings"]["execute_seconds"] / r["steps"]
+        out["host_analysis_ms_per_step"] = (
+            1e3 * r["timings"].get("analysis_seconds", 0.0) / r["steps"]
+        )
+    if r["refusal"] and r["last"] is not None and raw["execution"]["solver"] != "rk4":
+        try:
+            out["attribution"] = attribute(raw, r["last"])
+        except Exception:  # Attribution is diagnostic; keep the failure as evidence.
+            out["attribution_error"] = traceback.format_exc()
+    return out
+
+
+# ----------------------------------------------------------------------------- single cell
+
+
+def single_run(
+    kv,
+    *,
+    dt=1e-5,
+    end=0.08,
+    kick=None,
+    stim=None,
+    control="excitable",
+    solver=ARS,
+    temperature_K=310.0,
+):
+    raw = definition(
+        1,
+        dt=dt,
+        end_time=end,
+        kv_m_s=kv,
+        solver=solver,
+        temperature_K=temperature_K,
+        kicks=None if kick is None else {0: kick},
+        stim=stim,
+        control=control,
+    )
+    r = execute(raw)
+    rec = record(raw, r, kick_mV=kick, control=control)
+    if len(r["times"]) > 2:
+        after = 0.0 if stim is None else stim["pulses"][0][0] * dt
+        rec["features"] = ap_features(
+            r["times"],
+            np.asarray(r["vm"])[:, 0],
+            after=after,
+            rest=REST_V if kick is not None else None,
+        )
+        dv = np.diff(np.asarray(r["vm"])[:, 0]) / np.diff(np.asarray(r["times"]))
+        rec["max_dVdt_from_t0_V_s"] = float(dv.max())
+    return rec, r
+
+
+def part_single(args):
+    out = dict(provenance=provenance(), plan=PLAN, part="single")
+    path = Path(args.output) / "single.json"
+    write_json(Path(args.output) / "plan.json", dict(provenance=provenance(), plan=PLAN))
+    out["kv_scan"] = []
+    for kv in args.kv_values:
+        rec, _ = single_run(kv, kick=50.0)
+        out["kv_scan"].append(dict(kv_m_s=kv, **rec))
+        f = rec.get("features", {})
+        log(
+            f"kv {kv:g}: {f.get('class')} peak {f.get('peak_V')} end {f.get('end_V')} "
+            f"refusal {rec['refusal'] and rec['refusal']['message'][:80]}"
+        )
+        write_json(path, out)
+    chosen = [
+        c["kv_m_s"]
+        for c in out["kv_scan"]
+        if not c["refusal"]
+        and c.get("features", {}).get("class") == "action potential, repolarised"
+        and c["features"]["peak_V"] <= 0.055
+    ]
+    kv = min(chosen) if chosen else None
+    out["selected_kv_m_s"] = kv
+    out["selection_rule"] = PLAN["selection"]
+    log(f"selected Kv1.5 {kv}")
+    write_json(path, out)
+    if kv is None:  # Still characterise the cell: rest, threshold and controls at kv = 0.
+        kv = 0.0
+        out["characterised_kv_m_s"] = kv
+    # Rest.
+    rec, r = single_run(kv, dt=1e-3, end=4.0)
+    vm, t = np.asarray(r["vm"])[:, 0], np.asarray(r["times"])
+    i2 = int(np.searchsorted(t, 2.0))
+    out["rest"] = dict(
+        start_V=float(vm[0]),
+        at_2s_V=float(vm[i2]),
+        at_4s_V=float(vm[-1]),
+        drift_2_to_4s_V=float(vm[-1] - vm[i2]),
+        record=rec,
+    )
+    log(f"rest {out['rest']['at_4s_V']}")
+    write_json(path, out)
+    # Kick threshold.
+    trail, lo, hi = [], 0.0, 60.0
+
+    def fires(kick):
+        rec, _ = single_run(kv, kick=kick, end=0.06)
+        trail.append(
+            dict(
+                kick_mV=kick,
+                peak_V=rec.get("features", {}).get("peak_V"),
+                cls=rec.get("features", {}).get("class"),
+                refusal=rec["refusal"],
+            )
+        )
+        return None if rec["refusal"] else rec["features"]["peak_V"] > 0.0
+
+    threshold = None
+    if fires(hi):
+        for _ in range(args.bisections):
+            mid = 0.5 * (lo + hi)
+            ok = fires(mid)
+            if ok is None:
+                break
+            lo, hi = (lo, mid) if ok else (mid, hi)
+        threshold = hi
+    out["kick_threshold"] = dict(threshold_mV=threshold, bracket_mV=[lo, hi], trail=trail)
+    log(f"kick threshold {threshold} ({lo}, {hi})")
+    write_json(path, out)
+    if threshold is None:
+        out["verdict_single"] = "no overshoot at kicks up to 60 mV"
+        write_json(path, out)
+        return
+    # Controls and the all-or-none test.
+    out["controls"] = {}
+    supra = min(2 * threshold, 60.0)
+    for label, kick, control in (
+        ("suprathreshold_2x", supra, "excitable"),
+        ("sodium_disabled_2x", supra, "sodium_disabled"),
+        ("passive_2x", supra, "passive"),
+        ("subthreshold_minus_0p5mV", max(threshold - 0.5, 0.0), "excitable"),
+        ("threshold_plus_0p5mV", threshold + 0.5, "excitable"),
+        ("subthreshold_minus_5mV", max(threshold - 5.0, 0.0), "excitable"),
+    ):
+        rec, _ = single_run(kv, kick=kick, control=control)
+        out["controls"][label] = rec
+        f = rec.get("features", {})
+        log(f"control {label}: peak {f.get('peak_V')} max dV/dt {rec.get('max_dVdt_from_t0_V_s')}")
+        write_json(path, out)
+    c = out["controls"]
+    na_ok = (
+        c["sodium_disabled_2x"].get("max_dVdt_from_t0_V_s", 1.0) < 1.0
+        and c["sodium_disabled_2x"]["features"]["peak_V"] <= 0.0
+    )
+    regen = (
+        c["suprathreshold_2x"]["features"]["peak_V"] > 0.0
+        and c["suprathreshold_2x"]["features"]["max_dVdt_V_s"] > 10.0
+        and na_ok
+        and c["threshold_plus_0p5mV"]["features"]["peak_V"]
+        - c["subthreshold_minus_0p5mV"]["features"]["peak_V"]
+        > 0.050
+    )
+    out["regenerates"] = bool(regen)
+    out["recovers"] = bool(c["suprathreshold_2x"]["features"]["repolarised"])
+    log(f"regenerates {regen}; repolarises {out['recovers']}")
+    write_json(path, out)
+    # Step refinement and the largest admissible step.
+    out["dt_refinement"] = []
+    runs = [("rk4", 2.5e-6), ("rk4", 1.25e-6)]
+    runs += [(ARS, dt) for dt in DT_LADDER[:9]] + [(EULER, dt) for dt in DT_LADDER[3:9]]
+    for solver, dt in runs:
+        rec, r = single_run(kv, kick=supra, solver=solver, dt=dt)
+        if r["times"] and dt >= 1e-5:
+            rec["trace"] = dict(t=r["times"], vm=np.asarray(r["vm"])[:, 0].tolist())
+        out["dt_refinement"].append(dict(solver=solver, dt_s=dt, **rec))
+        f = rec.get("features", {})
+        log(
+            f"dt {solver} {dt:g}: peak {f.get('peak_V')} dV/dt {f.get('max_dVdt_V_s')} "
+            f"apd90 {f.get('apd90_s')} refusal {rec['refusal'] and rec['refusal']['message'][:80]}"
+        )
+        write_json(path, out)
+    # Stimulus threshold (1 ms cation conductance) and S1-S2 recovery at twice it.
+    dt = 1e-5
+    on, width = int(round(2e-3 / dt)), int(round(1e-3 / dt))
+    trail, lo, hi = [], 1e-9, 1e-6
+
+    def stim_fires(m_s):
+        rec, _ = single_run(kv, end=0.06, stim=dict(cells=[0], pulses=[(on, on + width)], m_s=m_s))
+        trail.append(
+            dict(m_s=m_s, peak_V=rec.get("features", {}).get("peak_V"), refusal=rec["refusal"])
+        )
+        return None if rec["refusal"] else rec["features"]["peak_V"] > 0.0
+
+    stim_threshold = None
+    if stim_fires(hi):
+        for _ in range(args.bisections):
+            mid = math.sqrt(lo * hi)
+            ok = stim_fires(mid)
+            if ok is None:
+                break
+            lo, hi = (lo, mid) if ok else (mid, hi)
+        stim_threshold = hi
+    out["stimulus_threshold"] = dict(
+        threshold_m_s=stim_threshold, bracket_m_s=[lo, hi], trail=trail
+    )
+    log(f"stimulus threshold {stim_threshold}")
+    write_json(path, out)
+    out["s1s2"] = []
+    if stim_threshold is not None:
+        for delta_ms in args.s1s2_ms:
+            s2 = on + int(round(delta_ms * 1e-3 / dt))
+            stim = dict(
+                cells=[0], pulses=[(on, on + width), (s2, s2 + width)], m_s=2 * stim_threshold
+            )
+            rec, r = single_run(kv, end=s2 * dt + 0.04, stim=stim)
+            row = dict(
+                delta_ms=delta_ms,
+                stimulus_m_s=2 * stim_threshold,
+                refusal=rec["refusal"],
+                record=rec,
+            )
+            if len(r["times"]) > 2:
+                tt, vv = np.asarray(r["times"]), np.asarray(r["vm"])[:, 0]
+                row["s2"] = ap_features(tt, vv, after=s2 * dt)
+                up = crossings(tt, vv, -0.030, start=int(np.searchsorted(tt, s2 * dt)))
+                # A response to S2: a new upward crossing of -30 mV after S2's onset, then an
+                # overshoot (an incompletely repolarised S1 cannot count as one).
+                row["s2_fired"] = bool(up) and float(vv[tt >= up[0]].max()) > 0.0
+            out["s1s2"].append(row)
+            log(f"S1-S2 {delta_ms} ms: S2 fired {row.get('s2_fired')}")
+            write_json(path, out)
+        fired = [r["delta_ms"] for r in out["s1s2"] if r.get("s2_fired")]
+        failed = [r["delta_ms"] for r in out["s1s2"] if r.get("s2_fired") is False]
+        out["recovery_bracket_ms"] = [
+            max([d for d in failed if d < min(fired, default=1e9)], default=None),
+            min(fired, default=None),
+        ]
+    out["peak_rss_mb"] = peak_rss_mb()
+    write_json(path, out)
+
+
+# ----------------------------------------------------------------------------- chain
+
+
+def chain_run(
+    args,
+    s,
+    *,
+    n=None,
+    dt,
+    control="excitable",
+    m_s=None,
+    pulses=None,
+    gated=False,
+    booking="main",
+    end=None,
+    span=None,
+):
+    n = n or args.n
+    stim_cells = list(range(args.stim_cells))
+    on, width = int(round(2e-3 / dt)), int(round(1e-3 / dt))
+    pulses = pulses or [(on, on + width)]
+    m_s = args.stim_m_s if m_s is None else m_s
+    booking = args.booking if booking == "main" else booking
+    raw = definition(
+        n,
+        dt=dt,
+        end_time=end or args.chain_end,
+        kv_m_s=args.kv,
+        s=s,
+        gated=gated,
+        booking=booking,
+        control=control,
+        stim=dict(cells=stim_cells, pulses=pulses, m_s=m_s),
+    )
+    stim_end = pulses[-1][1] * dt
+
+    def stop(o):  # The far end has fired once per pulse and 15 ms passed, or 25 ms all quiet.
+        t = o["times"]
+        if not t or t[-1] < stim_end + 0.01:
+            return False
+        vm = np.asarray(o["vm"])
+        far = crossings(t, vm[:, -1], -0.030)
+        if len(far) >= len(pulses) and t[-1] > far[-1] + 0.015:
+            return True
+        recent = np.asarray(t) > t[-1] - 0.025
+        return bool(np.all(vm[recent] < -0.030) and t[-1] > stim_end + 0.03)
+
+    r = execute(raw, stop=stop)
+    rec = record(raw, r, s=s, n=n, control=control, stimulus_m_s=m_s, pulses=pulses, gated=gated)
+    try:
+        rec["static_bounds"] = static_bounds(raw)
+    except ConfigError as error:
+        rec["static_bounds"] = dict(refusal=str(error))
+    if len(r["times"]) > 2:
+        t, vm = np.asarray(r["times"]), np.asarray(r["vm"])
+        rec["measures"] = chain_measures(t, vm, stim_cells=stim_cells, stim_end=stim_end, span=span)
+        vj = np.asarray(r["vj"])
+        rec["vm_max_V"], rec["vm_min_V"] = float(vm.max()), float(vm.min())
+        rec["vj_abs_max_V"] = float(np.abs(vj).max()) if vj.size else 0.0
+        rec["mid_cell"] = ap_features(t, vm[:, n // 2], after=pulses[0][0] * dt)
+        if args.keep_traces:
+            stride = max(1, int(round(2e-5 / dt)))
+            rec["trace"] = dict(t=t[::stride].tolist(), vm=vm[::stride].tolist())
+    return rec
+
+
+def log_chain(prefix, c):
+    m = c.get("measures", {})
+    dt = c.get("mechanisms", {}).get("dt_s")
+    log(
+        f"{prefix} s {c['s']:g} dt {dt} {c['control']}: last {m.get('last_activated_cell')} "
+        f"cv {m.get('cv_cells_per_s')} C1 {m.get('c1_regeneration')} vj {c.get('vj_abs_max_V')} "
+        f"vmax {c.get('vm_max_V')} refusal {c['refusal'] and c['refusal']['message'][:90]}"
+    )
+
+
+def part_chain(args):
+    out = dict(
+        provenance=provenance(),
+        plan=PLAN,
+        part="chain",
+        kv_m_s=args.kv,
+        n=args.n,
+        stimulus=dict(cells=args.stim_cells, m_s=args.stim_m_s, width_s=1e-3),
+        bounds=[],
+        sweep=[],
+        controls=[],
+        refinement=[],
+        length=[],
+        capture=[],
+        recovery=[],
+        block=[],
+        arms=[],
+    )
+    path = Path(args.output) / "chain.json"
+
+    def dt_for(s, cap):
+        return ladder_dt(
+            admissible(
+                static_bounds(definition(args.n, dt=1e-5, end_time=0.01, kv_m_s=args.kv, s=s))
+            ),
+            cap,
+        )
+
+    for s in args.s_values:
+        raw = definition(args.n, dt=1e-5, end_time=0.01, kv_m_s=args.kv, s=s)
+        out["bounds"].append(dict(s=s, **static_bounds(raw), mechanisms=mechanisms(raw)))
+    write_json(path, out)
+    for s in args.s_values:
+        c = chain_run(args, s, dt=dt_for(s, args.dt_cap))
+        out["sweep"].append(c)
+        log_chain("sweep", c)
+        write_json(path, out)
+    s0, dt0 = args.s_main, dt_for(args.s_main, args.dt_cap)
+    for control, m_s in (("sodium_disabled", None), ("passive", None)):
+        c = chain_run(args, s0, dt=dt0, control=control, m_s=m_s)
+        out["controls"].append(c)
+        log_chain("control", c)
+        write_json(path, out)
+    # Capture threshold at the main coupling (bisection on the stimulus permeability).
+    lo, hi = args.capture_bracket
+    for _ in range(args.bisections):
+        mid = math.sqrt(lo * hi)
+        c = chain_run(args, s0, dt=dt0, m_s=mid)
+        out["capture"].append(c)
+        log_chain(f"capture {mid:.3g}", c)
+        ok = c.get("measures", {}).get("propagated_to_end")
+        if c["refusal"]:
+            break
+        lo, hi = (lo, mid) if ok else (mid, hi)
+        out["capture_bracket_m_s"] = [lo, hi]
+        write_json(path, out)
+    c = chain_run(args, s0, dt=dt0, m_s=0.5 * out.get("capture_bracket_m_s", [lo, hi])[0])
+    c["label"] = "subthreshold control: half the largest non-capturing stimulus"
+    out["controls"].append(c)
+    log_chain("control subthreshold", c)
+    write_json(path, out)
+    for dt in args.refine_dt:
+        c = chain_run(args, s0, dt=dt)
+        out["refinement"].append(c)
+        log_chain("refine", c)
+        write_json(path, out)
+    big = ladder_dt(
+        admissible(static_bounds(definition(args.n, dt=1e-5, end_time=0.01, kv_m_s=args.kv, s=s0))),
+        1e-3,
+    )
+    c = chain_run(args, s0, dt=big)
+    c["label"] = "largest step the static bounds admit"
+    out["refinement"].append(c)
+    log_chain("largest static step", c)
+    write_json(path, out)
+    for n in (args.n_long,):
+        c = chain_run(args, s0, n=n, dt=dt0, end=args.chain_end)
+        if c.get("measures"):
+            t_act = c["measures"]["activation_s"]
+            spans = {}
+            for lo_, hi_ in ((5, 15), (15, 25), (25, 35), (n // 3, (2 * n) // 3)):
+                if all(t_act[i] is not None for i in range(lo_, hi_ + 1)):
+                    slope = np.polyfit(
+                        np.arange(lo_, hi_ + 1), [t_act[i] for i in range(lo_, hi_ + 1)], 1
+                    )[0]
+                    spans[f"{lo_}-{hi_}"] = 1.0 / slope
+                else:
+                    spans[f"{lo_}-{hi_}"] = None
+            c["cv_spans_cells_per_s"] = spans
+        out["length"].append(c)
+        log_chain(f"length {n}", c)
+        write_json(path, out)
+    # Recovery: S1-S2 at the stimulated end.
+    on, width = int(round(2e-3 / dt0)), int(round(1e-3 / dt0))
+    for delta_ms in args.s1s2_ms:
+        s2 = on + int(round(delta_ms * 1e-3 / dt0))
+        c = chain_run(
+            args,
+            s0,
+            dt=dt0,
+            pulses=[(on, on + width), (s2, s2 + width)],
+            end=s2 * dt0 + args.chain_end,
+        )
+        c["delta_ms"] = delta_ms
+        out["recovery"].append(c)
+        log_chain(f"S1-S2 {delta_ms} ms", c)
+        write_json(path, out)
+    second = [
+        c["delta_ms"]
+        for c in out["recovery"]
+        if c.get("measures", {}).get("activations_per_cell", [0])[-1] >= 2
+    ]
+    none = [
+        c["delta_ms"]
+        for c in out["recovery"]
+        if c.get("measures", {}).get("activations_per_cell", [2])[-1] < 2
+    ]
+    out["recovery_bracket_ms"] = [
+        max([d for d in none if d < min(second, default=1e9)], default=None),
+        min(second, default=None),
+    ]
+    # Block: bisection on s between the sweep's largest blocked and smallest propagating s.
+    sweep = [
+        (c["s"], c.get("measures", {}).get("propagated_to_end"))
+        for c in out["sweep"]
+        if not c["refusal"]
+    ]
+    blocked = [s for s, ok in sweep if ok is False]
+    passing = [s for s, ok in sweep if ok]
+    if blocked and passing and max(blocked) < min(passing):
+        lo, hi = max(blocked), min(passing)
+        for _ in range(args.bisections):
+            mid = math.sqrt(lo * hi)
+            c = chain_run(args, mid, dt=dt_for(mid, args.dt_cap))
+            out["block"].append(c)
+            log_chain("block", c)
+            ok = c.get("measures", {}).get("propagated_to_end")
+            if c["refusal"]:
+                break
+            lo, hi = (lo, mid) if ok else (mid, hi)
+            out["block_bracket_s"] = [lo, hi]
+            write_json(path, out)
+    # Arms at the main coupling: trapezoid junction heat; the declared junction gate.
+    for label, kw in (
+        ("default junction heat booking (explicit_tableau)", dict(booking=None)),
+        ("gated junctions (15 mV, minimum 0.1)", dict(gated=True)),
+    ):
+        try:
+            dt = (
+                dt0
+                if not kw.get("gated")
+                else ladder_dt(
+                    admissible(
+                        static_bounds(
+                            definition(
+                                args.n, dt=1e-5, end_time=0.01, kv_m_s=args.kv, s=s0, gated=True
+                            )
+                        )
+                    ),
+                    args.dt_cap,
+                )
+            )
+            c = chain_run(args, s0, dt=dt, **kw)
+        except ConfigError as error:
+            c = dict(
+                s=s0,
+                control="excitable",
+                refusal=dict(kind="ConfigError", message=str(error)),
+                mechanisms={"dt_s": None},
+            )
+        c["label"] = label
+        out["arms"].append(c)
+        log_chain(label, c)
+        write_json(path, out)
+    out["peak_rss_mb"] = peak_rss_mb()
+    write_json(path, out)
+
+
+def part_device(args):
+    """The model's device row checks (vector windows) on the main accepted cases."""
+    from cells.core.batch import BatchSpec, WorldSpec
+    from cells.core.vector_windows import run_vector_windowed
+
+    out = dict(provenance=provenance(), plan=PLAN, part="device", batches=[])
+    path = Path(args.output) / "device.json"
+    supra = args.kick
+    batches = [
+        (
+            "single cell, kick, dt 10 and 25 us",
+            [
+                definition(1, dt=dt, end_time=0.08, kv_m_s=args.kv, kicks={0: supra})
+                for dt in (1e-5, 2.5e-5)
+            ],
+        )
+    ]
+    dt = ladder_dt(
+        admissible(
+            static_bounds(definition(args.n, dt=1e-5, end_time=0.01, kv_m_s=args.kv, s=args.s_main))
+        ),
+        args.dt_cap,
+    )
+    on, width = int(round(2e-3 / dt)), int(round(1e-3 / dt))
+    stim = dict(cells=list(range(args.stim_cells)), pulses=[(on, on + width)], m_s=args.stim_m_s)
+    batches.append(
+        (
+            f"chain n {args.n} s {args.s_main:g} dt {dt:g}: excitable and sodium-disabled",
+            [
+                definition(
+                    args.n,
+                    dt=dt,
+                    end_time=args.device_end,
+                    kv_m_s=args.kv,
+                    s=args.s_main,
+                    stim=stim,
+                    control=c,
+                    booking=args.booking,
+                )
+                for c in ("excitable", "sodium_disabled")
+            ],
+        )
+    )
+    for label, raws in batches:
+        row = dict(label=label, worlds=len(raws), mechanisms=[mechanisms(r) for r in raws])
+        started = time.perf_counter()
+        try:
+            spec = BatchSpec(
+                tuple(WorldSpec(i + 1, parse_spec(r)) for i, r in enumerate(raws)),
+                len(raws),
+                2**53 - 1,
+                2**53 - 1,
+            )
+            result = run_vector_windowed(spec, WindowPolicy(args.device_window, "checkpoints"))
+            row.update(
+                status="passed",
+                timings=result.timings,
+                resources=dict(result.resources),
+                diagnostics={str(k): w.diagnostics for k, w in result.worlds.items()},
+                executed_steps={
+                    str(k): w.resources["executed_steps"] for k, w in result.worlds.items()
+                },
+            )
+        except Exception as error:  # Preserved as evidence.
+            row.update(
+                status="failed",
+                error=repr(error),
+                checks=getattr(error, "checks", None),
+                world=getattr(error, "world_id", None),
+                interval=getattr(error, "time_interval", None),
+                traceback=traceback.format_exc(),
+            )
+        row["wall_seconds"] = time.perf_counter() - started
+        out["batches"].append(row)
+        log(f"device {label}: {row['status']} {row.get('error', '')[:120]}")
+        write_json(path, out)
+    out["peak_rss_mb"] = peak_rss_mb()
+    write_json(path, out)
+
+
+def relative(a, b):
+    return None if a is None or b is None or b == 0 else abs(a - b) / abs(b)
+
+
+def part_verdict(args):
+    """C1-C5 evaluated mechanically from the saved parts, by PLAN's definitions."""
+    root = Path(args.output)
+    single = json.loads((root / "single.json").read_text())
+    chain = (
+        json.loads((root / "chain.json").read_text()) if (root / "chain.json").exists() else None
+    )
+    device = (
+        json.loads((root / "device.json").read_text()) if (root / "device.json").exists() else None
+    )
+    out = dict(provenance=provenance(), plan=PLAN, part="verdict")
+    out["single"] = dict(
+        regenerates=single.get("regenerates"),
+        recovers=single.get("recovers"),
+        selected_kv_m_s=single.get("selected_kv_m_s"),
+        kick_threshold_mV=single.get("kick_threshold", {}).get("threshold_mV"),
+        stimulus_threshold_m_s=single.get("stimulus_threshold", {}).get("threshold_m_s"),
+        recovery_bracket_ms=single.get("recovery_bracket_ms"),
+    )
+    ladder = {(c["solver"], c["dt_s"]): c for c in single.get("dt_refinement", [])}
+    accepted = {k: v for k, v in ladder.items() if not v["refusal"] and v.get("features")}
+    out["single"]["accepted_steps"] = sorted([f"{k[0]} {k[1]:g}" for k in accepted])
+    out["single"]["refused_steps"] = {
+        f"{k[0]} {k[1]:g}": v["refusal"]["message"] for k, v in ladder.items() if v["refusal"]
+    }
+    ref = accepted.get(("rk4", 1.25e-6))
+    if ref:
+        out["single"]["against_rk4_1p25us"] = {
+            f"{k[0]} {k[1]:g}": {
+                q: relative(v["features"].get(q), ref["features"].get(q))
+                for q in ("peak_V", "max_dVdt_V_s", "apd50_s", "apd90_s")
+            }
+            for k, v in accepted.items()
+        }
+    if chain:
+        main = next((c for c in chain["sweep"] if c["s"] == args.s_main), None)
+        m = (main or {}).get("measures", {})
+        out["C1"] = dict(
+            met=bool(m.get("c1_regeneration")), main_case_refusal=(main or {}).get("refusal")
+        )
+        controls = {c.get("label", c["control"]): c.get("measures", {}) for c in chain["controls"]}
+        out["C2"] = dict(
+            met=bool(controls)
+            and all(
+                v.get("c2_no_spread") and v.get("c2_peaks_decrease") for v in controls.values()
+            ),
+            controls={
+                k: dict(
+                    no_spread=v.get("c2_no_spread"),
+                    decreasing=v.get("c2_peaks_decrease"),
+                    last_activated=v.get("last_activated_cell"),
+                )
+                for k, v in controls.items()
+            },
+        )
+        out["C3"] = dict(
+            cv_cells_per_s={
+                str(c["s"]): c.get("measures", {}).get("cv_cells_per_s") for c in chain["sweep"]
+            },
+            capture_bracket_m_s=chain.get("capture_bracket_m_s"),
+            recovery_bracket_ms=chain.get("recovery_bracket_ms"),
+            block_bracket_s=chain.get("block_bracket_s"),
+        )
+        out["C3"]["met"] = (
+            all(
+                out["C3"][k] is not None
+                for k in ("capture_bracket_m_s", "recovery_bracket_ms", "block_bracket_s")
+            )
+            and m.get("cv_cells_per_s") is not None
+        )
+        refine = {c["mechanisms"]["dt_s"]: c for c in [main, *chain["refinement"]] if c}
+        cvs = {
+            dt: c.get("measures", {}).get("cv_cells_per_s")
+            for dt, c in refine.items()
+            if not c["refusal"]
+        }
+        finest = sorted(cvs)[:2]
+        dcv = relative(cvs[finest[0]], cvs[finest[1]]) if len(finest) == 2 else None
+        long = chain["length"][0] if chain["length"] else {}
+        spans = long.get("cv_spans_cells_per_s", {})
+        values = [v for v in spans.values() if v is not None]
+        spread = (max(values) - min(values)) / min(values) if values else None
+        short_cv = m.get("cv_cells_per_s")
+        long_cv = spans.get(f"{40 // 3}-{(2 * 40) // 3}")
+        out["C4"] = dict(
+            cv_by_dt=cvs,
+            cv_two_finest_relative=dcv,
+            spans=spans,
+            spans_spread=spread,
+            short_vs_long=relative(short_cv, long_cv),
+        )
+        out["C4"]["met"] = all(
+            v is not None and v < 0.02 for v in (dcv, spread, out["C4"]["short_vs_long"])
+        )
+    if device:
+        out["device"] = {b["label"]: b["status"] for b in device["batches"]}
+    write_json(root / "verdict.json", out)
+    log(
+        json.dumps(
+            jsonable({k: v for k, v in out.items() if k not in ("plan", "provenance")}), indent=1
+        )[:4000]
+    )
+
+
+PARTS = dict(single=part_single, chain=part_chain, device=part_device, verdict=part_verdict)
+
+
+def main(argv=None):
+    a = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    a.add_argument("part", choices=sorted(PARTS))
+    a.add_argument("--output", required=True)
+    a.add_argument(
+        "--kv", type=float, default=1e-7, help="Kv1.5 permeability (m/s) for chain/device"
+    )
+    a.add_argument("--kv-values", type=float, nargs="+", default=[0.0, 1e-8, 3e-8, 1e-7, 3e-7])
+    a.add_argument("--kick", type=float, default=40.0, help="device part's kick (mV)")
+    a.add_argument("--bisections", type=int, default=7)
+    a.add_argument(
+        "--s1s2-ms", type=float, nargs="+", default=[5, 8, 10, 12, 15, 20, 25, 30, 40, 60]
+    )
+    a.add_argument("--n", type=int, default=20)
+    a.add_argument("--n-long", type=int, default=40)
+    a.add_argument("--stim-cells", type=int, default=3)
+    a.add_argument("--stim-m-s", type=float, default=1e-6)
+    a.add_argument("--s-values", type=float, nargs="+", default=[10, 30, 100, 300, 1000, 3000])
+    a.add_argument("--s-main", type=float, default=1000.0)
+    a.add_argument("--dt-cap", type=float, default=1e-5)
+    a.add_argument("--refine-dt", type=float, nargs="+", default=[5e-6, 2.5e-6])
+    a.add_argument("--chain-end", type=float, default=0.25)
+    a.add_argument("--capture-bracket", type=float, nargs=2, default=[1e-9, 1e-6])
+    a.add_argument("--device-end", type=float, default=0.05)
+    a.add_argument("--device-window", type=int, default=512)
+    a.add_argument("--keep-traces", action="store_true")
+    a.add_argument(
+        "--booking",
+        default="trapezoid_nonnegative@1",
+        help="the chain's junction-heat booking (E07-v1's registered one by default)",
+    )
+    args = a.parse_args(argv)
+    log(f"part {args.part}: cells from {cells.__file__}; driver {__file__}")
+    try:
+        PARTS[args.part](args)
+    except Exception:
+        Path(args.output).mkdir(parents=True, exist_ok=True)
+        (Path(args.output) / f"{args.part}.FAILURE.txt").write_text(traceback.format_exc())
+        raise
+
+
+if __name__ == "__main__":
+    main()
