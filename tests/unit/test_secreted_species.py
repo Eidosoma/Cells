@@ -327,3 +327,150 @@ def test_a_donor_copy_whose_route_values_differ_is_refused():
     raw["model"]["operators"][0]["template_capacity"] = 3
     with pytest.raises(ConfigError, match="route-only template is refused"):
         parse_spec(raw)
+
+
+def test_donor_copies_between_heredity_cells_with_pumps_and_channels():
+    """The ion check on a real sheet (pumps and gated channels, hashed as dataclasses): identical
+    cells are admitted, and the copy is refused once the donor's rates differ from the slot's."""
+    from validation.tissue import cell_replacement_fixtures as rfx
+
+    raw = rfx.heredity_sheet(1, 0, dt=1e-3, end_time=0.01)
+    raw["experiment"]["observation_times"] = [0.0, 0.01]
+    events = [(EVENT, "cell_0", None, "c1", "cell_3")]
+    raw = rfx.with_replacement(raw, [rfx.template_from_cell(raw, "cell_1", "h")], events)
+    raw = add_inventory_species(
+        cs.frozen_definition(raw), "S", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+    )
+    for rates, admitted in (((0.1, 0.1), True), ((0.1, 0.2), False)):
+        world = fx.with_turnover(
+            raw,
+            [("clear_0", "cell_0", "clearance"), ("clear_3", "cell_3", "clearance")],
+            [("clear_0", "cell_0", [(0.0, rates[0])]), ("clear_3", "cell_3", [(0.0, rates[1])])],
+        )
+        if admitted:
+            parse_spec(world)
+        else:
+            with pytest.raises(ConfigError, match="secretion route values differ"):
+                parse_spec(world)
+
+
+REFERENCE = fx.identity(dict(catalogue="cells-proteins@0", entry="SECRETED"), "model")
+
+
+def full_world():
+    """Both operators, a replacement template with rates, a newcomer's own schedule, a saturable
+    route with K_M changing, a node schedule change and a catalogue identity."""
+    raw = replaced(
+        [(EVENT, "cell_0", "T", "c0_new")],
+        templates=[("T", {"sec_0": {"rate": 0.05}})],
+        schedules=[("sec_0", "c0_new", [(0.008, 0.4)])],
+    )
+    block = raw["model"]["operators"][1]
+    block["species"] = copy.deepcopy(REFERENCE)
+    block["routes"].append(
+        dict(id="sink_1", species="S", patch="contact_1", direction="import", law="saturable")
+    )
+    raw["experiment"]["exchange_controls"].append(
+        dict(
+            route_id="sink_1",
+            carrier_id="cell_1",
+            schedule=[
+                dict(time=0.0, rate=1e6, saturation_mM=5e-4),
+                dict(time=0.004, rate=2e6, saturation_mM=1e-3),
+            ],
+        )
+    )
+    return fx.with_turnover(
+        raw,
+        [("produce", "cell_0", "production"), ("clear", "ecs_1", "clearance")],
+        [("produce", "cell_0", [(0.0, 1e-6)]), ("clear", None, [(0.0, 0.5), (0.005, 0.7)])],
+        templates=[("T", {"produce": 2e-6})],
+        species=copy.deepcopy(REFERENCE),
+    )
+
+
+def test_the_definition_round_trips():
+    """Snapshots and rebind re-parse spec.to_dict(): it must give the same definition."""
+    spec = parse_spec(full_world())
+    again = parse_spec(spec.to_dict())
+    assert again == spec
+    assert again.to_dict() == spec.to_dict()
+
+
+@pytest.mark.parametrize("operator", ["turnover", "exchange"])
+def test_each_operator_refuses_more_than_seven_species(operator):
+    base = fx.secreting_cell()
+    if operator == "turnover":
+        routes, controls = [("p", "cell_0", "production")], [("p", "cell_0", [(0.0, 1e-6)])]
+        raw, law = fx.with_turnover(base, routes, controls), fx.TURNOVER
+    else:
+        routes = [("s", "contact_0", "export", "first_order")]
+        raw = fx.with_exchange(base, routes, [("s", "cell_0", [(0.0, 0.1)])])
+        law = fx.EXCHANGE
+    for i in range(4):
+        raw = add_inventory_species(
+            raw, f"X{i}", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+        )
+    with pytest.raises(ConfigError, match=re.escape(law) + " admits at most 7 species"):
+        parse_spec(raw)
+
+
+def test_padded_capacities_and_a_species_scale_energy_negative_control():
+    """With every capacity padded, both half-steps leave the padding at zero and close every host
+    check; a misbooked work far below the ions' scale is caught by the energy ledger of this
+    species-only world (its flows are the species' own)."""
+    from types import SimpleNamespace
+
+    from cells.core.errors import NumericalError
+
+    raw = full_world()
+    x = raw["execution"]
+    for name in ("capacity", "extracellular_capacity", "membrane_capacity", "face_capacity"):
+        x[name] += 1
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    _, exchange, turnover = model.operators
+    rates = SimpleNamespace(turnover_rate=np.array([1e-6, 0.5]))
+    state, ok = turnover.half_step(state, 5e-4, rates, p, xp=np)
+    assert ok
+    rates = SimpleNamespace(
+        exchange_rate=np.array([0.2, 0.2, 1e6]), exchange_saturation_mM=np.array([0, 0, 5e-4])
+    )
+    state, ok = exchange.half_step(state, 5e-4, rates, p, xp=np)
+    assert ok
+    assert np.all(state.amount_increment[:, -1] == 0.0)  # The padded cell slot.
+    assert np.all(state.extracellular_amount_increment[:, -1] == 0.0)  # The padded node.
+    model.check_values(state, spec, steps=[1])
+    misbooked = state.turnover_work_pJ + 1e-7 * (np.arange(state.turnover_work_pJ.size) == 0)
+    with pytest.raises(NumericalError, match="energy"):
+        model.check_values(state._replace(turnover_work_pJ=misbooked), spec, steps=[1])
+
+
+def test_a_batch_refuses_worlds_with_different_route_structures():
+    """The batch signature carries the static route structure (§7); rates are per-world data."""
+    from cells.core.batch import parse_batch
+
+    a = turnover_world()
+    b = fx.with_turnover(
+        fx.secreting_cell(), [("clear", "ecs_0", "clearance")], [("clear", None, [(0.0, 0.5)])]
+    )
+    c = copy.deepcopy(a)
+    c["experiment"]["turnover_controls"][1]["schedule"][0]["rate"] = 0.9
+
+    def batch(*worlds):
+        execution = dict(
+            mapping="lax_map", max_worlds=4, max_padded_steps=10**6, max_working_bytes=2**31
+        )
+        return parse_batch(
+            dict(
+                schema_version=1,
+                kind="independent_worlds",
+                worlds=[dict(world_id=i + 1, simulation=w) for i, w in enumerate(worlds)],
+                execution=execution,
+            )
+        )
+
+    batch(a, c)
+    with pytest.raises(ConfigError, match="matching model array axes"):
+        batch(a, b)

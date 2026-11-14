@@ -206,3 +206,30 @@ def test_a_vector_batch_mixes_per_world_rates_and_law_parameters():
                 if hasattr(single, partner):
                     scale = max(scale, np.max(np.asarray(getattr(single, partner))[-1]))
             assert np.max(np.abs(a - b), initial=0.0) <= 1e-12 * scale + 1e-30, (k, name)
+
+
+def test_a_flux_beyond_the_pool_refuses_the_compiled_step_and_keeps_the_start_state():
+    """An export flux larger than the cell's pool over the step: the composite's checked step is
+    refused and returns its start state bit for bit (no clipping, no repair)."""
+    import jax.numpy as jnp
+
+    from cells.core import pump_composite_spec as cs
+    from cells.models.registry import get_model
+
+    raw = fx.secreting_cell(end=0.004)
+    raw = fx.with_exchange(
+        raw, [("burst", "contact_0", "export", "flux")], [("burst", "cell_0", [(0.0, 1e-6)])]
+    )
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    controls = cs.control_values(spec, [0.0])
+    control = type(controls)(*(jnp.asarray(v[0]) for v in controls))
+    step = jax.jit(lambda x, c: model.checked_step(x, jnp.asarray(DT), c, p, p.active))
+    moved, ok = step(state, control)
+    assert bool(ok)
+    assert float(np.asarray(moved.exchange_moved_fmol)[0]) == pytest.approx(1e-6 * DT, rel=1e-14)
+    pool = float(np.asarray(p.amount_reference)[3, 0])  # 1e-3 fmol of S.
+    refused, ok = step(state, control._replace(exchange_rate=jnp.asarray([2 * pool / DT])))
+    assert not bool(ok)
+    assert same(refused, state)
