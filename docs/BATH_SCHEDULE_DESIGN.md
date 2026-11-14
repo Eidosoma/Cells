@@ -74,6 +74,11 @@ operator's own fields.
    - Version 1 is qualified between resolved levels, at a step ratio pinned at registration from a
      development measurement, since no arm has yet stepped a bath between two levels. The
      recommendation is D150's known-limit ruling extended to doses, with a staircase probe requested.
+   - **Measured since (§7's staircase probe):** the limit is on a step's absolute size, not only on
+     its ratio. A 100× stair up to 1e-3 mM passes under ARS, but a 100× step from 1e-3 to 0.1 mM
+     does not. In the probe's world, a tenfold step between resolved levels and a staircase of 100×
+     stairs from the trace pass under both solvers. A pinned ratio therefore holds only at the levels
+     where it was measured.
 7. **Effort:** about 1.75 agent-days (range 1.5 to 2.5). Door S adds 0.5 to 1, and door W about 1.
 
 ## 1. The operator
@@ -337,7 +342,9 @@ the bound.
   - transport is exact, by D150 §11.3's probe 4, not re-measured here;
   - the onset step's energy residual is about 2% of that step's flows under ARS, and 13% under
     RK4;
-  - a species-only world refuses it, and a mixed world passes it unseen.
+  - a species-only world refuses it, and a mixed world passes it unseen;
+  - measured since (§7's staircase probe): the limit bounds a step's absolute size, not only its
+    ratio, so a step ratio pinned at registration holds only at the levels where it was measured.
 
 **The ways forward, for the lead's ruling, since this blocks acceptance:**
 - **(a) D150's known-limit ruling, extended to doses.** In a mixed world a dose from nothing runs,
