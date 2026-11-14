@@ -2,7 +2,8 @@
 
 **Status: accepted by the lead with the advisor, 13 November 2026 (merged at ffc985a). Version 1
 code: milestones 1 and 2 landed on main, 14 November 2026 (merge bbbc922), with the lead's
-rulings at milestone 1 in §12. Development status: no judged run.** The main choices stand: one inventory in @3 as neutral species
+rulings at milestone 1 in §12. Development status: no judged run. Milestone 3 on the branch: the
+closed-form development run and a PROPOSED protocol, not registered (§12.2).** The main choices stand: one inventory in @3 as neutral species
 rows, uptake as a plain sink (a), and identity on the operator declarations. The lead's
 pre-code checks (probes 2 to 5) were run the same day. Their results, the amendments they bring
 and the lead's rulings are in §11:
@@ -1575,6 +1576,51 @@ the exact spherical-shell conductance between the points they join (the source s
 mid-radii, the outer boundary), decay by turnover's node clearance at every shell, references from
 the same declared system (matrix exponential). Its first engine runs are these guards; the
 closed-form comparison against the continuum is milestone 3.
+
+### 12.2 Milestone 3: the closed-form development run and the PROPOSED protocol (14 November 2026)
+
+Code on the branch: dc2e494 (the held sphere's closed forms, the radial builder's faces kind, the
+driver), 8d94451 (the analysis, the protocol's guard, judge and draft), a7e1869 (the builder's
+exact areas evaluated as before; two tier-1 files) and a40a332 / d717170 (the draft's findings,
+the PROPOSED protocol); `src/` unchanged. The engine arms ran twice, from the clean snapshots of
+dc2e494 and of a7e1869; the tolerances come from the second, analysed from the same snapshot.
+Evidence: `qualification-dev-a7e1869/` (and `-dc2e494/`) in the evidence folder (HANDOFF.md).
+These are development runs: nothing here is judged.
+
+| Item | Development result | Where |
+| --- | --- | --- |
+| The arms (§6's radial world: R = 10 µm, λ = 20 µm, the medium out to 6λ, k = 1/s, pre-formed: the steady state plus two positive sine modes of v) | All eight through the runner with every host check, none refused, `memory.events` all 0, peaks 1.4 and 1.6 GB. The 1.25 µm arm runs at dt K_ii 0.384, beyond the probed 0.30, and passed. The engine's amounts against its own bookings: 2.6e-15 fmol at most; energy relative 5.4e-8 (IMEX), 1.5e-14 (RK4) | `*.json`, `analysis.json` |
+| Q1, IMEX (2.5 µm, 1 ms) against the exact discrete solution | The dt study per shell and record (S5's form): 0.468 of the tolerance at most, no element at the floor. The splitting term per record in the max norm: 0.368. Controls: the dt study catches k and D in error by 5e-10 and 5e-9, the splitting term by 1e-3 and 2e-3 | `analysis.json` Q1_imex |
+| Q1, RK4 (2.5 µm, 0.1 ms) | 0.449 (31 of 96 elements at the floor), and 0.335. Controls 1e-12 and 1e-11, and 5e-6 and 1e-5 | Q1_rk4 |
+| The step term is the splitting term | IMEX: the first shell's error is −3.100e-5 to −3.102e-5 of c0 from 0.25 to 4 s; the composite step's fixed point gives −3.102e-5, the leading-order term dt² k (g − k c_ss)/4 −2.812e-5 (9.4% low at dt K_ii 0.19). RK4: −9.40e-8 to −9.41e-8, the fixed point −9.41e-8, the /12 term −9.37e-8. The step map iterated in NumPy reproduces the engine to 4.1e-15 (IMEX) and 9.0e-14 (RK4) of c0 at every shell and record | Q1 predictions |
+| Q2, IMEX (2.5 µm, 1 ms) against the closed forms, per element and record | 0.465 (the 24 coarse shells), 0.443 (the amount), 0.442 (the source's supply), 0.445 (the outer bath's), 0.442 (the clearance); the time term is at most 0.6% of the spatial. The probes' planar faces against the same tolerances: 28 to 248 times | Q2 |
+| Q3, the orders | Space at 0.5 ms, in the max norm per record: the coarse shells 1.92-1.93; the scalars 0.85-3.28 by record (the source's supply irregular at 0.25-0.5 s, during the start's transient near the source; 2.0-2.1 from 2 s). Time at 2.5 µm: 2.00-2.09. Every stop rule holds. Element by element, one coarse shell of 120 (shell 19 at 2 s) does not fall where the spatial error changes sign: the reason the stop rule takes the max norm | Q3 |
+| The two runs | Every fraction of tolerance within 0.001; the dt study's tolerances within 1.2e-5 (IMEX) and 1.3e-3 (RK4, at step terms of 5e-18 mM, about 1e3 times their own rounding) relative, Q2's within 1.4e-9 | the two `analysis.json` |
+| The species crossrev (the new operators' set) | From the clean snapshot of 8d94451 it found the radial world's bindings changed against its first record (b102da4): face factors by up to 2 ulp, anchors by up to 5, from a regrouping of 4π r_a r_b at dc2e494. Restored at a7e1869: 24/24 jaxpr texts, 24/24 constants, 8/8 bindings identical, its check holding. `src/` is unchanged, so the five existing sets are untouched | `crossrev/species/` |
+| A preview verdict (S5's precedent: the judge's code on copies of the development arms, the guard bypassed in-process) | Every item passes (Q1 IMEX and RK4, Q2, Q3). It is no verdict | `qualification-dev-a7e1869-preview/` |
+| The closed forms' own checks (tier 1) | Both boundary conditions and a positive start; exact shell integrals against Gauss-Legendre to 1e-12; the mass balance to 1e-13 of the supply; the declared system's exact solution converges to them at second order (1.95-2.14, then 1.99-2.04 at 2 s) | `tests/unit/test_secreted_species_closed_forms.py` |
+
+**The protocol** (`validation/tissue/secreted_species_protocol.json`, PROPOSED, not registered):
+- Q1 against the exact discrete solution, both step-term rules judged, for the IMEX and RK4 arms.
+- Q2 against the continuum closed forms.
+- Q3 the orders, reported, with the stop rules judged.
+- Q4 the Danckwerts switch-on, not judged: pre-formed starts only (ruling 5); probe 4's record
+  stands.
+- Q5 the guards of record: the test files at the judged snapshot.
+
+It carries S5's attempt rule, the resolved-start and guard-world rules, and the guards of
+record: RK4 for the face heat and a NumPy dG test per law. The judge (`python -m
+validation.tissue.secreted_species_qualification judge OUT`) refuses three things before it runs
+anything: an unregistered protocol, a source other than a clean snapshot, and an existing OUT
+(`tests/unit/test_secreted_species_judged_refusal.py`).
+
+Its open questions are the lead's:
+- the step term (both rules, or one);
+- the RK4 arm;
+- Danckwerts reported only;
+- the 1.25 µm arm's dt K_ii;
+- Q3's max norm;
+- whether the step map's agreement becomes a judged item.
 
 ## Appendix A. Equations for the independent references
 
