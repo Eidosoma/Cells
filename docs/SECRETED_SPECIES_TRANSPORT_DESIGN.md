@@ -1629,19 +1629,20 @@ revised after the lead's review with the advisor, the same day):
   is reported, and both rule changes are disclosed.
 - **Q4**, the Danckwerts switch-on: reported only, under the resolved-start rule. Probe 4's record
   stands.
-- **Q5**, the guards of record: the test files at the judged snapshot. They include two checks
-  added at the review:
-  - **The step-map guard** (`tests/unit/test_secreted_species_step_map.py`, tier 2). The judged
-    configuration is shortened to 500 steps, with max |engine − map| ≤ n_steps ε × the scale.
-    The development results, from the clean snapshot of af2d2b4, are 0.041 (IMEX) and 0.32 (RK4)
-    of that bound. It is a guard, not a
-    judged item, since one author wrote both sides; the judged run reports it on the full arms
-    (0.0055 and 0.095 there).
-  - **R-continuum's independence check.** The closed form is tested against the PDE itself,
-    without the builder. Its fourth-order difference residual falls at fourth order to 3.6e-10,
-    and 1e-6 errors in D or k are caught. Both boundary conditions hold over time, and the start
-    and the steady state match their sinh forms. R-discrete shares the builder's declared system,
-    so Q2 is what covers a builder error.
+- **Q5**, the guards of record: the test files at the judged snapshot. They include
+  **R-continuum's independence check**, added at the review. The closed form is tested against the
+  PDE itself, without the builder. Its fourth-order difference residual falls at fourth order to
+  3.6e-10, and 1e-6 errors in D or k are caught. Both boundary conditions hold over time, and the
+  start and the steady state match their sinh forms. R-discrete shares the builder's declared
+  system, so Q2 is what covers a builder error.
+- **The step-map guard** (`tests/unit/test_secreted_species_step_map.py`, tier 2): a regression
+  guard for the landing gates, outside Q5's judged list (the lead, after the review round).
+  - The judged configuration is shortened to 500 steps, with max |engine − map| ≤ n_steps ε × the
+    scale. From the clean snapshot of af2d2b4, the results are 0.041 (IMEX) and 0.32 (RK4) of
+    that bound.
+  - It carries no qualification verdict, since one author wrote both sides. At its 3× margin on
+    RK4, a rounding-level platform change would fail the qualification for the wrong reason.
+  - The judged run reports the full arms' ratios (0.0055 and 0.095 in development), not judged.
 
 It carries:
 - S5's attempt rule;

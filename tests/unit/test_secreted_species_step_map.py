@@ -1,10 +1,11 @@
 """Guard: the engine's composite step is the declared scheme's linear map, to rounding (D150 v1).
 
 The lead's review (14 November 2026): the step map's agreement with the engine is a guard, not a
-judged item of the qualification protocol, since one author wrote both sides. The qualification's
-judged configuration (validation/tissue/secreted_species_qualification.py: the held sphere on
-2.5 um shells, IMEX at 1 ms and RK4 at 0.1 ms) is shortened to 500 steps per solver and run through
-the runner with every host check, against the step map iterated in NumPy
+judged item of the qualification protocol, since one author wrote both sides. It is a tier-2
+regression guard for the landing gates, outside the protocol's Q5 (regression_guards). The
+qualification's judged configuration (validation/tissue/secreted_species_qualification.py: the
+held sphere on 2.5 um shells, IMEX at 1 ms and RK4 at 0.1 ms) is shortened to 500 steps per solver
+and run through the runner with every host check, against the step map iterated in NumPy
 (validation/tissue/secreted_species_analysis.scheme_map: the clearance's exact half-steps around
 ARS(2,2,2)'s explicit stages or RK4's polynomial).
 

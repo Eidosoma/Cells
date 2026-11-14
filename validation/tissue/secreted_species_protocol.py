@@ -4,7 +4,8 @@ docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §6, §7 and §12, with the lead's rul
 November. The protocol (validation/tissue/secreted_species_protocol.json) is PROPOSED: drafted here
 from the development runs named beside its numbers and revised after the lead's review with the
 advisor (14 November: the controls judged, the scope line, the closed form checked against the PDE,
-the step map a guard). Only the lead registers it, and registration changes its status alone.
+the step map a tier-2 regression guard outside Q5). Only the lead registers it, and registration
+changes its status alone.
 
 * judged_run_refusal / registered: the judge's first call. Before anything is computed or written,
   it refuses an unregistered protocol and a source that is not a clean execution snapshot
@@ -69,13 +70,13 @@ FINDINGS = (  # Disclosed with the draft: what the development runs showed befor
     f"controls after it ({EVIDENCE}/qualification-dev-a7e1869-preview-review/verdict.json): every "
     "item passes, and every control is caught. It is no verdict",
 )
+REGRESSION_GUARDS = ("tests/unit/test_secreted_species_step_map.py",)  # Tier 2, not judged.
 GUARD_TESTS = (
     "tests/unit/test_species_turnover.py",
     "tests/unit/test_species_exchange.py",
     "tests/unit/test_secreted_species.py",
     "tests/unit/test_secreted_species_closed_forms.py",
     "tests/unit/test_secreted_species_judged_refusal.py",
-    "tests/unit/test_secreted_species_step_map.py",
     "tests/unit/test_secreted_species_runs.py",
     "tests/unit/test_secreted_species_ions.py",
     "tests/unit/test_secreted_species_guards.py",
@@ -478,7 +479,8 @@ def draft(development, output):
                 "and the step map iterated in NumPy (ARS's explicit stages or RK4's polynomial, "
                 "the clearance's exact half-steps around them), whose distance from R-discrete "
                 "predicts the engine's error at every shell and record. The map's agreement with "
-                "the engine is a guard (Q5), not a judged item: one author wrote both sides"
+                "the engine is a tier-2 regression guard (regression_guards), not a judged item: "
+                "one author wrote both sides"
             ),
             controls=(
                 "judged (the lead's review, S5's form): the judged arm's output against R-discrete "
@@ -615,16 +617,6 @@ def draft(development, output):
                 "cap and the stationary refusal (test_species_turnover, test_species_exchange, "
                 "test_secreted_species)",
                 "the ion rows bitwise with the operators active (test_secreted_species_ions)",
-                "the step map's agreement with the engine (test_secreted_species_step_map, tier "
-                "2): the judged configuration shortened to 500 steps per solver, through the "
-                "runner, max |engine - map| <= n_steps x eps x the scale (the largest "
-                "concentration over the records), the rounding rule fixed at the lead's review "
-                "before any judged run. A guard, not a judged item: one author wrote both sides. "
-                "Development, on the full judged arms: "
-                f"{maps['Q1_imex']['fraction_of_bound']:.2g} (IMEX, "
-                f"{maps['Q1_imex']['n_steps']} steps) and "
-                f"{maps['Q1_rk4']['fraction_of_bound']:.2g} (RK4, {maps['Q1_rk4']['n_steps']} "
-                "steps) of the bound",
                 "R-continuum's independence check (the lead's review; "
                 "test_secreted_species_closed_forms): the closed form against the PDE itself, "
                 "without the builder: the residual of u_t = D lap u - k u in spherical form by "
@@ -633,6 +625,27 @@ def draft(development, output):
                 "and the judged-run refusal",
             ],
             verdict_rule="pass when every test in these files passes",
+        ),
+        regression_guards=dict(
+            judged=False,
+            tests=list(REGRESSION_GUARDS),
+            step_map=(
+                "the step map's agreement with the engine (tests/unit/"
+                "test_secreted_species_step_map.py, tier 2): the judged configuration shortened to "
+                "500 steps per solver, through the runner, max |engine - map| <= n_steps x eps x "
+                "the scale (the largest concentration over the records), the rounding rule fixed "
+                "at the lead's review before any judged run. A regression guard for the landing "
+                "gates, outside Q5's judged list (the lead, 14 November): one author wrote both "
+                "sides, so it carries no qualification verdict, and at its 3 x margin on RK4 a "
+                "rounding-level platform change would fail the qualification for the wrong "
+                f"reason ({EVIDENCE}/tests/m3-stepmap-af2d2b4/step_map_guard_record.json: 0.041 "
+                "(IMEX) and 0.32 (RK4) of the bound at 500 steps). The judged run reports the "
+                "full judged arms' ratios, not judged (development: "
+                f"{maps['Q1_imex']['fraction_of_bound']:.2g} (IMEX, "
+                f"{maps['Q1_imex']['n_steps']} steps) and "
+                f"{maps['Q1_rk4']['fraction_of_bound']:.2g} (RK4, {maps['Q1_rk4']['n_steps']} "
+                "steps) of the bound)"
+            ),
         ),
         review=dict(
             by="the lead with the advisor, 14 November 2026, on the PROPOSED draft at 392c633",
@@ -646,7 +659,8 @@ def draft(development, output):
                 "5. Q3's max norm is accepted, with the per-element count reported; both rule "
                 "changes stay disclosed (development_findings)",
                 "6. The step map's agreement is no judged item (one author wrote both sides): a "
-                "guard test with a rounding rule fixed now (Q5), reported in the judged run",
+                "guard test with a rounding rule fixed now, reported in the judged run; after the "
+                "round, a tier-2 regression guard outside Q5's judged list (regression_guards)",
             ],
             changes=[
                 "(a) the controls judged, as S5 did: Q1's k and D controls at a registered delta "
@@ -654,6 +668,15 @@ def draft(development, output):
                 "(b) the scope line (scope)",
                 "(c) an independence check on R-continuum: the closed form against the PDE itself "
                 "(Q5; test_secreted_species_closed_forms)",
+            ],
+            after_the_round=[
+                "the lead, 14 November, on the review round at 1d96232: the step-map guard out of "
+                "Q5's judged list, kept as a tier-2 regression guard so the landing gates catch "
+                "drift (regression_guards); the judged run reports the full-arm ratios, not judged",
+                "the controls judged at +delta only, one delta per rule and arm: confirmed",
+                "the five existing crossrev sets argued unaffected for landing (src/ unchanged); "
+                "the rehearsal on main reruns all five and the species set from the clean "
+                "snapshot before registration, as S5 did",
             ],
             order_after=(
                 "S5's: land on main as PROPOSED, rehearse on main, dry-run every judge entry, "
