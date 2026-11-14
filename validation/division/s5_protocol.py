@@ -54,7 +54,8 @@ def registered(item, protocol_path=PROTOCOL, root=ROOT):
 
 EVIDENCE = Path("/mnt/workspaces/Cells/cell-division-s5-20261113-01")
 DEVELOPMENT = dict(
-    q2=None,  # The seen sets' run from the frozen commit's snapshot: an observations commit.
+    q2=EVIDENCE / "protocol-dev-s5a23/q2_rops_comparison/q2_rops.json",  # The frozen commit's.
+    q2_near_zero=EVIDENCE / "protocol-dev-s5a23/near_zero_set.json",
     q3=EVIDENCE / "protocol-dev-s5a21/q3_tissue_comparison/q3_tissue.json",
     q4_tests=EVIDENCE / "protocol-dev-s5a21/test_division_limits_runs.log",
     q4_measure=EVIDENCE / "protocol-dev-s5a21/q4_limits_measure.json",
@@ -75,6 +76,7 @@ DEVELOPMENT = dict(
     regression=EVIDENCE / "regression-s5a9/results.txt",
 )
 SNAPSHOTS = {
+    "protocol-dev-s5a23": "0c7e2ac",
     "protocol-dev-s5a22": "1e73543",
     "protocol-dev-s5a21": "67b22b0",
     "protocol-dev-s5a20": "5e6f9cb",
@@ -200,6 +202,7 @@ def q2(name="q2"):
     report = load(name)
     report = report["scales"]["old"] if "scales" in report else report
     return dict(
+        where(name),
         fixed_cases={k: v["worst"] for k, v in report["cases"].items()},
         simultaneous={
             k: {o: e["worst"] for o, e in v.items()} for k, v in report["simultaneous"].items()
@@ -448,6 +451,30 @@ def draft():
             "amended magnitudes: the cases, the simultaneous divisions, the judged sets and the "
             "controls under both scales; the verdict at the new scale",
             "development_old_scale": q2(),
+            "development_estimate": dict(
+                where("q2_near_zero"),
+                note="the a_k control at the new scale, estimated before R-ops lands: in every "
+                "near-zero member a 1e-9 defect moves at least 1e-23 C of charge against a "
+                "threshold of 1.2-4.1e-25 C, so it would be caught (an estimate, not a "
+                "new-scale result)",
+            ),
+            "development_findings": [
+                "W is reached by no control at 1e-9 (old scale, protocol-dev-s5a23): f at "
+                "1.0-1.8e-5 or never, transference at 3.2-5.6e-5 or never, a_k at 1.0-1.8e-5, "
+                "the parent charge at 1-1.8e-4. Splitting a uniform solution changes no free "
+                "energy to first order; W sees f only through the unmixing term, second order "
+                "in delta, against a magnitude at the absolute free energies' scale. So f's "
+                "frozen target W fails the threshold by construction: a finding for the lead, "
+                "the threshold unmoved",
+                "the engine does not output delta q or delta separately: the transference "
+                "control reaches them through the increments and moved amounts (caught at "
+                "1.0-1.8e-13 old scale); free-energy changes are observed only within W",
+                "no control reaches the image charge, zero in exact arithmetic for an "
+                "isopotential split",
+                "at the old scale the near-zero cases' undefected potentials (and draw 35's "
+                "charges) exceed 64, so those families read 'baseline above 64' there; where "
+                "measurable the parent charge is caught on the charges at 3.2e-16-5.6e-15",
+            ],
             "before_the_freeze": dict(
                 where("q2_before_freeze"),
                 note="the same cases and seen sets at the old scale (fixed 0.39; simultaneous "
