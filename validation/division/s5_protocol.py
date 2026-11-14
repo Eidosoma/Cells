@@ -418,6 +418,14 @@ def draft():
                     "f": "R-ops given the volume fraction f + delta",
                     "transference": "R-ops given the first carrier's t + delta and the "
                     "second's t - delta, their sum kept 1",
+                    "W": "R-ops' daughters' free energy evaluated at V_D (1 + delta), a booking "
+                    "defect in the free-energy volume: W moves by -1e-3 RT N_D ln(1 + delta), "
+                    "first order (the amendment)",
+                    "image": "the engine moves (1 + delta) times the mismatch, its carrier "
+                    "fractions scaled in its layout, which breaks isopotentiality at first "
+                    "order (an engine-side defect, since R-ops keeps the transference numbers "
+                    "summing to 1; the amendment); a delta its own event checks refuse is "
+                    "reported",
                 },
                 "deltas": list(q2d.DEFECTS),
                 "families": {k: list(v) for k, v in q2d.CONTROL_GROUPS.items()},
@@ -430,6 +438,24 @@ def draft():
                 "wherever the undefected case passes; at the new scale each near-zero case "
                 "passes undefected and fails with the parent-charge defect. A control that "
                 "misses the threshold is a finding, never a moved threshold",
+                "amendment": {
+                    "when": "the lead, 14 November, after the freeze (0c7e2ac) and before any "
+                    "new-scale run; the threshold stays 1e-9",
+                    "finding": "W is reached by no map defect at 1e-9: f at 1.0-1.8e-5 or "
+                    "never, transference at 3.2-5.6e-5, a_k at 1.0-1.8e-5, the parent charge "
+                    "at 1-1.8e-4 (old scale, protocol-dev-s5a23)",
+                    "reason": "dG is stationary at the correct split: at delta = 0 the "
+                    "daughters' concentrations equal the parent's, so d dG / d delta = ln c_D1 "
+                    "- ln c_D2 = 0, and any map defect reaches W only at second order. W "
+                    "equals dG here, the bath held at 0 V. f -> W was a mis-specified target",
+                    "changes": [
+                        "W leaves f's targets; f's effect on W is reported as information",
+                        "W takes its own first-order control (the daughters' free energy at "
+                        "V_D (1 + delta))",
+                        "the image charge takes its own control (the mismatch scaled, "
+                        "delta -> (1 + delta) delta)",
+                    ],
+                },
                 "scales": "old and new (R-ops' charge_term)",
                 "cases": [
                     "the asymmetric neighbour world's bound state",
@@ -445,6 +471,9 @@ def draft():
                     "1 mV rule kept two draws (spread 1, draws 35 and 77); 5 mV adds seven more "
                     "and the spread-3 worst (draw 32). The driver recomputes the members from "
                     "the rule and asserts them",
+                    judged_sets="the rule applies unchanged to the judged sets: at the judged "
+                    "run the near-zero cases are the judged sets' admitted draws within the "
+                    "same 5 mV (the lead, 14 November)",
                 ),
             },
             "judged_run": "q2_rops_comparison judge once at the judged snapshot, with R-ops' "
@@ -459,18 +488,16 @@ def draft():
                 "new-scale result)",
             ),
             "development_findings": [
-                "W is reached by no control at 1e-9 (old scale, protocol-dev-s5a23): f at "
+                "W is reached by no map defect at 1e-9 (old scale, protocol-dev-s5a23): f at "
                 "1.0-1.8e-5 or never, transference at 3.2-5.6e-5 or never, a_k at 1.0-1.8e-5, "
-                "the parent charge at 1-1.8e-4. Splitting a uniform solution changes no free "
-                "energy to first order; W sees f only through the unmixing term, second order "
-                "in delta, against a magnitude at the absolute free energies' scale. So f's "
-                "frozen target W fails the threshold by construction: a finding for the lead, "
-                "the threshold unmoved",
+                "the parent charge at 1-1.8e-4. dG is stationary at the correct split, so a map "
+                "defect reaches W only at second order; the lead removed W from f's targets and "
+                "gave W and the image charge their own controls (negative_controls.amendment)",
                 "the engine does not output delta q or delta separately: the transference "
                 "control reaches them through the increments and moved amounts (caught at "
                 "1.0-1.8e-13 old scale); free-energy changes are observed only within W",
-                "no control reaches the image charge, zero in exact arithmetic for an "
-                "isopotential split",
+                "no map defect reaches the image charge, zero in exact arithmetic for an "
+                "isopotential split; the amendment's image control breaks the isopotentiality",
                 "at the old scale the near-zero cases' undefected potentials (and draw 35's "
                 "charges) exceed 64, so those families read 'baseline above 64' there; where "
                 "measurable the parent charge is caught on the charges at 3.2e-16-5.6e-15",

@@ -73,7 +73,19 @@ delta of DEFECTS (1e-16 to 1e-2 in quarter decades):
 * f: the volume fraction f + delta: the amounts, increments, moved amounts and W;
 * transference: the first carrier's t + delta and the second's t - delta (their sum stays 1):
   delta and the mismatch, which the engine exposes only through the increments and moved
-  amounts that carry them.
+  amounts that carry them;
+* W (the amendment, the lead, 14 November): R-ops' daughters' free energy evaluated at
+  V_D (1 + delta), a booking defect in the free-energy volume: W moves by -1e-3 RT N_D
+  ln(1 + delta), first order. f no longer targets W: dG is stationary at the correct split (at
+  delta = 0 the daughters' concentrations equal the parent's, d dG / d delta = ln c_D1 - ln c_D2
+  = 0), so a map defect reaches W only at second order (W equals dG here, the bath at 0 V);
+  f's effect on W is reported;
+* image (the amendment): the engine moves (1 + delta) times the mismatch, its carrier
+  fractions scaled, which breaks isopotentiality at first order: the image charge and the
+  potentials (an engine-side defect; R-ops' interface keeps the transference numbers summing
+  to 1). A delta at which the engine's own event checks refuse is reported.
+The near-zero rule applies unchanged to the judged sets: the judged run's near-zero cases are
+the judged sets' admitted draws within NEAR_ZERO_V of 0 V.
 The statistic is the smallest delta whose ratio passes 64, per family (CONTROL_GROUPS); the
 threshold: each control's target families (CONTROL_TARGETS) caught at or below THRESHOLD
 (1e-9) wherever the undefected case passes. Where the undefected ratio already exceeds 64 no
@@ -114,7 +126,7 @@ from cells.core.specs import parse_spec
 from cells.models import pump_composite_adapter as adapter
 from cells.models.operators import partition
 from cells.models.registry import get_model
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
 from tests import partition_fixtures as fx
 from validation.division import partition_reference as rops
 
@@ -149,12 +161,19 @@ CONTROL_GROUPS = dict(
 # {control: the families it must reach}. The engine exposes delta and the mismatch only through
 # the increments and moved amounts that carry them, so the transference control reaches them
 # there; an a_k defect moves charge but keeps each patch's voltage, so it cannot reach the
-# potentials.
+# potentials. The amendment (the lead, 14 November): W left f's targets. Delta G is stationary
+# at the correct split (at delta = 0 the daughters' concentrations equal the parent's, so
+# d dG / d delta = ln c_D1 - ln c_D2 = 0), so any map defect reaches W only at second order (W
+# equals dG here, the bath held at 0 V); f's effect on W is reported. W takes its own
+# first-order control (a booking defect in the free-energy volume), and the image charge its
+# own (the mismatch charge scaled).
 CONTROL_TARGETS = {
     "a_k": ("charges",),
     "parent charge": ("charges", "potentials"),
-    "f": ("amounts", "work"),
+    "f": ("amounts",),
     "transference": ("amounts",),
+    "W": ("work",),
+    "image": ("image", "potentials"),
 }
 CONTROL_PATCH = "membrane_0"
 # The near-zero cases: the asymmetric world's admitted seen draws whose parent patch sits within
@@ -302,11 +321,13 @@ class Bound:
         j = self.spec.model.junctions[self.junctions.index(junction)]
         return j.sender, j.receiver
 
-    def event(self, state, due):
+    def event(self, state, due, p=None):
+        """The partition's event; with p, under that layout (an engine-side defect)."""
         op = self.partition[0]
+        p = self.p if p is None else p
         new, ok = op.event(
-            state, SimpleNamespace(partition_due=np.asarray(due, float)), self.p, xp=np,
-            view=self.view,
+            state, SimpleNamespace(partition_due=np.asarray(due, float)), p, xp=np,
+            view=lambda s: self.model.view(p, s, xp=np),
         )  # fmt: skip
         return new, bool(ok)
 
@@ -730,13 +751,15 @@ def random_case(world, d, spread, seed=SEEN_SEED, scale="old"):
 ASYMMETRIC = "asymmetric neighbour world (f 0.75, a 0.6, three carriers)"
 
 
-def near_zero_draws(world):
-    """[(spread, index, state)] of NEAR_ZERO, the rule's members recomputed from the seen sets
-    (asserted equal to the frozen list, and to hold WORST_SEEN)."""
+def near_zero_draws(world, seeds=None):
+    """[(spread, index, state)]: the near-zero rule's members (module docstring). From the seen
+    sets (seeds None) they are asserted equal to NEAR_ZERO and to hold WORST_SEEN; the rule
+    applies unchanged to the judged sets (seeds {"spread s": seed})."""
     found = []
     k = world.patches.index(CONTROL_PATCH)
     for spread in SPREADS:
-        draws, _ = frozen_draws(world, spread)
+        seed = SEEN_SEED if seeds is None else seeds[f"spread {spread:g}"]
+        draws, _ = frozen_draws(world, spread, seed)
         for index, state in enumerate(draws):
             if not admitted(world, state, fx.EVENT)[0]:
                 continue
@@ -745,17 +768,22 @@ def near_zero_draws(world):
             node = len(world.cells) + int(world.p.membrane_outside[k])
             if abs(float(phi[world.cells.index("cell_0")] - phi[node])) <= NEAR_ZERO_V:
                 found.append((spread, index, state))
-    assert tuple((s, i) for s, i, _ in found) == NEAR_ZERO, [(s, i) for s, i, _ in found]
-    assert WORST_SEEN in NEAR_ZERO
+    if seeds is None:
+        assert tuple((s, i) for s, i, _ in found) == NEAR_ZERO, [(s, i) for s, i, _ in found]
+        assert WORST_SEEN in NEAR_ZERO
     return found
 
 
-def control_cases():
-    """(label, world, pre-event state, due) of the negative controls (module docstring)."""
+def control_cases(seeds=None):
+    """(label, world, pre-event state, due) of the negative controls (module docstring); the
+    near-zero cases from the seen sets, or from the judged sets' seeds {world: {spread: seed}}."""
     world = Bound(random_worlds()[ASYMMETRIC])
     out = [("asymmetric neighbour world, bound state", world, world.state, (1.0,))]
-    for spread, index, state in near_zero_draws(world):
-        label = f"asymmetric neighbour world, seen spread {spread:g} draw {index}"
+    sets = "seen" if seeds is None else "judged"
+    for spread, index, state in near_zero_draws(
+        world, None if seeds is None else seeds[ASYMMETRIC]
+    ):
+        label = f"asymmetric neighbour world, {sets} spread {spread:g} draw {index}"
         out.append((label, world, state, (1.0,)))
     carriers = {"Na": 0.5, "K": 0.5}
     raw = fx.cleft_divided(f=0.75, area_fraction=0.6, carriers=carriers, bridge=("linear", 0.001))
@@ -797,26 +825,59 @@ def defects(division, snapshot, parent):
     }
 
 
-def negative_controls(scale="old"):
+def booked_volume_defect(result, temperature_K, x):
+    """R-ops' result with its daughters' free energy evaluated at V_D (1 + x): A.6's
+    G(n, V) = 1e-3 RT sum n (ln(n / V) - 1) moves by -1e-3 RT N_D ln(1 + x) for each daughter,
+    so W does (the usage note's formula; R-ops itself is not changed)."""
+    v = result.values
+    total = float(np.sum(v["amounts_D1_fmol"]) + np.sum(v["amounts_D2_fmol"]))
+    moved = -1e-3 * R * temperature_K * np.log1p(x) * total
+    values = {**v, "work_pJ": v["work_pJ"] + moved}
+    return SimpleNamespace(values=values, magnitudes=result.magnitudes, snapshot=result.snapshot)
+
+
+def control_runs(world, d, state, due, after, base, division, snapshot, scale, refused):
+    """{control: delta -> (the engine's state after the event, R-ops' result)}. The four map
+    defects and W's are given to R-ops against the engine's own event; the image control is the
+    engine's (its carrier fractions scaled by 1 + delta, so it moves (1 + delta) delta of the
+    mismatch); a delta at which the engine's own event checks refuse is appended to refused."""
+    reference = defects(division, snapshot, d.parent)
+    runs = {c: (lambda x, c=c: (after, apply(*reference[c](x), scale))) for c in reference}
+    runs["W"] = lambda x: (after, booked_volume_defect(base, snapshot.temperature_K, x))
+
+    def image(x):
+        fraction = world.p.partition_carrier_fraction * (1 + x)
+        new, valid = world.event(state, due, world.p._replace(partition_carrier_fraction=fraction))
+        if not valid:
+            refused.append(x)
+        return new, base
+
+    runs["image"] = image
+    return runs
+
+
+def negative_controls(scale="old", seeds=None):
     """The negative controls at one scale (module docstring). Per case: the undefected ratios
     per family; per control, the smallest defect caught per family (None if none is, "baseline
     above 64" where the undefected case already fails) and whether every target family is
     caught at or below THRESHOLD."""
     out = {}
-    for label, world, state, due in control_cases():
+    for label, world, state, due in control_cases(seeds):
         d = next(x for x in world.partition[1].divisions if x.id == "first")
         division, snapshot = world.division(d, state), world.snapshot(state)
         after, ok = world.event(state, due)
         assert ok
-        baseline = compare(world, d, state, after, apply(snapshot, division, scale))
+        base = apply(snapshot, division, scale)
+        baseline = compare(world, d, state, after, base)
         groups = {**CONTROL_GROUPS, "any key": tuple(baseline)}
         entry = dict(
             baseline={group: max(baseline[k] for k in keys) for group, keys in groups.items()}
         )
-        for control, defect in defects(division, snapshot, d.parent).items():
-            ladder = [
-                (x, compare(world, d, state, after, apply(*defect(x), scale))) for x in DEFECTS
-            ]
+        refused = []
+        runs = control_runs(world, d, state, due, after, base, division, snapshot, scale, refused)
+        for control, run in runs.items():
+            refused.clear()
+            ladder = [(x, compare(world, d, state, *run(x))) for x in DEFECTS]
             caught = {
                 group: "baseline above 64"
                 if entry["baseline"][group] > 64
@@ -830,6 +891,7 @@ def negative_controls(scale="old"):
             entry[control] = dict(
                 smallest_defect_caught=caught,
                 targets_caught_at_threshold=targets,
+                engine_refuses_from=min(refused) if refused else None,
                 ladder=[
                     dict(delta=x, worst=max(r.values()), worst_key=max(r, key=r.get))
                     | {group: max(r[k] for k in keys) for group, keys in CONTROL_GROUPS.items()}
@@ -864,7 +926,8 @@ def run_all(scale, seeds):
             f"spread {s:g}": random_case(world, d, s, seeds[label][f"spread {s:g}"], scale)
             for s in SPREADS
         }
-    report["negative_controls"] = negative_controls(scale)
+    judged = seeds != seen_seeds()
+    report["negative_controls"] = negative_controls(scale, seeds if judged else None)
     return report
 
 
@@ -896,7 +959,7 @@ def verdict(report, item):
     comparisons = max(worst) <= 64
     controls = {}
     for label, entry in new["negative_controls"].items():
-        near = "seen spread" in label
+        near = " spread " in label  # A near-zero case, from the seen or the judged sets.
         for control in CONTROL_TARGETS:
             targets = entry[control]["targets_caught_at_threshold"]
             passed = all(targets.values()) and (not near or entry["baseline"]["any key"] <= 64)
