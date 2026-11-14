@@ -1,6 +1,6 @@
 """species_regulated_availability@1: compiled guards beyond the routine gate (tier 3).
 
-docs/INVENTORY_COUPLING_DESIGN.md §1.9, §1.10 and §4.4. Five compiled programs, so this file is
+docs/INVENTORY_COUPLING_DESIGN.md §1.9, §1.10 and §4.4. Seven compiled programs, so this file is
 deliberately tier 3 (the lead's rulings, 14 November 2026; D152's compiled guards are too); the
 tier-1 smoke keeps the declaration-only idleness check, _bitwise holds the routine one-program
 checks, and _execution the batch, windows and fresh-process guards.
@@ -13,6 +13,9 @@ checks, and _execution the batch, windows and fresh-process guards.
   and k at 1/2 give what junction_0 and kir_3 scheduled at 1/2 without the operator give, bit for
   bit (and those schedules change the RK4 step); a moving state (k_on 2e4, k_off 1e4, its input
   held) follows its closed form to rounding.
+* **Nine species (FR-9's cap at 16, D165).** The sheet with four more neutral species: the shared
+  structure's arms against every coupling off over the same schedules, and every coupling off
+  against the world without the operator, bit for bit.
 Every @3 state field of every accepted row and every @3 observation column is compared where the
 check is bitwise.
 """
@@ -73,3 +76,27 @@ def test_rk4_the_schedules_matter_here():
     whole = run(parse_spec(rf.scheduled(**RK4)))
     fields, _ = rf.differing(half, whole)
     assert {"junction_transferred", "channel_transferred"} <= set(fields)
+
+
+# ------------------------------------------------------------------ above the old species cap
+
+
+NINE = 4  # The sheet's five species and four more neutral ones: nine, above the old cap of 7.
+NINE_ARMS = [  # (couplings on, s0, junction and kir_3 scheduled under every coupling off)
+    (("a", "k"), (0.5, 0.5), dict(junction=0.5, channel=0.5)),
+    (("a", "k"), (0.0, 0.0), dict(junction=0.0, channel=0.0)),
+    (("a", "b", "k"), (0.5, 0.5), dict(junction=0.125, channel=0.5)),
+]
+
+
+@pytest.mark.parametrize("on, s0, schedules", NINE_ARMS, ids=["one half", "zero", "two couplings"])
+def test_nine_species_the_factored_path_is_the_world_without_the_operator(on, s0, schedules):
+    """FR-9's cap at 16 (D165): with nine species, the shared structure's arms against every
+    coupling off over the same schedules, and every coupling off against the world without the
+    operator, bit for bit (the two-coupling arm runs over junction_0 at 1/2)."""
+    over = dict(junction=0.5) if len(on) == 3 else {}
+    factored = run(parse_spec(rf.shared_structure(on=on, s0=s0, end=END, extra=NINE, **over)))
+    assert len(factored.spec.model.species_ids) == 9
+    off = run(parse_spec(rf.shared_structure(end=END, extra=NINE, **schedules)))
+    assert_same(factored, off)
+    assert_same(off, run(parse_spec(rf.scheduled(end=END, extra=NINE, **schedules))))

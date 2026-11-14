@@ -30,19 +30,23 @@ FLOOR_FMOL = 1e-20
 D_REGULATOR = 1e-10
 
 
-def sheet(*, end=0.02, dt=1e-3, observation_times=None, regulator_mM=REGULATOR_mM, solver=None):
-    """The seven-cell sheet with R declared; `solver` as the sheet's (None: its IMEX default; "rk4"
-    needs dt near 2.5e-6, @3's explicit bound on this sheet)."""
+def sheet(
+    *, end=0.02, dt=1e-3, observation_times=None, regulator_mM=REGULATOR_mM, solver=None, extra=0
+):
+    """The seven-cell sheet with R declared (five species), and `extra` more neutral species X0,
+    X1, ... at R's level (the cap counts every species); `solver` as the sheet's (None: its IMEX
+    default; "rk4" needs dt near 2.5e-6, @3's explicit bound on this sheet)."""
     raw = rfx.heredity_sheet(radius=1, disc=0, dt=dt, end_time=end, solver=solver)
     times = observation_times or sfx.grid_times(end, dt, end / 4)
     raw["experiment"]["observation_times"] = list(times)
-    raw = add_inventory_species(
-        raw,
-        REGULATOR,
-        trace_mM=regulator_mM,
-        diffusivity_m2_per_s=D_REGULATOR,
-        floor_fmol=FLOOR_FMOL,
-    )
+    for name in (REGULATOR, *(f"X{k}" for k in range(extra))):
+        raw = add_inventory_species(
+            raw,
+            name,
+            trace_mM=regulator_mM,
+            diffusivity_m2_per_s=D_REGULATOR,
+            floor_fmol=FLOOR_FMOL,
+        )
     return cs.frozen_definition(raw)
 
 
@@ -175,9 +179,10 @@ SHARED_JUNCTION, SHARED_CHANNEL = "junction_0", "kir_3"  # cell_0 (H) to cell_3 
 SHARED_COUPLINGS = ("a", "b", "d", "k")
 
 
-def scheduled(*, junction=1.0, channel=1.0, end=0.03, dt=1e-3, solver=None):
+def scheduled(*, junction=1.0, channel=1.0, end=0.03, dt=1e-3, solver=None, extra=0):
     """The sheet without the operator, junction_0 and kir_3 held at the given availabilities."""
-    raw = schedule_junction(sheet(end=end, dt=dt, solver=solver), SHARED_JUNCTION, junction)
+    raw = sheet(end=end, dt=dt, solver=solver, extra=extra)
+    raw = schedule_junction(raw, SHARED_JUNCTION, junction)
     return schedule_channel(raw, SHARED_CHANNEL, channel)
 
 
@@ -191,6 +196,7 @@ def shared_structure(
     dt=1e-3,
     solver=None,
     rates=(0.0, 0.0),
+    extra=0,
 ):
     """One coupled structure for every bitwise arm (one compiled program): a state s of R in
     cell_0 and cell_3 (s0 per cell; frozen unless `rates` gives k_on and k_off) and four
@@ -205,7 +211,7 @@ def shared_structure(
         initial=dict(cell_0=s0[0], cell_3=s0[1]),
     )
     return with_coupling(
-        scheduled(junction=junction, channel=channel, end=end, dt=dt, solver=solver),
+        scheduled(junction=junction, channel=channel, end=end, dt=dt, solver=solver, extra=extra),
         species=[REGULATOR],
         states=[s],
         couplings=[
