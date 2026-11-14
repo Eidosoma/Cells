@@ -58,6 +58,26 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **S5 protocol: the third and last control amendment, and the references' self-checks pinned
+  (14 November).**
+  - **The finding.** Three controls move charge in proportion to the patch charges: a_k, mismatch
+    scale and transference. Their effect fades near 0 V while A.8's term does not, so under the
+    frozen rule the seen-set preview failed on one near-zero draw.
+  - **The amendment.**
+    - The three are now judged on the fixed cases, and reported on the near-zero cases beside
+      their first-order size.
+    - The cause holds in all ten near-zero cases: observed against predicted is 0.99974–1.00040.
+    - Parent charge, non-conservation, f and W stay judged everywhere, with margins of 174× or
+      more.
+    - The threshold, the seeds and the comparison rule are unchanged.
+    - Both preview verdicts are recorded: fail under the frozen rule, pass under the amended
+      one.
+    - No judged state has been drawn. After registration, any control miss is a failed Q2.
+  - **The references' own 64-eps self-checks** are pinned to the tight scale
+    (`charge_term=False`). R-tissue uses R-ops' values only.
+  - **Gate:** tier 1, 303 files, no changed outcome
+    ([gate](/mnt/workspaces/Cells/land-20261114c/)).
+
 - **The S5 protocol, frozen as PROPOSED, then R-ops' A.8 amendment (14 November).** They land
   as two merges in that order, so the freeze is on main before the new Q2 scale.
   - **The protocol** (`validation/division/s5_protocol.json`, built by `s5_protocol.py`) is
