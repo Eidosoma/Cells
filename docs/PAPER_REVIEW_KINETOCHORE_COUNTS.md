@@ -24,7 +24,8 @@ almost nothing in the literature supplies: **absolute copies of a functional uni
 in a living cell, paired with a functional threshold** below which the cell fails.
 Second, it carries a modelling constraint that would **falsify a naive mass-action
 occupancy law** — binding sites stay unoccupied in the wild type although the free
-pool is an order of magnitude larger than the bound pool. Third, as a template for
+pool is several times the bound pool (2–7× for Dsn1 and 5–17× for Nuf2 from the
+paper's own figures; the paper says an order of magnitude). Third, as a template for
 how the [protein catalogue](PROTEIN_CATALOGUE_PLAN.md) should record abundance
 evidence: species, cell type, cell-cycle state, drug condition, temperature,
 method and uncertainty, all of which change the number. Replication is covered
@@ -77,9 +78,15 @@ conventional FCS in the mitotic cytosol, free EGFP-Dsn1 is 18.6 ± 0.4 nM and fr
 Nuf2-EGFP 68.6 ± 18.6 nM (11–13 measurements, two experiments), and FCCS shows the
 two are mostly **not** in complex in the cytosol. With mitotic DT40 cell volumes of
 636–2,208 µm³ (n = 18), that is of order 10⁴–10⁵ free molecules per cell, against
-about 3,520 Dsn1 and 5,280 Nuf2 bound across roughly 160 kinetochores — **the
-bound pool is an order of magnitude smaller than the free pool**, and the free
-concentrations do not differ between wild type and either mutant.
+about 3,520 Dsn1 and 5,280 Nuf2 bound across roughly 160 kinetochores. **The paper
+calls the bound pool an order of magnitude smaller than the free pool.** Its own
+figures give free-to-bound ratios of 2.0–7.0 for Dsn1 and 5.0–17 for Nuf2 across the
+measured volumes, so the gap runs from a few-fold to more than tenfold. The 5,280 is
+the paper's product of about 33 Nuf2 per kinetochore and 160 kinetochores; the
+table's 35.0 ± 0.8 would give about 5,600. The free concentrations do not differ
+between wild type and either mutant. (The ratios are this review's arithmetic,
+concentration × volume × Avogadro's number. The figures were checked against the
+paper's saved text on 14 November 2026.)
 
 **Measured versus inferred.** The distinction matters because the paper's
 headline architecture is the inferred part.
