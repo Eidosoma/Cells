@@ -1,0 +1,217 @@
+"""Guards of record of the secreted-species operators (D150 version 1; design §7, §11.2-§11.5).
+
+* **Energy, the species-only world** (the lead's ruling 4): with the ions quiescent, the energy
+  bound is the species' own, so a booking error shows under IMEX. A misbooking of 1% of the booked
+  secretion work is refused by the host energy ledger of the species-only world, and the same
+  relative misbooking passes unseen in the mixed heredity chain, whose bound is the ions' (the
+  shared bound is blind at µM-nM): the reason the species-only world and the NumPy dG tests are the
+  guards of record.
+* **The stiff front** (§7, §11.5 item 7): the radial world switched on from a 1e-15 mM trace under a
+  1e-3 mM source, 2,000 steps of 1 ms through the checked step map (the runner's host energy ledger
+  refuses this unresolved onset, a booking matter, §11.4): every step accepted and every amount
+  positive, and the profile on the exact discrete solution where it is resolved. Amounts below
+  about eps x their anchor stall positive (§1.3), which is not a failure.
+* **The trace background** (§1.3): raising it a thousandfold moves the pre-formed radial profile by
+  less than the trace's own change (a maximum principle), through the runner's host checks.
+* **RK4** (the lead's ruling 6): the species-only radial world, zero ion face diffusivity, from a
+  pre-formed profile at 0.1 ms through the runner, whose RK4 energy bound is the absolute 2e-8 pJ:
+  the face heat and the clearance's work are booked to it. The profile follows the exact discrete
+  solution to the splitting of turnover's half-steps around @3's RK4 step (second order in dt).
+The radial world declares the exact spherical-shell conductances (validation/tissue/
+secreted_species_radial). A few minutes of compiles: tier 3.
+"""
+
+import json
+import os
+from pathlib import Path
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import pytest
+
+from cells.core import pump_composite_spec as cs
+from cells.core.errors import NumericalError
+from cells.core.runner import run
+from cells.core.specs import parse_spec
+from cells.models.registry import get_model
+from validation.tissue import secreted_species_fixtures as fx
+from validation.tissue import secreted_species_radial as radial
+
+jax.config.update("jax_enable_x64", True)
+
+GEOMETRY = radial.Geometry(10e-6, 5e-6, 24)  # R = 10 um, 24 shells of 5 um.
+D, K, C0 = 4e-10, 1.0, 1e-3  # lambda = 20 um.
+TRACE = 1e-15
+
+
+def record(test, **values):
+    """Append measured values to this run's output folder (the tier runner's CELLS_OUTPUT_ROOT)."""
+    root = os.environ.get("CELLS_OUTPUT_ROOT")
+    if root:
+        path = Path(root) / "secreted_species_guards.jsonl"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a") as out:
+            out.write(json.dumps(dict(test=test, **values), default=float) + "\n")
+
+
+def final_bound(result):
+    """The energy ledger's bound at the last row without its rounding term: 2e-8 pJ + rtol x the
+    accumulated heat and work (the energy-role table's fields)."""
+    from cells.models.surface_pump import ENERGY_RTOL
+
+    model = get_model(result.spec.model)
+    flows = sum(
+        float(np.sum(np.abs(np.asarray(getattr(result.history, k))[-1])))
+        for k in model.ENERGY_FLOW_FIELDS
+    )
+    return 2e-8 + ENERGY_RTOL[result.spec.execution.solver] * flows
+
+
+def misbooked(history, field, route, fraction):
+    """The history with `fraction` of a route's booked work added from its second row on."""
+    values = np.array(getattr(history, field), copy=True)
+    values[1:, route] += fraction * values[-1, route]
+    return history._replace(**{field: values})
+
+
+def steps_of(result):
+    return np.rint(np.asarray(result.times) / result.spec.execution.dt).astype(int)
+
+
+def test_a_misbooked_work_fails_the_species_only_world_and_passes_unseen_in_the_mixed_world():
+    from tests.unit.test_secreted_species_runs import secretion
+
+    species_only = run(parse_spec(secretion(end=0.1)))
+    mixed = run(parse_spec(fx.chain_operators(fx.heredity_chain(secreted=True, end=0.1))))
+    report = {}
+    for label, result in (("species_only", species_only), ("mixed", mixed)):
+        model = get_model(result.spec.model)
+        steps = steps_of(result)
+        model.check_values(result.history, result.spec, steps=steps)  # As booked: passes.
+        wrong = misbooked(result.history, "exchange_work_pJ", 0, 0.01)
+        error = 0.01 * abs(float(np.asarray(result.history.exchange_work_pJ)[-1, 0]))
+        record(
+            "misbooked_work",
+            world=label,
+            misbooking_pJ=error,
+            final_bound_pJ=final_bound(result),
+            misbooking_over_bound=error / final_bound(result),
+        )
+        try:
+            model.check_values(wrong, result.spec, steps=steps)
+            report[label] = "passed"
+        except NumericalError as error:
+            report[label] = str(error)
+    assert report["species_only"].endswith("energy")
+    assert report["mixed"] == "passed"  # The ions' bound cannot see it: a known blindness.
+
+
+def jump_world(dt=1e-3, end=2.0):
+    raw = radial.world(
+        GEOMETRY, diffusivity=D, clearance=K, c0_mM=C0, trace_mM=TRACE, dt=dt, end=end
+    )
+    return parse_spec(raw)
+
+
+def test_a_stiff_front_from_the_trace_stays_positive_through_the_step_map():
+    spec = jump_world()
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    controls = cs.control_values(spec, [0.0])
+    control = type(controls)(*(jnp.asarray(v[0]) for v in controls))
+    step = jax.jit(
+        lambda x: model.checked_step(x, jnp.asarray(spec.execution.dt), control, p, p.active)
+    )
+    s = list(spec.model.species_ids).index(fx.SPECIES)
+    ids = [o.id for o in spec.model.extracellular]
+    cols = np.array([ids.index(f"shell_{i}") for i in range(GEOMETRY.shells)])
+    anchor = np.asarray(p.extracellular_amount_reference)[s, cols]
+    record = {250: 0.25, 500: 0.5, 1000: 1.0, 2000: 2.0}
+    profiles, refused, positive = {}, 0, True
+    for k in range(1, 2001):
+        state, ok = step(state)
+        refused += int(not bool(ok))
+        if k in record or k % 50 == 0:
+            amounts = anchor + np.asarray(state.extracellular_amount_increment)[s, cols]
+            positive &= bool(np.all(amounts > 0))
+            if k in record:
+                profiles[record[k]] = amounts / GEOMETRY.volumes_pL
+    record(
+        "stiff_front",
+        refused=refused,
+        positive=positive,
+        max_dt_K_ii=radial.max_dt_k(GEOMETRY, diffusivity=D, clearance=K, dt=spec.execution.dt),
+    )
+    assert refused == 0 and positive
+    m, g = radial.operator(GEOMETRY, diffusivity=D, clearance=K, c0_mM=C0, outer_mM=TRACE)
+    times = sorted(profiles)
+    exact = radial.solution(m, g, np.full(GEOMETRY.shells, TRACE), times)
+    resolved = exact > 1e3 * np.finfo(float).eps * TRACE  # Above the anchored resolution.
+    for j, t in enumerate(times):
+        error = np.max(np.abs(profiles[t] - exact[j])[resolved[j]])
+        record("stiff_front", time=t, error_of_c0=error / C0)
+        assert error <= 1e-5 * C0, (t, error)
+
+
+def pre_formed(trace, dt=1e-3, end=0.5, solver=fx.IMEX, every=0.1):
+    profile = radial.pre_formed(GEOMETRY, diffusivity=D, clearance=K, c0_mM=C0, trace_mM=trace)
+    raw = radial.world(
+        GEOMETRY,
+        diffusivity=D,
+        clearance=K,
+        c0_mM=C0,
+        trace_mM=trace,
+        profile_mM=profile,
+        dt=dt,
+        end=end,
+        solver=solver,
+        observation_every=every,
+    )
+    return parse_spec(raw), profile
+
+
+def test_a_thousandfold_trace_moves_the_profile_by_less_than_itself():
+    profiles = {}
+    for trace in (1e-15, 1e-12):
+        spec, _ = pre_formed(trace)
+        result = run(spec)  # Every host check, the energy ledger included.
+        profiles[trace] = radial.shell_concentrations(spec, result.observations, GEOMETRY)
+    change = np.max(np.abs(profiles[1e-12] - profiles[1e-15]))
+    record("trace", change_mM=change, change_over_trace_change=change / (1e-12 - 1e-15))
+    assert 0 < change <= 1e-12 - 1e-15
+
+
+def test_the_rk4_radial_world_books_face_heat_and_clearance_to_the_absolute_bound():
+    spec, profile = pre_formed(TRACE, dt=1e-4, end=0.2, solver="rk4", every=0.05)
+    result = run(spec)  # RK4's host energy bound: 2e-8 pJ, no solver tolerance.
+    assert result.diagnostics["max_energy_balance_error_pJ"] < 2e-8
+    concentrations = radial.shell_concentrations(spec, result.observations, GEOMETRY)
+    times = np.asarray(result.observations.times)
+    m, g = radial.operator(GEOMETRY, diffusivity=D, clearance=K, c0_mM=C0, outer_mM=TRACE)
+    exact = radial.solution(m, g, profile, times)
+    error = np.max(np.abs(concentrations - exact))
+    record(
+        "rk4_radial",
+        energy_error_pJ=result.diagnostics["max_energy_balance_error_pJ"],
+        error_of_c0=error / C0,
+    )
+    assert error <= 1e-6 * C0  # Turnover's splitting around the RK4 step, O(dt^2).
+
+
+@pytest.mark.parametrize("dt", [1e-3])
+def test_the_imex_radial_world_closes_every_host_check(dt):
+    spec, profile = pre_formed(TRACE, dt=dt, end=0.5)
+    result = run(spec)
+    assert result.diagnostics["max_energy_balance_relative"] < 2e-3
+    concentrations = radial.shell_concentrations(spec, result.observations, GEOMETRY)
+    m, g = radial.operator(GEOMETRY, diffusivity=D, clearance=K, c0_mM=C0, outer_mM=TRACE)
+    exact = radial.solution(m, g, profile, np.asarray(result.observations.times))
+    error = np.max(np.abs(concentrations - exact))
+    record(
+        "imex_radial",
+        dt=dt,
+        energy_relative=result.diagnostics["max_energy_balance_relative"],
+        error_of_c0=error / C0,
+    )
+    assert error <= 1e-5 * C0

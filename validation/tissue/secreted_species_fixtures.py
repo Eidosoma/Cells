@@ -314,3 +314,118 @@ def with_replacement(raw, templates=(), events=()):
         for e in events
     ]
     return out
+
+
+# ------------------------------------------------------------------ the mixed world (probe 2's)
+
+CHAIN = 6
+CHAIN_NODE_PL = 1.0
+CHAIN_FACE = (1e-10, 1e-5)  # Area m^2, length m.
+CHAIN_ION_D = 1e-9
+CHAIN_CONTACT_M2 = 1e-10
+CHAIN_PROFILE_mM = {
+    "cell_0": 1e-3,
+    **{f"ecs_{i}": 5e-4 * 0.5**i for i in range(CHAIN)},  # Pre-formed: no jump of decades.
+}
+
+
+def heredity_chain(*, secreted, dt=1e-3, end=0.1, observation_times=None, profile=None):
+    """Six heredity cells (state H) on their own held baths, each with a contact patch on a finite
+    1 pL node; the nodes form a chain by faces (ion D 1e-9), the last joined to bath_5 (probe 2's
+    world, design §11.1). The ions move: pumps, channels, junction-free contacts and ion faces.
+    secreted: S declared (trace 1e-9 mM, D_S on every face, a pre-formed profile from cell_0 down
+    the chain), else the four heredity species only. A composite definition with no operators."""
+    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from validation.tissue import surface_pump_v3_fixtures as v3fx
+
+    state = v3fx.HEREDITY_STATES["H"][:4]
+    times = observation_times or [0.0, end]
+    raw = v3fx.heredity_cells([state] * CHAIN, dt=dt, end_time=end, observation_times=times)
+    m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    ids = [s["id"] for s in m["species"]]
+    z = {s["id"]: s["valence"] for s in m["species"]}
+    bath = dict(v3fx.HEREDITY_BATH_mM)
+    contact_c = 0.05 * CHAIN_CONTACT_M2
+    for i in range(CHAIN):
+        vm = state[0]
+        cell = m["cells"][i]
+        # Electrically consistent start: the node at the bath's potential, the contact at Vm.
+        cell["initial_charge_C"] = (v3fx.HEREDITY_CAPACITANCE_F + contact_c) * vm
+        cell["fixed_charge_equivalent_fmol"] = cell["initial_charge_C"] / CHARGE_PER_FMOL - (
+            math.fsum(z[s] * cell["initial_amount_fmol"][s] for s in ids)
+        )
+        amounts = {s: bath[s] * CHAIN_NODE_PL for s in ids}
+        charge = -contact_c * vm
+        m["extracellular"].append(
+            dict(
+                id=f"ecs_{i}",
+                volume_pL=CHAIN_NODE_PL,
+                initial_amount_fmol=amounts,
+                fixed_charge_equivalent_fmol=charge / CHARGE_PER_FMOL
+                - math.fsum(z[s] * amounts[s] for s in ids),
+                initial_charge_C=charge,
+                reservoir=False,
+                boundary_potential_V=0.0,
+            )
+        )
+        contact = copy.deepcopy(m["membranes"][i])
+        contact.update(
+            id=f"contact_{i}",
+            outside=f"ecs_{i}",
+            pump=None,
+            calcium_pump=None,
+            area_m2=CHAIN_CONTACT_M2,
+            capacitance_F=contact_c,
+        )
+        m["membranes"].append(contact)
+        e["membrane_controls"].append(
+            dict(membrane_id=f"contact_{i}", schedule=[dict(time=0.0, availability=1.0)])
+        )
+    pairs = [(f"ecs_{i}", f"ecs_{i + 1}") for i in range(CHAIN - 1)]
+    pairs.append((f"ecs_{CHAIN - 1}", f"bath_{CHAIN - 1}"))
+    for k, (a, b) in enumerate(pairs):
+        m["faces"].append(
+            dict(
+                id=f"face_{k}",
+                sender=a,
+                receiver=b,
+                area_m2=CHAIN_FACE[0],
+                length_m=CHAIN_FACE[1],
+                diffusivity_m2_per_s={s: CHAIN_ION_D for s in ids},
+                law="logmean_electrodiffusion@1",
+            )
+        )
+    x.update(extracellular_capacity=2 * CHAIN, membrane_capacity=2 * CHAIN, face_capacity=CHAIN)
+    if secreted:
+        raw = add_inventory_species(
+            raw,
+            SPECIES,
+            trace_mM=TRACE_mM,
+            diffusivity_m2_per_s=D_S,
+            floor_fmol=FLOOR_FMOL,
+            concentrations_mM=CHAIN_PROFILE_mM if profile is None else profile,
+        )
+    return cs.frozen_definition(raw)
+
+
+def chain_operators(raw, *, secrete=0.1, produce=1e-4, clear=0.5, uptake=1e6, ku=1e-6):
+    """Both operators active on the chain: cell_0 produces and secretes into ecs_0, ecs_2 clears,
+    cell_3 takes S up from ecs_3 (saturable) and cell_5 from ecs_5 (first-order)."""
+    raw = with_turnover(
+        raw,
+        [("produce", "cell_0", "production"), ("clear", "ecs_2", "clearance")],
+        [("produce", "cell_0", [(0.0, produce)]), ("clear", None, [(0.0, clear)])],
+    )
+    return with_exchange(
+        raw,
+        [
+            ("secrete", "contact_0", "export", "first_order"),
+            ("sink", "contact_3", "import", "saturable"),
+            ("take_up", "contact_5", "import", "first_order"),
+        ],
+        [
+            ("secrete", "cell_0", [(0.0, secrete)]),
+            ("sink", "cell_3", [(0.0, uptake, 5e-4)]),
+            ("take_up", "cell_5", [(0.0, ku)]),
+        ],
+    )
