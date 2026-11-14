@@ -206,8 +206,9 @@ counts fetching from the public atlases as data tooling (stage 5):
 - **Where each protein is found:** tissue and subcellular location from the Human Protein
   Atlas, kept apart from what the engine models.
 
-As the atlas gains units, it grows by stacking further glass shelves, one per membrane
-or compartment, in place of widening one sheet (the user, 14 November 2026).
+The user on the atlas, 14 November 2026: "as we get more we can stack those glass shelfs".
+Read here as: when the atlas gains units, add further membrane sheets above and below,
+rather than widen one. That reading is the visualizer session's, to be confirmed.
 
 Ideas kept for after the basics (the user, 14 November 2026):
 
