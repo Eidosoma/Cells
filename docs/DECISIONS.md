@@ -5013,6 +5013,31 @@ should be designed as a general engine feature.
   - lifting D145's holds;
   - a law or species named for one experiment (D144);
   - reproducing a paper's model (D138).
+- **The note, accepted 14 November 2026** by the lead with the advisor
+  ([SHARED_INVENTORY_REACTIONS_DESIGN.md](SHARED_INVENTORY_REACTIONS_DESIGN.md); its rulings are
+  recorded in §9).
+  - **The operator.** `local_species_reactions@1` holds one network per composition. It runs as a
+    split part around @3's step and writes @3's neutral species rows at cells and finite outside
+    nodes.
+  - **Shared state.** `network_reactions@1` stays separate, neither migrated nor wrapped. Only the
+    neutral detailed-balance kernel `mass_action.reversible_flux` is reused, unchanged.
+  - **Energy.**
+    - Exact ΔG bookings, with a standard-potential term the operator owns, since @3's chemical
+      term has none.
+    - At nodes with both passive and driven routes, a per-route hybrid books the heat.
+    - One known limit: a driven route that carries a trace species across a passive equilibrium
+      within one half-step overbooks that step's heat.
+  - **Numerics.** SSPRK(3,3) half-steps under a stage condition at θ = 1/2. dt·L > 1 is refused.
+  - **Refused in version 1:** RK4, the stationary analysis, volume providers, closers, charged or
+    permeant reacting species, turnover on reacting rows, and cell routes on replaced slots.
+  - **First acceptance.** MG0c's numerical qualification, against textbook references written by
+    an agent that never reads the operator code.
+  - **D138.** The lead's reading is that MG0c is within it; work proceeds unless the user objects.
+    The note's questions 10 and 11 stay open for the user.
+  - **The D148 round it queues.** @3's explicit bound and its membrane-rate rule have no material
+    term for neutral species on junctions and membranes (probe C4).
+    - A sweep found no world that declares such a species, and both version 1s refuse them.
+    - The round comes after D150 v1 lands, statically gated. It fixes stability, not accuracy.
 
 ## D153: Checkpoints resume across a source or runtime change only through a recorded admission
 

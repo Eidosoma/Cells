@@ -58,6 +58,36 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The shared-inventory reactions design (D152) is accepted (14 November).** The lead, with the
+  advisor; docs only ([note](docs/SHARED_INVENTORY_REACTIONS_DESIGN.md), rulings in §9). Every probe
+  ran on CPU through `run_detached.sh`
+  ([evidence](/mnt/workspaces/Cells/shared-inventory-reactions-20261114-01/): HANDOFF.md,
+  `sweep/SWEEP_SUMMARY.md`).
+  - **Probe 1, the engine at ac5a251.**
+    - MG0c's transport world runs, and its species-set step is admitted.
+    - The species' transport is second order (ratios 4.00–4.01).
+    - The ions are bitwise unchanged.
+  - **The NumPy prototype** is development evidence only.
+    - The half-step, the Strang composition and the bookings are second order (ratios 3.98–4.07).
+    - The review corrected the stage condition for passive routes.
+  - **Mixed-node heat.**
+    - A stage quadrature overbooks a passive switch-on from a 1e-12 mM trace by 34–54% in the first
+      step.
+    - An average-vector-field share goes negative at crossings.
+    - The adopted per-route hybrid does neither.
+    - The known limit: a driven route that carries a trace species across a passive equilibrium
+      within one half-step books 5.4–5.6 times that step's true heat at a 1e-12 mM trace. In the
+      probed world that is 0.27–0.56% of the whole heat at 1 s.
+  - **C3.** Second order holds up to dt·L ≈ 2 in three stiff worlds, so version 1 refuses
+    dt·L > 1.
+  - **C4, the engine at ac5a251.** A neutral species on a junction or membrane gets no rate bound
+    from @3.
+    - In species-only worlds it is refused loudly from x = 0.1.
+    - Where other flows set the shared bound, it passes silently up to x = 1, with errors of 0.07%,
+      2.3% and 13% at x = 0.1, 0.5 and 1.
+    - The sweep found no config, test, registered or qualified world that declares such a species.
+      A D148 round for @3 is queued after D150 v1.
+
 - **S5a is qualified: every judged item passed (14 November).** Judged once each, in series, from a
   fresh clean snapshot of main at 7f9c473 (src identical to baseline-21fb714's), after the
   division crossrev matched that baseline. There were no infrastructure kills

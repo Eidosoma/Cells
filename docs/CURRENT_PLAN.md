@@ -145,7 +145,16 @@ assay needs it, not before.
 
 **Reactions on the shared inventory (D152).** Driven nonlinear reactions that write @3's species
 rows, as a general composite operator. Its consumers are MG0c's Turing case, GZMK item 2 and E15.
-The design note comes first, written against D150 v1's design. Code follows D150 v1's code.
+- **The design note was accepted on 14 November 2026** ([note](SHARED_INVENTORY_REACTIONS_DESIGN.md),
+  rulings in §9). Code follows D150 v1's landing.
+  - Its first milestone is the contract fit (C1), then the operator, its guards and MG0c.
+  - Estimate: about 6 agent-days and an hour of CPU.
+- **The first acceptance** is MG0c's numerical qualification against independent references.
+- **Queued after D150 v1: a D148 round for @3** (probe C4).
+  - It adds the material term for neutral species on junctions and membranes to @3's explicit
+    bound and membrane-rate rule, statically gated.
+  - It fixes stability, not accuracy, and opens D150 v1.1's bridge.
+  - No world declares such a species, and both version 1s refuse them.
 
 ### Gate: lifecycle operators
 
