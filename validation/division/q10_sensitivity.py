@@ -13,7 +13,8 @@ world; electrode_current_injection@1 in the injected variants.
 Worlds (tests/partition_fixtures; nominal values around the heredity cell, built from neither J1
 input, so the J2 bright line holds):
 * 1->2: the compact bridge world, end 6 ms;
-* 1->2->4: the daughters divide at 5 ms, after every variant's bridge has closed, end 7 ms;
+* 1->2->4: the daughters divide at 5 ms, when the latest variant's bridge has just closed (its
+  closure ends there, which the bridge admits), end 7 ms;
 * furrow 1->2: the furrow world (onset at 1 ms, cleft lumen), end 6 ms.
 Each world runs without and with 1 pA into d1. The current flows over one window shared by every
 variant, from 3 ms (the latest partition time) until 6 ms, or until d1's own division at 5 ms.
@@ -25,8 +26,16 @@ Ranges, declared here, one parameter at a time:
 * the aperture a_0 in {0.4, 1, 1.8} x 2 nm. G_b0 = 2 a_0 sigma_cyt then spans the declared
   sigma_cyt band, 0.2 to 0.9 S/m, at the default 0.5 S/m: sigma_cyt enters only through G_b0
   (§4.2). The widest a_0 stays within the 1 ms step bound (0.88 of it in the symmetric worlds).
-  This range runs at t_p = 3 ms, against the t_p = 3 ms run. Only there is the bridge open
-  while the current flows; at the nominal t_p it has closed first and a_0 cannot act.
+  This range runs at the nominal t_p, against the nominal.
+The bridge closes linearly over 2 ms (the lead, 14 November: a nominal whose closure overlaps
+the injection, so its exchange is not zero against zero): at the nominal t_p it is open from 2
+to 4 ms, and the current flows from 3 ms. An earlier version closed over 1 ms, so the nominal
+bridge closed before the current, and ran the a_0 range at t_p = 3 ms.
+
+Q10 is reported, not judged (the lead, 14 November). Each change is reported against the
+quantity's numerical noise floor, 3 x the nominal's step term |Q(0.25 ms) - Q(0.125 ms)| or
+64 eps x the quantity's largest |value|, whichever is larger; a change below it is within noise
+(validation/division/s5_protocol.py computes it from the two runs).
 
 Compared at the last two records, after every variant's divisions and closure:
 * each live patch's voltage;
@@ -59,7 +68,7 @@ from cells.models.registry import get_model
 from tests import partition_fixtures as fx
 
 STATUS = "Development study for Q10 (S5a); not judged; no tolerance registered"
-TAU = 0.001  # s, linear closure.
+TAU = 0.002  # s, linear closure: at the nominal t_p it overlaps the injection (3 to 4 ms).
 APERTURES = (0.4, 1.0, 1.8)  # x fx.APERTURE_M.
 INJECTION_A = 1e-12
 INJECTION_START = 0.003  # s: the latest partition time, so the window is every variant's.
@@ -89,7 +98,7 @@ def world(family, tp, scale, injected, dt=fx.DT):
     raw["experiment"]["observation_times"] = [0.0, *records]
     end = raw["experiment"]["end_time"]
     raw["execution"].update(dt=dt, max_steps=int(math.ceil(end / dt)) + 8)  # As q5_order's.
-    times = (tp, TAU, INJECTION_START, SECOND, fx.ONSET, end, *records)
+    times = (tp, TAU, tp + TAU, INJECTION_START, SECOND, fx.ONSET, end, *records)
     assert all(on_grid(t, dt) for t in times), (dt, times)
     return raw, records
 
@@ -133,22 +142,17 @@ def quantities(result, spec):
     return {k: np.asarray(v) for k, v in out.items()}
 
 
-APERTURE_TP = 0.003  # s: the a_0 range is run here, where the open bridge meets the current.
+APERTURE_TP = NOMINAL_TP  # s: the a_0 range, where the open bridge meets the current.
 
 
 def variants(family):
-    """[(label, t_p, aperture scale, baseline label)], one parameter at a time.
-
-    The t_p range is compared with the nominal (2 ms). The a_0 range runs at t_p = 3 ms and is
-    compared with the t_p = 3 ms run: only there is the bridge open (3 to 4 ms) while the
-    current flows (from 3 ms), so only there can a_0 act. At the nominal t_p the bridge has
-    closed before any asymmetry, and the a_0 arm would read exactly zero.
-    """
+    """[(label, t_p, aperture scale, baseline label)], one parameter at a time, each against the
+    nominal (t_p 2 ms, a_0 1x): there the bridge is open from 2 to 4 ms and the current flows
+    from 3 ms, so a_0 acts on the nominal itself."""
     times = (0.002, 0.003) if family == "furrow 1->2" else (0.001, 0.002, 0.003)
     rows = [("nominal", NOMINAL_TP, 1.0, None)]
     rows += [(f"t_p={tp * 1e3:g} ms", tp, 1.0, "nominal") for tp in times if tp != NOMINAL_TP]
-    base = f"t_p={APERTURE_TP * 1e3:g} ms"
-    rows += [(f"a_0={s:g}x at {base}", APERTURE_TP, s, base) for s in APERTURES if s != 1.0]
+    rows += [(f"a_0={s:g}x", APERTURE_TP, s, "nominal") for s in APERTURES if s != 1.0]
     return rows
 
 

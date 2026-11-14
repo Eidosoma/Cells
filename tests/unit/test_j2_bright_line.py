@@ -18,8 +18,8 @@ A partition source is any of:
 * a string constant naming the partition law;
 * an import of the engine's partition operator or its definition helper, of R-ops, of S5's compact
   worlds (tests/partition_fixtures), of the Q10 driver, of the egg-scale division world, of the
-  Q2, Q3 and Q5 comparison drivers, of Q2's domain and rounding probes or of S5's own crossrev
-  set;
+  Q2, Q3 and Q5 comparison drivers, of Q2's domain and rounding probes, of Q4's limits measure
+  or of S5's own crossrev set;
 * the use of R-tissue's division entry point. R-tissue's static entry point is kept apart, so its
   cross-check against R-full may read J1.
 
@@ -79,6 +79,7 @@ PARTITION_MODULES = {
     "validation.division.q5_order",  # Q5: the observed order.
     "validation.division.q2_domain_probe",  # Q2's sampling rule against the engine's checks.
     "validation.division.q2_rounding_cause",  # Q2's rounding against the ionic content.
+    "validation.division.q4_limits_measure",  # Q4's limits, measured.
     "validation.division.division_crossrev",  # S5's own crossrev world set (§8.4).
 }
 PARTITION_FUNCTIONS = {"validation.division.cleft_tissue_reference.simulate_divisions"}
@@ -99,6 +100,7 @@ PARTITION_MARKERS = (
     "q5_order",
     "q2_domain_probe",
     "q2_rounding_cause",
+    "q4_limits_measure",
     "division_crossrev",
 )
 EXEMPT = {}  # {path: reason}; a J2 driver enters only after the user releases J2.

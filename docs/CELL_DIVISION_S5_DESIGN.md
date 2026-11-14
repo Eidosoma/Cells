@@ -900,7 +900,7 @@ there too.
 | Q7 | Idle and unchanged (items below) | As listed | As listed |
 | Q8 | Each refusal (§3.8, §4.4, §5) | Compact | Refused with its message; the prior state is kept |
 | Q9 | Closed slots are @3 padding at the view; the lumen's padded-slot test | Compact | Domain valid at the view; observations of closed slots are padding |
-| Q10 | Sensitivity to the partition time and to a_0 (§4.2) | Compact 1 → 2 and 1 → 2 → 4, with and without injection into one daughter | Each compared quantity's change over the declared ranges is reported against its tolerance; "insensitive" only within it, otherwise t_p and a_0 enter its band |
+| Q10 | Sensitivity to the partition time and to a_0 (§4.2) | Compact 1 → 2 and 1 → 2 → 4, with and without injection into one daughter | Reported, not judged (decision 25): each compared quantity's change over the declared ranges against its numerical noise floor; a change below it is within noise, otherwise t_p and a_0 enter its band |
 | Q11 | The retirement record is state wherever state goes (items below) | Compact; egg-scale | Every check passes; the negative control fails |
 
 The Q6 items:
@@ -923,8 +923,11 @@ The Q6 items:
 The Q7 items:
 - a partition with no divisions declared is statically idle, and so is a bridge with no
   bridges: both bitwise against the composition without them;
-- the 19-cell sheet at the 64-node cap with idle division operators: bitwise;
-- **S3's cleft egg on insertion@2 and lumen@2 (criterion fixed before any run):**
+- the 19-cell sheet at the 64-node cap with idle division operators: bitwise (built,
+  `tests/unit/test_division_idle_sheet_runs.py`);
+- **S3's cleft egg on insertion@2 and lumen@2 (criterion fixed before any run): deferred**
+  (decision 24). Until it passes, insertion@2 and lumen@2 are qualified in division worlds only,
+  and S3's egg stays on @1.
   - **The pass criterion is S3's registered protocol against R-full.** S3's judge runs once, from
     a clean snapshot, on S3's definition with the two new versions, under S3's registered
     tolerances (Q1, Q2, Q4, Q5; Q3 reported).
@@ -976,6 +979,11 @@ from a clean snapshot.
   ruling enters Appendix A.
 - **The bright line.** After the merge, `validation.division.cleft_tissue_crosscheck`, a new J1
   reader, joins the J1 module list of `tests/unit/test_j2_bright_line.py`.
+
+**The protocol, PROPOSED (14 November, not registered).** It is
+`validation/division/s5_protocol.json`, drafted by `validation/division/s5_protocol.py` from the
+disclosed development runs it names; every tolerance number is computed there. Q2's frozen
+draws were fixed before R-ops' amended magnitudes land (A.8). The lead registers it after review.
 
 ### 8.4 Shared code: crossrev and D148
 - **What changes.** `contract.py`, `pump_composite.py` and `pump_composite_adapter.py` are
@@ -1155,6 +1163,8 @@ mirrors `tests/unit/test_d147_drivers.py`.
 | 21 | The bright line: `tests.partition_fixtures` and `validation.division.q10_sensitivity` join the partition list; insertion@2 and lumen@2 stay off it on condition that neither reaches a partition module through its explicit imports (asserted by the scan; they read lifetimes and patch maps through the contract's host-side `living_intervals` and `patch_maps`). `validation.division.cleft_tissue_crosscheck` joins the J1 list after the references merge | Accepted (the lead) |
 | 22 | Q7 (S3's cleft egg on insertion@2 and lumen@2): S3's registered protocol and judge stay untouched; Q7 gets its own registered variant protocol; a change to the J1 judge is a new entry point or a parameter whose default is today's path; before the Q7 run, the registered S3 readings come out bitwise unchanged on their recorded inputs; the J2 bright line still passes | Ruled (the lead); not started |
 | 23 | Q10 (§8.3): raw development results accepted (`q10-s5a6`, no tolerance registered). The registered protocol varies a_0 at a t_p where the open bridge overlaps the asymmetry (the injection), and states t_p's range relative to the injection window | Accepted |
+| 24 | The acceptance list changes (the lead, 14 November): Q7's S3 cleft egg on insertion@2 and lumen@2 (Q7(b), decision 22) is deferred. Its gate stays a registered operator variant in S3's protocol family, with a J1 judge entry point whose default is today's path and S3's registered readings shown bitwise unchanged. Until it passes, insertion@2 and lumen@2 are qualified in division worlds only, and S3's egg stays on insertion@1 and lumen@1. Q7(a), the 19-cell sheet at the 64-node cap with idle division operators, is built (`tests/unit/test_division_idle_sheet_runs.py`) | Ruled (the lead); the user is told |
+| 25 | The protocol's rulings (the lead, 14 November): Q5 is reported, not banded, and judges its stop rules only (S3's form); Q10 is reported, not judged, each change against its noise floor, with a nominal closure (2 ms) that overlaps the injection; Q2's judged draws take fresh seeds, the seen sets (seed 20261113) stay development evidence; every judge entry refuses a PROPOSED protocol | Ruled (the lead) |
 
 ## 13. Risks
 1. **The electrode ledger at four cells.**

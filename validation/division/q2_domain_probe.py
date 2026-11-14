@@ -37,7 +37,6 @@ from cells.models import pump_composite_adapter as adapter
 from cells.processes import junction_gate, voltage_gates
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
 from tests import partition_fixtures as fx
-from validation.division import partition_reference as rops
 from validation.division import q2_rops_comparison as q2
 
 DRAWS = 200
@@ -97,7 +96,7 @@ def summary(world, d, states):
     )
     worst, key, detail = 0.0, None, None
     for state in admitted:
-        result = rops.apply(world.snapshot(state), world.division(d, state))
+        result = q2.apply(world.snapshot(state), world.division(d, state), "old")
         after, ok = world.event(state, (1.0,))
         if not ok:
             out["engine_refused"] = out.get("engine_refused", 0) + 1

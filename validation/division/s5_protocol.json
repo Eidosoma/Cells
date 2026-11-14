@@ -1,0 +1,3360 @@
+{
+ "kind": "cells.cell_division_s5_protocol@1",
+ "id": "s5a-partition-bridge-insertion2-lumen2",
+ "title": "S5a: isopotential_partition@1, cytoplasmic_bridge_closure@1, scheduled_membrane_insertion@2 and restricted_cleft_lumen@2 against R-ops, R-tissue and the analytic limits",
+ "status": "PROPOSED, not registered: drafted 14 November 2026 for the lead's review with the advisor; the lead's rulings of 14 November written in. No judged run has been made. Q2's judged seeds and its negative controls are frozen together in this commit, before R-ops' amended magnitudes (Appendix A.8, the increment form's term, pending in R-ops) land.",
+ "engine_models": [
+  "resolved_pump_composite@1",
+  "resolved_pump_tissue@3",
+  "membrane_entity_state@1",
+  "isopotential_partition@1",
+  "cytoplasmic_bridge_closure@1",
+  "scheduled_membrane_insertion@2",
+  "restricted_cleft_lumen@2",
+  "electrode_current_injection@1"
+ ],
+ "references": {
+  "R-ops": "validation/division/partition_reference.py (run, not read)",
+  "R-tissue": "validation/division/cleft_tissue_reference.py (run, not read)",
+  "interface": "validation/division/REFERENCES_USAGE.md; the adapters are built from it alone"
+ },
+ "rules": {
+  "tolerances": "Every tolerance number is computed from a development run named beside it (validation/division/s5_protocol.py draft); development runs are not judged.",
+  "judged_run": "once per item, after registration, from a fresh clean execution snapshot of main (validation/source_snapshot.py, no dirty patch). A failure is recorded and diagnosed, never retuned.",
+  "judge_entries": {
+   "guard": "validation/division/s5_protocol.registered, each entry's first call: it refuses an unregistered protocol and a source that is not a clean execution snapshot before anything is computed or written (S3's rule); tests/unit/test_s5_judged_refusal.py tests it on edited copies",
+   "Q1 and Q11": "python -m validation.division.egg_division_world OUT --judge",
+   "Q2": "python -m validation.division.q2_rops_comparison judge OUT (also refused until R-ops takes charge_term)",
+   "Q3": "python -m validation.division.q3_tissue_comparison judge OUT",
+   "Q5": "python -m validation.division.q5_order judge OUT",
+   "Q4, Q6-Q9": "the test files at the judged snapshot",
+   "Q10": "none: reported, not judged",
+   "development": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/test_s5_judged_refusal.log",
+    "snapshot_revision": "1e73543",
+    "pre_merge": false,
+    "tests": "5 passed in 2.14s"
+   }
+  },
+  "landing_order": "this protocol's frozen commit lands on main first, then the amended R-ops; A.8's 'pending in R-ops' is removed in that second landing (the lead, 14 November)",
+  "development_runs": {
+   "q2": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a28/q2_rops_comparison/q2_rops.json",
+    "snapshot_revision": "4487d0a",
+    "pre_merge": false
+   },
+   "q2_near_zero": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a28/near_zero_set.json",
+    "snapshot_revision": "4487d0a",
+    "pre_merge": false
+   },
+   "q2_first_amendment": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a25/q2_rops_comparison/q2_rops.json",
+    "snapshot_revision": "3c3f190",
+    "pre_merge": false
+   },
+   "q2_frozen": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a23/q2_rops_comparison/q2_rops.json",
+    "snapshot_revision": "0c7e2ac",
+    "pre_merge": false
+   },
+   "q3": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q3_tissue_comparison/q3_tissue.json",
+    "snapshot_revision": "67b22b0",
+    "pre_merge": false
+   },
+   "q4_tests": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/test_division_limits_runs.log",
+    "snapshot_revision": "67b22b0",
+    "pre_merge": false
+   },
+   "q4_measure": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q4_limits_measure.json",
+    "snapshot_revision": "67b22b0",
+    "pre_merge": false
+   },
+   "q5": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/q5_order/q5_order.json",
+    "snapshot_revision": "1e73543",
+    "pre_merge": false
+   },
+   "q5_bridge_coupling": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/bridge-coupling-order.json",
+    "snapshot_revision": null,
+    "pre_merge": false
+   },
+   "q7a": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/test_division_idle_sheet_runs.log",
+    "snapshot_revision": "1e73543",
+    "pre_merge": false
+   },
+   "refusal": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/test_s5_judged_refusal.log",
+    "snapshot_revision": "1e73543",
+    "pre_merge": false
+   },
+   "q10_dt": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/q10_dt0.25ms/q10_sensitivity.json",
+    "snapshot_revision": "1e73543",
+    "pre_merge": false
+   },
+   "q10_half": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/q10_dt0.125ms/q10_sensitivity.json",
+    "snapshot_revision": "1e73543",
+    "pre_merge": false
+   },
+   "egg": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/egg-s5a8/egg_division.json",
+    "snapshot_revision": "c37ffa2",
+    "pre_merge": true
+   },
+   "q2_probe": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q2_domain_probe.json",
+    "snapshot_revision": "67b22b0",
+    "pre_merge": false
+   },
+   "q2_cause": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q2_rounding_cause.json",
+    "snapshot_revision": "67b22b0",
+    "pre_merge": false
+   },
+   "q2_out_of_domain": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/comparisons-s5a9/q2_rops_comparison/q2_rops.json",
+    "snapshot_revision": "6c2b118",
+    "pre_merge": true
+   },
+   "q2_before_freeze": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a20/q2_rops_comparison/q2_rops.json",
+    "snapshot_revision": "5e6f9cb",
+    "pre_merge": false
+   },
+   "a8_ratios": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-references-20261113-01/a8-ratios/a8_ratios.json",
+    "snapshot_revision": null,
+    "pre_merge": false
+   },
+   "regression": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/regression-s5a9/results.txt",
+    "snapshot_revision": "6c2b118",
+    "pre_merge": true
+   }
+  },
+  "pre_merge": "runs marked pre_merge ran before main's merge of the volume ledger (08c6a10). S5's own crossrev set is identical across the merge (crossrev-s5a10-division against crossrev-s5a11), but it covers the nine compact worlds only; the egg-scale world and Q5's worlds are outside it, and the only merged source they execute (current_injection.py) changed by a declaration (CONFLICTS_VIEW volume)."
+ },
+ "Q1": {
+  "claim": "Every @3 and operator ledger closes on host and device across partitions, with insertion, lumen, bridge and injection.",
+  "worlds": "compact 1 -> 2 and 1 -> 2 -> 4 (tests/partition_fixtures), and the egg-scale world (validation/division/egg_division_world.py) at full scale",
+  "pass": "no ledger, domain or dissipation check fails on any row, host and device",
+  "as_built": [
+   "tests/unit/test_partition_runs.py",
+   "tests/unit/test_cleft_division_runs.py",
+   "validation/division/egg_division_world.py (windowed, device checks on every row, then the host replay)"
+  ],
+  "judged_run": "the egg-scale world once, at 0.25 ms, with a 6G memory cap; the compact worlds through their test files at the judged snapshot",
+  "development": {
+   "egg": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/egg-s5a8/egg_division.json",
+    "snapshot_revision": "c37ffa2",
+    "pre_merge": true
+   },
+   "egg_diagnostics": {
+    "max_balance_error_fmol": 2.0375523490656633e-10,
+    "max_extracellular_balance_error_fmol": 5.72355929762125e-07,
+    "max_global_balance_error_fmol": 5.739410653404775e-07,
+    "max_capacitor_charge_error_C": 6.203854594147708e-25,
+    "max_electrode_charge_error_C": 3.433334705333167e-23,
+    "max_global_charge_error_C": 2.6736643855328836e-17,
+    "max_energy_balance_error_pJ": 0.6321247731136737,
+    "max_reservoir_work_error_pJ": 4.421919584274292e-06,
+    "max_electrode_work_error_pJ": 0.0,
+    "max_metabolic_work_error_pJ": 0.0,
+    "max_energy_balance_relative": 4.169868656517371e-07,
+    "max_global_charge_bound_ratio": 0.008730192692072088,
+    "max_membrane_area_balance_error_m2": 2.934757403999337e-18,
+    "max_membrane_capacitance_balance_error_F": 1.876955527944075e-20,
+    "max_population_abundance_balance_error": 0.0,
+    "max_lumen_fill_balance_error_fmol": 1.1938391253352165e-07,
+    "max_partition_material_error_fmol": 9.094947017729282e-13,
+    "max_partition_area_error_m2": 2.117582368135751e-22,
+    "max_partition_capacitance_error_F": 6.617444900424222e-24,
+    "max_partition_units_error": 0.0
+   },
+   "egg_rows_replayed": 120030,
+   "regression": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/regression-s5a9/results.txt",
+    "snapshot_revision": "6c2b118",
+    "pre_merge": true,
+    "files_passed": 19
+   }
+  }
+ },
+ "Q2": {
+  "claim": "The engine's event map equals R-ops'.",
+  "cases": [
+   "each world's events: the compact symmetric and asymmetric worlds, the neighbour contact, the bridge world's first and second divisions, the asymmetric furrow world with a bridge, the second-onset world's first division",
+   "the simultaneous second divisions as the engine applies them (bridge world, second-onset world), against R-ops applying them one after the other, in both orders",
+   "the random sets (below)",
+   "the negative controls (below)"
+  ],
+  "random_sets": {
+   "worlds": [
+    "symmetric neighbour world: tests/partition_fixtures.divided(neighbour=True)",
+    "asymmetric neighbour world (f 0.75, a 0.6, three carriers): divided(neighbour=True, f=0.75, area_fraction=0.6, carriers={Na: 0.3, K: 0.5, M: 0.2})"
+   ],
+   "spreads_declared_charges": [
+    0.1,
+    1.0,
+    3.0
+   ],
+   "draws_per_set": 200,
+   "sampler": "validation/division/q2_rops_comparison.perturbed, one fresh numpy default_rng per world and spread",
+   "count_rule": "every draw the composite's control domain check admits, with the control at the event, is compared; no other bound applies, no draw is redrawn, and the admitted counts are reported",
+   "seen": {
+    "seed": 20261113,
+    "role": "development evidence (q2_domain_probe's draws; their old-scale results were seen). Once the amended R-ops lands they are rerun under both scales (apply(..., charge_term=False) for the old) and disclosed"
+   },
+   "judged": {
+    "seeds": {
+     "symmetric neighbour world": {
+      "spread 0.1": 867424677,
+      "spread 1": 731592983,
+      "spread 3": 186581497
+     },
+     "asymmetric neighbour world (f 0.75, a 0.6, three carriers)": {
+      "spread 0.1": 336021742,
+      "spread 1": 1277804744,
+      "spread 3": 1727379153
+     }
+    },
+    "role": "the judged sets, assigned by the lead; read only by q2_rops_comparison.judge behind its guard. Nobody runs them, at either scale, before the judged run"
+   }
+  },
+  "tolerance": "64 eps x R-ops' own magnitude per compared quantity (the lead's ruling). For a cell's node charge, input and daughters alike, R-ops' magnitude adds |Q| + 1e-15 F sum |z dn|, the increment form's term (the lead's ruling of 14 November: not A.1's whole content, about 1,370 times larger on these draws), carried through its own solve (Appendix A.8, pending in R-ops); clefts unchanged. A key without an R-ops magnitude compares at 64 eps x (|engine| + |R-ops|).",
+  "a8_loosening": {
+   "path": "/mnt/workspaces/Cells/cell-division-s5-references-20261113-01/a8-ratios/a8_ratios.json",
+   "snapshot_revision": null,
+   "pre_merge": false,
+   "note": "the references agent's measure of A.8's loosening (new/old per output key): every magnitude that depends on a charge or potential (charges, potentials, image charge, capacitor energy, and through delta q the mismatch, delta, the increments and moved amounts, the daughters' amounts, the free energy and W); volumes, backgrounds, anchors, areas and capacitances unchanged. The factor on Q2's own draws comes from the seen sets' rerun"
+  },
+  "negative_controls": {
+   "frozen": "with the judged seeds, in one commit (the lead, 14 November)",
+   "defects": {
+    "a_k": "R-ops given membrane_0's share a_k + delta; a patch's charge and capacitance split together, so it reaches the charges and never the potentials",
+    "parent charge": "R-ops given the parent's node charge Q_P + delta |Q_declared| (the snapshot's charge anchor), which does not vanish as Q_P nears 0",
+    "f": "R-ops given the volume fraction f + delta",
+    "transference": "R-ops given the first carrier's t + delta and the second's t - delta, their sum kept 1",
+    "W": "R-ops' daughters' free energy evaluated at V_D (1 + delta), a booking defect in the free-energy volume: W moves by -1e-3 RT N_D ln(1 + delta), first order (the amendment; accepted as built). It is applied to R-ops' output through the usage note's G(n, V): the engine books free energy relative to its anchors, so a volume defect there would touch only the increments, about 1e-3 of the effect at the bound state",
+    "mismatch scale": "the engine moves (1 + delta) times the mismatch, its carrier fractions scaled in its layout, which breaks isopotentiality at first order (an engine-side defect, since R-ops keeps the transference numbers summing to 1; the amendment, formerly 'image'); a delta its event map refuses is reported",
+    "non-conservation": "D2 takes slightly more than the rest: Delta_D2 -> (Delta_P - Delta_D1)(1 + delta), applied to the engine's state after its event, its D2 increment and moved amount and the image it books (plates1 - plates0, the partition's capacitor_state) (the second amendment). At first order it moves the amounts by delta Delta_D2, and the charges and the image charge by delta F sum_s z_s Delta_D2,s, zero where D2's increment is electroneutral: a miss there is read as such, as for W (each case records D2's net charge increment). The work bookings keep the engine's undefected values, so its work entries are uninformative. The partition's event checks, re-applied to the defective state with its constants, report the delta they refuse and the checks that refuse it"
+   },
+   "construction_checks": "each case records the engine-side controls' construction against the engine's own event: at delta = 0 the non-conservation construction reproduces the event in every field; the re-applied event checks pass the event; and along the mismatch-scale ladder they agree with the event map's verdict and booked image at every delta. The verdict requires all three (added with the second amendment, at review before its development run)",
+   "deltas": [
+    1e-16,
+    1.7782794100389228e-16,
+    3.1622776601683793e-16,
+    5.623413251903491e-16,
+    1e-15,
+    1.7782794100389227e-15,
+    3.1622776601683794e-15,
+    5.623413251903491e-15,
+    1e-14,
+    1.7782794100389227e-14,
+    3.1622776601683796e-14,
+    5.6234132519034906e-14,
+    1e-13,
+    1.7782794100389227e-13,
+    3.162277660168379e-13,
+    5.62341325190349e-13,
+    1e-12,
+    1.7782794100389228e-12,
+    3.1622776601683794e-12,
+    5.6234132519034904e-12,
+    1e-11,
+    1.7782794100389227e-11,
+    3.1622776601683794e-11,
+    5.6234132519034906e-11,
+    1e-10,
+    1.778279410038923e-10,
+    3.1622776601683795e-10,
+    5.623413251903491e-10,
+    1e-09,
+    1.7782794100389228e-09,
+    3.1622776601683795e-09,
+    5.623413251903491e-09,
+    1e-08,
+    1.7782794100389228e-08,
+    3.162277660168379e-08,
+    5.6234132519034905e-08,
+    1e-07,
+    1.7782794100389227e-07,
+    3.162277660168379e-07,
+    5.62341325190349e-07,
+    1e-06,
+    1.778279410038923e-06,
+    3.162277660168379e-06,
+    5.623413251903491e-06,
+    1e-05,
+    1.778279410038923e-05,
+    3.1622776601683795e-05,
+    5.623413251903491e-05,
+    0.0001,
+    0.00017782794100389227,
+    0.00031622776601683794,
+    0.0005623413251903491,
+    0.001,
+    0.0017782794100389228,
+    0.0031622776601683794,
+    0.005623413251903491,
+    0.01
+   ],
+   "families": {
+    "charges": [
+     "charge_D1_C",
+     "charge_D2_C"
+    ],
+    "potentials": [
+     "potentials_after_V"
+    ],
+    "image": [
+     "image_charge_C"
+    ],
+    "amounts": [
+     "amounts_D1_fmol",
+     "amounts_D2_fmol",
+     "increment_D1_fmol",
+     "increment_D2_fmol",
+     "moved_fmol"
+    ],
+    "work": [
+     "work_pJ"
+    ]
+   },
+   "targets": {
+    "a_k": [
+     "charges"
+    ],
+    "parent charge": [
+     "charges",
+     "potentials"
+    ],
+    "f": [
+     "amounts"
+    ],
+    "transference": [
+     "amounts"
+    ],
+    "W": [
+     "work"
+    ],
+    "mismatch scale": [
+     "charges",
+     "potentials"
+    ],
+    "non-conservation": [
+     "image",
+     "charges",
+     "amounts"
+    ]
+   },
+   "statistic": "per control and family, the smallest delta whose ratio passes 64 (None if none does; 'baseline above 64' where the undefected case already fails at that scale)",
+   "threshold": 1e-09,
+   "pass": "every control's target families caught at or below the threshold wherever the undefected case passes; at the new scale each near-zero case passes undefected and fails with the parent-charge defect; and each case's construction checks hold. A control that misses the threshold is a finding, never a moved threshold",
+   "amendment": {
+    "when": "the lead, 14 November, after the freeze (0c7e2ac) and before any new-scale run; the threshold stays 1e-9",
+    "finding": "W is reached by no map defect at 1e-9: f at 1.0-1.8e-5 or never, transference at 3.2-5.6e-5, a_k at 1.0-1.8e-5, the parent charge at 1-1.8e-4 (old scale, protocol-dev-s5a23)",
+    "reason": "dG is stationary at the correct split: at delta = 0 the daughters' concentrations equal the parent's, so d dG / d delta = ln c_D1 - ln c_D2 = 0, and any map defect reaches W only at second order. W equals dG here, the bath held at 0 V. f -> W was a mis-specified target",
+    "changes": [
+     "W leaves f's targets; f's effect on W is reported as information",
+     "W takes its own first-order control (the daughters' free energy at V_D (1 + delta))",
+     "the image charge takes its own control (the mismatch scaled, delta -> (1 + delta) delta)"
+    ]
+   },
+   "second_amendment": {
+    "when": "the lead, 14 November, after the first amendment (3c3f190) and before any new-scale run; the threshold stays 1e-9",
+    "finding": "the mismatch-scale control (then 'image') does not reach the image charge: it missed in 10 of 12 cases, and its two catches were rounding: there the image ratio moves in steps of about 20-40 and does not grow with delta (old scale, protocol-dev-s5a25)",
+    "reason": "a held node's plate charge is minus the total charge of the patches facing it; a split that conserves charge leaves it unchanged, and so does the furrow world's floating cleft, whose charge is fixed. No charge-conserving defect can move the image charge",
+    "changes": [
+     "the delta-scaling control, renamed 'mismatch scale', targets the charges and potentials, no longer the image charge",
+     "a non-conservation control, the defect class the image charge exists to catch: Delta_D2 -> (Delta_P - Delta_D1)(1 + delta), targeting the image charge and the charge and material sums",
+     "the W control is accepted as built",
+     "the construction checks (negative_controls.construction_checks), required by the verdict"
+    ]
+   },
+   "scales": "old and new (R-ops' charge_term)",
+   "cases": [
+    "the asymmetric neighbour world's bound state",
+    "the near-zero seen draws (below)",
+    "the asymmetric furrow world after its onset (two patches a cell)"
+   ],
+   "near_zero": {
+    "rule": "the asymmetric world's admitted seen draws whose parent patch lies within 0.005 V of 0 V before the event (a state-only rule)",
+    "members": [
+     [
+      1.0,
+      35
+     ],
+     [
+      1.0,
+      45
+     ],
+     [
+      1.0,
+      77
+     ],
+     [
+      1.0,
+      111
+     ],
+     [
+      1.0,
+      143
+     ],
+     [
+      1.0,
+      149
+     ],
+     [
+      1.0,
+      171
+     ],
+     [
+      1.0,
+      180
+     ],
+     [
+      1.0,
+      191
+     ],
+     [
+      3.0,
+      32
+     ]
+    ],
+    "worst_seen": [
+     1.0,
+     35
+    ],
+    "disclosure": "the rule was chosen after the seen states had been seen: a 1 mV rule kept two draws (spread 1, draws 35 and 77); 5 mV adds seven more and the spread-3 worst (draw 32). The driver recomputes the members from the rule and asserts them",
+    "judged_sets": "the rule applies unchanged to the judged sets: at the judged run the near-zero cases are the judged sets' admitted draws within the same 5 mV (the lead, 14 November)"
+   }
+  },
+  "judged_run": "q2_rops_comparison judge once at the judged snapshot, with R-ops' amended magnitudes: the cases, the simultaneous divisions, the judged sets and the controls under both scales; the verdict at the new scale",
+  "development_old_scale": {
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a28/q2_rops_comparison/q2_rops.json",
+   "snapshot_revision": "4487d0a",
+   "pre_merge": false,
+   "fixed_cases": {
+    "compact symmetric": 0.3928037841814018,
+    "compact asymmetric": 0.3928037841814018,
+    "neighbour contact": 0.3928037841814018,
+    "furrow asymmetric with a bridge": 0.39248487553257416,
+    "bridge world, first division": 0.3928037841814018,
+    "bridge world, d1's division": 0.3928037841814018,
+    "second-onset world, first division": 0.3700960158589251
+   },
+   "simultaneous": {
+    "bridge world": {
+     "second_d1 then second_d2": 0.08763523984678251,
+     "second_d2 then second_d1": 0.08763523984678251
+    },
+    "second-onset world": {
+     "second_d1 then second_d2": 0.3317319526255406,
+     "second_d2 then second_d1": 0.3317319526255406
+    }
+   },
+   "frozen_draws": {
+    "symmetric neighbour world": {
+     "spread 0.1": {
+      "seed": 20261113,
+      "spread": 0.1,
+      "draws": 200,
+      "admitted": 200,
+      "worst": 0.8074262156392855,
+      "worst_key": "potentials_after_V"
+     },
+     "spread 1": {
+      "seed": 20261113,
+      "spread": 1.0,
+      "draws": 200,
+      "admitted": 148,
+      "worst": 0.9277553511335904,
+      "worst_key": "potentials_after_V"
+     },
+     "spread 3": {
+      "seed": 20261113,
+      "spread": 3.0,
+      "draws": 200,
+      "admitted": 59,
+      "worst": 0.677170229401472,
+      "worst_key": "potentials_after_V"
+     }
+    },
+    "asymmetric neighbour world (f 0.75, a 0.6, three carriers)": {
+     "spread 0.1": {
+      "seed": 20261113,
+      "spread": 0.1,
+      "draws": 200,
+      "admitted": 200,
+      "worst": 9.05964296133899,
+      "worst_key": "potentials_after_V"
+     },
+     "spread 1": {
+      "seed": 20261113,
+      "spread": 1.0,
+      "draws": 200,
+      "admitted": 148,
+      "worst": 860.5552472480347,
+      "worst_key": "potentials_after_V"
+     },
+     "spread 3": {
+      "seed": 20261113,
+      "spread": 3.0,
+      "draws": 200,
+      "admitted": 59,
+      "worst": 152.6151550304683,
+      "worst_key": "potentials_after_V"
+     }
+    }
+   },
+   "negative_controls": {
+    "asymmetric neighbour world, bound state": {
+     "baseline": {
+      "charges": 0.0,
+      "potentials": 0.3928037841814018,
+      "image": 0.17527047969356502,
+      "amounts": 0.21356859055711286,
+      "work": 0.07031047991682063,
+      "any key": 0.3928037841814018
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": -1.945909623578043e-13,
+      "faithful": true
+     },
+     "a_k": {
+      "smallest_defect_caught": {
+       "charges": 5.6234132519034906e-14,
+       "potentials": null,
+       "image": null,
+       "amounts": 5.6234132519034906e-14,
+       "work": 1.778279410038923e-05,
+       "any key": 1e-14
+      },
+      "targets_caught_at_threshold": {
+       "charges": true
+      }
+     },
+     "parent charge": {
+      "smallest_defect_caught": {
+       "charges": 1e-13,
+       "potentials": 3.1622776601683796e-14,
+       "image": null,
+       "amounts": 3.162277660168379e-13,
+       "work": 0.00017782794100389227,
+       "any key": 3.1622776601683796e-14
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": true
+      }
+     },
+     "f": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": 1.7782794100389227e-14,
+       "work": 1.778279410038923e-05,
+       "any key": 1.7782794100389227e-14
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "transference": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": 1e-13,
+       "work": 5.623413251903491e-05,
+       "any key": 1e-13
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": 5.62341325190349e-13
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "mismatch scale": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": 1e-13,
+       "image": null,
+       "amounts": 3.162277660168379e-13,
+       "work": 0.0001,
+       "any key": 1e-13
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": true
+      },
+      "engine_refuses_from": 3.1622776601683795e-09,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": 1e-13,
+       "image": 5.62341325190349e-13,
+       "amounts": 3.162277660168379e-13,
+       "work": null,
+       "any key": 1e-13
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 3.1622776601683795e-09,
+      "refused_by": [
+       "isopotential"
+      ]
+     }
+    },
+    "asymmetric neighbour world, seen spread 1 draw 35": {
+     "baseline": {
+      "charges": 199.62608383118828,
+      "potentials": 860.5552472480347,
+      "image": 0.0,
+      "amounts": 0.8415305153991092,
+      "work": 0.056096598464052676,
+      "any key": 860.5552472480347
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.201997204873493e-13,
+      "faithful": true
+     },
+     "a_k": {
+      "smallest_defect_caught": {
+       "charges": "baseline above 64",
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1.7782794100389228e-12,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": false
+      }
+     },
+     "parent charge": {
+      "smallest_defect_caught": {
+       "charges": "baseline above 64",
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": false,
+       "potentials": false
+      }
+     },
+     "f": {
+      "smallest_defect_caught": {
+       "charges": "baseline above 64",
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1.7782794100389227e-14,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "transference": {
+      "smallest_defect_caught": {
+       "charges": "baseline above 64",
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 3.1622776601683794e-12,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": "baseline above 64",
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "mismatch scale": {
+      "smallest_defect_caught": {
+       "charges": "baseline above 64",
+       "potentials": "baseline above 64",
+       "image": 1.7782794100389228e-12,
+       "amounts": 1e-11,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": false,
+       "potentials": false
+      },
+      "engine_refuses_from": 1.7782794100389227e-07,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": "baseline above 64",
+       "potentials": "baseline above 64",
+       "image": 1e-15,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": false,
+       "amounts": true
+      },
+      "engine_refuses_from": 5.6234132519034906e-11,
+      "refused_by": [
+       "plate_charges"
+      ]
+     }
+    },
+    "asymmetric neighbour world, seen spread 1 draw 45": {
+     "baseline": {
+      "charges": 28.620314930813638,
+      "potentials": 82.01288215760894,
+      "image": 14.27567515826126,
+      "amounts": 0.5983112018057142,
+      "work": 0.0261632385812835,
+      "any key": 82.01288215760894
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.052054505365497e-13,
+      "faithful": true
+     },
+     "a_k": {
+      "smallest_defect_caught": {
+       "charges": 1e-13,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 3.162277660168379e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true
+      }
+     },
+     "parent charge": {
+      "smallest_defect_caught": {
+       "charges": 1.7782794100389227e-15,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 5.6234132519034906e-14,
+       "work": 0.0031622776601683794,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": false
+      }
+     },
+     "f": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1.7782794100389227e-14,
+       "work": 0.01,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "transference": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 5.62341325190349e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "mismatch scale": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1.7782794100389228e-12,
+       "work": 0.005623413251903491,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": false
+      },
+      "engine_refuses_from": 5.6234132519034905e-08,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1e-14,
+       "potentials": "baseline above 64",
+       "image": 1.7782794100389227e-14,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 1.778279410038923e-10,
+      "refused_by": [
+       "plate_charges"
+      ]
+     }
+    },
+    "asymmetric neighbour world, seen spread 1 draw 77": {
+     "baseline": {
+      "charges": 36.520212611108285,
+      "potentials": 203.060962908443,
+      "image": 65.00597844777275,
+      "amounts": 0.5982326599042757,
+      "work": 0.0568985753662916,
+      "any key": 203.060962908443
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.190716683405357e-13,
+      "faithful": true
+     },
+     "a_k": {
+      "smallest_defect_caught": {
+       "charges": 3.1622776601683796e-14,
+       "potentials": "baseline above 64",
+       "image": "baseline above 64",
+       "amounts": 1e-12,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true
+      }
+     },
+     "parent charge": {
+      "smallest_defect_caught": {
+       "charges": 5.623413251903491e-16,
+       "potentials": "baseline above 64",
+       "image": "baseline above 64",
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": false
+      }
+     },
+     "f": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": "baseline above 64",
+       "amounts": 1.7782794100389227e-14,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "transference": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": "baseline above 64",
+       "amounts": 3.1622776601683794e-12,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": "baseline above 64",
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "mismatch scale": {
+      "smallest_defect_caught": {
+       "charges": 3.162277660168379e-13,
+       "potentials": "baseline above 64",
+       "image": "baseline above 64",
+       "amounts": 1e-11,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": false
+      },
+      "engine_refuses_from": 1e-07,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 5.623413251903491e-15,
+       "potentials": "baseline above 64",
+       "image": "baseline above 64",
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": false,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 5.6234132519034906e-11,
+      "refused_by": [
+       "plate_charges"
+      ]
+     }
+    },
+    "asymmetric neighbour world, seen spread 1 draw 111": {
+     "baseline": {
+      "charges": 52.40376283675204,
+      "potentials": 174.80323446004587,
+      "image": 9.954853348828829,
+      "amounts": 0.834299462881011,
+      "work": 0.08608976034934587,
+      "any key": 174.80323446004587
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.1546758278137514e-13,
+      "faithful": true
+     },
+     "a_k": {
+      "smallest_defect_caught": {
+       "charges": 1e-13,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 5.62341325190349e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true
+      }
+     },
+     "parent charge": {
+      "smallest_defect_caught": {
+       "charges": 3.1622776601683793e-16,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 5.6234132519034906e-14,
+       "work": 0.01,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": false
+      }
+     },
+     "f": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1.7782794100389227e-14,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "transference": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1e-12,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "mismatch scale": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 3.1622776601683794e-12,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": false
+      },
+      "engine_refuses_from": 5.6234132519034905e-08,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1.7782794100389227e-15,
+       "potentials": "baseline above 64",
+       "image": 1e-14,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 1e-10,
+      "refused_by": [
+       "plate_charges"
+      ]
+     }
+    },
+    "asymmetric neighbour world, seen spread 1 draw 143": {
+     "baseline": {
+      "charges": 21.30012756745319,
+      "potentials": 61.63708798791947,
+      "image": 22.322190140246303,
+      "amounts": 0.8416618326262447,
+      "work": 0.14289159846853564,
+      "any key": 61.63708798791947
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 2.9554284000053023e-13,
+      "faithful": true
+     },
+     "a_k": {
+      "smallest_defect_caught": {
+       "charges": 1e-13,
+       "potentials": null,
+       "image": null,
+       "amounts": 3.162277660168379e-13,
+       "work": 0.005623413251903491,
+       "any key": 1e-14
+      },
+      "targets_caught_at_threshold": {
+       "charges": true
+      }
+     },
+     "parent charge": {
+      "smallest_defect_caught": {
+       "charges": 3.1622776601683794e-15,
+       "potentials": 1e-16,
+       "image": null,
+       "amounts": 1e-13,
+       "work": 0.0031622776601683794,
+       "any key": 1e-16
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": true
+      }
+     },
+     "f": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": 1.7782794100389227e-14,
+       "work": 0.005623413251903491,
+       "any key": 1.7782794100389227e-14
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "transference": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": 5.62341325190349e-13,
+       "work": null,
+       "any key": 5.62341325190349e-13
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": 5.62341325190349e-13
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "mismatch scale": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": 1e-13,
+       "image": null,
+       "amounts": 1.7782794100389228e-12,
+       "work": 0.005623413251903491,
+       "any key": 1e-13
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": true
+      },
+      "engine_refuses_from": 1.7782794100389228e-08,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1.7782794100389227e-14,
+       "potentials": 5.623413251903491e-15,
+       "image": 3.1622776601683796e-14,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": 5.623413251903491e-15
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 3.1622776601683795e-10,
+      "refused_by": [
+       "plate_charges"
+      ]
+     }
+    },
+    "asymmetric neighbour world, seen spread 1 draw 149": {
+     "baseline": {
+      "charges": 20.927257686064163,
+      "potentials": 63.23755832492964,
+      "image": 5.414927926269102,
+      "amounts": 0.841561360740458,
+      "work": 0.02525738266804936,
+      "any key": 63.23755832492964
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 2.991241762106854e-13,
+      "faithful": true
+     },
+     "a_k": {
+      "smallest_defect_caught": {
+       "charges": 5.6234132519034906e-14,
+       "potentials": null,
+       "image": null,
+       "amounts": 3.162277660168379e-13,
+       "work": 0.01,
+       "any key": 1e-14
+      },
+      "targets_caught_at_threshold": {
+       "charges": true
+      }
+     },
+     "parent charge": {
+      "smallest_defect_caught": {
+       "charges": 5.623413251903491e-15,
+       "potentials": 1e-16,
+       "image": null,
+       "amounts": 1e-13,
+       "work": 0.0031622776601683794,
+       "any key": 1e-16
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": true
+      }
+     },
+     "f": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": 1.7782794100389227e-14,
+       "work": 0.01,
+       "any key": 1.7782794100389227e-14
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "transference": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": 5.62341325190349e-13,
+       "work": null,
+       "any key": 5.62341325190349e-13
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": 5.62341325190349e-13
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "mismatch scale": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": 1.7782794100389227e-14,
+       "image": null,
+       "amounts": 1.7782794100389228e-12,
+       "work": 0.005623413251903491,
+       "any key": 1.7782794100389227e-14
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": true
+      },
+      "engine_refuses_from": 1.7782794100389228e-08,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1.7782794100389227e-14,
+       "potentials": 5.623413251903491e-15,
+       "image": 1.7782794100389227e-14,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": 5.623413251903491e-15
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 3.1622776601683795e-10,
+      "refused_by": [
+       "plate_charges"
+      ]
+     }
+    },
+    "asymmetric neighbour world, seen spread 1 draw 171": {
+     "baseline": {
+      "charges": 15.333804837018196,
+      "potentials": 85.39744590520102,
+      "image": 5.458834521978478,
+      "amounts": 0.8418431235108529,
+      "work": 0.10322110092194504,
+      "any key": 85.39744590520102
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.118225441993714e-13,
+      "faithful": true
+     },
+     "a_k": {
+      "smallest_defect_caught": {
+       "charges": 5.6234132519034906e-14,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 5.62341325190349e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true
+      }
+     },
+     "parent charge": {
+      "smallest_defect_caught": {
+       "charges": 3.1622776601683794e-15,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1e-13,
+       "work": 0.005623413251903491,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": false
+      }
+     },
+     "f": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1.7782794100389227e-14,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "transference": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1e-12,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "mismatch scale": {
+      "smallest_defect_caught": {
+       "charges": 3.162277660168379e-13,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 3.1622776601683794e-12,
+       "work": 0.01,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": false
+      },
+      "engine_refuses_from": 5.6234132519034905e-08,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1e-14,
+       "potentials": "baseline above 64",
+       "image": 1e-14,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 1.778279410038923e-10,
+      "refused_by": [
+       "plate_charges"
+      ]
+     }
+    },
+    "asymmetric neighbour world, seen spread 1 draw 180": {
+     "baseline": {
+      "charges": 42.48641132151944,
+      "potentials": 236.2837582751508,
+      "image": 23.63306629759519,
+      "amounts": 0.8414428404425042,
+      "work": 0.14614102336916313,
+      "any key": 236.2837582751508
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.1662147247187893e-13,
+      "faithful": true
+     },
+     "a_k": {
+      "smallest_defect_caught": {
+       "charges": 3.1622776601683796e-14,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 5.62341325190349e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true
+      }
+     },
+     "parent charge": {
+      "smallest_defect_caught": {
+       "charges": 1e-15,
+       "potentials": "baseline above 64",
+       "image": 0.01,
+       "amounts": 5.6234132519034906e-14,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": false
+      }
+     },
+     "f": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1.7782794100389227e-14,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "transference": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1e-12,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "mismatch scale": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": "baseline above 64",
+       "image": 5.62341325190349e-13,
+       "amounts": 3.1622776601683794e-12,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": false
+      },
+      "engine_refuses_from": 1e-07,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1e-14,
+       "potentials": "baseline above 64",
+       "image": 5.623413251903491e-15,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 1e-10,
+      "refused_by": [
+       "plate_charges"
+      ]
+     }
+    },
+    "asymmetric neighbour world, seen spread 1 draw 191": {
+     "baseline": {
+      "charges": 3.5657011712617543,
+      "potentials": 10.604912692244255,
+      "image": 0.9462822339117734,
+      "amounts": 0.8419116671377137,
+      "work": 0.10070145055009104,
+      "any key": 10.604912692244255
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.0029016700368306e-13,
+      "faithful": true
+     },
+     "a_k": {
+      "smallest_defect_caught": {
+       "charges": 5.6234132519034906e-14,
+       "potentials": null,
+       "image": null,
+       "amounts": 1.7782794100389227e-13,
+       "work": 0.01,
+       "any key": 1e-14
+      },
+      "targets_caught_at_threshold": {
+       "charges": true
+      }
+     },
+     "parent charge": {
+      "smallest_defect_caught": {
+       "charges": 5.623413251903491e-15,
+       "potentials": 1.7782794100389227e-15,
+       "image": null,
+       "amounts": 5.6234132519034906e-14,
+       "work": 0.0031622776601683794,
+       "any key": 1.7782794100389227e-15
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": true
+      }
+     },
+     "f": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": 1.7782794100389227e-14,
+       "work": 0.01,
+       "any key": 1.7782794100389227e-14
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "transference": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": 3.162277660168379e-13,
+       "work": null,
+       "any key": 3.162277660168379e-13
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": 5.62341325190349e-13
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "mismatch scale": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": 1e-13,
+       "image": null,
+       "amounts": 1e-12,
+       "work": 0.005623413251903491,
+       "any key": 1e-13
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": true
+      },
+      "engine_refuses_from": 3.162277660168379e-08,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1.7782794100389227e-14,
+       "potentials": 3.1622776601683794e-15,
+       "image": 1.7782794100389227e-14,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": 3.1622776601683794e-15
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 3.1622776601683795e-10,
+      "refused_by": [
+       "plate_charges"
+      ]
+     }
+    },
+    "asymmetric neighbour world, seen spread 3 draw 32": {
+     "baseline": {
+      "charges": 30.2359315201431,
+      "potentials": 152.6151550304683,
+      "image": 4.420083209512446,
+      "amounts": 0.8420121948954025,
+      "work": 0.008362971353531886,
+      "any key": 152.6151550304683
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": 3.500387903994425e-13,
+      "faithful": true
+     },
+     "a_k": {
+      "smallest_defect_caught": {
+       "charges": 3.1622776601683796e-14,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1.7782794100389227e-13,
+       "work": 0.01,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true
+      }
+     },
+     "parent charge": {
+      "smallest_defect_caught": {
+       "charges": 3.1622776601683794e-15,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 5.6234132519034906e-14,
+       "work": 0.0031622776601683794,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": false
+      }
+     },
+     "f": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1.7782794100389227e-14,
+       "work": 0.005623413251903491,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "transference": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 3.162277660168379e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "mismatch scale": {
+      "smallest_defect_caught": {
+       "charges": 3.162277660168379e-13,
+       "potentials": "baseline above 64",
+       "image": null,
+       "amounts": 1e-12,
+       "work": 0.005623413251903491,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": false
+      },
+      "engine_refuses_from": 3.1622776601683795e-09,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 1e-14,
+       "potentials": "baseline above 64",
+       "image": 1e-14,
+       "amounts": 1e-13,
+       "work": null,
+       "any key": "baseline above 64"
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 1e-10,
+      "refused_by": [
+       "isopotential"
+      ]
+     }
+    },
+    "asymmetric furrow world (two patches a cell)": {
+     "baseline": {
+      "charges": 0.0,
+      "potentials": 0.38111195082804156,
+      "image": 0.1651381907316724,
+      "amounts": 0.17889967116438438,
+      "work": 0.1107632626201573,
+      "any key": 0.39248487553257416
+     },
+     "construction": {
+      "nonconservation_at_zero_reproduces_the_event": true,
+      "fields_differing_at_zero": [],
+      "event_checks_on_the_event": {
+       "isopotential": true,
+       "outside_potentials": true,
+       "plate_charges": true,
+       "positive_amounts": true,
+       "finite": true
+      },
+      "d2_net_charge_increment_C": -1.945909623578043e-13,
+      "faithful": true
+     },
+     "a_k": {
+      "smallest_defect_caught": {
+       "charges": 5.6234132519034906e-14,
+       "potentials": null,
+       "image": null,
+       "amounts": 5.6234132519034906e-14,
+       "work": 1e-05,
+       "any key": 1e-14
+      },
+      "targets_caught_at_threshold": {
+       "charges": true
+      }
+     },
+     "parent charge": {
+      "smallest_defect_caught": {
+       "charges": 1e-13,
+       "potentials": 3.1622776601683796e-14,
+       "image": null,
+       "amounts": 3.162277660168379e-13,
+       "work": 0.0001,
+       "any key": 3.1622776601683796e-14
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": true
+      }
+     },
+     "f": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": 1.7782794100389227e-14,
+       "work": 1e-05,
+       "any key": 1.7782794100389227e-14
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "transference": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": 1.7782794100389227e-13,
+       "work": 3.1622776601683795e-05,
+       "any key": 1.7782794100389227e-13
+      },
+      "targets_caught_at_threshold": {
+       "amounts": true
+      }
+     },
+     "W": {
+      "smallest_defect_caught": {
+       "charges": null,
+       "potentials": null,
+       "image": null,
+       "amounts": null,
+       "work": 5.62341325190349e-13,
+       "any key": 5.62341325190349e-13
+      },
+      "targets_caught_at_threshold": {
+       "work": true
+      }
+     },
+     "mismatch scale": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": 1e-13,
+       "image": null,
+       "amounts": 3.162277660168379e-13,
+       "work": 5.623413251903491e-05,
+       "any key": 1e-13
+      },
+      "targets_caught_at_threshold": {
+       "charges": true,
+       "potentials": true
+      },
+      "engine_refuses_from": 3.1622776601683795e-09,
+      "refused_by": [
+       "isopotential"
+      ],
+      "event_checks_agree_with_the_event_map": true
+     },
+     "non-conservation": {
+      "smallest_defect_caught": {
+       "charges": 5.62341325190349e-13,
+       "potentials": 1e-13,
+       "image": 5.62341325190349e-13,
+       "amounts": 3.162277660168379e-13,
+       "work": null,
+       "any key": 1e-13
+      },
+      "targets_caught_at_threshold": {
+       "image": true,
+       "charges": true,
+       "amounts": true
+      },
+      "engine_refuses_from": 3.1622776601683795e-09,
+      "refused_by": [
+       "isopotential"
+      ]
+     }
+    }
+   }
+  },
+  "development_estimate": {
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a28/near_zero_set.json",
+   "snapshot_revision": "4487d0a",
+   "pre_merge": false,
+   "note": "the a_k control at the new scale, estimated before R-ops lands: in every near-zero member a 1e-9 defect moves at least 1e-23 C of charge against a threshold of 1.2-4.1e-25 C, so it would be caught (an estimate, not a new-scale result)"
+  },
+  "development_at_the_freeze": {
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a23/q2_rops_comparison/q2_rops.json",
+   "snapshot_revision": "0c7e2ac",
+   "pre_merge": false,
+   "note": "the frozen controls before the amendment (old scale): their W finding led to it"
+  },
+  "development_at_the_first_amendment": {
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a25/q2_rops_comparison/q2_rops.json",
+   "snapshot_revision": "3c3f190",
+   "pre_merge": false,
+   "note": "the first amendment's controls (old scale): their image finding led to the second amendment"
+  },
+  "development_findings": [
+   "W is reached by no map defect at 1e-9 (old scale, protocol-dev-s5a23): f at 1.0-1.8e-5 or never, transference at 3.2-5.6e-5 or never, a_k at 1.0-1.8e-5, the parent charge at 1-1.8e-4. dG is stationary at the correct split, so a map defect reaches W only at second order; the lead removed W from f's targets and gave W and the image charge their own controls (negative_controls.amendment)",
+   "the amended W control is caught on W at 5.6e-13 in all 12 cases (old scale, protocol-dev-s5a25, unchanged at protocol-dev-s5a28), and f on the amounts at 1.8e-14",
+   "a finding for the lead: the image control does not reach the image charge. A held node's plate charge is minus the total charge of the patches facing it; a split that conserves charge (the engine's always does, D2 taking the rest) leaves it unchanged, and so does the floating cleft's fixed charge in the furrow world. So the image target misses in 10 of 12 cases (never caught, or the undefected ratio above 64), and the two catches (seen spread 1 draws 35 and 180, at 1.8e-12 and 5.6e-13) are rounding, not a reach: their undefected image ratios are 0.0 and 23.6, and along the ladder the ratio moves in steps of about 20-40 without growing with delta (corrected at protocol-dev-s5a28: 'near 64' was wrong). The image control reaches the potentials at 1.8e-14-1e-13 and the charges at 3.2-5.6e-13 where measurable. The engine's own event checks refuse it from 3.2e-9 to 1.8e-7. The threshold was not moved: the lead's second amendment took the image charge from this control's targets and gave it the non-conservation control (negative_controls.second_amendment)",
+   "the non-conservation control (old scale, protocol-dev-s5a28) is caught on the image charge at 1.0e-15-5.6e-13 and on the charges at 1.8e-15-5.6e-13, each in 11 of 12 cases, and on the amounts at 1.0-3.2e-13 in all 12. It reaches them at first order: at delta = 1e-9 their ratios are 1.4e5-3.5e7 in every case, growing tenfold per decade from 1e-11. The low end is rounding-assisted (draw 35's image reads 71.8 at 1.0e-15, against a first-order 35, in rounding steps of about 39). Its two misses are old-scale baselines above 64 (draw 77's image charge, draw 35's charges), which only the new scale settles. D2's net charge increment is 1.9-3.5e-13 C in magnitude, so no case is electroneutral. The engine's own event checks refuse it from 5.6e-11 to 3.2e-9: the plate-charge check in 9 of the 10 near-zero draws (5.6e-11-3.2e-10), the isopotential check in the two fixed cases (3.2e-9) and in spread 3 draw 32 (1.0e-10)",
+   "the mismatch-scale control (old scale, protocol-dev-s5a28) is caught on the charges at 3.2-5.6e-13 in 11 of 12 cases and on the potentials at 1.8e-14-1.0e-13 in 5; its misses are old-scale baselines above 64 (draw 35's charges, seven near-zero draws' potentials). The event map refuses it from 3.2e-9 to 1.8e-7, by its isopotential check in every case",
+   "the construction checks hold in all 12 cases (protocol-dev-s5a28): at delta = 0 the non-conservation construction reproduces the engine's event in every field, bit for bit; the re-applied event checks pass the event; and they agree with the event map's verdict and booked image at every delta of the mismatch-scale ladder",
+   "the engine does not output delta q or delta separately: the transference control reaches them through the increments and moved amounts (caught at 1.0-1.8e-13 old scale); free-energy changes are observed only within W",
+   "no charge-conserving defect reaches the image charge, zero in exact arithmetic for an isopotential split: neither the map defects nor the mismatch scale (above); the non-conservation control does (above)",
+   "at the old scale the near-zero cases' undefected potentials (and draw 35's charges and draw 77's image charge) exceed 64, so those families read 'baseline above 64' there; where measurable the parent charge is caught on the charges at 3.2e-16-5.6e-15"
+  ],
+  "before_the_freeze": {
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a20/q2_rops_comparison/q2_rops.json",
+   "snapshot_revision": "5e6f9cb",
+   "pre_merge": false,
+   "note": "the same cases and seen sets at the old scale (fixed 0.39; simultaneous 0.088 and 0.33; symmetric 0.81, 0.93, 0.68; asymmetric 9.06, 860.56, 152.62), with the earlier controls (a_k and |Q_P|-scaled parent charge only)"
+  },
+  "disclosed_runs": {
+   "out_of_domain_94.7": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/comparisons-s5a9/q2_rops_comparison/q2_rops.json",
+    "snapshot_revision": "6c2b118",
+    "pre_merge": true,
+    "note": "uncompensated increments; the states pass @3's bare domain check but fail the composite's control domain check in 197 of 200 (the gating laws' voltage domains) and the dropped 10% band in all 200. Cause: the engine forms charges in increment form, and its rounding scales with the increments' ionic content."
+   },
+   "domain_probe": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q2_domain_probe.json",
+    "snapshot_revision": "67b22b0",
+    "pre_merge": false
+   },
+   "rounding_cause": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q2_rounding_cause.json",
+    "snapshot_revision": "67b22b0",
+    "pre_merge": false,
+    "note": "|engine - R-ops| scales with the increments' ionic content at fixed net charge: median ratio 9.3-10.0 at 10x and 96-112 at 100x (asymmetric world); A.1's whole content is about 1,370 times the increments'."
+   }
+  }
+ },
+ "Q3": {
+  "claim": "Trajectories after partition agree with R-tissue.",
+  "worlds": "quartered furrow (cleft_quartered, passive, 1 pA into d1) and neighbour contact (asymmetric f 0.75, a 0.6, three mismatch carriers, the contact's gate fixed open, 1 pA into d1); validation/division/q3_tissue_comparison.py",
+  "records": "strictly after each division instant and off the onset instants",
+  "quantities": "each live cell's Vm; each lumen's volume and composition; the bridge current; each contact's current in R-tissue's direction",
+  "judged_dt_s": 0.00025,
+  "engine_step_term_rule": "|Q(0.25 ms) - Q(0.125 ms)| per quantity and record",
+  "reference_term_rule": "|R-tissue(SMALL atol) - R-tissue(SMALL x 1e-3)| per quantity and record",
+  "tolerance_rule": "3 x (step + reference) per quantity and record; where both terms fall below it, the floor 64 eps x the quantity's scale (its largest |value| over the world's records, the engine's at the judged step) serves instead",
+  "verdict_rule": "pass when every |engine - R-tissue| at each record is within its tolerance",
+  "tolerances": {
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/q3_tissue_comparison/q3_tissue.json",
+   "snapshot_revision": "67b22b0",
+   "pre_merge": false,
+   "worlds": {
+    "quartered furrow": {
+     "records_s": [
+      0.0025,
+      0.0035,
+      0.004,
+      0.006,
+      0.008,
+      0.01
+     ],
+     "quantities": {
+      "V": {
+       "scale": 0.07943237230360421,
+       "floor": 1.128801902490355e-15,
+       "records": {
+        "0.0025": {
+         "tolerance": 1.0528585216162956e-07,
+         "floor_applies": false,
+         "engine_step_term": 3.509451043659517e-08,
+         "reference_term": 7.736172813466169e-13,
+         "development_engine_minus_reference": 4.68454095237103e-08,
+         "development_fraction_of_tolerance": 0.4449354643755514
+        },
+        "0.0035": {
+         "tolerance": 2.543486743306067e-07,
+         "floor_applies": false,
+         "engine_step_term": 8.47821930854975e-08,
+         "reference_term": 6.983580380648391e-13,
+         "development_engine_minus_reference": 1.1305954848717104e-07,
+         "development_fraction_of_tolerance": 0.4445061441138644
+        },
+        "0.004": {
+         "tolerance": 2.542092768786919e-07,
+         "floor_applies": false,
+         "engine_step_term": 8.473572764289283e-08,
+         "reference_term": 6.979833377940281e-13,
+         "development_engine_minus_reference": 1.1299758548299899e-07,
+         "development_fraction_of_tolerance": 0.4445061441912727
+        },
+        "0.006": {
+         "tolerance": 2.5365516208297745e-07,
+         "floor_applies": false,
+         "engine_step_term": 8.455102422366689e-08,
+         "reference_term": 6.964706589229763e-13,
+         "development_engine_minus_reference": 1.1275127796694928e-07,
+         "development_fraction_of_tolerance": 0.4445061438570893
+        },
+        "0.008": {
+         "tolerance": 2.531052176180104e-07,
+         "floor_applies": false,
+         "engine_step_term": 8.436771092856787e-08,
+         "reference_term": 6.949441022641167e-13,
+         "development_engine_minus_reference": 1.1250682400987255e-07,
+         "development_fraction_of_tolerance": 0.4445061428155514
+        },
+        "0.01": {
+         "tolerance": 2.525564582883666e-07,
+         "floor_applies": false,
+         "engine_step_term": 8.41847926646988e-08,
+         "reference_term": 6.93431423393065e-13,
+         "development_engine_minus_reference": 1.1226289664545419e-07,
+         "development_fraction_of_tolerance": 0.4445061409487833
+        }
+       }
+      },
+      "lumen_volume_pL": {
+       "scale": 0.01009,
+       "floor": 1.4338752407638822e-16,
+       "records": {
+        "0.0025": {
+         "tolerance": 1.4338752407638822e-16,
+         "floor_applies": true,
+         "engine_step_term": 0.0,
+         "reference_term": 0.0,
+         "development_engine_minus_reference": 0.0,
+         "development_fraction_of_tolerance": 0.0
+        },
+        "0.0035": {
+         "tolerance": 1.4338752407638822e-16,
+         "floor_applies": true,
+         "engine_step_term": 0.0,
+         "reference_term": 0.0,
+         "development_engine_minus_reference": 0.0,
+         "development_fraction_of_tolerance": 0.0
+        },
+        "0.004": {
+         "tolerance": 1.4338752407638822e-16,
+         "floor_applies": true,
+         "engine_step_term": 0.0,
+         "reference_term": 0.0,
+         "development_engine_minus_reference": 0.0,
+         "development_fraction_of_tolerance": 0.0
+        },
+        "0.006": {
+         "tolerance": 1.4338752407638822e-16,
+         "floor_applies": true,
+         "engine_step_term": 0.0,
+         "reference_term": 0.0,
+         "development_engine_minus_reference": 0.0,
+         "development_fraction_of_tolerance": 0.0
+        },
+        "0.008": {
+         "tolerance": 1.4338752407638822e-16,
+         "floor_applies": true,
+         "engine_step_term": 1.734723475976807e-18,
+         "reference_term": 0.0,
+         "development_engine_minus_reference": 3.469446951953614e-18,
+         "development_fraction_of_tolerance": 0.024196295837462835
+        },
+        "0.01": {
+         "tolerance": 1.4338752407638822e-16,
+         "floor_applies": true,
+         "engine_step_term": 0.0,
+         "reference_term": 0.0,
+         "development_engine_minus_reference": 3.469446951953614e-18,
+         "development_fraction_of_tolerance": 0.024196295837462835
+        }
+       }
+      },
+      "lumen_mM": {
+       "scale": 145.0003104434902,
+       "floor": 2.060578345371627e-12,
+       "records": {
+        "0.0025": {
+         "tolerance": 1.034905494634586e-11,
+         "floor_applies": false,
+         "engine_step_term": 3.382183422218077e-12,
+         "reference_term": 6.750155989720952e-14,
+         "development_engine_minus_reference": 4.519051799434237e-12,
+         "development_fraction_of_tolerance": 0.43666323377960864
+        },
+        "0.0035": {
+         "tolerance": 7.043965410957753e-11,
+         "floor_applies": false,
+         "engine_step_term": 2.3391066861222498e-11,
+         "reference_term": 8.881784197001252e-14,
+         "development_engine_minus_reference": 3.12070369545836e-11,
+         "development_fraction_of_tolerance": 0.44303222877893783
+        },
+        "0.004": {
+         "tolerance": 1.4025580696852558e-10,
+         "floor_applies": false,
+         "engine_step_term": 4.666844688472338e-11,
+         "reference_term": 8.348877145181177e-14,
+         "development_engine_minus_reference": 6.227196536201518e-11,
+         "development_fraction_of_tolerance": 0.4439885000696582
+        },
+        "0.006": {
+         "tolerance": 4.1738879019703745e-10,
+         "floor_applies": false,
+         "engine_step_term": 1.390674242429668e-10,
+         "reference_term": 6.217248937900877e-14,
+         "development_engine_minus_reference": 1.8553691916167736e-10,
+         "development_fraction_of_tolerance": 0.44451821304086925
+        },
+        "0.008": {
+         "tolerance": 6.909193217552456e-10,
+         "floor_applies": false,
+         "engine_step_term": 2.3021584638627246e-10,
+         "reference_term": 9.059419880941277e-14,
+         "development_engine_minus_reference": 3.070681486860849e-10,
+         "development_fraction_of_tolerance": 0.4444341604255527
+        },
+        "0.01": {
+         "tolerance": 9.604264050722122e-10,
+         "floor_applies": false,
+         "engine_step_term": 3.2005686989577953e-10,
+         "reference_term": 8.526512829121202e-14,
+         "development_engine_minus_reference": 4.268940756446682e-10,
+         "development_fraction_of_tolerance": 0.4444839015151515
+        }
+       }
+      },
+      "bridge_A": {
+       "scale": 5.493018689088425e-14,
+       "floor": 7.806049053852498e-28,
+       "records": {
+        "0.0025": {
+         "tolerance": 2.1057761274810898e-16,
+         "floor_applies": false,
+         "engine_step_term": 7.019099028557897e-17,
+         "reference_term": 1.5472971240236555e-21,
+         "development_engine_minus_reference": 9.369344929863828e-17,
+         "development_fraction_of_tolerance": 0.44493547094540165
+        },
+        "0.0035": {
+         "tolerance": 7.806049053852498e-28,
+         "floor_applies": true,
+         "engine_step_term": 0.0,
+         "reference_term": 0.0,
+         "development_engine_minus_reference": 0.0,
+         "development_fraction_of_tolerance": 0.0
+        },
+        "0.004": {
+         "tolerance": 7.806049053852498e-28,
+         "floor_applies": true,
+         "engine_step_term": 0.0,
+         "reference_term": 0.0,
+         "development_engine_minus_reference": 0.0,
+         "development_fraction_of_tolerance": 0.0
+        }
+       }
+      }
+     }
+    },
+    "neighbour contact": {
+     "records_s": [
+      0.0025,
+      0.003,
+      0.004,
+      0.006,
+      0.008,
+      0.01
+     ],
+     "quantities": {
+      "V": {
+       "scale": 0.07369739571468918,
+       "floor": 1.0473029833901987e-15,
+       "records": {
+        "0.0025": {
+         "tolerance": 1.1615230274888977e-06,
+         "floor_applies": false,
+         "engine_step_term": 3.8717434248936033e-07,
+         "reference_term": 6.938893903907228e-18,
+         "development_engine_minus_reference": 5.147290986912134e-07,
+         "development_fraction_of_tolerance": 0.44315014554985516
+        },
+        "0.003": {
+         "tolerance": 1.403997534815682e-06,
+         "floor_applies": false,
+         "engine_step_term": 4.6799917827189397e-07,
+         "reference_term": 0.0,
+         "development_engine_minus_reference": 6.221639970716009e-07,
+         "development_fraction_of_tolerance": 0.4431375281248475
+        },
+        "0.004": {
+         "tolerance": 1.8127685563057439e-06,
+         "floor_applies": false,
+         "engine_step_term": 6.042561854213702e-07,
+         "reference_term": 1.3877787807814457e-17,
+         "development_engine_minus_reference": 8.032790223960751e-07,
+         "development_fraction_of_tolerance": 0.44312276909363657
+        },
+        "0.006": {
+         "tolerance": 2.375090363673782e-06,
+         "floor_applies": false,
+         "engine_step_term": 7.916967878635051e-07,
+         "reference_term": 2.7755575615628914e-17,
+         "development_engine_minus_reference": 1.0524206092155097e-06,
+         "development_fraction_of_tolerance": 0.44310760774071306
+        },
+        "0.008": {
+         "tolerance": 2.675835716732522e-06,
+         "floor_applies": false,
+         "engine_step_term": 8.919452388830851e-07,
+         "reference_term": 2.7755575615628914e-17,
+         "development_engine_minus_reference": 1.1856583870331616e-06,
+         "development_fraction_of_tolerance": 0.44309834853425745
+        },
+        "0.01": {
+         "tolerance": 2.789676753017778e-06,
+         "floor_applies": false,
+         "engine_step_term": 9.298922509642926e-07,
+         "reference_term": 4.163336342344337e-17,
+         "development_engine_minus_reference": 1.2360805854635948e-06,
+         "development_fraction_of_tolerance": 0.44309097250297713
+        }
+       }
+      },
+      "contact_A": {
+       "scale": 1.711222867801084e-11,
+       "floor": 2.431793955965253e-25,
+       "records": {
+        "0.0025": {
+         "tolerance": 8.31572464177068e-16,
+         "floor_applies": false,
+         "engine_step_term": 2.7719082138266247e-16,
+         "reference_term": 9.693522803355793e-27,
+         "development_engine_minus_reference": 3.6851605603398113e-16,
+         "development_fraction_of_tolerance": 0.4431556742305893
+        },
+        "0.003": {
+         "tolerance": 9.823150620235062e-16,
+         "floor_applies": false,
+         "engine_step_term": 3.274383540078354e-16,
+         "reference_term": 0.0,
+         "development_engine_minus_reference": 4.3530847155333955e-16,
+         "development_fraction_of_tolerance": 0.4431454717355468
+        },
+        "0.004": {
+         "tolerance": 1.2362830445127797e-15,
+         "floor_applies": false,
+         "engine_step_term": 4.120943481644642e-16,
+         "reference_term": 6.462348535570529e-27,
+         "development_engine_minus_reference": 5.478379298592651e-16,
+         "development_fraction_of_tolerance": 0.4431330934213116
+        },
+        "0.006": {
+         "tolerance": 1.5850047173227191e-15,
+         "floor_applies": false,
+         "engine_step_term": 5.283349057629306e-16,
+         "reference_term": 1.1309109937248425e-26,
+         "development_engine_minus_reference": 7.023476342262194e-16,
+         "development_fraction_of_tolerance": 0.4431202169622414
+        },
+        "0.008": {
+         "tolerance": 1.770497619633688e-15,
+         "floor_applies": false,
+         "engine_step_term": 5.901658731966891e-16,
+         "reference_term": 1.454028420503369e-26,
+         "development_engine_minus_reference": 7.845297972078199e-16,
+         "development_fraction_of_tolerance": 0.44311259642932327
+        },
+        "0.01": {
+         "tolerance": 1.83928332741252e-15,
+         "floor_applies": false,
+         "engine_step_term": 6.130944424595309e-16,
+         "reference_term": 1.1309109937248425e-26,
+         "development_engine_minus_reference": 8.149989449395419e-16,
+         "development_fraction_of_tolerance": 0.44310679751883136
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "Q4": {
+  "claim": "The analytic limits (design \u00a77.3) hold, each to its stated tolerance.",
+  "limits": [
+   "symmetric division at the event: daughters bitwise half the parent, moved transfers and the chemical work exact zeros, the capacitor term within 1e-14 of 1/2 C (0.1 V)^2 (test_partition.py)",
+   "symmetric trajectories: every field and potential of d1 and d2 within 64 eps of its scale for 50 ms (test_division_limits_runs.py)",
+   "asymmetric division: increments to 1e-12, Q_D1 = a q to 1e-12, the unmixing work RT sum delta^2 / (2 n f (1 - f)) to 1e-3 and >= 0 (test_partition.py)",
+   "isopotential split: the daughters at the parent's potential to 1e-12 (test_partition.py)",
+   "open bridge: its conductance 2 a sigma_cyt to 1e-3, and 1 - V2/V1 = R_b / (Rm + R_b) to 1% at 0.25 ms (test_bridge_closure_runs.py)",
+   "closed bridge (a = 0): the trans-cleft T-network's coupling, cleft ratio and input resistance to 1%, and the bridge-free world's response to 1e-9 (test_division_limits_runs.py)",
+   "sealed cleft (A/L = 0): R_j = 1/G_f1 + 1/G_f2 = 2 r_new / A_face to 1%, the coupling to 1% (test_division_limits_runs.py)"
+  ],
+  "circuit_world": {
+   "accepted": "the lead, 14 November",
+   "changes": [
+    "every membrane permeability x 100: each patch keeps its reversal potential, and the membrane time constant goes from about 1.5 s to 15 ms, so the limit is reached in a short run",
+    "no insertion after the division: the geometry holds still",
+    "the access face's area 1.5e-13 m^2: its resistance comparable with a furrow's"
+   ],
+   "base": "S5's compact furrow world (cleft_divided, symmetric, passive)"
+  },
+  "development": {
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a21/test_division_limits_runs.log",
+   "snapshot_revision": "67b22b0",
+   "pre_merge": false,
+   "tests": "4 passed in 362.36s (0:06:02)",
+   "measure": {
+    "t_network": {
+     "conductances_S": {
+      "G1": 1.0157319597551858e-09,
+      "G2": 1.0157319597551858e-09,
+      "Gf1": 3.117890301322149e-11,
+      "Gf2": 3.117890301322149e-11,
+      "Ga": 1.62439420282031e-11
+     },
+     "measured": {
+      "coupling": 0.011961850355079866,
+      "cleft_over_d1": 0.40153938816228674,
+      "input_ohm": 966499604.410781
+     },
+     "predicted": {
+      "coupling": 0.011954759644891873,
+      "cleft_over_d1": 0.4014114200462868,
+      "input_ohm": 966748403.4396724
+     },
+     "closed_vs_no_bridge_relative": {
+      "d1": 0.0,
+      "d2": 0.0,
+      "cleft": 0.0
+     },
+     "aperture_end": 0.0
+    },
+    "sealed": {
+     "conductances_S": {
+      "G1": 1.0157303490268912e-09,
+      "G2": 1.0157303490268912e-09,
+      "Gf1": 3.118114960974828e-11,
+      "Gf2": 3.118114960974828e-11,
+      "Ga": 0.0
+     },
+     "measured": {
+      "coupling": 0.015124260151551607,
+      "rj_ohm": 64109783350.598915
+     },
+     "predicted": {
+      "coupling": 0.015117093471689673,
+      "rj_ohm": 64141316950.50565
+     }
+    },
+    "symmetric": {
+     "fields": {
+      "amount_increment": {
+       "difference": 0.0,
+       "scale": 0.00019670060187703477
+      },
+      "membrane_transferred": {
+       "difference": 0.0,
+       "scale": 0.0001887642646545823
+      },
+      "membrane_dissipated_energy_pJ": {
+       "difference": 0.0,
+       "scale": 0.003002776316743494
+      },
+      "channel_gate": {
+       "difference": 0.0,
+       "scale": 0.9812913496615078
+      },
+      "channel_transferred": {
+       "difference": 0.0,
+       "scale": 0.00012440849537591537
+      },
+      "channel_dissipated_energy_pJ": {
+       "difference": 0.0,
+       "scale": 0.00010927011239226627
+      },
+      "pump_cycles": {
+       "difference": 0.0,
+       "scale": 0.0
+      },
+      "pump_dissipated_energy_pJ": {
+       "difference": 0.0,
+       "scale": 0.0
+      },
+      "metabolic_work_pJ": {
+       "difference": 0.0,
+       "scale": 0.0
+      },
+      "calcium_pump_cycles": {
+       "difference": 0.0,
+       "scale": 0.0
+      },
+      "calcium_pump_dissipated_energy_pJ": {
+       "difference": 0.0,
+       "scale": 0.0
+      },
+      "calcium_metabolic_work_pJ": {
+       "difference": 0.0,
+       "scale": 0.0
+      },
+      "membrane_area_increment_m2": {
+       "difference": 0.0,
+       "scale": 0.0
+      },
+      "membrane_capacitance_increment_F": {
+       "difference": 0.0,
+       "scale": 0.0
+      },
+      "population_abundance_increment": {
+       "difference": 0.0,
+       "scale": 0.0
+      },
+      "partition_moved_fmol": {
+       "difference": 0.0,
+       "scale": 1.579460678250787e-05
+      },
+      "partition_area_moved_m2": {
+       "difference": 0.0,
+       "scale": 0.0
+      },
+      "partition_capacitance_moved_F": {
+       "difference": 0.0,
+       "scale": 0.0
+      },
+      "partition_units_moved": {
+       "difference": 0.0,
+       "scale": 0.0
+      },
+      "partition_retired_membrane_transferred_fmol": {
+       "difference": 0.0,
+       "scale": 1.57917175868247e-05
+      },
+      "partition_retired_membrane_heat_pJ": {
+       "difference": 0.0,
+       "scale": 0.00025172232355650213
+      },
+      "partition_retired_channel_transferred_fmol": {
+       "difference": 0.0,
+       "scale": 1.0022021190154796e-05
+      },
+      "partition_retired_channel_heat_pJ": {
+       "difference": 0.0,
+       "scale": 8.445878656435762e-06
+      },
+      "partition_work_pJ": {
+       "difference": 0.0,
+       "scale": 2.17938053539122e-17
+      },
+      "partition_energy_magnitude_pJ": {
+       "difference": 0.0,
+       "scale": 0.10324793487175853
+      }
+     },
+     "potential_difference_in_eps": 0.0
+    }
+   }
+  }
+ },
+ "Q5": {
+  "claim": "The observed order is about 2 after partitions.",
+  "driver": "validation/division/q5_order.py at 0.5, 0.25 and 0.125 ms",
+  "reported_not_banded": "the observed orders are reported (S3's registered form); only the stop rules are judged (the lead, 14 November)",
+  "measurable": "a component whose two step terms, |q(0.5) - q(0.25)| and |q(0.25) - q(0.125)|, both lie above Q3's floor, 64 eps x the quantity's scale (its largest |value| over every component, record and step), defined before the judged run; the lumen volumes fall outside it",
+  "stop_rules": [
+   "every measurable component's step term decreases from the (0.5, 0.25 ms) pair to the (0.25, 0.125 ms) pair",
+   "a quantity that does not converge stops the run for a report"
+  ],
+  "dropped_band": "a band of [1.8, 2.3] was proposed after the development orders (1.99 to 2.06) had been seen, and is dropped",
+  "bridge_coupling_offset": "the split injection's offset of the bridge's fast mode has observed order 2.3 to 2.6 (bridge_coupling_order.py); a higher order is not a defect, and it is reported as it is",
+  "development": {
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/q5_order/q5_order.json",
+   "snapshot_revision": "1e73543",
+   "pre_merge": false,
+   "steps_s": [
+    0.0005,
+    0.00025,
+    0.000125
+   ],
+   "records_s": [
+    0.01,
+    0.015,
+    0.02
+   ],
+   "quantities": {
+    "furrow 1->2 patch_voltage_V": {
+     "scale": 0.07933828670305601,
+     "floor": 1.127464865690172e-15,
+     "measurable": 12,
+     "rounding_only": 0,
+     "every_step_term_decreases": true,
+     "order_min": 1.99004170162792,
+     "order_median": 1.997249756788486,
+     "order_max": 1.9995491853789393
+    },
+    "furrow 1->2 cell_amount_fmol": {
+     "scale": 76.65111342138192,
+     "floor": 1.0892778365897289e-12,
+     "measurable": 18,
+     "rounding_only": 6,
+     "every_step_term_decreases": true,
+     "order_min": 1.989492648979736,
+     "order_median": 1.9992967680384697,
+     "order_max": 1.9994876546593714
+    },
+    "furrow 1->2 lumen_volume_pL": {
+     "scale": 0.01019,
+     "floor": 1.448086095479084e-16,
+     "measurable": 0,
+     "rounding_only": 3,
+     "every_step_term_decreases": true,
+     "order_min": null,
+     "order_median": null,
+     "order_max": null
+    },
+    "furrow 1->2 lumen_concentration_mM": {
+     "scale": 145.00063143177547,
+     "floor": 2.0605829068895144e-12,
+     "measurable": 8,
+     "rounding_only": 4,
+     "every_step_term_decreases": true,
+     "order_min": 1.9971301063922107,
+     "order_median": 2.003470348078327,
+     "order_max": 2.0468956252244617
+    },
+    "furrow 1->2 bridge_exchange_fmol": {
+     "scale": 3.3437799874948747e-07,
+     "floor": 4.751797160188964e-21,
+     "measurable": 9,
+     "rounding_only": 3,
+     "every_step_term_decreases": true,
+     "order_min": 1.9995820083812628,
+     "order_median": 1.9995822433629886,
+     "order_max": 1.9995824366764374
+    },
+    "furrow 1->2->4 patch_voltage_V": {
+     "scale": 0.07927566370306785,
+     "floor": 1.12657493933551e-15,
+     "measurable": 36,
+     "rounding_only": 0,
+     "every_step_term_decreases": true,
+     "order_min": 1.998607222172854,
+     "order_median": 1.9991322519583643,
+     "order_max": 1.9996849506577499
+    },
+    "furrow 1->2->4 cell_amount_fmol": {
+     "scale": 25.550021792634478,
+     "floor": 3.6308764766537363e-13,
+     "measurable": 36,
+     "rounding_only": 12,
+     "every_step_term_decreases": true,
+     "order_min": 1.9985620756165208,
+     "order_median": 1.9992905057554295,
+     "order_max": 1.9996607212372266
+    },
+    "furrow 1->2->4 lumen_volume_pL": {
+     "scale": 0.010190000000000001,
+     "floor": 1.4480860954790843e-16,
+     "measurable": 0,
+     "rounding_only": 9,
+     "every_step_term_decreases": true,
+     "order_min": null,
+     "order_median": null,
+     "order_max": null
+    },
+    "furrow 1->2->4 lumen_concentration_mM": {
+     "scale": 145.00063422501455,
+     "floor": 2.060582946583829e-12,
+     "measurable": 33,
+     "rounding_only": 3,
+     "every_step_term_decreases": true,
+     "order_min": 1.9988590284670682,
+     "order_median": 1.9996874746717508,
+     "order_max": 2.0325756035448705
+    },
+    "furrow 1->2->4 bridge_exchange_fmol": {
+     "scale": 3.895673156976452e-07,
+     "floor": 5.536084525170469e-21,
+     "measurable": 9,
+     "rounding_only": 3,
+     "every_step_term_decreases": true,
+     "order_min": 1.9998296230987753,
+     "order_median": 1.9998296302611296,
+     "order_max": 1.9998297376406358
+    }
+   },
+   "bridge_coupling_offset": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/bridge-coupling-order.json",
+    "snapshot_revision": null,
+    "pre_merge": false,
+    "report": {
+     "relative_excess": {
+      "0.001": 0.07844218570191752,
+      "0.0005": 0.01573967093547668,
+      "0.00025": 0.0025790289288172286
+     },
+     "observed_orders": [
+      2.3172243559664465,
+      2.6095055182165803
+     ]
+    }
+   }
+  }
+ },
+ "Q6": {
+  "claim": "Restarts and batches (design \u00a78.3's items).",
+  "as_built": [
+   "restart at t_e - dt, t_e and t_e + dt, and from a checkpoint written after a partition, bitwise (test_partition_runs.py)",
+   "a vector-window batch mixing worlds by value equals each scalar run within 1e-12 of each field's scale, bitwise against itself reversed; a batch mixing static structures is refused (test_partition_runs.py, test_cleft_division_runs.py)",
+   "E_ref, q_ref and partition_birth_gate are bindings, never compiled in (validation/division/division_crossrev.py check)"
+  ]
+ },
+ "Q7": {
+  "claim": "Idle and unchanged (the lead's ruling).",
+  "items": [
+   "an idle partition and an idle bridge are bitwise the composition without them (test_partition.py, test_partition_runs.py, test_bridge_closure.py): built",
+   "(a) the 19-cell heredity sheet padded to the 64-node cap (32 + 32 slots) with idle division operators, bitwise against the same sheet without them; one slot past the cap refused (test_division_idle_sheet_runs.py): built",
+   "(b) S3's cleft egg on insertion@2 and lumen@2: deferred (design decision 24). Its gate is a registered operator variant in S3's protocol family, with a J1 judge entry point whose default is today's path and S3's registered readings shown bitwise unchanged",
+   "crossrev: every existing set identical, S5's own set recorded (crossrev-s5a11, crossrev-s5a10-division; the lead's renewed baseline of record at the landing tree covers all five sets): built"
+  ],
+  "acceptance_list_change": "until (b) passes, insertion@2 and lumen@2 are qualified in division worlds only, and S3's egg stays on insertion@1 and lumen@1 (the lead tells the user)",
+  "development": {
+   "q7a": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/test_division_idle_sheet_runs.log",
+    "snapshot_revision": "1e73543",
+    "pre_merge": false,
+    "tests": "2 passed in 63.04s (0:01:03)"
+   }
+  }
+ },
+ "Q8": {
+  "claim": "Each refusal, with its message.",
+  "as_built": "the S5 tier-1 files"
+ },
+ "Q9": {
+  "claim": "Closed slots are @3 padding at the view; the lumen's padded-slot test.",
+  "as_built": "test_partition.py, test_restricted_lumen_v2.py"
+ },
+ "Q10": {
+  "claim": "Sensitivity to the partition time and to a_0 (design \u00a74.2).",
+  "driver": "validation/division/q10_sensitivity.py",
+  "reported_not_judged": "the lead, 14 November",
+  "dt_s": 0.00025,
+  "nominal": "t_p 2 ms, a_0 1x, the bridge closing linearly over 2 ms: it is open from 2 to 4 ms and the current flows from 3 ms, so the nominal exchange is not zero against zero; every arm runs one parameter at a time against the nominal",
+  "noise_floor": "per world and quantity, 3 x the nominal's step term |Q(0.25 ms) - Q(0.125 ms)|, or 64 eps x the quantity's largest |value| where that is larger; a change below it is reported as within noise",
+  "development": {
+   "quarter": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/q10_dt0.25ms/q10_sensitivity.json",
+    "snapshot_revision": "1e73543",
+    "pre_merge": false
+   },
+   "eighth": {
+    "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/protocol-dev-s5a22/q10_dt0.125ms/q10_sensitivity.json",
+    "snapshot_revision": "1e73543",
+    "pre_merge": false
+   },
+   "worlds": {
+    "1->2": {
+     "nominal_step_term": {
+      "patch_voltage_V": 7.264068513368471e-11,
+      "cell_amount_fmol": 5.9756644077424426e-12,
+      "bridge_exchange_fmol": 0.0
+     },
+     "noise_floor": {
+      "patch_voltage_V": 2.1792205540105414e-10,
+      "cell_amount_fmol": 1.7926993223227328e-11,
+      "bridge_exchange_fmol": 0.0
+     },
+     "development_changes": {
+      "t_p=1 ms": {
+       "patch_voltage_V": {
+        "max_abs_change": 0.0,
+        "noise_floor": 2.1792205540105414e-10,
+        "within_noise": true
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 1.7926993223227328e-11,
+        "within_noise": true
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 0.0,
+        "within_noise": true
+       }
+      },
+      "t_p=3 ms": {
+       "patch_voltage_V": {
+        "max_abs_change": 0.0,
+        "noise_floor": 2.1792205540105414e-10,
+        "within_noise": true
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 1.7926993223227328e-11,
+        "within_noise": true
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 0.0,
+        "within_noise": true
+       }
+      },
+      "a_0=0.4x": {
+       "patch_voltage_V": {
+        "max_abs_change": 0.0,
+        "noise_floor": 2.1792205540105414e-10,
+        "within_noise": true
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 1.7926993223227328e-11,
+        "within_noise": true
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 0.0,
+        "within_noise": true
+       }
+      },
+      "a_0=1.8x": {
+       "patch_voltage_V": {
+        "max_abs_change": 0.0,
+        "noise_floor": 2.1792205540105414e-10,
+        "within_noise": true
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 1.7926993223227328e-11,
+        "within_noise": true
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 0.0,
+        "within_noise": true
+       }
+      }
+     }
+    },
+    "1->2 + injection": {
+     "nominal_step_term": {
+      "patch_voltage_V": 5.100952496506217e-08,
+      "cell_amount_fmol": 3.979465645898017e-09,
+      "bridge_exchange_fmol": 4.0083480659710655e-09
+     },
+     "noise_floor": {
+      "patch_voltage_V": 1.530285748951865e-07,
+      "cell_amount_fmol": 1.1938396937694051e-08,
+      "bridge_exchange_fmol": 1.2025044197913196e-08
+     },
+     "development_changes": {
+      "t_p=1 ms": {
+       "patch_voltage_V": {
+        "max_abs_change": 2.4683546610559937e-06,
+        "noise_floor": 1.530285748951865e-07,
+        "within_noise": false
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 1.9257916505921457e-07,
+        "noise_floor": 1.1938396937694051e-08,
+        "within_noise": false
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 1.9364758095751317e-07,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
+       }
+      },
+      "t_p=3 ms": {
+       "patch_voltage_V": {
+        "max_abs_change": 1.4927318711277504e-05,
+        "noise_floor": 1.530285748951865e-07,
+        "within_noise": false
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 1.1643251127679832e-06,
+        "noise_floor": 1.1938396937694051e-08,
+        "within_noise": false
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 1.168455299067438e-06,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
+       }
+      },
+      "a_0=0.4x": {
+       "patch_voltage_V": {
+        "max_abs_change": 1.4576638315139112e-06,
+        "noise_floor": 1.530285748951865e-07,
+        "within_noise": false
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 1.1372585362323662e-07,
+        "noise_floor": 1.1938396937694051e-08,
+        "within_noise": false
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 1.14357398836111e-07,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
+       }
+      },
+      "a_0=1.8x": {
+       "patch_voltage_V": {
+        "max_abs_change": 1.8398068094421793e-06,
+        "noise_floor": 1.530285748951865e-07,
+        "within_noise": false
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 1.4354046840026058e-07,
+        "noise_floor": 1.1938396937694051e-08,
+        "within_noise": false
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 1.4434019617653043e-07,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
+       }
+      }
+     }
+    },
+    "1->2->4": {
+     "nominal_step_term": {
+      "patch_voltage_V": 7.444256322486353e-11,
+      "cell_amount_fmol": 3.0517810500896303e-12,
+      "bridge_exchange_fmol": 0.0
+     },
+     "noise_floor": {
+      "patch_voltage_V": 2.233276896745906e-10,
+      "cell_amount_fmol": 9.155343150268891e-12,
+      "bridge_exchange_fmol": 0.0
+     },
+     "development_changes": {
+      "t_p=1 ms": {
+       "patch_voltage_V": {
+        "max_abs_change": 0.0,
+        "noise_floor": 2.233276896745906e-10,
+        "within_noise": true
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 9.155343150268891e-12,
+        "within_noise": true
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 0.0,
+        "within_noise": true
+       }
+      },
+      "t_p=3 ms": {
+       "patch_voltage_V": {
+        "max_abs_change": 0.0,
+        "noise_floor": 2.233276896745906e-10,
+        "within_noise": true
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 9.155343150268891e-12,
+        "within_noise": true
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 0.0,
+        "within_noise": true
+       }
+      },
+      "a_0=0.4x": {
+       "patch_voltage_V": {
+        "max_abs_change": 0.0,
+        "noise_floor": 2.233276896745906e-10,
+        "within_noise": true
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 9.155343150268891e-12,
+        "within_noise": true
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 0.0,
+        "within_noise": true
+       }
+      },
+      "a_0=1.8x": {
+       "patch_voltage_V": {
+        "max_abs_change": 0.0,
+        "noise_floor": 2.233276896745906e-10,
+        "within_noise": true
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 9.155343150268891e-12,
+        "within_noise": true
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 0.0,
+        "within_noise": true
+       }
+      }
+     }
+    },
+    "1->2->4 + injection": {
+     "nominal_step_term": {
+      "patch_voltage_V": 5.0814266350229786e-08,
+      "cell_amount_fmol": 1.9830217468097544e-09,
+      "bridge_exchange_fmol": 4.0083480659710655e-09
+     },
+     "noise_floor": {
+      "patch_voltage_V": 1.5244279905068936e-07,
+      "cell_amount_fmol": 5.949065240429263e-09,
+      "bridge_exchange_fmol": 1.2025044197913196e-08
+     },
+     "development_changes": {
+      "t_p=1 ms": {
+       "patch_voltage_V": {
+        "max_abs_change": 2.4590589890877146e-06,
+        "noise_floor": 1.5244279905068936e-07,
+        "within_noise": false
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 9.597075489864437e-08,
+        "noise_floor": 5.949065240429263e-09,
+        "within_noise": false
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 1.9364758095751317e-07,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
+       }
+      },
+      "t_p=3 ms": {
+       "patch_voltage_V": {
+        "max_abs_change": 1.4869514844306764e-05,
+        "noise_floor": 1.5244279905068936e-07,
+        "within_noise": false
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 5.801673239602678e-07,
+        "noise_floor": 5.949065240429263e-09,
+        "within_noise": false
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 1.168455299067438e-06,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
+       }
+      },
+      "a_0=0.4x": {
+       "patch_voltage_V": {
+        "max_abs_change": 1.4521743654793973e-06,
+        "noise_floor": 1.5244279905068936e-07,
+        "within_noise": false
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 5.66746471974966e-08,
+        "noise_floor": 5.949065240429263e-09,
+        "within_noise": false
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 1.14357398836111e-07,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
+       }
+      },
+      "a_0=1.8x": {
+       "patch_voltage_V": {
+        "max_abs_change": 1.83287822681788e-06,
+        "noise_floor": 1.5244279905068936e-07,
+        "within_noise": false
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 7.1532596734869e-08,
+        "noise_floor": 5.949065240429263e-09,
+        "within_noise": false
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 1.4434019617653043e-07,
+        "noise_floor": 1.2025044197913196e-08,
+        "within_noise": false
+       }
+      }
+     }
+    },
+    "furrow 1->2": {
+     "nominal_step_term": {
+      "patch_voltage_V": 9.732922801042321e-11,
+      "cell_amount_fmol": 7.94386778579792e-12,
+      "bridge_exchange_fmol": 0.0,
+      "lumen_volume_pL": 0.0,
+      "lumen_concentration_mM": 1.2050804798491299e-11
+     },
+     "noise_floor": {
+      "patch_voltage_V": 2.919876840312696e-10,
+      "cell_amount_fmol": 2.383160335739376e-11,
+      "bridge_exchange_fmol": 0.0,
+      "lumen_volume_pL": 1.4281908988778014e-16,
+      "lumen_concentration_mM": 3.61524143954739e-11
+     },
+     "development_changes": {
+      "t_p=3 ms": {
+       "patch_voltage_V": {
+        "max_abs_change": 0.0,
+        "noise_floor": 2.919876840312696e-10,
+        "within_noise": true
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 2.383160335739376e-11,
+        "within_noise": true
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 0.0,
+        "within_noise": true
+       },
+       "lumen_volume_pL": {
+        "max_abs_change": 0.0,
+        "noise_floor": 1.4281908988778014e-16,
+        "within_noise": true
+       },
+       "lumen_concentration_mM": {
+        "max_abs_change": 0.0,
+        "noise_floor": 3.61524143954739e-11,
+        "within_noise": true
+       }
+      },
+      "a_0=0.4x": {
+       "patch_voltage_V": {
+        "max_abs_change": 0.0,
+        "noise_floor": 2.919876840312696e-10,
+        "within_noise": true
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 2.383160335739376e-11,
+        "within_noise": true
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 0.0,
+        "within_noise": true
+       },
+       "lumen_volume_pL": {
+        "max_abs_change": 0.0,
+        "noise_floor": 1.4281908988778014e-16,
+        "within_noise": true
+       },
+       "lumen_concentration_mM": {
+        "max_abs_change": 0.0,
+        "noise_floor": 3.61524143954739e-11,
+        "within_noise": true
+       }
+      },
+      "a_0=1.8x": {
+       "patch_voltage_V": {
+        "max_abs_change": 0.0,
+        "noise_floor": 2.919876840312696e-10,
+        "within_noise": true
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 2.383160335739376e-11,
+        "within_noise": true
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 0.0,
+        "noise_floor": 0.0,
+        "within_noise": true
+       },
+       "lumen_volume_pL": {
+        "max_abs_change": 0.0,
+        "noise_floor": 1.4281908988778014e-16,
+        "within_noise": true
+       },
+       "lumen_concentration_mM": {
+        "max_abs_change": 0.0,
+        "noise_floor": 3.61524143954739e-11,
+        "within_noise": true
+       }
+      }
+     }
+    },
+    "furrow 1->2 + injection": {
+     "nominal_step_term": {
+      "patch_voltage_V": 4.822155320882704e-08,
+      "cell_amount_fmol": 3.876756693443895e-09,
+      "bridge_exchange_fmol": 3.905025180056777e-09,
+      "lumen_volume_pL": 0.0,
+      "lumen_concentration_mM": 1.0293099705904751e-11
+     },
+     "noise_floor": {
+      "patch_voltage_V": 1.4466465962648112e-07,
+      "cell_amount_fmol": 1.1630270080331684e-08,
+      "bridge_exchange_fmol": 1.1715075540170331e-08,
+      "lumen_volume_pL": 1.4281908988778014e-16,
+      "lumen_concentration_mM": 3.0879299117714254e-11
+     },
+     "development_changes": {
+      "t_p=3 ms": {
+       "patch_voltage_V": {
+        "max_abs_change": 1.4115919022436585e-05,
+        "noise_floor": 1.4466465962648112e-07,
+        "within_noise": false
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 1.134947964942512e-06,
+        "noise_floor": 1.1630270080331684e-08,
+        "within_noise": false
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 1.1388748046785673e-06,
+        "noise_floor": 1.1715075540170331e-08,
+        "within_noise": false
+       },
+       "lumen_volume_pL": {
+        "max_abs_change": 0.0,
+        "noise_floor": 1.4281908988778014e-16,
+        "within_noise": true
+       },
+       "lumen_concentration_mM": {
+        "max_abs_change": 1.2221335055073723e-11,
+        "noise_floor": 3.0879299117714254e-11,
+        "within_noise": true
+       }
+      },
+      "a_0=0.4x": {
+       "patch_voltage_V": {
+        "max_abs_change": 1.3743840531904583e-06,
+        "noise_floor": 1.4466465962648112e-07,
+        "within_noise": false
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 1.105319924477044e-07,
+        "noise_floor": 1.1630270080331684e-08,
+        "within_noise": false
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 1.1113086588932983e-07,
+        "noise_floor": 1.1715075540170331e-08,
+        "within_noise": false
+       },
+       "lumen_volume_pL": {
+        "max_abs_change": 0.0,
+        "noise_floor": 1.4281908988778014e-16,
+        "within_noise": true
+       },
+       "lumen_concentration_mM": {
+        "max_abs_change": 1.4210854715202004e-12,
+        "noise_floor": 3.0879299117714254e-11,
+        "within_noise": true
+       }
+      },
+      "a_0=1.8x": {
+       "patch_voltage_V": {
+        "max_abs_change": 1.7375198413521753e-06,
+        "noise_floor": 1.4466465962648112e-07,
+        "within_noise": false
+       },
+       "cell_amount_fmol": {
+        "max_abs_change": 1.3973653523180474e-07,
+        "noise_floor": 1.1630270080331684e-08,
+        "within_noise": false
+       },
+       "bridge_exchange_fmol": {
+        "max_abs_change": 1.404960537282822e-07,
+        "noise_floor": 1.1715075540170331e-08,
+        "within_noise": false
+       },
+       "lumen_volume_pL": {
+        "max_abs_change": 0.0,
+        "noise_floor": 1.4281908988778014e-16,
+        "within_noise": true
+       },
+       "lumen_concentration_mM": {
+        "max_abs_change": 1.7905676941154525e-12,
+        "noise_floor": 3.0879299117714254e-11,
+        "within_noise": true
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "Q11": {
+  "claim": "The retirement record is state wherever state goes.",
+  "as_built": [
+   "history rows, checkpoints, host replays and the summary carry the record; the negative control (record zeroed) fails the local and outside ledgers (test_partition_runs.py)",
+   "at egg scale: the windowed run's rows replay with identical diagnostics; the negative control fails (egg_division_world.py)"
+  ],
+  "development": {
+   "path": "/mnt/workspaces/Cells/cell-division-s5-20261113-01/egg-s5a8/egg_division.json",
+   "snapshot_revision": "c37ffa2",
+   "pre_merge": true,
+   "negative_control": "Resolved pump accounting failed: local",
+   "record_after_first_partition_pJ": 17556.799122939745
+  }
+ }
+}
