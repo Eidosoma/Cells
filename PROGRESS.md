@@ -73,6 +73,43 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The coupling operator's milestone 3, and Track E's independent references, landed (14
+  November 2026).** Validation, tests and docs only, during MG0c's `src/` hold. Tier 1 at the merge
+  8b7ad24: 326 files, no changed outcome ([summary](/mnt/workspaces/Cells/independent-references-20261114-01/land-gate1-8b7ad241/summary.json)).
+  - **`species_regulated_availability@1` against the independent references (A4 and A5)**
+    ([note](docs/INVENTORY_COUPLING_DESIGN.md) §9;
+    [evidence](/mnt/workspaces/Cells/inventory-coupling-m3-20261114-01/HANDOFF.md)).
+    - **A4, reciprocal feedback:** two cells, with a contact set by each cell's regulatory state.
+      Observed order 2.0 in V, the amounts and U at dt 1 to 0.125 ms, against R-feedback at Radau
+      rtol 1e-10. The fast arm gives 1.97–2.00.
+    - **A5, a species setting a channel's availability:** order 2.00 in V and the amounts. The
+      factor is exact to rounding.
+    - **The record** run from a frozen snapshot reproduced the development errors bit for bit.
+    - **Disclosed choices**, logged before the record run:
+      - A4 starts from the reference's state at 50 ms and sits at the edge of the explicit-rate
+        bound;
+      - the horizons are 2 s and 1 s;
+      - the worlds have no pumps or gated channels.
+    - **Not registered:** the proposed 1 ms tolerances (twice the measured error). On this build
+      they cannot fail, so they become regression guards. The judged item of the coming PROPOSED
+      protocol is the order against the reference, on pairs at least 100 floors above it, with a
+      control that breaks the order (the advisor's review).
+  - **Track E's references (`validation/excitable/`)** were written by a separate agent that read
+    no engine code ([usage](validation/excitable/REFERENCES_USAGE.md);
+    [evidence](/mnt/workspaces/Cells/independent-references-20261114-01/HANDOFF.md)).
+    - **What they cover:** the single cell with the declared laws and the pump; the passive cable
+      and its linear limit; the strong-coupling limit; the chain protocols of the appendix's §8,
+      including the mid-chain segment and the 0.01 F/m² cells.
+    - **Self-tests:** 16, tier 1. At rtol 1e-11 every observable moves by 1e-11 or less.
+    - **The blind check:** the entry-junction voltages at block sites match the engine's to 0.02
+      mV, and the coupling-only arm reaches 120.6 mV at s·r_gj = 10, supporting the floor of 20
+      (D170).
+    - **The ambiguities it flagged in §8.4** go to Track E's appendix: the observation window of
+      the far-end S1–S2 interval, the coupling for the capture runs, and APD measured from the
+      stimulus end.
+  - **The coupling references gained** `jac_sparsity` and `Run.integrate`. Their 44 self-tests
+    are unchanged.
+
 - **The visualizer merged into main (14 November 2026, the user's request).** It adds the
   `visualizer` branch's 45 commits, all under `visualizer/`: the three.js viewer with its replay
   and lenses, the run adapter, the planarian protein atlas from public sources, and their tests
