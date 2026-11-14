@@ -457,7 +457,20 @@ def draft():
                 "re-applied event checks pass the event; and along the mismatch-scale ladder "
                 "they agree with the event map's verdict and booked image at every delta. The "
                 "verdict requires all three (added with the second amendment, at review "
-                "before its development run)",
+                "before its development run; accepted by the lead, 14 November: a control "
+                "whose construction is not faithful at delta = 0 means nothing)",
+                "engine_refusals": "the engine-side controls' refusal sizes and refusing checks "
+                "are reported information, not judged. They come from event_checks, a copy in "
+                "validation/ of the checks the partition's event_map states inline (calling the "
+                "engine's own needs a src change: a follow-up, not made now). So the copy's "
+                "limits touch information only: its agreement test exercises the isopotential "
+                "check alone on the refusing side (the mismatch scale never trips the plate "
+                "charges), and a check the event map gained later would be missed. A wrong copy "
+                "could fail the construction checks but cannot change a catch; the image the "
+                "non-conservation control books is the partition's own capacitor_state's, "
+                "checked bit for bit at delta = 0. test_s5_protocol_binding fails if event_map "
+                "gains, loses or changes a check or what the checks read (the lead's staleness "
+                "guard, 14 November)",
                 "deltas": list(q2d.DEFECTS),
                 "families": {k: list(v) for k, v in q2d.CONTROL_GROUPS.items()},
                 "targets": {k: list(v) for k, v in q2d.CONTROL_TARGETS.items()},
@@ -508,6 +521,16 @@ def draft():
                         "the W control is accepted as built",
                         "the construction checks (negative_controls.construction_checks), "
                         "required by the verdict",
+                    ],
+                    "rulings": [
+                        "the verdict's requirement of the construction checks: accepted",
+                        "the charge and material sums are judged through the per-daughter "
+                        "charges and amounts families (compare has no sum key): accepted",
+                        "the non-conservation control's work entries: uninformative by "
+                        "construction, accepted as stated",
+                        "the copied event checks: their refusal sizes are information "
+                        "(negative_controls.engine_refusals); a staleness test; the engine's "
+                        "own checks a follow-up, since they need a src change",
                     ],
                 },
                 "scales": "old and new (R-ops' charge_term)",

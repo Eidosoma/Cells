@@ -858,10 +858,42 @@ def booked_volume_defect(result, temperature_K, x):
     return SimpleNamespace(values=values, magnitudes=result.magnitudes, snapshot=result.snapshot)
 
 
+# event_checks copies the partition's event checks: event_map states them inline, so calling
+# the engine's own needs a src change (a follow-up, not made now). Each check as event_map
+# states it (ast.unparse) with event_checks' name for it, then the statements defining what
+# the checks read (kids, also assigned in its gate loops, aside). test_s5_protocol_binding
+# fails when event_map gains, loses or changes one (the lead's staleness guard, 14 November).
+ENGINE_EVENT_CHECKS = (
+    ("valid = xp.all(xp.where(due, jump <= scale, True))", "isopotential"),
+    (
+        "valid &= xp.all(xp.where(outside, xp.abs(phi1[n:] - phi0[n:]) <= scale, True))",
+        "outside_potentials",
+    ),
+    (
+        "valid &= xp.all(xp.abs(image) <= PLATE_RTOL * xp.abs(plates0) + PLATE_ATOL_C)",
+        "plate_charges",
+    ),
+    ("valid &= xp.all(xp.where(alive[None, :], amounts[:, kids] > 0, True))", "positive_amounts"),
+    ("valid &= xp.all(xp.isfinite(value))", "finite"),
+)
+ENGINE_EVENT_READS = (
+    "phi0, v0, c0, plates0, u0 = capacitor_state(state, before, xp=xp)",
+    "phi1, _, _, plates1, u1 = capacitor_state(new, after, xp=xp)",
+    "scale = POTENTIAL_RTOL * xp.max(xp.abs(phi0)) + POTENTIAL_ATOL_V",
+    "jump = xp.maximum(xp.abs(phi1[one] - phi0[parent]), xp.abs(phi1[two] - phi0[parent]))",
+    "outside = after.outside_active & ~p.reservoir",
+    "image = xp.where(p.reservoir, plates1 - plates0, 0.0)",
+    "amounts = p.amount_reference + increment",
+    "alive = xp.concatenate((due, due))",
+)
+
+
 def event_checks(world, d, before, new):
     """(the held nodes' image charge, {check: passed}): the partition's event checks re-applied
-    to a state after the event, as event_map applies them (its isopotential, outside-potential,
-    plate-charge, positivity and finiteness checks, its constants and capacitor_state)."""
+    to a state after the event, as event_map applies them (ENGINE_EVENT_CHECKS: its
+    isopotential, outside-potential, plate-charge, positivity and finiteness checks, with its
+    constants and capacitor_state). Its flags feed only the reported refusal sizes and the
+    construction checks; the image it returns is the partition's own capacitor_state's."""
     p, n = world.p, len(world.cells)
     phi0, _, _, plates0, _ = partition.capacitor_state(before, world.view(before), xp=np)
     q1 = world.view(new)
