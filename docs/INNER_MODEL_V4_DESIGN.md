@@ -42,8 +42,9 @@ the D150 and D152 notes.
    - Everything that touches @3's traced code, or the shape of its state or layout, goes into a
      new inner ID, `resolved_pump_tissue@4`, beside a frozen @3. @4 is built on @3 as @3 was built
      on @2, so a definition that declares only @3's structures runs @3's own programs.
-   - The two bound terms enter the definition-time bound, which runs on the host, in one D148 round
-     that changes no compiled program and serves @3 and @4 alike.
+   - One D148 round on the host changes no compiled program. It adds the two bound terms to the
+     definition-time bound, and a refusal on @3 of channels and pumps on a face-free node's patch,
+     which @3's bounds cannot see (§5.6). The state-dependent stage terms are @4's.
 2. **Why not in place.** @3's step has one static switch, layout shape (§1.1). The probe found the
    law table's length as a literal in every @3 program, and an empty layout leaf as an input of
    every jaxpr (§10). So any in-place addition to @3's traced code is flagged by crossrev in every
@@ -141,15 +142,19 @@ the D150 and D152 notes.
   - But `implementation(inner, laws)` is cached per inner identity, and every
     `Operator.parse(raw, base, inner_model)` receives the inner. The contract was built for more
     than one inner.
-- **The operators fall into two groups:**
+- **What the operators declare about the inner** (their class declarations, with their imports):
 
-| Group | Operators | What they assume about the inner |
+| Operator | Declarations that touch @3's structures | Direct @3 imports or shapes |
 | --- | --- | --- |
-| Adapter or shared code only | `electrode_current_injection@1`, `membrane_entity_state@1`, `scheduled_bath_composition@1`, `scheduled_species_turnover@1`, `scheduled_species_exchange@1`, `local_species_reactions@1`, `species_regulated_availability@1` | @3's view, control and state names through the adapter; species rows; @3's free-energy terms |
-| Direct @3 imports or shapes | `scheduled_cell_replacement@1` and `@2` | `LAW_CODES` sizes the template tables; `template_channel_gate` is [rows, 2, law]; events call `junction_gate.kinetics` and the formation law |
-| | `isopotential_partition@1` (S5a) and `cytoplasmic_bridge_closure@1`, which requires it | They reset `channel_gate` and `junction_gate` (`STATE_RESETS`) |
-| | water@1 and the k-anion symport | They import `surface_pump_v3`; the symport goes through the process hook |
-| | insertion@1 and @2, and the lumens | `surface_pump_v3_spec`, the insertion modules |
+| `scheduled_cell_replacement@1` and `@2` | `STATE_RESETS = (channel_gate, junction_gate)`. `VIEW_FIELDS`: per-population `channel_permeability` and `channel_abundance`, `membrane_permeability`, both pump capacities. `CONTROL_FACTORS = (junction,)` | `LAW_CODES` sizes its template tables; `template_channel_gate` is [rows, 2, law]; events call `junction_gate.kinetics` and the formation law |
+| `isopotential_partition@1` (S5a) | `CLOSES = (active,)`, so closure propagates to patches, populations and contacts, and closed contacts' gates are padded at 0. `STATE_RESETS = (channel_gate, junction_gate)` | The adapter |
+| `cytoplasmic_bridge_closure@1` | `CONTROL_FACTORS = (junction,)`, the aperture on bridges. It requires the partition and writes no gate | The partition module |
+| `membrane_entity_state@1` | `VIEW_FIELDS`: `membrane_area`, `membrane_capacitance` and the per-population `channel_abundance` | `surface_pump` |
+| `scheduled_membrane_insertion@1` and `@2` | Views of the masks and outside references; `@2` `CLOSES` patch and node masks; writes membrane state's area, capacitance and population abundance | `surface_pump_v3_spec` |
+| `ideal_osmosis_linear_compliance_water@1`; the lumens | `VIEW_FIELDS`: the volumes | water imports `surface_pump_v3`; the lumens import the insertion modules |
+| `k_anion_symport_mass_action@1` | `PROCESS`, through @3's hook | `surface_pump_v3` |
+| `species_regulated_availability@1` | `CONTROL_FACTORS = (junction, channel)` | None |
+| Injection, the bath schedule, D150's turnover and exchange, D152's reactions | Writes to amount rows and electrode fields, booked; views of the outside references (the bath schedule); `CONFLICTS_VIEW` of the volumes and masks | The adapter only |
 
 ### 1.4 Crossrev, continuity and checkpoints
 
@@ -196,9 +201,15 @@ the D150 and D152 notes.
     reproduces resolved_pump_tissue@2".
   - @4 reproduces @3's programs exactly when a definition declares only @3's structures.
   - It imports @3's functions and copies none.
-- **The definition-time bound terms go in one D148 round on the shared host function** (§5.6). @3
-  and @4 both use it, and it changes no compiled program. The state-dependent run-time terms go in
-  @4 only.
+- **The definition-time bound terms go in one D148 round on the host** (§5.6). It changes no
+  compiled program, and @3 and @4 both use it. On @3 it also refuses channels and pumps on a
+  face-free node's patch: @3's definition-time bound runs on the channel-free projection, and its
+  stage rule divides by the cell's capacitance, so neither sees them. The state-dependent run-time
+  terms go in @4 only.
+- **@4 is a composite inner only,** not a standalone registered model. A plain @4 tissue is a
+  `resolved_pump_composite@1` definition with `inner_model: resolved_pump_tissue@4` and no
+  operators. That keeps one composite model (D143), one parser path and the composite's checks for
+  every run.
 - **Route (b) is used for nothing else.**
 
 ### 2.4 What @4's ID promises
@@ -232,8 +243,8 @@ the D150 and D152 notes.
   - Most guarded worlds declare a strict subset: the heredity cells of W1, W2, G2-Q1 and E07 carry
     Kir2.1 and NaV1.2 only, and so does the 825-node world.
   - "Declares only @3's structures" therefore means: @3's five laws or any subset, gated
-    junctions, @3's two pump slots with maintained fuel, and @3's two IMEX solvers. Such a
-    definition traces exactly @3's program.
+    junctions, @3's two pump slots with maintained fuel, and @3's three solvers (RK4 for reference
+    runs, and its two IMEX tableaux). Such a definition traces exactly @3's program.
 - **Mixed definitions.** A definition that also declares a further structure keeps the base group,
   with its domain check restricted to its own populations, and adds one kernel per further law
   (§4.2). Its program is new by design; identity is not claimed for it.
@@ -244,7 +255,7 @@ the D150 and D152 notes.
 | --- | --- | --- |
 | Programs | For every world of the crossrev sets, the same definition with `inner_model` @3 and @4, traced in one revision: the checked step, the right-hand side and the device row checks. The jaxpr text, constants (dtype, shape, digest) and bindings are compared, as crossrev compares them | A new mode of `composite_crossrev.py` (a validation extension in I1, which runs @3 and @4) |
 | Lowered programs | The lowered StableHLO of the checked step, and the vector-window program as `validation/continuity/probe.py` captures it at `.lower()` | The same mode, reusing the probe's capture |
-| CPU runs | @3's own test files run with @4 as the inner. The qualification worlds (W1's trajectories, W2's arms, G2-Q1's cases, W37, the 825-node world) run short and are compared bitwise with @3, with every accepted row's host checks | Detached, about an hour of CPU (**S**: two traces per world of about 10–17 s each, from the probe, plus short runs) |
+| CPU runs | @3's own test worlds, written as empty compositions over @4, against the same worlds over @3. The composite's empty composition is @3's own step (PUMP_COMPOSITE.md, equivalence (a)), RK4 included. The qualification worlds (W1's trajectories, W2's arms, G2-Q1's cases, W37, the 825-node world) run short and are compared bitwise with @3, with every accepted row's host checks | Detached, about an hour of CPU (**S**: two traces per world of about 10–17 s each, from the probe, plus short runs) |
 
 - **Not L4 bitwise equality.** At 825 nodes @3 does not repeat bitwise against itself on the L4
   (D168). Identical programs on identical inputs are what the check establishes. Any GPU item for
@@ -344,8 +355,8 @@ doors left closed.
     laws and the L-type CaV law of §3.3's table.
 - **The new mechanisms** (EXCITABLE_TISSUE_DESIGN §3.3), each written only if the moved laws
   cannot serve:
-  - `fast_sodium_m3hj@1`: three gates, with the j gate setting slow recovery. Its own domain
-    (§7.3).
+  - `fast_sodium_m3hj@1`: three gates, with the j gate setting slow recovery. It has its own
+    domain (EXCITABLE_TISSUE_DESIGN §7.3).
   - `transient_outward_potassium@1`, if needed: a Kv4-type law, two gates.
   - `l_type_calcium_cdi@1`: Ca²⁺ permeant, with a stage read of the cell's free Ca²⁺. It needs:
     - a Ca²⁺ row in each cell, already legal in @3's specification;
@@ -385,8 +396,12 @@ doors left closed.
   - Conservation and non-negative heat hold.
   - Probe 2's segment case runs below s·r_gj = 10 without refusal.
 - **Refused in version 1:**
-  - an ungated junction beside replacement@1 and @2, the partition, the bridge and any closer,
-    because they write or pad `junction_gate`;
+  - an ungated junction beside replacement@1 and @2, which reset `junction_gate` and restart the
+    formation law at events;
+  - beside the partition, which resets `junction_gate` and, as a closer, pads closed contacts'
+    gates at 0, and so beside the bridge, which requires the partition. The bridge itself only
+    multiplies the junction's availability;
+  - beside any other closer;
   - the coupling operator's junction factor on an ungated junction, until its guard reruns.
 
 ### 5.3 FR-4's pump and the shared energy pool
@@ -444,8 +459,9 @@ doors left closed.
 ### 5.4 FR-1's charged door, and the implicit set
 
 - **The bound term:**
-  - the definition-time half at the declared state in **I0**, the host round (§5.6), specified
-    after FR-1's probe P1, as the lead ruled;
+  - the definition-time half at the declared state in **I0**, the host round (§5.6), with @3's
+    refusal of channels and pumps on such a patch. It is specified after FR-1's probe P1, as the
+    lead ruled;
   - the stage-time half at stage concentrations in @4 only (§4.4).
 
   With the bound alone, CLOSED_COMPARTMENT_DESIGN §3.4's lysosomal chloride route needs
@@ -499,18 +515,23 @@ doors left closed.
 
 | Term | Its shape | Run-time half? |
 | --- | --- | --- |
-| **Finding 3's z = 0 material term** on junctions and membranes | A Gershgorin term of the face term's form: 2 × the maximum over neutral species and nodes of Σ P·A/V over that node's junctions and membrane routes. At the declared volumes, or water's minimum volumes through its check specification (R5) (**S**) | **Not needed (S).** P·A/V depends on neither openings nor concentrations, and an availability factor of at most 1 only lowers it. The ruling (D152 §9, Q7) names both functions, so the lead decides (§9, Q3) |
-| **The face-free-node term** | The maximum over free face-free finite nodes of Σ_m G_m / C_node, with G_m the constant-field slope at the larger side's declared concentration, as the membrane term takes plasma membranes (CLOSED_COMPARTMENT_DESIGN §3.4, door 1) | **Yes, in @4 only** (§4.4). Its concentration moves; @3 keeps its existing convention for passive routes, the declared state |
+| **Finding 3's z = 0 material term** on junctions and membranes | A Gershgorin term of the face term's form: 2 × the maximum over neutral species and nodes of Σ P·A/V over that node's junctions and membrane routes (**S**). It is evaluated on the operator-adjusted check specification, so R5's worst cases apply: water's minimum volumes and insertion's largest areas (`inner_check_spec`) | **Not needed (S).** P·A/V depends on neither openings nor concentrations, and an availability factor of at most 1 only lowers it. The ruling (D152 §9, Q7) names both functions, so the lead decides (§9, Q3) |
+| **The face-free-node term** | The maximum over **free** face-free finite nodes of Σ_m G_m / C_node, with G_m the passive constant-field slope at the larger side's declared concentration, as the membrane term takes plasma membranes (CLOSED_COMPARTMENT_DESIGN §3.4, door 1). Held baths and the gauge are excluded: the per-cell term already covers a cell against a fixed node. The near miss is P5 in `validation/tissue/pump_water_predictions.json` (water@1 under ARS(2,2,2)), whose face-free gauge `bath_0` carries an ion route (CLOSED_COMPARTMENT_DESIGN §3.4's sweep). Counting fixed nodes would refuse it | **On @3: none, replaced by a refusal.** @3 refuses, at the definition, a channel population or pump on a patch facing a free face-free node. Its definition-time bound runs on the channel-free projection, and its stage rule divides by the cell's capacitance, so neither sees such routes; passive routes keep @3's convention, the declared state. **On @4: yes** (§4.4), where the term is evaluated at stage concentrations and openings. This departs from the earlier ruling, which named both functions (§9, Q3) |
 
-**D148's four criteria hold by construction:**
-1. No program changes, so no physical field changes.
-2. No qualified world declares either structure, so no verdict changes. That is the existing-world
-   sweeps of D152 §10.3 and CLOSED_COMPARTMENT_DESIGN §3.4.
-3. No ledger changes.
-4. The crossrev baseline is renewed at the landing, identical.
+**D148's four criteria:**
+1. **Physical fields: by construction.** Every caller of `explicit_rate_bound` runs on the host:
+   @3's and `surface_pump`'s `StepChecks`, the step checks of insertion, water and replacement@2,
+   and validation tools (a grep at f2ada38d). The refusal is host-side too, so no program changes.
+2. **Verdicts: by sweep, not by construction.** The existing-world sweeps (D152 §10.3;
+   CLOSED_COMPARTMENT_DESIGN §3.4) were static and ran at earlier commits. They are rerun at the
+   landing commit, extended to channels and pumps on face-free patches. A qualified world that
+   either term or the refusal would refuse stops the round.
+3. **Ledgers:** no ledger changes.
+4. **Crossrev:** the baseline is renewed at the landing, and is identical.
 
-**What it adds is a refusal at the definition,** with a test per term, for raw definitions that
-today run silently wrong: C4c's 13% at x = 1, and FR-1's dt × rate of 4.8 at 1 ms.
+**What the round adds is refusals at the definition,** with a test per term and for the
+refusal. They catch raw definitions that today run silently wrong: C4c's 13% at x = 1, and
+FR-1's dt × rate of 4.8 at 1 ms.
 - **Engine models:** the resolved pump family that shares the function; @3 and the composite are
   the ones that matter.
 - **Effort:** 1.0–1.5 agent-days (CLOSED_COMPARTMENT_DESIGN §10).
@@ -526,9 +547,9 @@ today run silently wrong: C4c's 13% at x = 1, and FR-1's dt × rate of 4.8 at 1 
 
 | Feature | Admitted at its milestone | Refused until generalized |
 | --- | --- | --- |
-| Further channel laws (gate count of 2 or less) | Injection, D150's and D152's operators, the coupling operator, the bath schedule, membrane state | Replacement@1 and @2 (template tables keyed by @3's codes) |
-| A gate count above 2 | As above | Replacement@1 and @2, the partition, the bridge |
-| `junction_ungated@1` | As above, except the coupling operator's junction target until its guard reruns | Replacement@1 and @2, the partition, the bridge, every closer |
+| Further channel laws (gate count of 2 or less) | Injection, D150's and D152's operators, the coupling operator, the bath schedule, membrane state (its `channel_abundance` view is per population) | Replacement@1 and @2: template tables and per-population views keyed by @3's codes |
+| A gate count above 2 | As above | Replacement@1 and @2 and the partition, which reset `channel_gate` on two rows; the bridge, through the partition |
+| `junction_ungated@1` | As above, except the coupling operator's junction target until its guard reruns | Replacement@1 and @2 and the partition, which reset `junction_gate`; every closer, which pads it; the bridge, through the partition |
 | Transporters, pools | Injection, D150's and D152's operators | Water and what requires it, replacement, the partition, insertion |
 | Implicit routes | Decided in each route's note | — |
 
@@ -539,7 +560,7 @@ today run silently wrong: C4c's 13% at x = 1, and FR-1's dt × rate of 4.8 at 1 
 
 | Milestone | Engine models | Content | Qualification | Effort (agent-days) | Blocks |
 | --- | --- | --- | --- | --- | --- |
-| **I0** | The resolved pump family's shared bound; @3 and the composite | §5.6: finding 3's term now; the face-free term after P1 | D148's four criteria; a refusal test per term | 1.0–1.5 | FR-4 (the safety net); D150 v1.1's bridge for permeant neutral species |
+| **I0** | The resolved pump family's shared bound; @3 and the composite | §5.6: finding 3's term now; the face-free term, and @3's refusal of channels and pumps on face-free patches, after P1 | D148's four criteria, with the sweeps rerun at the landing commit; a refusal test per term | 1.0–1.5 | FR-4 (the safety net); D150 v1.1's bridge for permeant neutral species |
 | **I1** | `resolved_pump_composite@1` over @3 and @4 | The composite's inner generalization (`INNERS`, `CompositeModel`, `projection` and the implementation key per inner); @4's spec (@3's schema with every further key refused); the registry with @3's base group; static dispatch; operators' admission declarations; the cross-inner crossrev mode | §3.2; crossrev across revisions for @3 as the inner; tier files | 3–4 (**S**), plus about an hour of CPU | Everything below |
 | **I2** | @4 | `junction_ungated@1` (§5.2) | EXCITABLE_TISSUE_DESIGN §3.4's four checks | 1.5–2 (**S**) | Track E's M4; its M3 if the floor fails |
 | **I3** | @4 | §4's schema in full; the moved catalogue laws; `fast_sodium_m3hj@1`, and the transient outward current if needed | Component references; Track E's M4 protocol | 2–3 for the schema (**S**). The laws are within M4's 10–15 (EXCITABLE_TISSUE_DESIGN §11) | Track E's M4 |
@@ -598,10 +619,15 @@ today run silently wrong: C4c's 13% at x = 1, and FR-1's dt × rate of 4.8 at 1 
      numerically qualified status for the same worlds and programs, as the thin compositions
      inherited the frozen models' (PUMP_COMPOSITE.md, "Thin compositions"). Judged status still
      comes only from registered protocols (D143).
-3. **For the lead: finding 3's run-time half.**
-   - **Recommended:** none. The material term is state-independent, so the host-only term is
-     exact.
-   - The face-free term keeps its run-time half, in @4 only.
+3. **For the lead: the run-time halves.** Both earlier rulings name the two functions:
+   finding 3's (D152 §9, Q7) and the face-free term's (CLOSED_COMPARTMENT_DESIGN §3.4, §11).
+   - **Recommended for finding 3:** no run-time half. The material term is state-independent, so
+     the host term, on R5's worst cases, is exact.
+   - **Recommended for the face-free term:** no run-time half on @3. In its place, @3 refuses
+     channels and pumps on a face-free node's patch at the definition, and passive routes keep @3's
+     declared-state convention. The run-time half lives in @4 only, where it is static by
+     declaration.
+   - **Why:** on @3, a run-time half needs a new layout leaf, which flags every program (§1.1).
 4. **For the lead: I0's timing.**
    - **Recommended:** land the host-only round when a landing window opens, before GH200. It
      changes no program, so the reason for parking D148 rounds until after GH200 does not apply.
