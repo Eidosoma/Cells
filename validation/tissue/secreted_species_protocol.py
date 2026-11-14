@@ -34,6 +34,34 @@ STATUS = (
 JUDGED_ARMS = ("dr2.5_dt1", "rk4_dr2.5_dt0.1")
 ORDER_ARMS = ("dr5_dt0.5", "dr2.5_dt0.5", "dr1.25_dt0.5", "dr2.5_dt0.25")
 TIME_ORDER = ("dr2.5_dt1", "dr2.5_dt0.5", "dr2.5_dt0.25")
+EVIDENCE = "/mnt/workspaces/Cells/secreted-species-v1-20261114-01"
+FINDINGS = (  # Disclosed with the draft: what the development runs showed before any registration.
+    "Two development runs. The first (qualification-dev-dc2e494, the arms from the clean snapshot "
+    "of dc2e494) and the second (qualification-dev-a7e1869, after the radial builder's exact "
+    "areas were restored bitwise; the tolerances here are the second's) agree: every fraction of "
+    "tolerance within 0.001; the dt study's tolerances within 1.2e-5 (IMEX) and 1.3e-3 (RK4, at "
+    "step terms of 5e-18 mM, about 1e3 times their own rounding) relative, Q2's within 1.4e-9, "
+    "the splitting term's identical",
+    "The species crossrev from the clean snapshot of 8d94451 found the radial world's bindings "
+    "changed against its first record (b102da4): face factors by up to 2 ulp and anchors by up "
+    "to 5, from a regrouping of 4 pi r_a r_b at dc2e494. Restored at a7e1869: 24/24 jaxpr texts, "
+    "24/24 constants and 8/8 bindings identical, its check holding "
+    f"({EVIDENCE}/crossrev/species/compare-a7e1869-vs-b102da4.txt)",
+    "Three step-term definitions compared on the first run's arms "
+    f"({EVIDENCE}/qualification-dev-dc2e494/step_term_compare.json): per element (S5's form) "
+    "the controls catch k and D in error by 5e-10 and 5e-9 (IMEX), 1e-12 and 1e-11 (RK4); in the "
+    "max norm per record 1e-3 (IMEX) and 5e-6 (RK4); the splitting term as the step term (max "
+    "norm) 1e-3 and 2e-3, 5e-6 and 1e-5. The step map's exact fixed point used per element is no "
+    "step term: the far field is transient (180 times its tolerance at 0.5 s)",
+    "The first analysis judged Q3's stop rule on the errors against R-continuum "
+    f"({EVIDENCE}/qualification-dev-dc2e494/analysis-v1-per-element.json): the clearance's "
+    "error changes sign from 5 to 2.5 um at 0.25 s and grows there. Successive differences "
+    "element by element then failed at one coarse shell of 120, where the spatial error changes "
+    "sign; hence successive differences in the max norm (Q3.why_the_max_norm)",
+    "A preview verdict (S5's precedent: the judge's code on copies of the development arms, the "
+    f"guard bypassed in-process; {EVIDENCE}/qualification-dev-a7e1869-preview/verdict.json): "
+    "every item passes. It is no verdict",
+)
 GUARD_TESTS = (
     "tests/unit/test_species_turnover.py",
     "tests/unit/test_species_exchange.py",
@@ -183,6 +211,7 @@ def draft(development, output):
         arms_snapshot_revision=a["arms_source"]["git_revision"],
         arms_patch_sha256=a["arms_source"]["patch_sha256"],
         analysis_source=a["analysis_source"],
+        drafted_by=q.source_identity(),
     )
     stop_rule_count = len(a["Q3"]["space"]) + len(a["Q3"]["time"])
     protocol = dict(
@@ -476,8 +505,8 @@ def draft(development, output):
             "pinned from the dt study) and the splitting term per record (the instruction's). Keep "
             "both, or one? The formula is leading order: 9.4% below the step map's fixed point "
             "under ARS at dt K_ii 0.19, 0.4% under RK4; the fixed point gives the observed "
-            "first-shell error to 6e-4 (relative). Q2's time term stays the dt study's, since the "
-            "formula has no per-element form for the transient far field",
+            "first-shell error to 8e-4 or better (relative). Q2's time term stays the dt study's, "
+            "since the formula has no per-element form for the transient far field",
             "The RK4 arm (2.5 um, 0.1 ms, to 0.5 s) as a judged arm of Q1",
             "Q4: the Danckwerts switch-on reported only (probe 4's record), not judged",
             "dr1.25_dt0.5 runs at dt K_ii 0.384, beyond the probed 0.30: it passed every host "
@@ -489,6 +518,7 @@ def draft(development, output):
             "a judged item with a rounding rule (for example n_steps x eps x the scale), decided "
             "before any judged run",
         ],
+        development_findings=list(FINDINGS),
     )
     Path(output).write_text(json.dumps(protocol, indent=1, default=float) + "\n")
     print(output)
