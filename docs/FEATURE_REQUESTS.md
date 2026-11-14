@@ -115,8 +115,9 @@ two operators. It has no reactions inside, no binding sites and no pH.
   has zero ion permeability and no pump or channel. The content is electroneutral (a zero charge
   anchor): the cargo at a trace, the ions at a declared complement.
 - **Species:** the ions and the neutral cargo, declared by `inventory_species.add_inventory_species`
-  (valence 0, impermeant on every membrane and junction). **The cap in force is 7 in all**
-  (`species_common.MAX_SPECIES` at main's ced45c87). D165's raise to 16 is queued, not landed.
+  (valence 0, impermeant on every membrane and junction). **The cap was 7 in all** when this
+  world was written (`species_common.MAX_SPECIES` at main's ced45c87). D165 raised it to 16 on 14
+  November 2026.
 
 **The refusals the definition meets,** each refused with its reason:
 - **Exchange:** a route on a patch facing a held bath; a charged or permeant species; saturable
@@ -499,6 +500,10 @@ condensed. The lead's decision follows.
 
 D150's unpromised claim 3 departs at rounding in a 12-species chain. The requester does not rely on
 cross-world bitwise identity.
+
+**Landed 14 November 2026** (merge 2161f39, tier 1 and 2 with no changed outcome). `MAX_SPECIES` is 16.
+The tier-1 guard is host-side (`tests/unit/test_species_cap.py`). The runner world `cell_charged_9`
+is in tier 2 (`tests/unit/test_species_cap_runs.py`), since compilation alone takes about 15 s.
 
 **The lead's decision (D165): accepted, and queued now.** The requester is the consumer that
 PROGRESS's "when a consumer needs it" waited for.

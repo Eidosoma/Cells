@@ -120,7 +120,7 @@ It goes only through what the repository states; the preprint was not read for t
   - Neutral species rows on @3's species axis, carried by the face law.
   - `scheduled_species_turnover@1` and `scheduled_species_exchange@1` are design only.
   - Rates are scheduled, uptake is a plain sink, the tissue is static, and a world has at
-    most 7 species.
+    most 16 species (D165); its judged scope stays at 7.
 
   ROADMAP item 9 (trafficking) is not started.
 - **Why (b) matters here.** Under D150's rule that rates belong to the occupant (design §5.2,
