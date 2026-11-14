@@ -1351,6 +1351,20 @@ partition, bridge, insertion@2 or lumen@2 code (§7). These conventions hold thr
   - Random states: positive amounts, backgrounds, volumes, areas, capacitances and charges, with
     f and a_k in (0, 1) and random transference numbers.
   - Pass: 64 eps × magnitude.
+  - **Magnitudes: an added charge term (lead's ruling, 14 November 2026; pending in R-ops).**
+    For a cell's node charge, input and daughters alike, the magnitude adds
+    |Q̄_i| + 10⁻¹⁵ F Σ_s |z_s Δ_{s,i}|. Q̄_i is the declared charge anchor and Δ the increments
+    of A.6 step 3. R-ops carries the term through its own capacitor solve into the potentials.
+    Clefts are unchanged.
+    - **Why.** The increment form is in this appendix (A.6 step 3). Scaling the increments'
+      ionic content 10× and 100× at fixed net charge moved the engine–R-ops difference
+      9.3–10× and 96–112×. Without this term, the magnitude understated rounding near zero
+      potential: the ratio reached 860.6 at a net-charge spread of 1. A.1's whole-content
+      terms would also bound the rounding, but would loosen Q2 about 1,370× (median), so the
+      increment form is the stricter honest scale.
+    - **It replaces** a 10% net-charge band on the random draws, now withdrawn, which kept
+      potentials away from zero. The S5 protocol fixes the draws: spreads 0.1, 1 and 3, with
+      their seeds and counts.
 - **R-tissue.** Radau at rtol 1e-10, with breakpoints at every onset, partition, closure end,
   pulse edge and record. R-ops is applied at each partition. Compared at the records:
   - each live cell's Vm, φ_i − φ_b;
