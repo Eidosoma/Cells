@@ -54,6 +54,7 @@ PARTITION = partition_operator.LAW_ID
 BRIDGE = "cytoplasmic_bridge_closure@1"
 TURNOVER, EXCHANGE = "scheduled_species_turnover@1", "scheduled_species_exchange@1"
 REACTIONS, COUPLING = "local_species_reactions@1", "species_regulated_availability@1"
+BATH = "scheduled_bath_composition@1"
 
 OPS = "src/cells/models/operators/"
 TESTS = "tests/unit/"
@@ -357,6 +358,45 @@ def _tags():
             (*COUPLING_CODE, ONSET_CHANNELS[INSERTION_2]),
         )
     tags[("reads-closed", COUPLING, PARTITION, "active")] = (REAL, CELL_MASK[COUPLING], ())
+    anchor = "extracellular_amount_reference"
+    tags[("reads", REACTIONS, BATH, anchor)] = (
+        NOMINAL,
+        "D152 reads the anchors only at finite nodes (node_amounts and reactions_domain_valid mask "
+        "held baths) and refuses held-bath sites (_sites); the bath schedule provides the declared "
+        "array off its baths and schedules held baths only (held_view, parse_declaration). The "
+        "bath-schedule design §3.1",
+        (
+            OPS + "species_reactions.py::node_amounts",
+            OPS + "species_reactions.py::reactions_domain_valid",
+            OPS + "species_reactions.py::_sites",
+            OPS + "bath_schedule.py::held_view",
+            OPS + "bath_schedule.py::parse_declaration",
+        ),
+    )
+    lumen_read = (
+        "a lumen, which requires it, fills from its source bath at the declared composition and "
+        "does not declare that read"
+    )
+    tags[("providers", INSERTION_1, BATH, anchor)] = (
+        REAL,
+        "Real as the bath-schedule design §3.1 classes it: the composite admits one provider per "
+        "field (door S). Insertion@1's onset nodes are finite and the bath's targets held, but "
+        + lumen_read,
+        (),
+    )
+    tags[("mask", BATH, INSERTION_2, anchor)] = (
+        REAL,
+        "Real as the bath-schedule design §3.1 classes it: beside a closer the adapter pads the "
+        "field (door S). Insertion@2 closes only finite onset nodes, but " + lumen_read,
+        (),
+    )
+    tags[("mask", BATH, PARTITION, anchor)] = (
+        REAL,
+        "Real as the bath-schedule design §3.1 classes it: beside a closer the adapter pads the "
+        "field (door S). The partition closes no held bath (not shown nominal: the design does "
+        "not class it so)",
+        (),
+    )
     for name in (
         "membrane_active",
         "outside_active",
@@ -566,6 +606,16 @@ RULES = (
         + "test_secreted_species.py::test_more_than_sixteen_species_are_refused_with_the_reason",
         tag=REAL,
         why="Probed to 16 (FR-9 / D165); above it, another probe",
+    ),
+    dict(
+        rule="beside water@1 every bath step is isosmotic",
+        laws=(BATH, WATER),
+        level="data",
+        check=OPS + "bath_schedule.py::check_definition",
+        test=TESTS + "test_bath_schedule.py::test_beside_water_only_an_isosmotic_step_is_admitted",
+        tag=REAL,
+        why="Water reads the declared bath, its water potential bound at the definition (the "
+        "bath-schedule design §3.1, door W)",
     ),
     dict(
         rule="D152 refuses RK4",
