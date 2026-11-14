@@ -73,6 +73,30 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Track E (excitable tissue, D155): the design note accepted narrowly, for M1 and M2 on @3
+  (D170, 14 November 2026)** ([note](docs/EXCITABLE_TISSUE_DESIGN.md);
+  [evidence](/mnt/workspaces/Cells/excitable-tissue-20261114-01/HANDOFF.md)).
+  - **Engine model run:** `resolved_pump_tissue@3`, with its five channel laws, the
+    constant-field leaks and junctions, the pump and the junction gate.
+  - **Probe 2 failed S1 as registered at 0.05 F/m²:** every perturbed segment blocked. So the
+    acceptance condition, one cheap probe, failed.
+  - **The acceptance rests on amendment 4** at candidate A (0.01 F/m²), which is post hoc but
+    was written before its runs. S1–S4 were met.
+    - Segment delays were 1.08–2.02 times the control, with block at combined 0.02 and 0.01.
+    - Refinement was identical at 5 and 2.5 µs, and the energy residual at most 2.1e-4.
+  - **The limits:**
+    - the channel laws' +60 mV domain, against A's +56.65 mV at the chain's end cell;
+    - the junction gate law's 120 mV domain at block sites (118.1 mV at s·r_gj = 10), so the floor
+      s·r_gj ≥ 20 is provisional. The independent reference, written blind, matches the engine
+      to 0.02 mV, and finds 10 unsafe in the coupling-only arm (120.6 mV);
+    - `junction_ungated@1` named for the inner-model note.
+  - **Landed:** the note, its equations appendix and the probe driver
+    (`validation/tissue/excitable_probe.py`). Tier 1 at the merge 7bbda57: 323 files, no
+    changed outcome ([summary](/mnt/workspaces/Cells/excitable-tissue-20261114-01/tiers/land-gate1-7bbda575/summary.json)).
+  - **Next:** M1, when a slot frees. Its first development runs are the sheet's block-site
+    voltages, the block threshold and the peaks at lightly loaded cells, with B's segment run as
+    the fallback's evidence.
+
 - **Track R's independent references landed (14 November 2026)** in `validation/coupling/`.
   They are R-fac, R-state, R-cell and R-feedback, written by a separate agent that read no engine
   code ([usage](validation/coupling/REFERENCES_USAGE.md);

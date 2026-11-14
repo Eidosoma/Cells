@@ -1,5 +1,18 @@
 # Excitable tissue: design (proposed)
 
+**Accepted narrowly, 14 November 2026 (the lead, with the advisor; D170): for M1 and M2 on @3
+only.**
+- **The acceptance condition failed.** It was one cheap probe, and probe 2 failed S1 as
+  registered: at 0.05 F/m² every perturbed segment blocked.
+- **What the acceptance rests on instead:** amendment 4, a second probe at candidate A (0.01
+  F/m²). It is post hoc, but it was written before its runs.
+- **The generic cell is A,** by amendment 3's text. The driver's stricter record names B; an
+  addendum beside it explains why.
+- **The s·r_gj ≥ 20 floor is provisional.** M1's first development runs measure the junction
+  voltage at block sites on the sheet, the block threshold (coupling-only included) and the
+  peaks at lightly loaded cells. M3's grid is registered only after them.
+- **B is the pre-registered fallback** if A is refused on the sheet in M1.
+
 **Status.** Proposed on 14 November 2026 by Track E (D155). **It contains no code** (D142:
 design before code). The lead reviewed it with the advisor on 14 November and accepts it only
 for the generic-cell work on @3, and only after one cheap probe. Probe 2 (§1.2) is that probe.
