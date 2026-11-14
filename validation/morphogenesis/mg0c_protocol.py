@@ -623,10 +623,16 @@ QUESTIONS = [
     "batch signature (ruling Q11 (c)), so domains of different N are refused in one batch. "
     "Proposed: a vector batch over seeds on one domain (L/l = 6), bitwise against its reverse and "
     "within 1e-12 of each scalar run",
-    "2. Q1's records: 3 / |Re lambda| of each mode's slowest eigenvalue, capped at 600 s (the "
-    "near-marginal modes' 3 / |Re lambda| would run to 590 s and beyond)",
-    "3. Q1's linearised-map tolerance, 1e-6 relative a priori: above the floor measured at the "
-    "1e-7 start (the floor part) and below the smallest discretisation error at 12.5 ms",
+    "2. The records: 3 / |Re lambda| of each mode's slowest eigenvalue, capped at 600 s. The cap "
+    "never binds in Q1 (its longest record, L/l = 6 n = 1, is 590.5 s); it binds in Q5, where the "
+    "near-marginal modes at d = 8 would run to 640, 1,030 and 1,100 s (L/l = 6 n = 1, 11 n = 2, "
+    "16 n = 3)",
+    "3. Q1's linearised-map tolerance (1e-6 relative, proposed). No single tolerance separates "
+    "the two scales with margin: the worst floor at the 1e-7 start is 1.3e-7 (L/l = 6 n = 6 at 50 "
+    "ms, a fast mode at e^-3 of its start), while the smallest discretisation error, the size an "
+    "order mistake would take, is 8.2e-7 at 25 ms and 2.1e-7 at 12.5 ms (L/l = 16 n = 1). 1e-6 "
+    "keeps every development value at 8 x or more below it but would not see an error of the "
+    "smallest discretisation's size on that mode; the choice is the lead's",
     "4. The fit-limited rate tolerances (Q2 1e-3, Q3 1e-2, relative to the engine order's "
     "discrete-time rate, not the continuous sigma_n, which differs by O(dt^2)); Q5's fitted "
     "rates reported only",
@@ -634,19 +640,35 @@ QUESTIONS = [
     "eigenvalues; the band is (0.2, 0.5)), at least two per domain, 100 s each, fitted from 50 s",
     "6. Q6's controls are integrated at rtol 1e-12 on a decade grid (each costs an integration)",
     "7. §11.1's accuracy pins: adopted as guards, or kept as proposals",
-    "8. Guard 2's rounding rule: REFERENCES_USAGE.md's 1e-14 x steps x the scale, or D150's "
-    "steps x eps x the scale (development: up to 0.92 of the latter at 800 steps, both sides' "
-    "rounding counted; see development_values)",
+    "8. Guard 2's rounding rule: REFERENCES_USAGE.md's 1e-14 x steps x the scale (development: "
+    "0.008 to 0.021), or D150's steps x eps x the scale (development: up to 0.96, at 8,000 steps "
+    "in the passive world at 12.5 ms; the long-double iteration shows the engine's own rounding, "
+    "linear in steps)",
+    "9. Memory: development unit b (q6, q3, q5, q7) peaked at 3.5 GB in its cgroup (q7's vector "
+    "batch) against the 4 GiB cap; the judged run's cap is the coordinator's to set (5 GiB for "
+    "that group, or q7 in a unit of its own)",
+    "10. The guards of record list test_species_reactions_composition.py. Its same-material test "
+    "uses an exchange map written by the engine agent from D150's documented law (one author on "
+    "both sides, as D150's step map, which the lead moved out of D150's judged list to a "
+    "regression guard), and its idle claim 3 is reported, not promised. Judged guard, or a "
+    "regression guard outside the judged list?",
 ]
 RESOURCES = (
-    "CPUs 5 and 7 (CPU backend only), each unit capped at 4 GiB, detached through "
-    "scripts/run_detached.sh; development wall times in development_runs"
+    "CPUs 5 and 7 (CPU backend only), detached through scripts/run_detached.sh. Development: "
+    "unit a 52 min and 2.6 GB, unit b 90 min and 3.5 GB (cgroup peak, against its 4 GiB cap: "
+    "question 9), unit c 52 min and 1.1 GB, the d147 part 8 s"
 )
 UNITS = dict(
-    a="CPU 5: theory, timing, linear, floor, q1, q2, sites",
+    a="CPU 5: d147, theory, timing, linear, floor, q1, q2, sites",
     b="CPU 7: q6, q3, q5, q7",
     c="CPU 5, after a: q4",
-    note="development's split; the judged run keeps it, each unit into its own new directory",
+    note=(
+        "development's split, d147 run separately (dev-3e7399a-d); the judged run keeps the split "
+        "with d147 in unit a, each unit into its own new directory, then the judge entry. "
+        "mg0c/dev.sh, the development launcher, creates its output directory first and so cannot "
+        "start a judged run, which refuses an existing directory: a judged launcher writes its "
+        "logs beside the run's directory"
+    ),
 )
 
 
