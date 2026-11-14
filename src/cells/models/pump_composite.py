@@ -242,7 +242,8 @@ def field_map(inner, operators):
 
     State fields with their owner and writers (entity writes and resets), layout and
     control fields with their owner, view fields with their provider and readers, and
-    each observation column's owner chain (its owner is the last).
+    each observation column's owner chain (its owner is the last). With factor operators,
+    `factors` gives each factored inner control's chain of their laws in declared order.
     """
     state = {k: {"owner": "inner", "writers": []} for k in inner.STATE_FIELDS}
     layout = dict.fromkeys(inner.LAYOUT_TYPE._fields, "inner")
@@ -268,7 +269,17 @@ def field_map(inner, operators):
             "closers": [op.LAW_ID for op in operators if k in op.CLOSES],
             "readers": [r.LAW_ID for r in operators if k in r.VIEW_READS],
         }
-    return dict(state=state, layout=layout, control=control, views=views, observations=columns)
+    out = dict(state=state, layout=layout, control=control, views=views, observations=columns)
+    # Each factored inner control's chain of factor operators, in declared (multiplication) order
+    # (docs/INVENTORY_COUPLING_DESIGN.md §1.7, ruling 6). Only with factor operators, so every
+    # other composition's map, and so its manifests, are unchanged.
+    factors = {}
+    for op in operators:
+        for k in op.CONTROL_FACTORS:
+            factors.setdefault(k, []).append(op.LAW_ID)
+    if factors:
+        out["factors"] = factors
+    return out
 
 
 def accepted_writers(operators):

@@ -816,3 +816,27 @@ def test_a9_a_batch_refuses_worlds_of_another_structure():
     for other in (other_side, other_law, more_species):
         with pytest.raises(ConfigError, match="matching model array axes"):
             batch(first, other)
+
+
+def test_the_field_map_records_each_factored_controls_chain_and_only_then():
+    """Ruling 6, with the lead's rule of 14 November 2026: the `factors` entry appears only with a
+    factor operator, so every other composition's field map (and its manifests) is unchanged."""
+    inner = "resolved_pump_tissue@3"
+    replacement, bridge = "scheduled_cell_replacement@1", "cytoplasmic_bridge_closure@1"
+    keys = {"state", "layout", "control", "views", "observations"}
+    for laws in (
+        (),
+        ("ideal_osmosis_linear_compliance_water@1",),
+        ("electrode_current_injection@1",),
+        ("scheduled_species_turnover@1", "local_species_reactions@1"),
+    ):
+        assert set(pump_composite.implementation(inner, laws).FIELD_MAP) == keys, laws
+    chains = {
+        (replacement, LAW): {"junction": [replacement, LAW], "channel": [LAW]},
+        (LAW, replacement): {"junction": [LAW, replacement], "channel": [LAW]},
+        (replacement,): {"junction": [replacement]},
+        ("membrane_entity_state@1", "isopotential_partition@1", bridge): {"junction": [bridge]},
+    }
+    for laws, chain in chains.items():
+        field_map = pump_composite.implementation(inner, laws).FIELD_MAP
+        assert set(field_map) == keys | {"factors"} and field_map["factors"] == chain, laws
