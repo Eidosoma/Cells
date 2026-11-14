@@ -247,6 +247,12 @@ def rescale_capacitance(raw, cm, states):
         )
 
 
+def stimulus_scale():
+    """Stimulus permeabilities scale with the specific capacitance, so that a stimulus has the
+    heredity cell's rate (G/C) at any point (amendment 1's addendum)."""
+    return POINT["cm_F_m2"] / HEREDITY_CM_F_M2
+
+
 def set_point(nav_m_s, kir_m_s, cm_F_m2, rest=None):
     POINT.update(
         nav_m_s=nav_m_s,
@@ -922,7 +928,7 @@ def part_single(args):
     # Stimulus threshold (1 ms cation conductance) and S1-S2 recovery at twice it.
     dt = 1e-5
     on, width = int(round(2e-3 / dt)), int(round(1e-3 / dt))
-    trail, lo, hi = [], 1e-9, 1e-6
+    trail, lo, hi = [], 1e-9 * stimulus_scale(), 1e-6 * stimulus_scale()
 
     def stim_fires(m_s):
         rec, _ = single_run(kv, end=0.06, stim=dict(cells=[0], pulses=[(on, on + width)], m_s=m_s))
@@ -1000,7 +1006,7 @@ def chain_run(
     stim_cells = list(range(args.stim_cells))
     on, width = int(round(2e-3 / dt)), int(round(1e-3 / dt))
     pulses = pulses or [(on, on + width)]
-    m_s = args.stim_m_s if m_s is None else m_s
+    m_s = args.stim_m_s * stimulus_scale() if m_s is None else m_s
     booking = args.booking if booking == "main" else booking
     raw = definition(
         n,
@@ -1062,7 +1068,9 @@ def part_chain(args):
         part="chain",
         kv_m_s=args.kv,
         n=args.n,
-        stimulus=dict(cells=args.stim_cells, m_s=args.stim_m_s, width_s=1e-3),
+        stimulus=dict(
+            cells=args.stim_cells, m_s=args.stim_m_s, width_s=1e-3, scaled_with_capacitance=True
+        ),
         bounds=[],
         sweep=[],
         controls=[],
@@ -1104,7 +1112,7 @@ def part_chain(args):
         log_chain("control", c)
         write_json(path, out)
     # Capture threshold at the main coupling (bisection on the stimulus permeability).
-    lo, hi = args.capture_bracket
+    lo, hi = (v * stimulus_scale() for v in args.capture_bracket)
     for _ in range(args.bisections):
         mid = math.sqrt(lo * hi)
         c = chain_run(args, s0, dt=dt0, m_s=mid)
@@ -1265,7 +1273,11 @@ def part_device(args):
         args.dt_cap,
     )
     on, width = int(round(2e-3 / dt)), int(round(1e-3 / dt))
-    stim = dict(cells=list(range(args.stim_cells)), pulses=[(on, on + width)], m_s=args.stim_m_s)
+    stim = dict(
+        cells=list(range(args.stim_cells)),
+        pulses=[(on, on + width)],
+        m_s=args.stim_m_s * stimulus_scale(),
+    )
     batches.append(
         (
             f"chain n {args.n} s {args.s_main:g} dt {dt:g}: excitable and sodium-disabled",
