@@ -175,11 +175,26 @@ def probe_2d():
         "true_1e-9_to_1e-6": whole[1e-6] - whole[1e-9],
         "hybrid_1e-9_to_1e-6": hyb[1e-6] - hyb[1e-9],
     }
+    # The note's values are relative changes of the whole heat (read here; units not stated).
+    rel = {
+        "true_1e-12_to_1e-9": sens["true_1e-12_to_1e-9"] / whole[1e-12],
+        "hybrid_1e-12_to_1e-9": sens["hybrid_1e-12_to_1e-9"] / hyb[1e-12],
+        "true_1e-9_to_1e-6": sens["true_1e-9_to_1e-6"] / whole[1e-9],
+        "hybrid_1e-9_to_1e-6": sens["hybrid_1e-9_to_1e-6"] / hyb[1e-9],
+    }
     say(
-        "trace sensitivity at h = 0.025, 5 s (pJ; note: true -6.27e-5 and -2.21e-2, attribution "
-        "-6.32e-5 and -2.21e-2): " + ", ".join(f"{k} {v:.3g}" for k, v in sens.items())
+        "trace sensitivity at h = 0.025, 5 s, as relative changes of the whole heat (note: true "
+        "-6.27e-5 and -2.21e-2, attribution -6.32e-5 and -2.21e-2): "
+        + ", ".join(f"{k} {v:.3g}" for k, v in rel.items())
+        + "; in pJ: "
+        + ", ".join(f"{k} {v:.3g}" for k, v in sens.items())
     )
-    return {"rows": rows, "true_whole_H_5s": whole, "trace_sensitivity": sens}
+    return {
+        "rows": rows,
+        "true_whole_H_5s": whole,
+        "trace_sensitivity_pJ": sens,
+        "trace_sensitivity_relative": rel,
+    }
 
 
 def _share_minimum(net, h, lo=1e-6, hi=1.0):
@@ -261,13 +276,22 @@ def probe_2g():
                 f"{row['whole_H_1s_hybrid']:+.3f}%"
             )
     by = {(r["trace_mM"], r["h"]): r for r in rows}
-    sens_h = by[(1e-9, 0.0125)]["whole_H_1s"] - by[(1e-12, 0.0125)]["whole_H_1s"]
-    sens_t = by[(1e-9, 0.0125)]["true_whole_H_1s"] - by[(1e-12, 0.0125)]["true_whole_H_1s"]
+    base = by[(1e-12, 0.0125)]
+    sens_h = by[(1e-9, 0.0125)]["whole_H_1s"] - base["whole_H_1s"]
+    sens_t = by[(1e-9, 0.0125)]["true_whole_H_1s"] - base["true_whole_H_1s"]
+    rel_h, rel_t = sens_h / base["whole_H_1s"], sens_t / base["true_whole_H_1s"]
     say(
-        f"trace 1e-12 -> 1e-9 at h = 0.0125: hybrid {sens_h:.3g} pJ, true {sens_t:.3g} pJ "
-        "(note: -1.3e-3 and -1.4e-7)"
+        f"trace 1e-12 -> 1e-9 at h = 0.0125, relative change of the whole heat: hybrid "
+        f"{rel_h:.3g}, true {rel_t:.3g} (note: -1.3e-3 and -1.4e-7); in pJ {sens_h:.3g} and "
+        f"{sens_t:.3g}"
     )
-    return {"rows": rows, "trace_sensitivity_hybrid": sens_h, "trace_sensitivity_true": sens_t}
+    return {
+        "rows": rows,
+        "trace_sensitivity_hybrid_pJ": sens_h,
+        "trace_sensitivity_true_pJ": sens_t,
+        "trace_sensitivity_hybrid_relative": rel_h,
+        "trace_sensitivity_true_relative": rel_t,
+    }
 
 
 def probe_2c():
