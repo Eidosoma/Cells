@@ -240,8 +240,9 @@
     "transference": "R-ops given the first carrier's t + delta and the second's t - delta, their sum kept 1",
     "W": "R-ops' daughters' free energy evaluated at V_D (1 + delta), a booking defect in the free-energy volume: W moves by -1e-3 RT N_D ln(1 + delta), first order (the amendment; accepted as built). It is applied to R-ops' output through the usage note's G(n, V): the engine books free energy relative to its anchors, so a volume defect there would touch only the increments, about 1e-3 of the effect at the bound state",
     "mismatch scale": "the engine moves (1 + delta) times the mismatch, its carrier fractions scaled in its layout, which breaks isopotentiality at first order (an engine-side defect, since R-ops keeps the transference numbers summing to 1; the amendment, formerly 'image'); a delta its event map refuses is reported",
-    "non-conservation": "D2 takes slightly more than the rest: Delta_D2 -> (Delta_P - Delta_D1)(1 + delta), applied to the engine's state after its event, its D2 increment and moved amount and the image it books (plates1 - plates0, the partition's capacitor_state) (the second amendment). The partition's event checks, re-applied to the defective state with its constants, report the delta they refuse"
+    "non-conservation": "D2 takes slightly more than the rest: Delta_D2 -> (Delta_P - Delta_D1)(1 + delta), applied to the engine's state after its event, its D2 increment and moved amount and the image it books (plates1 - plates0, the partition's capacitor_state) (the second amendment). At first order it moves the amounts by delta Delta_D2, and the charges and the image charge by delta F sum_s z_s Delta_D2,s, zero where D2's increment is electroneutral: a miss there is read as such, as for W (each case records D2's net charge increment). The work bookings keep the engine's undefected values, so its work entries are uninformative. The partition's event checks, re-applied to the defective state with its constants, report the delta they refuse and the checks that refuse it"
    },
+   "construction_checks": "each case records the engine-side controls' construction against the engine's own event: at delta = 0 the non-conservation construction reproduces the event in every field; the re-applied event checks pass the event; and along the mismatch-scale ladder they agree with the event map's verdict and booked image at every delta. The verdict requires all three (added with the second amendment, at review before its development run)",
    "deltas": [
     1e-16,
     1.7782794100389228e-16,
@@ -352,7 +353,7 @@
    },
    "statistic": "per control and family, the smallest delta whose ratio passes 64 (None if none does; 'baseline above 64' where the undefected case already fails at that scale)",
    "threshold": 1e-09,
-   "pass": "every control's target families caught at or below the threshold wherever the undefected case passes; at the new scale each near-zero case passes undefected and fails with the parent-charge defect. A control that misses the threshold is a finding, never a moved threshold",
+   "pass": "every control's target families caught at or below the threshold wherever the undefected case passes; at the new scale each near-zero case passes undefected and fails with the parent-charge defect; and each case's construction checks hold. A control that misses the threshold is a finding, never a moved threshold",
    "amendment": {
     "when": "the lead, 14 November, after the freeze (0c7e2ac) and before any new-scale run; the threshold stays 1e-9",
     "finding": "W is reached by no map defect at 1e-9: f at 1.0-1.8e-5 or never, transference at 3.2-5.6e-5, a_k at 1.0-1.8e-5, the parent charge at 1-1.8e-4 (old scale, protocol-dev-s5a23)",
@@ -370,7 +371,8 @@
     "changes": [
      "the delta-scaling control, renamed 'mismatch scale', targets the charges and potentials, no longer the image charge",
      "a non-conservation control, the defect class the image charge exists to catch: Delta_D2 -> (Delta_P - Delta_D1)(1 + delta), targeting the image charge and the charge and material sums",
-     "the W control is accepted as built"
+     "the W control is accepted as built",
+     "the construction checks (negative_controls.construction_checks), required by the verdict"
     ]
    },
    "scales": "old and new (R-ops' charge_term)",

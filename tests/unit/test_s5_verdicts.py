@@ -62,8 +62,8 @@ def test_the_egg_verdict():
     assert egg.verdict(dict(report, replay_diagnostics={}))["verdict"] == "fail"
 
 
-def q2_report(worst, caught, baseline):
-    entry = {"baseline": {"any key": baseline}}
+def q2_report(worst, caught, baseline, faithful=True):
+    entry = {"baseline": {"any key": baseline}, "construction": {"faithful": faithful}}
     for control, targets in q2.CONTROL_TARGETS.items():
         entry[control] = {"targets_caught_at_threshold": {g: caught for g in targets}}
     new = {
@@ -85,3 +85,5 @@ def test_q2s_verdict():
     assert q2.verdict(q2_report(10.0, False, 1.0), item)["verdict"] == "fail"
     # A near-zero case must pass undefected at the new scale.
     assert q2.verdict(q2_report(10.0, True, 65.0), item)["verdict"] == "fail"
+    # An engine-side control's construction must reproduce the engine's own event.
+    assert q2.verdict(q2_report(10.0, True, 1.0, faithful=False), item)["verdict"] == "fail"

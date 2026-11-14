@@ -89,13 +89,19 @@ delta of DEFECTS (1e-16 to 1e-2 in quarter decades):
 * non-conservation (the second amendment): D2 takes slightly more than the rest, Delta_D2 ->
   (Delta_P - Delta_D1)(1 + delta), applied to the engine's state after its event (its D2
   increment and moved amount, and the image it books, plates1 - plates0, recomputed with the
-  partition's capacitor_state). It reaches the image charge and the charge and material sums
-  at first order.
+  partition's capacitor_state). At first order it moves the amounts by delta Delta_D2, and the
+  charges and the image charge by delta F sum_s z_s Delta_D2,s, which is zero where D2's
+  increment is electroneutral: a miss there is read as such, as for W. The work bookings keep
+  the engine's undefected values, so the control's work entries are uninformative.
 For the two engine-side controls the delta at which the engine's own event checks refuse is
-reported: the event map's verdict for the mismatch scale, and for non-conservation the
-partition's event checks (isopotential, outside potentials, plate charges, positivity, with
-its constants) re-applied to the defective state, since the event map conserves by
-construction.
+reported, with the checks that refuse it: the event map's verdict for the mismatch scale, and
+for non-conservation the partition's event checks (isopotential, outside potentials, plate
+charges, positivity, finiteness, with its constants) re-applied to the defective state
+(event_checks), since the event map conserves by construction. Each case records the
+construction against the engine (construction_checks): at delta = 0 the non-conservation
+construction reproduces the engine's event in every field; event_checks passes the engine's
+event; and along the mismatch-scale ladder it agrees with the event map's verdict and booked
+image at every delta. The verdict requires all three.
 The near-zero rule applies unchanged to the judged sets: the judged run's near-zero cases are
 the judged sets' admitted draws within NEAR_ZERO_V of 0 V.
 The statistic is the smallest delta whose ratio passes 64, per family (CONTROL_GROUPS); the
@@ -853,9 +859,9 @@ def booked_volume_defect(result, temperature_K, x):
 
 
 def event_checks(world, d, before, new):
-    """(the held nodes' image charge, valid): the partition's event checks re-applied to a state
-    after the event, as event_map applies them (its isopotential, outside-potential,
-    plate-charge and positivity bounds, its constants and capacitor_state)."""
+    """(the held nodes' image charge, {check: passed}): the partition's event checks re-applied
+    to a state after the event, as event_map applies them (its isopotential, outside-potential,
+    plate-charge, positivity and finiteness checks, its constants and capacitor_state)."""
     p, n = world.p, len(world.cells)
     phi0, _, _, plates0, _ = partition.capacitor_state(before, world.view(before), xp=np)
     q1 = world.view(new)
@@ -863,22 +869,77 @@ def event_checks(world, d, before, new):
     scale = partition.POTENTIAL_RTOL * np.max(np.abs(phi0)) + partition.POTENTIAL_ATOL_V
     parent = world.cells.index(d.parent)
     kids = [world.cells.index(c) for c in d.daughters]
-    valid = all(abs(phi1[k] - phi0[parent]) <= scale for k in kids)
     outside = np.asarray(q1.outside_active) & ~np.asarray(p.reservoir)
-    valid &= bool(np.all(np.where(outside, np.abs(phi1[n:] - phi0[n:]) <= scale, True)))
     image = np.where(np.asarray(p.reservoir), plates1 - plates0, 0.0)
     bound = partition.PLATE_RTOL * np.abs(plates0) + partition.PLATE_ATOL_C
-    valid &= bool(np.all(np.abs(image) <= bound))
     amounts = np.asarray(p.amount_reference) + np.asarray(new.amount_increment)
-    valid &= bool(np.all(amounts[:, kids] > 0))
-    return image, valid
+    checks = dict(
+        isopotential=all(bool(abs(phi1[k] - phi0[parent]) <= scale) for k in kids),
+        outside_potentials=bool(
+            np.all(np.where(outside, np.abs(phi1[n:] - phi0[n:]) <= scale, True))
+        ),
+        plate_charges=bool(np.all(np.abs(image) <= bound)),
+        positive_amounts=bool(np.all(amounts[:, kids] > 0)),
+        finite=all(bool(np.all(np.isfinite(np.asarray(v)))) for v in new),
+    )
+    return image, checks
 
 
-def control_runs(world, d, state, due, after, base, division, snapshot, scale, refused):
+def failed_checks(checks):
+    return [name for name, passed in checks.items() if not passed]
+
+
+def nonconserving_event(world, d, before, after, x):
+    """(the engine's state after the event with D2 taking (1 + x) times the rest, event_checks
+    on it): D2's increment and moved amount become (Delta_P - Delta_D1)(1 + x), and the image
+    the held nodes book follows; the work bookings keep the engine's (module docstring)."""
+    one, two = (world.cells.index(c) for c in d.daughters)
+    parent = world.cells.index(d.parent)
+    rest = (
+        np.asarray(before.amount_increment)[:, parent] - np.asarray(after.amount_increment)[:, one]
+    )
+    increment = np.array(after.amount_increment, copy=True)
+    increment[:, two] = rest * (1 + x)
+    moved = np.array(after.partition_moved_fmol, copy=True)
+    moved[:, two] = np.asarray(before.partition_moved_fmol)[:, two] + rest * (1 + x)
+    new = after._replace(amount_increment=increment, partition_moved_fmol=moved)
+    image, checks = event_checks(world, d, before, new)
+    new = new._replace(
+        electrode_charge_transferred_C=np.asarray(before.electrode_charge_transferred_C) + image,
+        partition_image_charge_C=np.asarray(before.partition_image_charge_C) + np.abs(image),
+    )
+    return new, checks
+
+
+def construction_checks(world, d, state, after):
+    """The engine-side controls' construction against the engine's own event (module
+    docstring): whether the non-conservation construction at delta = 0 reproduces the event in
+    every field (and the fields that differ), event_checks on the event, and D2's net charge
+    increment (C), the non-conservation defect's charge and image coefficient per unit delta."""
+    zero, _ = nonconserving_event(world, d, state, after, 0.0)
+    differing = [
+        name
+        for name in type(after)._fields
+        if not np.array_equal(np.asarray(getattr(zero, name)), np.asarray(getattr(after, name)))
+    ]
+    _, checks = event_checks(world, d, state, after)
+    two = world.cells.index(d.daughters[1])
+    z = np.ravel(world.p.valence)
+    second = np.asarray(after.amount_increment)[:, two]
+    return dict(
+        nonconservation_at_zero_reproduces_the_event=not differing,
+        fields_differing_at_zero=differing,
+        event_checks_on_the_event=checks,
+        d2_net_charge_increment_C=float(CHARGE_PER_FMOL * np.sum(z * second)),
+    )
+
+
+def control_runs(world, d, state, due, after, base, division, snapshot, scale, log):
     """{control: delta -> (the engine's state after the event, R-ops' result)}. The four map
     defects and W's are given to R-ops against the engine's own event; the mismatch scale and
-    non-conservation are the engine's (module docstring). A delta at which the engine's own
-    event checks refuse is appended to refused."""
+    non-conservation are the engine's (module docstring). Each engine-side run appends to log
+    its delta, its validity, the event checks it fails and, for the mismatch scale, whether
+    event_checks agrees with the event map (its verdict and its booked image)."""
     reference = defects(division, snapshot, d.parent)
     runs = {c: (lambda x, c=c: (after, apply(*reference[c](x), scale))) for c in reference}
     runs["W"] = lambda x: (after, booked_volume_defect(base, snapshot.temperature_K, x))
@@ -886,25 +947,17 @@ def control_runs(world, d, state, due, after, base, division, snapshot, scale, r
     def mismatch_scale(x):
         fraction = world.p.partition_carrier_fraction * (1 + x)
         new, valid = world.event(state, due, world.p._replace(partition_carrier_fraction=fraction))
-        if not valid:
-            refused.append(x)
+        image, checks = event_checks(world, d, state, new)
+        booked = np.asarray(state.electrode_charge_transferred_C) + image
+        agrees = all(checks.values()) == valid and np.array_equal(
+            booked, np.asarray(new.electrode_charge_transferred_C)
+        )
+        log.append(dict(delta=x, valid=valid, failing=failed_checks(checks), agrees=bool(agrees)))
         return new, base
 
     def nonconserving(x):
-        one, two, parent = (world.cells.index(c) for c in (*d.daughters, d.parent))
-        rest = np.asarray(state.amount_increment)[:, parent] - after.amount_increment[:, one]
-        increment = np.array(after.amount_increment, copy=True)
-        increment[:, two] = rest * (1 + x)
-        moved = np.array(after.partition_moved_fmol, copy=True)
-        moved[:, two] = np.asarray(state.partition_moved_fmol)[:, two] + rest * (1 + x)
-        new = after._replace(amount_increment=increment, partition_moved_fmol=moved)
-        image, valid = event_checks(world, d, state, new)
-        new = new._replace(
-            electrode_charge_transferred_C=np.asarray(state.electrode_charge_transferred_C) + image,
-            partition_image_charge_C=np.asarray(state.partition_image_charge_C) + np.abs(image),
-        )
-        if not valid:
-            refused.append(x)
+        new, checks = nonconserving_event(world, d, state, after, x)
+        log.append(dict(delta=x, valid=all(checks.values()), failing=failed_checks(checks)))
         return new, base
 
     runs["mismatch scale"] = mismatch_scale
@@ -914,9 +967,10 @@ def control_runs(world, d, state, due, after, base, division, snapshot, scale, r
 
 def negative_controls(scale="old", seeds=None):
     """The negative controls at one scale (module docstring). Per case: the undefected ratios
-    per family; per control, the smallest defect caught per family (None if none is, "baseline
-    above 64" where the undefected case already fails) and whether every target family is
-    caught at or below THRESHOLD."""
+    per family and the construction checks; per control, the smallest defect caught per family
+    (None if none is, "baseline above 64" where the undefected case already fails) and whether
+    every target family is caught at or below THRESHOLD; for the engine-side controls, the
+    smallest delta the engine's own event checks refuse and the checks that refuse it."""
     out = {}
     for label, world, state, due in control_cases(seeds):
         d = next(x for x in world.partition[1].divisions if x.id == "first")
@@ -927,12 +981,13 @@ def negative_controls(scale="old", seeds=None):
         baseline = compare(world, d, state, after, base)
         groups = {**CONTROL_GROUPS, "any key": tuple(baseline)}
         entry = dict(
-            baseline={group: max(baseline[k] for k in keys) for group, keys in groups.items()}
+            baseline={group: max(baseline[k] for k in keys) for group, keys in groups.items()},
+            construction=construction_checks(world, d, state, after),
         )
-        refused = []
-        runs = control_runs(world, d, state, due, after, base, division, snapshot, scale, refused)
+        log = []
+        runs = control_runs(world, d, state, due, after, base, division, snapshot, scale, log)
         for control, run in runs.items():
-            refused.clear()
+            log.clear()
             ladder = [(x, compare(world, d, state, *run(x))) for x in DEFECTS]
             caught = {
                 group: "baseline above 64"
@@ -944,17 +999,31 @@ def negative_controls(scale="old", seeds=None):
                 group: isinstance(caught[group], float) and caught[group] <= THRESHOLD
                 for group in CONTROL_TARGETS[control]
             }
+            refused = min(
+                (e for e in log if not e["valid"]), key=lambda e: e["delta"], default=None
+            )
             entry[control] = dict(
                 smallest_defect_caught=caught,
                 targets_caught_at_threshold=targets,
-                engine_refuses_from=min(refused) if refused else None,
+                engine_refuses_from=refused["delta"] if refused else None,
                 ladder=[
                     dict(delta=x, worst=max(r.values()), worst_key=max(r, key=r.get))
                     | {group: max(r[k] for k in keys) for group, keys in CONTROL_GROUPS.items()}
                     for x, r in ladder
                 ],
             )
+            if log:
+                entry[control]["refused_by"] = refused["failing"] if refused else []
+            if any("agrees" in e for e in log):
+                agree = all(e["agrees"] for e in log)
+                entry[control]["event_checks_agree_with_the_event_map"] = agree
             print("control", scale, label, control, caught, flush=True)
+        construction = entry["construction"]
+        construction["faithful"] = (
+            construction["nonconservation_at_zero_reproduces_the_event"]
+            and all(construction["event_checks_on_the_event"].values())
+            and entry["mismatch scale"]["event_checks_agree_with_the_event_map"]
+        )
         out[label] = entry
     return out
 
@@ -1006,8 +1075,9 @@ def main(output):
 def verdict(report, item):
     """Q2's verdict at the new scale: every compared ratio of the cases, the simultaneous
     divisions and the judged sets within 64; every control's target families caught at or
-    below THRESHOLD wherever the undefected case passes; and each near-zero case passing
-    undefected and failing with the parent-charge defect."""
+    below THRESHOLD wherever the undefected case passes; each near-zero case passing
+    undefected and failing with the parent-charge defect; and each case's engine-side
+    construction faithful to the engine (construction_checks)."""
     new = report["scales"]["new"]
     worst = [v["worst"] for v in new["cases"].values()]
     worst += [e["worst"] for v in new["simultaneous"].values() for e in v.values()]
@@ -1020,6 +1090,7 @@ def verdict(report, item):
             targets = entry[control]["targets_caught_at_threshold"]
             passed = all(targets.values()) and (not near or entry["baseline"]["any key"] <= 64)
             controls[f"{label}: {control}"] = passed
+        controls[f"{label}: construction"] = entry["construction"]["faithful"]
     ok = comparisons and all(controls.values())
     return dict(
         largest_ratio=max(worst),

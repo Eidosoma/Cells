@@ -434,10 +434,22 @@ def draft():
                     "non-conservation": "D2 takes slightly more than the rest: Delta_D2 -> "
                     "(Delta_P - Delta_D1)(1 + delta), applied to the engine's state after its "
                     "event, its D2 increment and moved amount and the image it books (plates1 "
-                    "- plates0, the partition's capacitor_state) (the second amendment). The "
+                    "- plates0, the partition's capacitor_state) (the second amendment). At "
+                    "first order it moves the amounts by delta Delta_D2, and the charges and "
+                    "the image charge by delta F sum_s z_s Delta_D2,s, zero where D2's "
+                    "increment is electroneutral: a miss there is read as such, as for W "
+                    "(each case records D2's net charge increment). The work bookings keep the "
+                    "engine's undefected values, so its work entries are uninformative. The "
                     "partition's event checks, re-applied to the defective state with its "
-                    "constants, report the delta they refuse",
+                    "constants, report the delta they refuse and the checks that refuse it",
                 },
+                "construction_checks": "each case records the engine-side controls' "
+                "construction against the engine's own event: at delta = 0 the "
+                "non-conservation construction reproduces the event in every field; the "
+                "re-applied event checks pass the event; and along the mismatch-scale ladder "
+                "they agree with the event map's verdict and booked image at every delta. The "
+                "verdict requires all three (added with the second amendment, at review "
+                "before its development run)",
                 "deltas": list(q2d.DEFECTS),
                 "families": {k: list(v) for k, v in q2d.CONTROL_GROUPS.items()},
                 "targets": {k: list(v) for k, v in q2d.CONTROL_TARGETS.items()},
@@ -447,8 +459,9 @@ def draft():
                 "threshold": q2d.THRESHOLD,
                 "pass": "every control's target families caught at or below the threshold "
                 "wherever the undefected case passes; at the new scale each near-zero case "
-                "passes undefected and fails with the parent-charge defect. A control that "
-                "misses the threshold is a finding, never a moved threshold",
+                "passes undefected and fails with the parent-charge defect; and each case's "
+                "construction checks hold. A control that misses the threshold is a finding, "
+                "never a moved threshold",
                 "amendment": {
                     "when": "the lead, 14 November, after the freeze (0c7e2ac) and before any "
                     "new-scale run; the threshold stays 1e-9",
@@ -485,6 +498,8 @@ def draft():
                         "to catch: Delta_D2 -> (Delta_P - Delta_D1)(1 + delta), targeting the "
                         "image charge and the charge and material sums",
                         "the W control is accepted as built",
+                        "the construction checks (negative_controls.construction_checks), "
+                        "required by the verdict",
                     ],
                 },
                 "scales": "old and new (R-ops' charge_term)",
