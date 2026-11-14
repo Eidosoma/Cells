@@ -66,10 +66,11 @@ FIXED = "asymmetric neighbour world, bound state"
 NEAR = "asymmetric neighbour world, seen spread 1 draw 35"
 
 
-def q2_report(worst, caught, baseline, faithful=True, misses=()):
-    """A Q2 report; misses: (case, control) pairs whose targets miss the threshold."""
+def q2_report(worst, caught, baseline, faithful=True, misses=(), near=(NEAR,)):
+    """A Q2 report; misses: (case, control) pairs whose targets miss the threshold; near: its
+    near-zero cases."""
     controls = {}
-    for label in (FIXED, NEAR):
+    for label in (FIXED, *near):
         entry = {"baseline": {"any key": baseline}, "construction": {"faithful": faithful}}
         for control, targets in q2.CONTROL_TARGETS.items():
             hit = caught and (label, control) not in misses
@@ -101,6 +102,18 @@ def test_q2s_verdict():
     for control in q2.NEAR_ZERO_REPORTED:  # Judged on the fixed cases.
         fixed_miss = q2_report(10.0, True, 1.0, misses={(FIXED, control)})
         assert q2.verdict(fixed_miss, item)["verdict"] == "fail"
+    # A judged set without a near-zero case leaves its near-zero conditions vacuous, not
+    # failed; the verdict reports the count per set, and says so plainly when none has one.
+    counted = q2.verdict(q2_report(10.0, True, 1.0), item)
+    assert counted["near_zero_counts"] == {
+        f"{q2.ASYMMETRIC}, spread 0.1": 0,
+        f"{q2.ASYMMETRIC}, spread 1": 1,
+        f"{q2.ASYMMETRIC}, spread 3": 0,
+    }
+    assert "vacuous, not failed, for spread 0.1, spread 3" in counted["near_zero"]
+    untested = q2.verdict(q2_report(10.0, True, 1.0, near=()), item)
+    assert untested["verdict"] == "pass" and not any(untested["near_zero_counts"].values())
+    assert untested["near_zero"].startswith("untested by the judged sets")
     for control in set(q2.CONTROL_TARGETS) - set(q2.NEAR_ZERO_REPORTED):  # Judged everywhere.
         assert (
             q2.verdict(q2_report(10.0, True, 1.0, misses={(NEAR, control)}), item)["verdict"]

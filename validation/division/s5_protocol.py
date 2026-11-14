@@ -259,7 +259,12 @@ def q2_previews():
     for name, reported in (("frozen_rule", ()), ("third_amendment", q2d.NEAR_ZERO_REPORTED)):
         v = q2d.verdict(report, item, reported=reported)
         failing = [k for k, ok in v["controls"].items() if not ok]
-        out[name] = dict(verdict=v["verdict"], largest_ratio=v["largest_ratio"], failing=failing)
+        out[name] = dict(
+            verdict=v["verdict"],
+            largest_ratio=v["largest_ratio"],
+            failing=failing,
+            near_zero_counts=v["near_zero_counts"],
+        )
     return out
 
 
@@ -340,6 +345,13 @@ def draft():
             "judged_run": "once per item, after registration, from a fresh clean execution "
             "snapshot of main (validation/source_snapshot.py, no dirty patch). A failure is "
             "recorded and diagnosed, never retuned.",
+            "attempts": "an attempt killed by infrastructure before its verdict is written (an "
+            "out-of-memory kill, a unit stopped by the slice, a host crash) is not a verdict. It "
+            "is recorded with its logs and partial outputs and rerun once from the same "
+            "snapshot; each attempt writes its own output directory, since every judge entry "
+            "refuses an existing one. A second infrastructure kill goes to the lead, as does "
+            "any other ending without a verdict. A run that has written its verdict is final "
+            "(the lead, 14 November)",
             "judge_entries": {
                 "guard": "validation/division/s5_protocol.registered, each entry's first call: "
                 "it refuses an unregistered protocol and a source that is not a clean execution "
@@ -585,6 +597,11 @@ def draft():
                     "Shown at first order in all ten near-zero cases before this amendment was "
                     "committed: each observed ratio at 1e-9 is within 0.04% of its first-order "
                     "size (development run q2-dev-15, worktree; first_order)",
+                    "first_order": "the charge and amount predictions use R-ops' own values and "
+                    "magnitudes alone; the mismatch scale's potential prediction is a linearity "
+                    "check, R-ops' carrier displacement through the engine's own field solve "
+                    "(corrected before registration: the amendment's first record said R-ops "
+                    "alone for all)",
                     "changes": [
                         "the parent charge (charges, potentials), non-conservation (image, "
                         "charges, amounts), f (amounts) and W (work) are judged in every case, "
@@ -622,6 +639,13 @@ def draft():
                     judged_sets="the rule applies unchanged to the judged sets: at the judged "
                     "run the near-zero cases are the judged sets' admitted draws within the "
                     "same 5 mV (the lead, 14 November)",
+                    empty_sets="a judged set with no admitted draw within 5 mV leaves its "
+                    "near-zero conditions vacuous for that set, not failed. The verdict reports "
+                    "the near-zero count of each of the asymmetric world's sets (the rule draws "
+                    "from those alone); if no judged set has a near-zero case it says plainly "
+                    "that the near-zero part went untested by the judged sets, tested only on "
+                    "the seen sets (the lead, 14 November). The seen sets hold 0, 9 and 1 at "
+                    "spreads 0.1, 1 and 3",
                 ),
             },
             "judged_run": "q2_rops_comparison judge once at the judged snapshot, with R-ops' "

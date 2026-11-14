@@ -21,6 +21,7 @@
  "rules": {
   "tolerances": "Every tolerance number is computed from a development run named beside it (validation/division/s5_protocol.py draft); development runs are not judged.",
   "judged_run": "once per item, after registration, from a fresh clean execution snapshot of main (validation/source_snapshot.py, no dirty patch). A failure is recorded and diagnosed, never retuned.",
+  "attempts": "an attempt killed by infrastructure before its verdict is written (an out-of-memory kill, a unit stopped by the slice, a host crash) is not a verdict. It is recorded with its logs and partial outputs and rerun once from the same snapshot; each attempt writes its own output directory, since every judge entry refuses an existing one. A second infrastructure kill goes to the lead, as does any other ending without a verdict. A run that has written its verdict is final (the lead, 14 November)",
   "judge_entries": {
    "guard": "validation/division/s5_protocol.registered, each entry's first call: it refuses an unregistered protocol and a source that is not a clean execution snapshot before anything is computed or written (S3's rule); tests/unit/test_s5_judged_refusal.py tests it on edited copies",
    "Q1 and Q11": "python -m validation.division.egg_division_world OUT --judge",
@@ -406,6 +407,7 @@
     "when": "the lead with the advisor, 14 November, after a new-scale result on the seen sets (protocol-dev-s5a32); the last amendment before registration: after registration, any control miss is a failed Q2",
     "finding": "at the new scale one target misses 1e-9: the mismatch scale's charges in seen spread 1 draw 35 (63.05 at delta = 1e-9, caught at 1.78e-9). The frozen rule's preview verdict on the seen sets fails, on that entry alone (preview_verdicts)",
     "cause": "a_k, the mismatch scale and transference move charge in proportion to the patch charges (x q_k, x dq, x dq / (z F)), which vanish at 0 V, while A.8's term (the anchor and the increments' content) does not. On a near-zero case their smallest defect caught therefore measures the vanishing effect, not Q2's power: at draw 35 (V_P = -0.63 mV) a_k's margin is 6.6, transference's 6.8 and the mismatch scale's charges below 1. Shown at first order in all ten near-zero cases before this amendment was committed: each observed ratio at 1e-9 is within 0.04% of its first-order size (development run q2-dev-15, worktree; first_order)",
+    "first_order": "the charge and amount predictions use R-ops' own values and magnitudes alone; the mismatch scale's potential prediction is a linearity check, R-ops' carrier displacement through the engine's own field solve (corrected before registration: the amendment's first record said R-ops alone for all)",
     "changes": [
      "the parent charge (charges, potentials), non-conservation (image, charges, amounts), f (amounts) and W (work) are judged in every case, near-zero included",
      "a_k, the mismatch scale and transference (near_zero_reported) are judged on the fixed cases, every target at 1e-9; on the near-zero cases they are reported beside their first-order size at 1e-9 (first_order_at_threshold, observed_at_threshold)",
@@ -470,7 +472,8 @@
      35
     ],
     "disclosure": "the rule was chosen after the seen states had been seen: a 1 mV rule kept two draws (spread 1, draws 35 and 77); 5 mV adds seven more and the spread-3 worst (draw 32). The driver recomputes the members from the rule and asserts them",
-    "judged_sets": "the rule applies unchanged to the judged sets: at the judged run the near-zero cases are the judged sets' admitted draws within the same 5 mV (the lead, 14 November)"
+    "judged_sets": "the rule applies unchanged to the judged sets: at the judged run the near-zero cases are the judged sets' admitted draws within the same 5 mV (the lead, 14 November)",
+    "empty_sets": "a judged set with no admitted draw within 5 mV leaves its near-zero conditions vacuous for that set, not failed. The verdict reports the near-zero count of each of the asymmetric world's sets (the rule draws from those alone); if no judged set has a near-zero case it says plainly that the near-zero part went untested by the judged sets, tested only on the seen sets (the lead, 14 November). The seen sets hold 0, 9 and 1 at spreads 0.1, 1 and 3"
    }
   },
   "judged_run": "q2_rops_comparison judge once at the judged snapshot, with R-ops' amended magnitudes: the cases, the simultaneous divisions, the judged sets and the controls under both scales, each passed to R-ops explicitly (charge_term False for the old, True for the new) and recorded in its scale's report; the verdict at the new scale, under the third amendment's rule",
@@ -484,12 +487,22 @@
     "largest_ratio": 1.5068886262894063,
     "failing": [
      "asymmetric neighbour world, seen spread 1 draw 35: mismatch scale"
-    ]
+    ],
+    "near_zero_counts": {
+     "asymmetric neighbour world (f 0.75, a 0.6, three carriers), spread 0.1": 0,
+     "asymmetric neighbour world (f 0.75, a 0.6, three carriers), spread 1": 9,
+     "asymmetric neighbour world (f 0.75, a 0.6, three carriers), spread 3": 1
+    }
    },
    "third_amendment": {
     "verdict": "pass",
     "largest_ratio": 1.5068886262894063,
-    "failing": []
+    "failing": [],
+    "near_zero_counts": {
+     "asymmetric neighbour world (f 0.75, a 0.6, three carriers), spread 0.1": 0,
+     "asymmetric neighbour world (f 0.75, a 0.6, three carriers), spread 1": 9,
+     "asymmetric neighbour world (f 0.75, a 0.6, three carriers), spread 3": 1
+    }
    }
   },
   "development_old_scale": {

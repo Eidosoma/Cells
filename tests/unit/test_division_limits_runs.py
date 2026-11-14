@@ -23,7 +23,7 @@ Stated tolerances: the circuit quantities (coupling, cleft over d1, input resist
 1%; the closed bridge against no bridge to 1e-9; the symmetric daughters to 64 eps x each
 field's scale (and each potential to 64 eps of itself). The margins are measured, unasserted,
 by validation/division/q4_limits_measure.py; its development run from a clean snapshot, named in
-the PROPOSED protocol (validation/division/s5_protocol.json), found the circuit quantities
+the S5 protocol (validation/division/s5_protocol.json), found the circuit quantities
 within 6e-4, the closed bridge's response identical to the bridge-free world's, and the
 symmetric daughters equal in every field and potential.
 A few minutes on one core (seven compiled runs).

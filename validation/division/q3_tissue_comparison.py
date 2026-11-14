@@ -42,8 +42,9 @@ engine - R-tissue, and two terms beside it:
 * the engine's step term: the same world at dt and dt/2;
 * the reference term: R-tissue at its SMALL atol against 1000 times tighter (the lead's ruling).
 Each quantity's scale, its largest |value| over the records, is reported for the rounding
-floor (the PROPOSED protocol, validation/division/s5_protocol.json), and at each record how
-many of its entries are live. No tolerance is registered, so nothing is judged.
+floor (the S5 protocol, validation/division/s5_protocol.json), and at each record how many
+of its entries are live. A development run judges nothing; the judge entry reads the
+protocol's tolerances.
 
 Usage: python -m validation.division.q3_tissue_comparison OUTPUT_DIR [WORLD ...] (through
 scripts/run_detached.sh; every world by default).
