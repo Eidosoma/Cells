@@ -5235,6 +5235,23 @@ adopted it.
   minimal inventory → control → electrical-response case, then newborn integration and
   state-triggered division. The full gene-regulation track stays held.
 
+## D157: A closed internal compartment on the shared inventory (FR-1) is logged as high priority
+
+2026-11-14, user request: "here is a new feature request please log as high prioriity". The user
+supplied the request (FR-1), and it is logged in
+[FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-1--a-closed-internal-compartment-on-the-shared-inventory).
+- **The feature:** a cell-owned finite node, with no bath and no faces, bounded by one patch of
+  its owning cell, carrying its own volume and inventory rows, with transfer routes to the
+  owner's cytosol.
+- **Its uses:** vesicles and granules (roadmap item 9), lysosomes, phagosomes and autophagosomes,
+  and the ER and mitochondrial matrix as species compartments.
+- **The order:** fixed topology first, with retained and cytosolic material kept distinct and
+  transfers reconciled on both sides. Dynamic internalisation (FR-2) later.
+- **Design first (D142),** as a general feature (D144). The lead's mapping (exchange as a possible
+  transfer law, fixed volume first, the electrical treatment as the hard question) is for the
+  design note to test.
+- **What it does not authorise:** code before the design note is accepted.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
