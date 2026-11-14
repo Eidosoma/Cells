@@ -11,7 +11,11 @@ Files:
 - `src/cells/models/pump_composite.py`: the composite (one cached implementation per
   inner identity and ordered operator list);
 - `src/cells/models/pump_composite_adapter.py`: the @3 entity adapter;
-- `src/cells/models/operators/`: the contract and the operators;
+- `src/cells/models/operators/`: the contract and the operators (the secreted-species operators
+  share `species_common.py`: identity, the 7-species cap, the occupant rule);
+- `src/cells/core/inventory_species.py`: declares a neutral inventory species on @3's species axis
+  (trace background, zero membrane and junction permeability, effective face diffusivity, its
+  material floor);
 - `validation/tissue/composite_guard.py`: the bitwise guards against the frozen models;
 - `validation/tissue/composite_crossrev.py` and `composite_dump.py`: the cross-revision
   guards of the thin modules (compiled programs and bindings; saved runs).
@@ -36,6 +40,8 @@ The experiment adds each operator's schedule under the operator's own keys:
 | `electrode_current_injection@1` | `electrodes` | `injection_controls` | none: a new law ([v2 design](PUMP_COMPOSITE_V2_DESIGN.md) §4); refused over water, whose dilution term it does not book (§2.10) |
 | `membrane_entity_state@1` | `populations` (functional unit, catalogue reference, reference density) | none | none: a state owner (v2 design §3) |
 | `scheduled_membrane_insertion@1` | `patches` (specific capacitance, inserted densities) | `insertion_controls` (onset, rates) | none: a new law (v2 design §3) |
+| `scheduled_species_turnover@1` | `species` (identity: catalogue reference, kind of evidence), `routes` (production at cells, clearance at cells and finite nodes), `templates` (newcomers' rates) | `turnover_controls` (per route and carrier; outside nodes per node) | none: a new law ([secreted-species design](SECRETED_SPECIES_TRANSPORT_DESIGN.md) §2.2, D150 v1); exact half-steps, signed work |
+| `scheduled_species_exchange@1` | `species`, `routes` (secretion: flux or first-order export; uptake: first-order or saturable import, a plain sink), `templates` | `exchange_controls` (rate and K_M per route and carrier) | none: a new law (secreted-species design §2.3); palindromic exact stages, signed work |
 
 The blocks and keys are the frozen models' own, so `frozen_definition(raw)` rewrites a
 `resolved_pump_tissue@3`, water@1, water@2 or replacement@1 definition as the equivalent

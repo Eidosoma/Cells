@@ -18,6 +18,8 @@ from cells.models.operators.osmotic_water import OsmoticWater
 from cells.models.operators.partition import IsopotentialPartition
 from cells.models.operators.restricted_lumen import RestrictedCleftLumen
 from cells.models.operators.restricted_lumen_v2 import RestrictedCleftLumenV2
+from cells.models.operators.species_exchange import ScheduledSpeciesExchange
+from cells.models.operators.species_turnover import ScheduledSpeciesTurnover
 
 OPERATORS = {
     op.LAW_ID: op
@@ -34,5 +36,7 @@ OPERATORS = {
         check_declarations(CytoplasmicBridgeClosure)(),
         check_declarations(ScheduledMembraneInsertionV2)(),
         check_declarations(RestrictedCleftLumenV2)(),
+        check_declarations(ScheduledSpeciesTurnover)(),
+        check_declarations(ScheduledSpeciesExchange)(),
     )
 }
