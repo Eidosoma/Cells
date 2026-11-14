@@ -125,8 +125,8 @@ All were ruled on by the lead with the advisor, 14 November 2026 (§11).
 7. **Numerics** (§4).
    - D152's SSPRK(3,3) integrates binding and internalisation together under its unidirectional
      stage condition at θ = ½, so dt · L > 1 is refused at run time. Positivity is a theorem.
-   - Face-free worlds are third order (prototype ratios 8.2 to 8.6), and worlds with faces are second
-     order.
+   - Face-free worlds are third order (prototype ratios 8.39 and 8.19 at ε = 0.1), and worlds with
+     faces are second order.
    - The rejected palindrome's steady bias was the dominant error in the guard's own quantity (§4.5).
 8. **Partition and reset** (§5). These are declared rules, refused in version 1 with their doors
    named.
@@ -328,7 +328,7 @@ Units are @3's: fmol, pL, mM = fmol/pL, s. c = n/V is at the facing node's decla
 
 ```json
 {"law": "site_occupancy@1",
- "species": [{"id": "L", "catalogue": null, "evidence": null}],
+ "species": [{"id": "L", "catalogue": null, "evidence": null, "trace_mM": 1.0e-15}],
  "populations": [
    {"id": "r_c0", "functional_unit": "site_unit_a", "catalogue": null,
     "owner": {"patch": "c0_contact", "face": "outside"},
@@ -409,12 +409,13 @@ The review also states what is not measured. The occupancy split between the two
 inferred from genotype differences plus assumed stoichiometry, and the paper says the wild-type split
 is beyond its method.
 
-**The figures, checked against the paper.** The paper's text (PMC13753873, read through Europe PMC)
-states:
+**The figures, checked against the paper.** A text search confirms each quote verbatim, in the copy
+the review saved: its folder's `text/paper.txt`, flattened from
+`downloads/epmc-fulltext/PMC13753873.fullTextXML.xml`. The paper states:
 - 18.6 ± 0.4 and 68.6 ± 18.6 nM free, in mitotic cells of 636–2,208 µm³ (n = 18);
 - about 160 kinetochores per cell;
 - about 3,520 Dsn1 and 5,280 Nuf2 molecules at kinetochores per cell. These are its estimates:
-  per-kinetochore counts times 160;
+  "∼22 Dsn1 and ∼33 Nuf2 molecules per kinetochore × ∼160";
 - cytosolic pools of "∼10⁴–10⁵ molecules", one range for both;
 - kinetochore numbers "one order of magnitude lower than those of the cytosolic pool".
 
@@ -799,25 +800,32 @@ an exact Riccati solution (Appendix A.4), a candidate for that door.
 - **The anchored stall** (D150 §1.3, amended). A pool anchored at a positive value and drained follows
   its closed form until about ε × its anchor, then stalls, positive and unrefused. A pool anchored at
   zero carries its whole value in the increment.
-- **The trace refusal** (ruling on question 9).
+- **The trace refusal** (ruling on question 9: "when both the trace and K_d are declared, refuse at
+  the definition", with the threshold stated).
   - **Why it is needed.** D150's "absent" ligand is a trace c_bg > 0, and high-affinity sites bind
     it: at equilibrium θ_bg = c_bg/(K_d + c_bg). A trace of 10⁻⁹ mM against K_d = 10⁻⁶ mM occupies
     10⁻³ of the sites (**S**).
-  - **What the definition reads.** The trace is not stored in the definition:
-    `add_inventory_species` takes it as an argument (`core/inventory_species.py`). The definition
-    holds the ligand's lowest declared concentration, over every cell, finite node, held bath and
-    replacement template. That minimum is its trace background (D150 §1.3: every node holds at
-    least c_bg).
-  - **The rule.** For every population binding the ligand, that minimum must satisfy
-    c_min ≤ 10⁻⁶ K_d, or the definition is refused, with the ratio and the threshold named. This is
-    the coupling operator's precedent for an enforced rule (its ruling 5).
+  - **The ruling's premise does not hold as built.** The trace is not stored in the definition:
+    `add_inventory_species` takes it as an argument (`core/inventory_species.py`). So the rule needs
+    either a declared trace or a proxy for it.
+  - **Proposed: (a), a declared trace.** This operator's species entry declares `trace_mM`, the
+    ligand's background. The definition refuses, naming the ratio and the threshold, if:
+    - any declared concentration of the ligand lies below it (cells, finite nodes, held baths,
+      replacement templates), since D150 §1.3 requires every node at or above the trace; or
+    - it exceeds 10⁻⁶ K_d for any population binding the ligand.
+
+    This is the coupling operator's precedent for an enforced rule (its ruling 5). Its residual: a
+    node declared above the trace is treated as present, whatever its builder meant.
+  - **The alternative: (b), a proxy.** Read the ligand's lowest declared concentration as its trace.
+    It needs no key, but it fails both ways.
+    - *False refusal:* a ligand declared above 10⁻⁶ K_d at every node has no trace.
+    - *False acceptance:* a bath or node that no site faces can hold the minimum, while a
+      site-facing "absent" node sits higher.
   - **The threshold** (**S**). 10⁻⁶ keeps the trace's occupancy below 10⁻⁶ of every population's
     capacity. The background guard (§8.3, Q5) lowers the trace by 10³ from a world at or below the
     threshold, and must see every compared quantity move far below its tolerance.
-  - **The cost.** D150's guard traces (10⁻⁹ to 10⁻¹⁵ mM) pass for K_d ≥ 10⁻³ mM; a nM binder needs a
-    trace of 10⁻¹⁵ mM. The anchored representation resolves both.
-  - **A version 1 limit.** A ligand declared above 10⁻⁶ K_d in every node of the world has no trace,
-    and it is refused.
+  - **The cost** (**S**). A nM binder (K_d = 10⁻⁶ mM) needs a trace at or below 10⁻¹² mM. D150's guard
+    worlds used 10⁻⁹ to 10⁻¹⁵ mM, and the anchored representation resolves them.
   - **Sequestration.** Sites also bind the trace itself. A node's trace content is far below a site
     pool, so its free trace falls toward the anchored stall: positive, and no refusal.
 
@@ -1043,7 +1051,8 @@ and FR-2 have no accepted design yet.
   - a species the model does not declare;
   - an identity that differs from another inventory operator's (§1.6);
   - more than `MAX_SPECIES` species in the world (`check_species_cap`, with its message);
-  - a lowest declared concentration above 10⁻⁶ K_d of a population binding the ligand (§4.3).
+  - under §4.3's proposal (a): a declared concentration below the ligand's declared `trace_mM`, or
+    a trace above 10⁻⁶ K_d of a population binding it.
 - **Owners:** an unknown patch or contact; an outward-facing population on a patch that faces a held
   bath. The bath's composition is held, and binding from a chemostat, booked as reservoir supply, is
   a door.
@@ -1158,16 +1167,20 @@ S/(V (K_d + c)).
 
 **The expected order depends on the world** (**S**).
 - **Third order in face-free worlds,** with or without internalisation: the operator's whole network
-  is one SSPRK(3,3) stage per half-step, and nothing between the two half-steps touches its rows. The
-  prototype measured ratios of 8.2 to 8.6.
+  is one SSPRK(3,3) stage per half-step, and nothing between the two half-steps touches its rows.
+  - The prototype's solid evidence is ε = 0.1: ratios of 8.39 and 8.19.
+  - At ε = 0.01 the errors fall to or below the reference's rtol (10⁻¹²), and at ε = 10⁻³ they sit
+    at rounding.
+  - So an order is judged only where the errors stand above the reference's floor, and the dt
+    study registers that floor.
 - **Second order where faces carry the ligand** (Strang against transport).
 
 | Item | World | Shows | Criterion |
 | --- | --- | --- | --- |
-| **Q1, day one: binding with internalisation against its full kinetics** | Face-free: one passive cell; an outward-facing population on its patch, facing a closed finite node of volume V; occupancy pre-formed at its quasi-steady value at c₀; binding and internalisation. A sweep ε = (S/V)/(K_M + c₀) ∈ {10⁻¹, 10⁻², 10⁻³}, rates fixed and S varied | (a) **Judged:** the engine against R-ode at each ε, under dt refinement: the node's and the cell's amounts, B, and the heat and work against R-ode's integrals. (b) **On the reference side:** R-ode against R-qss, with the unit map A·V_max = k_int S and K_M = (k_off + k_int)/k_on | (a) The dt study, third order (prototype: 8.2–8.6). (b) The observed order in ε, expected 1 (Segel & Slemrod 1989; prototype: 0.98 and 0.998), with the validity regime stated. **No engine-to-engine comparison with exchange's saturable law:** it would be judged nowhere, D150's scope excludes exchange, and FR-1 refuses saturable loading (ruled) |
+| **Q1, day one: binding with internalisation against its full kinetics** | Face-free: one passive cell; an outward-facing population on its patch, facing a closed finite node of volume V; occupancy pre-formed at its quasi-steady value at c₀; binding and internalisation. A sweep ε = (S/V)/(K_M + c₀) ∈ {10⁻¹, 10⁻², 10⁻³}, rates fixed and S varied | (a) **Judged:** the engine against R-ode at each ε, under dt refinement: the node's and the cell's amounts, B, and the heat and work against R-ode's integrals. (b) **On the reference side:** R-ode against R-qss, with the unit map A·V_max = k_int S and K_M = (k_off + k_int)/k_on | (a) The dt study, third order where the errors stand above the reference's floor (prototype at ε = 0.1: 8.39 and 8.19). (b) The observed order in ε, expected 1 (Segel & Slemrod 1989; prototype: 0.98 and 0.998), with the validity regime stated. **No engine-to-engine comparison with exchange's saturable law:** it would be judged nowhere, D150's scope excludes exchange, and FR-1 refuses saturable loading (ruled) |
 | **Q2, equilibrium occupancy** | Large V; small V; two cells' populations facing one node | The engine against R-eq at the true V in every world, and against the depletion quadratic directly in the small-V world. On the reference side, R-eq against the Langmuir isotherm with the depletion term stated. The total heat to equilibrium | Long-time state within the steady tolerance; heat against G(start) − G(eq) |
 | **Q3, binding kinetics** | Large V (association, dissociation); a closed node (depletion); internalisation in a large V | The engine against R-ode at the true V, and against the Riccati form directly in the closed node. On the reference side, R-ode against the pseudo-first-order exponentials and the linear internalisation form | Third order, at every record |
-| **Q4, accessibility as a pure factor** | α ∈ {1, ½, ¼} (exact binary fractions), at c ≪ K_d and c = 100 K_d, in a large V; Q1's world at α = ½ | Equilibrium θ(α)/θ(1) = α in both regimes; saturation at α; relaxation rate independent of α; the sink's V_max ∝ α and K_M unchanged. **The depletion term scales with α**, so Q4's worlds choose V to put S/(V (K_d + c)) at least 10³ below Q4's registered margin (**S**). **Negative controls:** (K) implemented instead fails at c ≪ K_d and in the rate; (A) fails at saturation and in K_M. They differ from (C) by order one (at saturation, θ → 1 against α) | The engine against R-ode and R-eq at the true V; the α-scaling within the margin; each control caught by a registered margin |
+| **Q4, accessibility as a pure factor** | α ∈ {1, ½, ¼} (exact binary fractions), at c ≪ K_d and c = 100 K_d, in a large V; Q1's world at α = ½ | **Judged on the engine,** against R-eq and R-ode at the true V: equilibrium θ(α)/θ(1) = α in both regimes; saturation at α; a relaxation rate independent of α; and Q1's world at α = ½. **The depletion term scales with α**, so Q4's worlds choose V to put S/(V (K_d + c)) at least 10³ below Q4's registered margin (**S**). **Negative controls,** on the same engine quantities: (K) implemented instead fails at c ≪ K_d and in the rate; (A) fails at saturation, where θ → 1 against α, an order-one difference. **On the reference side only:** the sink's V_max ∝ α with K_M unchanged, which carries the sink's O(ε) model error (blocking item 2) | The engine against R-eq and R-ode within their tolerances; the α-scaling within the margin; each control caught by a registered margin |
 | **Q5, accounting and energy** | §3.4's worlds | The material, moiety and system-total identities at the species' floors; the face-free residual at rounding; heat ≥ 0 on every row; the NumPy ΔG test; the negative controls; the background guard (lowering a trace at or below 10⁻⁶ K_d by 10³ moves every compared quantity far below its tolerance) | As stated |
 | **Q6, idleness, restart, vmap, crossrev, signature, refusals** | Existing sets; Q1–Q3 worlds | §4.8's claims 1 and 2; restart bitwise at, before and after a multiplier change, also through a written snapshot; a vector batch mixing every parameter, bitwise against its reverse and within 1e-12 of each scalar run; the signature refusing different structures; each refusal with its message | As claimed |
 
@@ -1308,8 +1321,13 @@ and the text above follows it. There are no questions for the user (ruled):
 8. **The refusals** of RK4, of sites facing a held bath, and of the stationary analysis?
    - *Ruled:* refuse all three.
 9. **The trace rule** (§4.3): world-building rule or refusal?
-   - *Ruled:* refuse at the definition, with the threshold stated: 10⁻⁶ K_d, on the ligand's lowest
-     declared concentration.
+   - *Ruled:* when both the trace and K_d are declared, refuse at the definition, and state the
+     threshold.
+   - *The note's implementation, for the lead to confirm.* The threshold is 10⁻⁶ K_d. The ruling's
+     premise does not hold as built, because the trace is not stored in the definition. So §4.3
+     proposes (a), a declared `trace_mM` per ligand, checked against every declared concentration.
+     The proxy (b), the lowest declared concentration, has both a false-refusal and a
+     false-acceptance mode.
 10. **The identity list** (§1.6): extend `SPECIES_LAWS` now?
     - *Ruled:* check against D152's identity tests; the shared change is a D148 item after FR-9 and
       outside MG0c's window.
@@ -1326,9 +1344,21 @@ and the text above follows it. There are no questions for the user (ruled):
 - **The kinetochore figures.** Checked against the paper's own text (§2.3). The landed review is left
   as it is; the lead handles it.
 
-**Open for the lead at acceptance:** none beyond the review's acceptance itself. The probe's two
-numbers that could move a protocol, the third-order ratios and the ε order, are development evidence
-by the note's author. The registered references supersede them.
+**Open for the lead at acceptance.** These are choices this revision introduced, which the review
+has not seen:
+1. **The booking rule's structure** (§3.3): static components, classed per step, with heat at the
+   facing node and **work booked per population**. That includes a reversing binding route's hybrid
+   correction at a mixed component.
+2. **The trace refusal's form** (§4.3): (a), a declared `trace_mM` checked against the world
+   (proposed); or (b), the proxy, with its two failure modes.
+3. **The rate bracket** (§4.5). "Realistic receptor rates" are bracketed (every rate up to 10 s⁻¹ at
+   dt = 1 ms), not taken from a sourced parameter set, which was sought and not reached.
+4. **One unmeasured mixed configuration** (§4.4): a cell that both receives internalised cargo and is
+   faced by an inward population binding the same ligand. World 1 of §3.4 covers it, and the
+   dissipation check refuses a falling heat in it loudly.
+
+The probe's numbers are development evidence by the note's author. The registered references
+supersede them, and the third-order evidence that matters is ε = 0.1's (§8.3).
 
 ## Appendix A. Equations for the independent references
 
@@ -1400,9 +1430,9 @@ observed orders in dt and in ε.
 
 ## References
 
-Records were checked by Crossref, and by Europe PMC for the PMIDs and the kinetochore paper's text,
-with no project details sent. The texts were not read unless stated. Entries marked D152 were checked
-there.
+Records were checked by Crossref, and by Europe PMC for the PMIDs, with no project details sent. The
+kinetochore paper's figures were checked by text search of the review's saved copy. The texts were
+not read unless stated. Entries marked D152 were checked there.
 - Berg HC, Purcell EM. Physics of chemoreception. *Biophys J* 1977;20(2):193–219.
   doi:10.1016/S0006-3495(77)85544-6
 - Borghans JAM, de Boer RJ, Segel LA. Extending the quasi-steady state approximation by changing
@@ -1417,7 +1447,8 @@ there.
   - Read through the repository's review
     ([PAPER_REVIEW_KINETOCHORE_COUNTS.md](PAPER_REVIEW_KINETOCHORE_COUNTS.md)), which read the full
     text.
-  - The figures of §2.3 were checked against the paper's own text through Europe PMC.
+  - The figures of §2.3 were checked by text search of the copy the review saved
+    (`/mnt/workspaces/Cells/paper-review-20261113-02/text/paper.txt`).
 - Hulme EC, Trevethick MA. Ligand binding assays at equilibrium: validation and interpretation.
   *Br J Pharmacol* 2010;161(6):1219–1237. doi:10.1111/j.1476-5381.2009.00604.x (context for
   equilibrium binding with depletion; the quadratic is derived in A.4)
