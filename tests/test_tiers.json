@@ -54,7 +54,8 @@
   "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/tiers/measure-merge/measured.json",
   "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tiers/measure-2ba4dc1/measured.json",
   "/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/tiers/measure-gpu/measured.json",
-  "/mnt/workspaces/Cells/independent-references-20261114-01/tiers-r/measure/measured.json"
+  "/mnt/workspaces/Cells/independent-references-20261114-01/tiers-r/measure/measured.json",
+  "/mnt/workspaces/Cells/independent-references-20261114-01/tiers-r/measure-02/measured.json"
  ],
  "measured_provenance": [
   {
@@ -448,6 +449,13 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-14T19:56:10+00:00"
+  },
+  {
+   "git_revision": "b1fdbc209c4cbe23d1e82109195ee84a9db09b01",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-14T20:02:01+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1199,10 +1207,10 @@
    },
    {
     "file": "tests/unit/test_coupling_references.py",
-    "seconds": 13.74,
+    "seconds": 15.81,
     "exit_code": 0,
     "counts": {
-     "passed": 42
+     "passed": 43
     }
    },
    {
