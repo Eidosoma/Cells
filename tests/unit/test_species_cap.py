@@ -10,8 +10,9 @@ charged rows below slot 8):
    charged rows, while the explicit host sum equals the compiled one bitwise. The order the old
    cap guarded against is real, and the ledgers do not depend on it.
 The world run through the runner with every host check on every accepted row is
-test_species_cap_runs.py (tier 2: compiling it alone takes longer than tier 1's 20 s). The
-refusal above 16 is tested in test_secreted_species.py and test_species_reactions_refusals.py.
+test_species_cap_runs.py, in tier 2: the run takes about 15 s whatever its length (14.7 to 17.3 s
+for 5, 10, 20 and 40 steps, nearly all of it compilation), and that file 21 s, above tier 1's 20 s.
+The refusal above 16 is tested in test_secreted_species.py and test_species_reactions_refusals.py.
 """
 
 import jax

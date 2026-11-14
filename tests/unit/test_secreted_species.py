@@ -1,10 +1,11 @@
 """Tier-1 tests of the secreted-species definitions (D150 version 1; host side, no compile).
 
 docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §1.3, §1.5, §2.6, §5.2, §5.5, §8 and §11.5: the inventory
-helper, the 7-species cap with its reason, identity on the declarations (never in the arrays), the
-version 1 composition refusals, the stationary analysis' refusal of the composite, the required
-energy-guard statement, and the occupant rule (rates belong to the carrier; donor copies admitted
-only with the slot's route values; schedules keyed by carrier).
+helper, the species cap with its reason (16 since FR-9 / D165, 7 before), identity on the
+declarations (never in the arrays), the version 1 composition refusals, the stationary analysis'
+refusal of the composite, the required energy-guard statement, and the occupant rule (rates belong
+to the carrier; donor copies admitted only with the slot's route values; schedules keyed by
+carrier).
 """
 
 import copy

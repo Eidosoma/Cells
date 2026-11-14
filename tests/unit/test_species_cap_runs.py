@@ -3,8 +3,9 @@
 tests/species_cap_fixtures.py's 9-species world (the W4 probe's cell_charged_9 rebuilt) through
 the runner, 20 steps of 1 ms, every host check on every accepted row: it runs, and on its states
 the host's species-axis sum (NumPy's pairwise order) differs from the explicit species-order sum
-the ledgers use in some rows (the probe: 4 of 6), while that explicit sum equals the compiled one
-on every row. Tier 2: compiling the world takes longer than tier 1's 20 s.
+the ledgers use in some rows (17 of 21 here; the W4 probe: 4 of 6), while that explicit sum equals
+the compiled one on every row. Tier 2: the run takes about 15 s whatever its length (14.7 to 17.3 s
+for 5, 10, 20 and 40 steps, nearly all of it compilation), and this file 21 s, above tier 1's 20 s.
 """
 
 import math
