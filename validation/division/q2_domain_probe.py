@@ -16,7 +16,9 @@ Reported per sampler:
 * the largest |V| of a live patch, and the largest |Q / Q_declared| of a live cell, over the
   draws and over those the control domain check admits;
 * over the draws the control domain check admits, Q2's comparison (64 eps x R-ops'
-  magnitudes): the worst ratio and its key.
+  magnitudes): the worst ratio and its key, and at the worst post-event potential the node,
+  |engine - R-ops|, R-ops' value and magnitude, and the daughters' net charges against their
+  increments' ionic charge content, F sum |z dn| (the scale of the engine's rounding there).
 This answers whether the engine's checks alone could define Q2's domain: they could if the
 worst ratio over their admitted draws stays within 64 at every spread.
 
@@ -29,6 +31,7 @@ import sys
 import jax
 import numpy as np
 
+from cells.models import pump_composite_adapter as adapter
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
 from tests import partition_fixtures as fx
 from validation.division import partition_reference as rops
@@ -79,18 +82,58 @@ def summary(world, d, states):
         admitted_max_abs_V=max((r[3] for r in rows if r[1]), default=None),
         admitted_max_charge_over_declared=max((r[4] for r in rows if r[1]), default=None),
     )
-    worst, key = 0.0, None
+    worst, key, detail = 0.0, None, None
     for state in admitted:
         result = rops.apply(world.snapshot(state), world.division(d, state))
         after, ok = world.event(state, (1.0,))
         if not ok:
             out["engine_refused"] = out.get("engine_refused", 0) + 1
             continue
-        for name, value in q2.compare(world, d, state, after, result).items():
+        ratios = q2.compare(world, d, state, after, result)
+        if ratios["potentials_after_V"] > (detail or {}).get("ratio", -1.0):
+            detail = potential_detail(world, d, after, result) | dict(
+                ratio=ratios["potentials_after_V"]
+            )
+        for name, value in ratios.items():
             if value > worst:
                 worst, key = value, name
-    out |= dict(admitted_worst_ratio=worst, admitted_worst_key=key)
+    out |= dict(admitted_worst_ratio=worst, admitted_worst_key=key, worst_potential=detail)
     return out
+
+
+def potential_detail(world, d, after, result):
+    """At the post-event potential with the worst ratio: its node, |engine - R-ops|, R-ops'
+    value and magnitude; each daughter's net charge and its increment's ionic charge content."""
+    p, q = world.p, world.view(after)
+    phi = adapter.node_potentials(after, q, xp=np)
+    n = len(world.cells)
+    names = {
+        **{c: k for k, c in enumerate(world.cells)},
+        **{c: n + k for k, c in enumerate(world.nodes)},
+    }
+    rows = []
+    for node, value in result.values["potentials_after_V"].items():
+        magnitude = result.magnitudes["potentials_after_V"][node]
+        delta = abs(float(phi[names[node]]) - value)
+        scale = max(q2.EPS * magnitude, np.finfo(float).tiny)
+        rows.append((delta / scale, node, delta, value, magnitude))
+    _, node, delta, value, magnitude = max(rows)
+    z = np.ravel(p.valence)
+    daughters = {}
+    for cell in d.daughters:
+        i = world.cells.index(cell)
+        increment = np.asarray(after.amount_increment)[:, i]
+        daughters[cell] = dict(
+            net_charge_C=float(q.initial_cell_charge_C[i] + CHARGE_PER_FMOL * (z @ increment)),
+            increment_ionic_charge_C=float(CHARGE_PER_FMOL * np.sum(np.abs(z * increment))),
+        )
+    return dict(
+        node=node,
+        abs_difference_V=delta,
+        reference_V=value,
+        reference_magnitude_V=magnitude,
+        daughters=daughters,
+    )
 
 
 def main(output):
