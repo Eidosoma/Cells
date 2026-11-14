@@ -493,8 +493,8 @@ def draft():
                     "before any new-scale run; the threshold stays 1e-9",
                     "finding": "the mismatch-scale control (then 'image') does not reach the "
                     "image charge: it missed in 10 of 12 cases, and its two catches were "
-                    "rounding where the undefected image ratio is near 64 (old scale, "
-                    "protocol-dev-s5a25)",
+                    "rounding: there the image ratio moves in steps of about 20-40 and does not "
+                    "grow with delta (old scale, protocol-dev-s5a25)",
                     "reason": "a held node's plate charge is minus the total charge of the "
                     "patches facing it; a split that conserves charge leaves it unchanged, and "
                     "so does the furrow world's floating cleft, whose charge is fixed. No "
@@ -566,8 +566,10 @@ def draft():
                 "leaves it unchanged, and so does the floating cleft's fixed charge in the "
                 "furrow world. So the image target misses in 10 of 12 cases (never caught, or "
                 "the undefected ratio above 64), and the two catches (seen spread 1 draws 35 "
-                "and 180, at 1.8e-12 and 5.6e-13) sit where the undefected image ratio is near "
-                "64: rounding, not a reach. The image control reaches the potentials at "
+                "and 180, at 1.8e-12 and 5.6e-13) are rounding, not a reach: their undefected "
+                "image ratios are 0.0 and 23.6, and along the ladder the ratio moves in steps "
+                "of about 20-40 without growing with delta (corrected at protocol-dev-s5a28: "
+                "'near 64' was wrong). The image control reaches the potentials at "
                 "1.8e-14-1e-13 and the charges at 3.2-5.6e-13 where measurable. The engine's "
                 "own event checks refuse it from 3.2e-9 to 1.8e-7. The threshold was not "
                 "moved: the lead's second amendment took the image charge from this control's "
@@ -575,7 +577,11 @@ def draft():
                 "(negative_controls.second_amendment)",
                 "the non-conservation control (old scale, protocol-dev-s5a28) is caught on the "
                 "image charge at 1.0e-15-5.6e-13 and on the charges at 1.8e-15-5.6e-13, each in "
-                "11 of 12 cases, and on the amounts at 1.0-3.2e-13 in all 12. Its two misses "
+                "11 of 12 cases, and on the amounts at 1.0-3.2e-13 in all 12. It reaches them "
+                "at first order: at delta = 1e-9 their ratios are 1.4e5-3.5e7 in every case, "
+                "growing tenfold per decade from 1e-11. The low end is rounding-assisted (draw "
+                "35's image reads 71.8 at 1.0e-15, against a first-order 35, in rounding steps "
+                "of about 39). Its two misses "
                 "are old-scale baselines above 64 (draw 77's image charge, draw 35's charges), "
                 "which only the new scale settles. D2's net charge increment is 1.9-3.5e-13 C "
                 "in magnitude, so no case is electroneutral. The engine's own event checks "
