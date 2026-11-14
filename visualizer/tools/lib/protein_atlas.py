@@ -120,11 +120,13 @@ class Atlas:
     def gained_since(self, revision):
         """Identifiers the engine has gained since the inventory's revision. The inventory has not reviewed them."""
         def at(rev):
-            listing = self.build.git("grep", "-o", "-E", "[A-Za-z][A-Za-z0-9_]*@[0-9]+", rev, "--", "src/cells")
+            # Quoted identifiers only, as the inventory's own census counts them: shorthand in a
+            # comment (insertion@1) is not an identifier.
+            listing = self.build.git("grep", "-o", "-E", "[\"'][A-Za-z][A-Za-z0-9_.]*@[0-9]+[\"']", rev, "--", "src/cells")
             found = {}
             for line in listing.splitlines():
                 _, path, name = line.split(":", 2)
-                found.setdefault(name, set()).add(path)
+                found.setdefault(name.strip("\"'"), set()).add(path)
             return found
 
         before, now = at(revision), at("HEAD")
@@ -138,7 +140,14 @@ class Atlas:
             folders = Counter("/".join(path.split("/")[2:-1]) or "the package root" for path in now[name])
             places[min(folders, key=lambda folder: (-folders[folder], folder))] += 1
         where = sorted(places.items(), key=lambda item: (-item[1], item[0]))[:3]
-        return {"added": len(added), "removed": len(set(before) - set(now)), "where": [list(item) for item in where]}
+        # A review of what was gained is curated with the count it covered; beyond that count, the rest is unreviewed.
+        review = self.overlay.get("gained_review")
+        return {
+            "added": len(added),
+            "removed": len(set(before) - set(now)),
+            "where": [list(item) for item in where],
+            "review": {**review, "covers_all": len(added) <= review["count"]} if review else None,
+        }
 
     def current(self, text):
         """Inventory text with identifiers that were renamed since brought up to date."""

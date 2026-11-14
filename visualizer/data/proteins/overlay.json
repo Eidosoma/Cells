@@ -40,6 +40,13 @@
       "source": "docs/PROTEIN_CATALOGUE_PLAN.md"
     }
   },
+  "gained_review": {
+    "date": "2026-11-14",
+    "count": 25,
+    "at": "ced45c87",
+    "text": "A review on 14 November 2026 found no channel, pump, transporter or junction law among them. One case, secretion and uptake, is the lead's to classify.",
+    "doc": "visualizer/docs/PROTEIN_ATLAS_REVIEW.md"
+  },
   "mappings": [
     {
       "id": "assigned",

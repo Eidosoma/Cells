@@ -43,6 +43,14 @@ const SHEET_HUE = { plasma: "bioMembrane", neighbour: "bioMembrane", er: "bioEr"
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const day = (iso) => (iso ? `${Number(iso.slice(8, 10))} ${months[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}` : "");
 
+/** What is known about the identifiers the engine gained since the inventory: a dated review, or nothing. */
+function gainedNote(gained) {
+  const review = gained.review;
+  if (!review) return "The inventory has not reviewed them, so a law added since would be missing here.";
+  if (review.covers_all) return review.text;
+  return `${review.count} of them were reviewed on ${day(review.date)}; the rest are unreviewed, so a law added since would be missing here.`;
+}
+
 export class ProteinLens {
   constructor(stage, model, labels) {
     this.id = "proteins";
@@ -250,7 +258,7 @@ export class ProteinLens {
         text: `${atlas.summary} The inventory was made on ${day(stamp.created)}, at engine ${stamp.read_at}.`,
         check:
           `${lost ? `${lost} of its ${stamp.records} law records are no longer found` : `All ${stamp.records} of its law records are still found`} at main ${stamp.checked_at}.` +
-          (stamp.gained?.added ? ` The engine has gained ${stamp.gained.added} identifiers since, most under ${stamp.gained.where[0][0]}. The inventory has not reviewed them, so a law added since would be missing here.` : ""),
+          (stamp.gained?.added ? ` The engine has gained ${stamp.gained.added} identifiers since, most under ${stamp.gained.where[0][0]}. ${gainedNote(stamp.gained)}` : ""),
         sources: atlas.sources,
         notCopied: atlas.not_copied,
       },
