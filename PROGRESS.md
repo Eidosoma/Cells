@@ -58,6 +58,31 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The secreted-species protocol's rehearsal on main, and its final pre-registration amendments
+  (14 November).** The protocol is still PROPOSED, with no judged run
+  ([evidence](/mnt/workspaces/Cells/secreted-species-v1-20261114-01/HANDOFF.md): `rehearsal-6f339ab/`,
+  `dryrun-0353b29/`).
+  - **The rehearsal, from a clean snapshot of main at 6f339ab.**
+    - All five crossrev sets and the species set are identical.
+    - The development pipeline reproduced every frozen number bitwise: 1,212 protocol leaves,
+      2,256 analysis leaves and 2,480 arm-record leaves.
+    - A dry run of the Q1–Q3 judge on a registered copy passed every item and caught every
+      control.
+  - **Amendments before registration.**
+    - A Q5 entry (`judge-q5`) and a `combine` entry now write one qualification verdict holding
+      every item, the scope, the snapshot's revision and the unjudged step-map ratios.
+    - The attempt rule counts a harness timeout, a runtime-limit kill or a Q5 file ended by a
+      signal as an infrastructure ending, rerun once.
+    - `rules.timing` sets runtime limits of about 3× the rehearsal's times. The judged units run
+      without `--wait-headroom`: the lead launches each only when the slice has about 3 GB free.
+    - Every judge entry was dry-run to a pass on a registered copy (judge 310 s, judge-q5 772 s,
+      combine 0 s).
+  - **Landing:** tier 1 at the merge 0698713: 314 files, no changed outcome. The tier-2 step-map
+    guard passed 2 of 2.
+  - **Next:** the advisor's check 1, which reruns judge, judge-q5 and combine on a registered
+    dry-run copy from a clean snapshot of this main and compares them leaf by leaf with
+    `dryrun-0353b29`. Then registration, through the generator, as a status-only change.
+
 - **Reactions on the shared inventory (D152 v1): `local_species_reactions@1`, milestones 1 and 2,
   landed (14 November).** This is development code, with no judged run; MG0c's qualification is
   milestone 3 ([note](docs/SHARED_INVENTORY_REACTIONS_DESIGN.md) §11;
