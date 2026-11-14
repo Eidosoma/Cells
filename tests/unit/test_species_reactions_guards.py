@@ -361,6 +361,10 @@ def bound_and_booking(result, history=None):
 
 
 def test_c2_the_shared_bound_is_blind_to_these_bookings_in_the_mixed_chain(mixed_run):
+    """C2's bound over the booking, pinned to the docstring's 0.35 (µM) and 409 (nM). An early
+    warning, kept on purpose (the lead, at milestone 2): the world is D150's heredity_chain
+    (validation/tissue/secreted_species_fixtures), so a change to that fixture fails this test
+    before it changes the statement silently. Re-measure and restate the ratios then."""
     level, result = mixed_run
     bound, booking, gross = bound_and_booking(result)
     assert booking > 0

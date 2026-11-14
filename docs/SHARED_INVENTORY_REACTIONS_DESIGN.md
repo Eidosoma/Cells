@@ -708,7 +708,11 @@ the lead with the advisor, 14 November 2026).
   passive route's equilibrium within that half-step. The route then reverses and goes to the
   quadrature, which samples the log-singular start.
   - This is not only the run's first step. The half-step depends only on the state and the
-    multipliers, so a driven route switched on mid-run from a trace reproduces it exactly.
+    multipliers, so a driven route switched on mid-run from a trace reproduces it exactly: the
+    half-step is bitwise at the same state, multipliers and step. Two compiled runs around a
+    mid-run switch-on agree to rounding (8.5e-21 pJ), not bitwise, because the runner's clock
+    forms the step as a difference of grid times (3 dt − 2 dt is 0.02500000000000001 s at
+    dt = 0.025 s). That is the runner, not the operator (amended at milestone 2, §11.2).
   - E15's switch-off at the damage, followed by a switch back on, is that case.
 - **Its size is a per-step factor.** The half-step books 5.4–5.6 times its true heat at a
   1e-12 mM trace (+436% to +459%), 3.4–3.7 times at 1e-9 (+243% to +267%) and 1.6–1.8 times at
@@ -864,9 +868,11 @@ shared bound cannot see. The guards therefore check the residual itself, not the
 
    **What they must show:**
    - each fails world 1 at the first row it touches;
-   - in a mixed heredity world, the shared bound does not see the scaled work or the dropped
-     standard term. The bound/booking ratio measured there goes into the docstring statement, as
-     D150's probe 2 part C did (§10.4, C2);
+   - in a mixed heredity world, the shared bound does not see the scaled work. It catches a
+     dropped standard term at µM, where it is 0.35 times the booking, and is blind to it at nM,
+     where it is 409 times (C2, measured at milestone 2; amended in place, §11.2). The face-free
+     world at rounding and the per-law ΔG test remain the guards of record. The bound/booking
+     ratio goes into the docstring statement, as D150's probe 2 part C did (§10.4, C2);
    - a wrong-sign heat is still caught there by the composite's dissipation check. Only the bound
      is blind to it.
 4. **A NumPy ΔG test per law,** written from Appendix A, not from engine code. For each law, order,
@@ -1983,6 +1989,33 @@ to rounding, above, so these are the engine's; the pins are proposals for the le
 - `stage_report` diagnoses a refused step on the host, since the runner's message is generic. No
   runner edit is proposed.
 - The docstring carries the full guard statement, with C2's ratios.
+
+### 11.2 Rulings at milestone 2 (the lead, 14 November 2026)
+
+Milestone 2 was accepted and landed (merge a4e2f7e). The lead ruled on its questions as follows,
+14 November 2026.
+1. **§3.4 guard 3, amended in place.** The shared bound catches a dropped standard term at µM
+   (0.35 times the booking) and is blind at nM (409 times). The face-free world at rounding and the
+   per-law ΔG test remain the guards of record.
+2. **§3.3, amended in place.** The half-step is bitwise at the same state, multipliers and step.
+   Two compiled runs around a mid-run switch-on agree to rounding (8.5e-21 pJ), not bitwise,
+   because the runner's clock forms the step as a difference of grid times. That is the runner, not
+   the operator.
+3. **The standard term's form, noted.** The engine books it in species form, Σ_s μ°'_s δ_s, and
+   the references in route form, Σ_r ΔG°'_r Δξ_r. The two agree to rounding.
+4. **`stage_report` is enough for version 1.** There is no D148 round for the runner's refusal
+   message.
+5. **The accuracy pins in §11.1 stay proposals,** and the tests keep their loose bounds. The lead
+   rules on them in the MG0c protocol review.
+
+**Milestone 3** adds, beside MG0c's driver, development runs and PROPOSED protocol, the items moved
+from milestone 2:
+- §3.4 guard 2, the species-only transport world with the network, its residual over the bound,
+  and the reaction–transport check against `strang_mode_map`;
+- a short compiled run of the composition with another writer: exchange, turnover on a read row,
+  and replacement@1 with outside routes;
+- idle claim 3, reported: the ion rows bitwise with the network active;
+- reactions at several sites with different multipliers.
 
 ## Appendix A. Equations for the independent references
 
