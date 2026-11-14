@@ -228,6 +228,19 @@ def definition(*, scale=1.0, dt=DT, injection=True):
     return raw
 
 
+def verdict(report):
+    """Q1 and Q11's verdict on a finished run's report: the windowed run passed every host
+    check (a failing row raises before a report exists), the written rows replay with the run's
+    own diagnostics, and the negative control fails."""
+    replayed = report["replay_diagnostics"] == report["diagnostics"]
+    negative = not report["negative_control"].startswith("passed")
+    return dict(
+        replay_identical=replayed,
+        negative_control_fails=negative,
+        verdict="pass" if replayed and negative else "fail",
+    )
+
+
 def main(argv=None):
     from cells.core.errors import NumericalError
     from cells.core.specs import parse_spec
@@ -238,7 +251,18 @@ def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("output")
     parser.add_argument("--scale", type=float, default=1.0)
+    parser.add_argument("--judge", action="store_true", help="the judged run of Q1 and Q11")
+    parser.add_argument("--protocol", default=None, help="the protocol (default the checked-in)")
+    parser.add_argument("--root", default=None, help="the source root (default this one)")
     args = parser.parse_args(argv)
+    if args.judge:  # First, before anything is computed (validation/division/s5_protocol.py).
+        from validation.division import s5_protocol
+
+        s5_protocol.registered(
+            "Q1", args.protocol or s5_protocol.PROTOCOL, args.root or s5_protocol.ROOT
+        )
+        if args.scale != 1.0:
+            raise SystemExit("Refused: the judged run is at the declared scale, 1")
     jax.config.update("jax_enable_x64", True)
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=False)
@@ -290,6 +314,8 @@ def main(argv=None):
         windows=result.resources.get("windows"),
         rows_replayed=int(len(times)),
     )
+    if args.judge:
+        report["verdict"] = verdict(report)
     (output / "egg_division.json").write_text(json.dumps(report, indent=1) + "\n")
     print(json.dumps(report, indent=1), flush=True)
 

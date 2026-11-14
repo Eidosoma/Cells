@@ -3,19 +3,53 @@
 docs/CELL_DIVISION_S5_DESIGN.md §8.3, with the lead's rulings of 13 and 14 November. Every
 tolerance number in the draft is computed here from a development run named beside it
 (DEVELOPMENT); the rules are stated with them. The lead registers the protocol, after review
-with the advisor: registration changes the status, and the judged drivers then refuse an
-unregistered protocol and a run outside a clean snapshot (to be added then). Judged runs use a
-fresh clean snapshot of main.
+with the advisor: registration changes the status. Judged runs use a fresh clean snapshot of
+main, and every S5 judge entry (q2_rops_comparison, q3_tissue_comparison, q5_order,
+egg_division_world) starts with registered(), which refuses, before anything is computed, an
+unregistered protocol and a run outside a clean execution snapshot, as S3's judge does
+(cleft_egg_engine.judged_run_refusal).
 
 Usage: python -m validation.division.s5_protocol draft OUTPUT_JSON
 """
 
+import hashlib
 import json
 import re
 import sys
 from pathlib import Path
 
 import numpy as np
+
+ROOT = Path(__file__).resolve().parents[2]
+PROTOCOL = ROOT / "validation/division/s5_protocol.json"
+
+
+def judged_run_refusal(protocol, root=ROOT):
+    """Why a judged run may not start (None: it may): an unregistered protocol, or a source that
+    is not a clean execution snapshot (validation/source_snapshot.py), as S3's judge refuses
+    them."""
+    status = protocol.get("status")
+    if not (isinstance(status, str) and status.startswith("registered")):
+        return "the S5 protocol is not registered (its status does not begin 'registered')"
+    manifest = Path(root) / "SNAPSHOT.json"
+    if not manifest.exists():
+        return "a judged run comes from a clean execution snapshot of main, not a checkout"
+    snapshot = json.loads(manifest.read_text())
+    clean = snapshot.get("patch_sha256") == hashlib.sha256(b"").hexdigest()
+    if snapshot.get("status") != "complete" or not clean:
+        return "the execution snapshot is incomplete or carries uncommitted changes"
+    return None
+
+
+def registered(item, protocol_path=PROTOCOL, root=ROOT):
+    """(protocol, its item): the judge entries' first call. Raises SystemExit("Refused: ...")
+    unless the protocol is registered and the source a clean execution snapshot."""
+    protocol = json.loads(Path(protocol_path).read_text())
+    refusal = judged_run_refusal(protocol, root)
+    if refusal:
+        raise SystemExit("Refused: " + refusal)
+    return protocol, protocol[item]
+
 
 EVIDENCE = Path("/mnt/workspaces/Cells/cell-division-s5-20261113-01")
 DEVELOPMENT = dict(

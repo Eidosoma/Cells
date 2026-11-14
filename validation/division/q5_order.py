@@ -20,9 +20,16 @@ Compared at records strictly after the last division (10, 15 and 20 ms):
 * each live cell's amounts;
 * each lumen's volume and composition;
 * the bridge's exchange.
-For each component with a measurable change, the step terms are e1 = |q(h) - q(h/2)| and
-e2 = |q(h/2) - q(h/4)|, and the observed order is log2(e1 / e2). Changes within 64 eps of the
-quantity's scale are rounding and are counted apart.
+For each component, the step terms are e1 = |q(h) - q(h/2)| and e2 = |q(h/2) - q(h/4)|.
+A component is measurable when both lie above Q3's floor, 64 eps x the quantity's scale (its
+largest |value| over every component, record and step), defined before the judged run (the
+lead, 14 November); its observed order is log2(e1 / e2). The others are rounding and are
+counted apart (the lumen volumes, which follow the inserted area, among them).
+
+Q5 is reported, not banded (the lead, 14 November, as S3's registered protocol): the judged run
+judges its stop rules only. Every measurable component's step term decreases, and a quantity
+that does not converge stops the run for a report. A band of [1.8, 2.3] was proposed after the
+development orders (1.99 to 2.06) had been seen, and was dropped.
 
 Usage: python -m validation.division.q5_order OUTPUT_DIR (through scripts/run_detached.sh).
 """
@@ -102,11 +109,14 @@ def orders(coarse, middle, fine):
     for name in coarse:
         a, b, c = (np.ravel(x[name]) for x in (coarse, middle, fine))
         e1, e2 = np.abs(a - b), np.abs(b - c)
-        floor = 64 * eps * np.maximum(np.abs(c), 1e-300)
+        scale = float(np.max(np.abs(np.concatenate((a, b, c))))) if a.size else 0.0
+        floor = 64 * eps * scale  # Q3's floor, on the quantity's scale.
         measurable = (e1 > floor) & (e2 > floor)
         p = np.log2(e1[measurable] / e2[measurable]) if measurable.any() else np.array([])
         out[name] = dict(
             components=int(a.size),
+            scale=scale,
+            floor=floor,
             measurable=int(measurable.sum()),
             rounding_only=int((~measurable).sum()),
             every_step_term_decreases=bool(np.all(e2[measurable] < e1[measurable])),
@@ -118,6 +128,30 @@ def orders(coarse, middle, fine):
             else None,
         )
     return out
+
+
+def verdict(report):
+    """Q5's verdict, its stop rules only (orders are reported): every measurable component's
+    step term decreases, and every quantity with a measurable component converges."""
+    stops = {
+        f"{world} {name}": summary["every_step_term_decreases"]
+        for world, quantities in report["worlds"].items()
+        for name, summary in quantities.items()
+        if summary["measurable"]
+    }
+    return dict(every_step_term_decreases=stops, verdict="pass" if all(stops.values()) else "stop")
+
+
+def judge(output, protocol_path=None, root=None):
+    """The judged run: refused first unless the S5 protocol is registered and the source a
+    clean snapshot (s5_protocol.registered); then the study, with the stop rules' verdict."""
+    from validation.division import s5_protocol
+
+    s5_protocol.registered("Q5", protocol_path or s5_protocol.PROTOCOL, root or s5_protocol.ROOT)
+    report = main(output)
+    report["verdict"] = verdict(report)
+    (Path(output) / "q5_judged.json").write_text(json.dumps(report, indent=1) + "\n")
+    return report
 
 
 def main(output):
@@ -136,7 +170,11 @@ def main(output):
         report["worlds"][name] = orders(*values)
         (output / "q5_order.json").write_text(json.dumps(report, indent=1) + "\n")
     print(json.dumps(report, indent=1), flush=True)
+    return report
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    if sys.argv[1:2] == ["judge"]:
+        judge(sys.argv[2])
+    else:
+        main(sys.argv[1])

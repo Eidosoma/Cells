@@ -419,11 +419,12 @@ def per_record(a, b, records, bridges):
     return rows
 
 
-def compare(name):
-    """One world's report (module docstring)."""
+def compare(name, *, judged=False):
+    """One world's report (module docstring); judged, only the judged step and R-tissue at its
+    SMALL atol, for the verdict against the registered tolerances."""
     records = WORLDS[name][1]
     engine = {}
-    for dt in (DT, 0.5 * DT):
+    for dt in (DT,) if judged else (DT, 0.5 * DT):
         raw = engine_world(name, dt)
         spec = parse_spec(raw)
         start = time.perf_counter()
@@ -436,9 +437,21 @@ def compare(name):
     reference = tissue_records(
         rt.simulate_divisions(world, END, record=records, atol=SMALL), records
     )
+    bridges = bridge_ids(raw)
+    if judged:
+        return dict(
+            records_s=list(records),
+            dt_s=DT,
+            per_record={
+                t: dict(
+                    engine_minus_reference=per_record(mine, reference, records, bridges)[t],
+                    live=live(mine[t], bridges),
+                )
+                for t in records
+            },
+        )
     tight = tissue_records(rt.simulate_divisions(world, END, record=records, atol=TIGHT), records)
     print(f"{name}: R-tissue (two runs): {time.perf_counter() - start:.1f} s", flush=True)
-    bridges = bridge_ids(raw)
     halved = engine[0.5 * DT][2]
     return dict(
         records_s=list(records),
@@ -464,6 +477,43 @@ def compare(name):
     )
 
 
+def verdict(report, item):
+    """Q3's verdict: every live quantity at every record within its registered tolerance."""
+    rows, ok = {}, True
+    for name, world in item["tolerances"]["worlds"].items():
+        for q, entry in world["quantities"].items():
+            for t, registered in entry["records"].items():
+                seen = report["worlds"][name]["per_record"][t]["engine_minus_reference"][q]
+                passed = seen <= registered["tolerance"]
+                rows[f"{name} {q} {t}"] = dict(
+                    difference=seen, tolerance=registered["tolerance"], passed=passed
+                )
+                ok &= passed
+    return dict(items=rows, verdict="pass" if ok else "fail")
+
+
+def judge(output, protocol_path=None, root=None):
+    """The judged run: refused first unless the S5 protocol is registered and the source a
+    clean snapshot (s5_protocol.registered); then each world at the judged step against
+    R-tissue, with the verdict."""
+    from validation.division import s5_protocol
+
+    _, item = s5_protocol.registered(
+        "Q3", protocol_path or s5_protocol.PROTOCOL, root or s5_protocol.ROOT
+    )
+    if item["judged_dt_s"] != DT:
+        raise SystemExit("Refused: the registered judged step is not the driver's")
+    jax.config.update("jax_enable_x64", True)
+    output = Path(output)
+    output.mkdir(parents=True, exist_ok=False)
+    report = dict(status="Judged run of Q3", worlds={})
+    for name in WORLDS:
+        report["worlds"][name] = compare(name, judged=True)
+    report["verdict"] = verdict(report, item)
+    (output / "q3_judged.json").write_text(json.dumps(report, indent=1, default=float) + "\n")
+    return report
+
+
 def main(output, names=()):
     jax.config.update("jax_enable_x64", True)
     output = Path(output)
@@ -476,4 +526,7 @@ def main(output, names=()):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], tuple(sys.argv[2:]))
+    if sys.argv[1:2] == ["judge"]:
+        judge(sys.argv[2])
+    else:
+        main(sys.argv[1], tuple(sys.argv[2:]))
