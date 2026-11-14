@@ -12,7 +12,8 @@ with a species-scale material floor and a pre-formed (resolved) profile where th
 * enzyme_network: the canonical small network on S, E, C and P, every law and node kind once (the
   passive binding E + S <-> C and the catalytic step C -> E + P in the cell, Michaelis-Menten S -> P
   catalysed by E at ecs_0, a zeroth-order source of S in the cell and a first-order sink of P at
-  ecs_0 under Hill inhibition by S), at the 7-species cap (3 ions, S, E, C, P);
+  ecs_0 under Hill inhibition by S), seven species with the 3 ions (S, E, C, P; D150's cap
+  is 16 since FR-9 / D165, 7 before);
 * with_reactions: the operator's block and its schedule on a composite definition;
 * the guard worlds of §3.4 (face-free: the network is the only energy flow): driven_only,
   passive_relaxation, enzyme_recipe (probe 2d's share case; resolved for the class switch),

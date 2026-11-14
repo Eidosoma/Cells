@@ -2212,7 +2212,9 @@ additions. `src/` is unchanged since a4e2f7e.
   engine order's exact map (`G2_passive_*`). Ruling 8 rules on that very criterion, since D150's
   0.96 is the passive world's ratio, so the draft keeps it judged and names it. The passive law's
   other uses, Michaelis–Menten, Hill factors, cell routes, D150's writers and the mixed-node heat
-  and work split enter only through test files.
+  and work split enter only through test files. The scope line also names the species count:
+  five per world (three quiescent ions and the network's two), within the 7 the scope stays at.
+  FR-9's cap of 16 (D165, merged into this branch at da94f81) is not exercised.
 - **(b) D150's pre-registration amendments, carried over:**
   - `judge-guards` runs the guards of record from the snapshot, uncapped per file, into its own
     verdict. A file ended by a signal writes `infrastructure.json` instead of a verdict.
