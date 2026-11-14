@@ -206,6 +206,15 @@ def on_backend(tree, backend):
     return walk(tree), count
 
 
+def with_backend(tree, backend):
+    """(tree, record) for a judge's --backend: the tree itself when backend is None (the
+    registered path, untouched), else on_backend's copy and {declared, definitions_set}."""
+    if backend is None:
+        return tree, None
+    copy_, count = on_backend(tree, backend)
+    return copy_, dict(declared=backend, definitions_set=count)
+
+
 def predictions_for(part, backend):
     """(predictions, protocol, definitions set) of the part, on `backend` if given."""
     predictions, protocol = registered(part)

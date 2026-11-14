@@ -399,10 +399,21 @@ def main():
     parser.add_argument("--output", required=True)
     parser.add_argument("--protocol")
     parser.add_argument("--parts", nargs="*", default=[])
+    parser.add_argument(
+        "--backend",
+        choices=("cpu", "gpu"),
+        help="set every definition's execution backend on a copy of the predictions (an L4 "
+        "run: gpu); default: as registered",
+    )
     args = parser.parse_args()
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
     predictions = json.loads(Path(args.predictions).read_text())
+    backend = None
+    if args.backend:  # The registered definitions declare the CPU; their backend picks the device.
+        from validation.tissue import composite_l4_agreement as agreement
+
+        predictions, backend = agreement.with_backend(predictions, args.backend)
     try:
         if args.phase == "dt-study":
             result = dt_study(predictions, args.parts, progress=out / "dt-study-progress.json")
@@ -421,6 +432,8 @@ def main():
             result.update(
                 dry_run=not judged, protocol=args.protocol, protocol_acceptance=acceptance
             )
+        if backend is not None and isinstance(result, dict):
+            result["backend"] = backend
         (out / f"{args.phase}.json").write_text(json.dumps(result, indent=2, default=float) + "\n")
     except Exception:
         (out / f"{args.phase}-failure.json").write_text(
