@@ -13,7 +13,7 @@ and a general feature, never one built for one study (D144).
 | [FR-6](#fr-6--species-driven-control-factors) | Species-driven control factors | Priority 2 (the request's label; logged 14 November 2026) | **Addressed by an accepted design (D155, D156; [the coupling note](INVENTORY_COUPLING_DESIGN.md)); no code yet.** Three narrower items are recorded as consumer registrations | The channel target in the coupling operator's milestone 1 (in progress); the routing door; the regulatory state as a prior condition (below) |
 | [FR-7](#fr-7--abundance-to-function-exposed-in-the-composite) | Abundance-to-function, exposed in the composite | Priority 3, ordering and not scope (the request's label; logged 14 November 2026) | Logged; most of part (b) is the coupling operator's channel target | Considered when the closed molecular-to-physiology loop's unit is chosen (below) |
 | [FR-8](#fr-8--a-qualified-long-duration-mode) | A qualified long-duration mode | Priority 2 (the request's label; logged 14 November 2026) | Logged; it is the compute-limits gate's open long-time deliverable | Its acceptance gains an intervention applied during the slow phase; a long-time path for composite operators needs a design note (below) |
-| [FR-9](#fr-9--raise-the-7-species-cap) | Raise the 7-species cap | Priority 2, **blocking for world design** (the request's label; logged 14 November 2026). Measured safe to 16 (the W4 probe) | **Accepted: the raise to 16 is queued** as a D148 change to `species_common` (D165) | The D148 change with a guard world of 8 or more species; the requester's species list comes with its world definition |
+| [FR-9](#fr-9--raise-the-7-species-cap) | Raise the 7-species cap | Priority 2, **blocking for world design** (the request's label; logged 14 November 2026). Measured safe to 16 (the W4 probe) | **Landed** (14 November): `MAX_SPECIES` is 16, a D148 change to `species_common` with guard worlds of 8 or more species (D165) | The D148 change with a guard world of 8 or more species; the requester's species list comes with its world definition |
 | [FR-10](#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family) | A dose schedule: scheduled bath composition in the pump family | Priority 2, small (the request's label; logged 14 November 2026) | **Design accepted** ([note](BATH_SCHEDULE_DESIGN.md), D169) | Code next; the staircase probe; a dose from nothing is a known limit |
 | [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Logged | A design note after FR-1's, with the energy-pool and charged-reaction doors (below) |
 
@@ -115,8 +115,9 @@ two operators. It has no reactions inside, no binding sites and no pH.
   has zero ion permeability and no pump or channel. The content is electroneutral (a zero charge
   anchor): the cargo at a trace, the ions at a declared complement.
 - **Species:** the ions and the neutral cargo, declared by `inventory_species.add_inventory_species`
-  (valence 0, impermeant on every membrane and junction). **The cap in force is 7 in all**
-  (`species_common.MAX_SPECIES` at main's ced45c87). D165's raise to 16 is queued, not landed.
+  (valence 0, impermeant on every membrane and junction). **The cap was 7 in all** when this
+  world was written (`species_common.MAX_SPECIES` at main's ced45c87). D165 raised it to 16 on 14
+  November 2026.
 
 **The refusals the definition meets,** each refused with its reason:
 - **Exchange:** a route on a patch facing a held bath; a charged or permeant species; saturable
@@ -499,6 +500,10 @@ condensed. The lead's decision follows.
 
 D150's unpromised claim 3 departs at rounding in a 12-species chain. The requester does not rely on
 cross-world bitwise identity.
+
+**Landed 14 November 2026** (merge 2161f39, tier 1 and 2 with no changed outcome). `MAX_SPECIES` is 16.
+The tier-1 guard is host-side (`tests/unit/test_species_cap.py`). The runner world `cell_charged_9`
+is in tier 2 (`tests/unit/test_species_cap_runs.py`), since compilation alone takes about 15 s.
 
 **The lead's decision (D165): accepted, and queued now.** The requester is the consumer that
 PROGRESS's "when a consumer needs it" waited for.
