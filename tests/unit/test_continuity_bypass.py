@@ -8,18 +8,22 @@ not a migration.
 
 The scan is static, over the modules under validation/ and scripts/ (test files excluded:
 they test the read-only tools). It flags a module that
-- names a snapshot's ``state.npz``, or
+- names a snapshot's ``state.npz``;
 - constructs a Checkpoint from arrays it loads itself (a ``Checkpoint(...)`` call and an
-  ``np.load`` call in one module),
-and fails unless EXEMPT lists the module with its class and reason (section 7's table). It
-also fails for a module that passes ``continuity=`` without being on the development
-allow-list, for such a module that does not pass provenance(admission) on, for registered
-drivers and judges that pass or import a record, and for engine call sites: in src/cells only
-batch_io passes ``continuity=``, to load a cohort's children.
+  ``np.load`` call in one module);
+- resumes from its own saved numeric state: ``np.load`` of an ``.npz`` file whose name says
+  checkpoint, state or restart (a driver's checkpoint.npz, last-state.npz or restart.npz); or
+- defines a module-level ``start_state``, section 7's name for importing a saved state as a
+  new definition's start;
+and fails unless EXEMPT lists the module with its class and reason (section 7's table, with
+registered drivers and development tools). It also fails for a module that passes
+``continuity=`` without being on the development allow-list, for such a module that does not
+pass provenance(admission) on, for registered drivers and judges that pass or import a record,
+and for engine call sites: in src/cells only batch_io passes ``continuity=``, to load a
+cohort's children.
 
-The scan sees names and calls, not what a module does at run time: a module that reads saved
-state under another file name (UNSEEN lists the known ones) is outside its reach, and the rule
-above still binds it.
+The scan sees names and calls, not what a module does at run time; the rule above binds a
+module that reads saved state in a way the scan does not see.
 """
 
 import ast
@@ -40,6 +44,14 @@ DIAGNOSTIC = (
 IMPORT = "imports saved states into a new definition (rule (b)); exempt while its runs last"
 DRIVER = "driver-owned resume inside one execution snapshot; exempt while its runs last"
 SAME = "same-process restart or an independent reference: no source change, or no Cells engine"
+REGISTERED_DRIVER = (
+    "a registered driver's own resume inside one execution snapshot; exempt while its runs "
+    "last, and as a registered driver it never passes a continuity record"
+)
+DEVELOPMENT_TOOL = (
+    "a development tool that imports a reference record's state as a new definition's start "
+    "(rule (b)): a new run, judged on its own; it claims no continuity"
+)
 PROBE = (
     "the continuity probe: reads checkpoints without the identity comparison to trace them "
     "under S0 and S1, keeps every other loader check, and never continues a run"
@@ -86,17 +98,18 @@ EXEMPT = {
     "they predate the D148 ledger fix); also " + DRIVER + " (checkpoint.npz)",
     "validation/tissue/open_calcium_bath_trajectory_production.py": DRIVER
     + " (its last-state.npz handoff)",
+    # A registered driver and a development tool (section 7's table).
+    "validation/tissue/e07_v1_run.py": REGISTERED_DRIVER
+    + " (E07-v1-B, validation/tissue/e07_v1_protocol.json: checkpoint.npz through the "
+    "validation-side Stepper)",
+    "validation/division/static_cleft_egg_steps.py": DEVELOPMENT_TOOL
+    + " (S0b step 3's step study: start_state takes R-full's J1 state from its record.json)",
     # Same-process restart and independent references.
     "validation/betse/fresh_rerun/workers.py": SAME
     + " (restart.npz written and read in one process)",
     "validation/tissue/open_calcium_bath_trajectory_oracle.py": SAME + " (the oracle's own state)",
     # The probe itself.
     "validation/continuity/probe.py": PROBE,
-}
-# Known reads of saved state that the scan does not see (other file names); section 7.
-UNSEEN = {
-    "validation/tissue/e07_v1_run.py": DRIVER + " (checkpoint.npz through the Stepper)",
-    "validation/division/static_cleft_egg_steps.py": IMPORT + " (R-full's J1 state, a record)",
 }
 # The only modules that may pass continuity= (development runs, never registered ones).
 DEVELOPMENT = {
@@ -115,16 +128,25 @@ def _name(call):
     return f.id if isinstance(f, ast.Name) else f.attr if isinstance(f, ast.Attribute) else None
 
 
+RESUME_WORDS = ("checkpoint", "state", "restart")  # In the name of an .npz a module np.loads.
+
+
+def _resume_file(value):
+    return value.endswith(".npz") and any(w in value for w in RESUME_WORDS)
+
+
 def scan(tree):
     """What one module does with saved state, statically."""
     calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call)]
-    loads = any(
-        _name(c) == "load"
+    numpy_loads = [
+        c
+        for c in calls
+        if _name(c) == "load"
         and isinstance(c.func, ast.Attribute)
         and isinstance(c.func.value, ast.Name)
         and c.func.value.id in ("np", "numpy")
-        for c in calls
-    )
+    ]
+    loads = bool(numpy_loads)
     imports = {
         alias.name if isinstance(node, ast.Import) else f"{node.module}.{alias.name}"
         for node in ast.walk(tree)
@@ -137,6 +159,14 @@ def scan(tree):
             for n in ast.walk(tree)
         ),
         rebuilds=loads and any(_name(c) == "Checkpoint" for c in calls),
+        resumes=any(
+            isinstance(n, ast.Constant) and isinstance(n.value, str) and _resume_file(n.value)
+            for c in numpy_loads
+            for n in ast.walk(c)
+        ),
+        imports_start=any(
+            isinstance(n, ast.FunctionDef) and n.name == "start_state" for n in tree.body
+        ),
         continuity=any(k.arg == "continuity" for c in calls for k in c.keywords),
         provenance=any(_name(c) == "provenance" for c in calls),
         imports_continuity=any(
@@ -146,11 +176,11 @@ def scan(tree):
 
 
 def flagged(found):
-    return found["state_npz"] or found["rebuilds"]
+    return found["state_npz"] or found["rebuilds"] or found["resumes"] or found["imports_start"]
 
 
 # A module without any of these words has nothing to scan (and is not parsed).
-WORDS = ("state.npz", "Checkpoint", "continuity", "provenance")
+WORDS = ("state.npz", "Checkpoint", ".npz", "start_state", "continuity", "provenance")
 NOTHING = scan(ast.parse(""))
 
 
@@ -171,10 +201,11 @@ def modules():
 def test_every_execution_from_saved_state_is_classified():
     offenders = [name for name, found in modules().items() if flagged(found) and name not in EXEMPT]
     assert not offenders, (
-        "Modules reading a snapshot's state.npz, or building a Checkpoint from loaded arrays, "
-        f"outside the loaders: {offenders}. Load through io.load_snapshot or "
-        "batch_io.load_batch_snapshot, or declare a new run from imported state (rule (b)) and "
-        "add the module to EXEMPT with its class and reason (design section 7)."
+        "Modules reading a snapshot's state.npz, building a Checkpoint from loaded arrays, "
+        f"resuming from their own saved state or importing a start state: {offenders}. Load "
+        "through io.load_snapshot or batch_io.load_batch_snapshot, or declare a new run from "
+        "imported state (rule (b)) and add the module to EXEMPT with its class and reason "
+        "(design section 7)."
     )
 
 
@@ -182,13 +213,6 @@ def test_every_exemption_is_still_flagged():
     found = modules()
     stale = [name for name in EXEMPT if name not in found or not flagged(found[name])]
     assert not stale, f"Remove these EXEMPT entries: {stale}"
-
-
-def test_the_known_unseen_cases_stay_unseen():
-    found = modules()
-    assert set(UNSEEN) <= set(found)
-    seen = [name for name in UNSEEN if flagged(found[name])]
-    assert not seen, f"The scan now sees these; classify them in EXEMPT instead: {seen}"
 
 
 def test_only_development_drivers_pass_a_record():
@@ -245,6 +269,11 @@ SOURCES = {  # Synthetic modules: does the scan flag them, and do they pass a re
     "from cells.io import load_snapshot\nsaved = load_snapshot(path)\n": (False, False),
     "from cells.batch_io import load_batch_snapshot\n"
     "saved = load_batch_snapshot(p, continuity=request)\n": (False, True),
+    "import numpy as np\nsaved = dict(np.load(out / 'checkpoint.npz'))\n": (True, False),
+    "import numpy as np\nlast = np.load(run / 'last-state.npz')\n": (True, False),
+    "import numpy as np\nrecords = np.load(out / 'records.npz')\n": (False, False),
+    "def start_state(args):\n    return json.loads(path.read_text())['j1']\n": (True, False),
+    "def run():\n    def start_state():\n        return None\n": (False, False),  # Not top level.
 }
 
 
