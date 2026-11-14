@@ -527,7 +527,8 @@ def phase_profile(args):
 
     class Collect(logging.Handler):
         def emit(self, record):
-            markers.append(dict(created=record.created, phase=record.phase, **record.fields))
+            if getattr(record, "event", None) is None:  # Completion records only.
+                markers.append(dict(created=record.created, phase=record.phase, **record.fields))
 
     handler = Collect()
     phases.LOGGER.addHandler(handler)
