@@ -373,6 +373,7 @@ class Rates:
     affinity: np.ndarray  # A_r = f - r (dimensionless, in units of RT) on passive routes, else 0
     factor: np.ndarray  # F_r, the product of the route's Hill factors (1 if none)
     consumption_rate: np.ndarray  # L_s (1/s) per species and node
+    affinity_terms: np.ndarray  # sum alpha |ln a| + sum beta |ln a| + |g| (passive), else 0
 
 
 def _evaluate(cn, Y, V, m):
@@ -393,6 +394,7 @@ def _evaluate(cn, Y, V, m):
         fwd = np.zeros((R, N))
         rev = np.zeros((R, N))
         aff = np.zeros((R, N))
+        aff_terms = np.zeros((R, N))
         for r, kind in enumerate(cn.law):
             if kind == MASS_ACTION:
                 prod = np.ones(N)
@@ -422,12 +424,15 @@ def _evaluate(cn, Y, V, m):
                 fwd[r] = pref * np.exp(f)
                 rev[r] = pref * np.exp(rr)
                 aff[r] = A
+                coeff = cn.alpha[:, r] + cn.beta[:, r]
+                aff_terms[r] = abs(cn.g[r]) + np.sum(
+                    np.where(coeff[:, None] > 0, coeff[:, None] * np.abs(ln_a), 0.0), axis=0)
         net = np.where(on, net, 0.0)
         fwd = np.where(on, fwd, 0.0)
         rev = np.where(on, rev, 0.0)
         consumed = np.maximum(-cn.nu, 0.0) @ fwd + np.maximum(cn.nu, 0.0) @ rev
         L = consumed / Y
-    return Rates(net, fwd, rev, aff, F, L)
+    return Rates(net, fwd, rev, aff, F, L, aff_terms)
 
 
 def rates(network, amounts_fmol, volumes_pL, multipliers=None, sites=None):
@@ -518,6 +523,7 @@ class HalfStep:
     accepted: np.ndarray  # [S, N] end if admitted, else start
     delta: np.ndarray  # [S, N] nu dxi
     extents: np.ndarray  # [R, N] dxi (fmol)
+    gross_extents: np.ndarray  # [R, N] h sum_k b_k (J+ + J-)(Y_k) (fmol); dxi on driven routes
     stages: np.ndarray  # [3, S, N] Y1, Y2, Y3
     stage_net: np.ndarray  # [3, R, N] J_r(Y_k)
     stage_forward: np.ndarray  # [3, R, N] J+ (passive) or J (driven)
@@ -548,6 +554,7 @@ class HalfStep:
     standard: np.ndarray  # [N] sum_r dG0'_r dxi_r (pJ), the booked standard term
     standard_species: np.ndarray  # [N] sum_s mu0'_s delta_s (pJ)
     delta_G_terms: np.ndarray  # [N] the sum of |terms| of dG (pJ)
+    heat_terms: np.ndarray  # [N] the rounding scale of H (pJ); W's is heat_terms + delta_G_terms
     ledger_residual: np.ndarray  # [N] chemical + standard + H - W (pJ)
 
 
@@ -630,6 +637,22 @@ def half_step(network, amounts_fmol, volumes_pL, h_s, RT_pJ_per_fmol, multiplier
     mixed = node_class == "mixed"
     route_heat = np.where(passive_route & mixed[None, :], np.where(non_reversing, share, quad), 0.0)
     heat_mixed = np.sum(route_heat, axis=0)
+    # The rounding scale of H. At a mixed node, per passive route (either branch):
+    # |dxi_r| sum_s |nu_sr mubar_s|, the share's potentials' rounding, which does not shrink near
+    # equilibrium while the share does; plus RT G_r T_r A_r, the net flux's and the affinity's
+    # rounding (G_r = h sum_k b_k (J+ + J-) the gross extent, T_r the largest sum of |terms|
+    # of an affinity, A_r the largest |A| over the stages and the end). At a passive-only node,
+    # dG's terms.
+    with np.errstate(all="ignore"):
+        share_terms = np.abs(dxi) * (np.abs(nu).T @ np.abs(mu_bar))
+        gross = h * sum(b * (r.forward + r.reverse)
+                        for b, r in zip(B_WEIGHTS, (r1, r2, r3), strict=True))
+        T_r = np.max(np.stack([r.affinity_terms for r in (r1, r2, r3, r_end)]), axis=0)
+        A_r = np.max(np.abs(np.stack([r.affinity for r in (r1, r2, r3, r_end)])), axis=0)
+        route_terms = share_terms + RT * gross * T_r * A_r
+    route_terms = np.where(passive_route & mixed[None, :], route_terms, 0.0)
+    heat_terms = np.where(mixed, np.sum(route_terms, axis=0),
+                          np.where(node_class == "passive", terms, 0.0))
     heat = np.where(mixed, heat_mixed, np.where(node_class == "passive", -delta_G, 0.0))
     work = np.where(mixed, delta_G + heat, np.where(node_class == "driven", delta_G, 0.0))
     heat = np.where(idle, 0.0, heat)
@@ -651,6 +674,7 @@ def half_step(network, amounts_fmol, volumes_pL, h_s, RT_pJ_per_fmol, multiplier
         accepted=end if admitted else n,
         delta=delta,
         extents=dxi,
+        gross_extents=np.where(idle[None, :], 0.0, gross),
         stages=stages,
         stage_net=np.stack([r1.net, r2.net, r3.net]),
         stage_forward=np.stack([r1.forward, r2.forward, r3.forward]),
@@ -681,6 +705,7 @@ def half_step(network, amounts_fmol, volumes_pL, h_s, RT_pJ_per_fmol, multiplier
         standard=standard,
         standard_species=standard_species,
         delta_G_terms=terms,
+        heat_terms=np.where(idle, 0.0, heat_terms),
         ledger_residual=chemical + standard + heat - work,
     )
 

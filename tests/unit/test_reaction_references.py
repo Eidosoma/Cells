@@ -483,6 +483,84 @@ def test_mixed_node_heat_converges_at_second_order():
     assert all(3.5 < q < 4.5 for q in ratios), ratios
 
 
+def test_closure_holds_with_c0_and_random_potentials():
+    """W - H = G(t) - G(0) along the exact flow ties mu0' = RT (mu0/RT - ln c0) in G to the
+    activity-based affinity: every_law_network has c0 != 1 and a passive route with sum nu != 0."""
+    rng = np.random.default_rng(8)
+    for _ in range(2):
+        net = every_law_network(rng)
+        assert net.c0_mM != 1.0
+        V = np.array([0.8])
+        n0 = random_amounts(rng, 5, 1, V)[:, 0]
+        tr = dr.integrate_node(net, n0, V, RT, [0.05, 0.2])
+        scale = np.abs(tr.heat) + np.abs(tr.work)
+        assert (np.abs(tr.closure) <= 1e-9 * scale).all()
+        assert (tr.heat > 0).all()
+
+
+def physical_enzyme(c0):
+    """Probe 2d's world declared at standard concentration c0 with the same physics: mu0_s at c0
+    is mu0_s at 1 mM plus RT ln c0, and k_f = k_on c0."""
+    lc = math.log(c0)
+    species = (
+        nr.Species("E", lc, {"E": 1}),
+        nr.Species("S", lc, {"S": 1}),
+        nr.Species("C", math.log(1e-3) + lc, {"E": 1, "S": 1}),
+        nr.Species("P", lc, {"S": 1}),
+    )
+    reactions = (
+        nr.Reaction("bind", "passive", {"E": 1, "S": 1}, {"C": 1}, k_f_per_s=1e3 * c0),
+        nr.Reaction("cat", "mass_action", {"C": 1}, {"E": 1, "P": 1}, rate_constant=1.0),
+    )
+    return nr.Network(species=species, reactions=reactions, c0_mM=c0)
+
+
+def test_bookings_are_invariant_under_the_standard_concentration():
+    n0 = np.array([[1e-4, 2e-4], [1e-3, 5e-4], [1e-12, 3e-5], [1e-12, 1e-5]])
+    V = np.array([1.0, 0.4])
+    ref = nr.half_step(physical_enzyme(1.0), n0, V, 0.025, RT)
+    for c0 in (2.5, 0.3):
+        st = nr.half_step(physical_enzyme(c0), n0, V, 0.025, RT)
+        np.testing.assert_allclose(st.end, ref.end, rtol=1e-13)
+        for field in ("heat", "work", "delta_G", "standard"):
+            got, want = getattr(st, field), getattr(ref, field)
+            assert (np.abs(got - want) <= 1e-12 * (ref.delta_G_terms + ref.heat_terms)).all(), field
+        assert np.array_equal(st.branch, ref.branch)
+        off = nr.half_step(physical_enzyme(c0), n0, V, 0.025, RT, [1.0, 0.0])
+        off_ref = nr.half_step(physical_enzyme(1.0), n0, V, 0.025, RT, [1.0, 0.0])
+        np.testing.assert_allclose(off.heat, off_ref.heat, rtol=1e-11)
+
+
+def test_sites_mask_equals_zero_multipliers():
+    net = ab_network(K=3.0, k_f=1.0, sink=0.7)
+    n = np.array([[1.0, 0.5, 2.0], [0.2, 1.5, 0.9]])
+    V = np.array([1.0, 2.0, 0.5])
+    sites = np.array([[True, False, True], [False, True, True]])
+    m = np.array([[1.0, 2.0, 0.5], [1.5, 1.0, 1.0]])
+    masked = nr.half_step(net, n, V, 0.05, RT, m, sites=sites)
+    zeroed = nr.half_step(net, n, V, 0.05, RT, np.where(sites, m, 0.0))
+    for field in ("end", "extents", "heat", "work", "delta_G", "standard", "stage_net"):
+        assert np.array_equal(getattr(masked, field), getattr(zeroed, field)), field
+    assert list(masked.node_class) == ["passive", "driven", "mixed"]
+
+
+def test_rt_from_the_gas_constant_and_temperature():
+    assert nr.rt_pJ_per_fmol(8.314462618, 310.0) == pytest.approx(2.5774834, rel=1e-7)
+    # Appendix A's 2.5773 pJ/fmol at 310 K is R = 8.314 J/(mol K) to four digits.
+    assert nr.rt_pJ_per_fmol(8.314, 310.0) == pytest.approx(2.5773, abs=5e-5)
+
+
+def test_chain_heat_and_work_equal_the_node_integral_on_a_uniform_start():
+    net = enzyme_network()
+    n0 = np.array([1e-4, 1e-3, 1e-5, 1e-5])
+    start = np.repeat(n0[:, None], 3, axis=1)
+    tr = cr.integrate_chain(net, start, 1.0, 1e-5, np.full(4, 1e-11), [0.2], RT_pJ_per_fmol=RT)
+    node = dr.integrate_node(net, n0, 1.0, RT, [0.2])
+    np.testing.assert_allclose(tr.heat[0], node.heat[0, 0], rtol=1e-8)
+    np.testing.assert_allclose(tr.work[0], node.work[0, 0], rtol=1e-8)
+    np.testing.assert_allclose(tr.amounts[0], np.repeat(node.amounts[0], 3, axis=1), rtol=1e-9)
+
+
 def test_chained_segments_carry_the_cumulative_records():
     net = ab_network(K=1.0, k_f=1.0, sink=1.0)
     first = dr.integrate_node(net, np.array([2.0, 1.0]), 1.0, RT, [0.5])

@@ -430,22 +430,23 @@ def every_law_network(rng):
 
 def variant_half_step(net, n, V, h, m):
     """A second correct float implementation: exp-log mass action, J+ - J- for passive routes,
-    Shu-Osher stages with the extents accumulated alongside, and per-route summation orders."""
+    Shu-Osher stages, and its own groupings of dG, mubar, the share and the quadrature. The
+    node classes come from the multipliers, as in the reference."""
     cn = nr.compile_network(net)
+    A_rows = []
 
     def rates(Y):
         ln_c = np.log(Y / V)
         ln_a = np.log(Y / (V * cn.c0))
         J = np.zeros((len(cn.reactions), Y.shape[1]))
+        A = np.zeros_like(J)
+        A_rows.append(A)
         for r, kind in enumerate(cn.law):
             if kind == nr.PASSIVE:
-                J[r] = (
-                    m[r]
-                    * cn.k_f[r]
-                    * cn.c0
-                    * V
-                    * (np.exp(cn.alpha[:, r] @ ln_a) - np.exp(cn.beta[:, r] @ ln_a + cn.g[r]))
-                )
+                f = cn.alpha[:, r] @ ln_a
+                b = cn.beta[:, r] @ ln_a + cn.g[r]
+                J[r] = m[r] * cn.k_f[r] * cn.c0 * V * (np.exp(f) - np.exp(b))
+                A[r] = f - b
                 continue
             F = np.ones(Y.shape[1])
             for sign, s, K, nh in cn.factors[r]:
@@ -473,19 +474,110 @@ def variant_half_step(net, n, V, h, m):
     J3 = rates(u2)
     dxi = h / 6.0 * J1 + h / 6.0 * J2 + (2.0 * h / 3.0) * J3
     delta = cn.nu @ dxi
-    dG = nr.free_energy_change(net, n, delta, V, RT)
+    end = n + delta
+    rates(end)  # Appends the end state's affinities.
+    A1, A2, A3, A_end = A_rows
+    with np.errstate(divide="ignore", invalid="ignore"):
+        mu0p = RT * cn.mu0_RT - RT * math.log(cn.c0)
+        lnn = np.log(n) - np.log(V)
+        chem = RT * np.sum((n + delta) * np.log1p(delta / n) + delta * lnn - delta, axis=0)
+        dG = chem + np.sum(delta * mu0p[:, None], axis=0)
+        x = delta / n
+        ratio = np.where(np.abs(x) < 1e-6, 1.0 + x * (0.5 - x / 6.0), np.log1p(x) + np.log1p(x) / x)
+        mu_bar = RT * (lnn + ratio - 1.0) + mu0p[:, None]
+    share = -np.einsum("sr,rn,sn->rn", cn.nu, dxi, mu_bar)
+    quad = RT * h * (J1 * A1 + J2 * A2 + 4.0 * J3 * A3) / 6.0
+    signs = np.sign(np.stack([J1, J2, J3, A_end]))
+    keep = (signs[0] != 0) & (signs == signs[0]).all(axis=0)
+    on = m > 0
+    mixed = (on & cn.driven[:, None]).any(axis=0) & (on & cn.passive[:, None]).any(axis=0)
+    heat = np.sum(np.where(cn.passive[:, None], np.where(keep, share, quad), 0.0), axis=0)
     return {
-        "end": n + delta,
+        "end": end,
         "extents": dxi,
-        "delta_G": dG["delta_G"],
+        "delta_G": dG,
         "gross": h * (np.abs(J1) + np.abs(J2) + 4 * np.abs(J3)) / 6.0,
+        "mixed": mixed,
+        "non_reversing": keep & cn.passive[:, None],
+        "heat": heat,
+        "work": dG + heat,
     }
+
+
+def mixed_heat_spread(rng, trials=240):
+    """H and W at mixed nodes: the reference against the variant, in units of heat_terms.
+
+    Half the trials start every passive route within ~1e-6 of its equilibrium, and half take
+    h L ~ 0.4 at the start (the rest h in 1e-4 to 1e-2 s). Refused trials are counted.
+    """
+    worst = {"heat_over_terms": 0.0, "work_over_terms": 0.0, "heat_over_abs_heat": 0.0}
+    counts = {
+        "trials": 0,
+        "refused": 0,
+        "nodes": 0,
+        "branch_disagreements": 0,
+        "near_equilibrium": 0,
+        "coarse_step": 0,
+        "quadrature_routes": 0,
+    }
+    for trial in range(trials):
+        net = every_law_network(rng)
+        cn = nr.compile_network(net)
+        N = 4
+        V = rng.uniform(0.2, 5.0, size=N)
+        n = 10 ** rng.uniform(-5, -2, size=(5, N)) * V
+        if trial % 2 == 0:  # Passive routes near their equilibria: A ~ 1e-6.
+            counts["near_equilibrium"] += 1
+            K = np.exp(-cn.g)
+            a = n / (V * cn.c0)
+            a[2] = K[0] * a[0] * a[1] * (1.0 + 1e-6 * rng.normal(size=N))
+            a[3] = K[1] * a[2] * (1.0 + 1e-6 * rng.normal(size=N))
+            n = a * V * cn.c0
+        m = rng.uniform(0.3, 3.0, size=(7, N))
+        if trial % 4 < 2:
+            counts["coarse_step"] += 1
+            L0 = float(np.max(nr.rates(net, n, V, m).consumption_rate))
+            h = 0.4 / L0
+        else:
+            h = float(10 ** rng.uniform(-4, -2))
+        counts["trials"] += 1
+        st = nr.half_step(net, n, V, h, RT, m)
+        if not st.admitted:
+            counts["refused"] += 1
+            continue
+        var = variant_half_step(net, n, V, h, m)
+        for i in range(N):
+            assert st.node_class[i] == "mixed" and var["mixed"][i]
+            if not np.array_equal(var["non_reversing"][:, i], st.non_reversing[:, i]):
+                counts["branch_disagreements"] += 1
+                continue
+            counts["nodes"] += 1
+            counts["quadrature_routes"] += int(np.sum(st.branch[:, i] == "quadrature"))
+            dH = abs(var["heat"][i] - st.heat[i])
+            dW = abs(var["work"][i] - st.work[i])
+            worst["heat_over_terms"] = max(worst["heat_over_terms"], dH / st.heat_terms[i])
+            worst["work_over_terms"] = max(
+                worst["work_over_terms"], dW / (st.heat_terms[i] + st.delta_G_terms[i])
+            )
+            if st.heat[i] != 0.0:
+                worst["heat_over_abs_heat"] = max(worst["heat_over_abs_heat"], dH / abs(st.heat[i]))
+    say(
+        f"mixed nodes ({counts['nodes']} nodes from {counts['trials'] - counts['refused']} "
+        f"admitted of {counts['trials']} trials; {counts['near_equilibrium']} near-equilibrium "
+        f"and {counts['coarse_step']} at h L ~ 0.4; {counts['quadrature_routes']} routes on the "
+        f"quadrature; {counts['branch_disagreements']} branch disagreements): H spread "
+        f"{worst['heat_over_terms'] / EPS:.1f} eps of heat_terms, W "
+        f"{worst['work_over_terms'] / EPS:.1f} eps of heat_terms + delta_G_terms; against |H| "
+        f"itself {worst['heat_over_abs_heat']:.2g}"
+    )
+    return {"worst": {k: v / EPS for k, v in worst.items()}, "counts": counts}
 
 
 def tolerance_evidence():
     say("\n== Tolerance evidence")
     rng = np.random.default_rng(20261114)
     worst_dG, spread = 0.0, {"end": 0.0, "extents": 0.0, "delta_G": 0.0}
+    refused_first = 0
     for trial in range(60):
         net = every_law_network(rng)
         N = 4
@@ -496,20 +588,14 @@ def tolerance_evidence():
         m = rng.uniform(0.3, 3.0, size=(7, N))
         st = nr.half_step(net, n, V, h, RT, m)
         if not st.admitted:
+            refused_first += 1
             continue
         ex = nr.exact_energy_change(net, n, V, RT, delta_fmol=st.delta)
         worst_dG = max(
             worst_dG, float(np.max(np.abs(st.delta_G - ex.delta_G_float) / ex.terms_float))
         )
         var = variant_half_step(net, n, V, h, m)
-        gross = (
-            h
-            * (np.abs(st.stage_net[0]) + np.abs(st.stage_net[1]) + 4 * np.abs(st.stage_net[2]))
-            / 6
-        )
-        gross = gross + h * np.sum(
-            np.array(nr.B_WEIGHTS)[:, None, None] * (st.stage_forward + st.stage_reverse), axis=0
-        )
+        gross = st.gross_extents
         spread["end"] = max(spread["end"], float(np.max(np.abs(var["end"] - st.end) / st.end)))
         spread["extents"] = max(
             spread["extents"],
@@ -525,8 +611,10 @@ def tolerance_evidence():
     say(
         "spread between two correct float half-steps (in eps): end amounts "
         f"{spread['end'] / EPS:.1f} (relative), extents {spread['extents'] / EPS:.1f} (of the "
-        f"gross extent), dG {spread['delta_G'] / EPS:.1f} (of the summed |terms|)"
+        f"gross extent), dG {spread['delta_G'] / EPS:.1f} (of the summed |terms|); "
+        f"{60 - refused_first} of 60 random trials admitted"
     )
+    mixed = mixed_heat_spread(rng)
     net = enzyme_network()
     n0 = np.array([1e-4, 1e-3, 1e-12, 1e-12])
     tight = dr.integrate_node(net, n0, 1.0, RT, [0.025, 0.5, 5.0])
@@ -567,6 +655,8 @@ def tolerance_evidence():
     return {
         "increment_form_worst_eps": worst_dG / EPS,
         "two_implementation_spread_eps": {k: v / EPS for k, v in spread.items()},
+        "random_trials_admitted": 60 - refused_first,
+        "mixed_node_heat_spread": mixed,
         "dissipation_rtol_agreement": agree,
         "mg0c_q1_linearisation": q1,
     }
