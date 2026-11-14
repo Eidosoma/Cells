@@ -54,8 +54,10 @@ def registered(item, protocol_path=PROTOCOL, root=ROOT):
 
 EVIDENCE = Path("/mnt/workspaces/Cells/cell-division-s5-20261113-01")
 DEVELOPMENT = dict(
-    q2=EVIDENCE / "protocol-dev-s5a28/q2_rops_comparison/q2_rops.json",  # The second amendment's.
+    q2=EVIDENCE / "protocol-dev-s5a32/q2_rops_comparison/q2_rops.json",  # Both scales, merged.
+    # s5a28's: at s5a32 the probe called R-ops at its new default (new_scale_findings).
     q2_near_zero=EVIDENCE / "protocol-dev-s5a28/near_zero_set.json",
+    q2_second_amendment=EVIDENCE / "protocol-dev-s5a28/q2_rops_comparison/q2_rops.json",
     q2_first_amendment=EVIDENCE / "protocol-dev-s5a25/q2_rops_comparison/q2_rops.json",
     q2_frozen=EVIDENCE / "protocol-dev-s5a23/q2_rops_comparison/q2_rops.json",  # The freeze's.
     q3=EVIDENCE / "protocol-dev-s5a21/q3_tissue_comparison/q3_tissue.json",
@@ -78,6 +80,7 @@ DEVELOPMENT = dict(
     regression=EVIDENCE / "regression-s5a9/results.txt",
 )
 SNAPSHOTS = {
+    "protocol-dev-s5a32": "d8a0979",
     "protocol-dev-s5a28": "4487d0a",
     "protocol-dev-s5a25": "3c3f190",
     "protocol-dev-s5a23": "0c7e2ac",
@@ -203,14 +206,15 @@ def q10():
 ENGINE_SIDE = ("engine_refuses_from", "refused_by", "event_checks_agree_with_the_event_map")
 
 
-def q2(name="q2"):
-    """Q2's development observations (old scale) from a run's report."""
+def q2(name="q2", scale="old"):
+    """Q2's development observations at one scale from a run's report."""
     if DEVELOPMENT[name] is None:
         return where(name)
     report = load(name)
-    report = report["scales"]["old"] if "scales" in report else report
+    report = report["scales"][scale] if "scales" in report else report
     return dict(
         where(name),
+        scale=scale,
         fixed_cases={k: v["worst"] for k, v in report["cases"].items()},
         simultaneous={
             k: {o: e["worst"] for o, e in v.items()} for k, v in report["simultaneous"].items()
@@ -403,10 +407,11 @@ def draft():
             },
             "tolerance": "64 eps x R-ops' own magnitude per compared quantity (the lead's "
             "ruling). For a cell's node charge, input and daughters alike, R-ops' magnitude "
-            "adds |Q| + 1e-15 F sum |z dn|, the increment form's term (the lead's ruling of 14 "
-            "November: not A.1's whole content, about 1,370 times larger on these draws), "
-            "carried through its own solve (Appendix A.8, pending in R-ops); clefts unchanged. "
-            "A key without an R-ops magnitude compares at 64 eps x (|engine| + |R-ops|).",
+            "adds |Q-bar| + 1e-15 F sum |z dn| (Q-bar the declared charge anchor), the "
+            "increment form's term (the lead's ruling of 14 November: not A.1's whole content, "
+            "about 1,370 times larger on these draws), carried through its own solve "
+            "(Appendix A.8; in R-ops since 2a386d4); clefts unchanged. A key without an R-ops "
+            "magnitude compares at 64 eps x (|engine| + |R-ops|).",
             "a8_loosening": dict(
                 where("a8_ratios"),
                 note="the references agent's measure of A.8's loosening (new/old per output "
@@ -557,12 +562,19 @@ def draft():
             "amended magnitudes: the cases, the simultaneous divisions, the judged sets and the "
             "controls under both scales; the verdict at the new scale",
             "development_old_scale": q2(),
+            "development_new_scale": q2(scale="new"),
             "development_estimate": dict(
                 where("q2_near_zero"),
                 note="the a_k control at the new scale, estimated before R-ops lands: in every "
                 "near-zero member a 1e-9 defect moves at least 1e-23 C of charge against a "
                 "threshold of 1.2-4.1e-25 C, so it would be caught (an estimate, not a "
-                "new-scale result)",
+                "new-scale result). The new-scale run catches it on the charges at "
+                "1e-13-1.8e-10 in every case (development_new_scale)",
+            ),
+            "development_at_the_second_amendment": dict(
+                where("q2_second_amendment"),
+                note="the second amendment's controls before R-ops' amendment (old scale); "
+                "protocol-dev-s5a32's old scale is bit-identical to it",
             ),
             "development_at_the_freeze": dict(
                 where("q2_frozen"),
@@ -631,6 +643,45 @@ def draft():
                 "charges and draw 77's image charge) exceed 64, so those families read "
                 "'baseline above 64' there; where "
                 "measurable the parent charge is caught on the charges at 3.2e-16-5.6e-15",
+            ],
+            "new_scale_findings": [
+                "both scales from the merged head's snapshot (protocol-dev-s5a32, d8a0979; the "
+                "seen sets only, the judged sets not run). The old scale (charge_term=False) is "
+                "bit-identical to protocol-dev-s5a28's, before R-ops' amendment",
+                "every comparison at the new scale is within 64: the fixed cases 0.25-0.39; "
+                "the simultaneous divisions 0.058 and 0.23; the seen sets' worst ratios "
+                "symmetric 0.21, 0.23, 0.21 and asymmetric 1.27, 1.40, 1.51 (spreads 0.1, 1, "
+                "3; admitted 200, 148, 59). The asymmetric sets' 9.06, 860.56 and 152.62 at the "
+                "old scale become 1.27, 1.40 and 1.51",
+                "the near-zero cases pass undefected at the new scale (any key 0.59-1.51, "
+                "against 10.6-861 at the old), and each fails with every control's defect at "
+                "1e-9 in at least one family",
+                "the controls at the new scale, smallest defect caught per target over the 12 "
+                "cases: a_k charges 1e-13-1.8e-10; parent charge charges 1.8e-13-3.2e-12 and "
+                "potentials 5.6e-14-3.2e-13; f amounts 1.8e-14; transference amounts "
+                "1.8e-13-1.8e-10; W work 5.6e-13; mismatch scale charges 1e-12-1.8e-9 and "
+                "potentials 1.8e-13-1e-10; non-conservation image 1e-12-5.6e-12, charges "
+                "1e-12-1e-11 and amounts 1e-13-5.6e-13. The construction checks hold in all 12 "
+                "cases; the engine's refusal sizes are the old scale's",
+                "a finding for the lead: one target misses 1e-9 at the new scale. The mismatch "
+                "scale's charges in seen spread 1 draw 35 read 63.05 at delta = 1e-9 "
+                "(charge_D1_C; D2 53.6) and are caught at 1.78e-9; its potentials, also a "
+                "target, read 718. Target and threshold unchanged. So the verdict function on "
+                "the seen sets (a development preview, not the judged verdict) says fail, on "
+                "that entry alone",
+                "the mechanism: on the charges the mismatch scale is the a_k control at "
+                "|a - f| = 0.15 strength (their ratio at 1e-9 is 0.1499-0.1501 in all ten "
+                "near-zero draws). Both move charge in proportion to the patch charges, which "
+                "vanish with the parent potential; A.8's term (the anchor and the increments' "
+                "content) does not. In draw 35 (V_P = -0.63 mV, the seen sets' nearest to 0 V) "
+                "a 1e-9 defect moves 1.54e-24 C against 64 eps x M_D1 = 1.57e-24 C (M_D1 = "
+                "1.10e-10 C, its charge -6.2e-15 C; probe/q2_draw35_keys-s5a32.json). At that "
+                "draw a_k's margin is 6.6 and transference's 6.8 (amounts); the parent charge, "
+                "scaled by the declared charge, keeps 3.2e4",
+                "recurrence: one such draw among the 207 admitted at spreads 1 and 3",
+                "protocol-dev-s5a32's near_zero_set.json holds new-scale ratios under "
+                "old_scale_potential_ratio: the probe (unedited) calls R-ops at its default, "
+                "now the new scale. q2_near_zero stays at protocol-dev-s5a28",
             ],
             "before_the_freeze": dict(
                 where("q2_before_freeze"),
