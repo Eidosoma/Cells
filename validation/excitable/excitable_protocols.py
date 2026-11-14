@@ -575,47 +575,47 @@ def main(argv=None):
     if "bracket_check" in args.parts:  # the blocking ends of the main run's brackets, re-decided
         main_results = json.loads(Path(args.main).read_text())["chain"]
         V2 = main_results["V_rest"]
-        out = results["bracket_check"] = {}
+        part = results["bracket_check"] = {}
         for i, b in enumerate(main_results.get("coupling_bracket", [])):
             blocked_end = b["lo"] if b.get("kind", "").startswith("block below") else b["hi"]
             if blocked_end is not None:
-                out[f"coupling_{i}"] = dict(s_c=blocked_end, bracket=b,
+                part[f"coupling_{i}"] = dict(s_c=blocked_end, bracket=b,
                                             **wave_outcome(V2, 20, blocked_end, rtol=rtol))
-                log("  bracket check", out[f"coupling_{i}"]["propagates"],
-                    out[f"coupling_{i}"]["decided_by"])
+                log("  bracket check", part[f"coupling_{i}"]["propagates"],
+                    part[f"coupling_{i}"]["decided_by"])
                 save()
         c = main_results.get("capture_threshold") or {}
         if c.get("lo") is not None:
-            out["capture"] = dict(P_stim=c["lo"], bracket=c,
+            part["capture"] = dict(P_stim=c["lo"], bracket=c,
                                   **wave_outcome(V2, 20, 1000.0, P_stim=c["lo"], rtol=rtol))
-            log("  capture check", out["capture"]["propagates"], out["capture"]["decided_by"])
+            log("  capture check", part["capture"]["propagates"], part["capture"]["decided_by"])
             save()
     if "bracket_robust" in args.parts:  # §8.4's bracket and capture, horizon-independent
         V2 = rests.get("point2", rest_potential("point2", rtol=rtol))
-        out = results["bracket_robust"] = dict(outcomes={})
+        part = results["bracket_robust"] = dict(outcomes={})
 
         def decided(s_c, **kw):
             key = f"s_c={s_c:g}" + "".join(f",{k}={v:g}" for k, v in kw.items())
-            if key not in out["outcomes"]:
-                out["outcomes"][key] = wave_outcome(V2, 20, s_c, rtol=rtol, **kw)
-                log("   robust", key, out["outcomes"][key]["propagates"],
-                    out["outcomes"][key]["decided_by"])
+            if key not in part["outcomes"]:
+                part["outcomes"][key] = wave_outcome(V2, 20, s_c, rtol=rtol, **kw)
+                log("   robust", key, part["outcomes"][key]["propagates"],
+                    part["outcomes"][key]["decided_by"])
                 save()
-            return bool(out["outcomes"][key]["propagates"])
+            return bool(part["outcomes"][key]["propagates"])
 
         grid = [3000.0, 1000.0, 300.0, 100.0, 30.0, 10.0, 3.0, 1.0, 0.3, 0.1]
         seen = {s: decided(s) for s in grid}
-        out["brackets"] = []
+        part["brackets"] = []
         for a, b in zip(sorted(seen), sorted(seen)[1:], strict=False):
             if seen[a] != seen[b]:
                 pred = decided if not seen[a] else (lambda x: not decided(x))
                 found = bisect(pred, a, b, tol=tol["s_c"], log_scale=True, label="robust s_c")
                 found["kind"] = ("block below, propagation above" if not seen[a]
                                  else "propagation below, block above")
-                out["brackets"].append(found)
+                part["brackets"].append(found)
                 save()
         k = er.POINTS["point2"]["c_m"] / 0.05
-        out["capture_threshold"] = bisect(lambda P: decided(1000.0, P_stim=P), 1e-9 * k,
+        part["capture_threshold"] = bisect(lambda P: decided(1000.0, P_stim=P), 1e-9 * k,
                                           1e-6 * k, tol=tol["capture"], log_scale=True,
                                           label="robust capture P")
         save()
