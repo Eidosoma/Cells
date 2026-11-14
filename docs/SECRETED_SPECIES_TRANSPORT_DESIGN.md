@@ -1543,6 +1543,31 @@ questions as follows. Each ruling is the lead's, 14 November 2026, at milestone 
 - **The bridge consequence** is a version 1.1 limit (§2.6, §5.3): bridge closure stays refused for
   inventory species until neutral species on junctions have a material-rate bound, a D148 question.
 
+### 12.1 Milestone 2: the guards, as built and run (14 November 2026)
+
+Code at b102da4 to 806eec9 on the branch (tests and validation only; `src/` unchanged since
+17c3407). Every run is a development run from a clean head, through `scripts/run_detached.sh`, with
+memory.events zero; evidence in `/mnt/workspaces/Cells/secreted-species-v1-20261114-01/`
+(HANDOFF.md; `tests/`, `crossrev/`, `tiers/`).
+
+| Guard (§7) | Result | Where |
+| --- | --- | --- |
+| Crossrev of every existing set, constants included, from a clean snapshot of b102da4 (2,924 files, empty patch), the tools unchanged, against the baseline of record | Identical: base 36/36 jaxpr texts, 36/36 constants, 12/12 bindings; qualification 78/78, 78/78, 56/56; injection 6/6, 6/6, 2/2; volume 6/6, 6/6, 2/2; division 27/27, 27/27, 9/9, its check holding | `crossrev/` |
+| The new operators' bindings (`validation/tissue/secreted_species_crossrev.py`, eight worlds, its first record) | Holds: in two value twins (every rate and K_M changed) the traced programs are identical in text and constants and only control arrays differ; no nonzero control row equals a closed-over constant | `crossrev/species/b102da4/check.json` |
+| Ion fields with both operators active, the mixed heredity chain against the same world without the species (idle claim 3, reported) | Bitwise on the scalar run, restart (in process and through a snapshot), a three-world vector batch (also bitwise against its reverse) and a replacement event; only the face heat and the baths' supply work differ (with the replacement's free-energy terms by the species' share) | `tests/unit/test_secreted_species_ions.py` |
+| Energy, the species-only world (ruling 4), negative control | A systematic 1% error in a law's booked work, in a species-only world whose flow is that law's work: 3.17 (exchange) and 4.90 (turnover) times the IMEX bound at the last row, refused; the same error in the mixed world: 2.9e-4 and 3.0e-3 of its bound, unseen (the known blindness) | `tests/unit/test_secreted_species_guards.py` |
+| RK4, the species-only radial world (ruling 6) | Energy residual 4.5e-14 pJ against the absolute 2e-8 pJ; 2.1e-8 of c0 from the exact discrete solution (turnover's splitting around the RK4 step) | guards |
+| IMEX radial world, pre-formed | Every host check; 9.93e-6 and 2.45e-6 of c0 from the exact discrete solution at 1 and 0.5 ms, ratio 4.05 (second order; turnover's Strang splitting sets most of it at k = 1/s) | guards |
+| Stiff front (§7, item 7 of §11.5) | From a 1e-15 mM trace under 1e-3 mM, 2,000 steps of 1 ms through the checked step map (dt K_ii 0.049): none refused, every amount positive, 6.2-6.6e-6 of c0 from the exact discrete solution | guards |
+| The trace background (§1.3) | A thousandfold trace moves the pre-formed profile by 0.947 times the trace's change, below it (as probe 3 measured) | guards |
+| Unit and smoke tests (milestone 1) | Tier 1: turnover 18, exchange 16, definitions 20; the compiled runs 7 (tier 3) | `tests/unit/test_species_*.py`, `test_secreted_species*.py` |
+
+**The radial world as built** (`validation/tissue/secreted_species_radial.py`): faces declared with
+the exact spherical-shell conductance between the points they join (the source surface, the shell
+mid-radii, the outer boundary), decay by turnover's node clearance at every shell, references from
+the same declared system (matrix exponential). Its first engine runs are these guards; the
+closed-form comparison against the continuum is milestone 3.
+
 ## Appendix A. Equations for the independent references
 
 The references are written from these equations, not from engine code. Units are @3's (fmol,
