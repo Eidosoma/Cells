@@ -5303,6 +5303,84 @@ supplied the request (FR-1), and it is logged in
   - re-expressing the injury law in the composite, a case of the old-family decision (D156).
 - **Design first (D142),** as a general feature (D144).
 
+## D162: Species-driven control factors (FR-6) are logged as addressed by the accepted coupling design
+
+2026-11-14. The user supplied the request (FR-6), at the requester's priority 2, logged in
+[FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-6--species-driven-control-factors).
+- **The general request is addressed by the accepted inventory-coupling design** (D155, D156), with
+  no code yet.
+- **Three narrower items are recorded as consumer registrations:**
+  - the channel target, in the coupling operator's milestone 1;
+  - the routing door to other operators' controls, with a second consumer (FR-5, FR-7);
+  - the regulatory state as a cell's prior condition, through its declared initial value and
+    writes.
+
+## D163: Abundance-to-function in the composite (FR-7) is logged at priority 3
+
+2026-11-14. The user supplied the request (FR-7), at the requester's priority 3 ("ordering, not
+scope"), logged in [FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-7--abundance-to-function-exposed-in-the-composite).
+- **The request:** when the closed loop's unit is chosen (the user's choice), the loop admits a
+  species-driven production rate (the coupling operator's routing door), and a factor whose source
+  is a population abundance (a source-semantics door of the same operator).
+- **Most of its part (b)** is the coupling operator's channel target, in milestone 1.
+
+## D164: A qualified long-duration mode (FR-8) is logged at priority 2
+
+2026-11-14. The user supplied the request (FR-8), at the requester's priority 2, logged in
+[FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-8--a-qualified-long-duration-mode).
+- **The request:** keep the quasi-steady or multirate mode on the path. Its acceptance case is to
+  include an intervention applied during the slow phase. This is added to the compute-limits
+  gate's long-time deliverable.
+- **The gap recorded with it:** no composite operator has a long-time path (the coarse modes cover
+  @1 to @3). A design note is needed, for which the requester's benchmark specification is an
+  input.
+
+## D165: The 7-species cap rises to 16 (FR-9), as a D148 change
+
+2026-11-14. The user supplied the request (FR-9), logged in
+[FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-9--raise-the-7-species-cap). The cap counts every
+species, ions included, so it binds on the requester's first world. The W4 probe measured 16 safe in
+every composition D150 and D152 admit.
+- **The lead's decision:** raise `MAX_SPECIES` to 16 now, as a D148 in-place change to
+  `species_common`, with the four criteria and the stop rule first, a tier-1 guard world of 8 or
+  more species, and the refusal tests and documents updated.
+- **What stays the same:**
+  - D150's claim 3 stays reported.
+  - Worlds above 7 species are outside D150's judged scope until a protocol covers them.
+  - Above 16 needs another probe.
+
+## D166: A scheduled bath composition in the composite (FR-10) is logged at priority 2
+
+2026-11-14. The user supplied the request (FR-10), the last of the block, at the requester's
+priority 2 ("small"). It is logged in
+[FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family).
+- **The feature:** a held bath's composition changes on the dt grid in the composite. The older
+  family's explicit ideal-reservoir law, with dose, compensating charge and external work, exists
+  and is re-expressed as a composite operator.
+- **Its consumers:** this study's doses, E07-v2's osmotic step and FR-4's pH step.
+- **Design first (D142),** as a general feature (D144).
+
+## D167: The feature-request order and the staged move of old-family physics are adopted
+
+2026-11-14, user decision: "lets continue and use all the agents and priorities the new feature
+request in the order you suggtest". This answers the lead's proposed order for FR-1 to FR-10 and its
+parity plan (option (b) of the architecture report).
+- **The feature-request order:**
+  1. FR-9, the species cap to 16, now;
+  2. FR-1's design note, then FR-10's;
+  3. FR-3's design alongside;
+  4. FR-4, with the shared energy-pool design, which also serves FR-2;
+  5. then FR-5;
+  6. FR-8's long-time design note after the GH200 numbers.
+  - FR-6 and FR-7 are registered consumers of the coupling operator's doors.
+- **The staged move of old-family physics** (option (b)): move each capability into the composite
+  when a consumer needs it, and freeze the old family as a reference once it is covered.
+  - The order: the channel library (through Track E, its start set by the conduction probe's
+    verdict); bath doses (FR-10); energy pools (FR-2, FR-4); calcium handling, with excitable
+    tissue; repair (FR-5); tissue removal (E15); mitochondria, when needed.
+  - It is not a wholesale migration, and the registry covers the composite only.
+- **Agents.** All six slots are used, on disjoint files.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

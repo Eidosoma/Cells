@@ -226,7 +226,7 @@ cleft answer, and all three are now qualified (above).
 | A full profile of a representative step | Only 41.5 of the 154 ms batch step at 64 worlds is accounted for today |
 | GH200 measurements (needs access) | End-to-end cost, host and device memory, numerical agreement with CPU and L4 |
 | A field-solver interface | It keeps the field law and residual checks. Sparse or matrix-free alternatives are compared on one device, covering the IMEX, capacitor and offset solves and the 2,048-node limit |
-| A verdict on long-time methods | Multirate or quasi-steady methods qualified, or bounded, on histories and intervention responses (projective failed its qualification) |
+| A verdict on long-time methods | Multirate or quasi-steady methods qualified, or bounded, on histories and intervention responses (projective failed its qualification). The acceptance case includes an intervention applied during the slow phase (FR-8, D164). The coarse modes cover @1–@3 only, so a long-time path for composite operators needs a design note |
 
 Partitioning one world across devices is introduced only when single-device measurements
 justify it. Thousands of cells do not by themselves need several GPUs.
@@ -263,7 +263,7 @@ This is the heredity question: can a written state repeatedly renew?
 | One regulated functional-unit population | A regulated production rate; a finite precursor inventory; assembly and trafficking delays; insertion and removal; a quantitative abundance-to-function relation; partition at division |
 | One material account | All of these reconcile in one account and predict a measured physiological response |
 
-The choice of unit is the user's. Candidates where abundance is already state:
+The choice of unit is the user's. FR-7 (D163) asks that the chosen loop admit a species-driven production rate and an abundance-sourced factor in the composite. Candidates where abundance is already state:
 - the redistribution pumps (`resolved_redistribution@1/@2`);
 - junction formation.
 
