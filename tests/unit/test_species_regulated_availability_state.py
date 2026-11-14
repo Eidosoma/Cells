@@ -285,9 +285,9 @@ def test_the_crossing_step_brackets_the_reference_crossing():
         fraction = (t_target / dt) % 1.0
         assert 0.05 <= fraction <= 0.95, (dt, fraction)  # The pre-registered placement.
         rows, final = trajectory(world(dt, **arm, level=theta))
-        record = np.asarray(final.state.regulatory_crossing_step)
-        k = int(record[0])
-        assert int(record[1]) == -1
+        crossing = np.asarray(final.state.regulatory_crossing_step)
+        k = int(crossing[0])
+        assert int(crossing[1]) == -1
         # δ: the row error near t* over |ds/dt| there (the commitment curve's slope at t*).
         c = arm["c0"][0] * np.exp(-arm["clear"][0] * t_target)
         slope = arm["k_on"] * u_of(c) * (1.0 - theta)
