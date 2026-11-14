@@ -13,6 +13,7 @@ and a general feature, never one built for one study (D144).
 | [FR-6](#fr-6--species-driven-control-factors) | Species-driven control factors | Priority 2 (the request's label; logged 14 November 2026) | **Addressed by an accepted design (D155, D156; [the coupling note](INVENTORY_COUPLING_DESIGN.md)); no code yet.** Three narrower items are recorded as consumer registrations | The channel target in the coupling operator's milestone 1 (in progress); the routing door; the regulatory state as a prior condition (below) |
 | [FR-7](#fr-7--abundance-to-function-exposed-in-the-composite) | Abundance-to-function, exposed in the composite | Priority 3, ordering and not scope (the request's label; logged 14 November 2026) | Logged; most of part (b) is the coupling operator's channel target | Considered when the closed molecular-to-physiology loop's unit is chosen (below) |
 | [FR-8](#fr-8--a-qualified-long-duration-mode) | A qualified long-duration mode | Priority 2 (the request's label; logged 14 November 2026) | Logged; it is the compute-limits gate's open long-time deliverable | Its acceptance gains an intervention applied during the slow phase; a long-time path for composite operators needs a design note (below) |
+| [FR-9](#fr-9--raise-the-7-species-cap) | Raise the 7-species cap | Priority 2, **blocking for world design** (the request's label; logged 14 November 2026). Measured safe to 16 (the W4 probe) | **Accepted: the raise to 16 is queued** as a D148 change to `species_common` (D165) | The D148 change with a guard world of 8 or more species; the requester's species list comes with its world definition |
 | [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Logged | A design note after FR-1's, with the energy-pool and charged-reaction doors (below) |
 
 ## FR-1 — A closed internal compartment on the shared inventory
@@ -404,3 +405,46 @@ requester is writing a benchmark specification for its own composition):
 - **The two-clock pattern helps where the physics separates.** Track E's plan runs a slow world
   coarsely and short fast assays from frozen snapshots (D155). It is not a long-time method for
   one coupled trajectory.
+
+## FR-9 — Raise the 7-species cap
+
+**Logged 14 November 2026, priority 2, blocking for world design** (the request's label). The raise
+was measured safe to 16 by the W4 probe. The request below is the requesting study's text,
+condensed. The lead's decision follows.
+
+**The count, corrected by the requester.** The lead checked the source.
+- **The cap counts every species, ions included.** `check_species_cap` takes
+  `count = len(spec.model.species_ids)` (`species_common.py`).
+  - With the six-ion set (Na, K, Cl, Ca, P, M), one row is free under a cap of 7.
+  - With a four-ion world, three are free.
+- **Locations are not identities.** The arrays are (species, node). The same species inside a
+  compartment and outside it is one row at two nodes.
+- **One caveat the other way.** A compartment that is not a declared node has no node axis, so a
+  pool held outside the node structure would need its own row. Which way FR-1 goes therefore
+  changes the budget. The requester will state the count with its world definition.
+- **The result.** A minimal delivery world on a six-ion set is over the cap before any cargo,
+  bound complex, buffer or proton is added. So the cap binds on the first world definition,
+  ahead of FR-1 to FR-5.
+
+**What the W4 probe found** (read-only, from a clean snapshot at f7f0592; PROGRESS):
+- the cap can rise to 16 in every composition D150 and D152 admit;
+- no ledger, guard or promised idleness depends on NumPy's sum order;
+- host checks, the face-free energy world, batches, restart and idleness hold at 16.
+
+D150's unpromised claim 3 departs at rounding in a 12-species chain. The requester does not rely on
+cross-world bitwise identity.
+
+**The lead's decision (D165): accepted, and queued now.** The requester is the consumer that
+PROGRESS's "when a consumer needs it" waited for.
+- **The change:** `MAX_SPECIES` from 7 to 16 in `species_common`, as a D148 in-place change, with
+  the four criteria and the stop rule written first.
+- **The tests:**
+  - a tier-1 guard world of 8 or more species that exercises the sum order (for example the probe's
+    `cell_charged_9`);
+  - the three refusal tests updated.
+- **The documents:** D150 §2.6 and §11.5, D152 §7.2 and its refusal lists, and the docstrings.
+- **What stays the same:**
+  - D150's claim 3 stays reported, with the chain departure recorded.
+  - Worlds above 7 species are outside D150's judged scope until a protocol covers them.
+  - Above 16 needs another probe.
+- **The requester's species list,** with its world definition, confirms the need (16 or fewer).

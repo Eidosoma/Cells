@@ -5335,6 +5335,20 @@ scope"), logged in [FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-7--abundance-to-
   @1 to @3). A design note is needed, for which the requester's benchmark specification is an
   input.
 
+## D165: The 7-species cap rises to 16 (FR-9), as a D148 change
+
+2026-11-14. The user supplied the request (FR-9), logged in
+[FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-9--raise-the-7-species-cap). The cap counts every
+species, ions included, so it binds on the requester's first world. The W4 probe measured 16 safe in
+every composition D150 and D152 admit.
+- **The lead's decision:** raise `MAX_SPECIES` to 16 now, as a D148 in-place change to
+  `species_common`, with the four criteria and the stop rule first, a tier-1 guard world of 8 or
+  more species, and the refusal tests and documents updated.
+- **What stays the same:**
+  - D150's claim 3 stays reported.
+  - Worlds above 7 species are outside D150's judged scope until a protocol covers them.
+  - Above 16 needs another probe.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
