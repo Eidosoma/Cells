@@ -36,17 +36,21 @@ interpretation, and **F** a value read off a figure.
 **Verdict first.** This is the most complete published simulation of one living cell's whole
 cycle in space and time: every gene expressed, the whole metabolic network, a replicating and
 segregating chromosome, growth and division, in 50 stochastic replicates. Its organism is a
-bacterium, and the model contains:
+bacterium, and the v1 text describes:
 - no membrane potential and no ions as charged species;
 - no water or osmotic balance;
 - no mechanics beyond a prescribed shape;
-- no gene regulation.
+- no transcriptional regulation.
+
+These rest on a search of the full text. The metabolic network itself sits in Tables S1–S2 and
+the 2022 model, which we did not read, and Fig. S4 does list ATP costs for transport and for an
+ATP synthase.
 
 It therefore touches no qualified Cells model and sets no numerical target for any gate in the
 [current plan](CURRENT_PLAN.md). Nothing in it should enter `src/cells`. Its value to Cells is
 as an engineering and validation case study:
 - how four solvers on different clocks were made to share one inventory;
-- where the wall-clock time actually went on two GPUs: mostly on the host, not in the GPU kernel;
+- where the wall-clock time actually went on two GPUs: mostly outside the GPU RDME kernel;
 - what partition at division looks like when it emerges from particle positions;
 - how thin the held-out evidence becomes once tuned and input quantities are set apart from
   predictions.
@@ -68,7 +72,7 @@ for now. No code, run or acceptance follows from this review.
 | Cost | 4–6 days per cycle, about 250 GPU-hours per replicate, and roughly 15,000 A100 GPU-hours for the 50 (Fig. 1; p. 10). A cycle took over two weeks before the chromosome moved to its own GPU (p. 10) |
 | Software | Lattice Microbes 2.5 (RDME and CME) with its Python layers pyLM and jLM; odeCELL with LSODA for metabolism; LAMMPS (19 November 2024) with Kokkos, driven by btree_chromo; sc_chain_generation for the starting chromosome; cobrapy to read the SBML network. FreeDTS was tested and set aside. Docker and Apptainer recipes are given on CUDA 11.6 (pp. 36–37, 42, 59) |
 | Output | One saved frame per biological second. Saving every step would take over 80 TB per trajectory, by the authors' estimate (p. 11) |
-| Deposits | Code on GitHub; a frozen snapshot of code, inputs and outputs on Zenodo (50 count-and-flux traces, 4 lattice trajectories); sequencing reads in SRA PRJNA1257452 (p. 12). Licences are in §6 |
+| Deposits | v1 promises code on GitHub and Zenodo and gives the SRA accession (p. 12). Checked on 14 November 2026: the [GitHub repository](https://github.com/Luthey-Schulten-Lab/Minimal_Cell_4DWCM); the [Zenodo record 10.5281/zenodo.15579159](https://doi.org/10.5281/zenodo.15579159) (2 June 2025), a frozen snapshot of code and inputs with 50 count-and-flux traces and 4 lattice trajectories; and sequencing reads in BioProject PRJNA1257452 (nine runs). Licences are in §6 |
 
 **Where the time goes** (Fig. 1, bar chart, **F**). The chart gives wall-clock seconds per
 biological second:
@@ -84,8 +88,9 @@ biological second:
 
 - The six sum to about 50 s per biological second, about 100 h per 7,200 s cycle (**S**). That is
   consistent with the stated 4–6 days.
-- **The GPU kernel is about 37% of the wall time.** The rest is host-side work done while the
-  solver is paused (**S**).
+- **The GPU RDME kernel is about 37% of the wall time.** The rest is work done outside that
+  kernel while the solver is paused (**S**). The preprint does not say on which device the CME
+  runs.
 - The chromosome's Brownian dynamics on the second GPU are not in the chart. They run in
   parallel and take about as long per biological second as everything else together (p. 38).
 
@@ -200,7 +205,8 @@ biological second:
   - A 12 pN repulsion acts on replicated DNA and is switched off once both chromosomes have
     crossed the mid-plane.
   - The authors call it a constraint, not a calibrated value.
-  - Syn3A has no ParABS, Min or MatP system and no attachment organelle (p. 41).
+  - A BLAST search finds no ParA or ParB genes and no complete parS sites in Syn3A. The authors
+    could not identify a MatP or Min system, and cryo-ET shows no attachment organelle (p. 41).
 - **Coupling to the lattice.** Bead positions mark DNA sites, where diffusion is halved. Gene
   start sites and the origin are lattice particles, moved to their bead's site with their state
   kept (pp. 42, 51). The polymer's boundary is smaller than the lattice membrane, so DNA never
@@ -265,7 +271,7 @@ Everything else is compared with earlier models, with other bacteria, or with th
 
 | Authors' claim | Measurement behind it | Input, tuned or held out | Our reading |
 | --- | --- | --- | --- |
-| Doubling time of 105 min matches experiment (pp. 5, 10) | 105 min (Breuer et al. 2019) | **Tuned.** Several rates were adjusted for 4D (§2.6). The previous model gave 97 min, and the authors attribute the slowdown to protein underproduction (p. 5) | A consistency check of a tuned model, not a prediction. The news story's "within two minutes" is not in v1 |
+| Doubling time of 105 min matches experiment (pp. 5, 10) | 105 min (Breuer et al. 2019) | **Not held out.** It lies downstream of the rates retuned for 4D (§2.6), which targeted initiation, protein doubling, survival and NTP build-up, not the doubling time itself. No doubling time is reported for the untuned set. The previous model gave 97 min, and the authors attribute the slowdown to protein underproduction (p. 5) | A consistency check, not a held-out prediction. The news story's "within two minutes" is not in v1 |
 | ori:ter of 1.28 agrees with the measured 1.21 (pp. 6, 10) | New sequencing, three replicates: 1.20, 1.21 and 1.21 in exponential phase; 0.97–0.99 stationary. Ten evolution endpoints from earlier data give 1.02–1.19 (p. 33) | **Closest to held out.** But initiation was retuned so that it happens at all (§2.6) | See below: the agreement depends on how the simulated population is sampled |
 | Imaging supports symmetric division (pp. 3, 5) | 1,319 fixed Syn3B cells with labelled FtsZ: 79.5% spherical, 11.6% prolate, 4.7% dividing, 4.2% budding (Fig. 4D, **F**). About 15% carry cell-in-cell structures in late exponential phase (p. 5) | **Imposed.** Symmetric two-sphere division is a constraint built from the imaging, not an output (p. 5) | The one quantitative morphology comparison disagrees; see below. The authors attribute the gap to missing FtsZ kinetics |
 | mRNA half-lives are recovered (abstract) | None for Syn3A in v1. Compared with the earlier model (1.97 and 1.48 min) and with the spread across other bacteria (pp. 8, 10) | Output, shaped by retuning the ribosome-to-degradosome binding ratio to bring proteins closer to doubling (p. 8) | Model mean 3.63 min, median 2.98 (Fig. 5, **F**). Not a validation against Syn3A data in v1 |
@@ -313,10 +319,10 @@ prolate plus dividing (Fig. 4D). Age weighting still gives about 28–35%.
 | Cells layer | Bearing | Why |
 | --- | --- | --- |
 | Bioelectric layer (`resolved_pump_tissue@3`: channels, pumps, junctions, field) | **None** | No membrane potential, ionic current, charge or electrochemical gradient appears anywhere in the model (**S**: a search of the full text finds none) |
-| Water and volume (`resolved_pump_water@1/@2`) | **None, and a contrast** | Volume is prescribed by geometry (a sphere until doubled, then constant), not computed from water fluxes. There is no osmotic or turgor term |
+| Water and volume (`resolved_pump_water@1/@2`) | **None, and a contrast** | Volume is prescribed by geometry (a sphere until doubled, then constant), not computed from water fluxes. The v1 text describes no osmotic or turgor term |
 | Division S2–S5 (insertion, the cleft lumen, `isopotential_partition@1`, bridge closure) | **A contrast, not data** | S5 splits continuum amounts by declared fractions with closed ledgers ([S5 design](CELL_DIVISION_S5_DESIGN.md) §3.3), which is right for ions at 10⁹ molecules and up (**S**). This paper's partition of integer particles is emergent and binomial-like, which matters at tens to hundreds of copies. Its shape is imposed. Microbes are rated a poor fit for Cells' physics in the [division plan](CELL_DIVISION_PLAN.md), and chromosome segregation is outside that plan's scope |
-| The composite and its operators ([PUMP_COMPOSITE.md](PUMP_COMPOSITE.md)) | **Architecture lessons** | One shared inventory with explicit conversion points, separate clocks and one exchange loop. The paper gets there with first-order lagged exchange and no ledgers. The composite uses ordered Strang halves with owned ledgers and refusal |
-| Secreted species (D150) | **Slight** | The medium is held constant and nothing is secreted. Nutrient uptake runs through transporters inside the ODE |
+| The composite and its operators ([PUMP_COMPOSITE.md](PUMP_COMPOSITE.md)) | **Architecture lessons** | One shared inventory with explicit conversion points, separate clocks and one exchange loop. The paper gets there with lagged exchange of unmeasured accuracy and no ledgers. The composite uses ordered Strang halves with owned ledgers and refusal |
+| Secreted species (D150) | **Slight** | The medium is held constant, and the preprint text describes no secreted species. Nutrient uptake runs through transporters inside the ODE; the transporter set is in Table S2 and the 2022 model, both unread |
 | Reactions on the shared inventory (D152, `local_species_reactions@1`) | **Moderate, as a pattern** | Metabolism as kinetic ODE on concentrations at the live volume, with costs drawn from shared pools, is D152's family. The paper adds the stochastic regimes that D152 version 1 does not have ([design](SHARED_INVENTORY_REACTIONS_DESIGN.md) §7) |
 | The protein catalogue ([plan](PROTEIN_CATALOGUE_PLAN.md)) | **An omics-parameterisation pattern** | Counts come from proteomics and cryo-ET, or are scaled from *E. coli*. This shows why the catalogue's abundance field must record the method and any transfer between organisms |
 | The gene-regulation layer (held, D145) | **Indirect** | Whole-genome expression without regulation, with promoter strengths set from proteomics. A warning for the layer's benchmarks: expression set from one data set cannot be judged against the same data |
@@ -328,8 +334,8 @@ prolate plus dividing (Fig. 4D). Age weighting still gives about 28–35%.
 
 1. **Name every clock and qualify every exchange.**
    - **What the paper shows.** A working hybrid of four methods on clocks from 0.1 ns to 4 s,
-     with one store of counts as the single source of truth (§2.2). Its exchanges are first
-     order and lagged, and their error is never measured.
+     with one store of counts as the single source of truth (§2.2). Its exchanges are lagged,
+     and their error is never measured.
    - **Where Cells stands.** The composite already uses ordered half-steps around @3's step,
      with one owner per row and refusal on a failed check ([PUMP_COMPOSITE.md](PUMP_COMPOSITE.md)).
      The [execution architecture](MULTISCALE_EXECUTION_ARCHITECTURE.md#qualification-before-scale-claims)
@@ -344,8 +350,9 @@ prolate plus dividing (Fig. 4D). Age weighting still gives about 28–35%.
      Whether freezing is accurate here was not tested (**S**).
 2. **Measure where the time goes before scaling hardware.**
    - **What the paper shows.**
-     - The GPU kernel took about 37% of the wall time (**S**, Fig. 1). Host work at 80 pauses
-       per biological second took the rest.
+     - The GPU RDME kernel took about 37% of the wall time (**S**, Fig. 1). Work outside it, at
+       the pauses, took the rest: ribosome updates at all 80 pauses per biological second, and
+       the CME, ODE and output once per second.
      - The large gain was concurrency, not a faster kernel: the polymer moved to its own GPU,
        and a cycle fell from over two weeks to 4–6 days (p. 10).
      - At about 250 GPU-hours per replicate, the study stops at 50 cells. The authors say that
@@ -375,6 +382,12 @@ prolate plus dividing (Fig. 4D). Age weighting still gives about 28–35%.
      The paper shows the integer case: unbiased, near-binomial partition at hundreds of copies,
      with representation artefacts (the degradosome edge peaks) leaking into the statistics.
      Such artefacts are what an independent reference like S5's R-ops is there to catch.
+   - **Inventories through growth and division.** Lattice particles are conserved by
+     construction: shape changes move them to the nearest site of their own type, and division
+     gives each to one daughter by position (pp. 9, 54–55). The count-to-concentration round
+     trip each second and the cost payments carry no reported check (**S**: none found). S5
+     instead books every moved quantity as signed transfers that sum to zero, checked against
+     an independent reference.
    - **Growth.** The paper's area-from-composition idea fits Cells' membrane entity state, where
      area is already state written by insertion. Its volume-from-geometry rule does not fit:
      Cells has water. Keep area and volume as separate states with their own physics.
@@ -456,7 +469,7 @@ Three further lessons, lower in rank:
 - **Repaying an overdrawn pool with fictitious reactions.** Cells refuses the step instead.
 - **Parameters chosen so that every cell survives, or so that a process happens at all,**
   without a registered selection rule. Cells declares its selection data (the J1 rules).
-- **First-order lagged exchange** with no interval-refinement study.
+- **Lagged exchange** with no interval-refinement study.
 - **Rate constants converted from another organism's event frequencies** without a check.
 - **A time-uniform single-cell average compared with a population measurement.**
 - **A polymer clock that is not physical time,** presented as dynamics.
@@ -487,8 +500,8 @@ validation driver, designed first (D142) and qualified against independent refer
 | 3 | **Division with growth, judged on cycle closure.** Area accumulated from insertion (existing operators), volume from water, material from a production law, a trigger sourced from the literature, and a registered check that daughters reproduce the founder's state over several generations within a declared tolerance | S5b. Water composed with partition (S5 refuses water today). The composition gate's entity volume ledger. A production law (the gene-regulation layer, or D150's production routes) | Lifecycle operators, milestone 2; composition | Deferred |
 | 4 | **The closed molecular-to-physiology loop with the paper's cost pattern.** The provisional junction-channel unit (D145): made by a regulated law, drawing precursors and energy from finite pools ([FINITE_ENERGY_POOLS.md](FINITE_ENERGY_POOLS.md)), assembled with delays, inserted and partitioned. The paper supplies a pattern, not parameters | The gate's own list. Catalogue stage 3 (held under D145) | [Closed molecular-to-physiology loop](CURRENT_PLAN.md#gate-a-closed-molecular-to-physiology-loop) | Deferred |
 | 5 | **A minimal-cell benchmark world.** A validation driver, not an engine feature: a small cell whose low-copy expression, growth by insertion and stochastic partition use only general operators (ranks 1–4). The paper's published distributions would be an external reference, read out of process | Ranks 1–4. The user's approval to use the paper's outputs (D138) | Endogenous lifecycle and the closed loop | Deferred; far out |
-| 6 | **Comparison with the saved Zenodo outputs** (50 traces and 4 trajectories, CC BY 4.0), analysed out of process | The user's approval per paper (D138). Until ranks 1–4 exist, it would run no Cells engine model and is pure tooling | None until ranks 1–4 exist | Deferred |
-| 7 | **Running their stack** (reproduction), out of process in its own environment | The user's approval (D138). About 250 A100 GPU-hours per replicate: 50 replicates take 12,500–15,000 GPU-hours, more than the whole 10,000 GH200 GPU-hour JUPITER allocation ([ROADMAP](ROADMAP.md)) (**S**). It needs two GPUs per cell | None | Deferred. This review's judgement is that it would not earn a slot |
+| 6 | **Comparison with the saved Zenodo outputs** (50 traces and 4 trajectories, CC BY 4.0), analysed out of process | The user's approval per paper (D138). Until ranks 1–4 exist, it would run no Cells engine model and is pure tooling | Tooling: the user's approval (D138) | Deferred |
+| 7 | **Running their stack** (reproduction), out of process in its own environment | The user's approval (D138). About 250 A100 GPU-hours per replicate: 50 replicates take 12,500–15,000 GPU-hours, more than the whole 10,000 GH200 GPU-hour JUPITER allocation ([ROADMAP](ROADMAP.md)) (**S**). It needs two GPUs per cell | Tooling: the user's approval (D138) | Deferred. This review's judgement is that it would not earn a slot |
 
 Lessons 1, 2 and 5 of §5 need no new item. Exchange qualification is already the execution
 architecture's rule, the step profile is already in the compute-limits gate, and registered
