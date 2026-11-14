@@ -15,7 +15,7 @@ listed under [Readings](#readings-of-the-design-taken-here); disagreements go to
 | `validation/coupling/state_reference.py` | R-state | The two-state fraction's closed forms, D150's turnover regulator, nested quadrature, an adaptive integration of (s, U), the crossing time t* and the crossing step k* |
 | `validation/coupling/cells_reference.py` | R-cell, R-feedback | Pump-free constant-field cells with regulated availabilities on channel populations and contacts, the regulatory states integrated with the ions |
 | `validation/coupling/piecewise_ode.py` | – | The shared segment-by-segment integrator (internal) |
-| `validation/coupling/reference_crosschecks.py` | – | The driver behind the numbers in [Tolerances](#recommended-settings-and-the-measured-floor) (`--out DIR`; about 1 minute) |
+| `validation/coupling/reference_crosschecks.py` | – | The driver behind the numbers in [Tolerances](#recommended-settings-and-the-measured-floor) (`--out DIR`; about 1.5 minutes) |
 
 Self-tests: `tests/unit/test_coupling_references.py` (tier 1, about 12 s). They also check that
 nothing in this folder imports `cells`, statically and in a fresh process, and that the only
@@ -119,8 +119,10 @@ in order (`rs.input_value(inputs, t)`).
     - `slope` is the grid estimate of ds/dt there.
   - If a margin is below the engine's error in s at that dt, k* is ambiguous by one step: §4.5's
     widening by δs/(ds/dt).
-- **Admitted rates:** DOP853 needs about λ t_end / 2 steps when λ is large. Use Radau past about
-  λ t_end = 1e5.
+- **Admitted rates.** Use Radau past about λ t_end = 1e5. Measured on a pulse input:
+  - at λ t_end ≈ 2e4, DOP853 took 9,646 steps and Radau 6,462, and DOP853 was faster;
+  - at λ t_end ≈ 2e5, they took 44,628 and 5,724 steps, Radau being 3 times faster;
+  - the two agreed to 1e-14.
 
 ## R-cell and R-feedback: `cells_reference` (`rc`)
 
@@ -226,9 +228,16 @@ rtol 1e-12, atol / 1000.
 **R-fac:** the exact path agrees with a literal 60-digit x^n/(K^n + x^n) to 6.9e-38 relative,
 on 400 random points. The float64 path's ulps are given above.
 
-So the references' own errors sit four or more orders of magnitude below any engine error
-expected at millisecond steps. A4's order study is meaningful down to engine errors of about
-1e-10 in s and amounts.
+**The floor is world-specific: measure it on the engine's own world.**
+
+```python
+run, tight, floor = rc.floor(world, t_end, record)  # rtol 1e-10, against rtol 1e-12, atol / 1000
+floor["s"], floor["V"], floor["amounts"], floor["crossing"]  # max |difference| per observable
+rc.compare(run_a, run_b, record)                      # the same comparison for any two runs
+```
+
+An engine error is resolvable in a dt study only where it exceeds that floor. On the synthetic
+worlds above, the floor sits near 1e-12 in s and in amounts (fmol).
 
 Evidence: `/mnt/workspaces/Cells/independent-references-20261114-01/` (`HANDOFF.md`;
 `track-r-crosschecks-01/crosschecks.json` and its log, run from the frozen snapshot

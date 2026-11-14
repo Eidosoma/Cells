@@ -44,8 +44,8 @@ kind, segment by segment between breakpoints at every record, schedule change, s
 regulator segment start (piecewise_ode). Records are integration end points, never dense output.
 
 Sources: Goldman DE. J Gen Physiol 1943;27:37-60; Hodgkin AL, Katz B. J Physiol 1949;108:37-77
-(the constant-field flux); Keener J, Sneyd J. Mathematical Physiology I, 2nd ed., Springer 2009,
-ch. 2-3; Hille B. Ion Channels of Excitable Membranes, 3rd ed., Sinauer 2001, ch. 14.
+(the constant-field flux); Keener J, Sneyd J. Mathematical Physiology I, 2nd ed., Springer 2009;
+Hille B. Ion Channels of Excitable Membranes, 3rd ed., Sinauer 2001.
 """
 
 import math
@@ -260,9 +260,10 @@ def check_world(w):
                 and 0 <= pop.opening <= 1):
             raise ValueError(f"population {name}: abundance >= 0 and opening in [0, 1]")
         _check_schedule(f"population {name}", pop.schedule)
+    names = [*w.patches, *w.populations, *w.contacts]
+    if len(set(names)) != len(names):
+        raise ValueError("patch, population and contact names are distinct")
     for name, e in w.contacts.items():
-        if name in w.populations:
-            raise ValueError(f"element name {name} is used twice")
         if len(e.cells) != 2 or e.cells[0] == e.cells[1] or any(x not in w.cells for x in e.cells):
             raise ValueError(f"contact {name} joins two distinct cells")
         if not (_finite(e.area_m2) and e.area_m2 > 0 and _finite(e.gate) and 0 <= e.gate <= 1):
@@ -670,6 +671,44 @@ class CellsRun:
         idx = self.model.state_base + 2 * self.model.pi[(state, cell)]
         return rs.crossing_step(lambda t: float(self.run.state(t)[idx]),
                                 self.crossing(state, cell, theta), theta, dt, self.run.t_end)
+
+
+def compare(a, b, record):
+    """Max |a - b| per observable over the records of two runs of one world: V, amounts, mM,
+    s, U, F (routes), a_eff, current (elements) and crossing (t*)."""
+    out = dict(V=0.0, amounts=0.0, mM=0.0, s=0.0, U=0.0, F=0.0, a_eff=0.0, current=0.0)
+    for t in record:
+        ra, rb = a.at[t], b.at[t]
+        for c in ra["V"]:
+            out["V"] = max(out["V"], abs(ra["V"][c] - rb["V"][c]))
+            out["amounts"] = max(out["amounts"], *(abs(x - y) for x, y in zip(
+                ra["amounts_fmol"][c], rb["amounts_fmol"][c], strict=True)))
+            out["mM"] = max(out["mM"], *(abs(x - y) for x, y in zip(ra["mM"][c], rb["mM"][c],
+                                                                      strict=True)))
+        for k in ra["s"]:
+            out["s"] = max(out["s"], abs(ra["s"][k] - rb["s"][k]))
+            out["U"] = max(out["U"], abs(ra["U"][k] - rb["U"][k]))
+        for k in ra["routes"]:
+            out["F"] = max(out["F"], abs(ra["routes"][k]["F"] - rb["routes"][k]["F"]))
+        for e in ra["elements"]:
+            out["a_eff"] = max(out["a_eff"], abs(ra["elements"][e]["a_eff"]
+                                                 - rb["elements"][e]["a_eff"]))
+            out["current"] = max(out["current"], abs(ra["elements"][e]["current_A"]
+                                                     - rb["elements"][e]["current_A"]))
+    out["crossing"] = max((abs(a.crossings[k] - b.crossings[k]) for k in a.crossings),
+                          default=0.0)
+    return out
+
+
+def floor(world, t_end, record, *, rtol=1e-10, atol=None, factor=100.0, method="Radau"):
+    """The numerical floor of a run of any world: the run at (rtol, atol) and one at
+    rtol / factor and atol / (10 factor), compared per observable (compare). Returns
+    (the run, the tight run, the differences); the differences estimate the first run's error."""
+    base = dict(ATOL, **(atol or {}))
+    run = simulate(world, t_end, record=record, rtol=rtol, atol=base, method=method)
+    tight = simulate(world, t_end, record=record, rtol=rtol / factor, method=method,
+                     atol={k: v / (10.0 * factor) for k, v in base.items()})
+    return run, tight, compare(run, tight, record)
 
 
 def breakpoints(world, t_end, record=()):

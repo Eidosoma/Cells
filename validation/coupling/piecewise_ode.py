@@ -3,14 +3,14 @@ R-feedback). numpy and scipy only.
 
 A run integrates segment by segment between breakpoints (schedule changes, records), so every
 record is an integration end point and no value is read from dense output. Radau's continuous
-extension is of lower order than its steps (Hairer & Wanner 1996, IV.8), so values between
+extension (its collocation polynomial) is of lower order than its steps, so values between
 solver steps come from a fresh integration from the last stored step instead. The first upward
 crossing of a level is bracketed by the stored steps and located by Brent's method on such
 re-integrations (Brent 1973).
 
 The integrators are scipy's solve_ivp methods: Radau IIA of order 5 (Hairer E, Wanner G. Solving
-Ordinary Differential Equations II, 2nd ed., Springer 1996, IV.8), DOP853 (Hairer E, Norsett SP,
-Wanner G. Solving Ordinary Differential Equations I, 2nd ed., Springer 1993, II.10) and LSODA.
+Ordinary Differential Equations II, 2nd ed., Springer 1996), DOP853 (Hairer E, Norsett SP,
+Wanner G. Solving Ordinary Differential Equations I, 2nd ed., Springer 1993) and LSODA.
 """
 
 import math

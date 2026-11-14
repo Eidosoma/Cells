@@ -12,7 +12,7 @@ The law (Appendix A.3), for one (state, cell):
 with each f_j a Hill activation or inhibition (R-fac) of a concentration c_j(t) (mM), k_on and
 k_off >= 0 (1/s), and s0 in [0, 1]. It is the deterministic kinetics of a population of two-state
 units, the gating-variable form of Hodgkin & Huxley (1952) and a covalent-modification cycle in
-its first-order regime (Goldbeter & Koshland 1981); Keener & Sneyd (2009) ch. 1 and 3 give the
+its first-order regime (Goldbeter & Koshland 1981); Keener & Sneyd (2009) ch. 1 gives the
 first-order kinetics. The exposure is U(t) = int_0^t u dtau.
 
 Closed forms (derived again here):
@@ -39,9 +39,10 @@ Numerical paths for general inputs:
   Jacobian, segment by segment; the crossing time t* of a level theta by Brent's method on
   re-integrations (piecewise_ode). The equation is scalar and linear in s, so an explicit method
   stays accurate at any admitted rate (its error control shortens the step where lambda h nears
-  its stability bound); measured, DOP853 was 3 to 50 times faster than Radau at rtol 1e-12 on
-  these inputs, including the fast arm lambda = 1/dt. Radau is the cross-check, and the better
-  choice once lambda t_end exceeds about 1e5.
+  its stability bound). Measured (independent-references-20261114-01): DOP853 was 3 to 50 times
+  faster than Radau at rtol 1e-12 on slow inputs and 1.5 times faster at lambda t_end = 2e4, and
+  Radau 3 times faster at lambda t_end = 2e5 (5724 steps against 44628), the two agreeing to
+  1e-14. Use Radau past about lambda t_end = 1e5.
 
 The exact (``exact=True``) closed forms use 40-digit decimal arithmetic and return Decimals.
 Sources: Hodgkin AL, Huxley AF. J Physiol 1952;117:500-544. Goldbeter A, Koshland DE Jr. PNAS

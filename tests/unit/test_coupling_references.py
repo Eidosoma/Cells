@@ -70,8 +70,9 @@ def test_references_import_nothing_from_cells():
             assert not name.startswith("."), (path.name, "relative import", name)
             assert name.split(".")[0] not in FORBIDDEN_TOP, (path.name, name)
             if name.startswith("validation") and not name.startswith("validation.coupling"):
-                assert name in ALLOWED_DIVISION, (path.name, name)
-                assert set(names or ()) <= ALLOWED_DIVISION[name], (path.name, names)
+                # Only `from validation.division.cleft_egg_reference import ghk_flux`.
+                assert name in ALLOWED_DIVISION and names is not None, (path.name, name)
+                assert set(names) <= ALLOWED_DIVISION[name], (path.name, names)
 
 
 def test_references_load_no_cells_j1_or_partition_module_in_a_fresh_process():
@@ -538,6 +539,49 @@ def test_r_cell_follows_a_turnover_regulator_and_its_voltage_tracks_zero_current
     assert run.at[2.0]["V"]["c0"] - run.at[0.5]["V"]["c0"] > 5e-3  # and depolarises the cell
 
 
+def test_sides_switches_products_and_a_state_sourced_population():
+    """The advertised paths beyond side "both": a first and a second side, two couplings on one
+    element in declared order under a schedule of 0.5, a switch at 2 ms with both sides of it,
+    and a population gated by a state, each against R-fac at the recorded state."""
+    world = rc.World(
+        CONST, SP, Z, BATH,
+        cells={"a": rc.Cell(VOL, CYT_A, initial_V=-0.06),
+               "b": rc.Cell(VOL, CYT_B, initial_V=-0.04)},
+        patches={"a.m": rc.Patch("a", AREA, CAP, LEAK), "b.m": rc.Patch("b", AREA, CAP, LEAK)},
+        populations={"kleak_a": rc.Population("a.m", 3e-9, KLEAK)},
+        contacts={"e": rc.Contact(("a", "b"), 1e-10, (2e-6, 3e-6, 4e-6), schedule=((0.0, 0.5),))},
+        regulators={"X": rc.Regulator({"b": rs.constant(0.8, VOL)})},
+        states={"s1": rc.State(("a", "b"), (rc.Input("hill_activation", "Na", 20.0, 2.0),), 50.0,
+                               5.0, initial={"a": 0.1, "b": 0.7})},
+        couplings={
+            "c1": rc.Coupling("e", "state_fraction", "s1", basal=0.1, side="first"),
+            "c2": rc.Coupling("e", "hill_activation", "X", basal=0.3, K_mM=1.0, n=2.0,
+                              side="second", enabled=((0.0, 1), (0.002, 0))),
+            "c3": rc.Coupling("kleak_a", "state_complement", "s1", basal=0.2),
+        },
+    )
+    run = rc.simulate(world, 0.004, record=(0.001, 0.002, 0.003))
+    on = float(fr.coupling_factor("hill_activation", 0.3, x=0.8, K=1.0, n=2.0))
+    for t, before, after in ((0.001, on, on), (0.002, on, 1.0), (0.003, 1.0, 1.0)):
+        r = run.at[t]
+        sa, sb = r["s"][("s1", "a")], r["s"][("s1", "b")]
+        F1 = fr.side_factor("first", "state_fraction", 0.1, first=sa, second=sb)
+        assert r["routes"][("c1", "e")]["F"] == r["routes"][("c1", "e")]["F_left"] == F1
+        assert F1 != fr.side_factor("second", "state_fraction", 0.1, first=sa, second=sb)
+        c2 = r["routes"][("c2", "e")]
+        assert c2["F_left"] == pytest.approx(before, rel=1e-15)
+        assert c2["F"] == pytest.approx(after, rel=1e-15)
+        e = r["elements"]["e"]
+        assert e["G"] == F1 * c2["F"] and e["G_left"] == F1 * c2["F_left"]
+        assert e["a_eff"] == 0.5 * e["G"] and e["a_sched"] == e["a_sched_left"] == 0.5
+        if t == 0.002:  # the same state on both sides: the flux scales with a_eff
+            assert e["current_A_left"] == pytest.approx(on * e["current_A"], rel=1e-12)
+        F3 = fr.coupling_factor("state_complement", 0.2, s=sa)
+        assert r["routes"][("c3", "kleak_a")]["F"] == F3 == r["elements"]["kleak_a"]["a_eff"]
+    _, _, floor = rc.floor(world, 0.004, (0.002, 0.004))
+    assert floor["s"] < 1e-11 and floor["amounts"] < 1e-9 and floor["V"] < 1e-12
+
+
 def test_records_at_a_schedule_change_give_both_sides():
     world = r_cell(None, schedule=((0.0, 1.0), (1.0, 0.25)))
     run = rc.simulate(world, 2.0, record=(1.0, 2.0))
@@ -573,6 +617,8 @@ def test_world_refusals():
                                    1.0)}},  # the coupling reads b, where the state is undeclared
         {"cells": {"a": rc.Cell(VOL, CYT_A, initial_V=-0.06, background_fmol=-1.0),
                    "b": rc.Cell(VOL, CYT_B)}},
+        {"patches": {"e": rc.Patch("a", AREA, CAP, LEAK),  # a patch named like the contact
+                     "b.m": rc.Patch("b", AREA, CAP, LEAK)}},
     ]
     for change in bad:
         with pytest.raises(ValueError):

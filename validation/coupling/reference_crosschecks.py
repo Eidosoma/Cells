@@ -9,12 +9,13 @@ Writes DIR/crosschecks.json (every measured number) and DIR/log.txt. Every world
   the 40-digit path against the literal 60-digit formula on random points; the log-space
   conditioning guide over the same grid.
 * R-state: closed forms against DOP853 (the default) and Radau, the general input against
-  nested quadrature, crossing times against their closed forms, the fast arm.
+  nested quadrature, crossing times against their closed forms, the fast arm, and the cost of
+  DOP853 against Radau at lambda t_end of about 2e4 and 2e5.
 * R-cell and R-feedback: the floor at the recommended settings (Radau, rtol 1e-10, default atol)
   as the distance to rtol 1e-12 with atol / 1000, and a second method (LSODA at rtol 1e-12, atol
   / 1000) against the tight Radau run, per observable, on an A4-like feedback world (also its
   fast arm, dt (k_on + k_off) = 1 at dt = 1 ms) and an A5-like gated-leak world.
-About two minutes on one free core (--quick: shorter horizons, for a smoke run).
+About a minute and a half on one free core (--quick: shorter horizons, for a smoke run).
 """
 
 import argparse
@@ -167,6 +168,21 @@ def part_rstate(quick):
         steps_dop=dop.steps, steps_radau=radau.steps, wall_dop_s=wall_dop,
         wall_radau_s=wall_radau)
     log("R-state fast arm", out["fast_arm"])
+    # Stiffness: DOP853 against Radau at lambda t_end of about 2e4 and 2e5 (the default's range).
+    out["stiffness"] = {}
+    for kon, koff in ((900.0, 100.0), (9000.0, 1000.0)):
+        T = 5.0 if quick else 20.0
+        row = {}
+        for label, kw in (("DOP853", {}), ("Radau", dict(method="Radau", rtol=1e-12,
+                                                         atol=(1e-15, 1e-15)))):
+            t0 = time.perf_counter()
+            run = rs.integrate(inputs, kon, koff, 0.05, T, record=(1.0, T), **kw)
+            row[label] = dict(steps=run.steps, wall_s=time.perf_counter() - t0,
+                              s=[float(run.at[1.0][0]), float(run.at[T][0])])
+        row["difference"] = max(abs(x - y) for x, y in zip(row["DOP853"]["s"], row["Radau"]["s"],
+                                                           strict=True))
+        out["stiffness"][f"k_on={kon} k_off={koff} t_end={T}"] = row
+        log("R-state stiffness", kon, koff, T, row)
     return out
 
 
@@ -199,33 +215,6 @@ def cell_world():
     )
 
 
-def differences(a, b, record):
-    """Max |a - b| per observable over the records (both runs at the same records)."""
-    out = dict(V=0.0, amounts=0.0, mM=0.0, s=0.0, U=0.0, F=0.0, a_eff=0.0, current=0.0)
-    for t in record:
-        ra, rb = a.at[t], b.at[t]
-        for c in ra["V"]:
-            out["V"] = max(out["V"], abs(ra["V"][c] - rb["V"][c]))
-            out["amounts"] = max(out["amounts"], *(abs(x - y) for x, y in
-                                                   zip(ra["amounts_fmol"][c],
-                                                       rb["amounts_fmol"][c], strict=True)))
-            out["mM"] = max(out["mM"], *(abs(x - y) for x, y in
-                                         zip(ra["mM"][c], rb["mM"][c], strict=True)))
-        for k in ra["s"]:
-            out["s"] = max(out["s"], abs(ra["s"][k] - rb["s"][k]))
-            out["U"] = max(out["U"], abs(ra["U"][k] - rb["U"][k]))
-        for k in ra["routes"]:
-            out["F"] = max(out["F"], abs(ra["routes"][k]["F"] - rb["routes"][k]["F"]))
-        for e in ra["elements"]:
-            out["a_eff"] = max(out["a_eff"], abs(ra["elements"][e]["a_eff"]
-                                                 - rb["elements"][e]["a_eff"]))
-            out["current"] = max(out["current"], abs(ra["elements"][e]["current_A"]
-                                                     - rb["elements"][e]["current_A"]))
-    out["crossing"] = max((abs(a.crossings[k] - b.crossings[k]) for k in a.crossings),
-                          default=0.0)
-    return out
-
-
 def part_cells(quick):
     tight = {k: v / 1000 for k, v in rc.ATOL.items()}
     worlds = {
@@ -246,8 +235,8 @@ def part_cells(quick):
         last = runs["tight"].at[record[-1]]
         out[name] = dict(
             horizon_s=T,
-            floor_recommended_vs_tight=differences(runs["recommended"], runs["tight"], record),
-            method_lsoda_vs_tight=differences(runs["lsoda"], runs["tight"], record),
+            floor_recommended_vs_tight=rc.compare(runs["recommended"], runs["tight"], record),
+            method_lsoda_vs_tight=rc.compare(runs["lsoda"], runs["tight"], record),
             crossings=runs["tight"].crossings and {f"{k[0]}@{k[1]}": v for k, v in
                                                    runs["tight"].crossings.items()},
             steps={k: r.steps for k, r in runs.items()},
