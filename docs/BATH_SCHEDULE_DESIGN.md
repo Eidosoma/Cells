@@ -74,6 +74,11 @@ operator's own fields.
    - Version 1 is qualified between resolved levels, at a step ratio pinned at registration from a
      development measurement, since no arm has yet stepped a bath between two levels. The
      recommendation is D150's known-limit ruling extended to doses, with a staircase probe requested.
+   - **Measured since (§7's staircase probe):** the limit is on a step's absolute size, not only on
+     its ratio. A 100× stair up to 1e-3 mM passes under ARS, but a 100× step from 1e-3 to 0.1 mM
+     does not. In the probe's world, a tenfold step between resolved levels and a staircase of 100×
+     stairs from the trace pass under both solvers. A pinned ratio therefore holds only at the levels
+     where it was measured.
 7. **Effort:** about 1.75 agent-days (range 1.5 to 2.5). Door S adds 0.5 to 1, and door W about 1.
 
 ## 1. The operator
@@ -337,7 +342,9 @@ the bound.
   - transport is exact, by D150 §11.3's probe 4, not re-measured here;
   - the onset step's energy residual is about 2% of that step's flows under ARS, and 13% under
     RK4;
-  - a species-only world refuses it, and a mixed world passes it unseen.
+  - a species-only world refuses it, and a mixed world passes it unseen;
+  - measured since (§7's staircase probe): the limit bounds a step's absolute size, not only its
+    ratio, so a step ratio pinned at registration holds only at the levels where it was measured.
 
 **The ways forward, for the lead's ruling, since this blocks acceptance:**
 - **(a) D150's known-limit ruling, extended to doses.** In a mixed world a dose from nothing runs,
@@ -394,6 +401,116 @@ change set or two consecutive ones.
    `CONFLICTS_VIEW`?
 3. **Formula units:** declared on the operator (as here), or on a composite-level species block when
    D150's open question 3 is decided?
+
+## 7. Milestone 1 as built (14 November 2026)
+
+The engine agent built version 1's operator after D169, on the branch, with the lead's approval of
+the one shared file it touches (the operator registry). The evidence and log are in
+`/mnt/workspaces/Cells/bath-schedule-20261114-01/` (HANDOFF.md).
+
+**What was built.**
+- `src/cells/models/operators/bath_schedule.py`, `scheduled_bath_composition@1`, registered in
+  `models/operators/__init__.py` with one import and one line.
+- **The declaration:** `baths` and `formula_units`. Each unit is checked neutral in integer
+  arithmetic, with counts that are positive ints.
+- **The events,** under the experiment key `bath_composition_events`: `{time, baths,
+  formula_units_mM}`, offsets absolute against the declared composition. Before a bath's first
+  event, its control is its declared reference amounts themselves.
+- **State:** the held content, and the records `bath_dose_fmol`, `bath_dose_free_energy_pJ` and
+  `bath_compensation_charge_C`. The last is the older rule's compensating charge, kept as a record:
+  zero for a neutral step, which its own ledger checks. Also B, the reconciliation accumulator, and
+  the magnitudes.
+- **Its own ledgers:** the dose against the held content; the free-energy record against its
+  endpoint difference (the per-event terms telescope exactly); and neutrality.
+- **K** is its own ledger term on @3's `reservoir_work`, with its magnitude in that ledger's
+  rounding allowance.
+- **The view** of `extracellular_amount_reference`, and `inner_check_spec` at the per-species
+  maxima.
+- **Refusals:** each of §1.1's at the definition, and the isosmotic rule beside water@1. The
+  composite's own structure check refuses, in either order, insertion@1 (a second provider of the
+  field), the closers insertion@2 and the partition (the field is padded beside them), the lumens
+  (lumen@1 needs insertion@1, lumen@2 insertion@2) and D152 (nominally), as §3.1 expected. It
+  admits injection, membrane state, replacement@1, turnover, exchange and water@1 (all tested in
+  `tests/unit/test_bath_schedule.py`). The stationary analysis refuses the composite by its own ID
+  check (read, not tested here).
+- **Fixtures:** `validation/tissue/bath_schedule_fixtures.py`, the species-only dose leg.
+
+**The gates.** Each ran from a clean snapshot of the branch, in units `cells-fr10-m1-*` on CPU 2
+with a 3G cap:
+- the operator's commit 2a7e594;
+- c36a3fa, the head after the first merge of main (species_regulated_availability@1's landing);
+- dae57ff, the tests stage alone, after the second merge of main (the architecture block's first
+  items and Track R). It is listed below the table.
+
+| Gate | Result |
+| --- | --- |
+| The tier-1 smoke, `tests/unit/test_bath_schedule.py` (NumPy) | At c36a3fa's tests stage, 36 passed in 3.8 s by pytest's clock (5 s wall). Every later figure from the tier tool was taken under load. At 2a7e594, 22 passed in 3.5 s; the extra cases are the structure-check and end-time ones |
+| B3, `tests/unit/test_bath_schedule_runs.py` (RK4 at 0.1 ms; a step from 1e-3 to 1.5e-3 mM at step 20 of 60) | Passed in 45 s, with every host check on every row. The record (`run-c36a3fa/b3-2/`) follows |
+| B5, idleness, `tests/unit/test_bath_schedule_idle.py` | Passed in 40 s: with no event, every inner field is bitwise equal to the composition without the operator |
+| Crossrev, the five sets of the baseline of record at 21fb714 | Identical at 2a7e594 and at c36a3fa. Base: 36/36 jaxpr texts, 36/36 constants, 12/12 bindings. Qualification: 78/78, 78/78, 56/56. Injection and volume: 6/6, 6/6, 2/2 each. Division: 27/27, 27/27, 9/9, with its check holding. Main has since renewed the baseline of record at da94f81, with seven sets. Its species and reactions sets have not run on this branch |
+| The tier record | Committed from the third measure at c36a3fa, as the lead ruled. All three measures ran on an oversubscribed machine (load 15 to 22 on 8 CPUs), so load pushed every file across a tier boundary: the smoke to tier 2 (24.5 s), and B3 and B5 past the 90 s cap to tier 3. The lead re-measures them at a quiet time (HANDOFF) |
+
+**At dae57ff,** after the second merge of main, the tests stage passed all three files again,
+on the loaded machine (load average about 21): the smoke with 36 passed (17.5 s), B3 (193 s) and B5
+(126 s). The only commits after it change documentation, which lies outside the snapshot's scope.
+
+**B3's record:**
+- **The energy ledger is at rounding on every row.** Its largest residual is 8.5e-22 pJ before the
+  event, 8.5e-22 pJ at the first row after it, and 2.0e-20 pJ after that. That is at most 2.6
+  ε × the integrated energy flows, and 1.0e-12 of RK4's absolute 2e-8 pJ bound.
+- **The reservoir-work ledger closes with the term,** within 9.9e-9 of its bound.
+- **Without the term, @3's own reservoir-work ledger fails** from the first row after the event:
+  at 2.1e4 × its bound there, and at 4.2e4 to 8.3e5 × afterwards.
+
+**The staircase probe** (the lead's request, §3.2's way (b)). Its criterion was written before the
+run, in HANDOFF. Evidence: `run-2a7e594/staircase/` (staircase.json, the probe in `staircase/`).
+- **The world:** the species-only dose leg with a face of κ/V = 10/s, so one face time is 0.1 s.
+  The ions are quiescent.
+- **Part S** doses from nothing: bath, node and cell start at 1e-15 mM. The bath reaches 1e-3 mM by
+  a geometric staircase of ratio r, each stair held 0.3 s (3 face times).
+- **Part R** takes one step from the resolved profile (1e-3, 0.9e-3 and 0.5e-3 mM), by r.
+- **Solvers:** ARS(2,2,2) at 1 ms and RK4 at 0.1 ms.
+- **What refuses:** an arm is admissible when the runner passes every host check on every row.
+  - Every refusal is the energy ledger. In every refused arm, local, outside, total and
+    reservoir-work stay below 0.005 of their bounds.
+  - The model's own checked step refused no step.
+
+| Part S: stair ratio r (stairs) | ARS, 1 ms | RK4, 0.1 ms |
+| --- | --- | --- |
+| 1e12 (1: the dose from nothing in one step) | Refused: 12.4 × the bound, 20 rows from the event | Refused: 376 ×, every row after it |
+| 1e6 (2) | Refused at the 2nd stair: 12.3 ×, 20 rows | Refused at the 2nd stair: 81 ×, every row after |
+| 1e3 (4) | Refused at the 4th stair: 5.8 ×, 9 rows | Passed |
+| **100 (6)** | **Passed** | **Passed** |
+| 10 (12) | Passed | Passed |
+| 10^0.5 (24) | Passed | Passed |
+
+| Part R: step ratio r, from 1e-3 mM | ARS, 1 ms, 1 s | RK4, 0.1 ms, 0.1 s |
+| --- | --- | --- |
+| 1.5, 3 | Passed | Passed |
+| **10** | **Passed** | **Passed** |
+| 100 | Refused: 1.75 × the bound, 2 rows | Passed |
+| 1e4 | Refused: 18 ×, 46 rows | Refused: 6.4e4 ×, every row after the event |
+
+- **By the criterion, the admissible dosing protocol from nothing is r = 100.** That is six stairs
+  of 100× held for 3 face times each, 1.8 s in all, the last stair reached 1.5 s after the first.
+  Every smaller ratio passes too. The one-step dose is refused, as probe 1 found.
+- **The admissible step ratio between resolved levels is 10.** That is the ratio that registration
+  pins, unless a later measurement narrows it. B3's step (1.5×) lies within it. B2's tenfold K
+  step, from 5 to 50 mM, is at other levels, so §4's development measurement still decides it.
+- **The limit depends on the step's absolute size, not on its ratio alone.**
+  - The staircase's 100× top stair, from 1e-5 to 1e-3 mM, passes under ARS. Part R's 100× step,
+    from 1e-3 to 0.1 mM, does not.
+  - Every staircase that failed under ARS failed at its top stair, the largest in amount.
+  - So both numbers hold for these levels (up to 1e-2 mM), this face and these dt. A world dosed
+    at other levels or faces measures its own (**S**).
+- **ARS's refusals are transient, RK4's persist.**
+  - RK4's energy bound is the absolute 2e-8 pJ, since its relative part is 0. Once a residual
+    exceeds it at an event, every later row of the run is over it.
+  - ARS's bound has a relative part, 2e-3 of the integrated flows, which grows after the event.
+    Its refused rows end within 46 rows.
+- **Not built: a refusal at the definition of steps beyond the pinned ratio.** As D169 records
+  the limit, the host energy ledger refuses such a step in a species-only world, and a mixed world
+  runs it unseen. Making it a definition refusal is the lead's choice.
 
 ## Appendix A. Equations for the independent references
 

@@ -73,6 +73,63 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Combined landing (14 November 2026):** FR-10's milestone 1, the coupling operator's
+  milestone 2 and MG0c's revised protocol. Tier 1 and 2 at the merge f0e154a: 420 files, no
+  changed outcome ([summary](/mnt/workspaces/Cells/inventory-coupling-m2-20261114-01/land-gate12-f0e154a0/summary.json)). The coupling operator's two tier-3 files
+  passed at the merge ([logs](/mnt/workspaces/Cells/inventory-coupling-m2-20261114-01/land-tier3-f0e154a0-r2)).
+  - **FR-10, `scheduled_bath_composition@1`, milestone 1**
+    ([note](docs/BATH_SCHEDULE_DESIGN.md) §7;
+    [evidence](/mnt/workspaces/Cells/bath-schedule-20261114-01/HANDOFF.md)). Development code;
+    its qualification comes later.
+    - **The engine models it runs:** the operator in the composite on `resolved_pump_tissue@3`.
+    - **What it does:** dose events on the dt grid. The dose, its work and the compensating charge
+      are the operator's own records, and the reconciliation term is its own ledger term.
+    - **B3:** the energy ledger is at rounding on every row across an event, at most 2.6 ε of the
+      flows. The control without the term fails from the first row after the event.
+    - **B5:** with no event, a run is bitwise identical to the composition without the operator.
+    - **Crossrev:** identical in the five 21fb714 sets.
+    - **The staircase probe** (criterion written first):
+      - a dose from nothing is admissible as stairs of 100× (six stairs of three face times);
+      - a step between resolved levels is admissible at 10×, under ARS at 1 ms and RK4 at 0.1 ms;
+      - the limit depends on the step's absolute size as well as its ratio.
+    - **Milestone 2:** a definition-time refusal of oversized steps, `check_species_cap` with a
+      world above 7 species, and FR-1's milestone 1 continues on the same branch.
+  - **`species_regulated_availability@1`, milestone 2** ([note](docs/INVENTORY_COUPLING_DESIGN.md)
+    §8; [evidence](/mnt/workspaces/Cells/inventory-coupling-m2-20261114-01/HANDOFF.md)).
+    Development code; its qualification comes later.
+    - **A2:** frozen input and retention are exact to rounding, and moving inputs converge at
+      order 2.00. The crossing record brackets t* at every dt.
+    - **A8:** restarts at eight times and snapshot round trips, in process and in a fresh process,
+      are bitwise. Windowed runs equal a single scan bitwise.
+    - **vmap:** three moving worlds match their own runs within 1e-12.
+    - **RK4 ("split"):** the factored path equals the world without the operator, bitwise.
+    - **A6:** locality held bitwise.
+    - **Compositions:** with replacement@1, injection and D152.
+    - **Nine species:** bitwise against every coupling switched off.
+    - **The `factors` manifest entry** is omitted when empty. 58 of 67 crossrev field maps are
+      byte-identical; the other 9 differ by that key only.
+    - **Crossrev:** identical in all seven sets against main da94f81.
+    - **The parser** moved into `species_common` in its own commit.
+    - **Next, milestone 3:** A4 and A5 against the independent references, with A4's tolerance
+      measured against the reference's floor on the engine's own world and registered before its
+      judged run.
+  - **MG0c (D152), the protocol revised after the lead's review, still PROPOSED**
+    ([protocol](validation/morphogenesis/protocols/mg0c_turing_v1.json);
+    [evidence](/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/HANDOFF.md)).
+    - It has 55 judged criteria and 165 registered control deltas. Every criterion a
+      development run can evaluate passes.
+    - The rulings applied:
+      - Q7 as a batch of seeds;
+      - the linearised map judged at 50 ms with an exact-propagator control;
+      - controls kept by parameter at 10× their smallest caught δ, with 25 decaying-mode controls
+        removed with reasons;
+      - the amplitude defined as max |u − mean u| at 3000 s (0.432 c*);
+      - D150's amendments carried over.
+    - **Disclosed:** the 1e-2 control cutoff was set after the mode sensitivities were known, and
+      the development runs predate FR-9.
+    - **Next:** the rehearsal on main (CPUs 5 and 7, about 2.5 h), the final check, registration
+      and one judged run. `src/` landings are held from the rehearsal to registration.
+
 - **Track E (excitable tissue, D155): the design note accepted narrowly, for M1 and M2 on @3
   (D170, 14 November 2026)** ([note](docs/EXCITABLE_TISSUE_DESIGN.md);
   [evidence](/mnt/workspaces/Cells/excitable-tissue-20261114-01/HANDOFF.md)).

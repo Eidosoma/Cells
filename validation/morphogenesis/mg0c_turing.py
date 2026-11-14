@@ -58,7 +58,12 @@ Usage:
       clean execution snapshot (validation/source_snapshot.py) and DIR is new (injection_rm1.py's
       and D150's rules)
   python -m validation.morphogenesis.mg0c_turing judge --output DIR --protocol FILE --results R...
-      the verdict over the judged runs' results.json (one snapshot, every part once; no runs)
+      the parts' verdict over the judged runs' results.json (one snapshot, every part once,
+      every run complete; no runs)
+  python -m validation.morphogenesis.mg0c_turing judge-guards --output DIR --protocol FILE
+      the guards' verdict: pytest on the protocol's guards of record, uncapped per file
+  python -m validation.morphogenesis.mg0c_turing combine --output DIR --protocol FILE
+      --results PARTS_DIR GUARDS_DIR: the one qualification verdict
 """
 
 import argparse
@@ -67,6 +72,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import resource
 import subprocess
 import sys
@@ -564,6 +570,8 @@ EPS = float(np.finfo(float).eps)
 REFERENCE_EPS = 64  # An exact reference's term: 64 eps x the scale (S5's and D150's floor).
 FACTOR = 3.0  # S5's dt-study rule: 3 x (the step term + the reference term).
 USAGE_NOTE_PER_STEP = 1e-14  # The usage note's accumulation against strang_mode_map: 1e-10 at 1e4.
+Q6_GRID = tuple(d for d in (m * 10.0**e for e in range(-9, 0) for m in (1, 2, 5)) if d <= 0.1)
+Q6_GRID_QUICK = (1e-8, 1e-6, 1e-4, 1e-2)
 DELTAS = (*(m * 10.0**e for e in range(-14, 0) for m in (1, 2, 5)), 0.5)  # A 1-2-5 grid.
 
 
@@ -616,6 +624,32 @@ def dt_rule(values, truth, scale, reference=None):
     return summary, tolerances
 
 
+PARAMETERS = ("k", "a", "b", "D_U", "D_V")  # Each must be caught by a judged control (the lead).
+
+
+def smallest_caught_bisected(value, tolerance, perturbed, deltas=DELTAS):
+    """smallest_caught for a costly perturbation (each one a reference integration): bisection on
+    the grid, assuming that a larger delta is caught whenever a smaller one is (true where the
+    error is about linear in delta); about log2 of the grid's length evaluations. None if the
+    largest is not caught."""
+
+    def caught(i):
+        return bool(np.any(np.abs(value - perturbed(deltas[i])) > tolerance))
+
+    low, high = 0, len(deltas) - 1
+    if not caught(high):
+        return None
+    if caught(low):
+        return deltas[low]
+    while high - low > 1:
+        middle = (low + high) // 2
+        if caught(middle):
+            high = middle
+        else:
+            low = middle
+    return deltas[high]
+
+
 def smallest_caught(value, tolerance, perturbed, deltas=DELTAS):
     """The smallest delta on the grid at which the rule catches the reference perturbed by it (its
     error exceeds the tolerance somewhere), or None. perturbed: delta -> the perturbed truth."""
@@ -629,16 +663,17 @@ def smallest_caught(value, tolerance, perturbed, deltas=DELTAS):
 REGISTERED_DELTAS = {}
 
 
-def controls(path, value, tolerance, perturbed, passes, deltas=DELTAS):
+def controls(path, value, tolerance, perturbed, passes, deltas=DELTAS, *, bisect=False):
     """The controls of one rule at one judged dt: per kind, the smallest caught delta on the grid
-    (development) and, in a judged run, whether the registered delta is caught. A control means
-    nothing where the unperturbed rule already fails (passes False): it is then recorded so, and
-    the protocol's draft refuses it."""
+    (development; bisected for a costly reference) and, in a judged run, whether the registered
+    delta is caught. A control means nothing where the unperturbed rule already fails (passes
+    False): it is then recorded so, and the protocol's draft refuses it."""
+    scan = smallest_caught_bisected if bisect else smallest_caught
     out = {}
     for kind, function in perturbed.items():
         entry = dict(
             rule_passes_unperturbed=bool(passes),
-            smallest_caught=smallest_caught(value, tolerance, function, deltas) if passes else None,
+            smallest_caught=scan(value, tolerance, function, deltas) if passes else None,
         )
         registered = REGISTERED_DELTAS.get(f"{path}.{kind}")
         if registered is not None:
@@ -915,9 +950,10 @@ def _mode_study(
     K, D, n_nodes, mode, record, dts, *, d=D_RATIO, path=None, fractions=(1 / 3, 2 / 3)
 ):
     """One single-mode start at every dt: the linearised map's agreement, the dt-study rule
-    against the exact propagator with its orders, and the k and D_V controls' smallest caught
-    deltas at each judged dt (with a path, the item's metric path). Returns (entry, the first
-    dt's coefficients and run)."""
+    against the exact propagator with its orders, and, with a path (the item's metric path), the
+    controls of all five parameters (k, a, b, D_U, D_V) at each judged dt, the item's engine
+    values, reference and tolerances (so a later control needs no engine run) and the mode's
+    structure (mode_structure). Returns (entry, the first dt's coefficients and run)."""
     from validation.reactions import chain_reference as cr
 
     entry, values, accounts = dict(record_s=record), [], {}
@@ -944,25 +980,77 @@ def _mode_study(
                 [np.asarray(cr.mode_propagator(Kx, Dx, lam, t)) @ a0 for t in times[1:]]
             )
 
+        perturbed = dict(
+            k=lambda x: exact_with(K * (1 + x), D),
+            a=lambda x: exact_with(schnakenberg_rates(d, A * (1 + x), B)[0], D),
+            b=lambda x: exact_with(schnakenberg_rates(d, A, B * (1 + x))[0], D),
+            D_U=lambda x: exact_with(K, D * np.asarray([1 + x, 1.0])),
+            D_V=lambda x: exact_with(K, D * np.asarray([1.0, 1 + x])),
+        )
         for i, tolerance in tolerances.items():
             entry["dt_rule"][dt_key(dts[i])]["controls"] = controls(
                 f"{path}.{dt_key(dts[i])}",
                 values[i],
                 tolerance,
-                dict(
-                    k=lambda x: exact_with(K * (1 + x), D),
-                    D_V=lambda x: exact_with(K, D * np.asarray([1.0, 1 + x])),
-                ),
+                perturbed,
                 rule[dt_key(dts[i])]["passes"],
             )
+        entry["arrays"] = dict(
+            records_s=[float(x) for x in times[1:]],
+            start=np.asarray(a0).tolist(),
+            truth=np.asarray(truth).tolist(),
+            engine={dt_key(dt): np.asarray(v).tolist() for dt, v in zip(dts, values, strict=True)},
+            tolerances={dt_key(dts[i]): np.asarray(v).tolist() for i, v in tolerances.items()},
+        )
+        entry["mode_structure"] = mode_structure(K, D, n_nodes, mode, a0, times[1:], d=d)
     errors = [entry[dt_key(dt)]["against_exact"] for dt in dts]
     entry["exact_ratios"] = [errors[i] / errors[i + 1] for i in range(len(errors) - 1)]
     return entry, accounts[dts[0]][:2]
 
 
+def mode_structure(K, D, n_nodes, mode, a0, records, *, d=D_RATIO):
+    """The mode's 2 x 2 system K - lambda_n D: its eigenvalues, the fast (more negative)
+    component's weight against the slow one in the start and at the first record (in the
+    eigenbasis), and each parameter's log-sensitivity of the slow eigenvalue times the last
+    record (|d lambda_slow / d ln p| t), which sets the size of a control's effect."""
+    lam = _lam(n_nodes, mode)
+
+    def eigen(Kx, Dx):
+        values, vectors = np.linalg.eig(Kx - lam * np.diag(Dx))
+        order = np.argsort(values.real)  # [fast, slow]
+        return values[order], vectors[:, order]
+
+    values, vectors = eigen(K, D)
+    complex_pair = bool(np.any(np.abs(values.imag) > 0))
+    weights = np.linalg.solve(vectors, np.asarray(a0, dtype=complex))
+    out = dict(
+        eigenvalues_per_s=[[float(v.real), float(v.imag)] for v in values],
+        complex_pair=complex_pair,
+    )
+    if not complex_pair:
+        ratio = abs(weights[0]) / max(abs(weights[1]), 1e-300)
+        out["fast_over_slow_at_start"] = float(ratio)
+        out["fast_over_slow_at_first_record"] = float(
+            ratio * np.exp((values[0].real - values[1].real) * records[0])
+        )
+    step = 1e-6
+    perturbed = dict(
+        k=(K * (1 + step), D),
+        a=(schnakenberg_rates(d, A * (1 + step), B)[0], D),
+        b=(schnakenberg_rates(d, A, B * (1 + step))[0], D),
+        D_U=(K, D * np.asarray([1 + step, 1.0])),
+        D_V=(K, D * np.asarray([1.0, 1 + step])),
+    )
+    out["slow_log_sensitivity_times_record"] = {
+        name: float(abs(eigen(*pair)[0][1].real - values[1].real) / step * records[-1])
+        for name, pair in perturbed.items()
+    }
+    return out
+
+
 def part_q1(quick):
     """Single-mode starts against the linearised engine-order map and the exact mode propagator
-    (the dt-study rule, its orders, and the k and D_V controls)."""
+    (the dt-study rule, its orders, and the five parameters' controls)."""
     K, D = schnakenberg_rates()
     dts = DTS[:2] if quick else DTS
     out = {}
@@ -1063,6 +1151,50 @@ def part_q3(quick):
     return out
 
 
+Q4_FIT_TOLERANCE = 1e-2  # Q3's relative fit tolerance (the lead's ruling 5: the simplest one).
+
+
+def q4_near_ties(predicted, tolerance=Q4_FIT_TOLERANCE):
+    """The near-tie rule (the lead's ruling 5), from the references' discrete-time rates alone:
+    {mode: rate}. The fastest two candidates are a near tie when their gap is below
+    2 x tolerance x the larger |rate| (each fitted rate may be off by tolerance relative). Returns
+    (near_tie, gap, the gap over that allowance, the smallest |rate| over tolerance x the largest
+    |rate|: the sign margin, reported)."""
+    rates = sorted(predicted.values(), reverse=True)
+    top = max(abs(r) for r in rates)
+    gap = rates[0] - rates[1] if len(rates) > 1 else None
+    allowance = 2 * tolerance * max(abs(rates[0]), abs(rates[1])) if gap is not None else None
+    sign = min(abs(r) for r in rates) / (tolerance * top)
+    return (
+        bool(gap is not None and gap < allowance),
+        gap,
+        None if gap is None else gap / allowance,
+        sign,
+    )
+
+
+def q4_verdict(points, tolerance=Q4_FIT_TOLERANCE):
+    """Q4's verdict over its points: every length agrees, near ties excluded up front (each
+    point's predicted_discrete_time_rates_per_s, from the references)."""
+    excluded, summary = [], dict(smallest_gap_over_allowance=None, smallest_sign_margin=None)
+    agree = True
+    for point in points:
+        predicted = {int(n): r for n, r in point["predicted_discrete_time_rates_per_s"].items()}
+        tie, gap, over, sign = q4_near_ties(predicted, tolerance)
+        if tie:
+            excluded.append(point["L"])
+        elif not point["agrees"]:
+            agree = False
+        if over is not None and (
+            summary["smallest_gap_over_allowance"] is None
+            or over < summary["smallest_gap_over_allowance"]
+        ):
+            summary.update(smallest_gap_over_allowance=over, smallest_gap_L=point["L"], gap=gap)
+        if summary["smallest_sign_margin"] is None or sign < summary["smallest_sign_margin"]:
+            summary.update(smallest_sign_margin=sign, smallest_sign_margin_L=point["L"])
+    return dict(all_agree_outside_near_ties=bool(agree), near_ties_excluded=excluded, **summary)
+
+
 def part_q4(quick):
     """The staircase: single-mode starts on L/l in [4, 30] (step 0.5) for every mode whose discrete
     k^2 lies in [0.1, 0.7] l^-2 (real eigenvalues; at least two modes); the fastest-growing on the
@@ -1120,6 +1252,8 @@ def part_q4(quick):
         points=out,
         all_agree=bool(all(p["agrees"] for p in out)),
         disagreements=[p["L"] for p in out if not p["agrees"]],
+        fit_tolerance=Q4_FIT_TOLERANCE,
+        **q4_verdict(out),
     )
 
 
@@ -1160,16 +1294,18 @@ def part_q5(quick):
     return out
 
 
-def _schnakenberg_network(k=RATE_K):
+def _schnakenberg_network(k=RATE_K, a=A, b=B):
     from validation.reactions import turing_reference as tu
 
-    return tu.schnakenberg_network(A, B, k, C_STAR_MM)
+    return tu.schnakenberg_network(a, b, k, C_STAR_MM)
 
 
 def part_q6(quick):
     """The nonlinear pattern on L/l = 11 against cr.integrate_chain (DOP853 at rtol 1e-13; its own
     term |rtol 1e-12 - rtol 1e-13|): the dt-study rule per node, species and record, its orders,
-    and the k and D_V controls (the reference re-integrated with each perturbed)."""
+    and the five parameters' controls (the reference re-integrated with each perturbed, the
+    smallest caught delta bisected on the 1-2-5 grid from 1e-9 to 1e-1); the engine values,
+    reference and tolerances stored."""
     from validation.reactions import chain_reference as cr
 
     n_nodes = DOMAINS[11]
@@ -1216,14 +1352,18 @@ def part_q6(quick):
         )
     rule, tolerances = dt_rule(values, ref, float(np.max(np.abs(ref))), np.abs(coarse - ref))
     out["dt_rule"] = rule
-    grid = (1e-8, 1e-6, 1e-4, 1e-2) if quick else (1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2)
+    grid = Q6_GRID_QUICK if quick else Q6_GRID
     started, cache = time.perf_counter(), {}
 
     def perturbed(kind, x):  # Each perturbed reference integrated once, for every judged dt.
         if (kind, x) not in cache:
-            network = _schnakenberg_network(RATE_K * (1 + x)) if kind == "k" else net
-            scaled = D * np.asarray([1.0, 1 + x]) if kind == "D_V" else D
-            cache[kind, x] = integrate(network, scaled, 1e-12)
+            network = {
+                "k": lambda: _schnakenberg_network(k=RATE_K * (1 + x)),
+                "a": lambda: _schnakenberg_network(a=A * (1 + x)),
+                "b": lambda: _schnakenberg_network(b=B * (1 + x)),
+            }.get(kind, lambda: net)()
+            scale = {"D_U": [1 + x, 1.0], "D_V": [1.0, 1 + x]}.get(kind, [1.0, 1.0])
+            cache[kind, x] = integrate(network, D * np.asarray(scale), 1e-12)
         return cache[kind, x]
 
     for i, tolerance in tolerances.items():
@@ -1231,12 +1371,21 @@ def part_q6(quick):
             f"q6.{dt_key(dts[i])}",
             values[i],
             tolerance,
-            {kind: (lambda x, kind=kind: perturbed(kind, x)) for kind in ("k", "D_V")},
+            {kind: (lambda x, kind=kind: perturbed(kind, x)) for kind in PARAMETERS},
             rule[dt_key(dts[i])]["passes"],
             grid,
+            bisect=True,
         )
     out["controls_s"] = time.perf_counter() - started
     out["controls_grid"] = list(grid)
+    out["controls_integrations"] = len(cache)
+    out["arrays"] = dict(
+        records_s=[float(x) for x in records[1:]],
+        truth=np.asarray(ref).tolist(),
+        reference_term=np.abs(coarse - ref).tolist(),
+        engine={dt_key(dt): np.asarray(v).tolist() for dt, v in zip(dts, values, strict=True)},
+        tolerances={dt_key(dts[i]): np.asarray(v).tolist() for i, v in tolerances.items()},
+    )
     errors = [out[dt_key(dt)]["max_error_of_c_star"] for dt in dts]
     out["ratios"] = [errors[i] / errors[i + 1] for i in range(len(errors) - 1)]
     return out
@@ -1429,10 +1578,12 @@ def part_sites(quick):
 
 def part_d147(quick):
     """D147's solver check (the coordinator's milestone-3 addition, before the protocol's draft):
-    validation/tissue/field_solver_choice.free_field_offsets(raw) and the declared field solver of
-    every MG0c world definition. Composite definitions skip D147's automatic choice, so the counts
-    are recorded, not applied. A floating capacitor component (one with no held bath) is a free
-    offset; every chain node shares the cell's capacitor component with the held bath."""
+    validation/tissue/field_solver_choice.free_field_offsets(raw), the declared field solver and
+    solver_for(raw)'s automatic choice for every MG0c world definition. Since D156 a composite
+    follows its inner model (@3, in D147's family), so the automatic choice applies to these
+    worlds: @3 with a free offset, the declared solver without one. A floating capacitor component
+    (one with no held bath) is a free offset; every chain node shares the cell's capacitor
+    component with the held bath."""
     from validation.tissue import field_solver_choice as fsc
 
     spacing = SPACING_M / length_scale_m()
@@ -1503,39 +1654,48 @@ def plain(value):
     return value
 
 
-def source_identity():
-    """The run's source: a frozen snapshot's manifest, or the checkout's revision and status."""
-    manifest = ROOT / "SNAPSHOT.json"
-    if manifest.exists():
-        snapshot = json.loads(manifest.read_text())
-        return dict(
-            kind="snapshot",
-            root=str(ROOT),
-            git_revision=snapshot.get("git_revision"),
-            patch_sha256=snapshot.get("patch_sha256"),
-            clean=snapshot.get("patch_sha256") == hashlib.sha256(b"").hexdigest(),
-        )
+def snapshot_identity(root=ROOT):
+    """The execution snapshot's identity at root (D150's shape): every judged run and verdict
+    carries it, so the judge and combine compare like with like."""
+    snapshot = json.loads((Path(root) / "SNAPSHOT.json").read_text())
+    return dict(
+        kind="snapshot",
+        git_revision=snapshot.get("git_revision"),
+        patch_sha256=snapshot.get("patch_sha256"),
+        status=snapshot.get("status"),
+    )
+
+
+def source_identity(root=ROOT):
+    """The run's source: a frozen snapshot's identity (snapshot_identity), or the checkout's
+    revision and status."""
+    if (Path(root) / "SNAPSHOT.json").exists():
+        return snapshot_identity(root)
 
     def git(*args):
         done = subprocess.run(
-            ["git", "-C", str(ROOT), *args], capture_output=True, text=True, check=False
+            ["git", "-C", str(root), *args], capture_output=True, text=True, check=False
         )
         return done.stdout.strip()
 
     return dict(
         kind="checkout",
-        root=str(ROOT),
+        root=str(root),
         git_revision=git("rev-parse", "HEAD"),
         dirty=git("status", "--porcelain"),
     )
 
 
 def judged_run_refusal(protocol, root=ROOT):
-    """Why a judged run may not start (None: it may): an unregistered protocol, or a source that is
-    not a clean execution snapshot (as validation/tissue/injection_rm1.py)."""
+    """Why a judged entry may not start (None: it may): an unregistered protocol (its status, and a
+    registration record matching it), or a source that is not a clean execution snapshot (D150's
+    and Rm1's guard)."""
     status = protocol.get("status")
     if not (isinstance(status, str) and status.lower().startswith("registered")):
         return "the MG0c protocol is not registered (its status does not begin 'registered')"
+    record = protocol.get("registration")
+    if not (isinstance(record, dict) and record.get("status") == status):
+        return "the MG0c protocol's registration record is missing or does not match its status"
     manifest = Path(root) / "SNAPSHOT.json"
     if not manifest.exists():
         return "a judged run comes from a clean execution snapshot of main, not a checkout"
@@ -1549,7 +1709,7 @@ def judged_run_refusal(protocol, root=ROOT):
 def registered(protocol_path, output, root=ROOT):
     """The protocol, or SystemExit("Refused: ...") before anything is computed or written: unless
     it is registered, the source is a clean execution snapshot and the output directory is new (each
-    attempt writes its own; D150's attempt rule)."""
+    attempt writes its own; D150's attempt rule). Every judged entry calls it first."""
     protocol = json.loads(Path(protocol_path).read_text())
     refusal = judged_run_refusal(protocol, root)
     if refusal is None and Path(output).exists():
@@ -1560,35 +1720,159 @@ def registered(protocol_path, output, root=ROOT):
 
 
 def judge(protocol_path, output, results_paths, root=ROOT):
-    """The verdict of a registered protocol from its judged runs (no runs here): every results file
-    a judged run of this protocol from one clean execution snapshot, every part in exactly one, the
-    merged results evaluated by mg0a_gradient.evaluate into OUTPUT/judgement.json (MG0b's judge
-    form). Refused before anything is written, as the judged runs are."""
+    """The parts' verdict (no runs here): the judged runs' results.json merged and evaluated by
+    mg0a_gradient.evaluate into OUTPUT/verdict.json (MG0b's judge form). Refused before anything is
+    written, by the guard, and unless every results file is a judged run of this protocol from the
+    snapshot at root, complete (every requested part has run: an incomplete run is an
+    infrastructure ending, its unit rerun once from the same snapshot), with every part of the
+    protocol in exactly one run."""
     protocol = registered(protocol_path, output, root)
-    parts, revisions, runs = {}, set(), []
+    source = snapshot_identity(root)
+    parts, runs = {}, []
     for path in results_paths:
         data = json.loads(Path(path).read_text())
         if data.get("status") != "Judged run of " + protocol["id"] or data.get("quick"):
             raise SystemExit(f"Refused: {path} is not a judged run of {protocol['id']}")
-        source = data["source"]
-        if source.get("kind") != "snapshot" or not source.get("clean"):
-            raise SystemExit(f"Refused: {path} does not come from a clean execution snapshot")
-        revisions.add(source["git_revision"])
+        if data.get("source") != source:
+            raise SystemExit(
+                f"Refused: {path} comes from another source than the snapshot at {root}"
+            )
+        requested = data.get("requested_parts") or []
+        if not data.get("complete") or sorted(data["parts"]) != sorted(requested):
+            raise SystemExit(
+                f"Refused: {path} is incomplete, an infrastructure ending (rerun its unit once "
+                "from the same snapshot into a new directory); no verdict is written"
+            )
         for name, value in data["parts"].items():
             if name in parts:
                 raise SystemExit(f"Refused: part {name} is in more than one judged run")
             parts[name] = value
-        runs.append(dict(path=str(path), source=source, parts=sorted(data["parts"])))
-    if len(revisions) != 1:
-        raise SystemExit(
-            f"Refused: the judged runs come from different snapshots {sorted(revisions)}"
-        )
+        runs.append(dict(path=str(path), parts=sorted(data["parts"])))
+    missing = sorted(set(protocol["judged_parts"]) - set(parts))
+    if missing:
+        raise SystemExit(f"Refused: the judged runs lack parts {missing}; no verdict is written")
     results = dict(parts=parts)
     results["accounting_summary"] = accounting_summary(results)
     verdict = evaluate(protocol, results)
+    record = dict(
+        item="parts",
+        protocol_id=protocol["id"],
+        protocol_status=protocol["status"],
+        source=source,
+        runs=runs,
+        criteria=verdict["criteria"],
+        passed=verdict["passed"],
+    )
     Path(output).mkdir(parents=True)
-    record = dict(protocol=protocol["id"], status=protocol["status"], runs=runs, verdict=verdict)
-    (Path(output) / "judgement.json").write_text(json.dumps(plain(record), indent=1) + "\n")
+    (Path(output) / "verdict.json").write_text(json.dumps(plain(record), indent=1) + "\n")
+    return record
+
+
+COUNTS = re.compile(r"(\d+) (passed|failed|errors?|skipped|xfailed|xpassed|deselected)")  # Tiers'.
+
+
+def _pytest_file(test, root, out):
+    """One guard file from root, in the tier runner's environment but with no cap: its exit code
+    (negative: ended by a signal), duration and counts (D150's judge-q5)."""
+    slug = test.replace("/", "__")
+    outputs, evidence = out / "outputs" / slug, out / "evidence" / slug
+    outputs.mkdir(parents=True)
+    evidence.mkdir(parents=True)
+    env = dict(
+        os.environ,
+        PYTHONPATH=str(root / "src"),
+        CUDA_VISIBLE_DEVICES="",
+        JAX_ENABLE_X64="1",
+        CELLS_OUTPUT_ROOT=str(outputs),
+        CELLS_COMPONENT_EVIDENCE=str(evidence),
+    )
+    log = out / f"{slug}.log"
+    command = [sys.executable, "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider"]
+    command += ["--continue-on-collection-errors", test]
+    started = time.monotonic()
+    with log.open("w") as handle:
+        code = subprocess.run(
+            command, cwd=root, env=env, stdout=handle, stderr=subprocess.STDOUT, check=False
+        ).returncode
+    seconds = round(time.monotonic() - started, 2)
+    tail = log.read_text(errors="replace")[-2000:]
+    last = [line for line in tail.splitlines() if " in " in line and COUNTS.search(line)]
+    counts = {}
+    for number, kind in COUNTS.findall(last[-1] if last else ""):
+        counts[kind.rstrip("s") if kind.startswith("error") else kind] = int(number)
+    return dict(file=test, exit_code=code, seconds=seconds, counts=counts, log=str(log))
+
+
+def judge_guards(protocol_path, output, root=ROOT):
+    """The guards' verdict (rules.judge_entries.guards; D150's judge-q5): the guard first, then
+    pytest on the protocol's guards_of_record from the snapshot at root, one file at a time with no
+    per-file cap, into OUTPUT/verdict.json (each file's counts, exit code and duration; passed when
+    every file exits 0; a test failure or error in a completed file is a verdict). A file whose
+    process ends by a signal ends the attempt without a verdict: OUTPUT/infrastructure.json."""
+    protocol = registered(protocol_path, output, root)
+    out = Path(output).resolve()  # Absolute: each file's process runs from root.
+    out.mkdir(parents=True)
+    root = Path(root).resolve()
+    files = []
+    for test in protocol["guards_of_record"]["tests"]:
+        files.append(_pytest_file(test, root, out))
+        if files[-1]["exit_code"] < 0:
+            ending = dict(item="guards", source=snapshot_identity(root), files=files)
+            (out / "infrastructure.json").write_text(json.dumps(ending, indent=1) + "\n")
+            raise SystemExit(
+                f"Infrastructure ending: {test} ended by signal {-files[-1]['exit_code']}; no "
+                "verdict is written (the attempt rule: rerun once from the same snapshot)"
+            )
+    verdict = dict(
+        item="guards",
+        protocol_id=protocol["id"],
+        protocol_status=protocol["status"],
+        source=snapshot_identity(root),
+        files=files,
+        passed=bool(files) and all(f["exit_code"] == 0 for f in files),
+    )
+    (out / "verdict.json").write_text(json.dumps(verdict, indent=1) + "\n")
+    return verdict
+
+
+def combine(protocol_path, output, parts_output, guards_output, root=ROOT):
+    """The one qualification verdict (rules.judge_entries.combined; D150's combine): the guard
+    first; then the parts' verdict and the guards' verdict, refused unless both name this protocol
+    and the snapshot at root. OUTPUT/verdict.json carries every criterion, the guards' files, the
+    scope line and the snapshot's revision; it passes when both passed."""
+    protocol = registered(protocol_path, output, root)
+    source = snapshot_identity(root)
+    verdicts = {}
+    for name, where in (("parts", parts_output), ("guards", guards_output)):
+        path = Path(where) / "verdict.json"
+        if not path.exists():
+            raise SystemExit(f"Refused: no {name} verdict at {path}")
+        part = json.loads(path.read_text())
+        if (part.get("protocol_id"), part.get("protocol_status")) != (
+            protocol["id"],
+            protocol["status"],
+        ):
+            raise SystemExit(f"Refused: the {name} verdict is not this protocol's")
+        if part.get("source") != source:
+            raise SystemExit(f"Refused: the {name} verdict comes from another source than {root}")
+        verdicts[name] = (part, str(path))
+    (a, a_path), (b, b_path) = verdicts["parts"], verdicts["guards"]
+    keep = ("file", "exit_code", "seconds", "counts")
+    verdict = dict(
+        kind="cells.mg0c_qualification_verdict@1",
+        protocol_id=protocol["id"],
+        protocol_status=protocol["status"],
+        scope=protocol["scope"],
+        source=source,
+        snapshot_revision=source["git_revision"],
+        criteria=a["criteria"],
+        guards=dict(passed=b["passed"], files=[{k: f[k] for k in keep} for f in b["files"]]),
+        passed=bool(a["passed"] and b["passed"]),
+        not_judged=protocol["reported_not_judged"],
+        verdicts=dict(parts=a_path, guards=b_path),
+    )
+    Path(output).mkdir(parents=True)
+    (Path(output) / "verdict.json").write_text(json.dumps(plain(verdict), indent=1) + "\n")
     return verdict
 
 
@@ -1603,11 +1887,21 @@ def main(argv=None):
     parser.add_argument("--protocol")
     parser.add_argument("--results", nargs="*", default=[])
     args = parser.parse_args(argv)
-    if args.parts == ["judge"]:
-        if not args.protocol or not args.results:
-            raise SystemExit("judge takes --protocol and --results (the judged runs' results.json)")
-        verdict = judge(args.protocol, args.output, args.results)
-        print("verdict", "pass" if verdict["passed"] else "fail", flush=True)
+    entries = {"judge", "judge-guards", "combine"}
+    if args.parts and args.parts[0] in entries:
+        if len(args.parts) != 1 or not args.protocol:
+            raise SystemExit(f"{args.parts[0]} takes --protocol and --output alone")
+        if args.parts == ["judge"]:
+            if not args.results:
+                raise SystemExit("judge takes --results (the judged runs' results.json)")
+            verdict = judge(args.protocol, args.output, args.results)
+        elif args.parts == ["judge-guards"]:
+            verdict = judge_guards(args.protocol, args.output)
+        else:
+            if len(args.results) != 2:
+                raise SystemExit("combine takes --results PARTS_OUTPUT GUARDS_OUTPUT")
+            verdict = combine(args.protocol, args.output, *args.results)
+        print(args.parts[0], "pass" if verdict["passed"] else "fail", flush=True)
         return 0 if verdict["passed"] else 1
     protocol = None
     if args.protocol:
@@ -1627,6 +1921,8 @@ def main(argv=None):
         quick=args.quick,
         source=source_identity(),
         started_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        requested_parts=list(parts),
+        complete=False,  # True once every requested part has run (ok or not).
         parts={},
     )
     path = output / "results.json"
@@ -1643,8 +1939,10 @@ def main(argv=None):
         results["accounting_summary"] = accounting_summary(results)
         path.write_text(json.dumps(results, indent=1, sort_keys=True) + "\n")
         print(name, entry["ok"], round(entry["seconds"], 1), flush=True)
+    results["complete"] = True
+    path.write_text(json.dumps(results, indent=1, sort_keys=True) + "\n")
     if protocol is not None:  # The verdict is the judge entry's, over every judged run.
-        results["verdict"] = "by the judge entry over the merged judged runs (judgement.json)"
+        results["verdict"] = "the judge entry's over the merged judged runs, then combine's"
         path.write_text(json.dumps(results, indent=1, sort_keys=True) + "\n")
     return 0 if all(p["ok"] for p in results["parts"].values()) else 1
 
