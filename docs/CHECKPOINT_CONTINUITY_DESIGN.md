@@ -1,14 +1,15 @@
 # Checkpoint continuity (proposed design)
 
-Status: **proposed, 13 November 2026; the coordinator accepted the note, but the
-implementation waits on the blockers of §13.** No code exists yet.
+Status: **the first landing (§13.1) is implemented, 14 November 2026: branch head `bd279e8`
+(`worktree-agent-a643386127e63513c`), accepted by the coordinator and awaiting landing.**
 - The user approved the tooling on 13 November: "yes fix checkpoint continuty also"
   (PROGRESS).
 - The public validation package is not approved, and this note does not touch it.
-- The draft decision (number assigned at landing; Appendix A) is **held for the user's
-  answers** (§13.6).
+- The draft decision (number assigned at landing; Appendix A) lands with the implementation;
+  the user's answers to §13.6 are in §13.7.
 - §13 records the coordinator's answers and the results of the blocker probes.
-- Evidence: `/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/`.
+- Evidence: `/mnt/workspaces/Cells/checkpoint-continuity-20261113-01/` (the implementation's
+  runs in `impl/`).
 
 **Engine models run:** none; this is tooling. The first consumer names its models (§10).
 
@@ -1163,7 +1164,10 @@ The draft decision (number assigned at landing) waits for the user's answers.
   by the decision in Appendix A, which lands with the implementation: the run names both
   sources and runtimes, and the record that admitted it. The user can still ask for the
   sentences.
-- **Implementation starts** on the first landing's scope (§13.1).
+- **Implemented** on the first landing's scope (§13.1), at branch head `bd279e8` (14 November):
+  `src/cells/continuity.py`, the loaders' `continuity=` argument, `validation/continuity/`
+  (probe, admit, verify_run and the first consumer's dev_run) and their tests. The evidence,
+  the first consumer's admitted and refused resumes included, is in `impl/`.
 
 ## Appendix A: the draft decision (number assigned at landing)
 
