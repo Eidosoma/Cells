@@ -58,6 +58,28 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The S5 protocol is registered (14 November).** The lead registered
+  `validation/division/s5_protocol.json` after the final review with the advisor. The JSON's
+  registration diff is the status line only.
+  - **Before registering:**
+    - **The lead read the protocol.** The judged seeds sit in their slots and appear nowhere
+      else. The changes since the freeze are the three disclosed amendments and one erratum.
+      The threshold is unchanged.
+    - **Two rules were added:**
+      - an infrastructure kill is not a verdict, and is rerun once from the same snapshot;
+      - a judged set with no near-zero draw is reported as untested there, not failed.
+    - **A rehearsal on main** reproduced every frozen number. The egg is byte-identical across
+      the merges, and the division crossrev matches baseline-21fb714. The rehearsal also found
+      that Q2's judge read its seeds from the wrong path, which would have crashed the judged
+      run; that is fixed and tested.
+    - **A dry run of every judge entry** (Q2 with throwaway seeds, Q3, Q5 and the egg) reached
+      and wrote its verdict, and the deterministic items matched the rehearsal exactly.
+  - **Next:** the judged runs, once per item, from a clean snapshot of main. They run in
+    series and `--oom-first`, so E07-v1's registered arms are protected.
+  - **Gate:** tier 1, 303 files, no changed outcome
+    ([gate](/mnt/workspaces/Cells/land-20261114d/)).
+  - [Evidence and log](/mnt/workspaces/Cells/cell-division-s5-20261113-01/HANDOFF.md).
+
 - **S5 protocol: the third and last control amendment, and the references' self-checks pinned
   (14 November).**
   - **The finding.** Three controls move charge in proportion to the patch charges: a_k, mismatch
