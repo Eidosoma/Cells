@@ -8,11 +8,11 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "extract": "python3 tools/extract_architecture.py",
-    "check": "node tools/check_scene.mjs data/architecture/architecture.scene.json",
+    "check": "npm run extract -- --strict && npm test",
     "serve": "node tools/serve.mjs",
     "export": "node tools/export_page.mjs",
     "shot": "node tools/screenshot.mjs",
-    "test": "node --test tests/"
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "three": "0.170.0"

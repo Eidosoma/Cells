@@ -1,0 +1,15 @@
+{
+  "note": "Artifacts published from this folder. Update an artifact at its URL; do not create a second one for the same page.",
+  "artifacts": {
+    "architecture": {
+      "title": "Cells Architecture Map",
+      "url": "https://claude.ai/artifact/7Pnsy6G25c2kRqgwk5TuaB",
+      "page": "out/cells-architecture.html",
+      "scene": "data/architecture/architecture.scene.json",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {"date": "2026-11-14", "engine_revision": "031ee42", "note": "First version: the cell-and-scales lens and the engine lens"}
+      ]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+<title>Cells Architecture Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/*__PAGE_CSS__*/
+</style>
+
+<cells-viewer id="cells-viewer">
+  <p class="boot" id="cells-boot">Loading the 3D map of Cells…</p>
+  <script type="application/json">__SCENE__</script>
+</cells-viewer>
+
+<script>
+  // If the viewer never starts (the 3D library is blocked or offline), say so.
+  setTimeout(function () {
+    if (!customElements.get("cells-viewer")) {
+      document.getElementById("cells-boot").textContent =
+        "The 3D map could not start: its 3D library did not load. Check the connection and reload.";
+    }
+  }, 9000);
+</script>
+<script type="module">
+/*__BUNDLE__*/
+</script>
