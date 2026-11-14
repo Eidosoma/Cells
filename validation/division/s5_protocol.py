@@ -67,7 +67,7 @@ DEVELOPMENT = dict(
     q5=EVIDENCE / "protocol-dev-s5a22/q5_order/q5_order.json",
     q5_bridge_coupling=EVIDENCE / "bridge-coupling-order.json",
     q7a=EVIDENCE / "protocol-dev-s5a22/test_division_idle_sheet_runs.log",
-    refusal=EVIDENCE / "protocol-dev-s5a22/test_s5_judged_refusal.log",
+    refusal=EVIDENCE / "rehearsal-s5a36/test_s5_judged_refusal.log",  # The rehearsal's.
     q10_dt=EVIDENCE / "protocol-dev-s5a22/q10_dt0.25ms/q10_sensitivity.json",
     q10_half=EVIDENCE / "protocol-dev-s5a22/q10_dt0.125ms/q10_sensitivity.json",
     egg=EVIDENCE / "egg-s5a8/egg_division.json",
@@ -81,6 +81,7 @@ DEVELOPMENT = dict(
     regression=EVIDENCE / "regression-s5a9/results.txt",
 )
 SNAPSHOTS = {
+    "rehearsal-s5a36": "198492d",
     "protocol-dev-s5a34": "1b2cfd6",
     "protocol-dev-s5a32": "d8a0979",
     "protocol-dev-s5a28": "4487d0a",
@@ -364,7 +365,13 @@ def draft():
                 "Q5": "python -m validation.division.q5_order judge OUT",
                 "Q4, Q6-Q9": "the test files at the judged snapshot",
                 "Q10": "none: reported, not judged",
-                "development": dict(passed("refusal")),
+                "development": dict(
+                    passed("refusal"),
+                    note="the pre-registration rehearsal's run (the lead, 14 November). The "
+                    "count went from 5 (protocol-dev-s5a22, the earlier pointer) to 6 because "
+                    "the freeze (0c7e2ac) added Q2 to test_each_judge_entry_refuses_first's "
+                    "parametrization after s5a22",
+                ),
             },
             "landing_order": "this protocol's frozen commit lands on main first, then the "
             "amended R-ops; A.8's 'pending in R-ops' is removed in that second landing (the "
