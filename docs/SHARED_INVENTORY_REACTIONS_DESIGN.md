@@ -1919,6 +1919,71 @@ measured ratio; the idle tests re-run against the live half-step; tier 1 and tie
 head before hand-back; the independent references only through
 `validation/reactions/REFERENCES_USAGE.md`, once it is on main.
 
+### 11.1 Milestone 2: the half-step and its guards, as built and run (14 November 2026)
+
+The code is on the branch from aaf2f67, the amendments and ruling Q8, through 2b31f88, the
+half-step, and the merge of main with the independent references (0f88501). The evidence is in
+`/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/`: HANDOFF.md, `tests/`,
+`crossrev/`, `tiers/`. The records in the tables come from the clean head 5de1c96 (the source at
+6ab0cb0 plus the tier record), and its snapshot `snapshot-5de1c96`.
+- **Negative controls** are edits of saved histories, judged by the face-free world's residual
+  against its rounding allowance, not misbookings inside the compiled program.
+- **The references** (`validation/reactions`) were used only through `REFERENCES_USAGE.md`.
+
+| Guard | Result | Where |
+| --- | --- | --- |
+| The per-law ΔG test of record (§3.4 guard 4): the half-step against `nr.half_step` on random states | 4 world variants × 60 trials (every law, mass action of orders 0 to 3, a coefficient of 2, Michaelis–Menten with and without its catalyst, both factor kinds, cells and outside nodes of 0.7 and 1.9 pL, c0 = 0.4 mM): 174 admitted and 57 refused half-steps, every node class, 92 share and 28 quadrature branches. Every comparison within the usage note's tolerances | `test_species_reactions_against_references.py` |
+| Whole compiled face-free runs against `nr.run_half_steps` | The amounts, extents, heat, work and standard term at every row agree to 7e-15 of their scales or better (the share onsets, crossings, class switch, reversal onset at the start and mid-run, a 400-step relaxation); the relaxation ends at `dr.passive_equilibrium`'s state, its heat its free-energy drop to 1e-15 | `test_species_reactions_reference_runs.py` |
+| The face-free energy world (§3.4 guard 1): the residual over 2.5 ε × steps × the energy magnitudes at every row | At most 0.26 (driven only), 0.066 (passive relaxation), 0.04–0.15 (the share's onsets), 0.10–0.35 (the quadrature's crossings), 0.071 (the class switch), 0.19 and 0.11 (the reversal onset at the start and mid-run) | `test_species_reactions_guards.py` |
+| Negative controls (§3.4 guard 3) | Each fails the face-free world at row 1, its first touched row: scaled work 6.0e8 × the allowance, a dropped standard term 6.7e12 ×, a wrong-sign heat 4.0e13 × (and the dissipation check) | guards |
+| C2 (§10.4): the shared bound over the booking \|W − H\| in the mixed heredity chain | 0.35 at µM and 409 at nM (the docstring's statement, tied to the test). A 1e-6 relative work error is unseen at both, and a wrong-sign heat is refused at both by the dissipation check | guards |
+| Benign padding (ruling Q11 (a)) | With every law, both factor kinds, and padded cell, outside and factor slots, no intermediate is NaN or infinite: NumPy raising on divide, invalid and overflow, and eager JAX under `jax_debug_nans` and `jax_debug_infs`. The jitted outputs are finite. A planted zero padding (a factor's K) raises in both | `test_species_reactions_halfstep.py`, `_runs.py` |
+| The bindings (ruling Q11 (b)) | The operator's own crossrev set (eight worlds, its first record): both value twins (every parameter, potential, c0 and multiplier changed) are identical in jaxpr text and constants, only the parameter layout arrays and the multiplier controls differ, and no bound row equals a closed-over constant (c0 included) | `crossrev/reactions/5de1c96` |
+| The batch signature (ruling Q11 (c)) | Another stoichiometry, law kind or factor species is refused in one batch; other parameters, potentials, c0 and multipliers are admitted | `_refusals.py` |
+| Idle (§4.5) against the live half-step | Zero multipliers and no routes: every field, observation and diagnostic bitwise the composition's without the operator. An idle node beside an active one, and a catalyst's row at an active node, keep their planted −0.0 | `_runs.py`, smoke |
+| Restart and vmap (§6.5) | Restart at 10, 20, 25, 30 and 40 ms around a multiplier change, in process and through a snapshot loaded in a fresh process: bitwise. A vector batch of three worlds mixing every parameter and multiplier: bitwise against its reverse, within 1e-12 of each scalar run, its device energy diagnostics equal to the host's to the terms' rounding. The device row checks refuse a misbooked accumulator (local), work (energy) and heat sign (dissipation) | `_runs.py` |
+| Crossrev of record (snapshot-5de1c96: 2,945 files, empty patch; the tools unchanged) | Against the baseline of record: base 36/36 texts, 36/36 constants, 12/12 bindings; qualification 78/78, 78/78, 56/56; injection 6/6, 6/6, 2/2; volume 6/6, 6/6, 2/2; division 27/27, 27/27, 9/9 with its check holding: identical. D150's species set against its record at 17d00b4: 24/24, 24/24, 8/8, its check holding: identical | `crossrev/` |
+| Tiers | Tier 1 is 312 files: `_halfstep.py` and `_against_references.py` join. Tier 2 is 82. Tier 3 is 218: `_runs.py` moves there from tier 2, beside `_guards.py` and `_reference_runs.py` | `tests/test_tiers.json` |
+| Gates | Tier 1 + 2 from the clean head 5de1c96 (dirty 0): 394 files, no changed outcome against the record. The three tier-3 files, also from that head, all passed: `_runs.py` 6, `_guards.py` 14 and `_reference_runs.py` 18 | `tiers/gate12-5de1c96`, `tests/final-5de1c96-*` |
+| The stage condition, positivity | Compiled: dt L = 0.98 admitted, 1.02 refused with the start state bitwise, always tested either side of the bound. A passive route in reverse is read on its reverse flux. 200 compiled steps at dt L = 0.99 from 1e-15 mM traces: all accepted and positive, the cleared amounts stalling at about ε × their anchors | `_halfstep.py`, `_runs.py`, guards |
+
+**The scheme's accuracy, beside the note's figures** (the reference's half-steps equal the engine's
+to rounding, above, so these are the engine's; the pins are proposals for the lead):
+
+| Item | Engine against the true kinetics (`dr.integrate_node`) | The note's figure (the prototype's) | Proposed pin |
+| --- | --- | --- | --- |
+| The share's onset (probe 2d), the first half-step's heat at h = 0.05, 0.025 and 0.0125 s | 1e-12 mM: +0.332%, +0.137%, +0.059%. 1e-9: +0.331%, +0.136%, +0.058%. 1e-6: +0.212%, +0.067%, +0.020% | +0.33/0.14/0.06%; +0.21/0.07/0.02% | ≤ 0.5% at h ≤ 0.05 s |
+| The share's onset, the whole heat at 5 s | 1e-12 and 1e-9: +0.063%, +0.018%, +0.0051%. 1e-6: +0.045%, +0.012%, +0.0030% | +0.063/0.018/0.005%; +0.045/0.012/0.003% | ≤ 0.1% at h ≤ 0.05 s, second order |
+| W at 5 s (W carries H's absolute error) | 1e-12: 0.035%, 0.010%, 0.0029% of \|W\| | 0.035/0.010/0.003% | as H |
+| The background guard (§3.4 guard 5; h = 0.025 s, 5 s): the whole heat's relative change for a trace of 1e-12 → 1e-9 mM | Engine −6.324e-5, true −6.273e-5 (a difference of 5.1e-7). Work: +3.62e-5 against +3.65e-5 | −6.32e-5 against −6.27e-5 | \|engine − true\| ≤ 2e-6 of the whole heat and work |
+| The crossing's quadrature (probe 2e, offset 0.01 above the equilibrium) | +6.9% (k_d = 1, h L = 0.05), +7.6% (k_d = 1, h L = 0.1), +10.3% (k_d = 10, h L = 0.275); never negative | +7.9% at h L = 0.05 to +127% at 0.5, at the sweep's crossing | 0 ≤ error ≤ probe 2f's figure at that h L |
+| The reversal onset (probe 2g, the known limit), the booked first half-step over its true heat | 1e-12 mM: 5.59 and 5.36 (h = 0.025 and 0.0125 s). 1e-9: 3.67 and 3.43. 1e-6: 1.80 and 1.59 | 5.4–5.6, 3.4–3.7, 1.6–1.8 | documented, not judged (option (a)) |
+
+**Findings for the lead:**
+1. **§3.4 guard 3 holds at nM only.** In C2's chain at µM the shared bound (0.35 of the booking)
+   sees an error of a booking's size: the dropped standard term, 0.76 of the booking, is refused
+   by the energy ledger. The note expected the bound to be blind to it. At nM it is unseen (bound
+   432 × the term). The docstring's statement now says so.
+2. **"Reproduces it exactly" (§3.3) holds for the half-step, not for two compiled runs.** At a
+   mid-run switch-on the whole state is bitwise the start state, and the half-step at the same
+   (state, multipliers, h) is bitwise. The runner's step at 50 ms, however, is a difference of grid
+   times: 3 dt − 2 dt = 0.02500000000000001 s on the float grid (`EventGrid`'s k × dt), against
+   the first step's 0.025 s. So the two runs' first active steps agree to rounding (8.5e-21 pJ),
+   not bitwise. This is a property of the runner's clock, not of the operator. No change is
+   proposed (D148).
+3. **The standard term** is booked in species form, Σ_s μ°'_s δ_s; the references book it in route
+   form, Σ_r ΔG°'_r Δξ_r. They agree to rounding (the per-law test compares them at 1e-12 of the
+   terms). A reading, recorded.
+
+**Changes from milestone 1:**
+- The domain no longer requires heat ≥ 0 exactly. A passive-only node's −ΔG can be −1e-18 pJ by
+  rounding, and the composite's dissipation check judges it (at −1e-12 pJ).
+- The readout columns `reaction_rate_fmol_per_s` and `reaction_affinity_RT`.
+- `STEP_ID` is `ssprk33_unidirectional_stage_condition_exact_bookings@1`.
+- `stage_report` diagnoses a refused step on the host, since the runner's message is generic. No
+  runner edit is proposed.
+- The docstring carries the full guard statement, with C2's ratios.
+
 ## Appendix A. Equations for the independent references
 
 The references are written from these equations, not from engine code.
