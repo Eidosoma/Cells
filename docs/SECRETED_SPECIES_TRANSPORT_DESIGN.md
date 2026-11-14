@@ -1600,27 +1600,53 @@ These are development runs: nothing here is judged.
 | A preview verdict (S5's precedent: the judge's code on copies of the development arms, the guard bypassed in-process) | Every item passes (Q1 IMEX and RK4, Q2, Q3). It is no verdict | `qualification-dev-a7e1869-preview/` |
 | The closed forms' own checks (tier 1) | Both boundary conditions and a positive start; exact shell integrals against Gauss-Legendre to 1e-12; the mass balance to 1e-13 of the supply; the declared system's exact solution converges to them at second order (1.95-2.14, then 1.99-2.04 at 2 s) | `tests/unit/test_secreted_species_closed_forms.py` |
 
-**The protocol** (`validation/tissue/secreted_species_protocol.json`, PROPOSED, not registered):
-- Q1 against the exact discrete solution, both step-term rules judged, for the IMEX and RK4 arms.
-- Q2 against the continuum closed forms.
-- Q3 the orders, reported, with the stop rules judged.
-- Q4 the Danckwerts switch-on, not judged: pre-formed starts only (ruling 5); probe 4's record
+**The protocol** (`validation/tissue/secreted_species_protocol.json`, PROPOSED, not registered;
+revised after the lead's review with the advisor, the same day):
+- **Scope.** The judged arms run @3's faces with exact radial conductances and turnover's
+  first-order clearance, with a held-bath source. Exchange, turnover's production and the
+  occupant rule enter only through Q5's test files. This is §6's first acceptance, so no arm is
+  missing.
+- **Q1**, against the exact discrete solution, for the IMEX and RK4 arms. The claim is "bounded a
+  priori by the splitting's leading term", and both rules are judged.
+  - The dt-study rule detects bias, not order: a second-order error passes near 4/9 by
+    construction, and a first-order one would pass near 2/3.
+  - The splitting rule is the one bound not scaled from the engine's runs. It is one-sided, so
+    it bounds the step term without identifying it; the identification (the fixed point, to
+    5.8e-4 at the first record) is reported.
+  - Its k and D controls are judged at a registered δ per rule and arm: 10× the larger of the
+    smallest δ caught. At those δ the development catches them at 13 to 79 times the tolerance.
+- **Q2**, against the continuum closed forms. Its judged control is the planar-face arm, which
+  must fail every quantity's tolerance; in development it does so by 28 to 248 times.
+- **Q3**, the orders: reported, with the stop rules judged in the max norm. The per-element count
+  is reported, and both rule changes are disclosed.
+- **Q4**, the Danckwerts switch-on: reported only, under the resolved-start rule. Probe 4's record
   stands.
-- Q5 the guards of record: the test files at the judged snapshot.
+- **Q5**, the guards of record: the test files at the judged snapshot. They include two checks
+  added at the review:
+  - **The step-map guard** (`tests/unit/test_secreted_species_step_map.py`, tier 2). The judged
+    configuration is shortened to 500 steps, with max |engine − map| ≤ n_steps ε × the scale.
+    The development results are 0.041 (IMEX) and 0.32 (RK4) of that bound. It is a guard, not a
+    judged item, since one author wrote both sides; the judged run reports it on the full arms
+    (0.0055 and 0.095 there).
+  - **R-continuum's independence check.** The closed form is tested against the PDE itself,
+    without the builder. Its fourth-order difference residual falls at fourth order to 3.6e-10,
+    and 1e-6 errors in D or k are caught. Both boundary conditions hold over time, and the start
+    and the steady state match their sinh forms. R-discrete shares the builder's declared system,
+    so Q2 is what covers a builder error.
 
-It carries S5's attempt rule, the resolved-start and guard-world rules, and the guards of
-record: RK4 for the face heat and a NumPy dG test per law. The judge (`python -m
-validation.tissue.secreted_species_qualification judge OUT`) refuses three things before it runs
-anything: an unregistered protocol, a source other than a clean snapshot, and an existing OUT
-(`tests/unit/test_secreted_species_judged_refusal.py`).
+It carries:
+- S5's attempt rule;
+- the resolved-start and guard-world rules;
+- the guards of record: RK4 for the face heat, and a NumPy dG test per law.
 
-Its open questions are the lead's:
-- the step term (both rules, or one);
-- the RK4 arm;
-- Danckwerts reported only;
-- the 1.25 µm arm's dt K_ii;
-- Q3's max norm;
-- whether the step map's agreement becomes a judged item.
+The judge (`python -m validation.tissue.secreted_species_qualification judge OUT`) refuses three
+things before it runs anything: an unregistered protocol, a source other than a clean snapshot,
+and an existing OUT (`tests/unit/test_secreted_species_judged_refusal.py`). That test follows the
+protocol's status, so registration leaves its outcome unchanged.
+
+The review's rulings and changes are recorded in the protocol (`review`). What follows is S5's
+order: land on main as PROPOSED, rehearse on main, dry-run every judge entry, register, then one
+judged run from a clean snapshot.
 
 ## Appendix A. Equations for the independent references
 
