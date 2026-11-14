@@ -314,13 +314,18 @@ def test_rk4_is_refused_with_its_reasons():
     assert "no consumer needs it" in str(error.value)
 
 
-def test_more_than_seven_species_are_refused_with_the_reason():
+def test_more_than_sixteen_species_are_refused_with_the_reason():
+    """FR-9 / D165: D150's cap, now 16, every species counted (it was 7)."""
     raw = rfx.enzyme_network()  # 3 ions and S, E, C, P: 7.
+    for i in range(9):  # Nine more: 16, admitted.
+        raw = add_inventory_species(
+            raw, f"X{i}", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+        )
     parse_spec(raw)
     raw = add_inventory_species(
-        raw, "X", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+        raw, "Y", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
     )
-    with pytest.raises(ConfigError, match="at most 7 species per world") as error:
+    with pytest.raises(ConfigError, match="at most 16 species per world") as error:
         parse_spec(raw)
     assert "local_species_reactions@1 admits" in str(error.value)
 

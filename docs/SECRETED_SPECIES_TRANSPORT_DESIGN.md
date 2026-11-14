@@ -18,7 +18,7 @@ and the lead's rulings are in §11:
   energy booking is a known limit, so production worlds should start resolved too;
 - RK4 with a diffusing species is guarded, not refused;
 - version 1 refuses a donor copy with different route values, the stationary analysis on the
-  composite, and worlds of more than 7 species.
+  composite, and worlds of more than 16 species (7 until FR-9 / D165, §13).
 
 D150 promoted this feature. The user's words were: "we do have plans to be able to run special
 modes of Cells at differnt timescales, so down the road nothing right now but for sure the
@@ -100,7 +100,7 @@ division design.
    refuses these, by the lead's rulings (§11.5):
    - a donor copy whose route values differ from the slot's;
    - the stationary analysis on the composite;
-   - worlds of more than 7 species.
+   - worlds of more than 16 species (7 until FR-9 / D165, §13).
 8. **The guards of record** (§7, §11.4).
    - **Energy.** The shared IMEX energy bound is the ions' and cannot see the species' bookings
      at µM–nM: it is 1.7 to 1,721 times the species' whole free-energy change. So the energy
@@ -557,13 +557,17 @@ primitive replaces the sink as a new law ID, and transport is unchanged.
 - **No ECM entity** (its item 5).
 - **No convection.**
 - **A continuum** (§1.3).
-- **At most 7 species per world** (the lead's ruling, §11.5).
-  - **The refusal.** The two new operators' definition checks refuse a world with more, and the
-    refusal names the cap and its reason. No model changes.
-  - **The reason.** Host-side NumPy sums over the species axis switch to pairwise summation at
-    8 or more terms. Host checks could then add the species in a different order from the
-    device's explicit species-order adds (D148).
-  - So version 1 admits at most 7 species until that is checked.
+- **At most 16 species per world** (FR-9 / D165, §13; the lead's ruling at 7, §11.5). The cap
+  counts every species, ions included.
+  - **The refusal.** Every species operator's definition check refuses a world with more:
+    turnover, exchange and D152's local reactions. The refusal names the cap and its reason. No
+    model changes.
+  - **The old reason, checked.** Host-side NumPy sums over the species axis switch to pairwise
+    summation at 8 or more terms, so host checks could add the species in a different order from
+    the device's explicit species-order adds (D148). The W4 probe (§13) found that order real,
+    and that nothing depends on it: every ledger adds the species in explicit species order.
+  - **The scope.** Worlds above 7 species are outside D150's judged scope until a protocol covers
+    them, and claim 3 stays reported. Above 16 needs another probe.
 - **The onset energy booking in mixed worlds** (a known limit, the lead's ruling, §11.4).
   - A switch-on from the trace is transported exactly.
   - Under the ions' bound, the species' onset energy booking is off by a few percent and goes
@@ -1476,13 +1480,14 @@ stays in every later row.
    §10, question 9).
 2. **The stationary analysis is not admitted on the composite in version 1.** Per-species
    tolerance scaling is required before trace or nM species use the plain @3 path (§8).
-3. **At most 7 species per world in version 1** (§2.6).
+3. **At most 7 species per world in version 1** (§2.6). *Raised to 16 by FR-9 / D165 on 14
+   November 2026, after the W4 probe (§13).*
    - The two new operators' definition checks refuse a world with more, with a message naming
      the cap. No model changes.
    - The reason: host-side NumPy sums over the species axis switch to pairwise summation at 8
      or more terms. Host checks could then add the species in a different order from the
      device's explicit species-order adds (D148).
-   - The cap holds until that is checked.
+   - The cap holds until that is checked; the W4 probe checked it up to 16 (§13).
 4. **The energy guards of record** are those of item 4: the species-only world and a NumPy ΔG
    test per law, with the docstring statement (§7).
 5. **The ramped-source arm.** Version 1 guard worlds use a pre-formed profile only, the measured
