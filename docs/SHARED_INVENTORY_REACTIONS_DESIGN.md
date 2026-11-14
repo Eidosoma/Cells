@@ -2174,6 +2174,144 @@ registered. `mg0c_protocol.py` drafts it from dev-d4cee87-a, -b and -c and dev-3
    - The development launcher `mg0c/dev.sh` creates its output directory first, so it cannot start
      a judged run, which refuses an existing directory.
 
+### 11.4 The lead's review of MG0c's protocol, and the revision (14 November 2026)
+
+The lead reviewed the PROPOSED protocol landed at e659ce4, with the advisor: ten rulings and four
+items blocking registration. The revised protocol is still PROPOSED and is drafted by the generator
+alone (`python -m validation.morphogenesis.mg0c_protocol draft ...`). It draws on milestone 3's
+development runs, with three parts rerun from `snapshot-7495288`, the driver with the review's
+additions. `src/` is unchanged since a4e2f7e.
+- **Engine models run:** as §11.3: `resolved_pump_composite@1` over `resolved_pump_tissue@3` with
+  `local_species_reactions@1`.
+- **Evidence:** `/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/` (HANDOFF.md,
+  round 2): `mg0c/dev-7495288-q1`, `-q6` and `-q7` with their quick passes,
+  `dev-7495288-q4-quick`, `mg0c/checks-r2.json`, and `tiers/`.
+
+**The rulings, as the protocol carries them:**
+
+| Ruling | In the protocol |
+| --- | --- |
+| 1. Q7's batch of seeds on L/ℓ = 6 | `Q7_batch` checks the batch bitwise against its reverse, and `Q7_batch_scalar` checks each world within 1e-12 of its scalar run. §6.4's Q7 row now says so |
+| 2. The 600 s cap | It binds in Q5 only (`world.cap_binds_in_q5`), at L/ℓ = 6 n = 1, 11 n = 2 and 16 n = 3. Uncapped, those records would be 638.5, 1,026.9 and 1,101.6 s. It binds nowhere in Q1 |
+| 3. The linearised map at 1e-6 | `Q1_L*_linearised_map` is judged at 50 ms only. Its control comes from the other side: the exact propagator must fail the same criterion there (`Q1_linearised_map_control`); both read the same normalisation. At 50 ms the worst floor is 1.3e-7, 7.8 × under the tolerance, and the smallest discretisation error is 3.3e-6, 3.3 × over it. At 25 and 12.5 ms the smallest discretisation errors, 8.2e-7 and 2.1e-7, lie below 1e-6, so those steps are reported only (`linearised_map_by_dt`). The 4.55 ratio: see the findings |
+| 4. The rate tolerances | Q2 at 1e-3 and Q3 at 1e-2, against the engine order's discrete-time rate. Q5's fitted rates are reported only |
+| 5. Q4's near ties | Near ties are excluded up front, from the references alone: two candidates whose predicted rates differ by less than 2 × 1e-2 × the larger \|rate\|. There are none. The smallest top-two gap is 3.47 × its allowance, at L/ℓ = 25. `Q4_staircase` reads `all_agree_outside_near_ties`, and `Q4_near_ties_as_registered` (an addition) holds the registered empty list: the smallest gap over its allowance must be ≥ 1 |
+| 6. Q6's controls at rtol 1e-12 | As drafted |
+| 7. §11.1's pins | Moved to `test_species_reactions_accuracy.py` with the tests' loose bounds, a regression guard outside the judged list. The scope line says the heat and work split is guarded, not qualified, until the first mixed-node protocol |
+| 8. Guard 2's rule | The usage note's 1e-14 × steps × the scale. The protocol discloses that it was chosen with D150's 0.96 in view |
+| 9. q7's memory | q7 runs in its own unit, with a cap of at least 5 GiB |
+| 10. The composition file | The same-material test, whose exchange map is the engine agent's own, moved to `test_species_reactions_same_material.py`, a regression guard outside the judged list. Supply counted once, the rejected step's restore, restart and batch stay in `test_species_reactions_composition.py`, a judged guard |
+
+**The blocking items:**
+- **(a) The scope line** (`scope`). It keeps the lead's words, with one addition for the lead to
+  rule on (question 1). MG0c's judged arms run driven mass action only, of orders 0, 1 and 3, at
+  outside nodes. One judged guard world departs from that: guard 2's passive world runs
+  `ideal_detailed_balance_mass_action@1` (A ⇌ B, linear) at outside nodes, judged against the
+  engine order's exact map (`G2_passive_*`). Ruling 8 rules on that very criterion, since D150's
+  0.96 is the passive world's ratio, so the draft keeps it judged and names it. The passive law's
+  other uses, Michaelis–Menten, Hill factors, cell routes, D150's writers and the mixed-node heat
+  and work split enter only through test files.
+- **(b) D150's pre-registration amendments, carried over:**
+  - `judge-guards` runs the guards of record from the snapshot, uncapped per file, into its own
+    verdict. A file ended by a signal writes `infrastructure.json` instead of a verdict.
+  - `combine` writes the one qualification verdict: every criterion, the guards' files, the scope
+    line and the snapshot's revision. It refuses verdicts of another protocol or snapshot.
+  - The attempt rule counts a harness timeout, a runtime-limit kill, a signal and an incomplete
+    part run as infrastructure endings. The judge refuses an incomplete run, reading its
+    `requested_parts` and `complete`.
+  - `rules.timing` sets each unit's `--runtime-max` at about 3 × its development seconds plus
+    10 min, until the rehearsal measures them. The judged units launch without `--wait-headroom`,
+    after the lead checks the slice's headroom.
+  - `register PROTOCOL RECORD` changes the status and adds the lead's record alone. The guard reads
+    the record: a registered status needs a record with the same status.
+  - `rules.controls_evaluable` explains why the control criteria fail outside a judged run. They
+    read `caught_at_registered`, which the driver writes only under `--protocol`, with the
+    registered deltas loaded. A development run has no registered deltas, so the metric is
+    missing and the criterion fails. The five criteria's passing path has never run, so the
+    rehearsal must run them to a pass on a registered dry-run copy.
+- **(c) Controls by parameter.** (results below)
+- **(d) §6.4's amplitude.** The defined measure is the maximum over nodes of \|u − mean(u)\| at
+  the last record (3000 s), in c* (u* = c*), in the reference's own integration of Q6's start
+  (`cr.integrate_chain`, rtol 1e-13): 0.432 on L/ℓ = 11. Q3's engine measure, the maximum over
+  nodes of \|u − u*\| at its end, is 0.427, 0.432 and 0.424 on L/ℓ = 6, 11 and 16. §6.4's Q6 row
+  now gives 0.43 c*. The prototype's "0.68 u0" is identified in its record (`probe2/`,
+  `reaction_numerics_probe.py` part_b2, `probe2.json`). It is another measure, time and start:
+  the range (max u − min u)/u* at 1500 s, from its own start (1e-3 relative noise on U and V,
+  seed 20261114), 0.678 to 0.679 at 50 to 12.5 ms and 0.679 in its reference. §11.3's "B2 is not
+  specified fully" is corrected by this.
+
+**(c) Controls by parameter** (`rules.controls`, `controls`). Each of k, a, b, D_U and D_V is
+perturbed in the reference by (1 + δ) on 38 rules:
+- Q1's 36: 18 modes at 50 and 25 ms, against the exact propagator with K = kJ(a, b) and D, on the
+  1-2-5 grid from 1e-14 to 0.5;
+- Q6's two: the reference re-integrated at rtol 1e-12, bisected on the 1-2-5 grid from 1e-9 to
+  0.1 (32 integrations, 572 s).
+
+A control is kept when 10 × its smallest caught δ is at most 1e-2, and it is registered there.
+Every parameter keeps controls, so each is caught by a judged criterion at a small δ with a 10 ×
+margin. The criteria are `Control_k` to `Control_D_V`, and each requires every kept control to
+catch at its registered δ.
+
+| Parameter | Kept (of 38) | Registered δ | Removed |
+| --- | --- | --- | --- |
+| k | 35 | 5e-7 to 1e-2 | 3: L/ℓ = 6, n = 5 and 6 |
+| a | 34 | 1e-8 to 1e-2 | 4: L/ℓ = 6, n = 5 and 6 |
+| b | 30 | 1e-8 to 1e-2 | 8: L/ℓ = 6, n = 3 to 6; 11, n = 4; 16, n = 6 |
+| D_U | 38 | 5e-6 to 5e-3 | none |
+| D_V | 28 | 2e-6 to 1e-2 | 10: L/ℓ = 6, n = 3 to 6; 11, n = 4 and 6; 16, n = 6 |
+
+- **Why controls are removed.** Each removed control's reason is in `controls.removed`. The
+  removed controls sit on decaying modes whose slow eigenvalue barely depends on the parameter.
+- **The D_V check the lead asked for.** On L/ℓ = 6 at n = 3 to 6, the D_V-sensitive fast component
+  has decayed by each mode's first record, to 8.8e-7, 8.6e-6, 2.2e-5 and 3.3e-5 of the slow one.
+  The slow eigenvalue's D_V log-sensitivity times the record is 0.15, 0.047, 0.020 and 0.011. A δ
+  therefore moves the coefficient by about that much times δ, against a tolerance of about 3 × the
+  step term. That estimate gives thresholds of 4e-3 to 0.27, within a factor of 5 of the measured
+  5e-3 to 0.1. The same holds for k, a and b on L/ℓ = 6's fastest modes.
+- **Q6's a and b controls are caught at the grid's lowest point,** 1e-9, at both steps. a and b
+  set the uniform state, u* = (a + b) c*, which k and the diffusivities do not. A δ therefore moves
+  every element by about δ c* from the start, while at the early records the per-element tolerance
+  falls to 1.3e-14 mM. They are registered at 1e-8 (`controls.at_grid_floor`).
+- **The cutoff was fixed in advance.** The 1e-2 cutoff was set before the thresholds for a, b and
+  D_U were measured (`disclosures`).
+
+**Findings:**
+1. **The 4.55 ratio is the scheme's higher-order term, not the floor.** The linearised
+   engine-order map alone against the exact propagator at L/ℓ = 6, n = 6 gives the same errors:
+   1.27e-3, 2.79e-4 and 6.61e-5, with ratios 4.549 and 4.223 falling toward 4. dt·D_V·λ₆ is 0.40
+   at 50 ms, and the floor there is 1.3e-7 (`mg0c/checks-r2.json`).
+2. **Memory.** The cgroup peaks were 1.8 GB for q7 alone, 0.87 GB for q6 alone and 2.2 GB for q1,
+   so the old unit b's 3.5 GB did not come from q7's batch alone. Unit b (q6, q3, q5) is a prefix of
+   that run, so its peak is at most 3.5 GB but has not been measured. The protocol therefore caps
+   unit b, like q7, at 5 GiB until the rehearsal measures it. This goes beyond ruling 9.
+3. **Q4's sign margin** is 0.19 at L/ℓ = 26.5: there a near-marginal candidate's |rate| is under
+   1e-2 of the fastest one's. Each length's smallest-|rate| candidate fits its predicted rate to
+   within 5.1e-4 relative (worst at L/ℓ = 28, n = 4), so no sign is in doubt.
+4. **The reruns reproduce the earlier parts bitwise:** Q1's errors against both maps and its rule
+   ratios, Q6's errors (5.4e-4 and 1.4e-4 of c* at 50 and 25 ms) and ratios (0.446, 0.445), and Q7's
+   face-free ratio (0.052). Restart and the batch are bitwise.
+
+**Added beyond the rulings:**
+- `Q4_near_ties_as_registered`;
+- §6.4's Q7 row;
+- unit b's 5 GiB cap;
+- `controls.at_grid_floor`.
+
+`test_mg0c_judged_refusal.py` now runs main against a PROPOSED copy, never the checked-in file.
+Once the file is registered, the old form would have failed from a checkout. Under judge-guards
+at the judged snapshot, it would have started a judged part (found by the advisor).
+
+**Question for the lead** (in the protocol): whether guard 2's passive world stays judged (item
+(a)).
+
+**Next** (S5's and D150's path): the lead lands this revision. Then the rehearsal on main, after
+FR-9:
+- redraft the protocol with one generator command from the runs named here, which predate FR-9;
+- run every entry on registered dry-run copies, including the five control criteria to a pass;
+- measure each unit's time and peak, unit b's in particular.
+
+Then come the lead's final check, registration and one judged run.
+
 ## Appendix A. Equations for the independent references
 
 The references are written from these equations, not from engine code.
