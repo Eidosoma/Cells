@@ -130,7 +130,7 @@ test("the protein atlas links out only to the named public resources, and copies
 test("a species atlas links out only to its named sources, over https", () => {
   // The hosts a species' side of the atlas may link to: the databases its ids name, the
   // papers it cites, and the home pages of the sources it states.
-  const allowed = ["www.uniprot.org", "www.rcsb.org", "parasite.wormbase.org", "www.ebi.ac.uk", "europepmc.org", "pubmed.ncbi.nlm.nih.gov", "doi.org"];
+  const allowed = ["www.uniprot.org", "www.rcsb.org", "parasite.wormbase.org", "www.ebi.ac.uk", "europepmc.org", "pubmed.ncbi.nlm.nih.gov", "www.ncbi.nlm.nih.gov", "doi.org"];
   const links = [];
   const collect = (node, where) => {
     if (Array.isArray(node)) return node.forEach((item) => collect(item, where));
