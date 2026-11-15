@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-14 UTC.
+Last updated: 2026-11-15 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -11,21 +11,24 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **14 November 2026.** The levels and the working order are in
+- **15 November 2026.** The levels and the working order are in
   [CURRENT_PLAN](docs/CURRENT_PLAN.md#status-on-14-november-2026-and-the-working-order-d156)
-  (D156). The runs below are newest first.
-  - **Numerically qualified:** S2, S3, Rm1 and S5a.
-  - **Judged:**
-    - E07-v1. The disc did not renew under donor-copy turnover, and the coupling's effect was
-      far smaller than predicted.
-    - Composite GPU agreement (in progress).
-  - **Numerically qualified, later the same day:** D150 secreted species (its stated scope).
-  - **Implemented and guarded:** D152 reactions (MG0c in progress), D153 checkpoint continuity, and water plus
-    replacement@2.
-  - **In design:** conduction (D155, first), coupling out of the inventory, and the D154
-    run-view output.
-- **Single lead agent from 8 November**, with at most six subagents on disjoint files from
-  14 November (four before; D155). Work continues on `main`, and milestones are tagged.
+  (D156, with D176's round). The runs below are newest first.
+  - **Judged (numerically qualified, CPU only, each within its scope line):** the coupling
+    operator `species_regulated_availability@1` (47 of 47) and MG0c's reactions operator
+    `local_species_reactions@1` (55 of 55).
+  - **Landed for development, not judged:** FR-1's and FR-3's first milestones, FR-10's first two,
+    the phase start and failure records, Track E's M1 development work, and independent references
+    for FR-3, FR-4 and the passive law.
+  - **In progress:** D172's single restructure round (D176). Engine changes go to the integration
+    branch `integration-d172`, from tag `d172-base-2026-11-15`, until one integrated landing; main
+    takes docs, validation and tests. FR-4 and FR-5 are the round's priority consumers.
+  - **Proposed designs:** the FR-4/FR-5 physics note and the run view (D154).
+  - **Open on the L4:** Q7, the run-to-run nondeterminism at 825 nodes. The W1 full-tissue hold
+    runs its third segment.
+- **Single lead agent from 8 November**, with at most seven subagents on disjoint files (six from
+  14 November, D155; seven the same evening, D171). Work continues on `main`, and milestones are
+  tagged.
 
 **Background: the reset of 8 November.**
 - **Reset on 8 November: BETSE is an external reference, not part of the engine.**
