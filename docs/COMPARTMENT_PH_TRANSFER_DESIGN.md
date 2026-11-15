@@ -39,8 +39,10 @@ branch `fr45-physics` from tag `d172-base-2026-11-15`. It is design before code.
    - **What refuses is the booking.** @3's energy ledger refuses an explicit patch at dt × G/C_b
      above about 0.05. At those refused steps the state is right (≤ 0.36% of its change, second
      order). What fails is the routes' heat quadrature, at 5–6 times the state's error.
-   - **So the fix is an exact booking, not a tighter shared bound.** B7 is a stability safety net
-     at @3's constant 1.0. The sweep shows it refuses no existing world.
+   - **Recommended, not settled:** an exact booking with the implicit patch. The run matched
+     neither reading written beforehand. The exact booking would silence today's only
+     over-large-step check, so B7's constant stays open: (a) now, (b) or (c) later, in §7.2. The
+     sweep shows the term refuses no existing world.
    - **With today's booking:** lysosomal Cl⁻ needs dt ≤ 0.01–0.03 ms (25–90 CPU-hours per 900 s,
      an upper bound), and FR-5's pores about 0.1–0.3 µs.
    - **The implicit patch** is designed in §7.3. It is local per compartment: a diagonal-plus-rank-one
@@ -177,10 +179,14 @@ The closure is a reduced representation under D175, and declares its four fields
   k_on in mM⁻¹ s⁻¹). The slowest of them is λ = min_k λ_k.
 - **The slow rate:** transport drives the free protons at ρ = |dH̄_eq/dt| / (β/ln 10) (1/s). That
   is the relative rate at which the equilibrium h moves, from the stage's transport.
-- **The envelope:** λ ≥ 10³ ρ and λ ≥ 10³/dt at every stage of every node the closure serves.
+- **The envelope:** λ ≥ 10³ ρ at every stage of every node the closure serves.
   - Both sides are computable at run time, from the declared k_on (a registry value of the buffer,
     used only for this check and the reference) and the stage's fluxes.
   - The run checks the envelope at every stage and refuses a stage outside it, with the reason.
+  - **No clause in dt.** The closure is evaluated exactly at every stage, so its error is the
+    kinetic system's lag behind equilibrium, of order ρ/λ, whatever the step. A dt clause would tie
+    a physical envelope to the numerics, and a dt study would move it. The step's own error is
+    the dt study's, as for any law.
 - **The error budget:** |pH_closure − pH_kinetic| ≤ 1e-3 pH units at every record time. So is the
   closure's error in H_eq-weighted fluxes, at 1e-3 relative. It is checked against Appendix A's
   kinetic reference.
@@ -190,8 +196,13 @@ The closure is a reduced representation under D175, and declares its four fields
     0.1 s⁻¹: 0.25 mM/s of pumped protons against β ≈ 5.1 mM/pH.
   - The kinetic reference lags the closure by a large fraction of a pH unit there.
   - Both the run-time envelope check and the comparison must flag it.
-- **The inside cases:** k_on of 1e10 M⁻¹ s⁻¹ (1e7 mM⁻¹ s⁻¹) and 1e8 M⁻¹ s⁻¹. The reference's
-  convergence toward the closure is shown as k_on grows (Appendix A).
+- **The inside cases:** k_on of 1e10 M⁻¹ s⁻¹ (1e7 mM⁻¹ s⁻¹) and 1e8 M⁻¹ s⁻¹ (1e5 mM⁻¹ s⁻¹).
+  The reference's convergence toward the closure is shown as k_on grows (Appendix A).
+- **Checked against §13.1's world (S):**
+  - Early acidification: ρ ≈ 0.1 s⁻¹, with b ≈ 38 mM, so λ ≈ 3.8e6 s⁻¹ at 1e5 mM⁻¹ s⁻¹.
+  - Near its steady state, pH ≈ 5 with b ≈ 3.6 mM: λ ≈ 3.7e5 s⁻¹ at 1e5 mM⁻¹ s⁻¹, while ρ → 0.
+  - So both inside cases stay inside λ ≥ 10³ ρ throughout, and the outside case is out by orders of
+    magnitude.
 
 D152's charged reactions (§11, item 4) remain the route for **slow** charged kinetics, such as
 uncatalysed CO₂ hydration. They are not on FR-4's critical path.
@@ -360,22 +371,45 @@ only, and the refused runs were let complete.
 - **The residual also converges at second order,** at a steady 5–6 times the state's error. It is
   the second-order quadrature of the patch routes' heat booking. It is not a non-convergent defect
   like FR-10's onset.
-- **So the fix is an exact booking, not a tighter shared bound.** That means a discrete-gradient
-  (average-vector-field) heat for the routes on a face-free patch (§7.3's booking).
-- **B7 is therefore a stability safety net,** with @3's own `EXPLICIT_STEP_BOUND` = 1.0 on the
-  max-side G, not an energy constant.
-- **The B7 sweep** (`b7_sweep.py`): every JSON world at the tag, the same 10 face-free nodes as
-  FR-1's sweep.
-  - Where the term applies, the largest term × dt is 0.00068, in older RK4 families.
-  - The near-miss P5 (`pump_water_predictions.json`, ARS at 1 ms) has its node as the gauge, so
-    the term does not apply. It would give 0.0032.
-  - The term refuses no existing world.
+- **A third outcome.** The run matched neither reading written beforehand. Those readings expected
+  either a wrong state, or a booking error falling more slowly than the state's. So what follows is
+  a recommendation for the coordinator and the core owner, not a settled verdict.
+- **The trade-off.**
+  - Today's energy ledger is the only check that catches an over-large step on these patches.
+  - An exact (discrete-gradient) booking would make the energy residual rounding-level at any
+    step, and so silence it.
+  - With B7 at @3's stability constant 1.0 and an exact booking, run 02's C3 (max-side 0.95, state
+    error 1.8%) would pass with nothing to flag it.
+- **The options:**
+  - **(a) Keep today's booking,** and let worlds declare dt × G_max-side/C_b ≤ 0.05, the energy
+    threshold. B7 at 1.0 is then only the stability net. This is conservative: it refuses steps
+    whose state is better than 1e-3.
+  - **(b) Exact booking plus a state-accuracy constant for B7.** From run 04, max-side 0.24 gives a
+    state error of 8e-4 and 0.48 gives 3.6e-3. So a constant of 0.25 bounds the state error at
+    about 1e-3 for this law, at five times option (a)'s step.
+  - **(c) Exact booking with an embedded error estimate** on the patch routes: a step-doubling or
+    embedded-pair state error, checked per step. That makes the guard state-based, not a constant.
+  - **Recommended:** (a) now, since FR-4's first world needs nothing more, and (b) or (c) with the
+    implicit patch, which books exactly anyway (§7.3). The constant stays open until then.
+- **The bound sweep.** I ran a JSON-definition sweep (`b7_sweep.py`), not the inner-model note's
+  P3.
+  - It covers every JSON world at the tag with passive permeabilities. Pumps and channels on such a
+    patch are refused today.
+  - It finds the same 10 face-free nodes as FR-1's sweep. Where the term applies, the largest
+    term × dt is 0.00068, in older RK4 families.
+  - P5 (`pump_water_predictions.json`, ARS at 1 ms) has its node as the gauge, so the term does not
+    apply. It would give 0.0032, so it is a near-miss of scope, not of size.
+  - The inner-model note's P3 swept the registered and PROPOSED protocols' worlds, Python-built
+    ones included, with this term's shape. The term was 0 in every free face-free world, since
+    MG0c's carries no ion route, and P5's gauge was excluded.
+  - So the term refuses no existing world at any constant.
 
 **The route, in order:**
-1. **Now, for FR-4's first world:** explicit, with a small counterion.
-   - Until the exact booking exists, the world declares its own dt with dt × G_max-side/C_b ≤ 0.05,
-     so that today's booking error stays under 2e-3. That is a world's choice, not an engine
-     bound.
+1. **Now, for FR-4's first world:** explicit, with a small counterion (option (a)).
+   - The world declares its own dt with dt × G_max-side/C_b ≤ 0.05, so that today's booking error
+     stays under 2e-3. That is a world's choice, not an engine bound.
+   - The 0.05 is extrapolated from worlds with no pump and no buffer. FR-4's world must show it on
+     its own dt study.
    - The world in §13 uses K⁺ at 5e-10 m/s and 140 mM, so 0.025 at 1 ms. 900 s is 9e5 steps, about
      0.9 CPU-hours at the measured upper-bound cost (**S**).
    - **B7,** as the safety net: max over free face-free nodes of Σ_m G_m/C_node, added to
@@ -418,14 +452,25 @@ i.
   A failure refuses the step; nothing is repaired.
 - **The update:** the owner's rows change by −Δx, so material and charge are exact by
   construction. The field solve then runs as today.
-- **The booking (exact):** the patch's heat over the step is
-
-      Q_b = −[ΔG_j^chem + Δ(½ C_b V_b²) − Σ_t Δx_t μ̄_t,i],
-
-  with μ̄_t,i the owner-side chemical potential's divided difference over the step, which is exact
-  when the patch is the owner's only change. When other routes also move the owner, it is the
-  average-vector-field mean along the step's chord, so the attribution error is O(h²) of a term
-  already O(V_j/V_i). That error is declared and measured in the qualification.
+- **The booking, for the patch as a whole, then split by route.** The patch carries several laws
+  in one step: the counterions, the proton leak, the pump, and FR-5's routes. They change the same
+  node and the same capacitor, so no one route may take all of ΔG_j or Δ(½ C_b V_b²).
+  - **Per node and species,** the divided difference over the step is
+    μ̄_t,k = [G_t,k(n_end) − G_t,k(n_start)] / (n_end − n_start). For buffered H_eq it is taken
+    on G* at fixed B_tot. For the capacitor it is the mean voltage V̄_b = (V_b,start + V_b,end)/2,
+    which is exact for a linear capacitor.
+  - **Each route r** that moves Δx_{t,r} from i to j books
+    Q_r = −Σ_t Δx_{t,r} (μ̄_t,j − μ̄_t,i) + V̄_b Δq_{j,r} + W_r, where
+    Δq_{j,r} = F 10⁻¹⁵ Σ_t z_t Δx_{t,r} is the charge r moves into j,
+    with W_r the pump's supplied work, and 0 for passive routes.
+  - **Exactness.** The divided differences use each node's total change from all routes. So
+    Σ_r Q_r = Σ_r W_r − ΔG_patch exactly, where ΔG_patch is the stored free-energy change the
+    patch's routes cause (D152's per-route average-vector-field pattern, §3.3 there).
+  - **Attribution.** At the owner, other routes (the plasma patch) also move the rows, so the
+    owner's μ̄ attributes their joint change. The per-route split is then exact in sum and O(h²)
+    in attribution, and the attribution error is declared and measured.
+  - Passive routes satisfy Q_r ≥ 0 by sign. The check refuses a negative passive Q_r beyond
+    rounding.
 - **The solver ID:** a new IMEX ID (D147), whose stage includes the per-compartment blocks for
   declared patches only. Absent compartments trace nothing.
 - **Qualification:**
@@ -566,13 +611,18 @@ radius 250 nm each, as one node.
   - A_b = 7.85398e-10 m²;
   - C_b = 7.85398e-12 F.
 - **The cytosol:** Na 10, K 140, Cl 10 mM.
-  - Buffer B_c (base valence −1) with B_tot 50 mM and pK 7.2, starting at pH 7.2. B_L is absent
-    there (amount 0, inert).
+  - Buffer B_c (base valence −1) with B_tot 50 mM, starting at pH 7.2. B_L is absent there
+    (amount 0, inert).
+  - **B_c's registry entry:** with μ°(H⁺) = 0, (μ°(HB_c) − μ°(B_c))/RT = −7.2 ln 10 = −16.57856, so
+    pK 7.2 follows (§4.1). k_on = 1e7 mM⁻¹ s⁻¹ is used for the envelope check and the kinetic
+    reference only.
   - Held fuel: ATP 3, ADP 0.3, Pi 3 mM. Δ_rG'° = −30.5 kJ/mol (a generic declared value).
   - `transformed_at(7.2, pMg 3, δ 0.05)`.
 - **The lumen:** Na 10, K 140, Cl 10 mM.
-  - Buffer B_L (base valence −1) with B_tot 40 mM and pK 6.0, starting at pH 7.2 (a resolved
-    start). B_c is absent.
+  - Buffer B_L (base valence −1) with B_tot 40 mM, starting at pH 7.2 (a resolved start). B_c is
+    absent.
+  - **B_L's registry entry:** (μ°(HB_L) − μ°(B_L))/RT = −6.0 ln 10 = −13.81551, so pK 6.0, with
+    k_on = 1e7 mM⁻¹ s⁻¹.
   - Mode `explicit`.
 - **Initial proton equivalents** at each node: H_eq = V (h₀ + Σ_k B̄_k h₀/(h₀ + K_k)), with
   h₀ = c° 10^{−pH₀}.
