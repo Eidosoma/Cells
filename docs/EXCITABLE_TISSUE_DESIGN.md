@@ -369,6 +369,17 @@ arm both act on availability.
   - The host energy-ledger tolerance (2e-3 of the flows) refuses 100 µs at point 2, and 25 µs
     at the chain's stimulus onset.
   - The heredity cell's slower upstroke is refused by the energy check alone, at 0.25–1 ms.
+  - **The stimulus onset (M1).** A switched conductance stimulus is refused at its onset by the
+    host energy ledger, with the cells at rest, when its strength times the step reaches 4e-12 m.
+    It is accepted at 2e-12 m:
+
+    | | Strength at 2.5 µs | at 5 µs | at 10 µs |
+    | --- | --- | --- | --- |
+    | Accepted (2e-12 m) | 8e-7 m/s | 4e-7 | 2e-7 |
+    | Refused (4e-12 m) | 1.6e-6 m/s | 8e-7 | 4e-7 |
+
+    The protocol's stimuli keep strength × step ≤ 2e-12 m, or ramp their onset. This is a limit of
+    the stimulus form, not of the tissue (`excitable_qualification_v1.json`, `stimulus_onset`).
 - **What converges.** ARS(2,2,2) is second order (single cell: peak error 1.5e-7 V at 10 µs
   against RK4), Euler first order. In the chain, CV at 5 µs and 2.5 µs agrees to 1.1e-6.
 - **The working step is 5 µs for chains.** The wave's own largest step is a qualification
