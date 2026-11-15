@@ -73,6 +73,31 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The coupling operator `species_regulated_availability@1` is numerically qualified (judged,
+  15 November 2026).** The protocol was registered at abe4ef5 (tag
+  `coupling-v1-registered-2026-11-15`), and one judged run was made from a clean snapshot of that
+  commit ([verdict](/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/judged/verdict/verdict.json); [log](/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/judged/judged.log)).
+  - **The verdict passed:** all 47 judged criteria, with 16 reported. The verdict's source revision
+    is the registration commit. The run took 1,378 s on one CPU and peaked at 0.98 GB.
+  - **What was judged:** the order against the independent references, in the band [1.7, 2.3]
+    fixed in advance.
+    - A4, reciprocal feedback (R-feedback): V, the amounts and U, plus all six observables of the
+      fast arm.
+    - A5, a species setting a channel's availability (R-cell): V and the amounts.
+    - A1, the factor values against R-fac's exact path.
+    - All four controls were caught: the regulatory state at first order, a factor one step
+      stale, and two basal-level δ controls.
+  - **The judged run is bit for bit identical to the rehearsal** in every part and control
+    ([compare](/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/judged/compare-to-rehearsal.json)).
+  - **The scope:**
+    - CPU only, in version 1;
+    - A4 starts from the reference's state at 50 ms and sits at the explicit-rate bound's edge;
+    - the horizons are 2 s and 1 s;
+    - no pumps or gated channels;
+    - A10 is out of scope.
+  - **Disclosed:** the band, the judged observables, the registered δ and the rounding-scale rule
+    were fixed with the development results in view.
+
 - **The coupling operator's qualification protocol, after its rehearsal and the final check (15
   November 2026).** It is still PROPOSED. Tier 1 at the merge d8ee24a: 329 files, no changed outcome.
   - **The rehearsal on main 0448f9f:** the judged entries were refused while PROPOSED. The dry run
