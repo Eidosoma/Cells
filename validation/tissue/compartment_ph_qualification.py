@@ -24,11 +24,12 @@ Parts of fr5-transfer-v1:
 * reference: R-transfer from the extract, both arms, their controls and floors
   (compartment_ph_reference_stage.fr5_reference).
 
-**The engine path is one function, `engine_run`, a stand-in** until the core's schema A seams
-(stage reads, transporters, held rows, passive routes, damage, readouts) are merged into this
-lane. It raises NotWired; ENGINE_READOUTS is the list of readouts it must return, sent to the core.
-Every entry refuses an engine part while a stand-in remains (STAND_INS), before anything is
-written; the reference parts run today.
+**The engine path is one function, `engine_run`:** validation/compartment_ph/engine_records.run
+on the development world (the declared world without FR-1's compartment operator, the lead's
+ruling), the windowed runner checking every accepted row on the host; ENGINE_READOUTS is what it
+returns per record. What is not wired yet is a stand-in (STAND_INS), each blocking only its own
+parts (STAND_IN_PARTS): every entry refuses those parts before anything is written, and a judged
+run is refused while any stand-in remains.
 
 Modes:
   python -m validation.tissue.compartment_ph_qualification dev fr4|fr5 OUT_DIR PART [PART ...]
@@ -85,11 +86,19 @@ PARTS = {
 }
 ENGINE_PARTS = {*FR4_RUNGS, *FR4_CONTROLS, "start", *FR5_RUNGS, *FR5_CONTROL_PARTS}
 
-# What remains a stand-in on this branch, and why. Empty once the seams are merged and wired.
+# What remains a stand-in on this branch, and why, and the parts each one blocks. Empty once
+# everything is wired.
 STAND_INS = {
-    "engine_run": "the core's schema A seams (stage reads, transporters, held rows, passive "
-                  "routes, the damage state, the readouts) are not merged into this lane yet",
-    "planted_sign": "K2's planted law (the pump's moves flipped) registers through the kind seam",
+    "planted_sign": "K2's planted law (the lead's ruling (b): a self-consistent reversed pump) "
+                    "is not wired yet",
+    "start_checkpoint": "FR-5's start part (the engine's snapshot and the start extract) is not "
+                        "wired yet",
+    "fr5_kinds": "FR-5's damage state and its routes' factors are not in the engine yet",
+}
+STAND_IN_PARTS = {
+    "planted_sign": {"control_k2"},
+    "start_checkpoint": {"start"},
+    "fr5_kinds": {*FR5_RUNGS, *FR5_CONTROL_PARTS},
 }
 
 # The readouts the engine path returns per record (the judge reads these names), for the core:
@@ -136,15 +145,19 @@ class NotWired(RuntimeError):
 
 def engine_run(definition, *, planted=None, checkpoint_dir=None):
     """The engine part's record for one definition (ENGINE_READOUTS at every record, keyed by
-    integer second, and the stage diagnostics and ledgers). A stand-in until the core's seams are
-    wired: when they are, it parses the definition (a refusal there is `admitted` false), runs it
-    in windows on the CPU backend in float64, and returns the readouts. `planted` names a planted
-    law registered only inside its block (K2). With `checkpoint_dir` (FR-5's start part) it also
-    writes the engine's snapshot there at the end (cells.io.write_snapshot) and returns, under
-    `extract`, definitions.start_extract(producer="engine", ...) of that state, with the snapshot's
-    manifest digest in its `engine_snapshot`."""
-    del definition, planted, checkpoint_dir
-    raise NotWired(STAND_INS["engine_run"])
+    integer second, and the stage diagnostics and ledgers): engine_records.run, which parses the
+    development world (a refusal there is `admitted` false) and runs it in windows on the CPU
+    backend in float64. `planted` names a planted law registered only inside its block (K2).
+    With `checkpoint_dir` (FR-5's start part) it is to write the engine's snapshot there at the
+    end (cells.io.write_snapshot) and return, under `extract`, definitions.start_extract(
+    producer="engine", ...) of that state; both are stand-ins (STAND_INS)."""
+    from validation.compartment_ph import engine_records
+
+    if planted is not None:
+        raise NotWired(STAND_INS["planted_sign"])
+    if checkpoint_dir is not None:
+        raise NotWired(STAND_INS["start_checkpoint"])
+    return engine_records.run(definition)
 
 
 def engine_part(definition, *, planted=None, checkpoint_dir=None):
@@ -304,9 +317,11 @@ def refusal_before_writing(which, requested, out_dir, extract, *, judged, quick,
         return f"unknown or no parts {unknown} (the parts: {list(PARTS[which])})"
     if judged and quick:
         return "a judged run has no quick horizon"
-    if STAND_INS and set(requested) & ENGINE_PARTS:
-        return (f"engine parts {sorted(set(requested) & ENGINE_PARTS)} need the engine path, "
-                f"a stand-in here: {STAND_INS['engine_run']}")
+    blocked = {name: sorted(set(requested) & STAND_IN_PARTS[name]) for name in STAND_INS}
+    blocked = {name: parts for name, parts in blocked.items() if parts}
+    if blocked:
+        return "; ".join(f"parts {parts} need what is still a stand-in here: {STAND_INS[name]}"
+                         for name, parts in blocked.items())
     if which == "fr5" and set(requested) - {"start"}:
         why = start_refusal(extract, judged=judged, root=root)
         if why:

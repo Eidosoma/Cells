@@ -1,0 +1,183 @@
+"""The engine's records of FR-4's (and later FR-5's) worlds, for the qualification generator.
+
+validation/tissue/compartment_ph_qualification.engine_run calls `run(definition)`: it parses the
+development world (definitions.development_world: the declared world without FR-1's compartment
+operator, the lead's ruling of 15 November 2026), runs it on the windowed runner
+(cells.core.windows.run_windowed, every accepted row checked on the host, the CPU backend in
+float64), and keeps one row per record from each window's observations (ENGINE_READOUTS):
+- `record_s` and `series`: the closure's pH at the cytosol and the lumen (B4's readout), the
+  bounding patch's voltage, the H and K rows at both nodes, the pump's cumulative cycles, the
+  maintenance's work, every law's heat, the stored free energy's change, the energy residual and
+  the integrated flows the engine's ledger allowance uses, the pump's and the leak's cumulative
+  proton transfers (cytosol to lumen positive) and each route's heat;
+- `amounts_fmol`: every row at every node and record, from which the judge computes the material
+  check and its allowance;
+- `stage`: B4's running extrema at the last record (gap 7): the largest lag estimate over every
+  buffered node and stage, and the cytosol's smallest and largest pH; the count of envelope
+  refusals, 0 for a run that completes (B4's stage check refuses the step at the first stage
+  beyond the budget);
+- `ledgers`: the charge ledger's residual and its tolerance at the record of their largest ratio.
+A refusal (at the definition or in the run) is recorded with its message: a refusal is a verdict.
+
+The energy identity, from the engine's own ledger (surface_pump_v3.balances with the kinds' terms):
+residual = stored change + heat - work, with heat every *_dissipated_energy_pJ field and work every
+*_work_pJ field (reservoir, electrode and the maintenance's), so stored change = residual - heat +
+work. The flows are ledger_limits' (every heat and work field's magnitude).
+"""
+
+from contextlib import nullcontext
+
+import numpy as np
+
+from validation.compartment_ph import definitions as defs
+
+WINDOW_STEPS = 1000  # One record per window at 1 ms.
+FR4_ROWS = ("H", "K")
+
+
+class Records:
+    """A run_windowed sink: one row of readouts per record."""
+
+    def __init__(self, spec, model):
+        from cells.models import surface_pump_v3
+
+        self.spec, self.model, self.v3 = spec, model, surface_pump_v3
+        m = spec.model
+        self.ids = list(m.species_ids)
+        self.cells = [c.id for c in m.cells]
+        self.outside = [o.id for o in m.extracellular]
+        self.bounding = [p.id for p in m.membranes].index(defs.BOUNDING)
+        routes = dict(m.kinds).get("cells.passive_routes@1", ())
+        self.routes = [r.id for r in routes]
+        _, self.p = model.initial_values(spec)
+        self.tol = np.asarray(spec.execution.material_balance_atol_fmol)
+        self.rtol = surface_pump_v3.ENERGY_RTOL[spec.execution.solver]
+        self.dt = spec.execution.dt
+        names = model.STATE_TYPE._fields
+        self.heat_fields = [f for f in names if f.endswith("_dissipated_energy_pJ")]
+        self.work_fields = [f for f in names if f.endswith("_work_pJ")]
+        self.record_s, self.series, self.amounts = [], {}, {}
+        self.charge = (0.0, None, None)  # (ratio, residual, tolerance)
+        self.last = None
+
+    def amount(self, obs, j, species, node):
+        row = self.ids.index(species)
+        if node in self.cells:
+            return float(obs.amount[j, row, self.cells.index(node)])
+        return float(obs.extracellular_amount[j, row, self.outside.index(node)])
+
+    def __call__(self, window):
+        obs = window.observations
+        for j in range(len(obs.times)):
+            self.add(obs, j)
+
+    def add(self, obs, j):
+        from cells.models import surface_pump as first
+
+        fields = self.model.STATE_TYPE._fields
+        state = self.model.STATE_TYPE(*(np.asarray(getattr(obs, f))[j] for f in fields))
+        v3, p, b = self.v3, self.p, self.bounding
+        h = self.ids.index("H")
+        row = dict(
+            pH_c=float(obs.pH[j, self.cells.index(defs.CELL)]),
+            pH_L=float(obs.pH[j, len(self.cells) + self.outside.index(defs.LUMEN)]),
+            V_b=float(obs.membrane_voltage_V[j, b]),
+            cycles=float(state.transporter_cycles[b]),
+            work_pJ=float(state.transporter_metabolic_work_pJ[b]),
+            moved_H_pump=float(p.transporter_stoichiometry[b] * state.transporter_cycles[b]),
+            heat_pump_pJ=float(state.transporter_dissipated_energy_pJ[b]),
+            heat_bounding_0_K_pJ=float(state.membrane_dissipated_energy_pJ[b]),
+        )
+        for species in FR4_ROWS:
+            for node, key in ((defs.CELL, "c"), (defs.LUMEN, "L")):
+                name = f"Heq_{key}" if species == "H" else f"{species}_{key}"
+                row[name] = self.amount(obs, j, species, node)
+        if "proton_leak_0" in self.routes:
+            k = self.routes.index("proton_leak_0")
+            row["moved_H_leak"] = -float(state.passive_transferred[h, k])  # c to L positive.
+            row["heat_proton_leak_0_pJ"] = float(state.passive_dissipated_energy_pJ[k])
+        ledgers = v3.balances(state, p, structure=self.model.structure)
+        heat = sum(float(np.sum(getattr(state, f))) for f in self.heat_fields)
+        work = sum(float(np.sum(getattr(state, f))) for f in self.work_fields)
+        residual = float(ledgers["energy"])
+        steps = int(round(float(obs.times[j]) / self.dt))
+        magnitudes = v3.channel_magnitudes(state, p, structure=self.model.structure)
+        flows, bounds = first.ledger_limits(
+            state, p, self.tol, self.rtol, steps=steps, magnitudes=magnitudes
+        )
+        row.update(
+            heat_pJ=heat,
+            stored_change_pJ=residual - heat + work,
+            energy_residual_pJ=residual,
+            energy_flows_pJ=float(flows),
+        )
+        charge = np.abs(np.asarray(ledgers["charge"]))
+        tolerance = np.asarray(bounds[first.LEDGERS.index("charge")]) * np.ones_like(charge)
+        k = int(np.argmax(charge / tolerance))
+        if charge[k] / tolerance[k] >= self.charge[0]:
+            self.charge = (float(charge[k] / tolerance[k]), float(charge[k]), float(tolerance[k]))
+        self.record_s.append(float(obs.times[j]))
+        for name, value in row.items():
+            self.series.setdefault(name, []).append(value)
+        for node in self.cells + self.outside:
+            for species in self.ids:
+                self.amounts.setdefault(node, {}).setdefault(species, []).append(
+                    self.amount(obs, j, species, node)
+                )
+        self.last = state
+
+    def stage(self, completed):
+        """B4's running extrema at the last record, and the envelope refusals (gap 7)."""
+        if self.last is None:
+            return dict(envelope_max_lag_ph=None, envelope_stages_beyond=None,
+                        cytosol_pH_min=None, cytosol_pH_max=None)
+        cell = self.cells.index(defs.CELL)
+        return dict(
+            envelope_max_lag_ph=float(np.max(self.last.proton_buffer_max_lag_pH)),
+            envelope_stages_beyond=0 if completed else None,
+            cytosol_pH_min=float(self.last.proton_buffer_min_pH[cell]),
+            cytosol_pH_max=float(self.last.proton_buffer_max_pH[cell]),
+        )
+
+    def record(self, completed):
+        return dict(
+            record_s=self.record_s,
+            series=self.series,
+            amounts_fmol=self.amounts,
+            stage=self.stage(completed),
+            ledgers=dict(charge_residual_C=self.charge[1], charge_tolerance_C=self.charge[2]),
+        )
+
+
+def run(definition, *, registry=None, window_steps=WINDOW_STEPS):
+    """The engine part's record of `definition`'s development world (module docstring). With
+    `registry` the build runs inside kind_registry.scope(registry) (a planted control's)."""
+    from cells.core import kind_registry
+    from cells.core.errors import NumericalError
+    from cells.core.specs import ConfigError, parse_spec
+    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.models.registry import get_model
+
+    out = dict(admitted=False, completed=False, refusal=None, steps=0, record_s=[], series={},
+               amounts_fmol={}, stage={}, ledgers={})
+    with kind_registry.scope(registry) if registry is not None else nullcontext():
+        try:
+            spec = parse_spec(defs.development_world(definition))
+        except ConfigError as error:
+            out["refusal"] = f"definition: {error}"
+            return out
+        out["admitted"] = True
+        model = get_model(spec.model)
+        sink = Records(spec, model)
+        try:
+            result = run_windowed(spec, WindowPolicy(window_steps, "observations"), sink=sink)
+        except (ConfigError, NumericalError) as error:
+            out["refusal"] = f"run: {error}"
+            out.update(sink.record(completed=False))
+            out["steps"] = int(round(sink.record_s[-1] / spec.execution.dt)) if sink.record_s else 0
+            return out
+    out.update(sink.record(completed=True))
+    out.update(completed=True, steps=int(result.final.step_index - result.start_step),
+               diagnostics=dict(result.diagnostics), timings=dict(result.timings),
+               resources={k: v for k, v in result.resources.items() if np.isscalar(v)})
+    return out

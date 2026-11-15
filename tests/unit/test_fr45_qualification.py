@@ -416,12 +416,24 @@ def test_the_judged_entry_refuses_before_writing_anything(tmp_path, which):
     assert not out.exists()
 
 
-def test_the_development_entry_refuses_engine_parts_while_the_engine_is_a_stand_in(tmp_path):
+def stand_in_text(name):
+    return generator.STAND_INS[name][:40]
+
+
+def test_the_development_entry_refuses_the_parts_a_stand_in_blocks(tmp_path):
     out = tmp_path / "dev"
-    if generator.STAND_INS:
-        with pytest.raises(SystemExit, match="stand-in"):
-            generator.main(["dev", "fr4", str(out), "rung_1ms"])
+    assert set(generator.STAND_IN_PARTS) >= set(generator.STAND_INS)
+    for name in generator.STAND_INS:  # Each remaining stand-in blocks only its own parts.
+        part = sorted(generator.STAND_IN_PARTS[name])[0]
+        which = "fr4" if part in generator.PARTS["fr4"] else "fr5"
+        why = generator.refusal_before_writing(which, [part], out, {"producer": "engine"},
+                                               judged=False, quick=False)
+        assert "stand-in" in why and stand_in_text(name) in why
+        if which == "fr4":
+            with pytest.raises(SystemExit, match="stand-in"):
+                generator.main(["dev", which, str(out), part])
         assert not out.exists()
+    assert not any("rung_1ms" in parts for parts in generator.STAND_IN_PARTS.values())
     with pytest.raises(SystemExit, match="--start"):
         generator.main(["dev", "fr5", str(out), "reference"])
     with pytest.raises(SystemExit, match="unknown"):
