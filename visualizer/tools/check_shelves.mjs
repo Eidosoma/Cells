@@ -134,7 +134,7 @@ const shot = async (name) => {
   note(`wrote ${path.join(outDir, `${name}.png`)}`);
 };
 // Where a marker of the shelves is on the screen, if a click there picks it and nothing lies over it.
-const at = (keyOrFn) =>
+const atNow = (keyOrFn) =>
   evaluate(`(() => {
     const v = ${V}, lens = v.current, view = lens.mounted;
     const keys = ${typeof keyOrFn === "string" && !keyOrFn.startsWith("(") ? `[${JSON.stringify(keyOrFn)}]` : `[...(view.dish ? view.dish.nodes.keys() : view.nodes.keys())].filter(${keyOrFn})`};
@@ -152,6 +152,27 @@ const at = (keyOrFn) =>
     }
     return null;
   })()`);
+// The camera glides when a panel opens or a family closes, and the members of a family glide to
+// their places. A marker's place on the screen is read only once the view holds still: three
+// looks in a row with the camera, the stage and the first member where they were (at most 6 s).
+// On a larger scene the glide ends a little later, and a click aimed during it missed its marker.
+const rest = async () => {
+  let before = null, same = 0;
+  for (let tries = 0; tries < 60 && same < 3; tries++) {
+    const now = await evaluate(`(() => {
+      const v = ${V}, s = v.stage, c = s.camera, dish = v.current?.mounted?.dish;
+      const first = dish?.nodes ? [...dish.nodes.values()][0]?.position?.toArray() ?? [] : [];
+      return JSON.stringify([c.position.toArray(), c.quaternion.toArray(), c.zoom, s.width, s.height, first].flat().map((n) => Math.round(n * 1000) / 1000));
+    })()`).catch(() => null);
+    same = now !== null && now === before ? same + 1 : 0;
+    before = now;
+    await sleep(100);
+  }
+};
+const at = async (keyOrFn) => {
+  await rest();
+  return atNow(keyOrFn);
+};
 const state = () =>
   evaluate(`(() => {
     const v = ${V}, root = v.shadowRoot, lens = v.lenses.get("proteins"), view = lens?.mounted;
@@ -210,7 +231,9 @@ try {
     // The legend: a side alone, then a basis, then a value of a mark.
     await press("cells-legend .legend-body > .legend-item:nth-of-type(2)");
     s = await state();
-    check("the legend shows one side alone", s.lit === 86, `${s.lit} lit; ${s.legend}`);
+    // How many the legend says that side holds: the data's own number, not one written here.
+    const alone = Number(((/=([\d,]+)\*/.exec(s.legend || "") || [])[1] || "").replace(/,/g, ""));
+    check("the legend shows one side alone", alone > 0 && alone < 455 && s.lit === alone, `${s.lit} lit; ${s.legend}`);
     await press("cells-legend .legend-body > .legend-item:nth-of-type(2)");
     await evaluate(`${V}.shadowRoot.querySelector("cells-legend .legend-fold")?.setAttribute("open", "")`);
     await press('cells-legend [data-finding="essential"]');
