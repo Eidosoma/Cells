@@ -25,10 +25,15 @@ Actions:
       the steps, seconds, a refusal); DIR/manifest.json records the source and environment.
       --from BASELINE runs the definitions saved there (so a later source's world builders
       cannot change what is compared)
-  compare BASELINE OTHER [--tolerance FILE] [--output FILE]
+  compare BASELINE OTHER [--tolerance FILE] [--padding k1] [--output FILE]
       every array of every world: bitwise (default), or within a declared tolerance
       ({"KEY_PATTERN": {"relative": r, "absolute": a}}, fnmatch patterns over SET/WORLD:KEY,
-      first match wins; |x - y| <= a + r max|x| per array); refusals must match exactly
+      first match wins; |x - y| <= a + r max|x| per array); refusals must match exactly.
+      --padding k1 (off by default) lets channel_targets and channel_tau_s differ at channel
+      slots inactive for the whole run (check K1), for uses such as packed bucketing. It is
+      NOT used by D172's dispatch gate (the lead's ruling, 15 November: the host observer keeps
+      today's padding values, so every observation column must match bitwise, division worlds
+      with closed slots included); the planted active-slot failure is that gate's self-test.
 Usage (from a frozen snapshot, CPU):
   JAX_PLATFORMS=cpu PYTHONPATH=SNAPSHOT/src:SNAPSHOT python results_baseline.py save OUT
 """
@@ -487,7 +492,7 @@ def tolerance_for(key, tolerances):
     return None
 
 
-def compare(base, other, tolerances):
+def compare(base, other, tolerances, padding=False):
     a_manifest = json.loads((base / "manifest.json").read_text())
     b_manifest = json.loads((other / "manifest.json").read_text())
     rows, problems = [], []
@@ -522,7 +527,7 @@ def compare(base, other, tolerances):
                 continue
             if np.array_equal(p, q, equal_nan=p.dtype.kind in "fc") and p.tobytes() == q.tobytes():
                 continue
-            if key.split(".")[-1] in PADDING_COLUMNS and padding_only(p, q, inactive):
+            if padding and key.split(".")[-1] in PADDING_COLUMNS and padding_only(p, q, inactive):
                 padded.append(key)  # Check K1: per-law dispatch's padding at inactive slots.
                 continue
             tol = tolerance_for(f"{world}:{key}", tolerances)
@@ -580,6 +585,9 @@ def main(argv=None):
     three.add_argument("base", type=Path)
     three.add_argument("other", type=Path)
     three.add_argument("--tolerance", type=Path)
+    three.add_argument(
+        "--padding", choices=("k1",), help="check K1 padding rule (off for D172 gates)"
+    )
     three.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
     if args.action == "list":
@@ -599,7 +607,7 @@ def main(argv=None):
         )
     else:
         tolerances = json.loads(args.tolerance.read_text()) if args.tolerance else {}
-        report = compare(args.base, args.other, tolerances)
+        report = compare(args.base, args.other, tolerances, padding=args.padding == "k1")
         if args.output:
             args.output.write_text(json.dumps(report, indent=1) + "\n")
         print(

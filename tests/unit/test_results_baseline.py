@@ -38,10 +38,13 @@ def arrays(targets=(0.1, 0.2, 0.7, 0.7), tau=(0.01, 0.02, 1.62, 1.62), state=1.0
     }
 
 
-def verdict(tmp_path, a, b, tolerances=None, **kw):
+def verdict(tmp_path, a, b, tolerances=None, padding=False, **kw):
     base = saved(tmp_path / "a", a)
     other = saved(tmp_path / "b", b, **kw)
-    return rb.compare(base, other, tolerances or {})
+    return rb.compare(base, other, tolerances or {}, padding=padding)
+
+
+K1_PADDED = dict(targets=(0.1, 0.2, 0.0, 0.0), tau=(0.01, 0.02, 1.0, 1.0))
 
 
 def test_identical_outputs_are_identical(tmp_path):
@@ -49,11 +52,17 @@ def test_identical_outputs_are_identical(tmp_path):
     assert report["verdict"] == "identical" and report["equal"] == 1
 
 
-def test_padding_at_inactive_slots_passes(tmp_path):
+def test_the_gate_default_compares_padding_columns_bitwise(tmp_path):
+    """D172's dispatch gate runs without the padding option (the lead's ruling, 15 November):
+    K1's per-law values at inactive slots are a difference there."""
+    report = verdict(tmp_path, arrays(), arrays(**K1_PADDED))
+    assert report["verdict"] == "differs"
+    assert report["rows"][0]["failing_count"] == 2 and report["rows"][0]["padding_only"] == []
+
+
+def test_with_the_k1_option_padding_at_inactive_slots_passes(tmp_path):
     """K1's per-law outputs: target 0 and tau 1 at the two inactive slots."""
-    report = verdict(
-        tmp_path, arrays(), arrays(targets=(0.1, 0.2, 0.0, 0.0), tau=(0.01, 0.02, 1.0, 1.0))
-    )
+    report = verdict(tmp_path, arrays(), arrays(**K1_PADDED), padding=True)
     assert report["verdict"] == "identical"
     assert sorted(report["rows"][0]["padding_only"]) == [
         "observations.channel_targets",
@@ -61,18 +70,23 @@ def test_padding_at_inactive_slots_passes(tmp_path):
     ]
 
 
-def test_a_planted_difference_at_an_active_slot_fails(tmp_path):
-    report = verdict(tmp_path, arrays(), arrays(targets=(0.1, 0.2000000001, 0.0, 0.0)))
+@pytest.mark.parametrize("padding", [False, True])
+def test_a_planted_difference_at_an_active_slot_fails(tmp_path, padding):
+    """The gate's self-test: with or without the option."""
+    other = arrays(targets=(0.1, 0.2000000001, 0.0, 0.0))
+    report = verdict(tmp_path, arrays(), other, padding=padding)
     assert report["verdict"] == "differs"
     assert report["rows"][0]["failing"][0]["key"] == "observations.channel_targets"
 
 
 def test_padding_is_refused_where_activity_is_not_static_or_changes(tmp_path):
     padded = arrays(targets=(0.1, 0.2, 0.0, 0.0))
-    assert verdict(tmp_path / "x", arrays(), padded, static=False)["verdict"] == "differs"
+    report = verdict(tmp_path / "x", arrays(), padded, padding=True, static=False)
+    assert report["verdict"] == "differs"
     # A slot inactive at the start but active at the end is not inactive for the whole run.
     changed = [True, True, True, False]
-    assert verdict(tmp_path / "y", arrays(), padded, final=changed)["verdict"] == "differs"
+    report = verdict(tmp_path / "y", arrays(), padded, padding=True, final=changed)
+    assert report["verdict"] == "differs"
 
 
 def test_other_fields_get_no_padding_and_a_state_change_fails(tmp_path):
