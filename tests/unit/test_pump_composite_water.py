@@ -107,7 +107,7 @@ def test_re_expressed_water_models_are_the_frozen_models(world):
     raw = WORLDS[world]()
     frozen, composite = parse_spec(raw), parse_spec(cs.frozen_definition(raw))
     expected = surface_pump_water_v2 if "route" in world else surface_pump_water
-    assert get_model(frozen.model) is expected
+    assert get_model(frozen.model).module is expected  # I2: per structure.
     report = guard.assert_same(run(frozen), run(composite))
     assert report["compared"]["history"] == len(expected.STATE_TYPE._fields)
 
