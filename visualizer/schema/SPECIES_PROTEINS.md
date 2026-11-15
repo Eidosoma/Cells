@@ -114,7 +114,9 @@ catalogue table, the same bytes every time.
     beside it.
   - **A value stands on the terms of the database it was read from, and the tool behind
     it is named and counted** (the user's ruling of 15 November 2026: the project's rule,
-    not a legal opinion). So where the tool's class is not permissive, the value stays.
+    not a legal opinion). It holds for every species: asked the same day whether it does,
+    the user said "yes it holds for this open source project". So where the tool's class
+    is not permissive, the value stays.
     The note beside the file lists the tool with its terms and its counts, and
     `tests/licence_classes.test.mjs` keeps it in a register under its species; one the
     register does not hold fails the test, so that a new one is noticed and put to the
