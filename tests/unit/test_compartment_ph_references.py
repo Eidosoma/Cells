@@ -3,8 +3,9 @@
 
 They check the closure's algebra, the kinetic system at equilibrium, the convergence of R-kinetic
 to R-closure as k_on grows (inside the 1e-3 pH budget at k_on >= 1e5 mM^-1 s^-1, outside it at
-1e-3), the energy identity dG_stored + Q = W, charge and material, the pump law, and the negative
-control (P_K = 0) stalling acidification by far more than the budget. The first tests check
+1e-3), the lag's first-order term at its peak, the reaction heat vanishing as 1/k_on, the energy
+identity dG_stored + Q = W, charge and material, the pump law, and the negative control (P_K = 0)
+stalling acidification by far more than the budget. The first tests check
 independence: nothing under validation/compartment_ph/ imports `cells` or validation.tissue.
 """
 
@@ -127,6 +128,24 @@ def test_r_kinetic_converges_to_the_closure_as_k_on_grows(short_runs):
     assert outside > 100 * BUDGET  # outside the envelope: the comparison must fail
     # The envelope at the declared k_on (1e7) holds by orders of magnitude in the closure run.
     assert min(min(clo.at[t]["envelope_ratio"]) for t in rec) > 1e6
+    # At its peak the lag is the closure's first-order (quasi-steady) correction, read from the
+    # kinetic run's own state: dpH = (rho/lambda) (beta/ln 10 - h)/(h ln 10) with one buffer per
+    # node (Keener and Sneyd 2009, ch. 7, the rapid-buffer expansion).
+    for kon, tol in ((1e3, 5e-2), (1e5, 1e-2), (1e7, 1e-2)):
+        run = short_runs[kon]
+        t = max(rec, key=lambda s, run=run: abs(run.at[s]["pH_L"] - clo.at[s]["pH_L"]))
+        r = run.at[t]
+        lag = (r["buffer_capacity"][1] / ph.LN10 - r["h_L"]) / (r["h_L"] * ph.LN10)
+        assert err[kon] == pytest.approx(lag / r["envelope_ratio"][1], rel=tol)
+    # §4.2's envelope (lambda >= 1e3 rho) admits k_on = 1e3 here by more than 1e3, yet its lag
+    # exceeds the budget: the bound-to-free factor above is about 1.5e4 at the lumen's start.
+    assert min(short_runs[1e3].at[t]["envelope_ratio"][1] for t in rec) > 1e3 * 1e3
+    assert err[1e3] > 10 * BUDGET
+    # A.2: the reaction's heat is never negative and vanishes in the limit, as 1/k_on.
+    T = short_runs["T"]
+    heat = {kon: short_runs[kon].at[T]["reaction_heat_pJ"] for kon in (1e3, 1e5, 1e7)}
+    assert heat[1e3] > 30 * heat[1e5] > 30 * 30 * heat[1e7] > 0
+    assert clo.at[T]["reaction_heat_pJ"] == 0.0
 
 
 def test_the_energy_identity_charge_and_material(short_runs):

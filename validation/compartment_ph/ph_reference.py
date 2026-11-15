@@ -253,7 +253,8 @@ class _Model:
         self.iW = base + 2 * len(self.ion_moving)
         self.iQ = self.iW + 1
         self.iC = self.iW + 2  # cycles
-        self.size = self.iW + 3
+        self.iR = self.iW + 3  # R-kinetic's reaction heat, a share of Q kept apart (A.2)
+        self.size = self.iW + 4
         y0 = np.zeros(self.size)
         for i in range(2):
             o = self.offset[i]
@@ -277,7 +278,7 @@ class _Model:
                 for k, (Bt, *_r) in enumerate(self.buf[i]):
                     scale[o + 1 + 2 * k] = scale[o + 2 + 2 * k] = max(Bt, 1e-30)
         G0 = abs(1e-3 * self.rt * max(float(np.max(np.abs(y0[:self.iW]))), 1e-30))
-        scale[self.iW] = scale[self.iQ] = G0
+        scale[self.iW] = scale[self.iQ] = scale[self.iR] = G0
         scale[self.iC] = max(float(np.max(np.abs(y0[:self.iW]))), 1e-30)
         self.scale = scale
 
@@ -389,6 +390,7 @@ class _Model:
         out[self.iW] = tr["work_rate"]
         out[self.iQ] = tr["heat_rate"] + reaction_heat
         out[self.iC] = tr["J_cyc"]
+        out[self.iR] = reaction_heat
         return out
 
     def stored_free_energy(self, y):
@@ -431,9 +433,11 @@ class _Model:
 
 
 class PHRun:
-    """One run. ``at[t]``: dict(pH_c, pH_L, h_c, h_L, Heq_c, Heq_L (fmol), K_c, K_L (fmol, the
-    counterion), Vb, phi_c (V), J_cyc, J_H, J_K (fmol/s), cycles (fmol), W, Q, G_stored change,
-    energy residual dG_stored + Q - W (pJ), the envelope's lambda/rho per node)."""
+    """One run. ``at[t]``: dict(pH_c, pH_L, h_c, h_L (mM), Heq_c, Heq_L (fmol), ions_c, ions_L
+    (fmol), Vb, phi_c (V), J_cyc, J_H, J_ions (fmol/s), dG_cyc (J/mol), cycles (fmol), work_pJ,
+    heat_pJ, reaction_heat_pJ (R-kinetic's share of the heat; 0 in R-closure), stored_change_pJ,
+    energy_residual_pJ (dG_stored + Q - W), envelope_ratio (lambda/rho per node, §4.2) and
+    buffer_capacity (beta per node, mM per pH unit))."""
 
     def __init__(self, model, run, record):
         self.model, self.run = model, run
@@ -456,7 +460,8 @@ class PHRun:
             h_L=sp[1]["h"], Heq_c=heq[0], Heq_L=heq[1],
             ions_c=dict(sp[0]["ions"]), ions_L=dict(sp[1]["ions"]), Vb=Vb, phi_c=phic,
             J_cyc=tr["J_cyc"], J_H=tr["J_H"], J_ions=dict(tr["J_ions"]), dG_cyc=tr["dG_cyc"],
-            cycles=float(y[m.iC]), work_pJ=W, heat_pJ=Q, stored_change_pJ=G - self.G0,
+            cycles=float(y[m.iC]), work_pJ=W, heat_pJ=Q, reaction_heat_pJ=float(y[m.iR]),
+            stored_change_pJ=G - self.G0,
             energy_residual_pJ=(G - self.G0) + Q - W,
             envelope_ratio=[lam / rho if rho > 0 else math.inf for lam, rho, _ in env],
             buffer_capacity=[beta for _, _, beta in env],
