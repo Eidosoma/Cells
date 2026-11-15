@@ -40,7 +40,8 @@ column cites `integration-d172`); **planned** (staged here); **not designed**.
 | Backends | JAX on CPU or GPU, float64 (`core/devices.py`:22–35) | — | Not designed; §5 | — |
 
 **What the round commits to for modules.** These are the core owner's answers and the lead's
-rulings, relayed on 15 November and now in §7.4 (j)–(k).
+rulings, relayed on 15 November and now in §7.4 (j)–(k). They are ruled but not yet built: no kind
+module or kind registry exists on `integration-d172`, `core-d172` or `fr45-transporter`.
 
 **Seams:**
 1. Core imports no kind module. Every kind, built-in or not, registers through one call into a
@@ -85,8 +86,17 @@ declaration, with no state of its own.
 **The law itself.**
 - Gates m and h, with Boltzmann targets and constant time constants; opening m·h; permeant K⁺.
   Two gates, as R's dispatch requires (core-d172 `surface_pump_v3.py`:233).
-- It uses the round's `ChannelLaw` (integration-d172 `inner_laws.py`:79–99): pure JAX kernels, the stage term
-  `constant_field_slope` (v1's only one), `rk4_step_s` and `provenance: cited`.
+- **What it declares.** It reads the membrane voltage (V) and its own gates, and changes the
+  permeant's amounts (fmol, inward-positive) only through the kind's constant-field flux. It
+  declares its voltage domain, and a step outside it is refused, as for today's laws.
+- **Its declaration** is the round's `ChannelLaw` (integration-d172 `inner_laws.py`:79–99): pure
+  JAX kernels, the stage term `constant_field_slope` (v1's only one), `rk4_step_s` and
+  `provenance: cited`.
+  - **The code.** `code` is a required field (:84), and dispatch reads `law.code` (core-d172
+    `surface_pump_v3.py`:237). A module leaves it to Cells: resolution binds it per definition
+    (§2.3).
+  - **Capabilities.** `cells.channel_law@1` adds optional fields for backends, dtypes and
+    integrators. Their defaults describe today's laws, and §2.4 checks them.
 - Kinetic constants are structure; permeability, abundance and initial gates are values.
 
 ### 2.2 Registration is explicit
@@ -120,6 +130,8 @@ repeats, and `resume` and `branch` take it too.
   module identity), of the components it uses.
   - It rides on the parsed model block, outside `to_dict`, so `resolved_config.json` and the
     fingerprints are unchanged.
+  - A re-parse of a spec's own dict reuses that spec's resolution. `write_snapshot` does this
+    re-parse (`io.py`:82), and `write_run` calls it for every checkpoint (:243–248).
   - Only raw-data entry points take `registry=` (`parse_spec`, `load_spec`, `load_snapshot`, the
     batch loaders, the CLI). Threading is incremental across 68 `parse_spec` and 74 `get_model`
     call sites, and an unthreaded path refuses external IDs.
@@ -131,9 +143,11 @@ repeats, and `resume` and `branch` take it too.
   and `cells.operator@1`. Modules declare those they implement, and Cells those it supports. An
   idle optional field keeps the major; a change of meaning takes a new one. Compatibility never
   rests on the static `__version__`.
-- **Codes:** `cells` laws keep theirs. An external law's code is 2^15 plus its canonical rank among
-  the structure's external laws, a function of the resolved structure alone. Dispatch selects on
-  disjoint codes (P2), so order changes no bit.
+- **Codes.**
+  - `cells` laws keep theirs.
+  - An external law's code is 2^15 plus its canonical rank among the structure's external laws, a
+    function of the resolved structure alone. The code array is int64 (`surface_pump_v3.py`:178).
+  - Dispatch selects on disjoint codes (P2), so order changes no bit.
 
 ### 2.4 Errors
 
@@ -155,11 +169,15 @@ Every error is raised at construction and names the module, the component and th
 **Unused components change nothing.** The implementation object, its types (by identity), the
 compile key, the programs, the bits and the run record all stay the same, because the
 resolution, the structure and the record hold only what the definition uses.
-- **I1.** One world per path (scalar, windowed, vector-window, batch, composite), built with
-  `BUILTIN` and with `BUILTIN.extended(example, planted)`, gives `is`-identical types, an equal
-  compile key (0 s of compile on the second build), crossrev's jaxpr and constants unchanged
-  (`composite_crossrev.py`), bitwise outputs (`results_baseline.compare`), and manifests equal
-  but for time stamps.
+- **I1.** Build one world per path (scalar, windowed, vector-window, batch, composite) with
+  `BUILTIN`, then with `BUILTIN.extended(example, planted)`. Every path gives:
+  - `is`-identical types;
+  - crossrev's jaxpr and constants unchanged (`composite_crossrev.py`);
+  - bitwise outputs (`results_baseline.compare`);
+  - manifests equal except for time stamps.
+
+  On the vector-window path, where `compile_window` lives, the compile key is also equal, with 0 s
+  of compile on the second build.
 - **I2.** In fresh processes, importing the package registers nothing. A run without it installed
   equals one with it registered but unused.
 - **I3.** Permuting the registration order changes nothing.
@@ -168,8 +186,8 @@ resolution, the structure and the record hold only what the definition uses.
 **Caches.** The registry stamps each external structure entry with its resolved declaration and
 module identity; built-in entries stay IDs, so today's keys hold.
 - The structure keys `compile_window` (core-d172 `vector_windows.py`:354) and the implementation
-  caches (core-d172 `surface_pump_v3.py`:1414; `pump_composite.py`:92). Registries binding one ID to different
-  objects never share an executable.
+  caches (core-d172 `surface_pump_v3.py`:1414; main `pump_composite.py`:92). Registries binding
+  one ID to different objects never share an executable.
 - JAX's persistent cache (`output_paths.py`:25) keys on the lowered program.
 
 **The record, per module used:** namespace, distribution, version and interfaces; the VCS
@@ -195,8 +213,13 @@ cells-example-law/
 **After the landing:**
 - **New:** `src/cells/modules/`, with the registry types, the errors and the conformance kit. The
   kit ships only from `src` (`pyproject.toml`:21–22).
-- **CORE:** the channel table through the registry (`inner_laws`' checks, integration-d172
-  :227–234; the parser's `LAW_CODES`; `structure()`), and the RK4 bound read from `rk4_step_s`.
+- **CORE:** the channel table through the registry:
+  - `inner_laws`' checks (integration-d172 :227–234);
+  - the parser's `LAW_CODES`, `LAW_PERMEABILITIES` and `GATE_COUNTS` (`surface_pump_v3_spec.py`:53,
+    :55, :62, :113, :123);
+  - the layout's codes (`surface_pump_v3.py`:188);
+  - `structure()`;
+  - the RK4 bound, read from `rk4_step_s`.
 - **INT:** `registry=` threading, the manifests' `modules`, and the CLI flag.
 
 ### 2.7 Acceptance
@@ -211,7 +234,7 @@ cells-example-law/
 | S6 Restart | It resumes bitwise in a fresh process; an unregistered or changed module is refused |
 | S7 Invariance | I1–I4 |
 | S8 CPU/GPU | On the L4, vector-window path, by the backend-variant method (inner-model note §5.3) |
-| S9 Installation | Wheel installs into a scratch venv on disk leave Cells' `source_hashes()` unchanged |
+| S9 Installation | Wheel installs into a scratch venv on disk leave Cells' `source_hashes()` unchanged. The test unsets `PYTHONPATH` and asserts that `cells.__file__` lies in the venv |
 | S10 Early refusal | A GPU run of a CPU-only component, or RK4 without a bound, is refused before compile |
 
 **Gates:** S8 is a recorded L4 run, S9 runs in tier 2, and the rest in tier 1 or 2.
@@ -323,7 +346,7 @@ nothing more is asked of the round:
   - Until then, refuse non-commuting hooks on the same rows (a request for §7.4 (k)).
 - **Seam 1 covers kinds, not member laws.** Stage 1 opens the channel table after the landing, so
   the round need only avoid hardening:
-  - a global code sequence for non-`cells` laws;
+  - a global code sequence for non-`cells` laws, or `code` as a field a module must supply;
   - behaviour keyed on code values beyond equality and F1's code-0 padding fill;
   - consumers reading `CHANNEL_LAWS` rather than the structure.
 - **Caches.** Both `implementation` caches key on structures and ID strings. With `registry=`, a
