@@ -117,6 +117,19 @@
         }
       ],
       "files": "out/cells-architecture.files.json lists the files published beside the page: the runs and the species' own proteins (generated, not committed)"
+    },
+    "invisible_quantities": {
+      "title": "Invisible Quantities",
+      "url": "https://claude.ai/artifact/RjP3pTa73yveNrNsbPzN98",
+      "page": "docs/ideas/invisible-quantities.html",
+      "note": "Ideas to choose from, with a sketch each, for showing voltages, charge, fields and flows in the viewer. Nothing in it is built; every sketch is drawn in the page from invented numbers. The note beside it is docs/INVISIBLE_QUANTITIES.md.",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-15",
+          "note": "First version: ten ideas in three tiers of readiness (works on today's saved runs; the engine computes it and runs must save it; needs new output from the engine), the design options for a quantity layer, what the engine would be asked for, and the choices put to the user. Looked at in light and dark, wide and phone, before publishing"
+        }
+      ]
     }
   }
 }
