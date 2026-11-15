@@ -683,8 +683,59 @@ cost.
 - **Not included:** D152's reaction half-steps, which add their own work per route and site at
   Syn3A's metabolic scale.
 
-*P6's anchors (CPU) and the extrapolation to about 50, 150 and 600 species, on CPU and the L4, are
-written here (§17).*
+**P6's measurements** (15 November, 01:25–01:42 UTC). The probe ran on CPU, one loaded core,
+under a 2G cap. It times the inner model's compiled checked step alone, without host checks.
+
+| World | Species | State (MB) | Layout (MB) | XLA temp (MB) | Step, median (ms) |
+| --- | --- | --- | --- | --- | --- |
+| 127-cell sheet (254 nodes) | 4 | 0.06 | 1.64 | 2.2 | 8.3 |
+| | 16 | 0.19 | 1.76 | 2.7 | 10.3 |
+| | 64 | 0.71 | 2.24 | 5.8 | 32.6 |
+| | 160 | 1.76 | 3.18 | 12.0 | 82.0 |
+| | 320 | 3.50 | 4.76 | 22.4 | 132.2 |
+| 825-node world (225 cells, 600 outside nodes, 1,151 faces) | 8 | 0.76 | 20.9 | 32.1 | 107 |
+| | 64 | 5.08 | 25.0 | 57.7 | 604 |
+| | 160 | — | — | — | Killed at the 2G cap (one out-of-memory kill); to rerun after 05:00 UTC if wanted |
+
+Every compile took 55–90 s, whatever the species count. Every step was accepted.
+
+**Per species, from these rows** (**S**, linear):
+- **The sheet:** about 11 KB of state, 10 KB of layout, 64 KB of XLA temporaries, and 0.3–0.5 ms
+  of step time.
+- **The 825-node world:** about 77 KB of state, 72 KB of layout, 0.46 MB of temporaries, and
+  **about 9 ms of step time.** Its 1,151 faces and 600 outside nodes carry every species, so the
+  species work overtakes the dense field solves somewhere between 8 and 64 species.
+
+**Extrapolated to the lead's three sizes** (**S**). Memory is per world; times are one CPU core,
+for the checked step alone:
+
+| Species | 127-cell sheet: memory / step | 825-node world: memory / step |
+| --- | --- | --- |
+| 50 | about 8 MB / 25–30 ms (3× today) | about 80 MB / about 0.5 s (4–5× today) |
+| 150 | about 16 MB / 65–80 ms (8–10×) | about 140 MB / about 1.4 s (13×) |
+| 600 | about 54 MB / about 0.2 s (25×) | about 0.4 GB / about 5 s (50×) |
+
+**On the L4 (not measured here; a stated extrapolation, S).**
+- **Memory bounds the batch.**
+  - The 825-node world: about 0.4 GB per world at 600 species, so roughly 50 worlds in the L4's
+    24 GB; about 150 worlds at 150 species.
+  - The sheet: several hundred worlds at every size.
+- **Time:** today's 825-node world runs 2.28 ms per world-step at 256 worlds (PROGRESS), with the
+  dense kernels at about half the device time. If the species work accelerates as the dense work
+  does (about 60× from CPU), it adds about 0.15 ms per species per world-step: about 10 ms at 64
+  species, and about 90 ms at 600.
+- **G4 replaces these numbers** with measurements in an L4 gap.
+
+**What follows:**
+- **About 50 species is affordable** on both worlds.
+- **About 150 species is affordable on the sheet,** and slow on the 825-node world on CPU.
+- **About 600 species (Syn3A's metabolism)** is a GPU and sparse-solver question for tissue-scale
+  worlds. A single Syn3A cell, or a small tissue, is the sheet's case or smaller, where 600 species
+  costs about 0.2 s per step on one core.
+- **The per-species work in the 825-node world** (face weights, per-route fluxes and scatters) is
+  where the field-solver interface's sparse methods and fused scatters would act
+  (FIELD_SOLVER_INTERFACE_DESIGN.md §6). A7's explicit sums add no operations.
+- **Each cap raise** measures exactly these columns at its new size (D165, amended).
 
 ## 11. Transport by physical contract: the passive permeation law (list (a))
 
@@ -993,7 +1044,7 @@ runs.
 
 **P5, the constants inventory.** All nine worlds share one executable with their parameter twins; the value-search hits are coincidences checked in code (§5.2).
 
-**P6, memory and step cost against the species count.** *Entered after the run.*
+**P6, memory and step cost against the species count.** Seven of eight rows were measured. The 825-node world at 160 species was killed at the 2G cap and waits for after 05:00 UTC. Per species: 0.3–0.5 ms per step on the sheet and about 9 ms on the 825-node world, on one CPU core (§10.6).
 
 (P4, the cost of per-law dispatch, was folded into P2 as its amendment 2.)
 
