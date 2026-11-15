@@ -18,6 +18,7 @@ from cells.core import kind_registry
 from cells.core.inventory_species import add_inventory_species
 from cells.core.runner import run
 from cells.core.specs import ConfigError, parse_spec
+from cells.core.surface_pump_v3_spec import control_values
 from cells.models import surface_pump_v3
 from cells.models.registry import get_model
 from tests import kind_fixtures
@@ -28,7 +29,9 @@ RATE = 1e-3  # fmol/s, small against B's 1 fmol in the cell.
 
 def world(rate=RATE, **kwargs):
     raw = water_fixtures.heredity_cell("D", end_time=0.004)
-    raw = add_inventory_species(raw, "B", trace_mM=1.0, diffusivity_m2_per_s=1e-10, floor_fmol=1e-12)
+    raw = add_inventory_species(
+        raw, "B", trace_mM=1.0, diffusivity_m2_per_s=1e-10, floor_fmol=1e-12
+    )
     return kind_fixtures.declare(raw, rate=rate, **kwargs)
 
 
@@ -126,6 +129,9 @@ def test_a_charged_planted_kind_closes_charge_field_and_ledgers():
         assert [k for k, _ in model.structure.kinds] == [kind_fixtures.CARRIER_ID]
         result = run(spec)  # Host checks on every accepted row: all ten ledgers.
         final, obs = result.final.state, result.observations
+        state, p = model.initial_values(spec)
+        control = model.Control(*(v[0] for v in control_values(spec, [0.0])))
+        current_A = model.readouts(state, control, p, xp=np).field.rates.membrane_current_A
         movers = surface_pump_v3.moved_rows(spec.model)["K"]
         assert any(entry[0] == kind_fixtures.CARRIER_ID for entry in movers)
     k = list(spec.model.species_ids).index("K")
@@ -141,6 +147,9 @@ def test_a_charged_planted_kind_closes_charge_field_and_ledgers():
     dv = float(obs.membrane_voltage_V[-1, 0] - obs.membrane_voltage_V[0, 0])
     assert dv == pytest.approx(-charge / HEREDITY_CAPACITANCE_F, rel=1e-9)
     assert float(obs.carrier_current_A[-1, 0]) == pytest.approx(CHARGE_PER_FMOL * CARRIED_FMOL_S)
+    # Gap 9: the kind's patch flux joins the patch's total flux and membrane current.
+    assert float(obs.membrane_flux_fmol_s[-1, k, 0]) == pytest.approx(CARRIED_FMOL_S)
+    assert float(current_A[0]) == pytest.approx(CHARGE_PER_FMOL * CARRIED_FMOL_S)
     work = float(final.carrier_work_pJ[0])
     assert work < 0  # K+ runs down its electrochemical gradient out of D.
     assert result.diagnostics["max_energy_balance_relative"] < 1e-3

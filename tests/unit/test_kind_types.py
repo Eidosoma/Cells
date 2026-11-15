@@ -1,4 +1,4 @@
-"""Schema A's per-structure types and the kind registry (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j), (k)).
+"""Schema A's per-structure types and the kind registry (INNER_MODEL_V4_DESIGN.md §7.4 (j), (k)).
 
 - Today's structures keep the module's own classes, by identity.
 - A registered kind that a definition does not declare changes nothing: the same classes,
@@ -123,9 +123,21 @@ def test_kinds_append_in_canonical_order_whatever_the_declaration_order(tmp_path
         assert layout == snapshot_keys(tmp_path / "two", two)  # One snapshot layout.
         assert layout == [*a.STATE_TYPE._fields, *a.LAYOUT_TYPE._fields]
         today = surface_pump_v3
-        assert a.STATE_TYPE._fields == (*today.STATE_TYPE._fields, "alpha_moved_fmol", "beta_moved_fmol")
-        assert a.LAYOUT_TYPE._fields == (*today.LAYOUT_TYPE._fields, "alpha_rate_fmol_s", "beta_rate_fmol_s")
-        assert a.Control._fields == (*today.Control._fields, "alpha_availability", "beta_availability")
+        assert a.STATE_TYPE._fields == (
+            *today.STATE_TYPE._fields,
+            "alpha_moved_fmol",
+            "beta_moved_fmol",
+        )
+        assert a.LAYOUT_TYPE._fields == (
+            *today.LAYOUT_TYPE._fields,
+            "alpha_rate_fmol_s",
+            "beta_rate_fmol_s",
+        )
+        assert a.Control._fields == (
+            *today.Control._fields,
+            "alpha_availability",
+            "beta_availability",
+        )
         n = len(today.STATE_TYPE._fields) + 1
         assert a.OBSERVATION_FIELDS == (
             *today.OBSERVATION_FIELDS[:n],
