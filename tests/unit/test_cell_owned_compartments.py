@@ -270,6 +270,27 @@ def permeable():
     return raw
 
 
+def channelled():
+    """A K leak channel population on the bounding patch (refusal 4's channel branch)."""
+    raw = w()
+    raw["model"]["channels"] = [
+        dict(
+            id="leak_0",
+            membrane_id="contact_0",
+            kinetic_law="kleak_always_open@1",
+            max_permeability_m_per_s=1e-9,
+            abundance=1.0,
+            initial_gate=[],
+            permeant_ions=[dict(species_id="K", relative_permeability=1.0)],
+        )
+    ]
+    raw["experiment"]["channel_controls"] = [
+        dict(channel_id="leak_0", schedule=[dict(time=0.0, availability=1.0)])
+    ]
+    raw["execution"]["channel_capacity"] = 1
+    return raw
+
+
 def charged():
     raw = w()
     lumen = node(raw, "ecs_0")
@@ -312,6 +333,7 @@ REFUSALS = {
         "one compartment per node",
     ),
     "an ion route on the bounding patch": (permeable, "carries an ion route"),
+    "a channel population on the bounding patch": (channelled, "carries an ion route"),
     "a charge anchor": (charged, "nonzero charge anchor"),
     "no held bath in the owner's component": (lambda: closed_world("bath"), "with no held bath"),
     "an empty label": (

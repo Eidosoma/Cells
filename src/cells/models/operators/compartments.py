@@ -30,10 +30,12 @@ Refused at the definition, each with its reason (§1.4, §1.5):
 The stationary analysis does not admit the composite (its own ID check).
 
 Identity is a host-side map (identity_map; ARCHITECTURE.md's modular core, D174): per compartment,
-its ID, its owner, its role, its storage and its oriented bounding membrane. The ID is the
-compartment's own, so the map does not depend on today's storage as an outside node; storage is one
-field of it. Version 1's role is "lumen": the compartment lies outside its bounding membrane, whose
-inside is the owner's cytosol (§1.1), so V_b = phi_owner - phi_compartment is @3's patch voltage.
+its ID, its owner, its role, its storage and its oriented bounding membrane. The map's shape is
+independent of today's storage as an outside node, which is one field of it; its values are not yet.
+In version 1 a compartment's ID is its node's ID (§1.4), and its role is fixed as "lumen": the
+compartment lies outside its bounding membrane, whose inside is the owner's cytosol (§1.1), so
+V_b = phi_owner - phi_compartment is @3's patch voltage. A declared ID distinct from the node, and a
+declared role, would make the values independent too; the @1 schema has neither.
 Labels and references are metadata: they reach the map and the summary, never an array. The
 transfer law is D150's exchange, unchanged (§2), a driven route (D174): it books the free-energy
 change of what it moves as signed work, with no heat. Loading is an export route on the bounding

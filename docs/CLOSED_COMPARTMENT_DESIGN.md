@@ -963,9 +963,12 @@ with one import and one line.
   - its oriented bounding membrane: the patch and its slot, the inside endpoint the owner cell, the
     outside endpoint the compartment, and V_b = φ_owner − φ_compartment;
   - the label and the reference.
-  The ID is the compartment's own, so storage as an outside node is one field of the map, not its
-  key. The summary carries the map. Two compartments in one cell stay distinct (tested). A label or
-  reference changes no binding.
+  **The map's shape is independent of storage, but its values are not yet.** Storage as an outside
+  node is one field of the map. In version 1, though, the ID is the node's ID (§1.4), and the role
+  is fixed as "lumen", not declared. Full independence needs a declared ID distinct from the node
+  and a declared role. Neither is in the @1 schema, and adding them is free only before landing:
+  the lead's decision. The summary carries the map. Two compartments in one cell stay distinct
+  (tested). A label or reference changes no binding.
 - **Exchange is a driven route** (D174). §0, §2.1 and §2.3 now say so: it books signed work and no
   heat, and a pair that follows Fick's trajectory is not a passive permeation. The passive law is
   door T1, with D174's five requirements.
