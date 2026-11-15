@@ -58,8 +58,15 @@ experiment).
 2. **Next, after the landing, in order:**
    1. FR-4 and FR-5: registration, rehearsal and judged runs on the landed core.
    2. The finite-fuel case (D176 item 2) against its independent reference.
-   3. The run-view writer with the visualizer's nine requirements, then FR-11's interim planarian
-      loop.
+   3. The run-view writer (D154). It is built on branch `run-view-d154` (01fa27d9, from
+      integration-d172 at 0ae1943a), with a worked example on the secreted-species development run
+      (`/mnt/workspaces/Cells/run-view-20261115-01/`). It merges with its tier records and a tier
+      gate. Its seam requests follow:
+      - the operator contract's view declarations, and the default `view_events` entity form fixed
+        to `{"cell": id}`;
+      - @3's own units, readout axes and layers, which replace the writer's interim table;
+      - door S recording the merged view of each changed field.
+      FR-11's interim planarian loop comes after these.
    4. The packed GPU planner and its one-time qualification.
    5. The module system's stage 1, one external law (D180), after the user's decisions in its §6.
 3. **Queued follow-ups** (each its own gated change):
