@@ -465,6 +465,21 @@ class ScheduledSpeciesExchange(Operator):
         "amount_increment": ("exchange_moved_fmol",),
         "extracellular_amount_increment": ("exchange_moved_fmol",),
     }
+    # Its layer in the run view (docs/RUN_VIEW_DESIGN.md §3): scheduled rates, prescribed.
+    VIEW_LAYERS = ({"id": "exchange", "label": "Species exchange", "representation": "prescribed"},)
+
+    def view_sets(self, spec, declaration):
+        """The run view's set of its own axis (cells/run_view.py): its routes, in declared order,
+        each on its patch."""
+        routes = declaration.routes
+        return {
+            "exchange_route": {
+                "id": "exchange_route",
+                "ids": tuple(r.id for r in routes),
+                "holds": "exchange route",
+                "on": ("membrane", tuple(r.patch for r in routes)),
+            }
+        }
 
     # ------------------------------------------------------------ definition
 

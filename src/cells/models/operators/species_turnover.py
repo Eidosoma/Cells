@@ -426,6 +426,8 @@ class ScheduledSpeciesTurnover(Operator):
         "amount_increment": ("turnover_produced_fmol", "turnover_cleared_fmol"),
         "extracellular_amount_increment": ("turnover_outside_cleared_fmol",),
     }
+    # Its layer in the run view (docs/RUN_VIEW_DESIGN.md §3): scheduled rates, prescribed.
+    VIEW_LAYERS = ({"id": "turnover", "label": "Species turnover", "representation": "prescribed"},)
 
     # ------------------------------------------------------------ definition
 
