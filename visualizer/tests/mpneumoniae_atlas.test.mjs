@@ -97,10 +97,10 @@ test("it is a single cell: molecules and one cell, with a sentence where the oth
   assert.match(cell.note, /cannot show/);
 });
 
-test("what Cells models of it is said plainly: audited next by the record's decision, and nothing in the engine", () => {
+test("what Cells models of it is said plainly: audited by the record's decision, and nothing in the engine", () => {
   assert.ok(STATES.includes(species.modelled.state));
   assert.equal(species.modelled.state, "proposed");
-  assert.match(species.modelled.text, /decision D173 \(14 November 2026\)/);
+  assert.match(species.modelled.text, /audited beside the minimal-cell track on JCVI-syn3A \(decision D173/);
   assert.match(species.modelled.text, /Nothing of it is in the engine, and no model of it has run/);
   // The user's note is not in the repository, so no file of it is cited.
   assert.ok(!/SOTA_SYN3A|docs\//.test(speciesText), "the species file cites a path of the repository");

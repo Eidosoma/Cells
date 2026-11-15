@@ -261,9 +261,10 @@ bytes every time; the test rebuilds and compares.
 
 ## For the lead's agent
 
-Decision D173 has the lead's Syn3A agent audit this organism next, for measured public
-data to validate against. That audit is the lead's; this data is the viewer's. What it
-adds:
+The lead's agent has audited this organism's public measurements (D173; section 9 of
+`docs/SYN3A_MINIMAL_CELL_TRACK.md` on main, 15 November 2026) and recommends it to lead a
+later stage on energy, transport and pH. That audit is the lead's; this data is the
+viewer's. What it adds:
 
 - **One frozen annotation and a 688-line catalogue keyed to it,** with the six counts of
   the literature set side by side.
