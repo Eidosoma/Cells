@@ -99,6 +99,11 @@
           "date": "2026-11-15",
           "engine_revision": "887e359b",
           "note": "Each species' own proteins on shelves in the protein atlas, in one format: Syn3A's 455 and M. pneumoniae's 688 one marker each, the planarian's 18,882 as families that open; a switch on the card moves between Cells' 49 machines and the species' own proteins. 12 protein files (3.4 MB) are now published beside the page with the 59 runs: 72 files with the page. The map shows the cell-owned compartment and site-occupancy operators and the run-view design note. Checked at b760d062: 55 of 55 real-input checks, 41 of 41 species checks, shelves checks 17 of 17 (Syn3A), 18 of 18 (planarian) and 6 of 6 (without the files); 211 tests (210 pass, 1 skipped)"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "44227075",
+          "note": "In the species' own proteins, what is inside the cell now stands in coloured glass like the membrane shelf, a little lighter; what is set apart keeps none. The map follows main through 44227075, and the atlas says that the catalogue's 34 added entries were reviewed (no channel, pump, transporter or junction law among them). Checked at aa4a3cbe: 55 of 55 real-input checks, 41 of 41 species checks, shelves checks 17 of 17 (Syn3A), 18 of 18 (planarian) and 6 of 6 (without the files); 211 tests (210 pass, 1 skipped). The 71 files beside the page were not sent again"
         }
       ],
       "files": "out/cells-architecture.files.json lists the files published beside the page: the runs and the species' own proteins (generated, not committed)"
