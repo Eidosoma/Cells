@@ -130,7 +130,8 @@ def test_r_kinetic_converges_to_the_closure_as_k_on_grows(short_runs):
     assert min(min(clo.at[t]["envelope_ratio"]) for t in rec) > 1e6
     # At its peak the lag is the closure's first-order (quasi-steady) correction, read from the
     # kinetic run's own state: dpH = (rho/lambda) (beta/ln 10 - h)/(h ln 10) with one buffer per
-    # node (Keener and Sneyd 2009, ch. 7, the rapid-buffer expansion).
+    # node. It is derived from A.2 as a quasi-steady expansion in 1/lambda; Keener and Sneyd
+    # (2009, ch. 7) give the rapid-buffer approximation it corrects.
     for kon, tol in ((1e3, 5e-2), (1e5, 1e-2), (1e7, 1e-2)):
         run = short_runs[kon]
         t = max(rec, key=lambda s, run=run: abs(run.at[s]["pH_L"] - clo.at[s]["pH_L"]))

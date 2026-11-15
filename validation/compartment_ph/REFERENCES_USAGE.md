@@ -165,8 +165,9 @@ This is far below every difference above.
    - **What the runs show:** at k_on = 1e3 the envelope holds by a factor of about 1.2e3 (λ/ρ ≥
      1.2e6). Yet the lumen lags by 1.26e-2 pH units at 0.36 ms, and still by 9.6e-3 after 10 s.
      The flux errors exceed 1e-3 relative too.
-   - **Why:** the free protons exceed the closure's h by about (dH̄_eq/dt)/λ times the bound share
-     (Keener and Sneyd 2009, ch. 7: the rapid-buffer expansion). In pH units:
+   - **Why:** the free protons exceed the closure's h by about (dH̄_eq/dt)/λ times the bound share.
+     This is derived here from A.2, as a quasi-steady expansion in 1/λ; Keener and Sneyd (2009,
+     ch. 7) give the rapid-buffer approximation it corrects. In pH units:
 
          |ΔpH| ≈ (ρ/λ) · (β/ln 10 − h) / (h ln 10)
 

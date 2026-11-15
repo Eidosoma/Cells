@@ -74,7 +74,9 @@ def max_dpH(a, b, rec, key):
 def first_order_lag(r, i, h_key):
     """The closure's first-order lag in pH, (rho/lambda)(beta/ln 10 - h)/(h ln 10), at a record
     (one buffer per node): the quasi-steady excess of free protons, dH_eq/dt over lambda, times the
-    bound share, over h ln 10 (Keener and Sneyd 2009, ch. 7, the rapid-buffer expansion)."""
+    bound share, over h ln 10. Derived here from A.2 as a quasi-steady expansion in 1/lambda and
+    confirmed by the runs; Keener and Sneyd (2009, ch. 7) give the rapid-buffer approximation it
+    corrects."""
     h, beta = r[h_key], r["buffer_capacity"][i]
     return (beta / ph.LN10 - h) / (h * ph.LN10) / r["envelope_ratio"][i]
 
