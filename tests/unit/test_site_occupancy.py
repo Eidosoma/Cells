@@ -30,6 +30,7 @@ from cells.models.registry import get_model
 from validation.tissue import compartment_fixtures as cfx
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import site_occupancy_fixtures as sfx
+from validation.tissue import species_reactions_fixtures as rfx
 
 
 def world(populations=None, **kwargs):
@@ -223,6 +224,26 @@ def test_identities_must_agree_with_d150_in_either_order():
     parse_spec(agreeing)
 
 
+def test_identities_must_agree_with_d152_in_either_order():
+    """D152's reaction network declares S with a catalogue reference; the sites declare S without
+    one (refused), or with the same one (admitted), with either operator first."""
+    tag = dict(catalogue=dict(catalogue="uniprot", entry="P00001"), evidence="model")
+    raw = rfx.enzyme_network()
+    network = next(op for op in raw["model"]["operators"] if op["law"] == rfx.REACTIONS)
+    next(s for s in network["species"] if s["id"] == sfx.LIGAND).update(tag)
+    sited = sfx.with_site_occupancy(raw, [sfx.population("out")])
+    agreeing = copy.deepcopy(sited)
+    block(agreeing)["species"] = [sfx.ligand(**tag)]
+    for first in (False, True):
+        refused, admitted = copy.deepcopy(sited), copy.deepcopy(agreeing)
+        if first:
+            for spec in (refused, admitted):
+                spec["model"]["operators"].reverse()
+        with pytest.raises(ConfigError, match="another identity than local_species_reactions@1"):
+            parse_spec(refused)
+        parse_spec(admitted)
+
+
 def test_the_species_cap_is_checked():
     raw = world()
     for k in range(13):  # 4 + 13 = 17 species.
@@ -301,6 +322,21 @@ def test_the_binding_layout():
     assert list(np.asarray(p.site_facing_node)) == [outside.index("ecs_0"), 0]
     assert list(np.asarray(p.site_internalises)) == [True, False]
     assert list(np.asarray(p.site_internalisation_rate)) == [0.2, 0.0]
+
+
+def test_a_contact_population_faces_the_cell_on_its_side():
+    """A contact's first side faces the junction's sender, its second the receiver (§1.1); two
+    populations on one contact face different cells, so they are two components."""
+    pops = [
+        sfx.population("k0", contact="j0", side="first"),
+        sfx.population("k1", contact="j0", side="second"),
+    ]
+    spec, p = layout(two_cells(pops))
+    cells = [c.id for c in spec.model.cells]
+    assert list(np.asarray(p.site_facing_kind)) == [so.CELL, so.CELL]
+    assert list(np.asarray(p.site_facing_node)) == [cells.index("cell_0"), cells.index("cell_1")]
+    assert list(np.asarray(p.site_internalises)) == [False, False]
+    assert list(np.asarray(p.site_component)) == [0, 1]
 
 
 def test_the_component_map():
