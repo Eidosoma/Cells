@@ -1248,6 +1248,19 @@ canonical kind order (sorted ID) that schema A's types use:
   seam change, through CORE.
 - **An undeclared kind is absent:** no field, no kernel, no hook call. A4's criterion extends to
   kinds.
+- **Two orders, named apart** (docs/MODULE_SYSTEM_DESIGN.md §7, D180): the field order is
+  `structure.kinds`, canonical by sorted ID. The hook-evaluation order is a separate name, equal
+  to the field order in version 1, so a later dependency order moves no field or snapshot layout.
+- **No global codes for kinds:** kinds and their laws carry no code. A kind's law index is bound
+  per definition by the resolved structure, and no global code sequence is hardened. Today's
+  channel LAW_CODES stay as they are.
+- **Non-commuting hooks on the same rows are refused at binding.** Version 1 has one stage read,
+  so nothing is refused yet.
+- **The planted kinds are registered from outside `src/cells`,** under a non-`cells` namespace
+  (`tests.`), on a test-local registry.
+- **Ledger lists stay the shared literals in this round** (rule (a)). Reading them from the
+  implementation object would change @1's and @2's shared check code, so it follows the landing,
+  with its own D148 case.
 - **Hooks on the check path trace on the device.** `domain`, `control_domain` and
   `ledger_terms` take `xp`, trace under jnp and branch on no value in Python. So the device's
   per-row checks include kinds as the host's do. That leaves room to move host-side checks into
