@@ -260,6 +260,54 @@
      "unit": "s"
     }
    }
+  },
+  "synthetic-world": {
+   "adapter": "standard-history",
+   "development": true,
+   "label": "Synthetic small world (test fixture)",
+   "plain": "Invented numbers in the layout of the engine's shared output path: one cell, its surroundings, and a species that leaves the cell and is cleared. No engine ran; nothing here is evidence.",
+   "sources": [],
+   "engine_entities": [],
+   "outcome": {
+    "judged": false,
+    "status": "A development run: not judged"
+   },
+   "parameters": {
+    "execution.dt": {
+     "label": "Time step",
+     "unit": "s"
+    },
+    "model.inner_model": {
+     "label": "Inner model"
+    }
+   },
+   "readouts": {
+    "status": {
+     "label": "Status"
+    },
+    "end_time": {
+     "label": "End",
+     "unit": "s"
+    }
+   }
+  },
+  "example-sheet": {
+   "adapter": "standard-history",
+   "example": true,
+   "label": "Example sheet (invented numbers)",
+   "plain": "Example: invented numbers. A small sheet written by the viewer's own run-fixture tool, in the layout of the engine's shared output path, to show the layers that no saved run feeds yet: ion traffic through a membrane, what crosses the junctions, and the energy dissipated. No engine ran, and nothing here is a result.",
+   "sources": [],
+   "engine_entities": [],
+   "stops": {
+    "example": {
+     "label": "No engine ran: the numbers are invented"
+    }
+   },
+   "records": {
+    "vm": {
+     "label": "Membrane voltage"
+    }
+   }
   }
  }
 }

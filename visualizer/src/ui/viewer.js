@@ -126,6 +126,7 @@ class CellsViewer extends HTMLElement {
     // Quantity layers of a replay: which layer holds a channel, and how strongly the marks are drawn.
     root.addEventListener("cells-layer", (event) => this.current?.setLayer?.(event.detail.id, event.detail.on));
     root.addEventListener("cells-strength", (event) => this.current?.setStrength?.(event.detail));
+    root.addEventListener("cells-slow", (event) => this.current?.setSlow?.(event.detail));
     root.addEventListener("cells-legend-toggle", () => {
       this.state.legendOpen = !this.state.legendOpen;
       this.renderLegend();
@@ -877,6 +878,7 @@ class CellsViewer extends HTMLElement {
         : [];
     return [
       // Development runs stand under a heading of their own, apart from the experiments: a catalogue entry says `development`.
+      // Examples (invented numbers) stand under "Examples", never among experiments: a catalogue entry says `example`.
       ...(() => {
         const row = (item) =>
           h(
@@ -885,13 +887,13 @@ class CellsViewer extends HTMLElement {
             h("span", { class: "exp-name" }, item.label),
             h("span", { class: "exp-found" }, found(item.outcome))
           );
-        const judged = experiments.filter((item) => !item.development), development = experiments.filter((item) => item.development);
+        const judged = experiments.filter((item) => !item.development && !item.example), development = experiments.filter((item) => item.development), examples = experiments.filter((item) => item.example);
         const group = (list, label) => [h("p", { class: "eyebrow" }, label), h("div", { class: "experiments", role: "group", "aria-label": label }, list.map(row))];
         // Many: a list to choose from, with a development run named as one.
-        if (experiments.length > 6) return [h("p", { class: "eyebrow" }, "Experiments"), chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.development ? "Development run: " : ""}${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}`]), experiments.find((item) => item.active)?.first)];
+        if (experiments.length > 6) return [h("p", { class: "eyebrow" }, "Experiments"), chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.example ? "Example: " : item.development ? "Development run: " : ""}${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}`]), experiments.find((item) => item.active)?.first)];
         // One: its name. Several: a row each, with what the record says it found.
-        if (experiments.length <= 1) return [h("p", { class: "eyebrow" }, development.length ? "Development run" : "Experiment"), h("p", { class: "card-title" }, heading)];
-        return [...(judged.length ? group(judged, judged.length > 1 ? "Experiments" : "Experiment") : []), ...(development.length ? group(development, development.length > 1 ? "Development runs" : "Development run") : [])];
+        if (experiments.length <= 1) return [h("p", { class: "eyebrow" }, examples.length ? "Example" : development.length ? "Development run" : "Experiment"), h("p", { class: "card-title" }, heading)];
+        return [...(judged.length ? group(judged, judged.length > 1 ? "Experiments" : "Experiment") : []), ...(development.length ? group(development, development.length > 1 ? "Development runs" : "Development run") : []), ...(examples.length ? group(examples, examples.length > 1 ? "Examples" : "Example") : [])];
       })(),
       // The first sentence says what the experiment asks; the rest is a click away.
       ...(() => {

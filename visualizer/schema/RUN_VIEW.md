@@ -2,7 +2,10 @@
 
 Status: **draft from the visualizer side, 14 November 2026**, for the lead's design note
 under D154. Names here are proposals; the engine-side note fixes the final file and field
-names, and the viewer adapts.
+names, and the viewer adapts. **From 15 November 2026 the engine's own run-view writer
+exists** (on a branch, with a worked example). Where its view and the proposals below
+differ, the writer's view stands, and the viewer reads it as written: see "The engine's
+view".
 
 D154 requires that every experiment can eventually be visualised through one run-view
 output, written by one shared run-output path. This note says what the viewer needs from
@@ -123,6 +126,56 @@ an existing run directory and mark it `"derived": true`, with a line saying how 
 piece was derived. For E07-v1 the sheet is a regular hexagonal sheet, so positions are
 derived from the saved junction topology. Adapters read saved files only.
 
+## The engine's view
+
+The engine's run-view writer (`cells.run_view@1`: one `view.json` beside a run's files)
+was shown on a worked example on 15 November 2026, made from the development run of one
+cell that secretes a species. It conforms to most of this note. Where it differs, by
+design, the viewer reads what the writer gives:
+
+- **Two time bases.** `time` is `{"unit": "s", "bases": [...]}`, each base
+  `{"id", "array", "says", "files": [{"file", "rows": [from, to]}]}`: the state's rows
+  (`accepted`) and the observed rows (`observation`), each with the files that hold it and
+  the rows in each file. Every record names its `base`. There is no `time.file` and no
+  `time.array`.
+- **A record's file comes from its base, and it has no label.** A record has `id` (its
+  array's name), `field` (the engine's name for the quantity), `array`, `base`, `axes` over
+  sets (the species among them), `set`, `unit`, `layer` and `owner`. What the page calls a
+  field is the viewer's own catalogue of names.
+- **Padding slots are null, and cells carry lifetimes.** A set's `ids` holds null for a slot
+  that has no entity, and every array keeps a column for it. `cell.lifetimes` gives, for
+  each cell, null or its birth and its retirement (either may be null).
+- **Signs name roles.** `sign` is `{"says", "from", "to", "confirmed"}`, with `from` and
+  `to` the roles of the record's set: `inside` and `outside` for a membrane patch and what
+  lies on one, `sender` and `receiver` for a junction or a face, `exterior` and `node` for
+  an outside node. A positive value goes from `from` to `to`. The proposals above, and the
+  viewer's older packages, say `first` and `second`, or `cell` and `outside node`; the
+  viewer reads both sets of words.
+- **Constants have no label and no set.** A constant has `id`, `unit`, `axes`, `values`,
+  `from` and `says`; the set it lies on is the one its values run along, beside the species.
+- **Added by the writer:** `constants`; `unstated` (`[{"id", "what", "why"}]`: what the
+  view does not state, with the reason); `recording` (`{"mode", "subset"}`: whether only
+  some fields, elements or rows were recorded); a layer's `owner` beside its
+  representation, which is never null; a record's `writers` and `note`; and for a total
+  either `"monotone": "non-decreasing"` or `resets`.
+- **A total that restarts.** A dissipated-energy ledger only grows (`monotone`), except
+  where an operator retires a slot: the retired slot's history moves into that operator's
+  own record, and the ledger restarts at nought on that slot. Such a record carries
+  `"resets": {"by": [laws], "says": "..."}` in place of `monotone`. No rate is taken across
+  a reset (`schema/QUANTITY_LAYERS.md`, rule 1): the events of the layers that those laws
+  own say when it happens, and at which cell.
+- **More about the sets.** `species.valence`, and `species.species` (each species'
+  identity, and the operator that declares it); `outside.reservoir` (the held baths); a
+  membrane set that `holds` "membrane patch", with each patch's `laws`, `pumps` (null, or
+  `{"id", "law_id", "per_cycle": [{"role", "species", "count"}], "per_cycle_sign":
+  "inward-positive"}`) and `calcium_pumps`; an operator's own sets (`exchange_route`, which
+  `holds` "exchange route", lies on its membrane and names its `owner`); and the sets
+  `node`, `world`, `gate` and `floating_component`.
+- **Events name entities by id** (`"at": {"cell": "cell_0"}`), and a cell's birth and its
+  retirement are events.
+- **No positions without a builder.** `space` is null and each set's `geometry` is null
+  where the caller gave no geometry, and `unstated` says so.
+
 ## Packaged for the viewer: `cells.visualizer.replay@1`
 
 This part is the viewer's own and is fixed, so that the adapter and the replay view can
@@ -218,6 +271,18 @@ Rules that tighten the run view above:
       `membrane_voltage_V` over the membranes is then the array of `vm` over the cells,
       and no array is added. Where a cell has several membranes, or the saved voltage is
       a mean over them, no such record is written;
+    - `monotone`: `"non-decreasing"` for a total since the start that only ever grows (the
+      engine's ledgers of dissipated energy, which it checks element by element), in the
+      engine's own word. A rate worked out from such a record is never negative. Not
+      allowed on a record of another kind;
+    - `resets`: `{"by": [laws], "says": "..."}` in place of `monotone`, for a total that
+      restarts at nought on a slot when one of those operators retires the slot. A rate is
+      not taken across such an event; a record with either word feeds the energy layer;
+    - `note`: what the run's view itself notes of the record, in its own words (that the
+      membrane's own total holds its passive routes only, for one);
+    - `array` and `base` (and `rows`): for a run packaged from the engine's own view, the
+      array the record comes from, the time base it is saved on, and, where that is not
+      the replay's own base, which of its rows were taken;
     - what it lives on is its `set` (a set may say `holds`, one of the contract's words,
       where its id is not one), and how it is represented is its layer's `representation`.
   - **A record in a file of its own** carries `part`, the id of one of `view.parts`; its
@@ -236,6 +301,33 @@ Rules that tighten the run view above:
     `"geometry": {"kind": "on", "set": "cell", "index": [...]}` gives, for each
     membrane, the index of its cell, and `"outside": {"set": "outside", "index": [...]}`
     the index of the outside node it faces.
+
+  What a set may say more of its entities, one value for each in the order of `ids`:
+  - `species.secreted`: the ids of the species the run secretes (those its operators
+    make, clear or exchange). A layer may ask for "the run's secreted species";
+  - `outside.reservoir`: for each outside node, whether it is a bath held at a fixed
+    composition (the engine's word; a reservoir in the definition);
+  - `cell.lifetimes`: for each cell null, or its birth and its retirement;
+  - **tiles for the outside nodes.** In a small world the outside nodes may have
+    `polygons` of their own. They then share the cells' list of `vertices` (the same
+    list, in both sets), so that the viewer finds the edge two tiles share: two tiles
+    touch where a junction, a membrane or a face joins their places. The run saves no
+    positions: the layout is the adapter's, the view's `derivation` says so, and the
+    page draws such a tile flat, never as a cell;
+  - `membrane.pumps`: for each membrane null, or its pump as the engine's view gives it:
+    `{"id", "law_id", "per_cycle": [{"role": "sodium", "species": "Na", "count": -3},
+    ...], "per_cycle_sign": "inward-positive"}`, what one cycle moves of each species; a
+    positive count is carried into the cell;
+  - `channel.species`: for each channel population, the ids of the ions it lets through;
+  - `route` (`"holds": "route"`; in the engine's own view `exchange_route`, which `holds`
+    "exchange route"): the routes of an operator that carries a species across a
+    membrane, each on its membrane (`"geometry": {"kind": "on", "set": "membrane",
+    "index": [...]}`), with `species`, the id of the species it carries, where the run's
+    files say it.
+- **`view.example`** (optional): `{"says": "Example: invented numbers", "made_by":
+  "tools/make_run_fixture.py"}`. The run's numbers are invented (`schema/QUANTITY_LAYERS.md`,
+  rule 6): no record then names a model as its owner, `run.engine_models` is empty, and
+  the page keeps the words of `says` on the picture and in the legend.
 - **`view.constants[]`** (optional) are named constants of the run's definition: values
   that a derivation of a quantity layer may read in place of a saved record
   (`schema/QUANTITY_LAYERS.md`, rule 1). `[{"id", "label", "unit", "set", "axes",
@@ -324,6 +416,14 @@ runs of the engine, not an experiment. The page lists them under a heading of th
 ("Development runs"), apart from the experiments, with `outcome.judged` false and the
 words its entry gives ("Development run, no verdict").
 
+**Examples.** An entry may say `"example": true`: its runs have invented numbers, written
+by the run-fixture tool for a layer that no saved run feeds yet. The page lists them
+under "Examples", after the experiments and the development runs, with no outcome and no
+class. The word comes from the run folder itself (`example.json`, which the tool writes)
+and is carried into the run's view and into its line of the catalogue (`"example": true`).
+The adapter refuses a run that is an example under an entry that does not say so, and a
+run that is none under an entry that does: an example never stands among experiments.
+
 ### A run written by the engine's shared output path
 
 The adapter `standard-history` reads a run folder that the engine's own writers made
@@ -361,6 +461,67 @@ window. It takes the readouts the run observed, `observed_<field>` at `observati
   in the definition's order, and the view says so.
 - **Constants** follow the same rule as for every run: a composition with an operator
   the adapter does not know states none, and names the operator.
+- **Owners:** where the run folder holds the engine's `manifest.json`, each record's
+  owner is the one its field map names for that readout (`field_owners.observations`):
+  the inner model, or an operator's law.
+- **An operator's ledgers** that the adapter's table does not list
+  (`turnover_produced_fmol`, `turnover_cleared_fmol`, `turnover_outside_cleared_fmol`) are
+  read as totals since the start where their arrays begin at nought and never fall, and
+  the view says that this is read from the arrays.
+- **Exchange routes** (`scheduled_species_exchange@1`): the ledger `exchange_moved_fmol`
+  has one total for each route. Which way it is positive is declared nowhere, so the
+  adapter reads it from the run's own arrays: a positive total has left the route's cell
+  where, at every record, the amount of the route's species in that cell is its amount at
+  the start, plus what was made there, less what was cleared there, what crossed the
+  cell's membranes and junctions, and the routes' totals; and where the amounts do not
+  add up with the totals read the other way round, or along each route's declared
+  direction. Its `by` says that this is the viewer's reading. Where the check does not
+  hold, the record has no sign and no kind, and no layer draws it with a direction.
+- **Outside nodes as tiles:** where the cells and the outside nodes of a run fit a
+  hexagonal lattice with a tile for each, touching wherever a junction, a membrane or a
+  face joins two of them (one cell, the space it secretes into and a bath), the outside
+  nodes get tiles. Where they do not (a sheet whose every cell has a bath of its own),
+  they get none, and the view says so.
+- **An example** is a run folder that holds `example.json` (see "Examples" above).
+
+### A run with the engine's own view beside its files
+
+Where a run folder holds `view.json` (`cells.run_view@1`, as the engine's writer gives
+it), the adapter `standard-history` packages the run **from that view and from nothing
+else**. None of its own tables is used (no kind, unit, sign or owner of its own), and
+nothing is read out of the arrays' values: no sign of a voltage, no direction of an
+operator's total, no "total since the start". What the view does not state stays
+unstated, with the view's own reason (`unstated`), and a layer that needs it says so in
+those words.
+
+- **One time base for the replay.** The replay steps through the observed rows
+  (`observation`) where the view has them, and through the state's rows otherwise;
+  `view.time.base` names it and lists the other bases with their row counts. A field
+  found on both bases is packaged once, from the replay's own base. A field found on the
+  other base only is packaged at the rows of that base that fall exactly on the replay's
+  times, and its record says so (`base`, `rows`); where a time has no such row it is not
+  packaged, and the derivation says so.
+- **Records** are those the page has a name for, under the engine's field name
+  (`amount.Na` for a field with a row for each species). Each carries, as the view writes
+  them, its unit, kind, sign, owner, layer, `monotone` or `resets`, `note` and `writers`,
+  and the `array` it comes from.
+- **Sets:** a slot with no name (null) is left out with its column in every array, and
+  every index into that set is renumbered. `reservoir`, `valence`, `lifetimes`, `laws` and
+  `pumps` are carried as written; a set a packaged record lies on (`exchange_route`) is
+  carried with its geometry and owner. The cells' and the outside nodes' places are still
+  the adapter's own layout where the view gives no geometry, and the derivation says so.
+- **Layers** are the view's, each with its owner and its representation: the page can
+  say "simulated", "modelled in aggregate" or "prescribed" of every record.
+- **Constants and what is unstated** are the view's own; a flag (true or false) is no
+  number a layer reads, and is left out.
+- **Events** are carried with the entity's number in place of its id, each with its layer,
+  so that a reader knows which operator's events restart a total.
+- **The secreted species** is the species an operator of the run declares (the view names
+  the operator that declares each species); the view does not itself call it secreted,
+  and the derivation says that this is the viewer's reading.
+- **Refused:** a view that records a subset (`recording.subset`), which the adapter does
+  not read yet; a view whose files, arrays, rows or shapes are not as it says; an example
+  (`example.json`) with a view beside it.
 
 **What an experiment found** is two separate facts, both curated from the record, each
 with the record's own line and a source. The viewer shows them and derives neither.

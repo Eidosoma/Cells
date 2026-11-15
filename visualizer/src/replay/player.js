@@ -3,7 +3,19 @@
 //
 // Events: "time" when the playhead moves, "state" when playing, speed or the run changes.
 
-export const SPEEDS = [15, 60, 240]; // seconds of the run per second of watching
+// Seconds of the run per second of watching: the speeds offered for the run shown. The list is
+// refilled when a run is loaded, so whoever cycles through it offers the speeds that suit the run.
+export const SPEEDS = [15, 60, 240];
+const LONG = [15, 60, 240], SHORT = [0.25, 1, 4];
+
+/**
+ * The speeds a run of a given length is offered, slowest first; the middle one is the one it
+ * opens at. A run of under two minutes opens at true speed: a second of watching is a second
+ * of the run.
+ */
+export function speedsFor(seconds) {
+  return seconds < 120 ? SHORT : LONG;
+}
 
 export class Player extends EventTarget {
   constructor() {
@@ -23,6 +35,11 @@ export class Player extends EventTarget {
     this.end = run ? run.end : 0;
     this.time = this.start;
     this.playing = false;
+    if (run) {
+      const speeds = speedsFor(this.end - this.start);
+      SPEEDS.splice(0, SPEEDS.length, ...speeds);
+      if (!speeds.includes(this.speed)) this.speed = speeds[1];
+    }
     this.emit("state");
     this.emit("time");
   }

@@ -10,6 +10,13 @@
 // piece of glass beside the sheet, tied to its cell, that follows the time of the replay
 // and says what it is. It is there while a cell is chosen and such a layer is on.
 //
+// Where a run's view gives the spaces outside the cells (its outside nodes) tiles of their
+// own, they lie flat beside the cells, never as prisms: a small world of one cell and its
+// surroundings. A layer on the motion channel draws beads for what the run's saved totals
+// say crossed a border between two records; the picture then states what one bead stands
+// for and what time it keeps (rule 3). A run whose numbers are invented says "Example:
+// invented numbers" on the picture for as long as it shows (rule 6).
+//
 // It shows what the run saved. Every step is a saved record and nothing is interpolated;
 // a record the run does not count as valid is drawn grey, never as data. The class shown
 // with a run is the one the experiment's own summary records: the viewer judges nothing.
@@ -20,10 +27,13 @@ import { loadRun, loadPart } from "../replay/source.js";
 import { Player } from "../replay/player.js";
 import { Catalogue, RUN, CELL } from "../replay/catalogue.js";
 import { Ramp, parse } from "../replay/ramp.js";
-import { clock, display, niceDomain, number } from "../replay/format.js";
+import { clock, display, niceDomain, number, rateDisplay } from "../replay/format.js";
 import "../replay/trace.js";
 import { MARKS } from "../layers/marks/index.js";
 import { paint } from "../layers/marks/tint.js";
+import { paintOutside } from "../layers/marks/fog.js";
+import { SLOWS, statementOf, timeWords } from "../layers/marks/beads.js";
+import { worldOf } from "../layers/world.js";
 import { raise } from "../layers/marks/relief.js";
 import { layersFor, readDeclarations, account, Switch, CHANNELS, CHANNEL_WORDS, STRENGTHS } from "../layers/layers.js";
 import { Closeup, freeRect } from "../layers/closeup.js";
@@ -36,6 +46,7 @@ const INSET = 0.055; // each cell is drawn a little small, so cells read as sepa
 const MARK_SECONDS = 45; // how long, in the run's time, a replacement stays marked
 const RINGS = 6; // replacements marked at once
 const LAYERS = "layers:shown"; // the panel that says what the layers show and what stands behind them
+const BLOOM = { quiet: 0.6, bold: 1 }; // how strongly what flows shines, where the stage has a finishing pass for it
 const LIGHT = new THREE.Vector2(-0.55, 0.83).normalize(); // where the side walls' shading comes from
 const smooth = (t) => t * t * (3 - 2 * t);
 
@@ -116,6 +127,7 @@ export class ReplayLens {
     this.player.pause();
     if (this.loaded.has(id)) {
       this.open(this.loaded.get(id));
+      await this.settling;
       return;
     }
     this.loading = true;
@@ -127,6 +139,7 @@ export class ReplayLens {
       if (token !== this.token) return; // another run was asked for meanwhile
       this.loading = false;
       this.open(run);
+      await this.settling; // the records of a layer the run opens with are on their way
     } catch (error) {
       if (token !== this.token) return;
       this.loading = false;
@@ -293,6 +306,9 @@ export class ReplayLens {
     // A frame over each region the run's plan names, at the height of the tallest cell.
     this.inkMaterial = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.92, side: THREE.DoubleSide });
     this.softMaterial = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.55, side: THREE.DoubleSide });
+    // The spaces outside the cells, where the run's view gives them tiles, and the borders between all the tiles.
+    const outside = this.buildOutside(vertices, point, pitch);
+    const world = worldOf(this.run, [...cells.map((cell, number_) => ({ set: "cell", index: number_, face: cell.face, ring: cell.ring, centre: cell.centre })), ...(outside ? outside.tiles : [])]);
     const frames = [];
     for (const region of this.run.regions) {
       if (region.set !== "cell" || !region.indices.length) continue;
@@ -346,9 +362,56 @@ export class ReplayLens {
 
     this.sheet = { cells, geometry, seams, frames };
     // What the layers' marks draw on (src/layers/marks/index.js).
-    this.surface = { cells, geometry, links: seams ? seams.quads : [], pitch, low: this.low, high: this.high, extent: this.extent, root: this.root };
+    this.surface = { cells, geometry, links: seams ? seams.quads : [], pitch, low: this.low, high: this.high, extent: this.extent, root: this.root, outside, world };
     this.settleLayers();
     this.applyInk();
+  }
+
+  /**
+   * The spaces outside the cells (the run's outside nodes), where its view gives each a tile:
+   * flat on the ground beside the cells, with an edge of its own; a bath held at a fixed
+   * composition has a double edge. They are never prisms, so that none reads as a cell. The
+   * tiles share the cells' list of corners: that is how the border between two tiles is
+   * found. Returns { set, tiles, geometry, level }, or null where the view gives them no place.
+   */
+  buildOutside(vertices, point, pitch) {
+    const set = [...this.run.sets.values()].find((item) => (item.holds || item.id) === "outside node" && item.geometry?.kind === "polygons");
+    const own = set?.geometry.vertices;
+    if (!set || own.length !== vertices.length || own.some(([x, y], k) => x !== vertices[k][0] || y !== vertices[k][1])) return null;
+    const level = pitch * 0.012; // just above the ground the prisms stand on
+    let corners = 0;
+    const tiles = set.geometry.faces.map((face, index) => {
+      const ring = face.map(point);
+      const mx = ring.reduce((sum, [x]) => sum + x, 0) / ring.length, my = ring.reduce((sum, [, y]) => sum + y, 0) / ring.length;
+      corners += ring.length;
+      return { set: set.id, index, face, ring, inset: ring.map(([x, y]) => [mx + (x - mx) * (1 - INSET), my + (y - my) * (1 - INSET)]), centre: [mx, my], held: set.reservoir?.[index] === true, top: new THREE.Vector3(mx, level, my) };
+    });
+    const positions = new Float32Array((corners + tiles.length) * 3), colours = new Float32Array((corners + tiles.length) * 3), index = [];
+    let at = 0;
+    for (const tile of tiles) {
+      const n = tile.inset.length;
+      tile.start = at;
+      positions.set([tile.centre[0], level, tile.centre[1]], at * 3);
+      tile.inset.forEach(([x, y], k) => positions.set([x, level, y], (at + 1 + k) * 3));
+      for (let k = 0; k < n; k++) index.push(at, at + 1 + ((k + 1) % n), at + 1 + k);
+      at += n + 1;
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute("color", new THREE.BufferAttribute(colours, 3));
+    geometry.setIndex(index);
+    const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+    mesh.frustumCulled = false;
+    mesh.userData.unpickable = true;
+    this.root.add(mesh);
+    const edges = (rings) => rings.flatMap((ring) => ring.map((corner, k) => [corner, ring[(k + 1) % ring.length]]));
+    const within = (tile, share) => tile.inset.map(([x, y]) => [tile.centre[0] + (x - tile.centre[0]) * share, tile.centre[1] + (y - tile.centre[1]) * share]);
+    const band = new THREE.Mesh(ribbon([...edges(tiles.map((tile) => within(tile, 0.985))), ...edges(tiles.filter((tile) => tile.held).map((tile) => within(tile, 0.9)))], pitch * 0.03), this.softMaterial);
+    band.position.y = level + pitch * 0.004;
+    band.userData.unpickable = true;
+    band.renderOrder = 2;
+    this.root.add(band);
+    return { set, tiles, geometry, level };
   }
 
   // ------------------------------------------------------------ layers
@@ -377,17 +440,25 @@ export class ReplayLens {
     this.offers = layersFor(run, this.declarations, MARKS);
     const ready = this.offers.filter((item) => item.ok && !item.parts.length).map((item) => item.layer.id);
     this.switch.keep(ready);
-    if (!this.switch.holder("colour") && !this.off.has("colour")) {
+    // A layer that says it opens a run (the secreted species, where the run names one) takes the colour as the
+    // run opens, and the sheet then stays flat. Otherwise the sheet is coloured by the record chosen, and its
+    // height repeats that colour, as the replay always was.
+    const opening = !this.switch.holder("colour") && !this.off.has("colour") ? this.offers.find((item) => item.ok && item.layer.opens === true && item.layer.channels.includes("colour")) || null : null;
+    if (opening && !opening.parts.length) this.switch.switchOn(opening.layer);
+    if (!opening && !this.switch.holder("colour") && !this.off.has("colour")) {
       const tint = this.offerOf("tint", this.record.id);
       if (tint) this.switch.switchOn(tint.layer);
     }
-    if (!this.switch.holder("height") && !this.off.has("height")) {
+    if (!opening && !this.switch.holder("height") && !this.off.has("height")) {
       const relief = this.offerOf("relief", (this.offer(this.switch.holder("colour"))?.source || this.record).id);
       if (relief) this.switch.switchOn(relief.layer);
     }
     this.buildMarks();
-    // A layer that was on and whose records come in a file of their own is fetched for this run too.
-    for (const id of this.wanted) if (!this.switch.isOn(id) && this.offer(id)?.ok) this.setLayer(id, true, { silent: true });
+    // The records of a layer the run opens with, and of a layer that was on, come in files of their own: they are fetched now.
+    const fetches = [];
+    if (opening?.parts.length) fetches.push(this.setLayer(opening.layer.id, true, { silent: true }));
+    for (const id of this.wanted) if (!this.switch.isOn(id) && this.offer(id)?.ok) fetches.push(this.setLayer(id, true, { silent: true }));
+    this.settling = Promise.all(fetches);
   }
 
   /**
@@ -397,7 +468,7 @@ export class ReplayLens {
   colours() {
     const other = { css: "#888888", colour: this.ink };
     return {
-      ramp: this.ramp, neutral: this.neutral, ink: this.ink, ground: this.ground, raised: this.raised, glass: this.glass,
+      ramp: this.ramp, neutral: this.neutral, ink: this.ink, ground: this.ground, raised: this.raised, glass: this.glass, dark: this.dark,
       ion: (id) => (this.ions.get(id) || other).colour,
       ionCss: (id) => (this.ions.get(id) || other).css,
     };
@@ -417,8 +488,8 @@ export class ReplayLens {
   buildMarks() {
     for (const { mark } of this.drawn.values()) mark.dispose();
     this.drawn.clear();
-    if (!this.surface) return;
-    const context = { surface: this.surface, run: this.run, scaleOf: (record) => this.scaleOf(record), shown: display, strength: this.switch.strength, colours: this.colours() };
+    if (!this.surface) return this.shine();
+    const context = { surface: this.surface, run: this.run, scaleOf: (record) => this.scaleOf(record), shown: display, strength: this.switch.strength, colours: this.colours(), slow: () => this.slow, still: () => this.still(), ions: this.knownIons() };
     for (const id of this.switch.on) {
       const fed = this.offer(id);
       if (!fed?.ok || fed.parts.length || this.livesOnMembrane(fed)) continue;
@@ -449,10 +520,9 @@ export class ReplayLens {
    */
   buildCloseup() {
     this.dropCloseup();
-    if (!this.surface || this.selected === null) return;
-    const on = this.switch.on.map((id) => this.offer(id)).filter((fed) => fed?.ok && !fed.parts.length && this.livesOnMembrane(fed));
-    const membrane = this.membraneOf(this.selected);
-    if (!on.length || !membrane) return;
+    const on = this.surface && this.selected !== null ? this.switch.on.map((id) => this.offer(id)).filter((fed) => fed?.ok && !fed.parts.length && this.livesOnMembrane(fed)) : [];
+    const membrane = on.length ? this.membraneOf(this.selected) : null;
+    if (!on.length || !membrane) return this.shine();
     this.closeup = new Closeup({ root: this.root, colours: this.colours() });
     this.closeup.membrane = membrane;
     this.closeup.cell = this.selected;
@@ -460,11 +530,51 @@ export class ReplayLens {
       if (!this.memos.has(key)) this.memos.set(key, make());
       return this.memos.get(key);
     };
-    const context = { surface: this.closeup.surface, run: this.run, membrane: membrane.index, strength: this.switch.strength, colours: this.colours(), memo, slow: () => this.slow };
+    const context = { surface: this.closeup.surface, run: this.run, membrane: membrane.index, strength: this.switch.strength, colours: this.colours(), memo, slow: () => this.slow, still: () => this.still() };
     for (const fed of on) this.onMembrane.set(fed.layer.id, { layer: fed.layer, fed, mark: MARKS[fed.layer.mark].create({ ...context, layer: fed.layer, fed }) });
     this.tags = null;
     // Once the window has settled (a panel may be opening), the view makes room for the close-up if it has none.
     this.roomIn = 350;
+    this.shine();
+  }
+
+  /** Whether nothing may move: the visitor asks for less motion, or the picture is a still one. */
+  still() {
+    return Boolean(this.stage.reducedMotion || this.stage.rig?.instant);
+  }
+
+  /** The species of the run shown that the page knows as ions (data/layers/ions.json): a bead of another species is a token of molecules. */
+  knownIons() {
+    // Where the run's view states each species' valence, a species with one is an ion; otherwise the page's own table of ions decides.
+    const table = new Set(Object.keys(ionTable.colours || {})), valence = this.run?.constants.get("valence");
+    return new Set((this.run?.sets.get("species")?.ids || []).filter((id, k) => (valence ? valence.at(0, k) !== 0 : table.has(id))));
+  }
+
+  /**
+   * What flows may shine, where the stage has a finishing pass for it (bloom): the marks say
+   * what shines, and the stage is asked. Beads and glows read without it. While a layer on
+   * the motion channel shows, the look's own motion stands still (rule 12).
+   */
+  shine() {
+    const { stage } = this;
+    const all = [...this.drawn.values(), ...this.onMembrane.values()];
+    const lit = this.active ? all.flatMap(({ mark }) => mark.shines || []) : [];
+    for (const object of this.lit || []) if (!lit.includes(object)) stage.glow?.(object, false);
+    for (const object of lit) if (!(this.lit || []).includes(object)) stage.glow?.(object, true);
+    this.lit = lit;
+    // The stage is shared with the other lenses: this one asks for bloom only while it is shown and something of its
+    // own shines, and switches off only the bloom it switched on. The same goes for holding the look's motion still.
+    if (lit.length) {
+      stage.setBloom?.(BLOOM[this.switch.strength]);
+      this.bloomed = true;
+    } else if (this.bloomed) {
+      stage.setBloom?.(0);
+      this.bloomed = false;
+    }
+    const moving = this.active && all.some(({ layer }) => layer.channels.includes("motion"));
+    if (moving && !this.holding) stage.decoration?.pause("layers");
+    if (!moving && this.holding) stage.decoration?.resume("layers");
+    this.holding = moving;
   }
 
   /**
@@ -512,12 +622,22 @@ export class ReplayLens {
         const words = SHORT[input.part] || input.says;
         if (!list.includes(words)) list.push(words);
       }
+      // A rate of saved totals has no parts: it is worked out from the totals themselves.
+      if (fed.sources && !saved.includes("totals")) saved.push("totals");
     }
     const list = (items) => (items.length > 1 ? `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}` : items[0] || "");
     const from = [saved.length ? `the saved ${list(saved)}` : "", stated.length ? `the ${list(stated)} of the run's definition` : ""].filter(Boolean).join(", with ");
     // On a wide window the close-up also says what its signs are; on a narrow one the legend alone does, to keep the card low.
     const notes = this.stage.width >= 760 ? [...this.onMembrane.values()].map(({ mark }) => mark.note?.(number)).filter(Boolean) : [];
-    return [`${which} at ${clock(this.player.time, { precise: true })}`, this.catalogue.title(entry), `Worked out by the viewer from ${from}.`, ...notes].join("\n");
+    // What a motion layer must state on the picture itself (rule 3), and that an example's numbers are invented (rule 6): on a window of any width.
+    const flow = [...this.onMembrane.values()].map(({ mark }) => this.statement(mark)).filter(Boolean);
+    return [...(run.example ? [run.example.says] : []), `${which} at ${clock(this.player.time, { precise: true })}`, this.catalogue.title(entry), ...flow, `Worked out by the viewer from ${from}.`, ...notes].join("\n");
+  }
+
+  /** What a mark on the motion channel states on the picture: what one bead stands for, the time it keeps, the interval its rate is a mean over. */
+  statement(mark) {
+    if (!mark?.interval || mark.token === undefined) return null;
+    return statementOf({ token: mark.token, what: mark.what || "ion", slow: this.slow, interval: mark.interval(), clock: (seconds) => clock(seconds, { precise: true }), still: this.still() });
   }
 
   /** Place the close-up for the frame about to be drawn: in the free part of the window, by its cell. */
@@ -563,6 +683,11 @@ export class ReplayLens {
         });
         for (const item of mark.missing) items.push({ label: item.id, detail: `Not drawn: this run did not save ${item.lacks}.` });
       }
+      if (layer.mark === "beads") {
+        const interval = mark.interval();
+        if (!interval) items.push({ label: "Ion traffic", detail: "No rate at the run's first record: a rate is a mean between two records." });
+        else items.push(...mark.readings().map((reading) => this.flowItem(reading, interval, mark.token, "ion")));
+      }
       if (layer.mark === "stipple") {
         const charge = mark.at(step);
         const whole = Math.round(charge.charges).toLocaleString("en-US");
@@ -582,10 +707,62 @@ export class ReplayLens {
     return { title, items, note: "Worked out by the viewer from this run's saved records and its definition; the panel on what the layers show says how." };
   }
 
+  /**
+   * One stream of beads, or one glowing element, as the panel gives it: the two saved totals,
+   * the time between, the mean rate, and what that is on the picture. Enough to check by hand.
+   */
+  flowItem(reading, interval, token, what) {
+    const at = (seconds) => clock(seconds, { precise: true });
+    const total = display({ unit: reading.unit, range: [reading.before, reading.now], dtype: "float32" });
+    const totals = `${number(reading.before * total.factor, 4)} ${total.unit} at ${at(interval[0])}, ${number(reading.now * total.factor, 4)} ${total.unit} at ${at(interval[1])}: the difference over ${number(reading.seconds, 3)} s`;
+    // The rate reads in the unit of the two totals, a second: the three numbers of an item can then be checked against each other.
+    const whole = rateDisplay(reading.unit, 1), speed = { factor: total.factor, unit: /W$/.test(whole.unit) ? `${total.unit.charAt(0)}W` : `${total.unit} a second` };
+    const per = reading.per !== undefined && reading.per !== 1 ? ` (the pump's cycles times ${number(Math.abs(reading.per), 0)}, what one cycle moves of it)` : "";
+    const label = reading.share !== undefined ? `${reading.name} · ${lower(reading.label)}` : [reading.name, reading.species].filter(Boolean).join(" · ");
+    if (reading.reset) return { label, detail: "no rate in this interval", lines: [totals, "A slot was retired in this interval, and its total restarted at nought: the difference is the operator's booking, not a flow, and no rate is taken across it."] };
+    if (reading.share !== undefined) {
+      // A glow: a power, and how far up the scale it stands.
+      return { label, detail: reading.mean ? `${number(reading.mean * speed.factor, 3)} ${speed.unit}` : "nothing in this interval", lines: [totals, reading.mean ? `${number(reading.share * 100, 0)} in a hundred of the brightest glow` : null].filter(Boolean) };
+    }
+    if (!reading.mean) return { label, detail: "nothing in this interval", lines: [totals] };
+    const way = reading.way || `from ${reading.from} to ${reading.to}`;
+    const each = Math.round(reading.particles).toLocaleString("en-US");
+    return { label, detail: `${number(Math.abs(reading.mean) * speed.factor, 3)} ${speed.unit} ${way}${per}`, lines: [totals, `${each} ${what}s a second; one bead is ${token.toLocaleString("en-US")}, so ${number(reading.beads, 2)} beads a second pass${this.slow > 1 ? `, slowed ${this.slow.toLocaleString("en-US")} times` : ""}`] };
+  }
+
+  /**
+   * The numbers behind what flows on the sheet at the record shown, for the panel: one
+   * section for the beads that cross its borders, one for what glows.
+   */
+  flowNumbers() {
+    if (!this.run || !this.sheet) return [];
+    const sections = [];
+    const at = (seconds) => clock(seconds, { precise: true });
+    for (const channel of ["motion", "glow"]) {
+      const drawn = this.markOn(channel);
+      if (!drawn?.mark.readings || !drawn.mark.interval) continue;
+      const name = lower(this.layerLabel(drawn.fed)), interval = drawn.mark.interval();
+      if (this.player.playing) sections.push({ title: `${capital(name)} (pause to read a moment)`, items: [{ label: "The run is playing", detail: "The numbers of a moment are given when the run is paused." }] });
+      else if (!this.run.isValid(this.player.index)) sections.push({ title: capital(name), items: [{ label: "Not a valid record", detail: "The run does not count this record as valid: nothing is worked out from it." }] });
+      else if (!interval) sections.push({ title: `${capital(name)} at ${at(this.player.time)}`, items: [{ label: "No rate yet", detail: "This is the run's first record: a rate is a mean between two records." }] });
+      else {
+        const readings = drawn.mark.readings();
+        // What moved or glowed is listed, and so is what has no rate because its total restarted; the rest is counted.
+        const moving = readings.filter((reading) => reading.mean || reading.reset), idle = readings.length - moving.length;
+        const items = moving.map((reading) => this.flowItem(reading, interval, drawn.mark.token, drawn.mark.what || "ion"));
+        if (idle) items.push({ label: `${idle} more`, detail: channel === "motion" ? "Nothing crossed in this interval." : "Nothing was dissipated in this interval." });
+        if (!readings.length) items.push({ label: "Nothing", detail: channel === "motion" ? "No saved total of this run ever changes on a border this picture draws." : "No ledger of this run ever grows." });
+        sections.push({ title: `${capital(name)}, a mean from ${at(interval[0])} to ${at(interval[1])}`, items, note: "Each number is the saved total at one record less the total at the record before, divided by the time between: worked out by the viewer." });
+      }
+    }
+    return sections;
+  }
+
   /** The numbers the panel gives are those of one moment: when the playhead rests elsewhere, the panel is written again. */
   numbersMoved() {
-    if (!this.closeup || !this.active) return;
-    if (this.panel === LAYERS || this.panel === CELL + this.closeup.cell) this.onPanel?.();
+    if (!this.active) return;
+    if (this.panel === LAYERS && (this.closeup || this.markOn("motion") || this.markOn("glow"))) return this.onPanel?.();
+    if (this.closeup && this.panel === CELL + this.closeup.cell) this.onPanel?.();
   }
 
   /**
@@ -641,6 +818,7 @@ export class ReplayLens {
     if (!STRENGTHS.includes(value) || value === this.switch.strength) return;
     this.switch.setStrength(value);
     for (const { mark } of [...this.drawn.values(), ...this.onMembrane.values()]) mark.setStrength?.(value);
+    this.shine();
     this.tags = null;
     this.draw();
     this.onChrome?.();
@@ -690,6 +868,8 @@ export class ReplayLens {
     const height = this.markOn("height"), colour = this.markOn("colour");
     if (height) height.mark.update(step, valid);
     else raise(surface, () => this.low);
+    // The spaces outside the cells wear the tone of no value, unless the layer that holds the colour paints them.
+    paintOutside(surface, () => this.neutral);
     if (colour) colour.mark.update(step, valid);
     else paint(surface, () => this.neutral);
     const done = new Set([height?.mark, colour?.mark]);
@@ -793,6 +973,15 @@ export class ReplayLens {
       this.tags.hover.boost = this.tags.pick.boost = 1000;
       // A bold relief stands a bar beside the sheet: how much of the quantity one stretch of height is.
       this.tags.bar = labels.add({ text: "", anchor: new THREE.Vector3(), priority: 320, kind: "note label-region", lift: 6 });
+      // Each space outside the cells is named on its tile, and a held bath is called one.
+      this.tags.outside = (this.surface.outside?.tiles || []).map((tile) => labels.add({ text: "", anchor: tile.top, priority: 310, kind: "note label-region", lift: 4 }));
+      // In such a small world each cell is named too, as its neighbours are; on a sheet a cell is named when it is pointed at or chosen.
+      this.tags.cells = this.surface.outside ? this.sheet.cells.map((cell) => labels.add({ text: "", anchor: cell.top, priority: 305, kind: "note label-region", lift: 4 })) : [];
+      // What the picture says of itself for as long as it shows: that an example's numbers are invented (rule 6),
+      // and for a layer on the motion channel what one bead stands for and what time it keeps (rule 3).
+      this.tags.example = this.run.example ? labels.add({ text: this.run.example.says, anchor: new THREE.Vector3(0, this.high, -this.extent * 1.02), priority: 980, kind: "note label-region label-example", lift: 10 }) : null;
+      this.tags.flow = labels.add({ text: "", anchor: new THREE.Vector3(0, 0, this.extent * 1.06), priority: 970, kind: "note label-region label-flow", lift: 0 });
+      for (const label of [this.tags.example, this.tags.flow]) if (label) label.boost = 1000;
       // The close-up's own words: the ions' names and readings, which side is which, and its caption.
       this.closeup?.attach(labels);
     }
@@ -803,6 +992,22 @@ export class ReplayLens {
       labels.setText(this.tags.bar, bar.text);
     }
     const step = this.player.index, valid = this.run.isValid(step);
+    const fogged = this.markOn("colour")?.mark;
+    this.tags.outside.forEach((label, number_) => {
+      const outside = this.surface.outside, tile = outside.tiles[number_];
+      const value = valid && fogged?.reading ? fogged.reading(step, "outside", number_, number) : null;
+      labels.setText(label, `${outside.set.ids[number_]}${tile.held ? " (held bath)" : ""}${value ? ` · ${value}` : ""}`);
+    });
+    this.tags.cells.forEach((label, number_) => {
+      // The tag of a cell pointed at or chosen says the same and more: the standing name gives way to it.
+      label.hidden = number_ === this.selected || number_ === this.hovered;
+      const value = valid && fogged?.reading ? fogged.reading(step, "cell", number_, number) : null;
+      labels.setText(label, `${this.cells.ids[number_]}${value ? ` · ${value}` : ""}`);
+    });
+    // On a narrow window the statement stands in three short lines, so that none of it is cut.
+    const flow = this.statement(this.markOn("motion")?.mark);
+    this.tags.flow.hidden = !flow;
+    if (flow) labels.setText(this.tags.flow, this.stage.width < 620 ? flow.replace(/ · /g, "\n") : flow);
     const words = (number_) => {
       const name = this.cells.ids[number_];
       return valid ? `${name} · ${this.record.text(step, number_)}` : `${name} · not a valid record`;
@@ -906,10 +1111,20 @@ export class ReplayLens {
         events: replaced.map((event) => ({ time: event.time, label: `Replaced (${word} ${event.label || ""})`.replace(" )", ")") })),
         extra: generation && generation !== this.record ? (step) => `generation ${generation.at(step, number_)}` : null,
       },
-      // With a layer on its membrane drawn, the numbers of the close-up at the record shown come first.
-      sections: this.closeup?.cell === number_ ? [this.membraneNumbers(), ...sections].filter(Boolean) : sections,
+      // With a layer on its membrane drawn, the numbers of the close-up at the record shown come first; then what the run's ledgers say of the cell.
+      sections: [this.closeup?.cell === number_ ? this.membraneNumbers() : null, this.ledgerOf("cell", number_), ...sections].filter(Boolean),
       sources: [],
     };
+  }
+
+  /** What the run's ledgers say of one place at the record shown (what was made there, what was cleared), where the layer that colours the sheet reads them. */
+  ledgerOf(where, number_) {
+    const mark = this.markOn("colour")?.mark;
+    if (!mark?.ledger || !this.run.isValid(this.player.index)) return null;
+    const lines = mark.ledger(this.player.index, where, number_, number);
+    if (!lines.length) return null;
+    const species = mark.species ? ` of ${mark.species}` : "", totals = lines.every((line) => line.total);
+    return { title: `${totals ? "Totals" : "Ledgers"}${species} at ${clock(this.player.time, { precise: true })}`, items: lines.map((line) => ({ label: line.label, detail: line.text })), note: totals ? "Saved by the run: totals since its start." : "Saved by the run." };
   }
 
   /** The experiment's own name for a record, or the run's. */
@@ -928,7 +1143,7 @@ export class ReplayLens {
     const chrome = {
       quiet: true, // the timeline takes the place of the hint
       status: this.error ? `This run could not be shown: ${this.error}` : this.loading ? "Loading the run…" : null,
-      stamp: [experiment.label, run?.info.revision ? `engine ${run.info.revision}` : null].filter(Boolean).join(" · "),
+      stamp: [experiment.label, run?.example ? run.example.says : null, run?.info.revision ? `engine ${run.info.revision}` : null].filter(Boolean).join(" · "),
       timeline: run && this.sheet ? { player: this.player, eventWord: lower(experiment.events?.replacement?.label || "event") } : null,
       run: {
         heading: experiment.label,
@@ -938,7 +1153,7 @@ export class ReplayLens {
         // With runs of several experiments, the card also picks the experiment.
         experiments: [...this.catalogue.experiments.values()]
           .filter((item) => this.catalogue.runs.some((one) => one.experiment === item.id))
-          .map((item) => ({ id: item.id, label: item.label, active: item.id === entry?.experiment, first: this.catalogue.runs.find((one) => one.experiment === item.id).id, outcome: this.catalogue.outcomeOf(item), development: Boolean(item.development) })),
+          .map((item) => ({ id: item.id, label: item.label, active: item.id === entry?.experiment, first: this.catalogue.runs.find((one) => one.experiment === item.id).id, outcome: this.catalogue.outcomeOf(item), development: Boolean(item.development), example: Boolean(item.example) })),
         runs: this.catalogue.runs
           .filter((item) => item.experiment === entry?.experiment)
           .map((item) => ({ id: item.id, title: item.arm, sub: item.seed === null || item.seed === undefined ? "" : `seed ${item.seed}`, klass: this.catalogue.classOf(item)?.label || "", early: this.catalogue.endOf(item).early, active: item.id === this.runId })),
@@ -952,7 +1167,7 @@ export class ReplayLens {
     if (run && this.sheet && this.record) {
       const colour = this.markOn("colour"), height = this.markOn("height");
       // The scale of what colours the sheet, as the layer's mark gives it.
-      if (colour) chrome.legend.scale = colour.mark.scale(this.recordLabel(colour.mark.record), number);
+      if (colour) chrome.legend.scale = colour.mark.scale(colour.mark.label || this.recordLabel(colour.mark.record), number);
       const keys = [];
       if (this.sheet.seams?.record) keys.push({ key: "seam", text: "A seam fills in as the junctions between two cells form" });
       for (const frame of this.sheet.frames) keys.push({ key: "frame", text: `${experiment.regions?.[frame.region.id]?.label || frame.region.label}: ${lower(experiment.regions?.[frame.region.id]?.plain || "a region the run names")}` });
@@ -987,9 +1202,9 @@ export class ReplayLens {
     const rows = [];
     for (const channel of CHANNELS) {
       const offered = this.offers.filter((item) => item.layer.channels.includes(channel));
-      // The colour is chosen in the run's card while only colourings compete for it.
-      if (channel === "colour" && offered.every((item) => item.layer.mark === "tint")) continue;
       const can = offered.filter((item) => item.ok);
+      // The colour is chosen in the run's card while only colourings of a record compete for it.
+      if (channel === "colour" && can.every((item) => item.layer.mark === "tint")) continue;
       if (!can.length) continue;
       const held = this.switch.holder(channel);
       rows.push({
@@ -1011,7 +1226,10 @@ export class ReplayLens {
     // A layer on a membrane is drawn for a chosen cell: with none chosen, the switch says how to see it.
     const waiting = this.layersOn().filter((item) => this.livesOnMembrane(item.fed) && !this.onMembrane.has(item.layer.id));
     const hint = waiting.length ? "Choose a cell of the sheet: a piece of its membrane is drawn beside it." : null;
-    return { title: "Layers", rows, cannot, keys, hint, strength: { options: STRENGTHS.map((value) => ({ id: value, label: value.charAt(0).toUpperCase() + value.slice(1), on: this.switch.strength === value })) }, details: this.layersOn().length ? LAYERS : null };
+    // The time a layer on the motion channel keeps: true speed as it opens, and a slow-down beside it.
+    const moving = this.layersOn().some((item) => item.layer.channels.includes("motion"));
+    const time = moving ? { label: "Speed", options: SLOWS.map((value) => ({ id: value, label: value === 1 ? "True" : `1/${value.toLocaleString("en-US")}`, title: timeWords(value), on: this.slow === value })) } : null;
+    return { title: "Layers", rows, cannot, keys, hint, time, example: this.run.example?.says || null, strength: { options: STRENGTHS.map((value) => ({ id: value, label: value.charAt(0).toUpperCase() + value.slice(1), on: this.switch.strength === value })) }, details: this.layersOn().length ? LAYERS : null };
   }
 
   /** What the panel says of the layers that are on: what each shows and what stands behind its numbers (rule 4). */
@@ -1028,6 +1246,8 @@ export class ReplayLens {
     // The numbers of the close-up at the record shown, where a cell is chosen.
     const numbers = this.membraneNumbers();
     if (numbers) sections.push({ ...numbers, title: `${this.cells.ids[this.closeup.cell]}: ${lower(numbers.title)}` });
+    // The numbers behind the beads that cross the sheet's borders and behind what glows, at the record shown.
+    sections.push(...this.flowNumbers());
     const cannot = this.offers.filter((item) => !item.ok && !item.layer.plain);
     if (cannot.length) sections.push({ title: "Not shown for this run", items: cannot.map((item) => ({ label: `${CHANNEL_WORDS[item.layer.channels[0]]}: ${lower(item.layer.label)}`, detail: item.why })) });
     return {
@@ -1035,7 +1255,7 @@ export class ReplayLens {
       label: "What the layers show",
       eyebrow: experiment.label,
       kind: "layers",
-      plain: "A layer draws one quantity onto the sheet, or onto a piece of a chosen cell's membrane, from numbers this run saved. One layer holds each visual channel: the colour, the height, the signs on the junctions, the arrows through a membrane, the marks at its faces.",
+      plain: `${this.run.example ? `${this.run.example.says}. ` : ""}A layer draws one quantity onto the sheet, or onto a piece of a chosen cell's membrane, from numbers this run saved. One layer holds each visual channel: the colour, the height, the signs on the junctions, the arrows through a membrane, the marks at its faces, what moves, what glows.`,
       note: "A number is either saved by the run, or worked out by the viewer from saved ones by a stated rule. The viewer computes no law of the engine again.",
       chips: [{ label: this.catalogue.title(entry), title: "The run these layers are drawn on." }],
       facts: [["Drawn", this.switch.strength]],
@@ -1046,7 +1266,9 @@ export class ReplayLens {
 
   /** A layer's name in the switch: the experiment's own name for its record where it has one. */
   layerLabel(fed) {
-    const record = !fed.quantity?.derivation && fed.source ? this.run.records.get(fed.source.id) : null;
+    // A colouring or a relief of a record is called by the record's name; the layer of a species by the species; any other layer by its own.
+    const record = !fed.quantity?.derivation && fed.source && ["tint", "relief"].includes(fed.layer.mark) ? this.run.records.get(fed.source.id) : null;
+    if (fed.quantity?.species === "secreted" && fed.species) return `Amount of ${fed.species}`;
     return record ? this.recordLabel(record) : fed.layer.label;
   }
 
@@ -1070,6 +1292,7 @@ export class ReplayLens {
     this.labels.clear();
     this.labels.calloutFrame = null;
     if (this.sheet) this.enter();
+    this.shine();
     this.draw();
     stage.invalidate();
   }
@@ -1090,6 +1313,7 @@ export class ReplayLens {
   deactivate() {
     this.active = false;
     this.player.pause();
+    this.shine(); // nothing of this lens shines while another is shown
     this.stage.scene.remove(this.root);
     this.labels.clear();
     this.tags = null;
@@ -1189,9 +1413,14 @@ export class ReplayLens {
   update(dt) {
     const playing = this.active ? this.player.tick(dt) : false;
     this.placeCloseup();
-    // A mark that moves (a layer on the motion channel) is advanced on every frame, and keeps the frames coming.
+    // A mark that moves (a layer on the motion channel) is advanced on every frame, and keeps the frames coming. It
+    // is advanced by the time that truly passed since the frame before: the stage hands a frame at most a tenth of a
+    // second, which on a slow device would let the beads pass more slowly than the picture says they do.
+    const clock = globalThis.performance?.now?.() ?? null;
+    const passed = clock !== null && this.ticked !== undefined && this.ticked !== null ? Math.max(dt, clock - this.ticked) : dt;
     let moving = false;
-    if (this.active) for (const { mark } of [...this.drawn.values(), ...this.onMembrane.values()]) if (mark.tick) moving = mark.tick(dt, this.slow) || moving;
+    if (this.active) for (const { mark } of [...this.drawn.values(), ...this.onMembrane.values()]) if (mark.tick) moving = mark.tick(passed, this.slow) || moving;
+    this.ticked = moving ? clock : null; // a lane that was not watched starts afresh: its first frame is the stage's own
     // A close-up just built waits a moment for the window to settle, then asks for room once.
     let waiting = false;
     if (this.closeup && this.roomIn > 0) {
@@ -1214,7 +1443,10 @@ export class ReplayLens {
   setSlow(value) {
     if (!(value >= 1) || value === this.slow) return;
     this.slow = value;
+    for (const { mark } of [...this.drawn.values(), ...this.onMembrane.values()]) mark.setSlow?.();
+    this.draw();
     this.onChrome?.();
+    this.numbersMoved();
     this.stage.invalidate();
   }
 
@@ -1257,6 +1489,7 @@ export class ReplayLens {
 }
 
 const lower = (text) => (text ? text.charAt(0).toLowerCase() + text.slice(1) : "");
+const capital = (text) => (text ? text.charAt(0).toUpperCase() + text.slice(1) : "");
 // The close-up's caption names each input of a rule in a word or two.
 const SHORT = { voltage: "membrane voltage", inside: "ion concentrations", outside: "composition outside", temperature: "temperature", valence: "valences", capacitance: "capacitance", area: "area" };
 const cssOf = ([r, g, b]) => `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;

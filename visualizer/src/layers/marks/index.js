@@ -11,6 +11,9 @@
 //   links     the junctions that can be drawn between two neighbours: { a, b, link, points }
 //   pitch     about one cell across; low, high: the heights the sheet has always had;
 //   extent    half the sheet's width; root: the group a mark adds its own meshes to
+//   outside   where the run's view gives the spaces outside the cells tiles of their own: the
+//             tiles ({ inset, centre, start, held }), their mesh and the level they lie at
+//   world     the borders between tiles, and where each entity of the run stands (../world.js)
 //
 // A mark that says `surface: "membrane"` draws on the close-up of one chosen cell's
 // membrane instead (../closeup.js), and is built for that membrane when a cell is chosen:
@@ -25,7 +28,12 @@ import { wedge } from "./wedge.js";
 import { arrows } from "./arrows.js";
 import { stipple } from "./stipple.js";
 import { beads } from "./beads.js";
+import { stream } from "./stream.js";
+import { glow } from "./glow.js";
+import { fog } from "./fog.js";
 
 // A mark that says `built: false` has its place and its arithmetic, and does not draw yet:
 // a layer that names it is listed for a run with that reason, and cannot be switched on.
-export const MARKS = { tint, relief, wedge, arrows, stipple, beads };
+// A mark that moves has `tick(milliseconds)`, and one the lens may mark to shine lists what
+// shines under `shines`.
+export const MARKS = { tint, relief, wedge, arrows, stipple, beads, stream, glow, fog };

@@ -331,6 +331,12 @@ test("every engine part an experiment's replays point at is on the map", async (
     for (const id of experiment.engine_entities) assert.ok(ids.has(id), `${name}: ${id} is not a part of the scene`);
     assert.ok(experiment.label && experiment.plain && experiment.sources.length, `${name} needs a label, a plain line and a source`);
     assert.ok((experiment.classes || []).every((item) => item.id && item.label && item.description), `${name}: every class is described`);
+    // An example has invented numbers (schema/QUANTITY_LAYERS.md, rule 6): nothing was found, no part of the engine stands behind it, and it has no class.
+    if (experiment.example === true) {
+      assert.ok(!experiment.outcome && !experiment.classes && !experiment.development && experiment.engine_entities.length === 0, `${name}: an example has no outcome, no class and no engine part`);
+      assert.ok(/invented numbers/.test(experiment.label) && experiment.plain.startsWith("Example: invented numbers"), `${name}: an example says so in its name and in its first words`);
+      continue;
+    }
     // What an experiment found is the record's, so it must say where the record says it.
     const outcome = experiment.outcome;
     assert.ok(outcome, `${name} says nothing about what it found`);

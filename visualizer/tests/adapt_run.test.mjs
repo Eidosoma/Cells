@@ -198,9 +198,11 @@ test("the adapter's own table for the tissue family: the signs the engine's owne
   for (const name of ["membrane_voltage_V", "cell_potential_V", "junction_voltage_V", "amount", "extracellular_amount"]) assert.equal(fields[name].sign, undefined, name);
   assert.equal(missing, null, "a field that was not confirmed by name is not listed");
   // The heat ledgers are totals that only grow; the transfers are totals too, of which a rate is worked out.
-  for (const part of ["membrane", "channel", "junction", "face", "pump"]) assert.deepEqual(fields[`${part}_dissipated_energy_pJ`], { kind: "cumulative", unit: "pJ", never_falls: true });
+  for (const part of ["membrane", "channel", "junction", "face", "pump"]) assert.deepEqual(fields[`${part}_dissipated_energy_pJ`], { kind: "cumulative", unit: "pJ", monotone: "non-decreasing" }, "in the engine's own word for a total that never falls");
   for (const name of signed) assert.equal(fields[name].kind, "cumulative", name);
-  assert.equal(fields.metabolic_work_pJ.never_falls, undefined, "only the dissipated-energy fields were confirmed never to fall");
+  assert.equal(fields.metabolic_work_pJ.monotone, undefined, "only the dissipated-energy fields were confirmed never to fall");
+  // The membrane's own total holds its passive routes only, as the engine's run view notes: its channels and its pump keep ledgers of their own.
+  assert.match(fields.membrane_transferred.note, /^the passive membrane routes only: what each channel population and each pump carried is its own ledger/);
 });
 
 test("where the definition does not say that the surroundings share one potential, the view does not say it either", () => {
@@ -553,8 +555,10 @@ test("the fixtures kept in the checkout are the ones the tool writes", (t) => {
 // ---------------------------------------------------------------- several experiments
 
 const SHARED = ["--overlay", path.join(FIXTURES, "overlay.json"), "--selection", path.join(FIXTURES, "selection.json")];
-const ARMS = "synthetic-arms", CUE = "synthetic-cue", HISTORY = "synthetic-history";
+const ARMS = "synthetic-arms", CUE = "synthetic-cue", HISTORY = "synthetic-history", WORLD = "synthetic-world", EXAMPLE = "example-sheet";
 const WHOLE = "synthetic-history--whole-run", WINDOWED = "synthetic-history--windowed-run";
+const SECRETING = "synthetic-world--secreting", UNBALANCED = "synthetic-world--unbalanced", SHEET = "example-sheet--invented-numbers";
+const VIEWED = "synthetic-world--viewed", RETIRING = "synthetic-world--retiring"; // the same world with the engine's own view beside its files
 const ISO = "synthetic-arms--synthetic-iso-s1.0", DONOR = "synthetic-arms--synthetic-donor-s1.0";
 const WRITTEN = "synthetic-cue--study-a-world-1--seed3", REFUSED = "synthetic-cue--study-b-world-1--seed3";
 const PATHS = /\/home\/|\/mnt\/|\/Users\/|\/tmp\/|[A-Za-z]:\\\\/;
@@ -572,14 +576,14 @@ function open(folder, id) {
 
 const all = path.join(scratch, "all");
 const everything = tool("--evidence", FIXTURES, ...SHARED, "--out", all);
-assert.equal(everything.status, 0, `the adapter failed on the three fixtures:\n${everything.stderr}`);
+assert.equal(everything.status, 0, `the adapter failed on the fixtures:\n${everything.stderr}`);
 const catalogue = readJson(path.join(all, "index.json"));
 const curated = readJson(path.join(FIXTURES, "overlay.json")).experiments;
 
 test("one call adapts every experiment of the selection into one catalogue", () => {
   assert.equal(catalogue.format, "cells.visualizer.replay_index@1");
-  assert.deepEqual(catalogue.experiments.map((item) => item.id), [EXPERIMENT, ARMS, CUE, HISTORY], "experiments stand in the overlay's order");
-  assert.deepEqual(catalogue.runs.map((item) => item.id), [RUN_ID, ISO, DONOR, WRITTEN, REFUSED, WHOLE, WINDOWED], "each experiment's runs follow, in the selection's order");
+  assert.deepEqual(catalogue.experiments.map((item) => item.id), [EXPERIMENT, ARMS, CUE, HISTORY, WORLD, EXAMPLE], "experiments stand in the overlay's order");
+  assert.deepEqual(catalogue.runs.map((item) => item.id), [RUN_ID, ISO, DONOR, WRITTEN, REFUSED, WHOLE, WINDOWED, SECRETING, UNBALANCED, VIEWED, RETIRING, SHEET], "each experiment's runs follow, in the selection's order");
   for (const experiment of catalogue.experiments) {
     const { adapter, ...entry } = curated[experiment.id];
     assert.deepEqual(experiment, { id: experiment.id, ...entry }, `${experiment.id}: the catalogue copies the overlay's entry, with its outcome and stops`);
@@ -616,8 +620,10 @@ test("adapting one experiment leaves the others' entries and files in place", ()
 
   const third = tool("--evidence", FIXTURES, "--experiment", CUE, ...SHARED, "--out", steps);
   assert.equal(third.status, 0, third.stderr);
-  const fourth = tool("--evidence", FIXTURES, "--experiment", HISTORY, ...SHARED, "--out", steps);
-  assert.equal(fourth.status, 0, fourth.stderr);
+  for (const experiment of [HISTORY, WORLD, EXAMPLE]) {
+    const next = tool("--evidence", FIXTURES, "--experiment", experiment, ...SHARED, "--out", steps);
+    assert.equal(next.status, 0, next.stderr);
+  }
   const one = filesOf(all), several = filesOf(steps);
   assert.deepEqual(Object.keys(several), Object.keys(one));
   for (const name of Object.keys(one)) assert.ok(several[name].equals(one[name]), `${name} differs between one call and three`);
@@ -625,7 +631,7 @@ test("adapting one experiment leaves the others' entries and files in place", ()
   // An experiment adapted again has exactly the runs of that call; a file it no longer lists stays on disk.
   const again = tool("--experiment", ARMS, "--root", path.join(FIXTURES, "run-arms"), "--run", "synthetic-iso-s1.0", ...SHARED, "--out", steps);
   assert.equal(again.status, 0, again.stderr);
-  assert.deepEqual(readJson(path.join(steps, "index.json")).runs.map((item) => item.id), [RUN_ID, ISO, WRITTEN, REFUSED, WHOLE, WINDOWED]);
+  assert.deepEqual(readJson(path.join(steps, "index.json")).runs.map((item) => item.id), [RUN_ID, ISO, WRITTEN, REFUSED, WHOLE, WINDOWED, SECRETING, UNBALANCED, VIEWED, RETIRING, SHEET]);
   assert.ok(existsSync(path.join(steps, `${DONOR}.json`)), "nothing is deleted");
   assert.match(again.stderr, /not in the catalogue and were left in place/);
 });
@@ -636,7 +642,7 @@ test("a kept run whose file is gone is taken out of the catalogue, and said to b
   rmSync(path.join(copy, `${DONOR}.json`));
   const result = tool("--experiment", EXPERIMENT, "--root", FIXTURE, ...SHARED, "--out", copy);
   assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(readJson(path.join(copy, "index.json")).runs.map((item) => item.id), [RUN_ID, ISO, WRITTEN, REFUSED, WHOLE, WINDOWED]);
+  assert.deepEqual(readJson(path.join(copy, "index.json")).runs.map((item) => item.id), [RUN_ID, ISO, WRITTEN, REFUSED, WHOLE, WINDOWED, SECRETING, UNBALANCED, VIEWED, RETIRING, SHEET]);
   assert.match(result.stderr, /synthetic-arms have no file/);
 });
 
@@ -946,6 +952,236 @@ test("a cue is an event of its own kind, at each cell it acts on", () => {
   const refused = open(all, REFUSED).view;
   assert.deepEqual([...new Set(refused.events.map((event) => event.kind))], ["cue_on"]);
   assert.ok(refused.derivation.some((line) => line.startsWith("7 scheduled cue changes after the run's last record")));
+});
+
+// ---------------------------------------------------------------- a small world, and an example
+
+test("a small world: each space outside the cells has a tile beside the cell, a held bath is called one, and the secreted species is named", () => {
+  const { view, file } = open(all, SECRETING);
+  assert.deepEqual(validateReplay(file), []);
+  const sets = Object.fromEntries(view.sets.map((item) => [item.id, item]));
+  assert.deepEqual(sets.outside.ids, ["bath", "ecs_0"]);
+  assert.deepEqual(sets.outside.reservoir, [true, false], "the bath is a reservoir in the definition; the space beside the cell is not");
+  assert.deepEqual(sets.species.secreted, ["S"], "the species the run's operators make, clear and exchange");
+  // One list of corners for the cell's tile and the two outside it; every two of the three tiles share an edge.
+  assert.equal(sets.outside.geometry.kind, "polygons");
+  assert.deepEqual(sets.outside.geometry.vertices, sets.cell.geometry.vertices);
+  const faces = [...sets.cell.geometry.faces, ...sets.outside.geometry.faces];
+  assert.equal(faces.length, 3);
+  const shared = (a, b) => a.filter((vertex) => b.includes(vertex)).length;
+  assert.deepEqual([shared(faces[0], faces[1]), shared(faces[0], faces[2]), shared(faces[1], faces[2])], [2, 2, 2], "a membrane or a face joins every two of them, and so their tiles touch");
+  assert.ok(view.derivation.some((line) => /Where the outside nodes stand: the run saves no positions.*That layout is the viewer's own/.test(line)));
+  // The face lies between the two spaces outside, sender first; a membrane on the cell faces each.
+  assert.deepEqual(sets.face.geometry, { kind: "links", between: "outside", ends: [[1, 0]] });
+  assert.deepEqual([sets.membrane.geometry.index, sets.membrane.outside.index], [[0, 0], [0, 1]]);
+  // A sheet whose every cell has a bath of its own gives the baths no place, and says so.
+  const sheet = open(all, SHEET).view;
+  assert.equal(sheet.sets.find((item) => item.id === "outside").geometry, undefined);
+  assert.ok(sheet.derivation.some((line) => /^The outside nodes are not drawn/.test(line)));
+});
+
+test("an operator's ledgers are read as totals where they start at nought and never fall, and each record's owner is the one the run's manifest names", () => {
+  const { view, record } = open(all, SECRETING);
+  for (const id of ["turnover_produced_fmol.S", "turnover_cleared_fmol.S", "turnover_outside_cleared_fmol.S"]) {
+    assert.deepEqual([record(id).kind, record(id).monotone, record(id).owner, record(id).unit], ["cumulative", "non-decreasing", "scheduled_species_turnover@1", "fmol"], id);
+  }
+  assert.equal(record("amount.S").owner, "resolved_pump_tissue@3", "the manifest's word 'inner' is the inner model");
+  assert.equal(record("face_dissipated_energy_pJ").monotone, "non-decreasing");
+  assert.equal(record("face_transferred.S").sign.from, "first");
+  assert.ok(view.derivation.some((line) => /^Read as totals since the run's start, because their arrays begin at nought and never fall: turnover_cleared_fmol, turnover_outside_cleared_fmol, turnover_produced_fmol\./.test(line)));
+  assert.ok(view.derivation.some((line) => /^Each record's owner is the one the run's own manifest names/.test(line)));
+  // The view lists each of its layers once.
+  assert.equal(new Set(view.layers.map((layer) => layer.id)).size, view.layers.length);
+});
+
+test("which way an exchange route's total is positive is read from the amounts adding up, and said only where no other reading does", () => {
+  const good = open(all, SECRETING), bad = open(all, UNBALANCED);
+  const moved = good.record("exchange_moved_fmol");
+  assert.deepEqual([moved.set, moved.kind, moved.unit, moved.owner], ["route", "cumulative", "fmol", "scheduled_species_exchange@1"]);
+  assert.deepEqual([moved.sign.says, moved.sign.from, moved.sign.to], ["a positive amount has left the route's cell for the outside its membrane faces", "cell", "outside node"]);
+  assert.match(moved.sign.by, /^the viewer's reading of the run's own saved arrays, not a declaration by the run: at every record the amount of the route's species in its cell is the amount at the start/);
+  assert.ok(good.view.derivation.some((line) => /^Which way moved by an exchange route is positive is not declared by the run\. It is read from its arrays/.test(line)));
+  // The routes are a set of their own: each on its membrane, with the species it carries.
+  const routes = good.view.sets.find((item) => item.id === "route");
+  assert.deepEqual([routes.holds, routes.ids, routes.geometry, routes.species], ["route", ["secrete", "sink"], { kind: "on", set: "membrane", index: [1, 1] }, ["S", "S"]]);
+  // The check itself, on the saved numbers: the cell's amount of S follows what was made less what the routes carried out.
+  const run = good.run, last = run.count - 1;
+  const value = (file, id, entity) => {
+    const item = file.record(id);
+    if (!item.part) return file.run.records.get(id).at(last, entity);
+    const part = readJson(path.join(all, `${file.view.run.id}.${item.part}.json`));
+    const bytes = Buffer.from(part.payload.data, "base64");
+    return new Float32Array(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), item.offset, item.shape[0] * item.shape[1])[last * item.shape[1] + entity];
+  };
+  const gain = value(good, "amount.S", 0) - 0.001, made = value(good, "turnover_produced_fmol.S", 0), carried = value(good, "exchange_moved_fmol", 0) + value(good, "exchange_moved_fmol", 1);
+  assert.ok(Math.abs(gain - (made - carried)) < 1e-9, `${gain} is ${made} less ${carried}`);
+  assert.ok(Math.abs(gain - (made + carried)) > 1e-5, "read the other way round, the amounts do not add up");
+  // Where the cell's amount does not follow, no reading holds: the record has no sign and no kind, and nothing is said of its direction.
+  const loose = bad.record("exchange_moved_fmol");
+  assert.deepEqual([loose.sign, loose.kind], [undefined, undefined]);
+  assert.ok(!bad.view.derivation.some((line) => /exchange route is positive/.test(line)));
+});
+
+test("an example says of itself that it is one: its view carries the word, names no model, and it is listed only under an entry that says so", () => {
+  const { view, file } = open(all, SHEET);
+  assert.deepEqual(validateReplay(file), []);
+  assert.deepEqual(view.example, { says: "Example: invented numbers", made_by: "tools/make_run_fixture.py" });
+  assert.match(view.derivation[0], /^Example: invented numbers\. Every number of this run was written by the run-fixture tool.*No engine ran, and no model is named as the owner of a record\.$/);
+  assert.deepEqual(view.run.engine_models, []);
+  assert.deepEqual([...new Set(view.records.filter((item) => item.id !== "t").map((item) => item.owner))], [undefined], "no record names a model as its owner");
+  assert.equal(view.run.class, undefined, "an example has no result class");
+  const row = catalogue.runs.find((item) => item.id === SHEET), entry = catalogue.experiments.find((item) => item.id === EXAMPLE);
+  assert.deepEqual([row.example, entry.example, entry.outcome, row.class], [true, true, undefined, undefined]);
+  // No other run is one.
+  for (const other of catalogue.runs.filter((item) => item.id !== SHEET)) {
+    assert.equal(other.example, undefined);
+    assert.equal(open(all, other.id).view.example, undefined);
+  }
+  // An example under an entry that does not say so is refused, and so is a run that is none under an entry that does.
+  const overlay = readJson(path.join(FIXTURES, "overlay.json"));
+  const wrong = path.join(scratch, "overlay-wrong.json");
+  delete overlay.experiments[EXAMPLE].example;
+  overlay.experiments[WORLD].example = true;
+  writeFileSync(wrong, JSON.stringify(overlay));
+  const target = path.join(scratch, "wrong-heading");
+  const asExperiment = tool("--evidence", FIXTURES, "--experiment", EXAMPLE, "--overlay", wrong, "--selection", path.join(FIXTURES, "selection.json"), "--out", target);
+  assert.notEqual(asExperiment.status, 0);
+  assert.match(asExperiment.stderr, /the run is an example with invented numbers, and its catalogue entry does not say so/);
+  const asExample = tool("--evidence", FIXTURES, "--experiment", WORLD, "--overlay", wrong, "--selection", path.join(FIXTURES, "selection.json"), "--out", target);
+  assert.notEqual(asExample.status, 0);
+  assert.match(asExample.stderr, /its catalogue entry calls it an example, and the run folder does not/);
+  assert.ok(!existsSync(path.join(target, "index.json")), "nothing is catalogued");
+});
+
+test("what one cycle of a pump moves and what a channel population lets through are the definition's own, and the example's totals keep the engine's shapes", () => {
+  const { view, record } = open(all, SHEET);
+  const sets = Object.fromEntries(view.sets.map((item) => [item.id, item]));
+  // In the shape the engine's own run view gives a pump: what one cycle moves, by role, a positive count into the cell.
+  assert.equal(sets.membrane.pumps.length, 19);
+  assert.deepEqual(sets.membrane.pumps[0], { id: "pump_0", law_id: "nak_atp_mass_action_positive@1", per_cycle: [{ role: "sodium", species: "Na", count: -3 }, { role: "potassium", species: "K", count: 2 }], per_cycle_sign: "inward-positive" });
+  assert.ok(view.derivation.some((line) => /^What one cycle of each membrane's pump moves is the pump's own declaration in the run's definition/.test(line)));
+  assert.equal(sets.channel.ids.length, 38);
+  assert.deepEqual([sets.channel.ids.slice(0, 2), sets.channel.species.slice(0, 2), sets.channel.geometry.index.slice(0, 4)], [["kir_0", "nal_0"], [["K"], ["Na"]], [0, 0, 1, 1]]);
+  // Totals and ledgers under the engine's names, each over the set the engine keeps it for; the spare column of capacity is cut.
+  const shapes = Object.fromEntries(["channel_transferred", "pump_cycles", "membrane_transferred.K", "junction_transferred.K", "junction_dissipated_energy_pJ", "channel_dissipated_energy_pJ", "membrane_dissipated_energy_pJ", "pump_dissipated_energy_pJ"].map((id) => [id, [record(id).set, record(id).shape[1], record(id).kind]]));
+  assert.deepEqual(shapes, {
+    channel_transferred: ["channel", 38, "cumulative"], pump_cycles: ["membrane", 19, "cumulative"], "membrane_transferred.K": ["membrane", 19, "cumulative"], "junction_transferred.K": ["junction", 42, "cumulative"],
+    junction_dissipated_energy_pJ: ["junction", 42, "cumulative"], channel_dissipated_energy_pJ: ["channel", 38, "cumulative"], membrane_dissipated_energy_pJ: ["membrane", 19, "cumulative"], pump_dissipated_energy_pJ: ["membrane", 19, "cumulative"],
+  });
+  for (const id of ["junction_dissipated_energy_pJ", "channel_dissipated_energy_pJ", "membrane_dissipated_energy_pJ", "pump_dissipated_energy_pJ"]) assert.equal(record(id).monotone, "non-decreasing", id);
+  // The membrane's own total is its passive routes only, and says so; what its channels and its pump carried are their own records.
+  assert.match(record("membrane_transferred.K").note, /^the passive membrane routes only/);
+  assert.equal(record("pump_cycles").sign.from, "outside node", "pump cycles are positive inwards");
+  assert.equal(record("channel_transferred").sign.from, "cell");
+  // The world of the first feed has no pump and no channel population: its view states neither.
+  const world = open(all, SECRETING).view;
+  assert.equal(world.sets.find((item) => item.id === "membrane").pumps, undefined);
+  assert.equal(world.sets.find((item) => item.id === "channel"), undefined);
+});
+
+// ---------------------------------------------------------------- a run with the engine's own view beside its files
+
+test("a run with the engine's own view is packaged from that view: its kinds, its signs by role, its layers and owners, and nothing of the adapter's own", () => {
+  const { view, file, record } = open(all, VIEWED);
+  assert.deepEqual(validateReplay(file), []);
+  assert.match(view.derivation[0], /^Read from the engine's own view of the run \(view\.json, cells\.run_view@1\), beside its files: every set, unit, kind, sign, owner and layer is as that view declares it\. The viewer adds no table of its own and reads nothing out of the arrays' values/);
+  // What the view says of the run, and of each layer: who owns it and how it is represented.
+  assert.deepEqual([view.run.label, view.run.revision, view.run.engine_models.length, view.run.stop], ["synthetic fixture: a small world with a view", "0123456", 4, "complete"]);
+  assert.deepEqual(view.layers, [
+    { id: "membrane", label: "Membrane voltage and ions", representation: "simulated", owner: "resolved_pump_tissue@3" },
+    { id: "pumps", label: "Pump populations", representation: "modelled", owner: "resolved_pump_tissue@3" },
+    { id: "turnover", label: "Species turnover", representation: "prescribed", owner: "scheduled_species_turnover@1" },
+    { id: "exchange", label: "Species exchange", representation: "prescribed", owner: "scheduled_species_exchange@1" },
+  ]);
+  // A sign is the view's own, by the roles of the record's set, with who confirmed it: no word of the adapter's is put beside it.
+  assert.deepEqual(record("face_transferred.S").sign, { confirmed: "synthetic fixture: written with the rest", from: "sender", says: "a positive amount leaves the face's sender node for its receiver", to: "receiver" });
+  assert.deepEqual([record("membrane_transferred.S").sign.from, record("pump_cycles").sign.from, record("reservoir_supplied.S").sign.from], ["inside", "outside", "exterior"]);
+  for (const item of view.records) assert.equal(item.sign?.by, undefined, `${item.id}: no reading of the adapter's`);
+  // What the view does not state is not stated: the operators' ledgers have no kind and no direction here, the voltages no sign,
+  // though the same numbers without a view get them from the adapter's own readings.
+  assert.deepEqual([record("exchange_moved_fmol").kind, record("exchange_moved_fmol").sign, record("turnover_produced_fmol.S").kind, record("turnover_produced_fmol.S").monotone, record("membrane_voltage_V").sign], [undefined, undefined, undefined, undefined, undefined]);
+  assert.deepEqual([open(all, SECRETING).record("exchange_moved_fmol").kind, open(all, SECRETING).record("turnover_produced_fmol.S").kind], ["cumulative", "cumulative"], "the same world with no view of the engine's");
+  assert.deepEqual(view.unstated.map((item) => [item.id, item.what]), [["geometry", "geometry"], ["exchange_moved_fmol", "kind"], ["turnover_cleared_fmol", "kind"], ["turnover_outside_cleared_fmol", "kind"], ["turnover_produced_fmol", "kind"]]);
+  assert.equal(view.unstated[1].why, "scheduled_species_exchange@1 declares no kind for it");
+  // The heat ledgers say in the engine's word that they only grow; each record names its array and its time base.
+  assert.deepEqual([record("face_dissipated_energy_pJ").monotone, record("face_dissipated_energy_pJ").array, record("face_dissipated_energy_pJ").base, record("face_dissipated_energy_pJ").owner], ["non-decreasing", "observed_face_dissipated_energy_pJ", "observation", "resolved_pump_tissue@3"]);
+  // The sets as the view names them: what a membrane and a route are called, which bath is a reservoir, each species' valence.
+  const sets = Object.fromEntries(view.sets.map((item) => [item.id, item]));
+  assert.deepEqual([sets.membrane.holds, sets.exchange_route.holds, sets.exchange_route.geometry, sets.exchange_route.owner], ["membrane patch", "exchange route", { kind: "on", set: "membrane", index: [1, 1] }, "scheduled_species_exchange@1"]);
+  assert.deepEqual([sets.outside.reservoir, sets.species.valence, sets.membrane.pumps], [[true, false], [1, 1, -1, 0], undefined]);
+  // The species an operator declares is taken as the secreted one, and the view says that this is the viewer's reading of it.
+  assert.deepEqual(sets.species.secreted, ["S"]);
+  assert.ok(view.derivation.some((line) => /^The species an operator of the run declares \(S, by scheduled_species_turnover@1\) is taken as the species the run secretes: the view names the operator that declares it, and does not itself call it secreted\.$/.test(line)));
+  // The constants are the view's own, with its own words for why nothing changes them; a flag is no number a layer reads.
+  assert.deepEqual(view.constants.map((item) => item.id), ["temperature", "valence", "volume", "extracellular_volume", "membrane_capacitance", "membrane_area"]);
+  assert.deepEqual(view.constants[0], { id: "temperature", unit: "K", axes: [], values: 310, from: "the definition (the bound layout)", says: "no operator of this composition changes it" });
+  // No positions in the view: the tiles are the viewer's own layout, as for the same world without a view.
+  assert.deepEqual(sets.outside.geometry.faces, open(all, SECRETING).view.sets.find((item) => item.id === "outside").geometry.faces);
+});
+
+test("a slot with no name is left out with its column, and the replay steps through one of the view's two time bases", () => {
+  const { view, record, run } = open(all, VIEWED);
+  const sets = Object.fromEntries(view.sets.map((item) => [item.id, item]));
+  // The cells' second slot has no name in the view: it is padding, and neither the set nor an array keeps it.
+  assert.deepEqual(sets.cell.ids, ["cell_0"]);
+  assert.deepEqual([record("amount.S").shape, record("cell_potential_V").shape, view.constants.find((item) => item.id === "volume").values], [[5, 1], [5, 1], [1]]);
+  assert.ok(view.derivation.some((line) => line === "Slots the view gives no name (padding) are left out, with their columns: 1 of cell."));
+  // The observed rows are the replay's records; the state's rows are named, with how many there are.
+  assert.deepEqual(view.time, { unit: "s", record: "t", base: { id: "observation", says: "the observed rows", others: [{ id: "accepted", says: "the state's accepted rows", rows: 9 }] } });
+  assert.deepEqual([run.count, run.start, run.end], [5, 0, 4]);
+  assert.ok(view.derivation.some((line) => /^The replay steps through the view's time base 'observation' \(the observed rows\): 5 records\./.test(line)));
+  // A field saved with the state too is packaged once, from the observed rows.
+  assert.equal(record("amount.S").base, "observation");
+  assert.ok(view.derivation.some((line) => /^1 record\(s\) of the view's other time base hold the same fields as records packaged here/.test(line)));
+  // A field saved with the state only is packaged at the rows of that base that fall on the replay's times, and says so.
+  const cleared = record("turnover_cleared_fmol.S");
+  assert.deepEqual([cleared.base, cleared.array, cleared.rows, cleared.shape, cleared.kind], ["accepted", "turnover_cleared_fmol", "the row of the base 'accepted' that falls on each of the replay's times", [5, 1], undefined]);
+  const part = readJson(path.join(all, `${VIEWED}.${cleared.part}.json`));
+  const bytes = Buffer.from(part.payload.data, "base64");
+  const values = new Float32Array(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), cleared.offset, 5);
+  assert.deepEqual(Array.from(values, (value) => Number(value.toExponential(3))), [0, 1e-6, 2e-6, 3e-6, 4e-6], "the rows at 0, 1, 2, 3 and 4 s of nine");
+  assert.ok(view.derivation.some((line) => line === "Saved on another time base only, and packaged at the rows of that base that fall on the replay's times: turnover_cleared_fmol."));
+});
+
+test("a retirement is an event of the view, and a total that restarts there says so in place of claiming that it only grows", () => {
+  const { view, file, record } = open(all, RETIRING);
+  assert.deepEqual(validateReplay(file), []);
+  assert.deepEqual(view.events, [{ time: 2.5, kind: "retirement", layer: "replacement", label: "cell_0 retired", at: { set: "cell", index: 0 } }]);
+  assert.deepEqual(view.sets.find((item) => item.id === "cell").lifetimes, [[null, 2.5]]);
+  const heat = record("membrane_dissipated_energy_pJ");
+  assert.deepEqual([heat.kind, heat.monotone, heat.resets.by], ["cumulative", undefined, ["scheduled_cell_replacement@1"]]);
+  assert.match(heat.resets.says, /on a retired slot the ledger restarts at zero/);
+  assert.equal(record("face_dissipated_energy_pJ").monotone, "non-decreasing", "a ledger no retiring operator writes still only grows");
+  // The layer of the operator that retires goes with its event, with its owner: that is how a reader knows which events restart a total.
+  assert.deepEqual(view.layers.find((layer) => layer.id === "replacement"), { id: "replacement", label: "Cell replacement", representation: "prescribed", owner: "scheduled_cell_replacement@1" });
+  assert.equal(open(all, VIEWED).view.layers.some((layer) => layer.id === "replacement"), false);
+});
+
+test("a view the adapter cannot read whole is refused with the reason, and nothing is written", () => {
+  const broken = (name, change) => {
+    const copy = path.join(scratch, `view-${name}`);
+    cpSync(path.join(FIXTURES, "run-world"), path.join(copy, "run-world"), { recursive: true });
+    const file = path.join(copy, "run-world", "viewed", "view.json");
+    const view = readJson(file);
+    change(view, path.join(copy, "run-world", "viewed"));
+    writeFileSync(file, JSON.stringify(view));
+    const target = path.join(scratch, `view-${name}-out`);
+    return [tool("--experiment", WORLD, "--root", path.join(copy, "run-world"), "--run", "viewed", ...SHARED, "--out", target), target];
+  };
+  for (const [name, change, message] of [
+    ["subset", (view) => (view.recording.subset = { fields: ["amount"], elements: null, every: 2 }), /its view records a subset of the run .*which the adapter does not read yet/],
+    ["format", (view) => (view.format = "cells.run_view@2"), /its view\.json is not a run view \(cells\.run_view@1\)/],
+    ["keys", (view) => delete view.unstated, /its view\.json lacks unstated/],
+    ["array", (view) => (view.records.find((item) => item.id === "observed_amount").array = "observed_amounts"), /trajectory\.npz does not hold observed_amounts, which its view says is saved there/],
+    ["rows", (view) => (view.time.bases[1].files[0].rows = [0, 4]), /trajectory\.npz does not hold the rows its view gives it for the time base observation/],
+    ["shape", (view) => view.sets.find((item) => item.id === "cell").ids.push(null), /does not have the shape its view's axes give it/],
+    ["example", (view, folder) => writeFileSync(path.join(folder, "example.json"), JSON.stringify({ example: true, says: "Example: invented numbers" })), /an example with invented numbers has no view of the engine's/],
+  ]) {
+    const [result, target] = broken(name, change);
+    assert.notEqual(result.status, 0, name);
+    assert.match(result.stderr, message, name);
+    assert.ok(!existsSync(path.join(target, "index.json")), `${name}: nothing is catalogued`);
+  }
 });
 
 test("no machine path, host name or traceback is written for any experiment", () => {

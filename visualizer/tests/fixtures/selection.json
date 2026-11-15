@@ -1,5 +1,5 @@
 {
- "note": "synthetic fixture: the four synthetic experiments, each with the folder beside this file that holds it.",
+ "note": "synthetic fixture: the five synthetic experiments and the example, each with the folder beside this file that holds it.",
  "synthetic-sheet": {
   "evidence_folder": "run-small",
   "runs": [
@@ -25,6 +25,21 @@
   "runs": [
    "whole/run",
    "windowed/run"
+  ]
+ },
+ "synthetic-world": {
+  "evidence_folder": "run-world",
+  "runs": [
+   "secreting",
+   "unbalanced",
+   "viewed",
+   "retiring"
+  ]
+ },
+ "example-sheet": {
+  "evidence_folder": "run-example",
+  "runs": [
+   "invented-numbers"
   ]
  }
 }

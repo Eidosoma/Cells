@@ -7,7 +7,19 @@
 //
 //   node tools/check_layers.mjs [SCENARIO] [RUNS_DIR] [OUT_DIR]
 //
-// SCENARIO is zero (the default), switch, closeup or picture. `closeup` checks the layers
+// SCENARIO is zero (the default), switch, closeup, flow, example or picture. `example` checks
+// a run with invented numbers (RUN names it): that the picture, the legend and the run's card
+// say that it is an example, and that a real press on a cell draws beads through its channel
+// populations and its pump on the close-up. `flow` checks what flows
+// on a run with a secreted species (the engine's development run of one cell and its
+// surroundings): that it opens coloured by the species, with the spaces outside as flat
+// tiles; that pressing Transfers puts beads on the borders and the picture then states what
+// one bead stands for and what time it keeps; that the glow stands where energy is
+// dissipated; and that the slow-down changes what a bead stands for and not how many pass.
+// With REFERENCE set to a JSON file of numbers worked out from the run's own 64-bit arrays
+// ({ run, time, interval, lanes: { face_0: { before, now, mean, from, to } }, busiest, token,
+// glow: { face_0: { before, now, mean } }, full, amounts: { cell_0, bath, ecs_0 } }), it holds
+// the page's numbers to those. `closeup` checks the layers
 // that are drawn on a chosen cell's membrane: that the close-up comes with a cell and a
 // layer and goes with either, that it says what it is, and that the page's own numbers are
 // the two declared rules applied to the run's saved arrays. With REFERENCE set to a JSON
@@ -189,6 +201,24 @@ const state = () =>
       fetched: performance.getEntriesByType("resource").filter((entry) => /\\.junction-gate\\.json$/.test(entry.name)).length,
       ions: performance.getEntriesByType("resource").filter((entry) => /\\.concentration-[a-z0-9-]+\\.json$/.test(entry.name)).length,
       hint: root.querySelector("cells-legend .layer-hint")?.textContent ?? null,
+      // What flows: the spaces outside, the picture's own statements, and the page's numbers behind each bead and each glow.
+      flow: (() => {
+        const words = (name) => [...root.querySelectorAll("." + name)].filter((el) => !el.classList.contains("is-off")).map((el) => el.textContent);
+        const stream = lens.drawn.get("transfers")?.mark, glow = lens.drawn.get("energy-glow")?.mark, fog = lens.drawn.get("signal-fog")?.mark;
+        return {
+          slow: lens.slow, example: words("label-example"), statement: words("label-flow"),
+          tiles: lens.surface.outside ? lens.surface.outside.tiles.map((tile, n) => ({ name: lens.surface.outside.set.ids[n], held: tile.held, level: lens.surface.outside.level })) : null,
+          regions: words("label-region"),
+          time: [...root.querySelectorAll('cells-legend .layer-row[data-channel="time"] button')].map((b) => b.textContent + (b.getAttribute("aria-pressed") === "true" ? "*" : "")),
+          legendExample: root.querySelector("cells-legend .layer-example")?.textContent ?? null,
+          lanes: stream ? { token: stream.token, what: stream.what, busiest: stream.busiest, beads: stream.lanes.map((lane) => lane.beads.length), drawn: stream.drawn, readings: stream.readings() } : null,
+          glow: glow ? { full: glow.full, unit: glow.shown.unit, readings: glow.readings() } : null,
+          amounts: fog ? { unit: fog.domain.shown.unit, high: fog.domain.high, cells: lens.cells.ids.map((_, n) => fog.record.at(lens.player.index, n)), outside: fog.outside && lens.surface.outside ? lens.surface.outside.set.ids.map((_, n) => fog.outside.at(lens.player.index, n)) : null } : null,
+          keys: [...root.querySelectorAll("cells-legend .legend-layers .legend-key")].map((p) => p.textContent),
+          headings: [...root.querySelectorAll(".eyebrow")].map((el) => el.textContent),
+          through: (() => { const mark = lens.onMembrane.get("ion-traffic")?.mark; return mark ? { token: mark.token, forms: mark.forms.map((form) => form.name), beads: mark.streams.map((stream) => stream.beads.length), drawn: mark.drawn, readings: mark.readings() } : null; })(),
+        };
+      })(),
       chips: [...root.querySelectorAll("cells-legend .key-chip")].map((chip) => chip.textContent + " " + chip.querySelector("i").style.background),
       selected: v.state.selected,
       // The close-up of a chosen cell's membrane: where it stands, what it says, and the page's own numbers.
@@ -486,6 +516,150 @@ try {
     check("Off on the membrane row takes the close-up away; the cell stays chosen and the sheet is as it always was", s.closeup === null && s.selected === `cell:${first.number}` && JSON.stringify(s.on) === JSON.stringify(["voltage-tint", "voltage-relief"]), JSON.stringify([s.closeup, s.selected, s.on]));
   }
 
+  if (scenario === "example") {
+    // An example run: invented numbers, said to be on the picture, in the legend and in the run's card.
+    await open(`${run}time=1`);
+    // The picture's own labels come a frame or two after the run is drawn: wait for them (a poll with a limit, never a fixed sleep).
+    let s = await until((now) => now.flow.example.length > 0 && now.flow.legendExample);
+    check(
+      "an example says that its numbers are invented: on the picture, in the legend, and under a heading of its own in the run's card",
+      s.flow.example.includes("Example: invented numbers") && s.flow.legendExample === "Example: invented numbers" && s.flow.headings.some((text) => /^Examples?$/.test(text)),
+      JSON.stringify([s.flow.example, s.flow.legendExample, s.flow.headings])
+    );
+    // Ion traffic, with a real press: it waits for a cell, and offers the slow-down beside the true speed.
+    await press(option("motion", "ion-traffic"));
+    await fetched();
+    s = await until((now) => now.on.includes("ion-traffic") && /Choose a cell/.test(now.hint || ""));
+    check("Ion traffic waits for a cell to be chosen, and the slow-down stands beside the true speed", s.on.includes("ion-traffic") && s.closeup === null && /Choose a cell of the sheet/.test(s.hint || "") && JSON.stringify(s.flow.time) === JSON.stringify(["True*", "1/1,000", "1/1,000,000"]), JSON.stringify([s.on, s.hint, s.flow.time]));
+    // A cell chosen with a real press on the sheet.
+    let first = null;
+    for (let number = 0; number < 19 && !first; number++) {
+      const at = await cellAt(number);
+      if (at) first = { number, ...at };
+    }
+    await click(first.x, first.y, 700);
+    s = await until((now) => now.closeup?.cell === first.number && now.flow.through && now.closeup.placed?.fits !== false);
+    await rest();
+    s = await state();
+    const through = s.flow.through, words = s.closeup?.words || [];
+    const caption = words.find((text) => /Membrane of/.test(text)) || "";
+    check(
+      "a press on a cell draws a form for each of its channel populations and one for its pump, with beads through each, and the bare membrane's own lanes beside them",
+      s.selected === `cell:${first.number}` && through?.forms.length === 4 && through.forms[2] === "pump" && through.forms[3] === "membrane itself" && through.readings.length === 6 && through.beads.slice(0, 4).every((count) => count >= 1) && through.drawn.heads === 6,
+      JSON.stringify([s.selected, through?.forms, through?.beads, through?.drawn])
+    );
+    check("the close-up says that it is an example, and states what one bead stands for, the time it keeps and the interval", /^Example: invented numbers/.test(caption) && /One bead is [\d,]+ ions · true speed, shown still · mean of 0\.5 s to 1\.0 s/.test(caption), caption.slice(0, 220));
+    const ways = Object.fromEntries((through?.readings || []).map((reading) => [`${reading.kind} ${reading.species}`, reading.way]));
+    check("potassium leaves through its channels and sodium enters through its own; the pump carries three sodium out and two potassium in for each cycle", ways["channel K"] === "out of the cell" && ways["channel Na"] === "into the cell" && ways["pump Na"] === "out of the cell" && ways["pump K"] === "into the cell" && through.readings.filter((reading) => reading.kind === "pump").map((reading) => reading.per).join() === "-3,2", JSON.stringify(ways));
+    check("each stream's beads a second are its ions a second over the token", through.readings.every((reading) => Math.abs(reading.beads - (Math.abs(reading.mean) * 6.02214076e8) / through.token) <= 1e-6 * reading.beads), JSON.stringify(through.readings.map((reading) => [reading.name, reading.species, reading.mean, reading.beads])));
+    await shot("example-closeup");
+    // Transfers takes the motion channel: the close-up goes, and beads cross the junctions.
+    await press(option("motion", "transfers"));
+    await fetched();
+    s = await until((now) => now.on.includes("transfers") && now.closeup === null && now.flow.lanes && now.flow.statement.length === 1);
+    check("Transfers takes the motion channel from Ion traffic: the close-up goes, and beads cross the junctions between cells", s.on.includes("transfers") && !s.on.includes("ion-traffic") && s.closeup === null && s.flow.lanes?.readings.length > 0 && /^One bead is [\d,]+ ions · true speed, shown still/.test(s.flow.statement[0] || ""), JSON.stringify([s.on, s.flow.statement, s.flow.lanes?.readings.length]));
+    note(`example: ${JSON.stringify({ run: s.run, on: s.on, statement: s.flow.statement, token: s.flow.lanes?.token, moving: s.flow.lanes?.readings.filter((reading) => reading.beads > 0.5).length, frame_ms: s.frame, legend: s.legendBox })}`);
+    await shot("example-transfers");
+  }
+
+  if (scenario === "flow") {
+    const reference = process.env.REFERENCE ? JSON.parse(await readFile(path.resolve(process.env.REFERENCE), "utf8")) : null;
+    const time = reference?.time ?? 0.4;
+    const close = (actual, wanted, share = 2e-5) => Number.isFinite(actual) && Math.abs(actual - wanted) <= Math.abs(wanted) * share + 1e-30;
+    await open(`${reference?.run ? `run=${reference.run}&` : run}time=${time}`);
+    let s = await until((now) => now.on.includes("signal-fog") && now.flow.amounts && now.flow.tiles?.every((tile) => now.flow.regions.some((text) => text.startsWith(tile.name))));
+    check("the run opens coloured by its secreted species, and nothing holds its height", JSON.stringify(s.on) === JSON.stringify(["signal-fog"]) && /^Amount of /.test(s.scale || ""), JSON.stringify([s.on, s.scale]));
+    check("each space outside the cells is a flat tile with its name on it; a held bath is called one", s.flow.tiles?.length > 0 && s.flow.tiles.every((tile) => tile.level < s.low / 4) && s.flow.tiles.every((tile) => s.flow.regions.some((text) => text.startsWith(tile.name + (tile.held ? " (held bath)" : "")))), JSON.stringify([s.flow.tiles, s.flow.regions]));
+    check("nothing moves and nothing is stated of beads before a layer on the motion channel is on", s.flow.statement.length === 0 && s.flow.time.length === 0, JSON.stringify([s.flow.statement, s.flow.time]));
+    if (reference) {
+      const names = Object.keys(reference.amounts);
+      const page = Object.fromEntries([...(await evaluate(`${L}.cells.ids`)).map((name, n) => [name, s.flow.amounts.cells[n]]), ...(s.flow.tiles || []).map((tile, n) => [tile.name, s.flow.amounts.outside?.[n]])]);
+      check("the amounts it colours by are the run's own, at the record shown", names.every((name) => close(page[name], reference.amounts[name], 1e-6)), JSON.stringify(page));
+    }
+
+    // Transfers: a real press on the legend's row for motion.
+    await press(option("motion", "transfers"));
+    await fetched();
+    s = await until((now) => now.on.includes("transfers") && now.flow.lanes && now.flow.statement.length === 1);
+    const lanes = Object.fromEntries((s.flow.lanes?.readings || []).map((reading) => [reading.name, reading]));
+    const trueToken = s.flow.lanes?.token;
+    check("pressing Transfers puts a lane of beads on each border a saved total crosses, and the picture states the token, the time and the interval", s.flow.lanes?.readings.length > 0 && /^One bead is [\d,]+ (molecule|ion)s? · true speed, shown still · mean of [\d.]+ s to [\d.]+ s$/.test(s.flow.statement[0] || ""), JSON.stringify([Object.keys(lanes), s.flow.statement]));
+    check("the slow-down stands beside the true speed, which is the one that is on", JSON.stringify(s.flow.time) === JSON.stringify(["True*", "1/1,000", "1/1,000,000"]), JSON.stringify(s.flow.time));
+    check("where nothing may move (a still picture) the beads stand, as many as would be crossing at one moment, and each lane that carries something ends in an arrowhead", s.flow.lanes.beads.every((count, n) => count === Math.min(18, Math.round(s.flow.lanes.readings[n].beads * 1.6))) && s.flow.lanes.drawn.heads === s.flow.lanes.readings.filter((reading) => reading.mean).length, JSON.stringify([s.flow.lanes.beads, s.flow.lanes.drawn]));
+    if (reference) {
+      for (const [name, wanted] of Object.entries(reference.lanes)) {
+        const got = lanes[name];
+        check(`${name}: the page's mean rate is the growth of the run's saved total over the interval, and the bead goes from ${wanted.from} to ${wanted.to}`, got && close(got.before, wanted.before) && close(got.now, wanted.now) && close(got.mean, wanted.mean) && got.from === wanted.from && got.to === wanted.to, JSON.stringify(got));
+        check(`${name}: beads a second are its particles a second over the token`, got && close(got.particles, Math.abs(wanted.mean) * 6.02214076e8) && close(got.beads, (Math.abs(wanted.mean) * 6.02214076e8) / reference.token), JSON.stringify([got?.particles, got?.beads]));
+      }
+      check("one token for the run, sized by its busiest lane over all its intervals", s.flow.lanes.token === reference.token && close(s.flow.lanes.busiest, reference.busiest), JSON.stringify([s.flow.lanes.token, s.flow.lanes.busiest]));
+    }
+
+    // The glow: a real press on its row.
+    await press(option("glow", "energy-glow"));
+    await fetched();
+    s = await until((now) => now.on.includes("energy-glow") && now.flow.glow);
+    const glows = Object.fromEntries((s.flow.glow?.readings || []).map((reading) => [reading.name, reading]));
+    check("pressing Energy dissipated puts a glow where a ledger grows, and the legend gives its scale and says it is no temperature", s.flow.glow?.readings.length > 0 && s.flow.keys.some((text) => /The brightest stands for [\d.]+ [pfa]W; .*A magnitude, not a temperature/.test(text)), JSON.stringify([Object.keys(glows), s.flow.keys.filter((text) => /glow/i.test(text))]));
+    if (reference) {
+      for (const [name, wanted] of Object.entries(reference.glow)) {
+        const got = glows[name];
+        check(`${name}: the power is the growth of the run's ledger over the interval`, got && close(got.before, wanted.before) && close(got.now, wanted.now) && close(got.mean, wanted.mean) && close(got.share, wanted.mean / reference.full, 1e-4), JSON.stringify(got));
+      }
+      check("the glow's scale ends on a round number at or above the largest power of the run", close(s.flow.glow.full, reference.full, 1e-9), String(s.flow.glow.full));
+    }
+
+    // The slow-down: a bead stands for fewer, and as many pass.
+    await press(option("time", "1000"));
+    s = await until((now) => now.flow.slow === 1000 && /slowed 1,000 times/.test(now.flow.statement[0] || ""));
+    const slowed = Object.fromEntries((s.flow.lanes?.readings || []).map((reading) => [reading.name, reading]));
+    const same = s.flow.lanes.token * 1000 === trueToken ? Object.keys(lanes).every((name) => close(slowed[name].beads, lanes[name].beads, 1e-6)) : true;
+    check(
+      "slowed a thousand times, a bead stands for a thousandth as many and as many beads pass; the picture and the legend say so",
+      s.flow.lanes.token === Math.max(1, trueToken / 1000) && same && s.flow.keys.some((text) => text.startsWith("Slowed 1,000 times: one second here is one millisecond in the cell")) && JSON.stringify(s.flow.time) === JSON.stringify(["True", "1/1,000*", "1/1,000,000"]),
+      JSON.stringify([trueToken, s.flow.lanes.token, s.flow.statement, s.flow.time])
+    );
+    await press(option("time", "1"));
+    s = await until((now) => now.flow.slow === 1);
+
+    // Where things may move, beads set out and cross. Every other step here looks at a still picture (the page is opened
+    // with still=1): this one lets the view move for a moment, watches a lane, and puts the stillness back.
+    const moving = await evaluate(`(async () => {
+      const viewer = ${V}, lens = viewer.current, mark = lens.drawn.get("transfers").mark, lane = mark.lanes[0];
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      viewer.stage.rig.instant = false;
+      lens.draw();
+      viewer.stage.invalidate();
+      await wait(600);
+      const emptied = lane.beads.length; // the standing beads are gone or under way; from here on beads set out one by one
+      await wait(2600);
+      const first = lane.beads.slice(), drawn = mark.drawn;
+      // A later look, once a frame has come (the browser of a check draws few frames a second): at most twenty seconds.
+      let later = first;
+      for (let tries = 0; tries < 100 && JSON.stringify(later) === JSON.stringify(first); tries++) {
+        await wait(200);
+        later = lane.beads.slice();
+      }
+      viewer.stage.rig.instant = true;
+      lens.draw();
+      viewer.stage.invalidate();
+      return { still: lens.still(), emptied, first, later, drawn, rate: mark.readings()[0].beads, standing: lane.beads.length };
+    })()`);
+    check(
+      "where things may move, beads set out one after another and travel: a lane holds about its rate times the crossing time, and its beads have moved a moment later",
+      moving.first.length >= 1 && moving.first.length <= Math.ceil(moving.rate * 1.6) + 1 && moving.first.every((share) => share > 0 && share < 1) && JSON.stringify(moving.first) !== JSON.stringify(moving.later) && moving.drawn.heads >= 1,
+      JSON.stringify({ rate: moving.rate, first: moving.first.map((share) => Number(share.toFixed(2))), later: moving.later.map((share) => Number(share.toFixed(2))), drawn: moving.drawn })
+    );
+    check("put back to a still picture, the beads stand again as many as would be crossing", moving.still === true && moving.standing === Math.min(18, Math.round(moving.rate * 1.6)), JSON.stringify([moving.still, moving.standing]));
+
+    // The panel: the numbers behind each bead and each glow, as the page gives them to be checked by hand.
+    await press("cells-legend .layer-details");
+    s = await until((now) => now.panel && /Transfers, a mean from/.test(now.panel.text) && /Energy dissipated, a mean from/.test(now.panel.text));
+    check("the panel gives, for each lane and each glow, the two saved totals, the time between and the mean rate", Boolean(s.panel) && /the difference over [\d.]+ s/.test(s.panel.text) && /beads a second pass/.test(s.panel.text) && /in a hundred of the brightest glow/.test(s.panel.text) && /Worked out by the viewer from the saved totals/.test(s.panel.text), s.panel ? s.panel.text.slice(0, 200) : "no panel");
+    note(`flow: ${JSON.stringify({ run: s.run, time: s.time, on: s.on, statement: s.flow.statement, token: s.flow.lanes?.token, lanes: s.flow.lanes?.readings.map((reading) => [reading.name, reading.mean, reading.beads, reading.from, reading.to]), glow: s.flow.glow?.readings.map((reading) => [reading.name, reading.mean, reading.share]), frame_ms: s.frame, legend: s.legendBox })}`);
+    await shot("flow");
+  }
+
   if (scenario === "picture") {
     // Pictures of the page as its address asks for it: one, or the few that PICTURES lists
     // ([{ name, query, size: [width, height] }]). At most four a call, so the browser is held briefly.
@@ -502,7 +676,7 @@ try {
         await sleep(500);
       }
       const s = await state();
-      note(`${item.name}: ${JSON.stringify({ size: [width, height], run: s.run, on: s.on, strength: s.strength, time: s.time, drops: s.drops, bar: s.bar, tallest_cells: Number((s.tallest / s.pitch).toFixed(2)), frame_ms: s.frame, rows: s.rows, cannot: s.cannot, legend: s.legendBox, closeup: s.closeup && { cell: s.closeup.cell, layers: s.closeup.layers, placed: s.closeup.placed, words: s.closeup.words } })}`);
+      note(`${item.name}: ${JSON.stringify({ flow: { statement: s.flow.statement, example: s.flow.example, legendExample: s.flow.legendExample, token: s.flow.lanes?.token, lanes: s.flow.lanes?.readings.length, glow: s.flow.glow?.readings.length }, size: [width, height], run: s.run, on: s.on, strength: s.strength, time: s.time, drops: s.drops, bar: s.bar, tallest_cells: Number((s.tallest / s.pitch).toFixed(2)), frame_ms: s.frame, rows: s.rows, cannot: s.cannot, legend: s.legendBox, closeup: s.closeup && { cell: s.closeup.cell, layers: s.closeup.layers, placed: s.closeup.placed, words: s.closeup.words } })}`);
       await shot(item.name);
     }
   }

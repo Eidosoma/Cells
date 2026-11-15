@@ -279,6 +279,23 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .label-closeup-side { font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
 .label-closeup-caption { font-size: 11px; font-weight: 400; color: var(--muted); white-space: pre-line; }
 .label-closeup-caption::first-line { font-weight: 600; color: var(--fg); }
+.layer-example { margin: 2px 8px 5px; padding: 3px 7px; border: 1px solid var(--fg); border-radius: 5px; font-size: 12px; font-weight: 600; line-height: 1.3; color: var(--fg); }
+.key-tile, .key-tile-held { height: 11px; border: 1.5px solid var(--muted); border-radius: 2px; }
+.key-tile-held { outline: 1.5px solid var(--muted); outline-offset: -5px; }
+.key-amount { width: 12px; height: 12px; margin-left: 4px; border-radius: 50%; background: linear-gradient(to right, var(--seq-1), var(--seq-4)); }
+.key-way { width: 15px; height: 2px; margin: 7px 0 0 1px; background: var(--fg); }
+.key-way::after { content: ""; position: absolute; right: -4px; top: -3px; border-left: 6px solid var(--fg); border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+.key-unplaced { width: 9px; height: 9px; margin: 3px 0 0 6px; border: 1.5px dashed var(--muted); border-radius: 50%; }
+.key-pump { width: 12px; height: 12px; margin-left: 4px; border: 1.5px solid var(--fg); border-radius: 2px; }
+.key-glow, .key-glow-spot, .key-glow-route { height: 11px; border-radius: 6px; background: radial-gradient(closest-side, #dd7a14, transparent); }
+.key-glow-rim { width: 13px; height: 13px; margin-left: 3px; border-radius: 50%; background: radial-gradient(closest-side, transparent 42%, #dd7a14 68%, transparent); }
+.key-glow-spot { width: 11px; margin-left: 5px; }
+.key-glow-route { opacity: .55; }
+.label-example { font-weight: 700; border: 1px solid var(--fg); background: var(--bg-raised); }
+.label-flow { font-weight: 500; font-variant-numeric: tabular-nums; white-space: pre-line; text-align: center; }
+.key-head { width: 0; height: 0; margin: 3px 0 0 6px; border-left: 9px solid var(--fg); border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+.legend-layers.is-dense .layer-row { grid-template-columns: 50px minmax(0, 1fr); column-gap: 5px; align-items: center; padding: 2px 8px; }
+.legend-layers.is-dense .layer-channel, .legend-layers.is-dense .layer-seg button { font-size: 11px; }
 
 /* ---------------------------------------------------------------- replay: the timeline */
 cells-timeline { position: absolute; left: 268px; right: 244px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); max-width: 780px; margin-inline: auto; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 7px 12px 8px; }

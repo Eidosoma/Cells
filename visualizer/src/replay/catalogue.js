@@ -74,11 +74,11 @@ export class Catalogue {
       if (!groups.has(run.experiment)) groups.set(run.experiment, []);
       groups.get(run.experiment).push(this.describe(run.id));
     }
-    // The experiments first, then the development runs, each named as one: a development run is no experiment.
-    const development = (id) => Boolean(this.experiments.get(id)?.development);
-    return [...groups]
-      .sort(([a], [b]) => Number(development(a)) - Number(development(b)))
-      .map(([id, entities]) => ({ label: development(id) ? `Development run: ${this.experiments.get(id)?.label || id}` : this.experiments.get(id)?.label || id, entities }));
+    // The experiments first, then the development runs, then the examples, each named as what it is:
+    // a development run is no experiment, and an example's numbers are invented.
+    const rank = (id) => (this.experiments.get(id)?.example ? 2 : this.experiments.get(id)?.development ? 1 : 0);
+    const named = (id) => `${["", "Development run: ", "Example: "][rank(id)]}${this.experiments.get(id)?.label || id}`;
+    return [...groups].sort(([a], [b]) => rank(a) - rank(b)).map(([id, entities]) => ({ label: named(id), entities }));
   }
 
   entities() {

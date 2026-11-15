@@ -332,3 +332,69 @@ owner, answer to follow.
   writes one through the shared writer unchanged, so it comes with the run view's writer
   in the rework's round. Until then ion traffic and the energy glow on a sheet are shown
   on examples with invented numbers, marked as such.
+
+### The worked example of the run view, read by the layers (15 November 2026)
+
+The engine's run-view writer was shown on a worked example: a `view.json` for the
+development run above (`run-view-20261115-01/secreted-species-dev-run-view-01fa27d9`).
+The viewer's adapter now packages a run from such a view and from nothing else: under a
+view it uses none of its own tables and reads no kind and no sign out of the arrays
+(`schema/RUN_VIEW.md`, "A run with the engine's own view beside its files"). Read that
+way, the worked example feeds the fog, the beads across the face and the glow. What it
+cannot feed is listed here for the writer's owner. **Items 1 and 10 change a picture;**
+the rest are smaller.
+
+1. **`exchange_moved_fmol` has no `kind` and no `sign`** (on both time bases). So it gives
+   no rate, and the two exchange routes get no beads: on this run that is the whole of "a
+   species leaving the cell". Needed: `kind: cumulative`, and a sign by the roles of the
+   route's membrane patch (`inside`, `outside`). The run's own amounts add up with a
+   positive total read as leaving the cell, for the export route and for the import
+   route alike, and under no other reading. The published page shows this run packaged
+   with the viewer's own table, which draws the routes by that reading and says that it
+   is the viewer's; a word from the core's owner would let the legend say "confirmed".
+2. **The writer's `SIGN_ROLES` has no entry for `exchange_route`,** so its own reader would
+   refuse a sign on that record as things stand.
+3. **No route states the species it carries.** `exchange_route` has ids, the membrane each
+   lies on and its owner, and the record has no species axis. A bead needs the species
+   for its colour and its name. (The run's `summary.json` does name each route's species
+   and declared direction; the viewer's own table reads it there.)
+4. **The turnover ledgers have no `kind`** (`turnover_produced_fmol`,
+   `turnover_cleared_fmol`, `turnover_outside_cleared_fmol`; the view lists them under
+   `unstated`). The page shows the saved numbers and can neither call them totals since
+   the start nor take a rate of them.
+5. **The voltages have no sign** (`membrane_voltage_V`, `junction_voltage_V`: "not
+   confirmed"). The push and pull on ions, the membrane charge and the junctions' own
+   drops need to know which side is the higher when the value is positive. The viewer's
+   own table reads that from the arrays (the cell's potential less that of its outside),
+   which it does not do under a view.
+6. **Nothing marks the secreted species.** The viewer takes the species whose identity
+   names an operator of the run as its source, and says that this is its own reading.
+7. **Which entities restart at a retirement.** `resets` names the retiring laws and the
+   events name cells. Nothing says which entities outside the cell set restart (a
+   membrane of the cell, a channel population, a junction to a neighbour, a face). The
+   viewer assumes the cell, its membranes and what lies on them, and its junctions;
+   anything it cannot trace to a cell gets no rate in an interval that holds such an
+   event.
+8. **An event at a record's own time.** The view does not say whether the row saved at
+   that time shows the state before the event or after it, so the viewer takes no rate
+   in either interval the event bounds.
+9. **Geometry is null** (no builder for this world), so the three tiles are the viewer's
+   own layout, and the page says so. Nothing to change; only to know.
+10. **A question on `membrane_transferred`.** The view's sign on `channel_transferred`
+    says "added unchanged into the patch's membrane total", as the core's owner said
+    above; the view's note on `membrane_transferred` says "the passive membrane routes
+    only: each channel population's and each pump's transfers are their own ledgers".
+    The viewer rests on the note: on the close-up of a cell it draws the channels'
+    totals, the pump's cycles and `membrane_transferred` as three ledgers side by side.
+    If the saved `membrane_transferred` did contain what the channels carried, that
+    picture would count the channels twice. Is "the patch's membrane total" in the
+    sign's words the balance's sum, and not the saved array? Until a saved run of a
+    sheet carries these totals the close-up is shown on an example only, so no real
+    picture rests on the answer yet.
+11. **Reading notes, not gaps.** The view has no `id`, no `arm` and no end state for the
+    run: the catalogue names it, and how it ended still comes from `summary.json`. The
+    run's own files name no revision of the engine by its commit (the note beside the
+    folder does), so the page gives none for this run. A
+    recording subset (`recording.subset`) is refused by the viewer's adapter until there
+    is an example of one, and a builder's geometry in a view is not read yet for the same
+    reason.

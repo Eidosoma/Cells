@@ -64,6 +64,18 @@ export function validateReplay(file) {
         problems.push(`set ${set.id}: a link names an entity that does not exist`);
       }
     }
+    // What a set may say of each of its entities: one value for each, in the entities' order.
+    const each = (list) => Array.isArray(list) && list.length === set.ids.length;
+    if (set.reservoir !== undefined && !(each(set.reservoir) && set.reservoir.every((value) => typeof value === "boolean"))) problems.push(`set ${set.id}: reservoir must say for each entity whether it is a held bath`);
+    if (set.lifetimes !== undefined && !(each(set.lifetimes) && set.lifetimes.every((life) => life === null || (Array.isArray(life) && life.length === 2 && life.every((time) => time === null || Number.isFinite(time)))))) problems.push(`set ${set.id}: lifetimes must give, for each entity, null or its birth and its retirement`);
+    if (set.secreted !== undefined && !(Array.isArray(set.secreted) && set.secreted.every((id) => set.ids.includes(id)))) problems.push(`set ${set.id}: its secreted species are not among its ids`);
+    const known = (id) => (view.sets.find((item) => item.id === "species")?.ids || []).includes(id);
+    if (set.species !== undefined && set.id !== "species" && !(each(set.species) && set.species.every((value) => (Array.isArray(value) ? value.every(known) : known(value))))) {
+      problems.push(`set ${set.id}: species must name, for each entity, a species of the run or a list of them`);
+    }
+    if (set.pumps !== undefined && !(each(set.pumps) && set.pumps.every((pump) => pump === null || (typeof pump === "object" && Array.isArray(pump.per_cycle) && pump.per_cycle.every((move) => move && known(move.species) && Number.isFinite(move.count)))))) {
+      problems.push(`set ${set.id}: pumps must give, for each entity, null or what one cycle of its pump moves of each species`);
+    }
     // Entities that lie on entities of another set (a membrane on its cell), and the outside each one faces.
     for (const [what, place] of [["on", geometry.kind === "on" ? geometry : null], ["outside", set.outside || null]]) {
       if (!place) continue;
@@ -82,6 +94,7 @@ export function validateReplay(file) {
     else if (!Number.isInteger(part.byte_length) || typeof part.file !== "string") problems.push(`part ${part.id}: it needs a file and a byte_length`);
     else parts.set(part.id, part);
   }
+  if (view.example !== undefined && !(view.example && typeof view.example.says === "string" && view.example.says)) problems.push("view.example must say in words that the run is an example");
   if (view.surroundings !== undefined && (typeof view.surroundings !== "object" || typeof view.surroundings.shared !== "boolean" || typeof view.surroundings.says !== "string")) {
     problems.push("view.surroundings must say whether the cells' surroundings share one potential, and how that is known");
   }
@@ -124,7 +137,11 @@ export function validateReplay(file) {
     if (!Number.isInteger(record.offset) || record.offset % 4 !== 0) problems.push(`${name}: offset ${record.offset} is not a multiple of 4`);
     else if (record.offset + count(record.shape) * Type.BYTES_PER_ELEMENT > room) problems.push(`${name}: runs past the end of ${part ? `its part ${part.id}` : "the payload"}`);
     if (record.kind !== undefined && !RECORD_KINDS.includes(record.kind)) problems.push(`${name}: kind ${record.kind} is not one of ${RECORD_KINDS.join(", ")}`);
-    if (record.sign !== undefined && (typeof record.sign !== "object" || typeof record.sign?.says !== "string" || (record.sign.high !== undefined && !SIGN_HIGH.includes(record.sign.high)) || (record.sign.by !== undefined && typeof record.sign.by !== "string"))) {
+    if (record.monotone !== undefined && (record.monotone !== "non-decreasing" || record.kind !== "cumulative")) problems.push(`${name}: only a total since the start may be said never to fall (monotone: non-decreasing)`);
+    if (record.resets !== undefined && !(record.resets && Array.isArray(record.resets.by) && record.resets.by.length && record.resets.by.every((law) => typeof law === "string") && typeof record.resets.says === "string" && record.monotone === undefined && record.kind === "cumulative")) {
+      problems.push(`${name}: resets names the operators that retire slots and says what a reset means; such a total claims no monotonicity`);
+    }
+    if (record.sign !== undefined && (typeof record.sign !== "object" || typeof record.sign?.says !== "string" || (record.sign.high !== undefined && !SIGN_HIGH.includes(record.sign.high)) || (record.sign.by !== undefined && typeof record.sign.by !== "string") || (record.sign.confirmed !== undefined && typeof record.sign.confirmed !== "string"))) {
       problems.push(`${name}: a sign says in words what positive means, which end or side is the higher, and where it comes from when the run does not declare it`);
     }
     if (named.has(record.id)) problems.push(`${name}: a constant has the same id`);
@@ -218,6 +235,8 @@ export class Run {
     this.info = view.run;
     this.id = view.run.id;
     this.derived = Boolean(view.derived);
+    // An example run (schema/QUANTITY_LAYERS.md, rule 6): its numbers are invented; { says, made_by }, or null.
+    this.example = view.example || null;
     this.derivation = view.derivation || [];
     this.sets = new Map(view.sets.map((set) => [set.id, set]));
     // A record whose array comes in a file of its own waits in `pending` until that file is in.

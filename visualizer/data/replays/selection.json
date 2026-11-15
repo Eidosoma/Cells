@@ -1,5 +1,5 @@
 {
-  "note": "The runs adapted for the published page, per experiment. An experiment's key is its id in overlay.json; evidence_folder is a folder's name, never a path. One call adapts everything: python3 tools/adapt_run.py --evidence FOLDER, where FOLDER holds the evidence folders. Nothing generated is committed. Held back: the W1 heredity pilot (evidence folder heredity-pilot-w1-20261110-01; runs pilot-04/world-1, pilot-04/world-2) adapts, but is not shown yet, because the view draws every event as a replacement and the pilot's events are a cue switched on and off in many cells at once. Add it back as an experiment here when the view can draw a cue.",
+  "note": "The runs adapted for the published page, per experiment. An experiment's key is its id in overlay.json; evidence_folder is a folder's name, never a path. One call adapts every experiment and development run: python3 tools/adapt_run.py --evidence FOLDER, where FOLDER holds the evidence folders. The example (invented numbers) is no evidence and is not listed here: its run folder is the fixture the run-fixture tool writes, added with a second call, python3 tools/adapt_run.py --experiment example-sheet --root tests/fixtures/run-example --run invented-numbers. Nothing generated is committed. Held back: the W1 heredity pilot (evidence folder heredity-pilot-w1-20261110-01; runs pilot-04/world-1, pilot-04/world-2) adapts, but is not shown yet, because the view draws every event as a replacement and the pilot's events are a cue switched on and off in many cells at once. Add it back as an experiment here when the view can draw a cue.",
   "e07-v1": {
     "note": "All 38 runs of the judged experiment. The first three are one of the inheritance route, which the judged result is about, and the control at two couplings; the rest follow in the order of the experiment's summary.",
     "evidence_folder": "e07-v1-judged-20261113-01",
@@ -69,6 +69,13 @@
       "donor-fast-k1-d19-s0.3",
       "donor-central-k1-d37-s1.0",
       "donor-fast-k3-d37-s1.0"
+    ]
+  },
+  "secreted-species-dev-run": {
+    "note": "The engine's first development run for the viewer (15 November 2026): one run, no verdict.",
+    "evidence_folder": "viewer-feed-20261115-01",
+    "runs": [
+      "secreted-species-dev-run"
     ]
   }
 }

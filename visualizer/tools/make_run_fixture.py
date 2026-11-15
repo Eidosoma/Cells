@@ -4,8 +4,8 @@
     python3 tools/make_run_fixture.py            # writes tests/fixtures/
     python3 tools/make_run_fixture.py --out DIR  # writes the same files into DIR
 
-Four folders, each in the layout of one kind of evidence folder, on the same 19-cell
-hexagonal sheet:
+Six folders, each in the layout of one kind of evidence folder; all but the last on the
+same 19-cell hexagonal sheet:
 
     run-small/   an E07-v1 folder: runs/<arm>/seedN, a summary with a class, snapshot/
     run-arms/    a turnover pre-screen folder: arms/<arm>, no seed and no class; one arm
@@ -15,8 +15,21 @@ hexagonal sheet:
     run-history/ two runs in the layout of the engine's shared output paths: one with
                  trajectory.npz, one with windows.jsonl and a chunk for each window; the
                  same numbers in both, under the engine's own names for its readouts
+    run-example/ one run in the same layout that says of itself that it is an example
+                 (example.json): what crossed each channel population, pump, membrane and
+                 junction, and the energy dissipated at each, with invented numbers. It is
+                 what the page shows under "Examples" for the layers no saved run feeds yet
+                 (schema/QUANTITY_LAYERS.md, rule 6)
 
-and beside them overlay.json and selection.json, which name all three experiments.
+    run-world/   four runs of one small world in the same layout: one cell, a finite space
+                 outside it and a held bath, with a species that is made in the cell,
+                 carried out of it by two exchange routes and cleared outside. In one the
+                 amounts add up; in another they do not; two more have a view.json beside
+                 their files in the shape the engine's own run-view writer gives it
+                 (cells.run_view@1: two time bases, signs by role, a padding slot), one of
+                 them with a cell that is retired and totals that restart there
+
+and beside them overlay.json and selection.json, which name all six experiments.
 Every number is invented here. No engine ran, and nothing in these folders is evidence.
 
 The same call always writes the same bytes. Standard library only.
@@ -43,8 +56,13 @@ OUT = FIXTURES / "run-small"
 ARMS = FIXTURES / "run-arms"
 CUE = FIXTURES / "run-cue"
 HISTORY = FIXTURES / "run-history"
+EXAMPLE = FIXTURES / "run-example"
+WORLD = FIXTURES / "run-world"
 EXPERIMENT, ARM, SEED = "synthetic-sheet", "synthetic-s1.0", 1
 ARMS_EXPERIMENT, CUE_EXPERIMENT, HISTORY_EXPERIMENT = "synthetic-arms", "synthetic-cue", "synthetic-history"
+EXAMPLE_EXPERIMENT = "example-sheet"
+WORLD_EXPERIMENT = "synthetic-world"
+EXAMPLE_SAYS = "Example: invented numbers"  # the words the page keeps on the picture and in the legend (rule 6)
 SYNTHETIC = "synthetic fixture"
 DIRECTIONS = ((1, 0), (0, 1), (-1, 1), (-1, 0), (0, -1), (1, -1))
 RADIUS, DISC_RING = 2, 1
@@ -664,21 +682,418 @@ def write_history(sheet):
     return entry, {"evidence_folder": HISTORY.name, "runs": ["whole/run", "windowed/run"]}
 
 
+def write_example(sheet):
+    """run-example: a small sheet with invented numbers, for the layers no saved run feeds yet.
+
+    One run folder in the layout of the engine's shared output path (trajectory.npz with
+    observed_<field> at observation_times, resolved_config.json, summary.json). It carries
+    what the engine's standard history holds for traffic and for heat, under the engine's own
+    names and in its shapes: the totals carried through each channel population, by each pump
+    (as cycles), across each membrane and through each junction, and the energy dissipated at
+    each of them. Every number comes from the formulas below; none comes from a model.
+
+    The folder holds example.json, which says in words that the run is an example. The
+    adapter carries that into the run's view, names no model as the owner of a record, and
+    refuses to list the run anywhere but under "Examples".
+
+    What is invented: the cells inside the disc start at a written voltage that fades towards
+    the resting one, so what crosses the junctions at the disc's edge, and the heat there,
+    fall as the run goes on. Each cell has one membrane with a pump (three Na out and two K in
+    for each cycle, the declaration's own numbers) and two channel populations, one that lets
+    K through and one that lets Na through. Potassium leaves through its channels and sodium
+    enters through its own; the pump carries both back; and a little K and M leak through the
+    membrane itself. The ledgers are kept apart as the engine keeps them: the membrane's own
+    total holds its passive routes only, and what the channel populations and the pump
+    carried are their own.
+    """
+    sites, index, cells, pairs, junctions, disc, neighbours = sheet
+    n, j, spare = len(cells), len(pairs), 1
+    times = [round(0.5 * step, 6) for step in range(25)]  # 12 s, a record every half second
+    fade = lambda t: math.exp(-t / 9.0)  # noqa: E731  how much of the written voltage is left
+    faded = lambda t: 9.0 * (1.0 - math.exp(-t / 9.0))  # noqa: E731  the integral of fade from the start
+    faded_twice = lambda t: 4.5 * (1.0 - math.exp(-2.0 * t / 9.0))  # noqa: E731  the integral of fade squared
+    inside = [1.0 if cell in disc else 0.0 for cell in range(n)]
+    voltage = lambda cell, t: H_V + (D_V - H_V) * inside[cell] * fade(t) + 1e-5 * cell  # noqa: E731
+    definition = turnover_definition(cells, junctions, [], "donor_copy", full=True, first=[voltage(cell, 0.0) for cell in range(n)])
+    model = definition["model"]
+    del model["replacement"]
+    model.update({"id": "resolved_pump_composite@1", "inner_model": "resolved_pump_tissue@3", "operators": []})
+    for number, membrane in enumerate(model["membranes"]):
+        membrane["pump"] = {"id": f"pump_{number}", "law": "nak_atp_mass_action_positive@1", "roles": {"sodium": "Na", "potassium": "K"}, "stoichiometry": {"Na": -3, "K": 2}}
+    # Two channel populations on each membrane, the K one first: kir_0, nal_0, kir_1, nal_1, ...
+    model["channels"] = [
+        {"id": f"{kind}_{number}", "membrane_id": f"membrane_{number}", "kinetic_law": law, "abundance": 1.0, "permeant_ions": [{"species_id": ion, "relative_permeability": 1.0}]}
+        for number in range(n)
+        for kind, law, ion in (("kir", "kir2p1_mh2@1", "K"), ("nal", "synthetic_sodium_population@0", "Na"))
+    ]
+    definition["note"] = f"{EXAMPLE_SAYS}. Written by tools/make_run_fixture.py; not a Cells definition, and no engine ran."
+    definition["experiment"] = {"end_time": times[-1], "observation_times": times}
+    species = [name for name, _ in SPECIES]
+    senders = [(cells.index(item["sender"]), cells.index(item["receiver"])) for item in junctions]
+    edge = [inside[a] - inside[b] for a, b in senders]  # +1 or -1 on a junction across the disc's edge, 0 elsewhere
+    gate = [0.25 if side else 1.0 for side in edge]
+    written = D_V - H_V  # the written voltage above the resting one, in volts
+
+    # Totals since the start, in fmol, each the integral of a rate that is written out here.
+    kir = lambda cell, t: 0.010 * (t + 0.5 * inside[cell] * faded(t))  # noqa: E731  K leaves through its channels
+    nal = lambda cell, t: -0.004 * (1 + 0.02 * cell) * t  # noqa: E731  Na enters through its own
+    cycles = lambda cell, t: 0.002 * (1 + 0.01 * cell) * t  # noqa: E731  pump cycles
+    # Through a junction: K goes from the cell at the higher voltage to the one at the lower, as much as the gate lets through.
+    slope = lambda link: 0.002 * gate[link] / abs(written)  # noqa: E731  fmol a second for each volt across the junction
+    drift = lambda link: 1e-5 * (senders[link][0] - senders[link][1])  # noqa: E731  the small standing difference between two cells
+    through_k = lambda link, t: slope(link) * (written * edge[link] * faded(t) + drift(link) * t)  # noqa: E731
+    through = lambda row, link, t: (0.25, 1.0, 0.0, 0.0)[row] * through_k(link, t)  # noqa: E731
+
+    # What crossed the membrane itself, by its own passive routes: a little K and M leak out of every cell.
+    leak = lambda row, cell, t: (0.0, 0.0003, 0.0005, 0.0)[row] * t  # noqa: E731
+
+    def across(row, cell, t):
+        """What left a cell across its membrane in all: its passive routes and its channel populations, less what its pump carried in (the stoichiometry times the cycles)."""
+        through_channels = nal(cell, t) if row == 0 else kir(cell, t) if row == 1 else 0.0
+        return leak(row, cell, t) + through_channels - (-3, 2, 0, 0)[row] * cycles(cell, t)
+
+    def held(row, cell, t):
+        """The amount in a cell: what it began with, less what left across its membrane and what left through its junctions."""
+        start = ((CONC_MM[row] + 0.01 * cell) if row < 3 else 101.0) * VOLUME_PL
+        left = sum((1.0 if a == cell else -1.0) * through(row, link, t) for link, (a, b) in enumerate(senders) if cell in (a, b))
+        return start - across(row, cell, t) - left
+
+    # Energy dissipated since the start, in pJ. At a junction: the charge carried times the voltage it fell through.
+    faraday_pj = 96485.33212 * 1e-3  # pJ for each fmol of unit charges carried through one volt
+    # The voltage across a junction is the written one, fading, plus the standing difference: its square, integrated from the start.
+    squared = lambda link, t: written * written * abs(edge[link]) * faded_twice(t) + 2 * written * edge[link] * drift(link) * faded(t) + drift(link) ** 2 * t  # noqa: E731
+    heat_junction = lambda link, t: faraday_pj * 1.25 * slope(link) * squared(link, t)  # noqa: E731
+
+    def padded(values_at, width):
+        return [value for t in times for value in [*values_at(t), *([0.0] * spare)]][: len(times) * (width + spare)]
+
+    fields = {
+        "membrane_voltage_V": ((n + spare,), padded(lambda t: [voltage(cell, t) for cell in range(n)], n)),
+        "cell_potential_V": ((n + spare,), padded(lambda t: [voltage(cell, t) for cell in range(n)], n)),
+        "extracellular_potential_V": ((n + spare,), padded(lambda t: [0.0] * n, n)),
+        "junction_voltage_V": ((j + spare,), padded(lambda t: [voltage(a, t) - voltage(b, t) for a, b in senders], j)),
+        "junction_gate": ((j + spare,), padded(lambda t: list(gate), j)),
+        "pump_cycles": ((n + spare,), padded(lambda t: [cycles(cell, t) for cell in range(n)], n)),
+        "channel_transferred": ((2 * n + spare,), padded(lambda t: [value for cell in range(n) for value in (kir(cell, t), nal(cell, t))], 2 * n)),
+        "membrane_dissipated_energy_pJ": ((n + spare,), padded(lambda t: [0.0006 * (1 + 0.02 * cell) * t for cell in range(n)], n)),
+        "channel_dissipated_energy_pJ": ((2 * n + spare,), padded(lambda t: [value for cell in range(n) for value in (0.004 * (t + 0.5 * inside[cell] * faded(t)), 0.0025 * t)], 2 * n)),
+        "junction_dissipated_energy_pJ": ((j + spare,), padded(lambda t: [heat_junction(link, t) for link in range(j)], j)),
+        "pump_dissipated_energy_pJ": ((n + spare,), padded(lambda t: [0.0012 * (1 + 0.01 * cell) * t for cell in range(n)], n)),
+        "metabolic_work_pJ": ((n + spare,), padded(lambda t: [0.005 * t for _ in range(n)], n)),
+    }
+    for field, width, value in (
+        ("amount", n, held),
+        ("extracellular_amount", n, lambda row, place, t: BATH_FMOL[species[row]]),
+        ("membrane_transferred", n, leak),
+        ("reservoir_supplied", n, lambda row, place, t: -across(row, place, t)),
+        ("junction_transferred", j, through),
+    ):
+        fields[field] = ((len(species), width + spare), [v for t in times for row in range(len(species)) for v in [*[value(row, place, t) for place in range(width)], *([0.0] * spare)]])
+
+    arrays = {"observation_times": npy("<f8", (len(times),), times)}
+    for field, (shape, values) in fields.items():
+        arrays[f"observed_{field}"] = npy("<f8", (len(times), *shape), values)
+    folder = EXAMPLE / "invented-numbers"
+    folder.mkdir(parents=True, exist_ok=True)
+    write_npz(folder / "trajectory.npz", arrays)
+    write_json(folder / "resolved_config.json", definition, indent=None)
+    write_json(folder / "summary.json", {"status": "example", "start_time": 0.0, "end_time": times[-1], "active_cells": n, "note": f"{EXAMPLE_SAYS}: no engine ran"})
+    write_json(folder / "example.json", {"example": True, "says": EXAMPLE_SAYS, "made_by": "tools/make_run_fixture.py"})
+    (EXAMPLE / "README.md").write_text(
+        "# An example run with invented numbers\n\n"
+        "Written by `tools/make_run_fixture.py`. Every number is invented by the formulas in that tool: no engine\n"
+        "ran, and nothing here is evidence. Do not edit by hand; change the tool and run it again.\n\n"
+        "`invented-numbers/` is laid out as the engine's shared output path lays out a run, and names its readouts as the\n"
+        "engine does. Its `example.json` says that it is an example; the adapter carries that into the run's view,\n"
+        "and the page then shows it under \"Examples\" with \"Example: invented numbers\" on the picture and in the\n"
+        "legend (`schema/QUANTITY_LAYERS.md`, rule 6).\n\n"
+        f"- {n} cells with one membrane, one pump, two channel populations and one held bath each; {j} junctions; {len(species)} species.\n"
+        f"- {len(times)} observation times, half a second apart.\n"
+        "- Totals carried (channel populations, pump cycles, the membranes' own passive routes, junctions) and energy\n"
+        "  dissipated at each, each ledger apart as the engine keeps them.\n"
+    )
+    print(f"wrote {EXAMPLE.name}: {n} cells, {j} junctions, {2 * n} channel populations, {len(times)} observation times, marked as an example")
+    entry = {
+        "adapter": "standard-history",
+        "example": True,
+        "label": "Example sheet (invented numbers)",
+        "plain": "Example: invented numbers. A small sheet written by the viewer's own run-fixture tool, in the layout of the engine's shared output path, to show the layers that no saved run feeds yet: ion traffic through a membrane, what crosses the junctions, and the energy dissipated. No engine ran, and nothing here is a result.",
+        "sources": [],
+        "engine_entities": [],
+        "stops": {"example": {"label": "No engine ran: the numbers are invented"}},
+        "records": {"vm": {"label": "Membrane voltage"}},
+    }
+    return entry, {"evidence_folder": EXAMPLE.name, "runs": ["invented-numbers"]}
+
+
+def write_world():
+    """run-world: one cell and its surroundings, in the layout of the engine's shared output path.
+
+    Two runs of the same small world, shaped as the engine's first real feed for the viewer:
+    one cell, a finite space outside it (ecs_0) and a held bath; a membrane from the cell to
+    each, and a face from the space to the bath. One operator makes a species S in the cell
+    and clears it in the space outside; another carries S across the contact membrane by two
+    routes, an export and an import. S leaves the space through the face. Every number is
+    invented: each total grows evenly, at a rate written out below.
+
+    In `secreting` the amounts add up when a route's total is read as positive out of the
+    cell, and under no other reading. In `unbalanced` the cell's amount of S stays as it
+    began, so no reading of the routes' totals makes the amounts add up.
+
+    `viewed` and `retiring` hold the same numbers as `secreting` with a view.json beside them,
+    written here in the shape of the engine's run-view writer (cells.run_view@1): the state
+    on the time base `accepted` (a row every half second) and the readouts on the base
+    `observation` (a row every second); a second slot of cells with no name (padding), so
+    arrays over the cells are two wide; signs by the roles of each record's set; a kind on
+    the inner model's records and none on the operators' ledgers, as the engine's first
+    worked example has it. In `retiring` an operator retires the cell at 2.5 s: the view lists
+    the event, and the membranes' heat ledger restarts there and says so (`resets`).
+    """
+    times = [0.0, 1.0, 2.0, 3.0, 4.0]
+    species = [("Na", 1), ("K", 1), ("Cl", -1), ("S", 0)]
+    ions = {"Na": 145.0, "K": 5.0, "Cl": 150.0}
+    still = {name: 0.0 for name, _ in species}
+    node = lambda identifier, amount, held: {"id": identifier, "volume_pL": 1.0, "initial_amount_fmol": {**ions, "S": amount}, "fixed_charge_equivalent_fmol": 0.0, "initial_charge_C": 0.0, "reservoir": held, "boundary_potential_V": 0.0}  # noqa: E731
+    wall = lambda identifier, outside: {"id": identifier, "inside": "cell_0", "outside": outside, "area_m2": 1e-10, "capacitance_F": 1e-12, "permeability_m_per_s": dict(still), "law": "constant_field@1", "pump": None, "calcium_pump": None}  # noqa: E731
+    named = [{"id": "S", "catalogue": None, "evidence": None}]
+    model = {
+        "id": "resolved_pump_composite@1",
+        "inner_model": "resolved_pump_tissue@3",
+        "temperature_K": TEMPERATURE_K,
+        "species": [{"id": name, "valence": valence} for name, valence in species],
+        "cells": [{"id": "cell_0", "volume_pL": 1.0, "initial_amount_fmol": {**ions, "S": 0.001}, "fixed_charge_equivalent_fmol": 0.0, "initial_charge_C": 0.0}],
+        "extracellular": [node("bath", 1e-9, True), node("ecs_0", 0.0005, False)],
+        "membranes": [wall("wall_cell_0", "bath"), wall("contact_0", "ecs_0")],
+        "junctions": [],
+        "faces": [{"id": "face_0", "sender": "ecs_0", "receiver": "bath", "area_m2": 1e-10, "length_m": 1e-5, "diffusivity_m2_per_s": {**still, "S": 1e-10}, "law": "logmean_electrodiffusion@1"}],
+        "closure": {"law": "resolved_capacitor_components_current_continuity@1", "gauge_reference": None},
+        "channels": [],
+        "operators": [
+            {"law": "scheduled_species_turnover@1", "routes": [{"id": "produce", "kind": "production", "node": "cell_0", "species": "S"}, {"id": "clear", "kind": "clearance", "node": "ecs_0", "species": "S"}], "species": named, "templates": []},
+            {"law": "scheduled_species_exchange@1", "routes": [{"id": "secrete", "direction": "export", "law": "first_order", "patch": "contact_0", "species": "S"}, {"id": "sink", "direction": "import", "law": "saturable", "patch": "contact_0", "species": "S"}], "species": named, "templates": []},
+        ],
+    }
+    definition = {"schema_version": 1, "note": f"{SYNTHETIC}: not a Cells definition", "model": model, "experiment": {"end_time": times[-1], "observation_times": times}, "execution": {"dt": 0.001}}
+    # Totals since the start, in fmol: what was made in the cell, what each route carried (positive out of the cell),
+    # what crossed the face from the space to the bath, and what was cleared in the space.
+    made = lambda t: 1.0e-4 * t  # noqa: E731
+    secrete = lambda t: 9.0e-5 * t  # noqa: E731
+    sink = lambda t: -2.0e-6 * t  # noqa: E731
+    face = lambda t: 6.0e-5 * t  # noqa: E731
+    cleared = lambda t: 2.0e-5 * t  # noqa: E731
+    last = len(species) - 1  # the row of S
+    owners = {field: ["inner"] for field in ("amount", "extracellular_amount", "membrane_voltage_V", "cell_potential_V", "extracellular_potential_V", "membrane_transferred", "face_transferred", "reservoir_supplied", "pump_cycles", "membrane_dissipated_energy_pJ", "face_dissipated_energy_pJ", "pump_dissipated_energy_pJ", "metabolic_work_pJ")}
+    owners.update({field: ["scheduled_species_turnover@1"] for field in ("turnover_produced_fmol", "turnover_cleared_fmol", "turnover_outside_cleared_fmol")})
+    owners["exchange_moved_fmol"] = ["scheduled_species_exchange@1"]
+    manifest = {"note": f"{SYNTHETIC}: no engine ran", "composition": {"model": model["id"], "inner_model": model["inner_model"], "operators": [operator["law"] for operator in model["operators"]]}, "field_owners": {"observations": owners, "views": {}}}
+
+    def rows(width, value):
+        """One row for each species at each time, `width` places wide: value(row, place, t)."""
+        return ((len(species), width), [value(row, place, t) for t in times for row in range(len(species)) for place in range(width)])
+
+    def flat(width, value):
+        return ((width,), [value(place, t) for t in times for place in range(width)])
+
+    start = lambda row: (145.0, 5.0, 150.0)[row] if row < last else None  # noqa: E731
+    for name, in_cell in (("secreting", lambda t: 0.001 + made(t) - (secrete(t) + sink(t))), ("unbalanced", lambda t: 0.001)):
+        fields = {
+            "membrane_voltage_V": flat(2, lambda place, t: 0.0),
+            "cell_potential_V": flat(1, lambda place, t: 0.0),
+            "extracellular_potential_V": flat(2, lambda place, t: 0.0),
+            "amount": rows(1, lambda row, place, t: in_cell(t) if row == last else start(row)),
+            # The bath is held; the space gains what the routes carry and loses what crosses the face and what is cleared.
+            "extracellular_amount": rows(2, lambda row, place, t: start(row) if row < last else (1e-9 if place == 0 else 0.0005 + secrete(t) + sink(t) - face(t) - cleared(t))),
+            "membrane_transferred": rows(2, lambda row, place, t: 0.0),
+            "face_transferred": rows(1, lambda row, place, t: face(t) if row == last else 0.0),
+            "reservoir_supplied": rows(2, lambda row, place, t: -face(t) if row == last and place == 0 else 0.0),
+            "pump_cycles": flat(2, lambda place, t: 0.0),
+            "membrane_dissipated_energy_pJ": flat(2, lambda place, t: 0.0),
+            "face_dissipated_energy_pJ": flat(1, lambda place, t: 0.004 * t),
+            "pump_dissipated_energy_pJ": flat(2, lambda place, t: 0.0),
+            "metabolic_work_pJ": flat(2, lambda place, t: 0.0),
+            "turnover_produced_fmol": rows(1, lambda row, place, t: made(t) if row == last else 0.0),
+            "turnover_cleared_fmol": rows(1, lambda row, place, t: 0.0),
+            "turnover_outside_cleared_fmol": rows(2, lambda row, place, t: cleared(t) if row == last and place == 1 else 0.0),
+            "exchange_moved_fmol": flat(2, lambda place, t: secrete(t) if place == 0 else sink(t)),
+        }
+        arrays = {"observation_times": npy("<f8", (len(times),), times)}
+        for field, (shape, values) in fields.items():
+            arrays[f"observed_{field}"] = npy("<f8", (len(times), *shape), values)
+        folder = WORLD / name
+        folder.mkdir(parents=True, exist_ok=True)
+        write_npz(folder / "trajectory.npz", arrays)
+        write_json(folder / "resolved_config.json", definition, indent=None)
+        write_json(folder / "manifest.json", manifest)
+        write_json(folder / "summary.json", {"status": "complete", "start_time": 0.0, "end_time": times[-1], "active_cells": 1, "note": f"{SYNTHETIC}: no engine ran"})
+    # ---- the same world with a view of its own beside its files, in the engine's shape.
+    accepted = [round(0.5 * step, 6) for step in range(9)]
+    heat = lambda t: 0.002 * t  # noqa: E731  each membrane's heat, were nothing retired
+    in_cell = lambda t: 0.001 + made(t) - (secrete(t) + sink(t))  # noqa: E731
+    padded = lambda value: [value, 0.0]  # noqa: E731  the cell and a slot with no name
+
+    def view_of(retiring):
+        """The view.json of one run: every set, time base, record, event and constant, as the engine's writer lays them out."""
+        inner, turnover, exchange, replacement = "resolved_pump_tissue@3", "scheduled_species_turnover@1", "scheduled_species_exchange@1", "scheduled_cell_replacement@1"
+        confirmed = f"{SYNTHETIC}: written with the rest"
+        out = {"confirmed": confirmed, "from": "inside", "says": "a positive amount leaves the patch's cell for its outside node", "to": "outside"}
+        along = {"confirmed": confirmed, "from": "sender", "says": "a positive amount leaves the face's sender node for its receiver", "to": "receiver"}
+        supplied = {"confirmed": confirmed, "from": "exterior", "says": "a positive amount is supplied into the held outside node from beyond the world", "to": "node"}
+        cycles_in = {"confirmed": confirmed, "from": "outside", "says": "pump cycles are inward-positive", "to": "inside"}
+        resets = {"by": [replacement], "says": "Written at the events of these operators, which retire slots: on a retired slot the ledger restarts at zero."}
+        fields = [  # (field, axes after time, unit, layer, owner, kind, sign, on the accepted base too)
+            ("membrane_voltage_V", ["membrane"], "V", "membrane", inner, "level", None, False),
+            ("cell_potential_V", ["cell"], "V", "membrane", inner, "level", None, False),
+            ("extracellular_potential_V", ["outside"], "V", "membrane", inner, "level", None, False),
+            ("amount", ["species", "cell"], "fmol", "membrane", inner, "amount", None, True),
+            ("extracellular_amount", ["species", "outside"], "fmol", "membrane", inner, "amount", None, False),
+            ("membrane_transferred", ["species", "membrane"], "fmol", "membrane", inner, "cumulative", out, False),
+            ("face_transferred", ["species", "face"], "fmol", "membrane", inner, "cumulative", along, False),
+            ("reservoir_supplied", ["species", "outside"], "fmol", "membrane", inner, "cumulative", supplied, False),
+            ("pump_cycles", ["membrane"], "fmol", "pumps", inner, "cumulative", cycles_in, False),
+            ("membrane_dissipated_energy_pJ", ["membrane"], "pJ", "membrane", inner, "cumulative", None, False),
+            ("face_dissipated_energy_pJ", ["face"], "pJ", "membrane", inner, "cumulative", None, False),
+            ("turnover_produced_fmol", ["species", "cell"], "fmol", "turnover", turnover, None, None, False),
+            ("turnover_outside_cleared_fmol", ["species", "outside"], "fmol", "turnover", turnover, None, None, False),
+            ("exchange_moved_fmol", ["exchange_route"], "fmol", "exchange", exchange, None, None, False),
+        ]
+        records = []
+        for field, axes, unit, layer, owner, kind, sign, state in fields:
+            for base, array_name in ([("accepted", field)] if state else []) + [("observation", f"observed_{field}")]:
+                record = {"array": array_name, "axes": ["time", *axes], "base": base, "field": field, "id": array_name, "layer": layer, "owner": owner, "set": axes[-1], "unit": unit}
+                if kind:
+                    record["kind"] = kind
+                if sign:
+                    record["sign"] = sign
+                if field.endswith("_dissipated_energy_pJ"):
+                    if retiring and field.startswith("membrane"):
+                        record["resets"] = resets
+                    else:
+                        record["monotone"] = "non-decreasing"
+                records.append(record)
+        # A ledger saved with the state only: no readout of it, so it is found on the accepted base alone.
+        records.append({"array": "turnover_cleared_fmol", "axes": ["time", "species", "cell"], "base": "accepted", "field": "turnover_cleared_fmol", "id": "turnover_cleared_fmol", "layer": "turnover", "owner": turnover, "set": "cell", "unit": "fmol"})
+        layers = [
+            {"id": "membrane", "label": "Membrane voltage and ions", "owner": inner, "representation": "simulated"},
+            {"id": "pumps", "label": "Pump populations", "owner": inner, "representation": "modelled"},
+            {"id": "turnover", "label": "Species turnover", "owner": turnover, "representation": "prescribed"},
+            {"id": "exchange", "label": "Species exchange", "owner": exchange, "representation": "prescribed"},
+        ] + ([{"id": "replacement", "label": "Cell replacement", "owner": replacement, "representation": "prescribed"}] if retiring else [])
+        operators = [turnover, exchange] + ([replacement] if retiring else [])
+        return {
+            "constants": [
+                {"axes": [], "from": "the definition (the bound layout)", "id": "temperature", "says": "no operator of this composition changes it", "unit": "K", "values": TEMPERATURE_K},
+                {"axes": ["species"], "from": "the definition (the bound layout)", "id": "valence", "says": "no operator of this composition changes it", "unit": "1", "values": [float(valence) for _, valence in species]},
+                {"axes": ["cell"], "from": "the definition (the bound layout)", "id": "volume", "says": "no operator of this composition changes it", "unit": "pL", "values": [1.0, 1.0]},
+                {"axes": ["outside"], "from": "the definition (the bound layout)", "id": "extracellular_volume", "says": "no operator of this composition changes it", "unit": "pL", "values": [1.0, 1.0]},
+                {"axes": ["membrane"], "from": "the definition (the bound layout)", "id": "membrane_capacitance", "says": "no operator of this composition changes it", "unit": "F", "values": [1e-12, 1e-12]},
+                {"axes": ["membrane"], "from": "the definition (the bound layout)", "id": "membrane_area", "says": "no operator of this composition changes it", "unit": "m2", "values": [1e-10, 1e-10]},
+                {"axes": ["cell"], "from": "the definition (the bound layout)", "id": "active", "says": "no operator of this composition changes it", "unit": "1", "values": [True, False]},
+            ],
+            "events": [{"at": {"cell": "cell_0"}, "kind": "retirement", "label": "cell_0 retired", "layer": "replacement", "time": 2.5}] if retiring else [],
+            "format": "cells.run_view@1",
+            "layers": layers,
+            "recording": {"mode": "write_run", "subset": None},
+            "records": records,
+            "run": {"composition": {"inner_model": inner, "model": model["id"], "operators": operators}, "definition_sha256": "0" * 64, "engine_models": [model["id"], inner, *operators], "label": f"{SYNTHETIC}: a small world with a view", "model": model["id"], "revision": "0123456", "scale": "cell"},
+            "sets": [
+                {"id": "species", "ids": [name for name, _ in species], "scale": "molecule", "species": [{"identity": None}, {"identity": None}, {"identity": None}, {"identity": {"catalogue": None, "evidence": None, "source": turnover}}], "valence": [valence for _, valence in species]},
+                {"geometry": None, "id": "cell", "ids": ["cell_0", None], "lifetimes": [[None, 2.5] if retiring else None, None], "scale": "cell"},
+                {"geometry": None, "holds": "outside node", "id": "outside", "ids": ["bath", "ecs_0"], "reservoir": [True, False], "scale": "cell"},
+                {"calcium_pumps": [None, None], "geometry": {"index": [0, 0], "kind": "on", "set": "cell"}, "holds": "membrane patch", "id": "membrane", "ids": ["wall_cell_0", "contact_0"], "laws": [{"law_id": "constant_field@1"}, {"law_id": "constant_field@1"}], "outside": {"index": [0, 1], "set": "outside"}, "pumps": [None, None], "pumps_are": "columns of this set (version 1)", "scale": "cell"},
+                {"geometry": {"between": "cell", "ends": [], "kind": "links"}, "id": "junction", "ids": [], "laws": [], "scale": "cell"},
+                {"geometry": {"between": "outside", "ends": [[1, 0]], "kind": "links"}, "holds": "face", "id": "face", "ids": ["face_0"], "laws": [{"law_id": "logmean_electrodiffusion@1"}], "scale": "cell"},
+                {"geometry": {"index": [], "kind": "on", "set": "membrane"}, "holds": "channel population", "id": "channel", "ids": [], "laws": [], "scale": "cell"},
+                {"geometry": {"index": [1, 1], "kind": "on", "set": "membrane"}, "holds": "exchange route", "id": "exchange_route", "ids": ["secrete", "sink"], "owner": exchange, "scale": "cell"},
+            ],
+            "space": None,
+            "time": {"bases": [
+                {"array": "accepted_times", "files": [{"file": "trajectory.npz", "rows": [0, len(accepted)]}], "id": "accepted", "says": "the state's accepted rows"},
+                {"array": "observation_times", "files": [{"file": "trajectory.npz", "rows": [0, len(times)]}], "id": "observation", "says": "the observed rows"},
+            ], "unit": "s"},
+            "unstated": [
+                {"id": "geometry", "what": "geometry", "why": "the caller gave no builder geometry: no coordinates, and no space"},
+                {"id": "exchange_moved_fmol", "what": "kind", "why": f"{exchange} declares no kind for it"},
+                {"id": "turnover_cleared_fmol", "what": "kind", "why": f"{turnover} declares no kind for it"},
+                {"id": "turnover_outside_cleared_fmol", "what": "kind", "why": f"{turnover} declares no kind for it"},
+                {"id": "turnover_produced_fmol", "what": "kind", "why": f"{turnover} declares no kind for it"},
+            ],
+        }
+
+    for name, retiring in (("viewed", False), ("retiring", True)):
+        # A membrane's heat grows evenly; where its cell is retired at 2.5 s it restarts at nought there.
+        warmth = (lambda t: heat(t) if t < 2.5 else heat(t - 2.5)) if retiring else heat
+        observed = {
+            "membrane_voltage_V": ((2,), lambda t: [0.0, 0.0]),
+            "cell_potential_V": ((2,), lambda t: padded(0.0)),
+            "extracellular_potential_V": ((2,), lambda t: [0.0, 0.0]),
+            "amount": ((4, 2), lambda t: [value for row in range(4) for value in padded(in_cell(t) if row == last else start(row))]),
+            "extracellular_amount": ((4, 2), lambda t: [value for row in range(4) for value in ([start(row)] * 2 if row < last else [1e-9, 0.0005 + secrete(t) + sink(t) - face(t) - cleared(t)])]),
+            "membrane_transferred": ((4, 2), lambda t: [0.0] * 8),
+            "face_transferred": ((4, 1), lambda t: [face(t) if row == last else 0.0 for row in range(4)]),
+            "reservoir_supplied": ((4, 2), lambda t: [value for row in range(4) for value in ([-face(t), 0.0] if row == last else [0.0, 0.0])]),
+            "pump_cycles": ((2,), lambda t: [0.0, 0.0]),
+            "membrane_dissipated_energy_pJ": ((2,), lambda t: [warmth(t), warmth(t)]),
+            "face_dissipated_energy_pJ": ((1,), lambda t: [0.004 * t]),
+            "turnover_produced_fmol": ((4, 2), lambda t: [value for row in range(4) for value in padded(made(t) if row == last else 0.0)]),
+            "turnover_outside_cleared_fmol": ((4, 2), lambda t: [value for row in range(4) for value in ([0.0, cleared(t)] if row == last else [0.0, 0.0])]),
+            "exchange_moved_fmol": ((2,), lambda t: [secrete(t), sink(t)]),
+        }
+        arrays = {"accepted_times": npy("<f8", (len(accepted),), accepted), "observation_times": npy("<f8", (len(times),), times)}
+        for field, (shape, value) in observed.items():
+            arrays[f"observed_{field}"] = npy("<f8", (len(times), *shape), [number for t in times for number in value(t)])
+        # The state: the amounts at every accepted row, and a ledger of what was cleared in the cell that has no readout.
+        arrays["amount"] = npy("<f8", (len(accepted), 4, 2), [number for t in accepted for number in observed["amount"][1](t)])
+        arrays["turnover_cleared_fmol"] = npy("<f8", (len(accepted), 4, 2), [number for t in accepted for row in range(4) for number in padded(1.0e-6 * t if row == last else 0.0)])
+        folder = WORLD / name
+        folder.mkdir(parents=True, exist_ok=True)
+        write_npz(folder / "trajectory.npz", arrays)
+        write_json(folder / "resolved_config.json", definition, indent=None)
+        write_json(folder / "summary.json", {"status": "complete", "start_time": 0.0, "end_time": times[-1], "active_cells": 1, "note": f"{SYNTHETIC}: no engine ran"})
+        write_json(folder / "view.json", view_of(retiring), indent=None)
+    (WORLD / "README.md").write_text(
+        "# Synthetic runs of one small world\n\n"
+        "Written by `tools/make_run_fixture.py` for the viewer's tests. Every number is invented: no engine ran,\n"
+        "and nothing here is evidence. Do not edit by hand; change the tool and run it again.\n\n"
+        "- One cell, a finite space outside it (`ecs_0`) and a held bath; a membrane from the cell to each; a face\n"
+        "  from the space to the bath; a species S that is made in the cell, carried across the contact membrane\n"
+        "  by two exchange routes, and cleared in the space.\n"
+        f"- {len(times)} observation times, one second apart, in `trajectory.npz`, with a manifest that names each\n"
+        "  readout's owner as the engine's does.\n"
+        "- `secreting`: the amounts add up. `unbalanced`: the cell's amount of S does not follow.\n"
+        "- `viewed` and `retiring`: the same numbers with a `view.json` beside them, in the shape of the engine's\n"
+        "  run-view writer (two time bases, signs by role, a padding slot); in `retiring` the cell is retired at\n"
+        "  2.5 s and its membranes' heat ledger restarts there.\n"
+    )
+    print(f"wrote {WORLD.name}: one cell, two spaces outside, one face, two exchange routes, {len(times)} observation times; two runs without a view and two with one")
+    entry = {
+        "adapter": "standard-history",
+        "development": True,
+        "label": "Synthetic small world (test fixture)",
+        "plain": "Invented numbers in the layout of the engine's shared output path: one cell, its surroundings, and a species that leaves the cell and is cleared. No engine ran; nothing here is evidence.",
+        "sources": [],
+        "engine_entities": [],
+        "outcome": {"judged": False, "status": "A development run: not judged"},
+        "parameters": {"execution.dt": {"label": "Time step", "unit": "s"}, "model.inner_model": {"label": "Inner model"}},
+        "readouts": {"status": {"label": "Status"}, "end_time": {"label": "End", "unit": "s"}},
+    }
+    return entry, {"evidence_folder": WORLD.name, "runs": ["secreting", "unbalanced", "viewed", "retiring"]}
+
+
 def main(argv=None):
-    global FIXTURES, OUT, ARMS, CUE, HISTORY
+    global FIXTURES, OUT, ARMS, CUE, HISTORY, EXAMPLE, WORLD
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("--out", default=str(FIXTURES), help="the folder to write the four run folders, overlay.json and selection.json into")
+    parser.add_argument("--out", default=str(FIXTURES), help="the folder to write the six run folders, overlay.json and selection.json into")
     FIXTURES = Path(parser.parse_args(argv).out).resolve()
-    OUT, ARMS, CUE, HISTORY = FIXTURES / "run-small", FIXTURES / "run-arms", FIXTURES / "run-cue", FIXTURES / "run-history"
+    OUT, ARMS, CUE, HISTORY, EXAMPLE, WORLD = FIXTURES / "run-small", FIXTURES / "run-arms", FIXTURES / "run-cue", FIXTURES / "run-history", FIXTURES / "run-example", FIXTURES / "run-world"
     sheet = the_sheet()
-    experiments, selection = {}, {"note": f"{SYNTHETIC}: the four synthetic experiments, each with the folder beside this file that holds it."}
-    for identifier, (entry, selected) in ((EXPERIMENT, write_small(sheet)), (ARMS_EXPERIMENT, write_arms(sheet)), (CUE_EXPERIMENT, write_cue(sheet)), (HISTORY_EXPERIMENT, write_history(sheet))):
+    experiments, selection = {}, {"note": f"{SYNTHETIC}: the five synthetic experiments and the example, each with the folder beside this file that holds it."}
+    for identifier, (entry, selected) in ((EXPERIMENT, write_small(sheet)), (ARMS_EXPERIMENT, write_arms(sheet)), (CUE_EXPERIMENT, write_cue(sheet)), (HISTORY_EXPERIMENT, write_history(sheet)), (WORLD_EXPERIMENT, write_world()), (EXAMPLE_EXPERIMENT, write_example(sheet))):
         experiments[identifier] = entry
         selection[identifier] = selected
     write_json(FIXTURES / "overlay.json", {"format": "cells.visualizer.replay_overlay@1", "note": f"{SYNTHETIC}: labels for the adapter's test only.", "experiments": experiments})
     write_json(FIXTURES / "selection.json", selection)
-    size = sum(path.stat().st_size for folder in (OUT, ARMS, CUE, HISTORY) for path in folder.rglob("*") if path.is_file())
-    print(f"wrote overlay.json and selection.json; {size:,} bytes in the four folders of {FIXTURES.name}/")
+    size = sum(path.stat().st_size for folder in (OUT, ARMS, CUE, HISTORY, EXAMPLE, WORLD) for path in folder.rglob("*") if path.is_file())
+    print(f"wrote overlay.json and selection.json; {size:,} bytes in the six folders of {FIXTURES.name}/")
 
 
 if __name__ == "__main__":

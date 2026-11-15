@@ -385,7 +385,8 @@ TISSUE_FIELDS = {
     "junction_voltage_V": {"kind": "level", "unit": "V"},
     "amount": {"kind": "amount", "unit": "fmol"},
     "extracellular_amount": {"kind": "amount", "unit": "fmol"},
-    "membrane_transferred": {"kind": "cumulative", "unit": "fmol", "sign": _OUT},
+    # The engine's own run view notes of this field that it holds the passive membrane routes only.
+    "membrane_transferred": {"kind": "cumulative", "unit": "fmol", "sign": _OUT, "note": "the passive membrane routes only: what each channel population and each pump carried is its own ledger (as the engine's run view notes of this field)"},
     "channel_transferred": {"kind": "cumulative", "unit": "fmol", "sign": dict(_OUT, says="a positive amount has left the channel's cell for its outside, as for its membrane")},
     "junction_transferred": {"kind": "cumulative", "unit": "fmol", "sign": _ALONG},
     "face_transferred": {"kind": "cumulative", "unit": "fmol", "sign": _ALONG},
@@ -394,7 +395,7 @@ TISSUE_FIELDS = {
     "metabolic_work_pJ": {"kind": "cumulative", "unit": "pJ"},
 }
 for _part in ("membrane", "channel", "junction", "face", "pump"):
-    TISSUE_FIELDS[f"{_part}_dissipated_energy_pJ"] = {"kind": "cumulative", "unit": "pJ", "never_falls": True}
+    TISSUE_FIELDS[f"{_part}_dissipated_energy_pJ"] = {"kind": "cumulative", "unit": "pJ", "monotone": "non-decreasing"}
 
 
 def tissue_field(name):
@@ -987,9 +988,10 @@ def refusal_of(recorded):
 
 
 def assemble(run, layers, stated, sheet, records, regions, events, derivation, parts=(), surroundings=None, membranes=None, species=None, constants=(), unstated=()):
-    if any(record.get("layer") == "junctions" for record in records):
+    # A layer the caller already lists is not listed again.
+    if any(record.get("layer") == "junctions" for record in records) and all(layer != "junctions" for layer, _ in layers):
         layers = tuple(layers) + (("junctions", "Junction gating"),)
-    if any(record.get("layer") == "ions" for record in records):
+    if any(record.get("layer") == "ions" for record in records) and all(layer != "ions" for layer, _ in layers):
         layers = tuple(layers) + (("ions", "Ion concentrations"),)
     view = {
         "format": VIEW_FORMAT,
@@ -1436,8 +1438,20 @@ HISTORY_FIELDS = {
     "face_dissipated_energy_pJ": (("face",), "Energy dissipated across a face", "energy"),
     "pump_dissipated_energy_pJ": (("membrane",), "Energy dissipated by a pump", "energy"),
     "metabolic_work_pJ": (("membrane",), "Metabolic work", "energy"),
+    # The ledgers of the operators that make and clear a secreted species (scheduled_species_turnover@1): totals since the start.
+    "turnover_produced_fmol": (("species", "cell"), "Made in the cell", "turnover"),
+    "turnover_cleared_fmol": (("species", "cell"), "Cleared in the cell", "turnover"),
+    "turnover_outside_cleared_fmol": (("species", "outside"), "Cleared outside", "turnover"),
+    # The ledger of the operator that carries a species across a membrane by declared routes (scheduled_species_exchange@1): one total for each route.
+    "exchange_moved_fmol": (("route",), "Moved by an exchange route", "turnover"),
 }
-HISTORY_LAYERS = (("membrane", "Voltages"), ("junctions", "Junctions"), ("ions", "Amounts of each species"), ("transport", "Amounts carried"), ("energy", "Energy"))
+HISTORY_LAYERS = (("membrane", "Voltages"), ("junctions", "Junctions"), ("ions", "Amounts of each species"), ("transport", "Amounts carried"), ("energy", "Energy"), ("turnover", "Made and cleared"))
+# The operators whose declarations name the species they secrete, make or clear: those species are the run's secreted ones.
+SECRETION_LAWS = {"scheduled_species_turnover@1", "scheduled_species_exchange@1"}
+# The operator whose routes carry a species across a membrane: each route names its membrane (its patch) and its species.
+EXCHANGE_LAWS = {"scheduled_species_exchange@1"}
+PLACE_WORDS = {"route": "exchange routes"}
+EXAMPLE_FILE = "example.json"  # the run-fixture tool writes it into a run folder whose numbers it invented
 # What the sheet opens with stays in the run's own file; every other field goes in a file of its own (rule 10).
 HISTORY_MAIN = ("membrane_voltage_V", "cell_potential_V")
 HISTORY_SETS = {"cell": "cells", "membrane": "membranes", "junction": "junctions", "outside": "extracellular", "face": "faces", "channel": "channels"}
@@ -1509,6 +1523,104 @@ def history_arrays(name, folder, derivation):
     return fields, times, len(chunks)
 
 
+def world_layout(tissue, sheet, membranes, derivation):
+    """One tile for each cell and each outside node, touching where a junction, a membrane or a face joins them; or None.
+
+    The run saves no positions. Where the places of a small world and what joins them fit a
+    hexagonal lattice (one cell, the node it secretes into and the bath: three tiles round one
+    corner), each is given a tile; the cells' tiles and the outside nodes' share one list of
+    corners, so that the viewer finds the edge two of them share. Where they do not fit (a
+    sheet whose every cell has a bath of its own), the outside nodes are given no place, and
+    the cells stay as they were laid out.
+    """
+    if not membranes or not membranes["nodes"]:
+        return None
+    cells, nodes = len(sheet.cells), len(membranes["nodes"])
+    node_index = {identifier: index for index, identifier in enumerate(membranes["nodes"])}
+    edges = {tuple(sorted(pair)) for pair in sheet.ends}
+    edges |= {(cell, cells + outside) for cell, outside in zip(membranes["cell"], membranes["outside"])}
+    for face in tissue.get("faces") or []:
+        if not isinstance(face, dict) or face.get("sender") not in node_index or face.get("receiver") not in node_index:
+            return None
+        edges.add(tuple(sorted((cells + node_index[face["sender"]], cells + node_index[face["receiver"]]))))
+    try:
+        lattice = embed(cells + nodes, sorted(edges))
+    except LayoutError:
+        derivation.append(
+            "The outside nodes are not drawn: the run saves no positions, and its cells and outside nodes cannot be laid out as tiles that touch wherever a membrane or a face joins two of them."
+        )
+        return None
+    vertices, faces, _ = hexagons(lattice, sheet.pitch)
+    derivation.append(
+        "Where the outside nodes stand: the run saves no positions. Each cell and each outside node is drawn as one tile, and two tiles touch where a junction, a membrane or a face joins them. "
+        "That layout is the viewer's own; an outside node's tile says nothing of its shape or its size."
+    )
+    return SimpleNamespace(vertices=vertices, cells=faces[:cells], outside=faces[cells:])
+
+
+def exchange_sign(fields, count, species, sheet, membranes, routes):
+    """Which way an exchange route's saved total is positive, read from the run's own arrays; or None.
+
+    The run declares no direction for it. Three readings are tried, on every cell that has a route and at every record: a
+    positive total has left the route's cell for its outside; it has entered the cell; it has gone the way the route's
+    own declaration names (export or import). A reading holds where the amount of the route's species in the cell is its
+    amount at the start, plus what was made there, less what was cleared there, what crossed the cell's membranes and
+    junctions, and the routes' totals read that way. The first reading is given only where it holds at every record and
+    each other reading fails at some record. Whatever else moved the species (a pump, a ledger the run did not keep)
+    leaves the amounts not adding up, and then no sign is given.
+    """
+    if not (routes and membranes and "amount" in fields and "exchange_moved_fmol" in fields):
+        return None
+
+    def at(field, step, *where):
+        if field not in fields:
+            return 0.0
+        shape, values = tuple(fields[field][0]), fields[field][1]
+        per = 1
+        for size in shape:
+            per *= size
+        offset = 0
+        for size, k in zip(shape, where):
+            offset = offset * size + k
+        return values[step * per + offset]
+
+    readings = {
+        "out": [1.0] * len(routes),
+        "in": [-1.0] * len(routes),
+        "declared": [-1.0 if route.get("direction") == "import" else 1.0 for route in routes],
+    }
+    patch = [membranes["ids"].index(route["patch"]) for route in routes]
+    pairs = sorted({(membranes["cell"][patch[r]], species.index(route["species"])) for r, route in enumerate(routes)})
+    scale = max((abs(at("amount", step, row, cell)) for cell, row in pairs for step in range(count)), default=0.0)
+    holds = {name: True for name in readings}
+    moved = False
+    for cell, row in pairs:
+        own = [m for m in range(len(membranes["ids"])) if membranes["cell"][m] == cell]
+        through = [r for r, route in enumerate(routes) if membranes["cell"][patch[r]] == cell and species.index(route["species"]) == row]
+        for step in range(count):
+            change = at("amount", step, row, cell) - at("amount", 0, row, cell)
+            others = at("turnover_produced_fmol", step, row, cell) - at("turnover_cleared_fmol", step, row, cell) - sum(at("membrane_transferred", step, row, m) for m in own)
+            for j, (sender, receiver) in enumerate(sheet.ends):
+                others += (-1.0 if sender == cell else 1.0 if receiver == cell else 0.0) * at("junction_transferred", step, row, j)
+            moved = moved or any(at("exchange_moved_fmol", step, r) != 0.0 for r in through)
+            for name, ways in readings.items():
+                if not math.isclose(change, others - sum(ways[r] * at("exchange_moved_fmol", step, r) for r in through), rel_tol=1e-9, abs_tol=1e-9 * scale + 1e-30):
+                    holds[name] = False
+    # A reading that is the same as the first for this run (no route is an import) cannot be told from it, and need not fail.
+    others_fail = all(not holds[name] for name in ("in", "declared") if readings[name] != readings["out"])
+    if not (moved and holds["out"] and others_fail):
+        return None
+    return {
+        "says": "a positive amount has left the route's cell for the outside its membrane faces",
+        "from": "cell",
+        "to": "outside node",
+        "by": (
+            f"{SIGN_FROM_ARRAYS}: at every record the amount of the route's species in its cell is the amount at the start, plus what was made there, less what was cleared there, "
+            "what crossed the cell's membranes and the routes' totals. Read the other way round, or along each route's declared direction, the amounts do not add up"
+        ),
+    }
+
+
 def tissue_of(config):
     """The part of a definition that lists the tissue (cells, membranes, junctions, outsides): the model itself, or the ionic part of a larger one."""
     model = config.get("model") if isinstance(config, dict) else None
@@ -1518,6 +1630,333 @@ def tissue_of(config):
     return None
 
 
+# ---------------------------------------------------------------- a run with the engine's own view
+#
+# The engine's run-view writer (cells.run_view@1) puts one view.json beside a run's files: every
+# set, unit, time base, layer, owner, kind and sign, as the engine itself declares them. Where a
+# run folder holds one, the run is packaged from it and from nothing else: none of the tables
+# above is used, and nothing is read out of the arrays' values (no sign of a voltage, no
+# direction of an operator's total, no "total since the start"). What the view does not state
+# stays unstated, with the view's own reason, and a layer that needs it says so.
+VIEW_FILE = "view.json"
+VIEW_KEYS = {"format", "run", "time", "space", "layers", "sets", "records", "events", "constants", "unstated", "recording"}
+# What the page calls a field. The engine's view gives a record no label: names are the viewer's own catalogue, and
+# a field the catalogue does not name is not packaged for the page.
+FIELD_LABELS = {field: label for field, (_, label, _) in HISTORY_FIELDS.items()}
+TIME_CLOSE = dict(rel_tol=1e-9, abs_tol=1e-12)
+
+
+def view_rows(name, folder, base, array_name):
+    """One array of a time base, read from the files the view names for that base: (shape after time, flat values, rows)."""
+    shape, values, rows = None, array("d"), 0
+    for part in base.get("files") or []:
+        file, span = part.get("file") if isinstance(part, dict) else None, part.get("rows") if isinstance(part, dict) else None
+        if not isinstance(file, str) or not RUN_FOLDER.match(file) or not (folder / file).is_file():
+            raise Refused(f"{name}: its view names a file of the time base {base.get('id')} that is not in the run's folder")
+        if array_name not in npz_names(folder / file):
+            raise Refused(f"{name}: {Path(file).name} does not hold {array_name}, which its view says is saved there")
+        data = read_npz(folder / file, [array_name])[array_name]
+        if not (isinstance(span, list) and len(span) == 2 and span[0] == rows and span[1] - span[0] == data.shape[0]):
+            raise Refused(f"{name}: {Path(file).name} does not hold the rows its view gives it for the time base {base.get('id')}")
+        if shape is not None and tuple(data.shape[1:]) != shape:
+            raise Refused(f"{name}: {array_name} changes its shape between the files of its time base")
+        shape = tuple(data.shape[1:])
+        values.extend(data.values)
+        rows = span[1]
+    if shape is None:
+        raise Refused(f"{name}: the time base {base.get('id')} of its view names no file")
+    return shape, values, rows
+
+
+def adapt_engine_view(root, name, experiment, entry):
+    """One run with the engine's own view beside its files (view.json, cells.run_view@1): packaged as that view declares it."""
+    folder = root / name
+    view = read_json(folder / VIEW_FILE)
+    if not isinstance(view, dict) or view.get("format") != VIEW_FORMAT:
+        raise Refused(f"{name}: its {VIEW_FILE} is not a run view ({VIEW_FORMAT})")
+    if VIEW_KEYS - set(view):
+        raise Refused(f"{name}: its {VIEW_FILE} lacks {', '.join(sorted(VIEW_KEYS - set(view)))}")
+    if (folder / EXAMPLE_FILE).is_file():
+        raise Refused(f"{name}: an example with invented numbers has no view of the engine's; the two are not read together")
+    recording = view.get("recording")
+    if isinstance(recording, dict) and recording.get("subset") is not None:
+        raise Refused(f"{name}: its view records a subset of the run (some fields, some elements or a cadence), which the adapter does not read yet")
+    derivation = [
+        f"Read from the engine's own view of the run ({VIEW_FILE}, {VIEW_FORMAT}), beside its files: every set, unit, kind, sign, owner and layer is as that view declares it. "
+        "The viewer adds no table of its own and reads nothing out of the arrays' values; what the view does not state is not stated here."
+    ]
+
+    # ---- the sets: every entity the view names; a slot with no name is padding, and is left out.
+    sets = {item.get("id"): item for item in view["sets"] if isinstance(item, dict)}
+    for needed in ("cell", "species"):
+        if not isinstance(sets.get(needed, {}).get("ids"), list):
+            raise Refused(f"{name}: its view lists no {needed}s")
+    keep = {identifier: [k for k, entity in enumerate(item.get("ids") or []) if entity is not None] for identifier, item in sets.items()}
+    place = {identifier: {old: new for new, old in enumerate(kept)} for identifier, kept in keep.items()}
+    padding = {identifier: len(item.get("ids") or []) - len(keep[identifier]) for identifier, item in sets.items()}
+    named = lambda identifier: [sets[identifier]["ids"][k] for k in keep.get(identifier, [])]  # noqa: E731
+
+    def each(identifier, key):
+        """One value of a set's list for each named entity, or None where the set gives no such list."""
+        values = sets.get(identifier, {}).get(key)
+        return [values[k] for k in keep[identifier]] if isinstance(values, list) and len(values) == len(sets[identifier]["ids"]) else None
+
+    def onto(identifier, target, index):
+        """A set's index into another set, for its named entities, in that set's numbering without its padding."""
+        try:
+            return [place[target][index[k]] for k in keep[identifier]]
+        except (KeyError, IndexError, TypeError):
+            raise Refused(f"{name}: an entity of {identifier} in its view points at no named entity of {target}") from None
+
+    def geometry_of(identifier):
+        """A set's `on` or `links` geometry, renumbered; or None."""
+        geometry = sets.get(identifier, {}).get("geometry")
+        if not isinstance(geometry, dict):
+            return None
+        if geometry.get("kind") == "on" and geometry.get("set") in sets:
+            return {"kind": "on", "set": geometry["set"], "index": onto(identifier, geometry["set"], geometry.get("index"))}
+        if geometry.get("kind") == "links" and geometry.get("between") in sets:
+            target, ends = geometry["between"], geometry.get("ends") or []
+            try:
+                return {"kind": "links", "between": target, "ends": [[place[target][ends[k][0]], place[target][ends[k][1]]] for k in keep[identifier]]}
+            except (KeyError, IndexError, TypeError):
+                raise Refused(f"{name}: a link of {identifier} in its view joins no named entity of {target}") from None
+        return None
+
+    constants_in = [item for item in view["constants"] if isinstance(item, dict) and isinstance(item.get("id"), str) and isinstance(item.get("axes"), list)]
+    cells, species = named("cell"), named("species")
+    volume = next((item for item in constants_in if item["id"] == "volume" and item["axes"] == ["cell"] and isinstance(item.get("values"), list) and len(item["values"]) == len(sets["cell"]["ids"])), None)
+    junction_links = geometry_of("junction") if "junction" in sets else None
+    junction_ids = named("junction") if junction_links and junction_links["between"] == "cell" else []
+    like = {
+        "cells": [{"id": cell, "volume_pL": volume["values"][keep["cell"][k]] if volume else 1.0} for k, cell in enumerate(cells)],
+        "junctions": [{"id": identifier, "sender": cells[a], "receiver": cells[b]} for identifier, (a, b) in zip(junction_ids, junction_links["ends"] if junction_ids else [])],
+    }
+    if sets["cell"].get("geometry") is not None:
+        derivation.append(f"The view places its cells itself ({(sets['cell']['geometry'] or {}).get('kind')}); the adapter does not read a builder's geometry yet, and lays the cells out as below.")
+    sheet = lay_out(name, like, derivation, row=True)
+    if not volume:
+        derivation.append("The view states no cell volume: the size the cells are drawn at stands for nothing.")
+    membranes = None
+    membrane_on = geometry_of("membrane") if "membrane" in sets else None
+    faces_outside = sets.get("membrane", {}).get("outside")
+    if membrane_on and membrane_on["set"] == "cell" and isinstance(faces_outside, dict) and faces_outside.get("set") in sets:
+        membranes = {"ids": named("membrane"), "cell": membrane_on["index"], "outside": onto("membrane", faces_outside["set"], faces_outside.get("index")), "nodes": named(faces_outside["set"]), "set": faces_outside["set"]}
+
+    # ---- the time bases: the replay steps through one of them, the observed rows where the run has them.
+    bases = {base.get("id"): base for base in (view["time"] or {}).get("bases") or [] if isinstance(base, dict)}
+    timeline = next((identifier for identifier in ("observation", "accepted") if identifier in bases and bases[identifier].get("files")), None)
+    if timeline is None:
+        raise Refused(f"{name}: its view names no time base the adapter knows (observation, accepted)")
+    _, time_values, count = view_rows(name, folder, bases[timeline], bases[timeline].get("array"))
+    times = list(time_values)
+    increasing(name, times)
+    derivation.append(f"The replay steps through the view's time base '{timeline}' ({bases[timeline].get('says') or 'as the view calls it'}): {count} records. Each record here names the base its array is saved on.")
+    others = {identifier: base for identifier, base in bases.items() if identifier != timeline}
+    other_rows = {}
+
+    def rows_on(identifier):
+        """For another time base: the row of it that falls on each time of the replay, or None where one has none."""
+        if identifier not in other_rows:
+            _, values, _ = view_rows(name, folder, others[identifier], others[identifier].get("array"))
+            found, at = [], 0
+            for time in times:
+                while at < len(values) and values[at] < time and not math.isclose(values[at], time, **TIME_CLOSE):
+                    at += 1
+                found.append(at if at < len(values) and math.isclose(values[at], time, **TIME_CLOSE) else None)
+            other_rows[identifier] = None if any(row is None for row in found) else found
+        return other_rows[identifier]
+
+    # ---- the records: those the page has a name for, as the view declares them.
+    listed = [record for record in view["records"] if isinstance(record, dict) and isinstance(record.get("field"), str) and record.get("base") in bases]
+    on_timeline = {record["field"] for record in listed if record["base"] == timeline}
+    payload, records, parts, skipped, twins, sampled, unsampled, unnamed = Payload(), [], [], [], 0, [], [], set()
+    records.append(describe(payload, "t", "Time", "s", ["time"], "float32", (count,), array("f", times)))
+    layer_ids = {layer.get("id") for layer in view["layers"] if isinstance(layer, dict)}
+    for field in HISTORY_FIELDS:  # the page's own order of fields
+        for record in [item for item in listed if item["field"] == field]:
+            rows = range(count)
+            if record["base"] != timeline:
+                if field in on_timeline:
+                    twins += 1
+                    continue
+                matched = rows_on(record["base"])
+                if matched is None:
+                    unsampled.append(field)
+                    continue
+                rows = matched
+                sampled.append(field)
+            axes = [axis for axis in record.get("axes") or [] if axis != "time"]
+            if not (1 <= len(axes) <= 2 and all(axis in sets for axis in axes) and (len(axes) == 1 or axes[0] == "species") and record.get("layer") in layer_ids and isinstance(record.get("unit"), str) and isinstance(record.get("owner"), str)):
+                skipped.append(field)
+                continue
+            shape, values, _ = view_rows(name, folder, bases[record["base"]], record.get("array"))
+            if tuple(shape) != tuple(len(sets[axis]["ids"]) for axis in axes):
+                raise Refused(f"{name}: {record.get('array')} does not have the shape its view's axes give it")
+            entity, columns, width = axes[-1], keep[axes[-1]], shape[-1]
+            if not columns:
+                continue  # a set with no entity: nothing to package, and the view says that it has none
+            per = 1
+            for size in shape:
+                per *= size
+            stated = {key: record[key] for key in ("kind", "sign", "monotone", "resets", "note", "writers") if record.get(key) is not None}
+            stated.update({"array": record.get("array"), "base": record["base"]})
+            if record["base"] != timeline:
+                stated["rows"] = f"the row of the base '{record['base']}' that falls on each of the replay's times"
+            split = {species[new]: array("f", (values[row * per + old * width + k] for row in rows for k in columns)) for new, old in enumerate(keep["species"])} if len(axes) == 2 else {None: array("f", (values[row * per + k] for row in rows for k in columns))}
+
+            def declare(target, values_, species_id=None, part=None):
+                label = FIELD_LABELS[field] if species_id is None else f"{FIELD_LABELS[field]}: {species_id}"
+                extra = {"field": field, "species": species_id} if species_id is not None else {}
+                return describe(target, field if species_id is None else f"{field}.{species_id}", label, record["unit"], ["time", entity], "float32", (count, len(columns)), values_, set=entity, layer=record["layer"], owner=record["owner"], part=part, **stated, **extra)
+
+            if field in HISTORY_MAIN:
+                records.append(declare(payload, split[None]))
+                continue
+            slug = re.sub(r"[^a-z0-9]+", "-", field.lower()).strip("-")
+            together = sum(len(item) * 4 for item in split.values()) * 4 / 3 < LIMIT_BYTES * 0.92
+            own = Payload()
+            for species_id, item in split.items():
+                part = slug if together or species_id is None else f"{slug}-{re.sub(r'[^a-z0-9]+', '-', species_id.lower()).strip('-')}"
+                if not together and species_id is not None:
+                    own = Payload()
+                records.append(declare(own, item, species_id, part))
+                if not together and species_id is not None:
+                    parts.append({"id": part, "label": f"{FIELD_LABELS[field]}: {species_id}", "payload": own})
+            if together or None in split:
+                parts.append({"id": slug, "label": FIELD_LABELS[field], "payload": own})
+    unnamed = sorted({record["field"] for record in listed if record["base"] == timeline and record["field"] not in FIELD_LABELS})
+    if not any(record.get("set") == "cell" for record in records):
+        raise Refused(f"{name}: its view names no record over its cells that the page could colour the sheet by")
+    # Where every cell has one membrane, in the cells' order, each membrane's voltage is also its cell's: the same array, declared over the cells.
+    own_voltage = next((record for record in records if record["id"] == "membrane_voltage_V"), None)
+    if own_voltage and one_membrane_each(membranes, sheet):
+        records.insert(records.index(own_voltage) + 1, {**own_voltage, "id": "vm", "set": "cell", "axes": ["time", "cell"], "same_as": "membrane_voltage_V"})
+        derivation.append("The view gives every cell exactly one membrane, in the cells' order, so each membrane's saved voltage is also declared as its cell's (vm); no array is added.")
+    if twins:
+        derivation.append(f"{twins} record(s) of the view's other time base hold the same fields as records packaged here, at other rows: they are not packaged.")
+    if sampled:
+        derivation.append(f"Saved on another time base only, and packaged at the rows of that base that fall on the replay's times: {', '.join(sorted(set(sampled)))}.")
+    if unsampled:
+        derivation.append(f"Saved on another time base only, with no row at some of the replay's times, and so not packaged: {', '.join(sorted(set(unsampled)))}.")
+    if skipped:
+        derivation.append(f"Not packaged, because the page cannot lay out their axes: {', '.join(sorted(set(skipped)))}.")
+    if unnamed:
+        derivation.append(f"The view declares {len(unnamed)} more field(s) on this time base that the page has no name for; they are not packaged: {', '.join(unnamed)}.")
+    left = sorted(f"{padding[identifier]} of {identifier}" for identifier in padding if padding[identifier])
+    if left:
+        derivation.append(f"Slots the view gives no name (padding) are left out, with their columns: {', '.join(left)}.")
+    derivation.append("Times and values are stored as 32-bit numbers; the run saved 64-bit. Every field but the two the sheet opens with is in a file of its own beside this one.")
+
+    # ---- how the run ended and what its catalogue entry asks to be copied: the run's own files, where it has them.
+    config = read_json(folder / "resolved_config.json") if (folder / "resolved_config.json").is_file() else {}
+    summary = read_json(folder / "summary.json") if (folder / "summary.json").is_file() else {}
+    plan = {"execution": config.get("execution") or {}, "model": {key: value for key, value in (config.get("model") or {}).items() if not isinstance(value, (list, dict))}} if isinstance(config, dict) else {}
+    parameters, readouts = copied(entry, plan, summary if isinstance(summary, dict) else {}, {})
+    stated_run = view["run"] if isinstance(view["run"], dict) else {}
+    arm = re.sub(r"[^A-Za-z0-9._-]+", "-", name)
+    run = run_facts(
+        experiment, arm, None, label=stated_run.get("label") if isinstance(stated_run.get("label"), str) else None, group=None,
+        engine_models=[model for model in stated_run.get("engine_models") or [] if isinstance(model, str)], revision=stated_run.get("revision") if isinstance(stated_run.get("revision"), str) else None,
+        end_s=times[-1], stop=summary.get("status") if isinstance(summary, dict) and isinstance(summary.get("status"), str) else None, parameters=parameters, readouts=readouts,
+    )  # fmt: skip
+
+    # ---- constants and what the view does not state, as written; a constant's values lose their padding slots.
+    def trimmed(values, axes):
+        if not axes:
+            return values
+        return [trimmed(values[k], axes[1:]) for k in keep[axes[0]]]
+
+    def numbers(values):
+        return is_number(values) if not isinstance(values, list) else all(numbers(value) for value in values)
+
+    constants = []
+    for item in constants_in:
+        axes = item["axes"]
+        if len(axes) > 2 or any(axis not in sets for axis in axes) or not isinstance(item.get("unit"), str) or not isinstance(item.get("says"), str):
+            continue
+        try:
+            values = trimmed(item.get("values"), axes)
+        except (IndexError, TypeError):
+            continue
+        if not numbers(values) or (axes and not values):
+            continue  # a flag (true or false), or a set with no entity: nothing a layer reads
+        constants.append({"id": item["id"], "unit": item["unit"], "axes": axes, "values": values, "from": item.get("from"), "says": item["says"]})
+    unstated = [{"id": item["id"], "what": item.get("what"), "why": item["why"]} for item in view["unstated"] if isinstance(item, dict) and isinstance(item.get("id"), str) and isinstance(item.get("why"), str)]
+
+    out = assemble(run, (), {}, sheet, records, [], [], derivation, parts, None, membranes=membranes, species=species, constants=constants, unstated=unstated)
+    packaged = {item["id"]: item for item in out["sets"]}
+    # What the view says of each set's entities is carried as written, for the named ones.
+    for identifier, keys in (("cell", ("lifetimes",)), ("species", ("valence",)), ("outside", ("reservoir",)), ("membrane", ("pumps", "laws")), ("junction", ("laws",))):
+        for key in keys:
+            values = each(identifier, key)
+            if identifier in packaged and values is not None and any(value is not None for value in values):
+                packaged[identifier][key] = values
+    for identifier in ("outside", "membrane"):
+        if identifier in packaged and isinstance(sets.get(identifier, {}).get("holds"), str):
+            packaged[identifier]["holds"] = sets[identifier]["holds"]
+    # Every other set a packaged record lies on, or that the picture lays out: as the view gives it.
+    used = {record["set"] for record in records if record.get("set")} | ({"face"} if "face" in sets else set())
+    for identifier in [key for key in sets if key in used and key not in packaged]:
+        item = {"id": identifier, "scale": sets[identifier].get("scale"), "ids": named(identifier)}
+        for key in ("holds", "owner", "says"):
+            if isinstance(sets[identifier].get(key), str):
+                item[key] = sets[identifier][key]
+        geometry = geometry_of(identifier)
+        if geometry:
+            item["geometry"] = geometry
+        laws = each(identifier, "laws")
+        if laws is not None and laws:
+            item["laws"] = laws
+        out["sets"].append(item)
+        packaged[identifier] = item
+    # The species the run's operators declare: the view names the operator that declares each, and does not call it secreted.
+    operators = set((stated_run.get("composition") or {}).get("operators") or []) if isinstance(stated_run.get("composition"), dict) else set()
+    identities = each("species", "species") or []
+    declared_by = [(species[k], (identity.get("identity") or {}).get("source")) for k, identity in enumerate(identities) if isinstance(identity, dict) and isinstance(identity.get("identity"), dict)]
+    secreted = [identifier for identifier, source in declared_by if source in operators]
+    if secreted:
+        packaged["species"]["secreted"] = secreted
+        derivation.append(
+            f"The species an operator of the run declares ({', '.join(f'{identifier}, by {source}' for identifier, source in declared_by if source in operators)}) is taken as the species the run secretes: "
+            "the view names the operator that declares it, and does not itself call it secreted."
+        )
+    # The spaces outside the cells, where the viewer can stand them beside the cells.
+    if membranes and "outside" in packaged:
+        face_links = packaged.get("face", {}).get("geometry") if "face" in packaged else None
+        nodes = membranes["nodes"]
+        faces_like = [{"sender": nodes[a], "receiver": nodes[b]} for a, b in face_links["ends"]] if face_links and face_links.get("between") == membranes["set"] else []
+        world = world_layout({"faces": faces_like}, sheet, membranes, derivation)
+        if world is not None:
+            packaged["cell"]["geometry"] = {"kind": "polygons", "vertices": world.vertices, "faces": world.cells}
+            packaged["outside"]["geometry"] = {"kind": "polygons", "vertices": world.vertices, "faces": world.outside}
+    # The view's events, each at an entity by its number here.
+    events = []
+    for event in view["events"]:
+        if not (isinstance(event, dict) and is_number(event.get("time")) and isinstance(event.get("at"), dict) and len(event["at"]) == 1):
+            continue
+        item = {"time": event["time"], "kind": event.get("kind"), "layer": event.get("layer"), "label": event.get("label") or None}
+        for end in ("at", "from"):
+            if isinstance(event.get(end), dict) and len(event[end]) == 1:
+                ((identifier, entity),) = event[end].items()
+                if identifier in packaged and entity in packaged[identifier]["ids"]:
+                    item[end] = {"set": identifier, "index": packaged[identifier]["ids"].index(entity)}
+        if "at" in item:
+            events.append(item)
+    if events:
+        out["events"] = sorted(events, key=lambda item: item["time"])
+    # The view's layers that a packaged record or event belongs to, each with its owner and how it is represented, as written.
+    in_use = {record.get("layer") for record in records} | {event.get("layer") for event in events}
+    out["layers"] = [{"id": layer["id"], "label": layer.get("label"), "representation": layer.get("representation"), "owner": layer.get("owner")} for layer in view["layers"] if isinstance(layer, dict) and layer.get("id") in in_use]
+    out["time"]["base"] = {"id": timeline, "says": bases[timeline].get("says"), "others": [{"id": identifier, "says": base.get("says"), "rows": sum(part["rows"][1] - part["rows"][0] for part in base.get("files") or [] if isinstance(part, dict) and isinstance(part.get("rows"), list) and len(part["rows"]) == 2)} for identifier, base in others.items()]}
+    missing = sorted({record["set"] for record in records if record.get("set")} - set(packaged))
+    if missing:
+        raise Refused(f"{name}: records lie on {', '.join(missing)}, which its view does not list as a set")
+    notes = {"records": count, "cells": len(sheet.cells), "junctions": len(sheet.junctions), "events": len(events), "revision": run["revision"], "pitch_um": sheet.pitch, "windows": len(bases[timeline].get("files") or [])}
+    notes["parts"] = {part["id"]: part["payload"].data() for part in parts}
+    return out, payload.data(), notes
+
+
 def adapt_history(root, name, experiment, entry):
     """One run written by the engine's shared output path (a folder that holds resolved_config.json and its arrays)."""
     if not RUN_FOLDER.match(name):
@@ -1525,15 +1964,27 @@ def adapt_history(root, name, experiment, entry):
     folder = root / name
     if not folder.is_dir():
         raise Refused(f"no run folder {name} in {root.name}/")
+    # A run with the engine's own view beside its files is packaged from that view, and from none of the adapter's tables.
+    if (folder / VIEW_FILE).is_file():
+        return adapt_engine_view(root, name, experiment, entry)
     config = read_json(folder / "resolved_config.json")
     tissue = tissue_of(config)
     if tissue is None:
         raise Refused(f"{name}: its definition lists no cells, membranes, junctions and outside nodes the adapter can read")
+    # A run folder the run-fixture tool wrote says so itself: its numbers are invented, and the view carries that word.
+    example = read_json(folder / EXAMPLE_FILE) if (folder / EXAMPLE_FILE).is_file() else None
+    if example is not None and not (isinstance(example, dict) and example.get("example") is True and isinstance(example.get("says"), str) and example["says"]):
+        raise Refused(f"{name}: its {EXAMPLE_FILE} does not say in words that the run is an example")
     model_id = (config.get("model") or {}).get("id")
     family = model_id in TISSUE_FAMILY
     derivation = []
     sheet = lay_out(name, tissue, derivation, row=True)
     fields, times, windows = history_arrays(name, folder, derivation)
+    # Who computed each readout, where the run's own manifest says it (a composition's field map): the inner model, or an operator's law.
+    manifest = read_json(folder / "manifest.json") if (folder / "manifest.json").is_file() else {}
+    owners = ((manifest.get("field_owners") or {}).get("observations") or {}) if isinstance(manifest, dict) else {}
+    if example:
+        owners = {}  # no model computed an example's numbers: none is named as their owner
     count = len(times)
     # The definition as the constants and the surroundings are read from: the tissue with the run's own experiment.
     definition = config if tissue is config.get("model") else {"model": tissue, "experiment": config.get("experiment") or {}}
@@ -1542,6 +1993,12 @@ def adapt_history(root, name, experiment, entry):
     index_of = {key: {item.get("id"): number for number, item in enumerate(tissue.get(HISTORY_SETS[key]) or []) if isinstance(item, dict)} for key in HISTORY_SETS}
     sizes = {key: len(tissue.get(listed) or []) for key, listed in HISTORY_SETS.items()}
     sizes["species"] = len(species)
+    # The routes of the operators that carry a species across a membrane, where each names a membrane and a species of the run.
+    composed = config.get("model") or {}
+    routes = [route for operator in composed.get("operators") or [] if isinstance(operator, dict) and operator.get("law") in EXCHANGE_LAWS for route in operator.get("routes") or []]
+    if not (membranes and all(isinstance(route, dict) and isinstance(route.get("id"), str) and route.get("patch") in membranes["ids"] and route.get("species") in species for route in routes)) or len({route["id"] for route in routes}) != len(routes):
+        routes = []
+    sizes["route"] = len(routes)
 
     def rows(field):
         """A field's values as {species or None: flat values over (time, the first n entities)}, with its set; or None when it is not there or does not fit."""
@@ -1564,7 +2021,17 @@ def adapt_history(root, name, experiment, entry):
 
     payload, records, parts, used_layers = Payload(), [], [], set()
     records.append(describe(payload, "t", "Time", "s", ["time"], "float32", (count,), array("f", times)))
-    owner = model_id if isinstance(model_id, str) else None
+    inner_model = (config.get("model") or {}).get("inner_model")
+
+    def owner_of(field):
+        """The model or law that computed a field: the run's manifest where it says, the model otherwise."""
+        said = owners.get(field)
+        said = said[-1] if isinstance(said, list) and said else said
+        if said == "inner" and isinstance(inner_model, str):
+            return inner_model
+        if isinstance(said, str) and said != "inner":
+            return said
+        return model_id if isinstance(model_id, str) and not example else None
     signs = {}
     # Which way the voltages are positive is checked on the saved arrays themselves, wherever they allow it.
     voltage, inner, outer = fields.get("membrane_voltage_V"), fields.get("cell_potential_V"), fields.get("extracellular_potential_V")
@@ -1585,17 +2052,31 @@ def adapt_history(root, name, experiment, entry):
         ) and any(abs(across[1][step * wide + j]) > 1e-9 for step in range(count) for j in range(sizes["junction"])):  # fmt: skip
             signs["junction_voltage_V"] = {"says": "a positive voltage means the junction's first cell, its sender, is at the higher potential", "high": "first", "by": f"{SIGN_FROM_ARRAYS}: at every record each junction's saved voltage equals the saved potential of its sender less that of its receiver"}
 
+    moved_sign = exchange_sign(fields, count, species, sheet, membranes, routes) if routes else None
+    if moved_sign:
+        signs["exchange_moved_fmol"] = moved_sign
+
+    totals = set()  # fields the adapter read as totals from the arrays themselves
+
     def declare(target, field, entity, n, values, species_id=None, part=None):
         table = tissue_field(field) if family else None
-        unit = (table or {}).get("unit") or ("V" if field.endswith("_V") else "pJ" if field.endswith("_pJ") else "")
+        unit = (table or {}).get("unit") or next((unit_ for suffix, unit_ in (("_V", "V"), ("_pJ", "pJ"), ("_fmol", "fmol")) if field.endswith(suffix)), "")
         sign = signs.get(field) or (table or {}).get("sign")
         label = HISTORY_FIELDS[field][1] if species_id is None else f"{HISTORY_FIELDS[field][1]}: {species_id}"
         layer = HISTORY_FIELDS[field][2]
         used_layers.add(layer)
         extra = {"field": field, "species": species_id} if species_id is not None else {}
+        kind = (table or {}).get("kind")
+        monotone = (table or {}).get("monotone")
+        if kind is None and layer == "turnover" and all(values[k] == 0 for k in range(n)) and all(values[step * n + k] >= values[(step - 1) * n + k] for step in range(1, count) for k in range(n)):
+            # An operator's ledger the viewer's table does not list: it starts at nought and never falls, so it is read as a total since the start.
+            kind, monotone = "cumulative", "non-decreasing"
+            totals.add(field)
+        if kind is None and field == "exchange_moved_fmol" and field in signs:
+            kind = "cumulative"  # the cells' amounts add up with it as a total since the start: the same check that gives its sign
         return describe(
             target, field if species_id is None else f"{field}.{species_id}", label, unit, ["time", entity], "float32", (count, n), values,
-            set=entity, layer=layer, kind=(table or {}).get("kind"), owner=owner, sign=sign, part=part, **extra,
+            set=entity, layer=layer, kind=kind, owner=owner_of(field), sign=sign, part=part, monotone=monotone, note=(table or {}).get("note"), **extra,
         )  # fmt: skip
 
     left_out, empty = [], []
@@ -1635,7 +2116,7 @@ def adapt_history(root, name, experiment, entry):
         derivation.append(f"Left out, because their arrays do not have the shape the adapter knows for them: {', '.join(left_out)}.")
     if empty:
         places = sorted({HISTORY_FIELDS[field][0][-1] for field in empty})
-        derivation.append(f"The run has no {' and no '.join(HISTORY_SETS[place] for place in places)}, so the fields that lie on them are empty and are not packaged: {', '.join(empty)}.")
+        derivation.append(f"The run has no {' and no '.join(PLACE_WORDS.get(place) or HISTORY_SETS[place] for place in places)}, so the fields that lie on them are empty and are not packaged: {', '.join(empty)}.")
     derivation.append("Times and values are stored as 32-bit numbers; the run saved 64-bit. Every field but the two the sheet opens with is in a file of its own beside this one.")
     derivation.append(
         "Which entity each column is: the arrays name none. Columns are taken in the order of the run's definition (its cells, membranes, junctions, outside nodes, faces and channel populations), "
@@ -1650,15 +2131,20 @@ def adapt_history(root, name, experiment, entry):
         derivation.append(f"The run's model ({model_id}) is not of the family the viewer's table speaks of: no kind and no sign is given for its records, and a unit only where the field's name ends in one.")
     for field, sign in signs.items():
         derivation.append(f"Which way {HISTORY_FIELDS[field][1].lower()} is positive is not declared by the run. It is read from its arrays: {sign['by'].split(': ', 1)[1]}.")
+    if totals:
+        derivation.append(f"Read as totals since the run's start, because their arrays begin at nought and never fall: {', '.join(sorted(totals))}. The viewer's table does not list these fields, and the run's files do not say what kind of number they are.")
+    if owners:
+        derivation.append("Each record's owner is the one the run's own manifest names for that readout (its field map): the inner model, or the operator's law.")
     stated = layers_stated(entry, derivation)
     summary = read_json(folder / "summary.json") if (folder / "summary.json").is_file() else {}
     plan = {"execution": config.get("execution") or {}, "model": {key: value for key, value in (config.get("model") or {}).items() if not isinstance(value, (list, dict))}}
     parameters, readouts = copied(entry, plan, summary if isinstance(summary, dict) else {}, {})
     derivation.append("Parameters are copied under their own names from resolved_config.json (execution and the model's plain values) and readouts from summary.json. The run's files name no revision of the engine by its commit, so none is given.")
     models = [model_id] if isinstance(model_id, str) else []
-    composed = config.get("model") or {}
     if isinstance(composed.get("inner_model"), str):
         models += [composed["inner_model"], *[operator.get("law") for operator in composed.get("operators") or [] if isinstance(operator, dict) and isinstance(operator.get("law"), str)]]
+    if example:
+        models = []  # no engine model ran
     arm = re.sub(r"[^A-Za-z0-9._-]+", "-", name)
     run = run_facts(
         experiment, arm, None, label=None, group=None, engine_models=models, revision=None, end_s=times[-1],
@@ -1677,10 +2163,55 @@ def adapt_history(root, name, experiment, entry):
     channels = [channel for channel in tissue.get("channels") or [] if isinstance(channel, dict)]
     if membranes and channels and all(channel.get("membrane_id") in index_of["membrane"] and isinstance(channel.get("id"), str) for channel in channels):
         view["sets"].append({"id": "channel", "holds": "channel population", "scale": "cell", "ids": [channel["id"] for channel in channels], "geometry": {"kind": "on", "set": "membrane", "index": [index_of["membrane"][channel["membrane_id"]] for channel in channels]}})
+        # The ions each population lets through, as the definition lists them: a population with one is drawn in that ion's colour.
+        permeant = [[item.get("species_id") for item in channel.get("permeant_ions") or [] if isinstance(item, dict) and item.get("species_id") in species] for channel in channels]
+        if any(permeant):
+            view["sets"][-1]["species"] = permeant
+    # The exchange routes, each on its membrane, with the species it carries.
+    if routes and any(record.get("set") == "route" for record in records):
+        view["sets"].append({"id": "route", "holds": "route", "scale": "cell", "ids": [route["id"] for route in routes], "geometry": {"kind": "on", "set": "membrane", "index": [membranes["ids"].index(route["patch"]) for route in routes]}, "species": [route["species"] for route in routes]})
+        derivation.append("The exchange routes are those the run's definition lists for its exchange operator: each names the membrane it lies on and the species it carries.")
+    # What one cycle of each membrane's pump moves, as its declaration gives it: a law's own numbers, which nothing the run schedules changes.
+    membrane_set = next((item for item in view["sets"] if item["id"] == "membrane"), None)
+    declared_pumps = {membrane.get("id"): membrane.get("pump") for membrane in tissue.get("membranes") or [] if isinstance(membrane, dict)}
+    if membrane_set is not None:
+        # In the shape the engine's own run view gives a pump: what one cycle moves, by role, a positive count into the cell.
+        pumps = []
+        for identifier in membrane_set["ids"]:
+            pump = declared_pumps.get(identifier) if isinstance(declared_pumps.get(identifier), dict) else {}
+            moves, roles = pump.get("stoichiometry"), pump.get("roles") if isinstance(pump.get("roles"), dict) else {}
+            if isinstance(moves, dict) and moves and all(key in species and is_number(value) for key, value in moves.items()):
+                role_of = {ion: role for role, ion in roles.items()}
+                pumps.append({"id": pump.get("id"), "law_id": pump.get("law"), "per_cycle": [{"role": role_of.get(ion), "species": ion, "count": count} for ion, count in moves.items()], "per_cycle_sign": "inward-positive"})
+            else:
+                pumps.append(None)
+        if any(pumps):
+            membrane_set["pumps"] = pumps
+            derivation.append("What one cycle of each membrane's pump moves is the pump's own declaration in the run's definition (its stoichiometry): a positive count is carried into the cell.")
+    # The outside nodes: which are held baths, and where the viewer stands them; the species the run's secretion operators name.
+    outside = next((item for item in view["sets"] if item["id"] == "outside"), None)
+    if outside is not None:
+        outside["reservoir"] = [node.get("reservoir") is True for node in tissue.get("extracellular") or []]
+        world = world_layout(tissue, sheet, membranes, derivation)
+        if world is not None:
+            cells_set = next(item for item in view["sets"] if item["id"] == "cell")
+            cells_set["geometry"] = {"kind": "polygons", "vertices": world.vertices, "faces": world.cells}
+            outside["geometry"] = {"kind": "polygons", "vertices": world.vertices, "faces": world.outside}
+    named = []
+    for operator in composed.get("operators") or []:
+        if isinstance(operator, dict) and operator.get("law") in SECRETION_LAWS:
+            named += [item.get("id") for item in operator.get("species") or [] if isinstance(item, dict) and item.get("id") in species and item.get("id") not in named]
+    species_set = next((item for item in view["sets"] if item["id"] == "species"), None)
+    if named and species_set is not None:
+        species_set["secreted"] = named
+        derivation.append(f"The secreted species ({', '.join(named)}) is the one the run's definition names in its operators that make, clear and exchange a species.")
     listed = {item["id"] for item in view["sets"]}
     missing = sorted({record["set"] for record in records if record.get("set")} - listed)
     if missing:
         raise Refused(f"{name}: records lie on {', '.join(missing)}, which the definition does not list in a form the adapter can read")
+    if example:
+        view["example"] = {"says": example["says"], "made_by": example.get("made_by") if isinstance(example.get("made_by"), str) else None}
+        derivation.insert(0, f"{example['says']}. Every number of this run was written by the run-fixture tool in the layout of the engine's shared output path. No engine ran, and no model is named as the owner of a record.")
     notes = {"records": count, "cells": len(sheet.cells), "junctions": len(sheet.junctions), "events": 0, "revision": None, "pitch_um": sheet.pitch, "windows": windows}
     notes["parts"] = {part["id"]: part["payload"].data() for part in parts}
     return view, payload.data(), notes
@@ -1855,6 +2386,9 @@ def main(argv=None):
         listed = []
         for name in names:
             view, data, notes = adapter(root, name, experiment, entry)
+            # An example (invented numbers) stands under "Examples" and never among experiments; an experiment's run is never listed as one.
+            if bool(view.get("example")) != (entry.get("example") is True):
+                raise Refused(f"{name}: {'the run is an example with invented numbers, and its catalogue entry does not say so' if view.get('example') else 'its catalogue entry calls it an example, and the run folder does not'}")
             replay = {"format": REPLAY_FORMAT, "view": view, "payload": {"encoding": "base64", "byte_length": len(data), "data": base64.b64encode(data).decode("ascii")}}
             check_clean(name, json.dumps(view, ensure_ascii=False))
             content = serialise(replay)
@@ -1875,6 +2409,8 @@ def main(argv=None):
                 (out / Path(part["file"]).name).write_bytes(text)
                 beside.append({"id": part["id"], "file": part["file"], "bytes": len(text)})
             listed.append(row_of(run, notes["records"], len(content), beside))
+            if view.get("example"):
+                listed[-1]["example"] = True
             flags = "" if "on_grid" not in notes else f" ({notes['on_grid']} on the grid, {notes['valid']} valid)"
             words = [f"class {run['class']!r}"] if "class" in run else []
             words += [f"stop {run['stop']!r}"] if run["stop"] else []
