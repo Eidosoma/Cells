@@ -16,3 +16,10 @@ def config_data():
 @pytest.fixture
 def spec(config_data):
     return parse_spec(config_data)
+
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers",
+        "needs_checkout: reads files outside an execution snapshot's scope (for example configs/)",
+    )
