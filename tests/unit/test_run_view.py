@@ -10,8 +10,9 @@ the plan, its refusals and the reader's check. The windowed paths: test_run_view
   version 1, a batch request that misses a world.
 * The reader's check refuses malformed views.
 * A recording subset keeps the declared fields, elements and cadence, and the view says which.
-* A batch writes one view per world, beside its definition; a builder's geometry lands on its set;
-  a division's lifetimes and events name the parent and both daughters.
+* A batch writes one view per world, beside its definition; a builder's geometry lands on its set
+  (a division: test_run_view_division.py).
+* The reader's check opens one file at a time and finds a heat total that falls across files.
 * Every field of resolved_pump_tissue@3 is described; the operators' missing declarations (the
   requested seams) only shrink.
 
@@ -19,6 +20,8 @@ Declarations an operator does not carry yet are planted for a test's duration on
 """
 
 import json
+import os
+import resource
 
 import numpy as np
 import pytest
@@ -37,11 +40,8 @@ from cells.models.registry import get_model
 from tests.batch_fixtures import definition
 from tests.run_view_fixtures import (
     EXCHANGE,
-    PARTITION,
-    STATE,
     TURNOVER,
     declare_secretion,
-    layers,
     load,
     plant,
     secretion,
@@ -117,11 +117,14 @@ def test_write_run_writes_a_valid_deterministic_view(written, tmp_path):
     assert records["observed_membrane_transferred"]["sign"]["from"] == "inside"
     assert records["observed_reservoir_supplied"]["sign"]["to"] == "node"
     assert records["observed_exchange_moved_fmol"]["layer"] == "exchange"
-    assert records["observed_exchange_moved_fmol"]["kind"] == "cumulative"
-    assert "sign" not in records["observed_exchange_moved_fmol"]  # The owner's to declare.
+    assert records["observed_exchange_work_pJ"]["kind"] == "cumulative"  # A declared work field.
+    # Its kind and sign are the owner's to declare: an accumulator may be a retirement record.
+    assert {"kind", "sign"}.isdisjoint(records["observed_exchange_moved_fmol"])
     assert records["face_dissipated_energy_pJ"]["monotone"] == "non-decreasing"
+    assert "resets" not in records["face_dissipated_energy_pJ"]  # Nothing retires here.
     assert {c["id"] for c in view["constants"]} >= {"temperature", "valence", "volume"}
     assert {(u["id"], u["what"]) for u in view["unstated"]} >= {
+        ("exchange_moved_fmol", "kind"),
         ("turnover_energy_magnitude_pJ", "kind"),
         ("geometry", "geometry"),
     }
@@ -322,6 +325,38 @@ def test_the_readers_check_finds_falling_heat(written, tmp_path):
         run_view.validate(view, tmp_path)
 
 
+def test_the_readers_check_holds_one_file_open_at_a_time(written, tmp_path):
+    """A run cut into one file per row (as a windowed run of one step per window would be) is
+    checked under an open-file limit far below its file count, heat carried across files."""
+    _, _, root = written
+    view = load(root / "a")
+    with np.load(root / "a" / "trajectory.npz") as saved:
+        arrays = {k: saved[k] for k in saved.files}
+    (tmp_path / "chunks").mkdir()
+    for base in view["time"]["bases"]:
+        names = [base["array"], *(r["array"] for r in view["records"] if r["base"] == base["id"])]
+        base["files"] = []
+        for i in range(len(arrays[base["array"]])):
+            name = f"chunks/{base['id']}-{i:03d}.npz"
+            np.savez(tmp_path / name, **{a: arrays[a][i : i + 1] for a in names})
+            base["files"].append({"file": name, "rows": [i, i + 1]})
+    files = sum(len(b["files"]) for b in view["time"]["bases"])
+    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    resource.setrlimit(resource.RLIMIT_NOFILE, (len(os.listdir("/proc/self/fd")) + 6, hard))
+    try:
+        run_view.validate(view, tmp_path)
+    finally:
+        resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
+    assert files > 6
+    heat = next(r for r in view["records"] if r["field"] == "face_dissipated_energy_pJ")
+    first = next(f for b in view["time"]["bases"] if b["id"] == heat["base"] for f in b["files"])
+    with np.load(tmp_path / first["file"]) as saved:
+        changed = {k: saved[k] for k in saved.files}
+    np.savez(tmp_path / first["file"], **(changed | {heat["array"]: changed[heat["array"]] + 1}))
+    with pytest.raises(run_view.ViewInvalid, match="never falling"):
+        run_view.validate(view, tmp_path)  # A fall between two files is found.
+
+
 # ------------------------------------------------------------------ geometry and a division
 
 
@@ -357,51 +392,6 @@ def test_a_builders_geometry_is_placed_on_its_set(declared):
     bad = run_view.Geometry("um", 2, {"cell": {"kind": "points", "centres": [[0, 0]]}}, "b")
     with pytest.raises(run_view.ViewRefused, match="2 finite 2-vectors"):
         run_view.prepare(spec, run_view.Request(geometry=bad), layout=initialise(spec).layout)
-
-
-def test_a_division_names_its_parent_and_daughters(monkeypatch):
-    from tests import partition_fixtures as pf
-
-    plant(
-        monkeypatch,
-        STATE,
-        VIEW_LAYERS=layers("membrane_state", "Membrane entity state", "simulated"),
-        UNITS={"population_abundance_increment": "1", "population_units": "1"},
-        OBSERVATION_AXES={
-            "membrane_area_m2": ("membrane_slot",),
-            "membrane_capacitance_F": ("membrane_slot",),
-            "population_units": ("channel_slot",),
-        },
-    )
-    plant(
-        monkeypatch,
-        PARTITION,
-        VIEW_LAYERS=layers("division", "Cell division"),
-        UNITS={"division_applied": "1", "partition_units_moved": "1", "partition_slot_phase": "1"},
-        OBSERVATION_AXES={"partition_slot_phase": ("cell_slot",)},
-        view_sets=lambda self, spec, declaration: {
-            "division_slot": {
-                "id": "division",
-                "ids": tuple(d.id for d in declaration.divisions),
-                "holds": "division",
-            }
-        },
-    )
-    spec = parse_spec(pf.divided())
-    plan = run_view.prepare(spec, run_view.Request(), layout=initialise(spec).layout)
-    cells = plan.sets["cell"]
-    lives = dict(zip(cells["ids"], cells["lifetimes"], strict=True))
-    assert lives["cell_0"] == [None, pf.EVENT]
-    assert lives["d1"] == lives["d2"] == [pf.EVENT, None]
-    assert [(e["kind"], e["at"]) for e in plan.events] == [
-        ("birth", {"cell": "d1"}),
-        ("birth", {"cell": "d2"}),
-        ("retirement", {"cell": "cell_0"}),
-    ]
-    assert {e["time"] for e in plan.events} == {pf.EVENT}
-    changed = {u["id"] for u in plan.unstated if u["what"] == "view field"}
-    assert {"active", "membrane_area", "membrane_capacitance"} <= changed
-    run_view.validate(plan.view({}, "write_run"))
 
 
 def test_the_inner_model_alone_carries_its_laws_and_gate_rows():

@@ -33,8 +33,12 @@ Declarations read, and their interim stand-ins
   getattr until the contract carries them: ``view_sets(spec, declaration)`` for its own axes,
   ``OBSERVATION_AXES`` for its readout columns, ``UNITS`` for names without a unit suffix,
   ``RECORD_KINDS``, ``ORIENTATION`` and ``RECORD_LAYERS``. Without a declared kind, a field the
-  contract books as heat, work or an entity write's accumulator is cumulative; any other is listed
-  as unstated.
+  contract books as heat or work (HEAT_FIELDS, WORK_FIELDS) is cumulative; any other is listed as
+  unstated.
+* Retirement: where an operator RETIRES slots, a retired slot's inner history moves into that
+  operator's own record at its retirement (the composite's checks add it back), so the inner
+  ledgers restart at zero there on the saved arrays. Their records then say so (``resets``) and
+  claim no monotonicity; elsewhere every ``*_dissipated_energy_pJ`` record is ``monotone``.
 * Owners: the composition's field map (state owners, observation owner chains: the last).
 * Laws (requirement 4): each channel population's, junction's and pump's law from the structure
   record's law declarations (models/inner_laws.py), with its provenance; membranes and faces carry
@@ -68,6 +72,7 @@ from ``from`` to ``to``.
 import json
 import math
 import re
+import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import MappingProxyType
@@ -100,6 +105,12 @@ TOP_KEYS = frozenset(
     }
 )
 HEAT_SUFFIX = "_dissipated_energy_pJ"
+RESETS_NOTE = (
+    "These operators retire slots: at a slot's retirement its history in this ledger moves into "
+    "the retiring operator's own record (the composite's checks add it back), and this record "
+    "restarts at zero there. A difference across a retirement is not a flow, and a heat total "
+    "only grows with that record added back."
+)
 HEAT_NOTE = (
     "A total per element: zero or more and never falling, checked at every accepted row (the "
     "engine's check, allowance 1e-12 pJ). Under an exact free-energy heat booking a route's value "
@@ -373,8 +384,9 @@ class Recording:
     """A declared recording subset (requirement 1): the fields, elements and cadence a run keeps.
 
     fields: engine field names (state or observation), None for all; elements: {set id: entity
-    ids}, None for all; every: keep every n-th observation row (the run's first row is kept).
-    The history keeps every accepted row of the kept fields and elements.
+    ids}, None for all; every: keep every n-th observation row, counted from the first row this
+    write saves (a continuation counts from its own first row). The history keeps every accepted
+    row of the kept fields and elements.
     """
 
     fields: tuple | None = None
@@ -474,6 +486,7 @@ class Plan:
         self.spec, self.request = spec, request or Request()
         self.model, self.inner_id, self.entries = _family(spec)
         self.problems, self.unstated = [], []
+        self.retiring = tuple(op.LAW_ID for op, _, _ in self.entries if op.RETIRES)
         table, inner_layers, notes = INNER_TABLES[self.inner_id]
         inner = _inner(self.model)
         self.inner_table, self.notes = table, notes
@@ -503,6 +516,10 @@ class Plan:
         self.recording = self._recording()
         self.run = self._run()
         _refuse(self.problems)
+        try:  # The view's structure, before any output: only its time bases come later.
+            validate(self.view({}, "prepared"))
+        except ViewInvalid as exc:
+            raise ViewRefused(str(exc)) from exc
 
     # -------------------------------------------------------------- sets
 
@@ -867,13 +884,10 @@ class Plan:
             return None
         kind = getattr(op, "RECORD_KINDS", {}).get(name)
         if kind is None:
-            booked = {
-                *op.HEAT_FIELDS,
-                *op.WORK_FIELDS,
-                *(k for ks in op.ENTITY_WRITES.values() for k in ks),
-                *(k for ks in op.EVENT_REPLACES.values() for k in ks),
-            }
-            if name in booked:
+            # Only the contract's energy roles say what a field is: heat and work are booked
+            # totals. An entity write's accumulator may be a retirement record, whose jump is
+            # bookkeeping, not a flow: its kind is its owner's to declare.
+            if name in (*op.HEAT_FIELDS, *op.WORK_FIELDS):
                 kind = "cumulative"
             else:
                 self.unstated.append(
@@ -1229,10 +1243,16 @@ class Plan:
                     record["kind"] = info.kind
                 if info.sign is not None:
                     record["sign"] = info.sign
-                if name.endswith(HEAT_SUFFIX):
+                resets = self.retiring and info.owner == self.inner_id and info.kind == "cumulative"
+                if resets:  # A retired slot's history moves out at its retirement.
+                    record["resets"] = {
+                        "by": list(self.retiring),
+                        "says": RESETS_NOTE,
+                    }
+                elif name.endswith(HEAT_SUFFIX):
                     record["monotone"] = "non-decreasing"
                     record["note"] = HEAT_NOTE
-                elif info.owner == self.inner_id and name in self.notes:
+                if not resets and info.owner == self.inner_id and name in self.notes:
                     record["note"] = self.notes[name]
                 records.append(record)
         return {
@@ -1249,12 +1269,14 @@ class Plan:
             "recording": {"mode": mode, "subset": self.recording},
         }
 
-    def write(self, directory, bases, mode, *, out=None, check=True):
-        """Write view.json (into `out`, default `directory`, the run's folder), checked first
-        against the files it names, which lie in `directory`."""
+    def write(self, directory, bases, mode, *, out=None, files=False):
+        """Write view.json (into `out`, default `directory`, the run's folder), its structure
+        checked first; with files, also against the files it names, which lie in `directory`.
+
+        The shared paths check the structure only: their view is written after the payload and
+        before the manifest, and everything else was checked before any output (prepare)."""
         value = self.view(bases, mode)
-        if check:
-            validate(value, directory)
+        validate(value, directory if files else None)
         folder = Path(out or directory)
         folder.mkdir(parents=True, exist_ok=True)  # A batch world without chunks has no folder.
         path = folder / FILE
@@ -1392,7 +1414,7 @@ def write_view(directory, spec=None, *, out=None, run=None, geometry=None, bases
         else:
             raise ViewRefused(f"{directory} holds no run written by a shared output path")
     plan = prepare(spec, Request(run or {}, geometry), layout=saved_layout(directory))
-    return plan.write(directory, bases, mode or "write_run", out=out)
+    return plan.write(directory, bases, mode or "write_run", out=out, files=True)
 
 
 # ------------------------------------------------------------------ the reader's check
@@ -1544,6 +1566,17 @@ def validate(view, directory=None):
         )
         if "kind" in record:
             _check(record["kind"] in KINDS, problems, f"record {rid}: kind is one of {KINDS}")
+        if "resets" in record:
+            resets = record["resets"]
+            _check(
+                isinstance(resets, dict)
+                and set(resets) == {"by", "says"}
+                and resets["by"]
+                and all(isinstance(law, str) and "@" in law for law in resets["by"])
+                and "monotone" not in record,
+                problems,
+                f"record {rid}: resets names the retiring laws, and claims no monotonicity",
+            )
         if "sign" in record:
             roles = SIGN_ROLES.get(record.get("set"), ())
             sign = record["sign"]
@@ -1648,64 +1681,75 @@ def _validate_geometry(set_id, s, sets, sizes, space, problems):
         )
 
 
-def _validate_files(view, directory, sets, sizes, problems):
-    archives = {}
+def _npz_shapes(path):
+    """{array: shape} of an npz archive, from the arrays' headers, without reading their data."""
+    readers = {
+        (1, 0): np.lib.format.read_array_header_1_0,
+        (2, 0): np.lib.format.read_array_header_2_0,
+    }
+    shapes = {}
+    with zipfile.ZipFile(path) as archive:
+        for member in archive.namelist():
+            if not member.endswith(".npy"):
+                continue
+            with archive.open(member) as stream:
+                version = np.lib.format.read_magic(stream)
+                if version not in readers:
+                    raise ViewInvalid(f"{path.name}: {member} has npy format {version}")
+                shapes[member[: -len(".npy")]] = readers[version](stream)[0]
+    return shapes
 
-    def array(name, key):
-        if name not in archives:
+
+def _validate_files(view, directory, sets, sizes, problems):
+    """Every file a time base names, one at a time: its time array (finite, increasing across
+    files), each record's shape from the arrays' headers, and the data of the heat records that
+    claim monotonicity, carrying only their last row from file to file."""
+    for base in view["time"]["bases"]:
+        records = [r for r in view["records"] if r["base"] == base["id"]]
+        shapes = {
+            r["id"]: tuple(
+                len(sets[a]["recorded"]) if "recorded" in sets[a] else sizes[a]
+                for a in r["axes"][1:]
+            )
+            for r in records
+        }
+        monotone = [r for r in records if r.get("monotone") == "non-decreasing"]
+        last_time, last_rows = None, {}
+        for part in base["files"]:
+            name, rows = part["file"], part["rows"][1] - part["rows"][0]
             path = directory / name
             if not _check(path.is_file(), problems, f"{name} does not exist"):
-                return None
-            archives[name] = np.load(path, allow_pickle=False)
-        archive = archives[name]
-        if not _check(key in archive.files, problems, f"{name} holds no array {key}"):
-            return None
-        return archive[key]
-
-    try:
-        bases = {}
-        for base in view["time"]["bases"]:
-            times = []
-            for part in base["files"]:
-                value = array(part["file"], base["array"])
-                if value is None:
-                    continue
-                rows = part["rows"][1] - part["rows"][0]
-                _check(value.shape == (rows,), problems, f"{part['file']}: {base['array']} rows")
-                times.append(value)
-            if times:
-                joined = np.concatenate(times)
+                continue
+            held = _npz_shapes(path)
+            missing = [a for a in (base["array"], *(r["array"] for r in records)) if a not in held]
+            if not _check(not missing, problems, f"{name} holds no array {missing[:3]}"):
+                continue
+            _check(held[base["array"]] == (rows,), problems, f"{name}: {base['array']} rows")
+            for record in records:
                 _check(
-                    np.all(np.isfinite(joined)) and np.all(np.diff(joined) > 0),
+                    held[record["array"]] == (rows, *shapes[record["id"]]),
                     problems,
-                    f"time base {base['id']}: finite and increasing",
+                    f"{name}: {record['array']} has shape {held[record['array']]}, its view "
+                    f"{(rows, *shapes[record['id']])}",
                 )
-            bases[base["id"]] = base
-        for record in view["records"]:
-            shape = tuple(
-                len(sets[a]["recorded"]) if "recorded" in sets[a] else sizes[a]
-                for a in record["axes"][1:]
-            )
-            parts = []
-            for part in bases[record["base"]]["files"]:
-                value = array(part["file"], record["array"])
-                if value is None:
-                    continue
-                rows = part["rows"][1] - part["rows"][0]
+            if problems:
+                continue
+            with np.load(path, allow_pickle=False) as archive:
+                times = archive[base["array"]]
+                joined = times if last_time is None else np.concatenate(([last_time], times))
                 _check(
-                    value.shape == (rows, *shape),
+                    np.all(np.isfinite(times)) and np.all(np.diff(joined) > 0),
                     problems,
-                    f"{part['file']}: {record['array']} has shape {value.shape}, its view "
-                    f"{(rows, *shape)}",
+                    f"time base {base['id']}: finite and increasing ({name})",
                 )
-                parts.append(value)
-            if record.get("monotone") == "non-decreasing" and parts:
-                joined = np.concatenate(parts)
-                _check(
-                    np.all(joined >= -1e-12) and np.all(np.diff(joined, axis=0) >= -1e-12),
-                    problems,
-                    f"record {record['id']}: zero or more and never falling",
-                )
-    finally:
-        for archive in archives.values():
-            archive.close()
+                last_time = times[-1]
+                for record in monotone:
+                    value = archive[record["array"]]
+                    before = last_rows.get(record["id"])
+                    joined = value if before is None else np.concatenate((before, value))
+                    _check(
+                        np.all(value >= -1e-12) and np.all(np.diff(joined, axis=0) >= -1e-12),
+                        problems,
+                        f"record {record['id']}: zero or more and never falling ({name})",
+                    )
+                    last_rows[record["id"]] = value[-1:].copy()
