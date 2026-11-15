@@ -2027,7 +2027,194 @@ def part_steps(args):
     log(f"steps criteria: { {k: v['largest_good_dt_s'] for k, v in criteria.items()} }")
 
 
+QUALCELL_TOLERANCES = dict(  # excitable_qualification_v1.json, CELL_rest and CELL_AP (PROPOSED)
+    rest_V=1e-5,
+    kick_threshold_widen_V=5e-5,
+    peak_V=1e-4,
+    time_relative=0.01,
+    time_absolute_s=1e-5,
+    dvdt_relative=0.02,
+    v80_V=1e-4,
+)
+
+
+def ap_row(t, v, *, reference_s, rest_V):
+    """The protocol's action-potential measures (conduction_observables; times from t = 0)."""
+    from validation.tissue import conduction_observables as co
+
+    t, v = np.asarray(t), np.asarray(v)
+    ap = co.action_potential(t, v, reference_s=reference_s, rest_V=rest_V)
+    dv = np.diff(v) / np.diff(t)
+    k = int(np.argmax(v))
+    back = co.falling(t, v, rest_V + 0.005, k)
+    return dict(
+        peak_V=float(v.max()),
+        time_to_peak_s=float(t[k]),
+        max_dVdt_V_per_s=float(dv.max()),
+        time_of_max_dVdt_s=float(0.5 * (t[int(np.argmax(dv))] + t[int(np.argmax(dv)) + 1])),
+        APD50_s=ap["apd50_s"] if ap and ap["peak_V"] > 0 else None,
+        APD90_s=ap["apd90_s"] if ap and ap["peak_V"] > 0 else None,
+        apd_reference_s=reference_s,
+        return_within_5mV_s=back,
+        V_at_80ms=float(np.interp(0.08, t, v)) if t[-1] >= 0.08 else None,
+        overshoot=bool(v.max() > 0.0),
+    )
+
+
+def compare_ap(engine, ref, tol):
+    """Engine against reference for the shared measures (development; not a verdict).
+
+    A measure absent from the reference is not compared (within None). APD and the return
+    within 5 mV are compared only when both runs overshoot: a non-firing run's APD is
+    undefined (the references' usage note).
+    """
+    out = {}
+    fired = bool(engine.get("overshoot")) and bool(ref.get("overshoot", ref.get("peak_V", -1) > 0))
+    for key, kind in (
+        ("peak_V", "V"),
+        ("V_at_80ms", "V80"),
+        ("max_dVdt_V_per_s", "dvdt"),
+        ("time_to_peak_s", "t"),
+        ("APD50_s", "t"),
+        ("APD90_s", "t"),
+        ("return_within_5mV_s", "t"),
+    ):
+        a, b = engine.get(key), ref.get(key)
+        if key in ("APD50_s", "APD90_s", "return_within_5mV_s") and not fired:
+            out[key] = dict(engine=a, reference=b, within=None, note="not firing: undefined")
+            continue
+        if b is None:
+            out[key] = dict(engine=a, reference=None, within=None, note="not in the reference")
+            continue
+        if a is None:
+            out[key] = dict(engine=None, reference=b, within=False)
+            continue
+        d = abs(a - b)
+        if kind == "V":
+            ok = d <= tol["peak_V"]
+        elif kind == "V80":
+            ok = d <= tol["v80_V"]
+        elif kind == "dvdt":
+            ok = d <= tol["dvdt_relative"] * abs(b)
+        else:
+            ok = d <= max(tol["time_relative"] * abs(b), tol["time_absolute_s"])
+        out[key] = dict(engine=a, reference=b, difference=d, within=bool(ok))
+    return out
+
+
+def part_qualcell(args):
+    """The PROPOSED protocol's one-cell criteria at the point given (A): development values and
+    their comparison with the references' saved results (excitable_qualification_v1.json;
+    M1 PLAN amendment 3). Kicked runs last 80 ms with APD from the largest dV/dt; the
+    stimulus run's APD is from the stimulus end (appendix section 8.3)."""
+    set_point(args.nav, args.kir, args.cm)
+    tol = QUALCELL_TOLERANCES
+    ref_all = json.loads(Path(args.reference_results).read_text())["cm001"][args.reference_point]
+    checks = json.loads(Path(args.reference_checks).read_text()) if args.reference_checks else {}
+    out = dict(
+        provenance=provenance(),
+        plan=PLAN,
+        part="qualcell",
+        point=dict(nav_m_s=args.nav, kir_m_s=args.kir, cm_F_m2=args.cm, kv_m_s=args.kv),
+        dt_s=args.cell_dt,
+        tolerances=tol,
+        references=dict(results=args.reference_results, checks=args.reference_checks),
+    )
+    path = Path(args.output) / "qualcell.json"
+    out["rest"] = relax_rest(args.kv)
+    rest_V = POINT["rest"][0]
+    out["CELL_rest"] = dict(
+        engine=rest_V,
+        reference=ref_all["rest_V"],
+        difference=abs(rest_V - ref_all["rest_V"]),
+        within=abs(rest_V - ref_all["rest_V"]) <= tol["rest_V"],
+    )
+    write_json(path, out)
+
+    def kicked_run(kick_mV, control="excitable"):
+        rec, r = single_run(args.kv, dt=args.cell_dt, end=0.08, kick=kick_mV, control=control)
+        t, v = np.asarray(r["times"]), np.asarray(r["vm"])[:, 0]
+        row = None
+        if len(t) > 2:
+            from validation.tissue import conduction_observables as co
+
+            row = ap_row(t, v, reference_s=co.largest_dvdt_time(t, v), rest_V=rest_V)
+        return rec, row
+
+    # The kick threshold by bisection on [0, 60] mV: fires when the peak exceeds 0 mV.
+    lo, hi, trail = 0.0, 60.0, []
+    while hi - lo > args.kick_tol_mV:
+        mid = 0.5 * (lo + hi)
+        rec, row = kicked_run(mid)
+        fired = bool(row and row["overshoot"]) and rec["refusal"] is None
+        trail.append(dict(kick_mV=mid, fired=fired, refusal=rec["refusal"]))
+        lo, hi = (lo, mid) if fired else (mid, hi)
+        log(f"qualcell kick {mid:.5f} mV fired {fired}")
+    ref_k = ref_all["kick_threshold"]
+    out["CELL_kick_threshold"] = dict(
+        engine_bracket_mV=[lo, hi],
+        reference_mV=1e3 * ref_k["threshold"],
+        within=bool(lo - 1e3 * tol["kick_threshold_widen_V"] <= 1e3 * ref_k["threshold"]
+                    <= hi + 1e3 * tol["kick_threshold_widen_V"]),
+        runs=trail,
+    )  # fmt: skip
+    write_json(path, out)
+    threshold = hi
+    twice = min(2.0 * threshold, 60.0)
+    panel = {}
+    for name, kick, control, ref_key in (
+        ("twice", twice, "excitable", "twice"),
+        ("twice_nav_off", twice, "sodium_disabled", "twice_nav_off"),
+        ("twice_all_off", twice, "passive", "twice_all_off"),
+        ("kick_to_-20mV", 1e3 * (-0.020 - rest_V), "excitable", None),
+        ("kick_to_0mV", 1e3 * (0.0 - rest_V), "excitable", None),
+    ):
+        rec, row = kicked_run(kick, control)
+        ref = ref_all["panel"][ref_key] if ref_key else ref_all[name]
+        panel[name] = dict(
+            kick_mV=kick,
+            control=control,
+            refusal=rec["refusal"],
+            engine=row,
+            comparison=None if row is None else compare_ap(row, ref, tol),
+        )
+        log(f"qualcell {name}: peak {row and row['peak_V']} refusal {rec['refusal']}")
+        write_json(path, out)
+    out["CELL_AP_and_controls"] = panel
+    # The 1 ms stimulus at 2e-7 m/s (scaled nominal), APD from the stimulus end.
+    on, width = int(round(2e-3 / args.cell_dt)), int(round(1e-3 / args.cell_dt))
+    stim = dict(cells=[0], pulses=[(on, on + width)], m_s=args.stim_m_s * stimulus_scale())
+    rec, r = single_run(args.kv, dt=args.cell_dt, end=0.08, stim=stim)
+    t, v = np.asarray(r["times"]), np.asarray(r["vm"])[:, 0]
+    row = (
+        ap_row(t, v, reference_s=(on + width) * args.cell_dt, rest_V=rest_V) if len(t) > 2 else None
+    )
+    ref_end = checks.get("stimulus_" + args.reference_point) or {}
+    ref_stim = dict(ref_all["stimulus_2e-7"])
+    if ref_end:  # The references' APDs from the stimulus end (checks-final: t_upstroke_s, 3 ms).
+        ref_stim["APD50_s"] = ref_end["APD50_from_upstroke_s"]
+        ref_stim["APD90_s"] = ref_end["APD90_from_upstroke_s"]
+        ref_stim["apd_reference_s"] = ref_end["t_upstroke_s"]
+        ref_stim.pop("max_dVdt_V_per_s", None)  # the stimulus onset's: not an upstroke measure
+    out["CELL_stimulus_run"] = dict(
+        refusal=rec["refusal"],
+        engine=row,
+        reference=ref_stim,
+        reference_from_stimulus_end=bool(ref_end),
+        comparison=None if row is None else compare_ap(row, ref_stim, tol),
+    )
+    out["peak_rss_mb"] = peak_rss_mb()
+    write_json(path, out)
+    within = [out["CELL_rest"]["within"], out["CELL_kick_threshold"]["within"]]
+    for entry in list(panel.values()) + [out["CELL_stimulus_run"]]:
+        within += [
+            c["within"] for c in (entry["comparison"] or {}).values() if c["within"] is not None
+        ]
+    log(f"qualcell: {sum(within)} of {len(within)} comparisons within the PROPOSED tolerances")
+
+
 PARTS = dict(
+    qualcell=part_qualcell,
     lengths=part_lengths,
     steps=part_steps,
     segment=part_segment,
@@ -2093,13 +2280,21 @@ def main(argv=None):
     a.add_argument("--step-cap", type=float, default=1e-4)
     a.add_argument("--step-count", type=int, default=4)
     a.add_argument("--kick-to-V", type=float, default=0.0, help="steps: the kicked cells' V(0)")
+    a.add_argument("--cell-dt", type=float, default=5e-6, help="qualcell: the step")
+    a.add_argument("--kick-tol-mV", type=float, default=0.01, help="qualcell: bisection width")
+    a.add_argument("--reference-results", default=None, help="qualcell: references' results.json")
+    a.add_argument("--reference-checks", default=None, help="qualcell: their final_checks.json")
+    a.add_argument("--reference-point", default="A")
     a.add_argument(
         "--booking",
         default="trapezoid_nonnegative@1",
         help="the chain's junction-heat booking (E07-v1's registered one by default)",
     )
     args = a.parse_args(argv)
-    if args.part in ("chain", "device", "segment", "lengths", "steps") and args.kv is None:
+    if (
+        args.part in ("chain", "device", "segment", "lengths", "steps", "qualcell")
+        and args.kv is None
+    ):
         a.error("chain and device need --kv explicitly")
     if args.part == "device" and args.kick_to is None:
         a.error("device needs --kick-to explicitly")
