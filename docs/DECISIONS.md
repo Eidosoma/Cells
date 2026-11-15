@@ -5747,7 +5747,7 @@ report kept in the lead's private workspace), and the user decided:
   doors,** with removal and surface insertion under FR-2. Its design note follows the round, and the
   choice of the closed loop's unit stays the user's.
 
-## D178: The visualizer's membrane-placement predictions read from UniProt and WormBase ParaSite may stay
+## D178: Membrane-placement predictions read from UniProt and WormBase ParaSite may stay
 
 2026-11-15. The visualizer's protein records include membrane-placement predictions (which side of
 the membrane each protein sits on) for about 17,500 planarian proteins and some *M. pneumoniae*
@@ -5758,9 +5758,14 @@ placements. The visualizer classed these values as non-commercial under D173.
   stay. The databases' published terms are treated as governing.
 - **The visualizer reclassifies them,** keeps its notes on where each value came from, and its
   licence test still lists every dependence by species.
-- **Scope:** only these placement predictions. Anything else, a source with no stated terms
-  included, stays under D173's rule: nothing from non-commercially licensed or unlicensed data is
-  committed or redistributed.
+- **Scope, widened the same day by the user:**
+  - **Every species:** human, planarian, Syn3A, *M. pneumoniae* and *E. coli*.
+  - **The terms:** a placement value stands on the terms of the database it was read from, and the
+    record names and counts the tool behind it.
+  - **Where the user said so:** to the visualizer, as one rule for every species with the numbers
+    for each; and to the lead, for *E. coli* ("Yes, extend D178").
+  - Anything else, a source with no stated terms included, stays under D173's rule: nothing from
+    non-commercially licensed or unlicensed data is committed or redistributed.
 
 ## D179: The FEP track's decisions: on hold, E. coli as data only, approvals delegated for this track
 
