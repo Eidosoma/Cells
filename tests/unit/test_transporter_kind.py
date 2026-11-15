@@ -26,7 +26,8 @@ from cells.models import surface_pump_v3
 from cells.models.inner_kinds import transporter
 from cells.models.registry import get_model
 from cells.processes import atp_transporter as neutral
-from cells.processes.electrochemistry import R
+from cells.processes import proton_pump as proton
+from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 from validation.tissue import pump_water_fixtures as water_fixtures
 
 END_S = 0.004
@@ -82,9 +83,11 @@ def held_world(*entries, potentials=True):
     return raw
 
 
-def scoped(kind=transporter.TRANSPORTER):
+def scoped(*kinds):
+    """A test-local registry holding `kinds` (the transporter by default)."""
     registry = kind_registry.KindRegistry()
-    registry.register(kind)
+    for kind in kinds or (transporter.TRANSPORTER,):
+        registry.register(kind)
     return kind_registry.scope(registry)
 
 
@@ -160,11 +163,6 @@ def test_the_definition_check_names_its_reasons():
             parse_spec(held_world(potentials=False))
         with pytest.raises(ConfigError, match=r"finite fuel .*gap 2"):
             parse_spec(held_world(population(fuel=fuel(kind=transporter.FINITE))))
-        proton = population(
-            law=transporter.PROTON_LAW, role="Na", fuel=fuel(ph_ref=7.2, ph_band=0.05)
-        )
-        with pytest.raises(ConfigError, match=r"gap 5.*gap 8.*gap 9"):
-            parse_spec(held_world(proton))
 
 
 def test_a_value_change_reuses_the_implementation():
@@ -246,3 +244,155 @@ def test_the_law_domain_refuses_at_the_stage():
         adp["standard_mu_RT"] = -250.0
         with pytest.raises(ConfigError, match="domain invalid"):
             parse_spec(raw)
+
+
+# ------------------------------------------------------------------ the charged role (FR-4's pump)
+# A generic charged world, not FR-4's: the proton pump moves H from heredity cell D, which B4
+# buffers (pK 7.2, 50 mM, pH 7.2), into the held bath (unbuffered, pH 7.4), on held fuel. Every
+# other route, channel and pump is at availability 0, so the pump is the only charge mover.
+
+PH_CELL, PH_BATH, PK_BUFFER, BUFFER_mM = 7.2, 7.4, 7.2, 50.0
+PUMP = dict(
+    law=transporter.PROTON_LAW,
+    role="H",
+    stoichiometry=2,
+    capacity_fmol_s=8.3027e-3,
+    km_role_mM=1e-4,
+    km_atp_mM=0.1,
+)
+
+
+def charged_world(*, ph_cell=PH_CELL, **over):
+    entry = population(**PUMP, fuel=fuel(ph_ref=PH_CELL, ph_band=0.05))
+    entry.update(over)
+    raw = held_world(entry)
+    m, c0 = raw["model"], 1000.0
+    h, k = c0 * 10**-ph_cell, c0 * 10**-PK_BUFFER
+    cell, bath = m["cells"][0], m["extracellular"][0]
+    v_cell, v_bath = cell["volume_pL"], bath["volume_pL"]
+    amounts = {
+        cell["id"]: dict(H=v_cell * (h + BUFFER_mM * h / (h + k)), B_c=v_cell * BUFFER_mM),
+        bath["id"]: dict(H=v_bath * c0 * 10**-PH_BATH, B_c=v_bath * 1e-6),
+    }
+    forms = dict(H=dict(), B_c=dict(protonated_standard_mu_RT=-PK_BUFFER * math.log(10.0)))
+    for species, z in (("H", 1), ("B_c", -1)):
+        m["species"].append(dict(id=species, valence=z, standard_mu_RT=0.0, **forms[species]))
+        for node in (cell, bath):
+            node["initial_amount_fmol"][species] = amounts[node["id"]][species]
+            node["fixed_charge_equivalent_fmol"] -= z * amounts[node["id"]][species]  # Same q.
+        for patch in m["membranes"]:
+            patch["permeability_m_per_s"][species] = 0.0
+        raw["execution"]["material_balance_atol_fmol"][species] = 1e-15
+    m["proton_buffering"] = dict(
+        proton="H", buffers={"cell_0": ["B_c"]}, k_on_per_mM_s={"B_c": 1e7}
+    )
+    for group in ("membrane_controls", "channel_controls", "pump_controls"):
+        for entry in raw["experiment"][group]:
+            entry["schedule"] = [dict(time=0.0, availability=0.0)]
+    return raw
+
+
+def charged():
+    from cells.models.inner_kinds import proton_buffer
+
+    return scoped(transporter.TRANSPORTER, proton_buffer.PROTON_BUFFER)
+
+
+def proton_kernel(voltage_V, temperature_K, capacity=PUMP["capacity_fmol_s"]):
+    """The proton kernel at the world's start (free h from the declared pH), in NumPy."""
+    i = proton.Inputs(
+        1e3 * 10**-PH_CELL, 1e3 * 10**-PH_BATH, voltage_V, 3.0, 0.3, 3.0, temperature_K
+    )
+    q = proton.Parameters(capacity, 2.0, 1e-4, 0.1, DRIVE0_J_MOL, PH_CELL, 0.05)
+    return i, q
+
+
+def test_the_charged_pump_reads_free_h_and_closes_charge_field_and_ledgers():
+    """FR-4's pump on held fuel through the runner with B4 (gaps 5, 8 and 9 merged):
+    - the read: the cycles follow the kernel at free h (pH 7.2), not at the stored H_eq;
+    - material: the cell's H_eq falls by 2 x cycles, the bath absorbs it, the held rows hold;
+    - charge and field: the bath's electrode answers 2 e per cycle, and the membrane voltage falls
+      by the capacitor's closed form;
+    - gap 9: the pump's flux is in the patch's membrane flux and current;
+    - ledgers: every accepted row passes all ten, the energy ledger with B4's stored term."""
+    from cells.core.surface_pump_v3_spec import control_values
+    from validation.tissue.surface_pump_v3_fixtures import HEREDITY_CAPACITANCE_F
+
+    with charged():
+        spec = parse_spec(charged_world())
+        model = get_model(spec.model)
+        assert [k for k, _ in model.structure.kinds] == [
+            "cells.rapid_proton_buffer@1",
+            transporter.KIND_ID,
+        ]
+        result = run(spec)
+        state, p = model.initial_values(spec)
+        control = model.Control(*(v[0] for v in control_values(spec, [0.0])))
+        current_A = model.readouts(state, control, p, xp=np).field.rates.membrane_current_A
+    final, obs, ids = result.final.state, result.observations, list(spec.model.species_ids)
+    h, atp = ids.index("H"), ids.index("ATP")
+    temperature = spec.model.temperature_K
+    rate = proton.kinetics(*proton_kernel(obs.membrane_voltage_V[0, 0], temperature), 1.0, xp=np)
+    cycles = float(final.transporter_cycles[0])
+    assert cycles == pytest.approx(float(rate.cycles_fmol_s) * END_S, rel=1e-4)
+    assert float(final.amount_increment[h, 0]) == pytest.approx(-2 * cycles, rel=1e-12)
+    assert float(final.reservoir_supplied[h, 0]) == pytest.approx(-2 * cycles, rel=1e-12)
+    assert float(final.amount_increment[atp, 0]) == 0.0
+    charge = CHARGE_PER_FMOL * 2 * cycles
+    assert float(final.electrode_charge_transferred_C[0]) == pytest.approx(charge, rel=1e-9)
+    dv = float(obs.membrane_voltage_V[-1, 0] - obs.membrane_voltage_V[0, 0])
+    assert dv == pytest.approx(-charge / HEREDITY_CAPACITANCE_F, rel=1e-9)
+    flux = float(obs.membrane_flux_fmol_s[0, h, 0])  # Gap 9, at the start: 2 H+ per cycle.
+    assert flux == pytest.approx(2 * float(rate.cycles_fmol_s), rel=1e-8)
+    assert float(current_A[0]) == pytest.approx(CHARGE_PER_FMOL * flux, rel=1e-12)
+    heat = float(final.transporter_dissipated_energy_pJ[0])
+    work = float(final.transporter_metabolic_work_pJ[0])
+    assert 0 < heat < work
+    assert result.diagnostics["max_energy_balance_relative"] < 1e-6
+
+
+def test_a_held_fuel_row_has_one_writer():
+    """Gap 8: held ATP at the cell is refused where a route moves it, naming the writer."""
+    raw = held_world()
+    raw["model"]["membranes"][0]["permeability_m_per_s"]["ATP"] = 1e-10
+    with scoped(), pytest.raises(ConfigError, match="holds ATP at cell_0, which membrane"):
+        parse_spec(raw)
+
+
+def test_the_pumps_slope_joins_the_step_rules():
+    """Gap 5: stage_term is the kernel's slope at the pump's static head at the stage's read;
+    bound_rate is the host term with the role's saturation at 1, over the cell's capacitance (the
+    bath is held), and a capacity that breaches it at 1 ms is refused by the step checks."""
+    from cells.core.surface_pump_v3_spec import control_values
+    from cells.models.inner_kinds import proton_buffer
+
+    with charged():
+        spec = parse_spec(charged_world())
+        structure = surface_pump_v3.structure(spec.model)
+        state, p = surface_pump_v3.initial_values(spec, structure=structure)
+        controls = control_values(spec, [0.0])
+        control = type(controls)(*(v[0] for v in controls))
+        read, ok = proton_buffer.stage_read(state, p, xp=np)
+        term = transporter.stage_term(read, control, p, xp=np)
+        rate = transporter.bound_rate(spec, dict(spec.model.kinds)[transporter.KIND_ID])
+        surface_pump_v3.check_steps(spec, np.asarray([1e-3]), None)
+        big = parse_spec(charged_world(capacity_fmol_s=2.0))
+        with pytest.raises(ConfigError, match="a declared kind's explicit-rate bound"):
+            surface_pump_v3.check_steps(big, np.asarray([1e-3]), None)
+    assert bool(ok)
+    h_in, temperature = 1e3 * 10**-PH_CELL, spec.model.temperature_K
+    s_atp = 3.0 / (3.0 + 0.1)
+    s_h = 1.0 / (1.0 + (1e-4 / h_in) ** 2)
+    unit = 4 * F / (R * temperature) * CHARGE_PER_FMOL * PUMP["capacity_fmol_s"] * s_atp
+    assert float(term[0]) == pytest.approx(unit * s_h, rel=1e-6)  # The read's free h.
+    capacitance = spec.model.membranes[0].capacitance_F
+    assert rate == pytest.approx(unit / capacitance, rel=1e-12)
+
+
+def test_the_ph_band_refuses_at_the_stage():
+    """The held fuel's band (7.2 +- 0.05) at the read's free h: a cytosol at pH 7.3 is refused at
+    the definition (through the stopgap), at 7.24 admitted."""
+    with charged():
+        parse_spec(charged_world(ph_cell=7.24))
+        with pytest.raises(ConfigError, match="domain invalid"):
+            parse_spec(charged_world(ph_cell=7.3))

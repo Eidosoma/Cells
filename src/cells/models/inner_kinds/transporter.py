@@ -48,11 +48,20 @@ What the hooks do:
   stage's rates turns into a refused stage (@3's rhs pattern). stage_check has no potentials and
   domain sees the stored state, so neither can test the charged law's domain; the seam asked of
   the core (a (state, valid) pattern, such as KindRates.valid) replaces this.
+- **membrane_flux** (gap 9): the role's outward flux across each patch joins the patches' total
+  flux and, for a charged role, the membrane current.
+- **stage_term** (gap 5, B7 for kinds): each charged population's electrogenic slope at the
+  stage's read, to its patch's cell. The stage's potentials are not passed, so it is the slope
+  at the pump's static head (the voltage where ΔG_cyc = 0): n e M e^a nF/RT with a <= 0 while
+  the pump runs forward or stalls, so the largest there; a reversed pump (a > 0) exceeds it by
+  e^a. **bound_rate:** B7's definition-time term, the same slope bounded with the role's
+  saturation at 1, over each free node's capacitance.
+- **held_rows** (gap 8): held fuel's rows at its node, which binding refuses any other writer of.
 - **ledger_terms:** the role's cumulative transfers (n x cycles at its two nodes), the heat and
   the held fuel's work, folded into @3's ledgers by role (rule (a)).
 - **moved_rows:** the role at both nodes (and finite fuel's rows, when admitted).
-- **check_definition:** the registry's potentials for every fuel row, and the refusals of version
-  1's gaps, each named.
+- **check_definition:** the registry's potentials for every fuel row, and finite fuel's refusal
+  (gap 2).
 """
 
 import math
@@ -66,7 +75,7 @@ from cells.core.specs import ConfigError, _fields, _number
 from cells.numerics.extracellular_field import scatter
 from cells.processes import atp_transporter as neutral
 from cells.processes import proton_pump as proton
-from cells.processes.electrochemistry import R
+from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 KIND_ID = "cells.transporter@1"
 MODEL_KEY = "transporters"
@@ -117,10 +126,6 @@ CONTROL_FIELDS = ("transporter_availability",)
 GAP_FINITE_FUEL = (
     "finite fuel (finite_fuel_rows@1) is refused in version 1 until its stored part is wired: "
     "the stage energy rate's standard-potential term (gap 2, after the landing)"
-)
-GAP_CHARGED = (
-    "the charged role waits for the core's seams: B7's stage term (gap 5), held rows with one "
-    "writer (gap 8) and the per-patch membrane_flux readout (gap 9)"
 )
 
 
@@ -294,8 +299,6 @@ def check_definition(spec):
                 )
         if t.fuel_kind == FINITE:
             raise ConfigError(f"{where}: {GAP_FINITE_FUEL}")
-        if t.law == PROTON_LAW:
-            raise ConfigError(f"{where}: {GAP_CHARGED}")
 
 
 def drive0_J_mol(spec, population):
@@ -376,6 +379,42 @@ def moved_rows(declaration):
     return tuple(out)
 
 
+def held_rows(declaration):
+    """Held fuel's rows at its node: read at every stage, moved by nothing (gap 8, one writer)."""
+    return tuple(
+        (row, t.fuel_node) for t in declaration if t.fuel_kind == HELD for row in t.fuel_rows
+    )
+
+
+def bound_rate(spec, declaration):
+    """B7's definition-time term (1/s, gap 5): at each free node a charged population charges, the
+    populations' slopes over the node's capacitance, the largest. A pump's slope is bounded by
+    k S_ATP n² e F/(RT): the role's saturation and e^a at most 1 (forward or stalled), S_ATP at
+    the held fuel's declared amount. A node's capacitance sums its patches'. Held baths and nodes
+    that faces join are not free nodes (as in B7's own term)."""
+    m = spec.model
+    charged = [t for t in declaration if t.law == PROTON_LAW]
+    if not charged:
+        return 0.0
+    ids = list(m.species_ids)
+    nodes = {node.id: node for node in (*m.cells, *m.extracellular)}
+    held_bath = {o.id for o in m.extracellular if o.reservoir}
+    faced = {f.sender for f in m.faces} | {f.receiver for f in m.faces}
+    capacitance, conductance = {}, {}
+    for patch in m.membranes:
+        for node in (patch.inside, patch.outside):
+            capacitance[node] = capacitance.get(node, 0.0) + patch.capacitance_F
+    for t in charged:
+        fuel = nodes[t.fuel_node]
+        atp = fuel.initial_amount_fmol[ids.index(t.fuel_rows[0])] / fuel.volume_pL
+        cycles = t.capacity_fmol_s * atp / (atp + t.km_atp_mM)
+        slope = t.stoichiometry**2 * F / (R * m.temperature_K) * CHARGE_PER_FMOL * cycles
+        for node in (t.inside, t.outside):
+            if node not in held_bath and node not in faced:
+                conductance[node] = conductance.get(node, 0.0) + slope
+    return max((g / capacitance[node] for node, g in conductance.items()), default=0.0)
+
+
 # ---------------------------------------------------------------------------- the stage
 
 
@@ -390,22 +429,41 @@ def _concentrations(state, p, *, xp):
     )
 
 
-def _inputs(state, potentials, p, *, xp):
-    """(role inside, role outside, patch voltage, fuel [3, membrane]) per membrane slot."""
+def _gather(state, p, *, xp):
+    """(role inside, role outside, fuel [3, membrane]) concentrations per membrane slot."""
     ci, co = _concentrations(state, p, xp=xp)
     inside, outside = ci[:, p.membrane_cell], co[:, p.membrane_outside]  # [S, membrane]
     slots = xp.arange(p.transporter_role.shape[-1])
-    n = p.active.size
-    voltage = xp.where(
-        p.membrane_active, potentials[p.membrane_cell] - potentials[n + p.membrane_outside], 0.0
-    )
     fuel = inside[p.transporter_fuel_rows, slots[None, :]]
-    return inside[p.transporter_role, slots], outside[p.transporter_role, slots], voltage, fuel
+    return inside[p.transporter_role, slots], outside[p.transporter_role, slots], fuel
+
+
+def _proton_law(c_in, c_out, voltage, fuel, p, *, xp):
+    """The proton kernel's (Inputs, Parameters) per membrane slot. Its c° is 1000 mM, so its
+    Δ_rG'° is the registry's at c0 plus RT ln(1000 mM / c0)."""
+    delta_g0 = p.transporter_drive0_J_mol + R * p.temperature * (
+        math.log(proton.STANDARD_STATE_mM) - xp.log(p.transporter_c0_mM)
+    )
+    i = proton.Inputs(c_in, c_out, voltage, fuel[0], fuel[1], fuel[2], p.temperature)
+    q = proton.Parameters(
+        p.transporter_capacity_fmol_s,
+        p.transporter_stoichiometry,
+        p.transporter_km_role_mM,
+        p.transporter_km_atp_mM,
+        delta_g0,
+        p.transporter_ph_ref,
+        p.transporter_ph_band,
+    )
+    return i, q
 
 
 def kinetics(state, potentials, availability, p, *, xp):
     """(cycles, ΔG_cyc, Δ_rG'_ATP, domain) per membrane slot, each declared law on its slots."""
-    c_in, c_out, voltage, fuel = _inputs(state, potentials, p, xp=xp)
+    c_in, c_out, fuel = _gather(state, p, xp=xp)
+    n = p.active.size
+    voltage = xp.where(
+        p.membrane_active, potentials[p.membrane_cell] - potentials[n + p.membrane_outside], 0.0
+    )
     cycles = energy = drive = xp.zeros_like(c_in)
     valid = xp.ones(c_in.shape, dtype=bool)
     if p.transporter_neutral.shape[-1]:  # Static: the neutral law is declared.
@@ -427,20 +485,7 @@ def kinetics(state, potentials, availability, p, *, xp):
         valid = valid & xp.where(mask, neutral.domain_valid(i, q, availability, xp=xp), True)
     if p.transporter_proton.shape[-1]:  # Static: the proton law is declared.
         mask = p.transporter_proton
-        # The proton kernel's c° is 1000 mM: Δ_rG'° there is Δ_rG'°(c0) + RT ln(1000 mM / c0).
-        delta_g0 = p.transporter_drive0_J_mol + R * p.temperature * (
-            math.log(proton.STANDARD_STATE_mM) - xp.log(p.transporter_c0_mM)
-        )
-        i = proton.Inputs(c_in, c_out, voltage, fuel[0], fuel[1], fuel[2], p.temperature)
-        q = proton.Parameters(
-            p.transporter_capacity_fmol_s,
-            p.transporter_stoichiometry,
-            p.transporter_km_role_mM,
-            p.transporter_km_atp_mM,
-            delta_g0,
-            p.transporter_ph_ref,
-            p.transporter_ph_band,
-        )
+        i, q = _proton_law(c_in, c_out, voltage, fuel, p, xp=xp)
         r = proton.kinetics(i, q, availability, xp=xp)
         cycles = xp.where(mask, r.cycles_fmol_s, cycles)
         energy = xp.where(mask, r.cycle_free_energy_J_mol, energy)
@@ -493,7 +538,28 @@ def rates(state, potentials, control, p, *, xp):
         ),
         heat_pJ_s=heat,
         work_pJ_s=work,
+        membrane_flux=outward,  # Gap 9: joins the patches' flux and current.
     )
+
+
+def stage_term(read, control, p, *, xp):
+    """[cell] conductance (S) of the charged populations at the stage's read (gap 5): each proton
+    pump's electrogenic slope at its static head, the voltage where ΔG_cyc = 0 (module
+    docstring), from the kernel's own conductance."""
+    n = p.active.size
+    if not p.transporter_proton.shape[-1]:  # Static: no charged law is declared.
+        return xp.zeros(n)
+    c_in, c_out, fuel = _gather(read, p, xp=xp)
+    i, q = _proton_law(c_in, c_out, xp.zeros_like(c_in), fuel, p, xp=xp)
+    head = (
+        proton.chemical_drive(i, q, xp=xp) / q.protons_per_cycle
+        + R * p.temperature * (xp.log(c_out) - xp.log(c_in))
+    ) / F
+    slope = proton.electrogenic_conductance_S(
+        i._replace(voltage_V=head), q, control.transporter_availability, xp=xp
+    )
+    slope = xp.where(p.transporter_proton & p.membrane_active, slope, 0.0)
+    return scatter(slope, xp.zeros(n), (p.membrane_cell,), xp=xp)
 
 
 # ---------------------------------------------------------------------------- the checks
@@ -549,6 +615,9 @@ TRANSPORTER = BUILTIN.register(
         initial=initial,
         control_values=control_values,
         rates=rates,
+        stage_term=stage_term,
+        bound_rate=bound_rate,
+        held_rows=held_rows,
         ledger_terms=ledger_terms,
         domain=domain,
         moved_rows=moved_rows,
