@@ -988,6 +988,135 @@ the insertion point is CORE's. Its conventions, fixed here:
   material and energy ledgers. The booking is §7.5's exact one.
 - **Bound:** finding 3's term covers the routes (§13.6).
 
+#### (j) The per-structure schema: three options (CORE's proposal for the lead's review with INT, 15 November; no code before the ruling)
+
+**What it must do.** New kinds add state, layout, control and observation fields: FR-4's
+transporter with its fuel rows, its stage read and the passive law ((i)). B7 adds none. A world
+that declares none of them keeps today's types. A world that declares one carries that kind's
+fields and no others ((d), the "Schema" level).
+
+**How types are used today** (the facts the options are judged on):
+- **Snapshots** are npz archives keyed by the state's and layout's field names. Reading requires
+  the archive's key set to equal `model.STATE_TYPE._fields` plus the layout's, and builds
+  `model.STATE_TYPE(*…)` (`io.py`). A restart requires `type(checkpoint.state) is
+  model.STATE_TYPE` (`core/runner.py`).
+- **Results and the acceptance owner's baseline** flatten histories, observations, diagnostics and
+  final states by field name (`results_baseline.py`'s `flatten`). D176's gate compares key sets as
+  well as bits.
+- **The compile key** holds the argument tree, which includes its NamedTuple types, and the leaves'
+  shapes (§7.4 (e) 4; 43812f59).
+- **The composite already builds its types per composition.** Its STATE_AXES is the inner model's
+  plus each operator's, and it builds `CompositeState`, its layouts and its Observations from them
+  (`pump_composite.py`). Operators address fields by name (`state.x`, `_replace(x=…)`).
+- **Generic code builds and splits states positionally:** `STATE_TYPE(*(…))` and
+  `type(state)(*(v[i] for v in state))` (rates, readouts, windows, checks). That is about 50 sites
+  in `core/` and more in the models and operators.
+
+**Option A: types per structure, on the implementation object.**
+- **The design.** The object carries its structure's STATE_AXES, STATE_TYPE, LAYOUT_TYPE (and the
+  floor layout), the Control type the schedule fills (a transporter's controls), OBSERVATION_FIELDS
+  and Observations. They hold today's fields in today's order,
+  then each declared kind's fields in kind order. A structure that declares no new kind returns
+  today's module types themselves, the same class objects. Classes are cached by field set, so
+  structures with the same kinds share one class, and they get deterministic names
+  (`SurfacePumpChannelState[transporter]`).
+- **Checkpoints:** today's worlds unchanged (same keys, same class). A kind's world writes and
+  reads its own fields. `io.py` and the runner already read `model.STATE_TYPE`, and the object
+  supplies it.
+- **Observation columns:** today's worlds unchanged. A kind appends its columns, as an operator
+  does in the composite.
+- **Compile key:** today's worlds' trees unchanged. A kind's world has its own tree and so its own
+  executable, which it needs anyway for its own program.
+- **D176's gate:** today's worlds bitwise, with no new leaves and no renamed keys, by construction.
+  It can be tested by identity: `impl.STATE_TYPE is surface_pump_v3.STATE_TYPE`.
+- **Operators by name:** today's fields are unchanged. An operator that reads or writes a kind's
+  field declares that kind. The composite's admission refuses it at binding in a world without
+  the kind, so there are no runtime presence checks.
+- **Cost:** about 1 agent-day, as costed in (h).
+  - @3's own builders that name the module's STATE_TYPE take the structure's instead; the dispatch
+    commits already thread the structure.
+  - The composite builds from `inner.STATE_AXES`, so its types follow once INT's switch passes the
+    object.
+- **Risks:**
+  - A re-created class would break `type(…) is` and the compile cache, hence the cache by field
+    set.
+  - No pickling is involved: snapshots are npz by name.
+
+**Option B: one superset type, with zero-size fields for undeclared kinds.**
+- **Checkpoints:** every world's snapshots gain every kind's keys as empty arrays. Today's
+  snapshots no longer load (the key-set check) unless the reader tolerates missing empty keys.
+- **Observation columns:** every world gains empty columns.
+- **Compile key:** every world's tree gains zero-size leaves. So every program changes, every
+  executable recompiles, and crossrev's records change.
+- **D176's gate:** fails as written, with new keys in every world. It would pass only with a
+  comparator exemption for empty new keys, which the gate does not have.
+- **Operators by name:** the simplest, since every field always exists. But every reduction over a
+  kind's field must handle empty arrays (initial values for max and min), in every operator and
+  check.
+- **Later kinds:** each new kind changes every world again.
+
+**Option C: today's types plus one extension container, `kinds`, empty for today's worlds.**
+- **Checkpoints:** the container is a new field name in every world's state. The npz writer and
+  reader must flatten it to prefixed keys and skip it when empty. Otherwise today's snapshots stop
+  loading, and an empty tuple would be saved as an empty array.
+- **Observation columns:** unchanged, if the observer ignores the container. A kind's columns come
+  from inside it.
+- **Compile key:** an empty container (a dict or an empty NamedTuple) adds no leaves, but every
+  world's tree changes by one node. The programs are unchanged (the jaxpr is over leaves), and
+  executables recompile once.
+- **D176's gate:** leaves are identical. Keys are identical in the acceptance owner's `flatten` for
+  a dict or empty-NamedTuple container (no keys), but not for an empty tuple (a new key). The
+  snapshot IO still has to change.
+- **Operators by name:** today's fields are unchanged. A kind's field is reached as
+  `state.kinds.<kind>.<field>`, and `_replace` needs a nested form. Every positional build or split
+  of a state must skip or recurse into the container: the ~50 sites in `core/` and those in the
+  models and operators.
+- **Its merit:** later kinds are added inside the container without touching today's fields.
+
+**A later kind, and a kind declared by two laws (the same under A, B and C).** Fields belong to
+the kind, not to a law:
+- The kind has one population axis, and each population's law code selects its kernel, as
+  channel slots do.
+- A field that only some laws need is present when any declared law needs it, sized by the
+  largest declaring law, as `gate_rows` is today.
+
+Examples:
+- **FR-4's charged buffering:**
+  - Buffer rows are inventory rows on the species axis, so they need no new state.
+  - The closure's declaration adds layout fields: the buffered (node, row) mask, k_on and c0.
+  - It adds one state accumulator, the closure's free-energy term ΔG_buf per node for the energy
+    ledger.
+  - It adds one diagnostic column, the stage residual |g|/H̄_eq.
+  - Under A all of these appear only where the closure is declared.
+- **Fuel:**
+  - Held fuel (`maintained_held_rows@1`) adds the maintenance's material record per population
+    (+1 ATP, −1 ADP, −1 Pi per cycle).
+  - Finite fuel adds only its standard-potential term's accumulator: its rows are inventory rows,
+    moved by the pump.
+  - A world declaring both fuel kinds carries both.
+- **Two transporter laws:** one transporter population axis, each population with its law code.
+  Cycles and ledgers are per population. A law with an extra internal state adds a field sized by
+  the largest such law.
+
+**Recommendation: A.**
+- **Why A:**
+  - Under A alone, today's worlds get the very same type objects as today. D176's gate, the
+    snapshots, crossrev and the compile cache then need no exemption and no IO change.
+  - It follows the composite's existing per-composition pattern, and the implementation object
+    is already its home.
+- **Why not C:** C's isolation of kinds is attractive, but it changes today's types by one field
+  and touches every positional build and split of a state.
+- **Why not B:** B changes every world now, and again at every new kind.
+- **A's own risks** are handled by caching classes by field set, with deterministic names, and by
+  a static admission rule for operators that need a kind's fields.
+- **Cost and coordination:** about 1 agent-day, inside FR-4's first insertion point. INT's switch
+  is the only coordination needed: the composite then builds from the object's STATE_AXES.
+- **Acceptance for A:**
+  - today's worlds' types are the module's own (identity);
+  - a planted kind adds exactly its fields, at the end;
+  - a kind's world round-trips through a snapshot;
+  - the results gate is bitwise for today's worlds.
+
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 
 - **Why.** Today a route's heat is the tableau's quadrature of its dissipation rate (Σ J Δμ̃ at the
