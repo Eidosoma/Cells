@@ -169,11 +169,16 @@ def test_the_declaration_parses_round_trips_and_names_its_compartments():
     assert summary["compartments"] == [
         dict(
             id="ecs_0",
-            node_column=1,
-            patch="contact_0",
-            patch_column=1,
-            owner="cell_0",
-            owner_carrier="cell_0",
+            owner=dict(cell="cell_0", slot=0, carrier="cell_0"),
+            role="lumen",
+            storage=dict(kind="outside_node", node="ecs_0", slot=1),
+            membrane=dict(
+                patch="contact_0",
+                slot=1,
+                inside=dict(kind="cell", id="cell_0", slot=0),
+                outside=dict(kind="compartment", id="ecs_0"),
+                voltage="inside minus outside: V_b = phi_owner - phi_compartment",
+            ),
             label="lysosome pool",
             reference=None,
         )
@@ -182,6 +187,37 @@ def test_the_declaration_parses_round_trips_and_names_its_compartments():
     assert (
         model.STATE_TYPE._fields
         == get_model(parse_spec(w(declared=False)).model).STATE_TYPE._fields
+    )
+
+
+def test_two_compartments_in_one_cell_stay_distinct_in_the_identity_map():
+    """ARCHITECTURE.md's modular core (D174): the host-side map keeps two compartments of one
+    owner distinct, each with its own storage slot and its own oriented bounding membrane."""
+    raw = fx.world(
+        cells=(("cell_0", 1.0),),
+        nodes=(("ecs_0", 1.0), ("ecs_1", 0.5)),
+        contacts=(("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_0", "ecs_1")),
+        faces=(),
+        end=END,
+        concentrations_mM=dict(cell_0=1e-3, ecs_0=1e-6, ecs_1=1e-6),
+    )
+    raw = cfx.with_compartments(
+        raw,
+        [
+            cfx.compartment(label="lysosome pool"),
+            cfx.compartment(node="ecs_1", patch="contact_1", label="secretory granules"),
+        ],
+    )
+    spec = parse_spec(raw)
+    entries = comp.identity_map(spec.model, spec.model.operators[-1])
+    assert [e["id"] for e in entries] == ["ecs_0", "ecs_1"]
+    assert {e["owner"]["cell"] for e in entries} == {"cell_0"}
+    assert [e["storage"]["slot"] for e in entries] == [1, 2]
+    assert [e["membrane"]["patch"] for e in entries] == ["contact_0", "contact_1"]
+    assert [e["membrane"]["outside"]["id"] for e in entries] == ["ecs_0", "ecs_1"]
+    assert all(e["membrane"]["inside"] == dict(kind="cell", id="cell_0", slot=0) for e in entries)
+    assert OPERATORS[LAW].summary(spec, spec.model.operators[-1], (), None)["compartments"] == list(
+        entries
     )
 
 

@@ -76,16 +76,18 @@ is an addition, not a change to existing behaviour.
      one widened, host-only admission, a strict superset of today's rule, which can also serve a
      part-less site owner for FR-3 (§1.6).
 3. **The transfer law is D150's exchange, unchanged** (§2).
-   - Loading is an export route, release an import route, and a passive permeation an
-     export–import pair.
+   - Loading is an export route, and release an import route. Both are driven routes (D174,
+     ARCHITECTURE.md's "Transport laws by physical contract"): each books the free-energy change of
+     what it moves as signed work, with no heat. An export–import pair can follow a permeation's
+     concentration trajectory without being a passive permeation.
    - Every move books the same amount on both sides, so retained and cytosolic material stay
      distinct and reconcile to rounding.
    - **Limits:**
      - the pair is Strang-split, so its equilibrium carries a bias of −a(a + 2b) dt²/96 (**S**);
      - its fall in free energy is booked as signed work, not heat;
      - saturable loading is refused.
-   - **Doors:** a passive exchange law with an exact two-way relaxation and heat (FR-5's neutral
-     leak), and saturable loading.
+   - **Doors:** a passive permeation law, door T1, with an exact two-way relaxation and heat
+     (FR-5's neutral leak; D174's target law); and saturable loading.
 4. **The electrical treatment: a free node of @3's capacitor network** (§3.1, §3.2).
    - The node's capacitor row gives C_b (φ_comp − φ_cell) = q_comp. So the bounding patch's voltage
      is V_b = φ_cell − φ_comp = −q_comp/C_b exactly (**S**), and the owner's plasma membrane sees
@@ -378,7 +380,7 @@ owner, not as extracellular space.
 | --- | --- | --- | --- |
 | Loading, constant | export, `flux` | J (fmol/s) from the cytosol | moved = J h, refused if the pool would not stay positive |
 | Loading, constitutive | export, `first_order` | k_e n_cyt | moved = n_cyt (1 − e^{−k_e h}) |
-| Release, passive or constitutive | import, `first_order` | k_u A c_comp, k_u in m/s | moved = n_comp (1 − e^{−κh}), κ = 10¹⁵ k_u A / V_comp |
+| Release, constitutive (a driven route, booked as work) | import, `first_order` | k_u A c_comp, k_u in m/s | moved = n_comp (1 − e^{−κh}), κ = 10¹⁵ k_u A / V_comp |
 | Release, carrier-mediated | import, `saturable` | A V_max c_comp / (K_M + c_comp) | D150's implicit closed form, with its Newton steps and residual check |
 
 ### 2.2 Retention, distinguishability and reconciliation
@@ -405,9 +407,11 @@ A.2). With release, the retained fraction follows the two-node closed form.
 
 ### 2.3 Three limits and two doors
 
-1. **A passive permeation is a pair, and the pair is split.**
+1. **A pair can follow Fick's trajectory, but it stays driven, and it is split.**
    - Export at k_e = 10¹⁵ P A / V_cyt and import at k_u = P give the net flux
-     J = 10¹⁵ P A (c_cyt − c_comp) fmol/s, Fick's law across the patch (**S**).
+     J = 10¹⁵ P A (c_cyt − c_comp) fmol/s, the concentration trajectory of Fick's law across the
+     patch (**S**). That does not make the pair a passive permeation (D174): each route still books
+     its free-energy change as signed work, with no heat (item 2).
    - Exchange runs the pair as the palindrome E(h/2) I(h) E(h/2) (its stage order). With
      x = n_cyt / N, a = k_e and b = κ, the map's fixed point is x* = α(1 − β)/(1 − α²β), with
      α = e^{−ah/2} and β = e^{−bh}, against the equilibrium x_eq = b/(a + b). Then
@@ -416,14 +420,19 @@ A.2). With release, the retained fraction follows the two-node closed form.
    - The composite applies two halves of h = dt/2 per step, and both have that fixed point, so the
      bias is −a(a + 2b) dt²/96 (**S**). At a = b = 1 s⁻¹ and 1 ms it is 3 × 10⁻⁸: negligible at
      physiological rates, and measured by acceptance C4.
-   - Mismatched rates make a pump, with its work booked. That is legal, but not passive.
-2. **A passive fall in free energy is booked as work.** Exchange books every route's exact ΔG as
-   signed work, never heat (D150 §2.4). The ledger closes, but the dissipation check does not see a
-   passive leak's dissipation. It is a declared limit, as D150's laws' metabolic costs are.
+   - Mismatched rates pump against the gradient, with that work booked too.
+2. **Exchange is a driven route: a fall in free energy is booked as work, not heat.** Exchange
+   books every route's exact ΔG as signed work, never heat (D150 §2.4; D174). The ledger closes,
+   but the dissipation check sees no heat from it. A transfer that is physically a passive leak
+   therefore needs door T1; exchange does not model it as one. It is a declared limit, as D150's
+   laws' metabolic costs are.
 3. **Saturable loading is refused.** Exchange refuses a saturable export, so a transporter that
    concentrates cargo into the compartment from the cytosol is not expressible.
 
-**Door T1: a passive exchange law** (for FR-5's neutral leak, and for heat-correct passive transfer).
+**Door T1: a passive permeation law** (for FR-5's neutral leak, and for heat-correct passive
+transfer). It is the law D174 expects in D172's round. It must show, in a fixed-volume case: zero
+net flux at equal chemical potential, reversal when the driving force reverses, conserved material,
+zero external work, and dissipation equal to the free-energy decrease.
 - One route, both directions: J = 10¹⁵ P A (c_cyt − c_comp).
 - Exact over a half-step as a two-node relaxation: N = n_cyt + n_comp is conserved,
   n_cyt* = N V_cyt / (V_cyt + V_comp), and n_cyt(h) = n_cyt* + (n_cyt − n_cyt*) e^{−λh} with
@@ -806,7 +815,7 @@ snapshot.
 | Door | Needs | First consumer |
 | --- | --- | --- |
 | Charged (§3.4) | A face-free-node term in the explicit bound and the membrane rate (one D148 round with finding 3's), then an implicit treatment of the bounding patch (a new IMEX ID) | FR-4 |
-| T1, a passive exchange law (§2.3) | A new exchange version with an exact two-way law and a heat field | FR-5 |
+| T1, a passive permeation law (§2.3) | A new law with an exact two-way relaxation and a heat field, D174's target in D172's round | FR-5 |
 | T2, saturable loading (§2.3) | The saturable solve on the cell side | Granule loading |
 | V, volume (§5.3) | D150's and D152's version 1.1, and the lumen's accounting | FR-5's osmotic swelling; FR-2 |
 | R, replacement (§1.5) | The swap of an owner's compartments, and the occupant rule for node-keyed rates | Renewal worlds with compartments |
@@ -945,7 +954,21 @@ with one import and one line.
 - `CONFLICTS_VIEW` lists the volumes, the areas, the capacitances and the masks. Through the
   composite's structure check it refuses water and what requires it, membrane state, insertion@1
   and @2, the partition, the bridge and the lumens.
-- The summary carries §1.5's identity block. A label or reference changes no binding.
+- **Identity is a host-side map** (`compartments.identity_map`; D174's "compartment identity is a
+  host-side map", made complete for version 1). Each entry holds:
+  - the compartment's ID;
+  - its owner (cell, slot, carrier);
+  - its role ("lumen" in version 1, outside its bounding membrane);
+  - its storage (`outside_node`, the node and its slot);
+  - its oriented bounding membrane: the patch and its slot, the inside endpoint the owner cell, the
+    outside endpoint the compartment, and V_b = φ_owner − φ_compartment;
+  - the label and the reference.
+  The ID is the compartment's own, so storage as an outside node is one field of the map, not its
+  key. The summary carries the map. Two compartments in one cell stay distinct (tested). A label or
+  reference changes no binding.
+- **Exchange is a driven route** (D174). §0, §2.1 and §2.3 now say so: it books signed work and no
+  heat, and a pair that follows Fick's trajectory is not a passive permeation. The passive law is
+  door T1, with D174's five requirements.
 
 **Fixtures:** `validation/tissue/compartment_fixtures.py`.
 - **W**, D150's face-free topology with exchange loading S into the compartment. W's ions are

@@ -29,10 +29,16 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    water and what requires it, membrane state, insertion, the lumens, and S5's closers (division).
 The stationary analysis does not admit the composite (its own ID check).
 
-Labels and references are metadata: they reach the summary's identity block, never an array. The
-transfer law is D150's exchange, unchanged (§2): loading is an export route on the bounding patch,
-release an import route; degradation inside is turnover's clearance at the node, and reactions
-inside are D152's at the node.
+Identity is a host-side map (identity_map; ARCHITECTURE.md's modular core, D174): per compartment,
+its ID, its owner, its role, its storage and its oriented bounding membrane. The ID is the
+compartment's own, so the map does not depend on today's storage as an outside node; storage is one
+field of it. Version 1's role is "lumen": the compartment lies outside its bounding membrane, whose
+inside is the owner's cytosol (§1.1), so V_b = phi_owner - phi_compartment is @3's patch voltage.
+Labels and references are metadata: they reach the map and the summary, never an array. The
+transfer law is D150's exchange, unchanged (§2), a driven route (D174): it books the free-energy
+change of what it moves as signed work, with no heat. Loading is an export route on the bounding
+patch, release an import route; degradation inside is turnover's clearance at the node, and
+reactions inside are D152's at the node.
 """
 
 from dataclasses import dataclass
@@ -69,6 +75,7 @@ CONFLICTS_VIEW = (
     "face_active",
 )
 COMPARTMENT_FIELDS = {"node", "patch", "owner", "label", "reference"}
+ROLE = "lumen"  # Version 1: outside its bounding membrane, whose inside is the owner's cytosol.
 
 
 @dataclass(frozen=True)
@@ -250,6 +257,36 @@ def check_definition(spec, declaration):
                 )
 
 
+def identity_map(model, declaration):
+    """The host-side compartment map (D174): one entry per compartment, in declared order.
+
+    {id, owner {cell, slot, carrier}, role, storage {kind, node, slot}, membrane {patch, slot,
+    inside {kind, id, slot}, outside {kind, id}, voltage}, label, reference}. Slots are today's
+    array columns. The owner's carrier is its founder, which never changes in version 1 (§1.5).
+    """
+    cells = [c.id for c in model.cells]
+    outside = [c.id for c in model.extracellular]
+    patches = [p.id for p in model.membranes]
+    return tuple(
+        dict(
+            id=c.node,
+            owner=dict(cell=c.owner, slot=cells.index(c.owner), carrier=c.owner),
+            role=ROLE,
+            storage=dict(kind="outside_node", node=c.node, slot=outside.index(c.node)),
+            membrane=dict(
+                patch=c.patch,
+                slot=patches.index(c.patch),
+                inside=dict(kind="cell", id=c.owner, slot=cells.index(c.owner)),
+                outside=dict(kind="compartment", id=c.node),
+                voltage="inside minus outside: V_b = phi_owner - phi_compartment",
+            ),
+            label=c.label,
+            reference=c.reference,
+        )
+        for c in declaration.compartments
+    )
+
+
 class CellOwnedCompartments(Operator):
     LAW_ID = LAW_ID
     DECLARATION_ONLY = True
@@ -268,25 +305,10 @@ class CellOwnedCompartments(Operator):
         return {}, {}
 
     def summary(self, spec, declaration, schedule, history):
-        """The identity block (§1.5's run view, D154): each compartment's id, its node's column,
-        its bounding patch's column, its owner's carrier and its label and reference."""
-        outside = [c.id for c in spec.model.extracellular]
-        patches = [p.id for p in spec.model.membranes]
+        """The identity block (§1.5's run view, D154): the host-side compartment map."""
         return {
             "compartments_law": LAW_ID,
-            "compartments": [
-                dict(
-                    id=c.node,
-                    node_column=outside.index(c.node),
-                    patch=c.patch,
-                    patch_column=patches.index(c.patch),
-                    owner=c.owner,
-                    owner_carrier=c.owner,
-                    label=c.label,
-                    reference=c.reference,
-                )
-                for c in declaration.compartments
-            ],
+            "compartments": list(identity_map(spec.model, declaration)),
             "compartments_scope": (
                 "version 1: neutral and electrically silent (no ion route on a bounding patch, a "
                 "zero charge anchor, a held-bath topology), at a fixed volume; owners are never "
