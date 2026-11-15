@@ -32,12 +32,12 @@ branch `fr45-physics` from tag `d172-base-2026-11-15`. It is design before code.
 3. **Counterions are explicit rows on explicit routes,** Cl⁻ in or K⁺ out, chosen by the world.
    Without one the pump charges the patch and stalls; that is the negative control.
 4. **The charged patch needs an implicit route for a practical step** (the charged-patch test,
-   §7.2). @3's energy ledger, not stability, sets the explicit limit, at dt × G/C_b ≲ 0.1.
-   - Lysosomal Cl⁻ needs 0.05 ms explicitly (about 18 CPU-hours per 900 s); FR-5's pores need
-     about 0.5 µs.
-   - A counterion whose G/C_b ≤ 0.1/dt runs explicitly. For K⁺ at 140 mM on both sides and
-     dt = 1 ms, that means P_K ≤ 2e-7 cm/s (**S**), which still carries the pump's current at a
-     few mV.
+   §7.2). @3's energy ledger, not stability, sets the explicit limit: dt × G/C_b ≤ 0.05 on the
+   max-side G that the engine computes.
+   - Lysosomal Cl⁻ needs dt ≤ 0.01–0.03 ms explicitly, of order 25–90 CPU-hours per 900 s, an
+     upper bound. FR-5's pores need about 0.1–0.3 µs.
+   - A small counterion conductance runs explicitly. K⁺ at 5e-10 m/s and 140 mM gives 0.025 at
+     1 ms, and still carries the pump's current at about 8 mV (**S**).
    - That is FR-4's first world, with the face-free bound term, while FR-1's door 2 (the implicit
      patch) is built.
 5. **Fuel is maintained under F2:** held ATP, ADP and Pi rows at the owner's cytosol, with one
@@ -57,7 +57,7 @@ branch `fr45-physics` from tag `d172-base-2026-11-15`. It is design before code.
    - The pH condition is a second factor on the same routing door. It reads the compartment's
      free H⁺ from the closure.
    - Ion pores wait for the implicit patch. Proton and neutral leaks run explicitly.
-9. **The first worlds fit the species cap.** FR-4 needs 8 rows, FR-5 9, against 16.
+9. **The first worlds fit the species cap.** FR-4 needs 9 rows, FR-5 10, against 16.
 
 ## 1. Scope, representation and claims
 
@@ -290,23 +290,36 @@ was run on `resolved_pump_tissue@3` alone.
 | K⁺, 7.1e-7 cm/s | 1 ms | 0.104 | Refused: energy |
 | Cl⁻ × 100 (a pore) | 0.05 ms, 2 µs | 9.0, 0.36 | Refused (domain; energy) |
 | H⁺, 6e-5 cm/s, unbuffered | 1 ms | 0.0002 | Ran; reference to 4.3e-6. The lumen drains from pH 5.0 to 5.86 in 0.3 s |
+| Run 03, lumped N = 1000 (the floor made negligible): Cl⁻ | 0.1, 0.05 ms | 0.18, 0.090 | Both refused: energy |
+| Run 03: K⁺, 7.1e-9 m/s | 1 ms | 0.104 | Refused: energy |
+| Run 03: K⁺, 1e-9 m/s, lumen K 100 | 1 ms | 0.043 (max-side 0.051) | Ran; error 1.2e-4 of V_b's change |
 
 - **Nothing was refused in advance:** @3's bound sees G/(C_p + C_b), and every failure was an honest
   run-time refusal.
-- **The explicit limit is @3's energy ledger at dt × G_slope/C_b ≲ 0.1,** not stability.
-  G/C_b = P F² c/(RT c_m) is independent of size.
-- **Cost:** 3.6 ms per step in this 3-node world. So a 900 s FR-4 world with lysosomal Cl⁻ costs
-  about 18 CPU-hours explicitly (**S**).
+- **The explicit limit is @3's energy ledger (relative tolerance 2e-3), not stability.**
+  - Run 03 removed the absolute floor's help, which had let run 02's single-compartment arm pass
+    at 0.090.
+  - Passing needs dt × G/C_b ≤ about 0.05 on the max-side G (pass 0.051, fail 0.238), or about
+    0.04 on the log-mean (pass 0.043, fail 0.090).
+  - G/C_b = P F² c/(RT c_m) is independent of size.
+- **Cost:** about 3.6 ms per step in this 3-node world, whatever the observation count. That is
+  this runner path's cost and an upper bound for production windows.
+- **So (S, upper bounds):** a 900 s FR-4 world with lysosomal Cl⁻ needs dt of 0.01–0.03 ms
+  explicitly, of order 25–90 CPU-hours. The FR-5 pore needs 0.1–0.3 µs.
 
 **The route, in order:**
-1. **Now, for FR-4's first world:** a counterion with dt × G/C_b ≤ 0.1.
-   - At dt = 1 ms and K⁺ at 140 mM on both sides, that is P_K ≤ 2e-7 cm/s. The world in §13 uses
-     1e-7 cm/s, so dt × G/C_b = 0.051.
-   - A 900 s world is then 9e5 steps, about 0.9 CPU-hours at the measured cost (**S**).
+1. **Now, for FR-4's first world:** a counterion with dt × G_max-side/C_b ≤ 0.05.
+   - At dt = 1 ms and K⁺ at 140 mM on both sides, that is P_K ≤ 1e-9 m/s. The world in §13 uses
+     5e-10 m/s, so dt × G/C_b = 0.025, a factor of 2 of margin.
+   - A 900 s world is then 9e5 steps, about 0.9 CPU-hours at the measured upper-bound cost
+     (**S**).
    - The face-free bound term B7 is added to `explicit_rate_bound` and `membrane_rate` as
      max over free face-free nodes of Σ_m G_m/C_node.
-   - The bound is set by the energy threshold 0.1, not by stability, so that such a world is
-     refused in advance rather than at run time.
+   - B7's constant is 0.05 on the max-side G, from the energy threshold rather than stability,
+     so that such a world is refused in advance rather than at run time.
+   - **Owner:** `explicit_rate_bound` and `membrane_rate` are the core's files, not this owner's.
+     The core owner, or the D148 round with finding 3's term, edits them; this note supplies the
+     term and its constant.
 2. **The implicit patch,** FR-1's door 2: a compartment's bounding-patch electrodiffusion joins the
    implicit part of the IMEX step, as face drift does.
    - It is local: a face-free node couples only to its owner. One node and one patch per
@@ -395,9 +408,8 @@ Two more, which this note adds:
 
 | World | Rows | Count |
 | --- | --- | --- |
-| FR-4, first | Na, K, Cl, H, B (one buffer species: its totals differ by node), ATP, ADP, Pi | 8 |
-| FR-4, with two buffer species | + B₂ | 9 |
-| FR-5, first | FR-4's 8 + cargo X | 9 |
+| FR-4, first | Na, K, Cl, H, B_c (the cytosol's buffer, pK 7.2), B_L (the lumen's, pK 6.0), ATP, ADP, Pi. A buffer species has one pK, so two pKs need two rows | 9 |
+| FR-5, first | FR-4's 9 + cargo X | 10 |
 
 All fit under 16 (D165), and none needs a raise.
 
@@ -415,12 +427,23 @@ radius 250 nm each, as one node.
   - V = 1000 × 6.54498e-5 pL = 6.54498e-2 pL;
   - A_b = 7.85398e-10 m²;
   - C_b = 7.85398e-12 F.
-- **The cytosol:** Na 10, K 140, Cl 10 mM. Buffer B (base valence −1) with B_tot 50 mM, pK 7.2,
-  starting at pH 7.2. Held fuel: ATP 3, ADP 0.3, Pi 3 mM. Δ_rG'° = −30.5 kJ/mol (a generic
-  declared value). `transformed_at(7.2, pMg 3, δ 0.05)`.
-- **The lumen:** Na 10, K 140, Cl 10 mM. Buffer B with B_tot 40 mM, pK 6.0, starting at pH 7.2
-  (a resolved start). Mode `explicit`.
-- **Fixed charges:** each node starts electroneutral, so q = 0 and V_b = 0.
+- **The cytosol:** Na 10, K 140, Cl 10 mM.
+  - Buffer B_c (base valence −1) with B_tot 50 mM and pK 7.2, starting at pH 7.2. B_L is absent
+    there (amount 0, inert).
+  - Held fuel: ATP 3, ADP 0.3, Pi 3 mM. Δ_rG'° = −30.5 kJ/mol (a generic declared value).
+  - `transformed_at(7.2, pMg 3, δ 0.05)`.
+- **The lumen:** Na 10, K 140, Cl 10 mM.
+  - Buffer B_L (base valence −1) with B_tot 40 mM and pK 6.0, starting at pH 7.2 (a resolved
+    start). B_c is absent.
+  - Mode `explicit`.
+- **Initial proton equivalents** at each node: H_eq = V (h₀ + Σ_k B̄_k h₀/(h₀ + K_k)), with
+  h₀ = c° 10^{−pH₀}.
+- **Fixed charges:** each node starts electroneutral. fixed = −(H_eq + Σ_k z_k B_tot,k +
+  Σ_ions z n), so q = 0 and V_b = 0.
+- **The voltage domain.** @3's −120 to 60 mV domain applies only to channel populations
+  (`surface_pump_v3.channel_domain_valid`), and the bounding patch carries none. So the negative
+  control's V_b of about −0.27 V is admissible (code reading). The pump law's own domain,
+  |ΔG_cyc/RT| ≤ 80, holds there.
 
 ### 13.1 FR-4: buffered acidification against a gradient
 
@@ -428,8 +451,9 @@ radius 250 nm each, as one node.
   - the pump: n = 2; k = 8.3027e-3 fmol cycles/s for the node (5,000 cycles/s per member × 1000
     members ÷ N_A × 10¹⁵); K_H 1e-4 mM, K_ATP 0.1 mM, a = 1;
   - the proton leak, P_H 6e-5 cm/s (6e-7 m/s);
-  - the counterion K⁺ at 1e-7 cm/s (1e-9 m/s).
-- **The run:** 900 s, explicit at dt = 1 ms (dt × G_K/C_b = 0.051), with B7.
+  - the counterion K⁺ at 5e-10 m/s (5e-8 cm/s). For the lumped node that is G_K ≈ 2.0e-10 S,
+    which carries the pump's 1.6 pA at about 8 mV (**S**).
+- **The run:** 900 s, explicit at dt = 1 ms (dt × G_K/C_b = 0.025 on the max-side G), with B7.
 - **What it shows:** lumen pH falling to a steady state where pumping balances the leak; K⁺ leaving
   in step with the pumped charge; V_b small.
 - **The negative control:** the same world with P_K = 0.
@@ -512,8 +536,10 @@ algebraic.
   - Fuel concentrations are constant (held).
 - **Algebraic quantities:**
   - h_c, h_L from §4.1, with V = V_c or V_L;
-  - q_L = F × 1e-15 × (fixed_L + H_eq,L − B_tot,L + n_K,L + n_Na,L − n_Cl,L) for B's base valence
-    −1, and likewise q_c;
+  - q_L = F × 1e-15 × (fixed_L + H_eq,L − B_tot,L + n_K,L + n_Na,L − n_Cl,L) for B_L's base
+    valence −1, and likewise q_c with B_c;
+  - initial H_eq and fixed charges as in §13: H_eq = V (h₀ + B̄ h₀/(h₀ + K)), and fixed set so
+    each node starts with q = 0;
   - V_b = −q_L/C_b;
   - φ_c = (q_c + q_L)/C_p, which stays 0 here.
 - **Fluxes,** positive from c to L, in fmol/s. P A c gives mol/s, with P in m/s, A in m² and c in
@@ -532,5 +558,9 @@ algebraic.
   - ΔG_stored(t) + Q(t) = W(t), with W = ∫ (−Δ_rG'_ATP) J_cyc dt;
   - Q = ∫ [−ΔG_cyc J_cyc + Σ_routes J (μ̃_in − μ̃_out)] dt, with μ̃ from free concentrations and
     potentials;
-  - G_stored = Σ_nodes G*(node) + ½ C_b V_b² + ½ C_p φ_c².
+  - G_stored = Σ_nodes [G*(node) + Σ_{s ∈ Na, K, Cl, X} n_s RT (ln(c_s/c°) − 1)] + ½ C_b V_b² +
+    ½ C_p φ_c², with G* from §4.4 (free H⁺, HB_k and B_k at the closure's speciation).
+  - The standard potentials of the ions cancel, because every route conserves each species. The
+    fuel rows are held, so their stored energy is constant, and the maintenance's W carries
+    hydrolysis.
 - **Integration:** Radau, rtol 1e-11. Report at the engine's record times.
