@@ -34,7 +34,7 @@ run is refused while any stand-in remains.
 
 Modes:
   python -m validation.tissue.compartment_ph_qualification dev fr4|fr5 OUT_DIR PART [PART ...]
-      [--start START_JSON] [--quick]
+      [--start START_JSON] [--quick] [--path host|vector]
   python -m validation.tissue.compartment_ph_qualification judged PROTOCOL_JSON OUT_DIR PART
       [PART ...] [--start START_JSON]
 A judged run is refused, before anything is computed or written, unless the protocol is registered
@@ -42,7 +42,9 @@ A judged run is refused, before anything is computed or written, unless the prot
 remains, FR-5's start extract was written by the engine from this same snapshot, and OUT_DIR is
 new (D150's and MG0c's guard). `--quick` (development only) runs every part to QUICK_END_S, so a
 check reaches the code under test in minutes (AGENTS.md's 30-minute rule); the judge refuses quick
-results.
+results. `--path vector` (development only, until a dated pre-run correction declares it) checks
+every accepted row on the device in a vector window (engine_records.run); the default `host`
+checks them on the host.
 """
 
 import argparse
@@ -67,6 +69,8 @@ PROTOCOLS = {
 IDS = {"fr4": "fr4-acidification-v1", "fr5": "fr5-transfer-v1"}
 QUICK_END_S = 20.0
 K3_LUMEN_K_ON = 1e-3  # /mM/s: the protocol's K3 (1 /M/s)
+HOST_PATH = "host"  # Every accepted row checked on the host: the protocols' execution path.
+PATHS = (HOST_PATH, "vector")  # engine_records.PATHS; "vector" checks them on the device.
 
 
 def dt_key(dt):
@@ -147,14 +151,16 @@ class NotWired(RuntimeError):
     """The engine path is a stand-in on this branch."""
 
 
-def engine_run(definition, *, planted=None, checkpoint_dir=None):
+def engine_run(definition, *, planted=None, checkpoint_dir=None, path=HOST_PATH):
     """The engine part's record for one definition (ENGINE_READOUTS at every record, keyed by
     integer second, and the stage diagnostics and ledgers): engine_records.run, which parses the
     development world (a refusal there is `admitted` false) and runs it in windows on the CPU
-    backend in float64. `planted` names a planted law registered only inside its block (K2).
-    With `checkpoint_dir` (FR-5's start part) it is to write the engine's snapshot there at the
-    end (cells.io.write_snapshot) and return, under `extract`, definitions.start_extract(
-    producer="engine", ...) of that state, a stand-in (STAND_INS)."""
+    backend in float64, every accepted row checked on the host (`path` "host") or on the device
+    in a vector window ("vector"; development only until a protocol declares it). `planted`
+    names a planted law registered only inside its block (K2). With `checkpoint_dir` (FR-5's
+    start part) it is to write the engine's snapshot there at the end (cells.io.write_snapshot)
+    and return, under `extract`, definitions.start_extract(producer="engine", ...) of that state,
+    a stand-in (STAND_INS)."""
     from validation.compartment_ph import engine_records
     from validation.compartment_ph import planted as plants
 
@@ -162,13 +168,14 @@ def engine_run(definition, *, planted=None, checkpoint_dir=None):
         raise NotWired(STAND_INS["start_checkpoint"])
     if planted is not None:  # K2's reversed pump, registered only inside its block.
         registry = plants.registry(plants.PLANTED[planted]())
-        return engine_records.run(definition, registry=registry)
-    return engine_records.run(definition)
+        return engine_records.run(definition, registry=registry, path=path)
+    return engine_records.run(definition, path=path)
 
 
-def engine_part(definition, *, planted=None, checkpoint_dir=None):
+def engine_part(definition, context, *, planted=None, checkpoint_dir=None):
     started = time.perf_counter()
-    record = engine_run(definition, planted=planted, checkpoint_dir=checkpoint_dir)
+    record = engine_run(definition, planted=planted, checkpoint_dir=checkpoint_dir,
+                        path=context["path"])
     record.update(kind="engine", dt_s=definition["execution"]["dt"],
                   end_s=definition["experiment"]["end_time"],
                   definition_sha256=defs.canonical_sha256(definition),
@@ -184,17 +191,18 @@ def _world(quick):
 
 
 def fr4_rung(name, context):
-    return engine_part(defs.fr4_world(_world(context["quick"]), dt_s=FR4_RUNGS[name]))
+    return engine_part(defs.fr4_world(_world(context["quick"]), dt_s=FR4_RUNGS[name]), context)
 
 
 def fr4_control(name, context):
     w = _world(context["quick"])
     if name == "control_k1":
-        return engine_part(defs.fr4_world(w.control(), dt_s=FR4_DECLARED_DT))
+        return engine_part(defs.fr4_world(w.control(), dt_s=FR4_DECLARED_DT), context)
     if name == "control_k2":
-        return engine_part(defs.fr4_world(w, dt_s=FR4_DECLARED_DT), planted="sign")
+        return engine_part(defs.fr4_world(w, dt_s=FR4_DECLARED_DT), context, planted="sign")
     lumen = replace(w.lumen_buffer, k_on_per_mM_s=K3_LUMEN_K_ON)
-    return engine_part(defs.fr4_world(replace(w, lumen_buffer=lumen), dt_s=FR4_DECLARED_DT))
+    return engine_part(defs.fr4_world(replace(w, lumen_buffer=lumen), dt_s=FR4_DECLARED_DT),
+                       context)
 
 
 def fr4_reference(name, context):
@@ -207,7 +215,8 @@ def fr5_start(name, context):
     del name
     end = QUICK_END_S if context["quick"] else stage.START_TIME_S
     definition = defs.fr4_world(replace(World(), end_s=end), dt_s=FR4_DECLARED_DT)
-    record = engine_part(definition, checkpoint_dir=context["out_dir"] / "engine_snapshot")
+    record = engine_part(definition, context,
+                         checkpoint_dir=context["out_dir"] / "engine_snapshot")
     extract = record.pop("extract")
     path = context["out_dir"] / "start.json"
     path.write_text(json.dumps(extract, indent=1, allow_nan=False) + "\n")
@@ -232,14 +241,14 @@ def _with_start(record, context):
 def fr5_rung(name, context):
     arm, dt = FR5_RUNGS[name]
     d = defs.fr5_world(_arm(arm, context), dt_s=dt, start=context["start"])
-    return _with_start(engine_part(d), context)
+    return _with_start(engine_part(d, context), context)
 
 
 def fr5_control(name, context):
     arm = FR5_CONTROL_PARTS[name]
     d = defs.fr5_world(_arm(arm, context), dt_s=dt_study.FR5_DECLARED_DT_S,
                        start=context["start"], control=stage.CONTROLS[arm])
-    return _with_start(engine_part(d), context)
+    return _with_start(engine_part(d, context), context)
 
 
 def fr5_reference(name, context):
@@ -316,13 +325,17 @@ def plain(value):
     return value
 
 
-def refusal_before_writing(which, requested, out_dir, extract, *, judged, quick, root=ROOT):
+def refusal_before_writing(which, requested, out_dir, extract, *, judged, quick, root=ROOT,
+                           path=HOST_PATH):
     """Every refusal an entry makes before anything is computed or written."""
     unknown = sorted(set(requested) - set(PARTS[which]))
     if unknown or not requested:
         return f"unknown or no parts {unknown} (the parts: {list(PARTS[which])})"
     if judged and quick:
         return "a judged run has no quick horizon"
+    if judged and path != HOST_PATH:
+        return (f"a judged run takes the protocols' execution path ({HOST_PATH}); another path is "
+                "development evidence until a dated pre-run correction declares it")
     blocked = {name: sorted(set(requested) & STAND_IN_PARTS[name]) for name in STAND_INS}
     blocked = {name: parts for name, parts in blocked.items() if parts}
     if blocked:
@@ -337,13 +350,13 @@ def refusal_before_writing(which, requested, out_dir, extract, *, judged, quick,
     return None
 
 
-def run(which, requested, out_dir, *, status, extract=None, quick=False):
+def run(which, requested, out_dir, *, status, extract=None, quick=False, path=HOST_PATH):
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True)
     results = dict(status=status, protocol_id=IDS[which], source=snapshot_identity(),
-                   requested_parts=list(requested), complete=False, quick=quick,
+                   requested_parts=list(requested), complete=False, quick=quick, path=path,
                    stand_ins=sorted(STAND_INS), parts={})
-    context = dict(quick=quick, start=extract, out_dir=out_dir)
+    context = dict(quick=quick, start=extract, out_dir=out_dir, path=path)
     for name in [p for p in PARTS[which] if p in requested]:
         started = time.perf_counter()
         value = FUNCTIONS[which][name](name, context)
@@ -363,6 +376,8 @@ def main(argv=None):
     parser.add_argument("parts", nargs="+")
     parser.add_argument("--start", type=Path)
     parser.add_argument("--quick", action="store_true")
+    parser.add_argument("--path", choices=PATHS, default=HOST_PATH,
+                        help="where every accepted row is checked (engine_records.run)")
     args = parser.parse_args(argv)
     if args.mode == "judged":
         protocol = json.loads(Path(args.target).read_text())
@@ -378,10 +393,12 @@ def main(argv=None):
         extract = defs.read_start(args.start)
     if why is None:
         why = refusal_before_writing(which, args.parts, args.out_dir, extract,
-                                     judged=args.mode == "judged", quick=args.quick)
+                                     judged=args.mode == "judged", quick=args.quick,
+                                     path=args.path)
     if why:
         raise SystemExit("Refused: " + why)
-    run(which, args.parts, args.out_dir, status=status, extract=extract, quick=args.quick)
+    run(which, args.parts, args.out_dir, status=status, extract=extract, quick=args.quick,
+        path=args.path)
     return 0
 
 

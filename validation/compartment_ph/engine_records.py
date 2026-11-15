@@ -21,6 +21,11 @@ A refusal (at the definition or in the run) is recorded with its message: a refu
 A refusal at the definition is attributed to the envelope (`refusal_reason`, K3's catch: the lead's
 ruling) when the same development world is admitted with B4's stage check alone removed.
 
+`run(..., path="vector")` runs the same world as the one world of a cells.core.vector_windows
+window instead: every accepted row is checked on the device (the model's device_checks, with the
+kinds' check hooks), and the observed rows reach Records through `one_world`, since a vector
+window's observations are keyed by world ID. The records are the same fields; `path` names which.
+
 The energy identity, from the engine's own ledger (surface_pump_v3.balances with the kinds' terms):
 residual = stored change + heat - work, with heat every *_dissipated_energy_pJ field and work every
 *_work_pJ field (reservoir, electrode and the maintenance's), so stored change = residual - heat +
@@ -35,6 +40,9 @@ from validation.compartment_ph import definitions as defs
 
 WINDOW_STEPS = 1000  # One record per window at 1 ms.
 FR4_ROWS = ("H", "K")
+PATHS = ("host", "vector")  # Where every accepted row is checked: run()'s `path`.
+VECTOR_WORLD_ID = 1  # The one world of a vector-window run.
+VECTOR_LIMIT = 2**53 - 1  # Its batch's padded-step and working-byte limits: one world, no cap.
 
 
 class Records:
@@ -184,15 +192,59 @@ def envelope_reason(definition):
     return "envelope"
 
 
-def run(definition, *, registry=None, window_steps=WINDOW_STEPS):
+class OneWorld:
+    """One world's view of a vector window, as the windowed runner's sink receives a window: a
+    vector window's observations are keyed by world ID."""
+
+    __slots__ = ("observations",)
+
+    def __init__(self, observations):
+        self.observations = observations
+
+
+def one_world(sink, world_id=VECTOR_WORLD_ID):
+    """A vector-window sink that passes `world_id`'s observations, when the round has any, to a
+    windowed-runner sink (Records)."""
+
+    def consume(window):
+        found = window.observations.get(world_id)
+        if found is not None:
+            sink(OneWorld(found))
+
+    return consume
+
+
+def _run_vector(spec, sink, window_steps):
+    """The one world through cells.core.vector_windows (every accepted row checked on the device:
+    the model's device_checks, the kinds' check hooks included): (steps, diagnostics, timings,
+    resources), the windowed runner's result fields."""
+    from cells.core.batch import BatchSpec, WorldSpec
+    from cells.core.vector_windows import run_vector_windowed
+    from cells.core.windows import WindowPolicy
+
+    batch = BatchSpec((WorldSpec(VECTOR_WORLD_ID, spec),), 1, VECTOR_LIMIT, VECTOR_LIMIT)
+    result = run_vector_windowed(
+        batch, WindowPolicy(window_steps, "observations"), sink=one_world(sink)
+    )
+    world = result.worlds[VECTOR_WORLD_ID]
+    steps = int(world.final.step_index - world.start_step)
+    return steps, dict(world.diagnostics), dict(result.timings), dict(result.resources)
+
+
+def run(definition, *, registry=None, window_steps=WINDOW_STEPS, path="host"):
     """The engine part's record of `definition`'s development world (module docstring). With
-    `registry` the build runs inside kind_registry.scope(registry) (a planted control's)."""
+    `registry` the build runs inside kind_registry.scope(registry) (a planted control's). `path`
+    is "host" (cells.core.windows.run_windowed: every accepted row checked on the host) or
+    "vector" (one world in a cells.core.vector_windows window: every accepted row checked on the
+    device, the observations through `one_world`); the records are the same fields."""
     from cells.core import kind_registry
     from cells.core.errors import NumericalError
     from cells.core.specs import ConfigError, parse_spec
     from cells.core.windows import WindowPolicy, run_windowed
     from cells.models.registry import get_model
 
+    if path not in PATHS:
+        raise ValueError(f"path is one of {PATHS}, not {path!r}")
     out = dict(
         admitted=False,
         completed=False,
@@ -204,6 +256,7 @@ def run(definition, *, registry=None, window_steps=WINDOW_STEPS):
         amounts_fmol={},
         stage={},
         ledgers={},
+        path=path,
     )
     with kind_registry.scope(registry) if registry is not None else nullcontext():
         try:
@@ -217,7 +270,13 @@ def run(definition, *, registry=None, window_steps=WINDOW_STEPS):
         model = get_model(spec.model)
         sink = Records(spec, model)
         try:
-            result = run_windowed(spec, WindowPolicy(window_steps, "observations"), sink=sink)
+            if path == "vector":
+                steps, diagnostics, timings, resources = _run_vector(spec, sink, window_steps)
+            else:
+                result = run_windowed(spec, WindowPolicy(window_steps, "observations"), sink=sink)
+                steps = int(result.final.step_index - result.start_step)
+                diagnostics, timings = dict(result.diagnostics), dict(result.timings)
+                resources = dict(result.resources)
         except (ConfigError, NumericalError) as error:
             out["refusal"] = f"run: {error}"
             out.update(sink.record(completed=False))
@@ -226,9 +285,9 @@ def run(definition, *, registry=None, window_steps=WINDOW_STEPS):
     out.update(sink.record(completed=True))
     out.update(
         completed=True,
-        steps=int(result.final.step_index - result.start_step),
-        diagnostics=dict(result.diagnostics),
-        timings=dict(result.timings),
-        resources={k: v for k, v in result.resources.items() if np.isscalar(v)},
+        steps=steps,
+        diagnostics=diagnostics,
+        timings=timings,
+        resources={k: v for k, v in resources.items() if np.isscalar(v)},
     )
     return out
