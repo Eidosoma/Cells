@@ -5353,6 +5353,15 @@ every composition D150 and D152 admit.
   - Worlds above 7 species are outside D150's judged scope until a protocol covers them.
   - Above 16 needs another probe.
 
+**Amended 2026-11-15, the user:** "so we should increase that limit as we need!"
+- The cap is raised whenever a consumer needs more species. Each raise:
+  - is a D148 change;
+  - comes with a guard world at the new size;
+  - measures the memory and step cost.
+- D172's restructure makes every species sum one explicit order, on host and device, in the same
+  round that consolidates species identity. A raise then needs only that guard and the cost
+  measurement, not a new summation-order probe (the lead's implementation).
+
 ## D166: A scheduled bath composition in the composite (FR-10) is logged at priority 2
 
 2026-11-14. The user supplied the request (FR-10), the last of the block, at the requester's
