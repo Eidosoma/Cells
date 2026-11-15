@@ -936,8 +936,8 @@ class CellsViewer extends HTMLElement {
             h("details", { class: "run-class-note" }, h("summary", {}, "What this class means"), h("p", { class: "card-text" }, [klass.description, klass.note].filter(Boolean).join(" ")))
           )
         : null,
-      // How this run ended, in the experiment's plain words, and any refusal the run records.
-      ended?.label ? h("p", { class: "card-text run-ended" }, mark(ended.refusal ? "no" : ended.early ? "mixed" : "yes"), ended.label, ended.refusal ? ` Refused: ${ended.refusal}` : "") : null,
+      // How this run ended, in the experiment's plain words, and any refusal the run records. An example was not run: its line carries no sign of how a run ended.
+      ended?.label ? h("p", { class: "card-text run-ended" }, experiments.find((item) => item.active)?.example ? "" : mark(ended.refusal ? "no" : ended.early ? "mixed" : "yes"), ended.label, ended.refusal ? ` Refused: ${ended.refusal}` : "") : null,
       colour ? this.segmented("Colour", colour.options.map(([value, label]) => [value, label.replace(/^Membrane /, "").replace(/^./, (letter) => letter.toUpperCase())]), colour.active, (value) => lens.setRecord(value)) : null,
       h("div", { class: "run-actions" }, h("button", { class: "pill-button pill-small", type: "button", onclick: () => this.select(details) }, "Run details")),
     ].filter(Boolean);

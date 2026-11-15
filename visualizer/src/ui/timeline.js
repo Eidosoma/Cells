@@ -97,7 +97,7 @@ class CellsTimeline extends HTMLElement {
     this.playButton.setAttribute("aria-label", player.playing ? "Pause" : player.atEnd ? "Play again from the start" : "Play");
     this.playButton.title = this.playButton.getAttribute("aria-label");
     this.speedButton.textContent = `${player.speed}×`;
-    const each = player.speed >= 60 ? duration(player.speed) : `${player.speed} seconds`;
+    const each = player.speed >= 60 ? duration(player.speed) : `${player.speed} ${player.speed === 1 ? "second" : "seconds"}`;
     this.speedButton.setAttribute("aria-label", `Speed: ${each} of the run each second. Press to change.`);
     this.speedButton.title = `${each} of the run each second`;
     this.place();
