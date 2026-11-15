@@ -334,6 +334,80 @@ every 10 s).
   route. The reference supports f·d (`CargoRoute(conditioned=True, damaged=True)`), and its
   self-test checks it.
 
+## The revised world: arms T and R (§13.2 at 220d6e4d)
+
+Run `compartment-transfer-arms-01`, from snapshot `compartment-transfer-snapshot-02` (b73769ad), on
+CPU 7; driver `transfer_arms_crosschecks.py`.
+- **The start:** both arms start from FR-4's steady state at 1800 s, here R-closure's own state
+  there: pH_L 5.0946 and V_b −7.33 mV. The engine's checkpoint can be passed as `tr.Start`.
+- **Cargo X:** 1 mM in the lumen and 1e-4 mM in the cytosol. The owner is impermeant, so the
+  bath's X never enters.
+- **Records:** 400 s, every second.
+- **X's budget:** B = 1e-3 X_L(0) = 6.545e-5 fmol.
+
+| | Arm T (the condition) | Arm R (the release) |
+| --- | --- | --- |
+| Damage window; pH_L first above pH₅₀ | [60, 120] s; **74 s**, inside the window | [100, 160] s; **114 s**, inside the window |
+| Peak pH_L (time); back below pH₅₀ | 5.912 (139 s); 327 s | 5.912 (179 s); 367 s |
+| Smallest f (time) | **0.022** (139 s) | 0.022 (179 s) |
+| X left in the lumen: before damage, window end, 400 s | 0.503, 0.409, 0.163 of X_L(0) | 0.891, **0.0155**, 0.0155 |
+| Conditioned transfer's flux: before damage, at the smallest f, at 400 s (fmol/s) | −3.80e-4, **−6.8e-6**, −9.7e-5 | −6.8e-5, 0, 0 |
+| The pore's release in the window | – (proton-only pore) | **0.874 of X_L(0)**, peak flux −4.97e-3 fmol/s; afterwards c_X,L = c_X,c |
+| Control | f ≡ 1 | d ≡ 0 |
+| Control's distance: X_L; cumulative transfer | **314 B** (245 s); 314 B | **872 B** (102 s); 262 B (400 s) |
+| Control's peak pH_L | 5.912, the same | 5.0946 (no rise; 0.818 below the arm) |
+| Energy residual; H_eq and X drift | ≤ 4.2e-11 pJ; ≤ 3.0e-15, 1.7e-15 | ≤ 2.5e-11 pJ; ≤ 4.2e-15, 1.1e-15 |
+| The cytosol's band \|pH_c − 7.2\| | ≤ 0.018 | ≤ 0.018 |
+| Floor (rtol 1e-11 against 1e-12): X_L; pH_L | 3.7e-15 X_L(0); 1.4e-14 | 3.3e-15 X_L(0); 2.0e-14 |
+
+**Under full damage held at d = 1** (3600 s from the start): pH_L 6.244, V_b −2.46 mV, f 1.06e-3.
+
+**The explicit-limit figure,** max-side G = F²/(RT) P A max(c_in, c_out) at dt = 1 ms:
+- the proton routes (leak plus pore) at pH 5.1 under full damage: dt G/C_b = 0.0304 (0.0287
+  from the pore alone);
+- over the arms' runs, the proton routes reach 0.0223; with K⁺'s route, the patch's total reaches
+  **0.0476**, against the world's 0.05.
+
+### Answers to the owner's five questions
+
+1. **The lumen's pH crosses pH₅₀ inside each window:** confirmed, at 74 s (T) and 114 s (R).
+   - The host estimate of the full-damage steady state is also confirmed: 6.244 against the
+     estimated 6.2.
+   - But the window ends, and resealing starts (τ = 20 s), before the lumen gets there. The peak
+     is 5.912.
+2. **f closes in arm T:** to 0.022, not the estimated 1.6e-3, because the peak pH is 5.91 rather
+   than 6.2.
+   - The conditioned flux still falls 56-fold, while 41% of X remains in the lumen.
+   - X keeps crossing slowly while f is partly open, so 0.25 of X_L(0) crosses between 120 s and
+     400 s.
+3. **Arm R's burst and pH rise:** confirmed.
+   - The pore releases 0.874 of X_L(0) within the window, and the lumen's X then equals the
+     cytosol's.
+   - **Re-acidification is partial at 400 s.** The pH is back below pH₅₀ by 367 s (327 s in T),
+     but not within 0.01 of the start (see the follow-up below).
+4. **Both controls clear 10× the budget,** by far: 314 B (T) and 872 B (R) in X_L.
+5. **The explicit-limit figure:** confirmed, 0.029 from the pore alone at pH 5.1 (0.030 with the
+   leak).
+   - With K⁺'s route, the patch's total reaches 0.048 of the declared 0.05: inside, but with
+     little margin.
+
+### The follow-up: what the shortfalls need
+
+`compartment-transfer-arms-01-followup.log` is a probe from the checkout at b73769ad, kept beside
+the record.
+
+| Question | Result |
+| --- | --- |
+| Re-acidification, with the run extended to 1500 s | T: pH_L 5.333 at 400 s, back within 0.01 of the start by 640 s and within 0.001 by 780 s. R: 5.421 at 400 s, then 680 s and 820 s |
+| Arm T's smallest f against the window (damage from 60 s) | [60, 120]: 0.022 (peak 5.912). [60, 180]: 5.9e-3 (6.057). [60, 240]: 2.9e-3 (6.133). [60, 360]: **1.5e-3** (6.204) |
+
+**The nearest changes, for the owner to choose between:**
+- **For "re-acidifies" to mean back within 0.01 pH:** a horizon of about 700 s, or 850 s for 0.001.
+  Otherwise, state the claim as "back below pH₅₀", which 400 s shows.
+- **For f near the estimated 1.6e-3:** a 300-s damage window in arm T ([60, 360] s).
+  - Otherwise, keep [60, 120] s and state f ≈ 0.02. The conditioned flux still falls 56-fold, and
+    the control differs by 314 B.
+
 # Finite fuel (item 4): R-fuel
 
 The lead chose option (a) on 15 November 2026: a neutral solute Y moved by an ATP-driven pump in
