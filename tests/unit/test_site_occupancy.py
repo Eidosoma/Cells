@@ -127,6 +127,10 @@ REFUSALS = {
         lambda: world(_pop(patch="wall_cell_0", face="inside", k_int=0.1)),
         "only an outward-facing patch",
     ),
+    "internalisation on a contact": (
+        lambda: two_cells([sfx.population("k0", contact="j0", side="first", k_int=0.1)]),
+        "only an outward-facing patch",
+    ),
     "a destination other than cell": (
         lambda: world(_pop(k_int=0.1, destination="lysosome")),
         "destination is one of",
@@ -244,6 +248,13 @@ def test_identities_must_agree_with_d152_in_either_order():
         parse_spec(admitted)
 
 
+def test_the_stationary_analysis_does_not_admit_the_composite():
+    from cells.analysis import stationary
+
+    with pytest.raises(ConfigError, match="not resolved_pump_composite@1"):
+        stationary.problem(parse_spec(world()))
+
+
 def test_the_species_cap_is_checked():
     raw = world()
     for k in range(13):  # 4 + 13 = 17 species.
@@ -265,6 +276,7 @@ VIEW_REFUSED = {
     "insertion@2": (STATE, "scheduled_membrane_insertion@2"),
     "the partition": (STATE, "isopotential_partition@1"),
     "lumen@1": (STATE, "scheduled_membrane_insertion@1", "restricted_cleft_lumen@1"),
+    "lumen@2": (STATE, "scheduled_membrane_insertion@2", "restricted_cleft_lumen@2"),
 }
 
 
@@ -273,7 +285,11 @@ def test_the_structure_check_refuses_providers_and_closers_of_what_it_reads(name
     laws = VIEW_REFUSED[name]
     for order in ((*laws, so.LAW_ID), (so.LAW_ID, *laws)):
         errors = pump_composite.structure_errors(adapter, tuple(OPERATORS[k] for k in order))
-        assert any(e.startswith(so.LAW_ID + " reads") for e in errors), (order, errors)
+        # The refusal names the provider or closer itself, not only a law it requires.
+        assert any(e.startswith(so.LAW_ID + " reads") and laws[-1] in e for e in errors), (
+            order,
+            errors,
+        )
 
 
 def test_the_structure_check_admits_its_neighbours():
