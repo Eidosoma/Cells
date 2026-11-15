@@ -43,12 +43,13 @@ a pairwise check.
 Moved by the step (moved_in_step)
 ---------------------------------
 For each species, the in-step movers of its cell rows and of its outside rows, derived from
-declarations and never declared by the user: the inner model's routes (membrane and junction
-permeability, each channel's permeant ions, face diffusivity for outside rows), its pumps' rows
-(the Na/K pump's roles, the calcium pump's role; under F2 the pump family's fuel rows), and each
-operator with an in-step process, through ``moves_in_step(spec, declaration)``. An instantaneous
-regulation reads only rows that nothing moves inside the step, since its factor is held through
-the step: a moved row would make it lag (docs/INVENTORY_COUPLING_DESIGN.md §1.4).
+declarations and never declared by the user: the inner model's movers from the core's join,
+``moved_rows`` of its structure's implementation object (docs/INNER_MODEL_V4_DESIGN.md §7.4 (f) 6:
+membrane and junction permeability, each declared channel law's permeant ions, face diffusivity
+for outside rows, the pumps' transported rows; (k) 7: each declared kind's moved rows, by node),
+and each operator with an in-step process, through ``moves_in_step(spec, declaration)``. An
+instantaneous regulation reads only rows that nothing moves inside the step, since its factor is
+held through the step: a moved row would make it lag (docs/INVENTORY_COUPLING_DESIGN.md §1.4).
 """
 
 import math
@@ -413,54 +414,68 @@ def _inner_model(spec):
     return spec.model
 
 
+# The node kinds each of today's mover kinds moves (the core's moved_rows, §7.4 (f) 6). A declared
+# kind's entries name nodes, whose kinds come from the model's node lists (§7.4 (k) 7).
+NODE_KINDS = {
+    "membrane": ("cell", "outside"),
+    "channel": ("cell", "outside"),
+    "pump": ("cell", "outside"),
+    "junction": ("cell",),
+    "face": ("outside",),
+}
+
+
+def inner_movers(spec):
+    """(inner model, {species: ((mover kind, law ID, entity IDs), ...)}): the core's join of the
+    inner model's in-step movers, through its structure's implementation object: today's routes,
+    channels and pumps (§7.4 (f) 6) and each declared kind's moved_rows (§7.4 (k) 7)."""
+    from cells.models import surface_pump_v3
+
+    m = _inner_model(spec)
+    return m, surface_pump_v3.model_for(m).moved_rows(m)
+
+
+def _named(kind, law, entity):
+    if kind == "pump":
+        from cells.processes import calcium_atpase
+
+        return (
+            f"the {'calcium' if law == calcium_atpase.LAW_ID else 'Na/K'} pump on membrane {entity}"
+        )
+    return f"{kind} {entity}"
+
+
 def moved_in_step(spec):
     """{species id: {"cell": movers, "outside": movers}}: what moves each species' rows inside the
-    inner step, each mover named (module docstring). Refuses an in-step process that does not
-    declare what it moves."""
-    m = _inner_model(spec)
-    ids = m.species_ids
-    moved = {s: {"cell": [], "outside": []} for s in ids}
+    inner step, each mover named (module docstring): the inner model's movers from the core's join
+    (inner_movers), then each operator's in-step process (the contract's moves_in_step)."""
+    m, movers = inner_movers(spec)
+    moved = {s: {"cell": [], "outside": []} for s in m.species_ids}
+    cells = {c.id for c in m.cells}
+    outside = {n.id for n in m.extracellular}
 
     def add(species, kinds, mover):
         for kind in kinds:
             if mover not in moved[species][kind]:
                 moved[species][kind].append(mover)
 
-    both = ("cell", "outside")
-    for p in m.membranes:
-        for row, value in enumerate(p.permeability_m_per_s):
-            if value != 0:
-                add(ids[row], both, f"membrane {p.id}")
-        pump = getattr(p, "pump", None)
-        if pump is not None:
-            for species in pump.roles:
-                add(species, both, f"the Na/K pump on membrane {p.id}")
-        calcium = getattr(p, "calcium_pump", None)
-        if calcium is not None:
-            add(calcium.role, both, f"the calcium pump on membrane {p.id}")
-    for j in m.junctions:
-        for row, value in enumerate(j.permeability_m_per_s):
-            if value != 0:
-                add(ids[row], ("cell",), f"junction {j.id}")
-    for c in getattr(m, "channels", ()):
-        for ion in c.permeant_ions:
-            if ion.relative_permeability != 0:
-                add(ion.species_id, both, f"channel {c.id}")
-    for f in m.faces:
-        for row, value in enumerate(f.diffusivity_m2_per_s):
-            if value != 0:
-                add(ids[row], ("outside",), f"face {f.id}")
+    for species, entries in movers.items():
+        for kind, law, entities in entries:
+            for entity in entities:
+                if kind in NODE_KINDS:
+                    add(species, NODE_KINDS[kind], _named(kind, law, entity))
+                elif entity in cells or entity in outside:
+                    node = "cell" if entity in cells else "outside"
+                    add(species, (node,), f"{kind} ({law}) at {entity}")
+                else:
+                    raise ConfigError(
+                        f"{kind} ({law}) moves {species} at {entity}, which is no node"
+                    )
     for op, declaration in _entries(spec):
         if not op.PROCESS:
             continue
-        method = getattr(op, "moves_in_step", None)
-        if method is None:
-            raise ConfigError(
-                f"{op.LAW_ID} has an in-step process but does not declare what it moves "
-                "(moves_in_step)"
-            )
-        for species, kind in method(spec, declaration):
-            if kind not in both:
+        for species, kind in op.moves_in_step(spec, declaration):
+            if kind not in ("cell", "outside"):
                 raise ConfigError(f"{op.LAW_ID}: moves_in_step gives node kinds cell or outside")
             add(species, (kind,), f"{op.LAW_ID} (its in-step process)")
     return {s: {k: tuple(v) for k, v in rows.items()} for s, rows in moved.items()}
