@@ -387,8 +387,9 @@ def moved_rows(declaration):
 
 def stage_term(read, potentials, control, p, *, xp):
     """B7 for the leak (gap 5): each leak route's max-side slope conductance (the kernel's
-    conductance_S, S) on its patch's cell, for membrane_rate's per-stage refusal; at the stage's
-    patch voltage when the potentials are given (the max-side slope does not depend on it)."""
+    conductance_S, S) at both of its patch's ends (cells, then outside nodes), for membrane_rate's
+    per-stage refusal at every node; at the stage's patch voltage when the potentials are given
+    (the max-side slope does not depend on it)."""
     c_in, c_out = _ends(read, p, xp)
     opening = _opening(read, control, p, xp)
     voltage = 0.0
@@ -398,8 +399,9 @@ def stage_term(read, potentials, control, p, *, xp):
         c_in, c_out, voltage, p.temperature, p.passive_area, p.passive_permeability, opening, xp=xp
     )  # [species, route]; nonzero at each route's own row.
     per_route = xp.where(p.passive_leak, species_sum(slope, xp=xp), 0.0)
-    cells = xp.zeros(p.active.shape)
-    return scatter(per_route, cells, (xp.minimum(p.passive_inside, cells.shape[0] - 1),), xp=xp)
+    nodes = xp.zeros(p.active.size + p.outside_active.size)  # Cells, then outside nodes.
+    inside = scatter(per_route, nodes, (p.passive_inside,), xp=xp)
+    return inside + scatter(per_route, nodes, (p.passive_outside,), xp=xp)
 
 
 def bound_rate(spec, declaration):

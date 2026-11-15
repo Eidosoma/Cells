@@ -1363,14 +1363,51 @@ def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None)
     membrane = xp.where(p.membrane_active, passive * p.membrane_area, 0.0)
     membrane += scatter(channel * p.membrane_area[patch], membrane, (patch,), xp=xp)
     total = slope * scatter(membrane, xp.zeros(n), (p.membrane_cell,), xp=xp)
-    kinds = _kinds(structure)
-    if kinds:  # Gap 5: each kind's conductance at the stage (S per cell), at the read amounts.
-        read, _ = _stage_read(state, p, kinds, xp=xp)
-        for kind in kinds:
-            if kind.stage_term is not None:
-                total = total + kind.stage_term(read, potentials, control, p, xp=xp)
     capacitance = scatter(p.membrane_capacitance, xp.zeros(n), (p.membrane_cell,), xp=xp)
-    return xp.max(xp.where(p.active, total / xp.where(p.active, capacitance, 1.0), 0.0))
+    kinds = _kinds(structure)
+    if not kinds:  # Today's rate: the cells' rows.
+        return xp.max(xp.where(p.active, total / xp.where(p.active, capacitance, 1.0), 0.0))
+    # Gap 5 with kinds: each kind's conductance at the stage, per node (cells, then outside
+    # nodes), at the read amounts and the stage's potentials; and the free outside nodes' rows
+    # too (a face-free compartment's small capacitance), with @3's own patch terms there.
+    read, _ = _stage_read(state, p, kinds, xp=xp)
+    nodes = xp.zeros(n + p.outside_active.size)
+    for kind in kinds:
+        if kind.stage_term is not None:
+            nodes = nodes + kind.stage_term(read, potentials, control, p, xp=xp)
+    total = total + nodes[:n]
+    cells = xp.max(xp.where(p.active, total / xp.where(p.active, capacitance, 1.0), 0.0))
+    o = p.outside_active.size
+    node_total = slope * scatter(membrane, xp.zeros(o), (p.membrane_outside,), xp=xp) + nodes[n:]
+    patches = xp.where(p.membrane_active, p.membrane_capacitance, 0.0)
+    node_capacitance = scatter(patches, xp.zeros(o), (p.membrane_outside,), xp=xp)
+    free = free_outside_nodes(p, xp=xp) & (node_capacitance > 0)
+    outside = xp.max(xp.where(free, node_total / xp.where(free, node_capacitance, 1.0), 0.0))
+    return xp.maximum(cells, outside)
+
+
+def free_outside_nodes(p, *, xp=jnp):
+    """[outside] the free outside nodes: active, not a held bath, not the gauge, not a fixed node
+    and named by no active face (B7's face-free nodes, surface_pump.face_free_node_rate), whose
+    charge their patches relax explicitly."""
+    o, n = p.outside_active.size, p.active.size
+    zero = xp.zeros(o)
+    faced = xp.where(p.face_active, 1.0, 0.0)
+    named = scatter(faced, zero, (p.face_sender,), xp=xp) + scatter(
+        faced, zero, (p.face_receiver,), xp=xp
+    )
+    fixed = p.field_fixed[n:] if hasattr(p, "field_fixed") else xp.zeros(o, dtype=bool)
+    return p.outside_active & ~p.reservoir & (named == 0) & ~p.field_gauge_mask & ~fixed
+
+
+def patch_node_conductance(slope, p, *, xp=jnp):
+    """[cells, then outside nodes] a per-patch conductance [membrane] (S) at both of each active
+    patch's ends: the form a kind's stage_term returns (gap 5)."""
+    n, o = p.active.size, p.outside_active.size
+    slope = xp.where(p.membrane_active, slope, 0.0)
+    zero = xp.zeros(n + o)
+    inside = scatter(slope, zero, (p.membrane_cell,), xp=xp)
+    return inside + scatter(slope, zero, (n + p.membrane_outside,), xp=xp)
 
 
 def check_steps(spec, steps, controls):
