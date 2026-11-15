@@ -168,6 +168,7 @@ def test_the_revised_fr5_arms_their_start_horizon_and_budget():
     for arm in (ARM_T, ARM_R):
         assert arm.pore_proton_m_s == 1e-5 and arm.start_checkpoint_s == 1800.0
         assert arm.x_budget_fraction == 1e-3 and arm.control_margin == 10.0
+        assert arm.dt_s == 5e-4
         d = defs.fr5_world(arm)
         assert d["start"]["checkpoint_time_s"] == 1800.0
         assert d["experiment"]["end_time"] == pytest.approx(arm.horizon_s)

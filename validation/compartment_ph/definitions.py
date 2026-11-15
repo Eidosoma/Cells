@@ -145,7 +145,7 @@ def fr5_world(damage_world, *, dt_s=None):
     damage control state and its routes, over the arm's horizon, started from FR-4's engine
     checkpoint at dw.start_checkpoint_s (the `start` key; the reference receives it as tr.Start)."""
     dw = damage_world
-    base = fr4_world(replace(dw.base, end_s=dw.horizon_s), dt_s=dt_s)
+    base = fr4_world(replace(dw.base, end_s=dw.horizon_s), dt_s=dt_s or dw.dt_s)
     m, e = base["model"], base["experiment"]
     base["start"] = dict(from_world="fr4", checkpoint_time_s=dw.start_checkpoint_s,
                          note="FR-4's engine checkpoint at steady state; the cargo X is added "

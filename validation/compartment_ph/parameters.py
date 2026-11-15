@@ -132,6 +132,7 @@ class DamageWorld:
     base: World = World()
     start_checkpoint_s: float = 1800.0  # FR-4's run to steady state; FR-5's t = 0
     horizon_s: float = 400.0
+    dt_s: float = 5e-4  # FR-5's declared step: the patch total stays near 0.024 (max-side)
     cargo_lumen_mM: float = 1.0
     cargo_cytosol_mM: float = 1e-4  # a resolved start, not a trace
     cargo_transfer_m_s: float = 1e-10
