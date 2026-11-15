@@ -143,7 +143,7 @@ Where older sections of this document differ, this section applies.
   - Sensing and transfer laws address a species in a named compartment, so one law serves
     cytosolic, lysosomal and mitochondrial cases.
   - The accepted FR-1 design names each compartment's node, bounding patch and owner. Its operator
-    is on a branch, not yet on main.
+    (`cell_owned_compartments@1`, milestone 1) is on main since 15 November.
 - **Acceptance:**
   - an occupancy-only world with fixed field inputs avoids the field refresh;
   - a capacitance-changing world triggers it;
@@ -285,8 +285,8 @@ require:
   - the detailed reference is itself numerically verified in that regime against an independent
     reference;
   - the declared comparisons are automated, and they report their scope.
-- **The first consumer comes after D174's fuel case. Target, a consumer milestone, waiting for the
-  fuel representation.**
+- **The first consumer comes after D174's fuel case. Target, a consumer milestone, after that case.**
+  The representation is decided (F2, D176).
   - D174's fuel case, one regeneration reaction and one pump, is the reduced closure.
   - The consumer milestone adds a small detailed regeneration network, sharing the same fuel amounts
     and pump interface.
@@ -301,9 +301,9 @@ note.
 
 | Case | What it exercises | Status |
 | --- | --- | --- |
-| Inventory → regulation → electrical response | Shared amounts, control routing, temporal coupling | Holds today numerically (Track R's A4 and A5). Its judged protocol is PROPOSED |
+| Inventory → regulation → electrical response | Shared amounts, control routing, temporal coupling | Numerically qualified (15 November): Track R's judged protocol passed, with A4 and A5 against independent references. CPU only |
 | Bath dose → uptake → compartment retention or reaction | Scoped views, compartment identity, material accounting | Target, needing door S |
-| Reaction → finite fuel → pump | Chemistry and electrics sharing one energy budget | Target, needing the fuel representation. Its single regeneration reaction is also the reduced closure of the first [levels-of-detail](#levels-of-detail) case |
+| Reaction → finite fuel → pump | Chemistry and electrics sharing one energy budget | Target. The representation is decided (F2, D176); this is D176's finite-fuel case. Its single regeneration reaction is also the reduced closure of the first [levels-of-detail](#levels-of-detail) case |
 | Neutral solute and water in a vesicle | Reuse across biological settings, changing concentration and volume | Target, needing the passive law. Syn3A's probe P0 checks capability |
 
 - **Organism data stays apart from engine mechanisms. Target.** The organism and evidence structure
@@ -333,6 +333,79 @@ note.
   measured-data tests without displacing FR-4 and FR-5.
 - **The success criterion:** adding a biological capability is a bounded addition of declarations
   and physical laws, with shared state, predictable GPU execution and reusable validation.
+
+## External modules (proposed)
+
+*Proposed on 15 November 2026 in [MODULE_SYSTEM_DESIGN.md](MODULE_SYSTEM_DESIGN.md), and not yet
+adopted. It uses the modular core's status words: holds today, target and open.*
+
+**The target.** Cells stays MIT and aims at broad adoption.
+- Independently maintained packages use, extend and compose Cells, and the project extends
+  itself through the same interfaces.
+- An external component meets the same validation, composition, execution and accounting
+  contracts as a built-in one.
+- Every component follows one path. It is registered explicitly into a registry scoped to one
+  model build, then resolved, validated, assembled, compiled and run.
+
+**Ownership boundaries.**
+- **Cells owns** shared physical state and its accounting, the seams where components attach,
+  admission, the numerical plan, compilation and its caches, checkpoints and run records.
+- **A module owns** its declarations, its pure kernels, its own accumulators and its evidence. The
+  declarations cover:
+  - the quantities it reads and changes, with their units;
+  - its own state, transfers, controls and stages;
+  - its domain of validity;
+  - the methods, backends and precision it supports.
+- **Shared state is reached only through declared interfaces.** A module never reads another
+  component's layout. Cells books the ledgers from the transfers actually applied.
+- **IDs are namespaced** (`example.law@1`), and bare IDs belong to `cells`.
+- **Registration is explicit,** never at import or by discovery. Registering an unused module
+  changes no other model's state layout, program or run record.
+- **Reference simulators stay out of process,** inside modules too (AGENTS.md).
+- **Interface validity is not scientific validity.** Interface, accounting, accuracy, validity
+  and performance are qualified apart.
+
+**Holds today.** Built-in contracts with closed lookup: the operator contract, the model registry
+and the definition parser are module-level tables. Any package can already ship definitions and
+builders that use built-in IDs.
+
+**Target, in D172's round** ([INNER_MODEL_V4_DESIGN.md](INNER_MODEL_V4_DESIGN.md) §7.4 (j)–(k)).
+- **The seams:**
+  - kinds register through a build-scoped registry, and built-in kinds use the same call;
+  - IDs are namespaced, and the canonical order is the sorted namespaced ID;
+  - a registered but undeclared kind changes nothing.
+- **Version 1 for kinds:**
+  - their ledger terms fold into today's ledgers by role;
+  - their state is observed;
+  - their material moves land in the shared inventory;
+  - their controls are availabilities unless declared otherwise.
+
+**Target, staged by consumers:**
+1. A separately installed package adds one law to an unchanged Cells installation, through normal
+   construction, execution, checkpoints and provenance.
+2. A stateful mechanism and a reusable composition, each instantiated twice.
+3. A reduced and detailed pair, on the first [levels-of-detail](#levels-of-detail) consumer.
+4. Other levels on demand: geometry, numerical methods, backends.
+
+**Each stage's acceptance.** Its components:
+- use the normal pipeline;
+- keep their accounting correct;
+- meet their CPU and GPU criteria;
+- reuse compilation across parameter changes;
+- survive checkpoint and restart.
+
+Duplicate, missing and incompatible components are refused clearly, and unused modules change
+nothing.
+
+**Open, for the user:**
+- provenance for out-of-tree modules;
+- D144, now that physics can live in modules;
+- qualification of outside modules, through a conformance kit shipped with Cells;
+- where the example package lives;
+- what a module PR looks like.
+
+**Not designed:** nested compositions beyond templates, external numerical methods and backends,
+and switching levels of detail at run time.
 
 ## System shape
 

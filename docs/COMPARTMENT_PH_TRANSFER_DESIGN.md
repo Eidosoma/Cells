@@ -49,7 +49,7 @@ branch `fr45-physics` from tag `d172-base-2026-11-15`. It is design before code.
      Newton on the compartment's amounts, with exact booking and no change to the global field
      factorization.
    - **FR-4's first world runs explicitly** with a small K⁺ conductance (5e-10 m/s at 140 mM:
-     0.025 at 1 ms, carrying the pump's current at about 8 mV, **S**), with its dt declared by the
+     0.025 at 1 ms, carrying the pump's current at about 2 mV, **S**), with its dt declared by the
      world.
 5. **Fuel is maintained under F2:** held ATP, ADP and Pi rows at the owner's cytosol, with one
    authority for their standard potentials. The scope label is "maintained fuel: no depletion".
@@ -82,8 +82,8 @@ branch `fr45-physics` from tag `d172-base-2026-11-15`. It is design before code.
   - continuum amounts;
   - either a single compartment, or a lumped population of N identical compartments as one node,
     with N × volume, area, capacitance and transporter capacity.
-  - Lumping is exact for identical members, because V/A and C/A are kept (FR-1 §1.3). The claim is
-    then a population mean.
+  - Lumping is exact for identical members, because V/A and C/A are kept (FR-1 §1.3). The lumped
+    compartment is a deterministic continuum model, not a stochastic mean.
 - **Why lumping matters here (CP4).**
   - A single 250 nm lumen holds 1.6 free protons at pH 7.4.
   - @3's absolute energy floor (2e-8 pJ) is 6% of one pump step's heat (3.2e-7 pJ at 10⁴ H⁺/s,
@@ -139,7 +139,14 @@ For buffer k at one node, with acid dissociation constant K_k in mM:
   - Each buffer species is declared once with the standard potentials of its two forms, μ°(B_k)
     for the base (valence z_k) and μ°(HB_k) for the acid (valence z_k + 1).
   - The proton's is μ°(H⁺), conventionally 0 at c°.
-  - Then K_k = c° exp(−(μ°(H⁺) + μ°(B_k) − μ°(HB_k))/RT), and pK_k = −log₁₀(K_k/c°).
+  - Then K_k = c° exp(−(μ°(H⁺) + μ°(B_k) − μ°(HB_k))/RT), with c° the registry's declared
+    `standard_concentration_mM` (one authority; the worlds declare 1000), and pK_k = −log₁₀(K_k/1 M).
+    pH stays defined against 1 M. The free-energy terms (§4.4) use the same declared c°. Potentials
+    converted consistently to another c° give the same K; unconverted ones do not (a planted test).
+  - **The closure's mask is the declared (node, row) pairs** (`buffers={cell: [B_c], lumen: [B_L]}`),
+    never an amount or a per-node flag. A row that does not apply at a node is a declared trace
+    (absent rows are refused): a free row at a fixed amount whose charge counts and which has no
+    protonation. Adding an undeclared trace leaves h bitwise unchanged (a planted test).
   - The closure, the kinetic reference (Appendix A) and the free-energy term (§4.4) all read the
     same three potentials.
 - The equilibrium is h × b_k / a_k = K_k, with a_k = [HB_k] and b_k = [B_k] in mM.
@@ -179,30 +186,51 @@ The closure is a reduced representation under D175, and declares its four fields
   k_on in mM⁻¹ s⁻¹). The slowest of them is λ = min_k λ_k.
 - **The slow rate:** transport drives the free protons at ρ = |dH̄_eq/dt| / (β/ln 10) (1/s). That
   is the relative rate at which the equilibrium h moves, from the stage's transport.
-- **The envelope:** λ ≥ 10³ ρ at every stage of every node the closure serves.
-  - Both sides are computable at run time, from the declared k_on (a registry value of the buffer,
-    used only for this check and the reference) and the stage's fluxes.
-  - The run checks the envelope at every stage and refuses a stage outside it, with the reason.
-  - **No clause in dt.** The closure is evaluated exactly at every stage, so its error is the
-    kinetic system's lag behind equilibrium, of order ρ/λ, whatever the step. A dt clause would tie
-    a physical envelope to the numerics, and a dt study would move it. The step's own error is
-    the dt study's, as for any law.
+- **The envelope, revised (state-dependent) after the FR-4 references' run 02**
+  (`validation/compartment_ph/REFERENCES_USAGE.md`): the closure's estimated lag behind the kinetic
+  system stays within the budget at every stage of every node the closure serves:
+
+      |ΔpH| ≈ (ρ/λ) (β/ln 10 − h) / (h ln 10) ≤ 1e-3,   β/ln 10 − h = h Σ_k B̄_k K_k/(h + K_k)².
+
+  - **Derivation, from A.2 to first order (S):**
+    - transport moves H_eq at rate dH̄/dt;
+    - the bound part's equilibrium moves at that rate times the bound share (β/ln 10 − h)/(β/ln 10);
+    - the bound pool relaxes toward it at λ, so it lags by about that rate over λ;
+    - the lagging protons sit in the free pool, so the error in h is that lag, and
+      ΔpH = δh/(h ln 10).
+    - With ρ = ln 10 |dH̄/dt|/β, this is the expression above.
+  - **Why the earlier fixed ratio λ ≥ 10³ρ failed** (the references found it): it omits the
+    bound-to-free factor (β/ln 10 − h)/(h ln 10).
+    - That factor is about 1.5e4 at the lumen's start (pH 7.2) and about 210 at pH 5.1.
+    - In §13.1's world the old ratio passes from k_on ≈ 0.83 mM⁻¹ s⁻¹, but the budget holds only
+      from k_on ≈ 1.28e4.
+    - At k_on = 1e3 the ratio holds by about 1.2e3, yet the lumen lags the closure by 1.26e-2 pH.
+      That case is kept as a planted test (`test_planted_the_old_fixed_ratio_admits_a_case_the_lag_check_refuses`).
+  - **Computable at run time,** from k_on, a parameter of the closure's own declaration (its
+    stage read; D175's stand-in parameter, used only for this check and the reference, not a
+    species-registry value), the stage's fluxes and the closure's state
+    (`rapid_proton_buffer.lag_estimate_ph`). The run refuses a stage outside it, with the reason.
+  - **No clause in dt.** The closure is evaluated exactly at every stage, so its error is this lag,
+    whatever the step. A dt clause would tie a physical envelope to the numerics, and a dt study
+    would move it. The step's own error is the dt study's, as for any law.
 - **The error budget:** |pH_closure − pH_kinetic| ≤ 1e-3 pH units at every record time. So is the
   closure's error in H_eq-weighted fluxes, at 1e-3 relative. It is checked against Appendix A's
   kinetic reference.
 - **The case outside the envelope, which must fail the budget:** FR-4's §13.1 world with the lumen
   buffer's k_on lowered to 1e-3 mM⁻¹ s⁻¹ (1 M⁻¹ s⁻¹).
   - Then λ is about 0.04 s⁻¹ (**S**, at b ≈ 38 mM). Early in the acidification, ρ is about
-    0.1 s⁻¹: 0.25 mM/s of pumped protons against β ≈ 5.1 mM/pH.
+    0.031 s⁻¹. The pump's saturation S is about 0.276 at pH 7.2, so about 2,760 H⁺/s per member
+    are pumped, or 0.07 mM/s against β ≈ 5.1 mM/pH.
   - The kinetic reference lags the closure by a large fraction of a pH unit there.
   - Both the run-time envelope check and the comparison must flag it.
 - **The inside cases:** k_on of 1e10 M⁻¹ s⁻¹ (1e7 mM⁻¹ s⁻¹) and 1e8 M⁻¹ s⁻¹ (1e5 mM⁻¹ s⁻¹).
   The reference's convergence toward the closure is shown as k_on grows (Appendix A).
-- **Checked against §13.1's world (S):**
-  - Early acidification: ρ ≈ 0.1 s⁻¹, with b ≈ 38 mM, so λ ≈ 3.8e6 s⁻¹ at 1e5 mM⁻¹ s⁻¹.
-  - Near its steady state, pH ≈ 5 with b ≈ 3.6 mM: λ ≈ 3.7e5 s⁻¹ at 1e5 mM⁻¹ s⁻¹, while ρ → 0.
-  - So both inside cases stay inside λ ≥ 10³ ρ throughout, and the outside case is out by orders of
-    magnitude.
+- **Checked against §13.1's world (S, and the references' run 02):**
+  - Early acidification: ρ ≈ 0.031 s⁻¹ and the bound-to-free factor is about 1.5e4. At 1e5 mM⁻¹ s⁻¹,
+    λ ≈ 3.8e6 s⁻¹, so the estimated lag is about 1.3e-4 pH. At 1e7 it is about 1.3e-6.
+  - Near the steady state (pH ≈ 5): the factor is about 210 and ρ → 0.
+  - So both inside cases stay within the budget throughout, and the outside case is out by orders
+    of magnitude. Neither was affected by the revision.
 
 D152's charged reactions (§11, item 4) remain the route for **slow** charged kinetics, such as
 uncatalysed CO₂ hydration. They are not on FR-4's critical path.
@@ -236,6 +264,17 @@ with μ°(HB_k) − μ°(B_k) − μ°(H) = RT ln(K_k/c°) (**S**: equilibrium).
 - **The closure therefore owns a declared free-energy term,** ΔG_buf = G* − (@3's term on those
   rows). D152's operator owns its standard-potential term in the same way (D152 §3.3). The term
   enters the energy ledger as stored free energy, not as a flow.
+- **The proton's standard part** (15 November 2026: the core's finding, checked by this note's
+  owner). @3's stored rows and its reservoir work are referenced to 1 mM with no standard part:
+  RT n (ln(n/V) − 1) per row, and μ = RT ln c + zFφ for a held bath. So the term B4's kind books
+  is ΔG_buf less the proton's standard part, RT H_eq (μ°(H⁺)/RT − ln c°).
+  - It is 0 at an unbuffered node, and ∂/∂H_eq = RT ln(h/H̄), so every route books against the
+    free proton as above.
+  - Kept in, the part would leave RT ln c° in the ledger for every proton exchanged with a held
+    bath. The inner-model note's earlier line, "−RT ln c° per proton at an unbuffered node, not
+    zero" (this owner's note of 15 November), is superseded.
+  - FR-4's and FR-5's energy identities do not change: their protons stay within the two covered
+    nodes, so the part's change sums to zero.
 
 ## 5. Fuel and the thermodynamic boundary
 
@@ -412,11 +451,16 @@ only, and the refused runs were let complete.
      its own dt study.
    - The world in §13 uses K⁺ at 5e-10 m/s and 140 mM, so 0.025 at 1 ms. 900 s is 9e5 steps, about
      0.9 CPU-hours at the measured upper-bound cost (**S**).
-   - **B7,** as the safety net: max over free face-free nodes of Σ_m G_m/C_node, added to
-     `explicit_rate_bound` and `membrane_rate` against `EXPLICIT_STEP_BOUND`. It is statically gated,
-     so worlds without such a node are unchanged.
-   - **Owner:** those two functions are the core's files. The core owner, or the D148 round with
-     finding 3's term, edits them. This note supplies the term.
+   - **B7,** as the safety net, host-only: max over free face-free nodes of Σ_m G_m/C_node, at the
+     definition beside `explicit_rate_bound`, at the ordinary constant (about 1).
+     - It has no run-time half and no 0.05 constant (the inner-model note §7.4 (g) 3).
+     - It is statically gated, so worlds without such a node are unchanged.
+   - **The world's 0.05 is a declaration, not an engine bound.** FR-4 declares 0.025 on the
+     max-side G. Its protocol's dt study enforces it.
+   - **State accuracy and the ledgers stay separate parts:** state accuracy (J3, J4) and the heat
+     and work closure (J6, J7) are judged apart.
+   - **Owner:** `explicit_rate_bound` is the core's file. The core owner, with finding 3's term
+     under one D148 record, adds B7 beside it. This note supplies the term.
 2. **The implicit patch (§7.3),** FR-1's door 2. Cl⁻ counterions at lysosomal values, and every
    ionic pore of FR-5, wait for it.
 
@@ -479,9 +523,24 @@ i.
   - energy closing to rounding with the exact booking;
   - the passive contract on FR-1's closed pair;
   - one planted error, a wrong sign in w, which must fail.
-- **Who codes it:** the core owner decides whether it fits behind one slot in the numerical plan
-  (the coordinator's question to them). The law, its references and its qualification are this
-  note's.
+- **Who codes it:** the core's slot runs this per-compartment Newton at each implicit ARS(2,2,2)
+  stage, admitted only on a face-free node with exactly one bounding patch (the core's §7.4–7.5).
+  The law, its references and its qualification are this note's.
+- **The core's two questions, answered.**
+  - **What x̂ carries at the last stage.** ARS(2,2,2) is stiffly accurate, so the step's result is
+    the last stage. There x̂ = x_n + h [δ E₁ + (1 − δ) E₂] + (1 − γ) h J_I(Y₂):
+    - the step's start;
+    - the explicit tableau's combination of every other law's rate on the compartment's rows at
+      stages 1 and 2 (the pump, the leaks, other routes);
+    - the patch's own implicit flux at stage 2's solved state.
+    The solve then adds γ h J_I(x). At the first implicit stage, x̂ = x_n + γ h E₁.
+  - **How the owner receives the moved amount.** At every implicit stage, exactly −(x − x̂) per
+    species. Its known part n̂_i carries what x̂ carries, with the opposite sign for the patch's
+    earlier term. In the Newton the owner's concentration follows the solve,
+    c_i = (n̂_i − (x − x̂))/V_i. That adds −∂J_j/∂c_i / V_i to the diagonal, keeping it diagonal
+    plus rank one (`stage_solve(owner_hat_fmol=..., owner_volume_pL=...)`). The frozen-c_i form
+    is an O(V_j/V_i) approximation, kept for tests.
+    Material and charge are exact by construction.
 
 ## 8. Compartment-state routing
 
@@ -549,6 +608,14 @@ i.
   - Damage may also scale it, through d's factor.
 - **Accounting:** whatever leaves the compartment arrives in the owner's cytosol on the same route.
   Material and charge close in one ledger, and each route books its own heat.
+- **FR-5's first world needs no implicit patch (S, answering the lead's question).**
+  - Its pores carry only protons and neutral cargo.
+  - The proton pore at 1e-6 m/s gives G/C_b ≈ 3.6 s⁻¹ at pH 5 (h ≈ 1e-2 mM), so dt × G/C_b
+    ≈ 0.004 at 1 ms. The proton leak gives 0.002.
+  - A neutral pore has no charge relaxation. Its material rate P A/V is about 12 s⁻¹ (0.012 at
+    1 ms), within finding 3's term.
+  - The K⁺ counterion is FR-4's, at 0.025.
+  - So the implicit slot is needed only for ionic pores and Cl⁻ counterions, which come later.
 - **What runs when:**
   - proton and neutral leaks and transfers run explicitly now. Their rates are small, for example
     H⁺ at 6e-5 cm/s gives dt × G/C ≈ 0.0002 at 1 ms;
@@ -611,18 +678,22 @@ radius 250 nm each, as one node.
   - A_b = 7.85398e-10 m²;
   - C_b = 7.85398e-12 F.
 - **The cytosol:** Na 10, K 140, Cl 10 mM.
-  - Buffer B_c (base valence −1) with B_tot 50 mM, starting at pH 7.2. B_L is absent there
-    (amount 0, inert).
+  - Buffer B_c (base valence −1) with B_tot 50 mM, starting at pH 7.2. B_L does not apply there:
+    it carries the declared trace, 1e-9 mM, undeclared to the closure.
   - **B_c's registry entry:** with μ°(H⁺) = 0, (μ°(HB_c) − μ°(B_c))/RT = −7.2 ln 10 = −16.57856, so
-    pK 7.2 follows (§4.1). k_on = 1e7 mM⁻¹ s⁻¹ is used for the envelope check and the kinetic
-    reference only.
+    pK 7.2 follows (§4.1), at the declared `standard_concentration_mM` = 1000. k_on = 1e7 mM⁻¹ s⁻¹
+    sits on the closure's declaration (envelope and reference only).
+  - **Absent rows:** every row that does not apply at a node carries a declared trace of 1e-9 mM;
+    B_c, B_L, ATP, ADP and Pi declare `background` (trace 1e-9 mM, floor 1e-18 fmol). The fixed
+    charges come from fsum(z n) of the written amounts. The references use an exact 0 for the
+    absent buffer, a declared difference the protocol discloses.
   - Held fuel: ATP 3, ADP 0.3, Pi 3 mM. Δ_rG'° = −30.5 kJ/mol (a generic declared value).
   - `transformed_at(7.2, pMg 3, δ 0.05)`.
 - **The lumen:** Na 10, K 140, Cl 10 mM.
-  - Buffer B_L (base valence −1) with B_tot 40 mM, starting at pH 7.2 (a resolved start). B_c is
-    absent.
-  - **B_L's registry entry:** (μ°(HB_L) − μ°(B_L))/RT = −6.0 ln 10 = −13.81551, so pK 6.0, with
-    k_on = 1e7 mM⁻¹ s⁻¹.
+  - Buffer B_L (base valence −1) with B_tot 40 mM, starting at pH 7.2 (a resolved start). B_c,
+    ATP, ADP and Pi carry the declared trace.
+  - **B_L's registry entry:** (μ°(HB_L) − μ°(B_L))/RT = −6.0 ln 10 = −13.81551, so pK 6.0; its
+    k_on, 1e7 mM⁻¹ s⁻¹, is on the closure's declaration.
   - Mode `explicit`.
 - **Initial proton equivalents** at each node: H_eq = V (h₀ + Σ_k B̄_k h₀/(h₀ + K_k)), with
   h₀ = c° 10^{−pH₀}.
@@ -640,7 +711,7 @@ radius 250 nm each, as one node.
     members ÷ N_A × 10¹⁵); K_H 1e-4 mM, K_ATP 0.1 mM, a = 1;
   - the proton leak, P_H 6e-5 cm/s (6e-7 m/s);
   - the counterion K⁺ at 5e-10 m/s (5e-8 cm/s). For the lumped node that is G_K ≈ 2.0e-10 S,
-    which carries the pump's 1.6 pA at about 8 mV (**S**).
+    which carries the pump's early current, about 0.44 pA (2,760 H⁺/s per member at S ≈ 0.276), at about 2.2 mV (**S**).
 - **The run:** 900 s, explicit at dt = 1 ms (dt × G_K/C_b = 0.025 on the max-side G), with B7.
 - **What it shows:** lumen pH falling to a steady state where pumping balances the leak; K⁺ leaving
   in step with the pumped charge; V_b small.
@@ -663,20 +734,88 @@ radius 250 nm each, as one node.
 
 ### 13.2 FR-5: damage, leak, reseal and pH-conditioned transfer, on the same state
 
-- **The start:** FR-4's world at its steady state, a saved checkpoint and a declared start.
-- **Cargo X** (valence 0) at 1 mM in the lumen and 1e-4 mM in the cytosol. That is a resolved
-  start: the energy ledger refuses trace starts (SYN3A_MINIMAL_CELL_TRACK §5.2).
-- **Transfer:** P_X 1e-8 m/s, f with pH₅₀ 5.5 and m 4.
-- **Damage:**
-  - k_inj 1 s⁻¹ on during [100, 110] s, then k_res 0.05 s⁻¹ from 110 s;
-  - pore routes for H (P_pore 1e-6 m/s through the closure) and for X (1e-6 m/s).
-  - Ionic pores are refused in version 1 (§9).
+**Revised after the references' R-transfer runs** (`validation/compartment_ph/REFERENCES_USAGE.md`;
+evidence in `independent-references-20261115-01/compartment-transfer-crosschecks-01/`). The first
+version showed neither of its claims.
+- **No release burst.** X crossed while the lumen was still acidic (f ≈ 0.98, τ ≈ 8 s), so
+  little was left for the pore at 100 s.
+- **The condition never closed.** A 1e-6 m/s proton pore raised the proton permeability only
+  2.7-fold. The lumen's pH peaked at 5.24, below pH₅₀ = 5.5.
+- **Its controls had no X budget,** and its start time was undefined: FR-4 is 1.4e-3 pH from its
+  steady state at 900 s.
+
+So the world now has two arms (`parameters.ARM_T`, `ARM_R`). Each claim is shown by the arm that
+isolates it.
+
+**Common to both arms:**
+- **The start:** FR-4's engine checkpoint at t = 1800 s, its steady state (pH_L ≈ 5.0946 per the
+  references). The references receive it as `tr.Start`, and FR-5's t = 0 is that checkpoint.
+- **Cargo X** (valence 0) at 1 mM in the lumen and 1e-4 mM in the cytosol and bath. That is a
+  resolved start: the energy ledger refuses trace starts.
+- **The condition:** f with pH₅₀ 5.5 and m 4.
+- **Damage:** k_inj 1 s⁻¹ during the arm's window, then k_res 0.05 s⁻¹.
+- **The proton pore:** 1e-5 m/s through the closure.
+  - **S:** at full damage the lumen's steady pH rises to about 6.2, so f falls to about 1.6e-3.
+  - It stays explicit at 1 ms: max-side dt × G/C_b ≈ 0.029 at pH 5.1, within the world-declared
+    0.05.
+- **Horizon and step:** 400 s at a declared 0.5 ms. Ionic pores are refused in version 1 (§9).
+  - **The step bound is on the patch total.** The world's 0.05 (max-side dt × G/C_b) applies to
+    the sum over every route on the bounding patch, because those routes share one charge mode (V_b).
+  - The references' rerun measured the patch total at 0.048 at 1 ms: the proton pore 0.029, plus
+    the leak and K⁺.
+  - So FR-5 declares 0.5 ms (about 0.024), FR-4's factor-of-two margin. Price: 8e5 steps per
+    400 s run instead of 4e5, about 0.8 CPU-hours per run at the upper-bound cost.
+  - **Confirmed by the references' readout** (branch 931fb38a,
+    `compartment-transfer-arms-01-readout.*` beside their record). It reran the record's own
+    worlds from its own snapshot and reproduced the record exactly. Each arm's results are given
+    in its own entry below.
+  - **The start is required for X's budget.** X_L along the run moves by about 0.06 B per 1e-3
+    pH of start offset. So the X comparison must start the reference from the engine's own
+    1800 s checkpoint (`tr.Start`), not from a recomputed steady state.
+
+**Arm T, the condition:**
+- **Parameters:** P_X = 1e-9 m/s (τ ≈ 83 s at f ≈ 1); a proton-only pore (P_pore,X = 0); damage
+  during [60, 120] s.
+- **What it shows** (restated after the references' rerun, 071ef983):
+  - X crosses while the lumen is acidic.
+  - The damage raises pH_L above pH₅₀. While pH_L > pH₅₀, the conditioned transfer's mean rate
+    falls at least 10-fold below its mean rate before damage, judged on the route's cumulative
+    transfer in units of X's budget B.
+    - The readout measured 8.375 B/s over [0, 60] s against 0.6120 B/s over [73.081, 326.882] s,
+      a ratio of 13.69.
+    - The route slows but does not stop. Most of the transfer happens while f passes through its
+      half-open range, and longer windows do not change that.
+    - So the claim is a number, not "stops".
+  - After resealing, pH_L returns below pH₅₀ before 400 s, within 5 s of the reference's crossing
+    time, and the transfer resumes. The readout's crossings: above at 73.081 s, back below at
+    326.882 s.
+- **Control:** f ≡ 1. X keeps crossing through the alkaline window.
+
+**Arm R, the release:**
+- **Parameters:** P_X = 1e-10 m/s (τ ≈ 830 s), which keeps most X in the lumen until damage, as the
+  references' grid showed; a cargo pore at 1e-6 m/s (τ ≈ 0.08 s at d ≈ 1) beside the proton
+  pore; damage during [100, 160] s.
 - **What it shows:**
-  - X crosses while the lumen is acidic, and not when it is not;
-  - damage opens a proton leak that raises the lumen's pH and releases X;
-  - resealing lets the pump re-acidify;
-  - every book closes.
-- **Negative controls:** f ≡ 1 (no condition: X crosses at every pH); d ≡ 0 (no release burst).
+  - a release burst through the pore: at least 0.8 of X_L(0) released inside the window. The
+    readout measured 0.8736 over [100, 160] s. The conditioned route carries nothing while
+    pH_L > pH₅₀, since the burst has already equalised X;
+  - the pH rising during damage;
+  - after resealing, pH_L returns below pH₅₀ before 400 s, within 5 s of the reference's crossing
+    time. The readout's crossings: above at 113.081 s, back below at 366.882 s.
+  - Full recovery to within 0.001 of the start needs about 820 s. That is not claimed, so the
+    horizon stays at 400 s.
+- **Control:** d ≡ 0. No burst, and no pH rise.
+
+**X's budget, declared for G1 and G3:**
+- |X_L,engine − X_L,reference| ≤ 1e-3 of the lumen's initial X at every record. The same budget
+  applies to the conditioned route's cumulative transfer, in fmol: 1e-3 × X_L(0) × V_L.
+- Each control must differ from its arm by at least 10 times that budget, on the same quantities.
+
+**Every book closes:**
+- X's and H_eq's material across both nodes;
+- charge;
+- energy (stored change + heat = the maintenance's work);
+- the cytosol's pH band.
 
 ## 14. Qualification, and what waits on whom
 
@@ -693,7 +832,8 @@ radius 250 nm each, as one node.
 - **Waits:**
   - FR-4's code waits on:
     - B5's transporter kind, held rows and B3 (the core owner);
-    - B7 as the stability safety net (the core's files, with the D148 round);
+    - B7 as the host-only stability safety net beside `explicit_rate_bound` (the core's file,
+      with the D148 round);
     - the identity map (FR-1's re-gate).
   - FR-5's code waits on FR-4, the routing door (§8: the operators stream and the integration
     owner), and the injury law as a control state.

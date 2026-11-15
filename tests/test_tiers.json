@@ -78,7 +78,14 @@
   "/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/tiers/measure-landing/measured.json",
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-02/measured.json",
-  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-02/measured.json"
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-02/measured.json",
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-passive-02/measured.json",
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-ph/measured.json",
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-transfer-02/measured.json",
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-transfer-03/measured.json",
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-fuel/measured.json",
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/acceptance/tiers-tools-20261115/measured.json",
+  "/mnt/workspaces/Cells/independent-references-20261115-01/compartment-k2b-tiers/run/measured.json"
  ],
  "measured_provenance": [
   {
@@ -642,6 +649,55 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-15T11:34:04+00:00"
+  },
+  {
+   "git_revision": "46deb99191e629c101c7a19bd9275f23a4139218",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T11:52:55+00:00"
+  },
+  {
+   "git_revision": "95f835fbbbcd8496b79a3fa513817386191b5eca",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T12:22:58+00:00"
+  },
+  {
+   "git_revision": "0372d6ce96646ff1395a36daf098022c67351133",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T12:54:17+00:00"
+  },
+  {
+   "git_revision": "c43b366b14df1befa6ac8e5a878459b70eae0ddd",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T13:00:51+00:00"
+  },
+  {
+   "git_revision": "f938d815165b96cb902eea356be6cd89e74d2805",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261115-refs3",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T13:43:18+00:00"
+  },
+  {
+   "git_revision": "e9a484d308b83b3b1582a60d994dc54f618c6fb7",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261115-tools",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T14:23:52+00:00"
+  },
+  {
+   "git_revision": "4c7bf8cd63e6a13688f0d556fb1bf39a06636210",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T20:44:02+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1351,6 +1407,30 @@
     }
    },
    {
+    "file": "tests/unit/test_compartment_fuel_references.py",
+    "seconds": 5.56,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_compartment_ph_references.py",
+    "seconds": 7.81,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_compartment_transfer_references.py",
+    "seconds": 6.76,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
     "file": "tests/unit/test_composite_crossrev.py",
     "seconds": 2.23,
     "exit_code": 0,
@@ -2035,6 +2115,14 @@
     }
    },
    {
+    "file": "tests/unit/test_matched_arm_export.py",
+    "seconds": 8.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
     "file": "tests/unit/test_membrane_insertion.py",
     "seconds": 3.94,
     "exit_code": 0,
@@ -2327,6 +2415,14 @@
     }
    },
    {
+    "file": "tests/unit/test_passive_references.py",
+    "seconds": 13.65,
+    "exit_code": 0,
+    "counts": {
+     "passed": 12
+    }
+   },
+   {
     "file": "tests/unit/test_phase_records.py",
     "seconds": 8.92,
     "exit_code": 0,
@@ -2599,6 +2695,14 @@
    {
     "file": "tests/unit/test_restricted_lumen_v2.py",
     "seconds": 5.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_results_baseline.py",
+    "seconds": 1.09,
     "exit_code": 0,
     "counts": {
      "passed": 10

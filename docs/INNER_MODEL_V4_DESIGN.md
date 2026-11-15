@@ -72,7 +72,8 @@
    declared once, where species are declared. Maintained fuel is held inventory rows, not pump
    parameters (ARCHITECTURE.md; §10.2 says what that means for today's pumps). FR-4's first case
    runs on maintained fuel; the finite-fuel case (a regeneration reaction and a pump sharing finite
-   ATP, ADP and Pi) stays separate.
+   ATP, ADP and Pi) stays separate, with its own acceptance world (D176 item 2, §7.4 (g) 2), and
+   finite rows are the transporter kind's default fuel.
 9. **The name** (§6). **Decided (D176): kept,** `resolved_pump_tissue@3`, with the snapshot, tag
    and results-gate provenance.
 10. **When** (§15.5, refreshed). MG0c and Track R are judged, and main is tagged
@@ -96,7 +97,9 @@
 12. **Effort** (§15): list (a) is **about 17–24.5 agent-days**, landing together under one tag and
     one gate, plus CPU hours for the re-runs and an L4 gap. Split by owner, with the summation
     study D176 adds, the elapsed critical path is **about 11–15.5 days** from the round's start,
-    or about 14.5–20.5 with FR-4's insertion points (C6) inside R (§15.6).
+    or about 14.5–20.5 with FR-4's insertion points (C6) inside R (§15.6). Re-planned after the
+    lead's rulings (15 November): about 13–17 days with FR-4's three first insertion points inside
+    R, and 14–18 with the implicit slot too.
 
 **What this note gathers.**
 - Track E's channel laws, `junction_ungated@1` and D167's move of the old catalogue
@@ -255,7 +258,7 @@ a dozen files (ARCHITECTURE.md, "Reuse cases and the results gate").
 
 | Part | Entries | Pass |
 | --- | --- | --- |
-| **G1, existing worlds on CPU** | Every world of the crossrev sets (base, qualification, injection, volume, division, species, reactions, and each operator's own set) and @3's test worlds. Each runs from the tag before R and from the new snapshot. Compared: every state field, observation column and `max_` diagnostic of every accepted row, and every refusal (its step and its message) | Bitwise, NaN-aware, bit patterns compared, except where R changes rounding. **A7 does (P7):** physical fields and accumulators are compared within a tolerance stated before the run from P7's magnitudes, field by field, and G2 runs in full. **Padding (check K1, §7.4 (b)):** per-law dispatch changes `channel_targets` and `channel_tau_s` at inactive population slots (padded or closed) of worlds that do not declare Kv1.5, and nothing else; the comparator treats those two columns at inactive slots as padding, a rule agreed with the acceptance owner before the dispatch commit's run |
+| **G1, existing worlds on CPU** | Every world of the crossrev sets (base, qualification, injection, volume, division, species, reactions, and each operator's own set) and @3's test worlds. Each runs from the tag before R and from the new snapshot. Compared: every state field, observation column and `max_` diagnostic of every accepted row, and every refusal (its step and its message) | Bitwise, NaN-aware, bit patterns compared, except where R changes rounding. **A7 does (P7):** physical fields and accumulators are compared within a tolerance stated before the run from P7's magnitudes, field by field, and G2 runs in full. **Padding (check K1, the activity check, §7.4 (b)):** compiled per-law dispatch would change `channel_targets` and `channel_tau_s` at inactive population slots of worlds that do not declare Kv1.5, closed slots of the division worlds included; the host observer therefore keeps today's padding values as a declared, temporary fill (the lead's ruling, 15 November), so every observation column stays bitwise and the whole-run padding mask is withdrawn. A planted change to an active slot's kinetics must fail, as the gate's self-test |
 | **G2, registered protocols re-run** | Every registered protocol whose engine models include the inner model or the composite. **Refreshed at f791294 by model-ID text match,** since protocol files name their models under different keys (`engine_models`, `engine_model`, `cells_run.model`) or only in their drivers. As before: W1, W2, G2-Q1, S2, S3, Rm1, S5a, D150's judged run, E07-v1. Judged on 15 November: MG0c (`mg0c-turing-v1`) and Track R (`regulated_availability_protocol.json`). **Newly listed, all on @3:** MG0b (`mg0b_domain_wall_v1`); the stationary analysis E (`stationary_analysis_e_v1`, items E2–E4); the BETSE parity rungs P3 (four cases), P4 (two) and P4b (four), registered by commit (PROGRESS), although their files' `status` fields still read PROPOSED, each with a registered L4 variant (§5.3). **The lead's call:** the projective qualification C (`projective_c_qualification_v1`, on @3), whose qual-01 failed. Track E's M2 (`excitable_qualification_v1.json`, PROPOSED) joins if judged before R lands. A7's import-closure manifest may add older families' protocols (§10.6) | Every verdict unchanged; numbers bitwise, or within the protocol's own tolerances |
 | **G3, planted changes, aligned with G1 (D176)** | **Exact contract tests,** run in the bitwise commits (declarations, dispatch, operators, door S, the passive law): (a) one law coefficient moved by one ulp in a test double (P2's planted arm shows the effect's size); (b) one world parameter moved by one ulp; (c) one required-results entry deleted from a run. **Scientific negative controls,** in the final gate at A7's tolerance, where a one-ulp plant passes by design: perturbations whose effects on judged observables exceed the declared budget, each effect measured against the budget before the run; (c) again | The gate must fail every plant and every control. If it passes any of them, it is void |
 | **G4, measurements** | Compile time, host and device memory, and end-to-end time, on representative compositions: the heredity cell, the 127-cell sheet, a water composition, D150's arm, MG0c's chain, the 825-node world | Reported against the tag; judged only where a protocol registers a bound |
@@ -542,18 +545,50 @@ registry code.
 - **A pump law** declares its ID, kernel and domain, the rows it moves per cycle by role, its fuel
   kind and its definition-time bound. Both of today's pumps run on
   `maintained_chemical_reservoirs@1` in today's parameter form (§10.2).
-- **The padding rule (P2's measured form, check K1).** An inactive population slot, padded or
-  closed, carries code 0, as today (`domain_valid`, the adapter's `close`). The dispatch selects a
-  declared law's values wherever a slot carries its code, active or not, so:
+- **The padding rule (P2's measured form in compiled programs, check K1; today's values on the
+  host, revised below).** An inactive population slot, padded or closed, carries code 0, as today
+  (`domain_valid`, the adapter's `close`). The compiled dispatch selects a declared law's values
+  wherever a slot carries its code, active or not, so:
   - in a world that declares Kv1.5 (code 0), an inactive slot reads Kv1.5's kinetics at 0 V, as
     today, bitwise (K1's five-law world);
   - in a world that does not, it reads target 0, time constant 1 and opening 1. Today it reads
-    Kv1.5's values, so `channel_targets` and `channel_tau_s` change at those slots, and nowhere else
-    (K1).
-  - G1's comparator treats those two columns at inactive slots as padding (§3). ACC agrees the rule
-    before the dispatch commit runs.
+    Kv1.5's values, so `channel_targets` and `channel_tau_s` would change at those slots, and
+    nowhere else (K1).
+  - That was to be a comparator exception (§3), before the activity check below; the host rule
+    removes the need for it.
   - Masking by activity as well would make padding independent of the declared laws, but it would
     change those columns in every world with an inactive slot, and K1 did not measure it.
+  - **The lead's ruling (15 November):** the comparator's padding mask covers only those two
+    columns, at slots inactive for the whole run, and a planted difference at an active slot must
+    fail it. The dispatch commit merges only then.
+  - **Which events change a population slot's activity during a run** (read in the code at the
+    tag): the closers do (`CLOSES`: the partition and insertion@2 only). The partition's births
+    and retirements close cells, and insertion@2's onsets close patches and nodes; the adapter's
+    `close` carries each down to the populations. Insertion@1 provides `membrane_active` but no
+    closure, so populations keep their declared activity. Replacement, its law-steady arrival
+    included, provides route values and junction gates only, never a mask.
+  - **Checked on the saved worlds (activity check, 15 November; core log):** the partition's worlds
+    build on the heredity cell and keep its Kir2.1 and NaV1.2 populations. In eight of the nine
+    crossrev division worlds, and in S5a's furrow world, every population sits on a cell the
+    partition opens or closes, and none declares Kv1.5. The composite observes the inner model at
+    each row's view, with the closures, so those slots carry code 0 on their closed rows. Per-law
+    dispatch would change both columns there, at slots that are active on other rows, which the
+    whole-run mask rightly does not cover. S3's cleft egg has no population.
+  - **Accepted (the lead's ruling, 15 November): the host keeps today's padding values, as a
+    declared fill, not physics.** The observer evaluates readouts in NumPy, and nothing compiled
+    reads a padded slot's kinetics (the gate update, the gate rate, the flux and the domain all mask
+    them). So the host readouts give a code-0 slot the code-0 law's kinetics, as today, when the
+    code-0 law is not declared (every code-0 slot is then padding), while compiled programs keep
+    P2's form and carry no undeclared kernel. Both columns stay bitwise in every world.
+    - **The dispatch commit's condition:** every observation column bitwise on the division worlds
+      with closed slots, the eight crossrev division sets and S5a's furrow world.
+    - **The whole-run padding mask is withdrawn:** with bitwise observations there is nothing to
+      mask. The planted active-slot failure stays, as the gate's self-test: a planted change to an
+      active slot's kinetics must fail.
+    - **The law-steady replacement world stays a merge condition** (refused at the tag; with the
+      acceptance owner).
+    - **The fill is temporary.** After the round, an explicit absent marker for padded entries can
+      be proposed as its own gated change, with the run view (D154).
 
 #### (c) Build-time selection: one implementation per structure
 
@@ -622,7 +657,8 @@ registry code.
    programs are unchanged: checked by crossrev identity as well as against the baseline. This is
    the first API commit, which OPS and INT test against.
 2. **Per-law channel dispatch,** the declared-code domain and the trapezoid leaf's removal:
-   bitwise, except the padding columns (K1's rule).
+   bitwise in every observation column, the host keeping today's padding values (b), shown on
+   the eight crossrev division sets and S5a's furrow world.
 3. **Pump and junction-law dispatch:** bitwise, up to signed zeros at exact zeros, reported apart.
 4. **The compile key and A4's two tests** (§2.2, §5.2):
    - an undeclared law contributes no kernel and no state: a jaxpr check that a world without
@@ -632,6 +668,13 @@ registry code.
    - `compile_window`'s key gains the model's `structure_key`, which the object sets to its
      structure (and the composite to its inner structure and operator list). The step and check
      functions stay in the key.
+   - **The packed planner's key (built on `core-d172`):** `vector_windows.world_key` is the part
+     of the key one world fixes: the structure key, the step and check functions, and the tree,
+     shapes and dtypes of the world's state, parameters, activity mask and check constants,
+     without the world axis. `spec_world_key(model, spec, start)` computes it on the host, before
+     any compile; `compile_window` builds its own key through it (`window_key`: the world part,
+     then the observation rows, the round arrays' shapes, the world count and the placement), so
+     the two cannot drift. Value twins get equal keys (`tests/unit/test_window_key.py`).
 
 #### (f) Answers to the operators stream (its PLAN.md §4)
 
@@ -686,6 +729,18 @@ registry code.
    - The model gains one field, `species_registry`, default None, omitted from `to_dict` when None,
      so every existing definition keeps its fingerprint. `to_dict` writes the entries back through
      `species_registry.to_entries`.
+   - **Refreshed against the operators' registry (e66fea95, 15 November):**
+     - `parse_entries(raw_model)` also pops `standard_concentration_mM`, and returns None when
+       nothing is declared; the hook calls `species_registry.check_definition(spec)` ahead of @3's
+       own checks, so the registry's refusal, which names the background to declare, fires first;
+     - two-form rows carry `protonated_standard_mu_RT`; the stage read takes K at binding from
+       `dissociation_constant_mM(spec, base, proton)`, the closure's own formula a cross-check
+       test;
+     - `check_two_form_rows` refuses in-step movers of a two-form row. The inner model's movers come
+       from `moved_rows`, which gains each declared transporter's roles and finite fuel rows with
+       the transporter kind; the stage read moves nothing;
+     - the hook lands on `core-d172` after the registry is on `integration-d172` (merged in, never
+       rebased).
 
 #### (g) Answers to FR-4 and FR-5 (COMPARTMENT_PH_TRANSFER_DESIGN.md, branch `fr45-physics`)
 
@@ -717,6 +772,31 @@ registry code.
      through dh/dH̄_eq.
    - **Reads at a split** (FR-5's factors on the routing door) call the same pure `evaluate` on the
      split's state. They are first order in dt there, as FR-4's note says.
+   - **Coverage and padding** (the FR-4/FR-5 owner's two notes, 15 November):
+     - a read declares every node it covers, buffered or not. At an unbuffered node h = H̄.
+       **Superseded (B4, core-d172 8f405f12; checked by the FR-4/FR-5 owner, FR-4's note §4.4 on
+       main 85108c77):** the kernel's declared term carries the proton's standard part,
+       RT H_eq (μ°(H⁺)/RT − ln c°), which @3's routes and its reservoir work never book (they use
+       RT ln c with c in mM). With it, a proton exchanged with a held bath would leave RT ln c° in
+       the energy ledger. So the kind books the term in @3's convention: the kernel's
+       `declared_term_pJ` less that standard part, which is zero at every unbuffered node, with
+       H_eq-derivative RT ln(h/H̄). The kernel stays unedited and convention-neutral; the kind
+       owns the engine's 1 mM convention (`models/inner_kinds/proton_buffer.py`);
+     - the slot masks padding, as @3 masks its own padded slots. Before `evaluate`, an inactive
+       node's amounts are replaced by a benign value, as `physical_amounts`' padding reads
+       concentration 1. After it, that node's validity is ignored, and its values and energy term
+       are exact zeros, selected rather than computed into a sum. `evaluate` needs no activity
+       mask.
+   - **What the closure's declaration carries (the lead's rulings, 15 November), and how the slot
+     takes it:**
+     - **its per-(node, row) buffer membership:** the read's coverage, bound as a [row, node] mask,
+       which the closure's own mask keys on. It is data, so worlds that differ only in membership
+       share one program;
+     - **its k_on,** a D175 stand-in parameter: bound with the read's parameters and used only by
+       the envelope check (at the definition, and at each stage where the envelope is checked
+       against that stage's transport rates) and by the reference, never by the equilibrium;
+     - **its c0,** from the registry's declared standard concentration, and the pair's two standard
+       potentials, from the registry.
    - **Owners:** the slot is CORE's, in `surface_pump_v3`. The closure module
      (`processes/rapid_proton_buffer.py`) and its declaration are FR45's.
    - **On FR-4's open question 2:** the general slot, now. Three consumers in one stage read the
@@ -740,15 +820,28 @@ registry code.
      - `domain_valid(...)`: |ΔG_cyc/RT| ≤ 80, and the fuel node's pH band;
      - `stage_term`, its electrogenic conductance for the stage rule, and `loop_term`;
      - its definition-time bound term, `provenance` and B8's fields.
-   - **Held rows:** `maintained_held_rows@1` (name **S**).
-     - The population names its fuel node, the hydrolysing cell, and its fuel rows (ATP, ADP, Pi).
-       They are read at every stage as rows nothing moves, and never moved.
-     - The definition refuses a held row that any in-step mover or operator writes (OPS's
-       `moved_in_step`, and D152's one-writer rule).
-     - Δ_rG'° comes from the registry's potentials (B3, OPS's), never from the pump.
-     - The supplied work per cycle, −Δ_rG'_ATP, is booked as today's metabolic work. The
-       maintenance's material record (+1 ATP, −1 ADP, −1 Pi per cycle) is an accumulator of the
-       population.
+   - **Fuel, two kinds, finite the default** (revised 15 November for D176 item 2's acceptance
+     world). The population names its fuel node (the hydrolysing cell) and its fuel rows (ATP,
+     ADP, Pi), and one kind:
+     - **`finite_fuel_rows@1` (name S), the default:** the pump moves its fuel rows in the step,
+       −1 ATP, +1 ADP and +1 Pi per forward cycle at the fuel node, inward-positive like its other
+       roles, booked in @3's material ledgers. Δ_rG'° comes from the registry's potentials at its
+       c0. The fuel rows' standard-potential term (Σ μ°' n) is stored free energy in the energy
+       ledger, as D152's operator-owned term, and no work is supplied. The fuel rows are in-step
+       movers: `moved_rows` lists them, so the operators' `moved_in_step` and
+       `check_two_form_rows` see them, and D150's writers and instantaneous reads refuse them;
+     - **`maintained_held_rows@1` (name S), the special case:** the rows are read at every stage
+       and never moved; the definition refuses a held row that any in-step mover or operator
+       writes (OPS's `moved_in_step`, and D152's one-writer rule). The maintenance's work per
+       cycle, −Δ_rG'_ATP, is booked as today's metabolic work, and its material record (+1 ATP,
+       −1 ADP, −1 Pi per cycle) is an accumulator of the population.
+     - Either way Δ_rG'° comes from the registry's potentials (B3, OPS's), never from the pump.
+   - **A moved role may be a neutral species** (valence 0), as the finite-fuel world's solute Y:
+     its transfer joins the material ledgers and carries no charge.
+   - **The finite-fuel acceptance world (D176 item 2):** an ATP-driven pump moving a neutral
+     solute Y in FR-4's §6 form, on finite ATP, ADP and Pi rows, with D152's
+     `ideal_detailed_balance_mass_action@1` regeneration on a schedule. Its independent reference
+     is built to that world. Today's Na/K and calcium pumps keep their parameter form in R.
    - **The insertion point** (CORE, in `readouts` and `explicit_rates`, beside today's pumps):
      - each declared transporter law's kernel runs on its own slots at every stage, with its reads;
      - its transfers enter the membrane totals and the node rates;
@@ -759,22 +852,27 @@ registry code.
        charge and energy ledgers and the device checks.
    - Door S's stage is `inner`. Its rows are rows, not view fields (SCOPED_COMPOSITION_DESIGN.md
      §6).
-3. **B7's slot.**
-   - **At the definition:** a new host function, `surface_pump.face_free_rate_bound(spec)`, beside
-     `explicit_rate_bound`. It takes the maximum over free face-free finite nodes (active, not a
-     held bath, not the gauge, not a fixed node, named by no face) of Σ_m G_m/C_node at the
-     declared state, with G_m the max-side constant-field slope of each ion route on the node's
-     patches. The step checks refuse dt × that rate > `FACE_FREE_STEP_BOUND`.
-   - **At run time:** `membrane_rate`'s companion at the actual openings, checked at every explicit
-     stage against the same constant. It is statically present only when the structure flags a free
-     face-free node with an ion route, so every other world's program is unchanged.
-   - **The split:** FR45 supplies the term's exact form and its constant (0.05 on the max-side G,
-     from the energy threshold), after its booking-versus-state check. CORE implements both halves,
-     with a D148 record for @1 and @2, which share `surface_pump`. P3 swept @3's family only; for
-     @1 and @2, FR-1's static sweep of 99 model blocks found no free face-free node with an ion
-     route in their worlds (CLOSED_COMPARTMENT_DESIGN.md §3.4), and the D148 record confirms it on
-     their registered worlds before the change.
-4. **The implicit patch: yes, behind one slot,** the IMEX step's implicit set.
+3. **B7's slot (as the lead ruled on 15 November; §13.6).**
+   - **At the definition, host-only:** a new term beside `explicit_rate_bound`'s, the maximum over
+     free face-free finite nodes (active, not a held bath, not the gauge, not a fixed node, named by
+     no face) of Σ_m G_m/C_node at the declared state, with G_m the max-side constant-field slope of
+     each ion route on the node's patches. The step checks refuse dt × that rate above the bound's
+     **ordinary constant**, `EXPLICIT_STEP_BOUND`, as for every other term.
+   - **One commit with finding 3's term,** with one D148 record and @1's and @2's cases, since they
+     share `surface_pump`. P3 swept @3's family only; for @1 and @2, FR-1's static sweep of 99
+     model blocks found no free face-free node with an ion route in their worlds
+     (CLOSED_COMPARTMENT_DESIGN.md §3.4), and the D148 record confirms it on their registered worlds
+     before the change.
+   - **No run-time half in this commit,** and no 0.05 constant. FR-4 declares its own step, 0.025
+     on the max-side G, confirmed by its own dt study. A tighter constant, and a run-time half if one
+     is needed, belong with the exact heat booking (§7.5), which removes the energy-ledger limit the
+     charged-patch test measured.
+   - **FR45 supplies the term's exact form** after its booking-versus-state check; CORE implements
+     it.
+4. **The implicit patch: yes, behind one slot,** the IMEX step's implicit set. *The first design
+   below put the patch into the global operator beside the faces. The decision at the end of this
+   item runs it instead as a local stage solve, FR45's Newton form, and leaves the faces as they
+   are.*
    - **Today the set is face electromigration alone:**
      - the stage operator (C + a_ii dt L_face) φ = q, with face weights frozen at the predicted
        state;
@@ -806,35 +904,570 @@ registry code.
        `imex_step` already holds the start derivative for both.
      - Each implicit set is a new solver ID (D147), for example
        `imex_ars222_face_patch_electromigration@1` (name **S**).
-   - **Owners, reconciled with §13.4:** CORE builds the slot in `surface_pump_v3.imex_step`, with
-     faces moved behind it bitwise. FR45 codes the patch kind against it in a new module, and
+   - **Owners, reconciled with §13.4** (the first design; see the decision below): CORE builds the
+     slot in `surface_pump_v3.imex_step`; FR45 codes the patch kind against it in a new module, and
      qualifies it, with REF's reference. The field-solver interface keeps the factorization and the
      solve (FIELD_SOLVER_INTERFACE_DESIGN §6), which the slot calls unchanged; a later sparse or
-     condensed solver replaces them behind the same calls.
+     condensed solver replaces them behind the same calls. Under the decision below the faces stay
+     where they are, and CORE's slot is the local stage solve.
+   - **Which form the slot runs (decided 15 November, after reading the module).** FR45's module
+     (`processes/patch_electrodiffusion.py`, `fr45-physics` 4f267ef4) gives two forms: the global
+     pieces above (frozen weights with a non-negative conductance; the patch's block, symmetric,
+     with zero row sums, positive semidefinite; an implicit-plus-explicit split that recombines
+     exactly to the full constant-field flux), and a per-compartment Newton stage solve,
+     R(x) = x − x̂ − γh J(x) on the compartment's own permeant amounts, with V_b = −q_j/C_b and a
+     Sherman–Morrison Jacobian, checked at a residual of 1e-13.
+     - **Its tests exercise the Newton form:** stable at dt × G/C_b up to 48, first order under
+       implicit Euler against Radau, the booking closing the energy ledger to rounding, and a
+       planted error caught. The global pieces are tested only for the exact split and the
+       positive semidefinite block.
+     - **So the slot runs the Newton form, as a local stage solve,** at each implicit stage of
+       ARS(2,2,2), with that stage's γh (the SDIRK diagonal), before the global field solve:
+       - **it is self-contained:** at a face-free node V_b = −q_j/C_b exactly (FR-1 §3.1), so the
+         compartment's solve needs no potential from the global solve; the owner cell's amounts
+         change by what the compartment loses, and the global solve then sees both charges;
+       - **existing programs stay unchanged:** the face part of the implicit set is untouched, and
+         the patch's solve is present only where a patch kind is declared;
+       - **its routes leave the explicit rates** and the explicit-stage rule, and B7's face-free
+         term counts only explicit routes.
+     - **Its admission:** the solve is self-contained only on a face-free node with exactly one
+       bounding patch, so a patch kind is refused anywhere else.
+     - **To settle with FR45 before it is wired:** what `x_hat` carries at ARS's last stage, and how
+       the owner cell receives the moved amount within the stage (CORE reads `stage_solve` itself
+       first; the module's head and commit message were read for this note).
+     - **Its qualification** (FR45, with REF) shows second order under ARS(2,2,2). The owner cell's
+       concentrations enter each stage's solve at that stage's known state, an O(h)-relative
+       approximation scaled by V_comp/V_cell, which the order study measures.
+     - **The global split stays a fallback,** as its own solver ID (D147), if the Newton form fails
+       that qualification.
+     - **Cost:** the local stage-solve slot, about 1–1.5 agent-days (CORE), as estimated in (h).
 
-#### (h) What this adds to CORE's queue, and what the lead decides
+#### (h) What this adds to CORE's queue: the lead's rulings (15 November)
 
-- **C6 (§15.6) is now about 3.5–5 agent-days (S):**
-  - the transporter insertion point, 1–1.5;
-  - the stage-read slot, 1–1.5;
-  - B7's two halves, 0.5;
-  - the implicit-route slot with faces behind it, 1–1.5.
-- **Its timing is the lead's call** (§15.6, option 3). After A7, FR-4's code can merge from about
-  day 12.5–18. Before A5, R lands 3.5–5 days later.
-- **How an operator reaches the implementation object is INT's contract question.** Operators
-  receive state, control and layout only, and today import `surface_pump_v3` directly. The contract
-  can pass the composite's inner object to the parts that call the inner model (replacement's event
-  map, water's coupled RK4 part); or those calls stay on structure-free module functions where one
-  suffices (replacement's post-event junction voltages need only the field solve). OPS's event-map
-  work waits on INT's answer.
-- **Files in no stream's list:**
-  - `core/surface_pump_v3_spec.py` (the parser and `LAW_CODES`), taken as the core's unless the
-    lead says otherwise;
-  - the registry's @3 line;
-  - the thin families (`models/cell_replacement.py`, `surface_pump_water.py`,
-    `surface_pump_water_v2.py`). They import only structure-free names from @3, but
-    `cell_replacement.py` builds its composite at import from the inner model ID, which becomes
-    per structure (INT's change).
+- **FR-4's insertion points are split.** FR-4's first world (explicit, with a K⁺ counterion) needs
+  three, each a declared-only addition with every existing world unchanged, right after the
+  dispatch commits. Costs (**S**, agent-days):
+  - **the per-structure schema** (state, layout, control and observation types that gain a kind's
+    fields only where it is declared): about 1, paid once by the first of the three and reused by
+    the passive law. It touches the adapter's view of the inner layout and control, so it is
+    coordinated with INT;
+  - **the stage-read slot** ((g) 1): 1–1.5;
+  - **the transporter kind with its fuel rows** ((g) 2): 2.5–3.5, revised from 2–2.5 for finite
+    fuel as the default (the fuel rows' in-step writes and their standard-potential term). It
+    includes the transporters' controls, the held-row admission against `moved_rows`, the ledgers
+    and device checks, and the refusal of a parameter-form pump whose own ΔG° disagrees with the
+    registry's fuel rows (§10.2);
+  - **B7** ((g) 3), at the bound's ordinary constant, with finding 3's term: about 1, host-only,
+    one commit with one D148 record and @1's and @2's cases (§13.6).
+  - **The implicit slot** ((g) 4) follows once FR-4's first world runs: 1–1.5. It stays outside
+    the round unless FR-5's first world needs it (the lead's ruling).
+  - **In all, 6.5–8.5 agent-days with finite fuel as the default** (6–7.5 before it), of which
+    the implicit slot's 1–1.5 stays outside the round. This supersedes the earlier 3.5–5, which
+    had no per-structure schema and a smaller transporter.
+- **Off the core's path:** the passive law's kernel module goes to FR45 (the proton leak's
+  sibling), and CORE writes its insertion point only, with the exact heat booking (§7.5); the
+  summation study goes to OPS (§10.6).
+- **The question of how operators reach the implementation object is answered (INT, accepted):**
+  operators declaring `USES_INNER = True` receive it as a static `inner=` keyword in their event,
+  half_step and rates calls; host methods use `model.inner`; operators stay registry singletons.
+  Until the first API commit lands, `inner=` passes today's adapter, which has the same surface.
+- **Files:** `core/surface_pump_v3_spec.py` and the registry's @3 line are the core's;
+  `compartments.py`'s refusal 4 and the charged-buffering closure are FR45's; FR-3's integrator
+  consolidation is outside the round. The thin families (`models/cell_replacement.py`,
+  `surface_pump_water.py`, `surface_pump_water_v2.py`) import only structure-free names from @3,
+  but `cell_replacement.py` builds its composite at import from the inner model ID, which becomes
+  per structure (INT's change).
+
+#### (i) The passive law's insertion point: its conventions (REF's closed-pair reference reads them)
+
+The kernel is FR45's (`processes/passive_neutral_permeation`, law `passive_neutral_permeation@1`);
+the insertion point is CORE's. Its conventions, fixed here:
+- **The declaration:** a `passive_routes` list in the model block, absent unless declared. Each
+  route names its ID, the law, its host route (one membrane patch, or one junction), and a
+  permeability per neutral species it carries. A species it carries has zero constant-field
+  permeability on that host route (refused otherwise), so one law moves it there.
+- **The effective PA:**
+  - **on a junction, P·A·gate·availability:** the junction's area, its gate state
+    (`junction_gate`, the junction law's) and its availability control, the same opening the
+    junction's ions see. The gate is evolving state, not 1 at 0 V, so the closed-pair world starts
+    it at its steady value, or the reference integrates it;
+  - **on a membrane patch, P·A·availability:** the patch's area and its availability control.
+- **The flux** is the kernel's constant-field route at valence 0 (Fick's law), at every explicit
+  stage, inward-positive, into the node amounts on both sides.
+- **The heat is booked in the law's own field, never in the membrane or junction fields:**
+  `passive_dissipated_energy_pJ` [passive route], with the transfers in `passive_transferred`
+  [species, passive route]. Both exist only where the law is declared, and both join @3's
+  material and energy ledgers. The booking is §7.5's exact one, on the neutral rows that only
+  exact-booked passive routes move (version 1's scope); elsewhere it is today's tableau booking.
+- **Bound:** finding 3's term covers the routes (§13.6).
+- **Its own step (ruled):** dt × L ≤ 1, with L = 1e15·PA·(1/V_a + 1/V_b) summed over the
+  routes at each node. That is finding 3's z = 0 term for its routes, declared as its bound term.
+  A dt-study criterion covers accuracy. Exact booking closes the ledger up to h = 2, so it no
+  longer signals an overshoot by itself (§7.5).
+- **As built (core-d172 6a43f189, 7af1382f; the lead's ruling: one kind, laws by contract):** the
+  kind `cells.passive_routes@1` (`models/inner_kinds/passive_routes.py`), model key
+  `passive_routes` in FR-4's form (`validation/compartment_ph/definitions.py`): a list of {id,
+  patch | junction, law, permeability_m_per_s (one number), species (the neutral law's row; the
+  leak's defaults to H), factors (empty: FR-5's damage and pH condition come with FR-5's laws)}.
+  - `passive_neutral_permeation@1`: the kernel's Fick flux on the read amounts, inward from the
+    host's outside end to its inside end; §7.5's exact booking where version 1's scope mask
+    (`passive_exact`, set at binding from `moved_nodes`; a route touching a held bath is never
+    exact) allows; its step is `bound_rate` (gap 5). The mask is a fixpoint over shared rows
+    (1e57af61): a route sharing a row with a tableau-booked passive route is tableau-booked too,
+    so every exact row is moved by exact routes alone. The operators' writers (`moved_in_step`)
+    join at the composite's admission (INT).
+  - `proton_constant_field_leak@1` (`processes/proton_leak.py`): an H⁺ constant-field route on a
+    membrane patch at the patch voltage, reading free h through B4's read at buffered nodes;
+    tableau-booked (charged: never exact); its max-side slope conductance is its `stage_term`
+    (B7, gap 5) and its flux joins the membrane current (gap 9); its row must be B4's proton row
+    where B4 is declared.
+- **B4's declaration (7af1382f)** is FR-4's `stage_reads` list: [{read_id:
+  "rapid_proton_buffer@1", proton_row, buffers, k_on_per_mM_s}], one read in version 1.
+
+#### (j) The per-structure schema: three options, and the ruling (A, 15 November)
+
+**What it must do.** New kinds add state, layout, control and observation fields: FR-4's
+transporter with its fuel rows, its stage read and the passive law ((i)). B7 adds none. A world
+that declares none of them keeps today's types. A world that declares one carries that kind's
+fields and no others ((d), the "Schema" level).
+
+**How types are used today** (the facts the options are judged on):
+- **Snapshots** are npz archives keyed by the state's and layout's field names. Reading requires
+  the archive's key set to equal `model.STATE_TYPE._fields` plus the layout's, and builds
+  `model.STATE_TYPE(*…)` (`io.py`). A restart requires `type(checkpoint.state) is
+  model.STATE_TYPE` (`core/runner.py`).
+- **Results and the acceptance owner's baseline** flatten histories, observations, diagnostics and
+  final states by field name (`results_baseline.py`'s `flatten`). D176's gate compares key sets as
+  well as bits.
+- **The compile key** holds the argument tree, which includes its NamedTuple types, and the leaves'
+  shapes (§7.4 (e) 4; 43812f59).
+- **The composite already builds its types per composition.** Its STATE_AXES is the inner model's
+  plus each operator's, and it builds `CompositeState`, its layouts and its Observations from them
+  (`pump_composite.py`). Operators address fields by name (`state.x`, `_replace(x=…)`).
+- **Generic code builds and splits states positionally:** `STATE_TYPE(*(…))` and
+  `type(state)(*(v[i] for v in state))` (rates, readouts, windows, checks). That is about 50 sites
+  in `core/` and more in the models and operators.
+
+**Option A: types per structure, on the implementation object.**
+- **The design.** The object carries its structure's STATE_AXES, STATE_TYPE, LAYOUT_TYPE (and the
+  floor layout), the Control type the schedule fills (a transporter's controls), OBSERVATION_FIELDS
+  and Observations. They hold today's fields in today's order,
+  then each declared kind's fields in kind order. A structure that declares no new kind returns
+  today's module types themselves, the same class objects. Classes are cached by field set, so
+  structures with the same kinds share one class, and they get deterministic names
+  (`SurfacePumpChannelState[transporter]`).
+- **Checkpoints:** today's worlds unchanged (same keys, same class). A kind's world writes and
+  reads its own fields. `io.py` and the runner already read `model.STATE_TYPE`, and the object
+  supplies it.
+- **Observation columns:** today's worlds unchanged. A kind appends its columns, as an operator
+  does in the composite.
+- **Compile key:** today's worlds' trees unchanged. A kind's world has its own tree and so its own
+  executable, which it needs anyway for its own program.
+- **D176's gate:** today's worlds bitwise, with no new leaves and no renamed keys, by construction.
+  It can be tested by identity: `impl.STATE_TYPE is surface_pump_v3.STATE_TYPE`.
+- **Operators by name:** today's fields are unchanged. An operator that reads or writes a kind's
+  field declares that kind. The composite's admission refuses it at binding in a world without
+  the kind, so there are no runtime presence checks.
+- **Cost:** about 1 agent-day, as costed in (h).
+  - @3's own builders that name the module's STATE_TYPE take the structure's instead; the dispatch
+    commits already thread the structure.
+  - The composite builds from `inner.STATE_AXES`, so its types follow once INT's switch passes the
+    object.
+- **Risks:**
+  - A re-created class would break `type(…) is` and the compile cache, hence the cache by field
+    set.
+  - No pickling is involved: snapshots are npz by name.
+
+**Option B: one superset type, with zero-size fields for undeclared kinds.**
+- **Checkpoints:** every world's snapshots gain every kind's keys as empty arrays. Today's
+  snapshots no longer load (the key-set check) unless the reader tolerates missing empty keys.
+- **Observation columns:** every world gains empty columns.
+- **Compile key:** every world's tree gains zero-size leaves. So every program changes, every
+  executable recompiles, and crossrev's records change.
+- **D176's gate:** fails as written, with new keys in every world. It would pass only with a
+  comparator exemption for empty new keys, which the gate does not have.
+- **Operators by name:** the simplest, since every field always exists. But every reduction over a
+  kind's field must handle empty arrays (initial values for max and min), in every operator and
+  check.
+- **Later kinds:** each new kind changes every world again.
+
+**Option C: today's types plus one extension container, `kinds`, empty for today's worlds.**
+- **Checkpoints:** the container is a new field name in every world's state. The npz writer and
+  reader must flatten it to prefixed keys and skip it when empty. Otherwise today's snapshots stop
+  loading, and an empty tuple would be saved as an empty array.
+- **Observation columns:** unchanged, if the observer ignores the container. A kind's columns come
+  from inside it.
+- **Compile key:** an empty container (a dict or an empty NamedTuple) adds no leaves, but every
+  world's tree changes by one node. The programs are unchanged (the jaxpr is over leaves), and
+  executables recompile once.
+- **D176's gate:** leaves are identical. Keys are identical in the acceptance owner's `flatten` for
+  a dict or empty-NamedTuple container (no keys), but not for an empty tuple (a new key). The
+  snapshot IO still has to change.
+- **Operators by name:** today's fields are unchanged. A kind's field is reached as
+  `state.kinds.<kind>.<field>`, and `_replace` needs a nested form. Every positional build or split
+  of a state must skip or recurse into the container: the ~50 sites in `core/` and those in the
+  models and operators.
+- **Its merit:** later kinds are added inside the container without touching today's fields.
+
+**A later kind, and a kind declared by two laws (the same under A, B and C).** Fields belong to
+the kind, not to a law:
+- The kind has one population axis, and each population's law code selects its kernel, as
+  channel slots do.
+- A field that only some laws need is present when any declared law needs it, sized by the
+  largest declaring law, as `gate_rows` is today.
+
+Examples:
+- **FR-4's charged buffering:**
+  - Buffer rows are inventory rows on the species axis, so they need no new state.
+  - The closure's declaration adds layout fields: the buffered (node, row) mask, k_on and c0.
+  - It adds one state accumulator, the closure's free-energy term ΔG_buf per node for the energy
+    ledger.
+  - It adds one diagnostic column, the stage residual |g|/H̄_eq.
+  - Under A all of these appear only where the closure is declared.
+- **Fuel:**
+  - Held fuel (`maintained_held_rows@1`) adds the maintenance's material record per population
+    (+1 ATP, −1 ADP, −1 Pi per cycle).
+  - Finite fuel adds only its standard-potential term's accumulator: its rows are inventory rows,
+    moved by the pump.
+  - A world declaring both fuel kinds carries both.
+- **Two transporter laws:** one transporter population axis, each population with its law code.
+  Cycles and ledgers are per population. A law with an extra internal state adds a field sized by
+  the largest such law.
+
+**Recommendation: A.**
+- **Why A:**
+  - Under A alone, today's worlds get the very same type objects as today. D176's gate, the
+    snapshots, crossrev and the compile cache then need no exemption and no IO change.
+  - It follows the composite's existing per-composition pattern, and the implementation object
+    is already its home.
+- **Why not C:** C's isolation of kinds is attractive, but it changes today's types by one field
+  and touches every positional build and split of a state.
+- **Why not B:** B changes every world now, and again at every new kind.
+- **A's own risks** are handled by caching classes by field set, with deterministic names, and by
+  a static admission rule for operators that need a kind's fields.
+- **Cost and coordination:** about 1 agent-day, inside FR-4's first insertion point. INT's switch
+  is the only coordination needed: the composite then builds from the object's STATE_AXES.
+- **Acceptance for A:**
+  - today's worlds' types are the module's own (identity);
+  - a planted kind adds exactly its fields, at the end;
+  - a kind's world round-trips through a snapshot;
+  - the results gate is bitwise for today's worlds.
+
+**The lead's ruling (15 November, after the advisor's review and INT's comments): A, with three
+additions to its acceptance.**
+1. **Canonical kind order.** The appended kinds' fields follow the canonical kind order, never the
+   definition's declaration order. It is the sorted namespaced kind ID, a total order independent
+   of registration and import order (the lead, 15 November, for external modules). Test: two worlds that declare the same kinds in
+   different orders get the same class, compile key and snapshot layout.
+2. **The families' refusal must exist.**
+   - Replacement@1 and both water families bind full-catalogue types at import and build states
+     positionally, so a planted kind in each family is refused at binding.
+   - An operator that reads a kind's field declares `REQUIRES_KINDS = (...)`, and
+     `structure_errors` refuses a missing kind, naming the operator and the kind.
+   - INT builds both, and the adapter's forwarding of the object's types: `STATE_AXES`,
+     `STATE_TYPE`, `STATE_FIELDS`, the layout and control types, `OBSERVATION_FIELDS`.
+3. **A planted kind through the run paths.** Its snapshot round trip runs in a fresh process, and
+   the planted kind also runs on the vector-window path, since packing depends on it.
+
+**Scope rules (the lead's ruling, 15 November, after CORE's map of today's fixed-field
+sites):**
+- (a) **Ledgers.** A kind's ledger terms fold into today's 10 ledgers by role (material per
+  species and node, charge, energy, heat, work). No new ledger rows in this round; a kind with a
+  genuinely new conserved quantity would be a later core change.
+- (b) **Columns.** A kind's state fields are observation columns, right after today's state
+  fields (the windowed runner rebuilds states from observations by name), and its readout columns
+  follow today's readouts. Today's worlds keep today's columns, bitwise.
+- (c) **Material.** A kind's material moves land in the shared inventory, today's amount fields
+  (F2: one authoritative account per quantity). Only the kind's own accumulators stay outside the
+  families' and operators' projections, which therefore keep charge right.
+- (d) **Controls.** A kind's controls are availabilities in [0, 1], unless its control-domain hook
+  declares otherwise.
+
+**A padding artifact kept for bitwise identity (F1; K2's amendment 6; the lead's ruling, 15
+November):**
+- **The artifact.** A closed or not-yet-open population slot carries code 0, Kv1.5's code, and
+  keeps its gate update. Today's catalogue evolves that gate under Kv1.5's kinetics. That is an
+  artifact of today's padding, kept only for bitwise identity through D176's gate.
+- **Where it is traced.** A4's "no kernel" holds for worlds without closers. A world whose
+  composition closes slots (an operator with CLOSES) traces code 0's kernel as declared padding,
+  named by the structure's `padding_fill`. That is ruling 8's declared, temporary fill, compiled
+  where it is needed.
+- **Its effect on physics, by opener:**
+  - the partition sets the gate (daughters take the parent's at division);
+  - replacement sets it (the template's or a source slot's at arrival);
+  - insertion@2's onset does not: a gated population on an onset patch starts from the gate the
+    artifact evolved while it was closed. Today's physics after an onset therefore depends on the
+    artifact.
+- **The insertion@2 bug is latent** (the acceptance owner's scan, `acceptance/insertion2-scan.txt`).
+  - `membrane_insertion_v2.check_onsets` refuses any channel population on an onset patch
+    ("Channel populations on an onset patch are later work"). So no accepted definition reaches
+    the inherited gate, and no evidence is affected.
+  - Insertion@2's onset patches (S5 and its tools, crossrev's division_furrow and
+    division_quartered) carry no channels. Kir2.1 and NaV1.2 sit only on cell membranes, which
+    the partition opens with their gates set.
+  - The gate fix (gates frozen while closed, or set at opening) is a precondition for lifting
+    `check_onsets`'s refusal, and lands with or before that change, as its own gated change.
+
+**Costs accepted:** about 2.5–3 days for CORE, with INT and OPS in parallel. INT takes the
+adapter's lookup order (the object first), the composite's 11 inner type reads, the composite
+spec's controls from the object and the families' refusal. OPS has `moved_in_step` call the
+declared kinds' `moved_rows`.
+
+**CORE's part (about one day as first costed, 2.5–3 days with the scope rules above; after the registry hook and B7):**
+- the object's per-structure types, cached by field set in canonical order;
+- today's classes returned for today's structures;
+- the identity test, the planted-kind test, the fresh-process round trip and the vector-window
+  run.
+
+INT merges CORE's types first, then the adapter's forwarding.
+
+#### (k) The kind interface: one module per kind (the lead's ruling, 15 November; design before code, D142)
+
+**Why.** After schema A, each new kind is its own module under `models/inner_kinds/`: FR-4's
+stage read (B4), the transporter (B5) and the passive law ((i)). Core functions call the declared
+kinds generically at fixed seams, so two writers never edit one core function. A kind edits no
+core file, and a seam change goes through CORE.
+
+**The registry and IDs** (constraints from the user's direction on external modules; the lead,
+15 November):
+- Core holds a registry of kind objects (register and lookup) and imports no kind module.
+- Built-in kinds register through the same call an external package would use, from their own
+  package (`models/inner_kinds`). Parse and build take the registry, defaulting to the built-in
+  one, so the lookup is scoped to the model build.
+- Kind IDs and new law IDs are namespaced (`cells.transporter@1`). A bare ID resolves in the
+  `cells` namespace: today's law IDs stay as written, since renaming them would change every
+  definition and fingerprint.
+- A registered but undeclared kind changes nothing. A second planted-kind test checks that a
+  world which does not declare it keeps today's classes, compile key and snapshot layout.
+
+**A kind declares** a module-level object, registered by its namespaced ID, appended in the
+canonical kind order (sorted ID) that schema A's types use:
+- `KIND_ID`, and its laws' declarations in its own module, as `inner_laws` holds the channels';
+- its fields: state axes, layout fields, control fields and observation columns, each with its
+  axes' names. Schema A appends them in canonical order;
+- `parse(entries, base)` → its declaration, from its model-key block (`entries`) and the parsed
+  @2 base definition; `to_dict(declaration)` → that block; `control_values(spec, declaration,
+  times)` → {control field: [time, ...]}, constant over the run in version 1;
+- `initial(spec, declaration, layout)` → ({state field: array}, {layout field: array});
+- `structure_entry(declaration)` → its hashable, value-free part of the InnerStructure. That part
+  enters the compile key, the batch signature and the cached implementation.
+
+**The hooks the core calls, as built** (schema A, `core-d172` e71dac25, with the stage check and
+the bookings' validity from 307daf3a and 6c850d91; the authoritative list is the `Kind` docstring
+in `core/kind_registry.py`). Each is optional; a kind supplies the ones it needs. `p` is the
+world's layout and `state`, `control` are in the structure's own types. **Built-in kinds**
+register on `BUILTIN` from their own package: `kind_registry.active()` imports
+`cells.models.inner_kinds` by name once, so the core imports no kind module and a registered,
+undeclared built-in changes nothing:
+1. **`stage_read(state, p, *, xp)` → (the state whose amount fields hold the amounts the stage's
+   rates read, valid),** at the concentration entry of every stage: `readouts` (so `rhs`),
+   `explicit_rates` and `imex_step`'s face weights call it before any rate reads a
+   concentration; `implicit_rates` uses the frozen weights. B4 uses it; reads compose in hook
+   order. **A failed read refuses the row and the step,** and `domain_valid` evaluates the reads
+   at every checked state, the step's end included (§7.4 (g) 1). **The read changes
+   concentrations, never charge:** the field solve takes the stored rows' charges (FR-4's H_eq
+   and buffer totals), and only the rates see the read amounts. A stage read declares
+   `stage_rows(declaration)` → ((species, node ID), ...), every row it reads or rewrites.
+   - **`stage_check(read, cell, outside, p, *, xp)` → one bool,** after every rate of a stage
+     (`readouts` and `explicit_rates`), with the read state and the stage's total node rates; a
+     false check refuses the row or the step. FR-4's envelope (the closure's lag at the stage's
+     transport) is one.
+2. **`rates(state, potentials, control, p, *, xp)` → `KindRates(cell, outside, derivatives,
+   heat_pJ_s, work_pJ_s)`:** inward-positive node changes (cell [species, cell], outside
+   [species, outside node]) into the shared inventory, where the field solve sees their charge
+   (rule (c)); its own state fields' derivatives; heat and work rates, which join the energy rate
+   by role (rule (a)). `potentials` are the stage's node potentials, cells then outside nodes.
+   They are added after today's terms, in hook order. `KindRates.valid` (7af1382f) is the
+   kind's own domain at the stage's read and potentials (a charged law's V-dependent domain,
+   such as |ΔG_cyc/RT| ≤ 80), and-ed into the stage's validity. `KindRates.membrane_flux` (outward
+   [species, membrane], optional) joins the patches' total flux and membrane current
+   (observations; gap 9, 669f8ed6).
+   - **Step size (B7 for kinds; gap 5, 669f8ed6):** `stage_term(read, control, p, *, xp)` →
+     [cell] conductance (S) at the stage, added to `membrane_rate`'s per-stage refusal;
+     `bound_rate(spec, declaration)` → 1/s, a definition-time term the host step checks hold to
+     the same bound (the passive law's dt·L ≤ 1).
+   - **One writer (gap 8, 669f8ed6):** `held_rows(declaration)` → ((species, node ID), ...), rows
+     the kind reads and never moves; binding refuses any inner route or other kind that moves
+     one. The operators' writers are the composite's admission.
+   - **Per-stage diagnostics (gap 7, dfe1234c):** `stage_values(read, cell, outside, p, *, xp)` →
+     {own state field: value} at every explicit IMEX stage, with `stage_extrema` = ((field,
+     "max" | "min"), ...); the step's end state holds each field's running extremum over every
+     stage so far (RK4 leaves them). B4 reports `proton_buffer_max_lag_pH`, `_min_pH` and
+     `_max_pH` per node; an envelope breach stays a refusal (the verdict), these are the margin.
+3. **`book(applied, start, end, p, dt, *, xp)` → ({own state field: new value}, valid),** in
+   `imex_step` after the tableau's combination; `applied(name)` is the step's applied rate of a
+   state field (the tableau's explicit and implicit weights). Every kind receives the same end
+   state (before any kind books) and may write only its own state fields, so bookings commute. A
+   false valid refuses the step: §7.5's "negative exact share: step-bound breach". §7.5's exact
+   booking is one. Under RK4 the kind's derivative fields integrate like any state.
+4. **`ledger_terms(state, p, *, xp)` → {"cell", "outside", "heat_pJ", "work_pJ", "stored_pJ"}
+   (any subset):** cumulative inward-positive node transfers, heat and work accumulators, and
+   `stored_pJ`, the free energy the kind holds beyond the stored rows' own terms (its change
+   since the start: FR-4's buffer term, finite fuel's standard term), folded by role into
+   `balances`, `device_balances` and the ledger magnitudes, so every ledger closes with its
+   moves.
+5. **`domain(state, p, *, xp)` → one bool,** and-ed into `domain_valid`, on the host and the
+   device; **`control_domain(control, p, *, xp)` → one bool,** in place of the [0, 1] rule for
+   its controls (rule (d)).
+6. **`readouts(state, read, potentials, control, p, *, xp)` → its readout columns** (7af1382f:
+   the stored state, the row's read and its node potentials, so a charged law reports its
+   instantaneous rate at a buffered node), in order, which
+   `observe_history` writes after today's.
+7. **`moved_rows(declaration)`** → ((species, node ID), ...), or ((species, node ID, law ID),
+   ...), the rows it moves in the step, joined into `moved_rows` (the registry's `moved_in_step`
+   reads them).
+8. **`check_definition(spec)`:** its definition-time refusals (for example B5's held-row admission
+   and ΔG° against the registry). It runs after the registry's checks and before @3's.
+
+**Rules.**
+- **Hooks are pure.** They close over the kind's declaration (structure), never over values (P5),
+  so a value change reuses executables.
+- **No cross-kind reads.** No kind reads another kind's fields; a dependency between kinds is a
+  seam change, through CORE.
+- **An undeclared kind is absent:** no field, no kernel, no hook call. A4's criterion extends to
+  kinds.
+- **Two orders, named apart** (docs/MODULE_SYSTEM_DESIGN.md §7, D180): the field order is
+  `structure.kinds`, canonical by sorted ID. The hook-evaluation order is a separate name, equal
+  to the field order in version 1, so a later dependency order moves no field or snapshot layout.
+- **No global codes for kinds:** kinds and their laws carry no code. A kind's law index is bound
+  per definition by the resolved structure, and no global code sequence is hardened. Today's
+  channel LAW_CODES stay as they are.
+- **Non-commuting hooks on the same rows are refused at binding.** Of the hooks, only stage reads
+  compose: two kinds' stage reads on a shared row (their `stage_rows`) are refused at binding, and
+  a stage read that declares no rows is refused. Bookings commute by construction (one end state
+  for every kind, own fields only); rates, ledger terms and domains add or and. Version 1 has one
+  stage read, so no declared world is refused.
+- **The planted kinds are registered from outside `src/cells`,** under a non-`cells` namespace
+  (`tests.`), on a test-local registry.
+- **The parsing surface (core-d172 d4b3c01f; D180):** a kind's `parse` and `check_definition`
+  refuse with `ConfigError` and may use `require_fields(value, expected, name)`,
+  `finite_number(value, name, *, positive=False)` and `bounded_integer(value, name, *,
+  minimum, maximum)`, all exported by `cells.core.kind_registry` (public names in
+  `cells.core.specs`, whose underscored helpers stay as aliases for today's callers). Kinds and
+  external modules use these, never the private names.
+- **Ledger lists stay the shared literals in this round** (rule (a)). Reading them from the
+  implementation object would change @1's and @2's shared check code, so it follows the landing,
+  with its own D148 case.
+- **Hooks on the check path trace on the device.** `domain`, `control_domain` and
+  `ledger_terms` take `xp`, trace under jnp and branch on no value in Python. So the device's
+  per-row checks include kinds as the host's do. That leaves room to move host-side checks into
+  device windows: the coupling export measured them at 91% of the runner path's wall time.
+  Enforced at binding: `check_definition` traces each of them once (`jax.eval_shape`) on the
+  definition's initial state, with `stage_read` (which `domain_valid` evaluates) and
+  `stage_check`, and refuses a hook that does not trace, a domain, read or check that is not one
+  bool, and a ledger term of an unknown role or shape.
+- **The planted kind of schema A's acceptance implements every hook** with trivial physics: a
+  neutral species exchanged at a constant rate between two nodes, with its own ledgers. So each
+  seam is exercised before any real kind lands.
+
+**Ownership.**
+- The seams in `surface_pump_v3.py`, `inner_laws.py` and `surface_pump_v3_spec.py` are CORE's.
+- Each kind module is its owner's:
+  - B5's transporter is FR45's, reviewed by CORE before INT merges it;
+  - B4's stage read is CORE's, with FR45's closure kernel;
+  - the passive law is CORE's insertion with FR45's kernel.
+
+### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
+
+- **Why.** Today a route's heat is the tableau's quadrature of its dissipation rate (Σ J Δμ̃ at the
+  stages, with the explicit weights). It matches the free-energy decrease only within the energy
+  ledger's tolerance, and the residual grows where a route moves a large share of a small pool in
+  one step. Three consumers meet that limit:
+  - the passive law's trace start (the Syn3A audit's probes P0b–P0d; §11);
+  - the implicit patch: the charged-patch test found that the energy ledger, not stability, binds
+    the explicit route near dt × G/C_b ≈ 0.05 ((g) 4 of §7.4);
+  - FR-10's onset at a dosed bath's face (its resolved-start rule).
+- **The booking, `exact_free_energy_heat@1` (name S).** Routes that declare it book, per step, the
+  exact decrease of the stored free energy that their moves cause, with no rate quadrature:
+  - **exact per row, not per route.** A row (a species at a node) may be moved by several routes in
+    one step, for example FR-5's transfer and damage pore across one patch. Its chemical term is
+    nonlinear, so terms anchored at the start amount, one per route, do not sum to the row's
+    change. The booking therefore takes each row's exact change once: ΔG_row, from @3's per-row
+    term (`species_chemical_free_energy_pJ`, the per-row form of `balances`' own term) between the
+    row's start and end amounts. That closes the ledger to rounding without forming a difference of
+    bulk terms;
+  - **the split between routes, declared:** each route moving the row takes the share μ̄_row ×
+    (its transfer at that row), with μ̄_row = ΔG_row/Δn_row the row's divided-difference potential
+    over the step (its limit, the potential at the start amount, when Δn_row = 0). The shares sum
+    to ΔG_row exactly, as in D152's per-route hybrid and FR45's kernel (`divided_potential_RT`). A
+    route's heat is minus the sum of its shares at its two ends;
+  - **version 1's scope (ruled):** neutral rows only (the passive law is valence 0), and only rows
+    that exact-booked passive routes alone move. This is checked at binding, from `moved_rows` and
+    the operators' `moved_in_step`. A passive route on a row that a pump or a tableau-booked route
+    also moves keeps today's tableau booking and checks: there μ̄ would average over a change the
+    route did not make. The accepted cost: FR-4's acidified compartment, pumped and leaked, keeps
+    its energy-ledger step limit (dt·G/C_b ≈ 0.05, declared by its worlds) until a pump booking by
+    the same divided differences is designed, a later item;
+  - **charged species (outside version 1):** the electrical part is the capacitor energy's change, exact for the
+    linear capacitor through the step's mean patch voltage (V̄ Δq), split in the same way. The
+    implicit patch, the first charged consumer, fixes it in its own module (FR45's
+    `patch_booking_pJ`);
+  - **sign and refusal, ruled for version 1 (15 November)** (after FR45's probe, two rounds, and
+    the advisor's review; this replaces f81f213d's proposal and the earlier group rule, and R3's
+    clamp is dropped):
+    - **booking:** each route books its exact divided-difference share of each row's exact
+      free-energy decrease. No clamp, no scaling, no trapezoid, and no groups;
+    - **refusal:** a step with any negative raw share is refused, with the reason "negative exact
+      share: step-bound breach". That covers a negative row decrease too, since the shares sum to
+      it;
+    - **why a share can be negative at all:**
+      - Under ARS(2,2,2) the explicit weights (δ, 1 − δ), δ < 0, can reverse the applied transfer
+        against stage rates of one sign.
+      - For a neutral row the share is ≥ 0 whenever the applied transfer and both end affinities
+        agree in sign: μ̄ is the mean of μ over the row's amount interval, and those intervals are
+        ordered when both end affinities are.
+      - Reachability is not proven. With one route per pair, FR45 shows a negative share is
+        unreachable under dt·L ≤ 1. With several routes at a node, one route's end affinity can
+        still reverse, though the share stayed positive in FR45's example (a chain a–b–c with a
+        small pool c).
+      - So version 1 fails loudly if it ever happens. If real runs show refusals, R3 is revisited
+        with that evidence;
+    - **the raw-sum check, per row:** |Σ shares − ΔG_row,exact| ≤ about 16 × eps × Σ|terms|
+      (`increment_terms`, the references' rounding scale).
+      - At the probe's case-4 magnitudes that is about 1.3e-14 pJ. The honest sum, 7.5e-15 pJ,
+        passes it, and a planted sign flip, 1.84e-3 pJ, fails it.
+      - The factor is confirmed by a test at implementation;
+    - **the step bound:** the passive law declares dt × L ≤ 1 as its bound term, finding 3's z = 0
+      term for its routes (§7.4 (i), §13.6). L = 1e15·PA·(1/V_a + 1/V_b), summed over the routes
+      at each node. A dt-study criterion covers accuracy. Exact booking closes the ledger up to
+      h = 2, so it no longer signals an overshoot by itself;
+    - **for the run view:** route heat stays monotone, since a step with a negative share is
+      refused. A route's value is an exact attribution of its rows' decrease (the
+      divided-difference split), not a separately measurable quantity.
+  - **The probe's numbers.** They are recorded here because they exist only as data and hand-back
+    text: FR45's `fr45/booking-probe/` (`HANDOFF.md`, `results.json`, `round2.json`).
+    - R1 (the share, else the trapezoid) missed the ledger's allowance by 48× to 480× wherever its
+      trapezoid fired.
+    - R3's clamp fired once, in case 4 at hγL = 0.6: raw shares −9.20e-4 and +2.727e-3 pJ against
+      the group's exact decrease of +1.806e-3 pJ. The honest clamp was 51% of the decrease.
+    - The raw shares summed to each row's exact decrease within 7.5e-15 pJ.
+    - A planted sign flip on the minor route missed the exact sum by 1.84e-3 pJ, so the raw-sum
+      check catches it, where the clamp would have absorbed it.
+- **Static and declared.** Only a route law that declares the booking computes it. Today's routes
+  (the membrane and junction constant-field routes, the channels, the faces) keep the tableau
+  booking, so every existing program is unchanged. The booking needs the step's start amounts and
+  the route's applied transfer, both of which `imex_step` already holds (`applied`).
+- **When.** It is implemented with its first consumer, the passive law's insertion point, and
+  reused by the implicit patch and FR-10's onset. A tighter face-free bound constant than the
+  ordinary one belongs with it (§13.6).
+- **Built (core-d172 6a43f189), with its acceptance as tests** (`tests/unit/
+  test_passive_routes_kind.py`, the closed pair being FR-1's face-free world W as plain @3, k =
+  100/s at dt = 1 ms): the pair relaxes as REF's closed form says and its heat is the engine's own
+  free-energy decrease to 1e-10; a trace start is admitted while the tableau's booking of the same
+  run fails the energy ledger; the honest raw sums stay within the factor 16 and a planted sign
+  flip on a minor route fails; an uphill step's negative share is refused; a route on a row
+  another route moves keeps the tableau's booking bitwise; binding refuses a charged species and
+  a carrying host. On the device and host path a refusal is the step's (the booking's validity);
+  the reason's text is the module's `NEGATIVE_SHARE`.
+- **Acceptance, with its first consumer:**
+  - on the closed pair each row's raw shares sum to its exact decrease within the raw-sum check,
+    with the factor 16 confirmed by a test;
+  - a trace start (1e-12 mM) is admitted;
+  - a planted sign flip on a minor route fails the raw-sum check;
+  - a step built to make a raw share negative is refused with "negative exact share: step-bound
+    breach";
+  - a passive route on a pumped row keeps today's tableau booking, bitwise;
+  - binding refuses no world of today's.
 
 ## 8. Scoped composition: door S's runtime merge (list (a))
 
@@ -986,9 +1619,11 @@ Not in R's total.
   - **Today's two pumps keep their parameter form in R** (`maintained_chemical_reservoirs@1`, with
     `delta_g0_J_per_mol` and the pool concentrations as layout data). Re-expressing them as held
     rows would add three species rows to every pump world, so no existing world would stay bitwise
-    or keep its species count. **For the lead:** keep that form as the declared representation of
-    today's pumps, with a later, separately gated migration if wanted; new fuel consumers, FR-4's
-    pump first, use held rows from the start.
+    or keep its species count. **The lead's ruling (15 November):** today's two pumps keep their
+    parameter fuel form in R, and new fuel consumers, FR-4's pump first, use held rows from the
+    start. **But a world is refused where a pump's own ΔG° and the registry's fuel rows
+    disagree,** so one quantity never has two values (the check lands with the transporter kind,
+    once the registry exists).
 - **Effort** (**S**): identity and trace policy are part of A7 (in R). **Refreshed (D176):** the
   operators stream's species registry (`core/species_registry.py`, approved) carries each
   species' `standard_mu_RT` at one declared standard concentration in R, host-side. So B3's field
@@ -1106,7 +1741,8 @@ cost.
 - After it, a raise needs only the guard world and the cost measurement. No new order probe.
 
 **Refreshed (D176): a measured order, then A7 last.**
-- **The summation study (D176, item 3), before A7 freezes; the core stream.**
+- **The summation study (D176, item 3), before A7 freezes; the operators stream (the lead's
+  ruling, 15 November; the core reviews).**
   - It compares serial left folds with an explicitly ordered hierarchical alternative (a pairwise
     tree in declared species order). Both are written as explicit adds, never a reduce.
   - Species counts: about 8, 16, 50 and 150.
@@ -1130,6 +1766,11 @@ cost.
     family. Changing a shared function brings @1's and @2's registered protocols into the gate under
     D148: for example the BETSE parity rungs P2 and 1 on @2, and the @1 items of E (E1, D1) and C
     (A1). Changing `surface_tissue` brings in every older family.
+  - **The lead's ruling (15 November):** the helper is called only from @3's module and the
+    operators, so @1, @2 and the older families stay out of G1 and G2. Where @3 calls a shared
+    function that sums over species (`surface_tissue.charge_increment`,
+    `surface_imex.face_laplacian`), @3's own call site takes the helper and the shared function
+    stays as it is.
   - **A5 meets the same rule:** finding 3's term lives in `surface_pump.explicit_rate_bound`,
     shared with @1 and @2, so it needs their cases and a D148 record (§13.6).
 
@@ -1354,7 +1995,7 @@ guard.
 | Term | Shape | Run-time half |
 | --- | --- | --- |
 | Finding 3's z = 0 material term | 2 × the maximum over neutral species and nodes of Σ P·A/V over junction and membrane routes, on R5's worst cases (water's minimum volumes, insertion's largest areas) | None needed (**S**): it depends on neither openings nor concentrations. The earlier ruling named both functions; the lead decides |
-| The face-free-node term | The maximum over **free** face-free finite nodes of Σ_m G_m / C_node at the declared state, with held baths, the gauge and the layout's fixed nodes excluded | A declared stage term in the inner model. Until it exists, channels and pumps on such a patch are refused |
+| The face-free-node term | The maximum over **free** face-free finite nodes of Σ_m G_m / C_node at the declared state, with held baths, the gauge and the layout's fixed nodes excluded | None in this round, and the refusal R is not adopted (the lead's ruling, 15 November; below) |
 
 **Parking.**
 - CURRENT_PLAN's "parked D148 rounds" (after GH200) are FIELD_SOLVER_INTERFACE_DESIGN §6.5's
@@ -1382,6 +2023,32 @@ neutral species, and its rerun covers them):
 - **So I0 changes no registered or PROPOSED outcome.**
 
 **Recommendation if P3 refuses nothing:** finding 3's term rides in R with the passive law (A5), with a D148 record for @1 and @2, since they share the function. The face-free term waits for P1 and FR-4 (B7).
+
+**The lead's ruling (15 November), which supersedes that recommendation's timing:** both terms land
+together, in one host-only commit with one D148 record and @1's and @2's cases, right after the
+dispatch commits (§7.4 (h)).
+- The face-free term is checked at the bound's **ordinary constant** (`EXPLICIT_STEP_BOUND`), not
+  FR-4's 0.05, so it refuses only steps that are unstable.
+- FR-4 declares its own step, 0.025 on the max-side G, confirmed by its own dt study.
+- A tighter constant belongs with the exact heat booking (§7.5), which removes the energy-ledger
+  limit the charged-patch test measured.
+- **Built:** `119ffb74` on `core-d172` (`neutral_material_rate`, `face_free_node_rate`, read by
+  `explicit_rate_bound`). Its D148 record covers @3 through P3 and @1 and @2 through the @1/@2
+  sweep (`core/HANDOFF.md`, "Check D148-B7").
+
+**The refusal R is not adopted (the lead's ruling, 15 November).**
+- **What R was:** P3 tested R, the refusal of channels and pumps on a patch facing a free
+  face-free node "until the run-time half exists".
+- **Why not:** R would refuse FR-4's own world. Its proton pump (a transporter) and its K⁺ route
+  sit on the lumen's bounding patch, which faces a free face-free node.
+- **What admits such worlds instead:**
+  - B7's host-only bound at the ordinary constant, with both terms;
+  - each world's declared step, checked by its dt study: FR-4 declares 0.025 on the max-side G,
+    FR-5 0.5 ms on the patch total;
+  - the implicit patch's stage checks, when that slot comes.
+- **Later, with its own record:** a run-time half for gated channels on face-free patches. This
+  round does not need it, since FR-4's and FR-5's routes are constant-field routes and a
+  transporter, not gated channels.
 
 ## 14. The operators in R
 
@@ -1583,14 +2250,21 @@ apart, on the shared machine (8 cores, 31 GB).
 | F1 | The charged-patch feasibility test CP: FR-1's probe P1, extended to FR-4's counterions and protons and FR-5's pores (D176: early) | FR45 | Owner to supply | The tag's snapshot | Running since 15 November |
 | F2 | FR-4's design note: §10.5's boundary; the counterion pathways; the pump law against §7.4's transporter shape; charged buffering's design and criterion; the patch treatment from F1 | FR45 | Owner to supply | F1; §7.4; SCOPED §6 | From day 1 |
 | F3 | **Charged buffering (D176):** FR-4's note chooses a rapid-buffer closure, a per-stage algebraic read (its §4), in a new module `processes/rapid_proton_buffer.py`. D152's charged slow reactions are a separate route, off FR-4's critical path (its §11, item 4) | FR45 (the closure, as its note proposes; the lead to confirm), on CORE's stage-read slot (C6) | Owner to supply | F2; O1's potentials; C6's slot | After F2 |
-| C6 | FR-4's insertion points (§7.4 (g)): the transporter kind (B5), the stage-read slot (B4), B7's two halves and the implicit-route slot with faces behind it | CORE | 3.5–5 (**S**) | C2, F1, F2 | After C5: day 9–13 → 12.5–18, unless the lead moves it before C3 |
+| C6 | FR-4's insertion points (§7.4 (g)): the transporter kind (B5), the stage-read slot (B4), B7's two halves and the implicit-route slot with faces behind it | CORE | 3.5–5 (**S**); re-estimated after the rulings at 5.5–7 for the three that open in the round (§7.4 (h)) | C2, F1, F2 | After C5: day 9–13 → 12.5–18, unless the lead moves it before C3 |
 | F4 | FR-4's first case on maintained, held-row fuel: the law module, the world, its references (REF) and its protocol | FR45, REF | Owner to supply | C6, I1, O1, F2, F3 | Develops on `integration-d172` once C2 and I1 merge; merges after I4 |
 
 **F3's acceptance criterion,** proposed here and matched to FR-4's note's closure (its §4, §13 and
 §14), for that note to fix:
-- **Admission:** buffer rows are inert (no route, no reaction), each with one declared pK and base
-  valence. One representation of a node's protonation is admitted (D175's key). No @3 route for H
-  at a buffered node.
+- **Admission:** buffer rows are inert (no route, no reaction). Each has one acid–base pair whose
+  two standard potentials, of the base form and the protonated form, the registry holds (FR-4's
+  note's B3), and a base valence; the operators stream extends the registry to carry both, in a
+  shape of its choosing (the lead's ruling, 15 November). The pair's K follows from the two
+  potentials, so no pK is declared beside them. One representation of a node's protonation is
+  admitted (D175's key). No @3 route for H at a buffered node.
+- **The closure's declaration:** the (node, row) pairs it buffers, which its mask keys on; the
+  standard concentration c0, taken from the registry's declared one; and k_on, a D175 stand-in
+  parameter used only for the envelope check and by the reference, never by the closure's own
+  equilibrium.
 - **Charge:** buffering changes no node's charge. The stored rows' charge sum is exact as it stands
   (that note's §3). In a world where only the closure acts, every node charge and the field stay
   bitwise unchanged.
@@ -1598,9 +2272,10 @@ apart, on the shared machine (8 cores, 31 GB).
   declared free-energy term ΔG_buf closes the energy ledger at rounding, from a trace start
   (pH 5 to 7.4).
 - **Convergence:** |g|/H̄_eq ≤ 1e-13 at every stage, else the step is refused.
-- **Accuracy:** against a kinetic-buffer reference (REF, Radau, k_on 1e10 M⁻¹ s⁻¹) within a budget
-  declared before the comparison. D175's envelope (k_on B̄ ≫ 1/dt, and ≫ every per-free-proton
-  transport rate) is checked as declared bounds, and one case outside it must fail.
+- **Accuracy:** against a kinetic-buffer reference (REF, Radau, at the closure's declared k_on,
+  1e10 M⁻¹ s⁻¹ in FR-4's worlds) within a budget declared before the comparison. D175's envelope
+  (k_on B̄ ≫ 1/dt, and ≫ every per-free-proton transport rate) is checked as declared bounds, and
+  one case outside it must fail.
 - **Planted control:** a wrong base valence fails the charge check.
 
 **D176's corrections: where each is entered, and whose it is.**
@@ -1647,6 +2322,43 @@ November.
    R lands 3.5–5 days later, unless 1 and 2 absorb part of it.
 
 With 1 and 2, the path is about 9–13 days; with 1, 2 and 3, about 12.5–18.
+
+**Re-planned after the lead's rulings (15 November; §7.4 (h)).** Options 1 and 2 are taken (the
+summation study goes to OPS; FR45 writes the passive law's kernel), and FR-4's insertion points are
+split. The core's queue, from day 1:
+
+| Core item | Effort (agent-days, **S**) | Elapsed days |
+| --- | --- | --- |
+| A1's first API commit: declarations and one implementation per structure (programs unchanged) | Done (034a60e on `core-d172`, from the tag) | About 1.2 |
+| The dispatch commits (channel laws; pumps and the junction law) and A4's two tests with the compile key. **Built** on `core-d172` (11176e3, 1386c13, 43812f5); K2 and the acceptance owner's results baseline (K3) are running on 43812f5; merging waits for the bitwise observations on the division worlds and a running law-steady replacement world (§7.4 (b)) | 2.5–3.5 | → 3.7–4.7 |
+| FR-4's three insertion points: the per-structure schema (1), the stage-read slot (1–1.5), the transporter kind with its fuel rows, finite by default and held as the special case (2.5–3.5, §7.4 (h)), B7 with finding 3's term (1, host-only, one D148 record) | 5.5–7 | → 9.2–11.7 |
+| The passive law's insertion point, with the exact heat booking (§7.5); FR45's kernel | 1.5–2 | → 10.7–13.7 |
+| A7's sweep, last and alone (OPS's study done meanwhile) | 1–1.5 | → 11.7–15.2 |
+| Then G1, G2 and the landing (Q3, Q4, I4) | 2–2.5 elapsed | → **13.7–17.7** |
+
+- **The implicit slot** (1–1.5) follows once FR-4's first world runs. **The lead's ruling (15
+  November): it stays outside the round unless FR-5's first world needs it** (the lead asks FR45),
+  so the plan was 13–17 days. Finite fuel as the transporter's default (the coordinator, 15
+  November; §7.4 (g) 2) adds 0.5–1 day, so about 14–18; inside R the implicit slot would move the
+  landing to about 15–19.
+- **FR-4's laws can merge onto `integration-d172`** once the three insertion points merge, about
+  day 9–12, and are accepted in FR-4's own milestone.
+
+**Refreshed from today (15 November, 17:00 UTC; the lead asked for one number).**
+
+| Item | Owner | Effort (agent-days, **S**) | Elapsed from today |
+| --- | --- | --- | --- |
+| The dispatch clearance (amendment 7): K2 with F1 (`core-d172-dispatch` 2337aeb2), tier 3 | CORE | Running | Day 0 |
+| The registry hook (89d0919) and B7 (119ffb7); B7's D148 record (sweep unchanged, crossrev pair running) | CORE | Built | Day 0 |
+| Schema A plus the kind seams (§7.4 (j), (k); stage 1 coded) | CORE | 2.5–3 | → 2.5–3 |
+| The adapter's lookup order, the composite's inner type reads, the composite spec's controls, the families' refusal | INT | 1–1.5, in parallel | → 2.5–3 |
+| B4's stage read | CORE | 1–1.5 | → 3.5–4.5 |
+| The passive law's insertion point (§7.5, version 1) | CORE | 1.5–2 | → 5–6.5 |
+| B5's transporter, version 1 (FR-4's held-fuel proton pump and R-fuel's neutral finite-fuel case), its module and kernel, with CORE's review | FR45, CORE | 2.5–3.5, then 0.5 | → 5.5–7 |
+| A7's sweep, last and alone | CORE | 1–1.5 | → 6.5–8.5 |
+| G1, G2 and the landing (Q3, Q4, I4) | INT, ACC | 2–2.5 elapsed | → **8.5–11** |
+
+**One number: about 10 days from today, so an integrated landing around 25 November.**
 
 ## 16. Open questions, with recommendations
 
@@ -1718,8 +2430,10 @@ run; host only, from the tag's snapshot, 2.5 s).
   declared), P2's per-law functions change `channel_targets` and `channel_tau_s` at the two
   inactive slots only (Kv1.5 at 0 V before; 0 and 1 after). The other 65 readouts are bitwise. In
   the five-law release world, all 67 are bitwise.
-- **So:** §7.4 fixes the padding rule, and G1's comparator treats those two columns at inactive
-  slots as padding (§3).
+- **So:** §7.4 (b) first made those two columns a comparator exception. The later activity check
+  found closed slots that are active on other rows (the division worlds), so the host keeps
+  today's padding values as a declared fill (§7.4 (b); the lead's ruling), and no comparator
+  exception remains (§3).
 
 ## Sources
 
