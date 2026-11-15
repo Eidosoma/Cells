@@ -20,7 +20,7 @@ import { ROOT } from "../tools/lib/build_page.mjs";
 import { validate } from "../src/scene/model.js";
 import { css } from "../src/ui/styles.js";
 import { findingMark } from "../src/lenses/protein_parts.js";
-import { atlasOf, defaultAtlas, inSpecies, speciesWords } from "../src/lenses/proteins.js";
+import { atlasOf, defaultAtlas, inSpecies, quietAtlas, speciesWords } from "../src/lenses/proteins.js";
 
 const SNAPSHOT = path.join(ROOT, "data", "proteins", "inventory.snapshot.json");
 const OVERLAY = path.join(ROOT, "data", "proteins", "overlay.json");
@@ -451,6 +451,37 @@ test("only a finding that differs is marked, and each mark has a ring to draw an
     assert.ok(ring.boundingBox.max.x > 5 && ring.boundingBox.max.x < 6, "around the unit, clear of its neighbours");
   }
   assert.notEqual(findingMark("band", 5).attributes.position.count, findingMark("dashes", 5).attributes.position.count, "an unbroken ring and a broken one");
+});
+
+test("a species that lacks most of the machines is shown quietly: faint units and no rings, with its own proteins pointed at", () => {
+  // The made-up worm differs for two units: a ring beside each is no trouble.
+  assert.equal(quietAtlas(proteins, species), false);
+  assert.equal(inSpecies(unitPart(NONE), proteins, "testworm").faint, false);
+  // A species in which almost nothing was found: a ring beside each unit would bury the picture.
+  const bare = readOne(madeUp((data) => {
+    for (const id of UNITS) if (id !== LUMPED) data.units[id] = { finding: "none found", note: "A search by family signature found nothing.", products: [] };
+    Object.assign(data.species, { id: "barebug", label: "Bare-B1" });
+  }), "barebug");
+  assert.deepEqual(bare.warnings, []);
+  const quiet = { ...proteins, atlases: bare.atlases };
+  const atlas = bare.atlases[1];
+  assert.equal(quietAtlas(quiet, atlas), true);
+  assert.equal(quietAtlas(quiet, bare.atlases[0]), false, "the inventory's own side is never quiet");
+  const unit = { ...unitPart(NONE), species: { barebug: bare.units[NONE].barebug } };
+  const shown = inSpecies(unit, quiet, "barebug");
+  assert.equal(shown.sign, null, "no sign on the unit's name");
+  assert.equal(shown.faint, true, "the unit is drawn faint");
+  assert.equal(shown.finding.swatch, "find-faint");
+  assert.ok(css.includes(".swatch-find-faint {") && css.includes(".label.is-faint"));
+  const said = speciesWords(quiet, atlas);
+  assert.match(said.caveat, /A unit drawn faint is one the Bare-B1 atlas found no gene product for/, "a proper name keeps its capitals in a sentence");
+  assert.ok(!/A ring marks/.test(said.caveat));
+  assert.match(said.card.check, /Most of these machines were not found in it\. The 1 of its own proteins that bear on the picture are listed below/);
+  assert.equal(said.card.extraOpen, true);
+  assert.deepEqual(said.findings.items.filter((item) => item.swatch).map((item) => item.swatch), ["find-faint", "find-faint"]);
+  // A species named by a plain word is written small in a sentence.
+  assert.match(speciesWords(proteins, species).caveat, /the Test worm atlas differs/);
+  assert.match(speciesWords(proteins, { ...species, label: "Planarian" }).caveat, /the planarian atlas differs/);
 });
 
 test("the species' card gives its own counts and sources, and claims nothing of the engine", () => {
