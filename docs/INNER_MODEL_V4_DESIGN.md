@@ -1124,8 +1124,9 @@ Examples:
 
 **The lead's ruling (15 November, after the advisor's review and INT's comments): A, with three
 additions to its acceptance.**
-1. **Canonical kind order.** The appended kinds' fields follow the registry's canonical kind
-   order, never the definition's declaration order. Test: two worlds that declare the same kinds in
+1. **Canonical kind order.** The appended kinds' fields follow the canonical kind order, never the
+   definition's declaration order. It is the sorted namespaced kind ID, a total order independent
+   of registration and import order (the lead, 15 November, for external modules). Test: two worlds that declare the same kinds in
    different orders get the same class, compile key and snapshot layout.
 2. **The families' refusal must exist.**
    - Replacement@1 and both water families bind full-catalogue types at import and build states
@@ -1137,7 +1138,51 @@ additions to its acceptance.**
 3. **A planted kind through the run paths.** Its snapshot round trip runs in a fresh process, and
    the planted kind also runs on the vector-window path, since packing depends on it.
 
-**CORE's part (about one day, after the registry hook and B7):**
+**Scope rules (the lead's ruling, 15 November, after CORE's map of today's fixed-field
+sites):**
+- (a) **Ledgers.** A kind's ledger terms fold into today's 10 ledgers by role (material per
+  species and node, charge, energy, heat, work). No new ledger rows in this round; a kind with a
+  genuinely new conserved quantity would be a later core change.
+- (b) **Columns.** A kind's state fields are observation columns, right after today's state
+  fields (the windowed runner rebuilds states from observations by name), and its readout columns
+  follow today's readouts. Today's worlds keep today's columns, bitwise.
+- (c) **Material.** A kind's material moves land in the shared inventory, today's amount fields
+  (F2: one authoritative account per quantity). Only the kind's own accumulators stay outside the
+  families' and operators' projections, which therefore keep charge right.
+- (d) **Controls.** A kind's controls are availabilities in [0, 1], unless its control-domain hook
+  declares otherwise.
+
+**A padding artifact kept for bitwise identity (F1; K2's amendment 6; the lead's ruling, 15
+November):**
+- **The artifact.** A closed or not-yet-open population slot carries code 0, Kv1.5's code, and
+  keeps its gate update. Today's catalogue evolves that gate under Kv1.5's kinetics. That is an
+  artifact of today's padding, kept only for bitwise identity through D176's gate.
+- **Where it is traced.** A4's "no kernel" holds for worlds without closers. A world whose
+  composition closes slots (an operator with CLOSES) traces code 0's kernel as declared padding,
+  named by the structure's `padding_fill`. That is ruling 8's declared, temporary fill, compiled
+  where it is needed.
+- **Its effect on physics, by opener:**
+  - the partition sets the gate (daughters take the parent's at division);
+  - replacement sets it (the template's or a source slot's at arrival);
+  - insertion@2's onset does not: a gated population on an onset patch starts from the gate the
+    artifact evolved while it was closed. Today's physics after an onset therefore depends on the
+    artifact.
+- **The insertion@2 bug is latent** (the acceptance owner's scan, `acceptance/insertion2-scan.txt`).
+  - `membrane_insertion_v2.check_onsets` refuses any channel population on an onset patch
+    ("Channel populations on an onset patch are later work"). So no accepted definition reaches
+    the inherited gate, and no evidence is affected.
+  - Insertion@2's onset patches (S5 and its tools, crossrev's division_furrow and
+    division_quartered) carry no channels. Kir2.1 and NaV1.2 sit only on cell membranes, which
+    the partition opens with their gates set.
+  - The gate fix (gates frozen while closed, or set at opening) is a precondition for lifting
+    `check_onsets`'s refusal, and lands with or before that change, as its own gated change.
+
+**Costs accepted:** about 2.5–3 days for CORE, with INT and OPS in parallel. INT takes the
+adapter's lookup order (the object first), the composite's 11 inner type reads, the composite
+spec's controls from the object and the families' refusal. OPS has `moved_in_step` call the
+declared kinds' `moved_rows`.
+
+**CORE's part (about one day as first costed, 2.5–3 days with the scope rules above; after the registry hook and B7):**
 - the object's per-structure types, cached by field set in canonical order;
 - today's classes returned for today's structures;
 - the identity test, the planted-kind test, the fresh-process round trip and the vector-window
@@ -1152,8 +1197,20 @@ stage read (B4), the transporter (B5) and the passive law ((i)). Core functions 
 kinds generically at fixed seams, so two writers never edit one core function. A kind edits no
 core file, and a seam change goes through CORE.
 
-**A kind declares** a module-level object, registered by name, in the canonical kind order that
-schema A's types use:
+**The registry and IDs** (constraints from the user's direction on external modules; the lead,
+15 November):
+- Core holds a registry of kind objects (register and lookup) and imports no kind module.
+- Built-in kinds register through the same call an external package would use, from their own
+  package (`models/inner_kinds`). Parse and build take the registry, defaulting to the built-in
+  one, so the lookup is scoped to the model build.
+- Kind IDs and new law IDs are namespaced (`cells.transporter@1`). A bare ID resolves in the
+  `cells` namespace: today's law IDs stay as written, since renaming them would change every
+  definition and fingerprint.
+- A registered but undeclared kind changes nothing. A second planted-kind test checks that a
+  world which does not declare it keeps today's classes, compile key and snapshot layout.
+
+**A kind declares** a module-level object, registered by its namespaced ID, appended in the
+canonical kind order (sorted ID) that schema A's types use:
 - `KIND_ID`, and its laws' declarations in its own module, as `inner_laws` holds the channels';
 - its fields: state axes, layout fields, control fields and observation columns, each with its
   axes' names. Schema A appends them in canonical order;
