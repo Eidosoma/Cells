@@ -25,6 +25,7 @@ import json
 import sys
 from pathlib import Path
 
+from validation.compartment_ph import definitions as defs
 from validation.compartment_ph import dt_study
 from validation.tissue import compartment_ph_qualification as generator
 from validation.tissue import compartment_ph_reference_stage as stage
@@ -60,16 +61,29 @@ def derivation_fr4():
         control_parts=list(generator.FR4_CONTROLS),
         order_observables=["pH_L", "V_b", "K_L", "cycles"],
         reference_observables=["pH_L", "V_b", "K_L", "cycles"], cytosol_pH=7.2,
-        arithmetic=ARITHMETIC)
+        **_shared(include_cargo=False))
+
+
+def _shared(*, include_cargo):
+    """The classes' band and edge, and the material allowance's species, nodes and floors."""
+    species = [s for s, _ in defs.SPECIES] + (["X"] if include_cargo else [])
+    floors = dict(Na=1e-10, K=1e-10, Cl=1e-10, H=1e-16,
+                  **dict.fromkeys(defs.BACKGROUND_ROWS, defs.World().trace_floor_fmol))
+    if include_cargo:
+        floors["X"] = 1e-12
+    return dict(band=BAND, energy_order_low=BAND[0], species=species,
+                conserved_nodes=[defs.CELL, defs.LUMEN, defs.BATH], material_floors_fmol=floors,
+                arithmetic=ARITHMETIC)
 
 
 def criteria_fr4():
     d = "derived"
     out = [criterion("J1_admission", [f"{d}.admission.all_admitted"], "ge", 1,
                      "every rung, control and the reference admitted and run to its end")]
-    out += [criterion(f"J2_order_{x}", [f"{d}.orders.{x}.order_finest"], "within", BAND,
-                      f"the observed order of {x} on the three finest rungs (1, 0.5, 0.25 ms) "
-                      "lies in [1.8, 2.2]; an unresolved difference gives None, which fails")
+    out += [criterion(f"J2_order_{x}", [f"{d}.orders.{x}.passes"], "ge", 1,
+                      f"{x} on the three finest rungs (1, 0.5, 0.25 ms) by the classes rule: "
+                      "resolved in [1.8, 2.2]; at rounding passes; mixed passes unless its lower "
+                      "bound exceeds 2.2; reversed fails (rules.dt_study)")
             for x in ("pH_L", "V_b", "K_L", "cycles")]
     out += [
         criterion("J3_state_error_pH_L", [f"{d}.state_error.pH_L"], "le", PH_BUDGET,
@@ -91,17 +105,19 @@ def criteria_fr4():
                   "node, on every rung"),
         criterion("J5_envelope_count", [f"{d}.envelope.stages_beyond"], "le", 0,
                   "no stage beyond the budget (counted and reported; any failure fails)"),
-        criterion("J6_material", [f"{d}.ledgers.material_over_tolerance"], "le", 1,
-                  "material per species within its declared floor, by the engine's own check, at "
-                  "every record of every rung"),
+        criterion("J6_material", [f"{d}.ledgers.material.max_over_allowance"], "le", 1,
+                  "material per species within its allowance (the declared floor plus N eps max "
+                  "over records of its total, computed by the judge) at every record of every "
+                  "rung"),
         criterion("J6_charge", [f"{d}.ledgers.charge_over_tolerance"], "le", 1,
                   "charge within the capacitor tolerance on every rung"),
         criterion("J6_energy", [f"{d}.ledgers.energy_over_flows_at_declared"], "le", 2e-3,
                   "the energy residual over the integrated flows at every record at 1 ms"),
-        criterion("J6_energy_falls", [f"{d}.ledgers.energy.smallest_order"], "ge", BAND[0],
-                  "the energy residual falls at second order down the ladder: its smallest "
-                  "resolved order at least the band's lower edge (the protocol gives no band; put "
-                  "to the lead)"),
+        criterion("J6_energy_falls", [f"{d}.ledgers.energy.passes"], "ge", 1,
+                  "the energy residual falls at second order down the ladder: every successive "
+                  "pair by the classes rule with no upper edge (resolved orders >= 1.8)"),
+        criterion("J6_reported", [f"{d}.ledgers.energy.smallest_resolved_order"], "ge", 0,
+                  "the smallest resolved order of the energy residual, reported", judged=False),
         criterion("J6_bands", [f"{d}.bands.cytosol_pH_max_deviation"], "le", 0.05,
                   "the cytosol's pH within 7.2 +- 0.05 at every stage of every rung"),
         criterion("J7_K1_control_stalls", [f"{d}.controls.k1.control_drop_ph"], "le", 0.1,
@@ -137,11 +153,13 @@ def derivation_fr5():
             pore_transfer="moved_X_pore" if pore else None,
             cargo_transfers=["moved_X_transfer"] + (["moved_X_pore"] if pore else []),
             passive_routes=["proton_leak_0", "proton_pore_0", "bounding_0_K", "cargo_transfer_0"]
-            + (["cargo_pore_0"] if pore else []))
-    return dict(arms=arms, order_observables=["X_L", "pH_L", "V_b", "d"],
+            + (["cargo_pore_0"] if pore else []),
+            exact_heat_routes=["cargo_transfer_0"] + (["cargo_pore_0"] if pore else []),
+            judged_heat_routes=["proton_leak_0", "proton_pore_0", "bounding_0_K"])
+    return dict(arms=arms, order_observables=["X_L", "pH_L", "V_b"], exact_observables=["d"],
                 x_budget_fraction=dt_study.ARM_T.x_budget_fraction, cytosol_pH=7.2,
                 proton_transfers=["moved_H_pump", "moved_H_leak", "moved_H_pore"],
-                arithmetic=ARITHMETIC)
+                **_shared(include_cargo=True))
 
 
 def criteria_fr5():
@@ -151,10 +169,13 @@ def criteria_fr5():
         out += [criterion(f"J1_{arm}_admission", [f"{d}.admission.all_admitted"], "ge", 1,
                           f"arm {arm}: every rung, its control, the start and the reference "
                           "admitted and run to their ends")]
-        out += [criterion(f"J2_{arm}_order_{x}", [f"{d}.orders.{x}.order_finest"], "within",
-                          BAND, f"arm {arm}: the observed order of {x} on the three finest rungs "
-                          "(0.5, 0.25, 0.125 ms) in [1.8, 2.2]")
-                for x in ("X_L", "pH_L", "V_b", "d")]
+        out += [criterion(f"J2_{arm}_order_{x}", [f"{d}.orders.{x}.passes"], "ge", 1,
+                          f"arm {arm}: {x} on the three finest rungs (0.5, 0.25, 0.125 ms) by "
+                          "FR-4's classes rule")
+                for x in ("X_L", "pH_L", "V_b")]
+        out.append(criterion(f"J2_{arm}_d_exact", [f"{d}.orders.d.at_rounding_every_pair"], "ge",
+                             1, f"arm {arm}: the damage d exact at rounding on every rung pair "
+                             "(each difference under its floor)"))
         out += [
             criterion(f"J3_{arm}_X_L", [f"{d}.state_error.X_L_over_budget"], "le", 1,
                       "at the declared 0.5 ms the Richardson-estimated error of the lumen's X, in "
@@ -181,21 +202,28 @@ def criteria_fr5():
                       "damage window, on every rung and the control"),
             criterion(f"J5_{arm}_envelope_count", [f"{d}.envelope.stages_beyond"], "le", 0,
                       "no stage beyond the budget"),
-            criterion(f"J6_{arm}_protons", [f"{d}.protons.max_over_tolerance"], "le", 1,
+            criterion(f"J6_{arm}_protons", [f"{d}.protons.max_over_allowance"], "le", 1,
                       "H_eq at each node changes only by its routes' proton transfers (pump, leak, "
-                      "proton pore), to the engine's H tolerance, at every record (0.5 ms)"),
+                      "proton pore), to H's material allowance, at every record (0.5 ms)"),
             criterion(f"J7_{arm}_energy", [f"{d}.energy.over_flows_at_declared"], "le", 2e-3,
                       "the energy identity at every record within FR-4's ledger tolerance"),
-            criterion(f"J7_{arm}_route_heat", [f"{d}.energy.smallest_route_heat_increment_pJ"],
-                      "ge", -1e-12, "each passive route's cumulative heat never falls between "
-                      "records (the booking probe's -1e-12 pJ rounding allowance)"),
-            criterion(f"J7_{arm}_energy_ladder", [f"{d}.energy.ladder.smallest_order"], "ge", 0,
-                      "the energy residual down the ladder, reported", judged=False),
-            criterion(f"J8_{arm}_cargo", [f"{d}.cargo.material_over_tolerance",
-                                          f"{d}.cargo.lumen_over_tolerance",
-                                          f"{d}.cargo.cytosol_over_tolerance"], "le", 1,
-                      "X conserved to its tolerance; what leaves the lumen arrives in the cytosol "
-                      "on the same routes"),
+            criterion(f"J7_{arm}_route_heat",
+                      [f"{d}.energy.smallest_judged_route_heat_increment_pJ"], "ge", -1e-12,
+                      "the routes §7.5 does not book exactly (the proton leak, the proton pore, "
+                      "K+) never lose cumulative heat between records, at -1e-12 pJ (record "
+                      "resolution); the exactly booked cargo routes are refused per step by the "
+                      "engine"),
+            criterion(f"J7_{arm}_reported",
+                      [f"{d}.energy.route_heat_increments_pJ.{r}"
+                       for r in derivation_fr5()["arms"][arm]["passive_routes"]]
+                      + [f"{d}.energy.ladder.smallest_resolved_order"], "ge", -1e-12,
+                      "each route's smallest heat increment, and the energy residual's smallest "
+                      "resolved order down the ladder, reported", judged=False),
+            criterion(f"J8_{arm}_cargo", [f"{d}.cargo.material_over_allowance",
+                                          f"{d}.cargo.lumen_over_allowance",
+                                          f"{d}.cargo.cytosol_over_allowance"], "le", 1,
+                      "X conserved to its material allowance across lumen, cytosol and bath; "
+                      "what leaves the lumen arrives in the cytosol on the same routes"),
             criterion(f"J9_{arm}_cytosol_band", [f"{d}.bands.cytosol_pH_max_deviation"], "le",
                       0.05, "the cytosol's pH within 7.2 +- 0.05 at every stage"),
             criterion(f"J9_{arm}_factors", [f"{d}.bands.d_min", f"{d}.bands.d_max",
@@ -273,6 +301,9 @@ def resources(which):
         runtime_max_rule="3 x the rehearsal's wall time of the unit plus 600 s, rounded up to the "
                          "minute (D150's rule)",
         caps="2G per unit (the runbook) until the rehearsal measures the peaks",
+        cost_note="the units' cpu_hours_upper use the charged-patch test's 3.6 ms per step, an "
+                  "upper bound from another world; the first development rung measures the real "
+                  "cost before anything is budgeted (the lead's ruling, 15 November 2026)",
         no_wait_headroom="judged units run without --wait-headroom: the wait would run inside "
                          "the unit and count against its runtime limit; the lead checks the "
                          "slice's room before each launch",
@@ -304,7 +335,7 @@ def judge_section(which):
     )
 
 
-QUESTIONS = {
+ASKED = {  # The questions as asked (15 November 2026), now ruled:
     "fr4": [
         "1. K2: 'J4 must fail by more than its budget' is read as |pH - pH_reference| >= 2e-3 (the "
         "excess over the budget at least the budget). Confirm, or give the reading",
@@ -353,6 +384,108 @@ QUESTIONS = {
         "3.2e6 steps)",
     ],
 }
+RULED = "pre-run correction, 15 November 2026, the lead's ruling on"
+RULINGS = {
+    "fr4": [
+        "Q1 (K2): confirmed. K2 is caught when the maximum over records of |pH_engine - "
+        "pH_reference| >= 2e-3",
+        "Q2 (the energy residual's order): confirmed. The smallest resolved order of the energy "
+        "residual is >= 1.8 and faster is no defect; Q6's classes apply to it, with no upper edge",
+        "Q3 (cost): not a discrepancy. The runbook's 0.9 CPU-h was one 1 ms rung, and that figure "
+        "is the charged-patch test's upper bound from another world; the first development rung "
+        "measures the real cost before anything is budgeted, and the lead sets the rehearsal's "
+        "horizon from it",
+        "Q4 (K3's unit): confirmed. K3's engine part stays its own unit at 1 ms, because the "
+        "run-time flag is what it tests; it needs gap 7's per-stage count or maximum, scheduled "
+        "by the core before FR-4's registration",
+        "Q5 (the H floor): the 1e-16 fmol H floor sits below one ulp of the cytosol's H_eq, so the "
+        "check changes: the material allowance is the declared floor plus N eps max over records "
+        "of the species' total (N the run's steps), computed by the judge from the records, never "
+        "read from the engine, and reported per species",
+        "Q6 (resolution): one ruling with FR-5's Q3 and Q8. The floor F = N eps max|q| (N the "
+        "finer rung's steps) is kept; on the two judged differences, each with its own floor: "
+        "resolved (both >= F) lies in [1.8, 2.2]; at rounding (both < F) passes; mixed (the "
+        "coarser >= F, the finer < F) passes unless the implied lower bound log2(coarser "
+        "difference / finer floor) exceeds 2.2; reversed (the coarser < F, the finer >= F) "
+        "fails. The judge reports each observable's class with its differences and floors; J3 "
+        "and J4 still judge every observable against its budget",
+    ],
+    "fr5": [
+        "Q1 (the dt-study block): 'state error at 1 ms as J3' becomes 'state error at the "
+        "declared 0.5 ms, as J3', and 'the declared 1 ms stands' becomes 'the declared 0.5 ms "
+        "stands'; the energy-residual line stays at 1 ms (<= 2e-3 at the coarsest rung, falling "
+        "at second order), since moving it to 0.5 ms would loosen it about fourfold",
+        "Q2 (the outcome rule): J11 is included: PASS needs J1-J11 for both arms",
+        "Q3 (d in J2): d stays in J2, written as 'exact at rounding on every rung pair (each "
+        "difference under its floor)', fixed before the run; under Q8's classes it passes at "
+        "rounding",
+        "Q4 (the controls' rungs): the controls run at the declared 0.5 ms only; J1 reads 'both "
+        "arms at every rung, and their controls at the declared step', as FR-4's controls are at "
+        "1 ms",
+        "Q5 (the H floor): as FR-4's Q5, for J6's and J8's route ledgers and X's conservation",
+        "Q6 (route heat): increments between records can hide a negative step. The routes §7.5 "
+        "books exactly (the cargo routes: X is neutral and moved only by them) are refused per "
+        "step by the engine when a raw share is negative, and a refusal is a verdict; the rest "
+        "(the proton leak, the proton pore, K+) are judged on their increments at >= -1e-12 pJ, "
+        "disclosed as record resolution, with each route's smallest increment reported",
+        "Q7 (cost): as FR-4's Q3",
+        "Q8 (resolution): as FR-4's Q6",
+    ],
+}
+# The prose the rulings correct (leaf paths of the protocol, set by `draft`).
+PROSE = {
+    "fr4": {
+        ("criteria", "J2_orders"): "observed orders of lumen pH, V_b, lumen K and pump cycles on "
+        "the three finest rungs, by the classes rule (rules.dt_study)",
+        ("criteria", "J6_ledgers"): "the ledgers rule (material within its allowance), and the "
+        "bands rule",
+        ("rules", "dt_study"): "S5's form, as D150's and MG0c's: per record, the step term "
+        "|q(dt) - q(dt/2)|, and the observed orders log2 of successive max-norm differences on "
+        "the three finest rungs; the rule detects bias, not order. Each difference has its floor "
+        "F = N eps max|q| (N the finer rung's steps). On the two judged differences: resolved "
+        "(both >= F) lies in [1.8, 2.2]; at rounding (both < F) passes; mixed (the coarser >= F, "
+        "the finer < F) passes unless the implied lower bound log2(coarser difference / finer "
+        "floor) exceeds 2.2; reversed (the coarser < F, the finer >= F) fails; each observable's "
+        "class is reported with its differences and floors (pre-run correction, the lead, 15 "
+        "November 2026)",
+        ("rules", "ledgers"): "material per species within its allowance at every record: the "
+        "declared floor plus N eps max over records of the species' total over the cell, the "
+        "lumen and the bath (N the run's steps), computed by the judge from the records and "
+        "reported per species (pre-run correction, the lead, 15 November 2026); charge within "
+        "the capacitor tolerance; energy residual over flows <= 2e-3 at 1 ms (today's booking), "
+        "falling at second order down the ladder (the classes, with no upper edge)",
+    },
+    "fr5": {
+        ("criteria", "J1_admission"): "both arms at every rung, and their controls at the "
+        "declared step, admitted and run without refusal",
+        ("criteria", "J2_orders"): "the dt study's orders on the three finest rungs, for the "
+        "lumen's X, the lumen's pH and V_b, by FR-4's classes rule; the damage d exact at rounding "
+        "on every rung pair (each difference under its floor)",
+        ("criteria", "J6_protons"): "H_eq conserved except across routes: the change of H_eq at "
+        "each node equals the sum of its routes' proton transfers (pump, leak, proton pore) to "
+        "H's material allowance (FR-4's rules.ledgers), at every record",
+        ("criteria", "J7_energy"): "the energy identity at every record: stored change + heat = "
+        "the maintenance's supplied work, within FR-4's ledger tolerance; each passive route's "
+        "heat >= 0: the routes §7.5 books exactly (the cargo routes) are refused per step by the "
+        "engine, and the rest (the proton leak, the proton pore, K+) are judged on their "
+        "increments between records at >= -1e-12 pJ (record resolution), each route's smallest "
+        "increment reported",
+        ("criteria", "J8_cargo"): "X conserved across lumen, cytosol and bath to its material "
+        "allowance; whatever leaves the lumen arrives in the cytosol on the same route",
+        ("dt_study_criteria_written_first", "checks"): [
+            "admission of every rung", "orders as J2",
+            "state error at the declared 0.5 ms, as J3",
+            "energy residual <= 2e-3 at 1 ms, falling at second order",
+            "the envelope as J5 on every rung"],
+        ("dt_study_criteria_written_first", "verdict"): "the declared 0.5 ms stands if every "
+        "check holds; otherwise the arm declares the finest rung that passes, reported, not "
+        "repaired",
+        ("outcome_rules",): "PASS when J1-J11 hold for both arms; otherwise the failing criteria "
+        "are reported with their values, without repair or retuning after the judged run",
+    },
+}
+
+
 DISCLOSURE = (
     "The machine criteria (judge.criteria), the judge's arithmetic (judge.derivation and "
     "validation/tissue/compartment_ph_judge.py's docstring) and the units were written on 15 "
@@ -385,7 +518,21 @@ def draft(which, path=None):
     out["judge"] = judge_section(which)
     if DISCLOSURE not in out["disclosures"]:
         out["disclosures"] = [*out["disclosures"], DISCLOSURE]
-    out["questions_for_the_lead"] = QUESTIONS[which]
+    for path_, text in PROSE[which].items():
+        leaf = out
+        for key in path_[:-1]:
+            leaf = leaf[key]
+        leaf[path_[-1]] = text
+    answered = list(out.get("questions_answered", []))
+    for asked_, ruling in zip(ASKED[which], RULINGS[which], strict=True):
+        entry = f"{asked_} RULED ({RULED} this question): {ruling}"
+        if entry not in answered:
+            answered.append(entry)
+        disclosure = f"{RULED} {which.upper()}'s {ruling}"
+        if disclosure not in out["disclosures"]:
+            out["disclosures"] = [*out["disclosures"], disclosure]
+    out["questions_answered"] = answered
+    out["questions_for_the_lead"] = []
     path.write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
     return out
 

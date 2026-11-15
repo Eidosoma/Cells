@@ -64,23 +64,24 @@ CRITERIA = {
 
 FR5_CRITERIA = {
     "written": "before any run (this file's revision is the record), 15 November 2026, from "
-               "fr5-transfer-v1's dt_study_criteria_written_first, at the declared 0.5 ms of the "
-               "lead's ruling and of the protocol's J3 (that block's '1 ms' predates the step's "
-               "move to 0.5 ms and is put to the lead)",
+               "fr5-transfer-v1's dt_study_criteria_written_first as the lead corrected it the "
+               "same day (pre-run: the state error and the verdict at the declared 0.5 ms; the "
+               "energy line at 1 ms; d exact at rounding)",
     "world": "definitions.fr5_world(parameters.ARM_T or ARM_R, start=FR-4's 1800 s extract), "
              "400 s, explicit ARS(2,2,2), records every 1 s",
     "ladder_s": FR5_LADDER_S,
     "declared_dt_s": FR5_DECLARED_DT_S,
     "checks": {
         "F1_admission": "every rung of both arms is admitted and runs to its end",
-        "F2_order": "the observed orders of the lumen's X, the lumen's pH, V_b and d, from "
-                    "max-norm differences on shared record times, lie in [1.8, 2.2] on the three "
-                    "finest rungs (0.5, 0.25 and 0.125 ms), as J2",
-        "F3_state_error_at_declared_dt": "at 0.5 ms, the Richardson-estimated error of the "
-                                         "lumen's X <= X's budget and of the lumen's pH <= 1e-3, "
-                                         "as J3",
-        "F4_energy": "the energy residual over flows <= 2e-3 at 0.5 ms, falling at second order "
-                     "down the ladder",
+        "F2_order": "the lumen's X, the lumen's pH and V_b on the three finest rungs (0.5, 0.25 "
+                    "and 0.125 ms) by FR-4's classes rule, as J2; d exact at rounding on every "
+                    "rung pair (each difference under its floor)",
+        "F3_state_error_at_declared_dt": "at the declared 0.5 ms, the Richardson-estimated error "
+                                         "of the lumen's X <= X's budget and of the lumen's pH "
+                                         "<= 1e-3, as J3",
+        "F4_energy": "the energy residual over flows <= 2e-3 at 1 ms (the coarsest rung), "
+                     "falling at second order down the ladder (the lead's ruling: at 0.5 ms it "
+                     "would loosen about fourfold)",
         "F5_envelope": "the closure's state-dependent envelope at every stage of every buffered "
                        "node on every rung, as J5",
     },
