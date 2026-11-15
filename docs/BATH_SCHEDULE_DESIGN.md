@@ -512,6 +512,103 @@ run, in HANDOFF. Evidence: `run-2a7e594/staircase/` (staircase.json, the probe i
   the limit, the host energy ledger refuses such a step in a species-only world, and a mixed world
   runs it unseen. Making it a definition refusal is the lead's choice.
 
+## 8. Milestone 2: the step refusal and the species cap (design point, 15 November 2026)
+
+**The lead's ruling after milestone 1:**
+- a definition-time refusal of oversized dose steps, from the measured region, with ratio and
+  absolute size together;
+- `check_species_cap`, with a world above 7 species.
+Until this lands the limit stays a recorded known limit, and protocols dose through admissible
+stairs (§7).
+
+### 8.1 What was measured
+
+§7's staircase probe ran the species-only dose leg with a face of κ/V = 10/s, under ARS(2,2,2) at
+1 ms and RK4 at 0.1 ms. Every step there raised a neutral species at a held bath from c to c′ > c.
+- **Passed under both solvers:**
+  - every stair of the staircases of ratio 100, 10 and 10^0.5 from 1e-15 mM, topping at 1e-3 mM;
+  - the single steps of ratio 1.5, 3 and 10 from 1e-3 mM, topping at 1e-2 mM.
+  - B3's step of 1.5 from 1e-3 mM passed RK4 in a face of κ/V = 1/s.
+- **Failed:**
+  - ratio 1e3 topping at 1e-3 mM, under ARS;
+  - ratio 100 topping at 0.1 mM, under ARS;
+  - ratio 1e4 topping at 10 mM, under both solvers;
+  - ratios of 1e6 and more, under both solvers.
+- **Not measured:**
+  - a step down (c′ < c);
+  - an ion step;
+  - a face faster than 10/s;
+  - ARS above 1 ms or RK4 above 0.1 ms;
+  - any other solver.
+
+### 8.2 The rule: admit only what the measurements dominate
+
+For each scheduled bath and each species, every change of the held content from c to c′ is a step.
+Both are positive, and the comparison is in mM at the bath's volume.
+- **The step's ratio** is r = c′/c, and **its level** is L = c′.
+- **A step is admitted only if a measured passing point (r_p, L_p) dominates it,** with r ≤ r_p
+  and L ≤ L_p, and only if the definition lies within the measured conditions:
+  - the solver: ARS(2,2,2) at dt ≤ 1 ms, or RK4 at dt ≤ 0.1 ms;
+  - every face touching the bath, for that species, relaxes its other node at κ/V ≤ 10/s, where
+    κ = D A / L;
+  - the step goes up, c′ > c.
+- **The measured points.** Neutral species (valence 0): (r_p, L_p) = (100, 1e-3 mM) and (10,
+  1e-2 mM). The other passing measurements lie inside these two. Ions: none.
+- **Everything else is refused, fail closed.** That means an ion step, a step down, a faster face,
+  a larger dt or another solver.
+  - The refusal names the bath, the species, the time, r and L, and the measured point that would
+    admit it.
+  - It suggests the admissible protocol, a staircase of stairs inside the region (§7).
+- **This is a guard, not a model.** The measured region is a few points in one world class.
+  The rule claims only that a step it admits lies inside what was measured. The host energy ledger
+  remains the run-time check in species-only worlds. **S:** a mixed world's bound would not see a
+  violation, which is why the refusal is at the definition.
+- **Cost.** It runs on the host at the definition, from the held series the schedule already
+  parses. No program changes.
+
+### 8.3 What the rule leaves refused, and how each opens
+
+- **Ion steps,** that is salt substitutions (§1.1) and FR-4's pH steps. Version 1 admitted them at
+  the definition. Under the rule they are refused until an ion envelope is measured. **This is a
+  regression for the lead to weigh:** milestone 1's salt-substitution and isosmotic tests would
+  become refusal tests. The alternative is to exempt ions, as a recorded known limit, until the
+  probe. **The probe
+  proposed for that** is B2's world: a passive cell with a K leak on a held bath, a KCl-for-NaCl
+  substitution raising K from 5 mM by r ∈ {1.5, 3, 10}, under ARS (1 ms) and RK4 (0.1 ms). Each arm
+  passes if the runner passes every host check on every row. Its passing points become the ion
+  envelope.
+- **Steps down** (washout). The same leg measured downward: from 1e-2 and from 1e-3 mM, by
+  r ∈ {10, 100}, under both solvers. The fail-closed rule refuses washouts until then. The
+  alternative is to apply the up-step region symmetrically, with r = max/min and L = max, marked
+  **S**.
+- **Faster faces, larger dt, other solvers:** each needs its own measurement.
+- These probes are the lead's to schedule, and the rule's tables take their points without a code
+  change elsewhere.
+
+### 8.4 The species cap
+
+- `check_definition` calls `species_common.check_species_cap(spec, LAW_ID)`, as every species
+  operator does. The cap is 16 species (D165).
+- The tests:
+  - a dosed world with 8 species (above version 1's old 7) is admitted;
+  - one with 17 species is refused with the cap's reason.
+
+### 8.5 Criteria, fixed before any run
+
+- **The rule's tests (NumPy, tier 1):**
+  - The corners of the region admit: (100, 1e-3 mM) and (10, 1e-2 mM), each as a single step.
+  - Just outside each corner refuses: (101, 1e-3), (100, 1.01e-3), (10.1, 1e-2) and (10, 1.01e-2).
+  - The measured failures refuse, each with its reason: (1e3, 1e-3), (100, 0.1) and (1e4, 10).
+  - An ion step, a step down, a face of 11/s, ARS at 2 ms and RK4 at 0.2 ms each refuse, with their
+    reasons.
+  - §7's admissible protocol is admitted whole: six stairs of 100 from 1e-15 to 1e-3 mM.
+  - The existing tests stay valid: B3's world (a step of 1.5 to 1.5e-3 mM, RK4, 1/s) is admitted.
+- **The species cap:** 8 species admitted, 17 refused.
+- **Existing worlds.** Every bath-schedule test world of milestone 1 is either admitted or rewritten
+  to an admitted step. Its earlier evidence stands as recorded.
+- **Crossrev:** no existing set contains the operator, so they are unaffected. Every existing set
+  stays identical.
+
 ## Appendix A. Equations for the independent references
 
 Units are @3's: fmol, pL, mM = fmol/pL, s, m and V. RT = 2.577 pJ/fmol at 310 K, F = 96485.33 C/mol.
