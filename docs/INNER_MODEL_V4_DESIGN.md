@@ -1228,30 +1228,42 @@ canonical kind order (sorted ID) that schema A's types use:
 - `structure_entry(declaration)` → its hashable, value-free part of the InnerStructure. That part
   enters the compile key, the batch signature and the cached implementation.
 
-**The hooks the core calls, as built** (schema A, `core-d172`; the authoritative list is the
-`Kind` docstring in `core/kind_registry.py`). Each is optional; a kind supplies the ones it
-needs. `p` is the world's layout and `state`, `control` are in the structure's own types:
-1. **`stage_read(state, p, *, xp)` → the state whose amount fields hold the amounts the stage's
-   rates read,** at the concentration entry of every stage: `readouts` (so `rhs`),
+**The hooks the core calls, as built** (schema A, `core-d172` e71dac25, with the stage check and
+the bookings' validity from 307daf3a and 6c850d91; the authoritative list is the `Kind` docstring
+in `core/kind_registry.py`). Each is optional; a kind supplies the ones it needs. `p` is the
+world's layout and `state`, `control` are in the structure's own types. **Built-in kinds**
+register on `BUILTIN` from their own package: `kind_registry.active()` imports
+`cells.models.inner_kinds` by name once, so the core imports no kind module and a registered,
+undeclared built-in changes nothing:
+1. **`stage_read(state, p, *, xp)` → (the state whose amount fields hold the amounts the stage's
+   rates read, valid),** at the concentration entry of every stage: `readouts` (so `rhs`),
    `explicit_rates` and `imex_step`'s face weights call it before any rate reads a
    concentration; `implicit_rates` uses the frozen weights. B4 uses it; reads compose in hook
-   order. **The read changes concentrations, never charge:** the field solve takes the stored
-   rows' charges (FR-4's H_eq and buffer totals), and only the rates see the read amounts. A
-   stage read declares `stage_rows(declaration)` → ((species, node ID), ...), every row it reads
-   or rewrites.
+   order. **A failed read refuses the row and the step,** and `domain_valid` evaluates the reads
+   at every checked state, the step's end included (§7.4 (g) 1). **The read changes
+   concentrations, never charge:** the field solve takes the stored rows' charges (FR-4's H_eq
+   and buffer totals), and only the rates see the read amounts. A stage read declares
+   `stage_rows(declaration)` → ((species, node ID), ...), every row it reads or rewrites.
+   - **`stage_check(read, cell, outside, p, *, xp)` → one bool,** after every rate of a stage
+     (`readouts` and `explicit_rates`), with the read state and the stage's total node rates; a
+     false check refuses the row or the step. FR-4's envelope (the closure's lag at the stage's
+     transport) is one.
 2. **`rates(state, potentials, control, p, *, xp)` → `KindRates(cell, outside, derivatives,
    heat_pJ_s, work_pJ_s)`:** inward-positive node changes (cell [species, cell], outside
    [species, outside node]) into the shared inventory, where the field solve sees their charge
    (rule (c)); its own state fields' derivatives; heat and work rates, which join the energy rate
    by role (rule (a)). `potentials` are the stage's node potentials, cells then outside nodes.
    They are added after today's terms, in hook order.
-3. **`book(applied, start, end, p, dt, *, xp)` → {own state field: new value},** in `imex_step`
-   after the tableau's combination; `applied(name)` is the step's applied rate of a state field
-   (the tableau's explicit and implicit weights). Every kind receives the same end state (before
-   any kind books) and may write only its own state fields, so bookings commute. §7.5's exact
+3. **`book(applied, start, end, p, dt, *, xp)` → ({own state field: new value}, valid),** in
+   `imex_step` after the tableau's combination; `applied(name)` is the step's applied rate of a
+   state field (the tableau's explicit and implicit weights). Every kind receives the same end
+   state (before any kind books) and may write only its own state fields, so bookings commute. A
+   false valid refuses the step: §7.5's "negative exact share: step-bound breach". §7.5's exact
    booking is one. Under RK4 the kind's derivative fields integrate like any state.
-4. **`ledger_terms(state, p, *, xp)` → {"cell", "outside", "heat_pJ", "work_pJ"} (any subset):**
-   cumulative inward-positive node transfers and heat and work accumulators, folded by role into
+4. **`ledger_terms(state, p, *, xp)` → {"cell", "outside", "heat_pJ", "work_pJ", "stored_pJ"}
+   (any subset):** cumulative inward-positive node transfers, heat and work accumulators, and
+   `stored_pJ`, the free energy the kind holds beyond the stored rows' own terms (its change
+   since the start: FR-4's buffer term, finite fuel's standard term), folded by role into
    `balances`, `device_balances` and the ledger magnitudes, so every ledger closes with its
    moves.
 5. **`domain(state, p, *, xp)` → one bool,** and-ed into `domain_valid`, on the host and the
@@ -1293,7 +1305,8 @@ needs. `p` is the world's layout and `state`, `control` are in the structure's o
   per-row checks include kinds as the host's do. That leaves room to move host-side checks into
   device windows: the coupling export measured them at 91% of the runner path's wall time.
   Enforced at binding: `check_definition` traces each of them once (`jax.eval_shape`) on the
-  definition's initial state, and refuses a hook that does not trace, a domain that is not one
+  definition's initial state, with `stage_read` (which `domain_valid` evaluates) and
+  `stage_check`, and refuses a hook that does not trace, a domain, read or check that is not one
   bool, and a ledger term of an unknown role or shape.
 - **The planted kind of schema A's acceptance implements every hook** with trivial physics: a
   neutral species exchanged at a constant rate between two nodes, with its own ledgers. So each
