@@ -76,6 +76,24 @@ contacts or faces. They are resolved from the definition's identities at binding
 | `read_slots(spec, declaration) → {field: slots}` | Host, at the definition | `ALL` |
 | `view(state, p, q, *, xp) → {field: values}` | Device. Full-shaped values; only its slots are taken (§4). `q` is the accumulated view before it | Today's method, unchanged |
 
+**How a reader receives what it reads.**
+- **A `fixed` or `reference` reader reads the layout `p`,** as every reader does today. For a
+  `fixed` read, admission (§3) guarantees that no changer touches its slots, so `p` holds the
+  physical value there.
+- **A `current` reader receives the merged view at its stage,** through the keyword its part
+  already has for `BOOKS_AT_VIEW`:
+  - `event(state, control, p, *, xp, view)`, where `view` is a function of state giving the merged
+    view;
+  - `half_step(state, h, control, p, *, xp, view)`, the merged view at the state current to that
+    half-step;
+  - `rates(state, control, p, view, *, xp)` and `observe(..., view, ...)`, which take the view
+    today.
+- **When the view is passed is static,** decided when the composition is built. A part with a
+  `current` read at stage `event` or `split` gets `view` if some operator of the composition
+  changes a field it reads, and `p` otherwise. That is a field-level test on declarations, so slot
+  sets, which are runtime data, never change a program.
+- **`BOOKS_AT_VIEW` keeps today's condition** (a field input is provided), so its bits are unchanged.
+
 So every operator keeps its present admissions and bits until it narrows its slots. Narrowing is
 per operator (§5).
 
@@ -90,8 +108,9 @@ overlapping slots in every refusal.
      the declared order, which is fixed and recorded in the field map as a chain, as control
      factors are.
    - Every other overlap is refused: `replace` with anything, and `add` with `multiply`.
-3. **A `current` read** requires every changer of a slot it reads to precede it in the declared
-   order. This is today's `VIEW_READS` rule, now per slot.
+3. **A `current` read** requires a changer of its field to exist, and every changer of a slot it
+   reads to precede it in the declared order. This is today's `VIEW_READS` rule (a read with no
+   earlier provider is refused), now per slot.
    - It is needed when the reader is itself a changer, since its `view` reads the accumulated view
      at its own place in the merge.
    - Between split parts it fixes the numerical order. The first halves run in declared order, so
@@ -100,11 +119,18 @@ overlapping slots in every refusal.
    any stage.
 5. **A `reference` read** has no constraint.
 6. **Closers.**
-   - A closer's changed slots include their descendants in the entity hierarchy: a cell's patches,
-     those patches' populations and the cell's contacts; a node's patches and faces. They are
-     computed at the definition.
-   - Padding (`PADDED_FIELDS`) counts as a change of those fields on the same slots.
+   - A closer's changed slots on the masks include their descendants in the entity hierarchy: a
+     cell's patches, those patches' populations and the cell's contacts; a node's patches and
+     faces. They are computed at the definition, and a `fixed` read of a mask at an intersecting
+     slot is refused (rule 4).
    - A mask still has closers or providers, never both.
+   - **Padded fields keep today's rule in R:** no provider of a field in `PADDED_FIELDS`
+     (`extracellular_amount_reference` among them) beside any closer. The lead ruled the bath
+     schedule's pairs with the partition and insertion@2 real (PUMP_COMPOSITE.md), and T8 keeps
+     them so.
+   - *For the lead:* under door S the padding acts only on closed slots (`where(open, q, 0)`), so
+     those pairs could be admitted where the closed slots and the provider's slots are disjoint
+     (**S**). That would be a ruling, not part of R's default.
 7. **Field inputs are unchanged in R.** Any change of a field in `FIELD_INPUTS` keeps the refresh
    and the 64-node cap. A refresh only where a field input's slots change is §9.1 of the inner-model
    note, reserved (B6).
@@ -157,22 +183,30 @@ property.
 
 ## 5. What each operator declares in R
 
-The defaults (§2) keep every operator as today. In R, the operators that door S must admit together
-narrow their slots. The operators' files belong to their owner, so the integration owner supplies
-the slot functions or reviews them. Every row lands under crossrev identity for the worlds it
-already admits.
+The defaults (§2) keep every operator as today. **R narrows only what the integration case
+needs:**
 
 | Operator | Changes: field, slots, contribution, stage | Reads: field, slots, mode |
 | --- | --- | --- |
 | `scheduled_bath_composition@1` | `extracellular_amount_reference` at its held baths, `replace`, `event` | none |
 | `local_species_reactions@1` (D152) | none | volumes, masks and `extracellular_amount_reference` at its sites' cells and nodes, `fixed` |
-| D150's exchange and turnover, the coupling operator | none | volumes and masks at their routes' cells and nodes, `fixed`; exchange's `membrane_area` at its patches, `fixed` |
-| `cell_owned_compartments@1` (FR-1) | none | its `CONFLICTS_VIEW` fields at each compartment's node, bounding patch and owner cell, `fixed` |
-| `site_occupancy@1` (FR-3) | none | its `CONFLICTS_VIEW` fields at its populations' patches and contacts and their facing pools, `fixed` |
-| `scheduled_membrane_insertion@1` | masks and `extracellular_amount_reference` at its onset patches and nodes, `replace`, `event` | `membrane_capacitance`, `ALL`, `current` |
-| The lumens, @1 and @2 | `extracellular_volume` at lumen nodes, `replace`, `split` | `membrane_area` (and @2's `membrane_active`), `current`. **New:** the source bath's `extracellular_amount_reference`, `fixed`, a read the lumens make today without declaring it (PUMP_COMPOSITE.md) |
-| `scheduled_cell_replacement@1` | its five channel and pump fields at the replaced slots' patches and populations, `replace`, `event` | volumes and `membrane_area` at the replaced slots, `fixed` |
-| Water, membrane state, injection, the partition, replacement@2, insertion@2, the bridge | Unchanged, on `ALL` (narrowing waits for a consumer) | Unchanged |
+
+Every other operator stays on `ALL` in R. FR-1's compartments are among them: their `fixed` reads
+do not include the anchor field, so the chain needs no narrowing of them. Narrowing a declaration
+would also need `read_slots` and `SCOPED_READS` added to `DECLARATION_MAY_DEFINE`.
+
+**Narrowing that door S makes possible, each when its owner or a consumer needs it.** Each turns a
+nominal pair of the composition matrix into an admission. The operators' files belong to their
+owner; the integration owner supplies or reviews the slot functions; each lands under crossrev
+identity for the worlds it already admits.
+
+| Operator | Changes | Reads | Note |
+| --- | --- | --- | --- |
+| D150's exchange and turnover, the coupling operator | none | volumes and masks at their routes' cells and nodes; exchange's `membrane_area` at its patches; all `fixed` | |
+| `site_occupancy@1` (FR-3) | none | its `CONFLICTS_VIEW` fields at its populations' patches and contacts and their facing pools, `fixed` | Admits it beside the bath schedule |
+| `scheduled_membrane_insertion@1` | masks and `extracellular_amount_reference` at its onset patches and nodes, `replace`, `event` | `membrane_capacitance`, `current` | Admits it beside the bath schedule |
+| `scheduled_cell_replacement@1` | its five channel and pump fields at the replaced slots' patches and populations, `replace`, `event` | volumes and `membrane_area` at the replaced slots, `fixed` | |
+| The lumens, @1 and @2 | `extracellular_volume` at lumen nodes, `replace`, `split` | **new:** the source bath's `extracellular_amount_reference`, `fixed` (an undeclared read today, PUMP_COMPOSITE.md) | Only with insertion@1's narrowing for lumen@1, and insertion@2's (its closures at onset slots) for lumen@2, in the same commit: otherwise each lumen is refused beside the insertion it requires |
 
 **The integration case, which is work item 2 and a real acceptance world:** a bath dose, uptake,
 an owned compartment, then a reaction.
@@ -183,19 +217,20 @@ an owned compartment, then a reaction.
 - **Material** closes across all four, by D150's and D152's own records.
 - **The requester's first admissible delivery world** runs with reactions instead of its turnover
   workaround (FEATURE_REQUESTS.md, FR-1).
-- **The bath schedule and the reactions in both declaration orders** give the same bits. That is
-  an event-only changer against a split-only reader, so the split order is kept.
+- **The bath schedule first and last in the declared order** gives the same state and
+  observations, bit for bit by field name. It is the only event-only operator, so the split parts
+  keep their order.
 
 ## 6. What FR-4 and FR-5 build against
 
 - **A compartment law addresses "species S in compartment C"** through FR-1's identity map
   (`compartments.identity_map`). Its reads resolve to C's node, its bounding patch and its owner
   cell. `fixed` reads of C's volume and anchors are admitted beside a dose at any bath.
-- **FR-5's damage fraction** is a `multiply` change, at stage `split` or `event`, of the bounding
-  patch's `membrane_permeability`, or of the transfer law's own route value.
-  - It composes with replacement's `replace` on other patches.
-  - It composes with another `multiply` on the same patch, in declared order.
-  - It is refused beside a `replace` of that patch.
+- **FR-5's damage fraction sits outside door S.** FEATURE_REQUESTS.md maps it to a control
+  factor on the transfer law's rate and to the coupling operator's routing door. A per-slot scaling
+  of a view field is still available to any law (**S**, an example, not FR-5's mapping): a
+  `multiply` on one patch's slot composes with replacement's `replace` on other patches and with
+  another `multiply` in declared order, and is refused beside a `replace` of the same patch.
 - **FR-4's pump** on the bounding patch is the inner model's (stage `inner`). F2's fuel is held
   inventory rows, not a view field (D176).
 - **What door S does not give:**
@@ -212,7 +247,7 @@ an owned compartment, then a reaction.
 | T2, overlaps | `replace` overlaps are refused, naming the slots. `add`/`add` and `multiply`/`multiply` chains apply in declared order and are recorded in the field map |
 | T3, readers | A `current` reader sees the merged values at its stage. A `fixed` reader is refused where a changer meets its slots and admitted where they are disjoint. A `reference` reader reads the bound value on a changed slot |
 | T4, successive steps | A run with a dose mid-run: on every row, outside the union of declared slots, the view equals the bound layout bitwise |
-| T5, permutation with the split order kept | The delivery world (§5) with the bath schedule and the reactions swapped: bitwise |
+| T5, permutation with the split order kept | The delivery world (§5) with the event-only bath schedule moved from first to last, every split part in its order: every state field and observation column bitwise, compared by name. The ledger diagnostics are compared within rounding, since operators' ledger terms add in declared order |
 | T6, single-provider worlds | G1's results, every set, against the baseline the acceptance owner saves at `d172-base-2026-11-15`: bitwise. Worlds whose operators all keep `ALL` slots also keep crossrev identity |
 | T7, planted controls | A test double whose values differ off its slots changes nothing there. A planted `replace` overlap and a planted `fixed` reader beside a changer of its slot are both refused |
 | T8, the composition matrix | Regenerated. A nominal pair becomes admitted only where the declarations make its slots disjoint; real pairs stay refused |
