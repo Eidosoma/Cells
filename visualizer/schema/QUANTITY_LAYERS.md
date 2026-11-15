@@ -84,7 +84,10 @@ the viewer changes.
    Switching a layer on takes its channels from whichever layer held them. Layers on
    different channels show together.
 3. **Something moves only where a rate stands behind it.** A level or a difference never
-   moves. A bead is a token of a rate: the legend says how much one stands for.
+   moves. A bead is a token of a rate: the legend says how much one stands for. A layer
+   on the `motion` channel states its time on the picture: true speed, how much it is
+   slowed, or the loop it plays; and what one token stands for. The rate sets how many
+   tokens pass, never how fast one travels.
 4. **Always a legend:** the quantity, its unit and scale, what stands behind it (the
    record's owner and how it is represented), and for a derivation the rule and its
    inputs. Text wears the page's text colours, never the mark's colour.
@@ -95,10 +98,13 @@ the viewer changes.
    the run-fixture tool, stands under "Examples" and never among the experiments, has no
    result class, and carries "Example: invented numbers" on the picture and in the
    legend for as long as it is shown.
-7. **Drawn where the run is shown.** A layer fed by a run is drawn in that run's replay:
-   on the sheet, or on a close-up of one chosen cell's membrane, named with the run, the
-   cell and the time. It is not drawn on a species' cell in the Cell view, which is not a
-   run.
+7. **Drawn where the run is shown; in the Cell view only from that cell's own run.** A
+   layer fed by a run is drawn in that run's replay: on the sheet, or on a close-up of
+   one chosen cell's membrane, named with the run, the cell and the time. In the Cell
+   view of a species it is drawn only from that species' own looping run, a run the
+   engine made of that one cell and packaged to loop. The picture then names the run,
+   says that it loops, and gives the loop's length in the cell's time and how much it is
+   slowed. A species with no such run shows no run-fed layer in its Cell view.
 8. **Colour by the job it does:** one hue for a level, two hues about a neutral middle
    for a signed quantity, each validated for colour-blind readers against the light and
    the dark surface. Each ion has one fixed colour everywhere, with its name beside it.
@@ -107,6 +113,27 @@ the viewer changes.
 10. **Size.** A layer's records may come in a file of their own beside the run's replay,
     fetched when the layer is switched on, so that a replay stays near 1 MB whatever
     layers its run can feed.
+11. **Illustration in the Cell view is a class of its own, off when the page opens** (the
+    user allowed it on 15 November 2026). Where a species has no looping run, flux may be
+    shown in its Cell view only as illustration, in one of two declared forms: `typical
+    values`, from a cited source and not from a run; or `direction only`, where the count
+    of tokens stands for no number. It carries "Illustration: not a run" on the picture
+    and in the legend for as long as it is shown, never shares a picture with a run-fed
+    layer, and is not offered for a part the species' file says it lacks.
+12. **Decoration never moves with a direction.** Motion that is not a layer (a drifting
+    crowd, a shimmering membrane) has no net direction, stops while any layer on the
+    `motion` channel shows, and stops for a visitor who asks for reduced motion.
+
+## Flux in the Cell view
+
+The user's choices of 15 November 2026, from the page of options
+(`docs/FLUX_AND_LOOK.md`): flux is drawn as **beads, with bloom**; it opens at **true
+speed**, with what one bead stands for on the picture and a slow-down the visitor sets
+beside it; at rest nothing flows, **a part's flux shows when the part is selected, and a
+Flux switch shows all of it**; its numbers come first from the species' own looping run,
+and **illustration is allowed** where there is none (rule 11); and **all of it flows**:
+ions through channels and pumps, the exchange with neighbours, water, secreted signals
+and fuel, each where a rate stands behind it.
 
 ## The first layers
 
