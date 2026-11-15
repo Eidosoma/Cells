@@ -17,7 +17,7 @@ One data file, the scene, drawn through four lenses, in this order:
 | Lens | What you see |
 | --- | --- |
 | **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar. **The Species switch sets the levels, the shapes and what the cell holds:** Human, Planarian, Syn3A and M. pneumoniae today. A single-celled species ends at its cell; the human's heart and body, like the planarian's brain and worm, are placeholder outlines |
-| **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER, mitochondrial and cage units inside. Each links to its engine part and out to the public atlases. A Species switch shows, for another species, the gene products that would make each machine: Human and Planarian today |
+| **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER, mitochondrial and cage units inside. Each links to its engine part and out to the public atlases. A Species switch shows, for another species, the gene products that would make each machine: Human and Planarian today For Syn3A, M. pneumoniae and the planarian it also shows the species' own proteins on shelves: every protein by its side of a membrane, as families that open where there are thousands |
 | **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Shown only when replays have been made |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
 
@@ -162,10 +162,20 @@ must bve configurable as well based on our different species as we add them".
   outlines. JCVI-syn3A and Mycoplasma pneumoniae are `proposed`: nothing of them is in the
   engine, and the picture shows where Cells' capabilities would have a place in them.
   This is the viewer's switch; the engine has no organism switch.
-- **Each species' own proteins** are placed for shelves in the protein atlas
-  (`schema/SPECIES_PROTEINS.md`, `data/proteins/<species>/shelves.json`): 455 for Syn3A,
-  688 for M. pneumoniae, and the planarian's 18,882 as families that open. The data is
-  made; the drawing is not yet.
+- **Each species' own proteins** stand on shelves in the protein atlas
+  (`schema/SPECIES_PROTEINS.md`, `data/proteins/<species>/shelves.json`), in one format for
+  every species (the user, 15 November 2026: "let's have all the shelfs simmilar format
+  inside outside for syn3a and all of them"): a shelf is a membrane, with what is outside
+  standing on it, what spans it standing in it, and what is inside on glass below; what
+  has no known side is set apart, never placed by guess. Syn3A (455) and M. pneumoniae
+  (688) have one marker for each protein. The planarian's 18,882 stand as families that
+  open (the user: "we should show them all but maybe cool expandable protein families"):
+  a family of five or more has its own marker, the smaller ones of a district and side are
+  gathered in one ringed marker, and "No family assigned" stands in parts in the same way.
+  A protein with a `unit` is drawn as that unit; every other is a plain marker, and the
+  page says Cells has no law for it. The card's switch moves between "Cells' 49 machines"
+  and "Its N proteins": Syn3A and M. pneumoniae open on their own proteins, the planarian
+  on the machines. Human has no catalogue yet, and its card says so.
 - **Licence classes.** Every source in a data file states its licence and its class:
   permissive, non-commercial, or no stated terms. A data file holds no value from a source
   that is not permissive (the user's rule, D173); such a source is a pointer in words.
@@ -262,6 +272,8 @@ npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load 
 npm test                    # scene, sources, page and allowed hosts; no browser needed
 npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas, its species sides and its links)
 npm run check:species       # real clicks on the species switch: each species' levels, cell and wording, in every view
+npm run check:shelves       # real clicks on a species' own proteins: a marker, a family opening, closing, the legend and the list (syn3a by default; planarian, nofiles)
+npm run serve -- --no-proteins   # the page as it is when the species' own proteins are not published beside it
 npm run shot -- --out /tmp/shot.png --query "lens=engine&select=num.imex" --theme dark
 npm run adapt:runs -- --evidence PATH   # make the replays under out/runs/ (not committed); PATH holds the evidence folders
 npm run export              # out/cells-architecture.html, the page as an artifact wants it, and the list of run files to publish beside it
@@ -334,8 +346,12 @@ The visualizer session publishes its own artifacts (the user, 14 November 2026).
 `artifacts.json` records each one's URL so that updates go to the same link.
 
 1. `npm run extract && npm test && npm run export`
-2. Publish `out/cells-architecture.html` to the URL in `artifacts.json`, with the run files
-   listed in `out/cells-architecture.files.json` beside it.
+2. Publish `out/cells-architecture.html` to the URL in `artifacts.json`, with the files
+   listed in `out/cells-architecture.files.json` beside it: the runs (`runs/<run id>.json`)
+   and the species' own proteins (`proteins/<species>/shelves.json` and the planarian's
+   `members-NN.json`). On 15 November 2026 that is 71 files: 59 runs and 12 files of
+   proteins (3.4 MB). A page published without the proteins' files draws the atlas as
+   before and says that the species' own proteins could not be loaded.
 
 Published pages load three.js from cdnjs, the preferred host of the artifact frame's
 allowlist; everything else is inside the page.
@@ -424,6 +440,11 @@ Ideas kept for after the basics (the user, 14 November 2026):
 
 ## Known limits
 
+- The species' own proteins need the 3D stage: the no-WebGL list has the machines only.
+- A protein of a large catalogue is in the list once its family is open. Before that the
+  list finds families by name, also the gathered ones, but not a member by its identifier.
+- A mark that is a number (Syn3A's estimated copies in a cell) is a fact in the panel; it
+  is not drawn.
 - The molecular scale is one membrane patch with one channel and one pump.
 - The planarian and its brain are sketches with indicative sizes. An open paper gives intact
   animals of the laboratory strain as 1 to 14 mm long (Lu and others 2025, CC BY 4.0); the

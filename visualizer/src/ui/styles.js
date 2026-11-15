@@ -357,8 +357,40 @@ cells-trace { display: grid; gap: 4px; }
 .finding-more, .list-note { font-size: 12px; color: var(--muted); }
 .list-note { margin: -1px 0 5px; }
 
+/* ---------------------------------------------------------------- a species' own proteins on shelves */
+.seg.seg-wide button { padding: 5px 4px; font-size: 12px; line-height: 1.2; white-space: normal; text-wrap: balance; }
+.card-notice { font-size: 12px; line-height: 1.4; padding: 6px 9px; border-radius: 7px; border-left: 2px solid var(--ghost); background: color-mix(in srgb, var(--fg) 6%, transparent); overflow-wrap: anywhere; }
+.card-open { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; padding: 5px 5px 5px 9px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--line); }
+.card-open-name { min-width: 0; overflow-wrap: anywhere; line-height: 1.3; }
+.card-open .pill-button { flex: none; }
+.card-marks { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px; }
+.card-marks .run-select { padding: 4px 6px; font-size: 12px; min-width: 0; }
+.tag-terms { font-size: 10.5px; }
+.index-more { padding: 4px 6px 2px 29px; font-size: 12px; color: var(--muted); }
+/* Where a marker sits against the membrane: on it, through it, under it, or apart. */
+.swatch-own-outside, .swatch-own-in, .swatch-own-inside { border-radius: 0; background: linear-gradient(var(--bio-membrane), var(--bio-membrane)) no-repeat; }
+.swatch-own-outside { background-position: 0 8px; background-size: 100% 3px; }
+.swatch-own-in { background-position: 0 4px; background-size: 100% 4px; }
+.swatch-own-inside { background-position: 0 1px; background-size: 100% 3px; }
+.swatch-own-outside::before, .swatch-own-in::before, .swatch-own-inside::before { content: ""; position: absolute; left: 3px; width: 6px; background: var(--atlas-generic); }
+.swatch-own-outside::before { top: 0; height: 6px; border-radius: 50%; }
+.swatch-own-in::before { left: 4px; width: 4px; top: 0; height: 12px; border-radius: 2px; }
+.swatch-own-inside::before { top: 6px; height: 6px; border-radius: 50%; }
+.swatch-own-unknown { border: 1.5px dashed var(--ghost); border-radius: 50%; }
+.swatch-own-plain { background: var(--atlas-generic); border-radius: 50%; transform: scale(.75); }
+.swatch-own-family { background: var(--atlas-generic); border-radius: 50% / 38%; }
+/* A district's name on a shelf: many stand side by side, so they are written small and plain. */
+.label-shelf { font-family: var(--font-body, inherit); font-size: 11px; font-weight: 600; letter-spacing: 0; text-transform: none; padding: 0 5px; }
+/* The name that follows the pointer or the selection over the shelves. */
+.label-hot { z-index: 2; background: var(--fg); color: var(--bg); font-weight: 600; pointer-events: none; }
+.label-hot::after { background: var(--fg); opacity: 1; }
+
 /* ---------------------------------------------------------------- narrow screens */
 @media (max-width: 760px) {
+  .card-notice { font-size: 11.5px; padding: 4px 7px; }
+  .card-open { font-size: 12px; }
+  .card-marks { display: none; }
+  .seg.seg-wide button { padding: 4px 3px; font-size: 11.5px; }
   .brand span, .stamp { display: none; }
   .bar { gap: 8px 10px; padding-block: 10px; }
   .switch button { padding: 6px 11px; }

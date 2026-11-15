@@ -3,6 +3,7 @@
  "species": "planarian",
  "made": "2026-11-15",
  "from": "predicted_proteins.tsv: 18,882 proteins of Schmidtea mediterranea, 17,294 gene models of one genome annotation and 1,588 UniProtKB entries. Every one is predicted, from the genome or from transcripts; none was measured.",
+ "predicted": true,
  "shelves": [
   {
    "id": "cell",

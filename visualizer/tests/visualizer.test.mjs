@@ -167,6 +167,17 @@ test("the scene carries the species the page can show, each with its shapes", ()
   }
 });
 
+test("the scene names each species' own proteins by file, with counts and sources, and holds none of them", () => {
+  const shelves = scene.proteins.shelves || [];
+  assert.ok(shelves.length > 0, "the scene names no species' proteins: rebuild it");
+  for (const item of shelves) {
+    assert.match(item.file, /^proteins\/[a-z0-9_-]+\/shelves\.json$/);
+    assert.equal(Object.values(item.counts).reduce((sum, n) => sum + n, 0), item.proteins, item.id);
+    assert.ok(item.sources.length > 0 && item.sources.every((source) => source.name && source.licence), item.id);
+  }
+  assert.ok(JSON.stringify(shelves).length < 40000, "the proteins themselves are beside the page, not in the scene");
+});
+
 test("every part belongs to a view", () => {
   const lensOf = new Map(scene.groups.map((group) => [group.id, group.lens]));
   const lenses = new Set(scene.entities.map((entity) => lensOf.get(entity.group)));

@@ -18,7 +18,8 @@
     "shot": "node tools/screenshot.mjs",
     "check:input": "node tools/check_input.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check:species": "node tools/check_species.mjs"
+    "check:species": "node tools/check_species.mjs",
+    "check:shelves": "node tools/check_shelves.mjs"
   },
   "dependencies": {
     "three": "0.170.0"

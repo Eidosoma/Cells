@@ -592,7 +592,8 @@ def main():
     if (folder / "inventory.snapshot.json").is_file():
         proteins = tuple(json.loads((folder / name).read_text(encoding="utf-8")) for name in ("inventory.snapshot.json", "overlay.json"))
         # The species atlases beside them (schema/SPECIES_ATLAS.md): any number of files, or none.
-        proteins += (Path(arguments.atlases) if arguments.atlases else folder / "atlases",)
+        # Each species' own proteins lie in a folder of its own there (schema/SPECIES_PROTEINS.md).
+        proteins += (Path(arguments.atlases) if arguments.atlases else folder / "atlases", folder)
     build = Build(repo, overlay, proteins)
     entities, relations, coverage = build.run()
 
@@ -664,6 +665,10 @@ def main():
                 counts = atlas["counts"]
                 print(f"species atlas {atlas['id']} of {atlas['made']}: products for {counts['with_products']} of {counts['units']} units, "
                       f"{counts['products']} gene products, {counts['candidates']} of them candidates")
+    for item in (build.proteins or {}).get("shelves", []):
+        sides = ", ".join(f"{count:,} {side}" for side, count in item["counts"].items())
+        whole = f"{item['families']:,} families and {item['no_family']:,} with none, in {len(item['members'])} files of members" if item["kind"] == "families" else "one marker each"
+        print(f"species proteins {item['id']} of {item['made']}: {item['proteins']:,} proteins ({sides}); {whole}; beside the page: {item['file']} ({item['bytes'] / 1024:.0f} KB)")
     for item in species:
         levels = ", ".join(level["id"] for level in item["levels"])
         print(f"species {item['id']}{' (the page opens on it)' if item['default'] else ''}: {levels}; modelled: {item['modelled']['state']}")

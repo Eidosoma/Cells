@@ -221,6 +221,51 @@
       }
     ]
   },
+  "shelves": {
+    "contract": "visualizer/schema/SPECIES_PROTEINS.md",
+    "note": "Where a protein or a family of a species' own catalogue is looked up. A species is named by its id; a pattern with a kind applies to the proteins whose mark 'kind' has that value; 'family' is for a family or a group that is an InterPro entry. Each pattern says when it was checked and what answered.",
+    "links": {
+      "syn3a": [
+        {
+          "text": "NCBI Protein: {id}",
+          "url": "https://www.ncbi.nlm.nih.gov/protein/?term={id}",
+          "checked": "2026-11-15: NCBI's E-utilities find exactly one protein record for the locus tag JCVISYN3A_0001, and the search page answers. A search by locus tag, because the catalogue's identifiers are locus tags."
+        }
+      ],
+      "mpneumoniae": [
+        {
+          "text": "UniProt: {id}",
+          "url": "https://www.uniprot.org/uniprotkb?query=gene%3A{id}%20AND%20organism_id%3A272634",
+          "checked": "2026-11-15: UniProt's search returns one entry for the locus tag MPN_001 in organism 272634 (Q50313, dnaN) and one for MPN_142 (Q50341). A search, because the catalogue's identifiers are locus tags; a protein with no UniProtKB entry finds nothing there."
+        }
+      ],
+      "planarian": [
+        {
+          "kind": "gene model",
+          "text": "WormBase ParaSite {id}",
+          "url": "https://parasite.wormbase.org/Schmidtea_mediterranea_s2f19h1prjna885486/Gene/Summary?g={id}",
+          "checked": "As species.entries.planarian.wormbaseparasite above (2026-11-14)."
+        },
+        {
+          "kind": "unreviewed entry",
+          "text": "UniProt {id}",
+          "url": "https://www.uniprot.org/uniprotkb/{id}/entry",
+          "checked": "The pattern of links.uniprot above."
+        },
+        {
+          "kind": "reviewed entry",
+          "text": "UniProt {id}",
+          "url": "https://www.uniprot.org/uniprotkb/{id}/entry",
+          "checked": "The pattern of links.uniprot above."
+        }
+      ],
+      "family": {
+        "text": "InterPro {id}",
+        "url": "https://www.ebi.ac.uk/interpro/entry/InterPro/{id}/",
+        "checked": "2026-11-15: InterPro's own interface returns the entry for IPR000990 (a family, Innexin) and for IPR011009 (a homologous superfamily), and the page address answers."
+      }
+    }
+  },
   "districts": [
     {
       "id": "sodium",

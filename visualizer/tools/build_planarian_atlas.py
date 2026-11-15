@@ -2112,6 +2112,7 @@ def build_shelves(c, d, rows, atlas, facts):
         "species": "planarian",
         "made": d.last_day(),
         "from": f"{FULL_FILE}: {len(rows):,} proteins of {ORGANISM}, {models:,} gene models of one genome annotation and {entries:,} UniProtKB entries. Every one is predicted, from the genome or from transcripts; none was measured.",
+        "predicted": True,
         "shelves": [SHELF],
         "groups": groups,
         "groups_from": (

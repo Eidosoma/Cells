@@ -2,7 +2,8 @@
 // standalone file and the artifact all get this same HTML.
 
 import { build } from "esbuild";
-import { readFile } from "node:fs/promises";
+import { spawn } from "node:child_process";
+import { mkdir, readFile, stat } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -14,6 +15,84 @@ export const THREE_LOCAL = "/vendor/three.module.min.js";
 export const DEFAULT_SCENE = path.join(ROOT, "data", "architecture", "architecture.scene.json");
 // Generated replays (schema/RUN_VIEW.md, "Packaged for the viewer"). Never committed.
 export const DEFAULT_RUNS = path.join(ROOT, "out", "runs");
+
+// Each species' own proteins (schema/SPECIES_PROTEINS.md): its shelves are committed there, in a
+// folder of its own; the files of a large catalogue's members are cut from its table into out/.
+export const DEFAULT_PROTEINS = path.join(ROOT, "data", "proteins");
+export const DEFAULT_MEMBERS = path.join(ROOT, "out", "proteins");
+const SHELVES_PATH = /^proteins\/([a-z0-9][a-z0-9_-]*)\/shelves\.json$/;
+const MEMBERS_NAME = /^members-\d+\.json$/;
+// How a catalogue says its members' files are written: a step of one of the repository's own tools.
+const MEMBERS_STEP = /^python3 (tools\/[a-z0-9_]+\.py) members --out DIR\b/;
+
+const modified = (file) => stat(file).then((found) => found.mtimeMs, () => null);
+
+/**
+ * The files of the species' own proteins that are published beside the page: for every
+ * species the scene names, its shelves, and for a large catalogue the files of its families'
+ * members. Those are not kept in the repository: they are written here, by the step the
+ * catalogue itself names, when they are missing or older than the catalogue.
+ * Returns { files: [{ path, source, species }], problems: [text] }; `path` is the address the
+ * page fetches, `source` the file on disk. A species whose files are not there is left out
+ * and said in `problems`: the page then shows the atlas without its own proteins.
+ */
+export async function proteinFiles(scene, { proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, make = true } = {}) {
+  const files = [], problems = [];
+  for (const summary of scene?.proteins?.shelves || []) {
+    const id = SHELVES_PATH.exec(summary.file || "")?.[1];
+    if (!id || id !== summary.id) {
+      problems.push(`${summary.id}: the scene names no file of proteins for it`);
+      continue;
+    }
+    const shelves = path.join(proteinsDir, id, "shelves.json");
+    const written = await modified(shelves);
+    if (written === null) {
+      problems.push(`${id}: ${path.relative(ROOT, shelves)} is not there`);
+      continue;
+    }
+    const own = [{ path: summary.file, source: shelves, species: id }];
+    const names = (summary.members || []).filter((name) => MEMBERS_NAME.test(name));
+    if (names.length !== (summary.members || []).length) {
+      problems.push(`${id}: the scene names a file of members that is not one`);
+      continue;
+    }
+    if (names.length) {
+      const folder = path.join(membersDir, id);
+      const stale = async () => (await Promise.all(names.map((name) => modified(path.join(folder, name))))).some((time) => time === null || time < written);
+      if (make && (await stale())) {
+        const failure = await writeMembers(shelves, folder);
+        if (failure) problems.push(`${id}: ${failure}`);
+      }
+      if (await stale()) {
+        problems.push(`${id}: the files of its families' members are not in ${path.relative(ROOT, folder)}, or are older than its catalogue`);
+        continue;
+      }
+      for (const name of names) own.push({ path: `proteins/${id}/${name}`, source: path.join(folder, name), species: id });
+    }
+    files.push(...own);
+  }
+  return { files, problems };
+}
+
+/** Write a large catalogue's members into `folder`, by the step its shelves name. Returns what went wrong, or null. */
+async function writeMembers(shelves, folder) {
+  let step = null;
+  try {
+    step = JSON.parse(await readFile(shelves, "utf8")).members_from?.step;
+  } catch {
+    return "its shelves could not be read";
+  }
+  const tool = MEMBERS_STEP.exec(step || "")?.[1];
+  if (!tool) return "its shelves do not say how the files of members are written";
+  await mkdir(folder, { recursive: true });
+  return new Promise((resolve) => {
+    const child = spawn("python3", [path.join(ROOT, tool), "members", "--out", folder], { cwd: ROOT, stdio: ["ignore", "ignore", "pipe"] });
+    let said = "";
+    child.stderr.on("data", (chunk) => (said += chunk));
+    child.on("error", (error) => resolve(`${tool} could not be started (${error.message})`));
+    child.on("close", (code) => resolve(code === 0 ? null : `${tool} members ended with ${code}: ${said.trim().split("\n").at(-1) || "no message"}`));
+  });
+}
 
 /** The catalogue of adapted runs, or null when there is none. */
 export async function readReplays(runsDir = DEFAULT_RUNS) {
@@ -34,7 +113,7 @@ const SKELETON_HEAD =
   "img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>";
 
 /** The page content, as published: no doctype, html, head or body tags of its own. */
-export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false } = {}) {
+export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS } = {}) {
   const bundle = await build({
     entryPoints: [path.join(ROOT, "src", "main.js")],
     bundle: true,
@@ -63,6 +142,13 @@ export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, 
     for (const run of replays.runs) {
       const text = (await readFile(path.join(runsDir, path.basename(run.file)), "utf8")).replaceAll("<", "\\u003c");
       inline += `\n<script type="application/json" data-replay="${run.id}">${text}</script>`;
+    }
+  }
+  // The same for the species' own proteins: beside the page by default, inside it for a file on disk.
+  if (inlineRuns) {
+    for (const file of (await proteinFiles(data, { proteinsDir, membersDir })).files) {
+      const text = (await readFile(file.source, "utf8")).replaceAll("<", "\\u003c");
+      inline += `\n<script type="application/json" data-file="${file.path}">${text}</script>`;
     }
   }
   const css = await readFile(path.join(ROOT, "src", "page.css"), "utf8");

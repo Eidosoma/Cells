@@ -138,6 +138,10 @@ const state = () =>
       cardText: text(".view-card .card-text"),
       marks: atlas ? atlas.marks.length : null,
       stamp: text(".stamp"),
+      show: v.dataset.show ?? null,
+      ownMarkers: atlas?.mounted ? atlas.mounted.nodes.size : null,
+      notice: text(".view-card .card-notice"),
+      shows: [...root.querySelectorAll(".view-card [data-show]")].map((b) => b.dataset.show + (b.getAttribute("aria-pressed") === "true" ? "*" : "")).join(" "),
       panel: panel.hidden ? null : { title: panel.querySelector("h2")?.textContent, eyebrow: panel.querySelector(".eyebrow")?.textContent, chips: [...panel.querySelectorAll(".chip")].map((c) => c.textContent).join(" | "), plain: panel.querySelector(".panel-plain")?.textContent, heads: [...panel.querySelectorAll(".panel-list h4")].map((h) => h.textContent).join(" | ") },
       barRows: (() => { const tops = [...root.querySelector(".bar").children].filter(shown).map((el) => Math.round(el.getBoundingClientRect().top / 20)); return new Set(tops).size; })(),
     };
@@ -202,12 +206,22 @@ try {
   s = await state();
   check("the species is kept when the protein atlas is opened, and its switch is the same one", s.lens === "proteins" && s.species === "syn3a" && /syn3a\*/.test(s.inBar + s.inCard), JSON.stringify([s.lens, s.species, s.inBar, s.inCard, s.heading]));
   const synAtlas = s;
+  // Which species have proteins of their own beside the page (schema/SPECIES_PROTEINS.md).
+  const withOwn = await evaluate(`(${V}.model.raw.proteins.shelves || []).map((item) => item.id)`);
+  if (withOwn.includes("syn3a")) {
+    await evaluate(`Promise.resolve(${V}.current.ready)`);
+    await sleep(400);
+    s = await state();
+    check("Syn3A in the atlas: its own proteins, one marker each, with the switch back to Cells' machines", s.show === "own" && s.ownMarkers > 0 && s.shows === "units own*" && s.heading === "Syn3A proteins", JSON.stringify([s.show, s.ownMarkers, s.shows, s.heading]));
+  }
   await pressSpecies("human");
   s = await state();
   check("Human in the atlas: the inventory's own side, with no rings", s.species === "human" && s.heading === "The proteins Cells models" && s.marks === 0, JSON.stringify([s.species, s.heading, s.marks]));
+  if (withOwn.length && !withOwn.includes("human")) check("Human in the atlas: one line says its own catalogue of proteins is not made", s.show === "units" && /not made yet/.test(s.notice || "") && s.shows === "", JSON.stringify([s.show, s.notice, s.shows]));
   await pressSpecies("planarian");
   s = await state();
   check("Planarian in the atlas: its own side, with rings", s.heading === "Planarian atlas" && s.marks > 0, JSON.stringify([s.heading, s.marks]));
+  if (withOwn.includes("planarian")) check("Planarian in the atlas: the machines first, with the switch to its own proteins", s.show === "units" && s.shows === "units* own", JSON.stringify([s.show, s.shows]));
   await press('.switch [data-lens="cell"]');
   s = await state();
   check("back in the cell view the species is the same, and the planarian's levels are back", s.lens === "cell" && s.species === "planarian" && s.rail.startsWith("molecule cell") && s.rail.includes("organism") && s.drawn === planarian.drawn, JSON.stringify([s.species, s.rail]));

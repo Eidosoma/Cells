@@ -346,11 +346,15 @@
       "match": [
         "src/cells/core/phases.py"
       ],
-      "plain": "Records that mark where each phase of a run ended. Completion records are implemented; start and failure records are pending.",
+      "plain": "Records that mark where each phase of a run started, ended or failed. Completion records came first; start and failure records landed on 15 November 2026 for every run path.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
           "where": "Status on 14 November 2026, and the working order (D156)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Phase start and failure records landed (item 3 of the"
         }
       ]
     },
@@ -447,8 +451,8 @@
       "id": "exec.run_view",
       "label": "Run-view output",
       "layer": "execution",
-      "status": "planned",
-      "plain": "Every run will save what a viewer needs to replay it: geometry, identities, record metadata, events and how each layer is represented. The requirement is recorded (D154); its design note comes first.",
+      "status": "designed",
+      "plain": "Every run will save what a viewer needs to replay it: geometry, identities, record metadata, events and how each layer is represented. The requirement is recorded (D154). Its design note is written and proposed, for the lead's review (15 November 2026); no engine code yet.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -457,8 +461,12 @@
         {
           "path": "docs/DECISIONS.md",
           "where": "D154"
+        },
+        {
+          "path": "docs/RUN_VIEW_DESIGN.md"
         }
-      ]
+      ],
+      "as_of": "2026-11-15"
     },
     {
       "id": "exec.devices",

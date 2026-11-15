@@ -67,6 +67,9 @@ catalogue table, the same bytes every time.
   A side that is predicted or taken from function is said to be so wherever it is shown.
 - **`group`** is the district the protein stands in on its side of the shelf. Groups come
   from a source's own classes where one has them, and say which.
+- **`predicted`** (optional, true or false) says whether every protein of the catalogue
+  is itself a prediction, from a genome or from transcripts, with none measured. The page
+  then calls each a predicted protein and its side a prediction on a predicted protein.
 - **`unit`** is the inventory unit the atlas already draws for this protein, or null. A
   protein with a unit is drawn as that unit; every other protein is a plain marker,
   labelled as not modelled.
