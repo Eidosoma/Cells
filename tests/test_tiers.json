@@ -87,7 +87,8 @@
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/acceptance/tiers-tools-20261115/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/head/tiers-45e0c186/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/batch/tiers-0ae1943a/measured.json",
-  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/split-v3/tiers-4e360c8a/measured-cap90.json"
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/split-v3/tiers-4e360c8a/measured-cap90.json",
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/schema-a/tiers-5d97b808/measured.json"
  ],
  "measured_provenance": [
   {
@@ -716,6 +717,14 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a987b987e846ec6c7",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-15T18:14:54+00:00"
+  },
+  {
+   "git_revision": "5d97b8080348041a4efeb32a5f25e290088f0f72",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/schema-a/snapshot-5d97b808",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T20:31:15+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1156,7 +1165,7 @@
    },
    {
     "file": "tests/unit/test_betse_network_emulator.py",
-    "seconds": 5.2,
+    "seconds": 4.58,
     "exit_code": 0,
     "counts": {
      "passed": 11
@@ -2090,6 +2099,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_kind_rules.py",
+    "seconds": 4.13,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_kind_types.py",
+    "seconds": 4.43,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
     }
    },
    {
@@ -3166,7 +3191,7 @@
    },
    {
     "file": "tests/unit/test_species_registry_hook.py",
-    "seconds": 5.53,
+    "seconds": 5.83,
     "exit_code": 0,
     "counts": {
      "passed": 8
@@ -3194,6 +3219,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_species_sums.py",
+    "seconds": 7.9,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    },
    {
@@ -3603,6 +3636,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 93
+    }
+   },
+   {
+    "file": "tests/unit/test_window_key.py",
+    "seconds": 3.93,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
     }
    }
   ],
@@ -4072,7 +4113,7 @@
    },
    {
     "file": "tests/unit/test_inner_executable_reuse.py",
-    "seconds": 66.98,
+    "seconds": 68.34,
     "exit_code": 0,
     "counts": {
      "passed": 1
@@ -4221,6 +4262,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_pump_composite_kinds.py",
+    "seconds": 68.47,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
     }
    },
    {
@@ -5161,6 +5210,12 @@
    {
     "file": "tests/unit/test_joint_water_profile_phase_handoff.py",
     "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_kind_seams.py",
+    "seconds": 90.11,
     "exit_code": null,
     "counts": {}
    },
