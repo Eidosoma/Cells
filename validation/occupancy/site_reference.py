@@ -289,15 +289,17 @@ class _Model:
         self.recv = np.array([self.ni[w.populations[p].receiving]
                               if w.populations[p].receiving is not None else -1
                               for p in self.pops], dtype=int)
-        # Layout: n [nodes], B [pops], R [pops], xi [pops], U [pops], H_reg, W.
+        # Layout: n [nodes], B, R, xi, U, H_reg, W [pops each]: the regular part of each
+        # population's heat and its work, so heat is reported per facing node and work per
+        # population, as the engine books them.
         self.iN = slice(0, nn)
         self.iB = slice(nn, nn + npop)
         self.iR = slice(nn + npop, nn + 2 * npop)
         self.iX = slice(nn + 2 * npop, nn + 3 * npop)
         self.iU = slice(nn + 3 * npop, nn + 4 * npop)
-        self.iH = nn + 4 * npop
-        self.iW = nn + 4 * npop + 1
-        self.size = nn + 4 * npop + 2
+        self.iH = slice(nn + 4 * npop, nn + 5 * npop)
+        self.iW = slice(nn + 5 * npop, nn + 6 * npop)
+        self.size = nn + 6 * npop
         n0 = np.array([w.nodes[x].ligand_fmol for x in self.nodes])
         theta0 = np.array([w.populations[p].initial_occupancy for p in self.pops])
         B0 = theta0 * self.S
@@ -348,16 +350,22 @@ class _Model:
         with np.errstate(divide="ignore", invalid="ignore"):
             lnRB = np.where(Iv > 0.0, np.log(np.maximum(R, TINY)) - np.log(np.maximum(B, TINY)),
                             0.0)
-        out[self.iH] = self.rt * float(np.sum(J * (lnc[self.face] - self.lnKd) + Iv * lnRB))
+        out[self.iH] = self.rt * (J * (lnc[self.face] - self.lnKd) + Iv * lnRB)
         lnc_r = np.where(self.recv >= 0, lnc[np.maximum(self.recv, 0)], 0.0)
-        out[self.iW] = float(np.sum(Iv * (self.rt * lnc_r - self.dG0 + self.rt * lnRB)))
+        out[self.iW] = Iv * (self.rt * lnc_r - self.dG0 + self.rt * lnRB)
         return out
 
     def boundary(self, y):
-        """RT sum_k [R ln(R/S) + B ln(B/S)] (pJ)."""
+        """RT [R ln(R/S) + B ln(B/S)] per population (pJ)."""
         B, R = y[self.iB], y[self.iR]
-        return self.rt * sum(_xlnx_over(float(b), float(s)) + _xlnx_over(float(r), float(s))
-                             for b, r, s in zip(B, R, self.S, strict=True))
+        return np.array([self.rt * (_xlnx_over(float(b), float(s)) + _xlnx_over(float(r),
+                                                                                  float(s)))
+                         for b, r, s in zip(B, R, self.S, strict=True)])
+
+    def population_heat(self, y):
+        """Each population's heat RT int J A dt along the path (pJ): the regular integral minus
+        the boundary term's change."""
+        return y[self.iH] - (self.boundary(y) - self.boundary(self.y0))
 
     def free_energy(self, y):
         n, B, R = y[self.iN], y[self.iB], y[self.iR]
@@ -395,8 +403,12 @@ class SiteRun:
         mb_l, mi_l = m.controls(*left)
         n, B, R, c, J, Iv = m.rates(y, mb_r, mi_r)
         _, _, _, _, J_l, I_l = m.rates(y, mb_l, mi_l)
-        heat = float(y[m.iH]) - (m.boundary(y) - m.boundary(m.y0))
-        work = float(y[m.iW])
+        heat_pop = m.population_heat(y)
+        work_pop = y[m.iW]
+        heat_node = np.zeros(len(m.nodes))
+        np.add.at(heat_node, m.face, heat_pop)
+        heat = math.fsum(heat_pop)
+        work = math.fsum(work_pop)
         n0, B0, R0 = m.y0[m.iN], m.y0[m.iB], m.y0[m.iR]
         dG_nodes = {x: node_increment(float(n0[i]), float(n[i] - n0[i]), float(m.V[i]), m.rt)
                     for i, x in enumerate(m.nodes)}
@@ -421,6 +433,9 @@ class SiteRun:
                                                   for k, p in enumerate(m.pops)},
             heat_pJ=heat,
             work_pJ=work,
+            heat_by_node_pJ={x: float(heat_node[i]) for i, x in enumerate(m.nodes)},
+            heat_by_population_pJ={p: float(heat_pop[k]) for k, p in enumerate(m.pops)},
+            work_by_population_pJ={p: float(work_pop[k]) for k, p in enumerate(m.pops)},
             free_energy_change_pJ=dG,
             node_free_energy_change_pJ=dG_nodes,
             site_free_energy_change_pJ=dG_sites,

@@ -21,7 +21,7 @@ go to the lead.
 | `validation/occupancy/site_bookings.py` (`sb`) | R-dG | An independent half-step of the site network with its checks, classes and bookings (§3.3, §4.2), the 50-digit ΔG, and consecutive half-steps |
 | `validation/occupancy/occupancy_crosschecks.py` | – | The driver behind the measured numbers below (`--out DIR`) |
 
-**Self-tests:** `tests/unit/test_occupancy_references.py`, 17 tests, tier 1, about 9 s. They also
+**Self-tests:** `tests/unit/test_occupancy_references.py`, 20 tests, tier 1, about 9 s. They also
 check that nothing here imports `cells` or `validation.tissue` (the engine's fixtures live there).
 The one import from another reference is `validation.coupling.piecewise_ode`.
 
@@ -81,15 +81,19 @@ run.at[t]["n_fmol"]["ecs"], run.at[t]["B_fmol"]["r"], run.at[t]["heat_pJ"]
   | `bound_net_fmol` | The binding extent (the engine's `site_bound_net_fmol`) |
   | `internalised_fmol` | The engine's `site_internalised_fmol` |
   | `binding_rate_fmol_per_s`, `internalisation_rate_fmol_per_s` | The net J and I with the multipliers in force from t on; each also as `*_left_*`, the multipliers just before t |
-  | `heat_pJ`, `work_pJ` | The exact path's integrals |
+  | `heat_pJ`, `work_pJ` | The exact path's integrals, in total |
+  | `heat_by_node_pJ`, `heat_by_population_pJ`, `work_by_population_pJ` | The same per facing node (the sum over the populations facing it, as the engine books heat) and per population |
   | `free_energy_change_pJ`, `node_free_energy_change_pJ`, `site_free_energy_change_pJ` | ΔG from t = 0 (increment form) |
   | `closure_pJ` | W − H − ΔG, the integration's own balance |
   | `moiety_residual_fmol`, `material_residual_fmol`, `material_total_fmol` | The identities' residuals |
 
   `run.observe(t)` gives the same record at any t.
 - **The heat** is integrated in a regular form that is finite at B = 0, the default start. It uses
-  the identity J ln(R/B) = I ln(R/B) − d/dt[R ln(R/S) + B ln(B/S)], and reports the boundary term
-  exactly.
+  the identity J ln(R/B) = I ln(R/B) − d/dt[R ln(R/S) + B ln(B/S)], per population, and reports
+  the boundary term exactly.
+- **The closure is not evidence for H.** The I ln(R/B) term enters H and W alike, so W − H − ΔG
+  cannot see an error in it. What checks H and W separately is R-dG's share heat converging to
+  them at second order (Measured below).
 - **`sr.check_world(world, trace_rule=True)`** refuses:
   - k_on ≤ 0 and k_off ≤ 0 (irreversible binding);
   - k_int < 0, or internalisation without a receiving node;
@@ -192,6 +196,9 @@ on CPU 0.
 | Q4, relaxation rate | Independent of α to 1.2e-6 |
 | R-dG on 4,000 random states (mixed world, a cell receiving and faced) | Ledger ≤ 0.41 ε × scale; ΔG ≤ 0.91 ε × terms against 50 digits; no negative heat; every branch reached (share 2,553; quadrature 68; node 3,532; off 1,345; idle 502) |
 | R-dG half-steps against R-ode (ε = 0.1, T = 0.128 s) | n errors 1.43e-8, 1.72e-9, 2.10e-10, 2.60e-11 of n₀ at dt = 8, 4, 2, 1 ms: **third order (8.35, 8.17, 8.09)**. Heat second order (3.87, 3.94, 3.97) |
+| R-dG, two populations in one mixed component (a cell receiving and faced), T = 0.064 s | Heat at each facing node and work per population, second order (3.94 to 3.99 from dt = 8 to 0.5 ms) |
+| R-dG, a washout through the binding equilibrium (one quadrature step per run; §3.3's reversal onset, documented and not judged) | Heat errors 1.8e-10, 4.9e-11, 1.3e-11, 3.2e-12 pJ at dt = 4 to 0.5 ms, against a heat of 9.7e-8 pJ: the hybrid converges through the reversal |
+| Q1's world at α = ½ (copies fixed, so S and ε halve) against R-qss with V_max ∝ α and K_M unchanged | Error of n₀ 1.09e-2, against 2.12e-2 at α = 1: ratio 1.95, O(ε) |
 
 **Recommended settings:**
 - **Radau at rtol 1e-12, the judged reference (§8.2).**
@@ -201,6 +208,11 @@ on CPU 0.
   about 1e-14 of n₀. Measure the floor on the engine's own worlds with `sr.floor`.
 
 ## Readings of the design taken here
+
+- **For a rounding-level comparison with the engine,** pass the engine's own S through
+  `sites_fmol`. Forming α ν N / N_f in another order differs in the last bits.
+- **The trace bound is inclusive and has no tolerance.** A trace of exactly 1e-6 K_d is admitted.
+  The concentrations' bound has 1e-12 relative, as built.
 
 1. **Positivity at stages.** Free rows must stay > 0, and pools ≥ 0. B = 0 and R = 0 are in the
    domain (§4.3).

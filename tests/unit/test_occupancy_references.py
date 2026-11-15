@@ -351,18 +351,26 @@ def test_the_quadrature_branch_forced_by_a_washout():
     assert st.stage_binding[0, 0] < 0.0 < st.stage_binding[1, 0]  # reverses within the step
     assert st.route_heat[0] == st.heat_quadrature[0] > 0.0
     assert abs(st.ledger_residual[0]) <= 4 * EPS * (st.delta_G_terms[0] + st.heat_terms[0])
-    # Just below, the same state with a smaller step does not reverse: the share is booked.
-    st2 = sb.half_step(w, n, B, R, 1e-6)
-    assert st2.branch == ["quadrature"] or st2.route_heat[0] == st2.heat_share[0]
+    # The other side of the selection: B below its binding equilibrium, so binding runs forward
+    # through the step while internalisation drains B further: the share is booked.
+    below = sr.World(RT, nodes=w.nodes, populations={"r": sr.Population(
+        "ecs", kon, koff, sites_fmol=S, initial_occupancy=B_eq * 0.999 / S, k_int_per_s=kint,
+        receiving="cell")})
+    st2 = sb.half_step(below, *sb.Layout(below).initial_state(), 2e-3)
+    assert st2.admitted and st2.branch == ["share"] and st2.non_reversing[0]
+    assert st2.route_heat[0] == st2.heat_share[0] > 0.0
 
 
 def test_the_stage_condition_is_inclusive_and_refuses_beyond():
+    # k_off = 10 /s: h L_B = 1/2 exactly at every stage at h = 0.05 s; L_R = k_on c = 10 /s at Y1.
     w = sr.World(RT, nodes={"n": sr.Node(1.0, 1e-3)},
                  populations={"p": sr.Population("n", 1e4, 10.0, sites_fmol=1e-4)})
     n, B, R = sb.Layout(w).initial_state()
-    h_edge = 0.5 / (1e4 * 1e-3)  # h L_R = 1/2 at Y1 (k_on c = 10 /s)
-    assert sb.half_step(w, n, B, R, h_edge * 0.999).stage_condition_ok
-    assert not sb.half_step(w, n, B, R, h_edge * 1.5).admitted
+    h_edge = 0.05
+    assert h_edge * 10.0 == 0.5 and 1e4 * (1e-3 / 1.0) == 10.0
+    st = sb.half_step(w, n, B, R, h_edge)
+    assert float(st.hL.max()) == 0.5 and st.stage_condition_ok  # equality is admitted
+    assert not sb.half_step(w, n, B, R, h_edge * 1.01).stage_condition_ok
 
 
 def test_half_steps_converge_to_r_ode_third_order_and_heat_second_order():
@@ -379,3 +387,49 @@ def test_half_steps_converge_to_r_ode_third_order_and_heat_second_order():
     for (a, ha, wa), (b, hb, wb) in zip(errs, errs[1:], strict=False):
         assert 7.0 < a / b < 9.0  # third order (prototype at epsilon = 0.1: 8.39, 8.19)
         assert 3.5 < ha / hb < 4.5 and 3.5 < wa / wb < 4.5  # the share: second order
+
+
+def test_the_small_helpers():
+    S, V, kon, koff, kint, c0 = 3e-4, 2.0, 1e4, 10.0, 5.0, 1e-3
+    K_M = (koff + kint) / kon
+    assert sc.epsilon(S, V, kon, koff, kint, c0) == (S / V) / (K_M + c0)
+    assert sc.langmuir(S, c0, koff / kon) == S * c0 / (koff / kon + c0)
+    n_total = 4e-4
+    c = sc.free_concentration_closed(n_total, S, koff / kon, V)
+    assert c * V + sc.langmuir(S, c, koff / kon) == pytest.approx(n_total, rel=1e-14)
+    start = dict(n={"n": 1e-3}, B={"p": 1e-5}, R={"p": 2e-4})
+    end = dict(n={"n": 9.9e-4}, B={"p": 2e-5}, R={"p": 1.9e-4})
+    w = sr.World(RT, nodes={"n": sr.Node(1.0, 1e-3)},
+                 populations={"p": sr.Population("n", 1e3, 1.0, sites_fmol=2.1e-4)})
+    exact = sr.exact_free_energy_change(w, start, end)
+    approx = (sr.node_increment(1e-3, -1e-5, 1.0, RT)
+              + sr.pool_increment(1e-5, 1e-5, 2.1e-4, RT * math.log(1e-3), RT)
+              + sr.pool_increment(2e-4, -1e-5, 2.1e-4, 0.0, RT))
+    assert float(exact["total"]) == pytest.approx(approx, rel=1e-12)
+    run, tight, d = sr.floor(w, 0.05, (0.05,), method="DOP853", rtol=1e-11)
+    assert d["n"] <= 1e-12 * 1e-3 and tight.at[0.05]["B_fmol"]["p"] > 0
+
+
+def test_heat_by_node_and_work_by_population_converge_in_a_mixed_two_population_world():
+    w = mixed_world()
+    T = 0.064  # at 0.032 s the cell's heat error is still pre-asymptotic (ratios 6.6 to 4.6)
+    ref = sr.integrate(w, T, record=(T,), method="DOP853", rtol=1e-13).at[T]
+    assert ref["heat_pJ"] == pytest.approx(math.fsum(ref["heat_by_node_pJ"].values()), rel=1e-14)
+    errs = []
+    for dt in (2e-3, 1e-3):
+        run = sb.run_half_steps(w, dt / 2, int(round(2 * T / dt)))
+        errs.append([abs(run.heat[-1, i] - ref["heat_by_node_pJ"][x])
+                     for i, x in enumerate(("ecs", "cell"))]
+                    + [abs(run.work[-1, 0] - ref["work_by_population_pJ"]["r"])])
+    for a, b in zip(errs[0], errs[1], strict=True):
+        assert 3.5 < a / b < 4.5  # second order, per node and per population
+
+
+def test_a_class_switch_through_the_multipliers():
+    w = mixed_world()
+    run = sb.run_half_steps(w, 5e-4, 8, multipliers=lambda k: (np.ones(2), np.array(
+        [0.0 if k < 4 else 1.0, 0.0])))
+    assert run.refused_at is None
+    assert all(b == ["node", "node"] for b in run.branches[:4])  # passive-only
+    assert all(b[0] in ("share", "quadrature") for b in run.branches[4:])  # mixed
+    assert not run.work[4].any() and run.work[-1, 0] != 0.0

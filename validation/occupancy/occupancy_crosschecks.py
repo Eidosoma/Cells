@@ -47,16 +47,17 @@ def log(*parts):
 
 
 def q1(eps, alpha=1.0, *, k_on=1e4, k_off=10.0, k_int=10.0, V=1.0, c0=1e-3):
+    """Q1's world: epsilon sets the copies at alpha = 1; alpha < 1 keeps the copies, so S and
+    epsilon scale by alpha (Q4's 'Q1's world at alpha = 1/2')."""
     K_M = (k_off + k_int) / k_on
-    S = eps * V * (K_M + c0)
-    B0 = sc.quasi_steady_bound(S, c0, K_M)
+    copies = eps * V * (K_M + c0) * sr.N_F
+    theta0 = c0 / (K_M + c0)  # the quasi-steady occupancy at c0, whatever S
     if alpha == 1.0:
-        pop = sr.Population("ecs", k_on, k_off, sites_fmol=S, initial_occupancy=B0 / S,
-                            k_int_per_s=k_int, receiving="cell")
-    else:  # copies at alpha = 1 give S / alpha; the accessible fraction scales it back
-        copies = S / alpha * sr.N_F
+        pop = sr.Population("ecs", k_on, k_off, sites_fmol=copies / sr.N_F,
+                            initial_occupancy=theta0, k_int_per_s=k_int, receiving="cell")
+    else:
         pop = sr.Population("ecs", k_on, k_off, copies=copies, sites_per_copy=1,
-                            accessible_fraction=alpha, initial_occupancy=B0 / S,
+                            accessible_fraction=alpha, initial_occupancy=theta0,
                             k_int_per_s=k_int, receiving="cell")
     w = sr.World(RT, nodes={"ecs": sr.Node(V, c0 * V), "cell": sr.Node(2.0, TRACE * 2.0)},
                  populations={"r": pop}, trace_mM=TRACE)
@@ -96,13 +97,23 @@ def part_q1(quick):
         log("Q1 eps", eps, "qss error", f"{err:.4e}", "floors", floors)
     out["order_in_eps"] = [math.log10(errs[1e-1] / errs[1e-2]), math.log10(errs[1e-2] / errs[1e-3])]
     log("Q1 order in eps", out["order_in_eps"])
-    # Q1's world at alpha = 1/2, S held: the same S through copies and the accessible fraction.
-    w1, S1, _ = q1(0.1)
-    w2, S2, _ = q1(0.1, alpha=0.5)
-    r1 = sr.integrate(w1, 0.5, record=(0.5,), method="DOP853", rtol=1e-13)
-    r2 = sr.integrate(w2, 0.5, record=(0.5,), method="DOP853", rtol=1e-13)
-    out["alpha_half_same_S"] = dict(S=[S1, S2], n_difference=abs(r1.at[0.5]["n_fmol"]["ecs"]
-                                                               - r2.at[0.5]["n_fmol"]["ecs"]))
+    # Q1's world at alpha = 1/2 (copies fixed, so S and epsilon halve), each against R-qss with
+    # V_max scaled by alpha and K_M unchanged (§2.3's sink signature): the error is O(epsilon).
+    out["alpha"] = {}
+    for alpha in (1.0, 0.5):
+        w, S, k = q1(0.1, alpha)
+        T = 2 * sc.sink_half_time(1e-3, k["a"], k["b"])
+        rec = tuple(np.linspace(0, T, 21)[1:])
+        run = sr.integrate(w, T, record=rec, method="DOP853", rtol=1e-13)
+        err = max(abs(run.at[t]["n_fmol"]["ecs"] - sc.sink_amount(t, 1e-3, k["a"], k["b"]))
+                  for t in rec) / 1e-3
+        out["alpha"][f"{alpha:g}"] = dict(S_fmol=S, epsilon=sc.epsilon(S, 1.0, 1e4, 10.0, 10.0,
+                                                                     1e-3),
+                                          V_max_fmol_per_s=k["a"], K_M_mM=k["K_M"],
+                                          qss_error_of_n0=err, horizon_s=T)
+    out["alpha"]["error_ratio_1_over_half"] = (out["alpha"]["1"]["qss_error_of_n0"]
+                                               / out["alpha"]["0.5"]["qss_error_of_n0"])
+    log("Q1 at alpha 1/2", out["alpha"])
     return out
 
 
@@ -240,6 +251,44 @@ def part_rdg(quick):
         out["orders"][f"eps={eps_:g}"] = rows
         log("R-dG orders", eps_, [(r["dt"], f"{r['n_err_of_n0']:.3e}", f"{r['heat_err']:.3e}")
                                   for r in rows])
+    # Per node and per population: the two-population mixed world (heat at each facing node,
+    # work per population), and a washout through the binding equilibrium (one quadrature step
+    # per run; §3.3's reversal onset, documented and not judged).
+    T = 0.064
+    ref = sr.integrate(w, T, record=(T,), method="DOP853", rtol=3e-14,
+                       atol_fraction=1e-9).at[T]
+    rows = []
+    for dt in (8e-3, 4e-3, 2e-3, 1e-3, 5e-4):
+        run = sb.run_half_steps(w, dt / 2, int(round(2 * T / dt)))
+        rows.append(dict(dt=dt, heat_err_by_node={x: abs(run.heat[-1, i]
+                                                         - ref["heat_by_node_pJ"][x])
+                                                  for i, x in enumerate(L.nodes)},
+                         work_err_by_population={p: abs(run.work[-1, k]
+                                                        - ref["work_by_population_pJ"][p])
+                                                 for k, p in enumerate(L.pops)}))
+    out["two_populations_mixed"] = dict(horizon_s=T, rows=rows)
+    log("R-dG two populations", [(r["dt"], r["heat_err_by_node"]) for r in rows])
+    kon, koff, kint, S = 1e4, 10.0, 50.0, 3e-4
+    c = 1e-6
+    B_eq = S * c / (koff / kon + c)
+    ww = sr.World(RT, nodes={"ecs": sr.Node(1.0, c), "cell": sr.Node(1.0, 1e-4)},
+                  populations={"r": sr.Population("ecs", kon, koff, sites_fmol=S,
+                                                  initial_occupancy=1.5 * B_eq / S,
+                                                  k_int_per_s=kint, receiving="cell")})
+    T = 0.04
+    ref = sr.integrate(ww, T, record=(T,), method="DOP853", rtol=3e-14,
+                       atol_fraction=1e-9).at[T]
+    rows = []
+    for dt in (4e-3, 2e-3, 1e-3, 5e-4):
+        run = sb.run_half_steps(ww, dt / 2, int(round(2 * T / dt)))
+        branches = [b for bs in run.branches for b in bs]
+        rows.append(dict(dt=dt, quadrature_steps=branches.count("quadrature"),
+                         n_err_of_n0=abs(run.n[-1, 0] - ref["n_fmol"]["ecs"]) / c,
+                         heat_err=abs(run.heat[-1].sum() - ref["heat_pJ"]),
+                         work_err=abs(run.work[-1, 0] - ref["work_pJ"])))
+    out["washout_quadrature"] = dict(horizon_s=T, heat_pJ=ref["heat_pJ"],
+                                     work_pJ=ref["work_pJ"], rows=rows)
+    log("R-dG washout", rows)
     return out
 
 
