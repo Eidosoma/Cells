@@ -148,6 +148,31 @@ def test_a_failed_stage_read_refuses_the_row_and_the_step():
             parse_spec(declaring("alpha_block"))
 
 
+def test_a_stage_check_sees_the_stages_total_rates_and_can_refuse():
+    seen = []
+
+    def watching(read, cell, outside, p, *, xp):
+        seen.append((np.shape(cell), np.shape(outside), read.amount_increment is not None))
+        return xp.all(xp.isfinite(cell))
+
+    with kind_registry.scope(registry(planted("alpha", "alpha_block", stage_check=watching))):
+        spec = parse_spec(declaring("alpha_block"))
+        impl, state, p, control = host_inputs(spec)
+        seen.clear()
+        assert impl.readouts(state, control, p, xp=np).valid
+        shapes = (state.amount_increment.shape, state.extracellular_amount_increment.shape)
+        assert seen == [(*shapes, True)]
+        new, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+        assert valid and len(seen) > 2  # Readouts at the start, then every explicit stage.
+
+    def refusing(read, cell, outside, p, *, xp):
+        return xp.asarray(False)
+
+    with kind_registry.scope(registry(planted("alpha", "alpha_block", stage_check=refusing))):
+        with pytest.raises(ConfigError, match="domain invalid"):
+            parse_spec(declaring("alpha_block"))
+
+
 def test_a_kinds_stored_term_joins_the_energy_ledger():
     kind = planted(
         "alpha", "alpha_block", ledger_terms=lambda state, p, *, xp: {"stored_pJ": state.alpha_value}

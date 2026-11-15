@@ -12,6 +12,7 @@ structure's kinds append their fields, is the sorted namespaced ID: total, and i
 registration, import and declaration order.
 """
 
+import importlib
 from collections.abc import Callable
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -60,7 +61,11 @@ class Kind:
       control, p, *, xp)` -> surface_pump_v3.KindRates: inward-positive node changes (cell
       [species, cell], outside [species, outside node]) into the shared inventory, the kind's own
       state derivatives {field: array}, and heat and work rates (pJ/s); `potentials` are the
-      stage's node potentials, cells then outside nodes (V).
+      stage's node potentials, cells then outside nodes (V). `stage_check(read, cell, outside,
+      p, *, xp)` -> one bool, after every rate of the stage: `read` is the read state, `cell`
+      [species, cell] and `outside` [species, outside node] the stage's total node rates (fmol/s;
+      explicit stages without the implicit face drift); a false check refuses the step (FR-4's
+      envelope: the closure's lag at the stage's transport).
     - step end: `book(applied, start, end, p, dt, *, xp)` -> {own state field: new value}, after
       the tableau's combination; `applied(name)` is the step's applied rate of a state field
       (the tableau's weights), `start` the step's start state and `end` its end state before any
@@ -93,6 +98,7 @@ class Kind:
     stage_read: Callable | None = None
     stage_rows: Callable | None = None
     rates: Callable | None = None
+    stage_check: Callable | None = None
     book: Callable | None = None
     ledger_terms: Callable | None = None
     domain: Callable | None = None
@@ -146,11 +152,27 @@ class KindRegistry:
 
 BUILTIN = KindRegistry()
 _ACTIVE = ContextVar("cells_kind_registry", default=None)
+BUILTIN_PACKAGE = "cells.models.inner_kinds"
+_builtins_loaded = False
+
+
+def _load_builtins():
+    """Import the built-in kinds' package once (by name: the core imports no kind module), so
+    each built-in registers on BUILTIN through the call an external package uses."""
+    global _builtins_loaded
+    if not _builtins_loaded:
+        importlib.import_module(BUILTIN_PACKAGE)
+        _builtins_loaded = True
 
 
 def active():
-    """The registry of the model build in progress: BUILTIN unless scope() says otherwise."""
-    return _ACTIVE.get() or BUILTIN
+    """The registry of the model build in progress: BUILTIN, with the built-in kinds loaded,
+    unless scope() says otherwise."""
+    registry = _ACTIVE.get()
+    if registry is not None:
+        return registry
+    _load_builtins()
+    return BUILTIN
 
 
 @contextmanager

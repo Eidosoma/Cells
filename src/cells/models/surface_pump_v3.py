@@ -416,6 +416,15 @@ def _field_values(state, read, control, p, *, xp):
     )
 
 
+def _stage_checks(kinds, read, cell, outside, p, *, xp):
+    """The kinds' stage checks at the stage's total node rates (§7.4 (k)); true without any."""
+    valid = True
+    for kind in kinds:
+        if kind.stage_check is not None:
+            valid = valid & kind.stage_check(read, cell, outside, p, xp=xp)
+    return valid
+
+
 def _kind_rates(kinds, state, potentials, control, p, *, xp):
     return [kind.rates(state, potentials, control, p, xp=xp) for kind in kinds if kind.rates]
 
@@ -621,8 +630,8 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
     if process is not None:
         valid &= process.valid
-    if kinds:  # A failed stage read refuses the row (§7.4 (g) 1).
-        valid &= read_valid
+    if kinds:  # A failed stage read or stage check refuses the row (§7.4 (g) 1).
+        valid &= read_valid & _stage_checks(kinds, read, cell, outside, p, xp=xp)
     for value in _availabilities(control, kinds) if kinds else control:
         valid &= xp.all(xp.isfinite(value) & (value >= 0) & (value <= 1))
     for kind in kinds:
@@ -861,8 +870,9 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
     if kinds:
         rates = _with_kind_derivatives(rates, kind_rates, structure, state, xp=xp)
     valid = r.valid
-    if kinds:  # A failed stage read refuses the step (§7.4 (g) 1).
-        valid = valid & read_valid
+    if kinds:  # A failed stage read or stage check refuses the step (§7.4 (g) 1).
+        outside_rate = xp.where(p.reservoir, 0.0, inflow)
+        valid = valid & read_valid & _stage_checks(kinds, read, cell_rate, outside_rate, p, xp=xp)
     if args is not None:  # The Na/K pump's domain, where its law is declared.
         valid = valid & xp.all(pump.domain_valid(*args, xp=xp))
     if ca_args is not None:
@@ -1200,6 +1210,10 @@ def _check_device_hooks(kinds, state, p, control):
             if jax.tree.structure(read) != tree:
                 refuse(kind, "stage_read", "must return a state of the structure's state type")
             boolean(kind, "stage_read", ok)
+        if kind.stage_check is not None:  # On the step path; traced here for an early refusal.
+            rates = (state.amount_increment, state.extracellular_amount_increment)
+            check = traced(kind, "stage_check", partial(kind.stage_check, xp=jnp), state, *rates, p)
+            boolean(kind, "stage_check", check)
         if kind.domain is not None:
             domain = traced(kind, "domain", partial(kind.domain, xp=jnp), state, p)
             boolean(kind, "domain", domain)
