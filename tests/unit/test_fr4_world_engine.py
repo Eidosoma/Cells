@@ -88,3 +88,23 @@ def test_the_engine_records_give_the_judges_readouts_on_the_development_world():
     assert 0 <= stage["envelope_max_lag_ph"] <= 1e-3 and stage["envelope_stages_beyond"] == 0
     assert stage["cytosol_pH_min"] <= 7.2 + 1e-9 and stage["cytosol_pH_max"] >= 7.2 - 1e-9
     assert record["ledgers"]["charge_residual_C"] <= record["ledgers"]["charge_tolerance_C"]
+
+
+def test_k3_is_refused_at_the_definition_through_the_envelope():
+    """The lead's ruling on K3: the lumen buffer's k_on at 1e-3 /mM/s is refused at the definition,
+    and the refusal is attributed to the envelope (the same world is admitted with B4's stage check
+    removed); a refusal for another reason is not."""
+    from dataclasses import replace
+
+    from validation.compartment_ph import engine_records
+    from validation.compartment_ph.parameters import World
+
+    w = World()
+    k3 = replace(w, lumen_buffer=replace(w.lumen_buffer, k_on_per_mM_s=1e-3))
+    record = engine_records.run(short(defs.fr4_world(k3)))
+    assert not record["admitted"] and record["refusal_reason"] == "envelope"
+    assert "domain invalid" in record["refusal"]
+    other = defs.fr4_world()
+    other["model"]["transporters"][0]["capacity_fmol_s"] = -1.0
+    record = engine_records.run(short(other))
+    assert not record["admitted"] and record["refusal_reason"] is None

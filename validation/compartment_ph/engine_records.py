@@ -18,6 +18,8 @@ float64), and keeps one row per record from each window's observations (ENGINE_R
   beyond the budget);
 - `ledgers`: the charge ledger's residual and its tolerance at the record of their largest ratio.
 A refusal (at the definition or in the run) is recorded with its message: a refusal is a verdict.
+A refusal at the definition is attributed to the envelope (`refusal_reason`, K3's catch: the lead's
+ruling) when the same development world is admitted with B4's stage check alone removed.
 
 The energy identity, from the engine's own ledger (surface_pump_v3.balances with the kinds' terms):
 residual = stored change + heat - work, with heat every *_dissipated_energy_pJ field and work every
@@ -149,6 +151,28 @@ class Records:
         )
 
 
+def envelope_reason(definition):
+    """"envelope" when the development world, refused at the definition, is admitted with B4's
+    stage check alone removed (every other built-in kind as registered), else None."""
+    import dataclasses
+
+    from cells.core import kind_registry
+    from cells.core.specs import ConfigError, parse_spec
+    from cells.models.inner_kinds import proton_buffer
+
+    registry = kind_registry.KindRegistry()
+    for kind in kind_registry.active().model_keys().values():
+        if kind is proton_buffer.PROTON_BUFFER:
+            kind = dataclasses.replace(kind, stage_check=None)
+        registry.register(kind)
+    with kind_registry.scope(registry):
+        try:
+            parse_spec(defs.development_world(definition))
+        except ConfigError:
+            return None
+    return "envelope"
+
+
 def run(definition, *, registry=None, window_steps=WINDOW_STEPS):
     """The engine part's record of `definition`'s development world (module docstring). With
     `registry` the build runs inside kind_registry.scope(registry) (a planted control's)."""
@@ -158,13 +182,15 @@ def run(definition, *, registry=None, window_steps=WINDOW_STEPS):
     from cells.core.windows import WindowPolicy, run_windowed
     from cells.models.registry import get_model
 
-    out = dict(admitted=False, completed=False, refusal=None, steps=0, record_s=[], series={},
-               amounts_fmol={}, stage={}, ledgers={})
+    out = dict(admitted=False, completed=False, refusal=None, refusal_reason=None, steps=0,
+               record_s=[], series={}, amounts_fmol={}, stage={}, ledgers={})
     with kind_registry.scope(registry) if registry is not None else nullcontext():
         try:
             spec = parse_spec(defs.development_world(definition))
         except ConfigError as error:
             out["refusal"] = f"definition: {error}"
+            if registry is None:
+                out["refusal_reason"] = envelope_reason(definition)
             return out
         out["admitted"] = True
         model = get_model(spec.model)
