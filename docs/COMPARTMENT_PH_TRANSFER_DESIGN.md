@@ -264,6 +264,17 @@ with μ°(HB_k) − μ°(B_k) − μ°(H) = RT ln(K_k/c°) (**S**: equilibrium).
 - **The closure therefore owns a declared free-energy term,** ΔG_buf = G* − (@3's term on those
   rows). D152's operator owns its standard-potential term in the same way (D152 §3.3). The term
   enters the energy ledger as stored free energy, not as a flow.
+- **The proton's standard part** (15 November 2026: the core's finding, checked by this note's
+  owner). @3's stored rows and its reservoir work are referenced to 1 mM with no standard part:
+  RT n (ln(n/V) − 1) per row, and μ = RT ln c + zFφ for a held bath. So the term B4's kind books
+  is ΔG_buf less the proton's standard part, RT H_eq (μ°(H⁺)/RT − ln c°).
+  - It is 0 at an unbuffered node, and ∂/∂H_eq = RT ln(h/H̄), so every route books against the
+    free proton as above.
+  - Kept in, the part would leave RT ln c° in the ledger for every proton exchanged with a held
+    bath. The inner-model note's earlier line, "−RT ln c° per proton at an unbuffered node, not
+    zero" (this owner's note of 15 November), is superseded.
+  - FR-4's and FR-5's energy identities do not change: their protons stay within the two covered
+    nodes, so the part's change sums to zero.
 
 ## 5. Fuel and the thermodynamic boundary
 
