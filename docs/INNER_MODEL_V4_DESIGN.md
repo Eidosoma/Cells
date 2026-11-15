@@ -992,7 +992,7 @@ the insertion point is CORE's. Its conventions, fixed here:
   an overshoot (§7.5). The law therefore declares its own step bound, or a dt-study criterion
   that its acceptance runs, as FR-4 declares its 0.025 step on the max-side G.
 
-#### (j) The per-structure schema: three options (CORE's proposal for the lead's review with INT, 15 November; no code before the ruling)
+#### (j) The per-structure schema: three options, and the ruling (A, 15 November)
 
 **What it must do.** New kinds add state, layout, control and observation fields: FR-4's
 transporter with its fuel rows, its stage read and the passive law ((i)). B7 adds none. A world
@@ -1120,6 +1120,29 @@ Examples:
   - a planted kind adds exactly its fields, at the end;
   - a kind's world round-trips through a snapshot;
   - the results gate is bitwise for today's worlds.
+
+**The lead's ruling (15 November, after the advisor's review and INT's comments): A, with three
+additions to its acceptance.**
+1. **Canonical kind order.** The appended kinds' fields follow the registry's canonical kind
+   order, never the definition's declaration order. Test: two worlds that declare the same kinds in
+   different orders get the same class, compile key and snapshot layout.
+2. **The families' refusal must exist.**
+   - Replacement@1 and both water families bind full-catalogue types at import and build states
+     positionally, so a planted kind in each family is refused at binding.
+   - An operator that reads a kind's field declares `REQUIRES_KINDS = (...)`, and
+     `structure_errors` refuses a missing kind, naming the operator and the kind.
+   - INT builds both, and the adapter's forwarding of the object's types: `STATE_AXES`,
+     `STATE_TYPE`, `STATE_FIELDS`, the layout and control types, `OBSERVATION_FIELDS`.
+3. **A planted kind through the run paths.** Its snapshot round trip runs in a fresh process, and
+   the planted kind also runs on the vector-window path, since packing depends on it.
+
+**CORE's part (about one day, after the registry hook and B7):**
+- the object's per-structure types, cached by field set in canonical order;
+- today's classes returned for today's structures;
+- the identity test, the planted-kind test, the fresh-process round trip and the vector-window
+  run.
+
+INT merges CORE's types first, then the adapter's forwarding.
 
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 
