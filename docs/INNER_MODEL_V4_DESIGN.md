@@ -1012,7 +1012,10 @@ the insertion point is CORE's. Its conventions, fixed here:
   - `passive_neutral_permeation@1`: the kernel's Fick flux on the read amounts, inward from the
     host's outside end to its inside end; §7.5's exact booking where version 1's scope mask
     (`passive_exact`, set at binding from `moved_nodes`; a route touching a held bath is never
-    exact) allows; its step is `bound_rate` (gap 5).
+    exact) allows; its step is `bound_rate` (gap 5). The mask is a fixpoint over shared rows
+    (1e57af61): a route sharing a row with a tableau-booked passive route is tableau-booked too,
+    so every exact row is moved by exact routes alone. The operators' writers (`moved_in_step`)
+    join at the composite's admission (INT).
   - `proton_constant_field_leak@1` (`processes/proton_leak.py`): an H⁺ constant-field route on a
     membrane patch at the patch voltage, reading free h through B4's read at buffered nodes;
     tableau-booked (charged: never exact); its max-side slope conductance is its `stage_term`
