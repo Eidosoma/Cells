@@ -73,6 +73,21 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The coupling operator's qualification protocol, after its rehearsal and the final check (15
+  November 2026).** It is still PROPOSED. Tier 1 at the merge d8ee24a: 329 files, no changed outcome.
+  - **The rehearsal on main 0448f9f:** the judged entries were refused while PROPOSED. The dry run
+    reproduced the development run bit for bit, with the δ-controls at their registered δ by
+    design, and its verdict passes with every control caught.
+  - **The final check** (with the advisor):
+    - a `register` path in MG0c's form, with the verdict from a registered copy identical to the
+      rehearsal's;
+    - the refusal tests are safe with the protocol registered;
+    - D147: 0 free offsets in all nine worlds;
+    - a runtime limit of 4,500 s, with the rerun-once rule for infrastructure endings;
+    - the disclosures recorded.
+  - [Evidence](/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/HANDOFF.md). Registration and
+    one judged run follow.
+
 - **The coupling operator's qualification protocol (milestone 4, PROPOSED) and the composition
   matrix landed (15 November 2026).** Validation, tests and docs only, during MG0c's `src/` hold.
   Tier 1 at the merge 200b796: 329 files, no changed outcome
