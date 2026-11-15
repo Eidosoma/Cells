@@ -742,16 +742,30 @@ isolates it.
   - **S:** at full damage the lumen's steady pH rises to about 6.2, so f falls to about 1.6e-3.
   - It stays explicit at 1 ms: max-side dt × G/C_b ≈ 0.029 at pH 5.1, within the world-declared
     0.05.
-- **Horizon:** 400 s at 1 ms. Ionic pores are refused in version 1 (§9).
+- **Horizon and step:** 400 s at a declared 0.5 ms. Ionic pores are refused in version 1 (§9).
+  - **The step bound is on the patch total.** The world's 0.05 (max-side dt × G/C_b) applies to
+    the sum over every route on the bounding patch, because those routes share one charge mode (V_b).
+  - The references' rerun measured the patch total at 0.048 at 1 ms: the proton pore 0.029, plus
+    the leak and K⁺.
+  - So FR-5 declares 0.5 ms (about 0.024), FR-4's factor-of-two margin. Price: 8e5 steps per
+    400 s run instead of 4e5, about 0.8 CPU-hours per run at the upper-bound cost.
+  - Pending the references' confirmation.
 
 **Arm T, the condition:**
 - **Parameters:** P_X = 1e-9 m/s (τ ≈ 83 s at f ≈ 1); a proton-only pore (P_pore,X = 0); damage
   during [60, 120] s.
-- **What it shows:**
-  - X crosses while the lumen is acidic;
-  - the damage raises the lumen's pH above pH₅₀, f closes, and the transfer stops while X remains
-    in the lumen;
-  - after resealing the pump re-acidifies, and the transfer resumes.
+- **What it shows** (restated after the references' rerun, 071ef983):
+  - X crosses while the lumen is acidic.
+  - The damage raises pH_L above pH₅₀. While pH_L > pH₅₀, the conditioned transfer's mean rate
+    falls at least 10-fold below its mean rate before damage, judged on the route's cumulative
+    transfer in units of X's budget B.
+    - The rerun measured about 14-fold: 152 B over 74–326 s, against 497 B in the 59 s before
+      damage.
+    - The route slows but does not stop. Most of the transfer happens while f passes through its
+      half-open range, and longer windows do not change that.
+    - So the claim is a number, not "stops".
+  - After resealing, pH_L returns below pH₅₀ before 400 s, within 5 s of the reference's crossing
+    time (327 s in the rerun), and the transfer resumes.
 - **Control:** f ≡ 1. X keeps crossing through the alkaline window.
 
 **Arm R, the release:**
@@ -759,9 +773,13 @@ isolates it.
   references' grid showed; a cargo pore at 1e-6 m/s (τ ≈ 0.08 s at d ≈ 1) beside the proton
   pore; damage during [100, 160] s.
 - **What it shows:**
-  - a release burst through the pore, with the lumen's X falling to near the cytosol's level;
+  - a release burst through the pore: at least 0.8 of X_L(0) released inside the window (the
+    rerun measured 0.874);
   - the pH rising during damage;
-  - re-acidification after resealing.
+  - after resealing, pH_L returns below pH₅₀ before 400 s, within 5 s of the reference's crossing
+    time (367 s in the rerun).
+  - Full recovery to within 0.001 of the start needs about 820 s. That is not claimed, so the
+    horizon stays at 400 s.
 - **Control:** d ≡ 0. No burst, and no pH rise.
 
 **X's budget, declared for G1 and G3:**
