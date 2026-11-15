@@ -1138,7 +1138,44 @@ additions to its acceptance.**
 3. **A planted kind through the run paths.** Its snapshot round trip runs in a fresh process, and
    the planted kind also runs on the vector-window path, since packing depends on it.
 
-**CORE's part (about one day, after the registry hook and B7):**
+**Scope rules (the lead's ruling, 15 November, after CORE's map of today's fixed-field
+sites):**
+- (a) **Ledgers.** A kind's ledger terms fold into today's 10 ledgers by role (material per
+  species and node, charge, energy, heat, work). No new ledger rows in this round; a kind with a
+  genuinely new conserved quantity would be a later core change.
+- (b) **Columns.** A kind's state fields are observation columns, right after today's state
+  fields (the windowed runner rebuilds states from observations by name), and its readout columns
+  follow today's readouts. Today's worlds keep today's columns, bitwise.
+- (c) **Material.** A kind's material moves land in the shared inventory, today's amount fields
+  (F2: one authoritative account per quantity). Only the kind's own accumulators stay outside the
+  families' and operators' projections, which therefore keep charge right.
+- (d) **Controls.** A kind's controls are availabilities in [0, 1], unless its control-domain hook
+  declares otherwise.
+
+**A padding artifact kept for bitwise identity (F1; K2's amendment 6; the lead's ruling, 15
+November):**
+- **The artifact.** A closed or not-yet-open population slot carries code 0, Kv1.5's code, and
+  keeps its gate update. Today's catalogue evolves that gate under Kv1.5's kinetics. That is an
+  artifact of today's padding, kept only for bitwise identity through D176's gate.
+- **Where it is traced.** A4's "no kernel" holds for worlds without closers. A world whose
+  composition closes slots (an operator with CLOSES) traces code 0's kernel as declared padding,
+  named by the structure's `padding_fill`. That is ruling 8's declared, temporary fill, compiled
+  where it is needed.
+- **Its effect on physics, by opener:**
+  - the partition sets the gate (daughters take the parent's at division);
+  - replacement sets it (the template's or a source slot's at arrival);
+  - insertion@2's onset does not: a gated population on an onset patch starts from the gate the
+    artifact evolved while it was closed. Today's physics after an onset therefore depends on the
+    artifact.
+- **The insertion@2 bug** is to be fixed later as its own gated change (gates frozen while
+  closed, or set at opening), not in this round.
+
+**Costs accepted:** about 2.5–3 days for CORE, with INT and OPS in parallel. INT takes the
+adapter's lookup order (the object first), the composite's 11 inner type reads, the composite
+spec's controls from the object and the families' refusal. OPS has `moved_in_step` call the
+declared kinds' `moved_rows`.
+
+**CORE's part (about one day as first costed, 2.5–3 days with the scope rules above; after the registry hook and B7):**
 - the object's per-structure types, cached by field set in canonical order;
 - today's classes returned for today's structures;
 - the identity test, the planted-kind test, the fresh-process round trip and the vector-window
