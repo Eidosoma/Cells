@@ -1,16 +1,21 @@
 """Declared laws and one implementation per structure for resolved_pump_tissue@3 (D172, D176).
 
-docs/INNER_MODEL_V4_DESIGN.md §7.4, the first API commit:
+docs/INNER_MODEL_V4_DESIGN.md §7.4:
 * the law declarations agree with today's tables, and their kernels and openings with today's
   dispatch, bit for bit, on the host and compiled;
 * a definition's structure is value-free: equal structures share one cached implementation,
   which registry.get_model returns;
-* the implementation's surface is the module's: every public name, the same object (programs
-  are unchanged in this commit), plus the new names;
+* the implementation's surface is the module's: structure-free names are the module's objects,
+  the structure-dependent functions the module's bound once to the structure, plus new names;
+* per-law dispatch: an undeclared law traces no kernel (A4's first test); readouts are today's
+  bit for bit, the host keeping today's padding values (§7.4 (b)); the batch signature carries
+  the structure;
 * moved_rows lists every in-step mover of the inner model.
 """
 
 import copy
+import dataclasses
+import functools
 import inspect
 
 import jax
@@ -21,7 +26,6 @@ import pytest
 from cells.core import surface_pump_v3_spec as spec3
 from cells.core.specs import parse_spec
 from cells.models import inner_laws, surface_pump_v3
-from cells.models import pump_composite_adapter as adapter
 from cells.models.registry import get_model
 from cells.processes import calcium_atpase, junction_gate, kinetic_pump, sodium_channels
 from validation.tissue import pump_water_fixtures as water_fixtures
@@ -75,7 +79,7 @@ INNER_PROTOCOL = (
 
 
 def bits(value):
-    value = np.atleast_1d(np.asarray(value))
+    value = np.ascontiguousarray(np.atleast_1d(np.asarray(value)))
     return value.view(np.uint8)
 
 
@@ -209,20 +213,38 @@ def test_one_cached_implementation_per_structure():
     assert other is not impl and other.structure != impl.structure
 
 
+def bound_to(value, function, structure):
+    return (
+        isinstance(value, functools.partial)
+        and value.func is function
+        and value.args == ()
+        and value.keywords == {"structure": structure}
+    )
+
+
 def test_implementation_surface_is_the_modules():
-    """Every public name of the module, the module's own object (no program changes in this
-    commit), beside the object's own structure; the adapter's inner protocol is available."""
-    impl = get_model(parse_spec(water_fixtures.heredity_cell("D", end_time=0.01)).model)
+    """Every public name of the module: structure-free names are the module's own objects, the
+    structure-dependent functions are the module's bound once to the object's structure, and the
+    batch signature carries the structure; the adapter's inner protocol is available."""
+    spec = parse_spec(water_fixtures.heredity_cell("D", end_time=0.01))
+    impl = get_model(spec.model)
     public = [name for name in dir(surface_pump_v3) if not name.startswith("_")]
+    bound = set(surface_pump_v3.STRUCTURED_FUNCTIONS)
     for name in public:
         if name == "structure":  # The object's own structure, not the module's function.
-            continue
-        assert getattr(impl, name) is getattr(surface_pump_v3, name), name
+            assert impl.structure == surface_pump_v3.structure(spec.model)
+        elif name in bound:
+            assert bound_to(getattr(impl, name), getattr(surface_pump_v3, name), impl.structure)
+            assert getattr(impl, name) is getattr(impl, name)  # Stable: one object per name.
+        elif name == "batch_signature":
+            assert impl.batch_signature is surface_pump_v3.structured_batch_signature
+        else:
+            assert getattr(impl, name) is getattr(surface_pump_v3, name), name
+    assert impl.domain_valid.with_control is impl.control_domain_valid
     # The adapter re-exports these @3 names (today's de facto inner protocol), and the operators
     # import the last ones directly.
     for name in INNER_PROTOCOL:
-        assert getattr(impl, name) is getattr(surface_pump_v3, name), name
-        assert getattr(adapter, name, getattr(impl, name)) is getattr(impl, name), name
+        assert hasattr(impl, name), name
     assert "steps" in inspect.signature(impl.check_values).parameters
     assert set(public) <= set(dir(impl))
     with pytest.raises(AttributeError):
@@ -266,3 +288,109 @@ def test_moved_rows():
     assert set(channels) == {spec3.KV1P5_LAW_ID, spec3.KIR2P1_LAW_ID, spec3.KLEAK_LAW_ID}
     for ids in channels.values():
         assert all(c in {p.id for p in release.channels} for c in ids)
+
+
+# ------------------------------------------------------------------ per-law dispatch (§7.4 (c))
+
+NAV1P2_LITERAL = "0.065000123"  # Only NaV1.2's kernel carries it (sodium_channels).
+KV1P5_LITERAL = "0.0253"  # Kv1.5's inactivation midpoint (voltage_gates).
+
+
+def without_law(raw, law):
+    """raw without the populations of one channel law, and their schedules."""
+    raw = copy.deepcopy(raw)
+    gone = {c["id"] for c in raw["model"]["channels"] if c["kinetic_law"] == law}
+    raw["model"]["channels"] = [c for c in raw["model"]["channels"] if c["id"] not in gone]
+    controls = raw["experiment"]["channel_controls"]
+    raw["experiment"]["channel_controls"] = [g for g in controls if g["channel_id"] not in gone]
+    return raw
+
+
+def padded(spec, extra=2):
+    x = spec.execution
+    execution = dataclasses.replace(x, channel_capacity=x.channel_capacity + extra)
+    return dataclasses.replace(spec, execution=execution)
+
+
+def initial(spec, model):
+    from cells.core.schedule import control_values
+
+    state, p = model.initial_values(spec)
+    controls = control_values(spec, [0.0])
+    control = type(controls)(*(np.asarray(v[0]) for v in controls))
+    return state, control, p
+
+
+def jaxpr_text(model, spec):
+    """The checked step's jaxpr at the initial state: tracing only, no compile."""
+    state, control, p = jax.tree.map(jnp.asarray, initial(spec, model))
+    closed = jax.make_jaxpr(lambda s, dt, c, q: model.checked_step(s, dt, c, q, q.active))(
+        state, jnp.asarray(spec.execution.dt), control, p
+    )
+    return str(closed), len(closed.jaxpr.eqns)
+
+
+def test_an_undeclared_law_traces_no_kernel():
+    """A4's first test: the object's step traces the declared laws' kernels only; the module's
+    own (today's catalogue) traces all of them."""
+    raw = water_fixtures.heredity_cell("D", end_time=0.01)  # Kir2.1 and NaV1.2.
+    for case, nav in ((raw, True), (without_law(raw, spec3.NAV1P2_LAW_ID), False)):
+        spec = parse_spec(case)
+        impl = get_model(spec.model)
+        mine, mine_count = jaxpr_text(impl, spec)
+        today, today_count = jaxpr_text(surface_pump_v3, spec)
+        assert KV1P5_LITERAL in today and NAV1P2_LITERAL in today
+        assert KV1P5_LITERAL not in mine
+        assert (NAV1P2_LITERAL in mine) == nav
+        assert mine_count < today_count
+    assert surface_pump_v3.structure(spec.model).declared_channel_laws == (spec3.KIR2P1_LAW_ID,)
+
+
+def flat_readouts(values):
+    flat = {}
+    for key, value in values.field._asdict().items():
+        if hasattr(value, "_asdict"):
+            flat.update({f"field.{key}.{k}": v for k, v in value._asdict().items()})
+        else:
+            flat[f"field.{key}"] = value
+    flat.update({f"derivative.{k}": v for k, v in values.derivative._asdict().items()})
+    for key in ("channel_flux_fmol_s", "channel_targets", "channel_tau_s", "valid"):
+        flat[key] = getattr(values, key)
+    return {k: np.asarray(v) for k, v in flat.items()}
+
+
+def test_dispatch_readouts_are_todays_with_the_host_padding_fill():
+    """Readouts at the initial state, the object's against the module's: on the host every output
+    is bitwise, padding included (the declared fill, §7.4 (b)); compiled, every output is bitwise
+    but the two padding columns at a Kv1.5-free world's inactive slots, which read 0 and 1."""
+    worlds = (
+        padded(parse_spec(water_fixtures.heredity_cell("D", end_time=0.01))),
+        parse_spec(fixtures.definition("release", solver=ARS)),
+    )
+    for spec in worlds:
+        impl = get_model(spec.model)
+        state, control, p = initial(spec, impl)
+        host = flat_readouts(impl.readouts(state, control, p, xp=np))
+        today = flat_readouts(surface_pump_v3.readouts(state, control, p, xp=np))
+        assert all(same_bits(host[k], today[k]) for k in today)
+        compiled = flat_readouts(jax.jit(impl.readouts)(state, control, p))
+        reference = flat_readouts(jax.jit(surface_pump_v3.readouts)(state, control, p))
+        inactive = ~np.asarray(p.channel_active)
+        kv = spec3.KV1P5_LAW_ID in impl.declared_channel_laws
+        for key in reference:
+            if key in ("channel_targets", "channel_tau_s") and not kv and inactive.any():
+                assert same_bits(compiled[key][..., ~inactive], reference[key][..., ~inactive])
+                fill = 0.0 if key == "channel_targets" else 1.0
+                assert np.all(compiled[key][..., inactive] == fill)
+            else:
+                assert same_bits(compiled[key], reference[key]), key
+
+
+def test_batch_signature_carries_the_structure():
+    raw = water_fixtures.heredity_cell("D", end_time=0.01)
+    a, twin = parse_spec(raw), parse_spec(scaled_values(raw))
+    other = parse_spec(without_law(raw, spec3.NAV1P2_LAW_ID))
+    impl = get_model(a.model)
+    assert impl.batch_signature(a.model) == impl.batch_signature(twin.model)
+    assert impl.batch_signature(a.model) != impl.batch_signature(other.model)
+    assert impl.batch_signature(a.model)[:-1] == surface_pump_v3.batch_signature(a.model)
