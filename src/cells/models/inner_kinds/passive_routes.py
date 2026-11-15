@@ -1,34 +1,47 @@
-"""cells.passive_routes@1: the passive permeation law's insertion point (A5).
+"""cells.passive_routes@1: the passive routes' insertion point, laws by contract (A5).
 
-docs/INNER_MODEL_V4_DESIGN.md §7.4 (i), §7.5 (version 1, ruled), §11; the kernel is
-processes/passive_permeation.py (law passive_neutral_permeation@1, the FR-4/FR-5 owner's), called
-here and never edited.
+docs/INNER_MODEL_V4_DESIGN.md §7.4 (i), §7.5 (version 1, ruled), §11; the lead's scope ruling (15
+November): one kind for passive routes, its laws by contract. The kernels are the FR-4/FR-5
+owner's, called here and never edited:
+- `passive_neutral_permeation@1` (processes/passive_permeation.py): a neutral species, Fick's law
+  at valence 0, with §7.5's exact booking;
+- `proton_constant_field_leak@1` (processes/proton_leak.py): an H+ constant-field route at
+  valence +1 on a membrane patch, reading free h through the stage read (B4) at buffered nodes;
+  tableau-booked (charged), with its slope conductance in the stage rule (B7) and its flux in the
+  membrane current.
 
-The declaration (model key `passive_routes`), each route on one host:
+The declaration (model key `passive_routes`, FR-4's form in validation/compartment_ph/
+definitions.py), each route on one host (`patch`, or `junction` for the neutral law):
 
-    [{"id": "leak_S", "law": "passive_neutral_permeation@1", "membrane": "contact_0",
-      "permeability_m_per_s": {"S": 1e-9}},
-     {"id": "gap_S", "law": "passive_neutral_permeation@1", "junction": "junction_0",
-      "permeability_m_per_s": {"S": 1e-9}}]
+    [{"id": "proton_leak_0", "patch": "bounding_0", "law": "proton_constant_field_leak@1",
+      "permeability_m_per_s": 6e-7},
+     {"id": "cargo_0", "patch": "bounding_0", "law": "passive_neutral_permeation@1",
+      "species": "X", "permeability_m_per_s": 1e-9}]
 
-- **The flux** is the kernel's constant-field route at valence 0 (Fick), inward from the host's
-  outside end (a patch's outside node, a junction's receiver) to its inside end (a patch's cell, a
-  junction's sender), at every explicit stage, on the read amounts. Its opening is the host's:
-  a patch's availability, or a junction's gate times its availability.
-- **Version 1 carries neutral species only**, and the host route's own constant-field
-  permeability for a carried species must be zero, so one law moves it there.
+`species` is the neutral law's carried row; the leak's is the proton row (`species`, default "H",
+which must be B4's proton_row when B4 is declared). `factors` (FR-5's damage and pH condition)
+come with FR-5's laws: an entry may carry an empty list only.
+
+- **The flux,** inward from the host's outside end (a patch's outside node, a junction's receiver)
+  to its inside end (a patch's cell, a junction's sender), at every explicit stage, on the read
+  amounts; the leak at the patch voltage phi_in - phi_out. Its opening is the host's: a patch's
+  availability, or a junction's gate times its availability.
+- **One law per species and route:** the host route's own constant-field permeability for a
+  carried species must be zero. The neutral law carries valence-0 species only; the leak a
+  valence +1 row.
 - **Its own fields:** `passive_transferred` [species, route] (cumulative, inward) and
   `passive_dissipated_energy_pJ` [route]; both join @3's material and energy ledgers by role.
-- **The booking (§7.5, version 1):** a route whose every carried row (species, end node) is moved
-  by exact-booked passive routes alone (checked at binding from moved_nodes; a held bath's row is
-  never one) books, per step, its exact divided-difference share of each row's exact free-energy
-  decrease: Q = -1e-3 RT moved (mu-bar_in - mu-bar_out), mu-bar the row's divided-difference
-  potential over the step (the kernel's divided_potential_RT and route_heat_pJ). No clamp, no
-  scaling. A step with any negative share, or a row whose shares miss its exact decrease by more
-  than RAW_SUM_FACTOR eps times its terms, is refused ("negative exact share: step-bound breach").
-  Every other route keeps the tableau's booking of its dissipation rate, as today's routes do.
-- **Its step (ruled):** dt L <= 1, with L = 1e15 P A (1/V_a + 1/V_b) summed over the routes at
-  each node (finding 3's z = 0 term for its routes), as its bound term (bound_rate).
+- **The booking (§7.5, version 1):** a neutral route whose every carried row (species, end node)
+  is moved by passive routes alone (binding, from moved_nodes; a held bath's row is never one)
+  books, per step, its exact divided-difference shares of each row's exact free-energy decrease:
+  Q = -1e-3 RT moved (mu-bar_in - mu-bar_out) (the kernel's divided_potential_RT and
+  route_heat_pJ). No clamp, no scaling. A negative share, or a row whose shares miss its exact
+  decrease by more than RAW_SUM_FACTOR eps times its terms, refuses the step ("negative exact
+  share: step-bound breach"). Every other route, the leak always, keeps the tableau's booking of
+  its dissipation rate (the leak's: the kernel's heat_pJ_s, >= 0).
+- **Its step (ruled):** the neutral law's dt L <= 1, L = 1e15 P A (1/V_a + 1/V_b) summed over
+  the routes at each node, as its bound term (bound_rate); the leak's slope conductance (the
+  kernel's conductance_S, max side) joins membrane_rate's per-stage refusal (stage_term).
 """
 
 from typing import NamedTuple
@@ -40,23 +53,29 @@ from cells.core.specs import ConfigError
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import species_sum
 from cells.processes import passive_permeation as passive
+from cells.processes import proton_leak as leak
 from cells.processes.electrochemistry import R
 
 KIND_ID = "cells.passive_routes@1"
 MODEL_KEY = "passive_routes"
-LAW_ID = passive.LAW_ID
+LAW_ID = passive.LAW_ID  # The neutral law.
+LEAK_LAW_ID = leak.LAW_ID  # The charged proton leak.
+LAWS = (LAW_ID, LEAK_LAW_ID)
+DEFAULT_PROTON = "H"
 RAW_SUM_FACTOR = 16.0  # §7.5: |sum of shares - exact decrease| <= 16 eps sum|terms|, per row.
 NEGATIVE_SHARE = "negative exact share: step-bound breach"
-HOSTS = ("membrane", "junction")
+HOSTS = ("patch", "junction")
 
 
 class Route(NamedTuple):
     id: str
-    host_kind: str  # "membrane" or "junction"
+    law: str
+    host_kind: str  # "patch" or "junction"
     host: str
     inside: str  # A patch's cell, a junction's sender.
     outside: str  # A patch's outside node, a junction's receiver.
-    permeability: tuple  # ((species, P in m/s), ...), sorted by species.
+    species: str
+    permeability: float  # m/s
 
 
 def parse(entries, base):
@@ -69,35 +88,43 @@ def parse(entries, base):
     for raw in entries:
         if not isinstance(raw, dict):
             raise ConfigError(f"{MODEL_KEY}: each route is a mapping")
+        rid = str(raw.get("id"))
         hosts = [h for h in HOSTS if h in raw]
-        if set(raw) != {"id", "law", "permeability_m_per_s", *hosts} or len(hosts) != 1:
+        allowed = {"id", "law", "permeability_m_per_s", "species", "factors", *hosts}
+        if not {"id", "law", "permeability_m_per_s"} <= set(raw) <= allowed or len(hosts) != 1:
             raise ConfigError(
-                f"{MODEL_KEY}: a route declares id, law, permeability_m_per_s and one host "
-                "(membrane or junction)"
+                f"{MODEL_KEY}: a route declares id, law, permeability_m_per_s, one host (patch or "
+                "junction), and species for the neutral law"
             )
-        if raw["law"] != LAW_ID:
-            raise ConfigError(f"{MODEL_KEY} {raw['id']}: law must be {LAW_ID}")
+        law = raw["law"]
+        if law not in LAWS:
+            raise ConfigError(f"{MODEL_KEY} {rid}: law must be one of {', '.join(LAWS)}")
+        if raw.get("factors"):
+            raise ConfigError(
+                f"{MODEL_KEY} {rid}: route factors (FR-5's damage and pH condition) come with "
+                "FR-5's laws"
+            )
         kind, host = hosts[0], raw[hosts[0]]
-        if kind == "membrane":
+        if kind == "patch":
             if host not in patches:
-                raise ConfigError(f"{MODEL_KEY} {raw['id']}: unknown membrane patch {host!r}")
+                raise ConfigError(f"{MODEL_KEY} {rid}: unknown membrane patch {host!r}")
             inside, outside = patches[host].inside, patches[host].outside
         else:
+            if law == LEAK_LAW_ID:
+                raise ConfigError(f"{MODEL_KEY} {rid}: the proton leak sits on a membrane patch")
             if host not in junctions:
-                raise ConfigError(f"{MODEL_KEY} {raw['id']}: unknown junction {host!r}")
+                raise ConfigError(f"{MODEL_KEY} {rid}: unknown junction {host!r}")
             inside, outside = junctions[host].sender, junctions[host].receiver
-        carried = raw["permeability_m_per_s"]
-        if not isinstance(carried, dict) or not carried:
-            raise ConfigError(f"{MODEL_KEY} {raw['id']}: permeability_m_per_s names its species")
-        values = []
-        for species, value in carried.items():
-            if species not in m.species_ids:
-                raise ConfigError(f"{MODEL_KEY} {raw['id']}: unknown species {species!r}")
-            value = float(value)
-            if not (np.isfinite(value) and value >= 0):
-                raise ConfigError(f"{MODEL_KEY} {raw['id']}: a permeability is finite and >= 0")
-            values.append((species, value))
-        routes.append(Route(str(raw["id"]), kind, host, inside, outside, tuple(sorted(values))))
+        species = raw.get("species", DEFAULT_PROTON if law == LEAK_LAW_ID else None)
+        if species not in m.species_ids:
+            raise ConfigError(f"{MODEL_KEY} {rid}: unknown species {species!r}")
+        value = raw["permeability_m_per_s"]
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ConfigError(f"{MODEL_KEY} {rid}: permeability_m_per_s is one number (m/s)")
+        value = float(value)
+        if not (np.isfinite(value) and value >= 0):
+            raise ConfigError(f"{MODEL_KEY} {rid}: permeability_m_per_s is finite and >= 0")
+        routes.append(Route(rid, law, kind, host, inside, outside, species, value))
     ids = [r.id for r in routes]
     if len(set(ids)) != len(ids):
         raise ConfigError(f"{MODEL_KEY}: route IDs must be unique")
@@ -105,19 +132,23 @@ def parse(entries, base):
 
 
 def to_dict(declaration):
-    return [
-        {
+    out = []
+    for r in declaration:
+        entry = {
             "id": r.id,
-            "law": LAW_ID,
             r.host_kind: r.host,
-            "permeability_m_per_s": dict(r.permeability),
+            "law": r.law,
+            "permeability_m_per_s": r.permeability,
         }
-        for r in declaration
-    ]
+        if r.law == LAW_ID or r.species != DEFAULT_PROTON:
+            entry["species"] = r.species
+        out.append(entry)
+    return out
 
 
 def structure_entry(declaration):
-    return ()  # Hosts, permeabilities and the booking mask are layout values.
+    """Value-free: the declared laws (the leak traces its own kernel)."""
+    return tuple(sorted({route.law for route in declaration}))
 
 
 def _node_ids(spec):
@@ -131,8 +162,8 @@ def _node_ids(spec):
 
 
 def _exact(spec, declaration):
-    """Version 1's scope, per route: every carried row (species, end node) is moved by passive
-    routes alone, and neither end is a held bath."""
+    """Version 1's scope, per route: a neutral route whose carried rows (species, end node) are
+    moved by passive routes alone, with neither end a held bath; the leak never."""
     from cells.models.surface_pump_v3 import moved_nodes
 
     m = spec.model
@@ -140,11 +171,10 @@ def _exact(spec, declaration):
     movers = moved_nodes(m)
     out = []
     for route in declaration:
-        ok = route.outside not in held
-        for species, value in route.permeability:
-            for node in (route.inside, route.outside):
-                others = [w for w in movers.get((species, node), ()) if w != KIND_ID]
-                ok = ok and not (value > 0 and others)
+        ok = route.law == LAW_ID and route.outside not in held
+        for node in (route.inside, route.outside):
+            others = [w for w in movers.get((route.species, node), ()) if w != KIND_ID]
+            ok = ok and not (route.permeability > 0 and others)
         out.append(ok)
     return np.asarray(out, dtype=bool)
 
@@ -155,32 +185,23 @@ def initial(spec, declaration, layout):
     s, r = len(ids), len(declaration)
     membranes = [p.id for p in m.membranes]
     junctions = [j.id for j in m.junctions]
-    patches = {p.id: p for p in m.membranes}
+    areas = {p.id: p.area_m2 for p in m.membranes} | {j.id: j.area_m2 for j in m.junctions}
     permeability = np.zeros((s, r))
     for k, route in enumerate(declaration):
-        for species, value in route.permeability:
-            permeability[ids.index(species), k] = value
-    on_junction = np.asarray([route.host_kind == "junction" for route in declaration], dtype=bool)
-    area = np.asarray(
-        [
-            patches[route.host].area_m2
-            if route.host_kind == "membrane"
-            else next(j.area_m2 for j in m.junctions if j.id == route.host)
-            for route in declaration
-        ]
-    )
+        permeability[ids.index(route.species), k] = route.permeability
     own = dict(
         passive_permeability=permeability,
-        passive_area=area,
+        passive_area=np.asarray([areas[route.host] for route in declaration]),
         passive_inside=np.asarray([nodes.index(route.inside) for route in declaration]),
         passive_outside=np.asarray([nodes.index(route.outside) for route in declaration]),
         passive_membrane=np.asarray(
-            [membranes.index(r.host) if r.host_kind == "membrane" else 0 for r in declaration]
+            [membranes.index(r.host) if r.host_kind == "patch" else 0 for r in declaration]
         ),
         passive_junction=np.asarray(
             [junctions.index(r.host) if r.host_kind == "junction" else 0 for r in declaration]
         ),
-        passive_on_junction=on_junction,
+        passive_on_junction=np.asarray([r.host_kind == "junction" for r in declaration]),
+        passive_leak=np.asarray([r.law == LEAK_LAW_ID for r in declaration]),
         passive_exact=_exact(spec, declaration),
     )
     state = dict(passive_transferred=np.zeros((s, r)), passive_dissipated_energy_pJ=np.zeros(r))
@@ -221,19 +242,33 @@ def _opening(state, control, p, xp):
     return opening
 
 
+def _ends(state, p, xp):
+    """(c_in, c_out) [species, route] in mM, from the read's amounts (free h at buffered nodes)."""
+    volume, active = _volumes(p, xp)
+    c = xp.where(active, _amounts(state, p, xp) / volume, 1.0)
+    return c[:, p.passive_inside], c[:, p.passive_outside]
+
+
 def rates(state, potentials, control, p, *, xp):
     from cells.models.surface_pump_v3 import KindRates
 
-    volume, active = _volumes(p, xp)
-    c = xp.where(active, _amounts(state, p, xp) / volume, 1.0)  # mM, the read's amounts.
-    c_in, c_out = c[:, p.passive_inside], c[:, p.passive_outside]
-    flux = passive.flux_fmol_s(
-        c_in, c_out, p.passive_area, p.passive_permeability, _opening(state, control, p, xp), xp=xp
+    c_in, c_out = _ends(state, p, xp)
+    opening = _opening(state, control, p, xp)
+    neutral = passive.flux_fmol_s(
+        c_in, c_out, p.passive_area, p.passive_permeability, opening, xp=xp
     )  # [species, route], inward.
+    voltage = potentials[p.passive_inside] - potentials[p.passive_outside]  # phi_in - phi_out.
+    charged = leak.flux_fmol_s(
+        c_in, c_out, voltage, p.temperature, p.passive_area, p.passive_permeability, opening, xp=xp
+    )
+    flux = xp.where(p.passive_leak, charged, neutral)
+    volume, _ = _volumes(p, xp)
     n = p.active.size
     net = _net(flux, p, volume.shape[0], xp)
     log_ratio = xp.log(c_out) - xp.log(c_in)
-    heat = 1e-3 * R * p.temperature * species_sum(flux * log_ratio, xp=xp)  # >= 0, pJ/s.
+    fick = 1e-3 * R * p.temperature * species_sum(flux * log_ratio, xp=xp)
+    ghk = species_sum(leak.heat_pJ_s(flux, c_in, c_out, voltage, p.temperature, xp=xp), xp=xp)
+    heat = xp.where(p.passive_leak, ghk, fick)  # >= 0, pJ/s per route.
     outward = xp.where(p.passive_on_junction, 0.0, -flux)
     patch_flux = scatter(outward, p.membrane_permeability, (p.passive_membrane,), xp=xp)
     return KindRates(
@@ -325,51 +360,80 @@ def domain(state, p, *, xp):
 def moved_rows(declaration):
     rows = []
     for route in declaration:
-        for species, value in route.permeability:
-            if value > 0:
-                rows += [(species, route.inside, LAW_ID), (species, route.outside, LAW_ID)]
+        if route.permeability > 0:
+            rows += [
+                (route.species, route.inside, route.law),
+                (route.species, route.outside, route.law),
+            ]
     return tuple(rows)
 
 
+def stage_term(read, control, p, *, xp):
+    """B7 for the leak (gap 5): each leak route's max-side slope conductance (the kernel's
+    conductance_S, S) on its patch's cell, for membrane_rate's per-stage refusal."""
+    c_in, c_out = _ends(read, p, xp)
+    opening = _opening(read, control, p, xp)
+    slope = leak.conductance_S(
+        c_in, c_out, 0.0, p.temperature, p.passive_area, p.passive_permeability, opening, xp=xp
+    )  # [species, route]; nonzero at each route's own row.
+    per_route = xp.where(p.passive_leak, species_sum(slope, xp=xp), 0.0)
+    cells = xp.zeros(p.active.shape)
+    return scatter(per_route, cells, (xp.minimum(p.passive_inside, cells.shape[0] - 1),), xp=xp)
+
+
 def bound_rate(spec, declaration):
-    """dt L <= 1 (§7.4 (i)): L = 1e15 P A (1/V_a + 1/V_b) summed over the routes at each node,
-    the largest over species and nodes (availability and gate at most 1)."""
+    """The neutral law's dt L <= 1 (§7.4 (i)): L = 1e15 P A (1/V_a + 1/V_b) summed over the routes
+    at each node, the largest over species and nodes (availability and gate at most 1)."""
     m = spec.model
     volume = {c.id: c.volume_pL for c in m.cells} | {o.id: o.volume_pL for o in m.extracellular}
     area = {p.id: p.area_m2 for p in m.membranes} | {j.id: j.area_m2 for j in m.junctions}
     totals = {}
     for route in declaration:
+        if route.law != LAW_ID:
+            continue
         both = 1.0 / volume[route.inside] + 1.0 / volume[route.outside]
-        for species, value in route.permeability:
-            rate = 1e15 * value * area[route.host] * both  # P A in m^3/s over V in pL (1e-15 m^3).
-            for node in (route.inside, route.outside):
-                totals[(species, node)] = totals.get((species, node), 0.0) + rate
+        rate = 1e15 * route.permeability * area[route.host] * both  # P A (m^3/s) over V (pL).
+        for node in (route.inside, route.outside):
+            totals[(route.species, node)] = totals.get((route.species, node), 0.0) + rate
     return max(totals.values(), default=0.0)
 
 
 def check_definition(spec):
-    """Version 1's admission: neutral species only, and the host route's own permeability for a
-    carried species is zero; route IDs unique among the definition's entity IDs."""
+    """Admission: the neutral law carries a valence-0 row, the leak a valence +1 row (B4's proton
+    row where B4 is declared); the host route's own permeability for the carried row is zero;
+    route IDs are unique among the definition's entity IDs."""
     m = spec.model
-    declaration = dict(m.kinds)[KIND_ID]
+    kinds = dict(m.kinds)
+    declaration = kinds[KIND_ID]
     patches = {p.id: p for p in m.membranes}
     junctions = {j.id: j for j in m.junctions}
     taken = {x.id for x in (*m.cells, *m.extracellular, *m.membranes, *m.junctions, *m.faces)}
+    closure = kinds.get("cells.rapid_proton_buffer@1")
     for route in declaration:
         if route.id in taken:
             raise ConfigError(f"{MODEL_KEY} {route.id}: the ID is already an entity's")
-        host = patches[route.host] if route.host_kind == "membrane" else junctions[route.host]
-        for species, value in route.permeability:
-            row = m.species_ids.index(species)
-            if m.valence[row] != 0:
+        host = patches[route.host] if route.host_kind == "patch" else junctions[route.host]
+        row = m.species_ids.index(route.species)
+        if route.law == LAW_ID and m.valence[row] != 0:
+            raise ConfigError(
+                f"{MODEL_KEY} {route.id}: {LAW_ID} carries neutral species only, not "
+                f"{route.species}"
+            )
+        if route.law == LEAK_LAW_ID:
+            if m.valence[row] != leak.VALENCE:
                 raise ConfigError(
-                    f"{MODEL_KEY} {route.id}: version 1 carries neutral species only, not {species}"
+                    f"{MODEL_KEY} {route.id}: {LEAK_LAW_ID} carries a valence +1 proton row"
                 )
-            if value > 0 and host.permeability_m_per_s[row]:
+            if closure is not None and closure.proton != route.species:
                 raise ConfigError(
-                    f"{MODEL_KEY} {route.id}: its {route.host_kind} {route.host} has its own "
-                    f"permeability for {species}; one law moves a species on a route"
+                    f"{MODEL_KEY} {route.id}: the leak's row {route.species} is not the closure's "
+                    f"proton row {closure.proton}"
                 )
+        if route.permeability > 0 and host.permeability_m_per_s[row]:
+            raise ConfigError(
+                f"{MODEL_KEY} {route.id}: its {route.host_kind} {route.host} has its own "
+                f"permeability for {route.species}; one law moves a species on a route"
+            )
 
 
 PASSIVE_ROUTES = BUILTIN.register(
@@ -388,6 +452,7 @@ PASSIVE_ROUTES = BUILTIN.register(
             "passive_membrane",
             "passive_junction",
             "passive_on_junction",
+            "passive_leak",
             "passive_exact",
         ),
         parse=parse,
@@ -395,6 +460,7 @@ PASSIVE_ROUTES = BUILTIN.register(
         structure_entry=structure_entry,
         initial=initial,
         rates=rates,
+        stage_term=stage_term,
         book=book,
         ledger_terms=ledger_terms,
         domain=domain,

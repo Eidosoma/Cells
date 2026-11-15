@@ -94,8 +94,11 @@ class Kind:
       work accumulators, and the free energy the kind stores beyond the stored rows' own terms
       (its change since the start), folded into balances, device_balances and the ledger
       magnitudes by role.
-    - observation: `readouts(state, control, p, *, xp)` -> its readout columns, in order, after
-      today's (on the host).
+    - observation: `readouts(state, read, potentials, control, p, *, xp)` -> its readout columns,
+      in order, after today's (on the host): the stored state, the row's read state (free h at a
+      buffered node) and its node potentials, so a charged law can report its instantaneous rate.
+    - a kind's own domain at a stage: KindRates.valid (from `rates`, at the stage's read and
+      potentials; a charged law's V-dependent domain); false refuses the row or the step.
     """
 
     kind_id: str
