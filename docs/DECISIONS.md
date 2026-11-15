@@ -5634,6 +5634,30 @@ clarifications were adopted into the section:
   held-bath worlds.
 - Two present-tense examples were corrected.
 
+## D175: Levels of detail as declared representations
+
+2026-11-15. The user forwarded guidance approving a concise "Levels of detail" section, with six
+refinements, and asked: "review and also get a review from your adviser then update the arch docs".
+The lead adopted it after reviewing it with the advisor. It is now in
+[ARCHITECTURE.md](ARCHITECTURE.md#levels-of-detail), linked from both multiscale documents.
+
+**What it sets.**
+- Representations of a mechanism are declared per mechanism and per question; there is no global
+  detail level.
+- Compatibility is defined at the physical interface. Each representation closes its own ledgers,
+  and the transient difference between them belongs to the declared error budget.
+- One representation of a pathway per scope, enforced by a declared key.
+- Four optional fields, only on laws that stand in for something. They are a reserved interface in
+  D172's law design.
+- The representation is kept separate from the numerical method.
+- Assignments are fixed first.
+- The reduction is real in the kernels, not a runtime flag.
+- Numerical, reduction and biological validation are kept separate. The envelope is declared
+  before the comparison, and one case outside it must fail.
+
+**Its first consumer** follows D174's fuel case and waits for the fuel representation. The
+guidance's text is kept outside the public repository.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

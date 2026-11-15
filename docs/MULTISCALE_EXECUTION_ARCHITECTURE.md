@@ -328,6 +328,8 @@ and autonomous renewal also require the mechanics and lifecycle work.
 
 ## Fidelity and resolution are explicit capabilities
 
+*The modular core's [levels of detail](ARCHITECTURE.md#levels-of-detail) (D175) states how these principles apply to the composite's law declarations.*
+
 Support named model families rather than an undocumented global "fast" flag:
 
 - Conditioned endpoint relations can answer only their declared static queries.
