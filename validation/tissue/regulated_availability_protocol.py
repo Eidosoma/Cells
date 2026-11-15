@@ -315,7 +315,8 @@ def draft(results, results_path):
     protocol["steps_before_judgement"] = [
         "the lead's review of this draft with the advisor",
         "a rehearsal: the judged entry from a snapshot, refused while PROPOSED (the guard)",
-        "a dry run: a development run from the snapshot to be judged, judged in dev mode",
+        "a dry run: the judged entries with a registered dry-run copy, from the snapshot to be "
+        "judged, every part, compared bitwise with the development run",
         "the final check of the registered values against the dry run",
         "registration by the lead (the status alone changes)",
         "one judged run and its verdict",
@@ -360,7 +361,12 @@ def with_rehearsal(protocol, rehearsal):
         basis="twice the rehearsal's wall time on one CPU, rounded up to the minute",
     )
     protocol["steps_before_judgement"] = [
-        step + (" (done: protocol['rehearsal'])" if step.startswith("a rehearsal") else "")
+        step
+        + (
+            " (done: protocol['rehearsal'])"
+            if step.startswith(("a rehearsal", "a dry run"))
+            else ""
+        )
         for step in protocol["steps_before_judgement"]
     ]
     return protocol

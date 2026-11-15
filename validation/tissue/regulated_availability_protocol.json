@@ -771,8 +771,8 @@
  "attempt_rule": "D150's: one judged run from a clean execution snapshot of main into a new directory; an infrastructure ending (an incomplete results.json) is rerun once from the same snapshot; a failed criterion is a verdict, not a retry",
  "steps_before_judgement": [
   "the lead's review of this draft with the advisor",
-  "a rehearsal: the judged entry from a snapshot, refused while PROPOSED (the guard)",
-  "a dry run: a development run from the snapshot to be judged, judged in dev mode",
+  "a rehearsal: the judged entry from a snapshot, refused while PROPOSED (the guard) (done: protocol['rehearsal'])",
+  "a dry run: the judged entries with a registered dry-run copy, from the snapshot to be judged, every part, compared bitwise with the development run (done: protocol['rehearsal'])",
   "the final check of the registered values against the dry run",
   "registration by the lead (the status alone changes)",
   "one judged run and its verdict"
@@ -1149,5 +1149,83 @@
   "Is the band [1.7, 2.3] right for a judged order on 3 pairs, with the observed orders 2.00 to 2.08 in development?",
   "Should A4's baseline U, at accumulated rounding in development, stay reported only?",
   "GPU: CPU-only in version 1, with an L4 variant later (proposed)?"
- ]
+ ],
+ "rehearsal": {
+  "snapshot": {
+   "git_revision": "0448f9fcfc64555f22b1795e68cbb740abbf6fbf",
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "status": "complete"
+  },
+  "refusals_while_proposed": {
+   "refused-generator": {
+    "message": "Refused: the protocol is not registered (its status does not begin 'registered')",
+    "wrote_nothing": true
+   },
+   "refused-judge": {
+    "message": "Refused: the protocol is not registered (its status does not begin 'registered')",
+    "wrote_nothing": true
+   }
+  },
+  "judged_run": {
+   "status": "Judged run of coupling_regulated_availability_v1",
+   "complete": true,
+   "source": {
+    "kind": "snapshot",
+    "git_revision": "0448f9fcfc64555f22b1795e68cbb740abbf6fbf",
+    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": "complete"
+   },
+   "parts": [
+    "a1",
+    "a4",
+    "a5",
+    "controls"
+   ],
+   "part_wall_s": {
+    "a1": 0.725591504946351,
+    "a4": 535.4089361899532,
+    "a5": 217.50346715701744,
+    "controls": 545.4266399326734
+   }
+  },
+  "judged_run_wall_s": 1299.1,
+  "verdict": {
+   "kind": "Judged verdict",
+   "passed": true,
+   "controls_caught": {
+    "first_order_state": 1,
+    "lagged_factor": 1,
+    "delta_basal_a4": 1,
+    "delta_basal_a5": 1
+   }
+  },
+  "bitwise_against_development": {
+   "development": "dev-476c6e01/results.json",
+   "parts": {
+    "a1": true,
+    "a4": true,
+    "a5": true,
+    "controls.delta_basal_a4": null,
+    "controls.delta_basal_a5": null,
+    "controls.first_order_state": true,
+    "controls.lagged_factor": true
+   },
+   "by_design": [
+    "controls.delta_basal_a4",
+    "controls.delta_basal_a5"
+   ],
+   "differing": []
+  },
+  "memory_peak_bytes": 980779008,
+  "memory_cap": "4G",
+  "passed": true
+ },
+ "resources": {
+  "cpus": 1,
+  "memory_cap": "4G",
+  "observed_memory_peak_bytes": 980779008,
+  "observed_wall_s": 1299.1,
+  "runtime_max_s": 2640,
+  "basis": "twice the rehearsal's wall time on one CPU, rounded up to the minute"
+ }
 }
