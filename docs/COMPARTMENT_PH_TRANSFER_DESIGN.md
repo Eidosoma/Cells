@@ -23,7 +23,10 @@ branch `fr45-physics` from tag `d172-base-2026-11-15`. It is design before code.
 1. **Protons are one +1 species row.** At a buffered node the row holds the node's titratable
    proton content (free plus bound, "proton equivalents"). Free H⁺ is algebraic state, computed by
    the node's buffer closure at every stage, and every law reads it from there.
-2. **Buffering is a rapid-buffer closure, not kinetic reactions** (§4).
+2. **Buffering is a rapid-buffer closure, not kinetic reactions** (§4). Its pK comes from the
+   registry's standard potentials. Its envelope and error budget are declared first (D175), with a
+   case outside the envelope that must fail. Appendix A.2 gives the full protonation kinetics, so
+   the references can show convergence to the closure.
    - Protonation relaxes at about 10⁸ s⁻¹ (**S**), so explicit kinetics are impossible.
    - A split implicit block would let the transport step move the free pool by several times its
      own size per step: a 250 nm lumen at pH 7.4 holds about 1.6 free protons (CP4).
@@ -32,14 +35,20 @@ branch `fr45-physics` from tag `d172-base-2026-11-15`. It is design before code.
 3. **Counterions are explicit rows on explicit routes,** Cl⁻ in or K⁺ out, chosen by the world.
    Without one the pump charges the patch and stalls; that is the negative control.
 4. **The charged patch needs an implicit route for a practical step** (the charged-patch test,
-   §7.2). @3's energy ledger, not stability, sets the explicit limit: dt × G/C_b ≤ 0.05 on the
-   max-side G that the engine computes.
-   - Lysosomal Cl⁻ needs dt ≤ 0.01–0.03 ms explicitly, of order 25–90 CPU-hours per 900 s, an
-     upper bound. FR-5's pores need about 0.1–0.3 µs.
-   - A small counterion conductance runs explicitly. K⁺ at 5e-10 m/s and 140 mM gives 0.025 at
-     1 ms, and still carries the pump's current at about 8 mV (**S**).
-   - That is FR-4's first world, with the face-free bound term, while FR-1's door 2 (the implicit
-     patch) is built.
+   §7.2–7.3).
+   - **What refuses is the booking.** @3's energy ledger refuses an explicit patch at dt × G/C_b
+     above about 0.05. At those refused steps the state is right (≤ 0.36% of its change, second
+     order). What fails is the routes' heat quadrature, at 5–6 times the state's error.
+   - **So the fix is an exact booking, not a tighter shared bound.** B7 is a stability safety net
+     at @3's constant 1.0. The sweep shows it refuses no existing world.
+   - **With today's booking:** lysosomal Cl⁻ needs dt ≤ 0.01–0.03 ms (25–90 CPU-hours per 900 s,
+     an upper bound), and FR-5's pores about 0.1–0.3 µs.
+   - **The implicit patch** is designed in §7.3. It is local per compartment: a diagonal-plus-rank-one
+     Newton on the compartment's amounts, with exact booking and no change to the global field
+     factorization.
+   - **FR-4's first world runs explicitly** with a small K⁺ conductance (5e-10 m/s at 140 mM:
+     0.025 at 1 ms, carrying the pump's current at about 8 mV, **S**), with its dt declared by the
+     world.
 5. **Fuel is maintained under F2:** held ATP, ADP and Pi rows at the owner's cytosol, with one
    authority for their standard potentials. The scope label is "maintained fuel: no depletion".
 6. **The thermodynamic boundary** (§5.2).
@@ -57,6 +66,10 @@ branch `fr45-physics` from tag `d172-base-2026-11-15`. It is design before code.
    - The pH condition is a second factor on the same routing door. It reads the compartment's
      free H⁺ from the closure.
    - Ion pores wait for the implicit patch. Proton and neutral leaks run explicitly.
+   - The routing door's use is designed in §8: sources, sinks, `multiply`, timing and who does
+     what.
+   - On a lumped population, an injury is uniform over its members. One member, or a subset, is
+     injured by splitting the population into two compartments (§9).
 9. **The first worlds fit the species cap.** FR-4 needs 9 rows, FR-5 10, against 16.
 
 ## 1. Scope, representation and claims
@@ -118,7 +131,15 @@ stands. No change to the field is needed.
 
 ### 4.1 The equations
 
-For buffer k at one node, with acid dissociation constant K_k in mM (pK_k = −log₁₀(K_k/c°)):
+For buffer k at one node, with acid dissociation constant K_k in mM:
+- **K_k comes from the registry's standard potentials, never from a second parameter** (B3, one
+  authority).
+  - Each buffer species is declared once with the standard potentials of its two forms, μ°(B_k)
+    for the base (valence z_k) and μ°(HB_k) for the acid (valence z_k + 1).
+  - The proton's is μ°(H⁺), conventionally 0 at c°.
+  - Then K_k = c° exp(−(μ°(H⁺) + μ°(B_k) − μ°(HB_k))/RT), and pK_k = −log₁₀(K_k/c°).
+  - The closure, the kinetic reference (Appendix A) and the free-energy term (§4.4) all read the
+    same three potentials.
 - The equilibrium is h × b_k / a_k = K_k, with a_k = [HB_k] and b_k = [B_k] in mM.
 - So a_k = B̄_k h/(h + K_k), where B̄_k = B_tot,k/V.
 - The free proton concentration h solves
@@ -149,8 +170,28 @@ The closure is a reduced representation under D175, and declares its four fields
 - **it preserves** H_eq, every B_tot,k, the node's charge and its free-energy minimum;
 - **what can be asked:** free h, pH, a_k and b_k, β, and observations. Kinetic questions about the
   buffer itself are refused;
-- **where it is qualified:** k_on B̄ ≫ 1/dt and ≫ every per-free-proton transport rate (J/n_free),
-  checked as declared bounds. Its error budget is set against the kinetic reference (§14).
+- **where it is qualified:** the envelope and budget below, declared before any comparison (D175).
+
+**The envelope and error budget, declared before the comparison (D175).**
+- **The fast rate:** each buffer's protonation relaxes at λ_k = k_on,k (h + b_k + K_k) (1/s, with
+  k_on in mM⁻¹ s⁻¹). The slowest of them is λ = min_k λ_k.
+- **The slow rate:** transport drives the free protons at ρ = |dH̄_eq/dt| / (β/ln 10) (1/s). That
+  is the relative rate at which the equilibrium h moves, from the stage's transport.
+- **The envelope:** λ ≥ 10³ ρ and λ ≥ 10³/dt at every stage of every node the closure serves.
+  - Both sides are computable at run time, from the declared k_on (a registry value of the buffer,
+    used only for this check and the reference) and the stage's fluxes.
+  - The run checks the envelope at every stage and refuses a stage outside it, with the reason.
+- **The error budget:** |pH_closure − pH_kinetic| ≤ 1e-3 pH units at every record time. So is the
+  closure's error in H_eq-weighted fluxes, at 1e-3 relative. It is checked against Appendix A's
+  kinetic reference.
+- **The case outside the envelope, which must fail the budget:** FR-4's §13.1 world with the lumen
+  buffer's k_on lowered to 1e-3 mM⁻¹ s⁻¹ (1 M⁻¹ s⁻¹).
+  - Then λ is about 0.04 s⁻¹ (**S**, at b ≈ 38 mM). Early in the acidification, ρ is about
+    0.1 s⁻¹: 0.25 mM/s of pumped protons against β ≈ 5.1 mM/pH.
+  - The kinetic reference lags the closure by a large fraction of a pH unit there.
+  - Both the run-time envelope check and the comparison must flag it.
+- **The inside cases:** k_on of 1e10 M⁻¹ s⁻¹ (1e7 mM⁻¹ s⁻¹) and 1e8 M⁻¹ s⁻¹. The reference's
+  convergence toward the closure is shown as k_on grows (Appendix A).
 
 D152's charged reactions (§11, item 4) remain the route for **slow** charged kinetics, such as
 uncatalysed CO₂ hydration. They are not on FR-4's critical path.
@@ -304,29 +345,98 @@ was run on `resolved_pump_tissue@3` alone.
   - G/C_b = P F² c/(RT c_m) is independent of size.
 - **Cost:** about 3.6 ms per step in this 3-node world, whatever the observation count. That is
   this runner path's cost and an upper bound for production windows.
-- **So (S, upper bounds):** a 900 s FR-4 world with lysosomal Cl⁻ needs dt of 0.01–0.03 ms
-  explicitly, of order 25–90 CPU-hours. The FR-5 pore needs 0.1–0.3 µs.
+- **So, with today's booking (S, upper bounds):** a 900 s FR-4 world with lysosomal Cl⁻ needs dt
+  of 0.01–0.03 ms explicitly, of order 25–90 CPU-hours. The FR-5 pore needs 0.1–0.3 µs.
+
+**What refuses: the booking, not the state (run 04).** The energy bound was widened inside the probe
+only, and the refused runs were let complete.
+
+| dt × G/C_b (log-mean) | 0.36 | 0.18 | 0.090 | 0.045 | 0.023 |
+| --- | --- | --- | --- | --- | --- |
+| State error (V_b, of its change) | 1.8e-2 | 3.6e-3 | 8.1e-4 | 1.9e-4 | 4.7e-5 |
+| Energy residual / flows | 8.9e-2 | 1.9e-2 | 4.4e-3 | 1.1e-3 | 2.6e-4 |
+
+- **The state is right at the refused steps,** and converges at second order.
+- **The residual also converges at second order,** at a steady 5–6 times the state's error. It is
+  the second-order quadrature of the patch routes' heat booking. It is not a non-convergent defect
+  like FR-10's onset.
+- **So the fix is an exact booking, not a tighter shared bound.** That means a discrete-gradient
+  (average-vector-field) heat for the routes on a face-free patch (§7.3's booking).
+- **B7 is therefore a stability safety net,** with @3's own `EXPLICIT_STEP_BOUND` = 1.0 on the
+  max-side G, not an energy constant.
+- **The B7 sweep** (`b7_sweep.py`): every JSON world at the tag, the same 10 face-free nodes as
+  FR-1's sweep.
+  - Where the term applies, the largest term × dt is 0.00068, in older RK4 families.
+  - The near-miss P5 (`pump_water_predictions.json`, ARS at 1 ms) has its node as the gauge, so
+    the term does not apply. It would give 0.0032.
+  - The term refuses no existing world.
 
 **The route, in order:**
-1. **Now, for FR-4's first world:** a counterion with dt × G_max-side/C_b ≤ 0.05.
-   - At dt = 1 ms and K⁺ at 140 mM on both sides, that is P_K ≤ 1e-9 m/s. The world in §13 uses
-     5e-10 m/s, so dt × G/C_b = 0.025, a factor of 2 of margin.
-   - A 900 s world is then 9e5 steps, about 0.9 CPU-hours at the measured upper-bound cost
-     (**S**).
-   - The face-free bound term B7 is added to `explicit_rate_bound` and `membrane_rate` as
-     max over free face-free nodes of Σ_m G_m/C_node.
-   - B7's constant is 0.05 on the max-side G, from the energy threshold rather than stability,
-     so that such a world is refused in advance rather than at run time.
-   - **Owner:** `explicit_rate_bound` and `membrane_rate` are the core's files, not this owner's.
-     The core owner, or the D148 round with finding 3's term, edits them; this note supplies the
-     term and its constant.
-2. **The implicit patch,** FR-1's door 2: a compartment's bounding-patch electrodiffusion joins the
-   implicit part of the IMEX step, as face drift does.
-   - It is local: a face-free node couples only to its owner. One node and one patch per
-     compartment.
-   - It is a new solver ID (D147), with its own qualification. The field-solver interface owns the
-     factor and solve (FIELD_SOLVER_INTERFACE_DESIGN §6; INNER §13.4).
-   - Cl⁻ counterions at lysosomal values, and every ionic pore of FR-5, wait for it.
+1. **Now, for FR-4's first world:** explicit, with a small counterion.
+   - Until the exact booking exists, the world declares its own dt with dt × G_max-side/C_b ≤ 0.05,
+     so that today's booking error stays under 2e-3. That is a world's choice, not an engine
+     bound.
+   - The world in §13 uses K⁺ at 5e-10 m/s and 140 mM, so 0.025 at 1 ms. 900 s is 9e5 steps, about
+     0.9 CPU-hours at the measured upper-bound cost (**S**).
+   - **B7,** as the safety net: max over free face-free nodes of Σ_m G_m/C_node, added to
+     `explicit_rate_bound` and `membrane_rate` against `EXPLICIT_STEP_BOUND`. It is statically gated,
+     so worlds without such a node are unchanged.
+   - **Owner:** those two functions are the core's files. The core owner, or the D148 round with
+     finding 3's term, edits them. This note supplies the term.
+2. **The implicit patch (§7.3),** FR-1's door 2. Cl⁻ counterions at lysosomal values, and every
+   ionic pore of FR-5, wait for it.
+
+### 7.3 The implicit patch: design (the consumer's note designs its route, INNER §13.4)
+
+**Why it can be local (S, from FR-1 §3.1).** A face-free compartment j has one patch, to its owner
+i.
+- **Its patch voltage is its own:** V_b = −q_j/C_b exactly, whatever φ_i.
+- **Its routes conserve q_i + q_j,** so the owner's capacitor row and the global field solve never
+  see them.
+- **So the stiff mode is local to the compartment.** Its implicit treatment needs no change to the
+  global factorization.
+
+**The route kind:** `bounding_patch_implicit_electrodiffusion@1`, one block per compartment.
+- **Unknowns at each implicit stage:** the compartment's amounts x_t = n_t,j of the patch's m
+  permeant species. m ≤ 16.
+- **Everything else,** including the owner's concentrations, is taken from the stage's state. The
+  owner's own change during the solve is O(V_j/V_i) and is carried by the same moved amounts.
+- **The stage equations, ARS(2,2,2)'s implicit part,** with γ = 1 − 1/√2 and the explicit
+  contributions E unchanged:
+
+      R(x) = x − x̂ − γ h J(x) = 0,   J_t(x) = the §7.1 flux of species t into j (fmol/s),
+      V_b(x) = −F 10⁻¹⁵ (fixed_j + Σ_s z_s x_s + Σ_{other rows} z n)/C_b.
+
+  x̂ holds the known parts: the step's start, the earlier stage's implicit term, and E.
+- **The factor:** the Jacobian is diagonal plus rank one,
+
+      ∂R/∂x = I − γ h (D + u wᵀ),   D_tt = ∂J_t/∂c_j,t / V_j,
+      u_t = ∂J_t/∂V_b,   w_s = −F 10⁻¹⁵ z_s / C_b.
+
+  Sherman–Morrison solves it in O(m) per compartment.
+- **The solve:** Newton at a fixed count (6), with a residual check, |R_t| ≤ 1e-13 (|x_t| + |x̂_t|).
+  A failure refuses the step; nothing is repaired.
+- **The update:** the owner's rows change by −Δx, so material and charge are exact by
+  construction. The field solve then runs as today.
+- **The booking (exact):** the patch's heat over the step is
+
+      Q_b = −[ΔG_j^chem + Δ(½ C_b V_b²) − Σ_t Δx_t μ̄_t,i],
+
+  with μ̄_t,i the owner-side chemical potential's divided difference over the step, which is exact
+  when the patch is the owner's only change. When other routes also move the owner, it is the
+  average-vector-field mean along the step's chord, so the attribution error is O(h²) of a term
+  already O(V_j/V_i). That error is declared and measured in the qualification.
+- **The solver ID:** a new IMEX ID (D147), whose stage includes the per-compartment blocks for
+  declared patches only. Absent compartments trace nothing.
+- **Qualification:**
+  - the CP worlds at dt up to 10 ms against the CP reference, at second order;
+  - stability on the pore at P × 10⁴;
+  - energy closing to rounding with the exact booking;
+  - the passive contract on FR-1's closed pair;
+  - one planted error, a wrong sign in w, which must fail.
+- **Who codes it:** the core owner decides whether it fits behind one slot in the numerical plan
+  (the coordinator's question to them). The law, its references and its qualification are this
+  note's.
 
 ## 8. Compartment-state routing
 
@@ -339,12 +449,30 @@ was run on `resolved_pump_tissue@3` alone.
   - its damage d (§9).
 - **Door S:** the pump and the leaks are inner-stage laws. F2's fuel rows are rows, not view fields.
   This note adds no view field.
-- **The routing door** (D156's, door S §6) carries FR-5's control factors to the transfer and leak
-  laws' rate multipliers: the damage d, and the pH factor f(pH_C).
-  - The factors are evaluated on each stage's state where the routing door supports stage reads
-    (INNER §7.2, B4).
-  - Otherwise they are evaluated at the split, which makes the coupling first order in dt. The
-    choice is declared, and the references use the stage form.
+- **The routing door** (D156's, door S §6) carries FR-5's two control factors to the rate
+  multipliers of the leak and transfer laws:
+  - **the sources:**
+    - d, the injury law's state on the bounding patch (§9);
+    - f(pH_C), computed from compartment C's closure, a read of H_eq and B_tot at C's node
+      through the identity map;
+  - **the sinks:** each FR-5 route declares one control slot, its rate multiplier m_r ∈ [0, 1],
+    which the routing door writes;
+  - **the combination:** `multiply`, in declared order:
+    - m_r = d for a damage route;
+    - m_r = f(pH_C) for the conditioned transfer;
+    - m_r = f(pH_C) × d where both are declared.
+
+    A factor outside [0, 1] refuses the step.
+  - **the timing:** on each stage's state where the routing door supports stage reads (INNER §7.2,
+    B4). Otherwise at the split, first order in dt, with that error declared and measured. The
+    references use the stage form;
+  - **no ledger:** factors book nothing, and the routes book material and heat (§9, §10).
+  - **who does what:**
+    - the coupling operator's side (reading these sources, writing route controls) goes to the
+      operators stream;
+    - the contract part (the control slot's declaration and the read of the closure) goes to the
+      integration owner;
+    - this note specifies both, and the laws are this owner's.
 
 ## 9. FR-5: damage, leak and reseal, and pH-conditioned transfer
 
@@ -356,6 +484,16 @@ was run on `resolved_pump_tissue@3` alone.
   - u_inj and u_res are declared piecewise-constant schedules in [0, 1].
   - d is kinetic state with no ledger (FEATURE_REQUESTS, FR-5). Its role is continuous dynamical
     state.
+  - **On a lumped population, one injury means a uniform one.** d is the damaged fraction of the
+    whole population's bounding area, applied equally to every member. That is exact for
+    identical members injured alike, and it is what a lumped node can represent.
+  - **Injuring one member, or a subset of N₁,** is declared by splitting the population into two
+    compartments of the same owner:
+    - an injured node with N₁ members, carrying d;
+    - an intact node with N − N₁ members, at d = 0.
+
+    FR-1's identity map already holds two compartments per owner. A lumped node never stands for
+    a damaged minority.
 - **The damage leak:** each declared species s gains a passive route through damage,
   J_s = d P_pore,s A_b × (the §7.1 flux factor). Protons go through the closures, as in §7.1. It
   books heat.
@@ -395,9 +533,9 @@ was run on `resolved_pump_tissue@3` alone.
 
 | # | Refused today | Where | Owner and route |
 | --- | --- | --- | --- |
-| 1 | An ion route on the bounding patch (nonzero permeability or channel) | `compartments.py`, refusal 4 | **This note's owner** (`compartments.py`). Lifted for K⁺-class routes with B7 (§7.2, step 1); for Cl⁻ and pores with the implicit patch (step 2: the field-solver interface owner for the solve, this owner for the law's qualification) |
+| 1 | An ion route on the bounding patch (nonzero permeability or channel) | `compartments.py`, refusal 4 | **This note's owner** (`compartments.py`). Lifted for small (K⁺-class) routes with B7 as the safety net and a world-declared dt (§7.2, step 1). For Cl⁻ and pores, lifted with the implicit patch (§7.3): this owner designs and qualifies it, and the core owner's answer on the numerical-plan slot decides who codes it |
 | 2 | A transporter (pump) on the bounding patch | `compartments.py`, refusal 4; there is no transporter kind | **This owner** (the pump law, §6, and the lifted refusal). B5's transporter kind and its insertion point in the inner step: **the core owner** (A1) |
-| 3 | Reactions inside a compartment beside a bath dose | The whole-field `CONFLICTS_VIEW` | **The integration owner** (door S, A6). Neutral reactions at a compartment node are admitted today: `compartments.ADMITTED` lists D152, and D152 refuses only held-bath sites |
+| 3 | ~~Reactions inside a compartment~~: **not refused** (dropped) | — | **Confirmed by a host-side parse** on the tag's snapshot (`fr45/charged_patch/refusal3_parse.py`). FR-1's world W with a neutral D152 reaction is admitted at the compartment node, and at that node with its owner. The planted held-bath site is refused with D152's message. One format rule applies: omit the `cells` key rather than give an empty list. Beside a bath dose, door S's whole-field `CONFLICTS_VIEW` is the integration owner's case (A6), not this list's |
 | 4 | Charged reactions | `species_common.parse_species` refuses nonzero valence | **This owner** (`species_reactions.py`, starting from `integration-d172` after the integration owner's declaration-only change). Version 2 admits closed charged reactions with Σ_s z_s ν_s = 0 exactly, in integers, for **slow** kinetics, and rewrites D150 §3's exact-zero charge argument. Buffering is not this route (§4) |
 
 Two more, which this note adds:
@@ -494,19 +632,25 @@ radius 250 nm each, as one node.
 
 - **Numerical verification first,** against references written from Appendix A by a separate agent:
   - dt studies at second order;
-  - the closure against a kinetic-buffer reference at k_on 1e10 M⁻¹ s⁻¹, solved by Radau. This is
-    D175's reduction check, with its budget declared before the comparison and one case outside
-    the envelope that must fail;
+  - the closure against Appendix A.2's kinetic reference, as a convergence series in k_on. This is
+    D175's reduction check, with §4.2's envelope and budget declared before the comparison, and
+    its outside case (k_on = 1 M⁻¹ s⁻¹), which must fail;
+  - the implicit patch's qualification (§7.3), when it is built;
   - the passive contract for the proton leak (§7.1) on FR-1's closed pair. The Syn3A track's P0e
     found two closed topologies on main.
 - **G1/G3 (D176):** exact contract tests per law (a NumPy ΔG per step), plus the scientific negative
   controls of §13, whose effects exceed the budget.
 - **Waits:**
-  - FR-4's code waits on B5's transporter kind (core owner), held rows and B3 (core owner), B7 (this
-    owner, with the D148 round), and the identity map (FR-1's re-gate);
-  - FR-5's code waits on FR-4, the routing door (D156's owner), and the injury law as a control
-    state;
-  - ionic pores and Cl⁻ counterions wait on the implicit patch.
+  - FR-4's code waits on:
+    - B5's transporter kind, held rows and B3 (the core owner);
+    - B7 as the stability safety net (the core's files, with the D148 round);
+    - the identity map (FR-1's re-gate).
+  - FR-5's code waits on FR-4, the routing door (§8: the operators stream and the integration
+    owner), and the injury law as a control state.
+  - Ionic pores and Cl⁻ counterions wait on the implicit patch (§7.3). Whether it fits behind one
+    slot in the numerical plan, which decides who codes it, is the core owner's answer.
+  - The exact booking of patch routes (§7.2) comes with the implicit patch. Until then, explicit
+    worlds declare dt × G/C_b ≤ 0.05.
 
 ## 15. Open questions
 
@@ -564,3 +708,34 @@ algebraic.
     fuel rows are held, so their stored energy is constant, and the maintenance's W carries
     hydrolysis.
 - **Integration:** Radau, rtol 1e-11. Report at the engine's record times.
+
+### A.2 The kinetic reference: full protonation kinetics
+
+This is written so that the reference does not share the closure's assumption. It is the same
+system with each buffer's protonation resolved, and its limit as k_on grows must be §A's closure
+system.
+- **States per node:** free n_H; for each buffer k, n_HB,k and n_B,k, with n_HB,k + n_B,k = B_tot,k
+  conserved; the ions, cargo and d as in §A.
+- **Each buffer's reaction** HB_k ⇌ H⁺ + B_k, in mM/s:
+
+      r_k = k_off,k a_k − k_on,k h b_k,   k_off,k = k_on,k K_k,
+
+  with h = n_H/V, a_k = n_HB,k/V, b_k = n_B,k/V, and K_k from the registry's potentials (§4.1).
+- **The equations:**
+  - dn_H/dt = V Σ_k r_k + (transport of free H⁺);
+  - dn_HB,k/dt = −V r_k;
+  - dn_B,k/dt = +V r_k.
+
+  Transport acts on free H⁺: the pump's n J_cyc and the leak's J_H read h and V_b. Everything else
+  is as in §A. The charge uses every form with its valence; q is unchanged by r_k.
+- **The initial state:** the equilibrium speciation at the declared pH₀, so a_k = B̄_k h₀/(h₀ + K_k).
+  This is the same start as the closure's H_eq.
+- **What the references show:**
+  - **convergence:** for k_on in {1e3, 1e5, 1e7} mM⁻¹ s⁻¹, the largest |pH_kinetic − pH_closure|
+    over the run, falling as k_on grows. The closure is the limit;
+  - **inside the envelope** (k_on ≥ 1e5 mM⁻¹ s⁻¹ in §13.1's world): within the 1e-3 pH budget;
+  - **outside it** (k_on = 1e-3 mM⁻¹ s⁻¹): beyond the budget, so the comparison must fail (§4.2).
+- **Integration:** Radau or BDF, rtol 1e-11. The kinetic system is stiff, at λ up to about
+  4e8 s⁻¹.
+- **Energy:** the reaction's heat −Σ_k ∫ V r_k Δ_rG_k dt ≥ 0 joins Q. In the limit it vanishes,
+  matching the closure's zero buffering dissipation.
