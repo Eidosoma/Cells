@@ -5747,6 +5747,21 @@ report kept in the lead's private workspace), and the user decided:
   doors,** with removal and surface insertion under FR-2. Its design note follows the round, and the
   choice of the closed loop's unit stays the user's.
 
+## D178: The visualizer's membrane-placement predictions read from UniProt and WormBase ParaSite may stay
+
+2026-11-15. The visualizer's protein records include membrane-placement predictions (which side of
+the membrane each protein sits on) for about 17,500 planarian proteins and some *M. pneumoniae*
+ones. They were read from UniProt and WormBase ParaSite. Those databases computed them with programs
+licensed for academic use: TMHMM, SignalP and Phobius, plus PROSITE's rules for about 200
+placements. The visualizer classed these values as non-commercial under D173.
+- **The user's ruling, asked before the visualizer's second merge into main:** these values may
+  stay. The databases' published terms are treated as governing.
+- **The visualizer reclassifies them,** keeps its notes on where each value came from, and its
+  licence test still lists every dependence by species.
+- **Scope:** only these placement predictions. Anything else, a source with no stated terms
+  included, stays under D173's rule: nothing from non-commercially licensed or unlicensed data is
+  committed or redistributed.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

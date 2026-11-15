@@ -16,6 +16,7 @@ and a general feature, never one built for one study (D144).
 | [FR-9](#fr-9--raise-the-7-species-cap) | Raise the 7-species cap | Priority 2, **blocking for world design** (the request's label; logged 14 November 2026). Measured safe to 16 (the W4 probe) | **Landed** (14 November): `MAX_SPECIES` is 16, a D148 change to `species_common` with guard worlds of 8 or more species (D165) | The D148 change with a guard world of 8 or more species; the requester's species list comes with its world definition |
 | [FR-10](#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family) | A dose schedule: scheduled bath composition in the pump family | Priority 2, small (the request's label; logged 14 November 2026) | **Milestones 1 and 2 landed** (14–15 November; [note](BATH_SCHEDULE_DESIGN.md) §7–§8, D169): dose steps admitted only inside measured regions (neutral up and down, K up and Na down) | Further ions and faster faces as each is measured; its protocol |
 | [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Design proposed in [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md) (merged 15 November); implementation in D172's round (D176) | Its law modules, world and protocol on the integration branch |
+| [FR-11](#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Looping replay packages of living cells for the viewer | Not stated (the user's request, logged 15 November 2026) | Logged, with the user's choices: periodic loops, a paced human heart cell, the minimal cells' cycle in scope | A design note when the run-view writer lands in D172's round; the interim planarian loop first |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -565,3 +566,48 @@ E07-v2's design wants an osmotic step as a post-release challenge, which is this
   compositions an osmotic step admits.
 - **The order.** It is small and has several consumers, so it is a candidate for an early slot,
   after FR-1's design. Its design note should be short.
+
+## FR-11 — Looping replay packages of living cells for the viewer
+
+**Logged 15 November 2026, no priority stated** (the user: "we have four types of cells for
+vizilation and that we are testing to different degreas in our upcomiung runs, human, planerian,
+syn3a, bacteria - we'd like the engine part to prepare relativly high level simulation replay
+packages so when you are not exploring some research with the viz tools the cell will be "alive" in
+a loop").
+
+**The request.** The viewer shows four cell types: human, planarian, Syn3A and a bacterium
+(*M. pneumoniae*). For each, the engine prepares a relatively high-level simulation replay package.
+The viewer plays it in a loop as the cell's resting state, whenever no research run is being
+explored.
+
+**The lead's mapping.**
+- **It is output, not new physics.** Each package is a short run of laws the engine has, or gains
+  through their own milestones.
+  - It is written by the run-view writer (D154, [note](RUN_VIEW_DESIGN.md)), in its format.
+  - It stays within the viewer's limit of about 1 MB per run.
+- **High level means a declared low level of detail** (D175): lumped compartments and reduced
+  representations. A package is labelled an illustration, never an experiment or a qualified result.
+- **A seamless loop needs a periodic state.**
+  - The physical way is a periodic drive, such as a pacing stimulus or a nutrient cycle. After the
+    transient the response repeats, and one period loops, with the seam checked (the state at t + T
+    against the state at t).
+  - Playing the run back and forth, or cross-fading a stationary state, would be the viewer's
+    choice, and is marked as such.
+- **The four cell types differ in readiness:**
+  - **Planarian:** the cue-written sheet's runs exist (E07-v1, W1).
+  - **Human:** a cell type is still to be chosen. The viewer's human organ is the heart, so a paced
+    cell would fit, with the channel laws it needs.
+  - **Syn3A and *M. pneumoniae*:** neither has an organism definition yet (the
+    [Syn3A note](SYN3A_MINIMAL_CELL_TRACK.md), D173). A first package would be a lumped single cell
+    built from the engine's general laws (membrane potential, pumps, a small reaction set), labelled
+    as such.
+- **Sequencing:** after the run-view writer lands with D172's round. The per-species definitions are
+  biological definitions, kept apart from engine mechanisms (ARCHITECTURE).
+- **The user's choices (15 November 2026), after the options:**
+  - **Loops are periodic:** a periodic drive, with one period played and its seam checked.
+  - **Human is a paced heart cell.**
+  - **For Syn3A and *M. pneumoniae*, the cell cycle is in scope as a loop** (grow, divide, follow
+    one daughter), as an illustration, since division is prescribed.
+  - **Timing:** after D172's round, at least to the stage where the run-view writer can carry the
+    interim planarian loop. The planarian loop comes first.
+- **Next:** a design note when the run-view writer lands (D142).
