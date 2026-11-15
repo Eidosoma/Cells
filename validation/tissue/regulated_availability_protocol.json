@@ -1,6 +1,18 @@
 {
  "id": "coupling_regulated_availability_v1",
- "status": "PROPOSED (drafted 14 November 2026 by the coupling operator's engine agent from the development run named in development_runs, for the lead's review with the advisor; not registered, and no judged run is made before the lead registers it)",
+ "status": "registered by the lead (registrar), 15 November 2026, after the rehearsal on main (0448f9fc), the dry run with a registered copy, the final check with the advisor and its five items (head 7cfe185a), and a registration-path check from the landed tree; one judged run follows from a clean snapshot of main at this registration commit",
+ "registration": {
+  "status": "registered by the lead (registrar), 15 November 2026, after the rehearsal on main (0448f9fc), the dry run with a registered copy, the final check with the advisor and its five items (head 7cfe185a), and a registration-path check from the landed tree; one judged run follows from a clean snapshot of main at this registration commit",
+  "registrar": "the lead",
+  "date": "2026-11-15",
+  "basis": [
+   "rehearsal: /mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/rehearsal/ (refusals while PROPOSED; every part bitwise against dev-476c6e01 apart from the \u03b4-controls at their registered \u03b4; the judge's verdict on the dry-run copy passes)",
+   "final-check items: the register path added and run; the refusal tests pass with the checked-in protocol registered; D147: 0 free offsets in all nine worlds; the runtime limit 4,500 s; the attempt rule; the disclosures",
+   "the advisor's final check (14-15 November): the order criteria judged in the a-priori band [1.7, 2.3]; the 1 ms pins are a regression guard, not judged"
+  ],
+  "scope_reminder": "CPU only in version 1; A4 from the reference's state at 50 ms at the explicit-rate bound's edge; horizons 2 s (A4) and 1 s (A5); no pumps or gated channels; A10 out of scope",
+  "judged_run": "one run, launched by the lead with the protocol's resources.launch command on an exclusive CPU"
+ },
  "operator": "species_regulated_availability@1",
  "models": [
   "resolved_pump_composite@1",
