@@ -127,6 +127,8 @@ const aside = await mkdtemp(path.join(os.tmpdir(), "cells-leftout-"));
 test.after(() => rm(aside, { recursive: true, force: true }));
 const unflagged = { map: structuredClone(map), atlas: structuredClone(overlay) };
 for (const capability of unflagged.map.capabilities) delete capability.left_out;
+// A species held back from the picture is flagged in the map's overlay too: with the flag off it is a species again.
+delete unflagged.map.species_held;
 for (const unit of Object.values(unflagged.atlas.units)) delete unit.left_out;
 const UNFLAGGED_OVERLAY = path.join(aside, "proteins", "overlay.json");
 await mkdir(path.join(aside, "proteins"));

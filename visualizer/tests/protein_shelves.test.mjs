@@ -1929,7 +1929,9 @@ test("the build puts each species' summary and the patterns of the addresses in 
   assert.equal(code, 0, said);
   assert.deepEqual(validate(scene), []);
   assert.deepEqual(scene.meta.warnings.filter((warning) => warning.startsWith("species proteins")), []);
-  assert.deepEqual(scene.proteins.shelves.map((item) => item.id), [...own].sort());
+  // A species held back from the picture for now (the map's overlay, `species_held`) keeps its files, and the scene carries none of it.
+  const held = new Set(Object.keys(JSON.parse(await readFile(path.join(ROOT, "data", "architecture", "overlay.json"), "utf8")).species_held || {}));
+  assert.deepEqual(scene.proteins.shelves.map((item) => item.id), [...own].filter((id) => !held.has(id)).sort());
   for (const item of scene.proteins.shelves) {
     assert.match(said, new RegExp(`species proteins ${item.id} of \\d{4}-\\d{2}-\\d{2}: [\\d,]+ proteins`));
     assert.equal(item.file, `proteins/${item.id}/shelves.json`);
