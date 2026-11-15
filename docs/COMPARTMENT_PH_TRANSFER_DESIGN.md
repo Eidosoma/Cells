@@ -754,7 +754,13 @@ isolates it.
     the leak and K⁺.
   - So FR-5 declares 0.5 ms (about 0.024), FR-4's factor-of-two margin. Price: 8e5 steps per
     400 s run instead of 4e5, about 0.8 CPU-hours per run at the upper-bound cost.
-  - Pending the references' confirmation.
+  - **Confirmed by the references' readout** (branch 931fb38a,
+    `compartment-transfer-arms-01-readout.*` beside their record). It reran the record's own
+    worlds from its own snapshot and reproduced the record exactly. Each arm's results are given
+    in its own entry below.
+  - **The start is required for X's budget.** X_L along the run moves by about 0.06 B per 1e-3
+    pH of start offset. So the X comparison must start the reference from the engine's own
+    1800 s checkpoint (`tr.Start`), not from a recomputed steady state.
 
 **Arm T, the condition:**
 - **Parameters:** P_X = 1e-9 m/s (τ ≈ 83 s at f ≈ 1); a proton-only pore (P_pore,X = 0); damage
@@ -764,13 +770,14 @@ isolates it.
   - The damage raises pH_L above pH₅₀. While pH_L > pH₅₀, the conditioned transfer's mean rate
     falls at least 10-fold below its mean rate before damage, judged on the route's cumulative
     transfer in units of X's budget B.
-    - The rerun measured about 14-fold: 152 B over 74–326 s, against 497 B in the 59 s before
-      damage.
+    - The readout measured 8.375 B/s over [0, 60] s against 0.6120 B/s over [73.081, 326.882] s,
+      a ratio of 13.69.
     - The route slows but does not stop. Most of the transfer happens while f passes through its
       half-open range, and longer windows do not change that.
     - So the claim is a number, not "stops".
   - After resealing, pH_L returns below pH₅₀ before 400 s, within 5 s of the reference's crossing
-    time (327 s in the rerun), and the transfer resumes.
+    time, and the transfer resumes. The readout's crossings: above at 73.081 s, back below at
+    326.882 s.
 - **Control:** f ≡ 1. X keeps crossing through the alkaline window.
 
 **Arm R, the release:**
@@ -778,11 +785,12 @@ isolates it.
   references' grid showed; a cargo pore at 1e-6 m/s (τ ≈ 0.08 s at d ≈ 1) beside the proton
   pore; damage during [100, 160] s.
 - **What it shows:**
-  - a release burst through the pore: at least 0.8 of X_L(0) released inside the window (the
-    rerun measured 0.874);
+  - a release burst through the pore: at least 0.8 of X_L(0) released inside the window. The
+    readout measured 0.8736 over [100, 160] s. The conditioned route carries nothing while
+    pH_L > pH₅₀, since the burst has already equalised X;
   - the pH rising during damage;
   - after resealing, pH_L returns below pH₅₀ before 400 s, within 5 s of the reference's crossing
-    time (367 s in the rerun).
+    time. The readout's crossings: above at 113.081 s, back below at 366.882 s.
   - Full recovery to within 0.001 of the start needs about 820 s. That is not claimed, so the
     horizon stays at 400 s.
 - **Control:** d ≡ 0. No burst, and no pH rise.
