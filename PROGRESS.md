@@ -76,6 +76,25 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **A future FEP track proposed (15 November 2026; docs only; PROPOSED, not scheduled).** At the
+  user's request ([proposal](docs/FEP_TRACK_PROPOSAL.md);
+  [source log](/mnt/workspaces/Cells/fep-track-20261115-01/sources.json)).
+  - **Claims discipline:** no result could prove the free-energy principle. A comparison harness
+    would carry planted tests, and a pair with identical dynamics that must come out
+    indistinguishable.
+  - **Three deferred stages:**
+    - chemotaxis in a well-mixed cell first;
+    - anticipatory regulation, held with D145's gene-regulation hold;
+    - collective tissue regulation, including islet calcium waves, which is Track E's coupling
+      physics.
+  - **Engine gaps:**
+    - Stage 1a needs only general items: an allosteric factor, occupancy as a coupling source,
+      output-dependent adaptation and an organism instance.
+    - Motility, gene expression with delays, long durations, evolution and observation models are
+      missing.
+  - **Timing:** recommended after the D172 round and FR-4/FR-5, at about 20–28 agent-days. The
+    decisions listed in the proposal are the user's.
+
 - **The results baseline tool, the protocol scan and the matched-arm export driver landed (15
   November 2026).** Validation only.
   - **Gate:** tier 1 at eb9ca828: 344 files. Two tree-scanning guards changed, both on the new tools.
