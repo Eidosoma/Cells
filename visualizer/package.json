@@ -5,7 +5,9 @@
   "description": "3D viewer for the Cells architecture map and, later, experiment replays. Tooling: reads the checkout and saved run outputs; never part of the engine.",
   "type": "module",
   "license": "MIT",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "extract": "python3 tools/extract_architecture.py",
     "import:proteins": "python3 tools/import_protein_inventory.py",
@@ -15,7 +17,8 @@
     "export": "node tools/export_page.mjs",
     "shot": "node tools/screenshot.mjs",
     "check:input": "node tools/check_input.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "check:species": "node tools/check_species.mjs"
   },
   "dependencies": {
     "three": "0.170.0"

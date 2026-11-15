@@ -5,8 +5,8 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-14",
-  "generated_at": "2026-11-15T01:06:05Z",
-  "revision": "a456453b",
+  "generated_at": "2026-11-15T02:28:03Z",
+  "revision": "c7c0d706",
   "revision_date": "2026-11-15",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
@@ -15,7 +15,7 @@
    "engine_files": 504,
    "engine_files_placed": 504,
    "parts": 216,
-   "relations": 818,
+   "relations": 819,
    "by_kind": {
     "operator": 17,
     "component": 110,
@@ -26,8 +26,8 @@
     "unit": 49
    },
    "by_status": {
-    "qualified": 35,
-    "landed": 16,
+    "qualified": 37,
+    "landed": 14,
     "established": 61,
     "planned": 26,
     "designed": 7,
@@ -375,7 +375,7 @@
      "covers_all": false
     }
    },
-   "checked_at": "a456453b"
+   "checked_at": "c7c0d706"
   },
   "counts": {
    "units": 49,
@@ -1234,13 +1234,12 @@
       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
       "lines": [
        "525 amino acids",
-       "Candidate, not an established counterpart: Locus JCVISYN3A_0792, product \"F0F1 ATP synthase subunit alpha\" in the genome record. Its sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
-       "GenBank: AVX54961.1"
+       "Candidate, not an established counterpart: Locus JCVISYN3A_0792, product \"F0F1 ATP synthase subunit alpha\" in the genome record. Its sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain) in UniProt's archive. A candidate by annotation, not a measured function in this strain."
       ],
       "links": [
        {
-        "text": "GenBank",
-        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+        "text": "GenBank AVX54961.1",
+        "url": "https://www.ncbi.nlm.nih.gov/protein/AVX54961.1"
        }
       ],
       "note": "Part of the cell's F-type ATP synthase, which sits in its one membrane; four of its eight subunits are listed here. In mycoplasmas this machine typically runs backwards, spending ATP to pump protons out, which was measured in related species and not in this strain. The law inventory has no F-type ATPase."
@@ -1252,13 +1251,12 @@
       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
       "lines": [
        "475 amino acids",
-       "Candidate, not an established counterpart: Locus JCVISYN3A_0790, product \"F0F1 ATP synthase subunit beta\" in the genome record. Its sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
-       "GenBank: AVX54959.1"
+       "Candidate, not an established counterpart: Locus JCVISYN3A_0790, product \"F0F1 ATP synthase subunit beta\" in the genome record. Its sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain) in UniProt's archive. A candidate by annotation, not a measured function in this strain."
       ],
       "links": [
        {
-        "text": "GenBank",
-        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+        "text": "GenBank AVX54959.1",
+        "url": "https://www.ncbi.nlm.nih.gov/protein/AVX54959.1"
        }
       ],
       "note": "The other subunit of the ATP synthase's catalytic head. The 2019 paper found the genes of this machine essential."
@@ -1270,13 +1268,12 @@
       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
       "lines": [
        "101 amino acids",
-       "Candidate, not an established counterpart: Locus JCVISYN3A_0795, product \"F0F1 ATP synthase subunit C\" in the genome record. Its sequence carries IPR000454 (ATP synthase, F0 complex, subunit C) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
-       "GenBank: AVX54964.1"
+       "Candidate, not an established counterpart: Locus JCVISYN3A_0795, product \"F0F1 ATP synthase subunit C\" in the genome record. Its sequence carries IPR000454 (ATP synthase, F0 complex, subunit C) in UniProt's archive. A candidate by annotation, not a measured function in this strain."
       ],
       "links": [
        {
-        "text": "GenBank",
-        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+        "text": "GenBank AVX54964.1",
+        "url": "https://www.ncbi.nlm.nih.gov/protein/AVX54964.1"
        }
       ],
       "note": "The ring of the ATP synthase that carries protons across the membrane."
@@ -1288,13 +1285,12 @@
       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
       "lines": [
        "287 amino acids",
-       "Candidate, not an established counterpart: Locus JCVISYN3A_0796, product \"F0F1 ATP synthase subunit A\" in the genome record. Its sequence carries IPR000568 (ATP synthase, F0 complex, subunit A) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
-       "GenBank: AVX54965.1"
+       "Candidate, not an established counterpart: Locus JCVISYN3A_0796, product \"F0F1 ATP synthase subunit A\" in the genome record. Its sequence carries IPR000568 (ATP synthase, F0 complex, subunit A) in UniProt's archive. A candidate by annotation, not a measured function in this strain."
       ],
       "links": [
        {
-        "text": "GenBank",
-        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+        "text": "GenBank AVX54965.1",
+        "url": "https://www.ncbi.nlm.nih.gov/protein/AVX54965.1"
        }
       ],
       "note": "The membrane subunit of the ATP synthase beside the ring, where protons enter and leave."
@@ -1307,13 +1303,12 @@
       "lines": [
        "942 amino acids",
        "Locus JCVISYN3A_0787, product \"Magnesium-translocating P-type ATPase\" in the genome record. Breuer and others 2019 name it: the annotation lists it as an importer of magnesium. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
-       "GenBank: AVX54957.1",
        "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842."
       ],
       "links": [
        {
-        "text": "GenBank",
-        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+        "text": "GenBank AVX54957.1",
+        "url": "https://www.ncbi.nlm.nih.gov/protein/AVX54957.1"
        },
        {
         "text": "Paper",
@@ -1334,13 +1329,12 @@
       "lines": [
        "885 amino acids",
        "Locus JCVISYN3A_0879, product \"Magnesium transporter\" in the genome record. Breuer and others 2019 name it: a putative magnesium importer that could carry calcium as well; the paper's reconstruction uses it as the calcium importer. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
-       "GenBank: AVX55014.1",
        "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842."
       ],
       "links": [
        {
-        "text": "GenBank",
-        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+        "text": "GenBank AVX55014.1",
+        "url": "https://www.ncbi.nlm.nih.gov/protein/AVX55014.1"
        },
        {
         "text": "Paper",
@@ -1361,13 +1355,12 @@
       "lines": [
        "533 amino acids",
        "Locus JCVISYN3A_0685, product \"Sodium transporter\" in the genome record. Breuer and others 2019 name it: with locus 0686, the KtrAB potassium import system; the paper's reconstruction gives it an ATP-consuming exchange of potassium for sodium. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
-       "GenBank: AVX54923.1",
        "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842."
       ],
       "links": [
        {
-        "text": "GenBank",
-        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+        "text": "GenBank AVX54923.1",
+        "url": "https://www.ncbi.nlm.nih.gov/protein/AVX54923.1"
        },
        {
         "text": "Paper",
@@ -1388,13 +1381,12 @@
       "lines": [
        "242 amino acids",
        "Locus JCVISYN3A_0686, product \"Potassium transporter\" in the genome record. Breuer and others 2019 name it: with locus 0685, the KtrAB potassium import system. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
-       "GenBank: AVX54924.1",
        "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842."
       ],
       "links": [
        {
-        "text": "GenBank",
-        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+        "text": "GenBank AVX54924.1",
+        "url": "https://www.ncbi.nlm.nih.gov/protein/AVX54924.1"
        },
        {
         "text": "Paper",
@@ -1415,13 +1407,12 @@
       "lines": [
        "745 amino acids",
        "Locus JCVISYN3A_0779, product \"PTS sugar transporter\" in the genome record. Breuer and others 2019 name it: part of the glucose phosphotransferase system, the only annotated sugar importer. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
-       "GenBank: AVX54956.1",
        "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842."
       ],
       "links": [
        {
-        "text": "GenBank",
-        "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2"
+        "text": "GenBank AVX54956.1",
+        "url": "https://www.ncbi.nlm.nih.gov/protein/AVX54956.1"
        },
        {
         "text": "Paper",
@@ -1492,6 +1483,8331 @@
    }
   ],
   "no_entry": "This atlas has no entry for this unit."
+ },
+ "species": [
+  {
+   "id": "human",
+   "label": "Human",
+   "organism": "Homo sapiens",
+   "taxon": 9606,
+   "plain": "The law inventory names its candidate proteins by their human genes, so the human side of the protein atlas is the inventory's own.",
+   "order": 10,
+   "made": "2026-11-14",
+   "modelled": {
+    "state": "generic",
+    "text": "Cells models a generic cell and a sheet of such cells, with laws whose candidate proteins are named by their human genes. No human cell type, organ or body is modelled: the heart and the body are placeholder outlines."
+   },
+   "default": false,
+   "levels": [
+    {
+     "id": "molecules"
+    },
+    {
+     "id": "cell",
+     "shape": {
+      "kind": "prism",
+      "sides": 6,
+      "radius_um": 10.6,
+      "height_um": 13,
+      "corner_um": 2.4,
+      "edge_um": 1.3
+     },
+     "note": "The cell drawn is a generic animal cell, as one of a layer; it is not a model of a human cell type. Its shape and its sizes are the picture's choice: six flat sides where it meets its neighbours, about 20 µm across.",
+     "notes": [
+      {
+       "text": "A generic animal cell, as one of a layer"
+      },
+      {
+       "text": "Its flat-sided shape is the picture's choice",
+       "roomy": true
+      }
+     ],
+     "fade_out_um": [
+      120,
+      190
+     ]
+    },
+    {
+     "id": "tissue",
+     "shape": {
+      "kind": "cell sheet",
+      "rings": 6,
+      "beyond": [
+       [
+        8,
+        0.34
+       ],
+       [
+        10,
+        0.2
+       ],
+       [
+        11,
+        0.1
+       ]
+      ]
+     },
+     "note": "The sheet is the one Cells simulates: a single layer of coupled cells. It stands for no particular human tissue.",
+     "notes": [
+      {
+       "text": "The sheet Cells simulates: a single layer of coupled cells",
+       "short": "The simulated sheet"
+      }
+     ],
+     "fade_in_um": [
+      100,
+      190
+     ]
+    },
+    {
+     "id": "organ",
+     "label": "Heart",
+     "shape": {
+      "kind": "outline",
+      "ref": "human",
+      "parts": [
+       "heart"
+      ],
+      "context": [
+       "trunk"
+      ]
+     },
+     "note": "The outline drawn is a human heart with its great vessels, as a placeholder. The heart is the picture's choice of organ: a paper on the injured heart is the user's high priority among the published models to reproduce (14 November 2026). No heart is modelled. The sheet of cells is drawn on the chest over the heart so that the scales follow one another; it is not heart tissue, and the heart's own cells are not modelled. The sizes are indicative.",
+     "sheet_mark": {
+      "band": 0.22,
+      "note": "Here lies the sheet, 0.24 mm across: too small to see, so its ring is not to scale"
+     },
+     "notes": [
+      {
+       "text": "A human heart and its great vessels: a placeholder outline"
+      },
+      {
+       "text": "The heart's own cells are not modelled",
+       "lift": -22,
+       "roomy": true
+      }
+     ],
+     "sources": [
+      "gray1918"
+     ],
+     "view": {
+      "toward_um": [
+       -8000,
+       0,
+       0
+      ],
+      "azimuth": -0.5,
+      "polar": 0.9
+     }
+    },
+    {
+     "id": "organism",
+     "label": "Whole body",
+     "shape": {
+      "kind": "outline",
+      "ref": "human"
+     },
+     "note": "The outline drawn is a human body lying on its back, 1.7 m long, as a placeholder. The sheet of cells is drawn on the chest for the scales only. The sizes are indicative, and the body's proportions are the picture's choice.",
+     "sheet_mark": {
+      "band": 0.22,
+      "note": "Here lies the sheet: too small to see, so its ring is not to scale",
+      "roomy": true
+     },
+     "notes": [
+      {
+       "text": "A human body: a placeholder outline"
+      }
+     ],
+     "sources": [
+      "ncdrisc2016"
+     ],
+     "view": {
+      "toward_um": [
+       -130000,
+       0,
+       0
+      ],
+      "azimuth": -0.3,
+      "polar": 0.98
+     }
+    }
+   ],
+   "cell": {
+    "facts": [],
+    "parts": {
+     "membranes": 1,
+     "wall": false,
+     "nucleus": true,
+     "organelles": [
+      "er",
+      "golgi",
+      "mitochondria"
+     ]
+    },
+    "capabilities": {}
+   },
+   "sources": {
+    "gray1918": {
+     "text": "Gray H (1918) Anatomy of the Human Body, 20th edition. The adult heart: about 12 cm long, 8 to 9 cm broad and 6 cm thick. Taken from a search digest of online copies of the text; the book itself was not opened.",
+     "url": "https://embryology.med.unsw.edu.au/embryology/index.php/Anatomy_of_the_Human_Body_by_Henry_Gray",
+     "accessed": "2026-11-14"
+    },
+    "ncdrisc2016": {
+     "text": "NCD Risk Factor Collaboration (2016) A century of trends in adult human height. eLife 5:e13410. Mean adult heights from about 1.4 m to above 1.8 m, across countries and birth years. Taken from a search digest; the paper itself was not opened.",
+     "doi": "10.7554/eLife.13410",
+     "accessed": "2026-11-14"
+    }
+   }
+  },
+  {
+   "id": "planarian",
+   "label": "Planarian",
+   "organism": "Schmidtea mediterranea",
+   "taxon": 79327,
+   "plain": "A freshwater flatworm that regrows its whole body from a fragment. Its protein atlas is of Schmidtea mediterranea; the outlines drawn are of a planarian in general, with indicative sizes.",
+   "order": 20,
+   "made": "2026-11-14",
+   "modelled": {
+    "state": "generic",
+    "text": "Cells models a generic cell and a sheet of such cells, not this animal. The sheet stands for skin-like tissue and is drawn on the worm for the scales only. The brain and the worm are placeholder outlines: nothing at those scales is simulated."
+   },
+   "default": true,
+   "levels": [
+    {
+     "id": "molecules"
+    },
+    {
+     "id": "cell",
+     "shape": {
+      "kind": "prism",
+      "sides": 6,
+      "radius_um": 10.6,
+      "height_um": 13,
+      "corner_um": 2.4,
+      "edge_um": 1.3
+     },
+     "note": "The cell drawn is one cell of the sheet, which stands for skin-like tissue; it is not a model of a planarian's skin cell. Its shape and its sizes are the picture's choice: six flat sides where it meets its neighbours, an outer face and a base, about 20 µm across and as tall as the sheet's cells. The plate under the layer marks where a flatworm's skin rests on a basement membrane, which Cells does not model.",
+     "notes": [
+      {
+       "text": "One cell of the skin-like layer"
+      },
+      {
+       "text": "Its flat-sided shape is the picture's choice",
+       "roomy": true
+      }
+     ],
+     "fade_out_um": [
+      120,
+      190
+     ]
+    },
+    {
+     "id": "tissue",
+     "shape": {
+      "kind": "cell sheet",
+      "rings": 6,
+      "beyond": [
+       [
+        8,
+        0.34
+       ],
+       [
+        10,
+        0.2
+       ],
+       [
+        11,
+        0.1
+       ]
+      ]
+     },
+     "note": "The sheet stands for skin-like tissue: a single layer of cells. It is drawn lying over the brain of the placeholder worm for the scales only; the simulated sheet is not that animal's tissue.",
+     "notes": [
+      {
+       "text": "The sheet stands for skin-like tissue: a single layer of cells",
+       "short": "Stands for skin-like tissue"
+      }
+     ],
+     "fade_in_um": [
+      100,
+      190
+     ],
+     "fade_out_um": [
+      1000,
+      1800
+     ]
+    },
+    {
+     "id": "organ",
+     "shape": {
+      "kind": "outline",
+      "ref": "planarian",
+      "parts": [
+       "nervous system"
+      ],
+      "context": [
+       "body"
+      ]
+     },
+     "note": "The outline drawn is a planarian flatworm's brain with its two nerve cords, as a placeholder. The sheet of cells stands for skin-like tissue lying over the brain, drawn on the worm's head so that the scales follow one another; it is not the worm's tissue. The brain's own cells are neurons and glia, which Cells does not model. The sizes are indicative.",
+     "centre_um": [
+      790,
+      -30,
+      0
+     ],
+     "view": {
+      "frame_um": [
+       2900,
+       1900
+      ],
+      "toward_um": [
+       120,
+       0,
+       0
+      ],
+      "azimuth": -0.42,
+      "polar": 0.92
+     },
+     "label_um": [
+      -520,
+      110,
+      -690
+     ],
+     "sheet_mark": {
+      "band": 0.018,
+      "note": "The sheet, to scale: it stands for skin-like tissue over the brain",
+      "note_at_um": [
+       0,
+       0,
+       179.007
+      ]
+     },
+     "notes": [
+      {
+       "text": "A planarian's brain and nerve cords: a placeholder outline",
+       "at_um": [
+        330,
+        0,
+        770
+       ]
+      },
+      {
+       "text": "The brain's own cells, neurons and glia, are not modelled",
+       "at_um": [
+        330,
+        0,
+        770
+       ],
+       "lift": -22,
+       "roomy": true
+      }
+     ],
+     "fade_in_um": [
+      900,
+      1800
+     ],
+     "fade_out_um": [
+      7500,
+      12000
+     ]
+    },
+    {
+     "id": "organism",
+     "shape": {
+      "kind": "outline",
+      "ref": "planarian"
+     },
+     "note": "The outline drawn is a planarian flatworm, about 10 mm long, as a placeholder. The sheet of cells stands for skin-like tissue and is drawn on the worm's head for the scales only. The sizes are indicative.",
+     "centre_um": [
+      5000,
+      0,
+      0
+     ],
+     "view": {
+      "frame_um": [
+       15000,
+       9600
+      ],
+      "toward_um": [
+       -400,
+       0,
+       0
+      ],
+      "azimuth": -0.3,
+      "polar": 0.98
+     },
+     "label_um": [
+      0,
+      240,
+      -910
+     ],
+     "sheet_mark": {
+      "band": 0.09,
+      "note": "The sheet, to scale",
+      "note_at_um": [
+       358.015,
+       0,
+       -639.338
+      ],
+      "roomy": true
+     },
+     "notes": [
+      {
+       "text": "A planarian flatworm: a placeholder outline",
+       "at_um": [
+        1000,
+        0,
+        1270
+       ]
+      }
+     ],
+     "fade_in_um": [
+      7500,
+      12000
+     ]
+    }
+   ],
+   "cell": {
+    "facts": [],
+    "parts": {
+     "membranes": 1,
+     "wall": false,
+     "nucleus": true,
+     "organelles": [
+      "er",
+      "golgi",
+      "mitochondria"
+     ]
+    },
+    "capabilities": {}
+   },
+   "sources": {}
+  },
+  {
+   "id": "syn3a",
+   "label": "Syn3A",
+   "organism": "JCVI-syn3A",
+   "taxon": 2144189,
+   "plain": "A bacterium with a designed, minimised genome: 452 protein-coding genes kept from Mycoplasma mycoides, in a cell about 400 nm across with one membrane and no wall. It grows on its own in a rich medium, and its genome is smaller than that of any natural cell that does.",
+   "order": 30,
+   "made": "2026-11-14",
+   "modelled": {
+    "state": "proposed",
+    "text": "JCVI-syn3A is the project's minimal-cell track (decision D173, 14 November 2026), taken up from a note that proposes it as the first whole-cell validation organism for Cells. Nothing of it is in the engine yet: the project's record holds an evidence audit, capability probes of the engine as it stands, and a proposed first milestone, with no engine code written for it and nothing accepted."
+   },
+   "default": false,
+   "levels": [
+    {
+     "id": "molecules"
+    },
+    {
+     "id": "cell",
+     "label": "One cell",
+     "shape": {
+      "kind": "sphere",
+      "across_um": 0.4
+     },
+     "note": "Drawn as a sphere 0.4 µm across with 500 ribosomes: round numbers for the smaller of the two cells that were measured. The larger one was about 0.5 µm across.",
+     "sources": [
+      "breuer2019",
+      "gilbert2021"
+     ]
+    }
+   ],
+   "no_further_levels": "A single-celled organism: each cell lives on its own, so there is no tissue, organ or body.",
+   "cell": {
+    "facts": [
+     {
+      "label": "Shape and size",
+      "value": "a sphere about 400 nm across; two cells measured in electron tomograms were 403 nm and 495 nm across",
+      "sources": [
+       "breuer2019",
+       "gilbert2021"
+      ]
+     },
+     {
+      "label": "Envelope",
+      "value": "one membrane; no cell wall and no periplasm",
+      "sources": [
+       "breuer2019",
+       "gilbert2021"
+      ]
+     },
+     {
+      "label": "Inside",
+      "value": "no nucleus: in electron tomograms the ribosomes are spread through the whole cell, with the chromosome among them",
+      "sources": [
+       "gilbert2021"
+      ]
+     },
+     {
+      "label": "Chromosome",
+      "value": "one circle of 543,379 base pairs",
+      "sources": [
+       "genbank"
+      ]
+     },
+     {
+      "label": "Genes",
+      "value": "493, of which 452 code for proteins; the genome record lists 455 protein products, 3 of them added for genetic manipulation",
+      "sources": [
+       "breuer2019",
+       "genbank"
+      ]
+     },
+     {
+      "label": "Ribosomes",
+      "value": "about 500 in a small cell: 503 or 684 counted in the cell 403 nm across, by two ways of counting, and 820 or 1,095 in the one 495 nm across",
+      "sources": [
+       "gilbert2021"
+      ]
+     },
+     {
+      "label": "Proteins",
+      "value": "about 77,000 molecules in an average cell, an estimate from proteomics; 427 of the 452 kinds were detected, and the added marker tetM",
+      "sources": [
+       "breuer2019"
+      ]
+     },
+     {
+      "label": "Doubling time",
+      "value": "about 105 minutes in rich medium",
+      "sources": [
+       "breuer2019"
+      ]
+     },
+     {
+      "label": "Energy",
+      "value": "ATP from sugar breakdown alone; no oxidative phosphorylation",
+      "sources": [
+       "thornburg2022"
+      ]
+     },
+     {
+      "label": "Food",
+      "value": "glucose, amino acids, fatty acids and cholesterol, taken up from a rich medium that is not fully defined",
+      "sources": [
+       "breuer2019"
+      ]
+     },
+     {
+      "label": "Ion channels",
+      "value": "none found among its 455 proteins",
+      "sources": [
+       "uniparc"
+      ]
+     },
+     {
+      "label": "Division",
+      "value": "ftsZ and sepF are among seven genes needed together for regular shape and division",
+      "sources": [
+       "pelletier2021"
+      ]
+     },
+     {
+      "label": "Origin",
+      "value": "a genome designed and synthesised from that of Mycoplasma mycoides subspecies capri, strain GM12, and cut down to a minimum",
+      "sources": [
+       "genbank",
+       "breuer2019"
+      ]
+     }
+    ],
+    "parts": {
+     "membranes": 1,
+     "wall": false,
+     "nucleus": false,
+     "chromosome_kbp": 543,
+     "ribosomes": 500
+    },
+    "capabilities": {
+     "cap.membrane": {
+      "place": "present",
+      "note": "Its one membrane holds the cell's ion and proton gradients. In mycoplasmas the ATP synthase typically runs backwards and pumps protons out; that was measured in related species, not in this strain."
+     },
+     "cap.channels": {
+      "place": "absent",
+      "why": "No ion channel was found among its 455 proteins: none carries the signature of a channel family in Cells' catalogue, or of the bacterial channels for potassium, chloride, magnesium, water or membrane stretch, which the same search does find in other mollicutes. Its ions cross the membrane through transporters and pumps."
+     },
+     "cap.pumps": {
+      "place": "present",
+      "note": "Not the pumps of animal cells: it has no sodium-potassium pump. By its annotation, its ATP-driven ion movers are the ATP synthase, two P-type ATPases named as magnesium transporters, and a potassium uptake system."
+     },
+     "cap.junctions": {
+      "place": "absent",
+      "why": "It lives as single cells and has no gap junctions: none of its proteins carries the signature of connexins or innexins."
+     },
+     "cap.extracellular": {
+      "place": "present",
+      "note": "Here it is the growth medium around the single cell, which the cell depends on. By the 2019 reconstruction of its metabolism it takes up glucose, amino acids, fatty acids and cholesterol from a rich medium."
+     },
+     "cap.water": {
+      "place": "present",
+      "note": "It has no cell wall: nothing but the membrane bounds its volume."
+     },
+     "cap.calcium": {
+      "place": "absent",
+      "why": "It has no endoplasmic reticulum: it is a bacterium with a single membrane and no internal compartments, and none of its proteins carries the signature of the store's calcium pump or of its release channels."
+     },
+     "cap.energy": {
+      "place": "present",
+      "note": "All of its ATP comes from breaking down sugar in the cytoplasm; it has no proteins for oxidative phosphorylation."
+     },
+     "cap.mitochondria": {
+      "place": "absent",
+      "why": "It is a bacterium and has no mitochondria. Its ATP synthase sits in the cell membrane."
+     },
+     "cap.circuits": {
+      "place": "present",
+      "note": "At the chromosome, which lies in the cytoplasm: there is no nucleus. The minimised genome kept few regulatory proteins."
+     },
+     "cap.grn": {
+      "place": "absent",
+      "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."
+     },
+     "cap.trafficking": {
+      "place": "absent",
+      "why": "It has no endoplasmic reticulum and no Golgi. By its annotation, new membrane proteins are put straight into the cell membrane by the Sec translocon and the YidC insertase."
+     },
+     "cap.assembly": {
+      "place": "present",
+      "note": "Its assemblies are its ribosomes, RNA polymerase and the ATP synthase. The designed protein cage that Cells models is not one of its proteins."
+     },
+     "cap.machines": {
+      "place": "present",
+      "note": "About 500 ribosomes, with RNA polymerase, the ATP synthase and the protein translocon. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."
+     },
+     "cap.secretion": {
+      "place": "present",
+      "note": "By the 2019 reconstruction of its metabolism it releases the end products of sugar breakdown, lactate and acetate, into the medium and takes nutrients up. Signalling between its cells was not looked for."
+     },
+     "cap.repair": {
+      "place": "present",
+      "note": "The place would be its bare membrane. No source read for this file describes a membrane injury or its resealing in this organism."
+     },
+     "cap.division": {
+      "place": "present",
+      "note": "It grows and divides as a single cell. Seven genes that the smaller strain JCVI-syn3.0 lacks, the division genes ftsZ and sepF among them, are needed together for its regular shape and division."
+     },
+     "cap.replacement": {
+      "place": "absent",
+      "why": "It forms no tissue, so there is no neighbour for a new cell to replace."
+     },
+     "cap.mechanics": {
+      "place": "absent",
+      "why": "It forms no sheet: its cells share no edges to pull on."
+     },
+     "cap.sheet": {
+      "place": "absent",
+      "why": "It lives as single cells and forms no sheet of coupled cells."
+     }
+    }
+   },
+   "sources": {
+    "breuer2019": {
+     "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
+     "doi": "10.7554/elife.36842",
+     "licence": "CC BY 4.0",
+     "accessed": "2026-11-14"
+    },
+    "gilbert2021": {
+     "text": "Gilbert and others (2021) Generating Chromosome Geometries in a Minimal Cell From Cryo-Electron Tomograms and Chromosome Conformation Capture Maps. Front Mol Biosci 8:644133.",
+     "doi": "10.3389/fmolb.2021.644133",
+     "licence": "CC BY 4.0",
+     "accessed": "2026-11-14"
+    },
+    "thornburg2022": {
+     "text": "Thornburg and others (2022) Fundamental behaviors emerge from simulations of a living minimal cell. Cell 185:345-360.e28.",
+     "doi": "10.1016/j.cell.2021.12.025",
+     "licence": "CC BY-NC-ND 4.0, read for numbers and one short quotation",
+     "accessed": "2026-11-14"
+    },
+    "pelletier2021": {
+     "text": "Pelletier and others (2021) Genetic requirements for cell division in a genomically minimal cell. Cell 184:2430-2440.e16. Abstract only.",
+     "doi": "10.1016/j.cell.2021.03.008",
+     "accessed": "2026-11-14"
+    },
+    "genbank": {
+     "text": "Glass J (2017) Synthetic bacterium JCVI-Syn3A, complete genome. GenBank CP016816.2, annotation of 12 April 2018.",
+     "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2",
+     "licence": "NCBI places no restrictions on the use or distribution of GenBank data; submitters may claim rights in what they submitted, and this record states none",
+     "accessed": "2026-11-14"
+    },
+    "uniparc": {
+     "text": "UniProt Consortium, UniParc release 2026_04: the archived protein sequences of taxon 2144189 and the family signatures on them.",
+     "url": "https://www.uniprot.org/uniparc?query=taxonomy_id:2144189",
+     "licence": "CC BY 4.0",
+     "accessed": "2026-11-14"
+    }
+   }
+  },
+  {
+   "id": "mpneumoniae",
+   "label": "M. pneumoniae",
+   "organism": "Mycoplasma pneumoniae M129",
+   "taxon": 272634,
+   "plain": "A small bacterium of the human airways, with a genome among the smallest of any organism that copies itself: 688 proteins in the genome record frozen here, in a thin cell about 2 µm long with one membrane, no wall and an attachment organelle at one end.",
+   "order": 40,
+   "made": "2026-11-15",
+   "modelled": {
+    "state": "proposed",
+    "text": "Its public measurements were audited beside the minimal-cell track on JCVI-syn3A (decision D173; the track's note of 15 November 2026), which recommends it to lead a later stage on energy, transport and pH. Nothing of it is in the engine, and no model of it has run."
+   },
+   "default": false,
+   "levels": [
+    {
+     "id": "molecules"
+    },
+    {
+     "id": "cell",
+     "label": "One cell",
+     "shape": {
+      "kind": "capsule",
+      "length_um": 2,
+      "across_um": 0.2
+     },
+     "note": "Drawn as a rod 2 µm long and 0.2 µm across, the upper ends of the ranges given for the cell, with 150 ribosomes. The real cell is not a plain rod: it changes shape, and one end narrows into the attachment organelle, about 0.3 µm long, which this shape cannot show.",
+     "sources": [
+      "parrott2016",
+      "nakane2015",
+      "nakane2021",
+      "maier2011"
+     ]
+    }
+   ],
+   "no_further_levels": "A single-celled organism: each cell lives on its own, on the cells of its host, so it has no tissue, organ or body of its own.",
+   "cell": {
+    "facts": [
+     {
+      "label": "Shape and size",
+      "value": "a thin cell 1 to 2 µm long and 0.1 to 0.2 µm wide, of changeable shape, drawn out at one end into its attachment organelle; one paper gives its volume as 0.05 µm³",
+      "sources": [
+       "parrott2016",
+       "nakane2015",
+       "maier2011"
+      ]
+     },
+     {
+      "label": "Attachment organelle",
+      "value": "a membrane-bound extension at one pole, 250 to 300 nm long, with a dense core; it carries the adhesins and leads the cell when it glides",
+      "sources": [
+       "nakane2021",
+       "hasselbring2006"
+      ]
+     },
+     {
+      "label": "Envelope",
+      "value": "one membrane, stiffened by sterols; no cell wall",
+      "sources": [
+       "parrott2016",
+       "nakane2015",
+       "hasselbring2006"
+      ]
+     },
+     {
+      "label": "Inside",
+      "value": "a prokaryote, among the smallest and simplest known: no nucleus and no internal compartments",
+      "sources": [
+       "hasselbring2006"
+      ]
+     },
+     {
+      "label": "Chromosome",
+      "value": "one circle of 816,394 base pairs",
+      "sources": [
+       "genbank",
+       "himmelreich1996"
+      ]
+     },
+     {
+      "label": "Genes",
+      "value": "688 protein products in the genome record frozen here, the re-annotation of 2000; papers count 677, 688, 689 or 694 by annotation, and UniProt has 686 entries",
+      "sources": [
+       "genbank",
+       "himmelreich1996",
+       "dandekar2000",
+       "wodke2013",
+       "lluchsenar2015",
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Ribosomes",
+      "value": "about 140 to 150 in a cell, counts from electron tomograms of 2009 as a paper of 2011 reports them; the 2009 papers were not open to read",
+      "sources": [
+       "maier2011"
+      ]
+     },
+     {
+      "label": "Proteins",
+      "value": "167 copies of a protein on average among those measured, from about 2 to about 2,300 (the elongation factor Tu), by mass spectrometry",
+      "sources": [
+       "maier2011"
+      ]
+     },
+     {
+      "label": "Essential genes",
+      "value": "342 of 694 genes essential, 93 needed for normal growth and 259 dispensable, by transposon mutagenesis",
+      "sources": [
+       "lluchsenar2015"
+      ]
+     },
+     {
+      "label": "Energy",
+      "value": "ATP from fermenting sugar to lactate and acetate; no citric acid cycle and no working respiratory chain",
+      "sources": [
+       "wodke2013"
+      ]
+     },
+     {
+      "label": "Food",
+      "value": "glucose as its main source of carbon and energy; no amino acid synthesis; a defined medium with 19 essential nutrients",
+      "sources": [
+       "wodke2013",
+       "himmelreich1996",
+       "yus2009"
+      ]
+     },
+     {
+      "label": "Ion channels",
+      "value": "none found among its 688 proteins; one glycerol facilitator of the aquaporin family",
+      "sources": [
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Division",
+      "value": "in two; the attachment organelle is duplicated first, and gliding is needed for normal division",
+      "sources": [
+       "parrott2016",
+       "hasselbring2006"
+      ]
+     },
+     {
+      "label": "Movement",
+      "value": "glides on surfaces, attachment organelle first, at up to 1 µm a second",
+      "sources": [
+       "nakane2015",
+       "hasselbring2006"
+      ]
+     },
+     {
+      "label": "Name",
+      "value": "databases now list it as Mycoplasmoides pneumoniae; the papers cited call it Mycoplasma pneumoniae",
+      "sources": [
+       "genbank",
+       "uniprot"
+      ]
+     }
+    ],
+    "parts": {
+     "membranes": 1,
+     "wall": false,
+     "nucleus": false,
+     "chromosome_kbp": 816,
+     "ribosomes": 150
+    },
+    "capabilities": {
+     "cap.membrane": {
+      "place": "present",
+      "note": "Its one membrane holds the cell's ion and proton gradients. A 2013 model of its metabolism has the ATP synthase spend more than half of the cell's energy keeping the proton gradient up; that is the model's estimate, and no source read for this file measured the voltage."
+     },
+     "cap.channels": {
+      "place": "absent",
+      "why": "No ion channel was found among its 688 proteins: none carries the signature of a channel family in Cells' catalogue, or of the bacterial channels for potassium, chloride, magnesium or membrane stretch, which the same search does find in other mollicutes. One protein, the glycerol facilitator GlpF, carries the signature of the family of water and glycerol channels; it is not an ion channel."
+     },
+     "cap.pumps": {
+      "place": "present",
+      "note": "Not the pumps of animal cells: it has no sodium-potassium pump. By its annotation, its ATP-driven ion movers are the ATP synthase, one P-type ATPase whose ion is not known, and a potassium uptake system."
+     },
+     "cap.junctions": {
+      "place": "absent",
+      "why": "It lives as single cells and has no gap junctions: none of its proteins carries the signature of connexins or innexins."
+     },
+     "cap.extracellular": {
+      "place": "present",
+      "note": "Here it is what surrounds the single cell: the surface of the airway cells it lives on, or a growth medium. The cell depends on it: it makes no amino acids of its own, and a defined medium needs 19 nutrients."
+     },
+     "cap.water": {
+      "place": "present",
+      "note": "It has no cell wall: nothing but the membrane bounds its volume. One of its proteins, GlpF, belongs to the family of water and glycerol channels."
+     },
+     "cap.calcium": {
+      "place": "absent",
+      "why": "It has no endoplasmic reticulum: it is a bacterium with a single membrane and no internal compartments, and none of its proteins carries the signature of the store's calcium pump or of its release channels."
+     },
+     "cap.energy": {
+      "place": "present",
+      "note": "Its ATP comes from fermenting sugar in the cytoplasm to lactate and acetate; it has no citric acid cycle and no working respiratory chain."
+     },
+     "cap.mitochondria": {
+      "place": "absent",
+      "why": "It is a bacterium and has no mitochondria. Its ATP synthase sits in the cell membrane."
+     },
+     "cap.circuits": {
+      "place": "present",
+      "note": "At the chromosome, which lies in the cytoplasm: there is no nucleus."
+     },
+     "cap.grn": {
+      "place": "absent",
+      "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."
+     },
+     "cap.trafficking": {
+      "place": "absent",
+      "why": "It has no endoplasmic reticulum and no Golgi. By its annotation, new membrane proteins are put straight into the cell membrane by the Sec translocon and the YidC insertase."
+     },
+     "cap.assembly": {
+      "place": "present",
+      "note": "Its assemblies are its ribosomes, RNA polymerase, the ATP synthase and the dense core of its attachment organelle; a screen of 2009 found 62 complexes of one kind of protein and 116 of several. The designed protein cage that Cells models is not one of its proteins."
+     },
+     "cap.machines": {
+      "place": "present",
+      "note": "About 150 ribosomes, with RNA polymerase, the ATP synthase, the protein translocon and the machinery in its attachment organelle that lets it glide. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."
+     },
+     "cap.secretion": {
+      "place": "present",
+      "note": "It releases lactate and acetate, the end products of its fermentation, and takes its nutrients up. Signalling between its own cells was not looked for."
+     },
+     "cap.repair": {
+      "place": "present",
+      "note": "The place would be its bare membrane. No source read for this file describes a membrane injury or its resealing in this organism."
+     },
+     "cap.division": {
+      "place": "present",
+      "note": "It divides in two as a single cell. Its attachment organelle is duplicated first, and gliding is needed for the two to part normally; the division gene ftsZ is in its genome."
+     },
+     "cap.replacement": {
+      "place": "absent",
+      "why": "It forms no tissue, so there is no neighbour for a new cell to replace."
+     },
+     "cap.mechanics": {
+      "place": "absent",
+      "why": "It forms no sheet: its cells share no edges to pull on. Its own movement, gliding on a surface, is not what this capability models."
+     },
+     "cap.sheet": {
+      "place": "absent",
+      "why": "It lives as single cells and forms no sheet of coupled cells."
+     }
+    }
+   },
+   "sources": {
+    "parrott2016": {
+     "text": "Parrott and others (2016) A Compendium for Mycoplasma pneumoniae. Front Microbiol 7:513.",
+     "doi": "10.3389/fmicb.2016.00513",
+     "licence": "CC BY 4.0",
+     "accessed": "2026-11-15"
+    },
+    "nakane2015": {
+     "text": "Nakane and others (2015) Systematic Structural Analyses of Attachment Organelle in Mycoplasma pneumoniae. PLoS Pathog 11:e1005299.",
+     "doi": "10.1371/journal.ppat.1005299",
+     "licence": "CC BY 4.0",
+     "accessed": "2026-11-15"
+    },
+    "nakane2021": {
+     "text": "Nakane and others (2021) Molecular ruler of the attachment organelle in Mycoplasma pneumoniae. PLoS Pathog 17:e1009621.",
+     "doi": "10.1371/journal.ppat.1009621",
+     "licence": "CC BY 4.0",
+     "accessed": "2026-11-15"
+    },
+    "lluchsenar2015": {
+     "text": "Lluch-Senar and others (2015) Defining a minimal cell: essentiality of small ORFs and ncRNAs in a genome-reduced bacterium. Mol Syst Biol 11:780.",
+     "doi": "10.15252/msb.20145558",
+     "licence": "CC BY 4.0",
+     "accessed": "2026-11-15"
+    },
+    "maier2011": {
+     "text": "Maier and others (2011) Quantification of mRNA and protein and integration with protein turnover in a bacterium. Mol Syst Biol 7:511.",
+     "doi": "10.1038/msb.2011.38",
+     "licence": "CC BY-NC-SA 3.0, read for numbers and short quotations; its tables are not copied",
+     "accessed": "2026-11-15"
+    },
+    "wodke2013": {
+     "text": "Wodke and others (2013) Dissecting the energy metabolism in Mycoplasma pneumoniae through genome-scale metabolic modeling. Mol Syst Biol 9:653.",
+     "doi": "10.1038/msb.2013.6",
+     "licence": "CC BY-NC-SA 3.0, read for numbers and short quotations; its tables are not copied",
+     "accessed": "2026-11-15"
+    },
+    "hasselbring2006": {
+     "text": "Hasselbring and others (2006) Terminal organelle development in the cell wall-less bacterium Mycoplasma pneumoniae. Proc Natl Acad Sci U S A 103:16478-83. Abstract only.",
+     "doi": "10.1073/pnas.0608051103",
+     "accessed": "2026-11-15"
+    },
+    "himmelreich1996": {
+     "text": "Himmelreich and others (1996) Complete sequence analysis of the genome of the bacterium Mycoplasma pneumoniae. Nucleic Acids Res 24:4420-49. Abstract only.",
+     "doi": "10.1093/nar/24.22.4420",
+     "accessed": "2026-11-15"
+    },
+    "dandekar2000": {
+     "text": "Dandekar and others (2000) Re-annotating the Mycoplasma pneumoniae genome sequence: adding value, function and reading frames. Nucleic Acids Res 28:3278-88. Abstract only.",
+     "doi": "10.1093/nar/28.17.3278",
+     "accessed": "2026-11-15"
+    },
+    "kuhner2009": {
+     "text": "Kühner and others (2009) Proteome organization in a genome-reduced bacterium. Science 326:1235-40. Abstract only.",
+     "doi": "10.1126/science.1176343",
+     "accessed": "2026-11-15"
+    },
+    "yus2009": {
+     "text": "Yus and others (2009) Impact of genome reduction on bacterial metabolism and its regulation. Science 326:1263-8. Abstract only.",
+     "doi": "10.1126/science.1177263",
+     "accessed": "2026-11-15"
+    },
+    "genbank": {
+     "text": "Himmelreich R, Hilbert H, Li B-C; Suyama M, Dandekar T, Herrmann R (1996, 2000) Mycoplasma pneumoniae M129, complete genome. GenBank U00089.2.",
+     "url": "https://www.ncbi.nlm.nih.gov/nuccore/U00089.2",
+     "licence": "NCBI places no restrictions on the use or distribution of GenBank data; submitters may claim rights in what they submitted, and this record states none",
+     "accessed": "2026-11-15"
+    },
+    "uniprot": {
+     "text": "UniProt Consortium, UniProt release 2026_04: the curated entries of taxon 272634, and the archived sequences of the taxon with the family signatures on them.",
+     "url": "https://www.uniprot.org/uniprotkb?query=taxonomy_id:272634",
+     "licence": "CC BY 4.0",
+     "accessed": "2026-11-15"
+    }
+   }
+  }
+ ],
+ "shapes": {
+  "human": {
+   "format": "cells.visualizer.outline@1",
+   "note": "A human body lying on its back, and its heart, as placeholder outlines. Sizes are indicative: the body is drawn 1.7 m long, within the range of adult mean heights that one study reports (about 1.4 to 1.8 m), and the heart 12 cm long, 8 to 9 cm broad and 6 cm thick, as an anatomy textbook gives for an adult. The proportions of the body are the picture's choice.",
+   "tissue_on": {
+    "at_um": [
+     480000,
+     110788,
+     22000
+    ],
+    "clearance_um": 3,
+    "note": "On the chest, over the heart."
+   },
+   "parts": [
+    {
+     "name": "trunk",
+     "group": "body",
+     "kind": "loft",
+     "stations": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       1992,
+       0,
+       0,
+       8508,
+       8883
+      ],
+      [
+       4688,
+       0,
+       0,
+       20812,
+       21688
+      ],
+      [
+       8789,
+       0,
+       0,
+       33961,
+       35648
+      ],
+      [
+       15000,
+       0,
+       0,
+       45000,
+       48000
+      ],
+      [
+       23906,
+       0,
+       0,
+       53508,
+       58656
+      ],
+      [
+       35000,
+       0,
+       0,
+       60938,
+       68875
+      ],
+      [
+       47344,
+       0,
+       0,
+       67148,
+       77906
+      ],
+      [
+       60000,
+       0,
+       0,
+       72000,
+       85000
+      ],
+      [
+       72930,
+       0,
+       0,
+       75305,
+       89797
+      ],
+      [
+       86562,
+       0,
+       0,
+       77188,
+       92750
+      ],
+      [
+       100664,
+       0,
+       0,
+       77977,
+       94328
+      ],
+      [
+       115000,
+       0,
+       0,
+       78000,
+       95000
+      ],
+      [
+       130000,
+       0,
+       0,
+       77219,
+       94797
+      ],
+      [
+       145625,
+       0,
+       0,
+       75500,
+       93500
+      ],
+      [
+       160938,
+       0,
+       0,
+       73031,
+       91203
+      ],
+      [
+       175000,
+       0,
+       0,
+       70000,
+       88000
+      ],
+      [
+       187656,
+       0,
+       0,
+       65922,
+       83320
+      ],
+      [
+       199375,
+       0,
+       0,
+       60875,
+       77312
+      ],
+      [
+       210156,
+       0,
+       0,
+       55891,
+       71148
+      ],
+      [
+       220000,
+       0,
+       0,
+       52000,
+       66000
+      ],
+      [
+       228320,
+       0,
+       0,
+       49141,
+       61875
+      ],
+      [
+       235312,
+       0,
+       0,
+       46875,
+       58250
+      ],
+      [
+       242148,
+       0,
+       0,
+       45672,
+       55500
+      ],
+      [
+       250000,
+       0,
+       0,
+       46000,
+       54000
+      ],
+      [
+       259414,
+       0,
+       0,
+       46766,
+       53719
+      ],
+      [
+       269688,
+       0,
+       0,
+       48125,
+       54500
+      ],
+      [
+       280117,
+       0,
+       0,
+       52422,
+       56531
+      ],
+      [
+       290000,
+       0,
+       0,
+       62000,
+       60000
+      ],
+      [
+       299219,
+       0,
+       0,
+       79875,
+       65734
+      ],
+      [
+       308125,
+       0,
+       0,
+       104000,
+       73375
+      ],
+      [
+       316719,
+       0,
+       0,
+       129125,
+       81328
+      ],
+      [
+       325000,
+       0,
+       0,
+       150000,
+       88000
+      ],
+      [
+       331914,
+       0,
+       0,
+       166242,
+       92984
+      ],
+      [
+       337812,
+       0,
+       0,
+       180312,
+       97125
+      ],
+      [
+       344805,
+       0,
+       0,
+       191227,
+       100703
+      ],
+      [
+       355000,
+       0,
+       0,
+       198000,
+       104000
+      ],
+      [
+       369102,
+       0,
+       0,
+       199180,
+       107250
+      ],
+      [
+       385938,
+       0,
+       0,
+       195688,
+       110250
+      ],
+      [
+       404805,
+       0,
+       0,
+       190102,
+       112625
+      ],
+      [
+       425000,
+       0,
+       0,
+       185000,
+       114000
+      ],
+      [
+       446875,
+       0,
+       0,
+       180602,
+       114125
+      ],
+      [
+       470625,
+       0,
+       0,
+       175688,
+       113250
+      ],
+      [
+       495312,
+       0,
+       0,
+       170680,
+       111750
+      ],
+      [
+       520000,
+       0,
+       0,
+       166000,
+       110000
+      ],
+      [
+       544648,
+       0,
+       0,
+       161039,
+       107688
+      ],
+      [
+       569688,
+       0,
+       0,
+       155812,
+       104750
+      ],
+      [
+       594883,
+       0,
+       0,
+       151680,
+       101938
+      ],
+      [
+       620000,
+       0,
+       0,
+       150000,
+       100000
+      ],
+      [
+       645469,
+       0,
+       0,
+       151891,
+       99297
+      ],
+      [
+       671250,
+       0,
+       0,
+       156375,
+       99375
+      ],
+      [
+       696406,
+       0,
+       0,
+       161672,
+       99766
+      ],
+      [
+       720000,
+       0,
+       0,
+       166000,
+       100000
+      ],
+      [
+       741875,
+       0,
+       0,
+       169531,
+       100234
+      ],
+      [
+       762500,
+       0,
+       0,
+       173000,
+       100625
+      ],
+      [
+       781875,
+       0,
+       0,
+       175469,
+       100703
+      ],
+      [
+       800000,
+       0,
+       0,
+       176000,
+       100000
+      ],
+      [
+       816758,
+       0,
+       0,
+       174625,
+       98438
+      ],
+      [
+       832188,
+       0,
+       0,
+       171750,
+       96250
+      ],
+      [
+       846523,
+       0,
+       0,
+       167000,
+       93438
+      ],
+      [
+       860000,
+       0,
+       0,
+       160000,
+       90000
+      ],
+      [
+       872891,
+       0,
+       0,
+       151297,
+       86875
+      ],
+      [
+       885000,
+       0,
+       0,
+       140875,
+       83750
+      ],
+      [
+       895859,
+       0,
+       0,
+       127516,
+       78750
+      ],
+      [
+       905000,
+       0,
+       0,
+       110000,
+       70000
+      ],
+      [
+       912227,
+       0,
+       0,
+       84141,
+       54375
+      ],
+      [
+       917812,
+       0,
+       0,
+       51875,
+       33750
+      ],
+      [
+       921992,
+       0,
+       0,
+       21172,
+       13750
+      ],
+      [
+       925000,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "rings": {
+      "from": 0.06,
+      "to": 0.97,
+      "step": 0.07,
+      "points": 24
+     },
+     "lines": [
+      0.5,
+      1.5
+     ],
+     "strength": 0.45,
+     "edge": 1,
+     "pick": 14,
+     "fill": 0.06,
+     "context": {
+      "edge": 0.4,
+      "fill": 0.05
+     }
+    },
+    {
+     "name": "left leg",
+     "group": "body",
+     "kind": "loft",
+     "stations": [
+      [
+       850000,
+       0,
+       88000,
+       0,
+       0
+      ],
+      [
+       853086,
+       0,
+       88359,
+       16156,
+       16156
+      ],
+      [
+       857188,
+       0,
+       88875,
+       39750,
+       39750
+      ],
+      [
+       863945,
+       0,
+       89453,
+       63469,
+       63469
+      ],
+      [
+       875000,
+       0,
+       90000,
+       80000,
+       80000
+      ],
+      [
+       890742,
+       0,
+       90500,
+       86766,
+       86719
+      ],
+      [
+       910312,
+       0,
+       91000,
+       87875,
+       87750
+      ],
+      [
+       933477,
+       0,
+       91500,
+       86047,
+       85906
+      ],
+      [
+       960000,
+       0,
+       92000,
+       84000,
+       84000
+      ],
+      [
+       991250,
+       0,
+       92500,
+       81812,
+       82219
+      ],
+      [
+       1026875,
+       0,
+       93000,
+       78250,
+       79250
+      ],
+      [
+       1064062,
+       0,
+       93500,
+       74062,
+       75656
+      ],
+      [
+       1100000,
+       0,
+       94000,
+       70000,
+       72000
+      ],
+      [
+       1135508,
+       0,
+       94500,
+       65672,
+       67812
+      ],
+      [
+       1171562,
+       0,
+       95000,
+       60875,
+       63000
+      ],
+      [
+       1205586,
+       0,
+       95500,
+       56641,
+       58688
+      ],
+      [
+       1235000,
+       0,
+       96000,
+       54000,
+       56000
+      ],
+      [
+       1256445,
+       0,
+       96523,
+       53969,
+       55969
+      ],
+      [
+       1272188,
+       0,
+       97062,
+       55750,
+       57750
+      ],
+      [
+       1288086,
+       0,
+       97570,
+       57656,
+       59656
+      ],
+      [
+       1310000,
+       0,
+       98000,
+       58000,
+       60000
+      ],
+      [
+       1340781,
+       0,
+       98320,
+       56078,
+       58078
+      ],
+      [
+       1376875,
+       0,
+       98562,
+       52875,
+       54875
+      ],
+      [
+       1414531,
+       0,
+       98773,
+       49234,
+       51234
+      ],
+      [
+       1450000,
+       0,
+       99000,
+       46000,
+       48000
+      ],
+      [
+       1483711,
+       -281,
+       99273,
+       42938,
+       44562
+      ],
+      [
+       1517188,
+       -750,
+       99562,
+       39750,
+       40750
+      ],
+      [
+       1548320,
+       -844,
+       99820,
+       37188,
+       38062
+      ],
+      [
+       1575000,
+       0,
+       100000,
+       36000,
+       38000
+      ],
+      [
+       1595938,
+       2016,
+       100070,
+       37109,
+       42453
+      ],
+      [
+       1612500,
+       4875,
+       100062,
+       39875,
+       50125
+      ],
+      [
+       1626562,
+       8297,
+       100023,
+       42703,
+       57734
+      ],
+      [
+       1640000,
+       12000,
+       100000,
+       44000,
+       62000
+      ],
+      [
+       1653359,
+       16383,
+       100000,
+       43781,
+       62422
+      ],
+      [
+       1665625,
+       21438,
+       100000,
+       42750,
+       60625
+      ],
+      [
+       1676328,
+       26273,
+       100000,
+       40344,
+       56516
+      ],
+      [
+       1685000,
+       30000,
+       100000,
+       36000,
+       50000
+      ],
+      [
+       1691211,
+       32281,
+       100000,
+       28125,
+       39000
+      ],
+      [
+       1695312,
+       33625,
+       100000,
+       17500,
+       24250
+      ],
+      [
+       1698008,
+       34406,
+       100000,
+       7125,
+       9875
+      ],
+      [
+       1700000,
+       35000,
+       100000,
+       0,
+       0
+      ]
+     ],
+     "rings": {
+      "from": 0.1,
+      "to": 0.95,
+      "step": 0.12,
+      "points": 18
+     },
+     "lines": [
+      0.5,
+      1.5
+     ],
+     "strength": 0.45,
+     "edge": 1,
+     "pick": 10,
+     "fill": 0.06
+    },
+    {
+     "name": "right leg",
+     "group": "body",
+     "kind": "loft",
+     "stations": [
+      [
+       850000,
+       0,
+       -88000,
+       0,
+       0
+      ],
+      [
+       853086,
+       0,
+       -88359,
+       16156,
+       16156
+      ],
+      [
+       857188,
+       0,
+       -88875,
+       39750,
+       39750
+      ],
+      [
+       863945,
+       0,
+       -89453,
+       63469,
+       63469
+      ],
+      [
+       875000,
+       0,
+       -90000,
+       80000,
+       80000
+      ],
+      [
+       890742,
+       0,
+       -90500,
+       86766,
+       86719
+      ],
+      [
+       910312,
+       0,
+       -91000,
+       87875,
+       87750
+      ],
+      [
+       933477,
+       0,
+       -91500,
+       86047,
+       85906
+      ],
+      [
+       960000,
+       0,
+       -92000,
+       84000,
+       84000
+      ],
+      [
+       991250,
+       0,
+       -92500,
+       81812,
+       82219
+      ],
+      [
+       1026875,
+       0,
+       -93000,
+       78250,
+       79250
+      ],
+      [
+       1064062,
+       0,
+       -93500,
+       74062,
+       75656
+      ],
+      [
+       1100000,
+       0,
+       -94000,
+       70000,
+       72000
+      ],
+      [
+       1135508,
+       0,
+       -94500,
+       65672,
+       67812
+      ],
+      [
+       1171562,
+       0,
+       -95000,
+       60875,
+       63000
+      ],
+      [
+       1205586,
+       0,
+       -95500,
+       56641,
+       58688
+      ],
+      [
+       1235000,
+       0,
+       -96000,
+       54000,
+       56000
+      ],
+      [
+       1256445,
+       0,
+       -96523,
+       53969,
+       55969
+      ],
+      [
+       1272188,
+       0,
+       -97062,
+       55750,
+       57750
+      ],
+      [
+       1288086,
+       0,
+       -97570,
+       57656,
+       59656
+      ],
+      [
+       1310000,
+       0,
+       -98000,
+       58000,
+       60000
+      ],
+      [
+       1340781,
+       0,
+       -98320,
+       56078,
+       58078
+      ],
+      [
+       1376875,
+       0,
+       -98562,
+       52875,
+       54875
+      ],
+      [
+       1414531,
+       0,
+       -98773,
+       49234,
+       51234
+      ],
+      [
+       1450000,
+       0,
+       -99000,
+       46000,
+       48000
+      ],
+      [
+       1483711,
+       -281,
+       -99273,
+       42938,
+       44562
+      ],
+      [
+       1517188,
+       -750,
+       -99562,
+       39750,
+       40750
+      ],
+      [
+       1548320,
+       -844,
+       -99820,
+       37188,
+       38062
+      ],
+      [
+       1575000,
+       0,
+       -100000,
+       36000,
+       38000
+      ],
+      [
+       1595938,
+       2016,
+       -100070,
+       37109,
+       42453
+      ],
+      [
+       1612500,
+       4875,
+       -100062,
+       39875,
+       50125
+      ],
+      [
+       1626562,
+       8297,
+       -100023,
+       42703,
+       57734
+      ],
+      [
+       1640000,
+       12000,
+       -100000,
+       44000,
+       62000
+      ],
+      [
+       1653359,
+       16383,
+       -100000,
+       43781,
+       62422
+      ],
+      [
+       1665625,
+       21438,
+       -100000,
+       42750,
+       60625
+      ],
+      [
+       1676328,
+       26273,
+       -100000,
+       40344,
+       56516
+      ],
+      [
+       1685000,
+       30000,
+       -100000,
+       36000,
+       50000
+      ],
+      [
+       1691211,
+       32281,
+       -100000,
+       28125,
+       39000
+      ],
+      [
+       1695312,
+       33625,
+       -100000,
+       17500,
+       24250
+      ],
+      [
+       1698008,
+       34406,
+       -100000,
+       7125,
+       9875
+      ],
+      [
+       1700000,
+       35000,
+       -100000,
+       0,
+       0
+      ]
+     ],
+     "rings": {
+      "from": 0.1,
+      "to": 0.95,
+      "step": 0.12,
+      "points": 18
+     },
+     "lines": [
+      0.5,
+      1.5
+     ],
+     "strength": 0.45,
+     "edge": 1,
+     "pick": 10,
+     "fill": 0.06
+    },
+    {
+     "name": "left arm",
+     "group": "body",
+     "kind": "loft",
+     "stations": [
+      [
+       335000,
+       0,
+       222000,
+       0,
+       0
+      ],
+      [
+       336172,
+       0,
+       223703,
+       9250,
+       10109
+      ],
+      [
+       337500,
+       0,
+       226125,
+       22750,
+       24875
+      ],
+      [
+       341328,
+       0,
+       228984,
+       36375,
+       39703
+      ],
+      [
+       350000,
+       0,
+       232000,
+       46000,
+       50000
+      ],
+      [
+       364258,
+       0,
+       235266,
+       50188,
+       54062
+      ],
+      [
+       382812,
+       0,
+       238875,
+       51250,
+       54500
+      ],
+      [
+       404961,
+       0,
+       242547,
+       50688,
+       53188
+      ],
+      [
+       430000,
+       0,
+       246000,
+       50000,
+       52000
+      ],
+      [
+       460039,
+       0,
+       249234,
+       49203,
+       51062
+      ],
+      [
+       494688,
+       0,
+       252375,
+       47625,
+       49500
+      ],
+      [
+       529492,
+       0,
+       255328,
+       45734,
+       47688
+      ],
+      [
+       560000,
+       0,
+       258000,
+       44000,
+       46000
+      ],
+      [
+       583711,
+       0,
+       260234,
+       42359,
+       44406
+      ],
+      [
+       603438,
+       0,
+       262125,
+       40625,
+       42750
+      ],
+      [
+       622695,
+       0,
+       263953,
+       39078,
+       41219
+      ],
+      [
+       645000,
+       0,
+       266000,
+       38000,
+       40000
+      ],
+      [
+       671055,
+       0,
+       268359,
+       37812,
+       39453
+      ],
+      [
+       699062,
+       0,
+       270875,
+       38250,
+       39375
+      ],
+      [
+       728789,
+       0,
+       273453,
+       38562,
+       39109
+      ],
+      [
+       760000,
+       0,
+       276000,
+       38000,
+       38000
+      ],
+      [
+       795234,
+       0,
+       278641,
+       35922,
+       35562
+      ],
+      [
+       833750,
+       0,
+       281375,
+       32875,
+       32250
+      ],
+      [
+       870391,
+       0,
+       283922,
+       29891,
+       28812
+      ],
+      [
+       900000,
+       0,
+       286000,
+       28000,
+       26000
+      ],
+      [
+       919727,
+       0,
+       287422,
+       27422,
+       24031
+      ],
+      [
+       932812,
+       0,
+       288375,
+       27625,
+       22500
+      ],
+      [
+       943242,
+       0,
+       289141,
+       28516,
+       21219
+      ],
+      [
+       955000,
+       0,
+       290000,
+       30000,
+       20000
+      ],
+      [
+       968750,
+       0,
+       291000,
+       32953,
+       18859
+      ],
+      [
+       982500,
+       0,
+       292000,
+       37125,
+       17875
+      ],
+      [
+       996250,
+       0,
+       293000,
+       40734,
+       16953
+      ],
+      [
+       1010000,
+       0,
+       294000,
+       42000,
+       16000
+      ],
+      [
+       1024570,
+       0,
+       295047,
+       40203,
+       15188
+      ],
+      [
+       1039688,
+       0,
+       296125,
+       36375,
+       14500
+      ],
+      [
+       1053711,
+       0,
+       297141,
+       31359,
+       13562
+      ],
+      [
+       1065000,
+       0,
+       298000,
+       26000,
+       12000
+      ],
+      [
+       1072930,
+       0,
+       298688,
+       19594,
+       9281
+      ],
+      [
+       1078438,
+       0,
+       299250,
+       12000,
+       5750
+      ],
+      [
+       1082227,
+       0,
+       299688,
+       4906,
+       2344
+      ],
+      [
+       1085000,
+       0,
+       300000,
+       0,
+       0
+      ]
+     ],
+     "rings": {
+      "from": 0.1,
+      "to": 0.95,
+      "step": 0.12,
+      "points": 18
+     },
+     "lines": [
+      0.5,
+      1.5
+     ],
+     "strength": 0.45,
+     "edge": 1,
+     "pick": 10,
+     "fill": 0.06
+    },
+    {
+     "name": "right arm",
+     "group": "body",
+     "kind": "loft",
+     "stations": [
+      [
+       335000,
+       0,
+       -222000,
+       0,
+       0
+      ],
+      [
+       336172,
+       0,
+       -223703,
+       9250,
+       10109
+      ],
+      [
+       337500,
+       0,
+       -226125,
+       22750,
+       24875
+      ],
+      [
+       341328,
+       0,
+       -228984,
+       36375,
+       39703
+      ],
+      [
+       350000,
+       0,
+       -232000,
+       46000,
+       50000
+      ],
+      [
+       364258,
+       0,
+       -235266,
+       50188,
+       54062
+      ],
+      [
+       382812,
+       0,
+       -238875,
+       51250,
+       54500
+      ],
+      [
+       404961,
+       0,
+       -242547,
+       50688,
+       53188
+      ],
+      [
+       430000,
+       0,
+       -246000,
+       50000,
+       52000
+      ],
+      [
+       460039,
+       0,
+       -249234,
+       49203,
+       51062
+      ],
+      [
+       494688,
+       0,
+       -252375,
+       47625,
+       49500
+      ],
+      [
+       529492,
+       0,
+       -255328,
+       45734,
+       47688
+      ],
+      [
+       560000,
+       0,
+       -258000,
+       44000,
+       46000
+      ],
+      [
+       583711,
+       0,
+       -260234,
+       42359,
+       44406
+      ],
+      [
+       603438,
+       0,
+       -262125,
+       40625,
+       42750
+      ],
+      [
+       622695,
+       0,
+       -263953,
+       39078,
+       41219
+      ],
+      [
+       645000,
+       0,
+       -266000,
+       38000,
+       40000
+      ],
+      [
+       671055,
+       0,
+       -268359,
+       37812,
+       39453
+      ],
+      [
+       699062,
+       0,
+       -270875,
+       38250,
+       39375
+      ],
+      [
+       728789,
+       0,
+       -273453,
+       38562,
+       39109
+      ],
+      [
+       760000,
+       0,
+       -276000,
+       38000,
+       38000
+      ],
+      [
+       795234,
+       0,
+       -278641,
+       35922,
+       35562
+      ],
+      [
+       833750,
+       0,
+       -281375,
+       32875,
+       32250
+      ],
+      [
+       870391,
+       0,
+       -283922,
+       29891,
+       28812
+      ],
+      [
+       900000,
+       0,
+       -286000,
+       28000,
+       26000
+      ],
+      [
+       919727,
+       0,
+       -287422,
+       27422,
+       24031
+      ],
+      [
+       932812,
+       0,
+       -288375,
+       27625,
+       22500
+      ],
+      [
+       943242,
+       0,
+       -289141,
+       28516,
+       21219
+      ],
+      [
+       955000,
+       0,
+       -290000,
+       30000,
+       20000
+      ],
+      [
+       968750,
+       0,
+       -291000,
+       32953,
+       18859
+      ],
+      [
+       982500,
+       0,
+       -292000,
+       37125,
+       17875
+      ],
+      [
+       996250,
+       0,
+       -293000,
+       40734,
+       16953
+      ],
+      [
+       1010000,
+       0,
+       -294000,
+       42000,
+       16000
+      ],
+      [
+       1024570,
+       0,
+       -295047,
+       40203,
+       15188
+      ],
+      [
+       1039688,
+       0,
+       -296125,
+       36375,
+       14500
+      ],
+      [
+       1053711,
+       0,
+       -297141,
+       31359,
+       13562
+      ],
+      [
+       1065000,
+       0,
+       -298000,
+       26000,
+       12000
+      ],
+      [
+       1072930,
+       0,
+       -298688,
+       19594,
+       9281
+      ],
+      [
+       1078438,
+       0,
+       -299250,
+       12000,
+       5750
+      ],
+      [
+       1082227,
+       0,
+       -299688,
+       4906,
+       2344
+      ],
+      [
+       1085000,
+       0,
+       -300000,
+       0,
+       0
+      ]
+     ],
+     "rings": {
+      "from": 0.1,
+      "to": 0.95,
+      "step": 0.12,
+      "points": 18
+     },
+     "lines": [
+      0.5,
+      1.5
+     ],
+     "strength": 0.45,
+     "edge": 1,
+     "pick": 10,
+     "fill": 0.06
+    },
+    {
+     "name": "ventricles and atria",
+     "group": "heart",
+     "kind": "loft",
+     "stations": [
+      [
+       428000,
+       55000,
+       2000,
+       24000,
+       24000
+      ],
+      [
+       429410,
+       55000,
+       2604,
+       27259,
+       19081
+      ],
+      [
+       431567,
+       55000,
+       3529,
+       31852,
+       22296
+      ],
+      [
+       434720,
+       55000,
+       4880,
+       36000,
+       25200
+      ],
+      [
+       439117,
+       55000,
+       6764,
+       39222,
+       27456
+      ],
+      [
+       444510,
+       55000,
+       9076,
+       42000,
+       29400
+      ],
+      [
+       450400,
+       55000,
+       11600,
+       44000,
+       30800
+      ],
+      [
+       456788,
+       55000,
+       14338,
+       45074,
+       31552
+      ],
+      [
+       463674,
+       55000,
+       17289,
+       45370,
+       31759
+      ],
+      [
+       470560,
+       55000,
+       20240,
+       45000,
+       31500
+      ],
+      [
+       477280,
+       55000,
+       23120,
+       43926,
+       30748
+      ],
+      [
+       484000,
+       55000,
+       26000,
+       42185,
+       29530
+      ],
+      [
+       490720,
+       55000,
+       28880,
+       40000,
+       28000
+      ],
+      [
+       497523,
+       55000,
+       31796,
+       37481,
+       26237
+      ],
+      [
+       504326,
+       55000,
+       34711,
+       34519,
+       24163
+      ],
+      [
+       510880,
+       55000,
+       37520,
+       31000,
+       21700
+      ],
+      [
+       517268,
+       55000,
+       40258,
+       26815,
+       18770
+      ],
+      [
+       523407,
+       55000,
+       42889,
+       22074,
+       15452
+      ],
+      [
+       528800,
+       55000,
+       45200,
+       17000,
+       11900
+      ],
+      [
+       533446,
+       55000,
+       47191,
+       10926,
+       7648
+      ],
+      [
+       537345,
+       55000,
+       48862,
+       4519,
+       3163
+      ],
+      [
+       540000,
+       55000,
+       50000,
+       0,
+       0
+      ]
+     ],
+     "rings": {
+      "every": 3,
+      "first": 2,
+      "points": 20
+     },
+     "lines": [
+      0.5,
+      1.5
+     ],
+     "strength": 0.8,
+     "alone": 0.95,
+     "edge": 0.85,
+     "pick": 12
+    },
+    {
+     "name": "aorta",
+     "group": "heart",
+     "kind": "loft",
+     "stations": [
+      [
+       436000,
+       62000,
+       10000,
+       12000,
+       12000
+      ],
+      [
+       428593,
+       63185,
+       10222,
+       12000,
+       12000
+      ],
+      [
+       418074,
+       64815,
+       10667,
+       12000,
+       12000
+      ],
+      [
+       408000,
+       66000,
+       12000,
+       12000,
+       12000
+      ],
+      [
+       399259,
+       66444,
+       14519,
+       12000,
+       12000
+      ],
+      [
+       390963,
+       66444,
+       17926,
+       12000,
+       12000
+      ],
+      [
+       384000,
+       66000,
+       22000,
+       12000,
+       12000
+      ],
+      [
+       378296,
+       65037,
+       26963,
+       12000,
+       12000
+      ],
+      [
+       373926,
+       63630,
+       32593,
+       12000,
+       12000
+      ],
+      [
+       372000,
+       62000,
+       38000,
+       12000,
+       12000
+      ],
+      [
+       372667,
+       60148,
+       43111,
+       12000,
+       12000
+      ],
+      [
+       375778,
+       58074,
+       48000,
+       12000,
+       12000
+      ],
+      [
+       382000,
+       56000,
+       52000,
+       12000,
+       12000
+      ],
+      [
+       391037,
+       53926,
+       54741,
+       12000,
+       12000
+      ],
+      [
+       403185,
+       51852,
+       56593,
+       12000,
+       12000
+      ],
+      [
+       420000,
+       50000,
+       58000,
+       12000,
+       12000
+      ],
+      [
+       446519,
+       48370,
+       59037,
+       12000,
+       12000
+      ],
+      [
+       477704,
+       46963,
+       59630,
+       12000,
+       12000
+      ],
+      [
+       500000,
+       46000,
+       60000,
+       12000,
+       12000
+      ]
+     ],
+     "rings": {
+      "every": 4,
+      "first": 2,
+      "points": 20
+     },
+     "strength": 0.7,
+     "alone": 0.9,
+     "edge": 0.75
+    },
+    {
+     "name": "pulmonary trunk",
+     "group": "heart",
+     "kind": "loft",
+     "stations": [
+      [
+       440000,
+       66000,
+       22000,
+       11000,
+       11000
+      ],
+      [
+       432889,
+       67259,
+       23778,
+       11000,
+       11000
+      ],
+      [
+       422889,
+       68963,
+       26000,
+       11000,
+       11000
+      ],
+      [
+       414000,
+       70000,
+       26000,
+       11000,
+       11000
+      ],
+      [
+       407481,
+       69852,
+       22370,
+       11000,
+       11000
+      ],
+      [
+       402074,
+       69037,
+       16519,
+       11000,
+       11000
+      ],
+      [
+       398000,
+       68000,
+       10000,
+       11000,
+       11000
+      ],
+      [
+       395630,
+       66667,
+       2296,
+       11000,
+       11000
+      ],
+      [
+       394593,
+       65111,
+       -6074,
+       11000,
+       11000
+      ],
+      [
+       394000,
+       64000,
+       -12000,
+       11000,
+       11000
+      ]
+     ],
+     "rings": {
+      "every": 4,
+      "first": 2,
+      "points": 20
+     },
+     "strength": 0.7,
+     "alone": 0.9,
+     "edge": 0.75
+    },
+    {
+     "name": "great vein",
+     "group": "heart",
+     "kind": "loft",
+     "stations": [
+      [
+       436000,
+       52000,
+       -16000,
+       10000,
+       10000
+      ],
+      [
+       425630,
+       51926,
+       -17185,
+       10000,
+       10000
+      ],
+      [
+       410815,
+       51852,
+       -18815,
+       10000,
+       10000
+      ],
+      [
+       396000,
+       52000,
+       -20000,
+       10000,
+       10000
+      ],
+      [
+       381185,
+       52593,
+       -20296,
+       10000,
+       10000
+      ],
+      [
+       366370,
+       53407,
+       -20148,
+       10000,
+       10000
+      ],
+      [
+       356000,
+       54000,
+       -20000,
+       10000,
+       10000
+      ]
+     ],
+     "rings": {
+      "every": 4,
+      "first": 2,
+      "points": 20
+     },
+     "strength": 0.7,
+     "alone": 0.9,
+     "edge": 0.75
+    },
+    {
+     "name": "groove",
+     "group": "heart",
+     "kind": "lines",
+     "paths": [
+      {
+       "points": [
+        [
+         452000,
+         84000,
+         14000
+        ],
+        [
+         488000,
+         83000,
+         30000
+        ],
+        [
+         520000,
+         74000,
+         42000
+        ],
+        [
+         536000,
+         62000,
+         48000
+        ]
+       ]
+      }
+     ],
+     "strength": 0.6,
+     "alone": 0.8
+    }
+   ]
+  },
+  "planarian": {
+   "format": "cells.visualizer.outline@1",
+   "note": "A planarian flatworm and its nervous system, as placeholder outlines. Sizes are indicative: the worm is drawn 10 mm long and 1.3 mm wide, with a brain a little under 1 mm long. One web search (14 November 2026) gave roughly 20 mm by 2 mm for a planarian, from an unreviewed preprint, and no measurement of the brain. The numbers were written out from the drawing the viewer held in code until 14 November 2026.",
+   "tissue_on": {
+    "at_um": [
+     790,
+     150.99290000000002,
+     0
+    ],
+    "clearance_um": 3,
+    "note": "On the back of the head, on the midline above the brain, where the back is nearly flat."
+   },
+   "parts": [
+    {
+     "name": "body",
+     "kind": "loft",
+     "stations": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       5.493,
+       0,
+       0,
+       35.068,
+       11.222,
+       0
+      ],
+      [
+       14.002,
+       0,
+       0,
+       60.342,
+       19.309,
+       0
+      ],
+      [
+       24.205,
+       0,
+       0,
+       82.89,
+       26.525,
+       0
+      ],
+      [
+       35.692,
+       0,
+       0,
+       103.831,
+       33.226,
+       0
+      ],
+      [
+       48.239,
+       0,
+       0,
+       123.654,
+       39.569,
+       0
+      ],
+      [
+       61.701,
+       0,
+       0,
+       142.629,
+       45.641,
+       0
+      ],
+      [
+       75.975,
+       0,
+       0,
+       160.926,
+       51.496,
+       0
+      ],
+      [
+       90.982,
+       0,
+       0,
+       178.663,
+       57.172,
+       0.001
+      ],
+      [
+       106.663,
+       0,
+       0,
+       195.923,
+       62.695,
+       0.002
+      ],
+      [
+       122.966,
+       0,
+       0,
+       212.772,
+       68.087,
+       0.004
+      ],
+      [
+       139.851,
+       0,
+       0,
+       229.258,
+       73.363,
+       0.01
+      ],
+      [
+       157.283,
+       0,
+       0,
+       245.422,
+       78.535,
+       0.023
+      ],
+      [
+       175.23,
+       0,
+       0,
+       261.296,
+       83.615,
+       0.053
+      ],
+      [
+       193.668,
+       0,
+       0,
+       276.906,
+       88.61,
+       0.118
+      ],
+      [
+       212.574,
+       0,
+       0,
+       292.277,
+       93.528,
+       0.258
+      ],
+      [
+       231.925,
+       0,
+       0,
+       307.426,
+       98.376,
+       0.544
+      ],
+      [
+       251.705,
+       0,
+       0,
+       322.371,
+       103.159,
+       1.106
+      ],
+      [
+       271.897,
+       0,
+       0,
+       337.126,
+       107.88,
+       2.157
+      ],
+      [
+       292.485,
+       0,
+       0,
+       351.705,
+       112.546,
+       4.021
+      ],
+      [
+       313.456,
+       0,
+       0,
+       366.118,
+       117.158,
+       7.138
+      ],
+      [
+       334.797,
+       0,
+       0,
+       380.375,
+       121.72,
+       12.022
+      ],
+      [
+       356.498,
+       0,
+       0,
+       394.486,
+       126.235,
+       19.143
+      ],
+      [
+       378.546,
+       0,
+       0,
+       408.458,
+       130.707,
+       28.721
+      ],
+      [
+       400.932,
+       0,
+       0,
+       422.299,
+       135.136,
+       40.466
+      ],
+      [
+       423.648,
+       0,
+       0,
+       436.015,
+       139.525,
+       53.367
+      ],
+      [
+       446.684,
+       0,
+       0,
+       449.613,
+       143.876,
+       65.669
+      ],
+      [
+       470.032,
+       0,
+       0,
+       463.097,
+       148.191,
+       75.163
+      ],
+      [
+       493.684,
+       0,
+       0,
+       476.474,
+       152.472,
+       79.779
+      ],
+      [
+       517.635,
+       0,
+       0,
+       479.943,
+       153.582,
+       79.569
+      ],
+      [
+       541.876,
+       0,
+       0,
+       479.694,
+       153.502,
+       77.601
+      ],
+      [
+       566.401,
+       0,
+       0,
+       479.265,
+       153.365,
+       74.105
+      ],
+      [
+       591.205,
+       0,
+       0,
+       478.677,
+       153.177,
+       69.242
+      ],
+      [
+       616.282,
+       0,
+       0,
+       477.956,
+       152.946,
+       63.261
+      ],
+      [
+       641.627,
+       0,
+       0,
+       477.127,
+       152.681,
+       56.475
+      ],
+      [
+       667.233,
+       0,
+       0,
+       476.218,
+       152.39,
+       49.229
+      ],
+      [
+       693.098,
+       0,
+       0,
+       475.259,
+       152.083,
+       41.875
+      ],
+      [
+       719.214,
+       0,
+       0,
+       474.282,
+       151.77,
+       34.735
+      ],
+      [
+       745.579,
+       0,
+       0,
+       473.32,
+       151.463,
+       28.078
+      ],
+      [
+       772.188,
+       0,
+       0,
+       472.41,
+       151.171,
+       22.105
+      ],
+      [
+       799.037,
+       0,
+       0,
+       471.59,
+       150.909,
+       16.938
+      ],
+      [
+       826.122,
+       0,
+       0,
+       470.897,
+       150.687,
+       12.624
+      ],
+      [
+       853.439,
+       0,
+       0,
+       470.375,
+       150.52,
+       9.146
+      ],
+      [
+       880.985,
+       0,
+       0,
+       470.066,
+       150.421,
+       6.437
+      ],
+      [
+       908.756,
+       0,
+       0,
+       470.004,
+       150.401,
+       4.399
+      ],
+      [
+       936.748,
+       0,
+       0,
+       470.075,
+       150.424,
+       2.917
+      ],
+      [
+       964.959,
+       0,
+       0,
+       470.234,
+       150.475,
+       1.875
+      ],
+      [
+       993.386,
+       0,
+       0,
+       470.48,
+       150.554,
+       1.169
+      ],
+      [
+       1022.025,
+       0,
+       0,
+       470.815,
+       150.661,
+       0.705
+      ],
+      [
+       1050.874,
+       0,
+       0,
+       471.238,
+       150.796,
+       0.412
+      ],
+      [
+       1079.93,
+       0,
+       0,
+       471.749,
+       150.96,
+       0.233
+      ],
+      [
+       1109.189,
+       0,
+       0,
+       472.348,
+       151.151,
+       0.127
+      ],
+      [
+       1138.651,
+       0,
+       0,
+       473.036,
+       151.372,
+       0.067
+      ],
+      [
+       1168.311,
+       0,
+       0,
+       473.812,
+       151.62,
+       0.034
+      ],
+      [
+       1198.168,
+       0,
+       0,
+       474.675,
+       151.896,
+       0.017
+      ],
+      [
+       1228.218,
+       0,
+       0,
+       475.626,
+       152.2,
+       0.008
+      ],
+      [
+       1258.461,
+       0,
+       0,
+       476.664,
+       152.532,
+       0.004
+      ],
+      [
+       1288.894,
+       0,
+       0,
+       477.788,
+       152.892,
+       0.002
+      ],
+      [
+       1319.513,
+       0,
+       0,
+       478.997,
+       153.279,
+       0.001
+      ],
+      [
+       1350.318,
+       0,
+       0,
+       480.291,
+       153.693,
+       0
+      ],
+      [
+       1381.307,
+       0,
+       0,
+       481.67,
+       154.134,
+       0
+      ],
+      [
+       1412.477,
+       0,
+       0,
+       483.131,
+       154.602,
+       0
+      ],
+      [
+       1443.826,
+       0,
+       0,
+       484.675,
+       155.096,
+       0
+      ],
+      [
+       1475.352,
+       0,
+       0,
+       486.3,
+       155.616,
+       0
+      ],
+      [
+       1507.054,
+       0,
+       0,
+       488.004,
+       156.161,
+       0
+      ],
+      [
+       1538.931,
+       0,
+       0,
+       489.787,
+       156.732,
+       0
+      ],
+      [
+       1570.979,
+       0,
+       0,
+       491.648,
+       157.327,
+       0
+      ],
+      [
+       1603.197,
+       0,
+       0,
+       493.584,
+       157.947,
+       0
+      ],
+      [
+       1635.585,
+       0,
+       0,
+       495.595,
+       158.59,
+       0
+      ],
+      [
+       1668.139,
+       0,
+       0,
+       497.678,
+       159.257,
+       0
+      ],
+      [
+       1700.859,
+       0,
+       0,
+       499.833,
+       159.946,
+       0
+      ],
+      [
+       1733.743,
+       0,
+       0,
+       502.057,
+       160.658,
+       0
+      ],
+      [
+       1766.79,
+       0,
+       0,
+       504.348,
+       161.391,
+       0
+      ],
+      [
+       1799.997,
+       0,
+       0,
+       506.706,
+       162.146,
+       0
+      ],
+      [
+       1833.364,
+       0,
+       0,
+       509.126,
+       162.92,
+       0
+      ],
+      [
+       1866.89,
+       0,
+       0,
+       511.609,
+       163.715,
+       0
+      ],
+      [
+       1900.572,
+       0,
+       0,
+       514.151,
+       164.528,
+       0
+      ],
+      [
+       1934.41,
+       0,
+       0,
+       516.75,
+       165.36,
+       0
+      ],
+      [
+       1968.402,
+       0,
+       0,
+       519.404,
+       166.209,
+       0
+      ],
+      [
+       2002.546,
+       0,
+       0,
+       522.111,
+       167.075,
+       0
+      ],
+      [
+       2036.843,
+       0,
+       0,
+       524.868,
+       167.958,
+       0
+      ],
+      [
+       2071.289,
+       0,
+       0,
+       527.672,
+       168.855,
+       0
+      ],
+      [
+       2105.885,
+       0,
+       0,
+       530.521,
+       169.767,
+       0
+      ],
+      [
+       2140.629,
+       0,
+       0,
+       533.413,
+       170.692,
+       0
+      ],
+      [
+       2175.52,
+       0,
+       0,
+       536.344,
+       171.63,
+       0
+      ],
+      [
+       2210.556,
+       0,
+       0,
+       539.311,
+       172.58,
+       0
+      ],
+      [
+       2245.737,
+       0,
+       0,
+       542.312,
+       173.54,
+       0
+      ],
+      [
+       2281.061,
+       0,
+       0,
+       545.344,
+       174.51,
+       0
+      ],
+      [
+       2316.528,
+       0,
+       0,
+       548.404,
+       175.489,
+       0
+      ],
+      [
+       2352.136,
+       0,
+       0,
+       551.488,
+       176.476,
+       0
+      ],
+      [
+       2387.885,
+       0,
+       0,
+       554.593,
+       177.47,
+       0
+      ],
+      [
+       2423.773,
+       0,
+       0,
+       557.716,
+       178.469,
+       0
+      ],
+      [
+       2459.799,
+       0,
+       0,
+       560.853,
+       179.473,
+       0
+      ],
+      [
+       2495.962,
+       0,
+       0,
+       564.002,
+       180.481,
+       0
+      ],
+      [
+       2532.262,
+       0,
+       0,
+       567.158,
+       181.491,
+       0
+      ],
+      [
+       2568.697,
+       0,
+       0,
+       570.318,
+       182.502,
+       0
+      ],
+      [
+       2605.266,
+       0,
+       0,
+       573.478,
+       183.513,
+       0
+      ],
+      [
+       2641.97,
+       0,
+       0,
+       576.634,
+       184.523,
+       0
+      ],
+      [
+       2678.806,
+       0,
+       0,
+       579.783,
+       185.531,
+       0
+      ],
+      [
+       2715.773,
+       0,
+       0,
+       582.921,
+       186.535,
+       0
+      ],
+      [
+       2752.872,
+       0,
+       0,
+       586.043,
+       187.534,
+       0
+      ],
+      [
+       2790.1,
+       0,
+       0,
+       589.146,
+       188.527,
+       0
+      ],
+      [
+       2827.458,
+       0,
+       0,
+       592.226,
+       189.512,
+       0
+      ],
+      [
+       2864.945,
+       0,
+       0,
+       595.277,
+       190.489,
+       0
+      ],
+      [
+       2902.559,
+       0,
+       0,
+       598.296,
+       191.455,
+       0
+      ],
+      [
+       2940.299,
+       0,
+       0,
+       601.279,
+       192.409,
+       0
+      ],
+      [
+       2978.166,
+       0,
+       0,
+       604.221,
+       193.351,
+       0
+      ],
+      [
+       3016.158,
+       0,
+       0,
+       607.118,
+       194.278,
+       0
+      ],
+      [
+       3054.274,
+       0,
+       0,
+       609.964,
+       195.188,
+       0
+      ],
+      [
+       3092.515,
+       0,
+       0,
+       612.756,
+       196.082,
+       0
+      ],
+      [
+       3130.878,
+       0,
+       0,
+       615.488,
+       196.956,
+       0
+      ],
+      [
+       3169.363,
+       0,
+       0,
+       618.156,
+       197.81,
+       0
+      ],
+      [
+       3207.97,
+       0,
+       0,
+       620.754,
+       198.641,
+       0
+      ],
+      [
+       3246.698,
+       0,
+       0,
+       623.279,
+       199.449,
+       0
+      ],
+      [
+       3285.546,
+       0,
+       0,
+       625.724,
+       200.232,
+       0
+      ],
+      [
+       3324.513,
+       0,
+       0,
+       628.085,
+       200.987,
+       0
+      ],
+      [
+       3363.599,
+       0,
+       0,
+       630.357,
+       201.714,
+       0
+      ],
+      [
+       3402.804,
+       0,
+       0,
+       632.533,
+       202.411,
+       0
+      ],
+      [
+       3442.125,
+       0,
+       0,
+       634.61,
+       203.075,
+       0
+      ],
+      [
+       3481.564,
+       0,
+       0,
+       636.581,
+       203.706,
+       0
+      ],
+      [
+       3521.119,
+       0,
+       0,
+       638.441,
+       204.301,
+       0
+      ],
+      [
+       3560.789,
+       0,
+       0,
+       640.184,
+       204.859,
+       0
+      ],
+      [
+       3600.574,
+       0,
+       0,
+       641.805,
+       205.378,
+       0
+      ],
+      [
+       3640.474,
+       0,
+       0,
+       643.298,
+       205.855,
+       0
+      ],
+      [
+       3680.487,
+       0,
+       0,
+       644.658,
+       206.29,
+       0
+      ],
+      [
+       3720.613,
+       0,
+       0,
+       645.877,
+       206.681,
+       0
+      ],
+      [
+       3760.852,
+       0,
+       0,
+       646.952,
+       207.025,
+       0
+      ],
+      [
+       3801.202,
+       0,
+       0,
+       647.874,
+       207.32,
+       0
+      ],
+      [
+       3841.665,
+       0,
+       0,
+       648.639,
+       207.565,
+       0
+      ],
+      [
+       3882.237,
+       0,
+       0,
+       649.24,
+       207.757,
+       0
+      ],
+      [
+       3922.92,
+       0,
+       0,
+       649.672,
+       207.895,
+       0
+      ],
+      [
+       3963.713,
+       0,
+       0,
+       649.927,
+       207.977,
+       0
+      ],
+      [
+       4004.615,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4045.626,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4086.744,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4127.97,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4169.303,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4210.743,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4252.289,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4293.94,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4335.696,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4377.557,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4419.521,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4461.59,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4503.761,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4546.035,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4588.411,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4630.889,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4673.468,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4716.148,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4758.929,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4801.809,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4844.789,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4887.867,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4931.045,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       4974.321,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       5017.694,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       5061.165,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       5104.733,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       5148.398,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       5192.159,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       5236.015,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       5279.968,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       5324.015,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       5368.157,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       5412.393,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       5456.723,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       5501.147,
+       0,
+       0,
+       650,
+       208,
+       0
+      ],
+      [
+       5545.663,
+       0,
+       0,
+       649.832,
+       207.946,
+       0
+      ],
+      [
+       5590.273,
+       0,
+       0,
+       649.428,
+       207.817,
+       0
+      ],
+      [
+       5634.975,
+       0,
+       0,
+       648.821,
+       207.623,
+       0
+      ],
+      [
+       5679.77,
+       0,
+       0,
+       648.025,
+       207.368,
+       0
+      ],
+      [
+       5724.656,
+       0,
+       0,
+       647.05,
+       207.056,
+       0
+      ],
+      [
+       5769.633,
+       0,
+       0,
+       645.902,
+       206.689,
+       0
+      ],
+      [
+       5814.702,
+       0,
+       0,
+       644.588,
+       206.268,
+       0
+      ],
+      [
+       5859.861,
+       0,
+       0,
+       643.111,
+       205.795,
+       0
+      ],
+      [
+       5905.111,
+       0,
+       0,
+       641.474,
+       205.272,
+       0
+      ],
+      [
+       5950.451,
+       0,
+       0,
+       639.68,
+       204.697,
+       0
+      ],
+      [
+       5995.881,
+       0,
+       0,
+       637.731,
+       204.074,
+       0
+      ],
+      [
+       6041.4,
+       0,
+       0,
+       635.63,
+       203.402,
+       0
+      ],
+      [
+       6087.008,
+       0,
+       0,
+       633.378,
+       202.681,
+       0
+      ],
+      [
+       6132.705,
+       0,
+       0,
+       630.976,
+       201.912,
+       0
+      ],
+      [
+       6178.49,
+       0,
+       0,
+       628.427,
+       201.097,
+       0
+      ],
+      [
+       6224.364,
+       0,
+       0,
+       625.731,
+       200.234,
+       0
+      ],
+      [
+       6270.325,
+       0,
+       0,
+       622.889,
+       199.325,
+       0
+      ],
+      [
+       6316.374,
+       0,
+       0,
+       619.902,
+       198.369,
+       0
+      ],
+      [
+       6362.51,
+       0,
+       0,
+       616.772,
+       197.367,
+       0
+      ],
+      [
+       6408.733,
+       0,
+       0,
+       613.498,
+       196.319,
+       0
+      ],
+      [
+       6455.042,
+       0,
+       0,
+       610.082,
+       195.226,
+       0
+      ],
+      [
+       6501.438,
+       0,
+       0,
+       606.524,
+       194.088,
+       0
+      ],
+      [
+       6547.92,
+       0,
+       0,
+       602.824,
+       192.904,
+       0
+      ],
+      [
+       6594.487,
+       0,
+       0,
+       598.984,
+       191.675,
+       0
+      ],
+      [
+       6641.14,
+       0,
+       0,
+       595.003,
+       190.401,
+       0
+      ],
+      [
+       6687.878,
+       0,
+       0,
+       590.882,
+       189.082,
+       0
+      ],
+      [
+       6734.701,
+       0,
+       0,
+       586.621,
+       187.719,
+       0
+      ],
+      [
+       6781.608,
+       0,
+       0,
+       582.222,
+       186.311,
+       0
+      ],
+      [
+       6828.6,
+       0,
+       0,
+       577.683,
+       184.859,
+       0
+      ],
+      [
+       6875.676,
+       0,
+       0,
+       573.005,
+       183.362,
+       0
+      ],
+      [
+       6922.835,
+       0,
+       0,
+       568.189,
+       181.821,
+       0
+      ],
+      [
+       6970.078,
+       0,
+       0,
+       563.235,
+       180.235,
+       0
+      ],
+      [
+       7017.404,
+       0,
+       0,
+       558.143,
+       178.606,
+       0
+      ],
+      [
+       7064.813,
+       0,
+       0,
+       552.913,
+       176.932,
+       0
+      ],
+      [
+       7112.304,
+       0,
+       0,
+       547.544,
+       175.214,
+       0
+      ],
+      [
+       7159.878,
+       0,
+       0,
+       542.039,
+       173.452,
+       0
+      ],
+      [
+       7207.534,
+       0,
+       0,
+       536.395,
+       171.647,
+       0
+      ],
+      [
+       7255.272,
+       0,
+       0,
+       530.615,
+       169.797,
+       0
+      ],
+      [
+       7303.091,
+       0,
+       0,
+       524.697,
+       167.903,
+       0
+      ],
+      [
+       7350.992,
+       0,
+       0,
+       518.641,
+       165.965,
+       0
+      ],
+      [
+       7398.974,
+       0,
+       0,
+       512.449,
+       163.984,
+       0
+      ],
+      [
+       7447.036,
+       0,
+       0,
+       506.119,
+       161.958,
+       0
+      ],
+      [
+       7495.179,
+       0,
+       0,
+       499.652,
+       159.889,
+       0
+      ],
+      [
+       7543.403,
+       0,
+       0,
+       493.048,
+       157.775,
+       0
+      ],
+      [
+       7591.706,
+       0,
+       0,
+       486.306,
+       155.618,
+       0
+      ],
+      [
+       7640.089,
+       0,
+       0,
+       479.428,
+       153.417,
+       0
+      ],
+      [
+       7688.552,
+       0,
+       0,
+       472.412,
+       151.172,
+       0
+      ],
+      [
+       7737.094,
+       0,
+       0,
+       465.259,
+       148.883,
+       0
+      ],
+      [
+       7785.716,
+       0,
+       0,
+       457.969,
+       146.55,
+       0
+      ],
+      [
+       7834.416,
+       0,
+       0,
+       450.542,
+       144.173,
+       0
+      ],
+      [
+       7883.195,
+       0,
+       0,
+       442.977,
+       141.753,
+       0
+      ],
+      [
+       7932.052,
+       0,
+       0,
+       435.275,
+       139.288,
+       0
+      ],
+      [
+       7980.987,
+       0,
+       0,
+       427.436,
+       136.78,
+       0
+      ],
+      [
+       8030,
+       0,
+       0,
+       419.459,
+       134.227,
+       0
+      ],
+      [
+       8079.091,
+       0,
+       0,
+       411.345,
+       131.63,
+       0
+      ],
+      [
+       8128.259,
+       0,
+       0,
+       403.093,
+       128.99,
+       0
+      ],
+      [
+       8177.505,
+       0,
+       0,
+       394.703,
+       126.305,
+       0
+      ],
+      [
+       8226.827,
+       0,
+       0,
+       386.176,
+       123.576,
+       0
+      ],
+      [
+       8276.227,
+       0,
+       0,
+       377.511,
+       120.803,
+       0
+      ],
+      [
+       8325.702,
+       0,
+       0,
+       368.707,
+       117.986,
+       0
+      ],
+      [
+       8375.255,
+       0,
+       0,
+       359.766,
+       115.125,
+       0
+      ],
+      [
+       8424.883,
+       0,
+       0,
+       350.687,
+       112.22,
+       0
+      ],
+      [
+       8474.587,
+       0,
+       0,
+       341.469,
+       109.27,
+       0
+      ],
+      [
+       8524.367,
+       0,
+       0,
+       332.113,
+       106.276,
+       0
+      ],
+      [
+       8574.223,
+       0,
+       0,
+       322.618,
+       103.238,
+       0
+      ],
+      [
+       8624.153,
+       0,
+       0,
+       312.985,
+       100.155,
+       0
+      ],
+      [
+       8674.159,
+       0,
+       0,
+       303.213,
+       97.028,
+       0
+      ],
+      [
+       8724.24,
+       0,
+       0,
+       293.303,
+       93.857,
+       0
+      ],
+      [
+       8774.395,
+       0,
+       0,
+       283.253,
+       90.641,
+       0
+      ],
+      [
+       8824.625,
+       0,
+       0,
+       273.064,
+       87.38,
+       0
+      ],
+      [
+       8874.929,
+       0,
+       0,
+       262.736,
+       84.076,
+       0
+      ],
+      [
+       8925.307,
+       0,
+       0,
+       252.269,
+       80.726,
+       0
+      ],
+      [
+       8975.758,
+       0,
+       0,
+       241.662,
+       77.332,
+       0
+      ],
+      [
+       9026.284,
+       0,
+       0,
+       230.915,
+       73.893,
+       0
+      ],
+      [
+       9076.883,
+       0,
+       0,
+       220.029,
+       70.409,
+       0
+      ],
+      [
+       9127.555,
+       0,
+       0,
+       209.003,
+       66.881,
+       0
+      ],
+      [
+       9178.3,
+       0,
+       0,
+       197.836,
+       63.308,
+       0
+      ],
+      [
+       9229.118,
+       0,
+       0,
+       186.53,
+       59.69,
+       0
+      ],
+      [
+       9280.009,
+       0,
+       0,
+       175.083,
+       56.027,
+       0
+      ],
+      [
+       9330.972,
+       0,
+       0,
+       163.495,
+       52.319,
+       0
+      ],
+      [
+       9382.007,
+       0,
+       0,
+       151.767,
+       48.566,
+       0
+      ],
+      [
+       9433.114,
+       0,
+       0,
+       139.898,
+       44.767,
+       0
+      ],
+      [
+       9484.294,
+       0,
+       0,
+       127.889,
+       40.924,
+       0
+      ],
+      [
+       9535.545,
+       0,
+       0,
+       115.737,
+       37.036,
+       0
+      ],
+      [
+       9586.867,
+       0,
+       0,
+       103.445,
+       33.102,
+       0
+      ],
+      [
+       9638.261,
+       0,
+       0,
+       91.011,
+       29.124,
+       0
+      ],
+      [
+       9689.726,
+       0,
+       0,
+       78.436,
+       25.099,
+       0
+      ],
+      [
+       9741.262,
+       0,
+       0,
+       65.719,
+       21.03,
+       0
+      ],
+      [
+       9792.869,
+       0,
+       0,
+       52.859,
+       16.915,
+       0
+      ],
+      [
+       9844.546,
+       0,
+       0,
+       39.858,
+       12.755,
+       0
+      ],
+      [
+       9896.294,
+       0,
+       0,
+       26.715,
+       8.549,
+       0
+      ],
+      [
+       9948.112,
+       0,
+       0,
+       13.429,
+       4.297,
+       0
+      ],
+      [
+       10000,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "rings": {
+      "from": 0.04,
+      "to": 0.97,
+      "step": 0.04,
+      "points": 28
+     },
+     "lines": [
+      0.25,
+      0.5,
+      0.75,
+      1.25,
+      1.5,
+      1.75
+     ],
+     "strength": 0.5,
+     "edge": 1,
+     "fill": 0.07,
+     "pick": 20,
+     "context": {
+      "edge": 0.4,
+      "fill": 0.06
+     }
+    },
+    {
+     "name": "eyespots and pharynx",
+     "kind": "lines",
+     "paths": [
+      {
+       "points": [
+        [
+         502,
+         133.113,
+         -175
+        ],
+        [
+         500.195,
+         133.113,
+         -161.649
+        ],
+        [
+         494.87,
+         133.113,
+         -148.967
+        ],
+        [
+         486.292,
+         133.113,
+         -137.591
+        ],
+        [
+         474.891,
+         133.113,
+         -128.09
+        ],
+        [
+         461.24,
+         133.113,
+         -120.942
+        ],
+        [
+         446.022,
+         133.113,
+         -116.504
+        ],
+        [
+         430,
+         133.113,
+         -115
+        ],
+        [
+         413.978,
+         133.113,
+         -116.504
+        ],
+        [
+         398.76,
+         133.113,
+         -120.942
+        ],
+        [
+         385.109,
+         133.113,
+         -128.09
+        ],
+        [
+         373.708,
+         133.113,
+         -137.591
+        ],
+        [
+         365.13,
+         133.113,
+         -148.967
+        ],
+        [
+         359.805,
+         133.113,
+         -161.649
+        ],
+        [
+         358,
+         133.113,
+         -175
+        ],
+        [
+         359.805,
+         133.113,
+         -188.351
+        ],
+        [
+         365.13,
+         133.113,
+         -201.033
+        ],
+        [
+         373.708,
+         133.113,
+         -212.409
+        ],
+        [
+         385.109,
+         133.113,
+         -221.91
+        ],
+        [
+         398.76,
+         133.113,
+         -229.058
+        ],
+        [
+         413.978,
+         133.113,
+         -233.496
+        ],
+        [
+         430,
+         133.113,
+         -235
+        ],
+        [
+         446.022,
+         133.113,
+         -233.496
+        ],
+        [
+         461.24,
+         133.113,
+         -229.058
+        ],
+        [
+         474.891,
+         133.113,
+         -221.91
+        ],
+        [
+         486.292,
+         133.113,
+         -212.409
+        ],
+        [
+         494.87,
+         133.113,
+         -201.033
+        ],
+        [
+         500.195,
+         133.113,
+         -188.351
+        ]
+       ],
+       "closed": true
+      },
+      {
+       "points": [
+        [
+         502,
+         133.113,
+         175
+        ],
+        [
+         500.195,
+         133.113,
+         188.351
+        ],
+        [
+         494.87,
+         133.113,
+         201.033
+        ],
+        [
+         486.292,
+         133.113,
+         212.409
+        ],
+        [
+         474.891,
+         133.113,
+         221.91
+        ],
+        [
+         461.24,
+         133.113,
+         229.058
+        ],
+        [
+         446.022,
+         133.113,
+         233.496
+        ],
+        [
+         430,
+         133.113,
+         235
+        ],
+        [
+         413.978,
+         133.113,
+         233.496
+        ],
+        [
+         398.76,
+         133.113,
+         229.058
+        ],
+        [
+         385.109,
+         133.113,
+         221.91
+        ],
+        [
+         373.708,
+         133.113,
+         212.409
+        ],
+        [
+         365.13,
+         133.113,
+         201.033
+        ],
+        [
+         359.805,
+         133.113,
+         188.351
+        ],
+        [
+         358,
+         133.113,
+         175
+        ],
+        [
+         359.805,
+         133.113,
+         161.649
+        ],
+        [
+         365.13,
+         133.113,
+         148.967
+        ],
+        [
+         373.708,
+         133.113,
+         137.591
+        ],
+        [
+         385.109,
+         133.113,
+         128.09
+        ],
+        [
+         398.76,
+         133.113,
+         120.942
+        ],
+        [
+         413.978,
+         133.113,
+         116.504
+        ],
+        [
+         430,
+         133.113,
+         115
+        ],
+        [
+         446.022,
+         133.113,
+         116.504
+        ],
+        [
+         461.24,
+         133.113,
+         120.942
+        ],
+        [
+         474.891,
+         133.113,
+         128.09
+        ],
+        [
+         486.292,
+         133.113,
+         137.591
+        ],
+        [
+         494.87,
+         133.113,
+         148.967
+        ],
+        [
+         500.195,
+         133.113,
+         161.649
+        ]
+       ],
+       "closed": true
+      },
+      {
+       "points": [
+        [
+         6320,
+         0,
+         0
+        ],
+        [
+         6311.654,
+         0,
+         26.328
+        ],
+        [
+         6286.784,
+         0,
+         52.121
+        ],
+        [
+         6245.898,
+         0,
+         76.852
+        ],
+        [
+         6189.828,
+         0,
+         100.019
+        ],
+        [
+         6119.715,
+         0,
+         121.149
+        ],
+        [
+         6036.986,
+         0,
+         139.814
+        ],
+        [
+         5943.325,
+         0,
+         155.632
+        ],
+        [
+         5840.64,
+         0,
+         168.282
+        ],
+        [
+         5731.021,
+         0,
+         177.506
+        ],
+        [
+         5616.698,
+         0,
+         183.117
+        ],
+        [
+         5500,
+         0,
+         185
+        ],
+        [
+         5383.302,
+         0,
+         183.117
+        ],
+        [
+         5268.979,
+         0,
+         177.506
+        ],
+        [
+         5159.36,
+         0,
+         168.282
+        ],
+        [
+         5056.675,
+         0,
+         155.632
+        ],
+        [
+         4963.014,
+         0,
+         139.814
+        ],
+        [
+         4880.285,
+         0,
+         121.149
+        ],
+        [
+         4810.172,
+         0,
+         100.019
+        ],
+        [
+         4754.102,
+         0,
+         76.852
+        ],
+        [
+         4713.216,
+         0,
+         52.121
+        ],
+        [
+         4688.346,
+         0,
+         26.328
+        ],
+        [
+         4680,
+         0,
+         0
+        ],
+        [
+         4688.346,
+         0,
+         -26.328
+        ],
+        [
+         4713.216,
+         0,
+         -52.121
+        ],
+        [
+         4754.102,
+         0,
+         -76.852
+        ],
+        [
+         4810.172,
+         0,
+         -100.019
+        ],
+        [
+         4880.285,
+         0,
+         -121.149
+        ],
+        [
+         4963.014,
+         0,
+         -139.814
+        ],
+        [
+         5056.675,
+         0,
+         -155.632
+        ],
+        [
+         5159.36,
+         0,
+         -168.282
+        ],
+        [
+         5268.979,
+         0,
+         -177.506
+        ],
+        [
+         5383.302,
+         0,
+         -183.117
+        ],
+        [
+         5500,
+         0,
+         -185
+        ],
+        [
+         5616.698,
+         0,
+         -183.117
+        ],
+        [
+         5731.021,
+         0,
+         -177.506
+        ],
+        [
+         5840.64,
+         0,
+         -168.282
+        ],
+        [
+         5943.325,
+         0,
+         -155.632
+        ],
+        [
+         6036.986,
+         0,
+         -139.814
+        ],
+        [
+         6119.715,
+         0,
+         -121.149
+        ],
+        [
+         6189.828,
+         0,
+         -100.019
+        ],
+        [
+         6245.898,
+         0,
+         -76.852
+        ],
+        [
+         6286.784,
+         0,
+         -52.121
+        ],
+        [
+         6311.654,
+         0,
+         -26.328
+        ]
+       ],
+       "closed": true
+      },
+      {
+       "points": [
+        [
+         6270,
+         0,
+         0
+        ],
+        [
+         6264.672,
+         0,
+         26.788
+        ],
+        [
+         6249.497,
+         0,
+         49.497
+        ],
+        [
+         6226.788,
+         0,
+         64.672
+        ],
+        [
+         6200,
+         0,
+         70
+        ],
+        [
+         6173.212,
+         0,
+         64.672
+        ],
+        [
+         6150.503,
+         0,
+         49.497
+        ],
+        [
+         6135.328,
+         0,
+         26.788
+        ],
+        [
+         6130,
+         0,
+         0
+        ],
+        [
+         6135.328,
+         0,
+         -26.788
+        ],
+        [
+         6150.503,
+         0,
+         -49.497
+        ],
+        [
+         6173.212,
+         0,
+         -64.672
+        ],
+        [
+         6200,
+         0,
+         -70
+        ],
+        [
+         6226.788,
+         0,
+         -64.672
+        ],
+        [
+         6249.497,
+         0,
+         -49.497
+        ],
+        [
+         6264.672,
+         0,
+         -26.788
+        ]
+       ],
+       "closed": true
+      }
+     ],
+     "strength": 0.9
+    },
+    {
+     "name": "eye cups",
+     "kind": "discs",
+     "at": [
+      [
+       438,
+       134.113,
+       -153
+      ],
+      [
+       438,
+       134.113,
+       153
+      ]
+     ],
+     "radius_um": 30,
+     "strength": 0.85
+    },
+    {
+     "name": "brain",
+     "group": "nervous system",
+     "kind": "loft",
+     "stations": [
+      [
+       1231.825,
+       -30,
+       -266.964,
+       38.08,
+       22.848,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1217.031,
+       -30,
+       -264.576,
+       38.471,
+       23.082,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1202.236,
+       -30,
+       -262.188,
+       39.597,
+       23.758,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1187.441,
+       -30,
+       -259.801,
+       41.39,
+       24.834,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1172.646,
+       -30,
+       -257.413,
+       43.781,
+       26.269,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1157.851,
+       -30,
+       -255.026,
+       46.703,
+       28.022,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1143.056,
+       -30,
+       -252.638,
+       50.086,
+       30.052,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1128.261,
+       -30,
+       -250.25,
+       53.863,
+       32.318,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1113.466,
+       -30,
+       -247.863,
+       57.964,
+       34.779,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1098.671,
+       -30,
+       -245.475,
+       62.322,
+       37.393,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1083.876,
+       -30,
+       -243.088,
+       66.868,
+       40.121,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1069.081,
+       -30,
+       -240.7,
+       71.532,
+       42.919,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1054.286,
+       -30,
+       -238.312,
+       76.248,
+       45.749,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1039.491,
+       -30,
+       -235.925,
+       80.947,
+       48.568,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1024.696,
+       -30,
+       -233.537,
+       85.559,
+       51.335,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       1009.901,
+       -30,
+       -231.15,
+       90.017,
+       54.01,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       995.106,
+       -30,
+       -228.762,
+       94.252,
+       56.551,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       980.311,
+       -30,
+       -226.374,
+       98.195,
+       58.917,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       965.517,
+       -30,
+       -223.987,
+       106.269,
+       63.761,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       950.722,
+       -30,
+       -221.599,
+       114.539,
+       68.723,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       935.927,
+       -30,
+       -219.212,
+       122.395,
+       73.437,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       921.132,
+       -30,
+       -216.824,
+       129.6,
+       77.76,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       906.337,
+       -30,
+       -214.436,
+       135.909,
+       81.545,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       891.542,
+       -30,
+       -212.049,
+       141.077,
+       84.646,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       876.747,
+       -30,
+       -209.661,
+       145.003,
+       87.002,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       861.952,
+       -30,
+       -207.274,
+       148.314,
+       88.989,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       847.157,
+       -30,
+       -204.886,
+       151.08,
+       90.648,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       832.362,
+       -30,
+       -202.498,
+       153.259,
+       91.956,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       817.567,
+       -30,
+       -200.111,
+       154.819,
+       92.891,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       802.772,
+       -30,
+       -197.723,
+       155.736,
+       93.442,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       787.977,
+       -30,
+       -195.336,
+       155.996,
+       93.598,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       773.182,
+       -30,
+       -192.948,
+       155.596,
+       93.358,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       758.387,
+       -30,
+       -190.56,
+       154.541,
+       92.725,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       743.592,
+       -30,
+       -188.173,
+       152.848,
+       91.709,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       728.797,
+       -30,
+       -185.785,
+       150.541,
+       90.324,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       714.003,
+       -30,
+       -183.398,
+       147.655,
+       88.593,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       699.208,
+       -30,
+       -181.01,
+       144.235,
+       86.541,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       684.413,
+       -30,
+       -178.622,
+       140.33,
+       84.198,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       669.618,
+       -30,
+       -176.235,
+       136,
+       81.6,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       654.823,
+       -30,
+       -173.847,
+       131.309,
+       78.786,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       640.028,
+       -30,
+       -171.46,
+       126.329,
+       75.798,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       625.233,
+       -30,
+       -169.072,
+       121.134,
+       72.68,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       610.438,
+       -30,
+       -166.684,
+       115.801,
+       69.481,
+       0,
+       -0.159318,
+       -0.987227
+      ],
+      [
+       595.587,
+       -30,
+       -164.941,
+       111.465,
+       66.879,
+       0,
+       -0.026744,
+       -0.999642
+      ],
+      [
+       580.645,
+       -30,
+       -163.861,
+       109.654,
+       65.792,
+       0,
+       -0.117303,
+       -0.993096
+      ],
+      [
+       565.862,
+       -30,
+       -161.43,
+       107.862,
+       64.717,
+       0,
+       -0.206895,
+       -0.978363
+      ],
+      [
+       551.361,
+       -30,
+       -157.668,
+       106.104,
+       63.663,
+       0,
+       -0.294781,
+       -0.955565
+      ],
+      [
+       537.261,
+       -30,
+       -152.607,
+       104.395,
+       62.637,
+       0,
+       -0.380238,
+       -0.924889
+      ],
+      [
+       523.678,
+       -30,
+       -146.287,
+       102.749,
+       61.649,
+       0,
+       -0.462559,
+       -0.886588
+      ],
+      [
+       510.724,
+       -30,
+       -138.762,
+       101.179,
+       60.707,
+       0,
+       -0.541067,
+       -0.840979
+      ],
+      [
+       498.506,
+       -30,
+       -130.092,
+       99.698,
+       59.819,
+       0,
+       -0.615115,
+       -0.788437
+      ],
+      [
+       487.125,
+       -30,
+       -120.35,
+       98.318,
+       58.991,
+       0,
+       -0.684092,
+       -0.729395
+      ],
+      [
+       476.674,
+       -30,
+       -109.616,
+       97.051,
+       58.231,
+       0,
+       -0.74743,
+       -0.664341
+      ],
+      [
+       467.24,
+       -30,
+       -97.979,
+       95.908,
+       57.545,
+       0,
+       -0.804606,
+       -0.593809
+      ],
+      [
+       458.9,
+       -30,
+       -85.533,
+       94.897,
+       56.938,
+       0,
+       -0.855149,
+       -0.518383
+      ],
+      [
+       451.724,
+       -30,
+       -72.383,
+       94.027,
+       56.416,
+       0,
+       -0.898642,
+       -0.438682
+      ],
+      [
+       445.77,
+       -30,
+       -58.635,
+       93.305,
+       55.983,
+       0,
+       -0.934727,
+       -0.355366
+      ],
+      [
+       441.087,
+       -30,
+       -44.405,
+       92.738,
+       55.643,
+       0,
+       -0.963107,
+       -0.26912
+      ],
+      [
+       437.715,
+       -30,
+       -29.808,
+       92.329,
+       55.397,
+       0,
+       -0.983546,
+       -0.180655
+      ],
+      [
+       435.68,
+       -30,
+       -14.966,
+       92.082,
+       55.249,
+       0,
+       -0.995878,
+       -0.090702
+      ],
+      [
+       435,
+       -30,
+       0,
+       92,
+       55.2,
+       0,
+       -1,
+       0
+      ],
+      [
+       435.68,
+       -30,
+       14.966,
+       92.082,
+       55.249,
+       0,
+       -0.995878,
+       0.090702
+      ],
+      [
+       437.715,
+       -30,
+       29.808,
+       92.329,
+       55.397,
+       0,
+       -0.983546,
+       0.180655
+      ],
+      [
+       441.087,
+       -30,
+       44.405,
+       92.738,
+       55.643,
+       0,
+       -0.963107,
+       0.26912
+      ],
+      [
+       445.77,
+       -30,
+       58.635,
+       93.305,
+       55.983,
+       0,
+       -0.934727,
+       0.355366
+      ],
+      [
+       451.724,
+       -30,
+       72.383,
+       94.027,
+       56.416,
+       0,
+       -0.898642,
+       0.438682
+      ],
+      [
+       458.9,
+       -30,
+       85.533,
+       94.897,
+       56.938,
+       0,
+       -0.855149,
+       0.518383
+      ],
+      [
+       467.24,
+       -30,
+       97.979,
+       95.908,
+       57.545,
+       0,
+       -0.804606,
+       0.593809
+      ],
+      [
+       476.674,
+       -30,
+       109.616,
+       97.051,
+       58.231,
+       0,
+       -0.74743,
+       0.664341
+      ],
+      [
+       487.125,
+       -30,
+       120.35,
+       98.318,
+       58.991,
+       0,
+       -0.684092,
+       0.729395
+      ],
+      [
+       498.506,
+       -30,
+       130.092,
+       99.698,
+       59.819,
+       0,
+       -0.615115,
+       0.788437
+      ],
+      [
+       510.724,
+       -30,
+       138.762,
+       101.179,
+       60.707,
+       0,
+       -0.541067,
+       0.840979
+      ],
+      [
+       523.678,
+       -30,
+       146.287,
+       102.749,
+       61.649,
+       0,
+       -0.462559,
+       0.886588
+      ],
+      [
+       537.261,
+       -30,
+       152.607,
+       104.395,
+       62.637,
+       0,
+       -0.380238,
+       0.924889
+      ],
+      [
+       551.361,
+       -30,
+       157.668,
+       106.104,
+       63.663,
+       0,
+       -0.294781,
+       0.955565
+      ],
+      [
+       565.862,
+       -30,
+       161.43,
+       107.862,
+       64.717,
+       0,
+       -0.206895,
+       0.978363
+      ],
+      [
+       580.645,
+       -30,
+       163.861,
+       109.654,
+       65.792,
+       0,
+       -0.117303,
+       0.993096
+      ],
+      [
+       595.587,
+       -30,
+       164.941,
+       111.465,
+       66.879,
+       0,
+       -0.026744,
+       0.999642
+      ],
+      [
+       610.438,
+       -30,
+       166.684,
+       115.801,
+       69.481,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       625.233,
+       -30,
+       169.072,
+       121.134,
+       72.68,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       640.028,
+       -30,
+       171.46,
+       126.329,
+       75.798,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       654.823,
+       -30,
+       173.847,
+       131.309,
+       78.786,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       669.618,
+       -30,
+       176.235,
+       136,
+       81.6,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       684.413,
+       -30,
+       178.622,
+       140.33,
+       84.198,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       699.208,
+       -30,
+       181.01,
+       144.235,
+       86.541,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       714.003,
+       -30,
+       183.398,
+       147.655,
+       88.593,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       728.797,
+       -30,
+       185.785,
+       150.541,
+       90.324,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       743.592,
+       -30,
+       188.173,
+       152.848,
+       91.709,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       758.387,
+       -30,
+       190.56,
+       154.541,
+       92.725,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       773.182,
+       -30,
+       192.948,
+       155.596,
+       93.358,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       787.977,
+       -30,
+       195.336,
+       155.996,
+       93.598,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       802.772,
+       -30,
+       197.723,
+       155.736,
+       93.442,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       817.567,
+       -30,
+       200.111,
+       154.819,
+       92.891,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       832.362,
+       -30,
+       202.498,
+       153.259,
+       91.956,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       847.157,
+       -30,
+       204.886,
+       151.08,
+       90.648,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       861.952,
+       -30,
+       207.274,
+       148.314,
+       88.989,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       876.747,
+       -30,
+       209.661,
+       145.003,
+       87.002,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       891.542,
+       -30,
+       212.049,
+       141.077,
+       84.646,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       906.337,
+       -30,
+       214.436,
+       135.909,
+       81.545,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       921.132,
+       -30,
+       216.824,
+       129.6,
+       77.76,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       935.927,
+       -30,
+       219.212,
+       122.395,
+       73.437,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       950.722,
+       -30,
+       221.599,
+       114.539,
+       68.723,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       965.517,
+       -30,
+       223.987,
+       106.269,
+       63.761,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       980.311,
+       -30,
+       226.374,
+       98.195,
+       58.917,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       995.106,
+       -30,
+       228.762,
+       94.252,
+       56.551,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1009.901,
+       -30,
+       231.15,
+       90.017,
+       54.01,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1024.696,
+       -30,
+       233.537,
+       85.559,
+       51.335,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1039.491,
+       -30,
+       235.925,
+       80.947,
+       48.568,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1054.286,
+       -30,
+       238.312,
+       76.248,
+       45.749,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1069.081,
+       -30,
+       240.7,
+       71.532,
+       42.919,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1083.876,
+       -30,
+       243.088,
+       66.868,
+       40.121,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1098.671,
+       -30,
+       245.475,
+       62.322,
+       37.393,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1113.466,
+       -30,
+       247.863,
+       57.964,
+       34.779,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1128.261,
+       -30,
+       250.25,
+       53.863,
+       32.318,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1143.056,
+       -30,
+       252.638,
+       50.086,
+       30.052,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1157.851,
+       -30,
+       255.026,
+       46.703,
+       28.022,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1172.646,
+       -30,
+       257.413,
+       43.781,
+       26.269,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1187.441,
+       -30,
+       259.801,
+       41.39,
+       24.834,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1202.236,
+       -30,
+       262.188,
+       39.597,
+       23.758,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1217.031,
+       -30,
+       264.576,
+       38.471,
+       23.082,
+       0,
+       -0.159318,
+       0.987227
+      ],
+      [
+       1231.825,
+       -30,
+       266.964,
+       38.08,
+       22.848,
+       0,
+       -0.159318,
+       0.987227
+      ]
+     ],
+     "rings": {
+      "every": 8,
+      "first": 4,
+      "points": 18
+     },
+     "lines": [
+      0.5,
+      1.5
+     ],
+     "strength": 0.8,
+     "alone": 0.95,
+     "edge": 0.8,
+     "pick": 10
+    },
+    {
+     "name": "nerves and cords",
+     "group": "nervous system",
+     "kind": "lines",
+     "paths": [
+      {
+       "points": [
+        [
+         1042.138,
+         -30,
+         -313.587
+        ],
+        [
+         963.356,
+         -30,
+         -435.222
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         1042.138,
+         -30,
+         313.587
+        ],
+        [
+         963.356,
+         -30,
+         435.222
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         853.645,
+         -30,
+         -352.812
+        ],
+        [
+         753.854,
+         -30,
+         -438.029
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         853.645,
+         -30,
+         352.812
+        ],
+        [
+         753.854,
+         -30,
+         438.029
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         676.228,
+         -30,
+         -323.402
+        ],
+        [
+         563.306,
+         -30,
+         -444.328
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         676.228,
+         -30,
+         323.402
+        ],
+        [
+         563.306,
+         -30,
+         444.328
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         515.499,
+         -30,
+         -257.235
+        ],
+        [
+         380.969,
+         -30,
+         -374.973
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         515.499,
+         -30,
+         257.235
+        ],
+        [
+         380.969,
+         -30,
+         374.973
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         392.747,
+         -30,
+         -158.85
+        ],
+        [
+         231.054,
+         -30,
+         -237.939
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         392.747,
+         -30,
+         158.85
+        ],
+        [
+         231.054,
+         -30,
+         237.939
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         1231.825,
+         -30,
+         -266.964
+        ],
+        [
+         1311.825,
+         -30,
+         -266.088
+        ],
+        [
+         1436.825,
+         -30,
+         -262.418
+        ],
+        [
+         1561.825,
+         -30,
+         -258.177
+        ],
+        [
+         1686.825,
+         -30,
+         -255.448
+        ],
+        [
+         1811.825,
+         -30,
+         -255.504
+        ],
+        [
+         1936.825,
+         -30,
+         -258.557
+        ],
+        [
+         2061.825,
+         -30,
+         -263.449
+        ],
+        [
+         2186.825,
+         -30,
+         -268.649
+        ],
+        [
+         2311.825,
+         -30,
+         -273.999
+        ],
+        [
+         2436.825,
+         -30,
+         -279.426
+        ],
+        [
+         2561.825,
+         -30,
+         -284.861
+        ],
+        [
+         2686.825,
+         -30,
+         -290.233
+        ],
+        [
+         2811.825,
+         -30,
+         -295.471
+        ],
+        [
+         2936.825,
+         -30,
+         -300.503
+        ],
+        [
+         3061.825,
+         -30,
+         -305.26
+        ],
+        [
+         3186.825,
+         -30,
+         -309.671
+        ],
+        [
+         3311.825,
+         -30,
+         -313.663
+        ],
+        [
+         3436.825,
+         -30,
+         -317.168
+        ],
+        [
+         3561.825,
+         -30,
+         -320.114
+        ],
+        [
+         3686.825,
+         -30,
+         -322.43
+        ],
+        [
+         3811.825,
+         -30,
+         -324.045
+        ],
+        [
+         3936.825,
+         -30,
+         -324.889
+        ],
+        [
+         4061.825,
+         -30,
+         -325
+        ],
+        [
+         4186.825,
+         -30,
+         -325
+        ],
+        [
+         4311.825,
+         -30,
+         -325
+        ],
+        [
+         4436.825,
+         -30,
+         -325
+        ],
+        [
+         4561.825,
+         -30,
+         -325
+        ],
+        [
+         4686.825,
+         -30,
+         -325
+        ],
+        [
+         4811.825,
+         -30,
+         -325
+        ],
+        [
+         4936.825,
+         -30,
+         -325
+        ],
+        [
+         5061.825,
+         -30,
+         -325
+        ],
+        [
+         5186.825,
+         -30,
+         -325
+        ],
+        [
+         5311.825,
+         -30,
+         -325
+        ],
+        [
+         5436.825,
+         -30,
+         -325
+        ],
+        [
+         5561.825,
+         -30,
+         -324.855
+        ],
+        [
+         5686.825,
+         -30,
+         -323.942
+        ],
+        [
+         5811.825,
+         -30,
+         -322.338
+        ],
+        [
+         5936.825,
+         -30,
+         -320.117
+        ],
+        [
+         6061.825,
+         -30,
+         -317.32
+        ],
+        [
+         6186.825,
+         -30,
+         -313.974
+        ],
+        [
+         6311.825,
+         -30,
+         -310.102
+        ],
+        [
+         6436.825,
+         -30,
+         -305.721
+        ],
+        [
+         6561.825,
+         -30,
+         -300.846
+        ],
+        [
+         6686.825,
+         -30,
+         -295.488
+        ],
+        [
+         6811.825,
+         -30,
+         -289.659
+        ],
+        [
+         6936.825,
+         -30,
+         -283.368
+        ],
+        [
+         7061.825,
+         -30,
+         -276.623
+        ],
+        [
+         7186.825,
+         -30,
+         -269.432
+        ],
+        [
+         7311.825,
+         -30,
+         -261.801
+        ],
+        [
+         7436.825,
+         -30,
+         -253.737
+        ],
+        [
+         7561.825,
+         -30,
+         -245.246
+        ],
+        [
+         7686.825,
+         -30,
+         -236.332
+        ],
+        [
+         7811.825,
+         -30,
+         -227.001
+        ],
+        [
+         7936.825,
+         -30,
+         -217.258
+        ],
+        [
+         8061.825,
+         -30,
+         -207.106
+        ],
+        [
+         8186.825,
+         -30,
+         -196.551
+        ],
+        [
+         8311.825,
+         -30,
+         -185.595
+        ],
+        [
+         8436.825,
+         -30,
+         -174.242
+        ],
+        [
+         8561.825,
+         -30,
+         -162.495
+        ],
+        [
+         8686.825,
+         -30,
+         -150.359
+        ],
+        [
+         8811.825,
+         -30,
+         -137.836
+        ],
+        [
+         8936.825,
+         -30,
+         -124.929
+        ],
+        [
+         9061.825,
+         -30,
+         -111.641
+        ],
+        [
+         9186.825,
+         -30,
+         -97.974
+        ],
+        [
+         9311.825,
+         -30,
+         -83.932
+        ],
+        [
+         9436.825,
+         -30,
+         -69.516
+        ],
+        [
+         9561.825,
+         -30,
+         -54.729
+        ],
+        [
+         9686.825,
+         -30,
+         -39.574
+        ],
+        [
+         9750,
+         -30,
+         0
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         1231.825,
+         -30,
+         266.964
+        ],
+        [
+         1311.825,
+         -30,
+         266.088
+        ],
+        [
+         1436.825,
+         -30,
+         262.418
+        ],
+        [
+         1561.825,
+         -30,
+         258.177
+        ],
+        [
+         1686.825,
+         -30,
+         255.448
+        ],
+        [
+         1811.825,
+         -30,
+         255.504
+        ],
+        [
+         1936.825,
+         -30,
+         258.557
+        ],
+        [
+         2061.825,
+         -30,
+         263.449
+        ],
+        [
+         2186.825,
+         -30,
+         268.649
+        ],
+        [
+         2311.825,
+         -30,
+         273.999
+        ],
+        [
+         2436.825,
+         -30,
+         279.426
+        ],
+        [
+         2561.825,
+         -30,
+         284.861
+        ],
+        [
+         2686.825,
+         -30,
+         290.233
+        ],
+        [
+         2811.825,
+         -30,
+         295.471
+        ],
+        [
+         2936.825,
+         -30,
+         300.503
+        ],
+        [
+         3061.825,
+         -30,
+         305.26
+        ],
+        [
+         3186.825,
+         -30,
+         309.671
+        ],
+        [
+         3311.825,
+         -30,
+         313.663
+        ],
+        [
+         3436.825,
+         -30,
+         317.168
+        ],
+        [
+         3561.825,
+         -30,
+         320.114
+        ],
+        [
+         3686.825,
+         -30,
+         322.43
+        ],
+        [
+         3811.825,
+         -30,
+         324.045
+        ],
+        [
+         3936.825,
+         -30,
+         324.889
+        ],
+        [
+         4061.825,
+         -30,
+         325
+        ],
+        [
+         4186.825,
+         -30,
+         325
+        ],
+        [
+         4311.825,
+         -30,
+         325
+        ],
+        [
+         4436.825,
+         -30,
+         325
+        ],
+        [
+         4561.825,
+         -30,
+         325
+        ],
+        [
+         4686.825,
+         -30,
+         325
+        ],
+        [
+         4811.825,
+         -30,
+         325
+        ],
+        [
+         4936.825,
+         -30,
+         325
+        ],
+        [
+         5061.825,
+         -30,
+         325
+        ],
+        [
+         5186.825,
+         -30,
+         325
+        ],
+        [
+         5311.825,
+         -30,
+         325
+        ],
+        [
+         5436.825,
+         -30,
+         325
+        ],
+        [
+         5561.825,
+         -30,
+         324.855
+        ],
+        [
+         5686.825,
+         -30,
+         323.942
+        ],
+        [
+         5811.825,
+         -30,
+         322.338
+        ],
+        [
+         5936.825,
+         -30,
+         320.117
+        ],
+        [
+         6061.825,
+         -30,
+         317.32
+        ],
+        [
+         6186.825,
+         -30,
+         313.974
+        ],
+        [
+         6311.825,
+         -30,
+         310.102
+        ],
+        [
+         6436.825,
+         -30,
+         305.721
+        ],
+        [
+         6561.825,
+         -30,
+         300.846
+        ],
+        [
+         6686.825,
+         -30,
+         295.488
+        ],
+        [
+         6811.825,
+         -30,
+         289.659
+        ],
+        [
+         6936.825,
+         -30,
+         283.368
+        ],
+        [
+         7061.825,
+         -30,
+         276.623
+        ],
+        [
+         7186.825,
+         -30,
+         269.432
+        ],
+        [
+         7311.825,
+         -30,
+         261.801
+        ],
+        [
+         7436.825,
+         -30,
+         253.737
+        ],
+        [
+         7561.825,
+         -30,
+         245.246
+        ],
+        [
+         7686.825,
+         -30,
+         236.332
+        ],
+        [
+         7811.825,
+         -30,
+         227.001
+        ],
+        [
+         7936.825,
+         -30,
+         217.258
+        ],
+        [
+         8061.825,
+         -30,
+         207.106
+        ],
+        [
+         8186.825,
+         -30,
+         196.551
+        ],
+        [
+         8311.825,
+         -30,
+         185.595
+        ],
+        [
+         8436.825,
+         -30,
+         174.242
+        ],
+        [
+         8561.825,
+         -30,
+         162.495
+        ],
+        [
+         8686.825,
+         -30,
+         150.359
+        ],
+        [
+         8811.825,
+         -30,
+         137.836
+        ],
+        [
+         8936.825,
+         -30,
+         124.929
+        ],
+        [
+         9061.825,
+         -30,
+         111.641
+        ],
+        [
+         9186.825,
+         -30,
+         97.974
+        ],
+        [
+         9311.825,
+         -30,
+         83.932
+        ],
+        [
+         9436.825,
+         -30,
+         69.516
+        ],
+        [
+         9561.825,
+         -30,
+         54.729
+        ],
+        [
+         9686.825,
+         -30,
+         39.574
+        ],
+        [
+         9750,
+         -30,
+         0
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         1750,
+         -30,
+         -255.087
+        ],
+        [
+         1750,
+         -30,
+         255.087
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         2200,
+         -30,
+         -269.207
+        ],
+        [
+         2200,
+         -30,
+         269.207
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         2650,
+         -30,
+         -288.661
+        ],
+        [
+         2650,
+         -30,
+         288.661
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         3100,
+         -30,
+         -306.647
+        ],
+        [
+         3100,
+         -30,
+         306.647
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         3550,
+         -30,
+         -319.861
+        ],
+        [
+         3550,
+         -30,
+         319.861
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         4000,
+         -30,
+         -325
+        ],
+        [
+         4000,
+         -30,
+         325
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         4450,
+         -30,
+         -325
+        ],
+        [
+         4450,
+         -30,
+         325
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         4900,
+         -30,
+         -325
+        ],
+        [
+         4900,
+         -30,
+         325
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         5350,
+         -30,
+         -325
+        ],
+        [
+         5350,
+         -30,
+         325
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         5800,
+         -30,
+         -322.517
+        ],
+        [
+         5800,
+         -30,
+         322.517
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         6250,
+         -30,
+         -312.082
+        ],
+        [
+         6250,
+         -30,
+         312.082
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         6700,
+         -30,
+         -294.896
+        ],
+        [
+         6700,
+         -30,
+         294.896
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         7150,
+         -30,
+         -271.596
+        ],
+        [
+         7150,
+         -30,
+         271.596
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         7600,
+         -30,
+         -242.568
+        ],
+        [
+         7600,
+         -30,
+         242.568
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         8050,
+         -30,
+         -208.084
+        ],
+        [
+         8050,
+         -30,
+         208.084
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         8500,
+         -30,
+         -168.354
+        ],
+        [
+         8500,
+         -30,
+         168.354
+        ]
+       ]
+      },
+      {
+       "points": [
+        [
+         8950,
+         -30,
+         -123.546
+        ],
+        [
+         8950,
+         -30,
+         123.546
+        ]
+       ]
+      }
+     ],
+     "strength": 0.8,
+     "alone": 0.95
+    }
+   ]
+  }
  },
  "entities": [
   {
@@ -2369,7 +10685,7 @@
    "group": "operators",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Reactions between species in the tissue's one inventory, with exact energy bookings. Development code with no judged run; its qualification, MG0c, has a revised protocol that is still proposed.",
+   "plain": "Reactions between species in the tissue's one inventory, with exact energy bookings. Development code with no judged run; its qualification, MG0c, is rehearsed and registered (15 November 2026) and awaits its judged run.",
    "detail": "Operator local_species_reactions@1: reactions on the shared species inventory (D152, version 1).",
    "facts": [
     [
@@ -2431,6 +10747,10 @@
     {
      "path": "PROGRESS.md",
      "where": "Combined landing (14 November 2026)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "MG0c (D152): the protocol after its rehearsal on main and the final check"
     }
    ],
    "files": [
@@ -2442,9 +10762,9 @@
    "label": "Regulated availability",
    "kind": "operator",
    "group": "operators",
-   "status": "landed",
-   "as_of": "2026-11-14",
-   "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Milestones 1 and 2 landed on 14 November 2026: the operator with its refusals, the junction and channel targets, a starting condition for each cell, and the regulatory state with restart, batches and compositions. In milestone 3 its development runs agree with the independent references at second order. Its qualification protocol is drafted and proposed (milestone 4, 15 November 2026), with 47 judged criteria. It is development code, guarded by tests; the protocol is not yet registered, and nothing is judged.",
+   "status": "qualified",
+   "as_of": "2026-11-15",
+   "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Numerically qualified on 15 November 2026: its judged run passed all 47 criteria. It agrees at second order with independent references, for two cells whose contact is set by each cell's regulatory state and for a species that sets a channel's availability. The qualification is for CPU runs within its stated scope: worlds without pumps or gated channels, over 1 and 2 seconds.",
    "detail": "Operator species_regulated_availability@1: coupling out of the inventory (D155 item 1, D156).",
    "facts": [
     [
@@ -2483,6 +10803,10 @@
    "sources": [
     {
      "path": "src/cells/models/operators/species_regulated_availability.py"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The coupling operator `species_regulated_availability@1` is numerically qualified (judged,"
     },
     {
      "path": "PROGRESS.md",
@@ -4076,9 +12400,9 @@
    "label": "Coupling out of the inventory",
    "kind": "component",
    "group": "laws",
-   "status": "landed",
-   "as_of": "2026-11-14",
-   "plain": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Its first two milestones are in the engine since 14 November 2026: the Hill factors, the operator that applies them to junctions and to channels, and a slower two-state regulatory state. It is development code, guarded by tests; its qualification comes later. It also answers feature request FR-6, species-driven control factors.",
+   "status": "qualified",
+   "as_of": "2026-11-15",
+   "plain": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. It is in the engine since 14 November 2026: the Hill factors, the operator that applies them to junctions and to channels, and a slower two-state regulatory state. The operator was numerically qualified on 15 November 2026, on CPU and within its stated scope. It also answers feature request FR-6, species-driven control factors.",
    "detail": "Hill activation and inhibition factors in log space (a neutral helper).",
    "facts": [
     [
@@ -4093,6 +12417,10 @@
    "sources": [
     {
      "path": "docs/INVENTORY_COUPLING_DESIGN.md"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The coupling operator `species_regulated_availability@1` is numerically qualified (judged,"
     },
     {
      "path": "PROGRESS.md",
@@ -5323,11 +13651,15 @@
    "group": "experiments",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Pattern formation by reaction and diffusion: the qualification of the shared-inventory reactions. Its driver and development runs have landed. Its protocol was revised after the lead's review and is still proposed: 55 judged criteria, and every one a development run can evaluate passes. It is not registered, and nothing is judged yet; a rehearsal comes next.",
+   "plain": "Pattern formation by reaction and diffusion: the qualification of the shared-inventory reactions. Its driver and development runs have landed. Its protocol has 55 judged criteria. A rehearsal on main passed all 55 on a dry-run copy, and the protocol was then registered (15 November 2026). Nothing is judged yet: one judged run follows.",
    "sources": [
     {
      "path": "PROGRESS.md",
      "where": "D152 v1 milestone 3 landed"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "MG0c (D152): the protocol after its rehearsal on main and the final check"
     },
     {
      "path": "PROGRESS.md",
@@ -5692,10 +14024,10 @@
     ],
     [
      "Lines of Python",
-     "78,185"
+     "78,441"
     ]
    ],
-   "weight": 78185
+   "weight": 78441
   },
   {
    "id": "val.division",
@@ -5735,10 +14067,10 @@
     ],
     [
      "Lines of Python",
-     "9,167"
+     "9,327"
     ]
    ],
-   "weight": 9167
+   "weight": 9327
   },
   {
    "id": "val.reactions",
@@ -5780,7 +14112,7 @@
    "group": "references",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "Reference solutions for the regulated-availability operator, written by a separate agent that read no engine code. Their own tests are in the routine gate. The operator's development runs agree with them at second order (14 November 2026); that is not yet a judged qualification.",
+   "plain": "Reference solutions for the regulated-availability operator, written by a separate agent that read no engine code. Their own tests are in the routine gate. The operator was judged against them on 15 November 2026 and passed.",
    "facts": [
     [
      "Files",
@@ -5802,6 +14134,10 @@
     {
      "path": "PROGRESS.md",
      "where": "The coupling operator's milestone 3, and Track E's independent references, landed"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The coupling operator `species_regulated_availability@1` is numerically qualified (judged,"
     }
    ],
    "files": [
@@ -5882,7 +14218,7 @@
     ],
     [
      "Lines of Python",
-     "232,170"
+     "232,226"
     ],
     [
      "Tier 1 test files",
@@ -5903,7 +14239,7 @@
      "where": "Milestones and provenance"
     }
    ],
-   "weight": 232170
+   "weight": 232226
   },
   {
    "id": "state.compartment",
@@ -6770,7 +15106,7 @@
    "group": "biology",
    "order": 1,
    "plain": "The current focus: a coherent model of one cell, where many processes share the same inventories.",
-   "note": "The cell drawn is one cell of the sheet, which stands for skin-like tissue; it is not a model of a planarian's skin cell. Its shape is the picture's choice: six flat sides where it meets its neighbours, an outer face and a base, and the height of the sheet's cells. The engine gives a cell a volume and a membrane area, not a shape. The cut removes the outer face, which is kept as a dashed outline. The neighbours, that outline and the lined plate under the layer are scenery. The plate marks where a flatworm's skin rests on a basement membrane, which Cells does not model.",
+   "note": "The cell is drawn in the shape that the species shown gives it. The engine gives a cell a volume and a membrane area, not a shape. The cut removes the cell's top, which is kept as a dashed outline. Where the cell is one of a layer, its neighbours and the lined plate under the layer are scenery.",
    "sources": [
     {
      "path": "docs/CURRENT_PLAN.md",
@@ -6785,7 +15121,7 @@
    "group": "biology",
    "order": 2,
    "plain": "Sheets of coupled cells run today. An integrated tissue unit with mechanics and the lifecycle is a later gate.",
-   "note": "The sheet stands for skin-like tissue: a single layer of cells. It is drawn lying over the brain of the placeholder worm for the scales only; the simulated sheet is not that animal's tissue. The cells outlined beyond the sheet's edge are scenery.",
+   "note": "The sheet is a single layer of the cells of the species shown. The cells outlined beyond the sheet's edge are scenery.",
    "sources": [
     {
      "path": "docs/CURRENT_PLAN.md",
@@ -6801,7 +15137,7 @@
    "status": "planned",
    "order": 3,
    "plain": "A first whole organ, defined as data. Planned; the organ and species are not yet chosen.",
-   "note": "The outline drawn is a planarian flatworm's brain with its two nerve cords, as a placeholder. Nothing at this scale is simulated. The sheet of cells stands for skin-like tissue lying over the brain, drawn on the worm's head so that the scales follow one another; it is not the worm's tissue. The brain's own cells are neurons and glia, which Cells does not model. The sizes are indicative.",
+   "note": "The outline drawn is a placeholder, from the species shown. Nothing at this scale is simulated. The sizes are indicative.",
    "sources": [
     {
      "path": "docs/ROADMAP.md",
@@ -6817,7 +15153,7 @@
    "status": "planned",
    "order": 4,
    "plain": "Interacting organ systems, and in time whole animals. A long-term goal; nothing is built.",
-   "note": "The outline drawn is a planarian flatworm, about 10 mm long, as a placeholder. Nothing at this scale is simulated, and no species has been chosen. The sheet of cells stands for skin-like tissue and is drawn on the worm's head for the scales only. The sizes are indicative.",
+   "note": "The outline drawn is a placeholder, from the species shown. Nothing at this scale is simulated. The sizes are indicative.",
    "sources": [
     {
      "path": "README.md",
@@ -28629,6 +36965,13 @@
    "to": "ref.bitsey",
    "kind": "compared_with",
    "weight": 1
+  },
+  {
+   "from": "op.species_regulated_availability@1",
+   "to": "val.coupling",
+   "kind": "compared_with",
+   "weight": 1,
+   "label": "its judged qualification, 15 November 2026"
   },
   {
    "from": "op.electrode_current_injection@1",

@@ -155,6 +155,18 @@ test("a species atlas links out only to its named sources, over https", () => {
   }
 });
 
+test("the scene carries the species the page can show, each with its shapes", () => {
+  const species = scene.species || [];
+  assert.ok(species.length > 0, "the scene names no species: rebuild it");
+  assert.equal(species.filter((item) => item.default).length, 1, "exactly one species is the one the page opens on");
+  for (const item of species) {
+    // No species is said to be modelled: the record names no registered model of an organism.
+    assert.ok(["generic", "proposed"].includes(item.modelled.state), `${item.id} is said to be modelled`);
+    assert.ok(item.modelled.text?.trim(), `${item.id} does not say what Cells models of it`);
+    for (const level of item.levels) if (level.shape?.ref) assert.ok(scene.shapes?.[level.shape.ref], `${item.id}: no shape ${level.shape.ref}`);
+  }
+});
+
 test("every part belongs to a view", () => {
   const lensOf = new Map(scene.groups.map((group) => [group.id, group.lens]));
   const lenses = new Set(scene.entities.map((entity) => lensOf.get(entity.group)));

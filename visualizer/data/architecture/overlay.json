@@ -1075,15 +1075,19 @@
       "id": "laws.inventory_coupling",
       "label": "Coupling out of the inventory",
       "layer": "laws",
-      "status": "landed",
-      "as_of": "2026-11-14",
+      "status": "qualified",
+      "as_of": "2026-11-15",
       "match": [
         "src/cells/processes/hill_factors.py"
       ],
-      "plain": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Its first two milestones are in the engine since 14 November 2026: the Hill factors, the operator that applies them to junctions and to channels, and a slower two-state regulatory state. It is development code, guarded by tests; its qualification comes later. It also answers feature request FR-6, species-driven control factors.",
+      "plain": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. It is in the engine since 14 November 2026: the Hill factors, the operator that applies them to junctions and to channels, and a slower two-state regulatory state. The operator was numerically qualified on 15 November 2026, on CPU and within its stated scope. It also answers feature request FR-6, species-driven control factors.",
       "sources": [
         {
           "path": "docs/INVENTORY_COUPLING_DESIGN.md"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The coupling operator `species_regulated_availability@1` is numerically qualified (judged,"
         },
         {
           "path": "PROGRESS.md",
@@ -1599,11 +1603,18 @@
       "layer": "experiments",
       "status": "landed",
       "as_of": "2026-11-14",
-      "plain": "Pattern formation by reaction and diffusion: the qualification of the shared-inventory reactions. Its driver and development runs have landed. Its protocol was revised after the lead's review and is still proposed: 55 judged criteria, and every one a development run can evaluate passes. It is not registered, and nothing is judged yet; a rehearsal comes next.",
+      "plain": "Pattern formation by reaction and diffusion: the qualification of the shared-inventory reactions. Its driver and development runs have landed. Its protocol has 55 judged criteria. A rehearsal on main passed all 55 on a dry-run copy, and the protocol was then registered (15 November 2026). Nothing is judged yet: one judged run follows.",
       "sources": [
         {
           "path": "PROGRESS.md",
           "where": "D152 v1 milestone 3 landed"
+        },
+        {
+          "path": "validation/morphogenesis/protocols/mg0c_turing_v1.json"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "MG0c (D152): the protocol after its rehearsal on main and the final check"
         },
         {
           "path": "PROGRESS.md",
@@ -1961,7 +1972,7 @@
       "match": [
         "validation/coupling/**"
       ],
-      "plain": "Reference solutions for the regulated-availability operator, written by a separate agent that read no engine code. Their own tests are in the routine gate. The operator's development runs agree with them at second order (14 November 2026); that is not yet a judged qualification.",
+      "plain": "Reference solutions for the regulated-availability operator, written by a separate agent that read no engine code. Their own tests are in the routine gate. The operator was judged against them on 15 November 2026 and passed.",
       "sources": [
         {
           "path": "validation/coupling/REFERENCES_USAGE.md"
@@ -1973,6 +1984,10 @@
         {
           "path": "PROGRESS.md",
           "where": "The coupling operator's milestone 3, and Track E's independent references, landed"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The coupling operator `species_regulated_availability@1` is numerically qualified (judged,"
         }
       ]
     },
@@ -2224,7 +2239,7 @@
         "label": "Shared-inventory reactions",
         "status": "landed",
         "as_of": "2026-11-14",
-        "plain": "Reactions between species in the tissue's one inventory, with exact energy bookings. Development code with no judged run; its qualification, MG0c, has a revised protocol that is still proposed.",
+        "plain": "Reactions between species in the tissue's one inventory, with exact energy bookings. Development code with no judged run; its qualification, MG0c, is rehearsed and registered (15 November 2026) and awaits its judged run.",
         "sources": [
           {
             "path": "docs/SHARED_INVENTORY_REACTIONS_DESIGN.md"
@@ -2240,15 +2255,23 @@
           {
             "path": "PROGRESS.md",
             "where": "Combined landing (14 November 2026)"
+          },
+          {
+            "path": "PROGRESS.md",
+            "where": "MG0c (D152): the protocol after its rehearsal on main and the final check"
           }
         ]
       },
       "species_regulated_availability@1": {
         "label": "Regulated availability",
-        "status": "landed",
-        "as_of": "2026-11-14",
-        "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Milestones 1 and 2 landed on 14 November 2026: the operator with its refusals, the junction and channel targets, a starting condition for each cell, and the regulatory state with restart, batches and compositions. In milestone 3 its development runs agree with the independent references at second order. Its qualification protocol is drafted and proposed (milestone 4, 15 November 2026), with 47 judged criteria. It is development code, guarded by tests; the protocol is not yet registered, and nothing is judged.",
+        "status": "qualified",
+        "as_of": "2026-11-15",
+        "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Numerically qualified on 15 November 2026: its judged run passed all 47 criteria. It agrees at second order with independent references, for two cells whose contact is set by each cell's regulatory state and for a species that sets a channel's availability. The qualification is for CPU runs within its stated scope: worlds without pumps or gated channels, over 1 and 2 seconds.",
         "sources": [
+          {
+            "path": "PROGRESS.md",
+            "where": "The coupling operator `species_regulated_availability@1` is numerically qualified (judged,"
+          },
           {
             "path": "PROGRESS.md",
             "where": "The coupling operator `species_regulated_availability@1` (D155/D156): milestone 1 landed"
@@ -2925,7 +2948,7 @@
       "label": "One cell",
       "order": 1,
       "plain": "The current focus: a coherent model of one cell, where many processes share the same inventories.",
-      "note": "The cell drawn is one cell of the sheet, which stands for skin-like tissue; it is not a model of a planarian's skin cell. Its shape is the picture's choice: six flat sides where it meets its neighbours, an outer face and a base, and the height of the sheet's cells. The engine gives a cell a volume and a membrane area, not a shape. The cut removes the outer face, which is kept as a dashed outline. The neighbours, that outline and the lined plate under the layer are scenery. The plate marks where a flatworm's skin rests on a basement membrane, which Cells does not model.",
+      "note": "The cell is drawn in the shape that the species shown gives it. The engine gives a cell a volume and a membrane area, not a shape. The cut removes the cell's top, which is kept as a dashed outline. Where the cell is one of a layer, its neighbours and the lined plate under the layer are scenery.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -2938,7 +2961,7 @@
       "label": "Tissue",
       "order": 2,
       "plain": "Sheets of coupled cells run today. An integrated tissue unit with mechanics and the lifecycle is a later gate.",
-      "note": "The sheet stands for skin-like tissue: a single layer of cells. It is drawn lying over the brain of the placeholder worm for the scales only; the simulated sheet is not that animal's tissue. The cells outlined beyond the sheet's edge are scenery.",
+      "note": "The sheet is a single layer of the cells of the species shown. The cells outlined beyond the sheet's edge are scenery.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -2952,7 +2975,7 @@
       "order": 3,
       "status": "planned",
       "plain": "A first whole organ, defined as data. Planned; the organ and species are not yet chosen.",
-      "note": "The outline drawn is a planarian flatworm's brain with its two nerve cords, as a placeholder. Nothing at this scale is simulated. The sheet of cells stands for skin-like tissue lying over the brain, drawn on the worm's head so that the scales follow one another; it is not the worm's tissue. The brain's own cells are neurons and glia, which Cells does not model. The sizes are indicative.",
+      "note": "The outline drawn is a placeholder, from the species shown. Nothing at this scale is simulated. The sizes are indicative.",
       "sources": [
         {
           "path": "docs/ROADMAP.md",
@@ -2966,7 +2989,7 @@
       "order": 4,
       "status": "planned",
       "plain": "Interacting organ systems, and in time whole animals. A long-term goal; nothing is built.",
-      "note": "The outline drawn is a planarian flatworm, about 10 mm long, as a placeholder. Nothing at this scale is simulated, and no species has been chosen. The sheet of cells stands for skin-like tissue and is drawn on the worm's head for the scales only. The sizes are indicative.",
+      "note": "The outline drawn is a placeholder, from the species shown. Nothing at this scale is simulated. The sizes are indicative.",
       "sources": [
         {
           "path": "README.md",
@@ -3334,6 +3357,12 @@
       "to": "op.ideal_osmosis_linear_compliance_water@1",
       "kind": "extends",
       "label": "its capability probe: a vesicle under the water operator"
+    },
+    {
+      "from": "op.species_regulated_availability@1",
+      "to": "val.coupling",
+      "kind": "compared_with",
+      "label": "its judged qualification, 15 November 2026"
     }
   ],
   "relation_kinds": [

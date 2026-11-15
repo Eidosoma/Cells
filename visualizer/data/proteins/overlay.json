@@ -156,6 +156,13 @@
           "url": "https://parasite.wormbase.org/Schmidtea_mediterranea_s2f19h1prjna885486/Gene/Summary?g={id}",
           "checked": "2026-11-14: asked for gene model h1SMcG0020152, the site answered with that gene's page. The address holds the genome annotation the planarian atlas uses (WBPS19, schMedS3 haplotype 1)."
         }
+      },
+      "syn3a": {
+        "genbank": {
+          "text": "GenBank {id}",
+          "url": "https://www.ncbi.nlm.nih.gov/protein/{id}",
+          "checked": "2026-11-14: NCBI's E-utilities return the protein record for AVX54569.1 (Chromosomal replication initiator protein, synthetic bacterium JCVI-Syn3A). The page itself answered the tool with a browser check, so it was not seen."
+        }
       }
     },
     "findings": [

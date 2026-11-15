@@ -111,6 +111,9 @@ const press = async (selector) => {
   await click(at.x, at.y);
   await sleep(250);
 };
+// The species whose side of the atlas is the inventory's own. The page opens on the species whose
+// file says default, which may be another, so the checks of the inventory's side ask for it by name.
+const ownAtlas = () => evaluate(`(() => { const atlases = ${VIEWER}.model.raw.proteins.atlases || []; return (atlases.find((atlas) => atlas.reference) || atlases[0])?.id ?? null; })()`);
 // What the protein atlas shows of its species: the card, the legend, the rings and the panel.
 const speciesState = () =>
   evaluate(`(() => {
@@ -121,7 +124,7 @@ const speciesState = () =>
       lens: viewer.state.lens,
       atlas: viewer.state.atlas ?? null,
       attribute: viewer.dataset.atlas ?? null,
-      species: [...root.querySelectorAll(".view-card [data-atlas]")].map((button) => ({ id: button.dataset.atlas, label: button.textContent, pressed: button.getAttribute("aria-pressed") === "true" })),
+      species: [...root.querySelectorAll("[data-atlas]")].filter((button) => button.offsetParent).map((button) => ({ id: button.dataset.atlas, label: button.textContent, pressed: button.getAttribute("aria-pressed") === "true" })),
       heading: text(".view-card .card-title"),
       organism: text(".view-card .card-organism"),
       stats: [...root.querySelectorAll(".view-card .stat b")].map((item) => item.textContent).join(" "),
@@ -173,6 +176,7 @@ try {
   // ---------------------------------------------------------------- protein atlas
   if (wants("atlas")) {
     await open("lens=proteins");
+    await open(`lens=proteins&atlas=${await ownAtlas()}`);
     const tabs = await evaluate(`[...${VIEWER}.shadowRoot.querySelectorAll(".switch button")].map((button) => button.getAttribute("aria-label")).join(" | ")`);
     check("atlas: the views are in the order asked for, with Engine last", /^Cell and scales \| Protein atlas \|( Experiments \|)? Engine$/.test(tabs), tabs);
     // A unit whose top is in plain view, with no label lying over the point clicked.
@@ -228,6 +232,8 @@ try {
   // ---------------------------------------------------------------- species atlases
   if (wants("species")) {
     await open("lens=proteins");
+    const opens = (await speciesState()).atlas; // the species the page opens on
+    await open(`lens=proteins&atlas=${await ownAtlas()}`);
     let s = await speciesState();
     // The species to switch to: one with a unit built from another family, where there is one, so
     // that the checks on such a unit run; otherwise the first that is not shown.
@@ -241,9 +247,9 @@ try {
       check("species: a scene with one atlas shows no switch, and no rings", s.species.length === 0 && s.marks === 0, JSON.stringify(s.species));
     } else {
       const human = s;
-      check("species: the atlas opens on the inventory's own, with the switch in its card", s.atlas === s.species[0].id && s.species[0].pressed && s.marks === 0 && s.findings === "", JSON.stringify([s.atlas, s.species, s.marks, s.findings]));
+      check("species: the inventory's own side has the page's species switch, no rings and no findings", s.species.find((item) => item.pressed)?.id === s.atlas && s.marks === 0 && s.findings === "", JSON.stringify([s.atlas, s.species, s.marks, s.findings]));
 
-      await press(`.view-card [data-atlas="${other.id}"]`);
+      await press(`[data-atlas="${other.id}"]`);
       s = await speciesState();
       check("species: a click on another species shows its atlas", s.atlas === other.id && s.attribute === other.id && s.heading !== human.heading && s.species.find((item) => item.id === other.id).pressed, JSON.stringify([s.atlas, s.attribute, s.heading]));
       check("species: the card gives the species' own name, counts and sources", Boolean(s.organism) && s.stats !== human.stats && /How it was made/.test(s.details) && /Sources and licences/.test(s.details), JSON.stringify([s.organism, s.stats, s.details]));
@@ -306,7 +312,7 @@ try {
       s = await speciesState();
       check("species: the species is kept when another view is visited", s.lens === "proteins" && s.atlas === other.id && s.marks > 0, JSON.stringify([s.lens, s.atlas, s.marks]));
       if (family) await evaluate(`${VIEWER}.select(${JSON.stringify(family)})`);
-      await press(`.view-card [data-atlas="${human.atlas}"]`);
+      await press(`[data-atlas="${human.atlas}"]`);
       s = await speciesState();
       check("species: back on the inventory's atlas, the card, the legend and the picture are as before", s.atlas === human.atlas && s.heading === human.heading && s.stats === human.stats && s.findings === "" && s.marks === 0 && s.lit === s.units && s.mapping === human.mapping, JSON.stringify([s.atlas, s.heading, s.findings, s.marks, s.lit]));
       check("species: the selected unit lists the inventory's candidates again", !family || (Boolean(s.panel) && s.panel.finding === null && /Candidate products/.test(s.panel.heads) && s.panel.lawNote === null), JSON.stringify(s.panel));
@@ -317,7 +323,7 @@ try {
       check("species: atlas= in the address is taken while another view is shown", s.lens === "cell" && s.atlas === other.id, JSON.stringify([s.lens, s.atlas]));
       await open("lens=proteins&atlas=no-such-species");
       s = await speciesState();
-      check("species: an unknown species in the address is ignored", s.atlas === human.atlas && s.heading === human.heading, JSON.stringify([s.atlas, s.heading]));
+      check("species: an unknown species in the address is ignored", s.atlas === opens, JSON.stringify([s.atlas, opens, s.heading]));
     }
   }
 

@@ -300,6 +300,34 @@ cells-trace { display: grid; gap: 4px; }
 /* ---------------------------------------------------------------- protein atlas: one species' side */
 /* The switch between species takes any number of them and wraps onto more rows. */
 .seg-many { display: flex; flex-wrap: wrap; gap: 2px; }
+/* The species switch: in the bar on a wide window, at the head of a card on a narrow one. */
+.species { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.species-label { font-family: var(--font-display); font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.species .seg { background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line); border-radius: 999px; padding: 3px; flex-wrap: nowrap; }
+.species .seg button { padding: 5px 12px; border-radius: 999px; font-size: 13px; }
+.species .seg button[aria-pressed="true"] { background: color-mix(in srgb, var(--fg) 12%, transparent); box-shadow: none; }
+.species-state { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); white-space: nowrap; }
+.species-state::after { content: "›"; margin-left: 6px; opacity: .6; }
+.species-state:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.species-state[data-state="proposed"] { color: var(--fg); box-shadow: inset 0 0 0 1.5px var(--fg); }
+.species-state[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.species-line { margin: -1px 0 1px; }
+.rail-note { max-width: 148px; font-size: 11.5px; line-height: 1.35; color: var(--muted); padding: 6px 8px 3px; margin-top: 2px; border-top: 1px solid var(--line); }
+@media (max-width: 1460px) { .species-label { display: none; } }
+/* With the species switch in it, the bar stays on one line: the date gives way first. */
+.with-species { flex-wrap: nowrap; }
+.with-species .bar-end { flex: 0 1 auto; overflow: hidden; }
+.with-species .stamp { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.with-species .switch, .with-species .species, .with-species .pill-button { flex: none; }
+.with-species .brand { flex: none; white-space: nowrap; }
+@media (max-width: 1340px) { .with-species .brand span { display: none; } }
+@media (max-width: 1240px) { .with-species .switch .long { display: none; } .with-species .switch .short { display: inline; } }
+@media (max-width: 1180px) { .with-species .stamp { display: none; } }
+/* Where the words are wider than that (more species, or a fallback font), the viewer asks for the same, by measure. */
+.with-species[data-tight="1"] .brand span, .with-species[data-tight="2"] .brand span { display: none; }
+.with-species[data-tight="2"] .switch .long { display: none; }
+.with-species[data-tight="2"] .switch .short { display: inline; }
+.with-species[data-tight="2"] .stamp { display: none; }
 .seg-many button { flex: 1 1 auto; padding: 4px 9px; white-space: nowrap; }
 .card-organism { font-size: 12.5px; font-style: italic; margin-top: -3px; }
 /* A species file may hold a long word (a file's name, an identifier): it wraps inside the card. */
@@ -312,6 +340,8 @@ cells-trace { display: grid; gap: 4px; }
    An unbroken ring is another protein family; a broken ring is nothing found. */
 .swatch-find-band { border: 3px solid currentColor; border-radius: 50%; }
 .swatch-find-dashes { border: 2px dashed currentColor; border-radius: 50%; }
+.swatch-find-faint { border: 1.5px solid color-mix(in srgb, currentColor 35%, transparent); background: color-mix(in srgb, currentColor 12%, transparent); border-radius: 50%; }
+.label.is-faint { opacity: .5; }
 .label-part .swatch-find-band, .label-part .swatch-find-dashes { width: 9px; height: 9px; margin-right: 4px; vertical-align: -1px; }
 .label-part .swatch-find-band { border-width: 2.5px; }
 .label-part .swatch-find-dashes { border-width: 1.5px; }

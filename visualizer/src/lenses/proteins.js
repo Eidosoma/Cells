@@ -71,6 +71,19 @@ export function defaultAtlas(proteins) {
 }
 
 /**
+ * Whether a species' atlas differs from the inventory's for so many units that a ring
+ * beside each would bury the picture (a bacterium has almost none of the machines the
+ * laws name). Such an atlas is shown quietly: no rings, and the units it found no product
+ * for, or another family for, are drawn faint.
+ */
+export function quietAtlas(proteins, atlas) {
+  if (!atlas || atlas.reference) return false;
+  const marked = new Set((proteins.findings || []).filter((word) => word.mark).map((word) => word.id));
+  const differing = (atlas.findings || []).filter((item) => marked.has(item.id)).reduce((sum, item) => sum + item.count, 0);
+  return differing > (atlas.counts?.units || 0) / 4;
+}
+
+/**
  * A unit as one species' atlas shows it: the same unit, form and engine laws, with that
  * species' finding and its gene products where the inventory's candidates stood.
  * In the inventory's own atlas (human) a unit is the scene's part, untouched.
@@ -80,7 +93,9 @@ export function inSpecies(entity, proteins, id) {
   if (!entity || entity.kind !== "unit" || !atlas || atlas.reference) return entity;
   const own = entity.species?.[atlas.id] || {};
   const word = (proteins.findings || []).find((item) => item.id === own.finding) || null;
-  const swatch = word?.mark ? `find-${word.mark}` : null;
+  // In a quiet atlas a unit that differs is drawn faint, and the same faint mark says so in words.
+  const quiet = quietAtlas(proteins, atlas);
+  const swatch = word?.mark ? (quiet ? "find-faint" : `find-${word.mark}`) : null;
   const said = `${atlas.label}: ${word ? lower(word.label) : "no entry"}`;
   const sections = (entity.sections || [])
     .filter((section) => section.key !== "products")
@@ -91,7 +106,8 @@ export function inSpecies(entity, proteins, id) {
     chips: [...(entity.chips || []), { label: said, title: word?.description || proteins.no_entry, swatch }],
     finding: { title: atlas.label, organism: atlas.organism, swatch, text: word?.sentence || proteins.no_entry, note: own.note || null, more: word?.more || null },
     sections,
-    sign: swatch ? { swatch, title: said } : null,
+    sign: swatch && !quiet ? { swatch, title: said } : null,
+    faint: Boolean(swatch) && quiet,
     keywords: [entity.keywords, own.keywords].filter(Boolean).join(" "),
   };
 }
@@ -107,15 +123,19 @@ export function speciesWords(proteins, species) {
   const counts = species.counts;
   const words = new Map((proteins.findings || []).map((word) => [word.id, word]));
   const some = counts.candidates === counts.products ? (counts.products === 1 ? "The one product was" : `All ${counts.products} products were`) : `${counts.candidates} of the ${counts.products} products were`;
+  const quiet = quietAtlas(proteins, species);
+  const more = (species.extra || []).length;
   return {
-    caveat: `Shapes are schematic and show what the engine's law names, the same for every species. A ring marks a unit where the ${name} atlas differs.`,
+    caveat: quiet
+      ? `Shapes are schematic and show what the engine's law names, the same for every species. A unit drawn faint is one the ${name} atlas found no gene product for.`
+      : `Shapes are schematic and show what the engine's law names, the same for every species. A ring marks a unit where the ${name} atlas differs.`,
     stamp: `${species.label} atlas${species.made ? ` of ${day(species.made)}` : ""} · inventory of ${day(proteins.stamp.created)}`,
     findings: {
       title: "In this species",
       unit: "units",
       items: (species.findings || []).map((item) => {
         const word = words.get(item.id);
-        return { id: item.id, label: word?.label || item.id, title: word?.description, count: item.count, swatch: word?.mark ? `find-${word.mark}` : null };
+        return { id: item.id, label: word?.label || item.id, title: word?.description, count: item.count, swatch: word?.mark ? (quiet ? "find-faint" : `find-${word.mark}`) : null };
       }),
     },
     card: {
@@ -125,9 +145,12 @@ export function speciesWords(proteins, species) {
       text: species.plain,
       check:
         `The ${counts.units} units and their laws are the engine's, the same for every species. Listed here are the ${name} gene products that would make each machine, not anything the engine models.` +
-        (counts.candidates ? ` ${some} found by signature or similarity: candidates, not established counterparts.` : ""),
+        (counts.candidates ? ` ${some} found by signature or similarity: candidates, not established counterparts.` : "") +
+        // Where the species has almost none of these machines, the card points at the proteins it does have.
+        (quiet && more ? ` Most of these machines were not found in it. The ${more} of its own proteins that bear on the picture are listed below.` : ""),
       method: species.method,
       extra: species.extra,
+      extraOpen: quiet && more > 0,
       sources: species.sources || [],
       notCopied: species.not_copied,
     },
@@ -152,6 +175,8 @@ export class ProteinLens {
     this.evidence = null; // a kind of evidence
     this.shown = defaultAtlas(this.atlas); // the id of the atlas shown
     this.species = null; // that atlas, when it is another species than the inventory's own
+    this.list = model.raw.species || []; // the species the page can show (schema/SPECIES.md)
+    this.page = this.shown; // the species the page shows; it may have no atlas yet
     this.finding = null; // one thing the species' atlas found, shown alone
     this.marks = []; // the rings beside the units where the species differs
     this.markMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
@@ -332,9 +357,13 @@ export class ProteinLens {
     const { atlas } = this;
     const { stamp, counts } = atlas;
     const lost = stamp.found.missing || 0;
-    // The switch between species, offered once the scene holds more than one atlas.
-    const atlases = atlas.atlases || [];
-    const choice = atlases.length > 1 ? { options: atlases.map((item) => [item.id, item.label, item.organism]), active: this.shown } : null;
+    // The switch between species: the page's own, the same control as in the cell view. A scene
+    // that names no species offers its atlases, once it holds more than one.
+    const offered = this.list.length ? this.list : atlas.atlases || [];
+    const choice = offered.length > 1 ? { options: offered.map((item) => [item.id, item.label, item.organism]), active: this.page } : null;
+    // A species without a file of its own in the atlas: the units are shown as the inventory has them, and the card says so.
+    const lacking = this.page !== this.shown ? this.list.find((item) => item.id === this.page) : null;
+    const reference = (atlas.atlases || []).find((item) => item.reference) || null; // the inventory's own side
     // The mapping and the evidence describe the engine's laws: they are the same in every atlas.
     const legend = {
       title: "Mapping",
@@ -360,7 +389,8 @@ export class ProteinLens {
         heading: "The proteins Cells models",
         species: choice,
         stats: [[counts.units, "functional units"], [counts.laws, "laws"], [counts.genes, "candidate genes"]],
-        text: `${atlas.summary} The inventory was made on ${day(stamp.created)}, at engine ${stamp.read_at}.`,
+        organism: lacking ? lacking.organism : undefined,
+        text: `${lacking ? `${lacking.label} has no protein atlas yet. The units are shown as the inventory has them, with its own candidate products${reference ? ` (${reference.label})` : ""}. ` : ""}${atlas.summary} The inventory was made on ${day(stamp.created)}, at engine ${stamp.read_at}.`,
         check:
           `${lost ? `${lost} of its ${stamp.records} law records are no longer found` : `All ${stamp.records} of its law records are still found`} at main ${stamp.checked_at}.` +
           (stamp.gained?.added ? ` The engine has gained ${stamp.gained.added} identifiers since, most under ${stamp.gained.where[0][0]}. ${gainedNote(stamp.gained)}` : ""),
@@ -442,7 +472,14 @@ export class ProteinLens {
     const atlas = atlasOf(this.atlas, id) || atlasOf(this.atlas, defaultAtlas(this.atlas));
     const species = atlas && !atlas.reference ? atlas : null;
     this.shown = atlas?.id ?? null;
-    if (species === this.species) return;
+    // The species the page shows, also where it has no atlas of its own (the inventory's is then shown).
+    const page = this.list.some((item) => item.id === id) || atlasOf(this.atlas, id) ? id : this.shown;
+    const moved = page !== this.page;
+    this.page = page;
+    if (species === this.species) {
+      if (moved) this.onChrome?.();
+      return;
+    }
     this.species = species;
     this.finding = null;
     this.buildMarks();
@@ -461,11 +498,13 @@ export class ProteinLens {
   buildMarks() {
     for (const mark of this.marks) this.root.remove(mark.mesh);
     this.marks = [];
+    this.quiet = quietAtlas(this.atlas, this.species);
     if (!this.species) return;
     const words = new Map((this.atlas.findings || []).map((word) => [word.id, word]));
     for (const node of this.nodes.values()) {
       const kind = words.get(node.entity.species?.[this.species.id]?.finding)?.mark;
-      if (!kind) continue;
+      node.faint = this.quiet && Boolean(kind); // a quiet atlas draws the unit faint, and no ring
+      if (!kind || this.quiet) continue;
       // Inside the ring of the unit in focus, and clear of the neighbouring units.
       const radius = (node.reach.floats ? node.reach.radius : Math.min(node.reach.radius, 4.3)) + 0.7;
       const mesh = new THREE.Mesh(findingMark(kind, radius), this.markMaterial);
@@ -522,14 +561,17 @@ export class ProteinLens {
     for (const [id, node] of this.nodes) {
       const lit = this.lit(node.entity);
       const hot = id === this.selected || id === this.hovered;
+      // A unit the species' quiet atlas found nothing for is drawn faint, unless it is in focus.
+      const faint = Boolean(this.species && node.faint) && !hot;
       for (const mesh of node.meshes) {
         const set = this.tones.get(mesh.userData.tone);
-        mesh.material = lit ? set.lit : set.dim;
+        mesh.material = lit && !faint ? set.lit : set.dim;
       }
       if (node.label) {
         node.label.boost = hot ? 1000 : 0;
         node.label.hidden = !lit && !hot;
         node.label.element.classList.toggle("is-focus", id === this.selected);
+        node.label.element.classList.toggle("is-faint", faint && lit);
       }
     }
     for (const mark of this.marks) mark.mesh.visible = this.lit(mark.node.entity);

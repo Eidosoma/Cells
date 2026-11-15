@@ -42,6 +42,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from lib.protein_atlas import LENS_GROUPS, RELATION_KINDS, Atlas  # noqa: E402
+from lib.species import read_species  # noqa: E402
 from lib.static_eval import Evaluator, Package, Unresolved, plain  # noqa: E402
 
 SCENE_FORMAT = "cells.visualizer.scene@1"
@@ -580,6 +581,7 @@ def main():
     parser.add_argument("--out", default=str(HERE.parent / "data" / "architecture" / "architecture.scene.json"))
     parser.add_argument("--proteins", default=str(HERE.parent / "data" / "proteins"), help="folder with the protein inventory's snapshot and overlay")
     parser.add_argument("--atlases", help="folder with the species atlases (default: atlases/ in the proteins folder; it need not exist)")
+    parser.add_argument("--species", default=str(HERE.parent / "data" / "species"), help="folder with the species files and their shapes (schema/SPECIES.md; it need not exist)")
     parser.add_argument("--strict", action="store_true", help="exit with an error if anything is warned about")
     arguments = parser.parse_args()
 
@@ -595,10 +597,14 @@ def main():
     entities, relations, coverage = build.run()
 
     revision = git(repo, "rev-parse", "--short", "HEAD").strip()
+    # The species the viewer can show (schema/SPECIES.md): any number of files, or none.
+    species, shapes, breaches, noted = read_species(arguments.species, {item["id"]: item["scale"] for item in overlay["capabilities"]})
+    build.warnings.extend(breaches)
     remarks = []
     if build.proteins:
         build.proteins["stamp"]["checked_at"] = revision
         remarks = build.proteins.pop("remarks", [])  # on the species atlases; reported below, not written
+    remarks += noted
     # Only tracked files are read, so an untracked file does not make the reading dirty.
     dirty = bool(git(repo, "status", "--porcelain", "--untracked-files=no", "--", "src", "docs", "PROGRESS.md").strip())
     scene = {
@@ -629,6 +635,8 @@ def main():
         "relation_kinds": overlay["relation_kinds"] + (RELATION_KINDS if build.proteins else []),
         "groups": [{**layer, "lens": "engine"} for layer in overlay["layers"]] + LENS_GROUPS,
         "proteins": build.proteins,
+        "species": species,
+        "shapes": shapes,
         "entities": entities,
         "relations": relations,
         "timeline": None,
@@ -656,6 +664,9 @@ def main():
                 counts = atlas["counts"]
                 print(f"species atlas {atlas['id']} of {atlas['made']}: products for {counts['with_products']} of {counts['units']} units, "
                       f"{counts['products']} gene products, {counts['candidates']} of them candidates")
+    for item in species:
+        levels = ", ".join(level["id"] for level in item["levels"])
+        print(f"species {item['id']}{' (the page opens on it)' if item['default'] else ''}: {levels}; modelled: {item['modelled']['state']}")
     for remark in remarks:
         print("remark:", remark)
     for warning in build.warnings:
