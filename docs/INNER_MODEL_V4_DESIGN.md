@@ -1248,6 +1248,10 @@ canonical kind order (sorted ID) that schema A's types use:
   seam change, through CORE.
 - **An undeclared kind is absent:** no field, no kernel, no hook call. A4's criterion extends to
   kinds.
+- **Hooks on the check path trace on the device.** `domain`, `control_domain` and
+  `ledger_terms` take `xp`, trace under jnp and branch on no value in Python. So the device's
+  per-row checks include kinds as the host's do. That leaves room to move host-side checks into
+  device windows: the coupling export measured them at 91% of the runner path's wall time.
 - **The planted kind of schema A's acceptance implements every hook** with trivial physics: a
   neutral species exchanged at a constant rate between two nodes, with its own ledgers. So each
   seam is exercised before any real kind lands.
@@ -2226,6 +2230,22 @@ split. The core's queue, from day 1:
   landing to about 15–19.
 - **FR-4's laws can merge onto `integration-d172`** once the three insertion points merge, about
   day 9–12, and are accepted in FR-4's own milestone.
+
+**Refreshed from today (15 November, 17:00 UTC; the lead asked for one number).**
+
+| Item | Owner | Effort (agent-days, **S**) | Elapsed from today |
+| --- | --- | --- | --- |
+| The dispatch clearance (amendment 7): K2 with F1 (`core-d172-dispatch` 2337aeb2), tier 3 | CORE | Running | Day 0 |
+| The registry hook (89d0919) and B7 (119ffb7); B7's D148 record (sweep unchanged, crossrev pair running) | CORE | Built | Day 0 |
+| Schema A plus the kind seams (§7.4 (j), (k); stage 1 coded) | CORE | 2.5–3 | → 2.5–3 |
+| The adapter's lookup order, the composite's inner type reads, the composite spec's controls, the families' refusal | INT | 1–1.5, in parallel | → 2.5–3 |
+| B4's stage read | CORE | 1–1.5 | → 3.5–4.5 |
+| The passive law's insertion point (§7.5, version 1) | CORE | 1.5–2 | → 5–6.5 |
+| B5's transporter, version 1 (FR-4's held-fuel proton pump and R-fuel's neutral finite-fuel case), its module and kernel, with CORE's review | FR45, CORE | 2.5–3.5, then 0.5 | → 5.5–7 |
+| A7's sweep, last and alone | CORE | 1–1.5 | → 6.5–8.5 |
+| G1, G2 and the landing (Q3, Q4, I4) | INT, ACC | 2–2.5 elapsed | → **8.5–11** |
+
+**One number: about 10 days from today, so an integrated landing around 25 November.**
 
 ## 16. Open questions, with recommendations
 
