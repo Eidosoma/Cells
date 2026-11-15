@@ -1019,10 +1019,25 @@ the insertion point is CORE's. Its conventions, fixed here:
     linear capacitor through the step's mean patch voltage (V̄ Δq), split in the same way. The
     implicit patch, the first charged consumer, fixes it in its own module (FR45's
     `patch_booking_pJ`);
-  - **sign:** a route whose stage rates and end-state affinity share one sign books its share,
-    which is then nonnegative; any other route books its stage quadrature, which is nonnegative
-    (D152's hybrid). So every route's heat is ≥ 0, and the row closes exactly whenever every route
-    moving it books its share.
+  - **sign (corrected 15 November, for the run view's question):** a route's share can be
+    negative while its row's total change is not, so the share is booked only when it is ≥ 0:
+    - **why it can be negative:** under ARS(2,2,2) the explicit weights (δ, 1 − δ), δ < 0, can
+      reverse the applied transfer against stage rates of one sign; and at a charged row moved by
+      several routes, the chemical divided difference (weighted by the rows' amounts) and the
+      patch's mean voltage (linear in charge) average the step differently. For a neutral row the
+      share is ≥ 0 whenever the applied transfer and both end affinities agree in sign: μ̄ is the
+      mean of μ over the row's amount interval, and those intervals are ordered when both end
+      affinities are;
+    - **the rule:** a route books its share when its applied transfer and end-state affinity share
+      one nonzero sign and the share is ≥ 0; any other route books the trapezoid of its start and
+      end-state powers, each ≥ 0 for a passive law, as `trapezoid_nonnegative@1` books junction
+      heat. Not the tableau's quadrature, which δ can make negative (D152's hybrid can use its
+      quadrature because SSPRK(3,3)'s weights are positive);
+    - **so** every route's heat increment is ≥ 0 and its cumulative heat never falls, as the
+      family's dissipation check requires (every `*_dissipated_energy_pJ` field nonnegative and
+      non-decreasing per element at each accepted row, within 1e-12 pJ, else the step is refused).
+      The row closes exactly whenever every route moving it books its share, and otherwise within
+      the energy ledger's tolerance.
 - **Static and declared.** Only a route law that declares the booking computes it. Today's routes
   (the membrane and junction constant-field routes, the channels, the faces) keep the tableau
   booking, so every existing program is unchanged. The booking needs the step's start amounts and
@@ -1032,7 +1047,8 @@ the insertion point is CORE's. Its conventions, fixed here:
   ordinary one belongs with it (§13.6).
 - **Acceptance, with its first consumer:** on the closed pair the heat equals the exact free-energy
   decrease to rounding; a trace start (1e-12 mM) is admitted; a planted sign error fails the
-  dissipation check.
+  dissipation check; and a step built to make a share negative (a transfer reversed by δ, or a
+  charged row with a voltage swing) books the trapezoid, with the route's heat still ≥ 0.
 
 ## 8. Scoped composition: door S's runtime merge (list (a))
 
