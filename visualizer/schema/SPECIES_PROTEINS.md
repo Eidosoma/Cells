@@ -13,7 +13,8 @@ half: **the species' own proteins**, whether or not Cells has a law for them, la
 same way for every species.
 
 **One format for every species: a shelf is a membrane, and every protein sits outside
-it, in it or inside it.** A bacterium has one shelf, its cell membrane. An animal cell
+it, in it or inside it.** A bacterium with one membrane has one shelf, its cell membrane; one with two has a
+shelf for each. An animal cell
 has several: the cell membrane, and one for each internal membrane the data can tell
 apart.
 
@@ -274,6 +275,19 @@ stacked in the page. Fixed on 15 November 2026, before the human data was made.
 - **Marks of a curated proteome.** `seen` is there the database's level of evidence that
   the protein exists, and its label says so; `where` is the database's own words for the
   place; `family` names the family of a protein listed under `lone`.
+- **A cell with two membranes of its own** (a bacterium with an inner and an outer
+  membrane) has the shelves `inner`, `outer` and `membrane`, in that order. The cytoplasm
+  is `inside` of `inner`; what is outside the cell is `outside` of `outer`. Of the space
+  between the two membranes (the periplasm, and the wall that lies in it): a protein free
+  in that space stands on `inner`, side `outside`, as a protein between the
+  mitochondrion's two membranes stands on `mito`; a protein held at one of the two
+  membranes and facing that space stands on that membrane's shelf, on the side that faces
+  it, `outside` of `inner` or `inside` of `outer`. On `membrane`, `outside` is whatever
+  lies beyond the inner membrane. The file counts these apart, under `between`.
+- **`highlights`** lists, for a catalogue in families, each protein that carries one of
+  the marks the page may pick out as a set (a pathway, an assembly), with its line, shelf
+  and side, so that the view can light the markers that hold them without fetching every
+  member.
 - **Counts on several shelves.** `counts` stays the four sides over the whole catalogue.
   `shelf_counts` gives the same four for each shelf, under the shelf's id, and under
   `no shelf` for the proteins on none. `distinct_families` gives the number of families,

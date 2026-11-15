@@ -62,7 +62,10 @@ design (`docs/PROTEIN_CATALOGUE_PLAN.md`, stage 3) has not begun and belongs to 
   (`data/proteins/inventory.snapshot.json`), keyed by the inventory's unit id. A unit with
   nothing found still has an entry that says so.
 - **`finding`** is one of:
-  - `found`: gene products of the same family as the unit's candidates were found;
+  - `found`: gene products of the same family as the unit's candidates were found. It asks for a
+    family that makes the machine itself: a protein that carries only the signature of an
+    accessory family (a regulator, a subunit that forms no channel or pump by itself)
+    does not make a unit found, and the note names it;
   - `different family`: the species builds this machine from another protein family
     (the note names both);
   - `none found`: the search found nothing; the note says what was searched;
