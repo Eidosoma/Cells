@@ -95,8 +95,8 @@
     Track E's M3.
 12. **Effort** (§15): list (a) is **about 17–24.5 agent-days**, landing together under one tag and
     one gate, plus CPU hours for the re-runs and an L4 gap. Split by owner, with the summation
-    study D176 adds, the elapsed critical path is **about 11–15.5 days** from the round's start
-    (§15.6).
+    study D176 adds, the elapsed critical path is **about 11–15.5 days** from the round's start,
+    or about 14.5–20.5 with FR-4's insertion points (C6) inside R (§15.6).
 
 **What this note gathers.**
 - Track E's channel laws, `junction_ungated@1` and D167's move of the old catalogue
@@ -255,7 +255,7 @@ a dozen files (ARCHITECTURE.md, "Reuse cases and the results gate").
 
 | Part | Entries | Pass |
 | --- | --- | --- |
-| **G1, existing worlds on CPU** | Every world of the crossrev sets (base, qualification, injection, volume, division, species, reactions, and each operator's own set) and @3's test worlds. Each runs from the tag before R and from the new snapshot. Compared: every state field, observation column and `max_` diagnostic of every accepted row, and every refusal (its step and its message) | Bitwise, NaN-aware, bit patterns compared, except where R changes rounding. **A7 does (P7):** physical fields and accumulators are compared within a tolerance stated before the run from P7's magnitudes, field by field, and G2 runs in full. **Padding (check K1, §7.4):** per-law dispatch changes `channel_targets` and `channel_tau_s` at inactive population slots of worlds that do not declare Kv1.5, and nothing else; the comparator treats those two columns at inactive slots as padding, a rule agreed with the acceptance owner before the dispatch commit's run |
+| **G1, existing worlds on CPU** | Every world of the crossrev sets (base, qualification, injection, volume, division, species, reactions, and each operator's own set) and @3's test worlds. Each runs from the tag before R and from the new snapshot. Compared: every state field, observation column and `max_` diagnostic of every accepted row, and every refusal (its step and its message) | Bitwise, NaN-aware, bit patterns compared, except where R changes rounding. **A7 does (P7):** physical fields and accumulators are compared within a tolerance stated before the run from P7's magnitudes, field by field, and G2 runs in full. **Padding (check K1, §7.4 (b)):** per-law dispatch changes `channel_targets` and `channel_tau_s` at inactive population slots (padded or closed) of worlds that do not declare Kv1.5, and nothing else; the comparator treats those two columns at inactive slots as padding, a rule agreed with the acceptance owner before the dispatch commit's run |
 | **G2, registered protocols re-run** | Every registered protocol whose engine models include the inner model or the composite. **Refreshed at f791294 by model-ID text match,** since protocol files name their models under different keys (`engine_models`, `engine_model`, `cells_run.model`) or only in their drivers. As before: W1, W2, G2-Q1, S2, S3, Rm1, S5a, D150's judged run, E07-v1. Judged on 15 November: MG0c (`mg0c-turing-v1`) and Track R (`regulated_availability_protocol.json`). **Newly listed, all on @3:** MG0b (`mg0b_domain_wall_v1`); the stationary analysis E (`stationary_analysis_e_v1`, items E2–E4); the BETSE parity rungs P3 (four cases), P4 (two) and P4b (four), registered by commit (PROGRESS), although their files' `status` fields still read PROPOSED, each with a registered L4 variant (§5.3). **The lead's call:** the projective qualification C (`projective_c_qualification_v1`, on @3), whose qual-01 failed. Track E's M2 (`excitable_qualification_v1.json`, PROPOSED) joins if judged before R lands. A7's import-closure manifest may add older families' protocols (§10.6) | Every verdict unchanged; numbers bitwise, or within the protocol's own tolerances |
 | **G3, planted changes, aligned with G1 (D176)** | **Exact contract tests,** run in the bitwise commits (declarations, dispatch, operators, door S, the passive law): (a) one law coefficient moved by one ulp in a test double (P2's planted arm shows the effect's size); (b) one world parameter moved by one ulp; (c) one required-results entry deleted from a run. **Scientific negative controls,** in the final gate at A7's tolerance, where a one-ulp plant passes by design: perturbations whose effects on judged observables exceed the declared budget, each effect measured against the budget before the run; (c) again | The gate must fail every plant and every control. If it passes any of them, it is void |
 | **G4, measurements** | Compile time, host and device memory, and end-to-end time, on representative compositions: the heredity cell, the 127-cell sheet, a water composition, D150's arm, MG0c's chain, the 825-node world | Reported against the tag; judged only where a protocol registers a bound |
@@ -542,14 +542,18 @@ registry code.
 - **A pump law** declares its ID, kernel and domain, the rows it moves per cycle by role, its fuel
   kind and its definition-time bound. Both of today's pumps run on
   `maintained_chemical_reservoirs@1` in today's parameter form (§10.2).
-- **The padding rule (check K1).** An inactive population slot carries code 0, as today
-  (`domain_valid`, the adapter's `close`). Its kinetics are target 0 and time constant 1, and its
-  opening is 1, whatever the declared laws: the dispatch selects a law's values only on active
-  slots of its code.
-  - Today a code-0 slot gets Kv1.5's kinetics at 0 V. So `channel_targets` and `channel_tau_s`
-    change at inactive slots, and nowhere else (K1 measured it in a world without Kv1.5).
+- **The padding rule (P2's measured form, check K1).** An inactive population slot, padded or
+  closed, carries code 0, as today (`domain_valid`, the adapter's `close`). The dispatch selects a
+  declared law's values wherever a slot carries its code, active or not, so:
+  - in a world that declares Kv1.5 (code 0), an inactive slot reads Kv1.5's kinetics at 0 V, as
+    today, bitwise (K1's five-law world);
+  - in a world that does not, it reads target 0, time constant 1 and opening 1. Today it reads
+    Kv1.5's values, so `channel_targets` and `channel_tau_s` change at those slots, and nowhere else
+    (K1).
   - G1's comparator treats those two columns at inactive slots as padding (§3). ACC agrees the rule
     before the dispatch commit runs.
+  - Masking by activity as well would make padding independent of the declared laws, but it would
+    change those columns in every world with an inactive slot, and K1 did not measure it.
 
 #### (c) Build-time selection: one implementation per structure
 
@@ -565,7 +569,7 @@ registry code.
     forwards the inner protocol from that object (§15.6, I2).
 - **The selection inside,** one kernel per declared law (P2's form):
   - channel kinetics start from target 0 and time constant 1. For each declared gated law, in code
-    order, its kernel's values are selected where the slot is active and carries its code;
+    order, its kernel's values are selected where the slot carries its code (the padding rule, (b));
   - openings start from 1, and each declared gated law's opening is selected where its code
     matches;
   - **the domain:** an active slot's code must be a declared code, so no literal comes from the
@@ -582,9 +586,9 @@ registry code.
   `rebind`) are the module's own objects and stay importable from it. Step, readout, domain, check
   and observation functions are bound to the structure, and consumers take them from the object.
   **New names:** `structure`; `declared_channel_laws` (the declared IDs, in code order);
-  `law_columns` ({law ID: column}); `gate_rows`; `channel_kinetics(voltage, codes, active, *,
-  xp)`; `channel_opening(gate, codes, *, xp)`; `junction_kinetics(voltage, p, *, xp)`;
-  `moved_rows(model)`.
+  `law_columns` ({law ID: column}); `gate_rows`; `channel_kinetics(voltage, codes, *, xp)` and
+  `channel_opening(gate, codes, *, xp)`, today's signatures; `junction_kinetics(voltage, p, *,
+  xp)`; `moved_rows(model)`.
 - **During the round,** the module's own structure-dependent names stay, bound to the full
   catalogue (every registered law declared). That gives today's values bitwise (K1's five-law
   world), so a caller not yet moved keeps working. They are removed before the landing, once every
@@ -608,16 +612,17 @@ registry code.
     compares field by field.
 - **Shrinking today's schema** (no pump fields, or no gate rows, when undeclared) is a later change,
   with a comparator rule agreed before its run.
-- **One empty leaf goes:** `junction_heat_trapezoid` becomes structure, the booking, and no other
-  consumer reads it.
+- **One empty leaf goes, in the dispatch commit:** `junction_heat_trapezoid` becomes structure,
+  the booking. No other reader exists under `src/`; validation and tests are checked in that
+  commit.
 
 #### (e) The commits, each checked against the baseline saved at the tag
 
-1. **Declarations and the implementation object,** with today's dispatch inside, so values are
-   unchanged, and programs too apart from the trapezoid leaf's removal. This is the first API
-   commit, which OPS and INT test against.
-2. **Per-law channel dispatch** and the declared-code domain: bitwise, except the padding columns
-   (K1's rule).
+1. **Declarations and the implementation object,** with today's dispatch inside, so values and
+   programs are unchanged: checked by crossrev identity as well as against the baseline. This is
+   the first API commit, which OPS and INT test against.
+2. **Per-law channel dispatch,** the declared-code domain and the trapezoid leaf's removal:
+   bitwise, except the padding columns (K1's rule).
 3. **Pump and junction-law dispatch:** bitwise, up to signed zeros at exact zeros, reported apart.
 4. **The compile key and A4's two tests** (§2.2, §5.2):
    - an undeclared law contributes no kernel and no state: a jaxpr check that a world without
@@ -638,7 +643,7 @@ registry code.
      data, built at its bind from `law_columns`.
    - The gate count is `gate_rows` (d): 2 in every world of R.
 2. **Kinetics in an event map.**
-   - The step's own selection is `channel_kinetics(voltage, codes, active, *, xp)` and
+   - The step's own selection is `channel_kinetics(voltage, codes, *, xp)` and
      `channel_opening(gate, codes, *, xp)`. Calling these, rather than a law's kernel directly,
      makes an event's gates the step's bit for bit.
    - Junction gates: `junction_kinetics(voltage, p, *, xp)` returns today's
@@ -765,8 +770,10 @@ registry code.
      face-free node with an ion route, so every other world's program is unchanged.
    - **The split:** FR45 supplies the term's exact form and its constant (0.05 on the max-side G,
      from the energy threshold), after its booking-versus-state check. CORE implements both halves,
-     with a D148 record for @1 and @2, which share `surface_pump`. Their registered worlds have no
-     such node (P3), so no value of theirs changes.
+     with a D148 record for @1 and @2, which share `surface_pump`. P3 swept @3's family only; for
+     @1 and @2, FR-1's static sweep of 99 model blocks found no free face-free node with an ion
+     route in their worlds (CLOSED_COMPARTMENT_DESIGN.md §3.4), and the D148 record confirms it on
+     their registered worlds before the change.
 4. **The implicit patch: yes, behind one slot,** the IMEX step's implicit set.
    - **Today the set is face electromigration alone:**
      - the stage operator (C + a_ii dt L_face) φ = q, with face weights frozen at the predicted
@@ -786,15 +793,24 @@ registry code.
        kind's must close the energy ledger with the stored-energy change, since the charged-patch
        test showed that ledger, not stability, binds the explicit route.
    - **The bounding patch is the second member.**
-     - It couples one face-free node to its owner, four entries per compartment, so it rides in
-       the same dense factorization; no separate local solve is needed.
-     - The field-solver interface replaces that factorization later (FIELD_SOLVER_INTERFACE_DESIGN
-       §6).
+     - It couples one face-free node to its owner, four entries per compartment (cell i and outside
+       node j), so it rides in the same dense factorization; no separate local solve is needed.
+     - **Checked in the code at the tag:** `numerics/surface_imex.factor_operator` takes any
+       node-space Laplacian over cells and outside nodes and factors C + a dt L on the free nodes;
+       `solve_operator` is generic. Only `face_laplacian` and `drift_flux` are face-specific, and
+       they stay as they are. A positive patch conductance keeps the matrix positive definite on
+       the free nodes. So the slot needs no edit of `surface_imex` (shared with @1 and @2): it lives
+       in `surface_pump_v3.imex_step`, which sums the kinds' blocks before calling
+       `factor_operator`, and in `implicit_rates`, which gains the cell-side amounts for a patch.
+     - The patch's frozen weights need the cell's predicted concentrations as well as the node's;
+       `imex_step` already holds the start derivative for both.
      - Each implicit set is a new solver ID (D147), for example
        `imex_ars222_face_patch_electromigration@1` (name **S**).
-   - **Owners:** CORE builds the slot in `surface_pump_v3.imex_step`, with faces moved behind it
-     bitwise. FR45 codes the patch kind against it in a new module, and qualifies it, with REF's
-     reference.
+   - **Owners, reconciled with §13.4:** CORE builds the slot in `surface_pump_v3.imex_step`, with
+     faces moved behind it bitwise. FR45 codes the patch kind against it in a new module, and
+     qualifies it, with REF's reference. The field-solver interface keeps the factorization and the
+     solve (FIELD_SOLVER_INTERFACE_DESIGN §6), which the slot calls unchanged; a later sparse or
+     condensed solver replaces them behind the same calls.
 
 #### (h) What this adds to CORE's queue, and what the lead decides
 
@@ -1595,8 +1611,13 @@ apart, on the shared machine (8 cores, 31 GB).
 | A7's manifest from the import closure | §10.6 | CORE, with ACC |
 
 **The critical path (S).** C1 → C2 → C3 → C4 → C5 → Q3 → Q4 → I4: 1 + (4–6) + (2–3) + (1–1.5) +
-(1–1.5) + 0.5 + (1–1.5) + 0.5 = **about 11–15.5 days,** so a landing about 26–30 November.
-- **The core stream is the long pole,** with 9–13 agent-days in series.
+(1–1.5) + 0.5 + (1–1.5) + 0.5 = **about 11–15.5 days without C6,** so a landing about 26–30
+November.
+- **With C6 inside R** (the stage hook opens in this round, §7.4 (g)), the core's queue grows by
+  3.5–5 days wherever C6 sits before the landing: **about 14.5–20.5 days,** a landing about 29
+  November to 5 December. Where C6 goes, and whether it lands with R or as FR-4's first commits on
+  top of it, is the lead's call.
+- **The core stream is the long pole,** with 9–13 agent-days in series (12.5–18 with C6).
 - **Every other owner has slack:**
   - OPS finishes its adaptation about when C2 merges (day 7–7.5);
   - INT's door S (day 3–4) and its adapter work (day 4–5) come early;
