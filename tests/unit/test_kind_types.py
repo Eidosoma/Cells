@@ -1,0 +1,125 @@
+"""Schema A's per-structure types and the kind registry (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j), (k)).
+
+- Today's structures keep the module's own classes, by identity.
+- A registered kind that a definition does not declare changes nothing.
+- Declared kinds append their fields in canonical order (the sorted namespaced ID), whatever the
+  declaration order: the same classes either way.
+- A kind's state fields are observation columns right after today's state fields, and its
+  readouts follow today's (rule (b)).
+- The spec round-trips a declared kind through its model key.
+"""
+
+import copy
+
+import numpy as np
+import pytest
+
+from cells.core import kind_registry
+from cells.core.specs import parse_spec
+from cells.models import surface_pump_v3
+from cells.models.registry import get_model
+from validation.tissue import pump_water_fixtures as water_fixtures
+
+TYPE_NAMES = surface_pump_v3.KindTypes._fields
+
+
+def planted(name, key):
+    """A planted kind with one state field, one layout field, one control and one column."""
+
+    def parse(entries, base):
+        return tuple(sorted((str(k), float(v)) for k, v in entries.items()))
+
+    return kind_registry.Kind(
+        kind_id=f"tests.{name}@1",
+        model_key=key,
+        state_axes=((f"{name}_moved_fmol", ("cell_slot",)),),
+        layout_fields=(f"{name}_rate_fmol_s",),
+        control_fields=(f"{name}_availability",),
+        readout_columns=(f"{name}_rate_column",),
+        parse=parse,
+        to_dict=lambda declaration: dict(declaration),
+        structure_entry=lambda declaration: (),
+        control_values=lambda spec, declaration, times: {
+            f"{name}_availability": np.ones(len(times))
+        },
+        initial=lambda spec, declaration, layout: (
+            {f"{name}_moved_fmol": np.zeros(len(spec.model.cells))},
+            {f"{name}_rate_fmol_s": np.asarray([dict(declaration)["rate"]])},
+        ),
+    )
+
+
+def registry(*kinds):
+    out = kind_registry.KindRegistry()
+    for kind in kinds:
+        out.register(kind)
+    return out
+
+
+def heredity():
+    return water_fixtures.heredity_cell("D", end_time=0.01)
+
+
+def declaring(raw, *keys):
+    raw = copy.deepcopy(raw)
+    for key in keys:
+        raw["model"][key] = {"rate": 1.0}
+    return raw
+
+
+def test_todays_structures_keep_todays_classes():
+    impl = get_model(parse_spec(heredity()).model)
+    assert impl.structure.kinds == ()
+    for name in TYPE_NAMES:
+        assert getattr(impl, name) is getattr(surface_pump_v3, name), name
+
+
+def test_a_registered_but_undeclared_kind_changes_nothing():
+    spec = parse_spec(heredity())
+    impl = get_model(spec.model)
+    with kind_registry.scope(registry(planted("alpha", "alpha_block"))):
+        again = parse_spec(heredity())
+        built = surface_pump_v3.model_for(again.model)
+        assert again == spec and again.to_dict() == spec.to_dict()
+        assert built.structure_key == impl.structure_key
+        assert built is impl  # The same object: the same bound functions, so the compile key.
+        for name in TYPE_NAMES:
+            assert getattr(built, name) is getattr(surface_pump_v3, name), name
+
+
+def test_kinds_append_in_canonical_order_whatever_the_declaration_order():
+    kinds = registry(planted("beta", "beta_block"), planted("alpha", "alpha_block"))
+    with kind_registry.scope(kinds):
+        one = parse_spec(declaring(heredity(), "beta_block", "alpha_block"))
+        two = parse_spec(declaring(heredity(), "alpha_block", "beta_block"))
+        assert [k for k, _ in one.model.kinds] == ["tests.alpha@1", "tests.beta@1"]
+        assert one.model.kinds == two.model.kinds
+        a, b = surface_pump_v3.model_for(one.model), surface_pump_v3.model_for(two.model)
+        assert a.structure_key == b.structure_key
+        for name in ("STATE_TYPE", "LAYOUT_TYPE", "FLOOR_LAYOUT_TYPE", "Control", "Observations"):
+            assert getattr(a, name) is getattr(b, name), name
+        today = surface_pump_v3
+        assert a.STATE_TYPE._fields == (*today.STATE_TYPE._fields, "alpha_moved_fmol", "beta_moved_fmol")
+        assert a.LAYOUT_TYPE._fields == (*today.LAYOUT_TYPE._fields, "alpha_rate_fmol_s", "beta_rate_fmol_s")
+        assert a.Control._fields == (*today.Control._fields, "alpha_availability", "beta_availability")
+        n = len(today.STATE_TYPE._fields) + 1
+        assert a.OBSERVATION_FIELDS == (
+            *today.OBSERVATION_FIELDS[:n],
+            "alpha_moved_fmol",
+            "beta_moved_fmol",
+            *today.OBSERVATION_FIELDS[n:],
+            "alpha_rate_column",
+            "beta_rate_column",
+        )
+        assert parse_spec(one.to_dict()) == one  # The kinds' model keys round-trip.
+
+
+def test_namespaces_and_duplicates():
+    assert kind_registry.qualified("transporter@1") == "cells.transporter@1"
+    assert kind_registry.qualified("tests.alpha@1") == "tests.alpha@1"
+    kinds = registry(planted("alpha", "alpha_block"))
+    with pytest.raises(ValueError, match="already registered"):
+        kinds.register(planted("alpha", "other_block"))
+    with pytest.raises(ValueError, match="model key"):
+        kinds.register(planted("gamma", "alpha_block"))
+    assert kind_registry.KindRegistry.canonical(["tests.b@1", "a@1"]) == ("cells.a@1", "tests.b@1")

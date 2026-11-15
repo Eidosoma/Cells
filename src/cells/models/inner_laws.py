@@ -222,8 +222,20 @@ class InnerStructure:
     pump_laws: tuple[str, ...]
     fuel_kinds: tuple[str, ...]
     junction_heat_booking: str
+    # True where the definition's composition closes population slots mid-run (an operator
+    # with CLOSES): a closed slot carries code 0 and keeps its gate update, so the compiled
+    # kinetics also evaluate the code-0 law there, today's dynamics, as the host's declared
+    # fill does everywhere (docs/INNER_MODEL_V4_DESIGN.md §7.4 (b); temporary, until an
+    # explicit absent marker).
+    padding_fill: bool = False
+    # The declared kinds (§7.4 (j), (k)): ((namespaced kind ID, the kind's structure entry), ...)
+    # in canonical (sorted ID) order; () for every definition of today's.
+    kinds: tuple = ()
 
     def __post_init__(self):
+        ids = [kind_id for kind_id, _ in self.kinds]
+        if ids != sorted(set(ids)):
+            raise ValueError("Declared kinds must be distinct and in canonical (sorted ID) order")
         unknown = [law for law in self.declared_channel_laws if law not in CHANNEL_LAWS]
         unknown += [law for law in self.junction_laws if law not in JUNCTION_LAWS]
         unknown += [law for law in self.pump_laws if law not in PUMP_LAWS]
