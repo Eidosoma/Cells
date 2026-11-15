@@ -103,6 +103,13 @@ Declarations (class attributes):
   Two changes or a change and a read of one field meet only on the slots both name; the
   composite admits a pair per slot (pump_composite.structure_errors and scope_errors) and
   merges each change onto the accumulated view on its slots (pump_composite_adapter.view).
+* Species identity and the step (core/species_registry.py, D176): ``IDENTITY_ROLE``
+  ("author" for an operator that declares the species it writes, "user" for one that refers to
+  species others declare) and ``species_identities``; ``moves_in_step``, the rows an in-step
+  process moves inside the inner step, which an operator with ``PROCESS`` declares.
+* The run view (docs/RUN_VIEW_DESIGN.md §3): ``VIEW_LAYERS`` (its layers, each
+  {"id", "label", "representation"}; None: undeclared, which the run-view writer refuses) and
+  ``view_events`` (its events with their entities by id).
 
 Methods take the composite's full state, control and layout NamedTuples, whose
 fields are the inner model's followed by each operator's in declared order.
@@ -115,6 +122,9 @@ from typing import NamedTuple
 HEAT_SUFFIX = "_dissipated_energy_pJ"
 WORK_SUFFIX = "_work_pJ"
 RK4_MODES = ("coupled", "split")
+IDENTITY_ROLES = ("author", "user")
+REPRESENTATIONS = ("simulated", "modelled", "prescribed")
+LAYER_KEYS = frozenset({"id", "label", "representation"})
 # Door S (docs/SCOPED_COMPOSITION_DESIGN.md §2).
 CONTRIBUTIONS = ("replace", "add", "multiply")  # Of a provided field; a closer's is "and".
 COMMUTING = ("add", "multiply", "and")  # Overlaps admitted, applied in declared order.
@@ -193,9 +203,21 @@ class Operator:
     # Topology (module docstring).
     CLOSES = ()
     RETIRES = False
+    # Its parts call the inner model's structure-bound functions (an event map's kinetics, the
+    # field solve): the composite passes the inner implementation object as `inner=` to its
+    # event, half_step and rates calls and to initial_values (static), and host methods reach
+    # it as model.inner (D176; docs/INNER_MODEL_V4_DESIGN.md §7.4). Every other call is unchanged.
+    USES_INNER = False
     # Door S (module docstring): refinements of the view declarations, per field.
     VIEW_CHANGES = MappingProxyType({})
     SCOPED_READS = MappingProxyType({})
+    # Species identity (core/species_registry.py, D176): "author" for an operator that declares
+    # the species it writes, "user" for one that refers to species others declare.
+    IDENTITY_ROLE = "author"
+    # Its layers in the run view (docs/RUN_VIEW_DESIGN.md §3): ({"id", "label",
+    # "representation"}, ...), representation one of REPRESENTATIONS. None: undeclared, which the
+    # run-view writer refuses.
+    VIEW_LAYERS = None
     # A declaration with no part and no field (module docstring; check_declarations).
     DECLARATION_ONLY = False
 
@@ -293,6 +315,39 @@ class Operator:
     def read_slots(self, spec, declaration):
         """Door S, host: {field: entity indices} for each field its scoped Read covers."""
         return {}
+
+    def moves_in_step(self, spec, declaration):
+        """The rows its in-step process (PROCESS) moves inside the inner step, as
+        ((species id, "cell" | "outside"), ...); read by core/species_registry.moved_in_step,
+        which the coupling operator's instantaneous admission uses (D176, "moved by the step").
+        An operator without an in-step process moves nothing in the step: ()."""
+        return ()
+
+    def species_identities(self, declaration):
+        """The species identities it declares: items with id, catalogue and evidence; ()."""
+        return ()
+
+    def view_events(self, spec, declaration, schedule):
+        """Its events in the run view: ({"time", "kind", "layer", "at", "from", "label"}, ...),
+        entities by id ({"set": id}), "from" optional. The default gives the births and
+        retirements of living_intervals, with their cells' ids; an operator with an event map or
+        a schedule overrides it, so that no event reaches the view without its entities."""
+        layer = self.VIEW_LAYERS[0]["id"] if self.VIEW_LAYERS else None
+        events = []
+        lives = self.living_intervals(spec, declaration, schedule)
+        for cell, (birth, retirement) in sorted(lives.items()):
+            for time, kind in ((birth, "birth"), (retirement, "retirement")):
+                if time is not None:
+                    events.append(
+                        dict(
+                            time=float(time),
+                            kind=kind,
+                            layer=layer,
+                            at=({"cells": cell},),
+                            label=f"{cell} {'born' if kind == 'birth' else 'retired'}",
+                        )
+                    )
+        return tuple(sorted(events, key=lambda e: (e["time"], e["kind"], e["label"])))
 
     def batch_signature(self, declaration):
         return (self.LAW_ID,)
@@ -432,6 +487,8 @@ DECLARATION_MAY_DEFINE = frozenset(
         "check_definition",
         "initial_values",
         "summary",
+        "VIEW_LAYERS",
+        "view_events",
     }
 )
 
@@ -541,7 +598,29 @@ def check_declarations(operator):
                 "removed and supplied accumulators"
             )
     _check_scopes(operator)
+    if operator.PROCESS and not _defined_below_operator(operator, "moves_in_step"):
+        raise ValueError(f"{name}: an in-step process declares the rows it moves (moves_in_step)")
+    if operator.IDENTITY_ROLE not in IDENTITY_ROLES:
+        raise ValueError(f"{name}: IDENTITY_ROLE is one of {IDENTITY_ROLES}")
+    _check_layers(operator)
     return operator
+
+
+def _check_layers(operator):
+    """VIEW_LAYERS, when declared (docs/RUN_VIEW_DESIGN.md §3)."""
+    layers = operator.VIEW_LAYERS
+    if layers is None:
+        return
+    name = operator.LAW_ID
+    if not isinstance(layers, tuple) or not layers:
+        raise ValueError(f"{name}: VIEW_LAYERS is a non-empty tuple of layers")
+    for layer in layers:
+        if not isinstance(layer, dict) or set(layer) != LAYER_KEYS:
+            raise ValueError(f"{name}: a view layer is a dict of {sorted(LAYER_KEYS)}")
+        if not all(isinstance(layer[k], str) and layer[k] for k in ("id", "label")):
+            raise ValueError(f"{name}: a view layer's id and label are non-empty strings")
+        if layer["representation"] not in REPRESENTATIONS:
+            raise ValueError(f"{name}: a view layer's representation is one of {REPRESENTATIONS}")
 
 
 def _check_scopes(operator):

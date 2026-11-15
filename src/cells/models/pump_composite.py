@@ -600,7 +600,9 @@ class Composition:
         state, p = self.inner.initial_values(projection(spec))
         values, layout = state._asdict(), p._asdict()
         for op, declaration, schedule in entries(spec):
-            owned, bound = op.initial_values(spec, declaration, schedule, state, p)
+            owned, bound = op.initial_values(
+                spec, declaration, schedule, state, p, **self._inner_keyword(op)
+            )
             values.update(owned)
             layout.update(bound)
         kind = (
@@ -702,12 +704,10 @@ class Composition:
         valid, current = None, state
         for op in self.events:
             if op in active:
+                keywords = self._inner_keyword(op)  # Static: an operator that uses the inner.
                 if self._passes_view(op):  # Static: S5's partition; door S's current readers.
-                    current, ok = op.event(
-                        current, control, p, xp=xp, view=lambda s: self.view(p, s, xp=xp)
-                    )
-                else:
-                    current, ok = op.event(current, control, p, xp=xp)
+                    keywords["view"] = lambda s: self.view(p, s, xp=xp)
+                current, ok = op.event(current, control, p, xp=xp, **keywords)
                 valid = _and(valid, ok)
         h = 0.5 * dt
         splits = tuple(op for op in self.splits if op in active)
@@ -758,6 +758,11 @@ class Composition:
 
     imex_step = split_step
 
+    def _inner_keyword(self, op):
+        """{"inner": the inner implementation object} for an operator that declares USES_INNER,
+        else {} (static: every other call is unchanged)."""
+        return {"inner": self.inner} if op.USES_INNER else {}
+
     def _passes_view(self, op):
         """Whether op's event or half-step receives the merged view (static): one that books at
         the view when a field input is provided, or a door S current reader (view_readers)."""
@@ -767,9 +772,10 @@ class Composition:
         """op's half-step; one that books at the view gets the current view when a field
         input is provided, and a door S current reader gets the merged view (static: otherwise
         the call is unchanged)."""
+        keywords = self._inner_keyword(op)
         if self._passes_view(op):
-            return op.half_step(state, h, control, p, xp=xp, view=self.view(p, state, xp=xp))
-        return op.half_step(state, h, control, p, xp=xp)
+            keywords["view"] = self.view(p, state, xp=xp)
+        return op.half_step(state, h, control, p, xp=xp, **keywords)
 
     def _end_domain(self, state, p, operators, *, xp):
         """Domain of the step's end state: the inner one at the view if a split moved it."""
@@ -800,7 +806,10 @@ class Composition:
         if self.process_operator is not None:
             hook = dict(membrane_process=self.process_operator.process(control, p))
         v = self.inner.readouts(self.inner.inner_state(state), inner_control, view, xp=xp, **hook)
-        computed = [op.rates(state, control, p, view, xp=xp) for op in self.operators]
+        computed = [
+            op.rates(state, control, p, view, xp=xp, **self._inner_keyword(op))
+            for op in self.operators
+        ]
         derivative = list(v.derivative)
         for op, (rates, _, _) in zip(self.operators, computed, strict=True):
             derivative.extend(rates[k] for k in op.STATE_AXES)

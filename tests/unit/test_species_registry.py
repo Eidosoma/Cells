@@ -174,10 +174,13 @@ def test_moved_in_step_names_each_mover():
 
 
 def test_an_in_step_process_must_declare_what_it_moves(monkeypatch):
-    symport = parse_spec(symport_world())
+    """The contract refuses it at registration (contract.check_declarations, D176's additions):
+    the base's moves_in_step moves nothing, so the registry's own check cannot meet one."""
+    from cells.models.operators.contract import check_declarations
+
     monkeypatch.delattr(k_anion_symport.KAnionSymport, "moves_in_step")
-    with pytest.raises(ConfigError, match="does not declare what it moves"):
-        registry.moved_in_step(symport)
+    with pytest.raises(ValueError, match="declares the rows it moves"):
+        check_declarations(k_anion_symport.KAnionSymport)
 
 
 def test_the_coupling_refuses_an_instantaneous_read_of_a_moved_row():
