@@ -8,23 +8,35 @@ form schema/SPECIES_ATLAS.md fixes. The answers are drawn from the planarian's U
 entries and from the gene models of one genome annotation, which the tool also writes
 out as a table.
 
-Two steps, kept apart:
+Three steps, kept apart:
 
-    python3 tools/build_planarian_atlas.py fetch --evidence DIR
-        asks public databases and saves every response in DIR/responses, with what was
-        asked and when in DIR/requests.json. The only step that uses the network.
+    python3 tools/build_planarian_atlas.py fetch --evidence DIR --datasets DATA
+        asks public databases and saves every response: those of the atlas and the
+        catalogue in DIR/responses, with what was asked and when in DIR/requests.json;
+        those the shelves added in DATA, one folder for each source with a MANIFEST.json
+        that gives every file's address, time and SHA-256. The only step that uses the
+        network.
 
-    python3 tools/build_planarian_atlas.py build --evidence DIR
-        reads only DIR and the inventory snapshot, and writes
+    python3 tools/build_planarian_atlas.py build --evidence DIR --datasets DATA
+        reads only DIR, DATA and the inventory snapshot, and writes
         data/proteins/atlases/planarian.json and, in data/proteins/planarian/,
-        predicted_proteins.tsv, reference_proteins.tsv and README.md: the same bytes
-        every time.
+        predicted_proteins.tsv, reference_proteins.tsv, shelves.json, shelf_members.tsv
+        and README.md: the same bytes every time.
+
+    python3 tools/build_planarian_atlas.py members --out OUT
+        cuts the shelves' member files, which the page publishes beside it, from the
+        tables in data/proteins/planarian/. It reads nothing else.
 
 The mass-spectrometry library of about 10,000 planarian proteins (Ying and others 2025)
 is not imported: its list of proteins could not be reached under terms that allow a copy.
 The README the build writes says what was found and what is missing. In the meantime the
 open set is written out whole (predicted_proteins.tsv): every gene model with a predicted
 protein and every UniProtKB entry of the species. It is predicted, not measured.
+
+The shelves (schema/SPECIES_PROTEINS.md) lay that open set out for the atlas: every
+protein is given one family, a side of a membrane and how that side is known, and the
+families open to show their members. Everything in them is a prediction on a predicted
+protein.
 
 This is the viewer's reference data. It is not the engine's protein catalogue and it
 makes no claim about the engine: the laws are the same for every species.
@@ -36,6 +48,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import hashlib
 import json
 import re
 import sys
@@ -211,6 +224,182 @@ def fetch(evidence, snapshot, refresh=False, pause=0.5, tries=5):
         (evidence / "requests.json").write_text(json.dumps(manifest, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
         time.sleep(pause)
     print(f"asked {asked} request(s), {failed} failed; {len(done)} on record in {evidence / 'requests.json'}")
+    return failed
+
+
+# ---------------------------------------------------------------------------------------
+# Fetch for the shelves: later downloads, kept as datasets
+# ---------------------------------------------------------------------------------------
+#
+# What the shelves need beyond the responses above is saved the way the project keeps
+# downloads: one folder per source under a datasets folder, each with a MANIFEST.json that
+# gives every file's address, time and SHA-256. The build reads a file only through its
+# MANIFEST and checks it against the SHA-256 there.
+
+BIOMART = "https://parasite.wormbase.org/biomart/martservice"
+BIOMART_GENOME = "smedh1prjna885486"  # the genome annotation's name in WormBase ParaSite's BioMart
+INTERPRO_FILES = "https://ftp.ebi.ac.uk/pub/databases/interpro/current_release"
+SHELF_MINE = "the visualizer's planarian shelves agent"
+TOPOLOGY_FIELDS = "accession,fragment,ft_non_ter,ft_signal,ft_transmem,ft_intramem,ft_topo_dom,cc_subcellular_location"
+SHELF_SOURCES = {
+    "wbps-biomart-smedh1prjna885486": {
+        "what": "WormBase ParaSite BioMart (release 19), genome smedh1prjna885486: the membrane-spanning helices (TMHMM) and signal-peptide cleavage sites (SignalP) it holds for each predicted protein, the gene count, and the list of attributes that names them",
+        "licence": "WormBase ParaSite's disclaimer: \"Ensembl imposes no restrictions on access to, or use of, the data provided\"; it asks that the genome's paper and the database be cited",
+    },
+    "interpro-hierarchy-and-go": {
+        "what": "InterPro release files: the tree of parent and child entries, the mapping of entries to Gene Ontology terms, and the release notes",
+        "licence": "CC0 1.0",
+    },
+    "geneontology-go-basic": {
+        "what": "The Gene Ontology (go-basic.obo), read for the is_a and part_of links between terms, with the consortium's page on citing and licence",
+        "licence": "CC BY 4.0",
+    },
+    "uniprot-smed-topology": {
+        "what": "UniProtKB entries of Schmidtea mediterranea (taxon 79327): whether each is a fragment; the signal peptides, membrane-spanning segments and subcellular location UniProt gives, with the evidence for each; and the Gene Ontology terms UniProt gives each entry",
+        "licence": "CC BY 4.0",
+    },
+}
+
+
+def biomart(attributes, flags=(), unique=False, count=False):
+    """The address of one BioMart query on the genome annotation: its attributes, one row
+    for each feature (or each distinct row), closed by a stamp that says the answer is whole."""
+    filters = f'<Filter name="species_id_1010" value="{BIOMART_GENOME}"/>' + "".join(f'<Filter name="{flag}" excluded="0"/>' for flag in flags)
+    wanted = "".join(f'<Attribute name="{name}"/>' for name in attributes)
+    query = (
+        '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE Query>'
+        f'<Query virtualSchemaName="parasite_mart" formatter="TSV" header="1" uniqueRows="{int(unique)}" count="{1 if count else ""}" datasetConfigVersion="0.6" completionStamp="{0 if count else 1}">'
+        f'<Dataset name="wbps_gene" interface="default">{filters}{wanted}</Dataset></Query>'
+    )
+    return f"{BIOMART}?query={q(query)}"
+
+
+def shelf_requests():
+    """Every request of the fetch step that the shelves added: the dataset folder, the file
+    there, the address and what it is for. "whole" is what the body must end with."""
+    out = []
+
+    def add(source, file, url, purpose, **more):
+        out.append({"source": source, "file": file, "url": url, "purpose": purpose, **more})
+
+    mart = "wbps-biomart-smedh1prjna885486"
+    add(mart, "biomart_attributes.tsv", f"{BIOMART}?type=attributes&dataset=wbps_gene", "the attributes BioMart offers, read for what the two predictions are called", contains="transmembrane_domain")
+    add(mart, "biomart_gene_count.txt", biomart(["wbps_gene_id"], unique=True, count=True), "how many genes BioMart holds for the genome annotation, to check that it is the one the catalogue uses")
+    add(mart, "biomart_tmhmm.tsv", biomart(["wbps_gene_id", "wbps_transcript_id", "transmembrane_domain"], flags=["with_tmhmm"]), "each membrane-spanning helix TMHMM predicts, one row for each, by predicted protein", whole="[success]")
+    add(mart, "biomart_signalp.tsv", biomart(["wbps_gene_id", "wbps_transcript_id", "signal_domain"], flags=["with_signalp"]), "each signal-peptide cleavage site SignalP predicts, by predicted protein", whole="[success]")
+    interpro = "interpro-hierarchy-and-go"
+    add(interpro, "ParentChildTreeFile.txt", f"{INTERPRO_FILES}/ParentChildTreeFile.txt", "which InterPro entry is a narrower kind of which")
+    add(interpro, "interpro2go", f"{INTERPRO_FILES}/interpro2go", "the Gene Ontology terms InterPro gives each of its entries")
+    add(interpro, "release_notes.txt", f"{INTERPRO_FILES}/release_notes.txt", "the InterPro release these two files belong to")
+    ontology = "geneontology-go-basic"
+    add(ontology, "go-basic.obo", "https://current.geneontology.org/ontology/go-basic.obo", "the Gene Ontology's terms and the links between them")
+    add(ontology, "go_citation_policy.html", "https://geneontology.org/docs/go-citation-policy/", "the Gene Ontology's licence")
+    add("uniprot-smed-topology", f"uniprotkb_{TAXON}_topology.json", f"{UNIPROT}/uniprotkb/stream?query={q(f'taxonomy_id:{TAXON}')}&format=json&fields={TOPOLOGY_FIELDS}", "where UniProt places each of the species' entries, and on what evidence")
+    add("uniprot-smed-topology", f"uniprotkb_{TAXON}_go.tsv", f"{UNIPROT}/uniprotkb/stream?query={q(f'taxonomy_id:{TAXON}')}&format=tsv&fields=accession,go_id", "the Gene Ontology terms UniProt gives each of the species' entries", contains="Gene Ontology IDs")
+    return out
+
+
+def utc_now():
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def digest(path):
+    sha, md5 = hashlib.sha256(), hashlib.md5()
+    with open(path, "rb") as handle:
+        for block in iter(lambda: handle.read(1 << 20), b""):
+            sha.update(block)
+            md5.update(block)
+    return sha.hexdigest(), md5.hexdigest()
+
+
+def read_manifest(folder):
+    path = Path(folder) / "MANIFEST.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
+def is_ours(manifest):
+    return manifest is not None and SHELF_MINE in manifest.get("note", "")
+
+
+def fetch_datasets(datasets, refresh=False, pause=2.0, tries=6):
+    """Ask every shelf request whose file is not yet in its dataset folder; save the body as
+    it came and describe it in the folder's MANIFEST. A folder another agent made is read
+    and never written."""
+    datasets = Path(datasets)
+    asked = failed = 0
+    for request in shelf_requests():
+        folder = datasets / request["source"]
+        manifest = read_manifest(folder)
+        held = (folder / request["file"]).exists() and any(item["name"] == request["file"] for item in (manifest or {}).get("files", []))
+        if held and not (refresh and is_ours(manifest)):
+            continue
+        if folder.exists() and not is_ours(manifest):
+            print(f"missing  {request['source']}/{request['file']}: the folder was made by another agent, so nothing is written there", flush=True)
+            failed += 1
+            continue
+        record, body = {}, None
+        call = urllib.request.Request(request["url"], headers={"User-Agent": CLIENT, "Accept-Encoding": "identity"})
+        for attempt in range(tries):
+            record, body = {"asked": utc_now()}, None
+            try:
+                with urllib.request.urlopen(call, timeout=900) as answer:
+                    body = answer.read()
+                    record["status"] = answer.status
+                    for header, key in [("X-Total-Results", "total_results"), ("X-UniProt-Release", "uniprot_release"), ("X-UniProt-Release-Date", "uniprot_release_date"), ("Last-Modified", "last_modified"), ("Content-Type", "content_type")]:
+                        if answer.headers.get(header):
+                            record[key] = answer.headers[header]
+                # A table that was cut short, or an error page sent as an answer, is not kept.
+                text = body[-200:].decode("utf-8", "replace").rstrip()
+                if request.get("whole") and not text.endswith(request["whole"]):
+                    record["status"], body = 0, None
+                    record["error"] = "the answer does not end with its completion stamp"
+                elif request.get("contains") and request["contains"].encode() not in body:
+                    record["status"], body = 0, None
+                    record["error"] = "the answer is not the listing asked for"
+                else:
+                    break
+            except urllib.error.HTTPError as error:
+                record["status"] = error.code
+                if error.code < 500 and error.code != 429:
+                    break
+            except (urllib.error.URLError, TimeoutError, OSError) as error:
+                record["status"] = 0
+                record["error"] = str(getattr(error, "reason", error))[:200]
+            # A busy service: wait and ask again.
+            if attempt + 1 < tries:
+                time.sleep(20)
+        asked += 1
+        if record.get("status") != 200 or body is None:
+            failed += 1
+            print(f"{record.get('status')}  {request['source']}/{request['file']}  {record.get('error', '')}", flush=True)
+            continue
+        # The folder is made only if it is not there at this moment; one that another agent
+        # has just made is left alone.
+        folder.mkdir(parents=True, exist_ok=True)
+        manifest = read_manifest(folder)
+        if manifest is not None and not is_ours(manifest):
+            print(f"skipped  {request['source']}/{request['file']}: the folder was just made by another agent", flush=True)
+            failed += not (folder / request["file"]).exists()
+            continue
+        (folder / request["file"]).write_bytes(body)
+        sha, md5 = digest(folder / request["file"])
+        entry = {
+            "name": request["file"], "url": request["url"], "role": request["purpose"], "retrieved_utc": record["asked"], "http_status": record["status"],
+            "content_type": record.get("content_type"), "size_bytes": len(body), "sha256": sha, "md5": md5,
+            "expected_size": None, "expected_md5": None, "ok": True, "error": None,
+        }
+        for key in ("total_results", "uniprot_release", "uniprot_release_date", "last_modified"):
+            if record.get(key) is not None:
+                entry["x_" + key] = record[key]
+        manifest = manifest or {"source_id": request["source"], "files": []}
+        manifest["record"] = SHELF_SOURCES[request["source"]]
+        manifest["files"] = sorted([item for item in manifest["files"] if item["name"] != entry["name"]] + [entry], key=lambda item: item["name"])
+        manifest["manifest_written_utc"] = utc_now()
+        manifest["note"] = f"Added by {SHELF_MINE}: downloaded as untrusted data by tools/build_planarian_atlas.py of the Cells checkout. Nothing here was executed."
+        (folder / "MANIFEST.json").write_text(json.dumps(manifest, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"200  {request['source']}/{request['file']}  {len(body)}", flush=True)
+        time.sleep(pause)
+    print(f"asked {asked} dataset request(s), {failed} failed or missing, under {datasets}")
     return failed
 
 
@@ -1295,7 +1484,843 @@ def library_facts(c):
     return facts
 
 
-def build_readme(c, facts, atlas, listed, named, everything):
+# ---------------------------------------------------------------------------------------
+# The shelves: every protein given one family, a side and a district
+# ---------------------------------------------------------------------------------------
+#
+# schema/SPECIES_PROTEINS.md fixes the form. The catalogue is too large for one marker
+# each, so it is given as families that open: shelves.json holds the families, and
+# shelf_members.tsv holds, for every protein, what it is filed under, its side and how
+# that side is known. The page builder cuts the members into files from the two tables.
+
+SHELF_FORMAT = "cells.visualizer.species_proteins@1"
+MEMBERS_FORMAT = "cells.visualizer.species_protein_members@1"
+SHELVES_FILE = "shelves.json"
+MEMBERS_FILE = "shelf_members.tsv"
+MEMBERS_COLUMNS = ["id", "under", "side", "basis", "helices", "signal", "units"]
+SIDES = ["outside", "in", "inside", "not known"]
+SIDE_TIE = ["in", "outside", "inside", "not known"]  # where a family's members are split evenly
+MEMBERS_PER_FILE = 2000
+SHELF = {
+    "id": "cell",
+    "label": "The cell's membranes, not told apart",
+    "outside": "Beyond a membrane: outside the cell, or within one of its compartments",
+    "inside": "Inside the cell: in the cytoplasm or the nucleus, or carried into an organelle",
+}
+# This tool's own reading of a sequence, used only where the two predictors leave a doubt
+# (see side_of_model). It takes no published scale: a stretch is hydrophobic when most of
+# its residues are among the plainly hydrophobic ones.
+HYDROPHOBIC = frozenset("AILMFVW")
+HYDROPHOBIC_WINDOW = 19   # residues, about the span of a membrane
+HYDROPHOBIC_LEAST = 12    # how many of them must be hydrophobic for a membrane-spanning stretch
+SIGNAL_REACH = 35         # a stretch that starts before this residue can be the signal peptide itself
+
+# The districts, in order. A protein's Gene Ontology terms are those InterPro maps to any
+# of its signatures, and those UniProt gives a UniProtKB entry (a gene model takes also
+# the terms of the entries joined to it). The protein falls in the first district one of
+# whose terms it carries, and a family stands where most of its classed members fall.
+# The choice of terms and their order is the viewer's; each term's name is checked
+# against the ontology.
+DISTRICTS = [
+    ("channels", "Channels", [("GO:0015267", "channel activity")]),
+    ("transport", "Transporters and pumps", [("GO:0005215", "transporter activity"), ("GO:0055085", "transmembrane transport"), ("GO:0006811", "monoatomic ion transport")]),
+    ("signalling", "Receptors and signalling", [("GO:0038023", "signaling receptor activity"), ("GO:0060089", "molecular transducer activity"), ("GO:0007165", "signal transduction"), ("GO:0005102", "signaling receptor binding")]),
+    ("genes", "DNA, RNA and making proteins", [("GO:0010467", "gene expression"), ("GO:0006259", "DNA metabolic process"), ("GO:0003677", "DNA binding"), ("GO:0003723", "RNA binding"), ("GO:0140110", "transcription regulator activity"), ("GO:0006355", "regulation of DNA-templated transcription"), ("GO:0006325", "chromatin organization"), ("GO:0005840", "ribosome"), ("GO:0140640", "catalytic activity, acting on a nucleic acid")]),
+    ("proteins", "Protein folding, change, sorting and breakdown", [("GO:0006457", "protein folding"), ("GO:0006508", "proteolysis"), ("GO:0036211", "protein modification process"), ("GO:0015031", "protein transport"), ("GO:0016192", "vesicle-mediated transport"), ("GO:0140096", "catalytic activity, acting on a protein")]),
+    ("structure", "Cytoskeleton, movement and adhesion", [("GO:0005856", "cytoskeleton"), ("GO:0007010", "cytoskeleton organization"), ("GO:0003774", "cytoskeletal motor activity"), ("GO:0007018", "microtubule-based movement"), ("GO:0007155", "cell adhesion"), ("GO:0031012", "extracellular matrix"), ("GO:0005929", "cilium"), ("GO:0005198", "structural molecule activity")]),
+    ("metabolism", "Enzymes and metabolism", [("GO:0003824", "catalytic activity"), ("GO:0008152", "metabolic process")]),
+]
+OTHER_DISTRICT = ("other", "Other functions")
+NO_DISTRICT = ("unclassed", "Not classed by function")
+# Where in the cell the same terms place a protein: an annotation carried by its
+# signatures, kept as a hint beside the predicted side. It is not a prediction for the
+# protein itself.
+WHERE = [
+    ("nucleus", "GO:0005634", "nucleus"), ("mitochondrion", "GO:0005739", "mitochondrion"), ("endoplasmic reticulum", "GO:0005783", "endoplasmic reticulum"),
+    ("Golgi apparatus", "GO:0005794", "Golgi apparatus"), ("lysosome", "GO:0005764", "lysosome"), ("peroxisome", "GO:0005777", "peroxisome"),
+    ("cilium", "GO:0005929", "cilium"), ("cytoskeleton", "GO:0005856", "cytoskeleton"), ("ribosome", "GO:0005840", "ribosome"),
+    ("cytosol", "GO:0005829", "cytosol"), ("plasma membrane", "GO:0005886", "plasma membrane"), ("extracellular", "GO:0005576", "extracellular region"),
+]
+INSIDE_WHERE = {"nucleus", "mitochondrion", "cilium", "cytoskeleton", "ribosome", "cytosol"}
+# The roles of a unit's products that span a membrane: their families must come out "in".
+SPANNING_ROLES = {"alpha", "alpha1", "innexin", "alpha (BK)", "alpha (SK)", "beta (BK)", "catalytic", "exchanger", "IP3R", "RyR", "KCC", "MCU"}
+
+
+class Datasets:
+    """The shelves' downloads, each read through its folder's MANIFEST and checked against it."""
+
+    def __init__(self, folder):
+        self.folder = Path(folder)
+        self.read = {}
+
+    def entry(self, source, file):
+        if (source, file) not in self.read:
+            manifest = read_manifest(self.folder / source)
+            if manifest is None:
+                raise SystemExit(f"no dataset folder {source!r} with a MANIFEST; run the fetch step first")
+            entry = next((item for item in manifest["files"] if item["name"] == file), None)
+            if entry is None or not (self.folder / source / file).exists():
+                raise SystemExit(f"the dataset folder {source} does not hold {file!r}; run the fetch step first")
+            if digest(self.folder / source / file)[0] != entry["sha256"]:
+                raise SystemExit(f"{source}/{file} is not the file its MANIFEST describes")
+            self.read[source, file] = entry
+        return self.read[source, file]
+
+    def path(self, source, file):
+        self.entry(source, file)
+        return self.folder / source / file
+
+    def text(self, source, file):
+        return self.path(source, file).read_text(encoding="utf-8", errors="replace")
+
+    def day(self, source, file):
+        return self.entry(source, file)["retrieved_utc"][:10]
+
+    def last_day(self):
+        return max(entry["retrieved_utc"][:10] for entry in self.read.values())
+
+
+def read_hierarchy(d):
+    """InterPro's tree: each entry's parent, the broader entry it is a kind of."""
+    parent, stack = {}, []
+    for line in d.text("interpro-hierarchy-and-go", "ParentChildTreeFile.txt").splitlines():
+        if not line.strip():
+            continue
+        depth = (len(line) - len(line.lstrip("-"))) // 2
+        accession = line.lstrip("-").split("::")[0]
+        stack = stack[:depth]
+        if depth:
+            parent[accession] = stack[-1]
+        stack.append(accession)
+    return parent
+
+
+def read_family_terms(d):
+    """InterPro's mapping of its entries to Gene Ontology terms."""
+    terms = defaultdict(list)
+    for line in d.text("interpro-hierarchy-and-go", "interpro2go").splitlines():
+        found = re.match(r"InterPro:(IPR\d+) .* ; (GO:\d+)$", line)
+        if found and found.group(2) not in terms[found.group(1)]:
+            terms[found.group(1)].append(found.group(2))
+    return dict(terms)
+
+
+def read_ontology(d):
+    """The Gene Ontology: each term's name and the broader terms it is a kind or a part of."""
+    terms, current = {}, None
+    for line in d.text("geneontology-go-basic", "go-basic.obo").splitlines():
+        if line == "[Term]":
+            current = {"up": [], "alt": []}
+            continue
+        if line.startswith("["):
+            current = None
+            continue
+        if current is None or ": " not in line:
+            continue
+        key, value = line.split(": ", 1)
+        if key == "id":
+            terms[value] = current
+        elif key == "name":
+            current["name"] = value
+        elif key == "is_a":
+            current["up"].append(value.split(" ! ")[0])
+        elif key == "relationship" and value.startswith("part_of "):
+            current["up"].append(value.split()[1])
+        elif key == "alt_id":
+            current["alt"].append(value)
+        elif key == "is_obsolete":
+            current["obsolete"] = True
+        elif key == "replaced_by":
+            current["replaced_by"] = value
+    for term in list(terms):
+        for other in terms[term]["alt"]:
+            terms.setdefault(other, {"same_as": term})
+    version = re.search(r"^data-version: (\S+)", d.text("geneontology-go-basic", "go-basic.obo")[:400], re.M)
+    for _, _, wanted in DISTRICTS:
+        for term, name in wanted:
+            if terms.get(term, {}).get("name") != name:
+                raise SystemExit(f"the ontology no longer calls {term} {name!r}; choose the districts' terms again")
+    for _, term, name in WHERE:
+        if terms.get(term, {}).get("name") != name:
+            raise SystemExit(f"the ontology no longer calls {term} {name!r}; choose the places again")
+    return terms, version.group(1)
+
+
+def broader_terms(terms):
+    """For a term, itself and every broader term, by the kind-of and part-of links."""
+    memo = {}
+
+    def up(term):
+        if term not in memo:
+            out = {term}
+            for other in terms[term]["up"]:
+                if other in terms:
+                    out |= up(other)
+            memo[term] = out
+        return memo[term]
+
+    def usable(term):
+        entry = terms.get(term)
+        if entry is None:
+            return None
+        if "same_as" in entry:
+            return entry["same_as"]
+        if entry.get("obsolete"):
+            return usable(entry["replaced_by"]) if entry.get("replaced_by") else None
+        return term
+
+    return up, usable
+
+
+def read_predictions(d, c):
+    """TMHMM's helices and SignalP's signal peptides, as WormBase ParaSite holds them for
+    the gene models' predicted proteins: how many helices each has, and which have a signal."""
+    mart = "wbps-biomart-smedh1prjna885486"
+    called = {}
+    for line in d.text(mart, "biomart_attributes.tsv").splitlines():
+        columns = line.split("\t")
+        if len(columns) > 1:
+            called.setdefault(columns[0], columns[1])
+    if called.get("transmembrane_domain") != "Transmembrane (TMHMM) domain" or called.get("signal_domain") != "Cleavage site (SignalP)":
+        raise SystemExit("BioMart no longer names the two predictions as TMHMM's and SignalP's; read its listing again")
+    if int(d.text(mart, "biomart_gene_count.txt").strip()) != sum(c.biotypes.values()):
+        raise SystemExit("BioMart's genome is not the annotation the catalogue uses: the gene counts differ")
+    helices, signals = Counter(), {}
+    for file, values in (("biomart_tmhmm.tsv", {"TMhelix"}), ("biomart_signalp.tsv", {"SignalP-noTM", "SignalP-TM"})):
+        lines = d.text(mart, file).splitlines()
+        if lines[-1] != "[success]" or not lines[0].startswith("Gene stable ID\tTranscript stable ID\t"):
+            raise SystemExit(f"{file} is not a whole BioMart answer")
+        for line in lines[1:-1]:
+            gene, protein, value = line.split("\t")
+            if c.proteins.get(protein, {}).get("gene") != gene or value not in values:
+                raise SystemExit(f"{file} holds a line the annotation file does not explain: {line!r}")
+            if file == "biomart_tmhmm.tsv":
+                helices[protein] += 1
+            else:
+                signals[protein] = value
+    return helices, signals
+
+
+def read_topology(d, c):
+    """What UniProt gives for each of the species' entries: membrane-spanning segments,
+    a signal peptide, whether the start of the sequence is missing, and where it places it."""
+    out = {}
+    for item in json.loads(d.text("uniprot-smed-topology", f"uniprotkb_{TAXON}_topology.json"))["results"]:
+        features = item.get("features", [])
+        places = []
+        for comment in item.get("comments", []):
+            if comment.get("commentType") == "SUBCELLULAR LOCATION":
+                for place in comment.get("subcellularLocations", []):
+                    places.append((place["location"]["value"], (place.get("topology") or {}).get("value") or ""))
+        out[item["primaryAccession"]] = {
+            "helices": sum(feature["type"] == "Transmembrane" for feature in features),
+            "signal": any(feature["type"] == "Signal" for feature in features),
+            "start_missing": any(feature["type"] == "Non-terminal residue" and feature["location"]["start"]["value"] == 1 for feature in features),
+            "places": places,
+            "reviewed": item["entryType"].startswith("UniProtKB reviewed"),
+        }
+    if set(out) != set(c.entries):
+        raise SystemExit("UniProt's entries of the species are not the ones the catalogue was made from; fetch both again")
+    return out
+
+
+def ontology_citation(d):
+    """The two papers the Gene Ontology asks to be cited, in its own page's words."""
+    page = plain(d.text("geneontology-go-basic", "go_citation_policy.html"))
+    first = re.search(r"(Ashburner et al\. Gene ontology: tool for the unification of biology\. [^\[]*?DOI: \S+)", page)
+    latest = re.search(r"(The Gene Ontology Consortium\. The Gene Ontology knowledgebase in \d{4}\. [^\[]*?DOI: \S+)", page)
+    if not first or not latest:
+        raise SystemExit("the Gene Ontology's saved page no longer names the two papers to cite; read it again")
+    return f"{first.group(1)}; {latest.group(1)}"
+
+
+def read_entry_terms(d, c):
+    """The Gene Ontology terms UniProt gives each of the species' entries."""
+    lines = d.text("uniprot-smed-topology", f"uniprotkb_{TAXON}_go.tsv").splitlines()
+    if lines[0].split("\t") != ["Entry", "Gene Ontology IDs"]:
+        raise SystemExit("UniProt's table of the entries' terms is not the one asked for")
+    out = {}
+    for line in lines[1:]:
+        accession, _, found = line.partition("\t")
+        out[accession] = [term.strip() for term in found.split(";") if term.strip()]
+    if set(out) != set(c.entries):
+        raise SystemExit("UniProt's entries of the species are not the ones the catalogue was made from; fetch both again")
+    return out
+
+
+def hydrophobic_stretches(sequence):
+    """Where at least 12 of a window of 19 residues are hydrophobic: [start, end) of each
+    stretch, counted from 0."""
+    values = [residue in HYDROPHOBIC for residue in sequence]
+    out, run = [], None
+    if len(values) < HYDROPHOBIC_WINDOW:
+        return out
+    total = sum(values[:HYDROPHOBIC_WINDOW])
+    for start in range(len(values) - HYDROPHOBIC_WINDOW + 1):
+        if start:
+            total += values[start + HYDROPHOBIC_WINDOW - 1] - values[start - 1]
+        if total >= HYDROPHOBIC_LEAST:
+            if run is None:
+                run = [start, start + HYDROPHOBIC_WINDOW]
+            else:
+                run[1] = start + HYDROPHOBIC_WINDOW
+        elif run is not None:
+            out.append(tuple(run))
+            run = None
+    if run is not None:
+        out.append(tuple(run))
+    return out
+
+
+def side_of_place(value, spans):
+    """The side a location in UniProt's words stands for, or None where it does not say."""
+    if value.startswith("Secreted"):
+        return "outside"
+    if "membrane" in value.lower() or value.startswith("Endomembrane system"):
+        return "in" if spans.startswith(("Multi-pass", "Single-pass")) else None
+    if value.startswith(("Nucleus", "Chromosome", "Cytoplasm", "Mitochondrion", "Cell projection")):
+        return "inside"
+    return None
+
+
+def side_from_where(where):
+    """The side a family's annotated places leave no real doubt of, or None."""
+    if where and set(where) <= INSIDE_WHERE:
+        return "inside"
+    if where == ["extracellular"]:
+        return "outside"
+    return None
+
+
+class Shelves:
+    """Everything the shelves are made from, and each protein's family, side and district."""
+
+    def __init__(self, c, d, rows, atlas):
+        self.c, self.d, self.rows, self.atlas = c, d, rows, atlas
+        if len({row[1] for row in rows}) != len(rows):
+            raise SystemExit("two proteins of the catalogue share an identifier; the members' table needs both columns")
+        self.release = re.search(r"Release ([\d.]+),", d.text("interpro-hierarchy-and-go", "release_notes.txt")).group(1)
+        if self.release != re.search(r"Release ([\d.]+),", c.evidence.text("interpro_release_notes.txt")).group(1):
+            raise SystemExit("the InterPro tree and the InterPro names are of different releases; fetch both again")
+        if "licensed under the Creative Commons Attribution 4.0 Unported License" not in plain(d.text("geneontology-go-basic", "go_citation_policy.html")):
+            raise SystemExit("the Gene Ontology's saved page no longer states its licence as read; read the terms again before building")
+        self.parent = read_hierarchy(d)
+        self.signature_terms = read_family_terms(d)
+        self.entry_terms = read_entry_terms(d, c)
+        self.terms, self.ontology = read_ontology(d)
+        self.up, self.usable = broader_terms(self.terms)
+        self.helices, self.signals = read_predictions(d, c)
+        self.topology = read_topology(d, c)
+        self.kind = lambda accession: c.entry_names.get(accession, {}).get("type")
+        self.units = defaultdict(set)   # protein -> the units the atlas lists it under
+        self.roles = defaultdict(set)   # protein -> the roles it has there
+        for unit_id, unit in atlas["units"].items():
+            for product in unit["products"]:
+                for item in product["ids"]:
+                    self.units[item["id"]].add(unit_id)
+                    self.roles[item["id"]].add(product["role"])
+        self.file_proteins()
+        self.class_proteins()
+        self.place_proteins()
+
+    # --- one family for each protein ----------------------------------------------------
+
+    def depth(self, accession):
+        depth = 0
+        while accession in self.parent:
+            accession, depth = self.parent[accession], depth + 1
+        return depth
+
+    def broader(self, accession):
+        out = []
+        while accession in self.parent:
+            accession = self.parent[accession]
+            out.append(accession)
+        return out
+
+    def file_proteins(self):
+        """under[id] is the family the protein is filed under, or the part of "no family"."""
+        signatures = {row[1]: [s for s in row[6].split(";") if s] for row in self.rows}
+        narrowest, carried = {}, Counter()
+        for protein, found in signatures.items():
+            families = [s for s in found if self.kind(s) == "Family"]
+            covered = {b for family in families for b in self.broader(family)}
+            narrowest[protein] = [family for family in families if family not in covered]
+            carried.update(set(found))
+        held = Counter(family for families in narrowest.values() for family in families)
+        self.family, self.part, self.several = {}, {}, 0
+        for protein, families in narrowest.items():
+            if families:
+                # The narrowest family; of several unrelated ones, the deepest in InterPro's
+                # tree, then the one fewest proteins of this catalogue are in, then the first.
+                self.several += len(families) > 1
+                self.family[protein] = min(families, key=lambda f: (-self.depth(f), held[f], f))
+                continue
+            wider = [s for s in signatures[protein] if self.kind(s) == "Homologous_superfamily"]
+            if wider:
+                self.part[protein] = min(wider, key=lambda s: (carried[s], s))
+            else:
+                self.part[protein] = "other-signature" if signatures[protein] else "no-signature"
+        self.signatures = signatures
+
+    # --- what a protein's signatures say it does, and where -------------------------------
+
+    def class_proteins(self):
+        """classed[id] is the district the protein's own terms put it in; places[id] the
+        places in the cell they name."""
+        joined = defaultdict(list)
+        for accession, match in self.c.matches.items():
+            joined[match["gene"]].append(accession)
+        self.classed, self.places, self.dropped = {}, {}, set()
+        for row in self.rows:
+            direct = [term for signature in self.signatures[row[1]] for term in self.signature_terms.get(signature, [])]
+            for accession in ([row[1]] if row[0] == "uniprot" else sorted(joined.get(row[1], []))):
+                direct += self.entry_terms[accession]
+            terms = set()
+            for term in direct:
+                usable = self.usable(term)
+                if usable:
+                    terms |= self.up(usable)
+                else:
+                    self.dropped.add(term)
+            self.places[row[1]] = [key for key, term, _ in WHERE if term in terms]
+            self.classed[row[1]] = next((key for key, _, wanted in DISTRICTS if any(term in terms for term, _ in wanted)), OTHER_DISTRICT[0] if terms else NO_DISTRICT[0])
+
+    def district(self, proteins, loose=False):
+        """A family's members are one kind of protein, so the district most of its classed
+        members fall in speaks for it; of equal counts, the first district. A part of
+        "no family" is a looser grouping (loose): it stands in a district only if more
+        than half of all its members fall there."""
+        found = Counter(self.classed[protein] for protein in proteins)
+        order = [key for key, _, _ in DISTRICTS]
+        best = max(order, key=lambda key: (found.get(key, 0), -order.index(key)))
+        if loose:
+            best = max([*order, OTHER_DISTRICT[0]], key=lambda key: found.get(key, 0))
+            return best if 2 * found.get(best, 0) > len(proteins) else NO_DISTRICT[0]
+        if found.get(best):
+            return best
+        return OTHER_DISTRICT[0] if found.get(OTHER_DISTRICT[0]) else NO_DISTRICT[0]
+
+    def where(self, proteins):
+        """The places at least half of the proteins that are given any place are given."""
+        placed = [self.places[protein] for protein in proteins if self.places[protein]]
+        return [key for key, _, _ in WHERE if 2 * sum(key in found for found in placed) >= len(placed) > 0]
+
+    # --- the side of each protein -------------------------------------------------------
+
+    def side_of_model(self, row):
+        """A gene model: by TMHMM and SignalP on its longest predicted protein."""
+        protein = row[8].split()[0]
+        helices, signal = self.helices.get(protein, 0), protein in self.signals
+        sequence = self.c.proteins[protein]["sequence"]
+        if helices >= 2 or (helices == 1 and not signal):
+            return "in", "predicted", helices, signal
+        if helices == 1:
+            # One helix and a signal peptide: TMHMM may have taken the signal peptide for a
+            # helix. Where the hydrophobic stretch lies decides, by this tool's own reading.
+            stretches = hydrophobic_stretches(sequence)
+            if any(start >= SIGNAL_REACH for start, _ in stretches):
+                return "in", "predicted", helices, signal
+            if stretches:
+                return "outside", "predicted", helices, signal
+            return "not known", "none", helices, signal
+        if signal:
+            return "outside", "predicted", helices, signal
+        if sequence.startswith("M"):
+            return "inside", "predicted", helices, signal
+        # The model does not begin with a start codon's methionine, so a signal peptide may
+        # be missing with its beginning: nothing was predicted, and nothing can be said
+        # from that, unless what its family is annotated to be leaves no real doubt.
+        side = side_from_where(self.places[row[1]])
+        return (side, "by function", helices, signal) if side else ("not known", "none", helices, signal)
+
+    def side_of_entry(self, row):
+        """A UniProtKB entry: by what the entry states or what UniProt predicts on it."""
+        known = self.topology[row[1]]
+        helices, signal = known["helices"], known["signal"]
+        sides = {side_of_place(value, spans) for value, spans in known["places"]} - {None}
+        if known["reviewed"] and len(sides) == 1:
+            return sides.pop(), "stated", helices, signal
+        if helices:
+            return "in", "predicted", helices, signal
+        if signal:
+            return "outside", "predicted", helices, signal
+        if len(sides) == 1:
+            return sides.pop(), "by function", helices, signal
+        if not known["start_missing"]:
+            return "inside", "predicted", helices, signal
+        side = side_from_where(self.places[row[1]])
+        return (side, "by function", helices, signal) if side else ("not known", "none", helices, signal)
+
+    def place_proteins(self):
+        self.placed = {}
+        for row in self.rows:
+            self.placed[row[1]] = self.side_of_model(row) if row[0] == "wormbase_parasite" else self.side_of_entry(row)
+
+    # --- how the predictions fare ---------------------------------------------------------
+
+    def agreement(self):
+        """Each UniProtKB entry that is whole, against the gene model it is joined to: two
+        sets of predictors on copies of one sequence. Returns all such pairs, and those
+        whose gene model has one helix and a signal peptide (settled by this tool)."""
+        by_id = {row[1]: row for row in self.rows}
+        out, settled = Counter(), Counter()
+        for accession, match in sorted(self.c.matches.items()):
+            model = by_id[match["gene"]]
+            if self.topology[accession]["start_missing"] or self.c.entries[accession]["length"] < 0.9 * int(model[2]):
+                continue
+            pair = (self.placed[model[1]][0], self.placed[accession][0])
+            out[pair] += 1
+            protein = model[8].split()[0]
+            if self.helices.get(protein, 0) == 1 and protein in self.signals:
+                settled[pair] += 1
+        return out, settled
+
+
+def majority(sides):
+    """The side most members sit on; of equals, the first in SIDE_TIE."""
+    return max(SIDE_TIE, key=lambda side: (sides.get(side, 0), -SIDE_TIE.index(side)))
+
+
+def ordered_sides(counts):
+    return {side: counts[side] for side in SIDES if counts.get(side)}
+
+
+def build_shelves(c, d, rows, atlas, facts):
+    """shelves.json and shelf_members.tsv, with what the README and the summary say of them."""
+    s = Shelves(c, d, rows, atlas)
+    order = {row[1]: index for index, row in enumerate(rows)}
+    names = c.entry_names
+
+    members = defaultdict(list)
+    for protein in sorted(s.family, key=order.get):
+        members[s.family[protein]].append(protein)
+    parts = defaultdict(list)
+    for protein in sorted(s.part, key=order.get):
+        parts[s.part[protein]].append(protein)
+
+    district_order = [key for key, _, _ in DISTRICTS] + [OTHER_DISTRICT[0], NO_DISTRICT[0]]
+    district = {family: s.district(found) for family, found in members.items()}
+    families = sorted(members, key=lambda f: (district_order.index(district[f]), -len(members[f]), f))
+    part_kind = lambda part: "superfamily" if part.startswith("IPR") else "other signature" if part == "other-signature" else "no signature"
+    part_label = {"other-signature": "A domain, repeat or site signature, and no family or superfamily", "no-signature": "No signature of any kind"}
+    part_rank = {"superfamily": 0, "other signature": 1, "no signature": 2}
+    listed_parts = sorted(parts, key=lambda p: (part_rank[part_kind(p)], -len(parts[p]), p))
+
+    # The members' files: families in their order, a new file where the next family would
+    # take the file past its size; a family or a part larger than a file has one of its own.
+    file_index, used, plan, sequence = 0, 0, {}, []
+    for key in [*families, *listed_parts]:
+        count = len(members[key]) if key in members else len(parts[key])
+        if used and used + count > MEMBERS_PER_FILE:
+            file_index, used = file_index + 1, 0
+        plan[key] = (f"members-{file_index:02d}.json", [used, used + count])
+        used += count
+        sequence += members[key] if key in members else parts[key]
+    if len(sequence) != len(rows) or len(set(sequence)) != len(rows):
+        raise SystemExit("a protein is filed twice or not at all")
+
+    family_rows, unit_families = [], defaultdict(list)
+    for family in families:
+        sides = Counter(s.placed[protein][0] for protein in members[family])
+        units = sorted({unit for protein in members[family] for unit in s.units.get(protein, ())}, key=natural)
+        spanning = any(s.roles.get(protein, set()) & SPANNING_ROLES for protein in members[family])
+        side = majority(sides)
+        if spanning and side != "in":
+            raise SystemExit(f"{family} holds a unit's membrane-spanning products and does not come out in a membrane; read the predictions again")
+        for unit in units:
+            unit_families[unit].append(family)
+        file, at = plan[family]
+        family_rows.append([family, names[family]["name"], SHELF["id"], side, district[family], len(members[family]), ordered_sides(sides), file, at, units, s.where(members[family])])
+    part_rows = []
+    for part in listed_parts:
+        sides = Counter(s.placed[protein][0] for protein in parts[part])
+        file, at = plan[part]
+        part_rows.append([part, names[part]["name"] if part.startswith("IPR") else part_label[part], part_kind(part), majority(sides), s.district(parts[part], loose=True), len(parts[part]), ordered_sides(sides), file, at])
+
+    all_sides = Counter(side for side, _, _, _ in s.placed.values())
+    bases = Counter((side, basis) for side, basis, _, _ in s.placed.values())
+    no_family_sides = Counter(s.placed[protein][0] for protein in s.part)
+    groups = []
+    tally = lambda key: {"families": sum(1 for f in families if district[f] == key), "proteins": sum(len(members[f]) for f in families if district[f] == key)}
+    for key, label, wanted in DISTRICTS:
+        groups.append({"id": key, "label": label, "from": "Gene Ontology terms: " + ", ".join(f"{name} ({term})" for term, name in wanted), **tally(key)})
+    groups.append({"id": OTHER_DISTRICT[0], "label": OTHER_DISTRICT[1], "from": "The family's proteins carry Gene Ontology terms, and none of the districts' terms", **tally(OTHER_DISTRICT[0])})
+    groups.append({"id": NO_DISTRICT[0], "label": NO_DISTRICT[1], "from": "The family's proteins carry no Gene Ontology term", **tally(NO_DISTRICT[0])})
+
+    models, entries = len(c.genes), len(c.entries)
+    mart = "wbps-biomart-smedh1prjna885486"
+    cite = {source["name"]: source["cite"] for source in atlas["sources"]}
+    ambiguous = sum(1 for row in rows if row[0] == "wormbase_parasite" and s.helices.get(row[8].split()[0], 0) == 1 and row[8].split()[0] in s.signals)
+    header = {
+        "format": SHELF_FORMAT,
+        "species": "planarian",
+        "made": d.last_day(),
+        "from": f"{FULL_FILE}: {len(rows):,} proteins of {ORGANISM}, {models:,} gene models of one genome annotation and {entries:,} UniProtKB entries. Every one is predicted, from the genome or from transcripts; none was measured.",
+        "shelves": [SHELF],
+        "groups": groups,
+        "groups_from": (
+            "A protein's Gene Ontology terms are those InterPro maps to any of its signatures and, for a UniProtKB entry, those UniProt gives the entry; a gene model takes also the terms of the entries joined to it. "
+            "With every broader term (by the ontology's kind-of and part-of links), the protein falls in the first district, in the order listed, one of whose terms it carries. "
+            "A family's members are one kind of protein, so it stands in the district most of its classed members fall in; of equal counts, the first listed. A part of no_family is a looser grouping: it stands in a district only if more than half of all its members fall there. The choice of the districts' terms and their order is the viewer's."
+        ),
+        "family_from": (
+            f"A family is an InterPro entry of the type Family (InterPro {s.release}). A protein is filed under the narrowest family among its signatures: one that is not a broader kind of another it carries, by InterPro's tree of entries. "
+            f"Where several unrelated families remain ({s.several:,} proteins), it is the deepest in that tree, then the one fewest proteins of this catalogue are in, then the first by accession. "
+            "A gene model's signatures are those on any of its predicted proteins, as the catalogue lists them."
+        ),
+        "family_columns": ["id", "label", "shelf", "side", "group", "count", "sides", "file", "at", "units", "where"],
+        "family_notes": {
+            "side": "The side most of the family's members sit on; of equal counts, a membrane first.",
+            "units": "The inventory units whose candidate products, in the planarian atlas, are members of this family.",
+            "where": "The places in the cell that the same Gene Ontology terms name for at least half of the family's members that are given any: an annotation carried by signatures, not a prediction for these proteins. " + "; ".join(f"{key}: {name} ({term})" for key, term, name in WHERE) + ".",
+        },
+    }
+    no_family = {
+        "label": "No family assigned",
+        "count": len(s.part),
+        "sides": ordered_sides(no_family_sides),
+        "parts_from": (
+            "A protein with no family is filed under one part. If it carries an InterPro entry of the type Homologous superfamily, the part is that superfamily: a wider grouping than a family, by shared structure. "
+            "Of several superfamilies it is the one fewest proteins of this catalogue carry, then the first by accession. The other two parts hold the proteins with only a domain, repeat or site signature, and those with no signature at all."
+        ),
+        "part_columns": ["id", "label", "kind", "side", "group", "count", "sides", "file", "at"],
+    }
+    tail = {
+        "member_columns": ["id", "label", "gene", "side", "basis", "length", "unit", "marks"],
+        "members_from": {
+            "table": f"data/proteins/planarian/{MEMBERS_FILE}",
+            "format": MEMBERS_FORMAT,
+            "order": "The table's lines are the members in order: the families as listed here, then the parts of no_family as listed; within each, the catalogue's order. A family's members are the lines whose 'under' is its id.",
+            "files": f"A file holds the members of consecutive families: a new file begins where the next family or part would take it past {MEMBERS_PER_FILE:,} members, so a family or a part is never split, and one larger than that has a file of its own. 'file' names the file and 'at' the first and one past the last of its members there.",
+            "label": f"A member's label is its name in {FULL_FILE}; where that is empty, the label of the part it is filed under.",
+            "step": "python3 tools/build_planarian_atlas.py members --out DIR writes the files from the two tables.",
+        },
+        "side_notes": {
+            "predicted": (
+                f"Gene models: TMHMM (membrane-spanning helices) and SignalP (signal peptides) as WormBase ParaSite ran them on each model's predicted proteins and gives them in its BioMart (release {WBPS_RELEASE[4:]}); the gene's longest predicted protein is read. "
+                "One helix or more without a signal peptide, or two or more with one: in a membrane. A signal peptide and no helix: outside. Neither, on a model that begins with methionine: inside. "
+                f"A signal peptide with exactly one helix ({ambiguous:,} models) is settled by this tool's own reading of the sequence, because TMHMM can take a signal peptide for a helix: "
+f"a stretch of {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or more are hydrophobic ({', '.join(sorted(HYDROPHOBIC))}) that starts at residue {SIGNAL_REACH + 1} or later puts it in a membrane; such a stretch only before that puts it outside. "
+                "UniProtKB entries: the membrane-spanning segments and signal peptides that UniProt's automatic annotation gives the entry. "
+                "Which membrane a protein spans is not predicted: the shelf stands for the cell's membranes together."
+            ),
+            "by function": "Taken from an annotation: for a UniProtKB entry with nothing predicted, the subcellular location UniProt's rules give it; for a protein whose beginning is missing and on which nothing was predicted, the place its Gene Ontology terms name, where that leaves no real doubt.",
+            "stated": "A reviewed UniProtKB entry states the location, by similarity to another species' protein.",
+            "not known": "Nothing was predicted and the protein's beginning is missing, so a signal peptide could be missing with it; or the two predictors cannot be told apart.",
+        },
+        "marks": {
+            "helices": {"label": "Membrane-spanning segments predicted", "measured": False, "source": "WormBase ParaSite (TMHMM) for a gene model; UniProt for an entry"},
+            "signal": {"label": "A signal peptide is predicted", "values": [True, False], "measured": False, "source": "WormBase ParaSite (SignalP) for a gene model; UniProt for an entry"},
+            "kind": {"label": "What the line is", "values": ["gene model", "unreviewed entry", "reviewed entry"], "measured": False, "source": FULL_FILE},
+            "same": {"label": "The other line of the same sequence: a gene model's UniProtKB entries, or an entry's gene model", "measured": False, "source": FULL_FILE},
+        },
+        "counts": {side: all_sides.get(side, 0) for side in SIDES},
+        "by_basis": {side: {basis: bases[side, basis] for basis in ("stated", "predicted", "by function", "none") if bases.get((side, basis))} for side in SIDES},
+        "sources": [
+            {
+                "name": "WormBase ParaSite", "url": "https://parasite.wormbase.org/", "release": WBPS_RELEASE, "accessed": d.day(mart, "biomart_tmhmm.tsv"),
+                "licence": "The database's disclaimer: \"Ensembl imposes no restrictions on access to, or use of, the data provided and the software used to analyse and present it. Ensembl data generated by members of the project are available without restriction.\" It asks that the genome's paper and the database be cited.",
+                "cite": cite["WormBase ParaSite"],
+                "holds": "the gene models; and, from its BioMart, the helices TMHMM predicts and the signal peptides SignalP predicts on each predicted protein",
+            },
+            {
+                "name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "release": s.release, "accessed": d.day("interpro-hierarchy-and-go", "ParentChildTreeFile.txt"), "licence": "CC0 1.0",
+                "cite": cite["InterPro"],
+                "holds": "the type and name of each entry, the tree of broader and narrower entries, and the mapping of entries to Gene Ontology terms",
+            },
+            {
+                "name": "Gene Ontology", "url": "https://geneontology.org/", "release": s.ontology, "accessed": d.day("geneontology-go-basic", "go-basic.obo"), "licence": "CC BY 4.0",
+                "cite": ontology_citation(d),
+                "holds": "the names of terms and which term is a kind or a part of which; no term's text is copied beyond the names of the districts' and the places' terms",
+            },
+            {
+                "name": "UniProt", "url": "https://www.uniprot.org/", "release": d.entry("uniprot-smed-topology", f"uniprotkb_{TAXON}_topology.json").get("x_uniprot_release") or facts["uniprot"], "accessed": d.day("uniprot-smed-topology", f"uniprotkb_{TAXON}_topology.json"), "licence": "CC BY 4.0",
+                "cite": cite["UniProt"],
+                "holds": "for each of the species' entries: the membrane-spanning segments, the signal peptide and the subcellular location it gives, whether the sequence's beginning is missing, and its Gene Ontology terms",
+            },
+        ],
+    }
+    compact = lambda value: json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+    lines = lambda items: "[\n" + ",\n".join("  " + compact(item) for item in items) + "\n ]"
+    body = json.dumps(header, indent=1, ensure_ascii=False)[:-2]
+    body += ',\n "families": ' + lines(family_rows)
+    body += ',\n "no_family": ' + json.dumps(no_family, indent=1, ensure_ascii=False).replace("\n", "\n ")[:-3] + ',\n  "parts": ' + lines(part_rows).replace("\n", "\n ") + "\n }"
+    body += "," + json.dumps(tail, indent=1, ensure_ascii=False)[1:] + "\n"
+    json.loads(body)
+
+    under = {**s.family, **s.part}
+    table_rows = [[protein, under[protein], s.placed[protein][0], s.placed[protein][1], str(s.placed[protein][2]), "1" if s.placed[protein][3] else "0", ";".join(sorted(s.units.get(protein, ()), key=natural))] for protein in sequence]
+    members_table = "\n".join("\t".join(row) for row in [MEMBERS_COLUMNS, *table_rows]) + "\n"
+
+    sizes = sorted((len(found) for found in members.values()), reverse=True)
+    report = {
+        "shelves": s, "families": len(families), "in_families": len(s.family), "no_family": len(s.part), "several": s.several,
+        "sizes": sizes, "largest": [(names[f]["name"], len(members[f])) for f in sorted(members, key=lambda f: (-len(members[f]), f))[:12]],
+        "parts": Counter(part_kind(part) for part in parts), "part_proteins": Counter({kind: sum(len(parts[p]) for p in parts if part_kind(p) == kind) for kind in part_rank}),
+        "largest_parts": [(names[p]["name"], len(parts[p])) for p in listed_parts[:8] if p.startswith("IPR")],
+        "sides": all_sides, "bases": bases, "groups": groups, "files": file_index + 1, "ambiguous": ambiguous,
+        "truncated": sum(1 for row in rows if row[0] == "wormbase_parasite" and not c.proteins[row[8].split()[0]]["sequence"].startswith("M")),
+        "start_missing": sum(1 for known in s.topology.values() if known["start_missing"]),
+        "agreement": s.agreement()[0], "settled": s.agreement()[1], "unit_families": {unit: found for unit, found in sorted(unit_families.items(), key=lambda item: natural(item[0]))},
+        "with_terms": sum(1 for f in families if district[f] != NO_DISTRICT[0]), "with_where": sum(1 for row in family_rows if row[10]),
+        "classed": Counter(s.classed.values()), "dropped": len(s.dropped),
+        "by_kind": Counter((row[3] if row[0] == "uniprot" else "gene model", s.placed[row[1]][0], s.placed[row[1]][1]) for row in rows),
+        "release": s.release, "ontology": s.ontology, "shelves_bytes": len(body.encode("utf-8")), "members_bytes": len(members_table.encode("utf-8")),
+        "member_files": sorted({plan[key][0] for key in plan}), "largest_file": max(Counter(plan[key][0] for key in plan for _ in range(plan[key][1][1] - plan[key][1][0])).values()),
+        "retired": len({sig for found in s.signatures.values() for sig in found if sig not in names}),
+        "family_rows": family_rows, "part_rows": part_rows,
+    }
+    report["text"] = body
+    return body, members_table, report
+
+
+def cut_members(folder):
+    """The members' files the page publishes beside it, cut from the two tables as
+    shelves.json says: {file name: text}. Reads only the repository's files."""
+    folder = Path(folder)
+    shelves = json.loads((folder / SHELVES_FILE).read_text(encoding="utf-8"))
+    catalogue = {}
+    with open(folder / FULL_FILE, encoding="utf-8") as handle:
+        header = handle.readline().rstrip("\n").split("\t")
+        for line in handle:
+            row = dict(zip(header, line.rstrip("\n").split("\t")))
+            catalogue[row["id"]] = row
+    placed = defaultdict(list)
+    with open(folder / MEMBERS_FILE, encoding="utf-8") as handle:
+        header = handle.readline().rstrip("\n").split("\t")
+        for line in handle:
+            row = dict(zip(header, line.rstrip("\n").split("\t")))
+            placed[row["under"]].append(row)
+    columns = shelves["member_columns"]
+    family_at = {name: index for index, name in enumerate(shelves["family_columns"])}
+    part_at = {name: index for index, name in enumerate(shelves["no_family"]["part_columns"])}
+    files = defaultdict(list)
+    groups = [(row[family_at["id"]], None, row[family_at["file"]], row[family_at["at"]]) for row in shelves["families"]]
+    groups += [(row[part_at["id"]], row[part_at["label"]], row[part_at["file"]], row[part_at["at"]]) for row in shelves["no_family"]["parts"]]
+    for key, fallback, file, at in groups:
+        if len(files[file]) != at[0] or len(placed[key]) != at[1] - at[0]:
+            raise SystemExit(f"the members of {key} are not where {SHELVES_FILE} says they are")
+        for row in placed[key]:
+            entry = catalogue[row["id"]]
+            marks = {"helices": int(row["helices"]), "signal": row["signal"] == "1", "kind": entry["kind"]}
+            if entry["match"]:
+                marks["same"] = entry["match"].split(";")
+            unit = row["units"].split(";") if row["units"] else None
+            files[file].append([row["id"], entry["name"] or fallback or "", entry["gene"], row["side"], row["basis"], int(entry["length"]), unit, marks])
+    compact = lambda value: json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+    out = {}
+    for file in sorted(files):
+        head = {"format": MEMBERS_FORMAT, "species": shelves["species"], "file": file, "columns": columns}
+        out[file] = json.dumps(head, indent=1, ensure_ascii=False)[:-2] + ',\n "members": [\n' + ",\n".join("  " + compact(member) for member in files[file]) + "\n ]\n}\n"
+        json.loads(out[file])
+    return out
+
+
+def shelves_section(report, c, d, everything):
+    """What the README says of the shelves' two files, from what the build counted."""
+    sizes, sides, bases, kinds = report["sizes"], report["sides"], report["bases"], report["by_kind"]
+    ones = sum(1 for size in sizes if size == 1)
+    at_least = lambda n: (sum(1 for size in sizes if size >= n), sum(size for size in sizes if size >= n))
+    parts, part_proteins = report["parts"], report["part_proteins"]
+    agreement, settled = report["agreement"], report["settled"]
+    both = sum(count for (model, entry), count in agreement.items() if model != "not known")
+    same = sum(count for (model, entry), count in agreement.items() if model == entry)
+    settled_same = sum(count for (model, entry), count in settled.items() if model == entry)
+    unplaced_models = sum(count for (kind, side, _), count in kinds.items() if kind == "gene model" and side == "not known")
+    unplaced_entries = sides["not known"] - unplaced_models
+    districts = "\n".join(f"| {group['label']} | {group['families']:,} | {group['proteins']:,} | {group['from']} |" for group in report["groups"])
+    largest = report["largest"]
+    return f"""## `{SHELVES_FILE}` and `{MEMBERS_FILE}`: the proteins laid out for the atlas's shelves
+
+The atlas shows every one of the {len(everything):,} proteins, grouped into families that open; the
+form is fixed in `schema/SPECIES_PROTEINS.md`. `{SHELVES_FILE}` holds the families.
+`{MEMBERS_FILE}` holds, for every protein, what it is filed under, its side of a membrane
+and how that side is known.
+
+**Everything here is a prediction on a predicted protein.** Nothing says that the animal
+makes a protein, where it was seen, or which membrane it is in.
+
+- **Families.** A family is an InterPro entry of the type Family (InterPro {report['release']}). {report['families']:,}
+  families hold {report['in_families']:,} proteins. A protein is filed under the narrowest family among
+  its signatures; for {report['several']:,} proteins several unrelated families remained and a rule
+  chose one (the deepest in InterPro's tree, then the smallest here, then the first).
+  {ones:,} families have one member and {at_least(10)[0]:,} have ten or more; the largest are
+  {largest[0][0]} ({largest[0][1]:,}), {largest[1][0]} ({largest[1][1]:,}) and {largest[2][0]} ({largest[2][1]:,}).
+- **No family.** {report['no_family']:,} proteins carry no family signature. None is dropped: they
+  are listed under "No family assigned", in parts. {parts['superfamily']:,} parts are InterPro
+  superfamilies, a wider grouping by shared structure, and hold {part_proteins['superfamily']:,}; {part_proteins['other signature']:,}
+  proteins carry only a domain, repeat or site signature; {part_proteins['no signature']:,} carry no signature
+  of any kind.
+- **Sides.** {sides['in']:,} span a membrane, {sides['outside']:,} are beyond one, {sides['inside']:,} are inside the cell
+  and {sides['not known']:,} are not placed. By how it is known: {sum(count for (_, basis), count in bases.items() if basis == 'predicted'):,} predicted,
+  {sum(count for (_, basis), count in bases.items() if basis == 'by function'):,} by function, {sum(count for (_, basis), count in bases.items() if basis == 'stated'):,} stated.
+- **How a side is predicted.** For a gene model: the helices TMHMM predicts and the signal
+  peptide SignalP predicts on its longest predicted protein, as WormBase ParaSite holds
+  them. For a UniProtKB entry: the membrane-spanning segments and the signal peptide
+  UniProt's automatic annotation gives. `{SHELVES_FILE}` gives the rule in full
+  (`side_notes`).
+- **This tool's own reading, in one case.** {report['ambiguous']:,} gene models have one helix and a signal
+  peptide, and TMHMM can take a signal peptide for a helix. Where the hydrophobic stretch
+  lies in the sequence decides: {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or more are hydrophobic
+  ({', '.join(sorted(HYDROPHOBIC))}). At residue {SIGNAL_REACH + 1} or later it is taken for a membrane-spanning
+  stretch, only before that for the signal peptide. The rule uses no published scale.
+- **Not placed.** {unplaced_models:,} gene models and {unplaced_entries:,} entries. Their sequence lacks its
+  beginning and nothing was predicted on the rest, so a signal peptide may be missing
+  with it; {report['truncated']:,} gene models do not begin with methionine. A few have one helix and a
+  signal peptide that could not be told apart.
+- **How the predictions fare.** {sum(agreement.values()):,} UniProtKB entries are whole copies of a gene model's
+  protein, and UniProt places them with other predictors (Phobius and SignalP). Where
+  both are placed, the two agree on {same:,} of {both:,}. Of the {sum(settled.values())} pairs this tool's own
+  reading settled, {settled_same} agree; the rule's two numbers were set while looking at
+  those pairs, so that is not an independent test.
+- **Which membrane is not predicted.** The one shelf stands for the cell's membranes
+  together: a predicted helix says that a protein spans a membrane, not which. "Beyond a
+  membrane" likewise covers the outside of the cell and the inside of its compartments.
+  Where the Gene Ontology terms of a family's members name a place in the cell, the
+  family carries it as a hint (`where`).
+- **Tied to the atlas.** {len(report['unit_families'])} of the inventory's units have candidate products
+  here; their families carry the units' ids, and every family that holds a
+  membrane-spanning product comes out in a membrane.
+
+A family, and a part of "No family assigned", stands in a district:
+
+| District | Families | Their proteins | From |
+| --- | ---: | ---: | --- |
+{districts}
+
+A protein's Gene Ontology terms are those InterPro maps to any of its signatures and
+those UniProt gives a UniProtKB entry; a gene model takes also the terms of the entries
+joined to it. The protein falls in the first district, in the order of the table, one of
+whose terms it carries, and a family stands where most of its classed members fall. The
+choice of the terms and their order is the viewer's.
+
+### `{MEMBERS_FILE}`
+
+{len(everything):,} lines under a header, tab-separated, in the order the shelves read them: the
+families as `{SHELVES_FILE}` lists them, then the parts of "No family assigned"; within
+each, the order of `{FULL_FILE}`.
+
+| Column | Meaning |
+| --- | --- |
+| `id` | The protein's `id` in `{FULL_FILE}` |
+| `under` | The InterPro family it is filed under; for a protein with no family, the part: a superfamily's accession, `other-signature` or `no-signature` |
+| `side` | `in`, `outside`, `inside` or `not known` |
+| `basis` | `predicted`, `by function`, `stated` or `none` |
+| `helices` | How many membrane-spanning segments are predicted |
+| `signal` | `1` if a signal peptide is predicted |
+| `units` | The inventory units that list the protein as a candidate product in the planarian atlas |
+
+**How a family's members are read.** A family's members are the lines whose `under` is
+its id, in the table's order. For the page they are cut into {len(report['member_files'])} files of at most
+{MEMBERS_PER_FILE:,} members where families allow (the largest holds {report['largest_file']:,}, one part alone): a
+file holds consecutive families and a family is never split. `{SHELVES_FILE}` gives each
+family's file and its place there (`file`, `at`). `python3
+tools/build_planarian_atlas.py members --out DIR` writes the files; they are published
+beside the page and are not kept in the repository."""
+
+
+def build_readme(c, facts, atlas, listed, named, everything, report, d):
     models, entries = len(c.genes), len(c.entries)
     existence = Counter(row[8] for row in everything if row[0] == "uniprot")
     known = ["evidence at transcript level", "inferred from homology", "predicted", "evidence at protein level"]
@@ -1307,6 +2332,9 @@ def build_readme(c, facts, atlas, listed, named, everything):
     rows = "\n".join(f"| [{s['name']}]({s['url']})" + (f", release {s['release']}" if s.get("release") else "") + f", read {s['accessed']} | {s['holds'][0].upper() + s['holds'][1:]} | {s['licence']} |" for s in table_sources)
     cites = "\n".join(f"- {s['name']}: {s['cite']}" for s in table_sources)
     more = len(listed) - named
+    shelf_sources = json.loads(report["text"])["sources"]
+    shelf_rows = "\n".join(f"| [{s['name']}]({s['url']}), release {s['release']}, read {s['accessed']} | {s['holds'][0].upper() + s['holds'][1:]} | {s['licence']} |" for s in shelf_sources)
+    shelf_files = "\n".join(f"| `{source}` | `{file}` | {entry['retrieved_utc'][:10]} | `{entry['sha256']}` |" for (source, file), entry in sorted(d.read.items()))
     return f"""# Planarian proteins
 
 Three things are recorded here for the planarian *{ORGANISM}*.
@@ -1321,6 +2349,10 @@ Three things are recorded here for the planarian *{ORGANISM}*.
    does not stand in for it.
 3. **`{REFERENCE_FILE}` holds the {len(listed)} of those lines that the planarian protein atlas
    draws on:** the {named} proteins it names and {more} more that are joined to them.
+4. **`{SHELVES_FILE}` and `{MEMBERS_FILE}` lay the same {len(everything):,} proteins out for the
+   atlas's shelves:** each is given one family, a side of a membrane and how that side is
+   known, and the families open to show their members. Every one of these is a
+   prediction on a predicted protein.
 
 Generated by `tools/build_planarian_atlas.py`; do not edit. This is reference data for
 the viewer's protein atlas. It is not the engine's protein catalogue, and nothing in the
@@ -1396,6 +2428,8 @@ words occur in the model's predicted protein and no other gene reaches half of t
 share; {len(c.matches):,} of the {entries:,} entries join a gene model this way. A join says the two are
 copies of one sequence, not that either is confirmed in the animal.
 
+{shelves_section(report, c, d, everything)}
+
 ## Where the proteins came from, and under what terms
 
 | Source | What is taken | Terms |
@@ -1406,21 +2440,42 @@ Cite:
 
 {cites}
 
+For the shelves, more was taken from the same sources, and the Gene Ontology was added:
+
+| Source | What the shelves take | Terms |
+| --- | --- | --- |
+{shelf_rows}
+
+The Gene Ontology asks for two papers to be cited, in its own words: {ontology_citation(d)}.
+Its release here is {report['ontology']}. The helices and signal peptides were predicted
+by TMHMM and SignalP, which WormBase ParaSite ran and gives out with its data; its BioMart
+names the two programs and no version.
+
+The files read for the shelves, each in its dataset folder outside the repository and
+checked against the SHA-256 its folder's MANIFEST gives:
+
+| Folder | File | Retrieved | SHA-256 |
+| --- | --- | --- | --- |
+{shelf_files}
+
 ## How to rebuild
 
 ```bash
-python3 tools/build_planarian_atlas.py fetch --evidence DIR   # network; saves every response
-python3 tools/build_planarian_atlas.py build --evidence DIR   # offline; the same bytes every time
+python3 tools/build_planarian_atlas.py fetch --evidence DIR --datasets DATA   # network; saves what is not yet there
+python3 tools/build_planarian_atlas.py build --evidence DIR --datasets DATA   # offline; the same bytes every time
+python3 tools/build_planarian_atlas.py members --out OUT                      # the shelves' member files, cut from the tables here
 ```
 
-`DIR` holds the saved responses and `requests.json`, the record of what was asked and
-when; it is kept outside the repository. The build also writes
+`DIR` holds the saved responses of the catalogue and the atlas, with `requests.json`, the
+record of what was asked and when. `DATA` holds the shelves' downloads, one folder for
+each source with a `MANIFEST.json` that gives every file's address, time and SHA-256.
+Both are kept outside the repository. The build also writes
 `data/proteins/atlases/planarian.json`. `docs/PLANARIAN_ATLAS.md` describes the method
 and its limits.
 """
 
 
-def build(evidence_folder, snapshot):
+def build(evidence_folder, datasets_folder, snapshot):
     evidence = Evidence(evidence_folder)
     check_terms(evidence)
     context = Context(evidence, snapshot)
@@ -1431,16 +2486,25 @@ def build(evidence_folder, snapshot):
     listed = [row for row in rows if (row[0], row[1]) in kept]
     if not used <= {(row[0], row[1]) for row in listed}:
         raise SystemExit("the atlas names an identifier that the reference proteins do not hold")
+    datasets = Datasets(datasets_folder)
+    shelves, members, report = build_shelves(context, datasets, rows, atlas, facts)
     files = {
         "atlas": json.dumps(atlas, indent=1, ensure_ascii=False) + "\n",
         "reference": table(listed),
-        "readme": build_readme(context, facts, atlas, listed, len(used), rows),
+        "readme": build_readme(context, facts, atlas, listed, len(used), rows, report, datasets),
         "full": table(rows),
+        "shelves": shelves,
+        "members": members,
     }
     for name, text in files.items():
         if PATHS.search(text):
             raise SystemExit(f"the {name} would hold a machine path")
-    return files, atlas, context
+    # The limits the repository keeps: the families under 1 MB, no file over 3 MB, and what
+    # the shelves add under about 1.5 MB.
+    size = {name: len(text.encode("utf-8")) for name, text in files.items()}
+    if size["shelves"] >= 1_000_000 or max(size.values()) >= 3_000_000 or size["shelves"] + size["members"] >= 1_600_000:
+        raise SystemExit(f"the shelves' files have outgrown their limits: {size}")
+    return files, atlas, context, report
 
 
 def summary(atlas, context):
@@ -1459,24 +2523,62 @@ def summary(atlas, context):
     return "\n".join(lines)
 
 
+def shelves_summary(report):
+    sizes, s = report["sizes"], report["shelves"]
+    at_least = lambda n: (sum(1 for size in sizes if size >= n), sum(size for size in sizes if size >= n))
+    lines = [
+        f"families: {report['families']:,} holding {report['in_families']:,} proteins; no family: {report['no_family']:,}; filed by a tie-break among unrelated families: {report['several']:,}",
+        "  sizes: " + "; ".join(f">={n}: {at_least(n)[0]:,} families, {at_least(n)[1]:,} proteins" for n in (1, 2, 3, 5, 10, 20, 50)),
+        f"  one-member families: {sum(1 for size in sizes if size == 1):,}; largest: {report['largest'][:6]}",
+        f"no family, by part: {dict(report['parts'])} holding {dict(report['part_proteins'])}; largest superfamilies: {report['largest_parts'][:5]}",
+        f"sides: {dict(report['sides'])}",
+        f"side and basis: {dict(sorted(report['bases'].items()))}",
+        f"gene models with one helix and a signal peptide: {report['ambiguous']:,}; models not beginning with M: {report['truncated']:,}; entries whose beginning is missing: {report['start_missing']:,}",
+        "districts: " + "; ".join(f"{group['id']} {group['families']:,} families, {group['proteins']:,} proteins" for group in report["groups"]),
+        f"families whose proteins carry a Gene Ontology term: {report['with_terms']:,}; with a place in the cell: {report['with_where']:,}; signatures no longer in InterPro: {report['retired']}; terms no longer usable: {report['dropped']}",
+        f"proteins by the district their own terms give: {dict(report['classed'])}",
+        f"member files: {report['files']}",
+        "a whole UniProtKB entry against the gene model it is joined to (model side, entry side): " + str(dict(sorted(report["agreement"].items()))),
+        "  of those, the models with one helix and a signal peptide: " + str(dict(sorted(report["settled"].items()))),
+        "families that hold the atlas's products, by unit: " + "; ".join(f"{unit}: {', '.join(found)}" for unit, found in report["unit_families"].items()),
+    ]
+    return "\n".join(lines)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("step", choices=["fetch", "build"], help="fetch asks the databases and saves the answers; build reads only what was saved")
-    parser.add_argument("--evidence", required=True, help="the folder of saved responses (kept outside the repository)")
+    parser.add_argument("step", choices=["fetch", "build", "members"], help="fetch asks the databases and saves the answers; build reads only what was saved; members cuts the shelves' member files from the repository's tables")
+    parser.add_argument("--evidence", help="fetch, build: the folder of saved responses (kept outside the repository)")
+    parser.add_argument("--datasets", help="fetch, build: the folder of the shelves' downloads, one folder per source with a MANIFEST.json (kept outside the repository)")
     parser.add_argument("--refresh", action="store_true", help="fetch: ask again even where an answer is saved")
     parser.add_argument("--out-atlas", default=str(ATLAS))
-    parser.add_argument("--out-reference", default=str(REFERENCE_DIR), help="the folder for predicted_proteins.tsv, reference_proteins.tsv and their README.md")
+    parser.add_argument("--out-reference", default=str(REFERENCE_DIR), help="the folder for the tables, shelves.json and their README.md")
+    parser.add_argument("--out", help="members: the folder to write the member files into")
     args = parser.parse_args()
+    if args.step == "members":
+        if not args.out:
+            parser.error("members needs --out")
+        Path(args.out).mkdir(parents=True, exist_ok=True)
+        for name, text in cut_members(args.out_reference).items():
+            (Path(args.out) / name).write_text(text, encoding="utf-8")
+            print(f"wrote {Path(args.out) / name} ({len(text.encode('utf-8')):,} bytes)")
+        return
+    if not args.evidence or not args.datasets:
+        parser.error(f"{args.step} needs --evidence and --datasets")
     snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
     if args.step == "fetch":
-        sys.exit(1 if fetch(Path(args.evidence), snapshot, refresh=args.refresh) else 0)
-    files, atlas, context = build(Path(args.evidence), snapshot)
-    targets = {"atlas": Path(args.out_atlas), "full": Path(args.out_reference) / FULL_FILE, "reference": Path(args.out_reference) / REFERENCE_FILE, "readme": Path(args.out_reference) / "README.md"}
+        failed = fetch(Path(args.evidence), snapshot, refresh=args.refresh)
+        failed += fetch_datasets(Path(args.datasets), refresh=args.refresh)
+        sys.exit(1 if failed else 0)
+    files, atlas, context, report = build(Path(args.evidence), Path(args.datasets), snapshot)
+    folder = Path(args.out_reference)
+    targets = {"atlas": Path(args.out_atlas), "full": folder / FULL_FILE, "reference": folder / REFERENCE_FILE, "shelves": folder / SHELVES_FILE, "members": folder / MEMBERS_FILE, "readme": folder / "README.md"}
     for name, target in targets.items():
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(files[name], encoding="utf-8")
         print(f"wrote {target} ({len(files[name].encode('utf-8')):,} bytes)")
     print(summary(atlas, context))
+    print(shelves_summary(report))
 
 
 if __name__ == "__main__":

@@ -1,12 +1,14 @@
 // The planarian side of the protein atlas (data/proteins/atlases/planarian.json) is held
 // to its contract, schema/SPECIES_ATLAS.md, and to what it may and may not claim. The
 // tables beside it (data/proteins/planarian/) are checked against it: the proteins it
-// names, and the whole open set of the species' proteins they were drawn from. Where
-// the folder of saved responses is on this machine, the build tool must reproduce the
-// files from it, byte for byte; elsewhere that one check is skipped.
+// names, and the whole open set of the species' proteins they were drawn from. The
+// shelves' two files (schema/SPECIES_PROTEINS.md) are held to their contract: every
+// protein in one family or under "no family", a side and how it is known. Where
+// the folders of saved downloads are on this machine, the build tool must reproduce the
+// files from them, byte for byte; elsewhere that one check is skipped.
 //
 //   node --test tests/planarian_atlas.test.mjs
-//   PLANARIAN_EVIDENCE=DIR node --test tests/planarian_atlas.test.mjs
+//   PLANARIAN_EVIDENCE=DIR PLANARIAN_DATASETS=DATA node --test tests/planarian_atlas.test.mjs
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -24,6 +26,11 @@ const WHOLE = path.join(FOLDER, "predicted_proteins.tsv");
 const README = path.join(FOLDER, "README.md");
 const TOOL = path.join(ROOT, "tools", "build_planarian_atlas.py");
 const EVIDENCE = process.env.PLANARIAN_EVIDENCE || "/mnt/workspaces/Cells/visualizer-planarian-proteins-20261114-01";
+const DATASETS = process.env.PLANARIAN_DATASETS || "/mnt/datasets/Cells/planarian";
+const SHELVES = path.join(FOLDER, "shelves.json");
+const MEMBERS = path.join(FOLDER, "shelf_members.tsv");
+const SIDES = ["outside", "in", "inside", "not known"];
+const BASES = ["stated", "predicted", "by function", "none"];
 
 const FINDINGS = ["found", "different family", "none found", "nothing to look for"];
 const EVIDENCE_WORDS = ["reviewed entry", "named in a publication", "family signature", "similarity search"];
@@ -36,6 +43,20 @@ const snapshot = JSON.parse(await readFile(path.join(ROOT, "data", "proteins", "
 const table = await readFile(TABLE, "utf8");
 const whole = await readFile(WHOLE, "utf8");
 const readme = await readFile(README, "utf8");
+const shelvesText = await readFile(SHELVES, "utf8");
+const shelves = JSON.parse(shelvesText);
+const membersText = await readFile(MEMBERS, "utf8");
+const rowsOf = (tsv) => {
+  // Only the last line's end is taken off: a line may end with an empty column.
+  const [head, ...lines] = tsv.replace(/\n$/, "").split("\n");
+  const names = head.split("\t");
+  return lines.map((line) => Object.fromEntries(line.split("\t").map((value, index) => [names[index], value])));
+};
+const catalogue = rowsOf(whole);
+const placed = rowsOf(membersText);
+const named = (columns, row) => Object.fromEntries(columns.map((name, index) => [name, row[index]]));
+const families = shelves.families.map((row) => named(shelves.family_columns, row));
+const parts = shelves.no_family.parts.map((row) => named(shelves.no_family.part_columns, row));
 const units = Object.entries(atlas.units);
 const products = [...units.flatMap(([id, unit]) => unit.products.map((product) => [id, product])), ...atlas.extra.map((product) => ["extra", product])];
 
@@ -149,7 +170,7 @@ test("extra products each say why they are there, and are few", () => {
 });
 
 test("no machine path, no host name, and no web address on a unit or a product", () => {
-  for (const [name, content] of [["atlas", text], ["reference table", table], ["whole table", whole], ["README", readme]]) {
+  for (const [name, content] of [["atlas", text], ["reference table", table], ["whole table", whole], ["README", readme], ["shelves", shelvesText], ["members' table", membersText]]) {
     assert.ok(!MACHINE.test(content), `machine path in the ${name}`);
     assert.ok(!content.includes(os.hostname()) && !/localhost/.test(content), `host name in the ${name}`);
   }
@@ -230,15 +251,221 @@ test("the README says plainly that the library of about 10,000 proteins was not 
   assert.ok(!/engine (uses|reads) (it|this)/i.test(readme.replace(/nothing in the\s+engine reads it/g, "")));
 });
 
-test("the build tool reproduces the atlas, both tables and the README from the saved responses", { skip: existsSync(path.join(EVIDENCE, "requests.json")) ? false : "the folder of saved responses is not on this machine (set PLANARIAN_EVIDENCE)" }, async () => {
+// ---------------------------------------------------------------- the shelves
+
+test("the shelves file keeps its contract: format, one shelf, declared districts, sources with their terms", () => {
+  assert.equal(shelves.format, "cells.visualizer.species_proteins@1");
+  assert.equal(shelves.species, "planarian");
+  assert.match(shelves.made, /^\d{4}-\d{2}-\d{2}$/);
+  assert.equal(shelves.shelves.length, 1);
+  for (const field of ["id", "label", "outside", "inside"]) assert.ok(shelves.shelves[0][field]?.trim(), `shelf.${field}`);
+  // The contract's columns come first and in its order; what is added is declared after them.
+  assert.deepEqual(shelves.family_columns.slice(0, 9), ["id", "label", "shelf", "side", "group", "count", "sides", "file", "at"]);
+  assert.deepEqual(shelves.member_columns, ["id", "label", "gene", "side", "basis", "length", "unit", "marks"]);
+  assert.ok(!("proteins" in shelves), "a catalogue this large is given by family, not protein by protein");
+  assert.ok(shelves.family_from.trim() && shelves.groups_from.trim() && shelves.no_family.parts_from.trim());
+  const groups = shelves.groups.map((group) => group.id);
+  assert.equal(new Set(groups).size, groups.length);
+  for (const group of shelves.groups) assert.ok(group.label.trim() && group.from.trim(), group.id);
+  for (const family of families) {
+    assert.equal(family.shelf, shelves.shelves[0].id, family.id);
+    assert.ok(groups.includes(family.group), `${family.id} stands in an undeclared district`);
+    assert.ok(SIDES.includes(family.side), `${family.id}: ${family.side}`);
+    assert.match(family.id, /^IPR\d{6}$/);
+    assert.ok(family.label.trim(), family.id);
+  }
+  for (const part of parts) {
+    assert.ok(groups.includes(part.group) && SIDES.includes(part.side), part.id);
+    assert.ok(["superfamily", "other signature", "no signature"].includes(part.kind), part.id);
+  }
+  assert.ok(shelves.sources.length >= 4);
+  for (const source of shelves.sources) {
+    for (const field of ["name", "licence", "holds", "accessed", "cite"]) assert.ok(source[field]?.trim(), `${source.name}: ${field}`);
+    assert.ok(source.url.startsWith("https://"), source.name);
+    assert.ok(!/non-?commercial|\bNC\b/i.test(source.licence), `${source.name}: ${source.licence}`);
+  }
+  // A source with no plain licence must have stated that it places no restriction.
+  assert.match(shelves.sources.find((source) => source.name === "WormBase ParaSite").licence, /Ensembl imposes no restrictions on access to, or use of, the data provided/);
+  for (const mark of Object.values(shelves.marks)) assert.ok(mark.label && mark.source && mark.measured === false, "nothing here is measured");
+});
+
+test("every protein of the table is in exactly one family or under no family, and the counts add up", () => {
+  assert.equal(catalogue.length, 18882);
+  assert.equal(placed.length, catalogue.length);
+  assert.deepEqual(Object.keys(placed[0]), ["id", "under", "side", "basis", "helices", "signal", "units"]);
+  const ids = new Set(catalogue.map((row) => row.id));
+  assert.equal(ids.size, catalogue.length, "the catalogue's identifiers are not unique");
+  const seen = new Set();
+  for (const row of placed) {
+    assert.ok(ids.has(row.id), `${row.id} is not in the catalogue`);
+    assert.ok(!seen.has(row.id), `${row.id} is filed twice`);
+    seen.add(row.id);
+  }
+  const count = new Map();
+  for (const row of placed) count.set(row.under, (count.get(row.under) || 0) + 1);
+  const known = new Set([...families.map((family) => family.id), ...parts.map((part) => part.id)]);
+  assert.equal(known.size, families.length + parts.length, "a family and a part share an identifier");
+  for (const under of count.keys()) assert.ok(known.has(under), `${under} is neither a family nor a part`);
+  for (const group of [...families, ...parts]) assert.equal(count.get(group.id), group.count, `${group.id}: its count`);
+  const inFamilies = families.reduce((sum, family) => sum + family.count, 0);
+  const inParts = parts.reduce((sum, part) => sum + part.count, 0);
+  assert.equal(shelves.no_family.count, inParts);
+  assert.equal(inFamilies + shelves.no_family.count, 18882);
+  assert.equal(Object.values(shelves.counts).reduce((sum, n) => sum + n, 0), 18882);
+  // A superfamily's accession is a part's id only; a family's id is an InterPro family.
+  assert.deepEqual(parts.filter((part) => part.kind !== "superfamily").map((part) => part.id).sort(), ["no-signature", "other-signature"]);
+});
+
+test("sides and bases use the fixed words, and a family stands where most of its members sit", () => {
+  const bySide = Object.fromEntries(SIDES.map((side) => [side, 0]));
+  const sides = new Map();
+  for (const row of placed) {
+    assert.ok(SIDES.includes(row.side), `${row.id}: ${row.side}`);
+    assert.ok(BASES.includes(row.basis), `${row.id}: ${row.basis}`);
+    assert.equal(row.side === "not known", row.basis === "none", `${row.id}: a side that is not known has no basis, and no other`);
+    assert.match(row.helices, /^\d+$/);
+    assert.ok(row.signal === "0" || row.signal === "1");
+    bySide[row.side] += 1;
+    if (!sides.has(row.under)) sides.set(row.under, {});
+    sides.get(row.under)[row.side] = (sides.get(row.under)[row.side] || 0) + 1;
+  }
+  assert.deepEqual(shelves.counts, bySide);
+  const order = ["in", "outside", "inside", "not known"];
+  for (const group of [...families, ...parts]) {
+    assert.deepEqual(group.sides, Object.fromEntries(SIDES.filter((side) => sides.get(group.id)[side]).map((side) => [side, sides.get(group.id)[side]])), group.id);
+    const most = Math.max(...Object.values(group.sides));
+    assert.equal(group.side, order.find((side) => group.sides[side] === most), `${group.id} does not stand where most of its members sit`);
+  }
+  // A protein with a helix is never placed inside or outside by prediction alone, except the
+  // one case the notes describe: one helix and a signal peptide.
+  for (const row of placed) {
+    if (row.basis === "predicted" && Number(row.helices) >= 2) assert.equal(row.side, "in", row.id);
+    if (row.basis === "predicted" && row.side === "outside") assert.ok(row.signal === "1", `${row.id} is outside without a signal peptide`);
+  }
+  for (const note of ["predicted", "by function", "stated", "not known"]) assert.ok(shelves.side_notes[note]?.trim(), `side_notes.${note}`);
+  assert.match(shelves.side_notes.predicted, /TMHMM/);
+  assert.match(shelves.side_notes.predicted, /SignalP/);
+  assert.match(shelves.side_notes.predicted, /this tool's own reading/);
+  assert.match(shelves.side_notes.predicted, /Which membrane a protein spans is not predicted/);
+});
+
+test("the members' files are planned without splitting a family, and the tool cuts them as planned", async () => {
+  // In the order listed, each family's place follows the one before it in the same file.
+  const filled = new Map();
+  let last = "";
+  for (const group of [...families, ...parts]) {
+    assert.match(group.file, /^members-\d\d\.json$/);
+    assert.ok(group.file >= last, `${group.id}: the files are not in order`);
+    last = group.file;
+    assert.equal(group.at[0], filled.get(group.file) || 0, `${group.id}: its place in ${group.file}`);
+    assert.equal(group.at[1] - group.at[0], group.count, group.id);
+    filled.set(group.file, group.at[1]);
+  }
+  // A file is over its size only where one family or part alone is.
+  for (const [file, size] of filled) {
+    const alone = [...families, ...parts].filter((group) => group.file === file).length === 1;
+    assert.ok(size <= 2000 || alone, `${file} holds ${size} members`);
+  }
+  // The table is in the members' order: each family's lines are together, in the files' order.
+  let at = 0;
+  for (const group of [...families, ...parts]) {
+    for (let index = 0; index < group.count; index++) assert.equal(placed[at + index].under, group.id, `line ${at + index + 2} of the members' table`);
+    at += group.count;
+  }
+  const out = await mkdtemp(path.join(os.tmpdir(), "planarian-members-"));
+  try {
+    const run = spawnSync("python3", [TOOL, "members", "--out", out], { encoding: "utf8", timeout: 300000 });
+    assert.equal(run.status, 0, run.stderr || run.stdout);
+    const byId = new Map(catalogue.map((row) => [row.id, row]));
+    let total = 0;
+    at = 0;
+    for (const [file, size] of [...filled].sort()) {
+      const cut = JSON.parse(await readFile(path.join(out, file), "utf8"));
+      assert.equal(cut.format, "cells.visualizer.species_protein_members@1");
+      assert.deepEqual(cut.columns, shelves.member_columns);
+      assert.equal(cut.members.length, size, file);
+      cut.members.forEach((row, index) => {
+        const member = named(cut.columns, row);
+        const line = placed[at + index];
+        assert.equal(member.id, line.id, `${file}, member ${index}`);
+        assert.equal(member.side, line.side);
+        assert.equal(member.basis, line.basis);
+        assert.equal(member.length, Number(byId.get(member.id).length));
+        assert.deepEqual(member.unit, line.units ? line.units.split(";") : null);
+        assert.ok(member.label !== undefined && member.marks.kind === byId.get(member.id).kind);
+      });
+      at += size;
+      total += size;
+    }
+    assert.equal(total, 18882);
+  } finally {
+    await rm(out, { recursive: true, force: true });
+  }
+});
+
+test("the shelves are tied to the atlas: a unit's products carry its id, and their families sit in a membrane", () => {
+  const spanning = ["alpha", "alpha1", "innexin", "alpha (BK)", "alpha (SK)", "beta (BK)", "catalytic", "exchanger", "IP3R", "RyR", "KCC", "MCU"];
+  const unitsOf = new Map();
+  const spans = new Set();
+  for (const [unit, entry] of units) {
+    for (const product of entry.products) {
+      for (const { id } of product.ids) {
+        if (!unitsOf.has(id)) unitsOf.set(id, new Set());
+        unitsOf.get(id).add(unit);
+        if (spanning.includes(product.role)) spans.add(id);
+      }
+    }
+  }
+  const number = (unit) => Number(unit.slice(1));
+  const familyUnits = new Map();
+  for (const row of placed) {
+    const expected = [...(unitsOf.get(row.id) || [])].sort((a, b) => number(a) - number(b)).join(";");
+    assert.equal(row.units, expected, `${row.id}: its units`);
+    if (expected && row.under.startsWith("IPR")) {
+      if (!familyUnits.has(row.under)) familyUnits.set(row.under, new Set());
+      for (const unit of expected.split(";")) familyUnits.get(row.under).add(unit);
+    }
+  }
+  assert.equal(placed.filter((row) => row.units).length, unitsOf.size, "a product of the atlas is not in the members' table");
+  for (const family of families) {
+    assert.deepEqual(family.units, [...(familyUnits.get(family.id) || [])].sort((a, b) => number(a) - number(b)), `${family.id}: its units`);
+  }
+  const holding = new Set(placed.filter((row) => spans.has(row.id) && families.some((family) => family.id === row.under)).map((row) => row.under));
+  assert.ok(holding.size >= 20, "the families of the atlas's membrane-spanning products");
+  for (const family of families.filter((family) => holding.has(family.id))) assert.equal(family.side, "in", `${family.id} (${family.label}) holds a membrane-spanning product`);
+  // The gap junctions' family is the innexins, in a membrane, among the channels.
+  const innexin = families.find((family) => family.label === "Innexin");
+  assert.deepEqual([innexin.side, innexin.group, innexin.units], ["in", "channels", ["U36", "U37", "U38"]]);
+});
+
+test("the shelves' files keep their size limits, and say that everything in them is predicted", () => {
+  assert.ok(shelvesText.length < 1_000_000, "the families' file has grown past 1 MB");
+  assert.ok(shelvesText.length + membersText.length < 1_500_000, "the shelves add more than 1.5 MB");
+  for (const content of [whole, membersText, shelvesText]) assert.ok(content.length < 3_000_000, "a file has grown past 3 MB");
+  assert.match(shelves.from, /Every one is predicted, from the genome or from transcripts; none was measured/);
+  const said = readme.replace(/\s+/g, " ");
+  assert.match(said, /Everything here is a prediction on a predicted protein/);
+  assert.match(said, /Nothing says that the animal makes a protein, where it was seen, or which membrane it is in/);
+  assert.ok(!/engine (models|uses|reads) (it|this|these)/i.test(shelvesText));
+  // What the README says of the shelves is what the files hold.
+  const stated = said.match(/([\d,]+) families hold ([\d,]+) proteins/);
+  assert.deepEqual(stated.slice(1).map((n) => Number(n.replace(/,/g, ""))), [families.length, families.reduce((sum, family) => sum + family.count, 0)]);
+  assert.ok(said.includes(`${shelves.no_family.count.toLocaleString("en-US")} proteins carry no family signature`));
+});
+
+const SAVED = existsSync(path.join(EVIDENCE, "requests.json")) && existsSync(path.join(DATASETS, "interpro-hierarchy-and-go", "MANIFEST.json"));
+
+test("the build tool reproduces the atlas, the tables, the shelves and the README from the saved downloads", { skip: SAVED ? false : "the folders of saved downloads are not on this machine (set PLANARIAN_EVIDENCE and PLANARIAN_DATASETS)" }, async () => {
   const out = await mkdtemp(path.join(os.tmpdir(), "planarian-atlas-"));
   try {
-    const run = spawnSync("python3", [TOOL, "build", "--evidence", EVIDENCE, "--out-atlas", path.join(out, "planarian.json"), "--out-reference", path.join(out, "planarian")], { encoding: "utf8", timeout: 600000 });
+    const run = spawnSync("python3", [TOOL, "build", "--evidence", EVIDENCE, "--datasets", DATASETS, "--out-atlas", path.join(out, "planarian.json"), "--out-reference", path.join(out, "planarian")], { encoding: "utf8", timeout: 900000 });
     assert.equal(run.status, 0, run.stderr || run.stdout);
     assert.equal(await readFile(path.join(out, "planarian.json"), "utf8"), text, "the atlas differs from what the tool builds");
     assert.equal(await readFile(path.join(out, "planarian", "predicted_proteins.tsv"), "utf8"), whole, "the whole table differs from what the tool builds");
     assert.equal(await readFile(path.join(out, "planarian", "reference_proteins.tsv"), "utf8"), table, "the reference table differs from what the tool builds");
     assert.equal(await readFile(path.join(out, "planarian", "README.md"), "utf8"), readme, "the README differs from what the tool builds");
+    assert.equal(await readFile(path.join(out, "planarian", "shelves.json"), "utf8"), shelvesText, "the shelves differ from what the tool builds");
+    assert.equal(await readFile(path.join(out, "planarian", "shelf_members.tsv"), "utf8"), membersText, "the members' table differs from what the tool builds");
   } finally {
     await rm(out, { recursive: true, force: true });
   }

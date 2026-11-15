@@ -135,6 +135,18 @@ its members, each a protein of the catalogue.
   are. The page builder writes those files beside the page from the catalogue table; they
   are not kept in the repository, where the table already is.
 - A family's `group` is its district, as for a protein.
+- **Further family columns** may follow the nine, declared in `family_columns`: `units`,
+  the inventory units whose products the family holds, and `where`, a hint at which
+  membrane the family belongs to. A member's `unit` is then a list, or null.
+- **`no_family` may be given in parts.** Where a broader grouping is honest (a
+  superfamily, or "a domain only", or "no signature at all"), `no_family` carries
+  `parts_from`, `part_columns` and `parts`, each part with its own `file` and `at`, and no
+  `file` of its own. A part is never called a family.
+- **One shelf may stand for several membranes.** Where the data can say that a protein
+  spans a membrane but not which, the species has one shelf, labelled as standing for the
+  cell's membranes together, and its `outside` says what "beyond a membrane" then covers.
+- **The members' file** written beside the page has the format
+  `cells.visualizer.species_protein_members@1` and holds `columns` and `members`.
 
 ## In the page
 
