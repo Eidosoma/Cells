@@ -1051,6 +1051,8 @@ and column 18). The declaration's twelve refusals all come from its `CONFLICTS_V
   declarations' refusals; and replacement@1 kept off owners and donors, data-level.
 - The matrix test passes (6 passed), from a snapshot that includes docs/.
 - At 38e8738, the head with the matrix, every FR-1 file passed again.
+- At 7ffdeb4, with the declared ID and role and refusal 4's pump branch tested, every FR-1 file,
+  the matrix test and the contract tests passed (smoke 121 passed).
 
 ## Appendix A. Equations for the independent references
 
