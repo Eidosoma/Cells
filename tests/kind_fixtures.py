@@ -119,7 +119,8 @@ def _scatter(flow, outside, p):
 def book(applied, start, end, p, dt, *, xp):
     # The tableau already integrated the accumulators. Re-booking `moved` from the step's applied
     # rate is the same quantity, so the seam is exercised and nothing changes.
-    return dict(exchange_moved_fmol=start.exchange_moved_fmol + dt * applied("exchange_moved_fmol"))
+    moved = start.exchange_moved_fmol + dt * applied("exchange_moved_fmol")
+    return dict(exchange_moved_fmol=moved), True
 
 
 def ledger_terms(state, p, *, xp):

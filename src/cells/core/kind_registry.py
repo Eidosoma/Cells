@@ -66,11 +66,12 @@ class Kind:
       [species, cell] and `outside` [species, outside node] the stage's total node rates (fmol/s;
       explicit stages without the implicit face drift); a false check refuses the step (FR-4's
       envelope: the closure's lag at the stage's transport).
-    - step end: `book(applied, start, end, p, dt, *, xp)` -> {own state field: new value}, after
-      the tableau's combination; `applied(name)` is the step's applied rate of a state field
-      (the tableau's weights), `start` the step's start state and `end` its end state before any
-      kind books, the same for every kind, and only the kind's own state fields may be written,
-      so bookings commute.
+    - step end: `book(applied, start, end, p, dt, *, xp)` -> ({own state field: new value},
+      valid), after the tableau's combination; `applied(name)` is the step's applied rate of a
+      state field (the tableau's weights), `start` the step's start state and `end` its end
+      state before any kind books, the same for every kind, and only the kind's own state fields
+      may be written, so bookings commute. A false valid refuses the step (§7.5's negative exact
+      share).
     - checks (traced on the device at binding, with stage_read, so the device's row checks
       include them as the host's do; they branch on no value in Python): `domain(state, p, *,
       xp)` -> one bool, and-ed into domain_valid; `control_domain(control, p, *, xp)` -> one

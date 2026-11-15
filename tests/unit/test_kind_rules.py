@@ -128,7 +128,7 @@ def test_a_failed_stage_read_refuses_the_row_and_the_step():
         return state, xp.all(state.alpha_value < 0.5)
 
     def book(applied, start, end, p, dt, *, xp):
-        return {"alpha_value": end.alpha_value + 1.0}
+        return {"alpha_value": end.alpha_value + 1.0}, True
 
     rows = dict(stage_read=gated, stage_rows=lambda declaration: ())
     with kind_registry.scope(registry(planted("alpha", "alpha_block", book=book, **rows))):
@@ -187,10 +187,10 @@ def test_a_kinds_stored_term_joins_the_energy_ledger():
 def test_bookings_see_one_end_state_and_write_only_their_own_fields():
     seen = {}
 
-    def probe(name):
+    def probe(name, ok=True):
         def book(applied, start, end, p, dt, *, xp):
             seen[name] = end
-            return {f"{name}_value": getattr(end, f"{name}_value") + dt}
+            return {f"{name}_value": getattr(end, f"{name}_value") + dt}, ok
 
         return planted(name, f"{name}_block", book=book)
 
@@ -202,8 +202,15 @@ def test_bookings_see_one_end_state_and_write_only_their_own_fields():
     assert seen["alpha"] is seen["beta"]  # One end state for every kind: bookings commute.
     assert float(new.alpha_value[0]) == float(new.beta_value[0]) == spec.execution.dt
 
+    with kind_registry.scope(registry(probe("alpha"), probe("beta", ok=False))):
+        spec = parse_spec(declaring("alpha_block", "beta_block"))
+        impl, state, p, control = host_inputs(spec)
+        new, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+    assert not valid  # A booking that refuses (a negative exact share) refuses the step.
+    assert float(new.alpha_value[0]) == 0.0
+
     def trespass(applied, start, end, p, dt, *, xp):
-        return {"amount_increment": end.amount_increment}
+        return {"amount_increment": end.amount_increment}, True
 
     with kind_registry.scope(registry(planted("alpha", "alpha_block", book=trespass))):
         spec = parse_spec(declaring("alpha_block"))
