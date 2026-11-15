@@ -3,9 +3,10 @@
 **Status: accepted, 14 November 2026 (the lead, with the advisor); rulings in §9.** Code follows
 D150 version 1's code (after S5a), as D152 orders. Milestones 1 and 2 are accepted and landed (§11,
 §11.1, §11.2). Milestone 3, MG0c's driver, its development runs and a PROPOSED protocol (§11.3), is
-landed. The lead's review of the protocol is answered in a revised PROPOSED protocol (§11.4). The
-rehearsal on main comes next, then the lead's final check and registration; no judged run is made
-before the lead registers the protocol.
+landed. The lead's review of the protocol is answered in a revised PROPOSED protocol (§11.4), which
+the lead landed. The rehearsal on main ran every judged entry to a pass on a registered dry-run
+copy, and the protocol is redrafted from it (§11.5). The lead's final check and registration come
+next; no judged run is made before the lead registers the protocol.
 
 **History of this note:**
 - The lead's rulings on §9's questions are recorded against each question.
@@ -2341,6 +2342,84 @@ FR-9:
 - measure each unit's time and peak, unit b's in particular.
 
 Then come the lead's final check, registration and one judged run.
+
+### 11.5 The rehearsal on main (14 and 15 November 2026)
+
+The lead answered §11.4's two questions when landing the revision on main at 58b6f14, in the
+combined landing f0e154a with FR-10 milestone 1 and the coupling operator's milestone 2. The lead
+also confirmed the six additions and accepted both disclosures (`review` in the protocol).
+- **Question 1:** guard 2's passive world stays judged, with the disclosure. Both candidate rules
+  pass on the development runs, so the choice concerned fragility, not the outcome. The final check
+  can revisit it.
+- **Question 2:** the split is intended. The heat and work comparisons against the true kinetics
+  are regression guards of record, and the scope line's "guarded, not qualified" is right.
+
+The rehearsal is not a judged run and not evidence of record. Its purpose was to run every judged
+entry as the judged run will, before registration.
+- **Engine models run:** as §11.3.
+- **Snapshot:** a clean snapshot of main at 58b6f14 (`snapshot-58b6f14`). It includes FR-9 and the
+  combined landing; the `src/` hold runs from the rehearsal to the registration commit.
+- **The dry-run copy.** The protocol was registered through the generator's `register` with a record
+  whose status says "registered for MG0c's rehearsal only: a dry-run copy, not a registration".
+  Every other leaf is identical.
+- **How the entries ran:** through `mg0c/rehearse_entry.sh`, each in its own unit on CPUs 5 and 7.
+  The caps were 4 GiB (a, c, guards) and 5 GiB (b, q7), the runtime limits came from the
+  protocol, and no `--wait-headroom` was used. Each successor was launched by hand once its lane
+  was free.
+- **Evidence:** `/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/`,
+  and HANDOFF.md.
+
+| Entry | Lane | Wall time | Peak (cap) | Result |
+| --- | --- | --- | --- | --- |
+| Unit a (d147, theory, timing, linear, floor, q1, q2, sites) | CPU 5 | 66 min | 2.59 GB (4 GiB) | complete; every part identical to development |
+| Unit b (q6, q3, q5) | CPU 7 | 102 min | 2.55 GB (5 GiB) | complete; identical, except Q6's count of control integrations, 38 against 32: the registered deltas' re-integrations |
+| q7 | CPU 7 | 7 min | 1.79 GB (5 GiB) | complete; identical |
+| Unit c (q4) | CPU 5 | 73 min | 0.98 GB (4 GiB) | complete; identical. Its near-tie leaves are the judged run's own and equal those derived at drafting |
+| judge-guards | CPU 7 | 53 min | 3.18 GB (4 GiB) | passed: 10 files, 201 tests, each file exit 0 |
+| judge | CPU 5 | 5 s | 0.20 GB | passed: 55 of 55 criteria |
+| combine | CPU 5 | 2 s | — | passed: the one verdict (`cells.mg0c_qualification_verdict@1`) |
+
+The machine was loaded, so q1, q6, q7 and the tier-3 guard files took about 1.2 to 2.8 × their
+development times. The guards' composition file took 1,498 s, against 535 s uncapped from
+`snapshot-454fa75` (§11.4). The runtime limits that follow (below) carry that load.
+
+**What the rehearsal showed:**
+- **The control criteria pass.** All five run to a pass on the registered copy:
+  - all 155 kept Q1 controls catch at their registered δ, as the host check predicted (§11.4);
+  - all 10 of Q6's re-integrated controls catch: k at 2e-5 and 5e-6; a and b at 1e-8 at both steps;
+    D_U at 5e-5 and 5e-6; D_V at 5e-4 and 5e-5. Re-integration took 1,324 s.
+- **Main's code reproduces the development numbers.** Every number compared reproduces exactly:
+  `mg0c/compare_rehearsal.py` checked 10,103 leaves, skipping only timing. The development runs
+  predate FR-9 and the combined landing; main's `src/` changes since then do not touch MG0c's worlds.
+- **The judged path works end to end.** The judge merged four runs from one snapshot. judge-guards
+  wrote its own verdict, and combine wrote the one verdict with the scope line and the snapshot's
+  revision.
+
+**The redraft.** The protocol is redrafted with one generator command from the rehearsal's runs
+and the guards' verdict, at the clean head e127755. It is still PROPOSED. The criteria, thresholds,
+165 registered deltas and controls are unchanged. These parts are new:
+- **Timings and peaks.** The units' times and peaks are the rehearsal's. The runtime limits are
+  about 3 × those times plus 10 min: a 12,419 s, b 18,994 s, q7 1,791 s, c 13,768 s and
+  judge-guards 10,065 s.
+- **Control criteria.** They are evaluable and pass in `development_values`.
+- **The lead's answers and confirmations,** in `review`.
+- **Two disclosures:** the rehearsal's comparison, and the runs it is drafted from.
+- **Lanes.** As the rehearsal ran them: CPU 5 runs a then c; CPU 7 runs b, then q7, then
+  judge-guards.
+
+Judge and combine on a registered copy of the redraft pass, with the same 55 criterion verdicts as
+the rehearsal's.
+
+**For the lead's final check:**
+1. **Unit b's cap.** Unit b peaked at 2.55 GB. Its cap stays at 5 GiB, as confirmed until
+   measured; the lead may lower it.
+2. **judge-guards' memory cap,** proposed at 5 GiB by ruling 9's reasoning. It peaked at 3.18 GB
+   under 4 GiB, and a cap kill would spend the single rerun.
+3. **Guard 2's passive world** stays judged, per the answer to question 1; the final check can
+   revisit it.
+
+Then come registration, which the lead does through `register` with the lead's record, and one
+judged run from a fresh snapshot of main at the registration commit.
 
 ## Appendix A. Equations for the independent references
 
