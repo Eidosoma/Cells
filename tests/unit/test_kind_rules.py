@@ -182,7 +182,8 @@ def test_a_kinds_conductance_and_bound_term_join_the_step_rules():
 
     def conducting(siemens):
         def stage_term(read, potentials, control, p, *, xp):
-            return xp.where(p.active, siemens, 0.0)
+            patches = xp.where(p.membrane_active, siemens, 0.0)  # Each patch, at both ends.
+            return surface_pump_v3.patch_node_conductance(patches, p, xp=xp)
 
         return planted("alpha", "alpha_block", stage_term=stage_term)
 
@@ -201,7 +202,8 @@ def test_a_kinds_conductance_and_bound_term_join_the_step_rules():
             n = p.active.size
             voltage = potentials[p.membrane_cell] - potentials[n + p.membrane_outside]
             past = xp.any(xp.abs(voltage) > threshold_V)
-            return xp.where(p.active & past, 1e-6, 0.0)
+            patches = xp.where(p.membrane_active & past, 1e-6, 0.0)
+            return surface_pump_v3.patch_node_conductance(patches, p, xp=xp)
 
         return planted("alpha", "alpha_block", stage_term=stage_term)
 
@@ -248,6 +250,41 @@ def test_stage_values_give_running_extrema_over_the_steps_stages():
         impl, state, p, control = host_inputs(spec)
         with pytest.raises(ValueError, match="declared extremum"):
             impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+
+
+def test_a_face_free_compartments_free_node_is_held_to_the_stage_rule():
+    """Gap 5 per node: a charged slope on a face-free compartment's patch (FR-1's W: cell_0 with
+    1.1 pF of patches, its node ecs_0 with the contact patch's 0.1 pF only) is counted at both
+    ends. At 5e-10 S and dt = 1 ms the cell's row is 0.45, the free node's 5: refused, where
+    the cells-only sum would have passed it; 5e-11 S passes both."""
+    from validation.tissue import secreted_species_fixtures as fx
+
+    def face_free():
+        raw = fx.face_free(end=0.004)
+        m = raw["model"]
+        m["id"] = "resolved_pump_tissue@3"
+        m.pop("inner_model")
+        m.pop("operators")
+        m["alpha_block"] = {"rate": 1.0}
+        return raw
+
+    def on_contact(siemens):
+        def stage_term(read, potentials, control, p, *, xp):
+            contact = xp.arange(p.membrane_active.size) == 1  # contact_0 (wall_cell_0 first).
+            patches = xp.where(contact & p.membrane_active, siemens, 0.0)
+            return surface_pump_v3.patch_node_conductance(patches, p, xp=xp)
+
+        return planted("alpha", "alpha_block", stage_term=stage_term)
+
+    for siemens, accepted in ((5e-11, True), (5e-10, False)):
+        with kind_registry.scope(registry(on_contact(siemens))):
+            spec = parse_spec(face_free())
+            impl, state, p, control = host_inputs(spec)
+            assert bool(surface_pump_v3.free_outside_nodes(p, xp=np)[1])  # ecs_0 is free.
+            rate = impl.membrane_rate(state, control, p, xp=np, potentials=np.zeros(3))
+            _, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+        assert bool(valid) == accepted, (siemens, rate)
+        assert rate == pytest.approx(siemens / fx.CONTACT_C_F, rel=1e-9)  # The node's row.
 
 
 def test_a_held_row_has_one_writer():
