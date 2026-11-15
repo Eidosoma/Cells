@@ -80,7 +80,9 @@
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-02/measured.json",
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-02/measured.json",
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-passive-02/measured.json",
-  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-ph/measured.json"
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-ph/measured.json",
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-transfer-02/measured.json",
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-transfer-03/measured.json"
  ],
  "measured_provenance": [
   {
@@ -658,6 +660,20 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-15T12:22:58+00:00"
+  },
+  {
+   "git_revision": "0372d6ce96646ff1395a36daf098022c67351133",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T12:54:17+00:00"
+  },
+  {
+   "git_revision": "c43b366b14df1befa6ac8e5a878459b70eae0ddd",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T13:00:51+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1372,6 +1388,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_compartment_transfer_references.py",
+    "seconds": 6.76,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    },
    {
