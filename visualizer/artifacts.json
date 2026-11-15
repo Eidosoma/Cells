@@ -79,6 +79,11 @@
           "date": "2026-11-15",
           "engine_revision": "e2a86708",
           "note": "JCVI-syn3A is a third species in the protein atlas: none of the inventory's 49 units is found in it (43 nothing found, 6 nothing to look for), and nine of its own membrane machines are listed apart. The map shows the Syn3A minimal-cell track as planned (D173), the coupling operator's third milestone and the excitable-tissue references. An interim view: the species switch that also changes the levels and the shapes is still being built. Checked at 38866504 on a clean checkout: 55 of 55 real-input checks; 113 tests (112 pass, 1 skipped). The 59 run files were not sent again"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "a456453b",
+          "note": "Mycoplasma pneumoniae is a fourth species in the protein atlas: none of the inventory's 49 units is found in it, and nine of its own membrane machines are listed apart. The map shows the coupling operator's proposed qualification protocol, the composition matrix and the Syn3A track's revision. Still an interim view: the species switch that changes the levels and the shapes, and the shelves of each species' own proteins, are being built. Checked at 634ab261 on a clean checkout: 55 of 55 real-input checks; 146 tests (145 pass, 1 skipped). The 59 run files were not sent again"
         }
       ],
       "files": "out/cells-architecture.files.json lists the run files published beside the page (generated, not committed)"
