@@ -38,10 +38,12 @@
      over the whole catalogue would still compile the absent ones.
    - A probe measured whether separating them moves any result: **it does not.** In seven worlds,
      every value at every step was bit-for-bit the same, with smaller programs (§4).
-   - **Two other parts of R are not yet probed:** summing species in one fixed order (A7) and door
-     S's merge (A6). The first is the likeliest to move results at rounding. If anything moves,
-     R re-runs every registered protocol in full. A small probe of the fixed order can run after
-     05:00 UTC.
+   - **Summing species in one fixed order (A7) does move results, at rounding** (P7).
+     - In most worlds only the energy and work running totals move, by 1–4 units in the last
+       place; the physical state stays bit-for-bit the same.
+     - Through an action potential the channel gates move too, by up to 36 units in the last
+       place.
+     - **So R re-runs every registered protocol in full.** Door S's merge (A6) is still unprobed.
 4. **R is accepted by results, not by identical programs** (§3).
    - A named list of required scientific results must actually execute and match.
    - Every existing world gives the same CPU results.
@@ -241,15 +243,17 @@ a dozen files (ARCHITECTURE.md, "Reuse cases and the results gate").
 
 | Part | Entries | Pass |
 | --- | --- | --- |
-| **G1, existing worlds on CPU** | Every world of the crossrev sets (base, qualification, injection, volume, division, species, reactions, and each operator's own set) and @3's test worlds. Each runs from the tag before R and from the new snapshot. Compared: every state field, observation column and `max_` diagnostic of every accepted row, and every refusal (its step and its message) | Bitwise, NaN-aware, bit patterns compared. **If P2 shows per-law dispatch moves results, a rounding tolerance is stated before the run, reported field by field, and G2 runs in full** |
+| **G1, existing worlds on CPU** | Every world of the crossrev sets (base, qualification, injection, volume, division, species, reactions, and each operator's own set) and @3's test worlds. Each runs from the tag before R and from the new snapshot. Compared: every state field, observation column and `max_` diagnostic of every accepted row, and every refusal (its step and its message) | Bitwise, NaN-aware, bit patterns compared, except where R changes rounding. **A7 does (P7):** physical fields and accumulators are compared within a tolerance stated before the run from P7's magnitudes, field by field, and G2 runs in full |
 | **G2, registered protocols re-run** | Every registered protocol whose engine models include the inner model or the composite, listed from each protocol's engine-models field. Known today: W1, W2, G2-Q1, S2, S3, Rm1, S5a, D150's judged run, E07-v1; MG0c and Track R once judged; Track E's M2 if judged before R | Every verdict unchanged; numbers bitwise, or within the protocol's own tolerances |
 | **G3, planted changes** | (a) one law coefficient moved by one ulp in a test double (P2's planted arm shows the effect's size); (b) one world parameter moved by one ulp; (c) one required-results entry deleted from a run | The gate must fail all three. If it passes any of them, it is void |
 | **G4, measurements** | Compile time, host and device memory, and end-to-end time, on representative compositions: the heredity cell, the 127-cell sheet, a water composition, D150's arm, MG0c's chain, the 825-node world | Reported against the tag; judged only where a protocol registers a bound |
 | **The reuse cases** (ARCHITECTURE.md's table) | Inventory → regulation → electrical response (Track R's A4 and A5) now. The other three join the list as they land: bath → uptake → compartment → reaction (§8); reaction → finite fuel → pump (§10); neutral solute and water in a vesicle (§11) | As registered |
 
 **Cost-savers, the lead's call:**
-- If G1 is bitwise, E07-v1 can be re-run as a sample (its E1 segments and one arm per group, about 5
-  core-hours against about 50).
+- If G1 were bitwise, E07-v1 could be re-run as a sample (its E1 segments and one arm per group,
+  about 5 core-hours against about 50). **With A7 it is not,** so E07-v1 runs in full, about 50
+  core-hours, unless the lead accepts the sample for a judged experiment whose verdict depends on
+  no single field at rounding.
 - Judges that differentiate the step (W1's and W2's stationary parts) re-run in full whatever G1
   shows. D148's first case moved a Jacobian under an identical forward run.
 
@@ -305,10 +309,9 @@ world gave compile and execution times.
     reuses its executable.
 - **The consequence:**
   - The dispatch change is bitwise, so it alone would let G1 run bitwise.
-  - **The rest of R is unprobed.** A7 rewrites every sum over species, on host and device, and is the
-    likeliest source of rounding movement. A6 changes how providers merge.
-  - If either moves results, §3's rounding contingency applies and G2 runs in full. A P2-style
-    prototype of A7's fold settles the first; it is offered for after 05:00 UTC.
+  - **A7 is not bitwise** (P7, §10.6), so §3's rounding contingency applies to R: G1 runs at a
+    tolerance stated before the run, and G2 re-runs every registered protocol in full.
+  - A6, the merge, is still unprobed. If it moves results, the same rule covers it.
   - Judges that differentiate the step still re-run in full (§3), since P2's Jacobians cover two
     worlds, not W1's and W2's.
   - P2 tests the dispatch change alone. The rest of R (A2–A7) is tested by the results gate.
@@ -679,6 +682,19 @@ cost.
 - Every species-axis sum in the inner model and the operators uses it.
 - A static test refuses any other species-axis reduction in those modules.
 - Since every program contains such sums, the change rides in R's single results gate (§3).
+- **P7 measured its effect, and it is not bitwise.**
+  - **The method.** A prototype replaced jax.numpy's sum over the species axis with an explicit
+    left fold in declared order (62 folded sums in each IMEX step, 351 in the RK4 step), in P2's
+    seven worlds.
+  - **Values move at rounding in six worlds.** In five of them only ledger accumulators moved:
+    reservoir work, membrane and junction heat, by 1–4 ulps, from the first rows. The physical
+    state stayed bitwise.
+  - **In the generic cell through an action potential,** gates, transfers and the electrode
+    ledger moved too, from row 10, by up to 36 ulps (gates) and 54 ulps (the electrode charge).
+  - **Unchanged:** the 127-cell sheet, and the Jacobians at the initial state in both worlds
+    where they were taken.
+  - **No difference was a signed zero only.**
+  - **So A7 forces §3's contingency:** G1 at a stated tolerance, and G2 in full.
 - After it, a raise needs only the guard world and the cost measurement. No new order probe.
 
 **The cost model.**
@@ -692,7 +708,7 @@ cost.
 - **Not included:** D152's reaction half-steps, which add their own work per route and site at
   Syn3A's metabolic scale.
 
-**P6's measurements** (15 November, 01:25–01:42 UTC). The probe ran on CPU, one loaded core,
+**P6's measurements** (15 November, 01:25–01:42 UTC; the last row rerun at 04:12–04:17 UTC). The probe ran on CPU, one loaded core,
 under a 2G cap. It times the inner model's compiled checked step alone, without host checks.
 
 | World | Species | State (MB) | Layout (MB) | XLA temp (MB) | Step, median (ms) |
@@ -704,16 +720,19 @@ under a 2G cap. It times the inner model's compiled checked step alone, without 
 | | 320 | 3.50 | 4.76 | 22.4 | 132.2 |
 | 825-node world (225 cells, 600 outside nodes, 1,151 faces) | 8 | 0.76 | 20.9 | 32.1 | 107 |
 | | 64 | 5.08 | 25.0 | 57.7 | 604 |
-| | 160 | — | — | — | Killed by a machine-wide out-of-memory event at 01:42 UTC, as the designated victim (`--oom-first`), at 1.42 GB resident, below its 2G cap. To rerun after 05:00 UTC |
+| | 160 | 12.5 | 31.9 | 110.0 | 1,086 (minimum 717). Rerun at 04:12 UTC: the first attempt was the designated victim of a machine-wide out-of-memory event at 01:42 UTC, below its cap |
 
 Every compile took 55–90 s, whatever the species count. Every step was accepted.
 
 **Per species, from these rows** (**S**, linear):
 - **The sheet:** about 11 KB of state, 10 KB of layout, 64 KB of XLA temporaries, and 0.3–0.5 ms
   of step time.
-- **The 825-node world:** about 77 KB of state, 72 KB of layout, 0.46 MB of temporaries, and
-  **5.6–8.9 ms of step time** (from the minimum and the median; two points on a loaded core). Its 1,151 faces and 600 outside nodes carry every species, so the
-  species work overtakes the dense field solves somewhere between 8 and 64 species.
+- **The 825-node world:** about 77 KB of state, 72 KB of layout, and 0.46–0.55 MB of
+  temporaries per species.
+  - Step time is **8.9 ms per species from 8 to 64 species, and 5.0 ms from 64 to 160** (medians;
+    the minima give 5.6 and 3.2 ms). The cost grows less than linearly.
+  - Its 1,151 faces and 600 outside nodes carry every species, so the species work overtakes
+    the dense field solves somewhere between 8 and 64 species.
 
 **Extrapolated to the lead's three sizes** (**S**). Memory is per world; times are one CPU core,
 for the checked step alone:
@@ -721,18 +740,18 @@ for the checked step alone:
 | Species | 127-cell sheet: memory / step | 825-node world: memory / step |
 | --- | --- | --- |
 | 50 | about 8 MB / 25–30 ms (3× today) | about 80 MB / about 0.5 s (4–5× today) |
-| 150 | about 16 MB / 65–80 ms (8–10×) | about 140 MB / about 1.4 s (13×) |
-| 600 | about 54 MB / about 0.2 s (25×) | about 0.4 GB / about 3.5–5 s (35–50×), a two-point extrapolation |
+| 150 | about 16 MB / 65–80 ms (8–10×) | about 150 MB / about 1.0 s (10×), between measured rows |
+| 600 | about 54 MB / about 0.2 s (25×) | about 0.45 GB / about 2–3.3 s (20–30×), extrapolated from the 64–160 slope |
 
 **On the L4 (not measured here; a stated extrapolation, S).**
 - **Memory bounds the batch.**
-  - The 825-node world: about 0.4 GB per world at 600 species, so roughly 50 worlds in the L4's
+  - The 825-node world: about 0.45 GB per world at 600 species, so roughly 50 worlds in the L4's
     24 GB; about 150 worlds at 150 species.
   - The sheet: several hundred worlds at every size.
 - **Time:** today's 825-node world runs 2.28 ms per world-step at 256 worlds (PROGRESS), with the
   dense kernels at about half the device time. If the species work accelerates as the dense work
-  does (about 60× from CPU), it adds about 0.15 ms per species per world-step: about 10 ms at 64
-  species, and about 90 ms at 600.
+  does (about 60× from CPU), it adds 0.08–0.15 ms per species per world-step: about 10 ms at 64
+  species, and about 50 ms at 600.
 - **G4 replaces these numbers** with measurements in an L4 gap.
 
 **What follows:**
@@ -964,7 +983,7 @@ Two tests decide membership:
 | A4. The GPU audit's tests (§5): a world without NaV1.2 traces no NaV1.2 kernel; a parameter-only change reuses `compile_window`'s executable; the host-per-row exceptions listed for the production path | ARCHITECTURE.md's targets for R cannot be claimed without them | 1 |
 | A5. One added law, the passive permeation law (§11), with finding 3's term (§13.6) and its closed two-compartment test | The working case of §2.3: adding a law leaves every existing program crossrev-identical and passes the idle guard. D174 expects the law in R, and its kernel exists | 2–3 |
 | A6. Door S's runtime merge (§8), with slot declarations for today's providers and readers and its own acceptance (disjoint providers in either order, overlap refused, merged values at each reader's stage) | It changes every composition's view, so landing it later would need a second G1 and G2. FR-4's pH step with buffering inside a compartment needs it (BATH_SCHEDULE_DESIGN §3.1) | 3–4 |
-| A7. Species identity and trace policy consolidated at the definition boundary (§10.2), with every sum over species in one explicit order on host and device (§10.6) | Every sum over species is in every program, so changing their order later would need a second G1 and G2. D165, amended, ties it to identity consolidation in this round, so that a later raise of the species cap needs only a guard world and a cost measurement | 2–3 |
+| A7. Species identity and trace policy consolidated at the definition boundary (§10.2), with every sum over species in one explicit order on host and device (§10.6) | Every sum over species is in every program, so changing their order later would need a second G1 and G2. D165, amended, ties it to identity consolidation in this round, so that a later raise of the species cap needs only a guard world and a cost measurement. **It moves results at rounding (P7), so with it G2 re-runs every registered protocol in full** | 2–3 |
 | **(a) in total** | | **about 17–24.5**, plus CPU hours (G1 about an hour; G2 the protocols' own costs, E07-v1 about 50 core-hours in full) and an L4 gap (§5.3) |
 
 **What is deliberately not in (a):**
@@ -1041,9 +1060,11 @@ A larger R delays the work labelled blocking, so each wait is stated:
 1. **The fuel representation** (§10), possibly the user's. Recommended: **F2**, inventory rows with
    one authority per standard potential (§10.2). F1 and F3 contradict D174's requirement.
 2. **The name** (§6). Recommended: keep `resolved_pump_tissue@3`, with D147 amended as written.
-3. **Rounding in G1** (§3, §4). P2 found per-law dispatch bitwise. A7's species-sum order and A6's
-   merge are unprobed. Recommended: a P2-style probe of A7's fold after 05:00 UTC, before R's
-   gate is planned. The rounding contingency stays.
+3. **Rounding in G1** (§3, §4, §10.6). P2 found per-law dispatch bitwise. P7 found A7's fixed
+   order moves results at rounding. **Recommended: keep A7 in R** (D165, amended, ties it there),
+   state G1's tolerance from P7's magnitudes before R's gate, and run G2 in full. The alternative,
+   leaving A7 out, keeps G1 bitwise but brings back a summation-order probe at every raise of
+   the species cap.
 4. **I0** (§13.6). P3 refused nothing, so finding 3's term rides in R with the passive law and
    needs no run-time half. The face-free term waits for P1 and FR-4 (B7).
 5. **The cost-savers** (§3): sample E07-v1 only if G1 is bitwise; derivative-program judges always
@@ -1078,7 +1099,13 @@ runs.
 
 **P5, the constants inventory.** All nine worlds share one executable with their parameter twins; the value-search hits are coincidences checked in code (§5.2).
 
-**P6, memory and step cost against the species count.** Seven of eight rows were measured. The 825-node world at 160 species was killed by a machine-wide out-of-memory event during the night's judged runs, as the designated victim, below its cap. It waits for after 05:00 UTC. Per species: 0.3–0.5 ms per step on the sheet and about 9 ms on the 825-node world, on one CPU core (§10.6).
+**P6, memory and step cost against the species count.** All eight rows are measured. The 825-node world at 160 species was rerun at 04:12 UTC, after its first attempt fell to the 01:42 machine-wide out-of-memory event. Per species, on one CPU core: 0.3–0.5 ms per step on the sheet; 8.9 ms on the 825-node world from 8 to 64 species, falling to 5.0 ms from 64 to 160 (§10.6).
+
+**P7, A7's fixed species-sum order** (15 November, 03:49–04:12 UTC; peak 1.48 GB, no memory events).
+- **C0 holds:** the planted change is seen everywhere.
+- **C1 fails:** values move at rounding in six of seven worlds. That is 1–4 ulps in ledger accumulators only, in five; up to 36–54 ulps in the excitable cell's gates and electrode ledger.
+- **C2 holds:** the Jacobians are bitwise.
+- **By the registered reading:** G1 runs at a stated tolerance and G2 in full (§10.6).
 
 (P4, the cost of per-law dispatch, was folded into P2 as its amendment 2.)
 
