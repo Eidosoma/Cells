@@ -679,7 +679,10 @@ def run_compare(out):
                 uninterrupted_run_id="uninterrupted-engine-run",
                 continued_run_id=run["run_id"],
                 checkpoint=artifact(out, f"checkpoints/step-{step}/manifest.json"),
-                checkpoint_state=artifact(out, f"checkpoints/step-{step}/state.npz"),
+                checkpoint_files=[
+                    artifact(out, f.relative_to(out))
+                    for f in sorted((Path(out) / "checkpoints" / f"step-{step}").iterdir())
+                ],
                 uninterrupted=inputs["slices"][str(step)],
                 continued=run["stream"],
                 comparison=result,
