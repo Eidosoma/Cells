@@ -2,7 +2,7 @@
 
 **Accepted, 14 November 2026 (the lead, with the advisor; D169).** It uses D152's unsplit SSPRK(3,3) with the per-route hybrid; the palindrome was measured and rejected. α is static in version 1. The day-one guard is judged against an independent integration of the full kinetics.
 
-**Milestone 1 built, 15 November 2026 (§12).** Stage A, the contract fit, and stage B, the half-step with its bookings and guards, are on the engine agent's branch. Every host check holds on every row of the face-free world, passive-only and mixed; three planted corruptions fail them; idle is bitwise; restart is bitwise; the stage condition refuses dt L > 1 at run time. The integrator duplicates D152's numerical block, a consolidation item for D172's round. The references, the protocol and its judged run are not part of it.
+**Milestone 1 landed on main, 15 November 2026 (§12; tier 1 and 2 at the merge a917d72).** Stage A, the contract fit, and stage B, the half-step with its bookings and guards, landed with it. Every host check holds on every row of the face-free world, passive-only and mixed; three planted corruptions fail them; idle is bitwise; restart is bitwise; the stage condition refuses dt L > 1 at run time. The integrator duplicates D152's numerical block, a consolidation item for D172's round. The references, the protocol and its judged run are not part of it.
 
 **Status: PROPOSED, 14 November 2026. Revised the same day after the lead's review with the
 advisor; the rulings are recorded in §11.** No engine code was added or changed. One pre-acceptance

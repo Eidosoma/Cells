@@ -39,11 +39,11 @@ experiment).
 | Secreted-species transport (D150 v1) | **Numerically qualified** (14 November): the held sphere with decay, the faces with exact radial conductances and turnover's clearance. Exchange, production and the occupant rule are guarded only, through the Q5 tests |
 | Reactions on the shared inventory (D152 v1) | **Numerically qualified** within MG0c's scope (15 November): the judged run of `mg0c-turing-v1` passed 55 of 55, with the guards and every kept control. CPU only |
 | Checkpoint continuity (D153) | Implemented and guarded for CPU vector windows and on the GPU (the extension landed on 14 November) |
-| Phase markers | Completion records implemented; start and failure records pending |
-| Run-view output (D154) | Requirement recorded; design pending |
+| Phase markers | Start, completion and failure records implemented (`core/phases.py`'s `Recorder`, 15 November) |
+| Run-view output (D154) | Design note proposed (15 November, [RUN_VIEW_DESIGN](RUN_VIEW_DESIGN.md)); its code joins D172's round |
 | Coupling out of the inventory (D155, scoped by D156) | **Numerically qualified** (15 November): the judged protocol passed, with second order against independent references for reciprocal feedback (A4) and a species setting a channel (A5). CPU only, within its scope line |
 | Excitable tissue (D155) | Design accepted narrowly, for M1 and M2 on @3 (D170). The generic cell is 0.01 F/m² (candidate A), on post-hoc probe evidence; the junction floor is provisional until M1's sheet runs |
-| Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestone 1 landed; FR-1's milestone 1 in progress |
+| Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestones 1 and 2, FR-1's milestone 1 and FR-3's milestone 1 landed (15 November). FR-4 and FR-5's design note is proposed |
 | The D172 restructure (one modular inner model, `resolved_pump_tissue@3`) | **In implementation** (D176, 15 November). It runs on the integration branch `integration-d172` from tag `d172-base-2026-11-15`, in six parallel streams with one integrated acceptance gate and landing. The [note](INNER_MODEL_V4_DESIGN.md) is the design. FR-4 and FR-5 are the priority consumers |
 | Field-solver interface | Designed; code waits for the GH200 numbers |
 | One production execution path, compile policy, registry | Not started. D147's policy for composite definitions landed on 14 November |
