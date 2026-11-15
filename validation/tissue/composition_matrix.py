@@ -34,6 +34,7 @@ from pathlib import Path
 
 from cells.models import pump_composite
 from cells.models.operators import OPERATORS
+from cells.models.operators import compartments as compartments_operator
 from cells.models.operators import partition as partition_operator
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -55,6 +56,8 @@ BRIDGE = "cytoplasmic_bridge_closure@1"
 TURNOVER, EXCHANGE = "scheduled_species_turnover@1", "scheduled_species_exchange@1"
 REACTIONS, COUPLING = "local_species_reactions@1", "species_regulated_availability@1"
 BATH = "scheduled_bath_composition@1"
+COMPARTMENTS = "cell_owned_compartments@1"
+SITES = "site_occupancy@1"
 
 OPS = "src/cells/models/operators/"
 TESTS = "tests/unit/"
@@ -410,10 +413,128 @@ def _tags():
             "definition",
             (),
         )
+    # FR-1's declaration reads the volumes, areas, capacitances and masks as declared
+    # (compartments.CONFLICTS_VIEW, docs/CLOSED_COMPARTMENT_DESIGN.md §1.4 and §4).
+    for name in ("volume", "extracellular_volume"):
+        tags[("reads", COMPARTMENTS, WATER, name)] = (
+            REAL,
+            "A compartment's volume is fixed in version 1 (door V, the closed-compartment design "
+            "§5.3); water changes the volumes of cells and finite nodes, an owner's and a "
+            "compartment's included",
+            (),
+        )
+    for name in ("membrane_area", "membrane_capacitance"):
+        tags[("reads", COMPARTMENTS, STATE, name)] = (
+            REAL,
+            "The membrane-state wall (the closed-compartment design §4): membrane state provides "
+            "every patch's area and capacitance as field inputs, a bounding patch's included; "
+            "sites on a bounding patch wait for this wall's door",
+            (),
+        )
+    for lumen in (LUMEN_1, LUMEN_2):
+        tags[("reads", COMPARTMENTS, lumen, "extracellular_volume")] = (
+            REAL,
+            "A lumen changes its node's volume and requires insertion; a lumen's onset node is not "
+            "refused as a compartment (not shown nominal)",
+            (),
+        )
+    tags[("reads", COMPARTMENTS, INSERTION_1, "face_active")] = (
+        NOMINAL,
+        "No face names a compartment's node (refusal 1, parse_declaration), and insertion@1's "
+        "face view differs from the declared only at faces naming its onset nodes (masks, "
+        "onset_entities): the slots are disjoint",
+        (
+            OPS + "compartments.py::parse_declaration",
+            OPS + "membrane_insertion.py::masks",
+            OPS + "membrane_insertion.py::onset_entities",
+        ),
+    )
+    for name in ("membrane_active", "outside_active"):
+        tags[("reads", COMPARTMENTS, INSERTION_1, name)] = (
+            REAL,
+            "Insertion@1 closes its onset patches and nodes until their onset, and a bounding "
+            "patch may be one: a compartment created at an event is FR-2's door C (the "
+            "closed-compartment design §7)",
+            (),
+        )
+        tags[("reads-closed", COMPARTMENTS, INSERTION_2, name)] = (
+            REAL,
+            "Insertion@2 closes its onset patches and nodes until their onset, and a bounding "
+            "patch may be one (FR-2's door C, the closed-compartment design §7)",
+            (),
+        )
+    tags[("reads-closed", COMPARTMENTS, PARTITION, "active")] = (
+        REAL,
+        "The partition closes and retires cells, an owner included: division of an owner is door "
+        "D (the closed-compartment design §1.5)",
+        (),
+    )
+    # FR-3's site occupancy reads the volumes, the masks and the outside anchors as declared
+    # (site_occupancy.CONFLICTS_VIEW, docs/SITE_OCCUPANCY_DESIGN.md §1.5 and §6).
+    for name in ("volume", "extracellular_volume"):
+        tags[("reads", SITES, WATER, name)] = (
+            REAL,
+            "The site half-step reads its facing nodes' declared volumes (pool_volumes); water "
+            "changes them",
+            (),
+        )
+    for lumen in (LUMEN_1, LUMEN_2):
+        tags[("reads", SITES, lumen, "extracellular_volume")] = (
+            REAL,
+            "The site half-step reads its facing nodes' declared volumes; a lumen changes its "
+            "node's volume (not shown nominal)",
+            (),
+        )
+    tags[("reads", SITES, BATH, "extracellular_amount_reference")] = (
+        NOMINAL,
+        "The sites read the outside anchors only at their facing pools, which are finite nodes "
+        "(a population facing a held bath is refused: parse_population; pool_amounts), and the "
+        "bath schedule provides the declared array off its baths and schedules held baths only "
+        "(held_view, parse_declaration): the slots are disjoint",
+        (
+            OPS + "site_occupancy.py::parse_population",
+            OPS + "site_occupancy.py::pool_amounts",
+            OPS + "bath_schedule.py::held_view",
+            OPS + "bath_schedule.py::parse_declaration",
+        ),
+    )
+    for name in ("extracellular_amount_reference", "membrane_active", "outside_active"):
+        tags[("reads", SITES, INSERTION_1, name)] = (
+            REAL,
+            "Insertion@1 opens onset patches and nodes and changes their anchors; a population's "
+            "patch or facing node may be one (not shown nominal)",
+            (),
+        )
+    for name in ("membrane_active", "outside_active"):
+        tags[("reads-closed", SITES, INSERTION_2, name)] = (
+            REAL,
+            "Insertion@2 closes onset patches and nodes until their onset; a population's patch "
+            "or facing node may be one (not shown nominal)",
+            (),
+        )
+    tags[("reads-closed", SITES, PARTITION, "active")] = (
+        REAL,
+        "The partition retires cells, an owner of sites included: the sites' split at division "
+        "is a door (the site-occupancy design §5.1)",
+        (),
+    )
     return tags
 
 
 TAGS = _tags()
+
+
+def _off_list(admitted_by_declarations):
+    """The compartments' off-list pairs that the declarations admit (marks) or refuse (behind)."""
+    out = []
+    for law in LAWS:
+        if law in compartments_operator.ADMITTED:
+            continue
+        for pair in ((COMPARTMENTS, law), (law, COMPARTMENTS)):
+            if (not errors(sequence(*pair))) == admitted_by_declarations:
+                out.append(pair)
+    return tuple(out)
+
 
 # ------------------------------------------------------------------ the rules at the definition
 
@@ -616,6 +737,31 @@ RULES = (
         tag=REAL,
         why="Water reads the declared bath, its water potential bound at the definition (the "
         "bath-schedule design §3.1, door W)",
+    ),
+    dict(
+        rule="cell_owned_compartments@1 composes only with its admitted list, which fails closed",
+        laws=(COMPARTMENTS,),
+        level="law",
+        check=OPS + "compartments.py::check_definition",
+        test=TESTS + "test_cell_owned_compartments.py::test_the_admitted_list_fails_closed",
+        tag=REAL,
+        why="A new operator may treat outside nodes as environment (the closed-compartment design "
+        "§4). It marks the off-list pairs the declarations admit (site occupancy: FR-1's door for "
+        "it, §4) and stands behind the declarations' refusals of the rest",
+        marks=_off_list(True),
+        behind=_off_list(False),
+    ),
+    dict(
+        rule="replacement@1 schedules no event on a compartment's owner and names no owner as a "
+        "donor",
+        laws=(COMPARTMENTS, REPLACEMENT_1),
+        level="data",
+        check=OPS + "compartments.py::check_definition",
+        test=TESTS + "test_cell_owned_compartments.py::"
+        "test_replacement_composes_away_from_owners_and_never_on_or_from_one",
+        tag=REAL,
+        why="A newcomer would inherit the compartment's content, and a donor copy takes the "
+        "donor's cytosolic amounts only (door R, the closed-compartment design §1.5)",
     ),
     dict(
         rule="D152 refuses RK4",
