@@ -135,8 +135,9 @@ def test_absent_rows_are_declared_traces_with_background_and_k_on_sits_on_the_re
     assert all("k_on_per_mM_s" not in e for e in entries.values())
     assert d["model"]["stage_reads"][0]["k_on_per_mM_s"] == {"B_c": 1e7, "B_L": 1e7}
     assert d["model"]["standard_concentration_mM"] == 1000.0
-    today = defs.today_only(d)
-    assert all("background" not in e for e in today["model"]["species"])
+    today = defs.today_only(d)  # Today's parser reads the registry's keys: they stay.
+    assert [e.get("background") for e in today["model"]["species"]] == [
+        e.get("background") for e in d["model"]["species"]]
 
 
 def test_the_fixture_uses_the_registry_keys_and_its_k_matches_the_kernel():
@@ -156,8 +157,7 @@ def test_the_fixture_uses_the_registry_keys_and_its_k_matches_the_kernel():
                                                 entries["H"]["standard_mu_RT"], c0_mM=c0, xp=np)
         assert k_kernel == pytest.approx(k_registry, rel=1e-15)
         assert -math.log10(k_kernel / 1000.0) == pytest.approx(pk, abs=1e-12)
-    for key in ("standard_mu_RT", "protonated_standard_mu_RT", "background"):
-        assert all(key not in e for e in defs.today_only(d)["model"]["species"])
+    assert defs.today_only(d)["model"]["species"] == d["model"]["species"]  # The registry stays.
 
 
 def test_the_revised_fr5_arms_their_start_horizon_and_budget():
@@ -195,3 +195,19 @@ def test_the_fr4_pump_is_the_transporter_kinds_entry_with_the_registrys_drive():
     w = World()
     drive = R * w.temperature_K * (mu["ADP"] + mu["Pi"] - mu["ATP"])
     assert drive == pytest.approx(w.delta_g0_prime_J_mol, rel=1e-14)
+
+
+def test_the_development_world_is_the_declared_world_without_the_compartment_operator():
+    """The lead's ruling: the development rungs run @3 plus the kinds, without FR-1's operator;
+    for FR-4 that is also all that today_only strips. FR-5's routes with factors are pending."""
+    d = defs.fr4_world()
+    dev = defs.development_world(d)
+    assert "operators" in d["model"] and "operators" not in dev["model"]
+    assert dev == {**d, "model": {k: v for k, v in d["model"].items() if k != "operators"}}
+    assert defs.today_only(d) == dev
+    assert set(dev["model"]) >= {"stage_reads", "transporters", "passive_routes",
+                                 "standard_concentration_mM"}
+    assert "passive_route_controls" not in d["experiment"]
+    today = defs.today_only(defs.fr5_world(DamageWorld()))
+    assert {r["id"] for r in today["model"]["passive_routes"]} == {"proton_leak_0"}
+    assert "patch_damage" not in today["model"] and "damage_controls" not in today["experiment"]

@@ -1,20 +1,25 @@
 """Definitions of FR-4's and FR-5's first acceptance worlds (generic; §13 of the FR-4/FR-5 note).
 
 `fr4_world(world)` builds the resolved_pump_tissue@3 definition from parameters.World:
-- **today's parts:** one owner cell in a held bath, an impermeant plasma patch, the lumped
-  compartment node, its bounding patch with the K+ counterion route (constant_field@1), and the
-  nine species rows (Na, K, Cl, H as proton equivalents, B_c, B_L, ATP, ADP, Pi);
-- **the pending parts,** under §7.4's published names, for the core's insertion points: the
-  species registry entries (`standard_mu_RT`), the stage read (`stage_reads`), the transporter
-  population (`transporters`, cells.transporter@1's form: the proton pump on held fuel, whose
-  rows the kind holds), the proton leak (`passive_routes`), and FR-1's compartment declaration.
-  Δ_rG'° is the registry's: the fuel rows' potentials (`fuel_potentials_RT`).
+- one owner cell in a held bath, an impermeant plasma patch, the lumped compartment node and its
+  bounding patch with the K+ counterion route (constant_field@1), and the nine species rows (Na,
+  K, Cl, H as proton equivalents, B_c, B_L, ATP, ADP, Pi) with their species-registry entries;
+- the declared kinds (§7.4 (k)): B4's rapid-buffer closure (`stage_reads`,
+  cells.rapid_proton_buffer@1), the proton pump (`transporters`, cells.transporter@1, on held
+  fuel whose rows the kind holds) and the proton leak (`passive_routes`, cells.passive_routes@1).
+  Δ_rG'° is the registry's: the fuel rows' potentials (`fuel_potentials_RT`);
+- FR-1's compartment declaration (`operators`), for the composite path.
 
-`today_only(definition)` strips the pending parts. Today's parser refuses them by design until the
-core lands them. Absent rows (a buffer at the other node, fuel outside the cytosol) carry 0, and
-rows that do not apply at a node carry the world's declared trace (absent rows are refused,
-the operators' PLAN §2.4), with `background` (trace_mM, floor_fmol) on B_c, B_L, ATP, ADP and
-Pi. The closure's mask is the declared (node, row) pairs, so a trace is never a live buffer.
+`development_world(definition)` is the definition without the compartment operator: @3 plus the
+kinds, as the development rungs run it (the lead's ruling, 15 November 2026). Before registration
+the declared world runs with the operator and is shown bitwise equal to it, or the protocol's world
+is corrected as a dated pre-run correction.
+
+`today_only(definition)` strips what today's parser refuses: the compartment operator, FR-5's
+damage state and controls, and the passive routes that declare factors (FR-5's, dropped whole).
+Rows that do not apply at a node carry the world's declared trace (absent rows are refused, the
+operators' PLAN §2.4), with `background` (trace_mM, floor_fmol) on B_c, B_L, ATP, ADP and Pi. The
+closure's mask is the declared (node, row) pairs, so a trace is never a live buffer.
 
 Records: every rung of every world records every `RECORD_EVERY_S` (1 s) on the step grid, so the
 rungs of a dt ladder share their record times (keyed by integer second) with each other and with
@@ -36,10 +41,9 @@ from validation.compartment_ph.parameters import CHARGE_PER_FMOL, R, World, h_fr
 
 SPECIES = (("Na", 1), ("K", 1), ("Cl", -1), ("H", 1), ("B_c", -1), ("B_L", -1),
            ("ATP", 0), ("ADP", 0), ("Pi", 0))
-PENDING_MODEL_KEYS = ("stage_reads", "transporters", "passive_routes", "operators",
-                      "standard_concentration_mM")
+PENDING_MODEL_KEYS = ("operators", "patch_damage")
 BACKGROUND_ROWS = ("B_c", "B_L", "ATP", "ADP", "Pi")
-PENDING_EXPERIMENT_KEYS = ("passive_route_controls",)
+PENDING_EXPERIMENT_KEYS = ("damage_controls",)
 FUEL_ROWS = ("ATP", "ADP", "Pi")
 PUMP_LAW = "cells.proton_atp_mass_action_positive@1"
 HELD_FUEL = "maintained_held_rows@1"
@@ -159,8 +163,6 @@ def fr4_world(world=None, *, dt_s=None):
         junction_controls=[], pump_controls=[], calcium_pump_controls=[], channel_controls=[],
         end_time=steps * dt,
         observation_times=[k * dt for k in range(0, steps + 1, stride)],
-        passive_route_controls=[dict(route_id="proton_leak_0",
-                                     schedule=[dict(time=0.0, availability=1.0)])],
     )
     execution = dict(
         dt=dt, capacity=1, extracellular_capacity=2, membrane_capacity=2, edge_capacity=0,
@@ -290,15 +292,24 @@ def read_start(path):
     return extract
 
 
+def development_world(definition):
+    """The definition as the development rungs run it: without FR-1's compartment operator, so
+    @3 plus the kinds (the lead's ruling, 15 November 2026)."""
+    out = copy.deepcopy(definition)
+    out["model"].pop("operators", None)
+    return out
+
+
 def today_only(definition):
     """The definition without its pending parts: what today's parser can read."""
     out = copy.deepcopy(definition)
     out.pop("start", None)
-    for key in PENDING_MODEL_KEYS + ("patch_damage",):
+    for key in PENDING_MODEL_KEYS:
         out["model"].pop(key, None)
-    for entry in out["model"]["species"]:
-        for key in ("standard_mu_RT", "protonated_standard_mu_RT", "background"):
-            entry.pop(key, None)
-    for key in PENDING_EXPERIMENT_KEYS + ("damage_controls",):
+    routes = [r for r in out["model"].get("passive_routes", ()) if not r.get("factors")]
+    out["model"].pop("passive_routes", None)
+    if routes:
+        out["model"]["passive_routes"] = routes
+    for key in PENDING_EXPERIMENT_KEYS:
         out["experiment"].pop(key, None)
     return out
