@@ -5789,6 +5789,30 @@ Items 3 and 4 the user left to the lead and the advisor ("You and adviser decide
 - **The temporal comparison over about 4 s is accepted as analysis only,** because no permissively
   licensed data covers it.
 
+## D180: External modules are a first-class architectural requirement; Cells stays MIT
+
+2026-11-15. The user directed that Cells stays MIT, aiming at broad adoption. People should be able
+to use, extend and compose Cells from independently maintained packages, and the project extends
+itself through the same interfaces. An external component meets the same validation, composition,
+execution and accounting contracts as a built-in one.
+- **The design is proposed** in [MODULE_SYSTEM_DESIGN.md](MODULE_SYSTEM_DESIGN.md), with a
+  proposed ARCHITECTURE section, "External modules". It was reviewed with the advisor.
+  - **The path:** components are registered explicitly into a registry scoped to one model build,
+    then resolved, validated, assembled, compiled and run.
+  - **Stages, staged by real consumers:**
+    1. one external law in a separately installed package;
+    2. a stateful mechanism and a reusable composition, each used twice;
+    3. a reduced and detailed pair.
+- **D172's round takes only four seam constraints,** which the core owner confirmed cost nothing
+  extra:
+  - kinds reach core through a build-scoped lookup;
+  - new IDs are namespaced;
+  - the canonical order is the sorted namespaced ID;
+  - a registered but undeclared kind changes nothing.
+- **Stage 1 starts after the integrated landing.**
+- **The design's §6 decisions are the user's:** provenance for modules, D144 with modules,
+  qualifying outside modules, where the example lives, and what a module PR is.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
