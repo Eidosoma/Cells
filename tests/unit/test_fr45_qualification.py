@@ -72,6 +72,16 @@ def fr4_series(t, dt, order=2, k1=False, k2=False):
         energy_residual_pJ=[1e-4 * e * f for f in flows], energy_flows_pJ=flows)
 
 
+def k3_refused(reason="envelope"):
+    """K3 as the engine records it (the lead's ruling): refused at the definition, its reason
+    attributed by the generator."""
+    return dict(kind="engine", dt_s=1e-3, end_s=900.0, steps=0, admitted=False, completed=False,
+                refusal="definition: Invalid resolved pump @3 definition: Initial resolved "
+                        "channel/junction/pump domain invalid",
+                refusal_reason=reason, record_s=[], series={}, stage={}, ledgers={},
+                amounts_fmol={})
+
+
 def fr4_parts(order=2):
     """A complete FR-4 run that passes every criterion at order 2 (its ladder's errors at
     `order`)."""
@@ -86,9 +96,7 @@ def fr4_parts(order=2):
                                ledgers=ledgers)
     parts["control_k2"] = part(1e-3, 900.0, fr4_series(t, 1e-3, k2=True), stage=stage,
                                ledgers=ledgers)
-    parts["control_k3"] = part(1e-3, 900.0, fr4_series(t, 1e-3), ledgers=ledgers,
-                               stage=dict(stage, envelope_max_lag_ph=2.0,
-                                          envelope_stages_beyond=1200))
+    parts["control_k3"] = k3_refused()  # Refused at the definition through the envelope.
     exact = fr4_series(t, 0.0)
     kinetic = dict(exact, pH_L=[p + 2.0 * math.exp(-s) for p, s in zip(exact["pH_L"], t,
                                                                            strict=True)])
@@ -607,3 +615,21 @@ def test_the_judged_path_registers_guards_merges_and_passes(tmp_path, which):
     assert set(record["part_sources"]) == set(generator.PARTS[which])
     with pytest.raises(SystemExit, match="exists"):
         judge.main(["judged", str(path), str(out), *map(str, files)])
+
+
+def test_k3_is_caught_by_its_envelope_refusal_and_leaves_j1():
+    """The lead's rulings (15 November 2026): K3's catch is the engine's refusal through the
+    envelope at the definition; a refusal for another reason, or a K3 that runs, is not; J1's
+    admission leaves K3 out, and J5 reads zero envelope refusals and the reported maximum."""
+    protocol = json.loads(generator.PROTOCOLS["fr4"].read_text())
+    derivation = protocol["judge"]["derivation"]
+    parts = fr4_parts()
+    derived = judge.derive_fr4(parts, derivation)
+    assert derived["admission"]["all_admitted"] == 1 and "control_k3" not in derived[
+        "admission"]["parts"]
+    assert derived["controls"]["k3"]["engine_stages_beyond"] == 1
+    assert derived["envelope"] == dict(max_lag_ph=1e-5, stages_beyond=0)
+    ran = dict(k3_refused(None), admitted=True, completed=True, refusal=None)
+    for k3, expected in ((k3_refused("other"), None), (ran, 0)):
+        derived = judge.derive_fr4(dict(parts, control_k3=k3), derivation)
+        assert derived["controls"]["k3"]["engine_stages_beyond"] == expected

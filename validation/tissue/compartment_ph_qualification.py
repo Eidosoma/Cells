@@ -124,10 +124,14 @@ ENGINE_READOUTS = dict(
             "pump", "proton_leak_0", "proton_pore_0", "bounding_0_K", "cargo_transfer_0",
             "cargo_pore_0")}),
     stage=dict(
-        envelope_max_lag_ph="the largest rapid_proton_buffer.lag_estimate_ph over every stage of "
-                            "every buffered node",
-        envelope_stages_beyond="the count of stages where it exceeds the budget (1e-3 pH)",
-        cytosol_pH_min="the cytosol's smallest pH over every stage", cytosol_pH_max="its largest"),
+        envelope_max_lag_ph="the running maximum of rapid_proton_buffer.lag_estimate_ph over every "
+                            "stage of every buffered node (B4's proton_buffer_max_lag_pH, gap 7), "
+                            "at the last record",
+        envelope_stages_beyond="the envelope refusals: 0 for a part that ran to its end, since "
+                               "B4's stage check refuses the step at the first stage beyond the "
+                               "budget",
+        cytosol_pH_min="the cytosol's smallest pH over every stage (proton_buffer_min_pH)",
+        cytosol_pH_max="its largest (proton_buffer_max_pH)"),
     amounts_fmol="{node: {species: [amount at each record]}} for every node and row: the judge "
                  "computes the material check and its allowance from these (the lead's ruling, "
                  "15 November 2026), never from an engine tolerance",
@@ -135,6 +139,8 @@ ENGINE_READOUTS = dict(
                  "tolerance"),
     part=dict(admitted="parsed and admitted", completed="ran to its end without a refusal",
               refusal="the engine's refusal message (a refusal is a verdict, not an ending)",
+              refusal_reason="'envelope' when the same world is admitted with B4's stage check "
+                             "removed (K3's catch), else None",
               steps="the steps taken", definition_sha256="the definition's identity"),
 )
 
