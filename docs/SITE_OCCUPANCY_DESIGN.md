@@ -1443,9 +1443,10 @@ serving D152 and FR-3.** A comment at the top of the integrator says so.
 **One departure from §2.5: the own ledgers' floor is a constant.** It is 1e-20 fmol, D150's
 species-scale floor as its worlds declare it, plus 2.5 ε × steps × magnitude. It is not read from
 the ligand's declared floor, because the contract's `own_bounds` receives no layout (the bath
-schedule's floors are constants for the same reason). In a world that declares a larger floor, the
-own check is stricter, never looser. A per-ligand floor needs the hook to see the layout, an item for
-D172.
+schedule's floors are constants for the same reason). In a world that declares a larger floor for
+the ligand, the own check is stricter than §2.5's. In one that declares a smaller floor (the
+definition requires only a positive one), it is looser, by less than 1e-20 fmol. A per-ligand floor
+needs the hook to see the layout, an item for D172.
 
 **Fixtures:** `validation/tissue/site_occupancy_fixtures.py`.
 - `face_free_sites` is D150's face-free topology, with S at 1e-3 mM in the cell and in ecs_0, and a
@@ -1456,8 +1457,9 @@ D172.
 
 **The gates.** They ran from clean snapshots, docs/ included, on CPU 2, one unit at a time: a 2G cap,
 `--oom-first` and `--wait-headroom 4G`. The unit at 369120a had its runtime capped so that it ended
-before the lead's memory stop at 02:10 UTC (peak 903 MB). Load averages were about 8 to 18 on 8 CPUs,
-so the times are loaded. The lead measures tiers on clean CPUs at landing.
+before the lead's memory stop at 02:10 UTC (peak 903 MB). Other units shared the machine (five at
+that unit's start, MG0c's two judged runs among them), so the times are loaded. The lead measures
+tiers on clean CPUs at landing.
 
 | Gate | Result |
 | --- | --- |
@@ -1490,8 +1492,9 @@ and column 19). The operator's eleven refusals all come from its `CONFLICTS_VIEW
 - **composition with D150's or D152's operators in a run.** The structure check admits them and the
   identities are checked, but no compiled world holds both;
 - **contact populations in a run.** Stage A checks their layout;
-- **the hybrid's quadrature branch.** In B1's mixed world, no binding route reverses within a step.
-  That world is §11's open item 4's configuration: a cell receives internalised cargo and is faced
+- **the hybrid's quadrature branch.** By its parameters, no binding route in B1's mixed world
+  reverses within a step: binding starts from empty sites and stays far from equilibrium over its
+  20 ms (**S**; the branch taken was not recorded). That world is §11's open item 4's configuration: a cell receives internalised cargo and is faced
   by an inward population binding the same ligand. The dissipation check held on all its rows: no
   heat field fell by more than 1e-12 pJ.
 
