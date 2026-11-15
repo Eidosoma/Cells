@@ -112,7 +112,7 @@ Checked on E07-v1's judged run (`definition.json`, `records.npz`, `plan.json`):
 | Identity | `definition.json` lists cells, membranes, junctions and channels in array order | Order is implied; fine for an adapter |
 | Topology | Junctions name their `sender` and `receiver` | None |
 | Geometry | Only areas and volumes | **No coordinates** |
-| Records | `records.npz`: `t`, `vm`, `conc`, `osm`, `abundance`, `gate`, `generation` | No units or axes written down |
+| Records | `records.npz`: `t`, `vm`, `conc`, `osm`, `abundance`, `gate`, `generation` | No units or axes written down; no kind, no sign and no owner |
 | Events | `definition.json` `replacement_events`, `plan.json` `events` | None |
 | Representation | Not stated | Missing |
 
@@ -182,11 +182,48 @@ Rules that tighten the run view above:
     behind the record converged.
   - The records `t`, `regular` and `valid` have no `set` and no `layer`. A record may carry
     a `note`.
+  - **What a quantity layer needs to know of a record** (`schema/QUANTITY_LAYERS.md`), each
+    optional, and each stated only where the run's own files or the driver that wrote
+    them state it; a reader says what is missing and fills nothing in:
+    - `kind`: `level`, `amount`, `cumulative` or `rate`;
+    - `owner`: the model, operator or law that computed it, as the run's definition names
+      it;
+    - `sign`, for a signed record: `{"says": "what positive means, in words"}`; for a
+      level on links also `"high": "first"` or `"second"`, the end that is at the higher
+      value when the record is positive; for a transfer `"from"` and `"to"`, the two ends
+      in the order a positive amount goes. A record with no `sign` is drawn as a level or
+      a size, never with a direction. Where the run's own files do not declare the sign
+      and an adapter takes it from a table of its own, the sign carries `"by"`, which
+      says in plain words where it comes from, and the legend repeats it. The adapter's
+      table for the tissue family (`TISSUE_FIELDS` in `tools/adapt_run.py`) is the
+      engine's own convention as the owner of its core confirmed it on 15 November 2026:
+      a positive transfer leaves the cell for its outside, or the sender for the
+      receiver; pump cycles are positive inwards. It is not carried over to the older
+      single-cell model, whose flux is positive from bath into cell;
+    - what it lives on is its `set` (a set may say `holds`, one of the contract's words,
+      where its id is not one), and how it is represented is its layer's `representation`.
+  - **A record in a file of its own** carries `part`, the id of one of `view.parts`; its
+    `offset` is then within that part's arrays. The record of the times is never in a part.
   - Event times keep the run's own precision, while `t` is stored in 32 bits: match the two
     with a tolerance.
 - **`view.sets[]`.** Cells of a sheet use `polygons` (`vertices` as `[x, y]` in
   `view.space.unit`, `faces` as lists of vertex indices, one per cell, in the order of
   `ids`). Junctions use `links` with `ends` as pairs of indices into the named set.
+- **`view.parts[]`** (optional) list the files that hold records of their own, so that a
+  run's own file stays near 1 MB whatever its layers can show:
+  `[{"id", "label", "file", "byte_length"}]`. `id` is lower-case letters, digits and
+  hyphens; `file` is `runs/<run-id>.<part id>.json`, beside the run's; `byte_length` is
+  the length of its decoded arrays. The file is
+  `{"format": "cells.visualizer.replay_part@1", "run": "<run-id>", "part": "<part id>",
+  "payload": {"encoding": "base64", "byte_length": …, "data": "…"}}`, under the same size
+  limit as a run's file. The viewer fetches it when a layer that reads one of its records
+  is switched on, and not before.
+- **`view.surroundings`** (optional) says whether every cell's surroundings share one
+  potential: `{"shared": true, "potential_V": 0.0, "says": "how the run's files state
+  it"}`. Only then is the difference of two cells' membrane voltages the voltage across
+  the junction between them. An adapter states it only where the run's definition does
+  (each membrane's outside a held bath, all at one potential, and nothing scheduled that
+  changes a bath); otherwise it is left out, and a layer that needs it is not offered.
 - **`view.regions[]`** (optional) name subsets the run's plan defines:
   `[{"id", "label", "set", "indices"}]`, for example the disc of cells that start in the
   written state. The viewer may outline a region; its label comes from the catalogue.
@@ -216,7 +253,8 @@ Rules that tighten the run view above:
   "runs": [{
     "id": "e07-v1--…--seed1", "experiment": "e07-v1", "arm": "…", "seed": 1,
     "label": "registered seed", "group": "control", "class": "erosion", "stop": "planned end",
-    "records": 318, "end_s": 2340.0, "file": "runs/e07-v1--…--seed1.json", "bytes": 700000
+    "records": 318, "end_s": 2340.0, "file": "runs/e07-v1--…--seed1.json", "bytes": 700000,
+    "parts": [{"id": "junction-gate", "file": "runs/e07-v1--…--seed1.junction-gate.json", "bytes": 240000}]
   }]
 }
 ```
@@ -226,6 +264,9 @@ and sources); the adapter copies the entry of each experiment it adapts and adds
 A record's entry may give `shown_between`, `[low, high]` in the record's own unit: the
 limits its colour scale uses in every run of the experiment, so one value has one colour.
 A run that reaches beyond them widens the scale.
+
+A run's `parts` (optional) list its files of records of their own, so that whoever
+publishes the runs knows every file without opening one.
 
 **Several experiments.** One catalogue holds every experiment adapted into the folder,
 each with its runs; adapting one experiment leaves the others' entries and files in place.
@@ -268,6 +309,9 @@ labels keyed by those words: `{"planned end": {"label": "Ran to its planned end"
   it fetches the run's `file`, a URL relative to the page. The local server and the
   published artifact serve `runs/<run-id>.json` beside the page; a standalone file carries
   the runs inline.
+- A part of a run is loaded when a layer first needs it: from
+  `<script type="application/json" data-replay-part="<run-id>/<part id>">` in the page, or
+  else from the part's `file`, beside the run's.
 
 ## Open points for the engine-side note
 

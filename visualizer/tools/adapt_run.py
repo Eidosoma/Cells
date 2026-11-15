@@ -50,6 +50,7 @@ from lib.npy_reader import read_npz  # noqa: E402
 REPLAY_FORMAT = "cells.visualizer.replay@1"
 VIEW_FORMAT = "cells.run_view@1"
 INDEX_FORMAT = "cells.visualizer.replay_index@1"
+PART_FORMAT = "cells.visualizer.replay_part@1"  # records of a run in a file of their own
 LIMIT_BYTES = 1_000_000  # one run file stays under 1 MB
 PATHS = re.compile(r"/(?:home|mnt|Users|tmp|var|root|opt|srv)/|[A-Za-z]:\\\\")
 RUN_NAME = re.compile(r"[A-Za-z0-9._-]+/seed(\d+)\Z")
@@ -341,6 +342,92 @@ def lay_out(name, model, derivation):
     return SimpleNamespace(cells=cells, junctions=junctions, cell_index=cell_index, ends=ends, vertices=vertices, faces=faces, pitch=pitch)
 
 
+# ---------------------------------------------------------------- the tissue family's fields
+#
+# What a quantity layer needs to know of a field of the tissue family (resolved_pump_tissue@3
+# and the models over it) that the run's view does not declare yet: what kind of number it
+# is, and for a signed one which way it is positive. This is the viewer's own table, kept
+# until the engine's run view declares these itself (docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md).
+#
+# The signs are the engine's own convention, as the owner of its core confirmed it on
+# 15 November 2026: a positive transfer leaves the cell for its outside, or the sender for
+# the receiver; pump cycles are positive inwards; what a reservoir supplies is positive into
+# the outside node. A field with no sign here has none confirmed, and is shown as a size or a
+# level, never with a direction. The table holds for the tissue family only: the older
+# single-cell model's flux is positive from bath into cell, and is not to be read by it.
+#
+# Every *_dissipated_energy_pJ field that exists today is zero or more and never falls,
+# element by element, at each accepted row (confirmed the same day): a total that only grows,
+# so that a rate worked out from it is never negative. Under the rework's exact booking one
+# route's own share may be negative: `never_falls` is to be asked again of a run made then.
+TISSUE_SIGN_BY = "the engine's own convention for this family of models, confirmed by the owner of its core on 15 November 2026 and not yet declared in the run's view"
+_OUT = {"says": "a positive amount has left the membrane's cell for its outside", "from": "cell", "to": "outside node", "by": TISSUE_SIGN_BY}
+_ALONG = {"says": "a positive amount has left the sender for the receiver", "from": "first", "to": "second", "by": TISSUE_SIGN_BY}
+TISSUE_FIELDS = {
+    "membrane_voltage_V": {"kind": "level", "unit": "V"},
+    "cell_potential_V": {"kind": "level", "unit": "V"},
+    "junction_voltage_V": {"kind": "level", "unit": "V"},
+    "amount": {"kind": "amount", "unit": "fmol"},
+    "extracellular_amount": {"kind": "amount", "unit": "fmol"},
+    "membrane_transferred": {"kind": "cumulative", "unit": "fmol", "sign": _OUT},
+    "channel_transferred": {"kind": "cumulative", "unit": "fmol", "sign": dict(_OUT, says="a positive amount has left the channel's cell for its outside, as for its membrane")},
+    "junction_transferred": {"kind": "cumulative", "unit": "fmol", "sign": _ALONG},
+    "face_transferred": {"kind": "cumulative", "unit": "fmol", "sign": _ALONG},
+    "pump_cycles": {"kind": "cumulative", "unit": "fmol", "sign": {"says": "positive cycles carry their ions into the cell: the stoichiometry times the cycles is taken from the membrane's total", "from": "outside node", "to": "cell", "by": TISSUE_SIGN_BY}},
+    "reservoir_supplied": {"kind": "cumulative", "unit": "fmol", "sign": {"says": "a positive amount has entered the outside node from its reservoir", "by": TISSUE_SIGN_BY}},
+    "metabolic_work_pJ": {"kind": "cumulative", "unit": "pJ"},
+}
+for _part in ("membrane", "channel", "junction", "face", "pump"):
+    TISSUE_FIELDS[f"{_part}_dissipated_energy_pJ"] = {"kind": "cumulative", "unit": "pJ", "never_falls": True}
+
+
+def tissue_field(name):
+    """What the viewer's table says of one field of the tissue family, or None when it does not list it."""
+    entry = TISSUE_FIELDS.get(name)
+    return json.loads(json.dumps(entry)) if entry else None
+
+
+# The controls a turnover definition schedules. None of them changes the potential of a held bath.
+KNOWN_CONTROLS = {"end_time", "observation_times", "membrane_controls", "junction_controls", "pump_controls", "calcium_pump_controls", "channel_controls", "replacement_events"}
+
+
+def owners_of(definition):
+    """The model or law that the run's definition names for each saved state: {record id: name or None}."""
+    model = definition.get("model") or {}
+    replacement = model.get("replacement") or {}
+    gates = {(junction.get("gate") or {}).get("law") for junction in model.get("junctions") or []}
+    name = lambda value: value if isinstance(value, str) and value else None  # noqa: E731
+    return {
+        "vm": name(model.get("id")),
+        "generation": name(replacement.get("law")),
+        "junction_abundance": name((replacement.get("junction_formation") or {}).get("law")),
+        "junction_gate": name(next(iter(gates))) if len(gates) == 1 else None,
+    }
+
+
+def surroundings_of(definition):
+    """Whether every cell's surroundings share one potential, as the definition states it; None when it does not say.
+
+    Each membrane's outside must be a held bath (a reservoir), all at one boundary potential,
+    and the experiment must schedule nothing beyond the controls known to leave a bath's
+    potential alone. Only then is the difference of two cells' membrane voltages the voltage
+    across the junction between them (schema/QUANTITY_LAYERS.md, rule 1).
+    """
+    model, experiment = definition.get("model") or {}, definition.get("experiment") or {}
+    outside = {node.get("id"): node for node in model.get("extracellular") or [] if isinstance(node, dict)}
+    membranes = model.get("membranes") or []
+    nodes = [outside.get(membrane.get("outside")) for membrane in membranes if isinstance(membrane, dict)]
+    if not nodes or len(nodes) != len(model.get("cells") or []):
+        return None
+    if any(node is None or node.get("reservoir") is not True or isinstance(node.get("boundary_potential_V"), bool) or not isinstance(node.get("boundary_potential_V"), (int, float)) for node in nodes):
+        return None
+    potentials = {float(node["boundary_potential_V"]) for node in nodes}
+    if len(potentials) != 1 or set(experiment) - KNOWN_CONTROLS:
+        return None
+    potential = potentials.pop()
+    return {"shared": True, "potential_V": potential, "says": f"In this run every cell's surroundings are a held bath at {potential:g} V: its definition says so, and nothing it schedules changes a bath's potential."}
+
+
 def increasing(name, times):
     if any(later <= earlier for earlier, later in zip(times, times[1:])):
         raise Refused(f"{name}: the record times do not increase")
@@ -350,9 +437,14 @@ def d_mark(threshold):
     return [{"value": threshold, "label": "D above this voltage, H below"}] if threshold is not None else None
 
 
-def turnover_records(name, folder, sheet, result, threshold, grid, entry, derivation):
-    """The arrays of a turnover run's records.npz, as (payload, records, saved arrays)."""
+def turnover_records(name, folder, sheet, result, threshold, grid, entry, derivation, definition=None):
+    """The arrays of a turnover run's records.npz, as (payload, records, saved arrays, parts).
+
+    parts are records that go in files of their own beside the run's, fetched when a layer
+    needs them (schema/QUANTITY_LAYERS.md, rule 10): [{"id", "label", "payload"}].
+    """
     cells, junctions = sheet.cells, sheet.junctions
+    owners = owners_of(definition or {})
     saved = read_npz(folder / "records.npz", ["t", "vm", "generation", "abundance", "regular", "valid"])
     count = saved["t"].shape[0]
     expected = {"t": (count,), "vm": (count, len(cells)), "generation": (count, len(cells)), "abundance": (count, len(junctions)), "regular": (count,), "valid": (count,)}
@@ -368,26 +460,26 @@ def turnover_records(name, folder, sheet, result, threshold, grid, entry, deriva
     payload, records = Payload(), []
     records.append(describe(payload, "t", "Time", "s", ["time"], "float32", (count,), array("f", times)))
     records.append(
-        describe(payload, "vm", label_of("vm", "Membrane voltage"), "V", ["time", "cell"], "float32", saved["vm"].shape, array("f", saved["vm"].values), set="cell", layer="membrane", marks=d_mark(threshold))
+        describe(payload, "vm", label_of("vm", "Membrane voltage"), "V", ["time", "cell"], "float32", saved["vm"].shape, array("f", saved["vm"].values), set="cell", layer="membrane", marks=d_mark(threshold), kind="level", owner=owners["vm"])
     )
     generation = saved["generation"].values
     if min(generation) < 0:
         raise Refused(f"{name}: a negative generation")
     code, dtype = ("B", "uint8") if max(generation) < 256 else ("H", "uint16") if max(generation) < 65536 else ("i", "int32")
     records.append(
-        describe(payload, "generation", label_of("generation", "Generation"), "1", ["time", "cell"], dtype, saved["generation"].shape, array(code, generation), set="cell", layer="replacement")
+        describe(payload, "generation", label_of("generation", "Generation"), "1", ["time", "cell"], dtype, saved["generation"].shape, array(code, generation), set="cell", layer="replacement", kind="level", owner=owners["generation"])
     )
     abundance = saved["abundance"].values
     label = label_of("junction_abundance", "Junction abundance")
     if all(math.isfinite(value) and -1e-9 <= value <= 1 + 1e-9 for value in abundance):
         stored = array("B", (min(255, max(0, round(value * 255))) for value in abundance))
         records.append(
-            describe(payload, "junction_abundance", label, "1", ["time", "junction"], "uint8", saved["abundance"].shape, stored, value_scale=1 / 255, set="junction", layer="replacement")
+            describe(payload, "junction_abundance", label, "1", ["time", "junction"], "uint8", saved["abundance"].shape, stored, value_scale=1 / 255, set="junction", layer="replacement", kind="level", owner=owners["junction_abundance"])
         )
         derivation.append("Junction abundance is stored in 256 steps, for drawing only (value = stored x 1/255); the run saved it as 64-bit numbers.")
     else:
         records.append(
-            describe(payload, "junction_abundance", label, "1", ["time", "junction"], "float32", saved["abundance"].shape, array("f", abundance), set="junction", layer="replacement")
+            describe(payload, "junction_abundance", label, "1", ["time", "junction"], "float32", saved["abundance"].shape, array("f", abundance), set="junction", layer="replacement", kind="level", owner=owners["junction_abundance"])
         )
     every = f"{grid:g} s" if grid else "regular"
     records.append(
@@ -405,7 +497,30 @@ def turnover_records(name, folder, sheet, result, threshold, grid, entry, deriva
     )  # fmt: skip
     derivation.append("Record names, units and axes: records.npz states none. They are read from the driver that wrote it: times in s, membrane voltage in V with one column per cell, abundance with one column per junction, in the definition's order.")
     derivation.append("Times and membrane voltages are stored as 32-bit numbers; the run saved 64-bit.")
-    return payload, records, saved
+    stated = "the model or law that the run's definition.json names for that state" if any(owners.values()) else "not stated: the run's definition.json names no model or law for these states"
+    derivation.append(
+        f"What kind of number each record is (a level) is read from the driver that wrote records.npz, which states none. Each record's owner is {stated}. "
+        "Which way the membrane voltage is positive is stated by neither, so it is shown as a level and given no direction."
+    )
+    parts = []
+    # Each junction's gate, where the run saved it, goes in a file of its own: only the layer that reads it fetches it.
+    try:
+        gate = read_npz(folder / "records.npz", ["gate"])["gate"]
+    except ValueError:
+        gate = None
+    if gate is not None:
+        if gate.shape != (count, len(junctions)):
+            raise Refused(f"{name}: records.npz gate has shape {gate.shape}, expected {(count, len(junctions))}")
+        if not all(math.isfinite(value) and -1e-9 <= value <= 1 + 1e-9 for value in gate.values):
+            raise Refused(f"{name}: a junction's gate is not between 0 and 1")
+        own = Payload()
+        stored = array("B", (min(255, max(0, round(value * 255))) for value in gate.values))
+        records.append(
+            describe(own, "junction_gate", label_of("junction_gate", "Junction gate"), "1", ["time", "junction"], "uint8", gate.shape, stored, value_scale=1 / 255, set="junction", layer="junctions", kind="level", owner=owners["junction_gate"], part="junction-gate")
+        )
+        parts.append({"id": "junction-gate", "label": "Each junction's gate", "payload": own})
+        derivation.append("Each junction's gate (how far it is open, 0 to 1) is stored in 256 steps, for drawing only, in a file of its own beside this one; the run saved it as 64-bit numbers.")
+    return payload, records, saved, parts
 
 
 def replacement_events(name, definition, plan, sheet, last, derivation):
@@ -477,7 +592,9 @@ def refusal_of(recorded):
     return recorded or None
 
 
-def assemble(run, layers, stated, sheet, records, regions, events, derivation):
+def assemble(run, layers, stated, sheet, records, regions, events, derivation, parts=(), surroundings=None):
+    if any(record.get("layer") == "junctions" for record in records):
+        layers = tuple(layers) + (("junctions", "Junction gating"),)
     view = {
         "format": VIEW_FORMAT,
         "derived": True,
@@ -496,6 +613,11 @@ def assemble(run, layers, stated, sheet, records, regions, events, derivation):
     }
     if not regions:
         del view["regions"]
+    if parts:
+        # Records in files of their own: each named by the run's id and the part's.
+        view["parts"] = [{"id": part["id"], "label": part["label"], "file": f"runs/{run['id']}.{part['id']}.json", "byte_length": part["payload"].length} for part in parts]
+    if surroundings:
+        view["surroundings"] = surroundings
     return view
 
 
@@ -556,7 +678,7 @@ def adapt_e07_v1(root, name, experiment, entry):
     sheet = lay_out(name, definition["model"], derivation)
     snapshot = snapshot_named(root, (result.get("provenance") or {}).get("source"), "snapshot")
     threshold, grid = driver_marks(root, snapshot, "validation.tissue.e07_v1_run", "validation.tissue.e07_v1_turnover", derivation)
-    payload, records, saved = turnover_records(name, folder, sheet, result, threshold, grid, entry, derivation)
+    payload, records, saved, parts = turnover_records(name, folder, sheet, result, threshold, grid, entry, derivation, definition)
     events, dropped = replacement_events(name, definition, plan, sheet, saved["t"].values[-1], derivation)
 
     regions = []
@@ -588,8 +710,13 @@ def adapt_e07_v1(root, name, experiment, entry):
         end_s=result.get("end_s"), stop=result.get("stop"), refusal=refusal_of(result.get("refusal")), run_class=run_class,
         judged_s=outcome.get("judged_s"), parameters=parameters, readouts=readouts,
     )  # fmt: skip
-    view = assemble(run, TURNOVER_LAYERS, stated, sheet, records, regions, events, derivation)
-    return view, payload.data(), turnover_notes(saved, sheet, events, dropped, revision, threshold, regions)
+    surroundings = surroundings_of(definition)
+    if surroundings:
+        derivation.append("That every cell's surroundings share one potential is read from definition.json: each membrane's outside is a held bath (a reservoir), all at one boundary potential, and the experiment schedules no control of a bath.")
+    view = assemble(run, TURNOVER_LAYERS, stated, sheet, records, regions, events, derivation, parts, surroundings)
+    notes = turnover_notes(saved, sheet, events, dropped, revision, threshold, regions)
+    notes["parts"] = {part["id"]: part["payload"].data() for part in parts}
+    return view, payload.data(), notes
 
 
 # ---------------------------------------------------------------- the turnover pre-screen
@@ -623,7 +750,7 @@ def adapt_turnover_literature(root, name, experiment, entry):
     driver = "validation.tissue.heredity_turnover_literature"
     snapshot = snapshot_named(root, (result.get("provenance") or {}).get("source"))
     threshold, grid = driver_marks(root, snapshot, driver, driver, derivation)
-    payload, records, saved = turnover_records(name, folder, sheet, result, threshold, grid, entry, derivation)
+    payload, records, saved, parts = turnover_records(name, folder, sheet, result, threshold, grid, entry, derivation, definition)
     events, dropped = replacement_events(name, definition, plan, sheet, saved["t"].values[-1], derivation)
 
     # The driver replaces only the disc's cells, in the order of the plan's permutation.
@@ -648,9 +775,13 @@ def adapt_turnover_literature(root, name, experiment, entry):
         experiment, name, None, label=None, group=group if isinstance(group, str) else None, engine_models=result.get("engine_models"), revision=revision,
         end_s=result.get("end_s"), stop=result.get("stop"), refusal=refusal_of(result.get("refusal")), parameters=parameters, readouts=readouts,
     )  # fmt: skip
-    view = assemble(run, TURNOVER_LAYERS, stated, sheet, records, [disc], events, derivation)
+    surroundings = surroundings_of(definition)
+    if surroundings:
+        derivation.append("That every cell's surroundings share one potential is read from definition.json: each membrane's outside is a held bath (a reservoir), all at one boundary potential, and the experiment schedules no control of a bath.")
+    view = assemble(run, TURNOVER_LAYERS, stated, sheet, records, [disc], events, derivation, parts, surroundings)
     notes = turnover_notes(saved, sheet, events, dropped, revision, threshold, [disc])
     notes["counts_checked"] = counted
+    notes["parts"] = {part["id"]: part["payload"].data() for part in parts}
     return view, payload.data(), notes
 
 
@@ -891,8 +1022,12 @@ def check_clean(name, text):
         raise Refused(f"{name} would carry a machine path ({found.group(0)}...)")
 
 
-def row_of(run, records, size):
-    """A run's line in the catalogue. A class and a refusal are there only when the run has one."""
+def row_of(run, records, size, parts=()):
+    """A run's line in the catalogue. A class and a refusal are there only when the run has one.
+
+    parts lists the run's records that are in files of their own, [{"id", "file", "bytes"}], so
+    that whoever publishes the runs knows every file without opening one.
+    """
     row = {"id": run["id"], "experiment": run["experiment"], "arm": run["arm"], "seed": run["seed"], "label": run["label"], "group": run["group"]}
     if "class" in run:
         row["class"] = run["class"]
@@ -900,6 +1035,8 @@ def row_of(run, records, size):
     if "refusal" in run:
         row["refusal"] = run["refusal"]
     row.update({"records": records, "end_s": run["end_s"], "file": f"runs/{run['id']}.json", "bytes": size})
+    if parts:
+        row["parts"] = list(parts)
     return row
 
 
@@ -1039,7 +1176,16 @@ def main(argv=None):
                 raise Refused(f"two runs would both be called {run['id']}")
             written.add(run["id"])
             (out / f"{run['id']}.json").write_bytes(content)
-            listed.append(row_of(run, notes["records"], len(content)))
+            # The run's records in files of their own, each under the same size limit.
+            beside = []
+            for part in view.get("parts") or []:
+                arrays = notes["parts"][part["id"]]
+                text = serialise({"format": PART_FORMAT, "run": run["id"], "part": part["id"], "payload": {"encoding": "base64", "byte_length": len(arrays), "data": base64.b64encode(arrays).decode("ascii")}})
+                if len(text) >= LIMIT_BYTES:
+                    raise Refused(f"{name}: its part {part['id']} would be {len(text):,} bytes; a file of a run stays under {LIMIT_BYTES:,}")
+                (out / Path(part["file"]).name).write_bytes(text)
+                beside.append({"id": part["id"], "file": part["file"], "bytes": len(text)})
+            listed.append(row_of(run, notes["records"], len(content), beside))
             flags = "" if "on_grid" not in notes else f" ({notes['on_grid']} on the grid, {notes['valid']} valid)"
             words = [f"class {run['class']!r}"] if "class" in run else []
             words += [f"stop {run['stop']!r}"] if run["stop"] else []
@@ -1055,7 +1201,7 @@ def main(argv=None):
     index, kept = merged_catalogue(out, existing, list(curated), adapted)
     check_clean("index.json", json.dumps(index, ensure_ascii=False))
     (out / "index.json").write_bytes((json.dumps(index, ensure_ascii=False, indent=1) + "\n").encode("utf-8"))
-    known = {f"{row['id']}.json" for row in index["runs"]} | {"index.json"}
+    known = {f"{row['id']}.json" for row in index["runs"]} | {Path(part["file"]).name for row in index["runs"] for part in row.get("parts") or []} | {"index.json"}
     stale = sorted(path.name for path in out.glob("*.json") if path.name not in known)
     if stale:
         print(f"note: {len(stale)} other file(s) in the output folder are not in the catalogue and were left in place: {', '.join(stale[:4])}", file=sys.stderr)

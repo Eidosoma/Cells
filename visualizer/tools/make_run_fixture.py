@@ -133,7 +133,8 @@ def turnover_records(cells, pairs, disc, events, marks, fallen=None, lowered=())
         for a, b in pairs:
             born = max((event_step * DT for event_step, slot, *_ in events if slot in (a, b) and event_step < step), default=None)
             abundance.append(1.0 if born is None else max(0.0, 1.0 - math.exp(-(t - born - LAG_S) / TAU_S)) if t > born + LAG_S else 0.0)
-            gate.append(1.0)
+            # A junction across the disc's edge has its gate mostly shut; the others are open.
+            gate.append(0.25 if (a in disc) != (b in disc) else 1.0)
         conc += [value + 0.01 * cell for value in (8.0, 140.0, 20.0) for cell in range(len(cells))]
         osm += [300.0 + 0.1 * cell for cell in range(len(cells))]
         valid.append(not math.isclose(t, 41.355))  # one record marked not valid, to exercise the flag
@@ -152,15 +153,24 @@ def turnover_records(cells, pairs, disc, events, marks, fallen=None, lowered=())
     return arrays, times, regular, vm
 
 
-def turnover_definition(cells, junctions, events, newcomer):
+def turnover_definition(cells, junctions, events, newcomer, full=False):
+    """A definition in the shape of a turnover run's. `full` adds what an E07-v1 definition
+    states and the pre-screen fixture leaves out: each cell's membrane and its held bath, the
+    junctions' gate law, and the laws of replacement and junction formation."""
+    model = {
+        "id": "synthetic_sheet@0",
+        "cells": [{"id": cell, "volume_pL": 0.75} for cell in cells],
+        "junctions": junctions,
+    }
+    if full:
+        model["junctions"] = [dict(junction, gate={"law": "synthetic_junction_gate@0"}) for junction in junctions]
+        model["extracellular"] = [{"id": f"bath_{number}", "reservoir": True, "boundary_potential_V": 0.0} for number in range(len(cells))]
+        model["membranes"] = [{"id": f"membrane_{number}", "inside": cell, "outside": f"bath_{number}"} for number, cell in enumerate(cells)]
+        model["replacement"] = {"law": "synthetic_replacement@0", "junction_formation": {"law": "synthetic_junction_formation@0"}}
     return {
         "schema_version": 1,
         "note": f"{SYNTHETIC}: not a Cells definition",
-        "model": {
-            "id": "synthetic_sheet@0",
-            "cells": [{"id": cell, "volume_pL": 0.75} for cell in cells],
-            "junctions": junctions,
-        },
+        "model": model,
         "experiment": {
             "end_time": END_S,
             "replacement_events": [
@@ -196,7 +206,7 @@ def write_small(sheet):
     run = OUT / "runs" / ARM / f"seed{SEED}"
     run.mkdir(parents=True, exist_ok=True)
     write_npz(run / "records.npz", arrays)
-    write_json(run / "definition.json", turnover_definition(cells, junctions, events, "donor_copy"), indent=None)
+    write_json(run / "definition.json", turnover_definition(cells, junctions, events, "donor_copy", full=True), indent=None)
     write_json(
         run / "plan.json",
         {

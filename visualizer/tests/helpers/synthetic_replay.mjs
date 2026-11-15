@@ -4,6 +4,7 @@
 // cells, a disc of 37, a record every 10 s plus one at each replacement.
 
 const SQRT3 = Math.sqrt(3);
+const MADE_UP = "none: synthetic example data";
 
 /** Axial coordinates of a hexagon of cells, `rings` cells out from the centre. */
 function hexagon(rings) {
@@ -32,9 +33,12 @@ function random(seed) {
  * Build a run. Returns { file, entry }: the run file as an object and its catalogue entry.
  * Options: rings (6 gives 127 cells), disc (3 gives 37), end, interval, erode (the share of
  * replaced disc cells that fall to the resting voltage), invalidFrom (a time after which
- * records are flagged invalid, to exercise that path).
+ * records are flagged invalid, to exercise that path), gate (false: the run saved no
+ * junction gate) and surroundings (false: its files do not say that the cells' surroundings
+ * share one potential). `parts` holds the files of the records that come in a file of their
+ * own, by part id (schema/QUANTITY_LAYERS.md, rule 10).
  */
-export function syntheticRun({ rings = 6, disc = 3, end = 2340, interval = 27.5675675, erode = 0.3, seed = 1, arm = "synthetic-example", invalidFrom = null, pitch = 11 } = {}) {
+export function syntheticRun({ rings = 6, disc = 3, end = 2340, interval = 27.5675675, erode = 0.3, seed = 1, arm = "synthetic-example", invalidFrom = null, pitch = 11, gate = true, surroundings = true } = {}) {
   const rand = random(seed);
   const axial = hexagon(rings);
   const key = ([q, r]) => `${q},${r}`;
@@ -95,7 +99,7 @@ export function syntheticRun({ rings = 6, disc = 3, end = 2340, interval = 27.56
   const steps = times.length;
 
   const D = -0.022, H = -0.075;
-  const vm = new Float32Array(steps * cells), generation = new Uint8Array(steps * cells), abundance = new Uint8Array(steps * links);
+  const vm = new Float32Array(steps * cells), generation = new Uint8Array(steps * cells), abundance = new Uint8Array(steps * links), gates = new Uint8Array(steps * links);
   const state = inDisc.map((yes) => (yes ? D : H)); // the voltage each cell is heading for
   const level = [...state], born = axial.map(() => -1e9), count = axial.map(() => 0);
   let next = 0;
@@ -116,36 +120,48 @@ export function syntheticRun({ rings = 6, disc = 3, end = 2340, interval = 27.56
       const age = time - Math.max(born[a], born[b]);
       const formed = age > 1e8 ? 1 : age < 120 ? 0.05 : 0.05 + 0.95 * (1 - Math.exp(-(age - 120) / 900));
       abundance[step * links + link] = Math.round(formed * 255);
+      // A junction between two cells far apart in voltage has its gate mostly shut.
+      gates[step * links + link] = Math.round((Math.abs(level[a] - level[b]) > 0.015 ? 0.12 : 0.96) * 255);
     });
   });
 
   // The payload: every array at an offset that is a multiple of 4.
   const arrays = [
     { id: "t", label: "Time", unit: "s", axes: ["time"], dtype: "float32", data: Float32Array.from(times, (item) => item.time), shape: [steps] },
-    { id: "vm", label: "Membrane voltage (synthetic)", unit: "V", set: "cell", layer: "membrane", axes: ["time", "cell"], dtype: "float32", data: vm, shape: [steps, cells] },
-    { id: "generation", label: "Generation (synthetic)", unit: "1", set: "cell", layer: "replacement", axes: ["time", "cell"], dtype: "uint8", data: generation, shape: [steps, cells] },
+    { id: "vm", label: "Membrane voltage (synthetic)", unit: "V", set: "cell", layer: "membrane", axes: ["time", "cell"], dtype: "float32", data: vm, shape: [steps, cells], kind: "level", owner: MADE_UP },
+    { id: "generation", label: "Generation (synthetic)", unit: "1", set: "cell", layer: "replacement", axes: ["time", "cell"], dtype: "uint8", data: generation, shape: [steps, cells], kind: "level", owner: MADE_UP },
     { id: "junction_abundance", label: "Junction abundance (synthetic)", unit: "1", set: "junction", layer: "replacement", axes: ["time", "junction"], dtype: "uint8", data: abundance, shape: [steps, links], scale: 1 / 255, quantised: true },
     { id: "regular", label: "On the regular record grid", unit: "1", axes: ["time"], dtype: "uint8", data: Uint8Array.from(times, (item) => item.regular), shape: [steps] },
     { id: "valid", label: "Valid record", unit: "1", axes: ["time"], dtype: "uint8", data: Uint8Array.from(times, (item) => (invalidFrom !== null && item.time >= invalidFrom ? 0 : 1)), shape: [steps] },
   ];
-  let offset = 0;
-  const records = arrays.map(({ data, ...record }) => {
-    const bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-    let low = Infinity, high = -Infinity;
-    for (const stored of data) {
-      const actual = stored * (record.scale ?? 1);
-      if (Number.isFinite(actual)) {
-        low = Math.min(low, actual);
-        high = Math.max(high, actual);
+  // Lay arrays end to end, each at a multiple of four bytes: { records, payload }.
+  const pack = (list) => {
+    let offset = 0;
+    const placed = list.map(({ data, ...record }) => {
+      const bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+      let low = Infinity, high = -Infinity;
+      for (const stored of data) {
+        const actual = stored * (record.scale ?? 1);
+        if (Number.isFinite(actual)) {
+          low = Math.min(low, actual);
+          high = Math.max(high, actual);
+        }
       }
-    }
-    const placed = { ...record, offset, range: [low, high], bytes };
-    offset += Math.ceil(bytes.length / 4) * 4;
-    return placed;
-  });
-  const payload = new Uint8Array(offset);
-  for (const record of records) payload.set(record.bytes, record.offset);
-  for (const record of records) delete record.bytes;
+      const entry = { ...record, offset, range: [low, high], bytes };
+      offset += Math.ceil(bytes.length / 4) * 4;
+      return entry;
+    });
+    const bytes = new Uint8Array(offset);
+    for (const record of placed) bytes.set(record.bytes, record.offset);
+    for (const record of placed) delete record.bytes;
+    return { records: placed, payload: bytes };
+  };
+  const { records, payload } = pack(arrays);
+  // Each junction's gate comes in a file of its own, as a real run's does.
+  const gatePart = gate
+    ? pack([{ id: "junction_gate", label: "Junction gate (synthetic)", unit: "1", set: "junction", layer: "junctions", axes: ["time", "junction"], dtype: "uint8", data: gates, shape: [steps, links], scale: 1 / 255, quantised: true, kind: "level", owner: MADE_UP, part: "junction-gate" }])
+    : null;
+  if (gatePart) records.push(...gatePart.records);
   records.find((record) => record.id === "vm").marks = [{ value: -0.0394, label: "D above, H below (synthetic)" }];
 
   const id = `e07-v1--${arm}--seed${seed}`;
@@ -199,6 +215,7 @@ export function syntheticRun({ rings = 6, disc = 3, end = 2340, interval = 27.56
     layers: [
       { id: "membrane", label: "Membrane voltage and ions", representation: "simulated" },
       { id: "replacement", label: "Cell replacement", representation: "prescribed" },
+      ...(gate ? [{ id: "junctions", label: "Junction gating", representation: "modelled" }] : []),
     ],
     sets: [
       { id: "cell", scale: "cell", ids: axial.map((_, index) => `cell_${index}`), geometry: { kind: "polygons", vertices, faces } },
@@ -215,10 +232,17 @@ export function syntheticRun({ rings = 6, disc = 3, end = 2340, interval = 27.56
       label: event.label,
     })),
   };
-  const data = Buffer.from(payload.buffer, payload.byteOffset, payload.byteLength).toString("base64");
-  const file = { format: "cells.visualizer.replay@1", view, payload: { encoding: "base64", byte_length: payload.byteLength, data } };
+  const base64 = (bytes) => Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength).toString("base64");
+  const parts = {};
   const entry = { id, experiment: "e07-v1", arm, seed, label: "synthetic example", group: "control", class: "erosion", stop: "planned end", records: steps, end_s: end, file: `runs/${id}.json`, bytes: 0 };
-  return { file, entry };
+  if (gatePart) {
+    view.parts = [{ id: "junction-gate", label: "Each junction's gate (synthetic)", file: `runs/${id}.junction-gate.json`, byte_length: gatePart.payload.byteLength }];
+    parts["junction-gate"] = { format: "cells.visualizer.replay_part@1", run: id, part: "junction-gate", payload: { encoding: "base64", byte_length: gatePart.payload.byteLength, data: base64(gatePart.payload) } };
+    entry.parts = [{ id: "junction-gate", file: view.parts[0].file, bytes: 0 }];
+  }
+  if (surroundings) view.surroundings = { shared: true, potential_V: 0, says: "Synthetic example: every cell's surroundings are taken to be a held bath at 0 V." };
+  const file = { format: "cells.visualizer.replay@1", view, payload: { encoding: "base64", byte_length: payload.byteLength, data: base64(payload) } };
+  return { file, entry, parts };
 }
 
 /** The catalogue for a list of synthetic runs, with the experiment's entry marked as an example. */

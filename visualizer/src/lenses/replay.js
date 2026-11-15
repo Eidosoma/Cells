@@ -1,8 +1,10 @@
 // The experiments lens: one saved run, replayed. The sheet of cells is drawn from the
-// run's own polygons, each cell coloured (and raised) by one of its records at the
-// playhead. Seams between cells fill in as their junctions form, a frame marks a region
-// the run's plan names (the disc), and a ring with an arrow marks each replacement as
-// it happens.
+// run's own polygons. What cannot be seen is drawn onto it by quantity layers
+// (schema/QUANTITY_LAYERS.md): each layer maps a record the run saved to a mark, and one
+// layer holds each visual channel. As it opens, a cell is coloured and raised by its
+// membrane voltage, as the replay always was. Seams between cells fill in as their
+// junctions form, a frame marks a region the run's plan names (the disc), and a ring with
+// an arrow marks each replacement as it happens.
 //
 // It shows what the run saved. Every step is a saved record and nothing is interpolated;
 // a record the run does not count as valid is drawn grey, never as data. The class shown
@@ -10,16 +12,22 @@
 
 import * as THREE from "../three.js";
 import { disposeTree } from "../core/stage.js";
-import { loadRun } from "../replay/source.js";
+import { loadRun, loadPart } from "../replay/source.js";
 import { Player } from "../replay/player.js";
 import { Catalogue, RUN, CELL } from "../replay/catalogue.js";
 import { Ramp, parse } from "../replay/ramp.js";
 import { clock, display, niceDomain, number } from "../replay/format.js";
 import "../replay/trace.js";
+import { MARKS } from "../layers/marks/index.js";
+import { paint } from "../layers/marks/tint.js";
+import { raise } from "../layers/marks/relief.js";
+import { layersFor, readDeclarations, account, Switch, CHANNELS, CHANNEL_WORDS, STRENGTHS } from "../layers/layers.js";
+import declaredLayers from "../../data/layers/layers.json" with { type: "json" };
 
 const INSET = 0.055; // each cell is drawn a little small, so cells read as separate tiles
 const MARK_SECONDS = 45; // how long, in the run's time, a replacement stays marked
-const MARKS = 6; // replacements marked at once
+const RINGS = 6; // replacements marked at once
+const LAYERS = "layers:shown"; // the panel that says what the layers show and what stands behind them
 const LIGHT = new THREE.Vector2(-0.55, 0.83).normalize(); // where the side walls' shading comes from
 const smooth = (t) => t * t * (3 - 2 * t);
 
@@ -46,7 +54,17 @@ export class ReplayLens {
     this.pendingTime = null;
     this.autoplayed = false;
     this.ink = new THREE.Color();
+    this.ground = new THREE.Color();
     this.neutral = [0.6, 0.65, 0.7];
+    // The layers: what is declared, which hold a channel, and for the run shown what it can feed.
+    this.declarations = readDeclarations(declaredLayers, MARKS).layers;
+    this.switch = new Switch();
+    this.offers = []; // for the run shown: [{ layer, ok, why, parts, … }]
+    this.drawn = new Map(); // the id of a layer that is on -> { layer, fed, mark }
+    this.fetching = new Set(); // ids of layers whose records are on their way
+    this.wanted = new Set(); // ids of layers the visitor switched on (kept across runs)
+    this.off = new Set(); // channels the visitor switched off
+    this.layerError = null; // { id, text }: a layer whose records could not be fetched
     this.setRamp(stage.palette);
     this.player.addEventListener("time", () => {
       this.draw();
@@ -124,6 +142,10 @@ export class ReplayLens {
   }
 
   clear() {
+    for (const { mark } of this.drawn.values()) mark.dispose();
+    this.drawn.clear();
+    this.surface = null;
+    this.offers = [];
     for (const child of [...this.root.children]) {
       this.root.remove(child);
       disposeTree(child);
@@ -268,14 +290,14 @@ export class ReplayLens {
       this.root.add(frame);
       // Its name sits at the frame's far edge.
       const far = edges.flat().reduce((best, [x, y]) => (y < best[1] ? [x, y] : best), [0, Infinity]);
-      frames.push({ region, anchor: new THREE.Vector3(far[0], frame.position.y, far[1]) });
+      frames.push({ region, mesh: frame, anchor: new THREE.Vector3(far[0], frame.position.y, far[1]) });
     }
 
     // Marks for replacements: a ring over the cell replaced and an arrow from the cell copied.
     const ring = new THREE.RingGeometry(0.8, 1, 40).rotateX(-Math.PI / 2);
     const arrow = arrowShape();
     this.marks = [];
-    for (let k = 0; k < MARKS; k++) {
+    for (let k = 0; k < RINGS; k++) {
       const material = new THREE.MeshBasicMaterial({ transparent: true, depthTest: false, side: THREE.DoubleSide });
       const group = new THREE.Group();
       const ringMesh = new THREE.Mesh(ring, material), arrowMesh = new THREE.Mesh(arrow, material);
@@ -300,8 +322,141 @@ export class ReplayLens {
     this.outlined = { hover: null, pick: null };
 
     this.sheet = { cells, geometry, seams, frames };
-    this.domain = this.scaleOf(this.record);
+    // What the layers' marks draw on (src/layers/marks/index.js).
+    this.surface = { cells, geometry, links: seams ? seams.quads : [], pitch, low: this.low, high: this.high, extent: this.extent, root: this.root };
+    this.settleLayers();
     this.applyInk();
+  }
+
+  // ------------------------------------------------------------ layers
+
+  /** An offer of the run shown: by a layer's id, or by the mark and the record it shows. */
+  offer(id) {
+    return this.offers.find((item) => item.layer.id === id) || null;
+  }
+
+  offerOf(mark, recordId) {
+    return this.offers.find((item) => item.ok && item.layer.mark === mark && !item.quantity.derivation && item.source.id === recordId) || null;
+  }
+
+  /** What is drawn on a channel now: { layer, fed, mark }, or null. */
+  markOn(channel) {
+    return this.drawn.get(this.switch.holder(channel)) || null;
+  }
+
+  /**
+   * For the run just opened: which layers it can feed, and which are on. A layer the
+   * visitor switched on stays on in the next run that can feed it; as it opens, the sheet
+   * is coloured by the record chosen and its height repeats that colour.
+   */
+  settleLayers() {
+    const { run } = this;
+    this.offers = layersFor(run, this.declarations, MARKS);
+    const ready = this.offers.filter((item) => item.ok && !item.parts.length).map((item) => item.layer.id);
+    this.switch.keep(ready);
+    if (!this.switch.holder("colour") && !this.off.has("colour")) {
+      const tint = this.offerOf("tint", this.record.id);
+      if (tint) this.switch.switchOn(tint.layer);
+    }
+    if (!this.switch.holder("height") && !this.off.has("height")) {
+      const relief = this.offerOf("relief", (this.offer(this.switch.holder("colour"))?.source || this.record).id);
+      if (relief) this.switch.switchOn(relief.layer);
+    }
+    this.buildMarks();
+    // A layer that was on and whose records come in a file of their own is fetched for this run too.
+    for (const id of this.wanted) if (!this.switch.isOn(id) && this.offer(id)?.ok) this.setLayer(id, true, { silent: true });
+  }
+
+  /** The colours a mark may use: the ramp of a magnitude, the tone of no value, the page's ink and its ground. */
+  colours() {
+    return { ramp: this.ramp, neutral: this.neutral, ink: this.ink, ground: this.ground };
+  }
+
+  /** Build the marks of the layers that are on, for the run shown. */
+  buildMarks() {
+    for (const { mark } of this.drawn.values()) mark.dispose();
+    this.drawn.clear();
+    if (!this.surface) return;
+    const context = { surface: this.surface, run: this.run, scaleOf: (record) => this.scaleOf(record), shown: display, strength: this.switch.strength, colours: this.colours() };
+    for (const id of this.switch.on) {
+      const fed = this.offer(id);
+      if (!fed?.ok || fed.parts.length) continue;
+      this.drawn.set(id, { layer: fed.layer, fed, mark: MARKS[fed.layer.mark].create({ ...context, layer: fed.layer, fed }) });
+    }
+    // What the tags, the panel and the chart speak of: the record that colours the sheet, or else the one that raises it.
+    const lead = this.markOn("colour") || this.markOn("height");
+    if (lead?.mark.record) {
+      this.record = lead.mark.record;
+      this.recordId = this.record.id;
+    }
+    this.tags = null; // a label of a mark may have come or gone
+  }
+
+  /**
+   * Switch a layer on or off. Switching one on takes its channels from the layers that
+   * held them. Records that come in a file of their own are fetched first; the promise
+   * settles when the layer is drawn, or when its records could not be fetched.
+   */
+  async setLayer(id, on = true, { silent = false } = {}) {
+    const fed = this.offer(id);
+    if (!fed || !this.run) return;
+    if (!on) {
+      this.wanted.delete(id);
+      for (const channel of fed.layer.channels) this.off.add(channel);
+      this.switch.switchOff(id);
+      return this.layersChanged();
+    }
+    if (!fed.ok) return;
+    if (!silent) this.wanted.add(id);
+    for (const channel of fed.layer.channels) this.off.delete(channel);
+    if (fed.parts.length) {
+      const run = this.run;
+      this.fetching.add(id);
+      this.layerError = null;
+      this.onChrome?.();
+      try {
+        await Promise.all(fed.parts.map((part) => loadPart(run, part)));
+      } catch (error) {
+        this.fetching.delete(id);
+        if (run === this.run) {
+          this.layerError = { id, text: `Its records could not be fetched: ${error.message}` };
+          this.onChrome?.();
+        }
+        return;
+      }
+      this.fetching.delete(id);
+      if (run !== this.run) return; // another run was opened meanwhile
+      this.offers = layersFor(run, this.declarations, MARKS);
+    }
+    const now = this.offer(id);
+    if (!now?.ok || now.parts.length) return;
+    for (const evicted of this.switch.switchOn(now.layer)) this.wanted.delete(evicted);
+    return this.layersChanged();
+  }
+
+  /** Switch on exactly the layers named ("voltage-relief,junction-drops"), beside the colouring. */
+  async setLayers(list) {
+    const ids = String(list || "").split(",").map((id) => id.trim()).filter(Boolean);
+    for (const id of ids) await this.setLayer(id.replace(/^-/, ""), !id.startsWith("-"));
+  }
+
+  /** Draw the marks quiet or bold. */
+  setStrength(value) {
+    if (!STRENGTHS.includes(value) || value === this.switch.strength) return;
+    this.switch.setStrength(value);
+    for (const { mark } of this.drawn.values()) mark.setStrength?.(value);
+    this.tags = null;
+    this.draw();
+    this.onChrome?.();
+    this.stage.invalidate();
+  }
+
+  layersChanged() {
+    this.buildMarks();
+    this.draw();
+    this.onChrome?.();
+    this.onPanel?.();
+    this.stage.invalidate();
   }
 
   /** The limits a record is drawn between: round numbers around its range, in the unit shown. */
@@ -330,38 +485,30 @@ export class ReplayLens {
 
   /** Draw the run as it was at the playhead: the last record saved at or before it. */
   draw() {
-    const { run, sheet, record } = this;
-    if (!run || !sheet || !record) return;
+    const { run, sheet, surface } = this;
+    if (!run || !sheet || !surface) return;
     const step = this.player.index;
     const valid = run.isValid(step);
-    const { low, high, steps } = this.domain;
-    const position = sheet.geometry.attributes.position, colour = sheet.geometry.attributes.color;
-    const rgb = [0, 0, 0], linear = new THREE.Color();
-    sheet.cells.forEach((cell, number_) => {
-      let share = (record.at(step, number_) - low) / (high - low);
-      if (steps) share = Math.round(share * steps) / steps;
-      share = Math.min(1, Math.max(0, share));
-      if (valid) this.ramp.at(share, rgb);
-      else rgb.splice(0, 3, ...this.neutral); // not a valid record: no value is shown
-      const height = valid ? this.low + (this.high - this.low) * share : this.low;
-      cell.height = height;
-      cell.top.y = height;
-      const n = cell.inset.length;
-      linear.setRGB(rgb[0], rgb[1], rgb[2], THREE.SRGBColorSpace);
-      for (let k = 0; k <= n; k++) {
-        position.array[(cell.start + k) * 3 + 1] = height;
-        colour.array.set([linear.r, linear.g, linear.b], (cell.start + k) * 3);
-      }
-      for (let k = 0; k < n; k++) {
-        const wall = cell.walls + k * 4, shade = cell.shade[k];
-        position.array[wall * 3 + 1] = height;
-        position.array[(wall + 1) * 3 + 1] = height;
-        linear.setRGB(rgb[0] * shade, rgb[1] * shade, rgb[2] * shade, THREE.SRGBColorSpace);
-        for (let corner = 0; corner < 4; corner++) colour.array.set([linear.r, linear.g, linear.b], (wall + corner) * 3);
-      }
-    });
-    position.needsUpdate = true;
-    colour.needsUpdate = true;
+    // Each channel is drawn by the layer that holds it: the heights first, since what lies
+    // on the sheet stands on them. With no layer on a channel the sheet is flat, or of one tone.
+    const height = this.markOn("height"), colour = this.markOn("colour");
+    if (height) height.mark.update(step, valid);
+    else raise(surface, () => this.low);
+    if (colour) colour.mark.update(step, valid);
+    else paint(surface, () => this.neutral);
+    const done = new Set([height?.mark, colour?.mark]);
+    for (const channel of CHANNELS) {
+      const mark = this.markOn(channel)?.mark;
+      if (!mark || done.has(mark)) continue;
+      done.add(mark);
+      mark.update(step, valid);
+    }
+    // What stands over the sheet clears its tallest cell.
+    const ceiling = height ? height.mark.ceiling : this.low;
+    for (const frame of sheet.frames) {
+      frame.mesh.position.y = ceiling + this.pitch * 0.07;
+      frame.anchor.y = frame.mesh.position.y;
+    }
 
     if (sheet.seams) {
       const { quads, geometry, record: formed } = sheet.seams;
@@ -397,7 +544,7 @@ export class ReplayLens {
       if (donor) {
         // From the middle of the cell copied towards the cell replaced, above every prism.
         const dx = cell.centre[0] - donor.centre[0], dy = cell.centre[1] - donor.centre[1];
-        mark.arrow.position.set(donor.centre[0], this.high + this.pitch * 0.12, donor.centre[1]);
+        mark.arrow.position.set(donor.centre[0], ceiling + this.pitch * 0.12, donor.centre[1]);
         mark.arrow.rotation.y = -Math.atan2(dy, dx);
         mark.arrow.scale.set(Math.hypot(dx, dy), 1, this.pitch);
       }
@@ -444,6 +591,14 @@ export class ReplayLens {
       this.tags.pick = labels.add({ text: "", anchor: new THREE.Vector3(), priority: 950, kind: "part label-read", lift: 8 });
       this.tags.pick.element.classList.add("is-focus");
       this.tags.hover.boost = this.tags.pick.boost = 1000;
+      // A bold relief stands a bar beside the sheet: how much of the quantity one stretch of height is.
+      this.tags.bar = labels.add({ text: "", anchor: new THREE.Vector3(), priority: 320, kind: "note label-region", lift: 6 });
+    }
+    const bar = this.markOn("height")?.mark.bar || null;
+    this.tags.bar.hidden = !bar;
+    if (bar) {
+      this.tags.bar.anchor.copy(bar.anchor);
+      labels.setText(this.tags.bar, bar.text);
     }
     const step = this.player.index, valid = this.run.isValid(step);
     const words = (number_) => {
@@ -467,6 +622,7 @@ export class ReplayLens {
     if (typeof id !== "string") return false;
     if (id.startsWith(RUN)) return this.catalogue.byId.has(id.slice(RUN.length));
     if (id.startsWith(CELL)) return Boolean(this.sheet) && Number(id.slice(CELL.length)) < this.sheet.cells.length;
+    if (id === LAYERS) return Boolean(this.sheet) && this.drawn.size > 0;
     return false;
   }
 
@@ -495,6 +651,7 @@ export class ReplayLens {
       const runId = id.slice(RUN.length);
       return this.catalogue.describe(id, this.loaded.get(runId) || null);
     }
+    if (id === LAYERS) return this.has(id) ? this.describeLayers() : null;
     if (!id.startsWith(CELL) || !this.has(id)) return null;
     const number_ = Number(id.slice(CELL.length));
     const { run } = this;
@@ -563,7 +720,8 @@ export class ReplayLens {
     const experiment = this.catalogue.experimentOf(entry);
     const klass = this.catalogue.classOf(entry);
     const run = this.run;
-    const records = run && this.cells ? run.recordsOn("cell").filter((record) => !record.quantised) : [];
+    // The records the sheet can be coloured by: one colouring layer each.
+    const records = run && this.sheet ? this.offers.filter((item) => item.ok && item.layer.mark === "tint").map((item) => run.records.get(item.source.id)) : [];
     const chrome = {
       quiet: true, // the timeline takes the place of the hint
       status: this.error ? `This run could not be shown: ${this.error}` : this.loading ? "Loading the run…" : null,
@@ -583,31 +741,103 @@ export class ReplayLens {
           .map((item) => ({ id: item.id, title: item.arm, sub: item.seed === null || item.seed === undefined ? "" : `seed ${item.seed}`, klass: this.catalogue.classOf(item)?.label || "", early: this.catalogue.endOf(item).early, active: item.id === this.runId })),
         ended: this.catalogue.endOf(entry),
         klass: klass ? { label: klass.label, description: klass.description, note: experiment.class_note || "" } : null,
-        colour: records.length > 1 ? { options: records.map((record) => [record.id, this.recordLabel(record)]), active: this.recordId } : null,
+        colour: records.length > 1 ? { options: records.map((record) => [record.id, this.recordLabel(record)]), active: this.markOn("colour")?.mark.record.id ?? null } : null,
         details: RUN + this.runId,
       },
       legend: { title: "Shown", items: [] },
     };
     if (run && this.sheet && this.record) {
-      const { shown, low, high, steps, nice } = this.domain;
-      const scale = { label: this.recordLabel(this.record), unit: shown.unit };
-      if (steps) {
-        scale.steps = Array.from({ length: steps + 1 }, (_, k) => ({ colour: cssOf(this.ramp.at(k / steps)), text: String(k) }));
-      } else {
-        scale.gradient = this.ramp.css();
-        const decimals = nice.step * 1 < 1 ? 1 : 0;
-        scale.ticks = [low, (low + high) / 2, high].map((value, k) => ({ at: k / 2, text: number(value * shown.factor, decimals) }));
-        scale.marks = (this.record.marks || []).filter((mark) => mark.value > low && mark.value < high).map((mark) => ({ at: (mark.value - low) / (high - low), text: `${number(mark.value * shown.factor, 1)} ${shown.unit}: ${mark.label}` }));
-      }
-      chrome.legend.scale = scale;
+      const colour = this.markOn("colour"), height = this.markOn("height");
+      // The scale of what colours the sheet, as the layer's mark gives it.
+      if (colour) chrome.legend.scale = colour.mark.scale(this.recordLabel(colour.mark.record), number);
       const keys = [];
       if (this.sheet.seams?.record) keys.push({ key: "seam", text: "A seam fills in as the junctions between two cells form" });
       for (const frame of this.sheet.frames) keys.push({ key: "frame", text: `${experiment.regions?.[frame.region.id]?.label || frame.region.label}: ${lower(experiment.regions?.[frame.region.id]?.plain || "a region the run names")}` });
       if (run.events.length) keys.push({ key: "ring", text: `${experiment.events?.replacement?.label || "Event"}: a ring on the cell, an arrow from the cell copied` });
       chrome.legend.keys = keys;
-      chrome.legend.note = { text: "Height repeats the colour. Every step is a saved record." };
+      chrome.legend.note = { text: this.heightNote(colour, height) };
+      chrome.legend.layers = this.layerSwitch();
+      // Where the layers add signs of their own, the sheet's standing marks fold away to leave them room.
+      if (chrome.legend.layers.keys.length) chrome.legend.folded = true;
     }
     return chrome;
+  }
+
+  /** What the legend says of the sheet's height, in one line. */
+  heightNote(colour, height) {
+    const saved = "Every step is a saved record.";
+    if (!height) return `The sheet is flat: no layer is on its height. ${saved}`;
+    const record = height.mark.record;
+    if (colour && colour.mark.record === record) return `Height repeats the colour. ${saved}`;
+    const { shown, low, high } = height.mark.domain;
+    const unit = shown.unit ? ` ${shown.unit}` : "";
+    return `Height: ${lower(this.recordLabel(record))}, from ${number(low * shown.factor, 0)}${unit} (low) to ${number(high * shown.factor, 0)}${unit} (tall). ${saved}`;
+  }
+
+  /**
+   * The switch for layers, as the legend draws it: for each channel but colour (which the
+   * card chooses), the layers this run can feed and which one is on; the layers it cannot
+   * feed, each with the reason; how strongly the marks are drawn; and, for the layers that
+   * are on, what stands behind their numbers.
+   */
+  layerSwitch() {
+    const rows = [];
+    for (const channel of CHANNELS) {
+      const offered = this.offers.filter((item) => item.layer.channels.includes(channel));
+      // The colour is chosen in the run's card while only colourings compete for it.
+      if (channel === "colour" && offered.every((item) => item.layer.mark === "tint")) continue;
+      const can = offered.filter((item) => item.ok);
+      if (!can.length) continue;
+      const held = this.switch.holder(channel);
+      rows.push({
+        channel,
+        label: CHANNEL_WORDS[channel],
+        options: [{ id: null, label: "Off", on: !held, off: held }, ...can.map((item) => ({ id: item.layer.id, label: this.layerLabel(item), on: held === item.layer.id, busy: this.fetching.has(item.layer.id), title: item.layer.says }))],
+        problem: this.layerError && can.some((item) => item.layer.id === this.layerError.id) ? this.layerError.text : null,
+      });
+    }
+    const cannot = this.offers.filter((item) => !item.ok && !item.layer.plain).map((item) => ({ id: item.layer.id, label: `${CHANNEL_WORDS[item.layer.channels[0]]}: ${lower(item.layer.label)}`, why: item.why }));
+    // The signs the layers add to the sheet, each with what it stands for.
+    const keys = [], listed = new Set();
+    for (const channel of CHANNELS) {
+      const drawn = this.markOn(channel);
+      if (!drawn || listed.has(drawn) || !drawn.mark.keys) continue;
+      listed.add(drawn);
+      keys.push(...drawn.mark.keys(number));
+    }
+    return { title: "Layers", rows, cannot, keys, strength: { options: STRENGTHS.map((value) => ({ id: value, label: value.charAt(0).toUpperCase() + value.slice(1), on: this.switch.strength === value })) }, details: this.drawn.size ? LAYERS : null };
+  }
+
+  /** What the panel says of the layers that are on: what each shows and what stands behind its numbers (rule 4). */
+  describeLayers() {
+    const entry = this.catalogue.byId.get(this.runId);
+    const experiment = this.catalogue.experimentOf(entry);
+    const sections = [...this.drawn.values()].map(({ layer, fed }) => {
+      const said = account(this.run, layer, fed);
+      const items = [{ label: "What it shows", detail: said.shows }, { label: said.derived ? "Its numbers: worked out by the viewer" : "Its numbers: saved by the run", lines: said.numbers }];
+      if (said.more.length) items.push({ label: "What else the run saved about it", lines: said.more });
+      return { title: `${said.channel}: ${lower(this.layerLabel(fed))}`, items };
+    });
+    const cannot = this.offers.filter((item) => !item.ok && !item.layer.plain);
+    if (cannot.length) sections.push({ title: "Not shown for this run", items: cannot.map((item) => ({ label: `${CHANNEL_WORDS[item.layer.channels[0]]}: ${lower(item.layer.label)}`, detail: item.why })) });
+    return {
+      id: LAYERS,
+      label: "What the layers show",
+      eyebrow: experiment.label,
+      kind: "layers",
+      plain: "A layer draws one quantity onto the sheet from numbers this run saved. One layer holds each visual channel: the colour, the height, the signs on the junctions.",
+      note: "A number is either saved by the run, or worked out by the viewer from saved ones by a stated rule. The viewer computes no law of the engine again.",
+      chips: [{ label: this.catalogue.title(entry), title: "The run these layers are drawn on." }],
+      facts: [["Drawn", this.switch.strength]],
+      sections,
+      sources: [],
+    };
+  }
+
+  /** A layer's name in the switch: the experiment's own name for its record where it has one. */
+  layerLabel(fed) {
+    const record = !fed.quantity?.derivation && fed.source ? this.run.records.get(fed.source.id) : null;
+    return record ? this.recordLabel(record) : fed.layer.label;
   }
 
   /** The scale bar reads in real units when the run's space is in micrometres. */
@@ -693,17 +923,22 @@ export class ReplayLens {
 
   setIsolate() {}
 
-  /** Colour the sheet by another of the run's records. */
+  /**
+   * Colour the sheet by another of the run's records. Where the height repeats the colour,
+   * it follows to the new record, as it always did.
+   */
   setRecord(id) {
-    const record = this.run?.records.get(id);
-    if (!record || record.set !== "cell" || record.quantised || record === this.record) return;
-    this.record = record;
-    this.recordId = id;
-    this.domain = this.scaleOf(record);
-    this.draw();
-    this.onChrome?.();
-    this.onPanel?.();
-    this.stage.invalidate();
+    const tint = this.offerOf("tint", id);
+    if (!tint || this.switch.holder("colour") === tint.layer.id) return;
+    const colour = this.markOn("colour"), height = this.markOn("height");
+    const repeats = Boolean(colour && height && height.mark.record === colour.mark.record);
+    this.off.delete("colour");
+    this.switch.switchOn(tint.layer);
+    if (repeats || (!height && !this.off.has("height"))) {
+      const relief = this.offerOf("relief", id);
+      if (relief) this.switch.switchOn(relief.layer);
+    }
+    this.layersChanged();
   }
 
   /** Move the playhead; before the run is in, the time is kept for when it is. */
@@ -732,6 +967,7 @@ export class ReplayLens {
     this.ramp = new Ramp([palette.seq0, palette.seq1, palette.seq2, palette.seq3, palette.seq4]);
     this.neutral = parse(palette.stUnstated);
     this.ink.set(palette.fg);
+    this.ground.set(palette.bg);
   }
 
   applyInk() {
@@ -743,6 +979,7 @@ export class ReplayLens {
   applyPalette(palette) {
     this.setRamp(palette);
     this.applyInk();
+    for (const { mark } of this.drawn?.values() || []) mark.setColours?.(this.colours());
     this.draw();
     if (this.active) this.onChrome?.();
     this.stage.invalidate();

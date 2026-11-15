@@ -121,6 +121,9 @@ class CellsViewer extends HTMLElement {
     root.addEventListener("cells-isolate", (event) => this.setIsolate(event.detail));
     root.addEventListener("cells-together", (event) => this.current?.setTogether?.(event.detail));
     root.addEventListener("cells-finding", (event) => this.current?.setFinding?.(event.detail));
+    // Quantity layers of a replay: which layer holds a channel, and how strongly the marks are drawn.
+    root.addEventListener("cells-layer", (event) => this.current?.setLayer?.(event.detail.id, event.detail.on));
+    root.addEventListener("cells-strength", (event) => this.current?.setStrength?.(event.detail));
     root.addEventListener("cells-legend-toggle", () => {
       this.state.legendOpen = !this.state.legendOpen;
       this.renderLegend();
@@ -209,6 +212,9 @@ class CellsViewer extends HTMLElement {
     if (query.get("time")) this.current?.seek?.(Number(query.get("time")));
     const settle = () => {
       if (query.get("record")) this.current?.setRecord?.(query.get("record"));
+      // Quantity layers: "layers=junction-drops,-voltage-relief" switches the first on and the second off; "strength=bold".
+      if (query.get("strength")) this.current?.setStrength?.(query.get("strength"));
+      if (query.get("layers")) this.current?.setLayers?.(query.get("layers"));
       if (query.get("select")) this.select(query.get("select"), { fly: true });
       // A stated camera angle or distance has the last word, also over the flight to a selected part.
       if (this.stage && (query.get("azimuth") || query.get("polar") || query.get("distance"))) {
@@ -803,7 +809,8 @@ class CellsViewer extends HTMLElement {
       const legend = chrome.legend || { title: "Mapping", items: atlas.mappings.map((item) => ({ ...item, swatch: `map-${item.id}` })) };
       // A species' findings add a block. On all but a tall window the evidence block then starts closed, so the card keeps its room.
       const filter = chrome.findings && chrome.filter && this.clientHeight < 1040 ? { ...chrome.filter, folded: true } : chrome.filter;
-      this.legend.render({ ...base, ...legend, filter, findings: chrome.findings, folded: this.clientHeight < 880 });
+      // A view may ask for its marks to fold away (a replay whose layers add signs of their own).
+      this.legend.render({ ...base, ...legend, filter, findings: chrome.findings, folded: legend.folded || this.clientHeight < 880 });
       return;
     }
     const counts = new Map();

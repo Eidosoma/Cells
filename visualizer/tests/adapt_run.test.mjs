@@ -66,12 +66,20 @@ const payload = Buffer.from(replay.payload.data, "base64");
 const record = (id) => view.records.find((item) => item.id === id);
 const set = (id) => view.sets.find((item) => item.id === id);
 
-/** A record's values, read out of the payload as its dtype says. */
+// The run's records in files of their own (schema/QUANTITY_LAYERS.md, rule 10), by part id.
+const partFiles = Object.fromEntries((view.parts || []).map((part) => [part.id, readJson(path.join(out, path.basename(part.file)))]));
+const partPayloads = Object.fromEntries(Object.entries(partFiles).map(([id, file]) => [id, Buffer.from(file.payload.data, "base64")]));
+
+/** The bytes a record's array lies in: the run's own payload, or the payload of its part. */
+const payloadOf = (item) => (item.part ? partPayloads[item.part] : payload);
+
+/** A record's values, read out of its payload as its dtype says. */
 function values(item) {
   const Type = TYPES[item.dtype];
   const count = item.shape.reduce((a, b) => a * b, 1);
-  const start = payload.byteOffset + item.offset;
-  return new Type(payload.buffer.slice(start, start + count * Type.BYTES_PER_ELEMENT));
+  const bytes = payloadOf(item);
+  const start = bytes.byteOffset + item.offset;
+  return new Type(bytes.buffer.slice(start, start + count * Type.BYTES_PER_ELEMENT));
 }
 
 test("the catalogue and the run file carry the contract's formats", () => {
@@ -113,8 +121,8 @@ test("every array lies inside the payload, on a multiple of four bytes, with its
     assert.ok(Type, `${item.id}: dtype ${item.dtype}`);
     assert.equal(item.offset % 4, 0, `${item.id}: offset ${item.offset}`);
     const bytes = item.shape.reduce((a, b) => a * b, 1) * Type.BYTES_PER_ELEMENT;
-    assert.ok(item.offset + bytes <= payload.length, `${item.id} runs past the payload`);
-    spans.push([item.offset, item.offset + bytes, item.id]);
+    assert.ok(item.offset + bytes <= payloadOf(item).length, `${item.id} runs past the payload`);
+    spans.push([item.offset, item.offset + bytes, item.id, item.part || ""]);
     for (const key of ["id", "label", "unit", "axes", "dtype", "offset", "shape", "range"]) assert.ok(key in item, `${item.id} lacks ${key}`);
     assert.equal(item.axes.length, item.shape.length, `${item.id}: one axis per dimension`);
 
@@ -123,8 +131,91 @@ test("every array lies inside the payload, on a multiple of four bytes, with its
     assert.ok(Math.abs(item.range[0] - Math.min(...finite)) < 1e-12 && Math.abs(item.range[1] - Math.max(...finite)) < 1e-12, `${item.id}: range ${item.range}`);
     assert.equal(Boolean(item.quantised), item.scale !== undefined, `${item.id}: a scaled array is marked quantised, and only that`);
   }
-  spans.sort((a, b) => a[0] - b[0]);
-  for (let i = 1; i < spans.length; i++) assert.ok(spans[i][0] >= spans[i - 1][1], `${spans[i][2]} overlaps ${spans[i - 1][2]}`);
+  // Within one payload (the run's own, or a part's), no two arrays overlap.
+  spans.sort((a, b) => a[3].localeCompare(b[3]) || a[0] - b[0]);
+  for (let i = 1; i < spans.length; i++) if (spans[i][3] === spans[i - 1][3]) assert.ok(spans[i][0] >= spans[i - 1][1], `${spans[i][2]} overlaps ${spans[i - 1][2]}`);
+});
+
+test("a record in a file of its own: the file is the run's, of the stated length, and listed in the catalogue", () => {
+  assert.deepEqual(view.parts, [{ id: "junction-gate", label: "Each junction's gate", file: `runs/${RUN_ID}.junction-gate.json`, byte_length: partPayloads["junction-gate"].length }]);
+  const file = partFiles["junction-gate"];
+  assert.deepEqual({ format: file.format, run: file.run, part: file.part, encoding: file.payload.encoding, byte_length: file.payload.byte_length }, { format: "cells.visualizer.replay_part@1", run: RUN_ID, part: "junction-gate", encoding: "base64", byte_length: partPayloads["junction-gate"].length });
+  const gate = record("junction_gate");
+  assert.deepEqual({ part: gate.part, set: gate.set, layer: gate.layer, kind: gate.kind, owner: gate.owner, quantised: gate.quantised, offset: gate.offset }, { part: "junction-gate", set: "junction", layer: "junctions", kind: "level", owner: "synthetic_junction_gate@0", quantised: true, offset: 0 });
+  assert.deepEqual(gate.shape, record("junction_abundance").shape);
+  // The fixture shuts the gate of every junction across the disc's edge to a quarter; the others are open.
+  const stored = [...values(gate)].map((value) => value * gate.scale);
+  assert.deepEqual([...new Set(stored.map((value) => value.toFixed(3)))].sort(), ["0.251", "1.000"]);
+  const saved = fixtureJson("runs", RUN, "definition.json").model.junctions.length;
+  assert.equal(stored.length, view.records.find((item) => item.id === "t").shape[0] * saved);
+  // The record of the times, and everything the sheet opens with, stay in the run's own file.
+  for (const id of ["t", "vm", "generation", "junction_abundance", "regular", "valid"]) assert.equal(record(id).part, undefined, `${id} is in the run's own file`);
+  // The catalogue lists the file with its size, so that it can be published without opening the run.
+  const [row] = index.runs;
+  assert.deepEqual(row.parts, [{ id: "junction-gate", file: `runs/${RUN_ID}.junction-gate.json`, bytes: statSync(path.join(out, `${RUN_ID}.junction-gate.json`)).size }]);
+  assert.ok(row.parts[0].bytes < 1_000_000);
+  assert.ok(view.layers.some((layer) => layer.id === "junctions"), "the gate's layer is listed");
+  assert.match(view.derivation.join(" "), /Each junction's gate .* in a file of its own beside this one/);
+});
+
+test("what a quantity layer needs of a record is stated only where the run's files state it", () => {
+  // Kind and owner: from the driver and from the definition's own names.
+  assert.deepEqual(["vm", "generation", "junction_abundance"].map((id) => [record(id).kind, record(id).owner]), [["level", "synthetic_sheet@0"], ["level", "synthetic_replacement@0"], ["level", "synthetic_junction_formation@0"]]);
+  // The fixture's definition states no sign for the voltage, so none is written.
+  for (const item of view.records) assert.equal(item.sign, undefined, `${item.id}: a sign the run does not state`);
+  assert.match(view.derivation.join(" "), /Which way the membrane voltage is positive is stated by neither/);
+  // The records with no set are no quantity of a layer.
+  for (const id of ["t", "regular", "valid"]) assert.deepEqual([record(id).kind, record(id).owner], [undefined, undefined]);
+  // Every cell's surroundings share one potential: each membrane's outside is a held bath at 0 V in the definition.
+  assert.deepEqual({ shared: view.surroundings.shared, potential_V: view.surroundings.potential_V }, { shared: true, potential_V: 0 });
+  assert.match(view.surroundings.says, /held bath at 0 V/);
+  assert.match(view.derivation.join(" "), /every cell's surroundings share one potential is read from definition\.json/);
+});
+
+test("the adapter's own table for the tissue family: the signs the engine's owner confirmed, and no other", () => {
+  const printed = spawnSync("python3", ["-c", "import json, sys; sys.path.insert(0, sys.argv[1]); import adapt_run; print(json.dumps({'fields': adapt_run.TISSUE_FIELDS, 'by': adapt_run.TISSUE_SIGN_BY, 'missing': adapt_run.tissue_field('calcium_pump_cycles')}))", path.dirname(TOOL)], { encoding: "utf8" });
+  assert.equal(printed.status, 0, printed.stderr);
+  const { fields, by, missing } = JSON.parse(printed.stdout);
+  // A positive transfer leaves the cell for its outside, or the sender for the receiver.
+  assert.deepEqual([fields.membrane_transferred.sign.from, fields.membrane_transferred.sign.to], ["cell", "outside node"]);
+  assert.deepEqual([fields.channel_transferred.sign.from, fields.channel_transferred.sign.to], ["cell", "outside node"]);
+  for (const name of ["junction_transferred", "face_transferred"]) assert.deepEqual([fields[name].sign.from, fields[name].sign.to], ["first", "second"], name);
+  // The two exceptions: pump cycles are positive inwards; what a reservoir supplies is positive into the outside node.
+  assert.deepEqual([fields.pump_cycles.sign.from, fields.pump_cycles.sign.to], ["outside node", "cell"]);
+  assert.match(fields.reservoir_supplied.sign.says, /entered the outside node/);
+  // Every sign says where it comes from, in plain words: the engine's convention, confirmed, not yet declared.
+  const signed = Object.keys(fields).filter((name) => fields[name].sign).sort();
+  assert.deepEqual(signed, ["channel_transferred", "face_transferred", "junction_transferred", "membrane_transferred", "pump_cycles", "reservoir_supplied"]);
+  for (const name of signed) assert.equal(fields[name].sign.by, by, name);
+  assert.match(by, /the engine's own convention.*confirmed by the owner of its core on 15 November 2026.*not yet declared in the run's view/);
+  // A field with no confirmed sign has none: it is shown as a level or a size, never with a direction.
+  for (const name of ["membrane_voltage_V", "cell_potential_V", "junction_voltage_V", "amount", "extracellular_amount"]) assert.equal(fields[name].sign, undefined, name);
+  assert.equal(missing, null, "a field that was not confirmed by name is not listed");
+  // The heat ledgers are totals that only grow; the transfers are totals too, of which a rate is worked out.
+  for (const part of ["membrane", "channel", "junction", "face", "pump"]) assert.deepEqual(fields[`${part}_dissipated_energy_pJ`], { kind: "cumulative", unit: "pJ", never_falls: true });
+  for (const name of signed) assert.equal(fields[name].kind, "cumulative", name);
+  assert.equal(fields.metabolic_work_pJ.never_falls, undefined, "only the dissipated-energy fields were confirmed never to fall");
+});
+
+test("where the definition does not say that the surroundings share one potential, the view does not say it either", () => {
+  const cases = [
+    ["baths at two potentials", (definition) => (definition.model.extracellular[3].boundary_potential_V = 0.01)],
+    ["a bath that is not held", (definition) => (definition.model.extracellular[0].reservoir = false)],
+    ["a cell with no membrane listed", (definition) => definition.model.membranes.pop()],
+    ["a control of another kind in the schedule", (definition) => (definition.experiment.bath_controls = [])],
+    ["no outside nodes at all", (definition) => delete definition.model.extracellular],
+  ];
+  for (const [name, damage] of cases) {
+    const copy = copyOfFixture(`surroundings-${name.replace(/[^a-z]+/g, "-")}`);
+    const file = path.join(copy, "runs", RUN, "definition.json");
+    const definition = readJson(file);
+    damage(definition);
+    writeFileSync(file, JSON.stringify(definition));
+    const target = path.join(copy, "out");
+    const result = adapt(copy, target);
+    assert.equal(result.status, 0, `${name}: ${result.stderr}`);
+    assert.equal(readJson(path.join(target, `${RUN_ID}.json`)).view.surroundings, undefined, `${name}: the view still says the surroundings share one potential`);
+  }
 });
 
 test("times, sets and records agree with one another", () => {
@@ -541,7 +632,8 @@ test("a cue is an event of its own kind, at each cell it acts on", () => {
 test("no machine path, host name or traceback is written for any experiment", () => {
   for (const name of readdirSync(all)) {
     const data = readJson(path.join(all, name));
-    const text = JSON.stringify(name === "index.json" ? data : data.view);
+    // A catalogue, a run (its view), or a part of a run (everything but its arrays).
+    const text = JSON.stringify(name === "index.json" ? data : data.view ?? { ...data, payload: null });
     assert.ok(!PATHS.test(text), `${name} carries a machine path`);
     for (const word of ["fixture-host", "nobody", "nowhere", "Traceback"]) assert.ok(!text.includes(word), `${name} carries "${word}"`);
   }
@@ -587,6 +679,20 @@ test("every file of a real output folder passes the viewer's own checks", { skip
     if (row.group !== null) assert.ok(experiment.groups?.[row.group], `${row.id}: the catalogue has no group ${row.group}`);
     if (row.class !== undefined) assert.ok((experiment.classes || []).some((item) => item.id === row.class), `${row.id}: the catalogue has no class ${row.class}`);
     if (row.stop !== null) assert.ok(experiment.stops?.[row.stop], `${row.id}: the catalogue has no words for the stop ${row.stop}`);
+    // Its records in files of their own: each listed, of the stated size, the run's, and read by the viewer.
+    assert.deepEqual((row.parts || []).map((part) => [part.id, part.file]), (view.parts || []).map((part) => [part.id, part.file]), `${row.id}: the catalogue and the run list the same parts`);
+    for (const part of row.parts || []) {
+      const beside = path.join(REAL, path.basename(part.file));
+      const bytes = statSync(beside).size;
+      assert.equal(part.bytes, bytes);
+      assert.ok(bytes < 1_000_000, `${row.id}: its part ${part.id} is ${bytes} bytes`);
+      total += bytes;
+      const held = readJson(beside);
+      assert.deepEqual([held.format, held.run, held.part], ["cells.visualizer.replay_part@1", row.id, part.id]);
+      const before = run.records.size;
+      run.attach(part.id, Uint8Array.from(Buffer.from(held.payload.data, "base64")).buffer);
+      assert.ok(run.records.size > before && run.pending.size === 0, `${row.id}: the part ${part.id} gave no record`);
+    }
   }
   for (const id of experiments.keys()) assert.ok(real.runs.some((row) => row.experiment === id), `${id} has no runs`);
   console.log(`  ${real.runs.length} runs of ${experiments.size} experiments, ${(total / 1e6).toFixed(1)} MB in all`);

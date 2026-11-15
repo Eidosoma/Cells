@@ -114,7 +114,7 @@ the viewer changes.
 | --- | --- | --- | --- | --- | --- |
 | `voltage-tint` | the colouring the replay has today | cell | `tint` | colour | record: membrane voltage |
 | `voltage-relief` | 1 | cell | `relief` | height | record: membrane voltage |
-| `junction-drops` | 2 | junction | `wedge` | links | `difference` of membrane voltage, with the junction's open fraction |
+| `junction-drops` | 2 | junction | `wedge` | links | the first a run can give of: the engine's own junction voltage; the `difference` of the two cells' potentials; the `difference` of membrane voltage where the run states that the cells' surroundings share one potential. With it, how far the junction's gate is open and whether a junction has formed |
 | `ion-push-pull` | 3 | membrane of the chosen cell | `arrows` | arrows | `potential terms` for each ion |
 | `membrane-charge` | 4 | membrane of the chosen cell | `stipple` | surface | `charge` |
 | `ion-traffic` | 5 | channel and pump populations of the chosen cell | `beads` | motion | `rate` of the amounts transferred |
@@ -123,6 +123,24 @@ the viewer changes.
 
 `voltage-tint` comes first and changes nothing a visitor sees: it proves the contract on
 the colouring that exists, with the page's own checks as its guard.
+
+## How a layer names its numbers
+
+- **Several sources, tried in order.** A layer may list its quantities under `first_of`:
+  the first one the run can give is used, and the legend says which. A record may be
+  named by several names, tried in order, so that the engine's own readout is taken
+  before a name an older driver used.
+- **What goes with it.** A layer may list records under `also`, each with a `role` the
+  mark knows (`gate`: how far a junction is open; `formed`: whether a junction exists),
+  what it `says`, and what the mark shows `without` it.
+- **A record no layer names** is still offered where a mark can show it plainly: a level
+  on the cells as a colouring and a relief, under the record's own name and unit.
+- **Strength, for the relief:** `quiet` is the height the sheet always had; `bold` stands
+  the same values higher and adds a bar that says how many millivolts a step is, and a
+  line where the sheet crosses a mark the experiment itself declares.
+- **What stands behind a layer** (rule 4) is said in a panel opened from the layers'
+  switch: the record, its owner and representation, and for a derivation the rule and
+  its inputs.
 
 The engine's standard history already holds what layers 5 to 7 need (amounts transferred
 per channel, pump, junction and face; energy dissipated per element; amounts per cell and

@@ -4,8 +4,11 @@
 import { reading } from "./format.js";
 
 export const REPLAY_FORMAT = "cells.visualizer.replay@1";
+export const PART_FORMAT = "cells.visualizer.replay_part@1";
 export const VIEW_FORMAT = "cells.run_view@1";
 export const INDEX_FORMAT = "cells.visualizer.replay_index@1";
+// What kind of number a record is, where its view says (schema/QUANTITY_LAYERS.md).
+export const RECORD_KINDS = ["level", "amount", "cumulative", "rate"];
 
 const TYPES = { float32: Float32Array, uint8: Uint8Array, uint16: Uint16Array, int32: Int32Array };
 const PATHS = /(^|[\s"'(=:])\/(home|mnt|Users|root|var|tmp)\//;
@@ -61,6 +64,17 @@ export function validateReplay(file) {
     }
   }
 
+  // Records may come in files of their own beside the run's (parts): each part states its length.
+  const parts = new Map();
+  for (const part of view.parts || []) {
+    if (!part || typeof part.id !== "string" || !/^[a-z0-9-]+$/.test(part.id) || parts.has(part.id)) problems.push("a part's id is missing, repeated or has other characters than a-z, 0-9 and hyphen");
+    else if (!Number.isInteger(part.byte_length) || typeof part.file !== "string") problems.push(`part ${part.id}: it needs a file and a byte_length`);
+    else parts.set(part.id, part);
+  }
+  if (view.surroundings !== undefined && (typeof view.surroundings !== "object" || typeof view.surroundings.shared !== "boolean" || typeof view.surroundings.says !== "string")) {
+    problems.push("view.surroundings must say whether the cells' surroundings share one potential, and how that is known");
+  }
+
   const seen = new Set();
   let times = null;
   for (const record of view.records) {
@@ -76,11 +90,20 @@ export function validateReplay(file) {
       problems.push(`${name}: shape and axes do not match`);
       continue;
     }
+    const part = record.part === undefined ? null : parts.get(record.part);
+    if (record.part !== undefined && !part) problems.push(`${name}: its part ${record.part} is not one of the run's`);
+    const room = part ? part.byte_length : payload.byte_length;
     if (!Number.isInteger(record.offset) || record.offset % 4 !== 0) problems.push(`${name}: offset ${record.offset} is not a multiple of 4`);
-    else if (record.offset + count(record.shape) * Type.BYTES_PER_ELEMENT > payload.byte_length) problems.push(`${name}: runs past the end of the payload`);
+    else if (record.offset + count(record.shape) * Type.BYTES_PER_ELEMENT > room) problems.push(`${name}: runs past the end of ${part ? `its part ${part.id}` : "the payload"}`);
+    if (record.kind !== undefined && !RECORD_KINDS.includes(record.kind)) problems.push(`${name}: kind ${record.kind} is not one of ${RECORD_KINDS.join(", ")}`);
+    if (record.sign !== undefined && (typeof record.sign !== "object" || typeof record.sign?.says !== "string" || (record.sign.high !== undefined && !["first", "second"].includes(record.sign.high)) || (record.sign.by !== undefined && typeof record.sign.by !== "string"))) {
+      problems.push(`${name}: a sign says in words what positive means, for a record on links which end is the higher, and where it comes from when the run does not declare it`);
+    }
+    if (record.owner !== undefined && typeof record.owner !== "string") problems.push(`${name}: its owner must be a name`);
     if (record.scale !== undefined && !record.quantised) problems.push(`${name}: a scaled record must be marked quantised`);
     if (record.axes[0] !== "time") problems.push(`${name}: the first axis must be time`);
     if (record.id === "t") times = record;
+    if (record.id === "t" && record.part !== undefined) problems.push("the record of the times must be in the run's own file");
     if (record.set) {
       const set = sets.get(record.set);
       if (!set) problems.push(`${name}: unknown set ${record.set}`);
@@ -143,7 +166,10 @@ export class Run {
     this.derived = Boolean(view.derived);
     this.derivation = view.derivation || [];
     this.sets = new Map(view.sets.map((set) => [set.id, set]));
-    this.records = new Map(view.records.map((record) => [record.id, new Series(record, buffer)]));
+    // A record whose array comes in a file of its own waits in `pending` until that file is in.
+    this.records = new Map(view.records.filter((record) => record.part === undefined).map((record) => [record.id, new Series(record, buffer)]));
+    this.pending = new Map(view.records.filter((record) => record.part !== undefined).map((record) => [record.id, record]));
+    this.parts = new Map((view.parts || []).map((part) => [part.id, { ...part, loaded: false }]));
     this.t = this.records.get("t").array;
     this.count = this.t.length;
     this.start = this.t[0];
@@ -153,6 +179,23 @@ export class Run {
     this.events = [...(view.events || [])].sort((a, b) => a.time - b.time);
     this.space = view.space || { unit: "", dimensions: 2 };
     this.layers = view.layers || [];
+  }
+
+  /**
+   * Take in the arrays of one part (a file of its own beside the run's). Its records are
+   * then read like any other. Throws when the bytes are not the length the run states.
+   */
+  attach(partId, buffer) {
+    const part = this.parts.get(partId);
+    if (!part) throw new Error(`the run has no part ${partId}`);
+    if (part.loaded) return;
+    if (buffer.byteLength !== part.byte_length) throw new Error(`the part ${partId} is ${buffer.byteLength} bytes long, not the ${part.byte_length} the run states`);
+    for (const [id, record] of [...this.pending]) {
+      if (record.part !== partId) continue;
+      this.records.set(id, new Series(record, buffer));
+      this.pending.delete(id);
+    }
+    part.loaded = true;
   }
 
   /** Records laid over one set, such as the cells: the ones a sheet can be coloured by. */

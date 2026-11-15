@@ -239,6 +239,19 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .key-ring { width: 12px; height: 12px; margin-left: 4px; border: 2px solid var(--fg); border-radius: 50%; }
 .key-mark::before { content: ""; position: absolute; left: 9px; top: -1px; bottom: -1px; width: 2px; background: var(--fg); }
 .legend-note-plain { grid-template-columns: 1fr; }
+/* The switch for quantity layers: a row for each visual channel. */
+.legend-layers { padding-bottom: 2px; }
+.layer-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 3px 8px; }
+.layer-channel { font-size: 11.5px; color: var(--muted); }
+.layer-seg button { padding: 3px 2px; font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.layer-seg button[aria-busy="true"] { font-style: italic; }
+.layer-cannot, .layer-problem { padding: 2px 8px; font-size: 12px; line-height: 1.35; color: var(--muted); }
+.layer-cannot-name { color: var(--fg); font-weight: 500; }
+.layer-more { padding: 3px 8px 2px; font-size: 12px; }
+.key-wedge, .key-wedge-hollow { width: 14px; height: 12px; margin-left: 3px; background: var(--fg); clip-path: polygon(0 0, 100% 50%, 0 100%); }
+.key-wedge-hollow::after { content: ""; position: absolute; inset: 0; background: var(--bg-raised); clip-path: polygon(16% 26%, 68% 50%, 16% 74%); }
+.key-break { width: 12px; height: 12px; margin-left: 4px; background: linear-gradient(to right, var(--fg) 0 4px, transparent 4px 8px, var(--fg) 8px 12px); }
+.key-level { height: 3px; margin-top: 7px; background: var(--fg); border-radius: 2px; }
 
 /* ---------------------------------------------------------------- replay: the timeline */
 cells-timeline { position: absolute; left: 268px; right: 244px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); max-width: 780px; margin-inline: auto; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 7px 12px 8px; }
