@@ -1029,9 +1029,9 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     explicit_states = [state]  # Each explicit stage's state (gap 7's per-stage values).
     # Channel currents are explicit: refuse the step where their actual
     # conductance at an explicit stage exceeds the family's stability bound.
-    valid &= dt * membrane_rate(state, control, p, xp=xp, structure=structure) <= (
-        EXPLICIT_STEP_BOUND
-    )
+    valid &= dt * membrane_rate(
+        state, control, p, xp=xp, structure=structure, potentials=start
+    ) <= (EXPLICIT_STEP_BOUND)
     # The start kinetics are the law's own (readouts at the start potentials).
     start_kinetics = (first_values.channel_targets, first_values.channel_tau_s)
     potential, stage = start, state
@@ -1066,7 +1066,8 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
             explicit.append(rates)
             explicit_states.append(stage)
             valid &= ok & (
-                dt * membrane_rate(stage, control, p, xp=xp, structure=structure)
+                dt
+                * membrane_rate(stage, control, p, xp=xp, structure=structure, potentials=potential)
                 <= EXPLICIT_STEP_BOUND
             )
     last = stages - 1
@@ -1334,7 +1335,7 @@ def _check_device_hooks(kinds, state, p, control):
                     refuse(kind, "ledger_terms", f"returns {key} of shape {terms[key].shape}")
 
 
-def membrane_rate(state, control, p, *, xp=jnp, structure=None):
+def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None):
     """Gershgorin rate (1/s) of membrane charge relaxation at a stage's actual openings.
 
     @1's membrane term, max_i sum_m G_m / C_i, with each population's open
@@ -1367,7 +1368,7 @@ def membrane_rate(state, control, p, *, xp=jnp, structure=None):
         read, _ = _stage_read(state, p, kinds, xp=xp)
         for kind in kinds:
             if kind.stage_term is not None:
-                total = total + kind.stage_term(read, control, p, xp=xp)
+                total = total + kind.stage_term(read, potentials, control, p, xp=xp)
     capacitance = scatter(p.membrane_capacitance, xp.zeros(n), (p.membrane_cell,), xp=xp)
     return xp.max(xp.where(p.active, total / xp.where(p.active, capacitance, 1.0), 0.0))
 

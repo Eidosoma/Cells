@@ -84,8 +84,10 @@ class Kind:
       [species, cell] and `outside` [species, outside node] the stage's total node rates (fmol/s;
       explicit stages without the implicit face drift); a false check refuses the step (FR-4's
       envelope: the closure's lag at the stage's transport).
-    - step size (B7 for kinds): `stage_term(read, control, p, *, xp)` -> [cell] conductance (S)
-      of the kind's charged routes at the stage (a pump's electrogenic slope), added to
+    - step size (B7 for kinds): `stage_term(read, potentials, control, p, *, xp)` -> [cell]
+      conductance (S) of the kind's charged routes at the stage's read and node potentials (a
+      pump's electrogenic slope, reversed past its head included; potentials is None when
+      membrane_rate is called without them), added to
       membrane_rate's per-stage refusal, dt x rate <= EXPLICIT_STEP_BOUND; `bound_rate(spec,
       declaration)` -> 1/s, a definition-time bound term the host step checks hold to the same
       bound (the passive law's dt L <= 1).

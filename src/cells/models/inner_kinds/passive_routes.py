@@ -385,13 +385,17 @@ def moved_rows(declaration):
     return tuple(rows)
 
 
-def stage_term(read, control, p, *, xp):
+def stage_term(read, potentials, control, p, *, xp):
     """B7 for the leak (gap 5): each leak route's max-side slope conductance (the kernel's
-    conductance_S, S) on its patch's cell, for membrane_rate's per-stage refusal."""
+    conductance_S, S) on its patch's cell, for membrane_rate's per-stage refusal; at the stage's
+    patch voltage when the potentials are given (the max-side slope does not depend on it)."""
     c_in, c_out = _ends(read, p, xp)
     opening = _opening(read, control, p, xp)
+    voltage = 0.0
+    if potentials is not None:
+        voltage = potentials[p.passive_inside] - potentials[p.passive_outside]
     slope = leak.conductance_S(
-        c_in, c_out, 0.0, p.temperature, p.passive_area, p.passive_permeability, opening, xp=xp
+        c_in, c_out, voltage, p.temperature, p.passive_area, p.passive_permeability, opening, xp=xp
     )  # [species, route]; nonzero at each route's own row.
     per_route = xp.where(p.passive_leak, species_sum(slope, xp=xp), 0.0)
     cells = xp.zeros(p.active.shape)

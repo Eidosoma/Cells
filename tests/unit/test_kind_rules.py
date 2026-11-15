@@ -181,7 +181,7 @@ def test_a_kinds_conductance_and_bound_term_join_the_step_rules():
     and its definition-time bound term joins the host step checks, each at the ordinary bound."""
 
     def conducting(siemens):
-        def stage_term(read, control, p, *, xp):
+        def stage_term(read, potentials, control, p, *, xp):
             return xp.where(p.active, siemens, 0.0)
 
         return planted("alpha", "alpha_block", stage_term=stage_term)
@@ -192,6 +192,25 @@ def test_a_kinds_conductance_and_bound_term_join_the_step_rules():
             impl, state, p, control = host_inputs(spec)
             _, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
         assert bool(valid) == accepted, siemens
+
+    def reversing(threshold_V):
+        """A slope that appears only past a membrane voltage (a pump reversed past its head):
+        the stage's potentials reach stage_term (D: V_m about -21.5 mV)."""
+
+        def stage_term(read, potentials, control, p, *, xp):
+            n = p.active.size
+            voltage = potentials[p.membrane_cell] - potentials[n + p.membrane_outside]
+            past = xp.any(xp.abs(voltage) > threshold_V)
+            return xp.where(p.active & past, 1e-6, 0.0)
+
+        return planted("alpha", "alpha_block", stage_term=stage_term)
+
+    for threshold, accepted in ((0.05, True), (0.01, False)):
+        with kind_registry.scope(registry(reversing(threshold))):
+            spec = parse_spec(declaring("alpha_block"))
+            impl, state, p, control = host_inputs(spec)
+            _, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+        assert bool(valid) == accepted, threshold
 
     def bounded(rate):
         return planted("alpha", "alpha_block", bound_rate=lambda spec, declaration: rate)
