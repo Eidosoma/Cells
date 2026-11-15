@@ -73,6 +73,19 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **MG0c (D152): the protocol after its rehearsal on main and the final check (15 November 2026).**
+  It is still PROPOSED. Tier 1 at the merge e1cdc79: 329 files, no changed outcome.
+  - **The rehearsal on main 58b6f14:** every judged entry ran on a registered dry-run copy, in its own
+    unit on CPUs 5 and 7. The verdict was 55 of 55, and 10,103 values were identical to the
+    development runs, apart from one count of control re-integrations.
+  - **The redraft:**
+    - runtime limits of about 3× the rehearsal plus 10 minutes;
+    - the lanes as rehearsed, with judge-guards at a 5 GiB minimum cap;
+    - the development runs restored as its basis;
+    - the launcher alone enforces caps, CPUs and limits.
+  - [Evidence](/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/HANDOFF.md).
+    Registration and one judged run follow.
+
 - **The coupling operator `species_regulated_availability@1` is numerically qualified (judged,
   15 November 2026).** The protocol was registered at abe4ef5 (tag
   `coupling-v1-registered-2026-11-15`), and one judged run was made from a clean snapshot of that
