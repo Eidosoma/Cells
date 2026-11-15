@@ -170,9 +170,13 @@ try {
     note(`caveat: ${s.caveat}`);
     note(`at rest: ${JSON.stringify(await frame())}`);
     const bead = await at("(key) => true");
-    await move(bead.x, bead.y);
     // The name appears with the frame after the pointer's: wait for it, up to three seconds, and say how long it took.
-    const named = await evaluate(`new Promise((resolve) => { const root = ${V}.shadowRoot, t = performance.now(); const wait = () => { const shown = [...root.querySelectorAll(".label-hot")].some((el) => !el.classList.contains("is-off") && el.textContent); shown || performance.now() - t > 3000 ? resolve(shown ? Math.round(performance.now() - t) : -1) : setTimeout(wait, 30); }; wait(); })`);
+    // A move that arrives before the shelves can be picked names nothing, so the pointer is moved again, up to three times.
+    let named = -1;
+    for (let attempt = 0; attempt < 3 && named < 0; attempt++) {
+      await move(bead.x + attempt, bead.y);
+      named = await evaluate(`new Promise((resolve) => { const root = ${V}.shadowRoot, t = performance.now(); const wait = () => { const shown = [...root.querySelectorAll(".label-hot")].some((el) => !el.classList.contains("is-off") && el.textContent); shown || performance.now() - t > 3000 ? resolve(shown ? Math.round(performance.now() - t) : -1) : setTimeout(wait, 30); }; wait(); })`);
+    }
     s = await state();
     check("the pointer names the protein under it", Boolean(s.hot) && named >= 0, `${s.hot} (${named} ms after the pointer came to rest, beyond the first 250)`);
     note(`hovered: ${await evaluate(`${L}.mounted.hovered`)}; at the pointer: ${JSON.stringify(bead)}`);
