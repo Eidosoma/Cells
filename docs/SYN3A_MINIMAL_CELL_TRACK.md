@@ -9,6 +9,15 @@ Status: **the track was adopted on 14 November 2026 (D173).**
   - the scale of the metabolism stage.
 
   It also adds the *M. pneumoniae* audit (D173, amended).
+- **A third pass (15 November, after the merge at baf09d0)** does five things:
+  - restates the passive contract in ARCHITECTURE.md's corrected wording (§5.3);
+  - finds two closed pairs on main by probe (§5.4);
+  - narrows the first milestone to numerical judged content (§6);
+  - opens the Wodke files and names one measured perturbation (§9.3);
+  - records the Moger-Reischer data and the Frallicciardi reuse terms.
+- **A licence follow-up (15 November, after D173's licence decision)** maps every place a
+  milestone or stage rests on non-commercial data, or on data with no stated terms, and names
+  permissive alternatives where they exist (§3.1).
 - **No engine code was written.** The probes ran the engine from a frozen snapshot of main as a
   capability check only. Nothing here is an acceptance.
 - **Source:** the user's research brief, `docs/SOTA_SYN3A.md` (untracked in the main checkout).
@@ -25,8 +34,8 @@ Status: **the track was adopted on 14 November 2026 (D173).**
 - **Data:** `/mnt/datasets/Cells/syn3a/<source-id>/` and `/mnt/datasets/Cells/mpneumoniae/<source-id>/`,
   one folder per source. Each folder's `MANIFEST.json` gives every file's URL, retrieval time,
   size and SHA-256.
-  - Six other folders under `syn3a/` belong to the visualizer's Syn3A agent. They are left
-    untouched and are not counted here.
+  - Seven other folders under `syn3a/` come from other agents: six from the visualizer's Syn3A
+    agent, and `biopython-185-protparam`. They are left untouched and are not counted here.
 
 **S** marks our own arithmetic or inference.
 
@@ -53,30 +62,50 @@ Status: **the track was adopted on 14 November 2026 (D173).**
     on today's engine.** A declared start at 1e-4 of the bath runs, at an osmotic bias of about
     4e-5 (**S**), but it is a workaround.
 - **Exchange is a driven route, not passive permeation, as D174 records.** It books signed work
-  and no heat.
-  - The constant-field route meets the passive contract's items in the probe, except for its
-    energy booking from a trace start.
-  - So the generic passive law that D174 expects in D172's round has a kernel already. The law
-    must add:
-    - exact free-energy booking as heat;
-    - finding 3's valence-0 bound term;
-    - a trace policy.
-- **The first milestone, concretely (§6):** neutral solute and water across protein-free vesicle
-  membranes. Its claims are kept apart:
-  - numerical verification;
-  - calibration on the impermeant traces;
-  - a held-out prediction of the permeant traces' minima on the same membranes, using the
-    Frallicciardi 2022 data, which are numeric, public and from the same assay. A host-side check
-    shows this arm can fail. The authors' own fits also show that the observation model is part
-    of what it tests (§6.1);
-  - then Syn3A-lipid vesicles, reported only, with no living-cell claim.
+  and no heat; that verdict is on paper, from its contract.
+- **A closed pair exists on main today (§5.4).** One cell and one finite outside node, with no
+  reservoir and no water, is admitted.
+  - There the constant-field route at valence 0 passes the corrected passive test from resolved
+    starts:
+    - material conserved to 1.5e-16;
+    - zero flux at equal potential;
+    - exact reversal;
+    - dissipation equal to the free-energy decrease to 1.1e-6, with no work.
+  - Only a trace start fails.
+  - The held-bath vesicle runs are not that test. They show the coupled behaviour and a total
+    balance that closes with the reservoir's work (§5.3).
+- **The generic passive law that D174 expects in D172's round has a kernel already.** The law must
+  add:
+  - exact free-energy booking as heat;
+  - finding 3's valence-0 bound term;
+  - a trace policy.
+- **The first milestone, narrowed (§6):** its judged content is numerical. The passive contract,
+  then water coupling, at vesicle scale, against references written by a separate agent.
+  - Calibration and the glycerol arm on the Frallicciardi 2022 traces are reported only. That
+    holds unless a check registered beforehand catches a planted error with margin, as MG0c's
+    controls do.
+  - The reasons: within-trace fitting, a thin margin, and the authors' own refits.
+  - Syn3A-lipid vesicles are analysis only, in the workspace, because Presutti 2026 is
+    non-commercial and has no permissive measured alternative. There is no living-cell claim.
+  - **Licences (§3.1):** the judged content depends on no external data. The Frallicciardi raw
+    traces have no stated terms, so their arms publish summary statistics and verdicts only.
 - ***M. pneumoniae* is richer in measured physiology, and should lead an energy, transport and pH
   stage tied to FR-4 (§9).**
   - It has measured protein turnover, and absolute mRNA and protein copy numbers under several
     perturbations.
-  - It has numeric pH-challenge and rebuffering data (glucose, protein, lactate). Its batch
-    glucose, lactate, acetate and pH time courses are not yet confirmed numeric.
+  - It has numeric pH-challenge data and a 158 h lactate and glucose time course with a
+    rebuffered arm (opened from the .xls files). Acetate, pH and protein time courses are
+    figures only.
+  - Rebuffering a stalled, acidified culture is one measured perturbation that FR-4 and
+    finite fuel could predict without a growth model (§9.3). Its biomass is a declared input,
+    so the prediction is relative to the unbuffered arm.
   - Its integrated database is offline, and most of its "1,748 data sets" are growth curves.
+  - **Licences (§3.1):** its three main sources are non-commercial, so under D173 they serve
+    analysis only.
+    - CC BY counterparts exist for protein abundance (Weber et al. 2023, 528 proteins) and
+      turnover (Burgos et al. 2020, 488 proteins).
+    - None was found for the rebuffering perturbation. A judged Stage 4a on it would therefore
+      rest on non-commercial data, which needs the user's decision.
 - **Metabolism is 10 to 100 times beyond today's 16-species cap, and gene expression is
   low-copy** (§4.3). Stage 4 needs both F8 (metabolism at scale) and F11 (a stochastic regime).
 
@@ -143,7 +172,8 @@ registration anywhere and no archive capture.
     trace to epistatic *ftsZ* mutations.
   - The deposit holds cell size (699 MB), FtsZ (390 MB), growth curves (8 MB) and fitness
     (176 MB).
-  - Related-strain evidence for Stage 5; not downloaded.
+  - Recorded in the inventory as related-strain evidence for Stage 5, metadata only
+    (`/mnt/datasets/Cells/syn3a/figshare-23119985/`). The data files are not downloaded.
 - **The Syn3B FtsZ:mCherry plasmid record,** Mendeley 10.17632/x59cx6ns2h. This is the 4D
   paper's imaging strain; the record holds no images.
 - **The 2022 model's ori/quarter/terminus qPCR,** Mendeley 10.17632/nprw2h5tx6.
@@ -169,11 +199,25 @@ registration anywhere and no archive capture.
 
 ## 3. What was downloaded, and what waits
 
-- **Syn3A:** 82 MB in 18 source folders (the earlier 17 plus the Frallicciardi subset and its
-  CC BY SI).
+- **Syn3A:** 82 MB in 19 source folders: the earlier 17, the Frallicciardi subset with its CC BY
+  SI, and the Moger-Reischer metadata.
 - ***M. pneumoniae*:** 4.4 MB in 3 folders (§9).
-- **How the files were handled.** Every file was only streamed to disk and hashed. Workbooks were
-  read as XML with the standard library, and nothing downloaded was executed.
+- **How the files were handled.**
+  - Every file was only streamed to disk and hashed. Nothing downloaded was executed.
+  - Workbooks were read with standard-library readers, `.xlsx` as XML and `.xls` (BIFF8) by
+    `scripts/xls_dump.py`.
+- **The Frallicciardi traces' reuse terms.**
+  - The paper's data statement names its source-data repository for the experimental
+    measurements and states no separate reuse terms.
+  - The article and its SI are CC BY 4.0, but the repository has no licence file.
+  - So the milestone fetches them by manifest and checksum at run time, and no trace or plot
+    of one enters the public repository.
+- **The non-commercial sources,** under the user's decision of 15 November (D173):
+  - The sources: Presutti, Sandberg, and the *M. pneumoniae* papers (Maier, Wodke, Chen, and
+    MyMpn).
+  - They serve analysis only. Nothing from them is committed or redistributed: no table,
+    trace or plot.
+  - Judged or published results rest on permissively licensed data where possible.
 - **Awaiting approval:** the 4D model's outputs, at the metabolism stage (D138, D173). No source
   exceeds 20 GB.
 - **Not downloaded, under the brief's rules:** raw spectra, raw tomograms, raw reads.
@@ -182,6 +226,60 @@ registration anywhere and no archive capture.
   - the two MD archives;
   - the Moger-Reischer data (1.3 GB);
   - the Frallicciardi weak-acid traces, which are kept for FR-4's case (§6.4).
+
+### 3.1 Licences: what each milestone and stage rests on (D173)
+
+**Three classes.**
+- **Permissive** (CC BY, CC0): values, tables and derived plots may enter the repository, with
+  attribution.
+- **Non-commercial** (CC BY-NC, -NC-SA, -NC-ND): analysis only.
+  - No table, trace or plot from these sources enters the repository. Individual values may be
+    cited, as D173 agreed.
+  - Judged or published results use a permissive source wherever one exists.
+- **No stated terms** (a deposit with no licence file, although its article is open):
+  - fetched by manifest and checksum at run time;
+  - no trace or plot enters the repository, though summary statistics and verdicts may.
+
+| Where | Source | Class | Use under D173 | Permissive alternative | What the alternative does not cover |
+| --- | --- | --- | --- | --- | --- |
+| S2-M1, judged content (§6.1) | None. Its scale values are round numbers or come from CC BY sources | — | Judged | Not needed | — |
+| The probes' scale values (§5) | Presutti 2026: Pf of Mixtures 1 and 3, Mixture 1's glycerol permeability, and the DLS radius range | Non-commercial | Cited single values in development probes, which D173 allows. Nothing judged rests on them | The CC BY Frallicciardi SI's water and glycerol coefficients for DOPC, POPC and DPPC | Syn3A-lipid mixtures |
+| S2-M1, calibration and glycerol arm (§6.1); the weak-acid case (§6.4) | Frallicciardi 2022's raw traces and DLS files (its GitHub repository) | No stated terms. The article and SI are CC BY | Reported as summary statistics and verdicts only. If the glycerol arm became judged, it would rest on these files, which are not permissive | The CC BY SI's coefficients (Supplementary Tables 1–5) and exemplary fit parameters (Table 6), and the traces as drawn in the CC BY figures | The raw acquisitions. The CC BY code record (Zenodo 5176264) holds seven MATLAB scripts and no data |
+| S2-M1, Syn3A-lipid arm (§6.1) | Presutti 2026's Source Data | Non-commercial (CC BY-NC-ND) | **Analysis only, in the workspace,** outside the published record | None measured | The same work's MD archive is CC BY but is another simulator's evidence. Frallicciardi's POPC–cholesterol water series has no stated terms |
+| §4.1's coefficient ranges | Presutti 2026, Fig. 3b | Non-commercial | Cited as orders of magnitude; the table is not copied | None | — |
+| Stage 4 (Syn3A), the evolution study (§4.3) | Sandberg 2023: the article's tables (Table S1, mutations); processed expression tables on GEO | Non-commercial (CC BY-NC-ND) for the article; GEO's terms not checked | Analysis only | Moger-Reischer 2023 (CC BY; figshare CC BY), held as metadata | Syn3B, a related strain: growth, fitness, cell size and FtsZ, but no expression data |
+| Stage 4a (*M. pneumoniae*): the rebuffering perturbation and the pH challenge (§9.3) | Wodke 2013, Fig. 4A–C source data | Non-commercial (CC BY-NC-SA 3.0) | Analysis only. A judged Stage 4a on this perturbation needs the user's decision | **None found** in five topic queries of Europe PMC (15 November), top hits screened by title | The nearest permissive observables are phenol-red growth-index curves for strain M129 (Gaspari et al. 2020; Burgos et al. 2023; figures only). They depend on growth, so they need a growth model, and they have no rebuffering step |
+| Stage 4a's medium (§9.3) | Yus 2009's defined medium | Not obtained | — | Leads for a serum-free recipe only. Burgos et al. 2023 (CC BY) tabulates complete serum-free formulations for M129, semi-defined (CMRL-1066 and yeastolate). Gaspari et al. 2020 (CC BY) gives the semi-defined MCMyco | Fig. 4's experiments used rich medium with horse serum (Hayflick, by name for Fig. 4A–B) |
+| Protein abundance (§9.2) | Maier 2011: 413 proteins | Non-commercial (CC BY-NC-SA 3.0) | Analysis only | **Weber et al. 2023** (*Mol. Syst. Biol.* 19:e11301, CC BY 4.0): copies per cell of 528 proteins at 48 h. 73 reference proteins are anchored by labelled peptides, and the rest are calibrated to them (PRIDE PXD035159) | Maier's perturbation proteomes and time course |
+| Protein turnover, the closed-loop test (§9.3) | Maier 2011: 231 proteins | Non-commercial | Analysis only | **Burgos et al. 2020** (*Mol. Syst. Biol.* 16:e9530, CC BY 4.0): SILAC pulse-chase fits for 488 proteins in exponential phase, in Hayflick (PRIDE PXD016386). Many fitted rates sit at the dilution rate, so those half-lives are long and poorly resolved | As above |
+| The osmotic response (§9.1) | Maier 2011, the 0.5 M NaCl proteome | Non-commercial | Analysis only | None found | — |
+| The 1,748 data sets (§2, §9.1) | Chen 2016's workbook; MyMpn | Non-commercial (CC BY-NC 4.0) | Cited for the count only; no milestone rests on them | The underlying deposits (ArrayExpress, PRIDE), under each archive's terms (not checked) | — |
+
+**About the alternatives.**
+- Each article's licence was read from its full text (CC BY 4.0). The deposits' own licences
+  were not checked, and none of their data files was opened.
+- The counts stay separate: Weber's 528 proteins with copies and Burgos's 488 turnover fits,
+  apart from Maier's 413 and 231.
+- One on-topic preprint is not permissive: the 2022 study of *M. pneumoniae*'s central carbon
+  metabolism (bioRxiv 10.1101/2022.08.08.503180, CC BY-NC). No published version was found
+  under its title.
+
+**Permissive throughout:**
+- Stage 3: Justice et al. 2024 (article, Source Data and lipidomics CC BY; TEM CC0);
+- Breuer et al. 2019 (CC BY; proteomics CC0);
+- the 3C map (CC0);
+- Moger-Reischer 2023 (CC BY);
+- the 4D model's Zenodo record (CC BY, although its code repository has no licence file).
+
+**Not classified, because their licences were not read:**
+- the *Cell* articles behind Stage 4's 2022 kinetic model and Stage 5's Syn3B counts (Thornburg
+  et al. 2022 and 2026);
+- Pelletier 2021 and Dobbs 2026;
+- the EMPIAR, SRA and GEO deposits' own terms.
+
+**Evidence records.** Records that enter the repository with a milestone (§7) carry no value
+from a non-commercial source or a source with no stated terms. They name the source file by
+manifest entry and checksum, and the value is read at run time.
 
 ## 4. Stage by stage
 
@@ -202,7 +300,8 @@ registration anywhere and no archive capture.
   all three (Frallicciardi), on each permeant trace.
 - **The values.** Syn3A-lipid coefficients span water 10⁻³ to 10⁻² cm/s, glycerol 10⁻⁷ to 10⁻⁶
   and ribose 10⁻⁹ to 10⁻⁸, each falling as cholesterol rises. Exact values are in Presutti's
-  Fig. 3b and the inventory JSON; that article is CC BY-NC-ND, so its table is not copied here.
+  Fig. 3b and the workspace inventory. That article is non-commercial (CC BY-NC-ND; §3.1), so
+  only orders of magnitude are cited here.
 - **What is not public:**
   - a second osmotic gradient on the same membrane;
   - a size series;
@@ -299,7 +398,7 @@ or verified.
   - transposon essentiality;
   - a reconstruction of 338 reactions and 304 metabolites;
   - a 105 min doubling time in SP4.
-- the evolution study;
+- the evolution study (Sandberg 2023: non-commercial, analysis only; §3.1);
 - the replication sequencing;
 - prior models, which count as another simulator's evidence: the 2022 kinetic model and the 4D
   model.
@@ -386,36 +485,102 @@ The world is the same vesicle with a valence-0 row G:
 | Reversed gradient (lumen 120, bath 12 mM) | Runs. The G amount falls (efflux); in the forward case it rises |
 | Heat | The membrane heat is positive and monotone in every run |
 
-### 5.3 The passive contract (D174), applied
+### 5.3 The passive contract, in ARCHITECTURE.md's corrected wording
 
-| Item | Exchange (paired first-order routes; from its contract and documented booking, not run) | Constant-field route at valence 0 (probe) |
-| --- | --- | --- |
-| Zero net flux at equal chemical potential | Only with rate constants tied to the declared volume | **Yes** (no-gradient run) |
-| Reversal with the driving force | Yes | **Yes** (reversed run) |
-| Conserved material | Yes | **Yes** (balance errors 0) |
-| Zero external work | **No:** books signed supplied work | **Yes:** books membrane heat only |
-| Dissipation equal to the free-energy decrease | **No:** books no heat | **Within the ledger tolerance** from resolved starts. The residual grows with the start ratio (1.6e-8 at 10×, 3.3e-4 at 10⁴×), and a trace start is refused |
-| Composes with water and held baths | Refused | Yes |
+**The acceptance** (ARCHITECTURE.md, the modular core, as corrected on main at 08ac2eb).
+- **The test:** a closed, fixed-volume, two-compartment world. The law must:
+  - conserve material;
+  - give zero net flux at equal chemical potential;
+  - reverse with the driving force;
+  - dissipate the free-energy decrease with no externally supplied work.
+- **In a held-bath world,** the total balance includes the declared reservoir work.
+- **Composition with water** is qualified separately.
 
-**Conclusion.** A generic passive law is needed in D172's round, as D174 expects. It can declare
-the constant-field kernel at valence 0 under its own ID and contract. It must book the exact
-free-energy change of each step as heat, as D150's exchange stages book theirs as work, so that
-trace starts are admitted. It must also carry finding 3's bound term.
+**What each run can show.**
 
-The probe found no need for a separate operator, and no need for D150 version 1.1 for this case:
-water already counts inner-model species rows. D150 version 1.1 is still needed wherever D150's
-own operators meet water.
+| Item | Exchange (paired one-way routes; judged from its contract and documented booking, not run) | Constant-field route at valence 0: the vesicle runs (P0b–P0d; a held bath, mostly with water) | Constant-field route at valence 0: the closed pair (P0e T1; no reservoir, no water) |
+| --- | --- | --- | --- |
+| Conserved material | Yes | Yes, counting the reservoir's supply | **Yes:** the pair's total G to 1.5e-16 |
+| Zero net flux at equal chemical potential | Only with rate constants tied to the declared volume | Yes | **Yes:** exactly zero |
+| Reversal with the driving force | Yes | Yes | **Yes:** equal and opposite to rounding |
+| Free-energy decrease dissipated, no external work | **No:** books signed supplied work and no heat | Not testable as such: the bath supplies G and books reservoir work. The total balance including that work closes within the ledger tolerance from resolved starts (residual 1.6e-8 at a 10-fold start, 3.3e-4 at 10⁴-fold) | **Yes:** the booked heat equals the exact ideal-solution decrease to 1.1e-6 relative; reservoir and electrode work are zero |
+| Time course | — | Within 6.1e-8 of an independent two-variable reference (with water) | **Within 7.7e-8** of the closed form |
+| A start from a trace | — | Refused by the energy ledger, with water on or off | **Refused**, the same way |
+| Composition with water | Refused | Runs: development evidence for the separate water qualification | Not part of this test |
+
+**Conclusions.**
+- **The held-bath vesicle runs are not the acceptance test.** They are open systems, mostly with
+  water on. They show the coupled behaviour and a total balance that closes with the reservoir's
+  work.
+- **The closed pair passes every item from resolved starts.** It is the acceptance test's own
+  shape, run on main's inner model with no new code.
+- **What is missing is one thing:** a trace start. A generic passive law in D172's round can
+  declare the constant-field kernel at valence 0 under its own ID and contract. It must:
+  - book each step's exact free-energy change as heat, as D150's exchange stages book theirs as
+    work, so that trace starts are admitted;
+  - carry finding 3's bound term;
+  - declare its trace policy at the definition boundary.
+- **No separate operator is needed for this case, and no D150 version 1.1:** water already counts
+  inner-model species rows. D150 version 1.1 is still needed wherever D150's own operators meet
+  water.
+
+### 5.4 A closed pair exists on main today (P0e)
+
+ARCHITECTURE.md asks first which admissible topology is closed for the test species, because
+FR-1's compartments sit in worlds with a held bath. The criterion was written before the run
+(`p0/P0E_CRITERION.md`).
+
+- **T1, one cell and one finite outside node, no reservoir:**
+  - **The parser.** It requires exactly one outside gauge when no reservoir is held, and admits
+    this pair.
+  - **The engine model run:** `resolved_pump_tissue@3` alone, with no water, so at fixed volume.
+  - **The variants:**
+    - equal concentrations: nothing moves;
+    - 1 against 10 mM, and the reverse: equal and opposite transfers;
+    - the time course within 7.7e-8 of the closed form;
+    - dissipation equal to the exact free-energy decrease to 1.1e-6;
+    - no work booked.
+  - **A trace start** is refused like the vesicle's.
+  - **So the closed passive test need not wait for FR-1.**
+- **T2, two cells joined by a pinned-open junction, each facing a held bath through a membrane
+  impermeant to G:** the junction route carries the same constant-field law.
+  - **Admitted, and closed for G despite the held bath.** No G reached the bath, and no reservoir
+    or electrode work was booked.
+  - **Results identical to T1's** (same law, area, permeability, volumes and step):
+    - equal concentrations: nothing moves;
+    - forward and reversed transfers equal and opposite;
+    - material to 1.5e-16;
+    - the time course within 7.7e-8;
+    - dissipation equal to the free-energy decrease to 1.1e-6.
+  - **A trace start is refused.**
+  - **Earlier attempts.** Two were refused at the parser by declaration errors in the probe itself:
+    a missing nested `gate`, then a missing junction `law`. Both are recorded in the criterion's
+    addenda (`p0/run-07-p0e-t2` is the valid run).
+- **So the closed test has two topologies on main.** One has no bath at all; the other sits in a
+  held-bath world, as FR-1's compartments will.
 
 ## 6. The first milestone: S2-M1, neutral solute and water across protein-free vesicles
 
-### 6.1 Claims, kept apart (D174)
+### 6.1 Claims, kept apart (D174), with the judged content numerical
 
 | Kind | What | Data | Judged? |
 | --- | --- | --- | --- |
-| Numerical verification | The passive law and water against closed forms and an independent reference written blind: the five contract items at fixed volume, then shrink-and-swell with water, with dt refinement. A trace start is included | None | Yes, numerically |
-| Calibration | Per membrane (POPC, DOPC, DPPC): P_w and the quenching parameter fitted on the KCl traces with the exemplary DLS distribution; P_gly fitted on a late window of the glycerol trace only (t > 20 water time constants). The published coefficients reproduced as a consistency check | Frallicciardi 2022 | No: reported as calibration |
-| Protein-free vesicle prediction, held out | On the same membranes: each glycerol trace's fluorescence minimum (its time and depth) with nothing refit. It is a permeant osmolyte at **about the same gradient** as KCl (every osmolyte was dosed to about 300 mOsm/kg), so what is held out is the coupled water-and-solute dynamics, not a new gradient | Frallicciardi 2022 | **Yes, the milestone's judged claim** (see the check below) |
-| Syn3A-lipid application | The three Syn3A-lipid mixtures' glycerol traces. The published P_w is an input. K_SV and the size prior would have to be transferred from another membrane, which the authors' own fits do not support (below). So a miss would not be interpretable | Presutti 2026 | **Reported, not judged.** Mixture-to-mixture interpolation is only a consistency check, since it passes by hand |
+| Numerical verification: the passive contract | The closed, fixed-volume, two-compartment test of §5.3 at vesicle scale, against references written by a separate agent: conservation, zero flux at equal potential, reversal, dissipation equal to the free-energy decrease with no external work, and the time course. A trace start included. The topology exists on main (§5.4) | None, so no licence dependence. Its worlds take round or CC BY-sourced scale values, not the probes' Presutti values (§3.1) | **Yes: the milestone's judged content** |
+| Numerical verification: water coupling | Then the same law composed with water@1 in a vesicle: shrinkage and swelling against an independent two-variable reference, with dt refinement and the held-bath total balance with its reservoir work | None; scale values as above | **Yes** |
+| Calibration | Per membrane (POPC, DOPC, DPPC): P_w and the quenching parameter on the KCl traces with the exemplary DLS distribution; P_gly on a late window of the glycerol trace (t > 20 water time constants). The published coefficients reproduced | Frallicciardi 2022; raw traces with no stated terms (§3.1) | No: reported as calibration, in summary statistics |
+| The glycerol arm | On the same membranes: each glycerol trace's fluorescence minimum (time and depth), with nothing refit. A permeant osmolyte at **about the same gradient** as KCl | Frallicciardi 2022; no stated terms (§3.1) | **Reported only,** in summary statistics. It becomes judged only if a check registered beforehand catches a planted error with margin, as MG0c's controls do. Reasons below |
+| Syn3A-lipid vesicles | The three Syn3A-lipid mixtures' glycerol traces, with the published P_w as input. K_SV and the size prior would have to come from another membrane | Presutti 2026: **non-commercial** (§3.1) | **Analysis only, in the workspace** (D173), since no permissive measured alternative exists. Mixture-to-mixture interpolation passes by hand |
+| Held-out living-cell prediction | None. The public data allow none at this stage. Stage 3's lysis needs F5 | — | — |
+
+**Why the glycerol arm is reported only.**
+- **Within-trace fitting:** P_gly comes from the same trace's late window, so the minimum is held
+  out only from that window, not from the experiment.
+- **The thin margin:** in the host-side check below, halving or doubling P_gly moves the predicted
+  minimum by only 1.5–2.5 acquisition s.d., and the unperturbed prediction itself sits within
+  1.4 s.d.
+- **The authors' own refits:** K_SV varies 1.2- to 10-fold between traces of one membrane, and
+  P_w differs between traces of one membrane. So the observation model is part of what the arm
+  tests.
 
 **The check that this arm can fail.** It was run host-side, not in the engine (`heldout/`).
 - **The model:** a crude ensemble model fitted to the public traces, weighted by the DLS
@@ -439,14 +604,14 @@ distribution, CC BY).
 - The jointly fitted P_w from the glycerol trace differs from the KCl trace's by 1.6 times
   (POPC) and 3.3 times (DOPC).
 
-**So the arm tests the observation model as much as the transport.** S2-M1 must declare, before
-its judged run:
-- how K_SV and the size weighting are handled;
-- a control that refits K_SV per trace, as the authors do, showing how far the verdict depends on
-  it.
+**So the arm tests the observation model as much as the transport.**
 
-A miss with K_SV fixed would not by itself point at the engine.
-| Held-out living-cell prediction | None. The public data allow none at this stage. Stage 3's lysis needs F5 | — | — |
+**To make it judged, the protocol must register beforehand:**
+- the handling of K_SV and the size weighting;
+- planted errors (P_gly ×2 and ×½, a shifted P_w) with the margin by which each must be caught;
+- a control that refits K_SV per trace, as the authors do.
+
+Until then, a miss would not point at the engine.
 
 ### 6.2 Its structure
 
@@ -464,21 +629,28 @@ A miss with K_SV fixed would not by itself point at the engine.
   - `ideal_osmosis_linear_compliance_water@1`;
   - the generic passive law (F1), from D172's round.
 - **Prerequisites:**
-  - the round's passive law, with exact booking and finding 3's term;
+  - the round's passive law, with exact booking and finding 3's term. The resolved-start part of
+    the contract runs on main today in the closed pair (§5.4), so references and protocol can be
+    prepared now;
   - water@1 qualified at vesicle scale (P0 is the development evidence);
-  - an independent reference written blind;
+  - references written by a separate agent that has not read the engine code;
   - a PROPOSED protocol registered before one judged run.
 - **Cost:** CPU minutes per world.
-- **Data in hand:** the 16-file Frallicciardi subset (1.1 MB) and Presutti's Source Data.
+- **Data in hand, for the arms that are not judged:**
+  - the 16-file Frallicciardi subset (1.1 MB). It has no stated terms, so it is fetched by
+    manifest and checksum, and no trace or plot enters the public repository (§3, §3.1);
+  - Presutti's Source Data, which is non-commercial: workspace analysis only.
 
 ### 6.3 Why this design
 
-- **It is choosing by measured perturbations.** The public data's only same-membrane perturbation
-  is a second, permeant osmolyte at about the same gradient. There is no second gradient, size
-  series or repeat DLS distribution. That is what the engine can be judged on without a
-  composition rule Cells lacks.
-- **It cannot be judged on today's engine.** The lumen starts without glycerol, a trace start the
-  energy ledger refuses (§5.2). It waits for the passive law's exact booking.
+- **It judges what can be judged honestly.** The numerical contract and the water coupling have
+  exact or independent references. The measured data offer only one same-membrane perturbation, a
+  second permeant osmolyte at about the same gradient, with no second gradient, size series or
+  repeat DLS distribution. That supports a reported arm, not a judged one, until a registered
+  planted-error control shows margin.
+- **Its trace-start items cannot be judged on today's engine.** A lumen without glycerol is a
+  trace start, which the energy ledger refuses (§5.2, §5.4). They wait for the passive law's
+  exact booking.
 - **It reuses an architecture case.** The vesicle is one of the architecture's named reuse cases.
 - **Everything it needs is general.** The passive law also serves drugs, metabolic wastes, gases
   and FR-1's compartments.
@@ -487,7 +659,8 @@ A miss with K_SV fixed would not by itself point at the engine.
 
 Frallicciardi's formate and lactate traces are on the same membranes. They need proton and buffer
 chemistry inside the vesicle, so they are FR-4's compartment-pH case on measured data. This also
-leads toward *M. pneumoniae*'s pH stage (§9).
+leads toward *M. pneumoniae*'s pH stage (§9). Those traces have no stated terms, so the same
+rule applies: summary statistics and verdicts only (§3.1).
 
 ## 7. The evidence inventory schema
 
@@ -509,6 +682,10 @@ leads toward *M. pneumoniae*'s pH stage (§9).
 | `use` | `set`, `judge` or `context`, per milestone; never both in one milestone |
 | `sampling` | Time-uniform, balanced growth or fixed phase |
 | `catalogue_ref`, `licence` | Functional unit or gene product; the licence of the value's source |
+
+**The licence rule (D173).** A record from a non-commercial source, or a source with no stated
+terms, enters the repository without its value. It holds the source file's manifest entry and
+checksum, and the value is read at run time from the workspace (§3.1).
 
 **How it fits the catalogue plan and the inner-model declarations.**
 - It carries the catalogue plan's abundance provenance and kind of evidence.
@@ -534,10 +711,10 @@ leads toward *M. pneumoniae*'s pH stage (§9).
 
 | Source | Identifier, licence | Strain, conditions | What was measured | What is inferred or simulated | Downloaded |
 | --- | --- | --- | --- | --- | --- |
-| Maier et al. 2011, *Mol. Syst. Biol.* 7:511 | 10.1038/msb.2011.38, PMC3159969; CC BY-NC-SA 3.0. MS raw data were placed on Tranche (ProteomeCommons); not checked | Strain not named in the methods; Hayflick medium as in Yus et al. 2009, attached growth; 24 h sampling over 4 days; perturbations at 96 h: **0.5 M NaCl osmotic stress**, mitomycin C, heat shock at 42 °C; a minimal-medium arm. Controls 9 replicates, perturbations duplicates | Average copies per cell of 413 proteins (anchored by labelled reference peptides; about 1.5–1.8-fold error); **turnover of 231 proteins** (SILAC chase, 1–8 days); mRNA copies per cell (tiling arrays with spike-ins; GEO); the proteome's response to each perturbation | Stochastic expression simulations | Tables S1–S8 (zip, 310 KB), SI text, model file: `maier2011-msb` |
-| Wodke et al. 2013, *Mol. Syst. Biol.* 9:653 | 10.1038/msb.2013.6, PMC3658275; CC BY-NC-SA 3.0; model iJW145 (BioModels MODEL1301290000) | Rich and defined media, glucose (strain and temperature not checked in this round) | **Batch time courses:** glucose consumed, lactate and acetate secreted, protein, medium pH 7.8 → 5.5 over 4 days. **36 h at pre-set pH 5.5–8.0:** glucose used and protein made (Fig. 4A–B), and recovery after a shift back (Fig. 4C). ¹³C-glucose labelling | ATP production (about 60,000 per cell per second at 36 h), the ATPase's share (up to 57%), maintenance: FBA with fitted constraints, never to be used as measurements | Fig. 4 and SI Fig. 2–3 source data, Tables S1–S17, SI: `wodke2013-msb` (2.0 MB). **Numeric, from the files' labels:** Fig. 4A–B (glucose and protein, days 2–3, Hayflick and rebuffered) and Fig. 4C (lactate and glucose time courses, with and without rebuffering). The batch time courses behind SI Fig. S5 were **not located** as a table: Table S6 lists acetic and lactic acid concentrations, but the binary .xls values were not parsed |
-| Chen et al. 2016, *NAR* 44:1192 | 10.1093/nar/gkw004, PMC4756857; CC BY-NC 4.0 | Consistent conditions from one group | The 1,748 data sets: **1,300 growth curves** at various nutrient concentrations (Yus et al. 2009), about 300 transcriptome data sets along growth and under stress, 57 proteome data sets along growth, interactions, modifications, turnover, metabolome (86 of 152 predicted metabolites), essentiality | — | The data workbook (Tables S1–S15) and index: `chen2016-nar` (1.9 MB) |
-| MyMpn (Wodke et al. 2015, *NAR* database issue) | 10.1093/nar/gku1105, PMC4383923; CC BY-NC 4.0 | — | The integrated database: **offline** (HTTP 404 at both addresses, 15 November 2026). Each data set must be fetched from its original deposit | — | — |
+| Maier et al. 2011, *Mol. Syst. Biol.* 7:511 | 10.1038/msb.2011.38, PMC3159969; CC BY-NC-SA 3.0: **non-commercial, analysis only (D173).** MS raw data were placed on Tranche (ProteomeCommons); not checked | Strain not named in the methods; Hayflick medium as in Yus et al. 2009, attached growth; 24 h sampling over 4 days; perturbations at 96 h: **0.5 M NaCl osmotic stress**, mitomycin C, heat shock at 42 °C; a minimal-medium arm. Controls 9 replicates, perturbations duplicates | Average copies per cell of 413 proteins (anchored by labelled reference peptides; about 1.5–1.8-fold error); **turnover of 231 proteins** (SILAC chase, 1–8 days); mRNA copies per cell (tiling arrays with spike-ins; GEO); the proteome's response to each perturbation | Stochastic expression simulations | Tables S1–S8 (zip, 310 KB), SI text, model file: `maier2011-msb` |
+| Wodke et al. 2013, *Mol. Syst. Biol.* 9:653 | 10.1038/msb.2013.6, PMC3658275; CC BY-NC-SA 3.0: **non-commercial, analysis only (D173)**; model iJW145 (BioModels MODEL1301290000) | Rich (Hayflick) and defined media, glucose (strain and temperature not checked) | **Batch time courses:** glucose consumed, lactate and acetate secreted, protein, medium pH 7.8 → 5.5 over 4 days. **The pH challenge:** after 48 h in Hayflick with glucose, 36 h at a pre-set pH (5.5–8.0 in the text; the file also has a pH 5.0 column): glucose used and protein made (Fig. 4A–B). **Rebuffering:** a batch culture brought back from about pH 6 to 7.7 with NaOH after 4 days, with glucose and lactate followed (Fig. 4C). ¹³C-glucose labelling | ATP production (about 60,000 per cell per second at 36 h), the ATPase's share (up to 57%), maintenance: FBA with fitted constraints, never to be used as measurements | Fig. 4 and SI Fig. 2–3 source data, Tables S1–S17, SI: `wodke2013-msb` (2.0 MB). **Opened (§9.3):** Fig. 4A–B and Fig. 4C are numeric. The batch time courses (SI Fig. S5) are a figure only |
+| Chen et al. 2016, *NAR* 44:1192 | 10.1093/nar/gkw004, PMC4756857; CC BY-NC 4.0: **non-commercial, analysis only (D173)** | Consistent conditions from one group | The 1,748 data sets: **1,300 growth curves** at various nutrient concentrations (Yus et al. 2009), about 300 transcriptome data sets along growth and under stress, 57 proteome data sets along growth, interactions, modifications, turnover, metabolome (86 of 152 predicted metabolites), essentiality | — | The data workbook (Tables S1–S15) and index: `chen2016-nar` (1.9 MB) |
+| MyMpn (Wodke et al. 2015, *NAR* database issue) | 10.1093/nar/gku1105, PMC4383923; CC BY-NC 4.0: non-commercial | — | The integrated database: **offline** (HTTP 404 at both addresses, 15 November 2026). Each data set must be fetched from its original deposit | — | — |
 | Dobbs, Jensen and Mahamid 2026, *Cell* | 10.1016/j.cell.2026.08.054, PMID 42790420; not in PMC | Strain M129-B7; native and antibiotic-perturbed cells | 140 subtomogram-average maps of translation states; EMD-53631 verified | — | Metadata only |
 | Membrane, ion and osmotic data | — | — | **None found for *M. pneumoniae*** beyond the 0.5 M NaCl proteome response and the medium-pH challenge. Relatives only: §4.2's bioelectric prior | — | — |
 
@@ -545,38 +722,83 @@ leads toward *M. pneumoniae*'s pH stage (§9).
 
 | What a Cells model could be judged on | JCVI-syn3A | *M. pneumoniae* |
 | --- | --- | --- |
-| Protein abundance | 428 proteins, one medium, 3 phases; absolute counts scaled | 413 proteins with absolute copies anchored by reference peptides, under growth and four perturbations |
-| Protein turnover | None | **231 half-lives** |
+| Protein abundance | 428 proteins, one medium, 3 phases; absolute counts scaled | 413 proteins with absolute copies anchored by reference peptides, under growth and four perturbations (Maier; non-commercial). Permissive: 528 proteins at 48 h, 73 anchored and the rest calibrated (Weber et al. 2023, CC BY) |
+| Protein turnover | None | **231 half-lives** (Maier; non-commercial). Permissive: 488 SILAC pulse-chase fits (Burgos et al. 2020, CC BY) |
 | mRNA | Relative expression of the ancestor and evolved clones | **Absolute copies per cell**, time courses and about 300 stress data sets |
-| Energy, transport, pH | None measured; undefined medium | **Glucose uptake, lactate and acetate secretion, medium acidification, pH-dependent growth arrest and recovery;** a defined medium exists |
+| Energy, transport, pH | None measured; undefined medium | **Numeric:** glucose and protein against pre-set medium pH, and lactate and glucose over a 158 h batch with a rebuffered arm. Acetate, pH and protein time courses are figures only; the defined medium's recipe was not obtained. All from Wodke (non-commercial), with no permissive equivalent found |
 | Membrane permeability, osmotic response | **Reconstituted Syn3A-lipid vesicles; living-cell lysis and FDA uptake (tagged strain)** | 0.5 M NaCl proteome only |
 | Structure | Two raw tomograms; a 3C map | **140 in-cell maps** |
 | Genetics, perturbation | Essentiality; evolved lineages with growth and mutations; division genetics (data not public) | Essentiality; many perturbation transcriptomes |
 | Division, morphology | Syn3B counts and cell-size data (related strain); Pelletier not public | Gliding, attached cells with an attachment organelle: a poor division subject |
-| Licences | Mostly CC BY and CC0; Presutti and Sandberg CC BY-NC-ND | Mostly CC BY-NC-SA or CC BY-NC: values citable, tables not copied |
+| Licences (§3.1) | Mostly CC BY and CC0. Presutti and Sandberg are non-commercial; the Frallicciardi traces have no stated terms | The main sources are non-commercial: analysis only (D173). CC BY counterparts exist for abundance and turnover, not for the pH perturbation |
 | Protein-coding genes | 452 (455 with markers) | About 690 (the brief; not re-verified) |
 
 ### 9.3 Should *M. pneumoniae* lead a stage?
 
 **Yes: an energy, transport and pH stage (call it 4a), tied to FR-4 and finite fuel.**
-- **The measured targets:**
-  - the response to pre-set medium pH: glucose used and protein made (numeric source data);
-  - lactate and glucose time courses with and without rebuffering (numeric source data);
-  - the batch time courses of glucose, lactate, acetate, pH and protein. These are a
-    supplementary figure; confirm they are numeric before relying on them.
-- **What it would exercise:** a held or finite medium with pH (FR-4), proton transport, secretion,
-  reactions that make and spend fuel (§11), and a growth readout.
-- **A rule for the data:** the paper's ATP budgets are model-derived and must stay apart from the
-  measured fluxes (the brief's point).
-- **Protein turnover** (Maier) is the natural test for the closed molecular-to-physiology loop.
+
+**What the files hold, opened (15 November).** The `.xls` files were read with a
+standard-library reader, `scripts/xls_dump.py`; the same tables are in Table S17, "dataSheet".
+
+| Data | Numeric? | What it holds |
+| --- | --- | --- |
+| Fig. 4A–B, the pH challenge | **Yes** | Protein (µg) and glucose (mM), mean and s.d. of triplicates. Columns: day 2, day 3, each pre-set pH from 5.0 to 8.0 (the text says 5.5–8.0), Hayflick at day 3, and rebuffered |
+| Fig. 4C, rebuffering | **Yes** | Lactate and glucose (mM) at 12 time points over 0–158.5 h of one batch culture, and a rebuffered arm sampled from 96.75 h (4 shared time points). Without rebuffering, glucose consumption stalls while lactate levels off; rebuffered, both resume |
+| The medium pH at rebuffering | **Stated** | From about pH 6 back to 7.7, by NaOH titration after 4 days (the methods and the Fig. 4 legend). The unbuffered arm's pH curve is plotted, but it is not in the source data |
+| Batch time courses of glucose, lactic and acetic acid, and protein (SI Fig. S5) | **No** | Only a figure. Table S8 gives just the fitted sigmoid parameters, and Table S6's ATP budget is in silico |
+| Medium-pH time course (7.8 to 5.5 over 4 days) | **No** | Quoted from Yus et al. 2009 |
+| The defined medium | **Not obtained** | Yus et al. 2009 (*Science* 326:1263) is not in PMC, and science.org refused automated access (HTTP 403). Fig. 4A–B ran in Hayflick, a rich medium with horse serum. Leads for a serum-free recipe are in §3.1 |
+
+**One measured perturbation the engine could predict with FR-4 and finite fuel, but no growth
+model: Fig. 4C's rebuffering.**
+- **The setting:** after 4 days (96.75 h) the medium has acidified to about pH 6. Soon after,
+  the unbuffered culture's glucose consumption stalls, which the authors read as reversible
+  metabolic stalling of a stationary population.
+- **The perturbation:** rebuffering the medium from about pH 6 to 7.7.
+- **The measured response:** glucose consumption and lactate secretion resume, against the
+  unbuffered arm (4 shared time points to 158.5 h).
+- **The model would need:**
+  - the population's biomass held fixed;
+  - glycolysis as reactions that make ATP (finite fuel);
+  - proton-coupled lactate export and an ATPase spending ATP;
+  - medium and cytosol pH with buffering (FR-4).
+- **The gaps:**
+  - **Biomass is not measured in this culture.** The Fig. 4C file holds only lactate and
+    glucose. Fig. 4A–B comes from separate cultures: 48 h of growth, then a medium exchange.
+    Fig. 4C's culture was instead a 96 h pre-culture diluted into fresh medium.
+    - So biomass is a declared input.
+    - The prediction is the rebuffered arm relative to the unbuffered one.
+  - **The pH:** the unbuffered arm's pH curve is a figure only. So the medium pH is a declared
+    input, apart from the stated rebuffering step.
+- **The licence:** Wodke 2013 is non-commercial, and no permissive equivalent was found (§3.1).
+  The perturbation can be analysed now. A judged Stage 4a on it needs the user's decision.
+
+**Other rules for these data:**
+- **ATP budgets:** the paper's are model-derived and stay apart from the measured fluxes.
+- **Protein turnover** is the natural test for the closed molecular-to-physiology loop. Anything
+  judged uses Burgos et al. 2020's 488 fits (CC BY); Maier's 231 serve analysis only.
+- **The figures stay separate:**
+  - Maier: 413 proteins with absolute copy numbers, and 231 with turnover rates;
+  - Weber: 528 proteins with copy numbers;
+  - Burgos: 488 turnover fits.
+- **Licences (D173):** the three main sources are non-commercial (CC BY-NC-SA 3.0 or CC BY-NC
+  4.0).
+  - They serve analysis only.
+  - No table, trace or plot from them enters the repository.
+  - Judged results use the CC BY counterparts where they exist (§3.1).
 
 **Syn3A should keep the lead for:**
 - membrane physics (S2-M1);
 - lipid-diet physiology;
 - division genetics.
 
-**Recommended:** register *M. pneumoniae* as an organism instance (§10) when Stage 4a is planned,
-and audit its defined medium and the growth-curve deposits then.
+**Recommended:**
+- Register *M. pneumoniae* as an organism instance (§10) when Stage 4a is planned, with the
+  rebuffering response as its first candidate measured perturbation, subject to the licence
+  decision above.
+- Bind protein abundance and turnover to the CC BY sources (Weber 2023, Burgos 2020).
+- For the medium, treat the CC BY serum-free formulations (§3.1) as leads. Hayflick's own
+  composition stays undefined, because of its serum.
 
 ## 10. Organism definitions in general
 
@@ -588,7 +810,7 @@ never declares laws itself.
 | Organism and strains | Taxon, strains with lineage, genome accession and frozen annotation, compartments |
 | Media and conditions | Named media with composition, as far as defined, and temperatures |
 | Law-set references | IDs from the inner model's law declarations and the operators' law IDs. Kinetics are not restated |
-| Parameter sets | Values bound to declared parameters, each pointing to evidence records, with `cited` or `calibrated` provenance |
+| Parameter sets | Values bound to declared parameters, each pointing to evidence records, with `cited` or `calibrated` provenance. A value from a non-commercial source, or one with no stated terms, is bound by reference only (§7) |
 | Observation models | Each assay's model and its calibrated nuisance parameters |
 | Evidence inventory | The records of §7 |
 | Benchmarks | Registered tests naming the records they set and judge, with their claim kinds |
@@ -623,24 +845,39 @@ stages as registered consumers of the fuel decision.
 ## 12. Open questions for the user, with recommendations
 
 D173 answered the earlier list (the track, P0, the Frallicciardi audit, the 4D outputs at
-Stage 4, no contact with authors, the licence rule, *M. pneumoniae* soon).
+Stage 4, no contact with authors, the licence rule, *M. pneumoniae* soon). On 15 November it
+also answered the non-commercial question: analysis only.
+- **What follows from that.** Anything judged on *M. pneumoniae* protein abundance or turnover
+  uses the CC BY sources (Weber 2023, Burgos 2020), and Maier stays analysis only.
+- **The one licence question left** is Stage 4a's acceptance (question 3).
+- The advisor's defaults on the 15 November recommendations went to the user separately.
 
-1. **S2-M1 as designed in §6:** protein-free vesicles, with claims kept apart; Frallicciardi
-   2022 for the held-out arm; Syn3A-lipid vesicles as an application.
-   - **Recommended: yes.** It is judged once D172's round has landed the passive law.
+These remain:
+
+1. **S2-M1, narrowed as in §6.**
+   - Its judged content is numerical: the closed passive test, then water coupling, at vesicle
+     scale, against references from a separate agent. It depends on no external data.
+   - The Frallicciardi arms are reported as summary statistics and verdicts, since the raw
+     traces have no stated terms.
+   - The Syn3A-lipid arm becomes workspace analysis, since Presutti is non-commercial (§3.1).
+   - **Recommended: yes.** The references and the protocol can be prepared now on main's closed
+     pair (§5.4). The judged run follows D172's round, for the trace-start items.
 2. **The passive law's form,** for the inner-model note: its own ID declaring the constant-field
    kernel at valence 0, with exact booking, or a separate kernel?
-   - **Recommended:** its own ID, sharing the kernel. The reuse rule allows sharing where the
-     energy role matches, and the probe shows it does once booking is exact.
-3. **Should *M. pneumoniae* lead an energy, transport and pH Stage 4a,** as FR-4's and the fuel
-   decision's measured-data consumer?
-   - **Recommended: yes.** Plan it after S2-M1, with a second audit of its defined medium and
-     growth-curve deposits.
-4. **The Moger-Reischer Syn3B data** (1.3 GB, CC BY), for Stage 5.
-   - **Recommended: defer to Stage 5,** as related-strain evidence.
-5. **The Frallicciardi repository has no licence file.**
-   - **Recommended:** use it for analysis only, cite the CC BY paper, and redistribute nothing.
-6. **The Pelletier data:** your side's search continues. §1.1 lists what was checked.
+   - **Recommended:** its own ID, sharing the kernel. The closed pair shows the energy role
+     already matches from resolved starts; only the trace start needs exact booking.
+3. **Should *M. pneumoniae* lead an energy, transport and pH Stage 4a,** with Fig. 4C's
+   rebuffering as its first measured perturbation (§9.3)?
+   - **Recommended: yes**, once FR-4 and finite fuel exist.
+   - **The caveat:** that culture's biomass was not measured, so it is a declared input, and the
+     prediction is the rebuffered arm relative to the unbuffered one.
+   - **The licence:** the perturbation rests on Wodke 2013 alone. That source is
+     non-commercial, and no permissive equivalent was found (§3.1). Under D173 it can be
+     analysed now.
+   - A judged Stage 4a on it needs your explicit acceptance, or a permissive measurement of a
+     comparable perturbation.
+4. **The Pelletier data:** your side's search continues; §1.1 lists what was checked and what
+   was not.
    - **Recommended:** if they surface, add them as Syn3.0 and Syn3A strain records; until then,
      use Syn3B data only as related-strain evidence.
 
@@ -665,7 +902,10 @@ Stage 4, no contact with authors, the licence rule, *M. pneumoniae* soon).
 - the inner-model note, read-only;
 - ARCHITECTURE.md's modular core (D174);
 - the engine's water, exchange, inventory-species and constant-field code, read-only, for §4.1
-  and §5.
+  and §5;
+- for §3.1, searched for the abundance, turnover, medium and data statements: the CC BY full
+  texts of Weber et al. 2023, Burgos et al. 2020, Burgos et al. 2023 and Gaspari et al. 2020
+  (Europe PMC). Also the Zenodo record of the Frallicciardi analysis code.
 
 **Not read:**
 - the *Cell* versions of Pelletier, Thornburg and Dobbs;
