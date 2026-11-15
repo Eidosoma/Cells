@@ -217,6 +217,16 @@ stacked in the page. Fixed on 15 November 2026, before the human data was made.
   stands on that shelf's `outside`, whose text says what lies beyond a membrane there:
   outside the cell, or within a compartment. Such proteins are never put on `other`,
   which is for membranes that are named.
+- **A protein is counted and drawn with its shelf; one with no shelf stands apart from
+  them all.** A protein whose compartment is stated but not its side (stated to be in the
+  mitochondrion with no part of it named, or at a membrane with its face not told) is on
+  that compartment's shelf with side `not known` and the place in `where`. Its basis is
+  `none`, as for any side that is not known, while `evidence` still says what stands
+  behind the stated compartment. It counts for that shelf and is drawn set apart beside
+  it. A protein with no stated location and nothing predicted has no shelf: its `shelf`
+  is null and its side `not known`, and a family has one line with a null shelf for such
+  members. It counts for no shelf and stands in the page's one set-apart area, in front
+  of every shelf.
 
 ## In the page
 
