@@ -1026,10 +1026,21 @@ so the times are loaded; the lead measures tiers on clean CPUs at landing.
 **Not in milestone 1:**
 - the acceptance items C3 to C13 and their independent references (a separate agent, D169);
 - probes P1 and P3;
-- door S;
-- the composition matrix's tags for this operator. They are added when the architecture block's
-  generator (`validation/tissue/composition_matrix.py`) lands on main, before the hand-back for
-  landing.
+- door S.
+
+**The composition matrix** (`validation/tissue/composition_matrix.py`; docs/PUMP_COMPOSITE.md, row
+and column 18). The declaration's twelve refusals all come from its `CONFLICTS_VIEW`.
+- **Eleven are real:** water's volumes (door V); membrane state's areas and capacitances (the
+  membrane-state wall); the lumens' volumes (not shown nominal); insertion@1's and @2's patch and
+  node masks (a bounding patch may be an onset patch, FR-2's door C); and the partition's cell mask
+  (door D).
+- **One is nominal, insertion@1's `face_active`:** no face names a compartment's node (refusal 1),
+  and insertion's face view differs from the declared only at faces naming its onset nodes. The
+  slots are disjoint, and the code is cited.
+- **Two rules at the definition:** the admitted list, law-level and failing closed, behind the
+  declarations' refusals; and replacement@1 kept off owners and donors, data-level.
+- The matrix test passes (6 passed), from a snapshot that includes docs/.
+- At 38e8738, the head with the matrix, every FR-1 file passed again.
 
 ## Appendix A. Equations for the independent references
 
