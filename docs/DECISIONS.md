@@ -5726,6 +5726,27 @@ adopted them after reviewing them with the advisor. The note is
   tolerance.
 - **Privacy:** acceptance worlds stay generic.
 
+## D177: A downstream user's requests: a matched-arm export, retained states as species, the dose world's controls after the round, FR-7 registered
+
+2026-11-15. A downstream user of Cells sent four requests. A review covered them (read-only, its
+report kept in the lead's private workspace), and the user decided:
+- **The coupling operator's matched-arm export is approved as a planned follow-up.**
+  - A dedicated agent writes a neutrally named validation driver on main. It runs the four
+    matched arms, 16 definitions, from a clean snapshot of main: the definitions, traces, the
+    independent references' traces, restarts and windows, and duration probes at 0.125 ms.
+  - It runs `resolved_pump_composite@1`, `resolved_pump_tissue@3`,
+    `scheduled_species_turnover@1` and `species_regulated_availability@1`.
+  - **What it is not:** an engine change, or a registered or judged protocol. Its provenance is
+    the Git revision and the frozen snapshot, with no attestation layer.
+- **A retained processing state is modelled as distinct species, with D152 reactions at the
+  retained node.** No new engine state is added. A per-compartment content state (a declared
+  multi-state cargo) waits for a second consumer (D144).
+- **The dose world's release route, production stage and zero-rate controls come after D172's
+  integrated landing,** not in the round.
+- **FR-7 is registered as a consumer of the coupling operator's routing and abundance-source
+  doors,** with removal and surface insertion under FR-2. Its design note follows the round, and the
+  choice of the closed loop's unit stays the user's.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
