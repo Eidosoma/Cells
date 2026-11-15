@@ -1,11 +1,11 @@
 // The cell lens: what Cells can simulate, drawn where it happens. One cell opened by
-// a flat cut and the sheet of cells around it. Beyond the sheet come two placeholder
-// outlines for the scales nothing simulates yet: a planarian's brain for the organ and
-// the worm for the whole organism. The scales are nested: the sheet lies on the worm's
-// head, above its brain, so zooming out leads from tissue into organ into organism. The
-// sheet stands for skin-like tissue, a single layer of cells, and the cell is one cell of
-// that layer with its neighbours round it. The sheet is placed on the worm for the scales
-// only; it is not the worm's tissue.
+// a flat cut, and round it the larger levels of the species shown: a sheet of its cells,
+// and placeholder outlines of an organ and a body for the scales nothing simulates yet.
+// Which levels there are, the shape drawn at each and which capabilities have a place in
+// the cell all come from the species (schema/SPECIES.md): the lens holds no drawing that
+// belongs to one species. The levels are nested: the sheet lies on the body above the
+// organ, so zooming out leads from tissue into organ into organism. A species of single
+// cells has no such levels, and zooming out ends at its cell.
 // Zooming is continuous: each scale fades in as the camera reaches it.
 //
 // Three things are kept apart:
@@ -20,7 +20,9 @@ import { statusToken } from "../core/theme.js";
 import { glyphSprite, soften } from "../core/materials.js";
 import { disposeTree } from "../core/stage.js";
 import { makeEnvironment } from "../core/environment.js";
-import { R, CUT, CUT_PLANES, HEX, ORGAN, BODY, buildCell, buildMolecules, buildTissue, buildOrgan, buildOrganism } from "./cell_parts.js";
+import { R, CUT, buildCell, buildMolecules, buildTissue } from "./cell_parts.js";
+import { REF, cellAcross } from "./shapes.js";
+import { buildOutline } from "./outline_parts.js";
 
 const smooth = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -28,15 +30,32 @@ const smooth = (a, b, x) => {
 };
 const WHITE = new THREE.Color(0xffffff), BLACK = new THREE.Color(0x000000);
 export const SIZE_MODES = ["schematic", "real"];
-
-// Camera distances (in micrometres) at which each scale fades in and out.
-const RANGES = {
-  schematic: { molecules: { out: [7, 13] }, studs: { out: [120, 190] }, cell: { out: [120, 190] } },
-  real: { molecules: { out: [0.45, 1.2] }, studs: { in: [0.5, 1.6], out: [120, 190] }, cell: { out: [120, 190] } },
-  // The brain is about 1 mm long and the worm 10 mm, so these follow the sizes in cell_parts.js.
-  // Each stop must lie where its own zone is fully shown, on a wide screen and on a tall one.
-  shared: { tissue: { in: [100, 190], out: [1000, 1800] }, organ: { in: [900, 1800], out: [7500, 12000] }, organism: { in: [7500, 12000] } },
+// The levels a species may have, small to large, with the scene's part for each and the stop's name.
+const LEVELS = [
+  { id: "molecules", stop: "molecule", entity: "scale.molecule" },
+  { id: "cell", stop: "cell", entity: "scale.cell" },
+  { id: "tissue", stop: "tissue", entity: "scale.tissue" },
+  { id: "organ", stop: "organ", entity: "scale.organ" },
+  { id: "organism", stop: "organism", entity: "scale.organism" },
+];
+// A scene that names no species still draws a cell and its sheet: a generic cell, of no species.
+const GENERIC = {
+  id: null,
+  levels: [{ id: "molecules" }, { id: "cell", shape: { kind: "prism", sides: 6, radius_um: REF.radius, height_um: 13, corner_um: 2.4, edge_um: 1.3 } }, { id: "tissue", shape: { kind: "cell sheet", rings: 6 } }],
+  cell: { facts: [], parts: { nucleus: true }, capabilities: {} },
 };
+// The camera's half view on a wide screen, for working out where one level gives way to the next.
+const HALF_VIEW = Math.tan((34 * Math.PI) / 360);
+const nominal = (size) => Math.max(size[1] / (2 * HALF_VIEW), size[0] / (2 * HALF_VIEW * 1.5));
+
+// What Cells models of a species, in two or three words (schema/SPECIES.md, `modelled.state`).
+export const MODELLED = { generic: "Generic cell", proposed: "Proposed, not modelled", modelled: "Modelled" };
+
+/** The species the page opens on: the one whose file says so, else the first; null in a scene without species. */
+export function defaultSpecies(scene) {
+  const list = scene?.species || [];
+  return (list.find((item) => item.default) || list[0])?.id ?? null;
+}
 
 let roundDot = null;
 /** A soft round dot for point clouds, drawn once. */
@@ -91,7 +110,7 @@ class Part {
       material = new THREE.MeshStandardMaterial({ roughness, metalness: 0, flatShading: flat, side, transparent: opacity < 1, opacity, depthWrite: depthWrite ?? opacity === 1 });
       soften(material, { rim, alphaRim });
     }
-    if (clip) material.clippingPlanes = CUT_PLANES;
+    if (clip) material.clippingPlanes = this.zone.cutPlanes;
     return this.register(material, { base: opacity, hue, shade, emissive, sketch });
   }
 
@@ -167,16 +186,77 @@ export class CellLens {
     this.active = false;
     this.capabilityByPart = new Map(model.ofKind("capability").map((entity) => [entity.part, entity]));
     this.environment = makeEnvironment(stage.renderer);
-    stage.raycaster.params.Points.threshold = 0.06;
+    this.fill = new THREE.DirectionalLight(0xffffff, 0.7);
+    this.fill.position.set(-70, 25, -40);
+    this.root.add(this.fill);
+    // The species the scene holds; the page shows one at a time (schema/SPECIES.md).
+    this.list = model.raw.species || [];
+    this.species = null;
+    this.setSpecies(defaultSpecies(model.raw));
+  }
+
+  // ------------------------------------------------------------ the species shown
+
+  /** The species with this id. A scene that names no species draws the generic cell. */
+  speciesOf(id) {
+    return this.list.length ? this.list.find((item) => item.id === id) || null : GENERIC;
+  }
+
+  /** Show another species: its levels, its shapes and the capabilities that have a place in its cell. */
+  setSpecies(id) {
+    const species = this.speciesOf(id);
+    if (!species || species === this.species) return;
+    const stop = this.activeStop;
+    this.species = species;
+    this.plan();
+    this.clear();
     this.build();
-    this.applyPalette(stage.palette);
+    this.applyPalette(this.stage.palette);
+    // Stay at the same level where the species has it; else at its largest.
+    const stops = this.currentStops;
+    this.activeStop = (stops.find((item) => item.id === stop) || stops[stops.length - 1]).id;
+    if (this.selected && !this.has(this.selected)) this.selected = null;
+    if (this.active) this.enter();
+    this.onChrome?.();
+  }
+
+  /** What follows from the species before anything is drawn: its levels, its cell's size and what has no place in it. */
+  plan() {
+    const species = this.species;
+    this.levels = Object.fromEntries(LEVELS.map(({ id }) => [id, species.levels.find((level) => level.id === id) || null]));
+    const across = cellAcross(this.levels.cell.shape);
+    this.u = across / REF.pitch; // micrometres per unit of the cell's frame
+    // A cell this small is drawn in one size mode: its molecules are large enough to see.
+    this.small = across < REF.small;
+    this.modes = this.small ? ["schematic"] : SIZE_MODES;
+    if (!this.modes.includes(this.sizeMode)) this.sizeMode = this.modes[0];
+    // What has no place in this species, with the reason the species gives.
+    const said = species.cell.capabilities || {};
+    const further = species.no_further_levels || "This species has no such level.";
+    this.absent = new Map();
+    for (const entity of this.model.ofKind("capability")) {
+      if (said[entity.id]?.place === "absent") this.absent.set(entity.id, said[entity.id].why);
+      else if (entity.scale !== "cell" && !this.levels[entity.scale]) this.absent.set(entity.id, further);
+    }
+    for (const { id, entity } of LEVELS) if (!this.levels[id]) this.absent.set(entity, further);
+  }
+
+  /** Takes down what was drawn for the species shown before. */
+  clear() {
+    for (const zone of this.zones) {
+      this.root.remove(zone.root);
+      disposeTree(zone.root);
+    }
+    this.zones = [];
+    this.byEntity.clear();
   }
 
   // ------------------------------------------------------------ building
 
-  zone(name, mode = null) {
-    const range = mode ? RANGES[mode][name] : RANGES.shared[name];
-    const zone = { name, mode, range, root: new THREE.Group(), parts: [], neutrals: [], labels: [], fade: -1 };
+  /** A group of things that fade in and out together. `scale` is micrometres per unit, for what is built in the cell's frame. */
+  zone(name, mode = null, scale = 1) {
+    const zone = { name, mode, range: {}, root: new THREE.Group(), parts: [], neutrals: [], labels: [], fade: -1, cutPlanes: [new THREE.Plane(new THREE.Vector3(0, -1, 0), CUT * scale)] };
+    zone.root.scale.setScalar(scale);
     this.zones.push(zone);
     this.root.add(zone.root);
     return zone;
@@ -184,12 +264,17 @@ export class CellLens {
 
   context(zone) {
     return {
-      part: (name, anchor) => this.bind(this.capabilityByPart.get(name), zone, anchor, name),
+      // A capability that has no place in the species shown is drawn, where its structure
+      // is drawn at all, as scenery: nothing to click and no name.
+      part: (name, anchor) => {
+        const entity = this.capabilityByPart.get(name);
+        return this.bind(entity && this.absent.has(entity.id) ? null : entity, zone, anchor, entity ? null : name);
+      },
       scale: (id, anchor) => this.bind(this.model.get(id), zone, anchor, id),
       neutral: (options = {}) => {
         const material = new THREE.MeshStandardMaterial({ roughness: 0.6, metalness: 0, transparent: true, side: options.side ?? THREE.FrontSide, depthWrite: options.depthWrite ?? false });
         if (options.glass) soften(material, { rim: 0.2, alphaRim: options.glass });
-        if (options.clip) material.clippingPlanes = CUT_PLANES;
+        if (options.clip) material.clippingPlanes = zone.cutPlanes;
         return this.neutral(zone, material, options);
       },
       neutralPoints: ({ size = 1.4, opacity = 0.6 } = {}) => {
@@ -214,25 +299,51 @@ export class CellLens {
   }
 
   build() {
-    this.fill = new THREE.DirectionalLight(0xffffff, 0.7);
-    this.fill.position.set(-70, 25, -40);
-    this.root.add(this.fill);
+    const species = this.species, u = this.u;
+    const notesOf = (level) => (level?.notes || []).map((item) => (typeof item === "string" ? { text: item } : item));
+    // The cell, in each size mode it is drawn in. It is built in its own frame and scaled to its size.
+    const has = (part) => {
+      const entity = this.capabilityByPart.get(part);
+      return !entity || !this.absent.has(entity.id);
+    };
+    const cell = { shape: this.levels.cell.shape, parts: species.cell.parts || {}, has, neighbours: Boolean(this.levels.tissue), notes: notesOf(this.levels.cell) };
+    const toWorld = (zones) => {
+      for (const zone of zones) for (const part of zone.parts) part.anchor?.multiplyScalar(u);
+    };
     this.cells = {};
-    for (const mode of SIZE_MODES) {
-      const cell = this.context(this.zone("cell", mode));
-      const studs = this.context(this.zone("studs", mode));
-      const handles = buildCell(cell, studs, mode);
-      handles.molecule = buildMolecules(this.context(this.zone("molecules", mode)), mode);
+    for (const mode of this.modes) {
+      const zones = [this.zone("cell", mode, u), this.zone("studs", mode, u), this.zone("molecules", mode, u)];
+      const handles = buildCell(this.context(zones[0]), this.context(zones[1]), mode, cell);
+      handles.molecule = buildMolecules(this.context(zones[2]), mode, handles.frame, has);
+      toWorld(zones);
       this.cells[mode] = handles;
     }
-    this.sheet = buildTissue(this.context(this.zone("tissue")));
-    // The larger scales are placeholder outlines; each returns the notes written beside it.
-    this.outlines = { organ: buildOrgan(this.context(this.zone("organ"))), organism: buildOrganism(this.context(this.zone("organism"))) };
-    this.stops = Object.fromEntries(SIZE_MODES.map((mode) => [mode, this.makeStops(mode)]));
+    // A sheet of the species' own cells, where it forms one.
+    this.sheet = null;
+    const tissue = this.levels.tissue;
+    if (tissue) {
+      const zone = this.zone("tissue", null, u);
+      const rings = tissue.shape.rings, height = this.cells[this.modes[0]].frame.top * 2;
+      this.sheet = buildTissue(this.context(zone), { rings, height, beyond: tissue.shape.beyond ?? [[rings + 2, 0.34], [rings + 4, 0.2], [rings + 5, 0.1]], notes: notesOf(tissue) });
+      this.sheet.height = height;
+      toWorld([zone]);
+    }
+    // The larger scales are placeholder outlines, from the species' shape files.
+    this.outlines = {};
+    const shapes = this.model.raw.shapes || {};
+    for (const name of ["organ", "organism"]) {
+      const level = this.levels[name], shape = level && shapes[level.shape.ref];
+      if (!shape) continue;
+      this.outlines[name] = buildOutline(this.context(this.zone(name)), { level, shape, entity: `scale.${name}`, zone: name, sheet: this.sheet ? (this.sheet.extent / 2) * u : 0 });
+    }
+    // Where the species has no level beyond its cell, zooming out past the cell says so.
+    if (species.no_further_levels && !tissue && !this.outlines.organ && !this.outlines.organism) this.zone("beyond");
+    this.stops = Object.fromEntries(this.modes.map((mode) => [mode, this.makeStops(mode)]));
+    this.setRanges();
   }
 
-  bind(entity, zone, anchor, name) {
-    if (!entity) console.warn(`cell lens: nothing in the scene for "${name}"; drawn as neutral`);
+  bind(entity, zone, anchor, missing) {
+    if (!entity && missing) console.warn(`cell lens: nothing in the scene for "${missing}"; drawn as neutral`);
     const part = new Part(this, entity, zone, anchor);
     if (entity) {
       if (!this.byEntity.has(entity.id)) this.byEntity.set(entity.id, []);
@@ -248,22 +359,69 @@ export class CellLens {
     return material;
   }
 
+  /** The stops of the scale rail, one for each level the species has. Sizes are in micrometres. */
   makeStops(mode) {
+    const u = this.u;
     const entity = (id) => this.model.get(id);
-    const molecule = this.cells[mode].molecule;
-    const out = molecule.outward;
-    return [
-      { id: "molecule", entity: entity("scale.molecule"), zone: "molecules", anchor: molecule.centre.clone().addScaledVector(out, molecule.view[1] * 0.3), size: molecule.view, target: molecule.centre.clone(), azimuth: molecule.fromInside ? Math.atan2(-out.x, -out.z) : Math.atan2(out.x, out.z), polar: molecule.fromInside ? 0.42 : 0.6 },
-      { id: "cell", entity: entity("scale.cell"), zone: "cell", anchor: this.cells[mode].shape.point(-Math.PI / 2, 1.6, CUT + 2.6), size: [42, 31], target: new THREE.Vector3(0.8, CUT - 2.6, 0.2), azimuth: 0.52, polar: 0.84 },
-      { id: "tissue", entity: entity("scale.tissue"), zone: "tissue", anchor: new THREE.Vector3(0, HEX.height * 2.6, -this.sheet.extent * 0.5), size: [this.sheet.extent * 1.42, this.sheet.extent * 1.0], target: new THREE.Vector3(0, -6, 0), azimuth: 0.55, polar: 0.86 },
-      // The brain with the head round it and the sheet's ring in front; then the whole worm.
-      // Both are seen at a slant from the worm's front quarter, so they have depth: the brain
-      // inside the head with the sheet's ring on the back above it, then the whole worm running
-      // away from the head. Their frames are as tall as a wide screen needs, so the height sets
-      // the distance there and the width only on a tall screen.
-      { id: "organ", entity: entity("scale.organ"), zone: "organ", size: [2900, 1900], target: ORGAN.centre.clone().add(new THREE.Vector3(120, 0, 0)), azimuth: -0.42, polar: 0.92 },
-      { id: "organism", entity: entity("scale.organism"), zone: "organism", size: [BODY.length * 1.5, BODY.length * 0.96], target: BODY.centre.clone().add(new THREE.Vector3(-BODY.length * 0.04, 0, 0)), azimuth: -0.3, polar: 0.98 },
+    const cell = this.cells[mode], molecule = cell.molecule;
+    const out = molecule.outward, centre = molecule.centre.clone().multiplyScalar(u), view = molecule.view.map((value) => value * u);
+    const stops = [
+      { id: "molecule", level: "molecules", zone: "molecules", anchor: centre.clone().addScaledVector(out, view[1] * 0.3), size: view, target: centre.clone(), azimuth: molecule.fromInside ? Math.atan2(-out.x, -out.z) : Math.atan2(out.x, out.z), polar: molecule.fromInside ? 0.42 : 0.6 },
+      { id: "cell", level: "cell", zone: "cell", anchor: cell.shape.point(-Math.PI / 2, 1.6, CUT + 2.6).multiplyScalar(u), size: [Math.min(96, Math.max(42, cell.frame.long * 1.3)) * u, 31 * u], target: new THREE.Vector3(0.8 + cell.frame.middle, CUT - 2.6, 0.2).multiplyScalar(u), azimuth: 0.52, polar: 0.84 },
     ];
+    if (this.sheet) {
+      const extent = this.sheet.extent;
+      stops.push({ id: "tissue", level: "tissue", zone: "tissue", anchor: new THREE.Vector3(0, this.sheet.height * 2.6, -extent * 0.5).multiplyScalar(u), size: [extent * 1.42 * u, extent * 1.0 * u], target: new THREE.Vector3(0, -6, 0).multiplyScalar(u), azimuth: 0.55, polar: 0.86 });
+    }
+    // The organ with its surroundings and the sheet's ring in front; then the whole body. Both
+    // are seen at a slant, so they have depth. Their frames are as tall as a wide screen needs,
+    // so the height sets the distance there and the width only on a tall screen.
+    for (const name of ["organ", "organism"]) {
+      const outline = this.outlines[name];
+      if (outline) stops.push({ id: name, level: name, zone: name, size: outline.frame.frame, target: outline.centre.clone().add(outline.frame.toward), azimuth: outline.frame.azimuth, polar: outline.frame.polar });
+    }
+    for (const stop of stops) {
+      stop.entity = entity(LEVELS.find((level) => level.id === stop.level).entity);
+      stop.label = this.levels[stop.level]?.label || stop.entity?.label || stop.id;
+    }
+    return stops;
+  }
+
+  /** Camera distances (in micrometres) at which each level fades in and out. */
+  setRanges() {
+    const u = this.u;
+    const stops = this.stops[this.modes[0]];
+    const far = Object.fromEntries(stops.map((stop) => [stop.id, nominal(stop.size)]));
+    const chain = stops.map((stop) => stop.id).filter((id) => id !== "molecule");
+    // Where one level gives way to the next: as the species says, else between the two stops.
+    // Two levels far apart in size do not share a stretch: the smaller goes soon after its stop,
+    // and the larger comes shortly before its own.
+    const cross = (a, b) => {
+      if (far[b] > far[a] * 25) return { out: [far[a] * 2.7, far[a] * 7], in: [far[b] * 0.1, far[b] * 0.5] };
+      const shared = far[a] * 2.7 < far[b] * 0.55 ? [far[a] * 2.7, far[b] * 0.55] : [Math.sqrt(far[a] * far[b]) * 0.85, Math.sqrt(far[a] * far[b]) * 1.15];
+      return { out: shared, in: shared };
+    };
+    const ranges = {};
+    chain.forEach((name, index) => {
+      const level = this.levels[name], before = chain[index - 1], after = chain[index + 1];
+      ranges[name] = {};
+      if (before) ranges[name].in = level.fade_in_um || cross(before, name).in;
+      if (after) ranges[name].out = level.fade_out_um || (far[after] > far[name] * 25 ? null : this.levels[after].fade_in_um) || cross(name, after).out;
+    });
+    const leave = ranges.cell.out ? { out: ranges.cell.out } : {};
+    const byMode = {
+      schematic: { molecules: { out: [7 * u, 13 * u] }, studs: leave, cell: leave },
+      real: { molecules: { out: [0.45, 1.2] }, studs: { in: [0.5, 1.6], ...leave }, cell: leave },
+    };
+    for (const zone of this.zones) {
+      if (zone.mode) zone.range = byMode[zone.mode][zone.name];
+      else if (zone.name === "beyond") zone.range = { in: [far.cell * 1.35, far.cell * 2.1] };
+      else zone.range = ranges[zone.name] || {};
+    }
+    this.ranges = ranges;
+    // The camera may go out as far as the largest level needs, and a little beyond. A very long
+    // cell is framed at its middle, where its parts are; zooming out shows the whole of it.
+    this.maxDistance = Math.max(...stops.map((stop) => stop.size[0]), this.cells[this.modes[0]].frame.long * 1.3 * u) * 4;
   }
 
   /** The camera view that frames a stop on the current screen. */
@@ -280,57 +438,128 @@ export class CellLens {
 
   /** World points the input check clicks; they follow the layout of the current size mode. */
   get probes() {
-    return this.cells[this.sizeMode].probes;
+    return Object.fromEntries(Object.entries(this.cells[this.sizeMode].probes).map(([name, point]) => [name, point.clone().multiplyScalar(this.u)]));
   }
 
   // ------------------------------------------------------------ lens interface
 
   has(id) {
-    return this.model.get(id)?.group === "biology";
+    if (this.species.id && id === `species:${this.species.id}`) return true;
+    return this.model.get(id)?.group === "biology" && !this.absent.has(id);
+  }
+
+  /**
+   * The species shown, as a part the panel can describe: what Cells models of it, the levels
+   * drawn for it, and the capabilities that have no place in it, each with the species' reason.
+   */
+  describe(id) {
+    const species = this.species;
+    if (!species.id || id !== `species:${species.id}`) return null;
+    const sources = species.sources || {};
+    const links = (keys) =>
+      (keys || [])
+        .map((key) => sources[key])
+        .filter(Boolean)
+        .map((source) => ({ text: source.text, url: source.doi ? `https://doi.org/${source.doi}` : source.url }));
+    const absent = [...this.absent].map(([part, why]) => ({ entity: this.model.get(part), why })).filter((item) => item.entity?.kind === "capability");
+    const drawn = LEVELS.filter(({ id: level }) => this.levels[level]).map(({ id: level, entity }) => ({ level: this.levels[level], entity: this.model.get(entity) }));
+    return {
+      id,
+      kind: "species",
+      group: "biology",
+      label: species.label,
+      eyebrow: "Species",
+      chips: [{ label: MODELLED[species.modelled.state] || species.modelled.state, title: "What Cells models of this species" }, ...(species.organism ? [{ label: species.organism }] : [])],
+      plain: species.modelled.text,
+      note: species.plain,
+      sections: [
+        { title: "Not in this organism", note: "Capabilities of Cells that have no place in this species, each with the reason.", items: absent.map((item) => ({ label: item.entity.label, lines: [item.why] })) },
+        { title: "Its cell", items: (species.cell.facts || []).map((fact) => ({ label: fact.label, detail: fact.value, links: links(fact.sources) })) },
+        { title: "Levels drawn", note: species.no_further_levels || null, items: drawn.map((item) => ({ label: item.level.label || item.entity?.label || item.level.id, lines: item.level.note ? [item.level.note] : [], links: links(item.level.sources) })) },
+      ],
+    };
   }
 
   entities() {
-    return this.model.entities.filter((entity) => entity.group === "biology");
+    return this.model.entities.filter((entity) => entity.group === "biology" && !this.absent.has(entity.id)).map((entity) => this.inSpecies(entity));
+  }
+
+  /** A part as the species shown has it: a level under the species' name for it, with what the species says of it. */
+  inSpecies(entity) {
+    if (!entity || !this.species.id) return entity;
+    if (entity.kind === "scale") {
+      const level = this.levels[LEVELS.find((item) => item.entity === entity.id)?.id];
+      if (!level || (!level.label && !level.note)) return entity;
+      return { ...entity, label: level.label || entity.label, note: [entity.note, level.note].filter(Boolean).join(" ") };
+    }
+    const said = this.species.cell.capabilities?.[entity.id];
+    return said?.note ? { ...entity, note: [entity.note, `${this.species.label}: ${said.note}`].filter(Boolean).join(" ") } : entity;
   }
 
   sections() {
-    const capabilities = this.model.ofKind("capability");
+    const capabilities = this.model.ofKind("capability").filter((entity) => !this.absent.has(entity.id));
     return [
       { label: "One cell", entities: capabilities.filter((entity) => entity.scale === "cell") },
       { label: "Tissue", entities: capabilities.filter((entity) => entity.scale === "tissue") },
-      { label: "Scales", entities: this.model.ofKind("scale").sort((a, b) => a.order - b.order) },
-    ];
+      { label: "Scales", entities: this.model.ofKind("scale").filter((entity) => !this.absent.has(entity.id)).sort((a, b) => a.order - b.order).map((entity) => this.inSpecies(entity)) },
+      { label: "Species", entities: this.species.id ? [this.describe(`species:${this.species.id}`)] : [] },
+    ].filter((section) => section.entities.length);
   }
 
   chrome() {
+    const species = this.species;
+    // What has no place in this species' cell, in the map's own names, each with the species' reason.
+    const absent = [...this.absent].map(([id, why]) => ({ entity: this.model.get(id), why })).filter((item) => item.entity?.kind === "capability").map((item) => ({ label: item.entity.label, why: item.why }));
     return {
-      caveat: this.model.raw.caveat,
-      rail: this.currentStops.map((stop) => ({ id: stop.id, label: stop.entity?.label || stop.id, title: stop.entity?.plain })),
+      // Of a species that is only proposed, nothing is in the engine (the contract's meaning of the
+      // state), so the picture says that in place of the map's caveat about runs.
+      caveat: species.modelled?.state === "proposed" ? `${species.label}: nothing of it is in the engine. The picture shows where the capabilities of Cells would have a place in it.` : this.model.raw.caveat,
+      rail: this.currentStops.map((stop) => ({ id: stop.id, label: stop.label, title: stop.entity?.plain })),
       railActive: this.activeStop,
+      // Where the species has no tissue, organ or body, the rail says so in the species' words.
+      railNote: LEVELS.every(({ id }) => this.levels[id]) ? null : species.no_further_levels || null,
       together: (this.model.raw.model_groups || []).map((group) => ({ id: group.id, label: group.label, title: group.description })),
       togetherActive: this.together,
-      view: { colour: this.colourBy, size: this.sizeMode },
+      view: {
+        colour: this.colourBy,
+        size: this.sizeMode,
+        sizes: this.modes,
+        across: cellAcross(this.levels.cell.shape),
+        species: species.id
+          ? {
+              options: this.list.map((item) => [item.id, item.label, item.organism]),
+              active: species.id,
+              organism: species.organism,
+              plain: species.plain,
+              modelled: species.modelled,
+              facts: species.cell.facts || [],
+              absent,
+              sources: species.sources || {},
+            }
+          : null,
+      },
     };
   }
 
   /** What the scale bar may say: micrometres per unit, or why no bar applies here. */
   scaleInfo() {
-    const distance = this.stage.rig.distance;
-    if (this.sizeMode === "schematic" && distance < 13) return { note: "Close-up not to scale" };
+    const distance = this.stage.rig.distance, u = this.u;
+    if (this.sizeMode === "schematic" && distance < 13 * u) return { note: "Close-up not to scale" };
     // From where the sheet starts to give way to the outlines, the bar says what they are.
-    if (distance > RANGES.shared.tissue.out[0]) return { micronsPerUnit: 1, note: "the outline is a placeholder" };
-    return { micronsPerUnit: 1, note: this.sizeMode === "schematic" && distance < 190 ? "small parts enlarged" : null };
+    if (this.ranges.tissue?.out && distance > this.ranges.tissue.out[0]) return { micronsPerUnit: 1, note: "the outline is a placeholder" };
+    return { micronsPerUnit: 1, note: this.sizeMode === "schematic" && distance < 190 * u ? "small parts enlarged" : null };
   }
 
   /** Where callout labels go: the cell's centre and radius on screen, or null to label parts in place. */
   calloutFrame() {
     const zone = this.zones.find((item) => item.name === "cell" && item.mode === this.sizeMode);
-    if (!zone || zone.fade < 0.6 || this.stage.width < 900 || this.stage.rig.distance < 34) return null;
+    const u = this.u;
+    if (!zone || zone.fade < 0.6 || this.stage.width < 900 || this.stage.rig.distance < 34 * u) return null;
     const { camera } = this.stage;
-    const centre = new THREE.Vector3(0, CUT - 2.2, 0);
+    const centre = new THREE.Vector3(0, CUT - 2.2, 0).multiplyScalar(u);
     const span = camera.position.distanceTo(centre) * Math.tan((camera.fov * Math.PI) / 360);
     const screen = this.stage.project(centre, new THREE.Vector3());
-    return { x: screen.x, y: screen.y, radius: (R * 1.1 * this.stage.height) / (2 * span) };
+    return { x: screen.x, y: screen.y, radius: (R * 1.1 * u * this.stage.height) / (2 * span) };
   }
 
   get pickRoots() {
@@ -344,12 +573,19 @@ export class CellLens {
     stage.sun.castShadow = false;
     stage.sun.position.set(55, 100, 80);
     stage.sun.target.position.set(0, 0, 0);
-    stage.rig.limits = { minDistance: 0.03, maxDistance: BODY.length * 6, minPolar: 0.1, maxPolar: 2.35 };
     this.light();
+    this.enter();
+    this.refresh();
+  }
+
+  /** Puts the camera at the stop the lens stands on, for the species shown, and writes its labels. */
+  enter() {
+    const { stage } = this;
+    stage.raycaster.params.Points.threshold = 0.06 * this.u;
+    stage.rig.limits = { minDistance: 0.03 * Math.min(1, this.u), maxDistance: this.maxDistance, minPolar: 0.1, maxPolar: 2.35 };
     stage.rig.setView(this.stopView(this.currentStops.find((stop) => stop.id === this.activeStop)));
     this.buildLabels();
     this.fades(true);
-    this.refresh();
   }
 
   deactivate() {
@@ -389,7 +625,7 @@ export class CellLens {
         const atCell = part.zone.name === "cell" || part.zone.name === "studs";
         part.label = labels.add({
           id: part.entity.id,
-          text: part.entity.label,
+          text: isScale ? this.inSpecies(part.entity).label : part.entity.label,
           anchor: part.anchor,
           priority: isScale ? 300 : this.model.isBuilt(part.entity) ? 40 : 50,
           kind: isScale ? "scale" : "part",
@@ -403,7 +639,7 @@ export class CellLens {
     const zoneOf = (name) => this.zones.find((zone) => zone.name === name && this.shows(zone));
     for (const stop of this.currentStops) {
       if (!stop.anchor || !stop.entity) continue;
-      zoneOf(stop.zone).labels.push(labels.add({ id: stop.entity.id, text: stop.entity.label, anchor: stop.anchor, priority: 300, kind: "scale", lift: 4 }));
+      zoneOf(stop.zone).labels.push(labels.add({ id: stop.entity.id, text: stop.label, anchor: stop.anchor, priority: 300, kind: "scale", lift: 4 }));
     }
     // Notes beside the drawing: what the cell and the sheet stand for, and what the
     // placeholder outlines are. A narrow screen gets the short form, or none if it is "roomy".
@@ -416,20 +652,29 @@ export class CellLens {
     // notes give way to the names of parts, so they never hide one.
     const under = (stopId, line = 0) => ({ anchor: this.currentStops.find((stop) => stop.id === stopId).anchor, lift: -19 - line * 20, priority: 30 });
     this.cells[this.sizeMode].notes.forEach((item, line) => note("cell", { ...item, ...under("cell", line) }));
-    this.sheet.notes.forEach((item, line) => note("tissue", { ...item, ...under("tissue", line) }));
+    (this.sheet?.notes || []).forEach((item, line) => note("tissue", { ...item, ...under("tissue", line) }));
     for (const [name, outline] of Object.entries(this.outlines)) {
       for (const item of outline.notes) note(name, item);
     }
-    const molecule = this.cells[this.sizeMode].molecule;
-    const text = this.sizeMode === "real" ? "To scale: the membrane is about 5 nm thick, the channel about 9 nm across" : "Illustration: channels and pumps are modelled as populations";
-    zoneOf("molecules").labels.push(labels.add({ text, anchor: molecule.centre.clone().addScaledVector(molecule.outward, -molecule.view[1] * 0.3), priority: 290, kind: "note", lift: 0 }));
+    const molecule = this.cells[this.sizeMode].molecule, u = this.u;
+    const text = this.sizeMode === "real" ? "To scale: the membrane is about 5 nm thick, the channel about 9 nm across" : molecule.pored ? "Illustration: channels and pumps are modelled as populations" : "Illustration: pumps and transporters are modelled as populations";
+    const beside = molecule.centre.clone().multiplyScalar(u).addScaledVector(molecule.outward, -molecule.view[1] * u * 0.3);
+    zoneOf("molecules").labels.push(labels.add({ text, anchor: beside, priority: 290, kind: "note", lift: 0 }));
+    if (!molecule.pored) {
+      // A species without ion channels: the close-up says so in the species' own words, and shows a pump.
+      const why = (this.absent.get(this.capabilityByPart.get("channels")?.id) || "").split(/[.:]/)[0].trim();
+      const said = why && why.length <= 80 ? why : "Ion channels have no place in this species";
+      zoneOf("molecules").labels.push(labels.add({ text: `${said}: the close-up shows a pump`, anchor: beside, priority: 289, kind: "note", lift: -20 }));
+    }
+    // Past the cell of a species with no further levels: its own sentence, where they would be.
+    if (zoneOf("beyond")) note("beyond", { text: this.species.no_further_levels, anchor: new THREE.Vector3(0, 0, R * 1.9 * u), priority: 290 });
   }
 
   goToScale(id, immediate = false) {
     const stop = this.currentStops.find((item) => item.id === id);
     if (!stop) return;
     const view = this.stopView(stop);
-    this.stage.rig.limits.minDistance = 0.03;
+    this.stage.rig.limits.minDistance = 0.03 * Math.min(1, this.u);
     if (immediate) this.stage.rig.setView(view);
     else this.stage.rig.flyTo(view, 1700);
     this.fades(true);
@@ -466,7 +711,7 @@ export class CellLens {
   }
 
   setSizeMode(mode) {
-    if (!SIZE_MODES.includes(mode) || mode === this.sizeMode) return;
+    if (!this.modes.includes(mode) || mode === this.sizeMode) return;
     const atMolecule = this.activeStop === "molecule";
     this.sizeMode = mode;
     if (this.active) {
@@ -528,7 +773,7 @@ export class CellLens {
 
   fades(force = false) {
     const rig = this.stage.rig;
-    const distance = rig.distance;
+    const distance = rig.distance, u = this.u;
     let changed = false;
     const dust = this.sizeMode === "real" ? smooth(0.5, 1.6, distance) : 1;
     if (Math.abs(dust - this.dustFade) > 0.004) {
@@ -563,8 +808,8 @@ export class CellLens {
       this.onChrome?.();
     }
     // The camera may come close at the cut edge, but looking at the middle of the cell it stays outside.
-    const atEdge = 1 - smooth(0.3, 2.8, this.cells[this.sizeMode].shape.depth(rig.target));
-    rig.limits.minDistance = R + 6 + (0.03 - R - 6) * atEdge;
+    const atEdge = 1 - smooth(0.3, 2.8, this.cells[this.sizeMode].shape.depth({ x: rig.target.x / u, z: rig.target.z / u }));
+    rig.limits.minDistance = (R + 6 + (0.03 - R - 6) * atEdge) * u;
     return changed;
   }
 

@@ -1,0 +1,945 @@
+<title>Invisible Quantities</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: a reading page in the viewer's own tokens. A short verdict on what the engine can feed
+   today, then ten idea cards in three tiers of readiness (sketch above text, two across on a wide
+   screen), then how the layers would be built, then what is asked of the reader. */
+:root {
+  --bg: #eef2f6; --bg-raised: #ffffff; --fg: #12283a; --muted: #566878; --line: #d6dee6; --accent: #1f6fd0;
+  --stage-a: #fbfcfd; --stage-b: #e6edf4;
+  --glass: #2fb3a3; --glass-edge: #1d8d80;
+  --seq-0: #6da7ec; --seq-1: #3987e5; --seq-2: #256abf; --seq-3: #184f95; --seq-4: #0d366b;
+  --div-n2: #184f95; --div-n1: #5598e7; --div-n0: #b7d3f6; --div-mid: #f0efec; --div-p0: #f3c1bd; --div-p1: #e5736f; --div-p2: #96292a;
+  --warm-0: #f6c7b2; --warm-1: #eb6834; --warm-2: #a8421a;
+  --ion-na: #eb6834; --ion-k: #2a78d6; --ion-cl: #1baf7a;
+  --signal: #e062a6;
+  --is-dark: 0;
+  --font-display: "Space Grotesk", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b151e; --bg-raised: #162432; --fg: #e6edf3; --muted: #95a6b7; --line: #283b4d; --accent: #5b9dee;
+    --stage-a: #1a3044; --stage-b: #0d1a25;
+    --glass: #2aa596; --glass-edge: #5fd0c2;
+    --seq-0: #1c5cab; --seq-1: #2a78d6; --seq-2: #5598e7; --seq-3: #86b6ef; --seq-4: #b7d3f6;
+    --div-n2: #b7d3f6; --div-n1: #5598e7; --div-n0: #256abf; --div-mid: #383835; --div-p0: #a43a37; --div-p1: #e5736f; --div-p2: #f3c1bd;
+    --warm-0: #7a3413; --warm-1: #d95926; --warm-2: #f3b093;
+    --ion-na: #d95926; --ion-k: #3987e5; --ion-cl: #199e70;
+    --signal: #e268ac;
+    --is-dark: 1;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b151e; --bg-raised: #162432; --fg: #e6edf3; --muted: #95a6b7; --line: #283b4d; --accent: #5b9dee;
+  --stage-a: #1a3044; --stage-b: #0d1a25;
+  --glass: #2aa596; --glass-edge: #5fd0c2;
+  --seq-0: #1c5cab; --seq-1: #2a78d6; --seq-2: #5598e7; --seq-3: #86b6ef; --seq-4: #b7d3f6;
+  --div-n2: #b7d3f6; --div-n1: #5598e7; --div-n0: #256abf; --div-mid: #383835; --div-p0: #a43a37; --div-p1: #e5736f; --div-p2: #f3c1bd;
+  --warm-0: #7a3413; --warm-1: #d95926; --warm-2: #f3b093;
+  --ion-na: #d95926; --ion-k: #3987e5; --ion-cl: #199e70;
+  --signal: #e268ac;
+  --is-dark: 1;
+  color-scheme: dark;
+}
+
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 var(--font-body); -webkit-font-smoothing: antialiased; }
+.page {
+  max-width: 1120px; margin: 0 auto; padding-block: 44px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 60px;
+}
+.page > *, .section > *, .build > *, .two > *, figure { min-width: 0; }
+h1, h2, h3, p, ul, ol, dl, dd, figure { margin: 0; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+code, .mono { font-family: var(--font-mono); font-size: 0.9em; }
+
+.eyebrow { font: 600 12px/1.2 var(--font-mono); letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.masthead { display: grid; gap: 18px; }
+.masthead h1 { font: 600 clamp(32px, 5.4vw, 52px)/1.04 var(--font-display); letter-spacing: -0.022em; text-wrap: balance; max-width: 16ch; }
+.lede { font-size: 18px; line-height: 1.5; color: var(--muted); max-width: 62ch; }
+.lede strong { color: var(--fg); font-weight: 600; }
+.choice { max-width: 62ch; font-size: 17px; }
+
+/* What the engine can feed today */
+.feed { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.feed > div { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 20px; display: grid; gap: 8px; align-content: start; }
+.feed h3 { font: 600 16px/1.3 var(--font-display); display: flex; gap: 9px; align-items: center; }
+.feed p { font-size: 14.5px; color: var(--muted); }
+.feed p strong { color: var(--fg); font-weight: 600; }
+
+.ready { width: 15px; height: 15px; flex: none; }
+.ready circle, .ready path { stroke: currentColor; stroke-width: 1.6; }
+
+.section { display: grid; gap: 22px; }
+.section > header { display: grid; gap: 8px; max-width: 68ch; }
+.section h2 { font: 600 clamp(22px, 3vw, 28px)/1.2 var(--font-display); letter-spacing: -0.012em; text-wrap: balance; display: flex; gap: 11px; align-items: center; }
+.section h2 .ready { width: 19px; height: 19px; }
+.section > header p { color: var(--muted); }
+
+.ideas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.idea { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
+.sketch { position: relative; aspect-ratio: 16 / 10; max-width: 100%; background: radial-gradient(120% 90% at 50% 20%, var(--stage-a), var(--stage-b)); border-bottom: 1px solid var(--line); }
+.sketch canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.tag { font: 500 10.5px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.idea-body { padding: 18px 20px 22px; display: grid; gap: 14px; align-content: start; }
+.idea-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; }
+.idea-head h3 { font: 600 20px/1.2 var(--font-display); letter-spacing: -0.01em; }
+.idea-head .num { font: 600 12px/1 var(--font-mono); color: var(--muted); }
+.scale { font: 600 10.5px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 4px 8px; }
+.first { font: 600 10.5px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 4px 8px; }
+.facts { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px 14px; font-size: 14.5px; line-height: 1.45; }
+.facts dt { font: 600 11px/1.5 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-top: 2px; }
+.facts dd { min-width: 0; }
+
+.build { display: grid; gap: 22px; }
+.build p { max-width: 68ch; }
+.wide { overflow-x: auto; max-width: 100%; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-raised); }
+.wide svg { display: block; min-width: 760px; width: 100%; height: auto; color: var(--fg); }
+figure figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; max-width: 68ch; }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 14.5px; line-height: 1.45; }
+th, td { text-align: left; vertical-align: top; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+thead th { font: 600 13px/1.3 var(--font-display); }
+tbody th { font: 600 11px/1.5 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); width: 120px; }
+tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+td.pick, th.pick { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+pre { margin: 0; padding: 16px 18px; font: 13px/1.55 var(--font-mono); min-width: 560px; }
+.asks { display: grid; gap: 12px; padding-left: 22px; max-width: 72ch; }
+.asks li { padding-left: 4px; }
+.asks li::marker { font: 600 13px var(--font-mono); color: var(--muted); }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; }
+.two h2 { font: 600 clamp(22px, 3vw, 28px)/1.2 var(--font-display); letter-spacing: -0.012em; margin-bottom: 16px; }
+.sources { font-size: 14px; color: var(--muted); display: grid; gap: 8px; padding-left: 20px; max-width: 80ch; }
+.foot { font-size: 13.5px; color: var(--muted); max-width: 72ch; }
+
+@media (min-width: 861px) {
+  .idea.span { grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto; }
+  .idea.span .sketch { aspect-ratio: auto; min-height: 340px; border-bottom: 0; border-right: 1px solid var(--line); }
+  .idea.span .idea-body { align-content: center; }
+}
+@media (max-width: 860px) {
+  .ideas, .feed, .two { grid-template-columns: minmax(0, 1fr); }
+  .page { gap: 48px; padding-block: 28px 64px; }
+}
+@media (max-width: 480px) {
+  .facts { grid-template-columns: minmax(0, 1fr); gap: 2px 0; }
+  .facts dd { margin-bottom: 8px; }
+  .idea-body { padding: 16px 16px 18px; }
+}
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">Cells viewer · ideas to choose from · 15 November 2026</p>
+    <h1>Showing what cannot be seen</h1>
+    <p class="lede">Ten ways to draw voltages, charge, fields, forces and flows in the 3D viewer. Each is tied to a quantity the engine has or plans, and each has a sketch. <strong>Nothing here is built.</strong></p>
+    <p class="choice"><strong>The choice is which to build first.</strong> I would start with ideas 1 and 2, the voltage pattern across a sheet: they need only what today's runs saved. The rest of the page says what each of the others would take.</p>
+  </header>
+
+  <section class="section" aria-labelledby="feed-h">
+    <header>
+      <h2 id="feed-h">What the engine can feed today</h2>
+      <p>The two examples in the request, voltage gradients and electrostatic forces, stand very differently.</p>
+    </header>
+    <div class="feed">
+      <div>
+        <h3><svg class="ready" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.4" fill="currentColor"/></svg>Voltage gradients: yes</h3>
+        <p>Today's saved runs hold <strong>one membrane voltage per cell</strong> at each record, with the junctions between cells. The gradient across a tissue is the difference between neighbours. Concentrations per cell are saved too.</p>
+      </div>
+      <div>
+        <h3><svg class="ready" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.4" fill="none"/><path d="M8 1.6a6.4 6.4 0 0 0 0 12.8z" fill="currentColor"/></svg>Flows and energy: computed, not saved</h3>
+        <p>The engine computes <strong>ion fluxes</strong> through channels, pumps and junctions, the <strong>potentials</strong> inside and outside each cell, and <strong>energy ledgers</strong>. The runs the viewer has did not save them.</p>
+      </div>
+      <div>
+        <h3><svg class="ready" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.4" fill="none"/></svg>Forces and fields in space: not as such</h3>
+        <p>The engine has <strong>no force on a single molecule</strong>. The electrical push on ions lives inside its transport laws, and can be drawn from them. A <strong>field between cells</strong> needs runs whose surroundings are not held at 0&nbsp;V.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="t1-h">
+    <header>
+      <h2 id="t1-h"><svg class="ready" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.4" fill="currentColor"/></svg>Works on today's saved runs</h2>
+      <p>Four ideas that need no change in the engine. The first two show a voltage pattern across a sheet. The other two answer the question about electrostatic forces at the scale of one cell.</p>
+    </header>
+    <div class="ideas">
+
+      <article class="idea">
+        <div class="sketch"><canvas data-sketch="relief" role="img" aria-label="Sketch: a sheet of hexagonal glass cells in which a central patch of cells stands higher and darker than the rest, like a plateau."></canvas></div>
+        <div class="idea-body">
+          <p class="tag">Sketch · invented numbers</p>
+          <div class="idea-head"><span class="num">1</span><h3>Voltage relief</h3><span class="scale">Sheet</span><span class="first">Build first</span></div>
+          <dl class="facts">
+            <dt>You see</dt><dd>Each cell stands as high as its membrane voltage. A depolarised patch rises as a plateau, and the border between two voltage states is a cliff you can walk around.</dd>
+            <dt>Drawn with</dt><dd>Height and a one-hue tint on the sheet's own glass cells, with lines at chosen voltages.</dd>
+            <dt>Needs</dt><dd>Membrane voltage per cell, in volts. Saved today.</dd>
+            <dt>Honest by</dt><dd>Height repeats the colour and adds nothing to it. A bar says how many millivolts one step is. Nothing is smoothed between cells.</dd>
+            <dt>Cost</dt><dd>Small to build, light to draw.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="idea">
+        <div class="sketch"><canvas data-sketch="drops" role="img" aria-label="Sketch: a flat sheet of hexagonal cells seen from above. Small wedges sit on the junctions around a central patch and point outward, down the voltage drop."></canvas></div>
+        <div class="idea-body">
+          <p class="tag">Sketch · invented numbers</p>
+          <div class="idea-head"><span class="num">2</span><h3>Junction drops</h3><span class="scale">Sheet</span></div>
+          <dl class="facts">
+            <dt>You see</dt><dd>The voltage difference across every junction, as a wedge that points down the drop. The ring where a pattern meets its surroundings stands out, and closed junctions show as breaks.</dd>
+            <dt>Drawn with</dt><dd>One wedge per junction, its width in millivolts.</dd>
+            <dt>Needs</dt><dd>Voltage per cell and each junction's open fraction. Saved today.</dd>
+            <dt>Honest by</dt><dd>A wedge is the difference of two saved numbers, not a current, so it never moves.</dd>
+            <dt>Cost</dt><dd>Small to build, light to draw.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="idea">
+        <div class="sketch"><canvas data-sketch="push" role="img" aria-label="Sketch: a glass membrane with three groups of arrows through it, for sodium, potassium and chloride. Each group shows the push of concentration, the pull of voltage and what is left over."></canvas></div>
+        <div class="idea-body">
+          <p class="tag">Sketch · invented numbers</p>
+          <div class="idea-head"><span class="num">3</span><h3>Push and pull on each ion</h3><span class="scale">Cell</span></div>
+          <dl class="facts">
+            <dt>You see</dt><dd>For each ion, the push of its concentration difference, the pull of the voltage, and what is left over. It shows why potassium leaks out while sodium is held back from rushing in.</dd>
+            <dt>Drawn with</dt><dd>Glass arrows through the membrane, in millivolts, one group per ion.</dd>
+            <dt>Needs</dt><dd>Voltage and concentrations in the cell (saved), with the composition outside and the temperature (in each run's definition).</dd>
+            <dt>Honest by</dt><dd>The arrows are the two terms of the engine's own transport law. An arrow is a drive, not a flow, and the formula stands in the legend.</dd>
+            <dt>Cost</dt><dd>Small to build, light to draw.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="idea">
+        <div class="sketch"><canvas data-sketch="charge" role="img" aria-label="Sketch: two pieces of membrane side by side. At minus 70 millivolts many plus marks crowd the outer face and minus marks the inner face. At minus 20 millivolts there are few."></canvas></div>
+        <div class="idea-body">
+          <p class="tag">Sketch · invented numbers</p>
+          <div class="idea-head"><span class="num">4</span><h3>Charge on the membrane</h3><span class="scale">Cell</span></div>
+          <dl class="facts">
+            <dt>You see</dt><dd>A membrane voltage is a thin layer of unbalanced charge on the two faces of the membrane. Marks crowd the faces at rest and thin out as the cell depolarises. The bulk stays neutral.</dd>
+            <dt>Drawn with</dt><dd>Plus and minus marks stippled on the glass membrane, as dense as the charge per area.</dd>
+            <dt>Needs</dt><dd>Voltage (saved), with the membrane's capacitance and area (in the definition): charge is capacitance times voltage.</dd>
+            <dt>Honest by</dt><dd>The count is real: one mark stands for a stated number of charges. Where each mark sits is illustration, and the page says so.</dd>
+            <dt>Cost</dt><dd>Small to medium to build, light to draw.</dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="t2-h">
+    <header>
+      <h2 id="t2-h"><svg class="ready" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.4" fill="none"/><path d="M8 1.6a6.4 6.4 0 0 0 0 12.8z" fill="currentColor"/></svg>The engine computes it; runs must save it</h2>
+      <p>Three ideas whose numbers the engine already has. They wait for the run-view output, or for a run that saves these arrays.</p>
+    </header>
+    <div class="ideas">
+
+      <article class="idea">
+        <div class="sketch"><canvas data-sketch="traffic" role="img" aria-label="Sketch: beads cross a glass membrane through two channels and a pump. Orange sodium beads stream inward, blue potassium beads outward, and the pump carries three sodium out for two potassium in."></canvas></div>
+        <div class="idea-body">
+          <p class="tag">Sketch · invented numbers</p>
+          <div class="idea-head"><span class="num">5</span><h3>Ion traffic</h3><span class="scale">Cell</span></div>
+          <dl class="facts">
+            <dt>You see</dt><dd>Ions crossing through each kind of channel and pump at the rate the engine computes: sodium streaming in, potassium out, the pump carrying three out for two in.</dd>
+            <dt>Drawn with</dt><dd>Beads moving through the glass channel forms, one hue per ion with its name beside it.</dd>
+            <dt>Needs</dt><dd>Flux per channel population and per pump, in femtomoles per second. Computed, not saved.</dd>
+            <dt>Honest by</dt><dd>Channels are modelled as populations, so a bead is a token of a rate: one bead stands for a stated number of ions per second. No bead moves without a flux behind it.</dd>
+            <dt>Cost</dt><dd>Medium to build, moderate to draw.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="idea">
+        <div class="sketch"><canvas data-sketch="glow" role="img" aria-label="Sketch: a flat sheet of cells with warm glows on the junctions around a central patch, largest where the voltage drop is largest."></canvas></div>
+        <div class="idea-body">
+          <p class="tag">Sketch · invented numbers</p>
+          <div class="idea-head"><span class="num">6</span><h3>Where the energy goes</h3><span class="scale">Sheet</span></div>
+          <dl class="facts">
+            <dt>You see</dt><dd>Power dissipated at junctions and membranes glows, and pumps pulse as they spend fuel. Holding a pattern costs energy: the glow shows where.</dd>
+            <dt>Drawn with</dt><dd>Warm halos on the cool glass, sized by picojoules per second.</dd>
+            <dt>Needs</dt><dd>The engine's dissipation ledgers and pump power. Computed, not saved.</dd>
+            <dt>Honest by</dt><dd>Glow is a magnitude with a legend. It is not a temperature, and the legend says that.</dd>
+            <dt>Cost</dt><dd>Small to medium to build, light to draw.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="idea span">
+        <div class="sketch"><canvas data-sketch="fog" role="img" aria-label="Sketch: a flat sheet of cells in which a signal spreads from one source cell and fades with distance, with two dashed rings at half and at a tenth of the source's level."></canvas></div>
+        <div class="idea-body">
+          <p class="tag">Sketch · invented numbers</p>
+          <div class="idea-head"><span class="num">7</span><h3>Signal fog</h3><span class="scale">Sheet</span></div>
+          <dl class="facts">
+            <dt>You see</dt><dd>A secreted signal spreading from its source and fading as it is cleared: which cells are within reach.</dd>
+            <dt>Drawn with</dt><dd>A one-hue fog over the sheet, with rings at chosen concentrations.</dd>
+            <dt>Needs</dt><dd>The signal's amount per cell and per face over time. The engine's transport is numerically qualified; no run with it is prepared for the viewer yet.</dd>
+            <dt>Honest by</dt><dd>The fog is filled cell by cell, as the model has it. The rings are marked as drawn between cells.</dd>
+            <dt>Cost</dt><dd>Medium to build, moderate to draw.</dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="t3-h">
+    <header>
+      <h2 id="t3-h"><svg class="ready" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.4" fill="none"/></svg>Needs new output from the engine</h2>
+      <p>Three ideas for quantities that no saved run carries in a form the viewer can place: a potential in space, moving geometry, and voltage at millisecond steps.</p>
+      <p>One more of this kind, for later and with no sketch yet: proteins being made at the ribosomes and carried to the membrane, moving at the rate a run gives for their production and turnover. No run feeds it today. It would use the bead mark of idea 5, under the same rule that nothing moves without a rate behind it.</p>
+    </header>
+    <div class="ideas">
+
+      <article class="idea">
+        <div class="sketch"><canvas data-sketch="field" role="img" aria-label="Sketch: several glass cells seen from above with coloured bands of equal potential and field lines running in the gaps between them, from a positive source on the left to a negative one on the right."></canvas></div>
+        <div class="idea-body">
+          <p class="tag">Sketch · invented numbers</p>
+          <div class="idea-head"><span class="num">8</span><h3>Field between cells</h3><span class="scale">Tissue</span></div>
+          <dl class="facts">
+            <dt>You see</dt><dd>The electric potential in the fluid between cells, and the way a positive ion would be pushed: around a wound, an electrode or a barrier.</dd>
+            <dt>Drawn with</dt><dd>Bands of equal potential in two hues around a neutral middle, and evenly spaced field lines, only in the space between cells.</dd>
+            <dt>Needs</dt><dd>The potential at the engine's outside nodes with their positions, and the flux across the faces between them. Today's runs hold every cell's surroundings at 0&nbsp;V.</dd>
+            <dt>Honest by</dt><dd>Drawn no finer than the nodes the model has, and absent where the model has no potential in space.</dd>
+            <dt>Cost</dt><dd>Medium to large to build, moderate to draw.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="idea">
+        <div class="sketch"><canvas data-sketch="tension" role="img" aria-label="Sketch: a sheet of irregular cells around a small hole. The edges around the hole are thick, the cells next to it are tinted as stretched, and small arrows point into the hole."></canvas></div>
+        <div class="idea-body">
+          <p class="tag">Sketch · invented numbers</p>
+          <div class="idea-head"><span class="num">9</span><h3>Tension web</h3><span class="scale">Sheet</span></div>
+          <dl class="facts">
+            <dt>You see</dt><dd>Which edges pull and which cells are squeezed, as a sheet relaxes or closes a wound.</dd>
+            <dt>Drawn with</dt><dd>Edge thickness for tension, a two-hue tint from squeezed to stretched, and arrows only where forces are out of balance.</dd>
+            <dt>Needs</dt><dd>Corner positions over time, tension per edge and pressure per cell. The vertex model is qualified; the run view does not carry moving shapes yet.</dd>
+            <dt>Honest by</dt><dd>Units are the model's own and are stated. Arrows vanish at equilibrium.</dd>
+            <dt>Cost</dt><dd>Medium to build, light to draw.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="idea span">
+        <div class="sketch"><canvas data-sketch="wave" role="img" aria-label="Sketch: an electrical wave crossing a sheet of cells from the lower left corner, with a bright front, a fading wake, dashed lines of equal arrival time, and three cells that never fire."></canvas></div>
+        <div class="idea-body">
+          <p class="tag">Sketch · invented numbers</p>
+          <div class="idea-head"><span class="num">10</span><h3>Wavefront</h3><span class="scale">Sheet</span></div>
+          <dl class="facts">
+            <dt>You see</dt><dd>An electrical wave crossing the sheet: where it started, how fast it travels, and where it is blocked.</dd>
+            <dt>Drawn with</dt><dd>The front as a bright band, with lines of equal arrival time behind it.</dd>
+            <dt>Needs</dt><dd>Voltage at millisecond steps around the event, or the engine's own arrival times. Today's records are 10 seconds apart. Excitable tissue is designed, not yet qualified.</dd>
+            <dt>Honest by</dt><dd>Arrival is the first crossing of a threshold the experiment declares. A blocked cell is drawn as blocked, never filled in from its neighbours.</dd>
+            <dt>Cost</dt><dd>Medium to build, light to draw.</dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="section build" aria-labelledby="build-h">
+    <header>
+      <h2 id="build-h">How it would be built</h2>
+      <p>Each idea is a quantity, a mark and a legend. Kept apart, a new quantity becomes a few lines of data, and a new kind of mark becomes one small module.</p>
+    </header>
+
+    <figure>
+      <div class="wide">
+        <svg viewBox="0 0 940 300" role="img" aria-label="The engine writes one run view per run. The run view names each recorded array by its set, unit, sign and owner. A quantity layer, which is data, maps a record to a mark with a scale and a legend. Mark modules, which are code, draw on the sets of the lens. The viewer allows one layer on each visual channel.">
+          <defs>
+            <marker id="iq-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="currentColor"/></marker>
+          </defs>
+          <g font-family="Inter, system-ui, sans-serif" font-size="12.5" fill="currentColor">
+            <rect x="14" y="44" width="168" height="112" rx="12" fill="none" stroke="currentColor" stroke-opacity="0.45"/>
+            <text x="30" y="70" font-weight="600" font-size="14">Engine run</text>
+            <text x="30" y="94" fill-opacity="0.72">Laws declare unit,</text>
+            <text x="30" y="111" fill-opacity="0.72">owner and how each</text>
+            <text x="30" y="128" fill-opacity="0.72">layer is represented</text>
+
+            <rect x="250" y="44" width="184" height="112" rx="12" fill="none" stroke="currentColor" stroke-opacity="0.45"/>
+            <text x="266" y="70" font-weight="600" font-size="14">Run view</text>
+            <text x="266" y="94" fill-opacity="0.72">Sets, records, events.</text>
+            <text x="266" y="111" fill-opacity="0.72">Each record: its set,</text>
+            <text x="266" y="128" fill-opacity="0.72">unit, sign and owner</text>
+
+            <rect x="502" y="44" width="184" height="112" rx="12" fill="var(--accent)" fill-opacity="0.09" stroke="var(--accent)" stroke-width="1.6"/>
+            <text x="518" y="70" font-weight="600" font-size="14">Quantity layer</text>
+            <text x="518" y="94" fill-opacity="0.72">Data: which record,</text>
+            <text x="518" y="111" fill-opacity="0.72">which mark, its scale</text>
+            <text x="518" y="128" fill-opacity="0.72">and its legend</text>
+
+            <rect x="754" y="44" width="172" height="112" rx="12" fill="var(--accent)" fill-opacity="0.09" stroke="var(--accent)" stroke-width="1.6"/>
+            <text x="770" y="70" font-weight="600" font-size="14">Mark modules</text>
+            <text x="770" y="94" fill-opacity="0.72">Code: tint, relief,</text>
+            <text x="770" y="111" fill-opacity="0.72">wedge, beads, arrows,</text>
+            <text x="770" y="128" fill-opacity="0.72">stipple, glow, bands</text>
+
+            <rect x="502" y="214" width="424" height="62" rx="12" fill="none" stroke="currentColor" stroke-opacity="0.45"/>
+            <text x="518" y="240" font-weight="600" font-size="14">Lenses the viewer has</text>
+            <text x="518" y="260" fill-opacity="0.72">The replayed sheet and the cell. One layer on each channel.</text>
+
+            <g stroke="currentColor" stroke-width="1.4" fill="none">
+              <line x1="184" y1="100" x2="246" y2="100" marker-end="url(#iq-arrow)"/>
+              <line x1="436" y1="100" x2="498" y2="100" marker-end="url(#iq-arrow)"/>
+              <line x1="688" y1="100" x2="750" y2="100" marker-end="url(#iq-arrow)"/>
+              <line x1="840" y1="158" x2="840" y2="210" marker-end="url(#iq-arrow)"/>
+            </g>
+            <text x="215" y="90" text-anchor="middle" font-size="11.5" fill-opacity="0.72">writes</text>
+            <text x="467" y="90" text-anchor="middle" font-size="11.5" fill-opacity="0.72">is read by</text>
+            <text x="719" y="90" text-anchor="middle" font-size="11.5" fill-opacity="0.72">asks for</text>
+            <text x="832" y="189" text-anchor="end" font-size="11.5" fill-opacity="0.72">draw on the lens's own cells</text>
+            <text x="594" y="26" text-anchor="middle" font-size="11.5" fill="var(--accent)" font-weight="600">New: a few lines per quantity</text>
+            <text x="840" y="26" text-anchor="middle" font-size="11.5" fill="var(--accent)" font-weight="600">New: one module per mark</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>The recommended design. The two tinted boxes are all that is new. The engine's side is its planned run-view output, with the five additions listed below.</figcaption>
+    </figure>
+
+    <div class="wide">
+      <table>
+        <thead>
+          <tr><th scope="col"></th><th scope="col" class="pick">A. Layers and marks (recommended)</th><th scope="col">B. One view per quantity</th><th scope="col">C. Fields as textures</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">What it is</th><td class="pick">A quantity layer is data. It names a record of the run and one mark from a small set of mark modules.</td><td>Each quantity gets a view of its own, hand-made.</td><td>Every quantity is resampled onto a grid, and general graphics passes draw it: flowing textures, volumes, particles.</td></tr>
+          <tr><th scope="row">Adding one</th><td class="pick">A new quantity with a known mark: data only. A new mark: one module.</td><td>New code for every quantity.</td><td>Data only, once the passes exist.</td></tr>
+          <tr><th scope="row">Combining</th><td class="pick">Each mark says which channel it uses: colour, height, links, motion, glow. One layer per channel, so voltage relief and ion beads can show together and two colourings cannot.</td><td>Not possible without a third view.</td><td>Free, and easy to overload.</td></tr>
+          <tr><th scope="row">Honesty</th><td class="pick">Each mark sits on the thing the engine computed it for: a cell, a junction, a channel. The layer carries the unit and how the layer is represented.</td><td>Depends on each view.</td><td>A grid invents detail between cells that the engine does not have.</td></tr>
+          <tr><th scope="row">Cost</th><td class="pick">The first layer costs most, since it brings the contract and the switch. Later ones are small.</td><td>Even, and it never falls.</td><td>Highest. Worth it only when the engine has a real field on a grid.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>My recommendation is A. Its mark modules can later include one from C, for the day the engine has a potential on a real grid. A layer would be declared like this:</p>
+
+    <div class="wide">
+<pre>{
+  "id": "voltage-relief",
+  "label": "Membrane voltage",
+  "quantity": { "record": "vm", "lives_on": "cell", "unit": "V", "kind": "level" },
+  "mark": "relief",
+  "channels": ["height", "colour"],
+  "scale": { "from": -0.080, "to": -0.020, "ramp": "one hue", "show_as": "mV" },
+  "representation": "as the run view states it for the record's layer"
+}</pre>
+    </div>
+  </section>
+
+  <div class="two">
+    <section aria-labelledby="eng-h">
+      <h2 id="eng-h">What the engine would be asked for</h2>
+      <ol class="asks">
+        <li><strong>Save what it already computes,</strong> when a run asks for it: fluxes through channels, pumps and junctions, junction voltages, the potentials inside and outside each cell, and the energy ledgers.</li>
+        <li><strong>A direction for every signed record:</strong> which way is positive, from which thing to which. The viewer then draws a flow's direction without reading a driver's habits.</li>
+        <li><strong>Positions for the outside nodes and faces,</strong> where a world has a space between cells.</li>
+        <li><strong>A short window at fine time steps</strong> around a fast event, beside the usual sparse records.</li>
+        <li><strong>The owner of each record:</strong> which law or operator computed it. With the modular rework and its levels of detail, a layer can then say what stands behind a number and how exact it is. Both are in development, not on main.</li>
+      </ol>
+    </section>
+    <section aria-labelledby="you-h">
+      <h2 id="you-h">What is asked of you</h2>
+      <ol class="asks">
+        <li><strong>Which ideas first?</strong> I would build 1 and 2 together on the replayed sheet, then 3 and 4 in the cell view, and ask the engine for what 5 and 6 need.</li>
+        <li><strong>How bold?</strong> Relief, glow and moving beads can be strong or quiet. The sketches lean quiet.</li>
+        <li><strong>May motion stand for a rate?</strong> My rule would be: something moves only where the engine gives a flux.</li>
+        <li><strong>Only on real runs,</strong> or also in the cell view with example numbers, marked as illustration?</li>
+        <li><strong>Should the five requests go to the lead now,</strong> or after the first two layers show what they are worth?</li>
+      </ol>
+    </section>
+  </div>
+
+  <section class="section" aria-labelledby="src-h">
+    <header><h2 id="src-h">What others do, in brief</h2><p>The note beside this page says what each technique is good and bad at. These are the pages it rests on.</p></header>
+    <ul class="sources">
+      <li>Colour that tells the truth and survives colour-blindness: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7595127">Crameri, Shephard and Heron 2020</a>.</li>
+      <li>Potential on a molecule's surface, red to blue around white: <a href="https://plato.cgl.ucsf.edu/chimerax/docs/user/commands/coulombic.html">ChimeraX, the coulombic command</a>; shells of equal potential: <a href="https://apbs.readthedocs.io/en/latest/using/examples/visualization-pymol.html">APBS with PyMOL</a>.</li>
+      <li>Arrival times of an electrical wave in heart tissue: <a href="https://opencarp.org/documentation/examples/02_ep_tissue/06_lats">openCARP, electrical mapping</a>.</li>
+      <li>A real voltage pattern seen with a dye, the frog embryo's "electric face": <a href="https://www.eurekalert.org/news-releases/851850">Tufts University, 2011</a>.</li>
+      <li>Flow as moving particles on the graphics card: <a href="https://cesium.com/blog/2019/04/29/gpu-powered-wind/">Cesium, GPU-powered wind</a>; evenly spaced field lines: <a href="https://kitware.com/evenly-spaced-streamlines-2d">Kitware</a>.</li>
+      <li>Stress in a living sheet of cells: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3135682">Tambe and others 2011</a>.</li>
+      <li>Where illustration may take licence, and must say so: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7230070">Goodsell, Olson and Forli 2020</a>.</li>
+    </ul>
+  </section>
+
+  <p class="foot">Every sketch is drawn in this page from invented numbers. None is engine data, and none is part of the viewer. The full inventory of what the engine has, with the file for each claim, is in <code>visualizer/docs/INVISIBLE_QUANTITIES.md</code>.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var TAU = Math.PI * 2;
+
+  // ---------------------------------------------------------------- colours, from the page's tokens
+  function css(name) { return getComputedStyle(root).getPropertyValue(name).trim(); }
+  function C(hex) {
+    var h = /^#[0-9a-f]{6}$/i.test(hex) ? hex : "#888888";
+    return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  }
+  function S(c, a) { return "rgba(" + Math.round(c[0]) + "," + Math.round(c[1]) + "," + Math.round(c[2]) + "," + (a === undefined ? 1 : a) + ")"; }
+  function lerp(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
+  function clamp(x, lo, hi) { return Math.max(lo, Math.min(hi, x)); }
+  function rampAt(stops, t) {
+    var last = stops.length - 1, x = clamp(t, 0, 1) * last, i = Math.min(last - 1, Math.floor(x));
+    return lerp(stops[i], stops[i + 1], x - i);
+  }
+  function theme() {
+    var list = function (names) { return names.map(function (n) { return C(css(n)); }); };
+    return {
+      bg: C(css("--bg")), raised: C(css("--bg-raised")), fg: C(css("--fg")), muted: C(css("--muted")), line: C(css("--line")),
+      accent: C(css("--accent")), glass: C(css("--glass")), glassEdge: C(css("--glass-edge")),
+      seq: list(["--seq-0", "--seq-1", "--seq-2", "--seq-3", "--seq-4"]),
+      div: list(["--div-n2", "--div-n1", "--div-n0", "--div-mid", "--div-p0", "--div-p1", "--div-p2"]),
+      warm: list(["--warm-0", "--warm-1", "--warm-2"]),
+      na: C(css("--ion-na")), k: C(css("--ion-k")), cl: C(css("--ion-cl")), signal: C(css("--signal")),
+      dark: css("--is-dark") === "1"
+    };
+  }
+
+  // ---------------------------------------------------------------- invented data, the same on every load
+  function mulberry(seed) {
+    return function () {
+      seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  var DIRS = [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]];
+  function hexDist(a, b) { var dq = a.q - b.q, dr = a.r - b.r; return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2; }
+  function makeSheet(R) {
+    var cells = [], at = {};
+    for (var q = -R; q <= R; q++) for (var r = -R; r <= R; r++) {
+      if (Math.abs(q + r) > R) continue;
+      var c = { q: q, r: r, i: cells.length };
+      cells.push(c); at[q + "," + r] = c;
+    }
+    return { cells: cells, at: at, R: R };
+  }
+  function place(c, s) { return { x: s * Math.sqrt(3) * (c.q + c.r / 2), y: s * 1.5 * c.r }; }
+  function corners(x, y, s, squash) {
+    var out = [];
+    for (var k = 0; k < 6; k++) { var a = (30 + 60 * k) * Math.PI / 180; out.push([x + s * Math.cos(a), y + s * Math.sin(a) * (squash || 1)]); }
+    return out;
+  }
+  var SHEET = makeSheet(4), rand = mulberry(11), ORIGIN = { q: 0, r: 0 };
+  SHEET.cells.forEach(function (c) {
+    c.d = hexDist(c, ORIGIN);
+    c.v = (c.d <= 1 ? -24 : c.d === 2 ? -30 : -78) + (rand() - 0.5) * 5; // millivolts
+  });
+  var JUNCTIONS = [];
+  SHEET.cells.forEach(function (c) {
+    for (var k = 0; k < 3; k++) {
+      var n = SHEET.at[(c.q + DIRS[k][0]) + "," + (c.r + DIRS[k][1])];
+      if (n) JUNCTIONS.push({ a: c, b: n, closed: rand() < 0.07 });
+    }
+  });
+
+  // ---------------------------------------------------------------- small drawing helpers
+  function poly(ctx, pts) { ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]); ctx.closePath(); }
+  function font(ctx, size, weight) { ctx.font = (weight || 500) + " " + size + "px Inter, system-ui, sans-serif"; }
+  function label(ctx, T, str, x, y, opts) {
+    opts = opts || {};
+    font(ctx, opts.size || 11.5, opts.weight);
+    ctx.textAlign = opts.align || "left"; ctx.textBaseline = opts.base || "middle";
+    if (opts.plate) {
+      var wide = ctx.measureText(str).width, left = opts.align === "center" ? x - wide / 2 : opts.align === "right" ? x - wide : x;
+      ctx.fillStyle = S(T.raised, 0.88); ctx.beginPath(); ctx.roundRect(left - 4, y - 8, wide + 8, 16, 5); ctx.fill();
+    }
+    ctx.fillStyle = S(opts.color || T.muted, opts.alpha === undefined ? 1 : opts.alpha);
+    ctx.fillText(str, x, y);
+  }
+  function legendRamp(ctx, T, x, y, w, stops, left, right) {
+    var g = ctx.createLinearGradient(x, 0, x + w, 0);
+    stops.forEach(function (c, i) { g.addColorStop(i / (stops.length - 1), S(c)); });
+    ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x, y, w, 7, 3.5); ctx.fill();
+    label(ctx, T, left, x, y + 18, { size: 10.5 });
+    label(ctx, T, right, x + w, y + 18, { size: 10.5, align: "right" });
+  }
+  function arrowHead(ctx, x, y, dx, dy, size) {
+    var n = Math.hypot(dx, dy) || 1; dx /= n; dy /= n;
+    ctx.beginPath(); ctx.moveTo(x, y);
+    ctx.lineTo(x - dx * size - dy * size * 0.55, y - dy * size + dx * size * 0.55);
+    ctx.lineTo(x - dx * size + dy * size * 0.55, y - dy * size - dx * size * 0.55);
+    ctx.closePath(); ctx.fill();
+  }
+  function glassBand(ctx, T, x, y, w, h) {
+    ctx.fillStyle = S(T.glass, T.dark ? 0.36 : 0.3); ctx.beginPath(); ctx.roundRect(x, y, w, h, 5); ctx.fill();
+    ctx.strokeStyle = S(T.glassEdge, 0.75); ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(x, y + 0.6); ctx.lineTo(x + w, y + 0.6); ctx.moveTo(x, y + h - 0.6); ctx.lineTo(x + w, y + h - 0.6); ctx.stroke();
+  }
+  // The flat sheet seen from above; returns where each cell stands.
+  function flatSheet(ctx, T, W, H, u, s, cx, cy, fill) {
+    var at = {};
+    SHEET.cells.forEach(function (c) {
+      var p = place(c, s), x = cx + p.x, y = cy + p.y;
+      at[c.i] = { x: x, y: y };
+      poly(ctx, corners(x, y, s * 0.95));
+      ctx.fillStyle = fill(c); ctx.fill();
+      ctx.strokeStyle = S(T.line, T.dark ? 0.9 : 1); ctx.lineWidth = 1; ctx.stroke();
+    });
+    return at;
+  }
+  var volt = function (c) { return clamp((c.v + 80) / 60, 0, 1); };
+
+  // ---------------------------------------------------------------- the ten sketches
+  var SKETCH = {};
+
+  SKETCH.relief = function (ctx, W, H, T) {
+    var u = W / 640, s = 31 * u, squash = 0.56, cx = W * 0.5, cy = H * 0.56;
+    var shade = T.dark ? T.bg : T.fg;
+    var items = SHEET.cells.map(function (c) { var p = place(c, s); return { c: c, x: cx + p.x, y: cy + p.y * squash }; });
+    items.sort(function (a, b) { return a.y - b.y || a.x - b.x; });
+    items.forEach(function (it) {
+      var k = volt(it.c), h = (5 + 60 * k) * u, col = rampAt(T.seq, k);
+      var top = corners(it.x, it.y - h, s * 0.96, squash), base = corners(it.x, it.y, s * 0.96, squash);
+      poly(ctx, [top[0], top[1], base[1], base[0]]); ctx.fillStyle = S(lerp(col, shade, 0.26)); ctx.fill();
+      poly(ctx, [top[1], top[2], base[2], base[1]]); ctx.fillStyle = S(lerp(col, shade, 0.44)); ctx.fill();
+      poly(ctx, top); ctx.fillStyle = S(col, 0.96); ctx.fill();
+      ctx.strokeStyle = S(T.raised, T.dark ? 0.28 : 0.75); ctx.lineWidth = 1; ctx.stroke();
+    });
+    legendRamp(ctx, T, 14, H - 34, 104, T.seq, "−80", "−20 mV");
+    var bx = W - 30, by = H - 44, step = 30 * u; // 30 mV of height
+    ctx.strokeStyle = S(T.muted); ctx.lineWidth = 1.2; ctx.beginPath();
+    ctx.moveTo(bx, by); ctx.lineTo(bx, by - step); ctx.moveTo(bx - 4, by); ctx.lineTo(bx + 4, by); ctx.moveTo(bx - 4, by - step); ctx.lineTo(bx + 4, by - step); ctx.stroke();
+    label(ctx, T, "30 mV", bx - 8, by - step / 2, { size: 10.5, align: "right" });
+  };
+
+  SKETCH.drops = function (ctx, W, H, T) {
+    var u = W / 640, s = 23.5 * u, cx = W * 0.5, cy = H * 0.47;
+    var at = flatSheet(ctx, T, W, H, u, s, cx, cy, function (c) { return S(rampAt(T.seq, volt(c)), 0.28); });
+    function wedge(ax, ay, bx, by, mv, len) {
+      var dx = bx - ax, dy = by - ay, n = Math.hypot(dx, dy) || 1; dx /= n; dy /= n;
+      var mx = (ax + bx) / 2, my = (ay + by) / 2, w = clamp(mv / 55, 0, 1) * s * 0.21;
+      ctx.beginPath();
+      ctx.moveTo(mx - dx * len - dy * w, my - dy * len + dx * w);
+      ctx.lineTo(mx - dx * len + dy * w, my - dy * len - dx * w);
+      ctx.lineTo(mx + dx * len, my + dy * len); ctx.closePath();
+      ctx.fillStyle = S(T.fg, 0.25 + 0.65 * clamp(mv / 55, 0, 1)); ctx.fill();
+    }
+    function closedMark(mx, my, dx, dy) {
+      ctx.strokeStyle = S(T.muted, 0.95); ctx.lineWidth = 1.4; ctx.beginPath();
+      var half = 3 * u + 1.5, gap = 1.6 * u + 0.9;
+      [-gap, gap].forEach(function (o) { ctx.moveTo(mx + dx * o - dy * half, my + dy * o + dx * half); ctx.lineTo(mx + dx * o + dy * half, my + dy * o - dx * half); });
+      ctx.stroke();
+    }
+    JUNCTIONS.forEach(function (j) {
+      var hi = j.a.v >= j.b.v ? j.a : j.b, lo = hi === j.a ? j.b : j.a, A = at[hi.i], B = at[lo.i], mv = hi.v - lo.v;
+      var dx = B.x - A.x, dy = B.y - A.y, n = Math.hypot(dx, dy); dx /= n; dy /= n;
+      if (j.closed) return closedMark((A.x + B.x) / 2, (A.y + B.y) / 2, dx, dy);
+      if (mv < 4) { ctx.fillStyle = S(T.muted, 0.55); ctx.beginPath(); ctx.arc((A.x + B.x) / 2, (A.y + B.y) / 2, 1.1, 0, TAU); ctx.fill(); return; }
+      wedge(A.x, A.y, B.x, B.y, mv, s * 0.3);
+    });
+    var lx = 14, ly = H - 22;
+    [10, 30, 50].forEach(function (mv, i) {
+      var x = lx + i * 54; wedge(x, ly, x + 2 * s * 0.3, ly, mv, s * 0.3);
+      label(ctx, T, mv + (i === 2 ? " mV" : ""), x + 2 * s * 0.3 + 5, ly, { size: 10.5 });
+    });
+    closedMark(lx + 196, ly, 1, 0); label(ctx, T, "closed", lx + 205, ly, { size: 10.5 });
+  };
+
+  SKETCH.push = function (ctx, W, H, T) {
+    var u = W / 640, my = H * 0.47, px = 0.86 * u; // pixels per millivolt
+    glassBand(ctx, T, 0, my - 13 * u, W, 26 * u);
+    label(ctx, T, "outside", 14, my - 13 * u - 12, { size: 10.5 });
+    label(ctx, T, "inside", 14, my + 13 * u + 12, { size: 10.5 });
+    // Each part in millivolts, outward positive. Invented, in the range of a resting cell.
+    var ions = [
+      { name: "Na+", col: T.na, conc: -60, elec: -70 },
+      { name: "K+", col: T.k, conc: 90, elec: -70 },
+      { name: "Cl−", col: T.cl, conc: -70, elec: 70 }
+    ];
+    function shaft(x, mv, w, style, col) {
+      if (Math.abs(mv) < 1) return;
+      var y1 = my - mv * px, dir = mv > 0 ? -1 : 1, head = Math.min(9 * u + w, Math.abs(mv) * px * 0.6);
+      ctx.beginPath();
+      ctx.moveTo(x - w / 2, my); ctx.lineTo(x - w / 2, y1 - dir * head); ctx.lineTo(x - w * 1.25, y1 - dir * head);
+      ctx.lineTo(x, y1); ctx.lineTo(x + w * 1.25, y1 - dir * head); ctx.lineTo(x + w / 2, y1 - dir * head); ctx.lineTo(x + w / 2, my); ctx.closePath();
+      if (style === "hollow") { ctx.fillStyle = S(T.raised, 0.7); ctx.fill(); ctx.strokeStyle = S(col, 1); ctx.lineWidth = 1.5; ctx.stroke(); }
+      else { ctx.fillStyle = S(col, style === "soft" ? 0.5 : 1); ctx.fill(); }
+    }
+    ions.forEach(function (ion, i) {
+      var x = W * (0.25 + 0.25 * i), net = ion.conc + ion.elec;
+      shaft(x - 24 * u, ion.conc, 7 * u, "hollow", ion.col);
+      shaft(x - 6 * u, ion.elec, 7 * u, "soft", ion.col);
+      if (Math.abs(net) < 1) {
+        ctx.strokeStyle = S(ion.col); ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(x + 22 * u, my, 7 * u, 0, TAU); ctx.stroke();
+        label(ctx, T, "in balance", x + 34 * u, my - 22 * u, { size: 10.5, color: T.fg });
+      } else {
+        shaft(x + 22 * u, net, 15 * u, "bold", ion.col);
+        label(ctx, T, Math.abs(net) + " mV " + (net > 0 ? "out" : "in"), x + 22 * u, my - net * px - (net > 0 ? 11 : -11), { size: 10.5, color: T.fg, align: "center" });
+      }
+      label(ctx, T, ion.name, x - 2 * u, 20, { size: 13, weight: 600, color: T.fg, align: "center" });
+    });
+    var ly = H - 20, lx = 14;
+    ctx.strokeStyle = S(T.muted); ctx.lineWidth = 1.5; ctx.fillStyle = S(T.raised, 0.7);
+    ctx.beginPath(); ctx.rect(lx, ly - 5, 14, 10); ctx.fill(); ctx.stroke();
+    label(ctx, T, "concentration", lx + 20, ly, { size: 10.5 });
+    ctx.fillStyle = S(T.muted, 0.5); ctx.fillRect(lx + 104, ly - 5, 14, 10);
+    label(ctx, T, "voltage", lx + 124, ly, { size: 10.5 });
+    ctx.fillStyle = S(T.muted); ctx.fillRect(lx + 176, ly - 6, 14, 12);
+    label(ctx, T, "what is left", lx + 196, ly, { size: 10.5 });
+  };
+
+  SKETCH.charge = function (ctx, W, H, T) {
+    var u = W / 640, my = H * 0.5, bandH = 24 * u, r = mulberry(5);
+    var panels = [{ x0: W * 0.05, x1: W * 0.47, mv: "−70 mV", n: 30 }, { x0: W * 0.53, x1: W * 0.95, mv: "−20 mV", n: 9 }];
+    panels.forEach(function (p) {
+      glassBand(ctx, T, p.x0, my - bandH / 2, p.x1 - p.x0, bandH);
+      for (var i = 0; i < p.n; i++) {
+        var x = p.x0 + 10 + (p.x1 - p.x0 - 20) * ((i + 0.5 + (r() - 0.5) * 0.7) / p.n);
+        var off = bandH / 2 + (5 + r() * 15) * u, size = 4.2 * u + 1.2;
+        ctx.lineWidth = 1.7; ctx.lineCap = "round";
+        ctx.strokeStyle = S(T.div[5]); ctx.beginPath(); // plus, on the outer face
+        ctx.moveTo(x - size, my - off); ctx.lineTo(x + size, my - off); ctx.moveTo(x, my - off - size); ctx.lineTo(x, my - off + size); ctx.stroke();
+        var x2 = p.x0 + 10 + (p.x1 - p.x0 - 20) * ((i + 0.5 + (r() - 0.5) * 0.7) / p.n), off2 = bandH / 2 + (5 + r() * 15) * u;
+        ctx.strokeStyle = S(T.div[1]); ctx.beginPath(); // minus, on the inner face
+        ctx.moveTo(x2 - size, my + off2); ctx.lineTo(x2 + size, my + off2); ctx.stroke();
+      }
+      ctx.lineCap = "butt";
+      label(ctx, T, p.mv, (p.x0 + p.x1) / 2, 22, { size: 13, weight: 600, color: T.fg, align: "center" });
+    });
+    label(ctx, T, "outside", W * 0.05, my - bandH / 2 - 40 * u, { size: 10.5 });
+    label(ctx, T, "inside", W * 0.05, my + bandH / 2 + 40 * u, { size: 10.5 });
+    label(ctx, T, "+ and − : unbalanced charge at the two faces. Away from them, none.", 14, H - 18, { size: 10.5 });
+  };
+
+  SKETCH.traffic = function (ctx, W, H, T, t) {
+    var u = W / 640, my = H * 0.5, bandH = 34 * u;
+    glassBand(ctx, T, 0, my - bandH / 2, W, bandH);
+    label(ctx, T, "outside", 14, my - bandH / 2 - 12, { size: 10.5 });
+    label(ctx, T, "inside", 14, my + bandH / 2 + 12, { size: 10.5 });
+    function channel(x, w, pump) {
+      ctx.fillStyle = S(T.glass, T.dark ? 0.55 : 0.5); ctx.strokeStyle = S(T.glassEdge, 0.95); ctx.lineWidth = 1.3;
+      ctx.beginPath(); ctx.roundRect(x - w / 2, my - bandH / 2 - 10 * u, w, bandH + 20 * u, pump ? w / 2 : 7 * u); ctx.fill(); ctx.stroke();
+      if (!pump) { ctx.strokeStyle = S(T.raised, 0.8); ctx.lineWidth = 2.4 * u; ctx.beginPath(); ctx.moveTo(x, my - bandH / 2 - 6 * u); ctx.lineTo(x, my + bandH / 2 + 6 * u); ctx.stroke(); }
+    }
+    function beads(x, col, n, speed, dir, group) {
+      var top = 40 * u, bottom = H - 46 * u, span = bottom - top, radius = 5 * u + 1.2;
+      for (var i = 0; i < n; i++) {
+        var slot = group ? Math.floor(i / group) / Math.ceil(n / group) + (i % group) * 0.035 : i / n;
+        var f = ((slot + t * speed) % 1 + 1) % 1, y = dir > 0 ? top + f * span : bottom - f * span;
+        var fade = Math.min(1, f / 0.1, (1 - f) / 0.1);
+        for (var k = 3; k >= 0; k--) {
+          ctx.fillStyle = S(col, (k === 0 ? 1 : 0.16 * (4 - k) / 3) * fade);
+          ctx.beginPath(); ctx.arc(x, y - dir * k * radius * 1.5, radius * (k === 0 ? 1 : 0.8), 0, TAU); ctx.fill();
+        }
+      }
+    }
+    var xa = W * 0.26, xb = W * 0.5, xc = W * 0.76;
+    channel(xa, 26 * u); channel(xb, 26 * u); channel(xc, 54 * u, true);
+    beads(xa, T.na, 12, 0.2, 1);        // sodium in, fast
+    beads(xb, T.k, 5, 0.11, -1);        // potassium out, slower
+    beads(xc - 12 * u, T.na, 6, 0.07, -1, 3); // the pump: three sodium out
+    beads(xc + 12 * u, T.k, 4, 0.07, 1, 2);   // for two potassium in
+    label(ctx, T, "Na+ in", xa + 16 * u + 6, 20, { size: 11.5, weight: 600, color: T.fg });
+    label(ctx, T, "K+ out", xb + 16 * u + 6, 20, { size: 11.5, weight: 600, color: T.fg });
+    label(ctx, T, "pump: 3 Na+ out, 2 K+ in", xc, 20, { size: 11.5, weight: 600, color: T.fg, align: "center" });
+    label(ctx, T, "1 bead = a stated number of ions a second", 14, H - 18, { size: 10.5 });
+  };
+
+  SKETCH.glow = function (ctx, W, H, T, t) {
+    var u = W / 640, s = 23.5 * u, cx = W * 0.5, cy = H * 0.47;
+    var at = flatSheet(ctx, T, W, H, u, s, cx, cy, function (c) { return S(T.glass, c.d <= 2 ? 0.26 : 0.1); });
+    function halo(x, y, power) { // power 0..1
+      var radius = (5 + 20 * Math.sqrt(power)) * u, g = ctx.createRadialGradient(x, y, 0, x, y, radius);
+      var core = T.dark ? T.warm[2] : T.warm[2], rim = T.warm[1];
+      g.addColorStop(0, S(core, 0.95)); g.addColorStop(0.35, S(rim, 0.6)); g.addColorStop(1, S(rim, 0));
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, radius, 0, TAU); ctx.fill();
+    }
+    JUNCTIONS.forEach(function (j) {
+      if (j.closed) return;
+      var mv = Math.abs(j.a.v - j.b.v), power = (mv / 55) * (mv / 55);
+      if (power < 0.01) return;
+      halo((at[j.a.i].x + at[j.b.i].x) / 2, (at[j.a.i].y + at[j.b.i].y) / 2, power);
+    });
+    SHEET.cells.forEach(function (c, i) { // pumps pulse where the cell works hardest
+      if (c.d > 2 || i % 3) return;
+      var f = ((t * 0.5 + i * 0.37) % 1 + 1) % 1, p = at[c.i];
+      ctx.strokeStyle = S(T.warm[1], 0.75 * (1 - f)); ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.arc(p.x, p.y, (3 + 9 * f) * u, 0, TAU); ctx.stroke();
+    });
+    var lx = 18, ly = H - 22;
+    [0.02, 0.2, 1].forEach(function (power, i) {
+      var x = lx + i * 70 + 8; halo(x, ly, power);
+      label(ctx, T, ["0.1", "1", "10 pJ/s"][i], x + (8 + 20 * Math.sqrt(power)) * u + 2, ly, { size: 10.5 });
+    });
+  };
+
+  SKETCH.fog = function (ctx, W, H, T) {
+    var u = W / 640, s = 23.5 * u, cx = W * 0.5, cy = H * 0.47, source = SHEET.at["-2,1"], reach = 1.7;
+    var level = function (c) { return Math.exp(-hexDist(c, source) / reach); };
+    var at = flatSheet(ctx, T, W, H, u, s, cx, cy, function (c) { return S(T.signal, 0.05 + 0.82 * level(c)); });
+    var p = at[source.i], pitch = Math.sqrt(3) * s;
+    ctx.setLineDash([5, 4]); ctx.lineWidth = 1.2; ctx.strokeStyle = S(T.fg, 0.7);
+    [[0.5, "half"], [0.1, "a tenth"]].forEach(function (ring) {
+      var radius = -reach * Math.log(ring[0]) * pitch;
+      ctx.beginPath(); ctx.arc(p.x, p.y, radius, -0.5, 0.95); ctx.stroke();
+      label(ctx, T, ring[1], p.x + radius * Math.cos(-0.5) + 6, p.y + radius * Math.sin(-0.5) - 6, { size: 10.5, color: T.fg, plate: true });
+    });
+    ctx.setLineDash([]);
+    ctx.fillStyle = S(T.raised); ctx.beginPath(); ctx.arc(p.x, p.y, 3.2 * u + 1, 0, TAU); ctx.fill();
+    label(ctx, T, "source", p.x, p.y - s - 7, { size: 10.5, color: T.fg, align: "center", plate: true });
+    var stops = [0, 0.25, 0.5, 0.75, 1].map(function (a) { return lerp(T.raised, T.signal, 0.05 + 0.82 * a); });
+    legendRamp(ctx, T, 14, H - 34, 104, stops, "0", "100 nM");
+  };
+
+  SKETCH.field = function (ctx, W, H, T) {
+    var u = W / 640, src = { x: W * 0.2, y: H * 0.5 }, sink = { x: W * 0.8, y: H * 0.52 }, soft = 20 * u;
+    function phi(x, y) { return 1 / (Math.hypot(x - src.x, y - src.y) + soft) - 1 / (Math.hypot(x - sink.x, y - sink.y) + soft); }
+    var peak = 1 / soft - 1 / (Math.hypot(src.x - sink.x, src.y - sink.y) + soft);
+    var level = function (x, y) { var v = phi(x, y) / peak; return Math.sign(v) * Math.pow(Math.abs(v), 0.62); }; // -1..1, eased so the far bands show
+    var cell = Math.max(3, Math.round(4 * u));
+    for (var gy = 0; gy < H; gy += cell) for (var gx = 0; gx < W; gx += cell) {
+      var band = Math.round(clamp(level(gx + cell / 2, gy + cell / 2) * 1.25, -1, 1) * 3); // seven bands
+      ctx.fillStyle = S(T.div[3 + band], T.dark ? [0.5, 0.42, 0.66, 0.9][Math.abs(band)] : band === 0 ? 0.55 : 0.9); ctx.fillRect(gx, gy, cell + 0.5, cell + 0.5);
+    }
+    ctx.strokeStyle = S(T.fg, 0.62); ctx.fillStyle = S(T.fg, 0.75); ctx.lineWidth = 1.1;
+    for (var a = 0; a < 12; a++) {
+      var ang = (a + 0.5) / 12 * TAU, x = src.x + Math.cos(ang) * 16 * u, y = src.y + Math.sin(ang) * 16 * u, pts = [[x, y]];
+      for (var i = 0; i < 420; i++) {
+        var e = 0.5, ex = -(phi(x + e, y) - phi(x - e, y)), ey = -(phi(x, y + e) - phi(x, y - e)), n = Math.hypot(ex, ey) || 1;
+        x += ex / n * 3; y += ey / n * 3;
+        if (x < -20 || x > W + 20 || y < -20 || y > H + 20 || Math.hypot(x - sink.x, y - sink.y) < 14 * u) break;
+        pts.push([x, y]);
+      }
+      if (pts.length < 12) continue;
+      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); pts.forEach(function (q) { ctx.lineTo(q[0], q[1]); }); ctx.stroke();
+      var m = Math.floor(pts.length * 0.45);
+      arrowHead(ctx, pts[m][0], pts[m][1], pts[m][0] - pts[m - 2][0], pts[m][1] - pts[m - 2][1], 6.5 * u + 1.5);
+    }
+    // The cells lie over the field as glass: it shows only between them.
+    [[0.37, 0.26], [0.5, 0.5], [0.37, 0.75], [0.63, 0.27], [0.63, 0.76], [0.5, 0.03], [0.5, 0.98]].forEach(function (c) {
+      poly(ctx, corners(W * c[0], H * c[1], 41 * u));
+      ctx.fillStyle = S(T.raised, T.dark ? 0.9 : 0.93); ctx.fill();
+      ctx.strokeStyle = S(T.glassEdge, 0.9); ctx.lineWidth = 1.3; ctx.stroke();
+      ctx.fillStyle = S(T.glass, 0.16); ctx.fill();
+    });
+    label(ctx, T, "cell", W * 0.5, H * 0.5, { size: 10.5, align: "center" });
+    [[src, "+"], [sink, "−"]].forEach(function (pair) {
+      ctx.fillStyle = S(T.raised); ctx.beginPath(); ctx.arc(pair[0].x, pair[0].y, 10 * u + 2, 0, TAU); ctx.fill();
+      ctx.strokeStyle = S(T.fg, 0.8); ctx.lineWidth = 1.2; ctx.stroke();
+      label(ctx, T, pair[1], pair[0].x, pair[0].y + 0.5, { size: 14, weight: 600, color: T.fg, align: "center" });
+    });
+    ctx.fillStyle = S(T.raised, 0.86); ctx.beginPath(); ctx.roundRect(8, H - 42, 132, 36, 8); ctx.fill();
+    legendRamp(ctx, T, 16, H - 36, 104, T.div, "−", "+ mV");
+  };
+
+  SKETCH.tension = function (ctx, W, H, T) {
+    var u = W / 640, s = 23.5 * u, cx = W * 0.5, cy = H * 0.47, r = mulberry(23), verts = {};
+    function vertex(x, y) { // shared corners, nudged once each
+      var key = Math.round(x / u) + "," + Math.round(y / u);
+      if (!verts[key]) {
+        var dx = x - cx, dy = y - cy, dist = Math.hypot(dx, dy) || 1, pull = dist < s * 3.2 ? 5 * u * (1 - dist / (s * 3.2)) : 0;
+        verts[key] = [x + (r() - 0.5) * 7 * u + dx / dist * pull, y + (r() - 0.5) * 7 * u + dy / dist * pull, dist];
+      }
+      return verts[key];
+    }
+    var edges = {};
+    SHEET.cells.forEach(function (c) {
+      if (c.d === 0) return; // the hole
+      var p = place(c, s), pts = corners(cx + p.x, cy + p.y, s).map(function (q) { return vertex(q[0], q[1]); });
+      var pressure = c.d === 1 ? 0.85 : c.d === 2 ? -0.55 : c.d === 3 ? -0.2 : 0; // stretched +, squeezed -
+      pressure += (r() - 0.5) * 0.18;
+      poly(ctx, pts); ctx.fillStyle = S(T.div[Math.round(3 - clamp(pressure, -1, 1) * 3)], 0.86); ctx.fill();
+      for (var k = 0; k < 6; k++) {
+        var a = pts[k], b = pts[(k + 1) % 6], key = [a, b].map(function (v) { return Math.round(v[0]) + ":" + Math.round(v[1]); }).sort().join("|");
+        if (!edges[key]) edges[key] = { a: a, b: b, ring: Math.max(a[2], b[2]) < s * 1.25 };
+      }
+    });
+    Object.keys(edges).forEach(function (key) {
+      var e = edges[key], near = Math.min(e.a[2], e.b[2]) < s * 2.2;
+      ctx.strokeStyle = S(T.fg, e.ring ? 0.95 : near ? 0.7 : 0.45); ctx.lineWidth = e.ring ? 4.6 * u + 1 : near ? 2.2 * u + 0.4 : 1.1; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(e.a[0], e.a[1]); ctx.lineTo(e.b[0], e.b[1]); ctx.stroke();
+    });
+    ctx.lineCap = "butt"; ctx.strokeStyle = S(T.fg, 0.9); ctx.fillStyle = S(T.fg, 0.9); ctx.lineWidth = 1.4;
+    Object.keys(verts).forEach(function (key) { // forces out of balance, only at the hole's rim
+      var v = verts[key];
+      if (v[2] > s * 1.25) return;
+      var dx = cx - v[0], dy = cy - v[1], n = Math.hypot(dx, dy) || 1, len = 10 * u + 2;
+      ctx.beginPath(); ctx.moveTo(v[0] + dx / n * 3, v[1] + dy / n * 3); ctx.lineTo(v[0] + dx / n * len, v[1] + dy / n * len); ctx.stroke();
+      arrowHead(ctx, v[0] + dx / n * (len + 3), v[1] + dy / n * (len + 3), dx, dy, 5 * u + 1.5);
+    });
+    legendRamp(ctx, T, 14, H - 34, 116, T.div.slice().reverse(), "squeezed", "stretched");
+    var lx = 156; ctx.strokeStyle = S(T.fg, 0.9); ctx.lineCap = "round";
+    [1.1, 2.6, 5].forEach(function (w, i) { ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(lx + i * 22, H - 31); ctx.lineTo(lx + i * 22 + 14, H - 31); ctx.stroke(); });
+    ctx.lineCap = "butt"; label(ctx, T, "tension", lx, H - 16, { size: 10.5 });
+  };
+
+  SKETCH.wave = function (ctx, W, H, T, t) {
+    var u = W / 640, s = 23.5 * u, cx = W * 0.5, cy = H * 0.47, start = SHEET.at["-4,4"], stepMs = 4;
+    var blocked = { "1,-1": 1, "2,-1": 1, "1,0": 1 };
+    var now = ((t * 0.16) % 1) * 44; // milliseconds since the stimulus
+    var at = flatSheet(ctx, T, W, H, u, s, cx, cy, function (c) {
+      if (blocked[c.q + "," + c.r]) return S(T.muted, 0.16);
+      var since = now - hexDist(c, start) * stepMs;
+      if (since < 0) return S(T.glass, 0.1);
+      var k = since < 4 ? 1 : Math.max(0, 1 - (since - 4) / 13);
+      return S(rampAt(T.seq, 0.25 + 0.75 * k), 0.14 + 0.82 * k);
+    });
+    Object.keys(blocked).forEach(function (key) { // drawn as blocked, not filled in
+      var p = at[SHEET.at[key].i], q = s * 0.38;
+      ctx.strokeStyle = S(T.muted, 0.95); ctx.lineWidth = 1.5; ctx.beginPath();
+      ctx.moveTo(p.x - q, p.y - q); ctx.lineTo(p.x + q, p.y + q); ctx.moveTo(p.x + q, p.y - q); ctx.lineTo(p.x - q, p.y + q); ctx.stroke();
+    });
+    var p0 = at[start.i], pitch = Math.sqrt(3) * s;
+    ctx.setLineDash([5, 4]); ctx.strokeStyle = S(T.fg, 0.6); ctx.lineWidth = 1.1;
+    [2, 4, 6].forEach(function (cells) {
+      var radius = cells * pitch;
+      ctx.beginPath(); ctx.arc(p0.x, p0.y, radius, -1.52, -0.02); ctx.stroke();
+      label(ctx, T, (cells * stepMs) + " ms", p0.x + radius * Math.cos(-0.38), p0.y + radius * Math.sin(-0.38), { size: 10.5, color: T.fg, align: "center", plate: true });
+    });
+    ctx.setLineDash([]);
+    ctx.fillStyle = S(T.fg); ctx.beginPath(); ctx.arc(p0.x, p0.y, 3 * u + 1, 0, TAU); ctx.fill();
+    label(ctx, T, "start", p0.x - s - 4, p0.y, { size: 10.5, color: T.fg, align: "right" });
+    label(ctx, T, "lines: equal arrival time", 14, H - 18, { size: 10.5 });
+    label(ctx, T, "× never fires", 14, 18, { size: 10.5 });
+  };
+
+  // ---------------------------------------------------------------- drawing, resizing, theme, motion
+  var MOVING = { traffic: 1, glow: 1, wave: 1 };
+  var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var entries = [].slice.call(document.querySelectorAll("canvas[data-sketch]")).map(function (canvas) {
+    return { canvas: canvas, name: canvas.dataset.sketch, visible: true };
+  });
+  var T = theme();
+  function draw(entry, time) {
+    var canvas = entry.canvas, box = canvas.getBoundingClientRect(), W = Math.round(box.width), H = Math.round(box.height);
+    if (!W || !H) return;
+    var ratio = Math.min(2, window.devicePixelRatio || 1);
+    if (canvas.width !== Math.round(W * ratio) || canvas.height !== Math.round(H * ratio)) { canvas.width = Math.round(W * ratio); canvas.height = Math.round(H * ratio); }
+    var ctx = canvas.getContext("2d");
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0); ctx.clearRect(0, 0, W, H);
+    try { SKETCH[entry.name](ctx, W, H, T, time); } catch (error) { label(ctx, T, "This sketch could not be drawn.", 14, 20, {}); }
+  }
+  var REST = 2.6; // the moment shown at rest
+  function drawAll(time) { entries.forEach(function (entry) { draw(entry, time); }); }
+  drawAll(REST);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { drawAll(REST); });
+
+  function retheme() { T = theme(); drawAll(REST); }
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", retheme);
+  new MutationObserver(retheme).observe(root, { attributes: true, attributeFilter: ["data-theme", "class", "style"] });
+  if (window.ResizeObserver) { var sized = new ResizeObserver(function () { drawAll(REST); }); entries.forEach(function (entry) { sized.observe(entry.canvas); }); }
+  else window.addEventListener("resize", function () { drawAll(REST); });
+
+  if (!still) {
+    if (window.IntersectionObserver) {
+      var seen = new IntersectionObserver(function (list) { list.forEach(function (item) { entries.forEach(function (entry) { if (entry.canvas === item.target) entry.visible = item.isIntersecting; }); }); });
+      entries.forEach(function (entry) { if (MOVING[entry.name]) seen.observe(entry.canvas); });
+    }
+    var last = 0;
+    (function tick(ms) {
+      if (ms - last > 33) { last = ms; entries.forEach(function (entry) { if (MOVING[entry.name] && entry.visible) draw(entry, REST + ms / 1000); }); }
+      requestAnimationFrame(tick);
+    })(0);
+  }
+})();
+</script>

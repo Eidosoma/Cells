@@ -12,7 +12,8 @@ as built on 14 November 2026; the build prints them again.
 | The atlas | `data/proteins/atlases/planarian.json`, in the form `schema/SPECIES_ATLAS.md` fixes (283 KB) |
 | The open set, whole | `data/proteins/planarian/predicted_proteins.tsv` (18,882 proteins: 17,294 gene models and 1,588 UniProtKB entries; 2.2 MB, no sequences), brought in by the user's decision of 14 November 2026 |
 | The proteins the atlas names | `data/proteins/planarian/reference_proteins.tsv` (229 proteins: the 227 it names and 2 joined to them; 35 KB) and the folder's `README.md` |
-| The tool | `tools/build_planarian_atlas.py`: `fetch` uses the network, `build` does not |
+| The shelves | `data/proteins/planarian/shelves.json` (the families, 541 KB) and `shelf_members.tsv` (every protein's family, side and basis, 860 KB), in the form `schema/SPECIES_PROTEINS.md` fixes; see "The shelves" below |
+| The tool | `tools/build_planarian_atlas.py`: `fetch` uses the network, `build` and `members` do not |
 | The check | `node --test tests/planarian_atlas.test.mjs` |
 | The evidence | `/mnt/workspaces/Cells/visualizer-planarian-proteins-20261114-01` (65 MB): 179 requests on record, one of them a refusal, and every response that came back |
 
@@ -67,10 +68,11 @@ permission, or a deposit of the library under an open licence. Or a new protein 
 derived from the 813 instrument files, which are open: that is a mass-spectrometry
 reanalysis against a protein reference, not a download.
 
-The user was asked on 14 November 2026 whether they hold the paper's supplementary table
-or can get it from the authors. A table placed under
-`/mnt/workspaces/Cells/visualizer-planarian-library/` can be imported. It may enter this
-public repository only with the authors' or the publisher's permission.
+The project does not contact authors (the user's rule, recorded in D173 on 14 November
+2026), so the first route waits for the list to appear in a public source under terms
+that allow a copy. A table the user already holds can be read from
+`/mnt/workspaces/Cells/visualizer-planarian-library/`; under the paper's present terms it
+stays outside this public repository.
 
 Other proteomics of the species exists and was not examined: five MassIVE datasets of
 2025 and 2026 from another group (MSV000098119, MSV000098120, MSV000099716, MSV000100775
@@ -190,11 +192,14 @@ Each line is what a reader outside the field needs, then what it rests on.
 
 - **Gap junctions are built from innexins, not connexins.** The channel between two
   cells does the same job, but its protein is of another family, so there is no planarian
-  connexin 45 or connexin 40 to name. Source: "connexins are exclusive of chordates"
-  (Abascal and Zardoya 2013, doi:10.1016/j.bbamem.2012.02.007); a planarian innexin
-  gap-junction gene, smedinx-11 (Oviedo and Levin 2007, doi:10.1242/dev.006635). In
-  support: 68 gene models carry the innexin signature and none the connexin one; no
-  flatworm entry in UniProtKB carries the connexin signature, and 21 human ones do.
+  connexin 45 or connexin 40 to name. Source: 68 gene models carry the innexin signature
+  and none the connexin one; no flatworm entry in UniProtKB carries the connexin
+  signature, and 21 human ones do. One planarian innexin has a sequence record of its
+  own, smedinx-11. Two papers say more and are named as places to read: Abascal and
+  Zardoya 2013 (doi:10.1016/j.bbamem.2012.02.007), on which animals have each family, and
+  Oviedo and Levin 2007 (doi:10.1242/dev.006635), on that innexin. Neither states an
+  open licence, so the atlas says nothing from them; until 15 November 2026 its note
+  rested on their abstracts.
 - **No inward-rectifier potassium channel was found.** Nothing in the planarian carries
   the signature of the family Kir2.1 belongs to. Source: three signatures of the family
   find no planarian sequence, and find 21 entries of other flatworms and 16 human ones.
@@ -205,7 +210,9 @@ Each line is what a reader outside the field needs, then what it rests on.
   flatworm entry carries the FXYD signature.
 - **One pump was described as a proton-potassium pump.** It shares its signature with the
   sodium-potassium pump's alpha subunit, so it is kept out of that unit and listed under
-  `extra`. Source: Beane and others (2013), doi:10.1242/dev.086900.
+  `extra`. Source: its sequence record JX174182, which names it. The paper that reports
+  it (Beane and others 2013, doi:10.1242/dev.086900) states no open licence: it is cited
+  for the name, and its findings are not repeated in the atlas.
 - **A channel with the HCN signature was published as a cyclic-nucleotide-gated channel.**
   The two are related kinds of channel; the signature says one and the name the other.
   Source: Roberts-Galbraith and others (2016), doi:10.7554/elife.17002, who call it CNG1.
@@ -276,6 +283,88 @@ Read and not copied: the paper and tables of the library of about 10,000 protein
 rights reserved); PlanMine, whose front page states no licence or terms of use, only how
 to cite it. Xenbase is not used at all.
 
+## What rests on non-commercial or unlicensed sources
+
+The project's rule (D173, 15 November 2026) sorts every source into three classes.
+**Permissive** (CC BY, CC0, or a plain statement that no restriction is placed): values
+and derived data may enter the repository, with attribution. **Non-commercial** (any
+CC BY-NC licence): analysis only. **No stated terms**: nothing enters. A data file here
+holds no value and no statement from a source of the last two classes; such a source is
+named as a pointer. A note may cite a single value from one, with its class beside it.
+
+**The tables, the atlas and the shelves take what they hold from permissive sources
+alone:** UniProt (CC BY 4.0), WormBase ParaSite (no restriction stated), InterPro (CC0),
+the Gene Ontology (CC BY 4.0), the nucleotide archive's records, and three papers under
+CC BY that name genes (Cowles and others 2014, Vu and others 2015, Roberts-Galbraith and
+others 2016). Each source carries its `class` in the files. **But nearly every side in
+the shelves is a prediction that one of those databases gives out and a program of
+another owner computed.** That is set out at the end of this section.
+
+**Papers whose terms do not allow a copy are named, and nothing of their findings is
+said.** Each has its class on its citation in the atlas:
+
+| Paper | Class | How the atlas names it | What changed on 15 November 2026 |
+| --- | --- | --- | --- |
+| Oviedo and Levin 2007 | no stated terms | For the name smedinx-11, which the sequence record DQ851133 carries; and as a place to read, in the gap-junction notes | The notes no longer say from its abstract that the gene has been described as a gap-junction gene |
+| Abascal and Zardoya 2013 | no stated terms | As a place to read, in the gap-junction notes | The notes no longer say from its abstract that connexins are known only from chordates; they rest on the signatures |
+| Beane and others 2013 | no stated terms | For the proton-potassium pump, which the sequence record JX174182 names | Its findings on voltage and head size were taken out of the pump's entry |
+| Arenas and others 2017 | no stated terms (an author manuscript, free to read, with no open licence) | For TRPA1, a name the UniProtKB entry carries | Its findings on heat and irritants were taken out of the channel's entry |
+| Wagner and others 2012 | no stated terms | UniProtKB entries of innexins cite it; the atlas repeats that | Nothing |
+| Wenemoser and others 2012 | no stated terms | A UniProtKB entry of an innexin cites it; the atlas repeats that | Nothing |
+| Ying and others 2025 | no stated terms (all rights reserved) | As the library that was not imported | The size of its library is no longer in the atlas or the README. It is said in this note, where the paper's terms are said beside it |
+| Howe and others 2017 | non-commercial (CC BY-NC-ND) | The citation that WormBase ParaSite asks for | Nothing: the data are the database's, under its own terms, and nothing is taken from the paper |
+| Rozanski and others 2019 | non-commercial (CC BY-NC) | The citation of PlanMine, in the README | Nothing: PlanMine was read and nothing was taken |
+
+**Values cited in this note only:** that the library covers about 10,000 proteins (Ying
+and others 2025, all rights reserved).
+
+**What the two databases give out that others computed.** The helices and signal
+peptides behind the sides were predicted by programs that WormBase ParaSite and UniProt
+ran. Neither database's terms speak for those programs:
+
+- WormBase ParaSite's disclaimer, after "Ensembl imposes no restrictions on access to, or
+  use of, the data provided", goes on: "Some of the data and software included in the
+  distribution may be subject to third-party constraints. Users of the data and software
+  are solely responsible for establishing the nature of and complying with any such
+  restrictions." The shelves' file now quotes that sentence too.
+- UniProt's licence page says: "We cannot provide unrestricted permission regarding the
+  use of the data, as some data may be covered by patents or other rights."
+
+Each tool's terms were read at its own page on 15 November 2026 and the page was saved;
+nothing else was downloaded from any of them, and no program was run. The shelves name
+each as a source with `through`, the database or databases its results were read in.
+
+| Tool or rule system | Its own terms, as read | Class | Read through | Sides that rest on it |
+| --- | --- | --- | --- | --- |
+| TMHMM | Academic licence of DTU Health Tech: free to publicly funded institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. A licence of the program: no clause speaks of predictions made with it | Non-commercial | WormBase ParaSite and UniProt | Gene models: all 16,566 predicted sides rest on what it and SignalP found or did not find (4,218 in a membrane by helices; 599 with one helix and a signal peptide, settled by this tool's own reading; 965 outside by a signal peptide; 10,784 inside because neither found anything). Entries: 578 in a membrane by segments that UniProt keeps where TMHMM and Phobius overlap, and 249 inside because nothing was found |
+| SignalP | Academic licence of DTU Health Tech, as TMHMM's | Non-commercial | WormBase ParaSite and UniProt | The gene models counted under TMHMM; and 131 entries placed outside by a signal peptide |
+| Phobius | For academic users only: private study, education or nonprofit research. Terms of the program | Non-commercial | UniProt | The entries counted under TMHMM and SignalP |
+| PROSITE (its rules, ProRule) | CC BY-NC-ND 4.0; commercial users pay a licence fee "irrespective of the method by which they access the database" | Non-commercial | UniProt | 3 entries placed in a membrane by segments that carry one of its rules; 146 entries placed by function on a stated place that names one, 50 of them on no other rule |
+| HAMAP (family rules) | CC BY 4.0 | Permissive | UniProt | 1 entry placed by function |
+| RuleBase, ARBA and the PIR rules | No terms of their own were read: UniProt's help pages describe them as parts of its annotation pipeline, and UniProt's entries are CC BY 4.0 | Not classed separately | none: they come with UniProt's entries | 38 entries placed by a segment or a signal peptide they give; 255 placed by function on a place they state |
+
+So 17,524 of the 17,565 predicted sides rest on the three academic programs, and 149
+sides rest at least in part on PROSITE's rules. The 118 sides placed by function from
+Gene Ontology terms, and the 795 not placed, rest on none of them.
+
+**What could not be read.** WormBase ParaSite's BioMart names TMHMM and SignalP and no
+version of either, and its service that lists a genome's analyses did not answer. The
+licence read for each program is the one DTU Health Tech shows on its download page
+today; an older version may have been given out on other words.
+
+**Two kinds of terms.** The licences of TMHMM and SignalP and the terms of Phobius are of
+the programs: they say who may run them and say nothing of predictions made with them,
+and it was the two databases that ran them. PROSITE's terms are of the database itself,
+of which its rules are part, and they reach a commercial user by whatever way the
+database is read. These are not the same kind of dependence.
+
+**Not settled, and the user's to decide:** whether sides that rest on the academic
+programs, or on PROSITE's rules, may stay in a commercial project. Until then every one
+of them is counted in the file and in this note, and is said to be predicted wherever it
+is shown. The families and districts do not rest on these programs: they come from
+InterPro (CC0) and the Gene Ontology (CC BY 4.0). InterPro's entries do gather the
+signatures of member databases, PROSITE among them; that was not looked into here.
+
 ## What a whole-proteome catalogue would take
 
 Two different things go by that name.
@@ -296,17 +385,262 @@ Two different things go by that name.
 Joining either to the engine's protein catalogue is for the lead: that catalogue's
 design has not begun.
 
+## The shelves: every protein in a family, on a side of a membrane
+
+**Added on 15 November 2026.** Told that 18,882 proteins were too many to read as one
+marker each, the user said: "we should show them all but maybe cool expandable protein
+families, same for humans". So every protein of `predicted_proteins.tsv` is now given
+one family, a side of a membrane and how that side is known, in the form
+`schema/SPECIES_PROTEINS.md` fixes for large catalogues. This is data only; the drawing
+comes later.
+
+**Everything here is a prediction on a predicted protein.** Two of the 18,882 sides are
+stated by a curated entry, and those by similarity to another species. Nothing says that
+the animal makes a protein, where it was seen, or which of the cell's membranes it is in.
+
+### What was made
+
+| File | What it holds | Size |
+| --- | --- | --- |
+| `shelves.json` | 3,457 families and the 509 parts of "No family assigned", each with its side, its district, how many members sit on each side, and where its members are to be read | 541 KB |
+| `shelf_members.tsv` | One line for each of the 18,882 proteins: what it is filed under, its side, the basis, the helices and signal peptide predicted, and the atlas's units it is a candidate for | 860 KB |
+
+Together they add 1.40 MB. No existing file changed its bytes except the folder's
+generated README.
+
+### One family for each protein
+
+A family is an InterPro entry of the type Family (release 111.0). A protein is filed
+under the narrowest family among its signatures: one that is not a broader kind of
+another it carries, by InterPro's own tree of entries.
+
+- 7,231 proteins carry one family and 1,630 carry several. For all but 221 of those,
+  the tree leaves one narrowest family.
+- For the 221, several unrelated families remain. A rule chooses: the deepest in the
+  tree, then the one fewest proteins of this catalogue are in, then the first by
+  accession. The rule is the tool's and is stated in the file.
+- **10,021 proteins (53%) carry no family signature.** They are kept, under "No family
+  assigned" (next).
+
+| Members | Families | Their proteins |
+| --- | ---: | ---: |
+| 1 | 2,153 | 2,153 |
+| 2 to 4 | 977 | 2,433 |
+| 5 to 9 | 213 | 1,399 |
+| 10 to 49 | 104 | 1,779 |
+| 50 or more | 10 | 1,097 |
+| All | 3,457 | 8,861 |
+
+The largest are the rhodopsin-like G protein-coupled receptors (415), the major
+facilitator superfamily (122), alpha tubulin (98), the small GTPases (89), the epithelial
+sodium channels (85) and the innexins (70).
+
+### The proteins with no family
+
+Asked whether a broader grouping would be honest and useful, the answer taken here is yes
+for superfamilies, as parts of "No family assigned" and never as families:
+
+- **507 parts are InterPro superfamilies** (entries of the type Homologous superfamily: a
+  wider grouping, by shared structure). They hold 5,247 proteins. A protein with several
+  superfamilies (2,091 proteins) goes under the one fewest proteins of this catalogue
+  carry. The largest are the protein kinase-like domain superfamily (283), TRAF-like
+  (181) and the ankyrin repeat-containing domain superfamily (177).
+- **887 proteins** carry only a domain, repeat or site signature. No grouping of them was
+  made: a protein has as many domains as it has, and none stands for it.
+- **3,887 proteins carry no signature of any kind.** Nothing in these sources says what
+  they are.
+
+The families' list holds families only, so a reader who wants InterPro families alone
+loses nothing. If the superfamily parts are not wanted, the three kinds can be shown as
+one pile.
+
+### The side of each protein
+
+| | In a membrane | Beyond one | Inside the cell | Not placed |
+| --- | ---: | ---: | ---: | ---: |
+| 17,294 gene models, predicted | 4,749 | 1,033 | 10,784 | |
+| gene models, by function | | 1 | 62 | |
+| gene models, not placed | | | | 665 |
+| 1,588 UniProtKB entries, predicted | 611 | 139 | 249 | |
+| entries, by function | 24 | 44 | 389 | |
+| entries, stated | | 1 | 1 | |
+| entries, not placed | | | | 130 |
+| **All 18,882** | **5,384** | **1,218** | **11,485** | **795** |
+
+- **Gene models.** WormBase ParaSite ran TMHMM (membrane-spanning helices) and SignalP
+  (signal peptides) on the predicted proteins of this annotation and gives the results in
+  its BioMart: 8,270 predicted proteins of 5,113 genes have a helix, and 3,533 have a
+  signal peptide. The gene's longest predicted protein is read, the one the catalogue
+  gives the length of.
+  - One helix or more and no signal peptide, or two or more with one: in a membrane.
+  - A signal peptide and no helix: beyond a membrane.
+  - Neither, on a model that begins with methionine: inside the cell.
+- **This tool's own reading, in one case.** 604 models have one helix and a signal
+  peptide, and TMHMM can take a signal peptide for a helix. BioMart gives no positions,
+  so the sequence is read: a stretch of 19 residues of which 12 or more are hydrophobic
+  (A, F, I, L, M, V, W), starting at residue 36 or later, is taken for a
+  membrane-spanning stretch (531 models, in a membrane); such a stretch only before that
+  is taken for the signal peptide (68, beyond one); 5 have no such stretch and are not
+  placed. The rule is this tool's and takes no published scale.
+- **UniProtKB entries.** The membrane-spanning segments and signal peptides that
+  UniProt's automatic annotation gives the entry. By UniProt's own account its sequence
+  analysis keeps a segment where TMHMM and Phobius overlap, and gives the signal peptide
+  SignalP predicts where TMHMM or Phobius bears it out; some segments and signal peptides
+  are given by its rule systems instead. Where nothing is predicted, the subcellular
+  location UniProt's rules give it is used, and called "by function". The two "stated"
+  are reviewed entries, by similarity.
+- **What the predicted sides rest on.** Of the 17,565 predicted sides, 17,524 rest on
+  what TMHMM, SignalP and Phobius found or did not find: all 16,566 of the gene models,
+  and 958 of the entries. The section "What rests on non-commercial or unlicensed
+  sources" gives each tool with its terms.
+- **Not placed: 795.** 660 gene models do not begin with methionine and have nothing
+  predicted, so a signal peptide may be missing with their beginning; 5 are the ones
+  above; 130 entries are fragments that lack their beginning. Where the Gene Ontology
+  terms of such a protein name a place that leaves no real doubt (the nucleus, the
+  ribosome, the cytoskeleton, the cytosol, the mitochondrion, the cilium, or outside the
+  cell), that is used: 63 gene models.
+
+**How the predictions fare.** 783 UniProtKB entries are whole copies of a gene model's
+protein, and UniProt places them with other predictors. Where both are placed, the two
+agree on 741 of 779 (95%). The disagreements: 15 where the gene model is in a membrane
+and the entry is not, 11 the other way, and 12 between inside and beyond. Of the 24 pairs
+that this tool's own reading settled, 21 agree; the rule's two numbers (12 of 19) were
+set while looking at those pairs, so that is not an independent test of it.
+
+**Limits that the file states.**
+- **Which membrane is not predicted.** A predicted helix says that a protein spans a
+  membrane, not which. So there is one shelf, "the cell's membranes, not told apart", and
+  "beyond a membrane" covers both the outside of the cell and the inside of its
+  compartments. An animal cell's several shelves cannot be told apart from these
+  predictions.
+- **A hint at the place.** Where the Gene Ontology terms of at least half of a family's
+  placed members name a place in the cell, the family carries it (`where`): 887 families,
+  most often the nucleus (368), the plasma membrane (123) and the mitochondrion (92). It
+  is an annotation carried by signatures, not a prediction for these proteins.
+- **Helices only.** TMHMM predicts helices. A membrane protein built as a barrel is
+  missed: the family of the mitochondrial porin comes out inside the cell.
+- **Truncated models.** 1,138 gene models do not begin with methionine.
+- **An older run of the signatures.** A gene model's signatures are those WormBase
+  ParaSite computed for its release, read under the names and types of InterPro 111.0;
+  55 of them are no longer InterPro entries. A current run on the same sequences would
+  find families for some of the 10,021 that have none here.
+
+### Districts
+
+A protein's Gene Ontology terms are those InterPro maps to any of its signatures and
+those UniProt gives a UniProtKB entry; a gene model takes also the terms of the entries
+joined to it. With every broader term, the protein falls in the first district, in the
+order below, one of whose terms it carries. A family's members are one kind of protein,
+so a family stands where most of its classed members fall. A part of "No family
+assigned" is a looser grouping and stands in a district only if more than half of all
+its members fall there. The choice of the terms and their order is the viewer's.
+
+| District | Families | Their proteins | With 5 members or more |
+| --- | ---: | ---: | ---: |
+| Channels | 66 | 545 | 24 |
+| Transporters and pumps | 141 | 856 | 48 |
+| Receptors and signalling | 156 | 1,083 | 34 |
+| DNA, RNA and making proteins | 789 | 1,533 | 55 |
+| Protein folding, change, sorting and breakdown | 320 | 701 | 31 |
+| Cytoskeleton, movement and adhesion | 133 | 482 | 15 |
+| Enzymes and metabolism | 593 | 1,329 | 45 |
+| Other functions | 588 | 1,225 | 44 |
+| Not classed by function | 671 | 1,107 | 31 |
+
+The file gives each district's terms. Two things to know:
+- **InterPro's own mapping alone was too thin.** It gives the innexins no term at all,
+  and the sodium:neurotransmitter symporters only "membrane". With the terms of every
+  signature a protein carries, and UniProt's terms for the entries, the innexins stand
+  among the channels and the symporters among the transporters.
+- **The sorting is by terms, not by judgement.** The small GTPases stand under "Enzymes
+  and metabolism" because their terms are GTP binding and hydrolysis, and the actins are
+  not classed. 7,231 of the 18,882 proteins carry no term of their own.
+
+### Tied to the atlas
+
+- 29 families hold the atlas's candidate products, for 41 of the inventory's units, and
+  carry those units' ids (`units`). Each of the 204 products carries its units in the
+  members' table.
+- **Every family that holds a membrane-spanning product comes out in a membrane,** as the
+  atlas draws those units: the sodium, potassium and calcium channels, the innexins, the
+  pumps and the exchangers. The build stops if one does not.
+- **Three families come out inside the cell, and should:** the calcium channels' beta
+  subunit and the potassium channels' beta subunit, which sit on the channel's inner
+  face, and the mitochondrial uniporter's regulator MICU, which is not in the membrane.
+- 9 products have no family: 5 alpha-2/delta gene models, 2 HCN-like models, 1 innexin
+  and 1 calcium-activated potassium channel. Eight carry only domain or superfamily
+  signatures; one carries none in this annotation, and the atlas found it through
+  UniProt's archive. They sit under "No family assigned" with their units.
+
+### Sizes the drawing will meet, and a proposal
+
+- 3,457 families, of which 2,153 have one member. 327 have five or more and hold 4,275
+  proteins; 114 have ten or more and hold 2,876.
+- "No family assigned" has 10,021 proteins: 107 superfamily parts of ten or more hold
+  4,140; 154 superfamily parts have one member; the two other parts hold 887 and 3,887.
+- 271 families have members on more than one side, and each member keeps its own side.
+  In 34 families of five or more, the largest side holds less than 70%.
+
+**Proposal.** A family of five or more gets a marker of its own: 327 markers over nine
+districts, between 15 and 55 in each. The 3,130 smaller families (4,586 proteins) are
+gathered by district and side into one marker, "smaller families", which opens to the
+list of its families, each of which opens to its members. "No family assigned" is shown
+the same way: the larger superfamilies as markers, the rest gathered, and the two other
+parts as two markers. Every protein stays within three openings, and none is hidden.
+
+**How members are read.** The members' table is in the members' order: the families as
+`shelves.json` lists them (by district, then size), then the parts. For the page they
+are cut into 9 files of at most 2,000 members, a family never split; the part with no
+signature is 3,887 and has a file of its own. Each family gives its file and its place
+there. `python3 tools/build_planarian_atlas.py members --out DIR` writes the files (2.7
+MB in all); they are not kept in the repository.
+
+### What the contract lacked
+
+`schema/SPECIES_PROTEINS.md` needed four things this data has, all declared in the file:
+- `units` and `where` as further family columns;
+- parts within `no_family`, each with its own file and place, because 10,021 members do
+  not fit one file of a few thousand;
+- a member's `unit` as a list, because a protein can be a candidate for several units of
+  one family;
+- a word for the shelf of an animal whose membranes the data cannot tell apart.
+
+### What would change for human
+
+Human is to be done last, the same way. What follows is from general knowledge of the
+sources and was not fetched; each figure is to be read from the source when it is.
+
+- **Source.** UniProt's human reference proteome, under CC BY 4.0: about 20,000 reviewed
+  entries, one for each protein-coding gene, and several times that when unreviewed
+  entries and isoforms are counted, which is where a figure near 100,000 comes from.
+  Families from InterPro (CC0), by the same rule.
+- **Sides would mostly be stated.** Most reviewed human entries state a subcellular
+  location and a topology, curated. So the basis would be "stated" for most, and several
+  shelves could be told apart: the cell membrane, the endoplasmic reticulum, the
+  mitochondrion's membranes, the nucleus.
+- **Size.** With one line for each reviewed entry, the members' table stays near 1 MB and
+  this form holds. With every entry it would pass 3 MB: then the reviewed set goes in the
+  repository and the rest is built outside it, or members are kept by family only.
+- **Not to be copied.** The Human Protein Atlas's tables are outside what this
+  repository copies today; where a protein was measured would be linked, not copied.
+
 ## How to rebuild
 
 ```bash
-python3 tools/build_planarian_atlas.py fetch --evidence DIR   # network: about 5 minutes, 64 MB
-python3 tools/build_planarian_atlas.py build --evidence DIR   # offline: about 45 seconds
-node --test tests/planarian_atlas.test.mjs                    # set PLANARIAN_EVIDENCE=DIR elsewhere
+python3 tools/build_planarian_atlas.py fetch --evidence DIR --datasets DATA   # network: about 6 minutes, 64 MB and 38 MB
+python3 tools/build_planarian_atlas.py build --evidence DIR --datasets DATA   # offline: about 45 seconds
+python3 tools/build_planarian_atlas.py members --out OUT                      # the shelves' member files, from the tables in the repository
+node --test tests/planarian_atlas.test.mjs                                    # set PLANARIAN_EVIDENCE=DIR and PLANARIAN_DATASETS=DATA elsewhere
 ```
 
 `fetch` asks only what is not yet saved, waits and asks again when a service is busy, and
-records each request in `DIR/requests.json`. `build` reads only `DIR` and the inventory
-snapshot and writes the same bytes every time; the test rebuilds and compares.
+records each request: the atlas's and the catalogue's in `DIR/requests.json`, the
+shelves' in the `MANIFEST.json` of each source's folder under `DATA`
+(`/mnt/datasets/Cells/planarian/` on this machine: `wbps-biomart-smedh1prjna885486`,
+`interpro-hierarchy-and-go`, `geneontology-go-basic`, `uniprot-smed-topology`). `build`
+reads only `DIR`, `DATA` and the inventory snapshot, checks each dataset file against the
+SHA-256 its MANIFEST gives, and writes the same bytes every time; the test rebuilds and
+compares.
 The families, the units' notes and the claims about papers are tables at the top of the
 tool; the numbers in the notes are read from the evidence.
 

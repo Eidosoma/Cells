@@ -1,0 +1,4879 @@
+{
+ "format": "cells.visualizer.planarian_bioelectric_evidence@1",
+ "made": "2026-11-15",
+ "question": "What public wet-lab data exists on the bioelectric proteins of planarians?",
+ "target": {
+  "organism": "Schmidtea mediterranea",
+  "taxon": 79327,
+  "note": "The species of the viewer's planarian atlas and catalogue. Evidence categories are given relative to it"
+ },
+ "evidence_categories": {
+  "measured_exact": "Measured in the species of the viewer's planarian atlas, Schmidtea mediterranea",
+  "related_strain": "Measured in another planarian species (a transferable prior with uncertainty)",
+  "reconstituted": "Measured on a planarian protein in a reconstructed system: heterologous cells or an expressed fragment",
+  "inferred_fitted": "Inferred or fitted from measurements, or from sequence data",
+  "other_simulator": "Predicted by a model or simulator",
+  "method": "A protocol: it describes a measurement and reports none of its own",
+  "not assigned": "The species is not stated in what was read, so no category relative to the target can be given"
+ },
+ "read_levels": {
+  "full text searched": "The open full text, or the author manuscript in PMC, was fetched and searched for the animals used, sequence records, data deposits and methods; the passages found were read. The paper was not read from end to end",
+  "abstract only": "Only the abstract in the bibliographic record was read; the full text was not open to this audit",
+  "record only": "The bibliographic record has no abstract: only its title and details were read"
+ },
+ "licence_classes": {
+  "permissive": "CC BY, CC0, or a plain statement that no restriction is placed on use: values may be given from it, with attribution",
+  "non-commercial": "A CC BY-NC licence of any kind: named so that it can be read; no value is taken from it",
+  "no stated terms": "No open licence is stated: named so that it can be read; no value is taken from it"
+ },
+ "kinds": [
+  "knockdown outcome",
+  "drug outcome",
+  "voltage-dye imaging",
+  "pH imaging",
+  "calcium entry",
+  "current recording, isolated cells",
+  "current recording, heterologous cells",
+  "extracellular recording",
+  "tissue potential",
+  "applied field",
+  "ion transport physiology",
+  "contraction of isolated cells",
+  "binding assay",
+  "expression map",
+  "sequencing dataset",
+  "sequence",
+  "sequence survey",
+  "behaviour",
+  "model"
+ ],
+ "families": {
+  "nav": "Voltage-gated sodium channels",
+  "kv": "Voltage-gated potassium channels",
+  "k_other": "Other potassium channels (two-pore, inward-rectifier, calcium-activated)",
+  "hcn_cng": "HCN and cyclic-nucleotide-gated channels",
+  "cav": "Voltage-gated calcium channels and their subunits",
+  "trp": "TRP channels (TRPA, TRPM, TRPV, PKD)",
+  "asic": "Acid-sensing and degenerin channels",
+  "ligand_gated": "Ligand-gated channels",
+  "cl": "Chloride channels",
+  "innexin": "Innexins (gap junctions)",
+  "hk_pump": "Proton-potassium pump",
+  "nak_pump": "Sodium-potassium pump",
+  "v_atpase": "V-type proton pump",
+  "ca_pump": "Calcium pumps (plasma membrane, SERCA)",
+  "exchangers": "Exchangers (sodium-calcium, sodium-proton, anion)",
+  "cotransporters": "Cation-chloride cotransporters",
+  "store_channels": "Release channels of the calcium store (IP3 receptor, ryanodine receptor)",
+  "aquaporin": "Aquaporins",
+  "tissue": "No protein named: voltage, fields or transport of the whole tissue"
+ },
+ "how_it_was_made": {
+  "requests": 161,
+  "requests_answered": 153,
+  "sources": "Europe PMC (searches, records, open full texts, text-mined organisms), PubMed and PMC through NCBI E-utilities, GenBank, GEO and BioProject summaries, Crossref, one GitHub repository record",
+  "rule": "A statement is in a record only if it was read in the paper's abstract, its open text or a data record. No table, trace or figure is copied. A value is given only from a paper whose terms are permissive (values_from names it); a record of any other paper says what was measured and how, in words, and points to the paper for its values. No author was contacted"
+ },
+ "papers": [
+  {
+   "id": "almazan2018",
+   "citation": "Almazan EMP, Lesko SL, Markey MP, Rouhana L. (2018) Girardia dorotocephala transcriptome sequence, assembly, and validation through characterization of piwi homologs and stem cell progeny markers. Dev Biol.",
+   "authors": "Almazan EMP, Lesko SL, Markey MP, Rouhana L.",
+   "year": "2018",
+   "title": "Girardia dorotocephala transcriptome sequence, assembly, and validation through characterization of piwi homologs and stem cell progeny markers",
+   "journal": "Dev Biol",
+   "doi": "10.1016/j.ydbio.2017.07.022",
+   "pmid": "28774726",
+   "pmcid": "PMC5750089",
+   "licence": "CC BY-NC-ND",
+   "class": "non-commercial",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "annand2014",
+   "citation": "Annand S. (2014) Control of axial polarity in planarians by an endogenous electric field. University of Aberdeen.",
+   "authors": "Annand S.",
+   "year": "2014",
+   "title": "Control of axial polarity in planarians by an endogenous electric field",
+   "journal": "University of Aberdeen",
+   "doi": null,
+   "pmid": null,
+   "pmcid": null,
+   "licence": "no licence stated (thesis record)",
+   "class": "no stated terms",
+   "record": "EThOS thesis record 606483, through Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "aoki2009",
+   "citation": "Aoki R, Wake H, Sasaki H, Agata K. (2009) Recording and spectrum analysis of the planarian electroencephalogram. Neuroscience.",
+   "authors": "Aoki R, Wake H, Sasaki H, Agata K.",
+   "year": "2009",
+   "title": "Recording and spectrum analysis of the planarian electroencephalogram",
+   "journal": "Neuroscience",
+   "doi": "10.1016/j.neuroscience.2008.11.011",
+   "pmid": "19063945",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "arenas2017",
+   "citation": "Arenas OM, Zaharieva EE, Para A, Vásquez-Doorman C, Petersen CP, Gallio M. (2017) Activation of planarian TRPA1 by reactive oxygen species reveals a conserved mechanism for animal nociception. Nat Neurosci.",
+   "authors": "Arenas OM, Zaharieva EE, Para A, Vásquez-Doorman C, Petersen CP, Gallio M.",
+   "year": "2017",
+   "title": "Activation of planarian TRPA1 by reactive oxygen species reveals a conserved mechanism for animal nociception",
+   "journal": "Nat Neurosci",
+   "doi": "10.1038/s41593-017-0005-0",
+   "pmid": "29184198",
+   "pmcid": "PMC5856474",
+   "licence": "no open licence; the PMC manuscript may be viewed and data-mined for academic research under the publisher's terms",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "beane2011",
+   "citation": "Beane WS, Morokuma J, Adams DS, Levin M. (2011) A chemical genetics approach reveals H,K-ATPase-mediated membrane voltage is required for planarian head regeneration. Chem Biol.",
+   "authors": "Beane WS, Morokuma J, Adams DS, Levin M.",
+   "year": "2011",
+   "title": "A chemical genetics approach reveals H,K-ATPase-mediated membrane voltage is required for planarian head regeneration",
+   "journal": "Chem Biol",
+   "doi": "10.1016/j.chembiol.2010.11.012",
+   "pmid": "21276941",
+   "pmcid": "PMC3278711",
+   "licence": "no licence stated; the author manuscript in PMC may be used for text mining and under fair use",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "beane2013",
+   "citation": "Beane WS, Morokuma J, Lemire JM, Levin M. (2013) Bioelectric signaling regulates head and organ size during planarian regeneration. Development.",
+   "authors": "Beane WS, Morokuma J, Lemire JM, Levin M.",
+   "year": "2013",
+   "title": "Bioelectric signaling regulates head and organ size during planarian regeneration",
+   "journal": "Development",
+   "doi": "10.1242/dev.086900",
+   "pmid": "23250205",
+   "pmcid": "PMC3597208",
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "beane2019",
+   "citation": "Beane WS, Adams DS, Morokuma J, Levin M. (2019) Live imaging of intracellular pH in planarians using the ratiometric fluorescent dye SNARF-5F-AM. Biol Methods Protoc.",
+   "authors": "Beane WS, Adams DS, Morokuma J, Levin M.",
+   "year": "2019",
+   "title": "Live imaging of intracellular pH in planarians using the ratiometric fluorescent dye SNARF-5F-AM",
+   "journal": "Biol Methods Protoc",
+   "doi": "10.1093/biomethods/bpz005",
+   "pmid": "31206034",
+   "pmcid": "PMC6541873",
+   "licence": "CC BY-NC",
+   "class": "non-commercial",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "benita2024",
+   "citation": "Benita O, Nesher N, Shomrat T. (2024) Neurophysiological measurements of planarian brain activity: a unique model for neuroscience research. Biol Open.",
+   "authors": "Benita O, Nesher N, Shomrat T.",
+   "year": "2024",
+   "title": "Neurophysiological measurements of planarian brain activity: a unique model for neuroscience research",
+   "journal": "Biol Open",
+   "doi": "10.1242/bio.060480",
+   "pmid": "38979914",
+   "pmcid": "PMC11391828",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "birkholz2017",
+   "citation": "Birkholz TR, Beane WS. (2017) The planarian TRPA1 homolog mediates extraocular behavioral responses to near-ultraviolet light. J Exp Biol.",
+   "authors": "Birkholz TR, Beane WS.",
+   "year": "2017",
+   "title": "The planarian TRPA1 homolog mediates extraocular behavioral responses to near-ultraviolet light",
+   "journal": "J Exp Biol",
+   "doi": "10.1242/jeb.152298",
+   "pmid": "28495872",
+   "pmcid": "PMC5536891",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "authors": "Blair KL, Anderson PAV.",
+   "year": "1993",
+   "title": "Properties of voltage-activated ionic currents in cells from the brains of the triclad flatworm Bdelloura candida",
+   "journal": "J Exp Biol 185:267-286",
+   "doi": "10.1242/jeb.185.1.267",
+   "pmid": null,
+   "pmcid": null,
+   "licence": "no open licence: the publisher's user licence (Crossref record)",
+   "class": "no stated terms",
+   "record": "Crossref",
+   "read": "abstract only",
+   "id": "blair1993",
+   "citation": "Blair KL, Anderson PAV. (1993) Properties of voltage-activated ionic currents in cells from the brains of the triclad flatworm Bdelloura candida. J Exp Biol 185:267-286."
+  },
+  {
+   "authors": "Blair KL, Anderson PAV.",
+   "year": "1994",
+   "title": "Physiological and pharmacological properties of muscle cells isolated from the flatworm Bdelloura candida (Tricladida)",
+   "journal": "Parasitology 109:325-335",
+   "doi": "10.1017/s0031182000078355",
+   "pmid": null,
+   "pmcid": null,
+   "licence": "no open licence: the publisher's terms (Crossref record)",
+   "class": "no stated terms",
+   "record": "Crossref",
+   "read": "abstract only",
+   "id": "blair1994",
+   "citation": "Blair KL, Anderson PAV. (1994) Physiological and pharmacological properties of muscle cells isolated from the flatworm Bdelloura candida (Tricladida). Parasitology 109:325-335."
+  },
+  {
+   "id": "blattner2026",
+   "citation": "Blattner M. (2026) Hidden regenerative state in planarians: A geometric model of bioelectric memory using Tangential Action Spaces. bioRxiv.",
+   "authors": "Blattner M.",
+   "year": "2026",
+   "title": "Hidden regenerative state in planarians: A geometric model of bioelectric memory using Tangential Action Spaces",
+   "journal": "bioRxiv",
+   "doi": "10.64898/2026.04.01.715890",
+   "pmid": null,
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "briner2018",
+   "citation": "Briner W. (2018) The Toxic Effect of Lanthanum on Planaria Is Mediated by a Variety of Ion Channels. Toxics.",
+   "authors": "Briner W.",
+   "year": "2018",
+   "title": "The Toxic Effect of Lanthanum on Planaria Is Mediated by a Variety of Ion Channels",
+   "journal": "Toxics",
+   "doi": "10.3390/toxics6020033",
+   "pmid": "29912145",
+   "pmcid": "PMC6027234",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "cervera2020",
+   "citation": "Cervera J, Meseguer S, Levin M, Mafe S. (2020) Bioelectrical model of head-tail patterning based on cell ion channels and intercellular gap junctions. Bioelectrochemistry.",
+   "authors": "Cervera J, Meseguer S, Levin M, Mafe S.",
+   "year": "2020",
+   "title": "Bioelectrical model of head-tail patterning based on cell ion channels and intercellular gap junctions",
+   "journal": "Bioelectrochemistry",
+   "doi": "10.1016/j.bioelechem.2019.107410",
+   "pmid": "31821903",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "cervera2023",
+   "citation": "Cervera J, Manzanares JA, Levin M, Mafe S. (2023) Transplantation of fragments from different planaria: A bioelectrical model for head regeneration. J Theor Biol.",
+   "authors": "Cervera J, Manzanares JA, Levin M, Mafe S.",
+   "year": "2023",
+   "title": "Transplantation of fragments from different planaria: A bioelectrical model for head regeneration",
+   "journal": "J Theor Biol",
+   "doi": "10.1016/j.jtbi.2022.111356",
+   "pmid": "36403806",
+   "pmcid": null,
+   "licence": "CC BY-NC-ND",
+   "class": "non-commercial",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "cervera2024",
+   "citation": "Cervera J, Levin M, Mafe S. (2024) Multicellular adaptation to electrophysiological perturbations analyzed by deterministic and stochastic bioelectrical models. Sci Rep.",
+   "authors": "Cervera J, Levin M, Mafe S.",
+   "year": "2024",
+   "title": "Multicellular adaptation to electrophysiological perturbations analyzed by deterministic and stochastic bioelectrical models",
+   "journal": "Sci Rep",
+   "doi": "10.1038/s41598-024-79087-7",
+   "pmid": "39528615",
+   "pmcid": "PMC11554804",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "chan2014",
+   "citation": "Chan JD, Agbedanu PN, Zamanian M, Gruba SM, Haynes CL, Day TA, Marchant JS. (2014) 'Death and axes': unexpected Ca²⁺ entry phenologs predict new anti-schistosomal agents. PLoS Pathog.",
+   "authors": "Chan JD, Agbedanu PN, Zamanian M, Gruba SM, Haynes CL, Day TA, Marchant JS.",
+   "year": "2014",
+   "title": "'Death and axes': unexpected Ca²⁺ entry phenologs predict new anti-schistosomal agents",
+   "journal": "PLoS Pathog",
+   "doi": "10.1371/journal.ppat.1003942",
+   "pmid": "24586156",
+   "pmcid": "PMC3930560",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "chan2016",
+   "citation": "Chan JD, Zhang D, Liu X, Zarowiecki MZ, Berriman M, Marchant JS. (2016) Dataset for a Dugesia japonica de novo transcriptome assembly, utilized for defining the voltage-gated like ion channel superfamily. Data Brief.",
+   "authors": "Chan JD, Zhang D, Liu X, Zarowiecki MZ, Berriman M, Marchant JS.",
+   "year": "2016",
+   "title": "Dataset for a Dugesia japonica de novo transcriptome assembly, utilized for defining the voltage-gated like ion channel superfamily",
+   "journal": "Data Brief",
+   "doi": "10.1016/j.dib.2016.11.022",
+   "pmid": "27909700",
+   "pmcid": "PMC5124351",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "chan2017",
+   "citation": "Chan JD, Zhang D, Liu X, Zarowiecki M, Berriman M, Marchant JS. (2017) Utilizing the planarian voltage-gated ion channel transcriptome to resolve a role for a Ca2+ channel in neuromuscular function and regeneration. Biochim Biophys Acta Mol Cell Res.",
+   "authors": "Chan JD, Zhang D, Liu X, Zarowiecki M, Berriman M, Marchant JS.",
+   "year": "2017",
+   "title": "Utilizing the planarian voltage-gated ion channel transcriptome to resolve a role for a Ca2+ channel in neuromuscular function and regeneration",
+   "journal": "Biochim Biophys Acta Mol Cell Res",
+   "doi": "10.1016/j.bbamcr.2016.10.010",
+   "pmid": "27771293",
+   "pmcid": "PMC5397384",
+   "licence": "no licence stated; the author manuscript in PMC may be used for text mining and under fair use",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "cobbett2003",
+   "citation": "Cobbett P, Day TA. (2003) Functional voltage-gated Ca2+ channels in muscle fibers of the platyhelminth Dugesia tigrina. Comp Biochem Physiol A Mol Integr Physiol.",
+   "authors": "Cobbett P, Day TA.",
+   "year": "2003",
+   "title": "Functional voltage-gated Ca2+ channels in muscle fibers of the platyhelminth Dugesia tigrina",
+   "journal": "Comp Biochem Physiol A Mol Integr Physiol",
+   "doi": "10.1016/s1095-6433(02)00350-1",
+   "pmid": "12600668",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "cortespoza2026",
+   "citation": "Cortés-Poza Y. (2026) A hybrid mathematical framework for morphogenesis and regeneration. J Math Biol.",
+   "authors": "Cortés-Poza Y.",
+   "year": "2026",
+   "title": "A hybrid mathematical framework for morphogenesis and regeneration",
+   "journal": "J Math Biol",
+   "doi": "10.1007/s00285-026-02459-2",
+   "pmid": "42671587",
+   "pmcid": "PMC13529881",
+   "licence": "CC BY-NC-ND",
+   "class": "non-commercial",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "cowles2014",
+   "citation": "Cowles MW, Omuro KC, Stanley BN, Quintanilla CG, Zayas RM. (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet.",
+   "authors": "Cowles MW, Omuro KC, Stanley BN, Quintanilla CG, Zayas RM.",
+   "year": "2014",
+   "title": "COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians",
+   "journal": "PLoS Genet",
+   "doi": "10.1371/journal.pgen.1004746",
+   "pmid": "25356635",
+   "pmcid": "PMC4214590",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "curry2025",
+   "citation": "Curry HN, Huynh R, Rouhana L. (2025) Melastatin family Transient Receptor Potential channels support spermatogenesis in planarian flatworms. Int J Dev Biol.",
+   "authors": "Curry HN, Huynh R, Rouhana L.",
+   "year": "2025",
+   "title": "Melastatin family Transient Receptor Potential channels support spermatogenesis in planarian flatworms",
+   "journal": "Int J Dev Biol",
+   "doi": "10.1387/ijdb.240180lr",
+   "pmid": "40298872",
+   "pmcid": "PMC12421698",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "davidian2021",
+   "citation": "Davidian D, Ziman B, Escobar AL, Oviedo NJ. (2021) Direct Current Electric Stimulation Alters the Frequency and the Distribution of Mitotic Cells in Planarians. Bioelectricity.",
+   "authors": "Davidian D, Ziman B, Escobar AL, Oviedo NJ.",
+   "year": "2021",
+   "title": "Direct Current Electric Stimulation Alters the Frequency and the Distribution of Mitotic Cells in Planarians",
+   "journal": "Bioelectricity",
+   "doi": "10.1089/bioe.2020.0026",
+   "pmid": "34476379",
+   "pmcid": "PMC8370485",
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "davidian2022",
+   "citation": "Davidian D, LeGro M, Barghouth PG, Rojas S, Ziman B, Maciel EI, Ardell D, Escobar AL, Oviedo NJ. (2022) Restoration of DNA integrity and the cell cycle by electric stimulation in planarian tissues damaged by ionizing radiation. J Cell Sci.",
+   "authors": "Davidian D, LeGro M, Barghouth PG, Rojas S, Ziman B, Maciel EI, Ardell D, Escobar AL, Oviedo NJ.",
+   "year": "2022",
+   "title": "Restoration of DNA integrity and the cell cycle by electric stimulation in planarian tissues damaged by ionizing radiation",
+   "journal": "J Cell Sci",
+   "doi": "10.1242/jcs.259304",
+   "pmid": "35322853",
+   "pmcid": "PMC9264365",
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "day2000",
+   "citation": "Day TA, Haithcock J, Kimber M, Maule AG. (2000) Functional ryanodine receptor channels in flatworm muscle fibres. Parasitology.",
+   "authors": "Day TA, Haithcock J, Kimber M, Maule AG.",
+   "year": "2000",
+   "title": "Functional ryanodine receptor channels in flatworm muscle fibres",
+   "journal": "Parasitology",
+   "doi": "10.1017/s0031182099005594",
+   "pmid": "10811283",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "dimmitt1952",
+   "citation": "DIMMITT J, MARSH G. (1952) Electrical control of morphogenesis in regenerating Dugesia tigrina. II. Potential gradient vs. current density as control factors. J Cell Comp Physiol.",
+   "authors": "DIMMITT J, MARSH G.",
+   "year": "1952",
+   "title": "Electrical control of morphogenesis in regenerating Dugesia tigrina. II. Potential gradient vs. current density as control factors",
+   "journal": "J Cell Comp Physiol",
+   "doi": "10.1002/jcp.1030400103",
+   "pmid": "12981131",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "record only"
+  },
+  {
+   "id": "durant2017",
+   "citation": "Durant F, Morokuma J, Fields C, Williams K, Adams DS, Levin M. (2017) Long-Term, Stochastic Editing of Regenerative Anatomy via Targeting Endogenous Bioelectric Gradients. Biophys J.",
+   "authors": "Durant F, Morokuma J, Fields C, Williams K, Adams DS, Levin M.",
+   "year": "2017",
+   "title": "Long-Term, Stochastic Editing of Regenerative Anatomy via Targeting Endogenous Bioelectric Gradients",
+   "journal": "Biophys J",
+   "doi": "10.1016/j.bpj.2017.04.011",
+   "pmid": "28538159",
+   "pmcid": "PMC5443973",
+   "licence": "CC BY-NC-ND",
+   "class": "non-commercial",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "durant2019",
+   "citation": "Durant F, Bischof J, Fields C, Morokuma J, LaPalme J, Hoi A, Levin M. (2019) The Role of Early Bioelectric Signals in the Regeneration of Planarian Anterior/Posterior Polarity. Biophys J.",
+   "authors": "Durant F, Bischof J, Fields C, Morokuma J, LaPalme J, Hoi A, Levin M.",
+   "year": "2019",
+   "title": "The Role of Early Bioelectric Signals in the Regeneration of Planarian Anterior/Posterior Polarity",
+   "journal": "Biophys J",
+   "doi": "10.1016/j.bpj.2019.01.029",
+   "pmid": "30799071",
+   "pmcid": "PMC6401388",
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "emmonsbell2015",
+   "citation": "Emmons-Bell M, Durant F, Hammelman J, Bessonov N, Volpert V, Morokuma J, Pinet K, Adams DS, Pietak A, Lobo D, Levin M. (2015) Gap Junctional Blockade Stochastically Induces Different Species-Specific Head Anatomies in Genetically Wild-Type Girardia dorotocephala Flatworms. Int J Mol Sci.",
+   "authors": "Emmons-Bell M, Durant F, Hammelman J, Bessonov N, Volpert V, Morokuma J, Pinet K, Adams DS, Pietak A, Lobo D, Levin M.",
+   "year": "2015",
+   "title": "Gap Junctional Blockade Stochastically Induces Different Species-Specific Head Anatomies in Genetically Wild-Type Girardia dorotocephala Flatworms",
+   "journal": "Int J Mol Sci",
+   "doi": "10.3390/ijms161126065",
+   "pmid": "26610482",
+   "pmcid": "PMC4661923",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "emmonsbell2019",
+   "citation": "Emmons-Bell M, Durant F, Tung A, Pietak A, Miller K, Kane A, Martyniuk CJ, Davidian D, Morokuma J, Levin M. (2019) Regenerative Adaptation to Electrochemical Perturbation in Planaria: A Molecular Analysis of Physiological Plasticity. iScience.",
+   "authors": "Emmons-Bell M, Durant F, Tung A, Pietak A, Miller K, Kane A, Martyniuk CJ, Davidian D, Morokuma J, Levin M.",
+   "year": "2019",
+   "title": "Regenerative Adaptation to Electrochemical Perturbation in Planaria: A Molecular Analysis of Physiological Plasticity",
+   "journal": "iScience",
+   "doi": "10.1016/j.isci.2019.11.014",
+   "pmid": "31765995",
+   "pmcid": "PMC6881696",
+   "licence": "CC BY-NC-ND",
+   "class": "non-commercial",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "ferenc2019",
+   "citation": "Ferenc NN, Levin M. (2019) Effects of Ivermectin Exposure on Regeneration of D. dorotocephala Planaria: Exploiting Human-Approved Ion Channel Drugs as Morphoceuticals. Macromol Biosci.",
+   "authors": "Ferenc NN, Levin M.",
+   "year": "2019",
+   "title": "Effects of Ivermectin Exposure on Regeneration of D. dorotocephala Planaria: Exploiting Human-Approved Ion Channel Drugs as Morphoceuticals",
+   "journal": "Macromol Biosci",
+   "doi": "10.1002/mabi.201800237",
+   "pmid": "30485697",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "fincher2018",
+   "citation": "Fincher CT, Wurtzel O, de Hoog T, Kravarik KM, Reddien PW. (2018) Cell type transcriptome atlas for the planarian Schmidtea mediterranea. Science.",
+   "authors": "Fincher CT, Wurtzel O, de Hoog T, Kravarik KM, Reddien PW.",
+   "year": "2018",
+   "title": "Cell type transcriptome atlas for the planarian Schmidtea mediterranea",
+   "journal": "Science",
+   "doi": "10.1126/science.aaq1736",
+   "pmid": "29674431",
+   "pmcid": "PMC6563842",
+   "licence": "no licence stated; the author manuscript in PMC may be used for text mining and under fair use",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "freiberg2023",
+   "citation": "Freiberg J, Lang L, Kaernbach C, Keil J. (2023) Characterization of the planarian surface electroencephalogram. BMC Neurosci.",
+   "authors": "Freiberg J, Lang L, Kaernbach C, Keil J.",
+   "year": "2023",
+   "title": "Characterization of the planarian surface electroencephalogram",
+   "journal": "BMC Neurosci",
+   "doi": "10.1186/s12868-023-00799-z",
+   "pmid": "37138236",
+   "pmcid": "PMC10157967",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "grodstein2022",
+   "citation": "Grodstein J, Levin M. (2022) A Computational Approach to Explaining Bioelectrically Induced Persistent, Stochastic Changes of Axial Polarity in Planarian Regeneration. Bioelectricity.",
+   "authors": "Grodstein J, Levin M.",
+   "year": "2022",
+   "title": "A Computational Approach to Explaining Bioelectrically Induced Persistent, Stochastic Changes of Axial Polarity in Planarian Regeneration",
+   "journal": "Bioelectricity",
+   "doi": "10.1089/bioe.2021.0036",
+   "pmid": "39372228",
+   "pmcid": "PMC11450330",
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "inoue2014",
+   "citation": "Inoue T, Yamashita T, Agata K. (2014) Thermosensory signaling by TRPM is processed by brain serotonergic neurons to produce planarian thermotaxis. J Neurosci.",
+   "authors": "Inoue T, Yamashita T, Agata K.",
+   "year": "2014",
+   "title": "Thermosensory signaling by TRPM is processed by brain serotonergic neurons to produce planarian thermotaxis",
+   "journal": "J Neurosci",
+   "doi": "10.1523/jneurosci.5379-13.2014",
+   "pmid": "25411498",
+   "pmcid": "PMC6608440",
+   "licence": "CC BY-NC-SA",
+   "class": "non-commercial",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "jeziorski1997",
+   "citation": "Jeziorski MC, Greenberg RM, Anderson PA. (1997) Cloning of a putative voltage-gated sodium channel from the turbellarian flatworm Bdelloura candida. Parasitology.",
+   "authors": "Jeziorski MC, Greenberg RM, Anderson PA.",
+   "year": "1997",
+   "title": "Cloning of a putative voltage-gated sodium channel from the turbellarian flatworm Bdelloura candida",
+   "journal": "Parasitology",
+   "doi": "10.1017/s0031182097001388",
+   "pmid": "9300466",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "kapsetaki2026",
+   "citation": "Kapsetaki SE, Landsberger T, Levin M. (2026) Transcriptional Profiling of Planarian Regeneration Habituating to Physiological Stressor Reveals Individual and Collective Dynamics. bioRxiv.",
+   "authors": "Kapsetaki SE, Landsberger T, Levin M.",
+   "year": "2026",
+   "title": "Transcriptional Profiling of Planarian Regeneration Habituating to Physiological Stressor Reveals Individual and Collective Dynamics",
+   "journal": "bioRxiv",
+   "doi": "10.64898/2026.07.28.741268",
+   "pmid": null,
+   "pmcid": null,
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "kumagai2025",
+   "citation": "Kumagai N, Kuroda M, Hanai T, Fujita M, Hino T, Yorimoto S, Manta S, Nakagawa S, Yokoyama M, Tajima L, Ito R, Yamada H, Miura K, Kashima M, Yamaguchi K, Shigenobu S, Furukawa R, Sekii K, Kobayashi K. (2025) Identification of an innexin required for termination of the asexual state in planarian reproductive switching. PLoS Genet.",
+   "authors": "Kumagai N, Kuroda M, Hanai T, Fujita M, Hino T, Yorimoto S, Manta S, Nakagawa S, Yokoyama M, Tajima L, Ito R, Yamada H, Miura K, Kashima M, Yamaguchi K, Shigenobu S, Furukawa R, Sekii K, Kobayashi K.",
+   "year": "2025",
+   "title": "Identification of an innexin required for termination of the asexual state in planarian reproductive switching",
+   "journal": "PLoS Genet",
+   "doi": "10.1371/journal.pgen.1011944",
+   "pmid": "41252438",
+   "pmcid": "PMC12654950",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "lange1978",
+   "citation": "Lange CS, Steele VE. (1978) The mechanism of anterior-posterior polarity control in planarians. Differentiation.",
+   "authors": "Lange CS, Steele VE.",
+   "year": "1978",
+   "title": "The mechanism of anterior-posterior polarity control in planarians",
+   "journal": "Differentiation",
+   "doi": "10.1111/j.1432-0436.1978.tb00965.x",
+   "pmid": "680426",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "marsh1952",
+   "citation": "MARSH G, BEAMS HW. (1952) Electrical control of morphogenesis in regenerating Dugesia tigrina. I. Relation of axial polarity to field strength. J Cell Comp Physiol.",
+   "authors": "MARSH G, BEAMS HW.",
+   "year": "1952",
+   "title": "Electrical control of morphogenesis in regenerating Dugesia tigrina. I. Relation of axial polarity to field strength",
+   "journal": "J Cell Comp Physiol",
+   "doi": "10.1002/jcp.1030390203",
+   "pmid": "14946235",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "record only"
+  },
+  {
+   "id": "martisolans2023",
+   "citation": "Martí-Solans J, Børve A, Bump P, Hejnol A, Lynagh T. (2023) Peripheral and central employment of acid-sensing ion channels during early bilaterian evolution. Elife.",
+   "authors": "Martí-Solans J, Børve A, Bump P, Hejnol A, Lynagh T.",
+   "year": "2023",
+   "title": "Peripheral and central employment of acid-sensing ion channels during early bilaterian evolution",
+   "journal": "Elife",
+   "doi": "10.7554/elife.81613",
+   "pmid": "36821351",
+   "pmcid": "PMC9949801",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "molano2023",
+   "citation": "Molano A. (2023) Rapid Peripheral Disintegration of Planaria in the Presence of Barium. preprint.",
+   "authors": "Molano A.",
+   "year": "2023",
+   "title": "Rapid Peripheral Disintegration of Planaria in the Presence of Barium",
+   "journal": "preprint",
+   "doi": "10.1101/2023.04.29.538822",
+   "pmid": null,
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "morana2025",
+   "citation": "Morana R, Darbon B, Herrmann L, Menger Y, Reho G, Cadiou H. (2025) Cinnamaldehyde induces a TRPA1-mediated nociceptive behavior in planarians. Neurosci Lett.",
+   "authors": "Morana R, Darbon B, Herrmann L, Menger Y, Reho G, Cadiou H.",
+   "year": "2025",
+   "title": "Cinnamaldehyde induces a TRPA1-mediated nociceptive behavior in planarians",
+   "journal": "Neurosci Lett",
+   "doi": "10.1016/j.neulet.2024.138041",
+   "pmid": "39549829",
+   "pmcid": null,
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "nogi2005lr",
+   "citation": "Nogi T, Yuan YE, Sorocco D, Perez-Tomas R, Levin M. (2005) Eye regeneration assay reveals an invariant functional left-right asymmetry in the early bilaterian, Dugesia japonica. Laterality.",
+   "authors": "Nogi T, Yuan YE, Sorocco D, Perez-Tomas R, Levin M.",
+   "year": "2005",
+   "title": "Eye regeneration assay reveals an invariant functional left-right asymmetry in the early bilaterian, Dugesia japonica",
+   "journal": "Laterality",
+   "doi": "10.1080/1357650054200001440",
+   "pmid": "16028337",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "nogi2009",
+   "citation": "Nogi T, Zhang D, Chan JD, Marchant JS. (2009) A novel biological activity of praziquantel requiring voltage-operated Ca2+ channel beta subunits: subversion of flatworm regenerative polarity. PLoS Negl Trop Dis.",
+   "authors": "Nogi T, Zhang D, Chan JD, Marchant JS.",
+   "year": "2009",
+   "title": "A novel biological activity of praziquantel requiring voltage-operated Ca2+ channel beta subunits: subversion of flatworm regenerative polarity",
+   "journal": "PLoS Negl Trop Dis",
+   "doi": "10.1371/journal.pntd.0000464",
+   "pmid": "19554083",
+   "pmcid": "PMC2694594",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "nogilevin2005",
+   "citation": "Nogi T, Levin M. (2005) Characterization of innexin gene expression and functional roles of gap-junctional communication in planarian regeneration. Dev Biol.",
+   "authors": "Nogi T, Levin M.",
+   "year": "2005",
+   "title": "Characterization of innexin gene expression and functional roles of gap-junctional communication in planarian regeneration",
+   "journal": "Dev Biol",
+   "doi": "10.1016/j.ydbio.2005.09.002",
+   "pmid": "16243308",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "oviedo2008",
+   "citation": "Oviedo NJ, Nicolas CL, Adams DS, Levin M. (2008) Live Imaging of Planarian Membrane Potential Using DiBAC4(3). CSH Protoc.",
+   "authors": "Oviedo NJ, Nicolas CL, Adams DS, Levin M.",
+   "year": "2008",
+   "title": "Live Imaging of Planarian Membrane Potential Using DiBAC4(3)",
+   "journal": "CSH Protoc",
+   "doi": "10.1101/pdb.prot5055",
+   "pmid": "21356693",
+   "pmcid": "PMC10468776",
+   "licence": "no licence stated; the author manuscript in PMC may be used for text mining and under fair use",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "oviedo2010",
+   "citation": "Oviedo NJ, Morokuma J, Walentek P, Kema IP, Gu MB, Ahn JM, Hwang JS, Gojobori T, Levin M. (2010) Long-range neural and gap junction protein-mediated cues control polarity during planarian regeneration. Dev Biol.",
+   "authors": "Oviedo NJ, Morokuma J, Walentek P, Kema IP, Gu MB, Ahn JM, Hwang JS, Gojobori T, Levin M.",
+   "year": "2010",
+   "title": "Long-range neural and gap junction protein-mediated cues control polarity during planarian regeneration",
+   "journal": "Dev Biol",
+   "doi": "10.1016/j.ydbio.2009.12.012",
+   "pmid": "20026026",
+   "pmcid": "PMC2823934",
+   "licence": "no licence stated; the author manuscript in PMC may be used for text mining and under fair use",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "oviedolevin2007",
+   "citation": "Oviedo NJ, Levin M. (2007) smedinx-11 is a planarian stem cell gap junction gene required for regeneration and homeostasis. Development.",
+   "authors": "Oviedo NJ, Levin M.",
+   "year": "2007",
+   "title": "smedinx-11 is a planarian stem cell gap junction gene required for regeneration and homeostasis",
+   "journal": "Development",
+   "doi": "10.1242/dev.006635",
+   "pmid": "17670787",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "pezzulo2021",
+   "citation": "Pezzulo G, LaPalme J, Durant F, Levin M. (2021) Bistability of somatic pattern memories: stochastic outcomes in bioelectric circuits underlying regeneration. Philos Trans R Soc Lond B Biol Sci.",
+   "authors": "Pezzulo G, LaPalme J, Durant F, Levin M.",
+   "year": "2021",
+   "title": "Bistability of somatic pattern memories: stochastic outcomes in bioelectric circuits underlying regeneration",
+   "journal": "Philos Trans R Soc Lond B Biol Sci",
+   "doi": "10.1098/rstb.2019.0765",
+   "pmid": "33550952",
+   "pmcid": "PMC7935058",
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "pietak2016",
+   "citation": "Pietak A, Levin M. (2016) Exploring Instructive Physiological Signaling with the Bioelectric Tissue Simulation Engine. Front Bioeng Biotechnol.",
+   "authors": "Pietak A, Levin M.",
+   "year": "2016",
+   "title": "Exploring Instructive Physiological Signaling with the Bioelectric Tissue Simulation Engine",
+   "journal": "Front Bioeng Biotechnol",
+   "doi": "10.3389/fbioe.2016.00055",
+   "pmid": "27458581",
+   "pmcid": "PMC4933718",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "pietak2017",
+   "citation": "Pietak A, Levin M. (2017) Bioelectric gene and reaction networks: computational modelling of genetic, biochemical and bioelectrical dynamics in pattern regulation. J R Soc Interface.",
+   "authors": "Pietak A, Levin M.",
+   "year": "2017",
+   "title": "Bioelectric gene and reaction networks: computational modelling of genetic, biochemical and bioelectrical dynamics in pattern regulation",
+   "journal": "J R Soc Interface",
+   "doi": "10.1098/rsif.2017.0425",
+   "pmid": "28954851",
+   "pmcid": "PMC5636277",
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "pietak2019",
+   "citation": "Pietak A, Bischof J, LaPalme J, Morokuma J, Levin M. (2019) Neural control of body-plan axis in regenerating planaria. PLoS Comput Biol.",
+   "authors": "Pietak A, Bischof J, LaPalme J, Morokuma J, Levin M.",
+   "year": "2019",
+   "title": "Neural control of body-plan axis in regenerating planaria",
+   "journal": "PLoS Comput Biol",
+   "doi": "10.1371/journal.pcbi.1006904",
+   "pmid": "30990801",
+   "pmcid": "PMC6485777",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "plass2018",
+   "citation": "Plass M, Solana J, Wolf FA, Ayoub S, Misios A, Glažar P, Obermayer B, Theis FJ, Kocks C, Rajewsky N. (2018) Cell type atlas and lineage tree of a whole complex animal by single-cell transcriptomics. Science.",
+   "authors": "Plass M, Solana J, Wolf FA, Ayoub S, Misios A, Glažar P, Obermayer B, Theis FJ, Kocks C, Rajewsky N.",
+   "year": "2018",
+   "title": "Cell type atlas and lineage tree of a whole complex animal by single-cell transcriptomics",
+   "journal": "Science",
+   "doi": "10.1126/science.aaq1723",
+   "pmid": "29674432",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "rg2016",
+   "citation": "Roberts-Galbraith RH, Brubacher JL, Newmark PA. (2016) A functional genomics screen in planarians reveals regulators of whole-brain regeneration. Elife.",
+   "authors": "Roberts-Galbraith RH, Brubacher JL, Newmark PA.",
+   "year": "2016",
+   "title": "A functional genomics screen in planarians reveals regulators of whole-brain regeneration",
+   "journal": "Elife",
+   "doi": "10.7554/elife.17002",
+   "pmid": "27612384",
+   "pmcid": "PMC5055394",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "ross2024",
+   "citation": "Ross KG, Alvarez Zepeda S, Auwal MA, Garces AK, Roman S, Zayas RM. (2024) The Role of Polycystic Kidney Disease-Like Homologs in Planarian Nervous System Regeneration and Function. Integr Org Biol.",
+   "authors": "Ross KG, Alvarez Zepeda S, Auwal MA, Garces AK, Roman S, Zayas RM.",
+   "year": "2024",
+   "title": "The Role of Polycystic Kidney Disease-Like Homologs in Planarian Nervous System Regeneration and Function",
+   "journal": "Integr Org Biol",
+   "doi": "10.1093/iob/obae035",
+   "pmid": "39364443",
+   "pmcid": "PMC11448475",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "sabry2019",
+   "citation": "Sabry Z, Ho A, Ireland D, Rabeler C, Cochet-Escartin O, Collins ES. (2019) Pharmacological or genetic targeting of Transient Receptor Potential (TRP) channels can disrupt the planarian escape response. PLoS One.",
+   "authors": "Sabry Z, Ho A, Ireland D, Rabeler C, Cochet-Escartin O, Collins ES.",
+   "year": "2019",
+   "title": "Pharmacological or genetic targeting of Transient Receptor Potential (TRP) channels can disrupt the planarian escape response",
+   "journal": "PLoS One",
+   "doi": "10.1371/journal.pone.0226104",
+   "pmid": "31805147",
+   "pmcid": "PMC6894859",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "sabry2022",
+   "citation": "Sabry Z, Wang R, Jahromi A, Rabeler C, Kristan WB, Collins ES. (2022) Head removal enhances planarian electrotaxis. J Exp Biol.",
+   "authors": "Sabry Z, Wang R, Jahromi A, Rabeler C, Kristan WB, Collins ES.",
+   "year": "2022",
+   "title": "Head removal enhances planarian electrotaxis",
+   "journal": "J Exp Biol",
+   "doi": "10.1242/jeb.243972",
+   "pmid": "35924486",
+   "pmcid": "PMC9482365",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "vu2015",
+   "citation": "Thi-Kim Vu H, Rink JC, McKinney SA, McClain M, Lakshmanaperumal N, Alexander R, Sánchez Alvarado A. (2015) Stem cells and fluid flow drive cyst formation in an invertebrate excretory organ. Elife.",
+   "authors": "Thi-Kim Vu H, Rink JC, McKinney SA, McClain M, Lakshmanaperumal N, Alexander R, Sánchez Alvarado A.",
+   "year": "2015",
+   "title": "Stem cells and fluid flow drive cyst formation in an invertebrate excretory organ",
+   "journal": "Elife",
+   "doi": "10.7554/elife.07405",
+   "pmid": "26057828",
+   "pmcid": "PMC4500094",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "weihrauch2012",
+   "citation": "Weihrauch D, Chan AC, Meyer H, Döring C, Sourial M, O'Donnell MJ. (2012) Ammonia excretion in the freshwater planarian Schmidtea mediterranea. J Exp Biol.",
+   "authors": "Weihrauch D, Chan AC, Meyer H, Döring C, Sourial M, O'Donnell MJ.",
+   "year": "2012",
+   "title": "Ammonia excretion in the freshwater planarian Schmidtea mediterranea",
+   "journal": "J Exp Biol",
+   "doi": "10.1242/jeb.067942",
+   "pmid": "22660782",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "wheeler2015",
+   "citation": "Wheeler NJ, Agbedanu PN, Kimber MJ, Ribeiro P, Day TA, Zamanian M. (2015) Functional analysis of Girardia tigrina transcriptome seeds pipeline for anthelmintic target discovery. Parasit Vectors.",
+   "authors": "Wheeler NJ, Agbedanu PN, Kimber MJ, Ribeiro P, Day TA, Zamanian M.",
+   "year": "2015",
+   "title": "Functional analysis of Girardia tigrina transcriptome seeds pipeline for anthelmintic target discovery",
+   "journal": "Parasit Vectors",
+   "doi": "10.1186/s13071-014-0622-3",
+   "pmid": "25600302",
+   "pmcid": "PMC4304616",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  },
+  {
+   "id": "zhang2011",
+   "citation": "Zhang D, Chan JD, Nogi T, Marchant JS. (2011) Opposing roles of voltage-gated Ca2+ channels in neuronal control of regenerative patterning. J Neurosci.",
+   "authors": "Zhang D, Chan JD, Nogi T, Marchant JS.",
+   "year": "2011",
+   "title": "Opposing roles of voltage-gated Ca2+ channels in neuronal control of regenerative patterning",
+   "journal": "J Neurosci",
+   "doi": "10.1523/jneurosci.3029-11.2011",
+   "pmid": "22049441",
+   "pmcid": "PMC3380623",
+   "licence": "CC BY-NC-SA",
+   "class": "non-commercial",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "zhang2013",
+   "citation": "Zhang D, Liu X, Chan JD, Marchant JS. (2013) Characterization of a flatworm inositol (1,4,5) trisphosphate receptor (IP₃R) reveals a role in reproductive physiology. Cell Calcium.",
+   "authors": "Zhang D, Liu X, Chan JD, Marchant JS.",
+   "year": "2013",
+   "title": "Characterization of a flatworm inositol (1,4,5) trisphosphate receptor (IP₃R) reveals a role in reproductive physiology",
+   "journal": "Cell Calcium",
+   "doi": "10.1016/j.ceca.2013.01.003",
+   "pmid": "23481272",
+   "pmcid": "PMC3665645",
+   "licence": "no licence stated; the author manuscript in PMC may be used for text mining and under fair use",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "full text searched"
+  }
+ ],
+ "records": [
+  {
+   "id": "hk-block-head",
+   "papers": [
+    "beane2011"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "GI, asexual clonal"
+    }
+   ],
+   "families": [
+    "hk_pump",
+    "cl",
+    "tissue"
+   ],
+   "kinds": [
+    "drug outcome",
+    "voltage-dye imaging"
+   ],
+   "measured": "Which end regenerates a head when the proton-potassium pump is blocked with SCH-28080, or when voltage is shifted with ivermectin; relative membrane voltage of fragments",
+   "how": "Drug exposure of cut fragments; marker genes; the dye DiBAC4(3) imaged on cut fragments",
+   "values": "Counts of outcomes; dye fluorescence as relative voltage, not millivolts. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "The text says the original images are available on request"
+   },
+   "sequences": [],
+   "genes": [
+    {
+     "name": "non-gastric H,K-ATPase alpha subunit",
+     "species": "Dugesia japonica",
+     "accession": null,
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only",
+     "note": "The paper says one such subunit was identified in this species and that the species' genome had not been sequenced"
+    }
+   ],
+   "could_test": "voltage shift and head-or-tail outcome after a pump is blocked"
+  },
+  {
+   "id": "hk-rnai-size",
+   "papers": [
+    "beane2013"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "hk_pump"
+   ],
+   "kinds": [
+    "knockdown outcome",
+    "voltage-dye imaging"
+   ],
+   "measured": "Head size and organ proportions after RNAi of the proton-potassium pump; the abstract reports membrane hyperpolarisation and missing apoptosis",
+   "how": "RNAi; how voltage was read is not in the abstract",
+   "values": "Outcome counts and sizes; the voltage change is reported as a direction. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "measured_exact",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [
+    {
+     "accession": "JX174182",
+     "what": "Schmidtea mediterranea non-gastric H+,K+-ATPase alpha subunit (ATP12A) mRNA",
+     "verified": "GenBank record seen",
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
+    }
+   ],
+   "genes": [
+    {
+     "name": "ATP12A (non-gastric H+,K+-ATPase alpha subunit)",
+     "species": "Schmidtea mediterranea",
+     "accession": "JX174182",
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "M4LUP7"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0015880"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    }
+   ],
+   "could_test": "organ proportions after a pump's knockdown",
+   "note": "The abstract names no species; the paper's PMC record and its sequence record name Schmidtea mediterranea"
+  },
+  {
+   "id": "hk-eye-asymmetry",
+   "papers": [
+    "nogi2005lr"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "hk_pump"
+   ],
+   "kinds": [
+    "drug outcome",
+    "expression map"
+   ],
+   "measured": "Left-right bias of eye defects when H+/K+-ATPase activity is inhibited; a non-gastric H+/K+-ATPase alpha transcript seen in the head blastema",
+   "how": "Inhibitor exposure; in situ hybridisation",
+   "values": "Outcome counts; an expression pattern. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "where a pump's transcript is found after amputation"
+  },
+  {
+   "id": "dibac-protocol",
+   "papers": [
+    "oviedo2008"
+   ],
+   "species": [
+    {
+     "name": "planarians; the text searched names no species",
+     "strain": null
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "voltage-dye imaging"
+   ],
+   "measured": "A protocol for imaging membrane potential in live planarians with DiBAC4(3)",
+   "how": "By the abstract, the images show variations in time-averaged membrane potential qualitatively, and standard electrophysiology cannot be used on a whole worm, whose cells are small and many",
+   "values": "Relative fluorescence, not millivolts. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "method",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "A protocol"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "what a relative voltage image can and cannot be compared with"
+  },
+  {
+   "id": "ph-protocol",
+   "papers": [
+    "beane2019"
+   ],
+   "species": [
+    {
+     "name": "planarians; the text names Schmidtea mediterranea and Dugesia japonica once each",
+     "strain": null
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "pH imaging"
+   ],
+   "measured": "A protocol for imaging intracellular pH gradients in living planarians with the ratiometric dye SNARF-5F-AM",
+   "how": "Ratiometric dye imaging of intact and regenerating worms",
+   "values": "Ratio images. The values are in the paper, which is under a non-commercial licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "method",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "A protocol"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "pH gradients along the body"
+  },
+  {
+   "id": "octanol-two-heads",
+   "papers": [
+    "durant2017"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "innexin",
+    "tissue"
+   ],
+   "kinds": [
+    "drug outcome",
+    "voltage-dye imaging"
+   ],
+   "measured": "The share of trunk fragments that regenerate two heads after brief exposure to the gap-junction blocker octanol, in that round and in later cuts in plain water; relative voltage patterns",
+   "how": "Octanol exposure; DiBAC4(3) imaging, with the dye's response rechecked against a valinomycin and potassium depolarising solution",
+   "values": "Outcome ratios; dye fluorescence as relative voltage, not millivolts. The values are in the paper, which is under a non-commercial licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "The text says the original images are available on request"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "a stable two-outcome ratio that persists through later regeneration"
+  },
+  {
+   "id": "early-depolarisation",
+   "papers": [
+    "durant2019"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "drug outcome"
+   ],
+   "measured": "Double-headed regeneration and altered gene expression after the wound is depolarised with ionophores early in regeneration",
+   "how": "Ionophore exposure and washout; gene expression",
+   "values": "Outcome counts; expression changes. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "an early voltage change and the later head-or-tail outcome",
+   "note": "The abstract names no species; Europe PMC's text-mined organisms for the full text name Dugesia japonica"
+  },
+  {
+   "id": "octanol-head-shape",
+   "papers": [
+    "emmonsbell2015"
+   ],
+   "species": [
+    {
+     "name": "Girardia dorotocephala",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "innexin",
+    "tissue"
+   ],
+   "kinds": [
+    "drug outcome",
+    "voltage-dye imaging",
+    "model"
+   ],
+   "measured": "Head shapes regenerated after octanol, some resembling other species; relative voltage patterns; an agent-based model",
+   "how": "Octanol exposure; morphometrics; DiBAC imaging",
+   "values": "Shape measures; relative voltage",
+   "values_from": [
+    "emmonsbell2015"
+   ],
+   "evidence_category": "related_strain",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "No deposit is named in the passages read"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "shape outcomes after coupling is blocked"
+  },
+  {
+   "id": "barium-adaptation",
+   "papers": [
+    "emmonsbell2019"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "k_other",
+    "kv",
+    "cl",
+    "cav",
+    "trp"
+   ],
+   "kinds": [
+    "drug outcome",
+    "sequencing dataset"
+   ],
+   "measured": "Head degeneration in barium chloride and regeneration of barium-insensitive heads; transcript changes; effects of chloride-channel, calcium-channel and TRPM blockers",
+   "how": "Drug exposure; RNA sequencing of heads",
+   "values": "Outcome counts; transcript fold changes. The values are in the paper, which is under a non-commercial licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "No accession for the RNA-seq data is given in the text; it says that no assay is yet available in planaria to observe directly what all the reagents used do"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "adaptation of a tissue to a potassium-channel blocker"
+  },
+  {
+   "id": "barium-single-worm",
+   "papers": [
+    "kapsetaki2026"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "k_other"
+   ],
+   "kinds": [
+    "drug outcome",
+    "sequencing dataset"
+   ],
+   "measured": "Transcript profiles of individual worms adapting to barium chloride",
+   "how": "RNA sequencing of single animals",
+   "values": "Transcript changes",
+   "values_from": [
+    "kapsetaki2026"
+   ],
+   "evidence_category": "related_strain",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "variation between animals in the same adaptation",
+   "note": "A preprint"
+  },
+  {
+   "id": "barium-girardia",
+   "papers": [
+    "molano2023"
+   ],
+   "species": [
+    {
+     "name": "Girardia species, collected from a stream",
+     "strain": "wild"
+    }
+   ],
+   "families": [
+    "k_other"
+   ],
+   "kinds": [
+    "drug outcome"
+   ],
+   "measured": "Rapid peripheral disintegration in barium chloride, unlike the slow head loss reported in Dugesia japonica",
+   "how": "Drug exposure",
+   "values": "Outcome and time. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "how far one species' drug response carries to another",
+   "note": "A preprint"
+  },
+  {
+   "id": "innexin-family-dj",
+   "papers": [
+    "nogilevin2005"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "innexin"
+   ],
+   "kinds": [
+    "sequence",
+    "expression map",
+    "drug outcome"
+   ],
+   "measured": "The innexin gene family cloned, its expression during regeneration, which falls into groups, and polarity changes after a gap-junction blocker",
+   "how": "Cloning; in situ hybridisation; blocker exposure",
+   "values": "Sequences; expression patterns; outcome counts. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [
+    {
+     "accession": "AB189253",
+     "what": "Dugesia japonica inx3 mRNA",
+     "verified": "GenBank record seen",
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
+    },
+    {
+     "accession": "AB189256",
+     "what": "Dugesia japonica inx7 mRNA",
+     "verified": "GenBank record seen",
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
+    }
+   ],
+   "genes": [
+    {
+     "name": "inx3",
+     "species": "Dugesia japonica",
+     "accession": "AB189253",
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    },
+    {
+     "name": "inx7",
+     "species": "Dugesia japonica",
+     "accession": "AB189256",
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    }
+   ],
+   "could_test": "which junction genes are expressed where coupling matters",
+   "note": "The abstract names no species; two of the family's sequence records, named in a later paper of the same laboratory, are Dugesia japonica"
+  },
+  {
+   "id": "smedinx-11",
+   "papers": [
+    "oviedolevin2007"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "CIW4 (sequence record)"
+    }
+   ],
+   "families": [
+    "innexin"
+   ],
+   "kinds": [
+    "knockdown outcome",
+    "expression map",
+    "sequence"
+   ],
+   "measured": "Loss of regeneration and of stem cells after RNAi of the innexin smedinx-11, which is expressed in stem cells",
+   "how": "RNAi; in situ hybridisation; irradiation",
+   "values": "Outcomes; expression patterns. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "measured_exact",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [
+    {
+     "accession": "DQ851133",
+     "what": "Schmidtea mediterranea strain CIW4 smedxin-11 mRNA",
+     "verified": "GenBank record seen",
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
+    }
+   ],
+   "genes": [
+    {
+     "name": "smedinx-11",
+     "species": "Schmidtea mediterranea",
+     "accession": "DQ851133",
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A7RDN9"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0020152"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    }
+   ],
+   "could_test": "what the loss of one junction gene does to a tissue's renewal"
+  },
+  {
+   "id": "innexin-triple-rnai",
+   "papers": [
+    "oviedo2010"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "GI, clonal"
+    }
+   ],
+   "families": [
+    "innexin"
+   ],
+   "kinds": [
+    "drug outcome",
+    "knockdown outcome"
+   ],
+   "measured": "Ectopic anterior blastemas after octanol or after RNAi of several innexins together; octanol taken up by the tissue",
+   "how": "Octanol exposure; injection of double-stranded RNA for Dj-Inx-5, -13 and -12; gas chromatography and mass spectrometry of tissue octanol",
+   "values": "Outcome counts; tissue octanol level. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "No deposit is named in the passages read"
+   },
+   "sequences": [],
+   "genes": [
+    {
+     "name": "Dj-Inx-5",
+     "species": "Dugesia japonica",
+     "accession": null,
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    },
+    {
+     "name": "Dj-Inx-12",
+     "species": "Dugesia japonica",
+     "accession": null,
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    },
+    {
+     "name": "Dj-Inx-13",
+     "species": "Dugesia japonica",
+     "accession": null,
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    }
+   ],
+   "could_test": "polarity after coupling is reduced by a drug or by knockdown"
+  },
+  {
+   "id": "innexin-reproduction",
+   "papers": [
+    "kumagai2025"
+   ],
+   "species": [
+    {
+     "name": "Dugesia ryukyuensis",
+     "strain": "OH"
+    }
+   ],
+   "families": [
+    "innexin"
+   ],
+   "kinds": [
+    "knockdown outcome",
+    "expression map"
+   ],
+   "measured": "An innexin, Dr-siri, needed to end the asexual state when sexual development is induced",
+   "how": "RNAi; expression",
+   "values": "Outcomes",
+   "values_from": [
+    "kumagai2025"
+   ],
+   "evidence_category": "related_strain",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "A search of the text for dye transfer, coupling or electrophysiology found no measurement of the junction itself"
+   },
+   "sequences": [],
+   "genes": [
+    {
+     "name": "Dr-siri",
+     "species": "Dugesia ryukyuensis",
+     "accession": null,
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    }
+   ],
+   "could_test": "a junction gene's role outside patterning"
+  },
+  {
+   "id": "pzq-cav-beta",
+   "papers": [
+    "nogi2009"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "GI, asexual clonal"
+    }
+   ],
+   "families": [
+    "cav"
+   ],
+   "kinds": [
+    "drug outcome",
+    "knockdown outcome",
+    "sequence"
+   ],
+   "measured": "Two-headed regeneration caused by praziquantel, removed by RNAi of calcium-channel beta subunits and not by RNAi of an alpha subunit",
+   "how": "Drug exposure; RNAi; cloning of the beta subunits",
+   "values": "Outcome counts",
+   "values_from": [
+    "nogi2009"
+   ],
+   "evidence_category": "related_strain",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "No dataset is named in the passages read"
+   },
+   "sequences": [
+    {
+     "accession": "FJ483940",
+     "what": "Dugesia japonica voltage-operated calcium channel subunit beta-1 mRNA",
+     "verified": "GenBank record seen",
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
+    },
+    {
+     "accession": "FJ483939",
+     "what": "Dugesia japonica voltage-operated calcium channel subunit beta-2 mRNA",
+     "verified": "GenBank record seen",
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
+    }
+   ],
+   "genes": [
+    {
+     "name": "Cavβ1",
+     "species": "Dugesia japonica",
+     "accession": "FJ483940",
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    },
+    {
+     "name": "Cavβ2",
+     "species": "Dugesia japonica",
+     "accession": "FJ483939",
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    }
+   ],
+   "could_test": "a drug's outcome depending on one channel subunit"
+  },
+  {
+   "id": "cav-alpha-family",
+   "papers": [
+    "zhang2011"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "cav"
+   ],
+   "kinds": [
+    "knockdown outcome",
+    "drug outcome",
+    "calcium entry",
+    "sequence"
+   ],
+   "measured": "The family of calcium-channel alpha subunits; praziquantel's two-headed outcome and calcium entry prevented by RNAi of Cav1A; opposing roles of Cav1A and Cav1B",
+   "how": "RNAi of single subunits; drug exposure; how calcium entry was measured is not in the abstract",
+   "values": "Outcome counts; calcium entry as reported. The values are in the paper, which is under a non-commercial licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [
+    {
+     "accession": "HQ724315",
+     "what": "Dugesia japonica voltage operated calcium channel Cav1A mRNA",
+     "verified": "GenBank record seen",
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
+    },
+    {
+     "accession": "HQ724316",
+     "what": "Dugesia japonica voltage operated calcium channel Cav1B mRNA",
+     "verified": "GenBank record seen",
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
+    },
+    {
+     "accession": "HQ724317",
+     "what": "Dugesia japonica voltage operated calcium channel Cav2A mRNA",
+     "verified": "GenBank record seen",
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
+    },
+    {
+     "accession": "HQ724318",
+     "what": "Dugesia japonica voltage operated calcium channel Cav2B mRNA",
+     "verified": "GenBank record seen",
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
+    },
+    {
+     "accession": "HQ724319",
+     "what": "Dugesia japonica voltage operated calcium channel Cav3 mRNA",
+     "verified": "GenBank record seen",
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
+    }
+   ],
+   "genes": [
+    {
+     "name": "Cav1A",
+     "species": "Dugesia japonica",
+     "accession": "HQ724315",
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    },
+    {
+     "name": "Cav1B",
+     "species": "Dugesia japonica",
+     "accession": "HQ724316",
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    },
+    {
+     "name": "Cav2A",
+     "species": "Dugesia japonica",
+     "accession": "HQ724317",
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    },
+    {
+     "name": "Cav2B",
+     "species": "Dugesia japonica",
+     "accession": "HQ724318",
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    },
+    {
+     "name": "Cav3",
+     "species": "Dugesia japonica",
+     "accession": "HQ724319",
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    }
+   ],
+   "could_test": "opposite outcomes from two channels of one family",
+   "note": "The abstract names no species; the five sequence records, dated July 2011 and named in the laboratory's 2017 paper, are Dugesia japonica"
+  },
+  {
+   "id": "pzq-phenologs",
+   "papers": [
+    "chan2014"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "GI, clonal"
+    }
+   ],
+   "families": [
+    "cav"
+   ],
+   "kinds": [
+    "drug outcome",
+    "knockdown outcome"
+   ],
+   "measured": "Compounds that copy or block praziquantel's two-headed outcome, used to predict agents against schistosomes",
+   "how": "Drug screens on regenerating fragments; RNAi",
+   "values": "Outcome counts",
+   "values_from": [
+    "chan2014"
+   ],
+   "evidence_category": "related_strain",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "No dataset is named in the passages read"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "one phenotype read out for many drugs on calcium entry"
+  },
+  {
+   "id": "cav-transcriptome",
+   "papers": [
+    "chan2017",
+    "chan2016"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "GI"
+    }
+   ],
+   "families": [
+    "cav",
+    "nav",
+    "kv",
+    "k_other",
+    "trp",
+    "hcn_cng"
+   ],
+   "kinds": [
+    "sequencing dataset",
+    "knockdown outcome",
+    "expression map"
+   ],
+   "measured": "A de novo transcriptome and its voltage-gated-like channel genes; the outcome of knocking down each calcium channel, with Cav1B knockdown impairing muscle function",
+   "how": "RNA sequencing and assembly; curation of channel sequences; RNAi; in situ probes",
+   "values": "Sequences; a table of channel genes; outcome counts",
+   "values_from": [
+    "chan2016"
+   ],
+   "evidence_category": "related_strain",
+   "read": "full text searched",
+   "deposit": {
+    "state": "stated",
+    "where": "Files with the Data in Brief article: the assemblies as FASTA and a table of the channels",
+    "id": "doi:10.1016/j.dib.2016.11.022",
+    "licence": "CC BY (the article)",
+    "class": "permissive",
+    "note": "The article says so; the files were not fetched"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "which channels a planarian has, and the muscle's dependence on one of them"
+  },
+  {
+   "id": "ip3-receptor",
+   "papers": [
+    "zhang2013"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "store_channels"
+   ],
+   "kinds": [
+    "binding assay",
+    "sequence",
+    "expression map",
+    "knockdown outcome"
+   ],
+   "measured": "The IP3 receptor cloned; an expressed fragment of the receptor binds IP3 with high affinity, lost with a point mutation; expression; fewer eggs laid after RNAi",
+   "how": "Expression of the binding region and radioligand binding; in situ hybridisation; RNAi",
+   "values": "A binding affinity; expression patterns; outcome counts. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "reconstituted",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "No dataset is named in the passages read"
+   },
+   "sequences": [
+    {
+     "accession": "KC249981",
+     "what": "Dugesia japonica inositol 1,4,5-trisphosphate receptor mRNA",
+     "verified": "GenBank record seen",
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
+    }
+   ],
+   "genes": [
+    {
+     "name": "Dj.IP3R",
+     "species": "Dugesia japonica",
+     "accession": "KC249981",
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    }
+   ],
+   "could_test": "a measured ligand affinity of a planarian channel",
+   "note": "The binding number is the only directly measured property of a planarian release channel that was found"
+  },
+  {
+   "id": "muscle-ca-current",
+   "papers": [
+    "cobbett2003"
+   ],
+   "species": [
+    {
+     "name": "Girardia tigrina",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "cav",
+    "k_other"
+   ],
+   "kinds": [
+    "current recording, isolated cells",
+    "contraction of isolated cells"
+   ],
+   "measured": "A voltage-gated inward current in single muscle fibres, larger with barium, independent of sodium, blocked by cobalt and not by tetrodotoxin; an outward potassium current; contraction on depolarisation",
+   "how": "Whole-cell recording from freshly dispersed muscle fibres; contraction in raised potassium",
+   "values": "Currents under voltage clamp; the abstract gives no conductance. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "a native calcium current of a planarian muscle cell",
+   "note": "Its abstract calls this the first clear demonstration of a voltage-gated calcium channel current in platyhelminth muscle; the 1994 paper on Bdelloura candida also reports an inward calcium current in muscle"
+  },
+  {
+   "id": "muscle-ryanodine",
+   "papers": [
+    "day2000"
+   ],
+   "species": [
+    {
+     "name": "Girardia tigrina",
+     "strain": "not read"
+    },
+    {
+     "name": "Procerodes littoralis",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "store_channels"
+   ],
+   "kinds": [
+    "contraction of isolated cells"
+   ],
+   "measured": "Caffeine contracts single muscle fibres of both species, an effect that ryanodine blocks",
+   "how": "Drugs applied to dispersed muscle fibres",
+   "values": "Concentrations for half-maximal contraction. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "release from the calcium store in a muscle cell"
+  },
+  {
+   "id": "brain-cell-currents",
+   "papers": [
+    "blair1993"
+   ],
+   "species": [
+    {
+     "name": "Bdelloura candida",
+     "strain": "a marine triclad"
+    }
+   ],
+   "families": [
+    "nav",
+    "cav",
+    "kv",
+    "k_other"
+   ],
+   "kinds": [
+    "current recording, isolated cells"
+   ],
+   "measured": "Brain cells in culture carry a fast transient sodium current that tetrodotoxin blocks, a calcium current and several potassium currents",
+   "how": "Whole-cell voltage clamp of cultured cells from the brain",
+   "values": "Currents under voltage clamp; the abstract gives no numbers. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "the set of currents in a planarian neuron"
+  },
+  {
+   "id": "muscle-cell-currents",
+   "papers": [
+    "blair1994"
+   ],
+   "species": [
+    {
+     "name": "Bdelloura candida",
+     "strain": "a marine triclad"
+    }
+   ],
+   "families": [
+    "cav",
+    "k_other",
+    "kv"
+   ],
+   "kinds": [
+    "current recording, isolated cells",
+    "contraction of isolated cells"
+   ],
+   "measured": "Isolated muscle fibres carry an inward calcium current and several potassium currents, and contract in response to transmitters and praziquantel",
+   "how": "Voltage clamp of dissociated muscle fibres; contraction",
+   "values": "Currents under voltage clamp; the abstract gives no numbers. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "the set of currents in a planarian muscle cell"
+  },
+  {
+   "id": "sodium-channel-clone",
+   "papers": [
+    "jeziorski1997"
+   ],
+   "species": [
+    {
+     "name": "Bdelloura candida",
+     "strain": "a marine triclad"
+    }
+   ],
+   "families": [
+    "nav"
+   ],
+   "kinds": [
+    "sequence"
+   ],
+   "measured": "A cDNA, BdNa1, encoding a protein like the main subunit of voltage-gated sodium channels",
+   "how": "Cloning and sequence comparison",
+   "values": "A sequence. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [
+    {
+     "name": "BdNa1",
+     "species": "Bdelloura candida",
+     "accession": null,
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    }
+   ],
+   "could_test": "the channel behind a recorded sodium current"
+  },
+  {
+   "id": "trpa1-behaviour",
+   "papers": [
+    "arenas2017"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "CIW4, asexual"
+    }
+   ],
+   "families": [
+    "trp"
+   ],
+   "kinds": [
+    "knockdown outcome",
+    "behaviour"
+   ],
+   "measured": "Escape from noxious heat and irritant chemicals is lost after RNAi of TRPA1",
+   "how": "RNAi; behavioural assays",
+   "values": "Behaviour scores. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "measured_exact",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "No dataset is named in the passages read"
+   },
+   "sequences": [
+    {
+     "accession": "MF818036",
+     "what": "Schmidtea mediterranea strain CIW4 transient receptor potential cation channel subfamily A member 1 mRNA",
+     "verified": "GenBank record seen",
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
+    }
+   ],
+   "genes": [
+    {
+     "name": "Smed-TRPA1",
+     "species": "Schmidtea mediterranea",
+     "accession": "MF818036",
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A291IA19"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0019963"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    }
+   ],
+   "could_test": "a behaviour that depends on one channel"
+  },
+  {
+   "id": "trpa1-patch-clamp",
+   "papers": [
+    "arenas2017"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "CIW4 (the cloned channel)"
+    }
+   ],
+   "families": [
+    "trp"
+   ],
+   "kinds": [
+    "current recording, heterologous cells"
+   ],
+   "measured": "The planarian TRPA1 channel, expressed in Drosophila S2 cells, is activated by the irritant AITC and by hydrogen peroxide and not by heat",
+   "how": "Whole-cell patch clamp of S2 cells expressing Smed-TRPA1",
+   "values": "Currents under whole-cell clamp; which numbers are given was not read. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "reconstituted",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "No dataset is named in the passages read"
+   },
+   "sequences": [],
+   "genes": [
+    {
+     "name": "Smed-TRPA1",
+     "species": "Schmidtea mediterranea",
+     "accession": "MF818036",
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A291IA19"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0019963"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    }
+   ],
+   "could_test": "a planarian channel's own response to an agonist",
+   "note": "The only recording of a cloned planarian channel that this audit found"
+  },
+  {
+   "id": "trpa-light",
+   "papers": [
+    "birkholz2017"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "asexual"
+    }
+   ],
+   "families": [
+    "trp"
+   ],
+   "kinds": [
+    "knockdown outcome",
+    "behaviour"
+   ],
+   "measured": "Avoidance of near-ultraviolet light by eyeless worms is lost after RNAi of Smed-TrpA",
+   "how": "RNAi; behavioural assays",
+   "values": "Behaviour scores",
+   "values_from": [
+    "birkholz2017"
+   ],
+   "evidence_category": "measured_exact",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "No dataset is named in the passages read"
+   },
+   "sequences": [],
+   "genes": [
+    {
+     "name": "Smed-TrpA",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": null,
+     "untied": "no accession was found in what was read"
+    }
+   ],
+   "could_test": "a second behaviour that depends on the same kind of channel"
+  },
+  {
+   "id": "trp-scrunching",
+   "papers": [
+    "sabry2019"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "asexual"
+    },
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "asexual"
+    }
+   ],
+   "families": [
+    "trp"
+   ],
+   "kinds": [
+    "drug outcome",
+    "knockdown outcome",
+    "behaviour"
+   ],
+   "measured": "Agonists of TRPA1 and TRPV induce the scrunching gait; RNAi of TRPA1 removes the response to AITC in both species",
+   "how": "Drug exposure; RNAi; gait analysis",
+   "values": "Behaviour scores",
+   "values_from": [
+    "sabry2019"
+   ],
+   "evidence_category": "measured_exact",
+   "read": "full text searched",
+   "deposit": {
+    "state": "stated",
+    "where": "Within the article and its supporting files",
+    "id": "doi:10.1371/journal.pone.0226104",
+    "licence": "CC BY (the article)",
+    "class": "permissive",
+    "note": "The article's data statement; the files were not fetched"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "one channel's part in a behaviour, in two species",
+   "note": "Both species were used; the category is given for Schmidtea mediterranea"
+  },
+  {
+   "id": "trpm-thermotaxis",
+   "papers": [
+    "inoue2014"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "trp"
+   ],
+   "kinds": [
+    "knockdown outcome",
+    "expression map",
+    "behaviour"
+   ],
+   "measured": "Thermotaxis needs neurons that express the TRPM homolog DjTRPMa",
+   "how": "RNAi; in situ hybridisation; a thermotaxis assay",
+   "values": "Behaviour scores; expression patterns. The values are in the paper, which is under a non-commercial licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [
+    {
+     "name": "DjTRPMa",
+     "species": "Dugesia japonica",
+     "accession": null,
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    }
+   ],
+   "could_test": "temperature sensing through one channel"
+  },
+  {
+   "id": "trpm-family",
+   "papers": [
+    "curry2025"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "sexual and asexual"
+    }
+   ],
+   "families": [
+    "trp"
+   ],
+   "kinds": [
+    "sequence survey",
+    "expression map",
+    "knockdown outcome"
+   ],
+   "measured": "Twenty-one candidate TRPM genes; where each is expressed; RNAi of the two expressed in testis",
+   "how": "Sequence search of transcriptomes; in situ hybridisation; RNAi",
+   "values": "Sequences; expression patterns; outcomes",
+   "values_from": [
+    "curry2025"
+   ],
+   "evidence_category": "measured_exact",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "No dataset is named in the passages read"
+   },
+   "sequences": [
+    {
+     "accession": "PQ273721",
+     "what": "Schmidtea mediterranea transient receptor potential channel melastatin subfamily C mRNA",
+     "verified": "GenBank record seen",
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
+    }
+   ],
+   "genes": [
+    {
+     "name": "Smed-TRPM-c",
+     "species": "Schmidtea mediterranea",
+     "accession": "PQ273721",
+     "tie": null,
+     "untied": "its record is not among the UniProtKB entries the catalogue was built from, and no sequence comparison was made here"
+    }
+   ],
+   "could_test": "how large one channel family is, and where its members are expressed"
+  },
+  {
+   "id": "pkd-family",
+   "papers": [
+    "ross2024"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "asexual and hermaphroditic"
+    }
+   ],
+   "families": [
+    "trp"
+   ],
+   "kinds": [
+    "expression map",
+    "knockdown outcome"
+   ],
+   "measured": "Expression and function of all the pkd genes of the genome",
+   "how": "In situ hybridisation; RNAi; behavioural tests",
+   "values": "Expression patterns; outcomes",
+   "values_from": [
+    "ross2024"
+   ],
+   "evidence_category": "measured_exact",
+   "read": "full text searched",
+   "deposit": {
+    "state": "stated",
+    "where": "In the article and its supplementary material",
+    "id": "doi:10.1093/iob/obae035",
+    "licence": "CC BY (the article)",
+    "class": "permissive",
+    "note": "The article's data statement; the files were not fetched"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "sensory channels of one family mapped to cells",
+   "note": "Its genes were not tied here: the paper names them, and a tie needs an accession"
+  },
+  {
+   "id": "trpa1-girardia",
+   "papers": [
+    "morana2025"
+   ],
+   "species": [
+    {
+     "name": "Girardia dorotocephala",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "trp"
+   ],
+   "kinds": [
+    "drug outcome",
+    "knockdown outcome",
+    "behaviour"
+   ],
+   "measured": "Cinnamaldehyde evokes a nociceptive behaviour that RNAi of Gd-TRPA1 suppresses",
+   "how": "Drug exposure; RNAi; open-field analysis",
+   "values": "Behaviour scores",
+   "values_from": [
+    "morana2025"
+   ],
+   "evidence_category": "related_strain",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [
+    {
+     "name": "Gd-TRPA1",
+     "species": "Girardia dorotocephala",
+     "accession": null,
+     "tie": null,
+     "untied": "another species: the catalogue holds Schmidtea mediterranea only"
+    }
+   ],
+   "could_test": "the same channel's role in a third species"
+  },
+  {
+   "id": "asic-absent",
+   "papers": [
+    "martisolans2023"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": null
+    }
+   ],
+   "families": [
+    "asic"
+   ],
+   "kinds": [
+    "sequence survey"
+   ],
+   "measured": "No candidate acid-sensing ion channel was found in Schmidtea mediterranea",
+   "how": "A search of sequence data across bilaterians",
+   "values": "An absence in the data searched",
+   "values_from": [
+    "martisolans2023"
+   ],
+   "evidence_category": "inferred_fitted",
+   "read": "full text searched",
+   "deposit": {
+    "state": "stated",
+    "where": "The alignment is a supplementary file of the article",
+    "id": "doi:10.7554/elife.81613",
+    "licence": "CC BY (the article)",
+    "class": "permissive",
+    "note": "Not fetched"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "a channel family the organism does not have"
+  },
+  {
+   "id": "coe-targets",
+   "papers": [
+    "cowles2014"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "CIW4, asexual"
+    }
+   ],
+   "families": [
+    "nav",
+    "kv",
+    "k_other",
+    "ligand_gated"
+   ],
+   "kinds": [
+    "sequencing dataset",
+    "knockdown outcome"
+   ],
+   "measured": "Genes that fall after RNAi of the transcription factor coe, many of them ion channels; RNAi of those genes, where a sodium-channel alpha subunit, scna-2, is needed for regeneration of the nervous system",
+   "how": "RNA sequencing of control and RNAi animals; RNAi of the validated targets",
+   "values": "Transcript changes; outcome counts",
+   "values_from": [
+    "cowles2014"
+   ],
+   "evidence_category": "measured_exact",
+   "read": "full text searched",
+   "deposit": {
+    "state": "verified",
+    "where": "NCBI Sequence Read Archive",
+    "id": "PRJNA235907",
+    "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+    "class": "permissive",
+    "note": "The BioProject record exists: Schmidtea mediterranea strain CIW4"
+   },
+   "sequences": [],
+   "genes": [
+    {
+     "name": "scna-1",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0A1CVW3"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0013155"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     },
+     "note": "scna-1 and scna-3 join the same gene model"
+    },
+    {
+     "name": "scna-2",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0A1CQM0"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0014796"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "scna-3",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0A1CRL5"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0013155"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "kcnb",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0A1CQL4"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0008430"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "kcnka",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0A1CVW0"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0004125"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    }
+   ],
+   "could_test": "channel genes of neurons, and one whose loss shows"
+  },
+  {
+   "id": "brain-screen-cng",
+   "papers": [
+    "rg2016"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "CIW4, asexual clonal"
+    }
+   ],
+   "families": [
+    "hcn_cng"
+   ],
+   "kinds": [
+    "sequencing dataset",
+    "expression map",
+    "knockdown outcome"
+   ],
+   "measured": "A screen of genes expressed in the regenerating brain; CNG1, a cyclic-nucleotide-gated channel, is expressed at the edge of the head",
+   "how": "RNA sequencing; in situ hybridisation; RNAi",
+   "values": "Expression patterns; outcome counts",
+   "values_from": [
+    "rg2016"
+   ],
+   "evidence_category": "measured_exact",
+   "read": "full text searched",
+   "deposit": {
+    "state": "verified",
+    "where": "NCBI Sequence Read Archive",
+    "id": "PRJNA319973",
+    "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+    "class": "permissive",
+    "note": "The BioProject record exists: Schmidtea mediterranea isolate CIW4"
+   },
+   "sequences": [],
+   "genes": [
+    {
+     "name": "CNG1",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A1Z1R0Y6"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0005006"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    }
+   ],
+   "could_test": "where a sensory channel is expressed"
+  },
+  {
+   "id": "slc-expression-map",
+   "papers": [
+    "vu2015"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "asexual"
+    }
+   ],
+   "families": [
+    "exchangers",
+    "cotransporters",
+    "trp"
+   ],
+   "kinds": [
+    "sequence survey",
+    "expression map",
+    "knockdown outcome"
+   ],
+   "measured": "318 solute-carrier genes found in the genome and the expression of all of them mapped, among them sodium-proton and anion exchangers in the excretory tubules; cysts after RNAi of kidney-disease gene homologs",
+   "how": "Sequence search; in situ hybridisation of every gene; RNAi",
+   "values": "Sequences; expression patterns; outcomes",
+   "values_from": [
+    "vu2015"
+   ],
+   "evidence_category": "measured_exact",
+   "read": "full text searched",
+   "deposit": {
+    "state": "verified",
+    "where": "UniProtKB entries that cite the paper, which the catalogue holds",
+    "id": "PubMed 26057828",
+    "licence": "CC BY 4.0 (UniProt); CC BY (the article)",
+    "class": "permissive",
+    "note": "53 of its entries are ion exchangers, cation-chloride cotransporters, sodium-calcium exchangers or PKD channels"
+   },
+   "sequences": [],
+   "genes": [
+    {
+     "name": "PKD1L-1",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YJQ5"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0019281"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "PKD1L-2",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YFF8"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0019650"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "PKD1L-3",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YJK5"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0019279"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "PKD2-1",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YFQ9"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0022018"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "PKD2-2",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YKM7"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0006542"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "PKD2-3",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YJQ9"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0013587"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "PKD2-4",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YFG1"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0003677"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "PKD2L-1",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YJL0"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0003675"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "PKD2L-2",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YFR3"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0003676"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc4a-1",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YF38"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0021165"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc4a-2",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YJZ6"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0017497"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc4a-3",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YIX5"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0009155"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc4a-4",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YEW7"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0018063"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc4a-5",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YIT6"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0018431"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc4a-7",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YF42"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0017878"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc4a-8",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YK00"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins it to no gene model"
+     }
+    },
+    {
+     "name": "slc4a-9",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YIY0"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0000678"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc4a-10",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YEX0"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0000678"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc8a-1",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YEY7"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0011283"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc8a-2",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YIW4"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0011221"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc8a-3",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YF68"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0009796"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc8a-4",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YK36"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0015487"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc8a-5",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YJ09"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0015486"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc9a-1",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YEZ0"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0021416"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc9a-2",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YIW8"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0018395"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc9a-4",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YF72"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0000325"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc9a-5",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YK40"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0006912"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc9a-6",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YJ14"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0016006"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc9a-7",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YEZ1"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins it to no gene model"
+     }
+    },
+    {
+     "name": "slc9a-8",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YIX1"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0009737"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc9a-9",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YF75"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0009782"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc12a-1",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YEZ5"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0005436"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc12a-2",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YIX7"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0004908"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc12a-3",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YF80"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0004821"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc12a-4",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YK51"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0001288"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc12a-5",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YJ24"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0020739"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc24a-1",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YFD4"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0020507"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc24a-2",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YKA1"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins it to no gene model"
+     }
+    },
+    {
+     "name": "slc24a-4",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YJA7"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0014026"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc24a-5",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YF40"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0022146"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc24a-6",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YJ53"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0007259"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc24a-7",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YFD7"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins it to no gene model"
+     }
+    },
+    {
+     "name": "slc24a-8",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YKA3"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0007258"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc26a-1",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YF67"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins it to no gene model"
+     }
+    },
+    {
+     "name": "slc26a-2",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YJ92"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0012851"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc26a-3",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YFG7"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0010091"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc26a-4",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YKD1"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0010092"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc26a-5",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YJE7"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0009483"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc26a-6",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YF71"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0007439"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc26a-7",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YJ97"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins it to no gene model"
+     }
+    },
+    {
+     "name": "slc26a-8",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YFH1"
+       },
+       {
+        "db": "wormbase_parasite",
+        "id": "h1SMcG0010088"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins the entry to the gene model by sequence"
+     }
+    },
+    {
+     "name": "slc26a-9",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YKD5"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins it to no gene model"
+     }
+    },
+    {
+     "name": "slc26a-10",
+     "species": "Schmidtea mediterranea",
+     "accession": null,
+     "tie": {
+      "to": [
+       {
+        "db": "uniprot",
+        "id": "A0A0H3YJF3"
+       }
+      ],
+      "how": "The sequence record is this UniProtKB entry, which cites the paper; the catalogue joins it to no gene model"
+     }
+    }
+   ],
+   "could_test": "where each exchanger and cotransporter is expressed"
+  },
+  {
+   "id": "ammonia-excretion",
+   "papers": [
+    "weihrauch2012"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "v_atpase",
+    "nak_pump",
+    "exchangers"
+   ],
+   "kinds": [
+    "ion transport physiology",
+    "drug outcome",
+    "expression map"
+   ],
+   "measured": "Ammonia excretion depends on acidifying the body surface; inhibitors implicate the V-type proton pump and carbonic anhydrase, and possibly the sodium-potassium pump and sodium-proton exchangers; transcript levels of the pump subunits and an Rh protein change with the water's pH and ammonia",
+   "how": "Excretion rates in buffered water; inhibitors; transcript levels; in situ hybridisation",
+   "values": "Excretion rates; fold changes of transcripts. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "measured_exact",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "ion transport across the skin of the animal"
+  },
+  {
+   "id": "tissue-potential-thesis",
+   "papers": [
+    "annand2014"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "not read"
+    },
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "tissue potential",
+    "applied field",
+    "ion transport physiology"
+   ],
+   "measured": "A voltage gradient in the tissue spaces, with the head more negative than the tail, kept in regenerating fragments; techniques for transepithelial potential, epithelial ion transport and applied fields",
+   "how": "Techniques developed for the thesis to measure transepithelial potential and epithelial ion transport; applied electric fields",
+   "values": "Voltages; the record's abstract is cut short and gives no numbers. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "measured_exact",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "a measured electrical gradient along the body",
+   "note": "A doctoral thesis; the record's abstract is truncated, and the thesis itself was not fetched. Both species were used; the category is given for Schmidtea mediterranea"
+  },
+  {
+   "id": "field-polarity-1952",
+   "papers": [
+    "marsh1952",
+    "dimmitt1952"
+   ],
+   "species": [
+    {
+     "name": "Girardia tigrina",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "applied field"
+   ],
+   "measured": "Two papers on the electrical control of regeneration in Dugesia tigrina: axial polarity against field strength, and potential gradient against current density",
+   "how": "Applied electric fields, by the titles",
+   "values": "Not read. The values are in the papers, which state no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "record only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "The records have no abstract"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "polarity reversed by an applied field"
+  },
+  {
+   "id": "field-model-1978",
+   "papers": [
+    "lange1978"
+   ],
+   "species": [
+    {
+     "name": "Dugesia etrusca",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "model"
+   ],
+   "measured": "A substance that inhibits brain formation runs as a negatively charged molecule in electrophoresis; the authors propose that a bioelectric field moves it tailward",
+   "how": "Electrophoresis of the substance; a proposed model",
+   "values": "A proposal. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "inferred_fitted",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "a field acting on a charged signal"
+  },
+  {
+   "id": "current-stimulation",
+   "papers": [
+    "davidian2021",
+    "davidian2022"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "tissue",
+    "cav",
+    "store_channels"
+   ],
+   "kinds": [
+    "applied field",
+    "calcium entry"
+   ],
+   "measured": "Direct current applied to whole worms changes where cells divide, and restores stem-cell activity in irradiated tissue through calcium entry by L-type channels and release from stores",
+   "how": "Current through pulled glass microelectrodes, applied for hours; how calcium was measured is not in the abstracts",
+   "values": "Cell counts; calcium changes as reported. The values are in the papers, which state no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "measured_exact",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "a tissue's response to an applied current"
+  },
+  {
+   "id": "electrotaxis",
+   "papers": [
+    "sabry2022"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "asexual"
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "applied field",
+    "behaviour"
+   ],
+   "measured": "Worms move to the cathode at 2 V and respond to voltage, not current; decapitation restores the response in head fragments",
+   "how": "An automated electrotaxis setup",
+   "values": "Positions over time",
+   "values_from": [
+    "sabry2022"
+   ],
+   "evidence_category": "related_strain",
+   "read": "full text searched",
+   "deposit": {
+    "state": "verified",
+    "where": "GitHub, Collinslab-swat/Planarian-electrotaxis",
+    "id": "https://github.com/Collinslab-swat/Planarian-electrotaxis",
+    "licence": "no licence stated",
+    "class": "no stated terms",
+    "note": "The repository exists; its record names no licence"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "behaviour in an electric field"
+  },
+  {
+   "id": "eeg-electrode",
+   "papers": [
+    "aoki2009"
+   ],
+   "species": [
+    {
+     "name": "a planarian; the abstract names no species",
+     "strain": null
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "extracellular recording"
+   ],
+   "measured": "A continuous brain signal of very small amplitude and low frequency",
+   "how": "A single electrode inserted in the head on a cold stage",
+   "values": "Amplitude and spectrum. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "not assigned",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "ongoing electrical activity of the brain"
+  },
+  {
+   "id": "eeg-surface",
+   "papers": [
+    "freiberg2023"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "asexual"
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "extracellular recording"
+   ],
+   "measured": "Continuous electrical activity recorded without piercing the animal, under different lighting",
+   "how": "Surface wire electrodes on living worms",
+   "values": "Power spectra",
+   "values_from": [
+    "freiberg2023"
+   ],
+   "evidence_category": "measured_exact",
+   "read": "full text searched",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "The article's data statement was not among the passages read"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "ongoing electrical activity of the brain"
+  },
+  {
+   "id": "brain-units",
+   "papers": [
+    "benita2024"
+   ],
+   "species": [
+    {
+     "name": "Dugesia japonica",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "extracellular recording"
+   ],
+   "measured": "Multi-unit activity of the brain, its change along the head, and responses to stimuli, also in worms with two heads",
+   "how": "Extracellular recording from a semi-intact, pinned preparation",
+   "values": "Spike rates",
+   "values_from": [
+    "benita2024"
+   ],
+   "evidence_category": "related_strain",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "No deposit is named in the passages read"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "spiking activity of a planarian brain"
+  },
+  {
+   "id": "atlas-fincher",
+   "papers": [
+    "fincher2018"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "asexual"
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "sequencing dataset"
+   ],
+   "measured": "Transcriptomes of essentially every cell type of the animal, so the cell types that express any channel gene can be read off",
+   "how": "Single-cell RNA sequencing",
+   "values": "Counts per cell and gene. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "measured_exact",
+   "read": "full text searched",
+   "deposit": {
+    "state": "verified",
+    "where": "NCBI Gene Expression Omnibus",
+    "id": "GSE111764",
+    "licence": "no licence stated on the record",
+    "class": "no stated terms",
+    "note": "The GEO record exists under the paper's title"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "which cells express a given channel",
+   "note": "Its genes are named by transcript, not by the catalogue's gene models; no tie was made"
+  },
+  {
+   "id": "atlas-plass",
+   "papers": [
+    "plass2018"
+   ],
+   "species": [
+    {
+     "name": "Schmidtea mediterranea",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "sequencing dataset"
+   ],
+   "measured": "A cell type atlas and lineage tree of the whole animal",
+   "how": "Single-cell RNA sequencing",
+   "values": "Counts per cell and gene. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "measured_exact",
+   "read": "abstract only",
+   "deposit": {
+    "state": "verified",
+    "where": "NCBI Gene Expression Omnibus",
+    "id": "GSE103633",
+    "licence": "no licence stated on the record",
+    "class": "no stated terms",
+    "note": "Found at GEO under the paper's title; the paper's own data statement was not read"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "which cells express a given channel"
+  },
+  {
+   "id": "transcriptome-tigrina",
+   "papers": [
+    "wheeler2015"
+   ],
+   "species": [
+    {
+     "name": "Girardia tigrina",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "sequencing dataset",
+    "drug outcome"
+   ],
+   "measured": "A transcriptome of Girardia tigrina and drug screens on three targets",
+   "how": "RNA sequencing; inhibitors on worms",
+   "values": "Sequences; motility",
+   "values_from": [
+    "wheeler2015"
+   ],
+   "evidence_category": "related_strain",
+   "read": "full text searched",
+   "deposit": {
+    "state": "stated",
+    "where": "Assemblies and annotations behind a shortened web link in the article",
+    "id": "doi:10.1186/s13071-014-0622-3",
+    "licence": "CC BY (the article); its data under a CC0 waiver",
+    "class": "permissive",
+    "note": "The link was not followed"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "the gene set of a third species"
+  },
+  {
+   "id": "nachr-dorotocephala",
+   "papers": [
+    "almazan2018"
+   ],
+   "species": [
+    {
+     "name": "Girardia dorotocephala",
+     "strain": "clonal line"
+    }
+   ],
+   "families": [
+    "ligand_gated"
+   ],
+   "kinds": [
+    "sequencing dataset",
+    "sequence"
+   ],
+   "measured": "A transcriptome of Girardia dorotocephala, checked by characterising its nicotinic acetylcholine receptor subunits",
+   "how": "RNA sequencing; sequence analysis",
+   "values": "Sequences. The values are in the paper, which is under a non-commercial licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "full text searched",
+   "deposit": {
+    "state": "verified",
+    "where": "NCBI Sequence Read Archive",
+    "id": "PRJNA317859",
+    "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+    "class": "permissive",
+    "note": "The BioProject record exists: Girardia dorotocephala"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "ligand-gated channel genes of a third species"
+  },
+  {
+   "id": "lanthanum-channels",
+   "papers": [
+    "briner2018"
+   ],
+   "species": [
+    {
+     "name": "Girardia dorotocephala",
+     "strain": "bought stock"
+    }
+   ],
+   "families": [
+    "cav",
+    "kv",
+    "nav",
+    "cl"
+   ],
+   "kinds": [
+    "drug outcome"
+   ],
+   "measured": "Lanthanum's toxicity changes with agonists and antagonists of calcium, potassium, sodium, magnesium and chloride channels",
+   "how": "Drug combinations on whole worms",
+   "values": "Toxicity scores",
+   "values_from": [
+    "briner2018"
+   ],
+   "evidence_category": "related_strain",
+   "read": "full text searched",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "No deposit is named in the passages read"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "which channel classes a toxic ion acts through"
+  },
+  {
+   "id": "ivermectin-regeneration",
+   "papers": [
+    "ferenc2019"
+   ],
+   "species": [
+    {
+     "name": "Girardia dorotocephala",
+     "strain": "not read"
+    }
+   ],
+   "families": [
+    "cl"
+   ],
+   "kinds": [
+    "drug outcome"
+   ],
+   "measured": "Regeneration under ivermectin, a chloride-channel opener",
+   "how": "Drug exposure of regenerating worms",
+   "values": "Outcomes. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
+   "evidence_category": "related_strain",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "regeneration when a chloride conductance is opened"
+  },
+  {
+   "id": "model-betse",
+   "papers": [
+    "pietak2016",
+    "pietak2017",
+    "pietak2019"
+   ],
+   "species": [
+    {
+     "name": "a simulator; the 2019 model is set against experiments on Dugesia japonica",
+     "strain": null
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "model"
+   ],
+   "measured": "The BETSE simulator, its extension to gene and reaction networks, and a model of body-axis control that predicts the share of two-headed regenerates",
+   "how": "Finite-volume simulation of ion flows and gap junctions; a network model",
+   "values": "Predictions",
+   "values_from": [
+    "pietak2016",
+    "pietak2019"
+   ],
+   "evidence_category": "other_simulator",
+   "read": "abstract only",
+   "deposit": {
+    "state": "none found",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "No deposit is named in the passages read"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "another simulator's predictions for the same experiments"
+  },
+  {
+   "id": "model-cervera",
+   "papers": [
+    "cervera2020",
+    "cervera2023",
+    "cervera2024"
+   ],
+   "species": [
+    {
+     "name": "models of planaria",
+     "strain": null
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "model"
+   ],
+   "measured": "Bioelectrical models of head-tail patterning from channels and gap junctions, of grafts between fragments, and of adaptation to a channel blocker",
+   "how": "Mean-field and multicellular models",
+   "values": "Predictions",
+   "values_from": [
+    "cervera2024"
+   ],
+   "evidence_category": "other_simulator",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "another model's predictions for the same experiments"
+  },
+  {
+   "id": "model-others",
+   "papers": [
+    "pezzulo2021",
+    "grodstein2022",
+    "cortespoza2026",
+    "blattner2026"
+   ],
+   "species": [
+    {
+     "name": "models motivated by planaria",
+     "strain": null
+    }
+   ],
+   "families": [
+    "tissue"
+   ],
+   "kinds": [
+    "model"
+   ],
+   "measured": "Models of two-outcome pattern memory, of bioelectric networks, a hybrid framework for morphogenesis, and a geometric model of bioelectric memory",
+   "how": "Mathematical and computational models",
+   "values": "Predictions. The values are in the papers, of which none states terms that allow a copy: none is given here.",
+   "values_from": [],
+   "evidence_category": "other_simulator",
+   "read": "abstract only",
+   "deposit": {
+    "state": "not determined",
+    "where": null,
+    "id": null,
+    "licence": null,
+    "note": "Only the abstract was read; it names no deposit"
+   },
+   "sequences": [],
+   "genes": [],
+   "could_test": "other models' predictions"
+  }
+ ],
+ "family_summary": [
+  {
+   "family": "innexin",
+   "named_genes": "Dugesia japonica: the family cloned (2005), several members knocked down together. Schmidtea mediterranea: smedinx-11 and two more entries in UniProt. Dugesia ryukyuensis: one.",
+   "expression": "In situ maps of the family in Dugesia japonica; smedinx-11 in stem cells",
+   "knockdown": "Yes, in three species",
+   "pharmacology": "Octanol and heptanol, in four species",
+   "imaging": "Voltage-dye images after octanol",
+   "direct_measurement": "None found. No dye-transfer, electrical-coupling or expressed-channel measurement of a planarian innexin turned up in PubMed searches for those words"
+  },
+  {
+   "family": "hk_pump",
+   "named_genes": "One alpha subunit each in Schmidtea mediterranea (tied) and Dugesia japonica",
+   "expression": "Head blastema in Dugesia japonica",
+   "knockdown": "Schmidtea mediterranea",
+   "pharmacology": "SCH-28080 in Dugesia japonica",
+   "imaging": "Voltage-dye images",
+   "direct_measurement": "None found: the pump's transport was not measured; its role is inferred from a drug, a knockdown and dye images"
+  },
+  {
+   "family": "nak_pump",
+   "named_genes": "None named in the papers read",
+   "expression": "Transcript level of the alpha subunit in Schmidtea mediterranea",
+   "knockdown": "None found",
+   "pharmacology": "Inhibitors in an excretion study",
+   "imaging": "None",
+   "direct_measurement": "None found"
+  },
+  {
+   "family": "v_atpase",
+   "named_genes": "None named in the papers read",
+   "expression": "Transcript level of subunit A in Schmidtea mediterranea",
+   "knockdown": "None found",
+   "pharmacology": "Inhibitors in an excretion study",
+   "imaging": "None",
+   "direct_measurement": "None found"
+  },
+  {
+   "family": "nav",
+   "named_genes": "scna-1, -2, -3 in Schmidtea mediterranea (tied); BdNa1 in Bdelloura candida",
+   "expression": "Neuronal, by the screen they come from",
+   "knockdown": "scna-2",
+   "pharmacology": "None found",
+   "imaging": "None",
+   "direct_measurement": "A tetrodotoxin-sensitive sodium current recorded in brain cells of Bdelloura candida (1993). Not tied to a cloned channel"
+  },
+  {
+   "family": "kv",
+   "named_genes": "kcnb in Schmidtea mediterranea (tied)",
+   "expression": "From sequencing datasets only",
+   "knockdown": "None found for a named gene",
+   "pharmacology": "Barium chloride, as a blocker of potassium channels",
+   "imaging": "None",
+   "direct_measurement": "Potassium currents recorded in brain and muscle cells of Bdelloura candida and in muscle of Girardia tigrina. Not tied to cloned channels"
+  },
+  {
+   "family": "k_other",
+   "named_genes": "kcnka in Schmidtea mediterranea (tied)",
+   "expression": "From sequencing datasets only",
+   "knockdown": "None found",
+   "pharmacology": "Barium chloride",
+   "imaging": "None",
+   "direct_measurement": "As for the voltage-gated potassium channels"
+  },
+  {
+   "family": "hcn_cng",
+   "named_genes": "CNG1 in Schmidtea mediterranea (tied)",
+   "expression": "Edge of the head",
+   "knockdown": "Part of a screen",
+   "pharmacology": "None found",
+   "imaging": "None",
+   "direct_measurement": "None found"
+  },
+  {
+   "family": "cav",
+   "named_genes": "Five alpha and two beta subunits in Dugesia japonica",
+   "expression": "In situ probes in Dugesia japonica",
+   "knockdown": "Each alpha subunit and both beta subunits in Dugesia japonica",
+   "pharmacology": "Praziquantel and many others",
+   "imaging": "Calcium entry, as reported",
+   "direct_measurement": "An inward calcium current recorded in muscle of Girardia tigrina (2003) and of Bdelloura candida (1994), and in its brain cells. None on a cloned channel"
+  },
+  {
+   "family": "store_channels",
+   "named_genes": "The IP3 receptor of Dugesia japonica",
+   "expression": "Pharynx, optic nerves, reproductive organs",
+   "knockdown": "Yes",
+   "pharmacology": "Caffeine and ryanodine on muscle fibres",
+   "imaging": "None",
+   "direct_measurement": "A binding affinity for IP3 of an expressed fragment, to be read in its paper; functional ryanodine receptors shown by contraction"
+  },
+  {
+   "family": "trp",
+   "named_genes": "TRPA1 (tied), 21 TRPM candidates and the PKD genes in Schmidtea mediterranea; TRPA1 and TRPM in Dugesia japonica; TRPA1 in Girardia dorotocephala",
+   "expression": "In situ maps of TRPM and PKD genes",
+   "knockdown": "TRPA1 in three species; TRPM; PKD",
+   "pharmacology": "Agonists and antagonists",
+   "imaging": "None",
+   "direct_measurement": "Whole-cell patch clamp of the Schmidtea mediterranea TRPA1 in Drosophila S2 cells: activated by AITC and hydrogen peroxide, not by heat (2017)"
+  },
+  {
+   "family": "asic",
+   "named_genes": "None: a survey found no candidate in Schmidtea mediterranea",
+   "expression": "Not applicable",
+   "knockdown": "Not applicable",
+   "pharmacology": "None found",
+   "imaging": "None",
+   "direct_measurement": "Not applicable"
+  },
+  {
+   "family": "cl",
+   "named_genes": "None named in the papers read",
+   "expression": "None found",
+   "knockdown": "None found",
+   "pharmacology": "Ivermectin, and chloride-channel blockers",
+   "imaging": "None",
+   "direct_measurement": "None found"
+  },
+  {
+   "family": "ligand_gated",
+   "named_genes": "Nicotinic receptor subunits in Girardia dorotocephala; receptor subunits among a screen's targets in Schmidtea mediterranea",
+   "expression": "Not audited",
+   "knockdown": "Part of a screen",
+   "pharmacology": "Not audited",
+   "imaging": "None",
+   "direct_measurement": "Not audited: this family was searched only in passing"
+  },
+  {
+   "family": "exchangers",
+   "named_genes": "Sodium-proton, sodium-calcium and anion exchangers of Schmidtea mediterranea (tied)",
+   "expression": "Every one mapped by in situ hybridisation",
+   "knockdown": "None found for these",
+   "pharmacology": "Inhibitors in an excretion study",
+   "imaging": "None",
+   "direct_measurement": "None found"
+  },
+  {
+   "family": "cotransporters",
+   "named_genes": "Five slc12a genes of Schmidtea mediterranea (tied)",
+   "expression": "Mapped by in situ hybridisation",
+   "knockdown": "None found",
+   "pharmacology": "None found",
+   "imaging": "None",
+   "direct_measurement": "None found"
+  },
+  {
+   "family": "ca_pump",
+   "named_genes": "None named in the papers read",
+   "expression": "None found",
+   "knockdown": "None found",
+   "pharmacology": "None found",
+   "imaging": "None",
+   "direct_measurement": "None found"
+  },
+  {
+   "family": "aquaporin",
+   "named_genes": "None named in the papers read",
+   "expression": "None found",
+   "knockdown": "None found",
+   "pharmacology": "None found",
+   "imaging": "None",
+   "direct_measurement": "None found: the searches returned nothing on planarian aquaporins"
+  }
+ ],
+ "claims_checked": [
+  {
+   "claim": "Much of the work measures whole-animal outcomes after a pump, a channel family or the gap junctions are knocked down or blocked, such as two-headed worms",
+   "verdict": "confirmed",
+   "evidence": "Read in eleven records, among them the pump block, octanol, the innexin knockdowns and praziquantel"
+  },
+  {
+   "claim": "Voltage-dye images show body-wide patterns of membrane voltage, relative and not in millivolts",
+   "verdict": "confirmed",
+   "evidence": "By the protocol's own abstract the images show variations in time-averaged membrane potential qualitatively; the papers speak of relative depolarisation"
+  },
+  {
+   "claim": "Expression maps show where channel genes are switched on",
+   "verdict": "confirmed",
+   "evidence": "In situ maps of innexins, of all solute carriers, of TRPM and PKD genes, and two single-cell atlases with public data"
+  },
+  {
+   "claim": "Data on what a channel law needs, conductances and gating measured on a planarian channel, is thin and is still borrowed from other species",
+   "verdict": "corrected in part",
+   "evidence": "Thin, but not absent. One Schmidtea mediterranea channel, TRPA1, was patch-clamped in a heterologous cell. Native sodium, calcium and potassium currents were voltage-clamped in cells of two other planarians (Bdelloura candida, 1993 and 1994; Girardia tigrina, 2003), and an IP3 receptor fragment's binding affinity was measured. None of this is on the channels the atlas draws for Schmidtea mediterranea, and only abstracts of the current recordings were read, so whether they give numbers a law could use is not known"
+  },
+  {
+   "claim": "Several of the best-known experiments were done in Dugesia japonica, not Schmidtea mediterranea",
+   "verdict": "confirmed, and stronger than said",
+   "evidence": "The pump block with dye imaging, the octanol and two-headed work, the innexin triple knockdown, praziquantel and the calcium channels, the barium adaptation and the IP3 receptor are all Dugesia japonica"
+  },
+  {
+   "claim": "Only 4 of the atlas's products are named in a paper tied to a database entry",
+   "verdict": "holds by the atlas's rule; more by a wider one",
+   "evidence": "By this audit's rule (the entry cites the paper), kcnb, kcnka, CNG1, the proton-potassium pump, TRPA1 and the exchangers, cotransporters and PKD channels of one expression study are also named and tied"
+  }
+ ],
+ "context": [
+  {
+   "id": "barghouth2015",
+   "citation": "Barghouth PG, Thiruvalluvan M, Oviedo NJ. (2015) Bioelectrical regulation of cell cycle and the planarian model system. Biochim Biophys Acta.",
+   "authors": "Barghouth PG, Thiruvalluvan M, Oviedo NJ.",
+   "year": "2015",
+   "title": "Bioelectrical regulation of cell cycle and the planarian model system",
+   "journal": "Biochim Biophys Acta",
+   "doi": "10.1016/j.bbamem.2015.02.024",
+   "pmid": "25749155",
+   "pmcid": "PMC4561208",
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "durant2016",
+   "citation": "Durant F, Lobo D, Hammelman J, Levin M. (2016) Physiological controls of large-scale patterning in planarian regeneration: a molecular and computational perspective on growth and form. Regeneration (Oxf).",
+   "authors": "Durant F, Lobo D, Hammelman J, Levin M.",
+   "year": "2016",
+   "title": "Physiological controls of large-scale patterning in planarian regeneration: a molecular and computational perspective on growth and form",
+   "journal": "Regeneration (Oxf)",
+   "doi": "10.1002/reg2.54",
+   "pmid": "27499881",
+   "pmcid": "PMC4895326",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "peiris2013",
+   "citation": "Peiris TH, Oviedo NJ. (2013) Gap junction proteins: master regulators of the planarian stem cell response to tissue maintenance and injury. Biochim Biophys Acta.",
+   "authors": "Peiris TH, Oviedo NJ.",
+   "year": "2013",
+   "title": "Gap junction proteins: master regulators of the planarian stem cell response to tissue maintenance and injury",
+   "journal": "Biochim Biophys Acta",
+   "doi": "10.1016/j.bbamem.2012.03.005",
+   "pmid": "22450236",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "marchant2019",
+   "citation": "Marchant JS. (2019) Ca2+ Signaling and Regeneration. Cold Spring Harb Perspect Biol.",
+   "authors": "Marchant JS.",
+   "year": "2019",
+   "title": "Ca2+ Signaling and Regeneration",
+   "journal": "Cold Spring Harb Perspect Biol",
+   "doi": "10.1101/cshperspect.a035485",
+   "pmid": "31308144",
+   "pmcid": "PMC6824241",
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "chan2013",
+   "citation": "Chan JD, Zarowiecki M, Marchant JS. (2013) Ca²⁺ channels and praziquantel: a view from the free world. Parasitol Int.",
+   "authors": "Chan JD, Zarowiecki M, Marchant JS.",
+   "year": "2013",
+   "title": "Ca²⁺ channels and praziquantel: a view from the free world",
+   "journal": "Parasitol Int",
+   "doi": "10.1016/j.parint.2012.12.001",
+   "pmid": "23246536",
+   "pmcid": "PMC3610807",
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "jeziorski2006",
+   "citation": "Jeziorski MC, Greenberg RM. (2006) Voltage-gated calcium channel subunits from platyhelminths: potential role in praziquantel action. Int J Parasitol.",
+   "authors": "Jeziorski MC, Greenberg RM.",
+   "year": "2006",
+   "title": "Voltage-gated calcium channel subunits from platyhelminths: potential role in praziquantel action",
+   "journal": "Int J Parasitol",
+   "doi": "10.1016/j.ijpara.2006.02.002",
+   "pmid": "16545816",
+   "pmcid": "PMC3788357",
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "authors": "Blair KL, Anderson PAV.",
+   "year": "1996",
+   "title": "Physiology and pharmacology of turbellarian neuromuscular systems",
+   "journal": "Parasitology 113:S73-S82",
+   "doi": "10.1017/s0031182000077908",
+   "pmid": null,
+   "pmcid": null,
+   "licence": "no open licence: the publisher's terms (Crossref record)",
+   "class": "no stated terms",
+   "record": "Crossref",
+   "read": "abstract only",
+   "id": "blair1996",
+   "citation": "Blair KL, Anderson PAV. (1996) Physiology and pharmacology of turbellarian neuromuscular systems. Parasitology 113:S73-S82."
+  },
+  {
+   "id": "reho2022",
+   "citation": "Reho G, Lelièvre V, Cadiou H. (2022) Planarian nociception: Lessons from a scrunching flatworm. Front Mol Neurosci.",
+   "authors": "Reho G, Lelièvre V, Cadiou H.",
+   "year": "2022",
+   "title": "Planarian nociception: Lessons from a scrunching flatworm",
+   "journal": "Front Mol Neurosci",
+   "doi": "10.3389/fnmol.2022.935918",
+   "pmid": "35959107",
+   "pmcid": "PMC9362985",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  },
+  {
+   "id": "levin2019",
+   "citation": "Levin M, Pietak AM, Bischof J. (2019) Planarian regeneration as a model of anatomical homeostasis: Recent progress in biophysical and computational approaches. Semin Cell Dev Biol.",
+   "authors": "Levin M, Pietak AM, Bischof J.",
+   "year": "2019",
+   "title": "Planarian regeneration as a model of anatomical homeostasis: Recent progress in biophysical and computational approaches",
+   "journal": "Semin Cell Dev Biol",
+   "doi": "10.1016/j.semcdb.2018.04.003",
+   "pmid": "29635019",
+   "pmcid": "PMC6234102",
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only"
+  }
+ ],
+ "leads_not_audited": [
+  {
+   "id": "settles2025",
+   "citation": "Settles SE, Miller KE, Roberts-Galbraith RH. (2025) A parenchymal niche regulates pluripotent stem cell function in planarians. preprint.",
+   "authors": "Settles SE, Miller KE, Roberts-Galbraith RH.",
+   "year": "2025",
+   "title": "A parenchymal niche regulates pluripotent stem cell function in planarians",
+   "journal": "preprint",
+   "doi": "10.1101/2025.08.01.668211",
+   "pmid": null,
+   "pmcid": null,
+   "licence": "CC BY-NC-ND",
+   "class": "non-commercial",
+   "record": "Europe PMC",
+   "read": "abstract only",
+   "why": "A preprint: innexin genes needed for stem-cell function; its abstract names no species"
+  },
+  {
+   "id": "scimone2011",
+   "citation": "Scimone ML, Srivastava M, Bell GW, Reddien PW. (2011) A regulatory program for excretory system regeneration in planarians. Development.",
+   "authors": "Scimone ML, Srivastava M, Bell GW, Reddien PW.",
+   "year": "2011",
+   "title": "A regulatory program for excretory system regeneration in planarians",
+   "journal": "Development",
+   "doi": "10.1242/dev.068098",
+   "pmid": "21937596",
+   "pmcid": "PMC3177309",
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only",
+   "why": "Excretory cells express homologs of reabsorption proteins; not audited"
+  },
+  {
+   "id": "moneypenny2001",
+   "citation": "Moneypenny CG, Kreshchenko N, Moffett CL, Halton DW, Day TA, Maule AG. (2001) Physiological effects of FMRFamide-related peptides and classical transmitters on dispersed muscle fibres of the turbellarian, Procerodes littoralis. Parasitology.",
+   "authors": "Moneypenny CG, Kreshchenko N, Moffett CL, Halton DW, Day TA, Maule AG.",
+   "year": "2001",
+   "title": "Physiological effects of FMRFamide-related peptides and classical transmitters on dispersed muscle fibres of the turbellarian, Procerodes littoralis",
+   "journal": "Parasitology",
+   "doi": "10.1017/s0031182001007508",
+   "pmid": "11315178",
+   "pmcid": null,
+   "licence": "no licence stated",
+   "class": "no stated terms",
+   "record": "Europe PMC",
+   "read": "abstract only",
+   "why": "Transmitters and peptides contract dispersed muscle fibres of Procerodes littoralis; not audited"
+  },
+  {
+   "id": "reho2024",
+   "citation": "Reho G, Menger Y, Goumon Y, Lelièvre V, Cadiou H. (2024) Behavioral and pharmacological characterization of planarian nociception. Front Mol Neurosci.",
+   "authors": "Reho G, Menger Y, Goumon Y, Lelièvre V, Cadiou H.",
+   "year": "2024",
+   "title": "Behavioral and pharmacological characterization of planarian nociception",
+   "journal": "Front Mol Neurosci",
+   "doi": "10.3389/fnmol.2024.1368009",
+   "pmid": "38751713",
+   "pmcid": "PMC11094297",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "abstract only",
+   "why": "Nociceptive tests and drugs in Girardia dorotocephala; not audited"
+  },
+  {
+   "id": "mccubbin2025",
+   "citation": "McCubbin RA, Auwal MA, Wang S, Alvarez Zepeda S, Sasik R, Zeller RW, Ross KG, Zayas RM. (2025) Smed-pou4-2 regulates mechanosensory neuron regeneration and function in planarians. Elife.",
+   "authors": "McCubbin RA, Auwal MA, Wang S, Alvarez Zepeda S, Sasik R, Zeller RW, Ross KG, Zayas RM.",
+   "year": "2025",
+   "title": "Smed-pou4-2 regulates mechanosensory neuron regeneration and function in planarians",
+   "journal": "Elife",
+   "doi": "10.7554/elife.107718",
+   "pmid": "41252183",
+   "pmcid": "PMC12626421",
+   "licence": "CC BY",
+   "class": "permissive",
+   "record": "Europe PMC",
+   "read": "abstract only",
+   "why": "A transcription factor of mechanosensory neurons in Schmidtea mediterranea; its channel genes were not audited"
+  }
+ ],
+ "not_determined": [
+  "Whether the current recordings of 1993, 1994 and 2003 report conductances, kinetics or current-voltage relations that a law could be set from: only their abstracts were read.",
+  "How membrane voltage and calcium entry were read in the papers known only by abstract.",
+  "What the 2014 thesis measured in numbers: its record's abstract is cut short and the thesis was not fetched.",
+  "The two papers of 1952 on applied fields: their records have no abstract.",
+  "Which strain was used in the papers read by abstract.",
+  "Whether data behind the papers that name no deposit exists elsewhere: no author was asked, by rule.",
+  "The ligand-gated channels, and behavioural pharmacology in general, were not audited beyond what the searches returned.",
+  "Which gene models the named genes of other species correspond to: the catalogue holds Schmidtea mediterranea only, and no sequence comparison across species was made."
+ ]
+}

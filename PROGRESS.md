@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-14 UTC.
+Last updated: 2026-11-15 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -11,21 +11,24 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **14 November 2026.** The levels and the working order are in
+- **15 November 2026.** The levels and the working order are in
   [CURRENT_PLAN](docs/CURRENT_PLAN.md#status-on-14-november-2026-and-the-working-order-d156)
-  (D156). The runs below are newest first.
-  - **Numerically qualified:** S2, S3, Rm1 and S5a.
-  - **Judged:**
-    - E07-v1. The disc did not renew under donor-copy turnover, and the coupling's effect was
-      far smaller than predicted.
-    - Composite GPU agreement (in progress).
-  - **Numerically qualified, later the same day:** D150 secreted species (its stated scope).
-  - **Implemented and guarded:** D152 reactions (MG0c in progress), D153 checkpoint continuity, and water plus
-    replacement@2.
-  - **In design:** conduction (D155, first), coupling out of the inventory, and the D154
-    run-view output.
-- **Single lead agent from 8 November**, with at most six subagents on disjoint files from
-  14 November (four before; D155). Work continues on `main`, and milestones are tagged.
+  (D156, with D176's round). The runs below are newest first.
+  - **Judged (numerically qualified, CPU only, each within its scope line):** the coupling
+    operator `species_regulated_availability@1` (47 of 47) and MG0c's reactions operator
+    `local_species_reactions@1` (55 of 55).
+  - **Landed for development, not judged:** FR-1's and FR-3's first milestones, FR-10's first two,
+    the phase start and failure records, Track E's M1 development work, and independent references
+    for FR-3, FR-4 and the passive law.
+  - **In progress:** D172's single restructure round (D176). Engine changes go to the integration
+    branch `integration-d172`, from tag `d172-base-2026-11-15`, until one integrated landing; main
+    takes docs, validation and tests. FR-4 and FR-5 are the round's priority consumers.
+  - **Proposed designs:** the FR-4/FR-5 physics note and the run view (D154).
+  - **Open on the L4:** Q7, the run-to-run nondeterminism at 825 nodes. The W1 full-tissue hold
+    runs its third segment.
+- **Single lead agent from 8 November**, with at most seven subagents on disjoint files (six from
+  14 November, D155; seven the same evening, D171). Work continues on `main`, and milestones are
+  tagged.
 
 **Background: the reset of 8 November.**
 - **Reset on 8 November: BETSE is an external reference, not part of the engine.**
@@ -72,6 +75,165 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **The coupling operator's matched-arm export ran (15 November 2026, D177).** It is development
+  evidence, with no registered or judged verdict
+  ([EXPORT.md](/mnt/workspaces/Cells/coupling-export-20261115-01/EXPORT.md)).
+  - **Setup:** the driver `validation/tissue/matched_arm_export.py` ran from a clean snapshot of main
+    5c2b04d6, with `resolved_pump_composite@1` over `resolved_pump_tissue@3`,
+    `scheduled_species_turnover@1` and `species_regulated_availability@1`.
+  - **The 16 definitions** (four arms at four steps) were admitted and executed. Six fresh-process
+    restarts and the 4- and 7-step windows are byte-identical on all 103 fields.
+  - **Agreement:** the engine agrees with the refined independent reference to 2.9e-5 mV at 1 ms,
+    and to 4.5e-7 mV at 0.125 ms.
+  - **A finding: decimal record times are refused** at window planning, because an observation time
+    must be an accepted integration boundary. The export uses the engine's grid times instead.
+  - **Duration probes** at 0.125 ms: 1 s, 10 s and 60 s took 126 s, 680 s and 3481 s. At 60 s, 91% of
+    the wall time is host-side window checks; the compiled step costs 0.46 ms. That is input to the
+    round's inventory of host-side checks.
+  - **The first viewer feed,** a development run of the secreted-species world through the shared
+    output path, is in /mnt/workspaces/Cells/viewer-feed-20261115-01/.
+
+- **A future FEP track proposed (15 November 2026; docs only; PROPOSED, not scheduled).** At the
+  user's request ([proposal](docs/FEP_TRACK_PROPOSAL.md);
+  [source log](/mnt/workspaces/Cells/fep-track-20261115-01/sources.json)).
+  - **Claims discipline:** no result could prove the free-energy principle. A comparison harness
+    would carry planted tests, and a pair with identical dynamics that must come out
+    indistinguishable.
+  - **Three deferred stages:**
+    - chemotaxis in a well-mixed cell first;
+    - anticipatory regulation, held with D145's gene-regulation hold;
+    - collective tissue regulation, including islet calcium waves, which is Track E's coupling
+      physics.
+  - **Engine gaps:**
+    - Stage 1a needs only general items: an allosteric factor, occupancy as a coupling source,
+      output-dependent adaptation and an organism instance.
+    - Motility, gene expression with delays, long durations, evolution and observation models are
+      missing.
+  - **Timing:** recommended after the D172 round and FR-4/FR-5, at about 20–28 agent-days. The
+    decisions listed in the proposal are the user's.
+
+- **The results baseline tool, the protocol scan and the matched-arm export driver landed (15
+  November 2026).** Validation only.
+  - **Gate:** tier 1 at eb9ca828: 344 files. Two tree-scanning guards changed, both on the new tools.
+    - The export driver named a checkpoint's array file, which the continuity guard forbids. It
+      now lists the checkpoint's files.
+    - The baseline tool built free-offset worlds without D147's declaration. It is exempt, with its
+      reason: its worlds run as their protocols declare them (G2-Q1's Q7 tissue as its judge runs
+      it), and `--from` re-runs saved definitions verbatim.
+    - The guards and the new tests reran on the fixed tree at df61c3f0: 77 passed
+      ([log](/mnt/workspaces/Cells/d172-restructure-20261115-01/acceptance/land-guards-df61c3f0/guards.log)).
+  - **`validation/results_baseline.py`, D176's results gate:**
+    - It saves a defined world set's CPU outputs at a tag, and compares a later source's outputs
+      bitwise or at a declared tolerance. Refusals must match exactly.
+    - K1's padding exemption is opt-in, and off for D172's dispatch gate.
+    - The baseline at tag `d172-base-2026-11-15` holds 113 worlds, 112 of which run
+      ([baseline](/mnt/workspaces/Cells/d172-restructure-20261115-01/acceptance/baseline-44227075/)).
+  - **`validation/protocol_models.py`:** lists the engine models each protocol names, for G2's
+    scope.
+  - **`validation/tissue/matched_arm_export.py` (D177):** the coupling operator's A5 world in four
+    arms at four steps, with independent references, restarts and windows. It is a driver of the
+    established runners. It adds no physics and gives no verdict.
+  - **Packed GPU execution, a design point (proposed):** on the L4, 80–90% SM activity is reached at
+    128 or more worlds of one structure (89% at 128, 93% at 256).
+  - **15 self-tests** (10 and 5), tier 1.
+  - **Also landed:** the inner-model note's revisions.
+    - Finite fuel rows are the transporter's default, held rows the special case.
+    - §7.5's monotone booking is a proposal awaiting a probe and the lead's ruling.
+    - The plan is re-costed at about 14–18 days.
+
+- **FR-5's and the finite-fuel case's independent references landed, with D177 and the FR-4/FR-5
+  note's revisions (15 November 2026).** The references are in `validation/compartment_ph/` and were
+  written code-blind ([usage](validation/compartment_ph/REFERENCES_USAGE.md);
+  [evidence](/mnt/workspaces/Cells/independent-references-20261115-01/HANDOFF.md)). Tier 1 ran at
+  b5954bf3: 342 files, no changed outcome. The later commits are docs only, apart from the
+  visualizer merge (the next entry).
+  - **R-transfer (FR-5)** runs the note's §13.2 from FR-4's steady state at 1800 s.
+    - The first world showed neither of its claims: the cargo had crossed before the damage, and
+      the condition never closed. The world was revised into two arms, with numeric claims.
+    - **Arm T:** while pH_L is above pH₅₀, the conditioned transfer slows 13.7-fold; it does not
+      stop. pH_L returns below pH₅₀ at 327 s.
+    - **Arm R:** the pore releases 0.874 of the lumen's cargo inside the damage window. pH_L
+      returns below pH₅₀ at 367 s.
+    - Both controls clear 10 times the cargo budget (314 B and 872 B). Energy closes within
+      4.2e-11 pJ.
+    - The engine comparison must start the reference from the engine's own 1800 s checkpoint: the
+      cargo moves about 0.06 B per 1e-3 pH of start offset.
+  - **R-fuel (D176's finite-fuel case):** an ATP-driven pump moving a neutral solute, with
+    stoichiometric regeneration.
+    - With regeneration off for 200 s, ATP falls from 3.27 to 1.7e-4 mM, and the pump to 0.0018 of
+      its held-fuel rate.
+    - The pump is back within 1% two seconds after regeneration resumes.
+    - The books close within 2.5e-11 pJ.
+  - **11 self-tests** (6 and 5), tier 1.
+  - **Also landed:**
+    - D177, recording the user's decisions on a downstream user's requests;
+    - the FR-4/FR-5 note's consistency fixes: B7 host-only, and one continuum label;
+    - FR-5's revised §13.2: two arms, numeric claims confirmed by the references, and dt 0.5 ms.
+    - FR-11, the user's request for looping replay packages of living cells for the viewer, with
+      the user's choices;
+    - D178, the user's ruling on the visualizer's placement predictions.
+
+- **The visualizer merged into main again (15 November 2026, the user's request).** It adds the
+  `visualizer` branch's commits since the 14 November merge, all under `visualizer/`, up to
+  d0201f3a. Nothing outside `visualizer/` changed.
+  - **What it adds:**
+    - the species switch (human, planarian, Syn3A, *M. pneumoniae*);
+    - each species' protein shelves: Syn3A's 455 proteins, *M. pneumoniae*'s 688, and the
+      planarian's 18,882 in families;
+    - the planarian bioelectric evidence audit;
+    - the quantity layers' contract, and the visualizer's note on what the layers need from the
+      engine. The lead's answers route requests 1–8 to the run-view writer in D172's round.
+  - **Licence:** the user ruled that membrane-placement predictions read from UniProt and WormBase
+    ParaSite may stay (D178).
+  - **Gate:** the tree-scanning guards ran on the merge and passed: 68 passed and 46 skipped, the skips being the D131 ones
+    ([log](/mnt/workspaces/Cells/visualizer-merge-20261115/guards.log)). No full tier gate ran for
+    this part, because the tier runner collects `tests/` only. The visualizer reported 225 of its own
+    226 tests passing, with 1 skipped, on a clean copy of 268ed6de.
+
+- **FR-4's and the passive law's independent references landed (15 November 2026).** They are in
+  `validation/compartment_ph/` and `validation/passive/` and were written code-blind
+  ([FR-4 usage](validation/compartment_ph/REFERENCES_USAGE.md);
+  [passive usage](validation/passive/REFERENCES_USAGE.md);
+  [evidence](/mnt/workspaces/Cells/independent-references-20261115-01/HANDOFF.md)). Tier 1 at the
+  merge 22d4251: 340 files, no changed outcome.
+  - **FR-4's references** (R-closure and R-kinetic, Radau at rtol 1e-11) run the FR-4 note's
+    acceptance world for 900 s.
+    - The lumen acidifies from pH 7.2 to 5.096 against the gradient, and the cytosol stays within
+      0.018 pH. The energy identity closes within 2.2e-11 pJ.
+    - The kinetic system converges to the closure at first order in 1/k_on: the lumen's largest
+      lag is 1.26e-2, 1.28e-4 and 1.28e-6 pH at k_on = 1e3, 1e5 and 1e7 mM⁻¹ s⁻¹.
+    - With the counterion route removed (P_K = 0) the lumen stalls at pH 7.14. The route's effect
+      is 2.04 pH units, 2,044 times the 1e-3 pH budget.
+    - The declared outside case (the lumen's k_on at 1e-3) lags by up to 2.2 pH units and fails,
+      as the note requires.
+  - **A finding: the note's envelope did not imply its budget.** The check λ ≥ 10³ρ admitted k_on
+    four orders of magnitude below the point where the 1e-3 pH budget holds (about 1.28e4).
+    - The lag is (ρ/λ)(β/ln 10 − h)/(h ln 10). Its bound-to-free factor is about 1.5e4 at pH 7.2.
+    - The FR-4 owner replaced the fixed ratio with this state-dependent check and a planted test
+      (`fr45-physics`, 4f7e1a30). The check lands with FR-4's code on `integration-d172`; the
+      note's revision lands on main with the next docs batch.
+  - **The passive law's closed pair:** a closed form (floats and 50 digits) and Radau and DOP853
+    integrations of any closed graph.
+    - Flux and heat are exactly 0 at equal concentrations, and reversal is exactly antisymmetric.
+    - Heat is non-negative and monotone; material is conserved within 3.8e-15.
+    - The per-step heat is within 1.24 ε of its rounding scale over 5,000 random steps.
+    - The core owner's conventions answer its three questions: a junction's PA is
+      P·A·gate·availability, heat goes to the law's own field, and a trace is a start, never a
+      zero.
+  - **20 self-tests** (8 and 12), tier 1.
+
+- **FR-3's independent site-occupancy references landed (15 November 2026).** They are in
+  `validation/occupancy/` and were written code-blind
+  ([usage](validation/occupancy/REFERENCES_USAGE.md);
+  [evidence](/mnt/workspaces/Cells/independent-references-20261115-01/HANDOFF.md)). Tier 1 at the
+  merge 66d248d: 338 files, no changed outcome.
+  - **R-ode** integrates the full binding kinetics (Radau, rtol 1e-12, cross-checked by DOP853).
+    - Against the saturable sink, the day-one guard converges at orders 0.980 and 0.998 in ε.
+    - Its floor sits well below the engine errors to be judged.
+  - **R-dG** re-implements the per-step bookings independently. Its ledger closes within 0.41 ε of
+    scale, and its heat and work converge at second order.
+  - **20 self-tests, tier 1.**
 
 - **Track E, M1's development work landed (15 November 2026).** Validation only; no judged claim.
   Tier 1 at the merge 0385674: 337 files, no changed outcome

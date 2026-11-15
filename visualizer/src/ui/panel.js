@@ -99,6 +99,15 @@ class CellsPanel extends HTMLElement {
       );
       body.append(this.list(group.title, items, "connection"));
     }
+    // Parts the view makes itself that this one leads to (a family's proteins; a protein's family).
+    for (const group of entity.opens || []) {
+      if (!group.items?.length) continue;
+      const items = group.items.map((part) =>
+        h("li", {}, h("button", { class: "link-button", type: "button", onclick: () => emit(this, "cells-select", { id: part.id, fly: true }) }, statusSwatch(part.swatch), part.label))
+      );
+      const more = group.more > 0 ? h("li", { class: "quiet" }, `and ${group.more.toLocaleString("en-US")} more: the list finds each by name`) : null;
+      body.append(this.list(group.title, more ? [...items, more] : items, "opens", null, group.count));
+    }
     const connections = this.connections(model, entity);
     if (connections.length) body.append(h("h3", {}, "Connections"), ...connections);
     if (entity.sources?.length) {
@@ -155,9 +164,9 @@ class CellsPanel extends HTMLElement {
     });
   }
 
-  list(title, items, className = "", note = null) {
+  list(title, items, className = "", note = null, count = items.length) {
     const first = items.slice(0, SHOWN), rest = items.slice(SHOWN);
-    const block = h("div", { class: `panel-list ${className}` }, h("h4", {}, title, h("span", { class: "quiet" }, ` ${items.length}`)), note ? h("p", { class: "list-note" }, note) : null, h("ul", {}, first));
+    const block = h("div", { class: `panel-list ${className}` }, h("h4", {}, title, h("span", { class: "quiet" }, ` ${count.toLocaleString("en-US")}`)), note ? h("p", { class: "list-note" }, note) : null, h("ul", {}, first));
     if (rest.length) block.append(h("details", {}, h("summary", {}, `Show ${rest.length} more`), h("ul", {}, rest)));
     return block;
   }
