@@ -24,6 +24,10 @@ valence z_k) and protons.
   - the pump (§6): dG_cyc = dG'_ATP + n [RT ln(h_L/h_c) - F V_b],
     dG'_ATP = dG'0 + RT ln(c_ADP c_Pi/(c_ATP c0)), S = [1 + (K_H/h_c)^n]^-1 [1 + K_ATP/c_ATP]^-1,
     J_cyc = k a S (1 - exp(dG_cyc/RT)), moving n H+ from c to L per cycle;
+  - K2(b), the self-consistent reversed pump (fr4_acidification_v1's controls.K2_planted_sign at
+    e71f1200; ``Pump.reversed_sides``): the same law with its two sides exchanged, so a forward
+    cycle moves n H+ from L to c, dG_cyc = dG'_ATP + n [RT ln(h_c/h_L) + F V_b] and
+    S = [1 + (K_H/h_L)^n]^-1 [1 + K_ATP/c_ATP]^-1; fuel, work and heat as declared;
   - V_b = phi_c - phi_L = -q_L/C_b; phi_c = (q_c + q_L)/C_p; q = 1e-15 F (fixed + sum z n).
 * Energy (Appendix A): dG_stored + Q = W with W = int (-dG'_ATP) J_cyc dt,
   Q = int [-dG_cyc J_cyc + sum_routes J (mu~_in - mu~_out) + (R-kinetic) sum_k -V r_k dG_k] dt,
@@ -94,7 +98,9 @@ class Node:
 
 @dataclass(frozen=True)
 class Pump:
-    """proton_atp_mass_action_positive@1 (§6) with held (maintained) fuel at the inside node."""
+    """proton_atp_mass_action_positive@1 (§6) with held (maintained) fuel at the cytosol.
+    ``reversed_sides``: K2(b), the declared law with its two sides exchanged (protons taken from
+    the lumen, saturating on h_L, given to the cytosol); the fuel stays at the cytosol."""
 
     n: int
     capacity_fmol_per_s: float
@@ -105,6 +111,7 @@ class Pump:
     Pi_mM: float
     dG0_prime_J_per_mol: float
     availability: float = 1.0
+    reversed_sides: bool = False
 
 
 @dataclass(frozen=True)
@@ -150,6 +157,8 @@ def check_world(world):
             raise ValueError("pump constants and fuel are > 0")
         if not (p.capacity_fmol_per_s >= 0 and 0 <= p.availability <= 1):
             raise ValueError("capacity >= 0 and availability in [0, 1]")
+        if not isinstance(p.reversed_sides, bool):
+            raise ValueError("reversed_sides is a bool")
 
 
 # ---------------------------------------------------------------- the closure
@@ -333,17 +342,24 @@ class _Model:
         out["heat_rate"] += 1e-3 * JH * (rt * math.log(hc / hL) + F * Vb)
         p = w.pump
         if p is None:
-            out.update(J_cyc=0.0, dG_cyc=0.0, dG_ATP=0.0)
+            out.update(J_cyc=0.0, dG_cyc=0.0, dG_ATP=0.0, J_H_pump=0.0)
             return out
         dG_atp = p.dG0_prime_J_per_mol + rt * math.log(p.ADP_mM * p.Pi_mM
                                                          / (p.ATP_mM * self.c0))
-        dG_cyc = dG_atp + p.n * (rt * math.log(hL / hc) - F * Vb)
+        # A forward cycle moves n H+ from its source side to its sink side: c to L as declared,
+        # L to c reversed (K2(b)). V_b = phi_c - phi_L.
+        if p.reversed_sides:
+            h_src, h_snk, dphi = hL, hc, Vb  # phi_sink - phi_source = phi_c - phi_L
+        else:
+            h_src, h_snk, dphi = hc, hL, -Vb
+        dG_cyc = dG_atp + p.n * (rt * math.log(h_snk / h_src) + F * dphi)
         x = dG_cyc / rt
         if abs(x) > 80.0:
             raise RuntimeError(f"the pump's |dG_cyc/RT| = {abs(x):.3g} exceeds its domain 80")
-        log_sat = (-math.log1p((p.K_H_mM / hc) ** p.n) - math.log1p(p.K_ATP_mM / p.ATP_mM))
+        log_sat = (-math.log1p((p.K_H_mM / h_src) ** p.n) - math.log1p(p.K_ATP_mM / p.ATP_mM))
         Jc = p.capacity_fmol_per_s * p.availability * math.exp(log_sat) * -math.expm1(x)
-        out.update(J_cyc=Jc, dG_cyc=dG_cyc, dG_ATP=dG_atp)
+        out.update(J_cyc=Jc, dG_cyc=dG_cyc, dG_ATP=dG_atp,
+                   J_H_pump=(-1.0 if p.reversed_sides else 1.0) * p.n * Jc)  # c to L
         out["heat_rate"] += 1e-3 * (-dG_cyc) * Jc
         out["work_rate"] = 1e-3 * (-dG_atp) * Jc
         return out
@@ -366,9 +382,7 @@ class _Model:
         sp = self.speciation(y)
         Vb, _ = self.potentials(sp)
         tr = self.transport(sp, Vb)
-        p = self.w.pump
-        nJ = (p.n if p is not None else 0) * tr["J_cyc"]
-        dH = nJ + tr["J_H"]  # protons moved c -> L
+        dH = tr["J_H_pump"] + tr["J_H"]  # protons moved c -> L
         out = np.zeros(self.size)
         if self.kinetic:
             rx = self.reactions(sp)
@@ -418,8 +432,7 @@ class _Model:
         sp = self.speciation(y)
         Vb, _ = self.potentials(sp)
         tr = self.transport(sp, Vb)
-        p = self.w.pump
-        dH = (p.n if p is not None else 0) * tr["J_cyc"] + tr["J_H"]
+        dH = tr["J_H_pump"] + tr["J_H"]
         out = []
         for i, sign in ((0, -1.0), (1, 1.0)):
             V, h = self.V[i], sp[i]["h"]
@@ -434,7 +447,8 @@ class _Model:
 
 class PHRun:
     """One run. ``at[t]``: dict(pH_c, pH_L, h_c, h_L (mM), Heq_c, Heq_L (fmol), ions_c, ions_L
-    (fmol), Vb, phi_c (V), J_cyc, J_H, J_ions (fmol/s), dG_cyc (J/mol), cycles (fmol), work_pJ,
+    (fmol), Vb, phi_c (V), J_cyc, J_H, J_H_pump (the pump's protons, c to L), J_ions (fmol/s),
+    dG_cyc (J/mol), cycles (fmol), work_pJ,
     heat_pJ, reaction_heat_pJ (R-kinetic's share of the heat; 0 in R-closure), stored_change_pJ,
     energy_residual_pJ (dG_stored + Q - W), envelope_ratio (lambda/rho per node, §4.2) and
     buffer_capacity (beta per node, mM per pH unit))."""
@@ -459,7 +473,8 @@ class PHRun:
             t=t, pH_c=pH(sp[0]["h"], m.c0), pH_L=pH(sp[1]["h"], m.c0), h_c=sp[0]["h"],
             h_L=sp[1]["h"], Heq_c=heq[0], Heq_L=heq[1],
             ions_c=dict(sp[0]["ions"]), ions_L=dict(sp[1]["ions"]), Vb=Vb, phi_c=phic,
-            J_cyc=tr["J_cyc"], J_H=tr["J_H"], J_ions=dict(tr["J_ions"]), dG_cyc=tr["dG_cyc"],
+            J_cyc=tr["J_cyc"], J_H=tr["J_H"], J_H_pump=tr["J_H_pump"],
+            J_ions=dict(tr["J_ions"]), dG_cyc=tr["dG_cyc"],
             cycles=float(y[m.iC]), work_pJ=W, heat_pJ=Q, reaction_heat_pJ=float(y[m.iR]),
             stored_change_pJ=G - self.G0,
             energy_residual_pJ=(G - self.G0) + Q - W,
@@ -487,10 +502,10 @@ def integrate(world, t_end, *, record=(), kinetic=False, k_on=None, rtol=1e-11, 
 # ---------------------------------------------------------------- the acceptance world (§13.1)
 
 
-def acceptance_world(*, P_K=5e-10, constants=None, k_on=1e7):
+def acceptance_world(*, P_K=5e-10, constants=None, k_on=1e7, reversed_pump=False):
     """§13 and §13.1's world: a 10 um owner cytosol, a lumped lumen of 1000 compartments of 250 nm,
     the pump (n = 2) on held fuel, the proton leak and the K+ counterion; ``P_K = 0`` is the
-    negative control."""
+    negative control K1; ``reversed_pump=True`` is K2(b), the pump's two sides exchanged."""
     const = constants or Constants(96485.33212, 8.314462618, 310.0)
     ions = {"Na": 10.0, "K": 140.0, "Cl": 10.0}
     return World(
@@ -503,5 +518,6 @@ def acceptance_world(*, P_K=5e-10, constants=None, k_on=1e7):
         permeability_m_s={"K": P_K} if P_K > 0 else {},
         proton_permeability_m_s=6e-7,
         pump=Pump(n=2, capacity_fmol_per_s=8.3027e-3, K_H_mM=1e-4, K_ATP_mM=0.1, ATP_mM=3.0,
-                  ADP_mM=0.3, Pi_mM=3.0, dG0_prime_J_per_mol=-30.5e3),
+                  ADP_mM=0.3, Pi_mM=3.0, dG0_prime_J_per_mol=-30.5e3,
+                  reversed_sides=reversed_pump),
     )
