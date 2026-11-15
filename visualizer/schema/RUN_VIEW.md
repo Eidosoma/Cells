@@ -469,14 +469,17 @@ window. It takes the readouts the run observed, `observed_<field>` at `observati
   read as totals since the start where their arrays begin at nought and never fall, and
   the view says that this is read from the arrays.
 - **Exchange routes** (`scheduled_species_exchange@1`): the ledger `exchange_moved_fmol`
-  has one total for each route. Which way it is positive is declared nowhere, so the
-  adapter reads it from the run's own arrays: a positive total has left the route's cell
-  where, at every record, the amount of the route's species in that cell is its amount at
-  the start, plus what was made there, less what was cleared there, what crossed the
-  cell's membranes and junctions, and the routes' totals; and where the amounts do not
-  add up with the totals read the other way round, or along each route's declared
-  direction. Its `by` says that this is the viewer's reading. Where the check does not
-  hold, the record has no sign and no kind, and no layer draws it with a direction.
+  has one total for each route. The run's files do not declare which way it is positive.
+  The engine's convention, which its lead confirmed on 15 November 2026 from the
+  operator's own code, is that a positive total has left the route's cell, for an export
+  and an import route alike. The adapter gives the record that sign only where the run's
+  own arrays agree: where, at every record, the amount of the route's species in that
+  cell is its amount at the start, plus what was made there, less what was cleared there,
+  what crossed the cell's membranes and junctions, and the routes' totals; and where the
+  amounts do not add up with the totals read the other way round, or along each route's
+  declared direction. Its `by` names the convention and who confirmed it, and says that
+  the run's amounts agree. Where the check does not hold, the record has no sign and no
+  kind, and no layer draws it with a direction.
 - **Outside nodes as tiles:** where the cells and the outside nodes of a run fit a
   hexagonal lattice with a tile for each, touching wherever a junction, a membrane or a
   face joins two of them (one cell, the space it secretes into and a bath), the outside

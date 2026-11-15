@@ -150,6 +150,11 @@ export function signedBy(sign) {
   return ` Declared by the run's own view${sign.confirmed ? `; confirmed by ${sign.confirmed}` : ""}.`;
 }
 
+/** The same for a legend: its first sentence. What more an adapter says with it (how the run's own amounts agree) stands in the panel on what the layers show. */
+export function signedByShort(sign) {
+  return signedBy(sign).trim().split(/(?<=\.) /)[0];
+}
+
 /** In one sentence, what stands behind a saved record: who computed it and how it is represented. */
 export function behind(record) {
   if (!record) return "";

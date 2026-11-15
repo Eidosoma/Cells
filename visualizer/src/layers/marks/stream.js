@@ -24,7 +24,7 @@
 
 import * as THREE from "../../three.js";
 import { tokenFor, beadsASecond, ionsASecond, timeWords, tokenWords, meanRate, restarted, standing, advance, headSize, MOST, HEAD_WORDS, STILL_WORDS } from "./beads.js";
-import { fromFirst, signedBy } from "../records.js";
+import { fromFirst, signedByShort } from "../records.js";
 
 const SIZE = { quiet: 1, bold: 1.35 };
 
@@ -285,7 +285,7 @@ export const stream = {
         // Whose word the direction is: each source says it, and the sources that share a word are named together.
         const by = new Map();
         for (const lane of lanes) {
-          const sign = lane.source.sign, whose = signedBy(sign).trim();
+          const sign = lane.source.sign, whose = signedByShort(sign);
           const said = by.get(whose) || new Set();
           said.add(sign.says);
           by.set(whose, said);

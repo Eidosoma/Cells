@@ -342,7 +342,9 @@ view it uses none of its own tables and reads no kind and no sign out of the arr
 (`schema/RUN_VIEW.md`, "A run with the engine's own view beside its files"). Read that
 way, the worked example feeds the fog, the beads across the face and the glow. What it
 cannot feed is listed here for the writer's owner. **Items 1 and 10 change a picture;**
-the rest are smaller.
+the rest are smaller. The lead answered items 1 and 10 the same day, as written under
+each; items 2 to 9 and 11 are in the queue of the run view's writer, after the modular
+rework lands.
 
 1. **`exchange_moved_fmol` has no `kind` and no `sign`** (on both time bases). So it gives
    no rate, and the two exchange routes get no beads: on this run that is the whole of "a
@@ -352,6 +354,16 @@ the rest are smaller.
    route alike, and under no other reading. The published page shows this run packaged
    with the viewer's own table, which draws the routes by that reading and says that it
    is the viewer's; a word from the core's owner would let the legend say "confirmed".
+   **Answered by the lead the same day: yes, that is the convention.** The total is
+   cumulative and positive outwards, from the inside of the route's patch to its outside,
+   for both directions: an export route's value is nought or more and an import route's
+   nought or less, and the operator's own domain check enforces it
+   (`src/cells/models/operators/species_exchange.py`: the state's axes mark the field
+   "Export positive", and the validity rule asks for a total of nought or more on an
+   export and nought or less on an import). The writer will declare it (`kind:
+   cumulative`, a sign by roles, with item 2). Until it does, the page says that the
+   direction is the engine's convention, confirmed, and no longer the viewer's reading;
+   the adapter still draws it only where the run's amounts agree.
 2. **The writer's `SIGN_ROLES` has no entry for `exchange_route`,** so its own reader would
    refuse a sign on that record as things stand.
 3. **No route states the species it carries.** `exchange_route` has ids, the membrane each
@@ -391,6 +403,12 @@ the rest are smaller.
     sign's words the balance's sum, and not the saved array? Until a saved run of a
     sheet carries these totals the close-up is shown on an example only, so no real
     picture rests on the answer yet.
+    **Answered by the lead the same day: yes.** The saved `membrane_transferred` holds
+    the passive membrane routes only. "The patch's membrane total" is the balance's sum
+    when the balance is checked: `membrane_transferred` plus `channel_transferred` mapped
+    to its patch. The pump's moves are a third, separate term (its stoichiometry times
+    `pump_cycles`). Drawing the channels, the pump and the membrane side by side counts
+    nothing twice.
 11. **Reading notes, not gaps.** The view has no `id`, no `arm` and no end state for the
     run: the catalogue names it, and how it ended still comes from `summary.json`. The
     run's own files name no revision of the engine by its commit (the note beside the

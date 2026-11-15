@@ -994,13 +994,13 @@ test("an operator's ledgers are read as totals where they start at nought and ne
   assert.equal(new Set(view.layers.map((layer) => layer.id)).size, view.layers.length);
 });
 
-test("which way an exchange route's total is positive is read from the amounts adding up, and said only where no other reading does", () => {
+test("an exchange route's total is positive out of the cell by the engine's confirmed convention, and gets a direction only where the run's amounts agree", () => {
   const good = open(all, SECRETING), bad = open(all, UNBALANCED);
   const moved = good.record("exchange_moved_fmol");
   assert.deepEqual([moved.set, moved.kind, moved.unit, moved.owner], ["route", "cumulative", "fmol", "scheduled_species_exchange@1"]);
   assert.deepEqual([moved.sign.says, moved.sign.from, moved.sign.to], ["a positive amount has left the route's cell for the outside its membrane faces", "cell", "outside node"]);
-  assert.match(moved.sign.by, /^the viewer's reading of the run's own saved arrays, not a declaration by the run: at every record the amount of the route's species in its cell is the amount at the start/);
-  assert.ok(good.view.derivation.some((line) => /^Which way moved by an exchange route is positive is not declared by the run\. It is read from its arrays/.test(line)));
+  assert.match(moved.sign.by, /^the engine's own convention for this operator, confirmed by the engine's lead on 15 November 2026 and not yet declared in the run's view\. The run's own saved amounts agree with it: at every record the amount of the route's species in its cell is the amount at the start.*Read the other way round or along each route's declared direction, the amounts do not add up$/);
+  assert.ok(good.view.derivation.some((line) => /^Which way moved by an exchange route is positive is not declared by the run's files\. It is the engine's own convention for this operator, confirmed by the engine's lead on 15 November 2026/.test(line)));
   // The routes are a set of their own: each on its membrane, with the species it carries.
   const routes = good.view.sets.find((item) => item.id === "route");
   assert.deepEqual([routes.holds, routes.ids, routes.geometry, routes.species], ["route", ["secrete", "sink"], { kind: "on", set: "membrane", index: [1, 1] }, ["S", "S"]]);

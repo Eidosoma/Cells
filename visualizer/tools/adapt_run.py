@@ -1457,6 +1457,11 @@ HISTORY_MAIN = ("membrane_voltage_V", "cell_potential_V")
 HISTORY_SETS = {"cell": "cells", "membrane": "membranes", "junction": "junctions", "outside": "extracellular", "face": "faces", "channel": "channels"}
 RUN_FOLDER = re.compile(r"[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\Z")
 SIGN_FROM_ARRAYS = "the viewer's reading of the run's own saved arrays, not a declaration by the run"
+# An exchange route's total (scheduled_species_exchange@1) is positive out of the cell, for an export and an import route alike: the
+# engine's lead confirmed it on 15 November 2026 from the operator's own code, whose domain check holds an export's total at nought
+# or more and an import's at nought or less. The run's files do not declare it, so it is given only where the run's own amounts agree.
+EXCHANGE_SIGN_BY = "the engine's own convention for this operator, confirmed by the engine's lead on 15 November 2026 and not yet declared in the run's view"
+OTHER_READINGS = (("in", "the other way round"), ("declared", "along each route's declared direction"))
 
 
 def npz_names(path):
@@ -1559,15 +1564,17 @@ def world_layout(tissue, sheet, membranes, derivation):
 
 
 def exchange_sign(fields, count, species, sheet, membranes, routes):
-    """Which way an exchange route's saved total is positive, read from the run's own arrays; or None.
+    """Which way an exchange route's saved total is positive: the engine's convention, where the run's own arrays agree; or None.
 
-    The run declares no direction for it. Three readings are tried, on every cell that has a route and at every record: a
-    positive total has left the route's cell for its outside; it has entered the cell; it has gone the way the route's
-    own declaration names (export or import). A reading holds where the amount of the route's species in the cell is its
-    amount at the start, plus what was made there, less what was cleared there, what crossed the cell's membranes and
-    junctions, and the routes' totals read that way. The first reading is given only where it holds at every record and
-    each other reading fails at some record. Whatever else moved the species (a pump, a ledger the run did not keep)
-    leaves the amounts not adding up, and then no sign is given.
+    The run's files declare no direction for it. The engine's convention is that a positive total has left the route's
+    cell for its outside, whatever the route's declared direction (EXCHANGE_SIGN_BY). It is given only where the run's own
+    amounts agree. Three readings are tried, on every cell that has a route and at every record: a positive total has left
+    the route's cell for its outside; it has entered the cell; it has gone the way the route's own declaration names
+    (export or import). A reading holds where the amount of the route's species in the cell is its amount at the start,
+    plus what was made there, less what was cleared there, what crossed the cell's membranes and junctions, and the
+    routes' totals read that way. The sign is given only where the first reading holds at every record and each other
+    reading fails at some record. Whatever else moved the species (a pump, a ledger the run did not keep) leaves the
+    amounts not adding up, and then no sign is given.
     """
     if not (routes and membranes and "amount" in fields and "exchange_moved_fmol" in fields):
         return None
@@ -1615,8 +1622,9 @@ def exchange_sign(fields, count, species, sheet, membranes, routes):
         "from": "cell",
         "to": "outside node",
         "by": (
-            f"{SIGN_FROM_ARRAYS}: at every record the amount of the route's species in its cell is the amount at the start, plus what was made there, less what was cleared there, "
-            "what crossed the cell's membranes and the routes' totals. Read the other way round, or along each route's declared direction, the amounts do not add up"
+            f"{EXCHANGE_SIGN_BY}. The run's own saved amounts agree with it: at every record the amount of the route's species in its cell is the amount at the start, "
+            "plus what was made there, less what was cleared there, what crossed the cell's membranes and the routes' totals. "
+            f"Read {' or '.join(words for name, words in OTHER_READINGS if readings[name] != readings['out'])}, the amounts do not add up"
         ),
     }
 
@@ -2130,7 +2138,10 @@ def adapt_history(root, name, experiment, entry):
     else:
         derivation.append(f"The run's model ({model_id}) is not of the family the viewer's table speaks of: no kind and no sign is given for its records, and a unit only where the field's name ends in one.")
     for field, sign in signs.items():
-        derivation.append(f"Which way {HISTORY_FIELDS[field][1].lower()} is positive is not declared by the run. It is read from its arrays: {sign['by'].split(': ', 1)[1]}.")
+        if sign["by"].startswith(EXCHANGE_SIGN_BY):
+            derivation.append(f"Which way {HISTORY_FIELDS[field][1].lower()} is positive is not declared by the run's files. It is {sign['by']}.")
+        else:
+            derivation.append(f"Which way {HISTORY_FIELDS[field][1].lower()} is positive is not declared by the run. It is read from its arrays: {sign['by'].split(': ', 1)[1]}.")
     if totals:
         derivation.append(f"Read as totals since the run's start, because their arrays begin at nought and never fall: {', '.join(sorted(totals))}. The viewer's table does not list these fields, and the run's files do not say what kind of number they are.")
     if owners:

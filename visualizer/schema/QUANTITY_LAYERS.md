@@ -115,17 +115,19 @@ the viewer changes.
      page says so of each: which species is the secreted one, where the view names none
      as such, and where the tiles of a small world lie, where the view gives no geometry.
    - **Packaged with the viewer's own table**, for a run of the tissue family that has
-     no such view. The table's convention was confirmed by the owner of the engine's core
-     on 15 November 2026 (a positive transfer leaves the cell for its outside, or the
-     sender for the receiver; pump cycles are positive inwards), and the legend says that
-     the convention is the engine's own, confirmed and not declared in that run's files
-     (`docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md`). Three readings go beyond what was
-     confirmed, and each is named as the viewer's reading wherever it is used:
+     no such view. The table's convention was confirmed on 15 November 2026, by the owner
+     of the engine's core (a positive transfer leaves the cell for its outside, or the
+     sender for the receiver; pump cycles are positive inwards) and by the engine's lead
+     (an exchange route's total, `exchange_moved_fmol`, is positive out of the cell, for
+     an export and an import route alike: the operator's own check holds an export's
+     total at nought or more and an import's at nought or less). The legend says that the
+     convention is the engine's own, confirmed and not declared in that run's files
+     (`docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md`). An exchange route is drawn with that
+     direction only where the run's own amounts agree with it: where they add up read
+     that way, and under no other reading. Two readings go beyond what was confirmed, and
+     each is named as the viewer's reading wherever it is used:
      - the sign of the membrane voltage, read from the run's files (the cell's potential
        less that of its outside);
-     - the direction of an operator's total that the run saved with none (the exchange
-       routes' `exchange_moved_fmol`), read from the run's own arrays, and only where the
-       amounts add up under one reading and under no other;
      - that an operator's ledger which the table does not list (the ledgers of what was
        made and cleared of a secreted species) is a total since the start, read from its
        array where it begins at nought and never falls.
@@ -228,7 +230,8 @@ the colouring that exists, with the page's own checks as its guard.
 (rule 2). `ion-traffic` draws, with no form, what crossed the membrane itself: the
 engine's `membrane_transferred` holds the passive membrane routes only, and what each
 channel population and each pump carried is its own ledger. The engine's run view notes
-this of the field; the question that remains is with the lead
+this of the field, and the engine's lead confirmed it on 15 November 2026: the three
+ledgers stand side by side and count nothing twice
 (`docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md`).
 
 ## How a layer names its numbers

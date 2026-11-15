@@ -23,7 +23,7 @@
 
 import * as THREE from "../../three.js";
 import { rate } from "../derive.js";
-import { declared, family, fromFirst, restartsBetween, signedBy } from "../records.js";
+import { declared, family, fromFirst, restartsBetween, signedByShort } from "../records.js";
 
 export const PER_FMOL = 6.02214076e23 * 1e-15; // ions in a femtomole
 export const BUSIEST = 10; // beads a second on the screen for a run's busiest stream
@@ -441,7 +441,7 @@ export const beads = {
         lines.push(...beads.keys(ionsASecond(busiest), slow(), still()));
         const by = new Map();
         for (const stream of streams) {
-          const sign = stream.source.sign, whose = signedBy(sign).trim();
+          const sign = stream.source.sign, whose = signedByShort(sign);
           const said = by.get(whose) || new Set();
           said.add(sign.says);
           by.set(whose, said);
