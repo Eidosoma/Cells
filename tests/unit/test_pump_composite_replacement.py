@@ -159,7 +159,7 @@ def _booking(raw):
 def test_re_expressed_replacement_is_the_frozen_model(world):
     raw = WORLDS[world]()
     frozen, composite = parse_spec(raw), parse_spec(cs.frozen_definition(raw))
-    assert get_model(frozen.model) is cell_replacement
+    assert get_model(frozen.model).module is cell_replacement  # I2: per structure.
     a, b = run(frozen), run(composite)
     report = guard.assert_same(a, b)
     assert report["compared"]["history"] == len(cell_replacement.STATE_TYPE._fields)

@@ -120,6 +120,99 @@ def check_definition(spec):
     model_for(spec.model).check_definition(spec)
 
 
+class FamilyModel:
+    """A model family that runs as one composition (water@1 and @2, cell replacement@1), for one
+    declared inner structure (I2; docs/INNER_MODEL_V4_DESIGN.md §7.4 (c)).
+
+    Each such module binds its names to one full-catalogue composition (its `_model`) and rewrites
+    its definitions as that composition's (its `composite(spec)`). This object is the module with
+    the composition of one structure instead: the names the module takes from its `_model`, and
+    the functions that pass `composite(spec)` to it, come from that composition; every other name
+    is the module's own.
+    """
+
+    BOUND = (
+        "STATE_AXES",
+        "STATE_TYPE",
+        "LAYOUT_TYPE",
+        "FLOOR_LAYOUT_TYPE",
+        "checked_step",
+        "readouts",
+        "field_values",
+        "rhs",
+        "domain_valid",
+        "control_domain_valid",
+        "balances",
+        "device_balances",
+        "magnitudes",
+        "ledger_limits",
+        "DISSIPATION_FIELDS",
+        "DEVICE_CHECKS",
+        "DEVICE_DIAGNOSTICS",
+        "device_check_constants",
+        "device_failure_message",
+        "device_checks",
+        "OBSERVATION_FIELDS",
+        "Observations",
+        "structure_key",
+    )
+    ALIASES = dict(
+        Values="VALUES_TYPE",
+        ionic_balances="inner_balances",
+        ionic_magnitudes="inner_magnitudes",
+        imex_step="split_step",
+    )
+
+    def __init__(self, module, composition):
+        self.module, self.composition = module, composition
+        for name in self.BOUND:
+            setattr(self, name, getattr(composition, name))
+        for name, source in self.ALIASES.items():
+            if hasattr(module, name):  # Only the names the module itself exports.
+                setattr(self, name, getattr(composition, source))
+
+    def __getattr__(self, name):
+        # Only reached for names not set above: the module's own.
+        if name.startswith("__"):
+            raise AttributeError(name)
+        return getattr(self.module, name)
+
+    def __repr__(self):
+        return f"<{self.module.MODEL_ID} for {self.composition!r}>"
+
+    def initial_values(self, spec):
+        return self.composition.initial_values(self.module.composite(spec))
+
+    def check_definition(self, spec):
+        self.composition.check_definition(self.module.composite(spec))
+
+    def check_steps(self, spec, steps, controls):
+        self.composition.check_steps(self.module.composite(spec), steps, controls)
+
+    def bind_step_checks(self, spec):
+        return self.composition.bind_step_checks(self.module.composite(spec))
+
+    def check_values(self, state, spec, steps=None):
+        return self.composition.check_values(state, self.module.composite(spec), steps=steps)
+
+    def observe_history(self, times, history, layout, requested, spec):
+        return self.composition.observe_history(
+            times, history, layout, requested, self.module.composite(spec)
+        )
+
+    def ensemble_voltage(self, state, layout, spec, time):
+        return self.composition.ensemble_voltage(state, layout, self.module.composite(spec), time)
+
+    def field_owners(self, spec):
+        return self.composition.field_owners(self.module.composite(spec))
+
+
+@cache
+def family_model(module, laws, structure):
+    """A family's model for one declared inner structure (cached: equal structures share it)."""
+    return FamilyModel(module, implementation(module.ionic.MODEL_ID, laws, structure))
+
+
 def compact(spec):
     m = spec.model
     return replace(
