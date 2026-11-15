@@ -18,6 +18,24 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
 
+# The kind interface's parsing surface (§7.4 (k); D180's external modules): a kind's parse and
+# check_definition refuse with ConfigError and may use these public helpers, never the
+# underscored names of cells.core.specs.
+from cells.core.specs import ConfigError, bounded_integer, finite_number, require_fields
+
+__all__ = (
+    "BUILTIN",
+    "ConfigError",
+    "Kind",
+    "KindRegistry",
+    "active",
+    "bounded_integer",
+    "finite_number",
+    "qualified",
+    "require_fields",
+    "scope",
+)
+
 NAMESPACE = "cells"
 
 
