@@ -257,7 +257,7 @@ a dozen files (ARCHITECTURE.md, "Reuse cases and the results gate").
 
 | Part | Entries | Pass |
 | --- | --- | --- |
-| **G1, existing worlds on CPU** | Every world of the crossrev sets (base, qualification, injection, volume, division, species, reactions, and each operator's own set) and @3's test worlds. Each runs from the tag before R and from the new snapshot. Compared: every state field, observation column and `max_` diagnostic of every accepted row, and every refusal (its step and its message) | Bitwise, NaN-aware, bit patterns compared, except where R changes rounding. **A7 does (P7):** physical fields and accumulators are compared within a tolerance stated before the run from P7's magnitudes, field by field, and G2 runs in full. **Padding (check K1, §7.4 (b)):** per-law dispatch changes `channel_targets` and `channel_tau_s` at inactive population slots (padded or closed) of worlds that do not declare Kv1.5, and nothing else; the comparator treats those two columns at inactive slots as padding, a rule agreed with the acceptance owner before the dispatch commit's run |
+| **G1, existing worlds on CPU** | Every world of the crossrev sets (base, qualification, injection, volume, division, species, reactions, and each operator's own set) and @3's test worlds. Each runs from the tag before R and from the new snapshot. Compared: every state field, observation column and `max_` diagnostic of every accepted row, and every refusal (its step and its message) | Bitwise, NaN-aware, bit patterns compared, except where R changes rounding. **A7 does (P7):** physical fields and accumulators are compared within a tolerance stated before the run from P7's magnitudes, field by field, and G2 runs in full. **Padding (check K1, the activity check, §7.4 (b)):** compiled per-law dispatch would change `channel_targets` and `channel_tau_s` at inactive population slots of worlds that do not declare Kv1.5, closed slots of the division worlds included; the host observer therefore keeps today's padding values, so both columns stay bitwise. The lead's whole-run padding mask (those two columns, slots inactive for the whole run, a planted active-slot difference that must fail) stays as the comparator's safeguard |
 | **G2, registered protocols re-run** | Every registered protocol whose engine models include the inner model or the composite. **Refreshed at f791294 by model-ID text match,** since protocol files name their models under different keys (`engine_models`, `engine_model`, `cells_run.model`) or only in their drivers. As before: W1, W2, G2-Q1, S2, S3, Rm1, S5a, D150's judged run, E07-v1. Judged on 15 November: MG0c (`mg0c-turing-v1`) and Track R (`regulated_availability_protocol.json`). **Newly listed, all on @3:** MG0b (`mg0b_domain_wall_v1`); the stationary analysis E (`stationary_analysis_e_v1`, items E2–E4); the BETSE parity rungs P3 (four cases), P4 (two) and P4b (four), registered by commit (PROGRESS), although their files' `status` fields still read PROPOSED, each with a registered L4 variant (§5.3). **The lead's call:** the projective qualification C (`projective_c_qualification_v1`, on @3), whose qual-01 failed. Track E's M2 (`excitable_qualification_v1.json`, PROPOSED) joins if judged before R lands. A7's import-closure manifest may add older families' protocols (§10.6) | Every verdict unchanged; numbers bitwise, or within the protocol's own tolerances |
 | **G3, planted changes, aligned with G1 (D176)** | **Exact contract tests,** run in the bitwise commits (declarations, dispatch, operators, door S, the passive law): (a) one law coefficient moved by one ulp in a test double (P2's planted arm shows the effect's size); (b) one world parameter moved by one ulp; (c) one required-results entry deleted from a run. **Scientific negative controls,** in the final gate at A7's tolerance, where a one-ulp plant passes by design: perturbations whose effects on judged observables exceed the declared budget, each effect measured against the budget before the run; (c) again | The gate must fail every plant and every control. If it passes any of them, it is void |
 | **G4, measurements** | Compile time, host and device memory, and end-to-end time, on representative compositions: the heredity cell, the 127-cell sheet, a water composition, D150's arm, MG0c's chain, the 825-node world | Reported against the tag; judged only where a protocol registers a bound |
@@ -544,35 +544,42 @@ registry code.
 - **A pump law** declares its ID, kernel and domain, the rows it moves per cycle by role, its fuel
   kind and its definition-time bound. Both of today's pumps run on
   `maintained_chemical_reservoirs@1` in today's parameter form (§10.2).
-- **The padding rule (P2's measured form, check K1).** An inactive population slot, padded or
-  closed, carries code 0, as today (`domain_valid`, the adapter's `close`). The dispatch selects a
-  declared law's values wherever a slot carries its code, active or not, so:
+- **The padding rule (P2's measured form in compiled programs, check K1; today's values on the
+  host, revised below).** An inactive population slot, padded or closed, carries code 0, as today
+  (`domain_valid`, the adapter's `close`). The compiled dispatch selects a declared law's values
+  wherever a slot carries its code, active or not, so:
   - in a world that declares Kv1.5 (code 0), an inactive slot reads Kv1.5's kinetics at 0 V, as
     today, bitwise (K1's five-law world);
   - in a world that does not, it reads target 0, time constant 1 and opening 1. Today it reads
-    Kv1.5's values, so `channel_targets` and `channel_tau_s` change at those slots, and nowhere else
-    (K1).
-  - G1's comparator treats those two columns at inactive slots as padding (§3). ACC agrees the rule
-    before the dispatch commit runs.
+    Kv1.5's values, so `channel_targets` and `channel_tau_s` would change at those slots, and
+    nowhere else (K1).
+  - That was to be a comparator exception (§3), before the activity check below; the host rule
+    removes the need for it.
   - Masking by activity as well would make padding independent of the declared laws, but it would
     change those columns in every world with an inactive slot, and K1 did not measure it.
   - **The lead's ruling (15 November):** the comparator's padding mask covers only those two
     columns, at slots inactive for the whole run, and a planted difference at an active slot must
     fail it. The dispatch commit merges only then.
   - **Which events change a population slot's activity during a run** (read in the code at the
-    tag): the closers do. The partition's births and retirements close cells, and insertion@2's
-    onsets close patches and nodes; the adapter's `close` carries each down to the populations.
-    Insertion@1 provides `membrane_active` but no closure, so populations keep their declared
-    activity. Replacement, its law-steady arrival included, provides route values and junction
-    gates only, never a mask. The saved worlds of the partition and insertion@2 declare no channel
-    population, so no saved world is expected to have a part-run inactive slot; the comparator's
-    rule shows it.
-  - **An option for the lead, if a part-run inactive slot appears:** keep today's padding values on
-    the host. The observer evaluates readouts in NumPy, and nothing compiled reads a padded slot's
-    kinetics (the gate update, the gate rate, the flux and the domain all mask them). So the host
-    readouts could give a code-0 padded slot the code-0 law's kinetics at 0 V, as today, while
-    compiled programs carry no undeclared kernel. The two columns would then stay bitwise in every
-    world, and no comparator exception would be needed.
+    tag): the closers do (`CLOSES`: the partition and insertion@2 only). The partition's births
+    and retirements close cells, and insertion@2's onsets close patches and nodes; the adapter's
+    `close` carries each down to the populations. Insertion@1 provides `membrane_active` but no
+    closure, so populations keep their declared activity. Replacement, its law-steady arrival
+    included, provides route values and junction gates only, never a mask.
+  - **Checked on the saved worlds (activity check, 15 November; core log):** the partition's worlds
+    build on the heredity cell and keep its Kir2.1 and NaV1.2 populations. In eight of the nine
+    crossrev division worlds, and in S5a's furrow world, every population sits on a cell the
+    partition opens or closes, and none declares Kv1.5. The composite observes the inner model at
+    each row's view, with the closures, so those slots carry code 0 on their closed rows. Per-law
+    dispatch would change both columns there, at slots that are active on other rows, which the
+    whole-run mask rightly does not cover. S3's cleft egg has no population.
+  - **So the padding rule is revised: the host keeps today's padding values.** The observer
+    evaluates readouts in NumPy, and nothing compiled reads a padded slot's kinetics (the gate
+    update, the gate rate, the flux and the domain all mask them). So the host readouts give a
+    code-0 slot the code-0 law's kinetics, as today, when the code-0 law is not declared (every
+    code-0 slot is then padding), while compiled programs keep P2's form and carry no undeclared
+    kernel. Both columns then stay bitwise in every world, and the dispatch commit needs no
+    comparator exception for them; the lead's whole-run rule stays as the comparator's safeguard.
 
 #### (c) Build-time selection: one implementation per structure
 
@@ -803,7 +810,10 @@ registry code.
      @1 and @2, FR-1's static sweep of 99 model blocks found no free face-free node with an ion
      route in their worlds (CLOSED_COMPARTMENT_DESIGN.md §3.4), and the D148 record confirms it on
      their registered worlds before the change.
-4. **The implicit patch: yes, behind one slot,** the IMEX step's implicit set.
+4. **The implicit patch: yes, behind one slot,** the IMEX step's implicit set. *The first design
+   below put the patch into the global operator beside the faces. The decision at the end of this
+   item runs it instead as a local stage solve, FR45's Newton form, and leaves the faces as they
+   are.*
    - **Today the set is face electromigration alone:**
      - the stage operator (C + a_ii dt L_face) φ = q, with face weights frozen at the predicted
        state;
@@ -840,21 +850,32 @@ registry code.
      qualifies it, with REF's reference. The field-solver interface keeps the factorization and the
      solve (FIELD_SOLVER_INTERFACE_DESIGN §6), which the slot calls unchanged; a later sparse or
      condensed solver replaces them behind the same calls.
-   - **Which form the slot runs (decided 15 November).** FR45's module
-     (`processes/patch_electrodiffusion.py`, `fr45-physics` 4f267ef4) gives two forms: the slot's
-     pieces (frozen weights with a non-negative conductance; the patch's block, symmetric, with zero
-     row sums, positive semidefinite; and an implicit-plus-explicit split that recombines exactly
-     to the full constant-field flux), and a per-compartment Newton stage solve.
-     - **The slot runs the linearly implicit split inside ARS(2,2,2),** with the weights frozen at
-       the step's operator time, the predicted midpoint, as for faces. That keeps one factorization
-       per step and one linear solve per stage, the faces' structure; it is second order by the
-       faces' argument (Σ b_i c_i = 1/2); and it needs no nested iteration between a local Newton
-       solve and the global field solve.
-     - **Its qualification decides whether that suffices** (FR45, with REF): second order under
-       ARS(2,2,2), and stability at FR-4's dt × G/C_b, where the explicit remainder's slope
-       G(V) − G* is the risk. The Newton form's tests so far are first order, under implicit Euler.
-     - **If the remainder binds,** the per-compartment Newton form becomes its own solver ID, a
-       different implicit treatment (D147), not a mode of this one.
+   - **Which form the slot runs (decided 15 November, after reading the module).** FR45's module
+     (`processes/patch_electrodiffusion.py`, `fr45-physics` 4f267ef4) gives two forms: the global
+     pieces above (frozen weights with a non-negative conductance; the patch's block, symmetric,
+     with zero row sums, positive semidefinite; an implicit-plus-explicit split that recombines
+     exactly to the full constant-field flux), and a per-compartment Newton stage solve,
+     R(x) = x − x̂ − γh J(x) on the compartment's own permeant amounts, with V_b = −q_j/C_b and a
+     Sherman–Morrison Jacobian, checked at a residual of 1e-13.
+     - **Its tests exercise the Newton form:** stable at dt × G/C_b up to 48, first order under
+       implicit Euler against Radau, the booking closing the energy ledger to rounding, and a
+       planted error caught. The global pieces are tested only for the exact split and the
+       positive semidefinite block.
+     - **So the slot runs the Newton form, as a local stage solve,** at each implicit stage of
+       ARS(2,2,2), with that stage's γh (the SDIRK diagonal), before the global field solve:
+       - **it is self-contained:** at a face-free node V_b = −q_j/C_b exactly (FR-1 §3.1), so the
+         compartment's solve needs no potential from the global solve; the owner cell's amounts
+         change by what the compartment loses, and the global solve then sees both charges;
+       - **existing programs stay unchanged:** the face part of the implicit set is untouched, and
+         the patch's solve is present only where a patch kind is declared;
+       - **its routes leave the explicit rates** and the explicit-stage rule, and B7's face-free
+         term counts only explicit routes.
+     - **Its qualification** (FR45, with REF) shows second order under ARS(2,2,2). The owner cell's
+       concentrations enter each stage's solve at that stage's known state, an O(h)-relative
+       approximation scaled by V_comp/V_cell, which the order study measures.
+     - **The global split stays a fallback,** as its own solver ID (D147), if the Newton form fails
+       that qualification.
+     - **Cost:** the local stage-solve slot, about 1–1.5 agent-days (CORE), as estimated in (h).
 
 #### (h) What this adds to CORE's queue: the lead's rulings (15 November)
 
@@ -886,6 +907,27 @@ registry code.
   but `cell_replacement.py` builds its composite at import from the inner model ID, which becomes
   per structure (INT's change).
 
+#### (i) The passive law's insertion point: its conventions (REF's closed-pair reference reads them)
+
+The kernel is FR45's (`processes/passive_neutral_permeation`, law `passive_neutral_permeation@1`);
+the insertion point is CORE's. Its conventions, fixed here:
+- **The declaration:** a `passive_routes` list in the model block, absent unless declared. Each
+  route names its ID, the law, its host route (one membrane patch, or one junction), and a
+  permeability per neutral species it carries. A species it carries has zero constant-field
+  permeability on that host route (refused otherwise), so one law moves it there.
+- **The effective PA:**
+  - **on a junction, P·A·gate·availability:** the junction's area, its gate state
+    (`junction_gate`, the junction law's) and its availability control, the same opening the
+    junction's ions see;
+  - **on a membrane patch, P·A·availability:** the patch's area and its availability control.
+- **The flux** is the kernel's constant-field route at valence 0 (Fick's law), at every explicit
+  stage, inward-positive, into the node amounts on both sides.
+- **The heat is booked in the law's own field, never in the membrane or junction fields:**
+  `passive_dissipated_energy_pJ` [passive route], with the transfers in `passive_transferred`
+  [species, passive route]. Both exist only where the law is declared, and both join @3's
+  material and energy ledgers. The booking is §7.5's exact one.
+- **Bound:** finding 3's term covers the routes (§13.6).
+
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 
 - **Why.** Today a route's heat is the tableau's quadrature of its dissipation rate (Σ J Δμ̃ at the
@@ -896,21 +938,31 @@ registry code.
   - the implicit patch: the charged-patch test found that the energy ledger, not stability, binds
     the explicit route near dt × G/C_b ≈ 0.05 ((g) 4 of §7.4);
   - FR-10's onset at a dosed bath's face (its resolved-start rule).
-- **The booking, `exact_free_energy_heat@1` (name S).** A route law that declares it books, per
-  step, the exact decrease of the stored free energy that the amounts it moved cause, with no rate
-  quadrature:
-  - **neutral species, exact per route:** H = −Σ, over the route's two ends, of @3's per-row
-    chemical term `species_chemical_free_energy_pJ(anchor, change, volume, T)` (the adapter's;
-    D150's exchange books its work with it), with the anchor the step's start amount and the change
-    the route's applied transfer at that end. It is the per-row form of `balances`' own term, so
-    the ledger closes to rounding, and no difference of bulk terms is formed;
-  - **charged species, exact in total:** the step's chemical change plus its capacitor-energy
-    change, over the routes that declare the booking, H_total = −(ΔG_chem + ΔU_cap). The split
-    between routes follows their quadrature shares, as D152's per-route hybrid splits its heat; the
-    implicit patch, its first charged consumer, fixes the split in its own note;
-  - **sign:** a passive route that moves down its gradient within the step books H ≥ 0. A step
-    that overshoots its equilibrium books H < 0 and is refused, never repaired: dt is too large for
-    that route.
+- **The booking, `exact_free_energy_heat@1` (name S).** Routes that declare it book, per step, the
+  exact decrease of the stored free energy that their moves cause, with no rate quadrature:
+  - **exact per row, not per route.** A row (a species at a node) may be moved by several routes in
+    one step, for example FR-5's transfer and damage pore across one patch. Its chemical term is
+    nonlinear, so terms anchored at the start amount, one per route, do not sum to the row's
+    change. The booking therefore takes each row's exact change once: ΔG_row, from @3's per-row
+    term (`species_chemical_free_energy_pJ`, the per-row form of `balances`' own term) between the
+    row's start and end amounts. That closes the ledger to rounding without forming a difference of
+    bulk terms;
+  - **the split between routes, declared:** each route moving the row takes the share μ̄_row ×
+    (its transfer at that row), with μ̄_row = ΔG_row/Δn_row the row's divided-difference potential
+    over the step (its limit, the potential at the start amount, when Δn_row = 0). The shares sum
+    to ΔG_row exactly, as in D152's per-route hybrid and FR45's kernel (`divided_potential_RT`). A
+    route's heat is minus the sum of its shares at its two ends;
+  - **a tableau-booked route on the same row** keeps its own quadrature heat. The rows it moves
+    still give every booking route its divided-difference share over the row's total change, so
+    the booking routes' part is exact and the rest keeps today's tolerance;
+  - **charged species:** the electrical part is the capacitor energy's change, exact for the
+    linear capacitor through the step's mean patch voltage (V̄ Δq), split in the same way. The
+    implicit patch, the first charged consumer, fixes it in its own module (FR45's
+    `patch_booking_pJ`);
+  - **sign:** a route whose stage rates and end-state affinity share one sign books its share,
+    which is then nonnegative; any other route books its stage quadrature, which is nonnegative
+    (D152's hybrid). So every route's heat is ≥ 0, and the row closes exactly whenever every route
+    moving it books its share.
 - **Static and declared.** Only a route law that declares the booking computes it. Today's routes
   (the membrane and junction constant-field routes, the channels, the faces) keep the tableau
   booking, so every existing program is unchanged. The booking needs the step's start amounts and
