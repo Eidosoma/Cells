@@ -49,6 +49,9 @@ EXEMPT = {
     "validation/tissue/pump_water_equivalence.py": "equivalence guard: water against @3",
     "validation/tissue/resolved_scale_study.py": "study recorded before D147",
     "validation/tissue/surface_pump_v3_study.py": "the builder (default version 2), its study",
+    "validation/results_baseline.py": "cross-revision results baseline: worlds as their "
+    "protocols and crossrev sets declare them (G2-Q1's Q7 tissue as its judge runs it); "
+    "--from re-runs the saved definitions verbatim",
 }
 
 
