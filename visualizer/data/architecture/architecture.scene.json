@@ -5,8 +5,8 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-15",
-  "generated_at": "2026-11-15T18:38:24Z",
-  "revision": "d854e1e4",
+  "generated_at": "2026-11-15T19:06:35Z",
+  "revision": "c156a47d",
   "revision_date": "2026-11-15",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
@@ -375,7 +375,7 @@
      "covers_all": true
     }
    },
-   "checked_at": "d854e1e4"
+   "checked_at": "c156a47d"
   },
   "counts": {
    "units": 48,
@@ -2716,6 +2716,12 @@
     }
    ],
    "fruitfly": [
+    {
+     "text": "UniProt {id}",
+     "url": "https://www.uniprot.org/uniprotkb/{id}/entry"
+    }
+   ],
+   "thalecress": [
     {
      "text": "UniProt {id}",
      "url": "https://www.uniprot.org/uniprotkb/{id}/entry"
@@ -12445,6 +12451,14 @@
    "since": "2026-11-15",
    "says": "an engineered protein cage",
    "reason": "it is a designed protein, not a part of a cell"
+  },
+  {
+   "id": "species.thalecress",
+   "kind": "species",
+   "label": "Thale cress",
+   "since": "2026-11-15",
+   "says": "thale cress",
+   "reason": "a plant cell's chloroplasts and vacuole cannot be drawn yet"
   }
  ],
  "entities": [
@@ -18939,6 +18953,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of voltage-gated sodium channel alpha subunits (IPR001696). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -19343,6 +19363,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of voltage-gated sodium channel alpha subunits (IPR001696). The unit's human candidates carry it, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -19769,6 +19795,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of voltage-gated sodium channel alpha subunits (IPR001696). The unit's human candidates carry it, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -20266,6 +20298,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of voltage-gated sodium channel alpha subunits (IPR001696). The unit's human candidates carry it, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -20829,6 +20867,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of Kv1-type potassium channels (IPR003972). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -21388,6 +21432,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of Kv1-type potassium channels (IPR003972). The unit's human candidates carry it, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -21971,6 +22021,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of Kv1-type potassium channels (IPR003972). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -22526,6 +22582,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of Kv1-type potassium channels (IPR003972). The unit's human candidates carry it, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -23123,6 +23185,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of Kv1-type potassium channels (IPR003972). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -23684,6 +23752,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of Kv1-type potassium channels (IPR003972). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -23888,6 +23962,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of Kv2-type potassium channels (IPR003973). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of Kv2-type potassium channels (IPR003973). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -24070,6 +24150,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of Kv2-type potassium channels (IPR003973). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of Kv2-type potassium channels (IPR003973). The unit's human candidates carry it, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -24646,6 +24732,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of Kv3-type potassium channels (IPR003974). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -25193,6 +25285,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of Kv3-type potassium channels (IPR003974). The unit's human candidates carry it, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -25744,6 +25842,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of Kv3-type potassium channels (IPR003974). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -26290,6 +26394,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of Kv3-type potassium channels (IPR003974). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -26547,6 +26657,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of Kv4-type potassium channels (IPR003975). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of Kv4-type potassium channels (IPR003975). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -26657,6 +26773,12 @@
     "syn3a": {
      "finding": "nothing to look for",
      "note": "The inventory gives this unit no gene product: it is a default shape of current, not a named channel. No potassium channel of any family searched was found in this organism.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "nothing to look for",
+     "note": "The inventory gives this unit no gene product: it is a default shape of current, not a named channel.",
      "items": [],
      "keywords": ""
     }
@@ -26902,6 +27024,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of inward-rectifier potassium channels (IPR016449, IPR040445, IPR041647). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of inward-rectifier potassium channels (IPR016449, IPR040445, IPR041647). The unit's human candidates carry them, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -27212,6 +27340,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of HCN-type channels (IPR051413, IPR013621). The unit's human candidates carry them, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -27553,6 +27687,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of HCN-type channels (IPR051413, IPR013621). The unit's human candidates carry them, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -27892,6 +28032,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of HCN-type channels (IPR051413, IPR013621). The unit's human candidates carry them, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -28164,6 +28310,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of HCN-type channels (IPR051413, IPR013621). The unit's human candidates carry them, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -28860,6 +29012,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of L-type calcium channel alpha-1 subunits (IPR005446). The unit's human candidates carry it, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -29569,6 +29727,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of L-type calcium channel alpha-1 subunits (IPR005446). The unit's human candidates carry it, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -30288,6 +30452,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of L-type calcium channel alpha-1 subunits (IPR005446). The unit's human candidates carry it, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -31163,6 +31333,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of voltage-gated calcium channel alpha-1 subunits (IPR002077). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -31885,6 +32061,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of voltage-gated calcium channel alpha-1 subunits (IPR002077). The unit's human candidates carry it, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -32631,6 +32813,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of voltage-gated calcium channel alpha-1 subunits (IPR002077). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -33355,6 +33543,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of voltage-gated calcium channel alpha-1 subunits (IPR002077). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -33601,6 +33795,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -33825,6 +34025,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). The unit's human candidates carry it, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -34656,6 +34862,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of BK calcium-activated potassium channels, SK calcium-activated potassium channels and BK channel beta subunits (IPR047871, IPR015449, IPR003930). UniProtKB holds 4 entries of other mollicutes, the class of bacteria it was made from, that carry one of them. The unit's human candidates carry them, so the search finds the family where it exists. It takes up potassium with a transporter instead (KtrAB, listed under extra). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of BK calcium-activated potassium channels and SK calcium-activated potassium channels (IPR047871, IPR015449). The unit's human candidates carry them, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -34853,6 +35065,12 @@
      "note": "A background conductance that the inventory ties to no protein.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "nothing to look for",
+     "note": "A background conductance that the inventory ties to no protein.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -34959,6 +35177,12 @@
      "keywords": ""
     },
     "syn3a": {
+     "finding": "nothing to look for",
+     "note": "A lumped permeability of the whole membrane, not a population of proteins.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
      "finding": "nothing to look for",
      "note": "A lumped permeability of the whole membrane, not a population of proteins.",
      "items": [],
@@ -36430,6 +36654,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). The unit's human candidates carry them, so the search finds the family where it exists. A plant's cells are joined in another way: by plasmodesmata, channels lined by the cell membrane that cross the wall between two cells (UniProt's vocabulary). 32 proteins of the catalogue are stated to be there; they stand on the cell membrane's shelf.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -37826,6 +38056,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). The unit's human candidates carry them, so the search finds the family where it exists. A plant's cells are joined in another way: by plasmodesmata, channels lined by the cell membrane that cross the wall between two cells (UniProt's vocabulary). 32 proteins of the catalogue are stated to be there; they stand on the cell membrane's shelf.",
      "items": [],
      "keywords": ""
     }
@@ -39256,6 +39492,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). The unit's human candidates carry them, so the search finds the family where it exists. A plant's cells are joined in another way: by plasmodesmata, channels lined by the cell membrane that cross the wall between two cells (UniProt's vocabulary). 32 proteins of the catalogue are stated to be there; they stand on the cell membrane's shelf.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -40128,6 +40370,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of the sodium-potassium pump's alpha subunit, its beta subunit and its FXYD regulators (IPR005775, IPR000402, IPR000272). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. The wider family, the P-type ATPases, has two members here, both annotated as magnesium transporters (loci JCVISYN3A_0787 and JCVISYN3A_0879, listed under extra). Neither carries the mark of the sodium-potassium pump.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of the sodium-potassium pump's alpha subunit (IPR005775). The unit's human candidates carry it, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -40592,6 +40840,173 @@
      "note": "None of the 455 protein products of its genome carries the signature of plasma-membrane calcium pumps (IPR006408). UniProtKB holds 6 entries of other mollicutes, the class of bacteria it was made from, that carry it. The unit's human candidates carry it, so the search finds the family where it exists. One of its two P-type ATPases, locus JCVISYN3A_0879, has been suggested to carry calcium, and the 2019 reconstruction of its metabolism uses it as the calcium importer. It does not carry this signature, and it is listed under extra.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "found",
+     "note": "10 proteins of its 27,368 carry the signature of plasma-membrane calcium pumps (IPR006408): ACA1, ACA2, ACA4, ACA7, ACA8, ACA9, ACA10, ACA11, ACA12 and ACA13. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the plant.",
+     "items": [
+      {
+       "label": "ACA1",
+       "detail": "Calcium-transporting ATPase 1, plasma-membrane calcium pumps",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,020 amino acids",
+        "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q37145",
+         "url": "https://www.uniprot.org/uniprotkb/Q37145/entry"
+        }
+       ]
+      },
+      {
+       "label": "ACA2",
+       "detail": "Calcium-transporting ATPase 2, plasma membrane-type, plasma-membrane calcium pumps",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,014 amino acids",
+        "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt O81108",
+         "url": "https://www.uniprot.org/uniprotkb/O81108/entry"
+        }
+       ]
+      },
+      {
+       "label": "ACA4",
+       "detail": "Calcium-transporting ATPase 4, plasma membrane-type, plasma-membrane calcium pumps",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,030 amino acids",
+        "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt O22218",
+         "url": "https://www.uniprot.org/uniprotkb/O22218/entry"
+        }
+       ]
+      },
+      {
+       "label": "ACA7",
+       "detail": "Putative calcium-transporting ATPase 7, plasma membrane-type, plasma-membrane calcium pumps",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,015 amino acids",
+        "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt O64806",
+         "url": "https://www.uniprot.org/uniprotkb/O64806/entry"
+        }
+       ]
+      },
+      {
+       "label": "ACA8",
+       "detail": "Calcium-transporting ATPase 8, plasma membrane-type, plasma-membrane calcium pumps",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,074 amino acids",
+        "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9LF79",
+         "url": "https://www.uniprot.org/uniprotkb/Q9LF79/entry"
+        }
+       ]
+      },
+      {
+       "label": "ACA9",
+       "detail": "Calcium-transporting ATPase 9, plasma membrane-type, plasma-membrane calcium pumps",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,086 amino acids",
+        "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9LU41",
+         "url": "https://www.uniprot.org/uniprotkb/Q9LU41/entry"
+        }
+       ]
+      },
+      {
+       "label": "ACA10",
+       "detail": "Calcium-transporting ATPase 10, plasma membrane-type, plasma-membrane calcium pumps",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,069 amino acids",
+        "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9SZR1",
+         "url": "https://www.uniprot.org/uniprotkb/Q9SZR1/entry"
+        }
+       ]
+      },
+      {
+       "label": "ACA11",
+       "detail": "Putative calcium-transporting ATPase 11, plasma membrane-type, plasma-membrane calcium pumps",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,025 amino acids",
+        "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9M2L4",
+         "url": "https://www.uniprot.org/uniprotkb/Q9M2L4/entry"
+        }
+       ]
+      },
+      {
+       "label": "ACA12",
+       "detail": "Calcium-transporting ATPase 12, plasma membrane-type, plasma-membrane calcium pumps",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,033 amino acids",
+        "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9LY77",
+         "url": "https://www.uniprot.org/uniprotkb/Q9LY77/entry"
+        }
+       ]
+      },
+      {
+       "label": "ACA13",
+       "detail": "Putative calcium-transporting ATPase 13, plasma membrane-type, plasma-membrane calcium pumps",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,017 amino acids",
+        "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9LIK7",
+         "url": "https://www.uniprot.org/uniprotkb/Q9LIK7/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "ACA1 Calcium-transporting ATPase 1 Q37145 ACA2 Calcium-transporting ATPase 2, plasma membrane-type O81108 ACA4 Calcium-transporting ATPase 4, plasma membrane-type O22218 ACA7 Putative calcium-transporting ATPase 7, plasma membrane-type O64806 ACA8 Calcium-transporting ATPase 8, plasma membrane-type Q9LF79 ACA9 Calcium-transporting ATPase 9, plasma membrane-type Q9LU41 ACA10 Calcium-transporting ATPase 10, plasma membrane-type Q9SZR1 ACA11 Putative calcium-transporting ATPase 11, plasma membrane-type Q9M2L4 ACA12 Calcium-transporting ATPase 12, plasma membrane-type Q9LY77 ACA13 Putative calcium-transporting ATPase 13, plasma membrane-type Q9LIK7"
     }
    }
   },
@@ -40908,6 +41323,29 @@
      "note": "None of the 455 protein products of its genome carries the signature of SERCA-type calcium pumps (IPR005782). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It is a bacterium with a single membrane and no internal compartments, so it has no endoplasmic reticulum for this machine to sit in.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "found",
+     "note": "1 protein of its 27,368 carries the signature of SERCA-type calcium pumps (IPR005782): ECA3. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the plant.",
+     "items": [
+      {
+       "label": "ECA3",
+       "detail": "Calcium-transporting ATPase 3, endoplasmic reticulum-type, SERCA-type calcium pumps",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "998 amino acids",
+        "Its reviewed UniProtKB entry carries IPR005782 (P-type ATPase, subfamily IIA, SERCA-type). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9SY55",
+         "url": "https://www.uniprot.org/uniprotkb/Q9SY55/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "ECA3 Calcium-transporting ATPase 3, endoplasmic reticulum-type Q9SY55"
     }
    }
   },
@@ -41262,6 +41700,12 @@
     "syn3a": {
      "finding": "none found",
      "note": "None of the 455 protein products of its genome carries the signature of sodium-calcium exchangers (IPR004836). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Nothing in its annotation is named a sodium-calcium exchanger.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of sodium-calcium exchangers (IPR004836). The unit's human candidates carry it, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
     }
@@ -41657,6 +42101,12 @@
      "note": "None of the 455 protein products of its genome carries the signature of inositol trisphosphate receptors and ryanodine receptors (IPR000493, IPR013333). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It is a bacterium with a single membrane and no internal compartments, so it has no endoplasmic reticulum for this machine to sit in.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "none found",
+     "note": "None of its 27,368 proteins carries the signature of inositol trisphosphate receptors and ryanodine receptors (IPR000493, IPR013333). The unit's human candidates carry them, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
     }
    }
   },
@@ -42050,6 +42500,29 @@
      "note": "None of the 455 protein products of its genome carries the signature of potassium-chloride cotransporters and the wider SLC12 transporter family (IPR000076, IPR004842). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Its annotation names no chloride-coupled cotransporter.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "found",
+     "note": "1 protein of its 27,368 carries the signature of the wider SLC12 transporter family (IPR004842): CCC1. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the plant.",
+     "items": [
+      {
+       "label": "CCC1",
+       "detail": "Cation-chloride cotransporter 1, the wider SLC12 transporter family",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "975 amino acids",
+        "Its reviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q2UVJ5",
+         "url": "https://www.uniprot.org/uniprotkb/Q2UVJ5/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "CCC1 Cation-chloride cotransporter 1 Q2UVJ5"
     }
    }
   },
@@ -42334,6 +42807,29 @@
      "note": "None of the 455 protein products of its genome carries the signature of sodium-potassium-chloride cotransporters and the wider SLC12 transporter family (IPR002443, IPR004842). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Its annotation names no chloride-coupled cotransporter.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "found",
+     "note": "1 protein of its 27,368 carries the signature of the wider SLC12 transporter family (IPR004842): CCC1. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the plant.",
+     "items": [
+      {
+       "label": "CCC1",
+       "detail": "Cation-chloride cotransporter 1, the wider SLC12 transporter family",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "975 amino acids",
+        "Its reviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q2UVJ5",
+         "url": "https://www.uniprot.org/uniprotkb/Q2UVJ5/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "CCC1 Cation-chloride cotransporter 1 Q2UVJ5"
     }
    }
   },
@@ -42459,6 +42955,12 @@
     "syn3a": {
      "finding": "nothing to look for",
      "note": "A slot that each model configuration fills with a transporter of its own; it has no fixed protein in any species. This organism's own transporters are in its protein catalogue.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "nothing to look for",
+     "note": "A slot that each model configuration fills with a transporter of its own; it has no fixed protein in any species.",
      "items": [],
      "keywords": ""
     }
@@ -42884,6 +43386,125 @@
      "note": "None of the 455 protein products of its genome carries the signature of the mitochondrial calcium uniporter, its regulator EMRE and its MICU regulators (IPR039055, IPR006769, IPR018782, IPR039800). No UniProtKB entry of any mollicute, the class of bacteria it was made from, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It is a bacterium and has no mitochondria.",
      "items": [],
      "keywords": ""
+    },
+    "thalecress": {
+     "finding": "found",
+     "note": "7 proteins of its 27,368 carry the signature of the mitochondrial calcium uniporter and its MICU regulators (IPR039055, IPR006769, IPR039800): MCU1, MCU2, MCU3, MCU4, MCU5, MCU6 and MICU. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the plant.",
+     "items": [
+      {
+       "label": "MCU1",
+       "detail": "Calcium uniporter protein 1, mitochondrial, the mitochondrial calcium uniporter",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "292 amino acids",
+        "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt F4I111",
+         "url": "https://www.uniprot.org/uniprotkb/F4I111/entry"
+        }
+       ]
+      },
+      {
+       "label": "MCU2",
+       "detail": "Calcium uniporter protein 2, mitochondrial, the mitochondrial calcium uniporter",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "293 amino acids",
+        "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q8VYR0",
+         "url": "https://www.uniprot.org/uniprotkb/Q8VYR0/entry"
+        }
+       ]
+      },
+      {
+       "label": "MCU3",
+       "detail": "Calcium uniporter protein 3, mitochondrial, the mitochondrial calcium uniporter",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "336 amino acids",
+        "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt O64823",
+         "url": "https://www.uniprot.org/uniprotkb/O64823/entry"
+        }
+       ]
+      },
+      {
+       "label": "MCU4",
+       "detail": "Calcium uniporter protein 4, mitochondrial, the mitochondrial calcium uniporter",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "338 amino acids",
+        "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q1PE15",
+         "url": "https://www.uniprot.org/uniprotkb/Q1PE15/entry"
+        }
+       ]
+      },
+      {
+       "label": "MCU5",
+       "detail": "Calcium uniporter protein 5, mitochondrial, the mitochondrial calcium uniporter",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "293 amino acids",
+        "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9FJV7",
+         "url": "https://www.uniprot.org/uniprotkb/Q9FJV7/entry"
+        }
+       ]
+      },
+      {
+       "label": "MCU6",
+       "detail": "Chloroplastic calcium uniporter protein, the mitochondrial calcium uniporter",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "321 amino acids",
+        "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9LVR5",
+         "url": "https://www.uniprot.org/uniprotkb/Q9LVR5/entry"
+        }
+       ]
+      },
+      {
+       "label": "MICU",
+       "detail": "Calcium uptake protein, mitochondrial, its MICU regulators",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "498 amino acids",
+        "Its reviewed UniProtKB entry carries IPR039800 (Calcium uptake protein 1/2/3). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9SZ45",
+         "url": "https://www.uniprot.org/uniprotkb/Q9SZ45/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "MCU1 Calcium uniporter protein 1, mitochondrial F4I111 MCU2 Calcium uniporter protein 2, mitochondrial Q8VYR0 MCU3 Calcium uniporter protein 3, mitochondrial O64823 MCU4 Calcium uniporter protein 4, mitochondrial Q1PE15 MCU5 Calcium uniporter protein 5, mitochondrial Q9FJV7 MCU6 Chloroplastic calcium uniporter protein Q9LVR5 MICU Calcium uptake protein, mitochondrial Q9SZ45"
     }
    }
   },
@@ -42992,6 +43613,12 @@
     "syn3a": {
      "finding": "nothing to look for",
      "note": "A lumped water permeability of the membrane; water channels (aquaporins) are not part of it. No protein of this organism carries the aquaporin family's signature.",
+     "items": [],
+     "keywords": ""
+    },
+    "thalecress": {
+     "finding": "nothing to look for",
+     "note": "A lumped water permeability of the membrane; water channels (aquaporins) are not part of it.",
      "items": [],
      "keywords": ""
     }
