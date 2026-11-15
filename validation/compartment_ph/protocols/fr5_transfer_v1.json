@@ -2,7 +2,7 @@
  "schema": "cells.compartment_ph_protocol@1",
  "id": "fr5-transfer-v1",
  "title": "FR-5's first acceptance: pH-conditioned transfer, damage, leak and reseal on an owned compartment, in two arms on FR-4's steady state",
- "status": "PROPOSED (drafted 15 November 2026 by the FR-4/FR-5 physics owner on branch fr45-physics). It stays PROPOSED until the integrated candidate runs; registration is the lead's, after the dt study and a rehearsal. The arm values are PENDING THE REFERENCES' CONFIRMATION (their rerun of §13.2's two arms from 1800 s); a value their rerun moves is revised here before registration",
+ "status": "PROPOSED (drafted 15 November 2026 by the FR-4/FR-5 physics owner on branch fr45-physics). It stays PROPOSED until the integrated candidate runs; registration is the lead's, after the dt study and a rehearsal. The arm values and restated claims are confirmed by the references' readout (branch 931fb38a; compartment-transfer-arms-01-readout.* beside /mnt/workspaces/Cells/independent-references-20261115-01/compartment-transfer-arms-01/), which reran the record's own worlds and reproduced it exactly",
  "registration": {
   "status": "not registered",
   "no_judged_run_yet": "No run of either arm exists: the core's insertion points and this branch's laws are not yet wired",
@@ -23,12 +23,13 @@
  "driver": "validation/compartment_ph/definitions.py fr5_world(parameters.ARM_T or ARM_R), run by the dt-study harness once wired",
  "start": {
   "declared": "FR-4's engine checkpoint at t = 1800 s of fr4_world(World()), its steady state (pH_L about 5.0946 per the references); FR-5's t = 0 is that checkpoint, with X added at its declared start amounts",
-  "reference": "passed to the reference as tr.Start, so engine and reference start from the same state"
+  "reference": "REQUIRED for X's budget: the reference starts from the engine's own 1800 s checkpoint (tr.Start), not a recomputed steady state. X_L along the run moves by about 0.06 B per 1e-3 pH of start offset (the references' readout)"
  },
  "arms": {
   "T": {
-   "claim": "X crosses while the lumen is acidic. A proton-only damage raises pH_L above pH50, and while pH_L > pH50 the conditioned transfer's mean rate falls at least 10-fold below its mean rate over the pre-damage interval, judged on the route's cumulative transfer in units of X's budget B (the rerun measured about 14-fold: 152 B over 74-326 s against 497 B in the 59 s before damage). After resealing, pH_L returns below pH50 before 400 s, with the crossing time within 5 s of the reference's (327 s in the rerun), and the transfer resumes. Pending the references' confirmation",
-   "values_pending_confirmation": {
+   "claim": "X crosses while the lumen is acidic. A proton-only damage raises pH_L above pH50, and while pH_L > pH50 the conditioned transfer's mean rate falls at least 10-fold below its mean rate over the pre-damage interval, judged on the route's cumulative transfer in units of X's budget B (the rerun measured about 14-fold: 152 B over 74-326 s against 497 B in the 59 s before damage). After resealing, pH_L returns below pH50 before 400 s, with the crossing time within 5 s of the reference's (327 s in the rerun), and the transfer resumes.",
+   "control": "f = 1 (no condition): X keeps crossing through the alkaline window; the lumen's X and the conditioned route's cumulative transfer differ from arm T by at least 10x X's budget",
+   "values": {
     "cargo_transfer_m_s": 1e-09,
     "pore_proton_m_s": 1e-05,
     "pore_cargo_m_s": 0.0,
@@ -43,11 +44,12 @@
     "horizon_s": 400.0,
     "dt_s": 0.0005
    },
-   "control": "f = 1 (no condition): X keeps crossing through the alkaline window; the lumen's X and the conditioned route's cumulative transfer differ from arm T by at least 10x X's budget"
+   "confirmed": "8.375 B/s over [0, 60] s against 0.6120 B/s over [73.081, 326.882] s (ratio 13.69 >= 10); pH_L above pH50 at 73.081 s, back below at 326.882 s"
   },
   "R": {
-   "claim": "The slow conditioned route keeps most X in the lumen until damage. The damage opens the cargo pore and the proton pore, giving a release burst (at least 0.8 of X_L(0) released inside the window; the rerun measured 0.874) and a pH rise. After resealing, pH_L returns below pH50 before 400 s, with the crossing time within 5 s of the reference's (367 s in the rerun). Pending the references' confirmation",
-   "values_pending_confirmation": {
+   "claim": "The slow conditioned route keeps most X in the lumen until damage. The damage opens the cargo pore and the proton pore, giving a release burst (at least 0.8 of X_L(0) released inside the window; the rerun measured 0.874) and a pH rise. After resealing, pH_L returns below pH50 before 400 s, with the crossing time within 5 s of the reference's (367 s in the rerun).",
+   "control": "d = 0 (no damage): no burst and no pH rise; the lumen's X differs from arm R by at least 10x X's budget",
+   "values": {
     "cargo_transfer_m_s": 1e-10,
     "pore_proton_m_s": 1e-05,
     "pore_cargo_m_s": 1e-06,
@@ -62,7 +64,7 @@
     "horizon_s": 400.0,
     "dt_s": 0.0005
    },
-   "control": "d = 0 (no damage): no burst and no pH rise; the lumen's X differs from arm R by at least 10x X's budget"
+   "confirmed": "0.8736 of X_L(0) released over [100, 160] s (>= 0.8); pH_L above pH50 at 113.081 s, back below at 366.882 s; the conditioned route carries nothing while pH_L > pH50, since the burst has already equalised X"
   }
  },
  "budgets": {
@@ -122,12 +124,13 @@
   "P_X = 1e-10 m/s for arm R comes from the references' grid; the proton pore at 1e-5 m/s (not their 1e-4) was chosen by host-side steady-state arithmetic so that both arms stay explicit at 1 ms; whether the pH crosses pH50 within each window is for their rerun to confirm",
   "The world declares 1e-9 mM traces where a row does not apply; the references use exact zeros for the absent buffer. A declared difference: the closure's mask keys on declared (node, row) pairs, so the traces are never live buffers",
   "The start (FR-4's checkpoint at 1800 s) was fixed after the references found FR-4's 900 s state 1.4e-3 pH from steady state, beyond the 1e-3 budget",
-  "After the references' rerun of both arms (references branch 071ef983; /mnt/workspaces/Cells/independent-references-20261115-01/compartment-transfer-arms-01/): arm T's original claim, that the transfer stops, did not hold. The route slows about 14-fold while pH_L > pH50 but does not stop, since most of the transfer happens while f passes through its half-open range, and longer windows do not change that. So the claim is restated numerically (at least 10-fold), not sharpened by parameters. The re-acidification claim is restated as a return below pH50 before 400 s, with no longer horizon. The step bound was declared on the patch total after the rerun measured 0.048 at 1 ms, so FR-5's step became 0.5 ms"
+  "After the references' rerun of both arms (references branch 071ef983; /mnt/workspaces/Cells/independent-references-20261115-01/compartment-transfer-arms-01/): arm T's original claim, that the transfer stops, did not hold. The route slows about 14-fold while pH_L > pH50 but does not stop, since most of the transfer happens while f passes through its half-open range, and longer windows do not change that. So the claim is restated numerically (at least 10-fold), not sharpened by parameters. The re-acidification claim is restated as a return below pH50 before 400 s, with no longer horizon. The step bound was declared on the patch total after the rerun measured 0.048 at 1 ms, so FR-5's step became 0.5 ms",
+  "The restated claims and the arm values were confirmed by the references' readout (branch 931fb38a; compartment-transfer-arms-01-readout.* beside /mnt/workspaces/Cells/independent-references-20261115-01/compartment-transfer-arms-01/), which reran the record's own worlds and reproduced it exactly, before registration and before any engine run"
  ],
  "development_runs": {
   "runs": [],
   "note": "no run of either arm; the charged-patch test's runs (fr45/charged_patch/) are development evidence for the explicit limit only"
  },
  "outcome_rules": "PASS when J1-J10 hold for both arms; otherwise the failing criteria are reported with their values, without repair or retuning after the judged run",
- "step_bound": "The world's 0.05 (max-side dt x G/C_b) applies to the patch total, the sum over every route on the bounding patch, since those routes share one charge mode (V_b). The rerun measured the patch total at 0.048 at 1 ms at the stiffest state (the proton pore 0.029, the leak, K+). So FR-5 declares dt = 0.5 ms (patch total about 0.024, FR-4's factor-of-two margin). Price: 400 s is 8e5 steps per run instead of 4e5, about 0.8 CPU-hours per run at the charged-patch test's upper-bound cost. Pending the references' confirmation"
+ "step_bound": "The world's 0.05 (max-side dt x G/C_b) applies to the patch total, the sum over every route on the bounding patch, since those routes share one charge mode (V_b). The rerun measured the patch total at 0.048 at 1 ms at the stiffest state (the proton pore 0.029, the leak, K+). So FR-5 declares dt = 0.5 ms (patch total about 0.024, FR-4's factor-of-two margin). Price: 400 s is 8e5 steps per run instead of 4e5, about 0.8 CPU-hours per run at the charged-patch test's upper-bound cost."
 }
