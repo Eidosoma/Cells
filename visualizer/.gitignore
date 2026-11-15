@@ -3,3 +3,8 @@
 node_modules/
 out/
 *.log
+# Downloaded data never lives in this folder: it goes under /mnt/datasets, with a manifest
+# per source, and analysis under /mnt/workspaces. These two names are ignored at this
+# folder's top level so that a download made here by mistake is not committed.
+/downloads/
+/datasets/

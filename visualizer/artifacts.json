@@ -74,9 +74,62 @@
           "date": "2026-11-14",
           "engine_revision": "6ae5b388",
           "note": "The map at main 6ae5b388: the scheduled bath is a registered operator (FR-10's first milestone, development code); the coupling operator's first two milestones are in; MG0c's protocol is revised and still proposed; the conduction probe's text says what was compared blind. The page is otherwise unchanged, and the 59 run files were not sent again. Checked at 3ce44705: 55 of 55 real-input checks on a clean checkout (one label check had failed once under heavy machine load and was made to wait for the label to hold still); 95 tests (94 pass, 1 skipped)"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "e2a86708",
+          "note": "JCVI-syn3A is a third species in the protein atlas: none of the inventory's 49 units is found in it (43 nothing found, 6 nothing to look for), and nine of its own membrane machines are listed apart. The map shows the Syn3A minimal-cell track as planned (D173), the coupling operator's third milestone and the excitable-tissue references. An interim view: the species switch that also changes the levels and the shapes is still being built. Checked at 38866504 on a clean checkout: 55 of 55 real-input checks; 113 tests (112 pass, 1 skipped). The 59 run files were not sent again"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "a456453b",
+          "note": "Mycoplasma pneumoniae is a fourth species in the protein atlas: none of the inventory's 49 units is found in it, and nine of its own membrane machines are listed apart. The map shows the coupling operator's proposed qualification protocol, the composition matrix and the Syn3A track's revision. Still an interim view: the species switch that changes the levels and the shapes, and the shelves of each species' own proteins, are being built. Checked at 634ab261 on a clean checkout: 55 of 55 real-input checks; 146 tests (145 pass, 1 skipped). The 59 run files were not sent again"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "c7c0d706",
+          "note": "One species for the whole page (Human, Planarian, Syn3A, M. pneumoniae): the switch in the top bar sets the levels, the shapes, what the cell holds and the species' side of the protein atlas, all from data files. Syn3A and M. pneumoniae end at their cell; the human heart and body are rough placeholders. The map shows the coupling operator as numerically qualified and MG0c's protocol as registered. Checked at 4e89be16 on a clean checkout: 55 of 55 real-input checks, 38 of 38 species checks, 177 tests (176 pass, 1 skipped). The species' own proteins on shelves are not drawn yet. The 59 run files were not sent again"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "a784a0b3",
+          "note": "The species' facts now rest on permissively licensed sources only: every source in the data files is classed by licence, and no value comes from a non-commercial source or one with no stated terms (M. pneumoniae is drawn with 300 ribosomes, from an open paper's measurement). The map shows both the coupling operator and the reactions operator as numerically qualified (MG0c judged, 55 of 55). Checked on a clean checkout of the branch head: 55 of 55 real-input checks, 38 of 38 species checks, 185 tests (184 pass, 1 skipped). The 59 run files were not sent again"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "887e359b",
+          "note": "Each species' own proteins on shelves in the protein atlas, in one format: Syn3A's 455 and M. pneumoniae's 688 one marker each, the planarian's 18,882 as families that open; a switch on the card moves between Cells' 49 machines and the species' own proteins. 12 protein files (3.4 MB) are now published beside the page with the 59 runs: 72 files with the page. The map shows the cell-owned compartment and site-occupancy operators and the run-view design note. Checked at b760d062: 55 of 55 real-input checks, 41 of 41 species checks, shelves checks 17 of 17 (Syn3A), 18 of 18 (planarian) and 6 of 6 (without the files); 211 tests (210 pass, 1 skipped)"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "44227075",
+          "note": "In the species' own proteins, what is inside the cell now stands in coloured glass like the membrane shelf, a little lighter; what is set apart keeps none. The map follows main through 44227075, and the atlas says that the catalogue's 34 added entries were reviewed (no channel, pump, transporter or junction law among them). Checked at aa4a3cbe: 55 of 55 real-input checks, 41 of 41 species checks, shelves checks 17 of 17 (Syn3A), 18 of 18 (planarian) and 6 of 6 (without the files); 211 tests (210 pass, 1 skipped). The 71 files beside the page were not sent again"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "f791294c",
+          "note": "The map gains the modular inner model (D172, D176: designed, in implementation on an integration branch, not on main) and levels of detail (D175), and says of the composite what the record says of the L4 (agreement within tolerance; the bitwise criterion open). Every 'qualified' label was checked against main's record at f791294c. Checked on a clean copy of 15549fd4: the scene built strictly with no warning; 211 tests (210 pass, 1 skipped); the engine's real-input checks, 4 of 4. Nothing else changed since Version 8, whose full checks stand; the 71 files beside the page were not sent again"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "1bd1cfbd",
+          "note": "The engine map level with main 1bd1cfbd after a pass over every entry: the modular rework of the inner model is a hub that delivers eleven designed parts, each saying what holds today and that it is not on main, and the Cell view says part by part what runs today and what the rework brings (designed 10 to 24, qualified 39 to 40). In the species' own proteins every tool behind a predicted placement is named with its own terms and counts, and Syn3A's lipid anchors come from a sequence rule of the tool's own (5 proteins outside where 13 were), pending the user's decision on values a restricted tool computed. Checked on a clean copy: 55 of 55 real-input checks and 41 of 41 species checks at e6396b3a, shelves checks 17 of 17 (Syn3A), 18 of 18 (planarian) and 6 of 6 (without the files) at b210a54a, where only the check itself differs; 226 tests (225 pass, 1 skipped). Sent with the page: the three species' shelves files; the other 68 files beside it are unchanged"
         }
       ],
-      "files": "out/cells-architecture.files.json lists the run files published beside the page (generated, not committed)"
+      "files": "out/cells-architecture.files.json lists the files published beside the page: the runs and the species' own proteins (generated, not committed)"
+    },
+    "invisible_quantities": {
+      "title": "Invisible Quantities",
+      "url": "https://claude.ai/artifact/RjP3pTa73yveNrNsbPzN98",
+      "page": "docs/ideas/invisible-quantities.html",
+      "note": "Ideas to choose from, with a sketch each, for showing voltages, charge, fields and flows in the viewer. Nothing in it is built; every sketch is drawn in the page from invented numbers. The note beside it is docs/INVISIBLE_QUANTITIES.md.",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-15",
+          "note": "First version: ten ideas in three tiers of readiness (works on today's saved runs; the engine computes it and runs must save it; needs new output from the engine), the design options for a quantity layer, what the engine would be asked for, and the choices put to the user. Looked at in light and dark, wide and phone, before publishing"
+        }
+      ]
     }
   }
 }
