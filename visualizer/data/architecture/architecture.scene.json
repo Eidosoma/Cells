@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-15",
-  "generated_at": "2026-11-15T17:10:34Z",
+  "generated_at": "2026-11-15T17:33:11Z",
   "revision": "d0c747c7",
   "revision_date": "2026-11-15",
   "dirty": false,
@@ -3859,7 +3859,7 @@
       "length_um": 2.5,
       "across_um": 1
      },
-     "note": "Drawn as a rod 2.5 µm long and 1 µm across: the picture's choice, within the ranges given for the cell. Its second membrane and its wall are drawn as clear shells around the cell membrane, and its 6,800 ribosomes are the low end of the range one paper gives. The real cell also carries flagella and fimbriae on its surface, which this shape cannot show.",
+     "note": "Drawn as a rod 2.5 µm long and 1 µm across: the picture's choice, within the ranges given for the cell. Its second membrane and its wall are drawn as clear shells around the cell membrane, and its 6,800 ribosomes are the low end of the range one paper gives. Its flagella and fimbriae are given as appendages, with the ranges their sources give; that the fimbriae stand all over the cell is the picture's choice, since no source read for this file says where they stand.",
      "sources": [
       "volkmer2011",
       "urich2008",
@@ -3928,6 +3928,31 @@
       ]
      },
      {
+      "label": "Flagella",
+      "value": "1 to 5 on a cell in one study of single cells, and 3.4 on average by another paper; each a thread typically 5 to 10 µm long (7.5 µm by one measurement). Of the width the sources disagree: about 20 nm by one, 40 nm by another",
+      "sources": [
+       "mears2014",
+       "schavemaker2022",
+       "dvoriashyna2021",
+       "zhuang2025"
+      ]
+     },
+     {
+      "label": "Where the flagella stand",
+      "value": "all over the cell body; the motor at the foot of each sits in the inner membrane, where its ring protein FliF and its stator proteins MotA and MotB are stated to be. 34 proteins are parts of the flagellum by the Gene Ontology terms UniProt gives them",
+      "sources": [
+       "dvoriashyna2021",
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Type 1 fimbriae",
+      "value": "200 to 500 on a cell by one paper's summary, each up to 1 µm long and about 7 to 10 nm wide, standing out from the outer membrane",
+      "sources": [
+       "jahnke2016"
+      ]
+     },
+     {
       "label": "Chemotaxis",
       "value": "22 of its proteins carry UniProt's keyword for chemotaxis (aer, cheA, cheB, cheR, cheW, cheY, cheZ, dppA, fliG, fliJ, fliL, fliM, fliN, fliO, mglB, motA, motB, rbsB, tap, tar, trg and tsr), and 34 are parts of the flagellum by the Gene Ontology terms UniProt gives them",
       "sources": [
@@ -3976,7 +4001,58 @@
      "wall": true,
      "nucleus": false,
      "chromosome_kbp": 4642,
-     "ribosomes": 6800
+     "ribosomes": 6800,
+     "appendages": [
+      {
+       "kind": "flagellum",
+       "label": "Flagella",
+       "count": [
+        1,
+        5
+       ],
+       "length_um": [
+        5,
+        10
+       ],
+       "width_nm": [
+        20,
+        40
+       ],
+       "where": "all over",
+       "from": "inner membrane",
+       "base": {
+        "id": "flagellar-motor",
+        "label": "Flagellar motor",
+        "mark": "complex",
+        "value": "flagellum"
+       },
+       "sources": [
+        "mears2014",
+        "schavemaker2022",
+        "dvoriashyna2021",
+        "zhuang2025",
+        "uniprot"
+       ]
+      },
+      {
+       "kind": "pilus",
+       "label": "Type 1 fimbriae",
+       "count": [
+        200,
+        500
+       ],
+       "length_um": 1,
+       "width_nm": [
+        7,
+        10
+       ],
+       "where": "all over",
+       "from": "outer membrane",
+       "sources": [
+        "jahnke2016"
+       ]
+      }
+     ]
     },
     "capabilities": {
      "cap.membrane": {
@@ -4082,6 +4158,41 @@
     "urich2008": {
      "text": "Urich T, Lanzén A, Qi J, Huson DH, Schleper C, Schuster SC (2008) Simultaneous assessment of soil microbial community structure and function through analysis of the meta-transcriptome. PLoS One 3:e2527.",
      "doi": "10.1371/journal.pone.0002527",
+     "licence": "CC BY",
+     "class": "permissive",
+     "accessed": "2026-11-15"
+    },
+    "mears2014": {
+     "text": "Mears PJ, Koirala S, Rao CV, Golding I, Chemla YR (2014) Escherichia coli swimming is robust against variations in flagellar number. eLife 3:e01916.",
+     "doi": "10.7554/eLife.01916",
+     "licence": "CC BY",
+     "class": "permissive",
+     "accessed": "2026-11-15"
+    },
+    "schavemaker2022": {
+     "text": "Schavemaker PE, Lynch M (2022) Flagellar energy costs across the tree of life. eLife 11:e77266.",
+     "doi": "10.7554/eLife.77266",
+     "licence": "CC BY",
+     "class": "permissive",
+     "accessed": "2026-11-15"
+    },
+    "dvoriashyna2021": {
+     "text": "Dvoriashyna M, Lauga E (2021) Hydrodynamics and direction change of tumbling bacteria. PloS one 16:e0254551.",
+     "doi": "10.1371/journal.pone.0254551",
+     "licence": "CC BY",
+     "class": "permissive",
+     "accessed": "2026-11-15"
+    },
+    "zhuang2025": {
+     "text": "Zhuang XY, Lo CJ (2025) Decoding Bacterial Motility: From Swimming States to Patterns and Chemotactic Strategies. Biomolecules 15:170.",
+     "doi": "10.3390/biom15020170",
+     "licence": "CC BY",
+     "class": "permissive",
+     "accessed": "2026-11-15"
+    },
+    "jahnke2016": {
+     "text": "Jahnke JP, Terrell JL, Smith AM, Cheng X, Stratis-Cullum DN (2016) Influences of Adhesion Variability on the \"Living\" Dynamics of Filamentous Bacteria in Microfluidic Channels. Molecules (Basel, Switzerland) 21:E985.",
+     "doi": "10.3390/molecules21080985",
      "licence": "CC BY",
      "class": "permissive",
      "accessed": "2026-11-15"
