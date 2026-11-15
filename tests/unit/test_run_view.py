@@ -1,20 +1,21 @@
-"""The run view (D154; docs/RUN_VIEW_DESIGN.md; cells/run_view.py).
+"""The run view (D154; docs/RUN_VIEW_DESIGN.md; cells/run_view.py): write_run, write_batch_run,
+the plan, its refusals and the reader's check. The windowed paths: test_run_view_windows.py.
 
-* The shared paths write a view only when asked (view=): without it every path writes what it
+* The shared paths write a view only when asked (view=): without it write_run writes what it
   wrote before; with it, view.json beside the run, before the manifest that covers it.
 * The view validates against the run's own files (shapes, time bases, heat monotone), repeats
   byte for byte, holds no host path, and equals the view written afterwards from the saved run.
 * Refusals write nothing: an operator without VIEW_LAYERS, a set an operator does not declare,
   geometry for a set the definition fixes, a bad recording subset or run label, a model outside
-  version 1.
+  version 1, a batch request that misses a world.
 * The reader's check refuses malformed views.
-* Windowed runs name every chunk once per time base; batches write one view per world; a recording
-  subset keeps the declared fields, elements and cadence, and the view says which.
-* A division: lifetimes and births and retirements name the parent and both daughters.
+* A recording subset keeps the declared fields, elements and cadence, and the view says which.
+* A batch writes one view per world, beside its definition; a builder's geometry lands on its set;
+  a division's lifetimes and events name the parent and both daughters.
 * Every field of resolved_pump_tissue@3 is described; the operators' missing declarations (the
   requested seams) only shrink.
 
-Declarations an operator does not carry yet are planted here for the test's duration only.
+Declarations an operator does not carry yet are planted for a test's duration only.
 """
 
 import json
@@ -24,75 +25,27 @@ import pytest
 
 from cells import run_view
 from cells.batch_io import write_batch_run
-from cells.batch_window_io import write_windowed_batch
 from cells.core.batch import run_batch
 from cells.core.runner import run
 from cells.core.specs import parse_spec
 from cells.core.state import initialise
-from cells.core.windows import WindowPolicy
 from cells.io import write_run
 from cells.models import surface_pump_v3 as tissue3
 from cells.models.operators import OPERATORS
 from cells.models.operators.contract import Operator
 from cells.models.registry import get_model
-from cells.window_io import write_windowed_run
 from tests.batch_fixtures import definition
-from validation.tissue import secreted_species_fixtures as fx
-
-DT = 1e-3
-TURNOVER = "scheduled_species_turnover@1"
-EXCHANGE = "scheduled_species_exchange@1"
-PARTITION = "isopotential_partition@1"
-STATE = "membrane_entity_state@1"
-
-
-def secretion(end=0.01, every=0.002, produce=1e-4, **world):
-    """The worked example's world (a cell secretes S into a node that leaks to its bath), short."""
-    builder = fx.world if world else fx.secreting_cell
-    raw = builder(
-        end=end, dt=DT, solver=fx.IMEX, observation_times=fx.grid_times(end, DT, every), **world
-    )
-    cell = (world.get("cells") or (("cell_0", 1.0),))[0][0]
-    raw = fx.with_turnover(
-        raw,
-        [("produce", cell, "production"), ("clear", "ecs_0", "clearance")],
-        [("produce", cell, [(0.0, produce)]), ("clear", None, [(0.0, 0.5)])],
-    )
-    raw = fx.with_exchange(
-        raw,
-        [
-            ("secrete", "contact_0", "export", "first_order"),
-            ("sink", "contact_0", "import", "saturable"),
-        ],
-        [("secrete", cell, [(0.0, 0.1)]), ("sink", cell, [(0.0, 1e6, 5e-4)])],
-    )
-    return parse_spec(raw)
-
-
-def _route_set(self, spec, declaration):
-    routes = declaration.routes
-    return {
-        "exchange_route": {
-            "id": "exchange_route",
-            "ids": tuple(r.id for r in routes),
-            "holds": "exchange route",
-            "on": ("membrane", tuple(r.patch for r in routes)),
-        }
-    }
-
-
-def plant(patch, law, **declarations):
-    for name, value in declarations.items():
-        patch.setattr(type(OPERATORS[law]), name, value, raising=False)
-
-
-def layers(layer_id, label, representation="prescribed"):
-    return (dict(id=layer_id, label=label, representation=representation),)
-
-
-def declare_secretion(patch):
-    plant(patch, TURNOVER, VIEW_LAYERS=layers("turnover", "Species turnover"))
-    plant(patch, EXCHANGE, VIEW_LAYERS=layers("exchange", "Species exchange"), view_sets=_route_set)
+from tests.run_view_fixtures import (
+    EXCHANGE,
+    PARTITION,
+    STATE,
+    TURNOVER,
+    declare_secretion,
+    layers,
+    load,
+    plant,
+    secretion,
+)
 
 
 @pytest.fixture
@@ -102,7 +55,8 @@ def declared(monkeypatch):
 
 @pytest.fixture(scope="module")
 def written(tmp_path_factory):
-    """One short run of the example's world, written with a view (and twice for the bytes)."""
+    """One short run of the example's world, written with a view (twice, for the bytes) and
+    without one."""
     with pytest.MonkeyPatch.context() as patch:
         declare_secretion(patch)
         spec = secretion()
@@ -115,14 +69,10 @@ def written(tmp_path_factory):
         yield spec, result, root
 
 
-def load(directory):
-    return json.loads((directory / run_view.FILE).read_text())
+# ------------------------------------------------------------------ write_run
 
 
-# ------------------------------------------------------------------ the shared paths
-
-
-def test_without_a_view_the_paths_write_what_they_wrote(written):
+def test_without_a_view_write_run_writes_what_it_wrote(written):
     _, _, root = written
     files = {str(p.relative_to(root / "plain")) for p in (root / "plain").rglob("*") if p.is_file()}
     assert files == {
@@ -182,6 +132,51 @@ def test_write_run_writes_a_valid_deterministic_view(written, tmp_path):
     assert (out / "view.json").read_bytes() == data
 
 
+def test_a_recording_subset_keeps_the_declared_fields_elements_and_cadence(
+    written, declared, tmp_path
+):
+    spec, result, _ = written
+    keep = run_view.Recording(
+        fields=("membrane_voltage_V", "amount", "exchange_moved_fmol"),
+        elements={"species": ("S",), "membrane": ("contact_0",)},
+        every=2,
+    )
+    write_run(tmp_path / "r", result, view=run_view.Request(recording=keep))
+    view = load(tmp_path / "r")
+    run_view.validate(view, tmp_path / "r")
+    sets = {s["id"]: s for s in view["sets"]}
+    assert sets["species"]["recorded"] == [3] and sets["membrane"]["recorded"] == [1]
+    assert {r["field"] for r in view["records"]} == set(keep.fields)
+    assert view["recording"]["subset"]["every"] == 2
+    with np.load(tmp_path / "r" / "trajectory.npz") as saved:
+        times = spec.experiment.observation_times
+        np.testing.assert_array_equal(saved["observation_times"], times[::2])
+        assert saved["observed_amount"].shape == (len(times[::2]), 1, 1)
+        assert saved["observed_membrane_voltage_V"].shape == (len(times[::2]), 1)
+        assert "membrane_transferred" not in saved.files and "exchange_moved_fmol" in saved.files
+        assert len(saved["exchange_moved_fmol"]) == len(saved["accepted_times"])
+        assert "volume" in saved.files  # The layout is not a record: kept whole.
+
+
+def test_a_batch_writes_one_view_per_world(declared, tmp_path):
+    specs = [secretion(produce=1e-4), secretion(produce=2e-4)]
+    result = run_batch(definition(specs))
+    requests = {10: run_view.Request({"seed": 1}), 11: run_view.Request({"seed": 2})}
+    write_batch_run(tmp_path / "b", result, view=requests)
+    for world, spec in zip((10, 11), specs, strict=True):
+        folder = tmp_path / "b" / "worlds" / f"world-{world}"
+        view = load(folder)
+        run_view.validate(view, folder)
+        assert view["run"]["definition_sha256"] == spec.fingerprint
+        assert view["run"]["seed"] == world - 9
+        manifest = json.loads((folder / "manifest.json").read_text())
+        assert "view.json" in manifest["files_sha256"]
+    bad = {10: requests[10], 11: run_view.Request({"seed": "2"})}
+    with pytest.raises(run_view.ViewRefused, match="run label 'seed'"):
+        write_batch_run(tmp_path / "refused", result, view=bad)
+    assert not (tmp_path / "refused").exists()  # Every world checked before any output.
+
+
 # ------------------------------------------------------------------ refusals
 
 
@@ -212,10 +207,7 @@ def test_an_operator_axis_without_a_set_is_refused(written, monkeypatch):
             dict(geometry=run_view.Geometry("um", 2, {"membrane": {"kind": "points"}}, "builder")),
             "only cell and outside",
         ),
-        (
-            dict(geometry=run_view.Geometry("px", 2, {}, "builder")),
-            "is not one of",
-        ),
+        (dict(geometry=run_view.Geometry("px", 2, {}, "builder")), "is not one of"),
         (
             dict(
                 geometry=run_view.Geometry(
@@ -238,6 +230,14 @@ def test_a_model_outside_version_1_is_refused():
     spec = synthetic_pair().worlds[0].simulation
     with pytest.raises(run_view.ViewRefused, match="No view declarations"):
         run_view.prepare(spec, run_view.Request(), layout=None)
+
+
+def test_a_batch_request_names_every_world_once():
+    request = run_view.Request()
+    assert run_view.requests_for(None, [10, 11]) == {}
+    assert run_view.requests_for(request, [10, 11]) == {10: request, 11: request}
+    with pytest.raises(run_view.ViewRefused, match="name every world once"):
+        run_view.requests_for({10: request}, [10, 11])
 
 
 # ------------------------------------------------------------------ the reader's check
@@ -322,85 +322,10 @@ def test_the_readers_check_finds_falling_heat(written, tmp_path):
         run_view.validate(view, tmp_path)
 
 
-# ------------------------------------------------------------------ windows, subsets, batches
-
-
-@pytest.mark.parametrize("recording", ["full", "observations"])
-def test_a_windowed_run_names_each_chunk_once_per_time_base(declared, recording, tmp_path):
-    spec = secretion()
-    write_windowed_run(tmp_path / "w", spec, WindowPolicy(3, recording), view=run_view.Request())
-    view = load(tmp_path / "w")
-    run_view.validate(view, tmp_path / "w")
-    bases = {b["id"]: b for b in view["time"]["bases"]}
-    assert set(bases) == ({"accepted", "observation"} if recording == "full" else {"observation"})
-    chunks = sorted(
-        str(p.relative_to(tmp_path / "w")) for p in (tmp_path / "w" / "chunks").glob("*.npz")
-    )
-    assert sorted({f["file"] for b in bases.values() for f in b["files"]}) == chunks
-    assert bases["observation"]["files"][-1]["rows"][1] == len(spec.experiment.observation_times)
-    manifest = json.loads((tmp_path / "w" / "manifest.json").read_text())
-    assert "view.json" in manifest["files_sha256"]
-    assert view["recording"] == {"mode": recording, "subset": None}
-
-
-def test_a_recording_subset_keeps_the_declared_fields_elements_and_cadence(declared, tmp_path):
-    spec = secretion(end=0.012, every=0.002)  # Seven observations.
-    keep = run_view.Recording(
-        fields=("membrane_voltage_V", "amount", "exchange_moved_fmol"),
-        elements={"species": ("S",), "membrane": ("contact_0",)},
-        every=2,
-    )
-    request = run_view.Request(recording=keep)
-    write_run(tmp_path / "r", run(spec), view=request)
-    write_windowed_run(tmp_path / "w", spec, WindowPolicy(5, "full"), view=request)
-    for folder in ("r", "w"):
-        view = load(tmp_path / folder)
-        run_view.validate(view, tmp_path / folder)
-        sets = {s["id"]: s for s in view["sets"]}
-        assert sets["species"]["recorded"] == [3] and sets["membrane"]["recorded"] == [1]
-        assert {r["field"] for r in view["records"]} == set(keep.fields)
-        assert view["recording"]["subset"]["every"] == 2
-    with np.load(tmp_path / "r" / "trajectory.npz") as saved:
-        np.testing.assert_array_equal(
-            saved["observation_times"], spec.experiment.observation_times[::2]
-        )
-        assert saved["observed_amount"].shape == (4, 1, 1)
-        assert saved["observed_membrane_voltage_V"].shape == (4, 1)
-        assert "membrane_transferred" not in saved.files and "exchange_moved_fmol" in saved.files
-        assert "volume" in saved.files  # The layout is not a record: kept whole.
-        times = saved["observation_times"]
-    chunks = sorted((tmp_path / "w" / "chunks").glob("*.npz"))
-    windowed = np.concatenate([np.load(c)["observation_times"] for c in chunks])
-    np.testing.assert_array_equal(windowed, times)
-
-
-def test_batches_write_one_view_per_world(declared, tmp_path):
-    specs = [secretion(produce=1e-4), secretion(produce=2e-4)]
-    batch = definition(specs)
-    write_windowed_batch(tmp_path / "wb", batch, WindowPolicy(4), view=run_view.Request())
-    write_batch_run(
-        tmp_path / "b",
-        run_batch(batch),
-        view={10: run_view.Request({"seed": 1}), 11: run_view.Request({"seed": 2})},
-    )
-    manifest = json.loads((tmp_path / "wb" / "manifest.json").read_text())
-    for world, spec in zip((10, 11), specs, strict=True):
-        for root in (tmp_path / "wb", tmp_path / "b"):
-            folder = root / "worlds" / f"world-{world}"
-            view = load(folder)
-            run_view.validate(view, folder)
-            assert view["run"]["definition_sha256"] == spec.fingerprint
-        assert f"worlds/world-{world}/view.json" in manifest["files_sha256"]
-    assert load(tmp_path / "b" / "worlds" / "world-11")["run"]["seed"] == 2
-    with pytest.raises(run_view.ViewRefused, match="name every world once"):
-        write_windowed_batch(tmp_path / "x", batch, WindowPolicy(4), view={10: run_view.Request()})
-    assert not (tmp_path / "x").exists()
-
-
 # ------------------------------------------------------------------ geometry and a division
 
 
-def test_a_builders_geometry_is_placed_on_its_set(declared, tmp_path):
+def test_a_builders_geometry_is_placed_on_its_set(declared):
     spec = secretion(
         cells=(("cell_0", 1.0), ("cell_1", 1.0)),
         contacts=(("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_1", "ecs_0")),
@@ -411,9 +336,11 @@ def test_a_builders_geometry_is_placed_on_its_set(declared, tmp_path):
         {"cell": {"kind": "points", "centres": [[0.0, 0.0], [12.0, 0.0]], "radius": 6.0}},
         "a test builder: two cells 12 um apart",
     )
-    write_run(tmp_path / "g", run(spec), view=run_view.Request(geometry=geometry))
-    view = load(tmp_path / "g")
-    run_view.validate(view, tmp_path / "g")
+    plan = run_view.prepare(
+        spec, run_view.Request(geometry=geometry), layout=initialise(spec).layout
+    )
+    view = plan.view({}, "write_run")
+    run_view.validate(view)
     cell = next(s for s in view["sets"] if s["id"] == "cell")
     assert cell["geometry"] == {
         "kind": "points",
@@ -427,6 +354,9 @@ def test_a_builders_geometry_is_placed_on_its_set(declared, tmp_path):
         "source": "a test builder: two cells 12 um apart",
     }
     assert "geometry" not in {u["id"] for u in view["unstated"]}
+    bad = run_view.Geometry("um", 2, {"cell": {"kind": "points", "centres": [[0, 0]]}}, "b")
+    with pytest.raises(run_view.ViewRefused, match="2 finite 2-vectors"):
+        run_view.prepare(spec, run_view.Request(geometry=bad), layout=initialise(spec).layout)
 
 
 def test_a_division_names_its_parent_and_daughters(monkeypatch):
@@ -471,6 +401,7 @@ def test_a_division_names_its_parent_and_daughters(monkeypatch):
     assert {e["time"] for e in plan.events} == {pf.EVENT}
     changed = {u["id"] for u in plan.unstated if u["what"] == "view field"}
     assert {"active", "membrane_area", "membrane_capacitance"} <= changed
+    run_view.validate(plan.view({}, "write_run"))
 
 
 # ------------------------------------------------------------------ declarations
@@ -524,7 +455,7 @@ PENDING_UNITS = frozenset(
         ("species_regulated_availability@1", "regulatory_writes_applied"),
     }
 )
-# Operators' own axes without a declared set, and readout columns without declared axes.
+# Operators' own axes without a declared set (view_sets).
 PENDING_SETS = frozenset(
     {
         ("isopotential_partition@1", "division_slot"),
