@@ -5430,7 +5430,8 @@ code check. The notes are [CLOSED_COMPARTMENT_DESIGN.md](CLOSED_COMPARTMENT_DESI
   - A dose from nothing is a known limit, extending D150's resolved-start ruling. It is refused in
     species-only worlds and unseen in mixed ones (probe 1). A staircase probe is requested.
   - Door S (slot-scoped provision) comes early, as a general contract feature. D152's conflict with
-    the schedule is nominal.
+    the schedule is nominal. *Amended by D174:* door S also covers the runtime merge onto the
+    accumulated view, so it is not host-only, and it joins D172's round.
 - **FR-3, the site occupancy.**
   - It is a new operator, `site_occupancy@1`, owning its populations and providing no field input.
   - It uses D152's unsplit SSPRK(3,3) with the per-route hybrid. The palindrome was measured and
@@ -5585,6 +5586,32 @@ contacting the authors and we will search for the missing data also help if need
 - ***M. pneumoniae* is audited soon,** amended the same evening by the user: "But also M. pneumoniae
   soon for validation if we have more real public data there". The Syn3A agent audits it next,
   for real measured public data to validate against, and says whether it should lead any stage.
+
+## D174: The external architecture review adopted into D172; the architecture document first
+
+2026-11-15. The user forwarded an external review of the D172 direction and asked: "from
+external reviewers, you review then get adviser then act on this", then "update the arhtecture doc
+before changing any code" and "afte3r review".
+
+**What the lead did.**
+- Reviewed it and checked three of its claims in the code:
+  - the adapter's view replaces whole fields per provider;
+  - exchange books signed work with no heat;
+  - the tier gate compares exit codes and failed and error counts only.
+- Adopted it after reviewing it with the advisor.
+- Wrote its requirements into [ARCHITECTURE.md](ARCHITECTURE.md), section "The modular core". Each
+  requirement there is marked holds today, target for D172, or open.
+
+**The rule:** no review-driven code, and no `src/` or `scripts/` landing, until that section is on
+main. Approved branch work continues.
+
+**Consequences, recorded there:**
+- Per-law dispatch replaces the option of keeping @3's five laws as one group.
+- A new passive permeation law is expected, since exchange is a driven route.
+- Door S includes the runtime merge onto the accumulated view and joins D172's round. This amends
+  D169.
+- The fuel requirement is fixed. Its representation is open.
+- The reviewers' text is kept outside the public repository.
 
 ## Implementation choices and remaining work
 
