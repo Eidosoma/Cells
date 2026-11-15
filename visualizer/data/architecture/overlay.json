@@ -1601,10 +1601,14 @@
       "id": "exp.mg0c",
       "label": "MG0c: Turing patterns",
       "layer": "experiments",
-      "status": "landed",
-      "as_of": "2026-11-14",
-      "plain": "Pattern formation by reaction and diffusion: the qualification of the shared-inventory reactions. Its driver and development runs have landed. Its protocol has 55 judged criteria. A rehearsal on main passed all 55 on a dry-run copy, and the protocol was then registered (15 November 2026). Nothing is judged yet: one judged run follows.",
+      "status": "qualified",
+      "as_of": "2026-11-15",
+      "plain": "Pattern formation by reaction and diffusion: the qualification of the shared-inventory reactions. Its driver and development runs have landed. Its protocol has 55 judged criteria. The protocol was registered and judged on 15 November 2026: the one judged run passed all 55 criteria, with the guards and every kept control, and was identical to its rehearsal.",
       "sources": [
+        {
+          "path": "PROGRESS.md",
+          "where": "MG0c judged: the reactions operator `local_species_reactions@1` (D152 v1) is numerically"
+        },
         {
           "path": "PROGRESS.md",
           "where": "D152 v1 milestone 3 landed"
@@ -1956,10 +1960,14 @@
       "match": [
         "validation/reactions/**"
       ],
-      "plain": "Reference solutions for the shared-inventory reactions operator, written by an agent that never read the operator's code.",
+      "plain": "Reference solutions for the shared-inventory reactions operator, written by an agent that never read the operator's code. MG0c was judged against them on 15 November 2026 and passed.",
       "sources": [
         {
           "path": "validation/reactions/REFERENCES_USAGE.md"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "MG0c judged: the reactions operator `local_species_reactions@1` (D152 v1) is numerically"
         }
       ]
     },
@@ -2237,10 +2245,14 @@
       },
       "local_species_reactions@1": {
         "label": "Shared-inventory reactions",
-        "status": "landed",
-        "as_of": "2026-11-14",
-        "plain": "Reactions between species in the tissue's one inventory, with exact energy bookings. Development code with no judged run; its qualification, MG0c, is rehearsed and registered (15 November 2026) and awaits its judged run.",
+        "status": "qualified",
+        "as_of": "2026-11-15",
+        "plain": "Reactions between species in the tissue's one inventory, with exact energy bookings. Numerically qualified on 15 November 2026 within the scope of its protocol, MG0c: the judged run passed all 55 criteria, the guards and every kept control. The scope is driven mass-action reactions at outside nodes with the composite's species transport, on CPU.",
         "sources": [
+          {
+            "path": "PROGRESS.md",
+            "where": "MG0c judged: the reactions operator `local_species_reactions@1` (D152 v1) is numerically"
+          },
           {
             "path": "docs/SHARED_INVENTORY_REACTIONS_DESIGN.md"
           },
