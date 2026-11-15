@@ -28,9 +28,10 @@ engine issues". FEP is the free-energy principle; AIF is active inference.
 
 - **The essays' empirical anchors hold, with corrections** (§1.3). "CheA compares" is loose, and not
   every planarian change persists.
-- **No result here would prove the FEP.** A standard chemotaxis model is already known to be an
-  optimal filter, and PID control a special case of AIF. So the harness must be able to fail, and
-  must report "indistinguishable" when accounts coincide (§1, §3.8).
+- **No result here would prove the FEP.** A standard chemotaxis model has been shown mathematically
+  equivalent to an optimal filter, and PID control derived as AIF under linear generative models. So
+  the harness must be able to fail, and must report "indistinguishable" when accounts coincide (§1,
+  §3.8).
 - **Stage 1a needs no motility, spatial gradient or stochastic kernel.** The classic data come from
   tethered or immobilised cells under flow-delivered stimuli. It needs:
   - an allosteric (MWC) factor;
@@ -38,7 +39,9 @@ engine issues". FEP is the free-energy principle; AIF is active inference.
   - adaptation with an output-dependent rate;
   - an organism instance with observation models.
 
-  A permissive single-cell dataset with a knockout exists (Keegstra et al. 2017, CC BY).
+  A permissive single-cell dataset with a knockout exists (Keegstra et al. 2017, CC BY). It can judge
+  step responses, recovery, dose response and the knockout. The ~4 s comparison, ramps and sine waves
+  have no permissive source found, so they are analysis only.
 - **The "active" loop needs two large general features wanted elsewhere:** motile cells sampling a
   field (E15's migration) and a stochastic regime (Syn3A's F11).
 - **Stage 2 is blocked by D145's hold and FR-8.** Stage 3's islet maps mostly onto planned general
@@ -62,9 +65,11 @@ engine issues". FEP is the free-energy principle; AIF is active inference.
 - **No result proves the FEP.** Level 3 success means only that an AIF model wins on held-out
   perturbations under a score registered in advance.
 - **Equivalences come first.**
-  - A standard chemotaxis model equals an optimal filter inferring up- or down-gradient swimming,
-    noise neglected, with methylation as the prediction term (Nakamura & Kobayashi 2021; read
-    through summaries).
+  - A standard chemotaxis model is "mathematically equivalent to an information-theoretically
+    optimal filtering dynamics" (Nakamura & Kobayashi 2021, arXiv abstract). Summaries of the full
+    text add that the filter infers up- or down-gradient swimming, that methylation is its
+    prediction term, that noise is neglected, and that one tumbling parameter disagrees with
+    measurement.
   - PID control follows from variational free-energy minimisation under approximate linear
     generative models (Baltieri & Buckley 2019). The pathway's cutoff is also an optimal-filtering
     solution (Andrews, Yi & Iglesias 2006).
@@ -87,7 +92,7 @@ engine issues". FEP is the free-energy principle; AIF is active inference.
 
 ### 1.3 The essays' claims, checked
 
-Abstracts unless stated; read levels are in the source log.
+Each claim rests only on what was read; read levels are marked in the [References](#references).
 - **"A comparison over about 4 s": confirmed** (Segall, Block & Berg 1986). Tethered *E. coli* got
   impulses, steps, exponential ramps and exponentiated sine waves. They weight the last second
   positively and the 3 s before it negatively.
@@ -100,8 +105,10 @@ Abstracts unless stated; read levels are in the source log.
 - **"CheA compares": loose.** The receptor–CheW–CheA complex's activity reflects ligand occupancy
   against the methylation level (Tu, Shimizu & Berg 2008; Shimizu, Tu & Berg 2010). CheA carries
   the result.
-- **"A feedback controller, not by itself a generative model": agreed.** Integral feedback (Barkai &
-  Leibler 1997; Yi et al. 2000) and the filter equivalence are both established readings.
+- **"A feedback controller, not by itself a generative model": agreed.** Established readings:
+  - adaptation as a consequence of network connectivity, with no fine-tuning (Barkai & Leibler 1997);
+  - the same read as integral feedback (Yi et al. 2000);
+  - the filter equivalence.
 - **Anticipation: confirmed at abstract level.**
   - Mitchell et al. (2009) report asymmetric anticipation (early stimuli pre-induce later genes, not
     the reverse), a fitness gain from pre-exposure, and loss of the response in *E. coli* evolved
@@ -129,9 +136,11 @@ Abstracts unless stated; read levels are in the source log.
     total output and raised basal release (Ravier et al. 2005).
   - Reduced coupling slows and disrupts Ca²⁺ waves, which a heterogeneously coupled model reproduces
     (Benninger et al. 2008).
-  - The K_ATP chain is consensus (review: Rorsman & Ashcroft 2018). PMC8915749 is a review of β-cell
-    heterogeneity (Benninger & Kravets 2022). Hub-cell leadership (Johnston et al. 2016) is debated
-    (Satin, Zhang & Rorsman 2020).
+  - Metabolism → electrical activity → Ca²⁺ → exocytosis is consensus (review: Rorsman & Ashcroft
+    2018). Its abstract does not name K_ATP, so the essay's K_ATP step was not checked at source here.
+  - PMC8915749 is a review of β-cell heterogeneity (Benninger & Kravets 2022).
+  - Hub-cell leadership (Johnston et al. 2016) is doubted: no obvious electrophysiological mechanism
+    lets one hyperpolarised hub silence an islet (Satin, Zhang & Rorsman 2020).
 
 ## 2. The staged track
 
@@ -143,17 +152,18 @@ feedback on held-out perturbations.
 | Item | Content |
 | --- | --- |
 | Observables | Kinase activity by FRET (populations and single cells) after steps, impulses, ramps and sine waves; tethered rotation bias; adaptation time and precision |
-| Judged data (permissive) | Keegstra et al. 2017 (*eLife*, CC BY): single-cell FRET with and without CheR/CheB, steps and dose responses, figure source data as `.mat` files |
+| Judged data (permissive) | Keegstra et al. 2017 (*eLife*, CC BY): single-cell FRET with and without CheR/CheB, steps and dose responses, figure source data as `.mat` files. Its single-cell traces are smoothed over a 14 s moving average in the part read |
 | Analysis-only data | Shimizu et al. 2010 (CC BY-NC-SA: ramps, sine waves, temperature); Segall et al. 1986 and Block et al. 1982 (tethered impulse responses, the mutants); Sourjik & Berg 2002; Cluzel et al. 2000. The last four have no stated terms |
 | Calibration, held out | Calibrate on wild-type steps. Hold out ramps and sine waves, the knockout, protein-level changes (Alon et al. 1999's design), temperature (analysis only) |
 | Controls | A methylation-free arm that must fail to adapt; planted parameter errors; the harness's identical-dynamics pair |
 | References | From equations, by an agent that never reads the engine code (as for D152); simulators second (§5) |
-| Claim | Level 1: a Cells model reproduces adaptation and its loss without methylation, and predicts held-out responses. The control reading is a separate claim; there is no inference claim |
+| Claim | Level 1, judged on the permissive set: step responses, recovery, dose response, and lost adaptation without CheR/CheB. Analysis only, since no permissive source was found: the impulse response's temporal comparison, ramps and sine waves, and temperature. Single-cell temporal fluctuations need the stochastic regime (§3.7, rank 4). The control reading is a separate claim; there is no inference claim |
 
 ### 2.2 Stage 1b: run and tumble in a gradient (the action loop)
 
-- **Observables:** drift velocity, run and tumble statistics, single-motor switching (Korobkova et
-  al. 2004), performance against an information bound (Mattingly et al. 2021).
+- **Observables:** drift velocity; run and tumble statistics; behavioural noise in single cells,
+  which the signalling network generates (Korobkova et al. 2004); performance against an
+  information limit (Mattingly et al. 2021).
 - **Data and references:** mostly no stated terms, so analysis only. RapidCell and MicrobeAgents.jl
   are the references (§5).
 - **The claim:** an AIF account first predicts actions here, and can be compared with a fixed
@@ -170,6 +180,8 @@ feedback on held-out perturbations.
   interval.
 - **Entry point:** lactose → maltose needs only chemical cues. The temperature arms need a control
   the engine lacks (§3.4).
+- **References:** a cross-regulation model written from equations by an independent agent. No
+  published simulator was checked.
 - **The claim:** a cross-regulatory wiring reproduces the asymmetry. That the network "learned a
   correlation" is a further, evolutionary claim.
 
@@ -186,6 +198,10 @@ planarian polarity on fixed geometry (D134), E07's written discs, MG0b's walls, 
 
 - **Held-out perturbations:** glucose steps (FR-10), K_ATP openers and blockers as availability
   changes, partial coupling; turnover schedules, recut readouts, block timing.
+- **Track E is the same question.** D155 asks whether weakly coupled cells slow or block
+  conduction, and whether clustering matters. That is the islet's Cx36 wave question, on the same
+  sheets and with the same channel laws. Its independent references (`validation/excitable/`) and
+  M3's grid carry over.
 - **The central question as a test:** do per-cell variables (ATP, volume, Ca²⁺) stay in their bands
   while a collective variable (synchrony, a wave pattern, a written domain) is kept or restored?
   Uncoupled cells are the control.
@@ -200,6 +216,10 @@ planarian polarity on fixed geometry (D134), E07's written discs, MG0b's walls, 
     human pancreas slices, about 33 GB, with no perturbation in its record.
 - **Pattern data:** Durant 2017 (non-commercial) and Oviedo 2010 (no stated terms) are analysis
   only; Emmons-Bell 2015 is CC BY. The visualizer's audit lists the rest.
+- **References:**
+  - 3a: Track E's references, and a heterogeneously coupled islet model written from equations.
+    Benninger et al. 2008's own model would need D138 approval.
+  - 3b: the existing heredity and MG0b references, with BETSE and BITSEY as before.
 - **The claim:** collective attractors and controllers first. Any organ-level predictive account must
   beat the conventional coupled model on held-out perturbations, and in Cells that model is the
   engine model itself.
@@ -244,6 +264,9 @@ Stage 1a is a one-cell world over minutes of biological time: CPU minutes, with 
 | A spatial gradient | D150's faces between outside nodes, held baths as sources and sinks; static | **Field sampling at a moving position** | Yes (same section) |
 | Many swimmers | Independent-world ensembles | Non-interacting swimmers sharing one field | Yes |
 
+**What the D172 round adds here: nothing.** List (a) holds no stochastic, motility or
+field-sampling item.
+
 ### 3.4 Stage 2, term by term
 
 | Term | Main today | Missing | General? |
@@ -257,6 +280,12 @@ Stage 1a is a one-cell world over minutes of biological time: CPU minutes, with 
 | Evolution | None (ROADMAP, "Other research options"; E11's rules) | Variation, selection, reproduction | Defer; analyse evolved strains as data |
 | Hours | Fixed steps | FR-8 | Yes |
 
+**What the D172 round adds here:**
+- A5's passive law, for uptake.
+- A1's declarations: a delay or temperature-dependent law becomes a declaration, traced only where
+  declared.
+- B1 only reserves FR-8's step context; it is not code.
+
 ### 3.5 Stage 3, term by term
 
 | Term | Main today | Missing | General? |
@@ -269,6 +298,14 @@ Stage 1a is a one-cell world over minutes of biological time: CPU minutes, with 
 | Changing connectivity | Scheduled and species-regulated availability; formation after replacement | Activity-dependent junction abundance (E15 §1.1; D145's molecular-loop unit); new contacts | Yes, planned |
 | 100–1,000 cells over hours | The 127-cell sheet on CPU; the 825-node tissue needs GH200 or a long-time method | FR-8; the field-solver interface | Yes |
 | Group blanket test | None | The stochastic regime, plus an analysis in `validation/` | Yes |
+
+**What the D172 round adds here:**
+- A1: a new K⁺ law, or the moved Ca²⁺ laws, become declarations traced only where declared.
+- A5: glucose uptake.
+- A6: bath → uptake → compartment → reaction chains, for dosing and granules.
+- A7: cheap cap raises for metabolite rows.
+
+The fuel rows come with the finite-fuel case after the round, and `junction_ungated@1` after it too.
 
 ### 3.6 The candidate gaps, confirmed or refuted
 
@@ -398,9 +435,12 @@ if the user lifts D145's hold.
 3. **D138:** may published models (a chemotaxis model, an AIF chemotaxis agent, an islet model) be
    out-of-process references, or only references written from equations?
 4. **The harness:** approve it as tooling, or only alongside Stage 1a's engine run?
-5. **Licences:** the richest time-varying data (Shimizu et al. 2010) are non-commercial, and the
-   impulse responses have no stated terms. Judged Stage 1 results would rest on Keegstra et al. 2017
-   (CC BY). Accept?
+5. **Licences:** judged Stage 1 results would rest on Keegstra et al. 2017 (CC BY). That set covers
+   step responses, recovery, dose response and the knockout.
+   - One of the three observables you named, the ~4 s comparison, has no permissive judge. The
+     impulse responses have no stated terms, and the ramps and sine waves (Shimizu et al. 2010) are
+     non-commercial.
+   - Accept it as analysis only, or should we look further for permissive data?
 6. **Stage 2:** lift D145's hold for it, or keep it deferred?
 7. **Islets:** accept them for Stage 3a? Their Cx36 data found so far are analysis only. The human
    slice deposit would be downloaded only when the stage starts.
@@ -408,21 +448,72 @@ if the user lifts D145's hold.
 
 ## Provenance
 
-- **Read in the repository:**
-  - AGENTS.md;
-  - ARCHITECTURE.md's modular core, space, time, information access and randomness sections;
-  - DECISIONS D134–D178;
-  - FEATURE_REQUESTS.md, CURRENT_PLAN.md and PROGRESS's current position;
-  - the Syn3A note's §0, §4.3, §5.1 and §8–§12;
-  - the coupling, occupancy, reactions and secreted-species notes (summaries and cited sections);
-  - INNER_MODEL_V4_DESIGN.md §12 and §15;
-  - MORPHOGENESIS_PLAN.md, E15's path, EXPERIMENTS.md;
-  - the visualizer's planarian audit;
-  - the code cited.
-- **Read outside it:** abstracts through Europe PMC's REST API, records through Crossref, one full
-  text (Keegstra 2017), one Zenodo record, and licence files through the GitHub API. Claims resting
-  on press or search summaries are marked as such.
+- **In the repository:** the documents and code cited above, read at `bd8f1e9f`.
+- **Outside it:**
+  - abstracts through Europe PMC's REST API;
+  - records through Crossref;
+  - one full text, Keegstra et al. 2017;
+  - one Zenodo record;
+  - licence files through the GitHub API.
 - **Not read:** the full texts of the anticipation, impulse-response, filtering, information and islet
   papers.
 - **Privacy:** every request used a generic client name. No author was contacted (D173), and nothing
   was downloaded.
+
+## References
+
+Read levels:
+- **[A]**, the abstract;
+- **[F]**, the open full text, searched;
+- **[S]**, press or search summaries only;
+- **[T]**, the title and record only.
+
+**Licence classes** are in the [source log](/mnt/workspaces/Cells/fep-track-20261115-01/sources.json).
+
+- Aguilera M, Millidge B, Tschantz A, Buckley CL (2022) *Phys Life Rev* 40:24–50. doi:10.1016/j.plrev.2021.11.001 [A]
+- Alon U, Surette MG, Barkai N, Leibler S (1999) *Nature* 397:168–171. doi:10.1038/16483 [A]
+- Andrews BW, Yi TM, Iglesias PA (2006) *PLoS Comput Biol* 2:e154. doi:10.1371/journal.pcbi.0020154 [A]
+- Baltieri M, Buckley CL (2019) *Entropy* 21:257. doi:10.3390/e21030257 [A]
+- Barkai N, Leibler S (1997) *Nature* 387:913–917. doi:10.1038/43199 [A]
+- Benninger RKP, Kravets V (2022) *Nat Rev Endocrinol* 18:9–22. doi:10.1038/s41574-021-00568-0 [A]
+- Benninger RK, Zhang M, Head WS, Satin LS, Piston DW (2008) *Biophys J* 95:5048–5061. doi:10.1529/biophysj.108.140863 [A]
+- Biehl M, Pollock FA, Kanai R (2021) *Entropy* 23:293. doi:10.3390/e23030293 [A]
+- Block SM, Segall JE, Berg HC (1982) *Cell* 31:215–226. doi:10.1016/0092-8674(82)90421-4 [A]
+- Bruineberg J, Dołęga K, Dewhurst J, Baltieri M (2022) *Behav Brain Sci* 45:e183. doi:10.1017/S0140525X21002351 [A]
+- Cluzel P, Surette M, Leibler S (2000) *Science* 287:1652–1655. doi:10.1126/science.287.5458.1652 [T]
+- Colombo M, Wright C (2021) *Synthese* 198:3463–3488. doi:10.1007/s11229-018-01932-w [A]
+- Durant F, Morokuma J, Fields C, Williams K, Adams DS, Levin M (2017) *Biophys J* 112:2231–2243. doi:10.1016/j.bpj.2017.04.011 [A]
+- Emmons-Bell M, Durant F, Hammelman J, et al. (2015) *Int J Mol Sci* 16:27865–27896. doi:10.3390/ijms161126065 [A]
+- Friston K, Levin M, Sengupta B, Pezzulo G (2015) *J R Soc Interface* 12:20141383. doi:10.1098/rsif.2014.1383 [A]
+- Friston K, Da Costa L, Sajid N, et al. (2023) *Phys Rep* 1024:1–29. doi:10.1016/j.physrep.2023.07.001 [T]
+- Huber MK, Phelps EA (2025) Calcium imaging videos from human pancreas slices. Zenodo. doi:10.5281/zenodo.14605547 [the deposit record]
+- Johnston NR, Mitchell RK, Haythorne E, et al. (2016) *Cell Metab* 24:389–401. doi:10.1016/j.cmet.2016.06.020 [T]
+- Keegstra JM, Kamino K, Anquez F, Lazova MD, Emonet T, Shimizu TS (2017) *eLife* 6:e27455. doi:10.7554/eLife.27455 [F]
+- Korobkova E, Emonet T, Vilar JMG, Shimizu TS, Cluzel P (2004) *Nature* 428:574–578. doi:10.1038/nature02404 [A]
+- Kuchling F, Friston K, Georgiev G, Levin M (2020) *Phys Life Rev* 33:88–108. doi:10.1016/j.plrev.2019.06.001 [A]
+- Lan G, Sartori P, Neumann S, Sourjik V, Tu Y (2012) *Nat Phys* 8:422–428. doi:10.1038/nphys2276 [A]
+- Mattingly HH, Kamino K, Machta BB, Emonet T (2021) *Nat Phys* 17:1426–1431. doi:10.1038/s41567-021-01380-3 [S]
+- Mitchell A, Romano GH, Groisman B, et al. (2009) *Nature* 460:220–224. doi:10.1038/nature08112 [A; details S]
+- Miyata M, Hamaguchi T (2016) *Front Microbiol* 7:960. doi:10.3389/fmicb.2016.00960 [S]
+- Nakamura K, Kobayashi TJ (2021) *Phys Rev Lett* 126:128102. doi:10.1103/PhysRevLett.126.128102; arXiv:2005.13208 [A of the arXiv version; details S]
+- Oviedo NJ, Morokuma J, Walentek P, et al. (2010) *Dev Biol* 339:188–199. doi:10.1016/j.ydbio.2009.12.012 [A]
+- Raja V, Valluri D, Baggs E, Chemero A, Anderson ML (2021) *Phys Life Rev* 39:49–72. doi:10.1016/j.plrev.2021.09.001 [T]
+- Ravier MA, Güldenagel M, Charollais A, et al. (2005) *Diabetes* 54:1798–1807. doi:10.2337/diabetes.54.6.1798 [A]
+- Rorsman P, Ashcroft FM (2018) *Physiol Rev* 98:117–214. doi:10.1152/physrev.00008.2017 [A]
+- Sartori P, Granger L, Lee CF, Horowitz JM (2014) *PLoS Comput Biol* 10:e1003974. doi:10.1371/journal.pcbi.1003974 [T]
+- Satin LS, Zhang Q, Rorsman P (2020) *Diabetes* 69:830–836. doi:10.2337/dbi19-0012 [A]
+- Segall JE, Block SM, Berg HC (1986) *PNAS* 83:8987–8991. doi:10.1073/pnas.83.23.8987 [A]
+- Shimizu TS, Tu Y, Berg HC (2010) *Mol Syst Biol* 6:382. doi:10.1038/msb.2010.37 [A]
+- Sontag ED (2003) *Syst Control Lett* 50:119–126. doi:10.1016/S0167-6911(03)00136-1 [T]
+- Sourjik V, Berg HC (2002) *PNAS* 99:123–127. doi:10.1073/pnas.011589998 [A]
+- Stožer A, Gosak M, Dolenšek J, et al. (2013) *PLoS Comput Biol* 9:e1002923. doi:10.1371/journal.pcbi.1002923 [T]
+- Tagkopoulos I, Liu YC, Tavazoie S (2008) *Science* 320:1313–1317. doi:10.1126/science.1154456 [A; details S]
+- Tu Y, Shimizu TS, Berg HC (2008) *PNAS* 105:14855–14860. doi:10.1073/pnas.0807569105 [A]
+- Waade PT, Olesen CL, Laursen JE, Nehrer SW, Heins C, Friston K, Mathys C (2025) *Entropy* 27:143. doi:10.3390/e27020143 [A]
+- Yi TM, Huang Y, Simon MI, Doyle J (2000) *PNAS* 97:4649–4653. doi:10.1073/pnas.97.9.4649 [T]
+
+**Software (§5)**, with licences read from the repositories:
+- RapidCell: Vladimirov et al. 2008, doi:10.1371/journal.pcbi.1000242.
+- NFsim: Sneddon, Faeder & Emonet 2011, doi:10.1038/nmeth.1546.
+- Smoldyn: Andrews & Bray 2004, doi:10.1088/1478-3967/1/3/001.
+- pymdp: Heins et al. 2022, doi:10.21105/joss.04098.
