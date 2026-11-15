@@ -250,6 +250,11 @@ def run_paths(raw):
     return out
 
 
+def stem(name):
+    """A world's file name: its name with path separators replaced (G2's cases are C9/donor/...)."""
+    return name.replace("/", "__")
+
+
 def digest(array):
     a = np.ascontiguousarray(array)
     return hashlib.sha256(f"{a.dtype}{a.shape}".encode() + a.tobytes()).hexdigest()
@@ -304,11 +309,10 @@ def save(directory, sets, worlds, max_steps, origin):
     )
     for set_name in sets:
         if origin:
-            names = sorted(p.stem for p in (origin / set_name).glob("*.json"))
-            built = {
-                n: json.loads((origin / set_name / f"{n}.json").read_text())["definition"]
-                for n in names
-            }
+            records = [
+                json.loads(p.read_text()) for p in sorted((origin / set_name).glob("*.json"))
+            ]
+            built = {r["name"]: r["definition"] for r in records}
         else:
             try:
                 built = SETS[set_name]()
@@ -320,7 +324,7 @@ def save(directory, sets, worlds, max_steps, origin):
             if worlds and name not in worlds:
                 continue
             key = f"{set_name}/{name}"
-            started, record = perf_counter(), dict(definition=raw)
+            started, record = perf_counter(), dict(name=name, definition=raw)
             try:
                 if set_name == "run-paths":
                     arrays = {
@@ -336,8 +340,8 @@ def save(directory, sets, worlds, max_steps, origin):
                     traceback=traceback.format_exc()[-4000:],
                 )
             record["seconds"] = perf_counter() - started
-            np.savez_compressed(directory / set_name / f"{name}.npz", **arrays)
-            (directory / set_name / f"{name}.json").write_text(
+            np.savez_compressed(directory / set_name / f"{stem(name)}.npz", **arrays)
+            (directory / set_name / f"{stem(name)}.json").write_text(
                 json.dumps(record, default=str) + "\n"
             )
             manifest["worlds"][key] = dict(
@@ -377,13 +381,16 @@ def compare(base, other, tolerances):
             problems.append(dict(world=world, problem="missing or builder error", base=a, other=b))
             continue
         set_name, name = world.split("/", 1)
-        ra = json.loads((base / set_name / f"{name}.json").read_text()).get("refusal")
-        rb = json.loads((other / set_name / f"{name}.json").read_text()).get("refusal")
+        ra = json.loads((base / set_name / f"{stem(name)}.json").read_text()).get("refusal")
+        rb = json.loads((other / set_name / f"{stem(name)}.json").read_text()).get("refusal")
         if ra or rb:
             same = bool(ra and rb and ra["type"] == rb["type"] and ra["message"] == rb["message"])
             rows.append(dict(world=world, refusal=True, equal=same))
             continue
-        x, y = np.load(base / set_name / f"{name}.npz"), np.load(other / set_name / f"{name}.npz")
+        x, y = (
+            np.load(base / set_name / f"{stem(name)}.npz"),
+            np.load(other / set_name / f"{stem(name)}.npz"),
+        )
         keys = sorted(set(x.files) | set(y.files))
         worst, failing = 0.0, []
         for key in keys:
