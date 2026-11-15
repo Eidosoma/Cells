@@ -76,6 +76,55 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-5's and the finite-fuel case's independent references landed, with D177 and the FR-4/FR-5
+  note's revisions (15 November 2026).** The references are in `validation/compartment_ph/` and were
+  written code-blind ([usage](validation/compartment_ph/REFERENCES_USAGE.md);
+  [evidence](/mnt/workspaces/Cells/independent-references-20261115-01/HANDOFF.md)). Tier 1 ran at
+  b5954bf3: 342 files, no changed outcome. The later commits are docs only, apart from the
+  visualizer merge (the next entry).
+  - **R-transfer (FR-5)** runs the note's §13.2 from FR-4's steady state at 1800 s.
+    - The first world showed neither of its claims: the cargo had crossed before the damage, and
+      the condition never closed. The world was revised into two arms, with numeric claims.
+    - **Arm T:** while pH_L is above pH₅₀, the conditioned transfer slows 13.7-fold; it does not
+      stop. pH_L returns below pH₅₀ at 327 s.
+    - **Arm R:** the pore releases 0.874 of the lumen's cargo inside the damage window. pH_L
+      returns below pH₅₀ at 367 s.
+    - Both controls clear 10 times the cargo budget (314 B and 872 B). Energy closes within
+      4.2e-11 pJ.
+    - The engine comparison must start the reference from the engine's own 1800 s checkpoint: the
+      cargo moves about 0.06 B per 1e-3 pH of start offset.
+  - **R-fuel (D176's finite-fuel case):** an ATP-driven pump moving a neutral solute, with
+    stoichiometric regeneration.
+    - With regeneration off for 200 s, ATP falls from 3.27 to 1.7e-4 mM, and the pump to 0.0018 of
+      its held-fuel rate.
+    - The pump is back within 1% two seconds after regeneration resumes.
+    - The books close within 2.5e-11 pJ.
+  - **11 self-tests** (6 and 5), tier 1.
+  - **Also landed:**
+    - D177, recording the user's decisions on a downstream user's requests;
+    - the FR-4/FR-5 note's consistency fixes: B7 host-only, and one continuum label;
+    - FR-5's revised §13.2: two arms, numeric claims confirmed by the references, and dt 0.5 ms.
+    - FR-11, the user's request for looping replay packages of living cells for the viewer, with
+      the user's choices;
+    - D178, the user's ruling on the visualizer's placement predictions.
+
+- **The visualizer merged into main again (15 November 2026, the user's request).** It adds the
+  `visualizer` branch's commits since the 14 November merge, all under `visualizer/`, up to
+  d0201f3a. Nothing outside `visualizer/` changed.
+  - **What it adds:**
+    - the species switch (human, planarian, Syn3A, *M. pneumoniae*);
+    - each species' protein shelves: Syn3A's 455 proteins, *M. pneumoniae*'s 688, and the
+      planarian's 18,882 in families;
+    - the planarian bioelectric evidence audit;
+    - the quantity layers' contract, and the visualizer's note on what the layers need from the
+      engine. The lead's answers route requests 1–8 to the run-view writer in D172's round.
+  - **Licence:** the user ruled that membrane-placement predictions read from UniProt and WormBase
+    ParaSite may stay (D178).
+  - **Gate:** the tree-scanning guards ran on the merge and passed: 68 passed and 46 skipped, the skips being the D131 ones
+    ([log](/mnt/workspaces/Cells/visualizer-merge-20261115/guards.log)). No full tier gate ran for
+    this part, because the tier runner collects `tests/` only. The visualizer reported 225 of its own
+    226 tests passing, with 1 skipped, on a clean copy of 268ed6de.
+
 - **FR-4's and the passive law's independent references landed (15 November 2026).** They are in
   `validation/compartment_ph/` and `validation/passive/` and were written code-blind
   ([FR-4 usage](validation/compartment_ph/REFERENCES_USAGE.md);
