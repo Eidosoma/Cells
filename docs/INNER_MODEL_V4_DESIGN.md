@@ -257,7 +257,7 @@ a dozen files (ARCHITECTURE.md, "Reuse cases and the results gate").
 
 | Part | Entries | Pass |
 | --- | --- | --- |
-| **G1, existing worlds on CPU** | Every world of the crossrev sets (base, qualification, injection, volume, division, species, reactions, and each operator's own set) and @3's test worlds. Each runs from the tag before R and from the new snapshot. Compared: every state field, observation column and `max_` diagnostic of every accepted row, and every refusal (its step and its message) | Bitwise, NaN-aware, bit patterns compared, except where R changes rounding. **A7 does (P7):** physical fields and accumulators are compared within a tolerance stated before the run from P7's magnitudes, field by field, and G2 runs in full. **Padding (check K1, the activity check, §7.4 (b)):** compiled per-law dispatch would change `channel_targets` and `channel_tau_s` at inactive population slots of worlds that do not declare Kv1.5, closed slots of the division worlds included; the host observer therefore keeps today's padding values, so both columns stay bitwise. The lead's whole-run padding mask (those two columns, slots inactive for the whole run, a planted active-slot difference that must fail) stays as the comparator's safeguard |
+| **G1, existing worlds on CPU** | Every world of the crossrev sets (base, qualification, injection, volume, division, species, reactions, and each operator's own set) and @3's test worlds. Each runs from the tag before R and from the new snapshot. Compared: every state field, observation column and `max_` diagnostic of every accepted row, and every refusal (its step and its message) | Bitwise, NaN-aware, bit patterns compared, except where R changes rounding. **A7 does (P7):** physical fields and accumulators are compared within a tolerance stated before the run from P7's magnitudes, field by field, and G2 runs in full. **Padding (check K1, the activity check, §7.4 (b)):** compiled per-law dispatch would change `channel_targets` and `channel_tau_s` at inactive population slots of worlds that do not declare Kv1.5, closed slots of the division worlds included; the host observer therefore keeps today's padding values as a declared, temporary fill (the lead's ruling, 15 November), so every observation column stays bitwise and the whole-run padding mask is withdrawn. A planted change to an active slot's kinetics must fail, as the gate's self-test |
 | **G2, registered protocols re-run** | Every registered protocol whose engine models include the inner model or the composite. **Refreshed at f791294 by model-ID text match,** since protocol files name their models under different keys (`engine_models`, `engine_model`, `cells_run.model`) or only in their drivers. As before: W1, W2, G2-Q1, S2, S3, Rm1, S5a, D150's judged run, E07-v1. Judged on 15 November: MG0c (`mg0c-turing-v1`) and Track R (`regulated_availability_protocol.json`). **Newly listed, all on @3:** MG0b (`mg0b_domain_wall_v1`); the stationary analysis E (`stationary_analysis_e_v1`, items E2–E4); the BETSE parity rungs P3 (four cases), P4 (two) and P4b (four), registered by commit (PROGRESS), although their files' `status` fields still read PROPOSED, each with a registered L4 variant (§5.3). **The lead's call:** the projective qualification C (`projective_c_qualification_v1`, on @3), whose qual-01 failed. Track E's M2 (`excitable_qualification_v1.json`, PROPOSED) joins if judged before R lands. A7's import-closure manifest may add older families' protocols (§10.6) | Every verdict unchanged; numbers bitwise, or within the protocol's own tolerances |
 | **G3, planted changes, aligned with G1 (D176)** | **Exact contract tests,** run in the bitwise commits (declarations, dispatch, operators, door S, the passive law): (a) one law coefficient moved by one ulp in a test double (P2's planted arm shows the effect's size); (b) one world parameter moved by one ulp; (c) one required-results entry deleted from a run. **Scientific negative controls,** in the final gate at A7's tolerance, where a one-ulp plant passes by design: perturbations whose effects on judged observables exceed the declared budget, each effect measured against the budget before the run; (c) again | The gate must fail every plant and every control. If it passes any of them, it is void |
 | **G4, measurements** | Compile time, host and device memory, and end-to-end time, on representative compositions: the heredity cell, the 127-cell sheet, a water composition, D150's arm, MG0c's chain, the 825-node world | Reported against the tag; judged only where a protocol registers a bound |
@@ -573,17 +573,21 @@ registry code.
     each row's view, with the closures, so those slots carry code 0 on their closed rows. Per-law
     dispatch would change both columns there, at slots that are active on other rows, which the
     whole-run mask rightly does not cover. S3's cleft egg has no population.
-  - **Proposed, for the lead to confirm: the host keeps today's padding values.** The observer
-    evaluates readouts in NumPy, and nothing compiled reads a padded slot's kinetics (the gate
-    update, the gate rate, the flux and the domain all mask them). So the host readouts would give
-    a code-0 slot the code-0 law's kinetics, as today, when the code-0 law is not declared (every
-    code-0 slot is then padding), while compiled programs keep P2's form and carry no undeclared
-    kernel. Both columns would then stay bitwise in every world.
-    - **Not yet measured.** The dispatch commit must show it on a division world with closed slots,
-      bitwise in every observation column.
-    - **Ruling 8's two merge conditions stay the lead's to lift:** the comparator's whole-run
-      padding mask with its planted active-slot control, and a law-steady replacement world that
-      runs at the tag.
+  - **Accepted (the lead's ruling, 15 November): the host keeps today's padding values, as a
+    declared fill, not physics.** The observer evaluates readouts in NumPy, and nothing compiled
+    reads a padded slot's kinetics (the gate update, the gate rate, the flux and the domain all mask
+    them). So the host readouts give a code-0 slot the code-0 law's kinetics, as today, when the
+    code-0 law is not declared (every code-0 slot is then padding), while compiled programs keep
+    P2's form and carry no undeclared kernel. Both columns stay bitwise in every world.
+    - **The dispatch commit's condition:** every observation column bitwise on the division worlds
+      with closed slots, the eight crossrev division sets and S5a's furrow world.
+    - **The whole-run padding mask is withdrawn:** with bitwise observations there is nothing to
+      mask. The planted active-slot failure stays, as the gate's self-test: a planted change to an
+      active slot's kinetics must fail.
+    - **The law-steady replacement world stays a merge condition** (refused at the tag; with the
+      acceptance owner).
+    - **The fill is temporary.** After the round, an explicit absent marker for padded entries can
+      be proposed as its own gated change, with the run view (D154).
 
 #### (c) Build-time selection: one implementation per structure
 
@@ -652,8 +656,8 @@ registry code.
    programs are unchanged: checked by crossrev identity as well as against the baseline. This is
    the first API commit, which OPS and INT test against.
 2. **Per-law channel dispatch,** the declared-code domain and the trapezoid leaf's removal:
-   bitwise, with the host keeping today's padding values if the lead confirms (b)'s proposal,
-   shown on a division world with closed slots; otherwise bitwise except the two padding columns.
+   bitwise in every observation column, the host keeping today's padding values (b), shown on
+   the eight crossrev division sets and S5a's furrow world.
 3. **Pump and junction-law dispatch:** bitwise, up to signed zeros at exact zeros, reported apart.
 4. **The compile key and A4's two tests** (§2.2, §5.2):
    - an undeclared law contributes no kernel and no state: a jaxpr check that a world without
@@ -758,6 +762,16 @@ registry code.
        concentration 1. After it, that node's validity is ignored, and its values and energy term
        are exact zeros, selected rather than computed into a sum. `evaluate` needs no activity
        mask.
+   - **What the closure's declaration carries (the lead's rulings, 15 November), and how the slot
+     takes it:**
+     - **its per-(node, row) buffer membership:** the read's coverage, bound as a [row, node] mask,
+       which the closure's own mask keys on. It is data, so worlds that differ only in membership
+       share one program;
+     - **its k_on,** a D175 stand-in parameter: bound with the read's parameters and used only by
+       the envelope check (at the definition, and at each stage where the envelope is checked
+       against that stage's transport rates) and by the reference, never by the equilibrium;
+     - **its c0,** from the registry's declared standard concentration, and the pair's two standard
+       potentials, from the registry.
    - **Owners:** the slot is CORE's, in `surface_pump_v3`. The closure module
      (`processes/rapid_proton_buffer.py`) and its declaration are FR45's.
    - **On FR-4's open question 2:** the general slot, now. Three consumers in one stage read the
@@ -905,7 +919,8 @@ registry code.
     a parameter-form pump whose own ΔG° disagrees with the registry's fuel rows (§10.2);
   - **B7** ((g) 3), at the bound's ordinary constant, with finding 3's term: about 1, host-only,
     one commit with one D148 record and @1's and @2's cases (§13.6).
-  - **The implicit slot** ((g) 4) follows once FR-4's first world runs: 1–1.5.
+  - **The implicit slot** ((g) 4) follows once FR-4's first world runs: 1–1.5. It stays outside
+    the round unless FR-5's first world needs it (the lead's ruling).
   - **In all, 6–7.5 agent-days,** which supersedes the earlier 3.5–5: that estimate had no
     per-structure schema and a smaller transporter.
 - **Off the core's path:** the passive law's kernel module goes to FR45 (the proton leak's
@@ -1759,9 +1774,16 @@ apart, on the shared machine (8 cores, 31 GB).
 
 **F3's acceptance criterion,** proposed here and matched to FR-4's note's closure (its §4, §13 and
 §14), for that note to fix:
-- **Admission:** buffer rows are inert (no route, no reaction), each with one declared pK and base
-  valence. One representation of a node's protonation is admitted (D175's key). No @3 route for H
-  at a buffered node.
+- **Admission:** buffer rows are inert (no route, no reaction). Each has one acid–base pair whose
+  two standard potentials, of the base form and the protonated form, the registry holds (FR-4's
+  note's B3), and a base valence; the operators stream extends the registry to carry both, in a
+  shape of its choosing (the lead's ruling, 15 November). The pair's K follows from the two
+  potentials, so no pK is declared beside them. One representation of a node's protonation is
+  admitted (D175's key). No @3 route for H at a buffered node.
+- **The closure's declaration:** the (node, row) pairs it buffers, which its mask keys on; the
+  standard concentration c0, taken from the registry's declared one; and k_on, a D175 stand-in
+  parameter used only for the envelope check and by the reference, never by the closure's own
+  equilibrium.
 - **Charge:** buffering changes no node's charge. The stored rows' charge sum is exact as it stands
   (that note's §3). In a world where only the closure acts, every node charge and the field stay
   bitwise unchanged.
@@ -1769,9 +1791,10 @@ apart, on the shared machine (8 cores, 31 GB).
   declared free-energy term ΔG_buf closes the energy ledger at rounding, from a trace start
   (pH 5 to 7.4).
 - **Convergence:** |g|/H̄_eq ≤ 1e-13 at every stage, else the step is refused.
-- **Accuracy:** against a kinetic-buffer reference (REF, Radau, k_on 1e10 M⁻¹ s⁻¹) within a budget
-  declared before the comparison. D175's envelope (k_on B̄ ≫ 1/dt, and ≫ every per-free-proton
-  transport rate) is checked as declared bounds, and one case outside it must fail.
+- **Accuracy:** against a kinetic-buffer reference (REF, Radau, at the closure's declared k_on,
+  1e10 M⁻¹ s⁻¹ in FR-4's worlds) within a budget declared before the comparison. D175's envelope
+  (k_on B̄ ≫ 1/dt, and ≫ every per-free-proton transport rate) is checked as declared bounds, and
+  one case outside it must fail.
 - **Planted control:** a wrong base valence fails the charge check.
 
 **D176's corrections: where each is entered, and whose it is.**
@@ -1832,8 +1855,9 @@ split. The core's queue, from day 1:
 | A7's sweep, last and alone (OPS's study done meanwhile) | 1–1.5 | → 11.2–14.2 |
 | Then G1, G2 and the landing (Q3, Q4, I4) | 2–2.5 elapsed | → **13.2–16.7** |
 
-- **The implicit slot** (1–1.5) follows once FR-4's first world runs. Inside R it moves the landing
-  to about 14–18 days; otherwise it lands as FR-4's first commit on top of R.
+- **The implicit slot** (1–1.5) follows once FR-4's first world runs. **The lead's ruling (15
+  November): it stays outside the round unless FR-5's first world needs it** (the lead asks FR45),
+  so the plan is 13–17 days; inside R it would move the landing to about 14–18.
 - **FR-4's laws can merge onto `integration-d172`** once the three insertion points merge, about
   day 9–11, and are accepted in FR-4's own milestone.
 
@@ -1908,9 +1932,9 @@ run; host only, from the tag's snapshot, 2.5 s).
   inactive slots only (Kv1.5 at 0 V before; 0 and 1 after). The other 65 readouts are bitwise. In
   the five-law release world, all 67 are bitwise.
 - **So:** §7.4 (b) first made those two columns a comparator exception. The later activity check
-  found closed slots that are active on other rows (the division worlds), so §7.4 (b) now proposes
-  that the host keep today's padding values; the lead's whole-run comparator rule stays as the
-  safeguard (§3).
+  found closed slots that are active on other rows (the division worlds), so the host keeps
+  today's padding values as a declared fill (§7.4 (b); the lead's ruling), and no comparator
+  exception remains (§3).
 
 ## Sources
 
