@@ -67,7 +67,9 @@
 11. **What R must contain, and what waits** (§15). Three lists:
     - **(a) What R needs to land:** the declarations with build-time selection, the operators that
       depend on today's tables, the results gate, the GPU audit's tests, one added law (the
-      passive permeation law) to show that adding a law changes nothing else, and door S's merge.
+      passive permeation law) to show that adding a law changes nothing else, door S's merge, and
+      species identity consolidated with every sum over species in one explicit order. That last
+      item makes later raises of the species cap a guard and a measurement only (D165, amended).
     - **(b) Interfaces R only reserves:** evolution roles and step time, the compartment map,
       the shared identity and potential declarations, the reads, transporters, fuel and implicit
       routes.
@@ -76,7 +78,7 @@
 
     Every item kept out of (a) is time not added before FR-4 and FR-5, which are blocking, and
     Track E's M3.
-12. **Effort** (§15): list (a) is **about 15–22 agent-days**, landing together under one tag and
+12. **Effort** (§15): list (a) is **about 17.5–25 agent-days**, landing together under one tag and
     one gate, plus CPU hours for the re-runs and an L4 gap.
 
 **What this note gathers.**
@@ -571,6 +573,49 @@ Water, division and full metabolism are not prerequisites. This is the third reu
 every later consumer (FR-2, FR-4's finite fuel, Syn3A's stage 4, the molecular-to-physiology
 gate), so the lead may take it to the user.
 
+### 10.6 The species cap: one sum order, and the cost of more species (A7)
+
+**The rule** (D165, amended by the user: "so we should increase that limit as we need!"). The cap
+(`species_common.MAX_SPECIES`, 16 today) is raised whenever a consumer needs more species. Each
+raise is a D148 change, with a guard world at the new size and a measurement of memory and step
+cost.
+
+**Today's sums over species, in code:**
+- **The ledgers add species in an explicit order** (`surface_tissue.capacitor_change`, D148's
+  first case).
+- **Other sums use `xp.sum` over the species axis:**
+  - `surface_tissue.charge_increment`;
+  - `readouts`' node charge rates and membrane current;
+  - the chemical energy rate;
+  - `membrane_rate`'s and `explicit_rate_bound`'s z²-weighted sums;
+  - `numerics/surface_imex.face_laplacian`'s Σ z² W.
+- **On the host, NumPy sums 8 or more terms pairwise.** `tests/unit/test_species_cap.py` shows that
+  the host's sum differs from the explicit one for a single column of 9 species, while the explicit
+  host sum equals the compiled one bitwise. That is why every raise past 16 needed its own
+  summation-order probe.
+
+**In R (A7):**
+- One helper sums over species as an explicit left fold, in declared species order, on host
+  (NumPy) and device (JAX) alike.
+- Every species-axis sum in the inner model and the operators uses it.
+- A static test refuses any other species-axis reduction in those modules.
+- Since every program contains such sums, the change rides in R's single results gate (§3).
+- After it, a raise needs only the guard world and the cost measurement. No new order probe.
+
+**The cost model.**
+- **What scales with the species count S:**
+  - the state's and layout's species arrays, which are species × entities (cells, outside nodes,
+    patches, junctions, faces, channels);
+  - the elementwise transport work, per species per route at each explicit stage;
+  - the node-charge sums, O(S × nodes).
+- **What does not scale with S:** the dense node-space solves, O(nodes³), which dominate today's
+  step at 825 nodes (FIELD_SOLVER_INTERFACE_DESIGN.md §1–§2).
+- **Not included:** D152's reaction half-steps, which add their own work per route and site at
+  Syn3A's metabolic scale.
+
+*P6's anchors (CPU) and the extrapolation to about 50, 150 and 600 species, on CPU and the L4, are
+written here (§17).*
+
 ## 11. Transport by physical contract: the passive permeation law (list (a))
 
 **What holds today, in code and in a probe.**
@@ -765,7 +810,8 @@ The test: R's own acceptance cannot be shown without the item.
 | A4. The GPU audit's tests (§5): a world without NaV1.2 traces no NaV1.2 kernel; a parameter-only change reuses `compile_window`'s executable; the host-per-row exceptions listed for the production path | ARCHITECTURE.md's targets for R cannot be claimed without them | 1 |
 | A5. One added law, the passive permeation law (§11), with finding 3's term (§13.6) and its closed two-compartment test | The working case of §2.3: adding a law leaves every existing program crossrev-identical and passes the idle guard. D174 expects the law in R, and its kernel exists | 2–3 |
 | A6. Door S's runtime merge (§8), with slot declarations for today's providers and readers and its own acceptance (disjoint providers in either order, overlap refused, merged values at each reader's stage) | It changes every composition's view, so landing it later would need a second G1 and G2. FR-4's pH step with buffering inside a compartment needs it (BATH_SCHEDULE_DESIGN §3.1) | 3–4 |
-| **(a) in total** | | **about 15.5–22**, plus CPU hours (G1 about an hour; G2 the protocols' own costs, E07-v1 about 50 core-hours in full) and an L4 gap (§5.3) |
+| A7. Species identity and trace policy consolidated at the definition boundary (§10.2), with every sum over species in one explicit order on host and device (§10.6) | Every sum over species is in every program, so changing their order later would need a second G1 and G2. D165, amended, ties it to identity consolidation in this round, so that a later raise of the species cap needs only a guard world and a cost measurement | 2–3 |
+| **(a) in total** | | **about 17.5–25**, plus CPU hours (G1 about an hour; G2 the protocols' own costs, E07-v1 about 50 core-hours in full) and an L4 gap (§5.3) |
 
 **What is deliberately not in (a):**
 - **Ownership separated from solver invalidation** (§9.1). It changes only the programs of
@@ -784,7 +830,7 @@ consumers.
 | --- | --- | --- |
 | B1. Evolution roles, counter kinds, the step context (§12) | Declared for every field (host-side) | FR-8's milestone |
 | B2. The compartment identity map (§9.2) | The declaration at the definition boundary | FR-1's operator becomes its writer at its re-gate; FR-3, FR-5 |
-| B3. Species identity, trace policy and standard potentials at the definition boundary (§10.2) | Identity and trace policy, which the passive law uses (A5) | D150's, D152's and the coupling operator's next versions; standard potentials with the fuel case |
+| B3. Standard potentials at the definition boundary (§10.2); identity and trace policy are in (a), A7 | The declaration's field | D152's next version reads it; the fuel case |
 | B4. Laws' stage reads and loop terms (§7.2) | The fields in the law declaration | Track E's Ca-dependent inactivation; a pump on finite fuel |
 | B5. New kinds: transporters, finite fuel, implicit-route solvers, the stage hook | Their shapes only. Each kind brings its insertion point when it lands (§2.3) | FR-4; the fuel case; FR-4's patch and Track E's junctions; a named consumer of the hook |
 | B6. Ownership separated from solver invalidation (§9.1) | Unless the lead moves it into (a) | FR-2; FR-3's later step |
