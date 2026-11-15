@@ -202,6 +202,21 @@ stacked in the page. Fixed on 15 November 2026, before the human data was made.
   each there are.
 - **Families** are InterPro's, by the rule the planarian's file uses, so that a family has
   the same id in every species.
+- **A family has one line for each shelf that holds members of it,** so that a marker on
+  a shelf holds only proteins of that shelf, each shelf's count is what stands on it, and
+  an opened family is drawn against one membrane. `id` and `label` are the family's own,
+  the same on every shelf; `shelf` says which; `side`, `group`, `count`, `sides`, `file`,
+  `at` and `units` are of its members on that shelf alone. A line is identified by `id`
+  and `shelf` together, and a member's shelf is its line's. The parts of `no_family`
+  likewise, with `shelf` among `part_columns`. The file gives the number of distinct
+  families as well as the number of lines.
+- **A membrane that is not named has a shelf of its own,** last in order: `membrane`,
+  "A membrane, not told which". It holds the proteins stated to be in a membrane with no
+  membrane named, and those with no stated location and a predicted membrane segment. A
+  protein with no stated location, no predicted segment and a predicted export signal
+  stands on that shelf's `outside`, whose text says what lies beyond a membrane there:
+  outside the cell, or within a compartment. Such proteins are never put on `other`,
+  which is for membranes that are named.
 
 ## In the page
 
