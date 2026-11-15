@@ -451,6 +451,29 @@ def test_the_judged_entry_refuses_before_writing_anything(tmp_path, which):
     assert not out.exists()
 
 
+def test_judged_runs_take_the_vector_path_and_development_runs_either(tmp_path):
+    """The lead's ruling (15 November 2026, a dated pre-run correction in both protocols): a
+    judged run takes the vector-window path, every accepted row checked on the device, and refuses
+    the host path; a development run takes the host path unless --path names the vector one."""
+    out = tmp_path / "out"
+    assert generator.JUDGED_PATH == "vector" and set(generator.PATHS) == {"host", "vector"}
+    assert generator.default_path(judged=True) == "vector"
+    assert generator.default_path(judged=False) == "host"
+    why = generator.refusal_before_writing("fr4", ["rung_1ms"], out, None, judged=True,
+                                           quick=False, path="host")
+    assert "execution path (vector" in why
+    assert generator.refusal_before_writing("fr4", ["rung_1ms"], out, None, judged=True,
+                                            quick=False, path="vector") is None
+    for path in generator.PATHS:
+        assert generator.refusal_before_writing("fr4", ["rung_1ms"], out, None, judged=False,
+                                                quick=True, path=path) is None
+    for which in ("fr4", "fr5"):
+        disclosures = PROTOCOLS[which]["disclosures"]
+        assert drafter.EXECUTION_PATH in disclosures
+        assert any("the lead's ruling on the cost and the rehearsal" in d for d in disclosures)
+    assert not out.exists()
+
+
 def stand_in_text(name):
     return generator.STAND_INS[name][:40]
 

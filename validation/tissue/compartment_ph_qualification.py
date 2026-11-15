@@ -27,24 +27,26 @@ Parts of fr5-transfer-v1:
 
 **The engine path is one function, `engine_run`:** validation/compartment_ph/engine_records.run
 on the development world (the declared world without FR-1's compartment operator, the lead's
-ruling), the windowed runner checking every accepted row on the host; ENGINE_READOUTS is what it
-returns per record. What is not wired yet is a stand-in (STAND_INS), each blocking only its own
-parts (STAND_IN_PARTS): every entry refuses those parts before anything is written, and a judged
-run is refused while any stand-in remains.
+ruling), as the one world of a vector window checking every accepted row on the device (judged
+runs: the protocols' execution path) or on the windowed runner checking them on the host
+(development's default); ENGINE_READOUTS is what it returns per record. What is not wired yet is
+a stand-in (STAND_INS), each blocking only its own parts (STAND_IN_PARTS): every entry refuses
+those parts before anything is written, and a judged run is refused while any stand-in remains.
 
 Modes:
   python -m validation.tissue.compartment_ph_qualification dev fr4|fr5 OUT_DIR PART [PART ...]
       [--start START_JSON] [--quick] [--path host|vector]
   python -m validation.tissue.compartment_ph_qualification judged PROTOCOL_JSON OUT_DIR PART
-      [PART ...] [--start START_JSON]
+      [PART ...] [--start START_JSON]   (the vector path)
 A judged run is refused, before anything is computed or written, unless the protocol is registered
 (its status and its registration record), the source is a clean execution snapshot, no stand-in
 remains, FR-5's start extract was written by the engine from this same snapshot, and OUT_DIR is
 new (D150's and MG0c's guard). `--quick` (development only) runs every part to QUICK_END_S, so a
 check reaches the code under test in minutes (AGENTS.md's 30-minute rule); the judge refuses quick
-results. `--path vector` (development only, until a dated pre-run correction declares it) checks
-every accepted row on the device in a vector window (engine_records.run); the default `host`
-checks them on the host.
+results. A judged run takes the protocols' execution path, `vector` (the lead's ruling, a dated
+pre-run correction of 15 November 2026): every accepted row checked on the device in a vector
+window (engine_records.run), and refuses any other; a development run takes `host` (every accepted
+row checked on the host) unless `--path` names one.
 """
 
 import argparse
@@ -69,8 +71,16 @@ PROTOCOLS = {
 IDS = {"fr4": "fr4-acidification-v1", "fr5": "fr5-transfer-v1"}
 QUICK_END_S = 20.0
 K3_LUMEN_K_ON = 1e-3  # /mM/s: the protocol's K3 (1 /M/s)
-HOST_PATH = "host"  # Every accepted row checked on the host: the protocols' execution path.
-PATHS = (HOST_PATH, "vector")  # engine_records.PATHS; "vector" checks them on the device.
+HOST_PATH = "host"  # Every accepted row checked on the host (the windowed runner): development.
+VECTOR_PATH = "vector"  # Every accepted row checked on the device (a vector window).
+PATHS = (HOST_PATH, VECTOR_PATH)  # engine_records.PATHS.
+JUDGED_PATH = VECTOR_PATH  # The protocols' execution path (the lead's ruling, a dated pre-run
+# correction of 15 November 2026); development runs default to the host path.
+
+
+def default_path(*, judged):
+    """The path a run takes unless --path names one: the protocols' for a judged run."""
+    return JUDGED_PATH if judged else HOST_PATH
 
 
 def dt_key(dt):
@@ -155,8 +165,8 @@ def engine_run(definition, *, planted=None, checkpoint_dir=None, path=HOST_PATH)
     """The engine part's record for one definition (ENGINE_READOUTS at every record, keyed by
     integer second, and the stage diagnostics and ledgers): engine_records.run, which parses the
     development world (a refusal there is `admitted` false) and runs it in windows on the CPU
-    backend in float64, every accepted row checked on the host (`path` "host") or on the device
-    in a vector window ("vector"; development only until a protocol declares it). `planted`
+    backend in float64, every accepted row checked on the host (`path` "host", development) or
+    on the device in a vector window ("vector", the protocols' execution path). `planted`
     names a planted law registered only inside its block (K2). With `checkpoint_dir` (FR-5's
     start part) it is to write the engine's snapshot there at the end (cells.io.write_snapshot)
     and return, under `extract`, definitions.start_extract(producer="engine", ...) of that state,
@@ -333,9 +343,9 @@ def refusal_before_writing(which, requested, out_dir, extract, *, judged, quick,
         return f"unknown or no parts {unknown} (the parts: {list(PARTS[which])})"
     if judged and quick:
         return "a judged run has no quick horizon"
-    if judged and path != HOST_PATH:
-        return (f"a judged run takes the protocols' execution path ({HOST_PATH}); another path is "
-                "development evidence until a dated pre-run correction declares it")
+    if judged and path != JUDGED_PATH:
+        return (f"a judged run takes the protocols' execution path ({JUDGED_PATH}, a dated pre-run "
+                f"correction); the {path} path is for development")
     blocked = {name: sorted(set(requested) & STAND_IN_PARTS[name]) for name in STAND_INS}
     blocked = {name: parts for name, parts in blocked.items() if parts}
     if blocked:
@@ -376,8 +386,9 @@ def main(argv=None):
     parser.add_argument("parts", nargs="+")
     parser.add_argument("--start", type=Path)
     parser.add_argument("--quick", action="store_true")
-    parser.add_argument("--path", choices=PATHS, default=HOST_PATH,
-                        help="where every accepted row is checked (engine_records.run)")
+    parser.add_argument("--path", choices=PATHS, default=None,
+                        help="where every accepted row is checked (engine_records.run): judged "
+                             "runs the protocols' vector path, development runs host unless named")
     args = parser.parse_args(argv)
     if args.mode == "judged":
         protocol = json.loads(Path(args.target).read_text())
@@ -391,14 +402,14 @@ def main(argv=None):
     extract = None
     if why is None and args.start is not None:
         extract = defs.read_start(args.start)
+    path = args.path or default_path(judged=args.mode == "judged")
     if why is None:
         why = refusal_before_writing(which, args.parts, args.out_dir, extract,
-                                     judged=args.mode == "judged", quick=args.quick,
-                                     path=args.path)
+                                     judged=args.mode == "judged", quick=args.quick, path=path)
     if why:
         raise SystemExit("Refused: " + why)
     run(which, args.parts, args.out_dir, status=status, extract=extract, quick=args.quick,
-        path=args.path)
+        path=path)
     return 0
 
 
