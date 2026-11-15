@@ -9,6 +9,8 @@ export const VIEW_FORMAT = "cells.run_view@1";
 export const INDEX_FORMAT = "cells.visualizer.replay_index@1";
 // What kind of number a record is, where its view says (schema/QUANTITY_LAYERS.md).
 export const RECORD_KINDS = ["level", "amount", "cumulative", "rate"];
+// Which end of a link, or which side of a membrane, is the higher when a signed level is positive.
+export const SIGN_HIGH = ["first", "second", "inside", "outside"];
 
 const TYPES = { float32: Float32Array, uint8: Uint8Array, uint16: Uint16Array, int32: Int32Array };
 const PATHS = /(^|[\s"'(=:])\/(home|mnt|Users|root|var|tmp)\//;
@@ -62,6 +64,15 @@ export function validateReplay(file) {
         problems.push(`set ${set.id}: a link names an entity that does not exist`);
       }
     }
+    // Entities that lie on entities of another set (a membrane on its cell), and the outside each one faces.
+    for (const [what, place] of [["on", geometry.kind === "on" ? geometry : null], ["outside", set.outside || null]]) {
+      if (!place) continue;
+      const other = view.sets.find((item) => item.id === place.set);
+      if (!other || !Array.isArray(other.ids)) problems.push(`set ${set.id}: its ${what} names an unknown set ${place.set}`);
+      else if (!Array.isArray(place.index) || place.index.length !== set.ids.length || place.index.some((index) => !(Number.isInteger(index) && index >= 0 && index < other.ids.length))) {
+        problems.push(`set ${set.id}: its ${what} does not give one entity of ${place.set} for each of its own`);
+      }
+    }
   }
 
   // Records may come in files of their own beside the run's (parts): each part states its length.
@@ -73,6 +84,23 @@ export function validateReplay(file) {
   }
   if (view.surroundings !== undefined && (typeof view.surroundings !== "object" || typeof view.surroundings.shared !== "boolean" || typeof view.surroundings.says !== "string")) {
     problems.push("view.surroundings must say whether the cells' surroundings share one potential, and how that is known");
+  }
+
+  // Named constants of the run's definition: one number, or one for each entity along the axes they name.
+  const lengthOf = (axis) => sets.get(axis)?.ids.length;
+  const shaped = (values, axes) => (axes.length === 0 ? Number.isFinite(values) : Array.isArray(values) && values.length === lengthOf(axes[0]) && values.every((value) => shaped(value, axes.slice(1))));
+  const named = new Set();
+  for (const constant of view.constants || []) {
+    const name = `constant ${constant?.id}`;
+    if (!constant || typeof constant.id !== "string" || named.has(constant.id)) problems.push(`${name}: missing or repeated id`);
+    else if (!Array.isArray(constant.axes) || constant.axes.length > 2 || constant.axes.some((axis) => lengthOf(axis) === undefined)) problems.push(`${name}: its axes must name sets of the run`);
+    else if (!shaped(constant.values, constant.axes)) problems.push(`${name}: its values do not have one finite number for each entity along its axes`);
+    else if (typeof constant.unit !== "string" || typeof constant.says !== "string") problems.push(`${name}: it needs a unit, and must say why it is a constant of this run`);
+    named.add(constant?.id);
+  }
+  for (const item of view.unstated || []) {
+    if (!item || typeof item.id !== "string" || typeof item.why !== "string") problems.push("a value the view does not state needs its id and the reason");
+    else if (named.has(item.id)) problems.push(`${item.id} is both stated as a constant and listed as not stated`);
   }
 
   const seen = new Set();
@@ -96,8 +124,17 @@ export function validateReplay(file) {
     if (!Number.isInteger(record.offset) || record.offset % 4 !== 0) problems.push(`${name}: offset ${record.offset} is not a multiple of 4`);
     else if (record.offset + count(record.shape) * Type.BYTES_PER_ELEMENT > room) problems.push(`${name}: runs past the end of ${part ? `its part ${part.id}` : "the payload"}`);
     if (record.kind !== undefined && !RECORD_KINDS.includes(record.kind)) problems.push(`${name}: kind ${record.kind} is not one of ${RECORD_KINDS.join(", ")}`);
-    if (record.sign !== undefined && (typeof record.sign !== "object" || typeof record.sign?.says !== "string" || (record.sign.high !== undefined && !["first", "second"].includes(record.sign.high)) || (record.sign.by !== undefined && typeof record.sign.by !== "string"))) {
-      problems.push(`${name}: a sign says in words what positive means, for a record on links which end is the higher, and where it comes from when the run does not declare it`);
+    if (record.sign !== undefined && (typeof record.sign !== "object" || typeof record.sign?.says !== "string" || (record.sign.high !== undefined && !SIGN_HIGH.includes(record.sign.high)) || (record.sign.by !== undefined && typeof record.sign.by !== "string"))) {
+      problems.push(`${name}: a sign says in words what positive means, which end or side is the higher, and where it comes from when the run does not declare it`);
+    }
+    if (named.has(record.id)) problems.push(`${name}: a constant has the same id`);
+    if (record.species !== undefined && !(sets.get("species")?.ids || []).includes(record.species)) problems.push(`${name}: its species ${record.species} is not one of the run's`);
+    if (record.field !== undefined && typeof record.field !== "string") problems.push(`${name}: its field must be a name`);
+    if (record.same_as !== undefined) {
+      const other = view.records.find((item) => item.id === record.same_as);
+      if (!other || other === record || other.dtype !== record.dtype || other.offset !== record.offset || other.part !== record.part || JSON.stringify(other.shape) !== JSON.stringify(record.shape)) {
+        problems.push(`${name}: it is declared the same as ${record.same_as}, which is not the same array`);
+      }
     }
     if (record.owner !== undefined && typeof record.owner !== "string") problems.push(`${name}: its owner must be a name`);
     if (record.scale !== undefined && !record.quantised) problems.push(`${name}: a scaled record must be marked quantised`);
@@ -157,6 +194,23 @@ class Series {
   }
 }
 
+/**
+ * A named constant of the run's definition (view.constants): a value that nothing the run
+ * schedules changes, as its view says. One number, or one for each entity along its axes.
+ */
+class Constant {
+  constructor(entry) {
+    Object.assign(this, entry);
+  }
+
+  /** The value for one entity of its set and, where it has a row for each species, for one species (both by index). */
+  at(entity = 0, species = 0) {
+    let value = this.values;
+    for (const axis of this.axes) value = value[axis === "species" ? species : entity];
+    return value;
+  }
+}
+
 export class Run {
   constructor(view, buffer, entry = null) {
     this.view = view;
@@ -170,6 +224,9 @@ export class Run {
     this.records = new Map(view.records.filter((record) => record.part === undefined).map((record) => [record.id, new Series(record, buffer)]));
     this.pending = new Map(view.records.filter((record) => record.part !== undefined).map((record) => [record.id, record]));
     this.parts = new Map((view.parts || []).map((part) => [part.id, { ...part, loaded: false }]));
+    this.constants = new Map((view.constants || []).map((constant) => [constant.id, new Constant(constant)]));
+    // What the view does not state as a constant, each with the reason: { id: why }.
+    this.unstated = new Map((view.unstated || []).map((item) => [item.id, item.why]));
     this.t = this.records.get("t").array;
     this.count = this.t.length;
     this.start = this.t[0];

@@ -1,0 +1,13 @@
+{
+  "format": "cells.visualizer.ion_colours@1",
+  "contract": "visualizer/schema/QUANTITY_LAYERS.md",
+  "note": "One fixed colour for each ion wherever a layer draws it, for the light and the dark surface (rule 8). A species is named by its id in a run's definition, as it stands: the viewer does not guess what a generic row stands for. Only three colours can be told apart from one another by every reader on both surfaces, so only three are given: sodium, potassium, and the mobile negative ion of a definition (Cl, or the generic row M of the tissue definitions). Any other species is drawn in one neutral tone and told apart by its name, which always stands beside it; where a definition holds both Cl and M, the later of the two in its order takes the neutral tone.",
+  "validated": "With the data-visualisation validator, all pairs, on the page's own surfaces (light #eef2f6, dark #0b151e), 15 November 2026. The three colours: worst pair for colour-blind readers 9.2 light and 9.4 dark (target 8), worst pair for full colour vision 24.0 light and 20.9 dark (floor 15). The neutral tone against the three: 9.2 and 9.4, 18.0 and 18.3; it is a grey on purpose. On the light surface orange and aqua stand out less than 3 to 1 from the ground, so an ion's name is always beside its marks and its numbers are in the panel.",
+  "colours": {
+    "Na": {"light": "#eb6834", "dark": "#d95926", "hue": "orange"},
+    "K": {"light": "#2a78d6", "dark": "#3987e5", "hue": "blue"},
+    "Cl": {"light": "#1baf7a", "dark": "#199e70", "hue": "aqua", "shares": "mobile negative ion"},
+    "M": {"light": "#1baf7a", "dark": "#199e70", "hue": "aqua", "shares": "mobile negative ion"}
+  },
+  "other": {"light": "#6e6a64", "dark": "#b3aea6", "hue": "neutral"}
+}

@@ -3,6 +3,10 @@
 // who computed it and how that layer of the engine is represented. This module only reads
 // what the run's view states; where the view states less, it says what is missing and
 // fills nothing in.
+//
+// Beside its records a run's view may state named constants of its definition (a
+// temperature, a membrane's capacitance): values that nothing the run schedules changes.
+// A derivation may read one in place of a saved record, and only where the view states it.
 
 export const LIVES_ON = ["cell", "junction", "membrane", "channel population", "pump population", "face", "outside node", "world"];
 export const KINDS = ["level", "amount", "cumulative", "rate"];
@@ -49,6 +53,11 @@ export function declared(run, id) {
     times: record.shape?.[0] ?? null,
     quantised: Boolean(record.quantised),
     part: record.part || null,
+    // One of a field's records, one for each species (a concentration of each ion).
+    field: record.field || null,
+    species: record.species ?? null,
+    // The same array as another record, declared over another set (a membrane's voltage where each cell has one membrane).
+    same_as: record.same_as || null,
     loaded: run.records.has(id),
     lacks,
   };
@@ -58,6 +67,26 @@ export function declared(run, id) {
 export function declaredOn(run, livesOnWhat) {
   const ids = [...run.records.keys(), ...(run.pending ? run.pending.keys() : [])];
   return ids.map((id) => declared(run, id)).filter((record) => record && record.lives_on === livesOnWhat && record.set);
+}
+
+/** The records of one field, one for each species the run saved it for, in the order of the run's species. */
+export function family(run, field) {
+  const species = run.sets.get("species")?.ids || [];
+  const ids = [...run.records.keys(), ...(run.pending ? run.pending.keys() : [])];
+  return ids
+    .map((id) => declared(run, id))
+    .filter((record) => record && record.field === field && record.species !== null)
+    .sort((a, b) => species.indexOf(a.species) - species.indexOf(b.species));
+}
+
+/**
+ * A named constant of the run's definition as its view states it, or null: { id, label, unit,
+ * lives_on, set, axes, says }. `says` is the view's own account of why nothing in the run changes it.
+ */
+export function constantOf(run, id) {
+  const constant = run.constants?.get(id);
+  if (!constant) return null;
+  return { id: constant.id, label: constant.label || constant.id, unit: constant.unit || null, lives_on: livesOn(run, constant.set), set: constant.set || null, axes: constant.axes, says: constant.says || "", from: constant.from || null, constant: true };
 }
 
 const REPRESENTED = { simulated: "simulated", modelled: "modelled in aggregate", prescribed: "prescribed by the experiment" };

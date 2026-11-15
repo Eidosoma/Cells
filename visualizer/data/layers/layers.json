@@ -1,7 +1,7 @@
 {
   "format": "cells.visualizer.quantity_layers@1",
   "contract": "visualizer/schema/QUANTITY_LAYERS.md",
-  "note": "The layers the viewer can draw: each maps a record a run saved, or a number worked out from saved ones by a declared rule, to a mark. A record is named as a run's view names it: the engine's own readout name, or the name an adapter gave it, in the order tried. Where a layer lists several quantities (first_of), it takes the first the run can feed: the engine's own readout where the run kept it, a worked-out number otherwise. A layer is offered for a run only when the run saved what it needs; what a run did not save is said. A record laid over the cells that no layer here names is still offered as a colouring and a relief, under the record's own name. The layers of ideas 3 to 7 are added as their marks are built.",
+  "note": "The layers the viewer can draw: each maps a record a run saved, or a number worked out from saved ones by a declared rule, to a mark. A record is named as a run's view names it: the engine's own readout name, or the name an adapter gave it, in the order tried. Where a layer lists several quantities (first_of), it takes the first the run can feed: the engine's own readout where the run kept it, a worked-out number otherwise. A rule with several inputs names, for each part it is worked out from, what may fill it, in the order tried: a record the run saved, a named constant of its definition (stated by the run's view only where nothing the run schedules changes it), or an amount over a volume. A layer is offered for a run only when the run saved what it needs; what a run did not save is said. A record laid over the cells that no layer here names is still offered as a colouring and a relief, under the record's own name. Ion traffic (idea 5) is declared and its mark has its place; it draws once a run saved the amounts transferred. The layers of ideas 6 and 7 are added as their marks are built.",
   "layers": [
     {
       "id": "voltage-tint",
@@ -86,6 +86,104 @@
         "links"
       ],
       "says": "A wedge on a junction points down the voltage drop across it, and is as wide as the drop is large. It is a difference of voltages, not a current: it never moves."
+    },
+    {
+      "id": "ion-push-pull",
+      "label": "Push and pull on ions",
+      "idea": 3,
+      "quantity": {
+        "derivation": "potential terms",
+        "of": {
+          "voltage": [
+            "membrane_voltage_V",
+            "vm"
+          ],
+          "inside": [
+            "concentration_mM",
+            {
+              "amount": "amount",
+              "over": "volume"
+            }
+          ],
+          "outside": [
+            "extracellular_concentration_mM",
+            {
+              "amount": "extracellular_amount",
+              "over": "extracellular_volume"
+            }
+          ],
+          "temperature": [
+            "temperature"
+          ],
+          "valence": [
+            "valence"
+          ]
+        }
+      },
+      "mark": "arrows",
+      "channels": [
+        "arrows"
+      ],
+      "says": "For each ion at the chosen cell's membrane: the push of its concentration difference, the pull of the voltage, and what is left of the two, in millivolts. An arrow is a drive, not a flow: it never moves."
+    },
+    {
+      "id": "membrane-charge",
+      "label": "Membrane charge",
+      "idea": 4,
+      "quantity": {
+        "derivation": "charge",
+        "of": {
+          "voltage": [
+            "membrane_voltage_V",
+            "vm"
+          ],
+          "capacitance": [
+            "membrane_capacitance"
+          ],
+          "area": [
+            "membrane_area"
+          ]
+        }
+      },
+      "mark": "stipple",
+      "channels": [
+        "surface"
+      ],
+      "piece": {
+        "width_nm": 100,
+        "depth_nm": 25
+      },
+      "says": "Plus and minus marks at the two faces of the chosen cell's membrane, as many as the charge its voltage stands for on a piece of that size. How many there are is worked out; where each sits is illustration."
+    },
+    {
+      "id": "ion-traffic",
+      "label": "Ion traffic",
+      "idea": 5,
+      "quantity": {
+        "derivation": "rate",
+        "of": [
+          "channel_transferred"
+        ]
+      },
+      "also": [
+        {
+          "record": "pump_cycles",
+          "role": "pump",
+          "says": "Beads through a pump: its cycles between two records, each cycle moving the ions the run's definition gives it.",
+          "without": "This run did not save its pumps' cycles, so no beads cross through a pump."
+        },
+        {
+          "record": "membrane_transferred",
+          "role": "leak",
+          "says": "Beads through the membrane itself: what crossed it beside its channels.",
+          "without": "This run did not save what crossed the membrane beside its channels."
+        }
+      ],
+      "mark": "beads",
+      "channels": [
+        "motion"
+      ],
+      "says": "Beads cross the chosen cell's membrane through each of its channel populations and pumps, as many a second as the run's saved totals grew between two records. A bead is a token of a rate, not an ion: the legend says how many ions one stands for and what time the picture keeps."
     }
   ]
 }

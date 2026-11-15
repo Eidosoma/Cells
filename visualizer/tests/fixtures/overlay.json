@@ -225,6 +225,41 @@
      "unit": "s"
     }
    }
+  },
+  "synthetic-history": {
+   "adapter": "standard-history",
+   "development": true,
+   "label": "Synthetic development run (test fixture)",
+   "plain": "Invented numbers in the layout of the engine's shared output paths. No engine ran; nothing here is evidence.",
+   "sources": [],
+   "engine_entities": [],
+   "outcome": {
+    "judged": false,
+    "status": "A development run: not judged"
+   },
+   "records": {
+    "vm": {
+     "label": "Membrane voltage"
+    }
+   },
+   "parameters": {
+    "execution.dt": {
+     "label": "Time step",
+     "unit": "s"
+    },
+    "model.inner_model": {
+     "label": "Inner model"
+    }
+   },
+   "readouts": {
+    "status": {
+     "label": "Status"
+    },
+    "end_time": {
+     "label": "End",
+     "unit": "s"
+    }
+   }
   }
  }
 }

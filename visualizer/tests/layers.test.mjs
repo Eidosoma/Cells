@@ -17,13 +17,19 @@ import { openReplay, loadPart } from "../src/replay/source.js";
 import { validateReplay } from "../src/replay/run.js";
 import { Ramp } from "../src/replay/ramp.js";
 import { display } from "../src/replay/format.js";
-import { difference, rate, charge, potentialTerms, DERIVATIONS, FARADAY, GAS } from "../src/layers/derive.js";
-import { declared, declaredOn, behind, LIVES_ON, KINDS } from "../src/layers/records.js";
-import { layersFor, feeds, readDeclarations, validateLayer, account, Switch, CHANNELS, LAYERS_FORMAT, NOT_SAVED } from "../src/layers/layers.js";
+import { difference, rate, charge, chargesIn, potentialTerms, DERIVATIONS, FARADAY, GAS, ELEMENTARY } from "../src/layers/derive.js";
+import { declared, declaredOn, behind, family, constantOf, LIVES_ON, KINDS } from "../src/layers/records.js";
+import { layersFor, feeds, readDeclarations, validateLayer, account, partsOf, Switch, CHANNELS, LAYERS_FORMAT, NOT_SAVED } from "../src/layers/layers.js";
 import { shareOf, roundUp } from "../src/layers/scale.js";
 import { MARKS } from "../src/layers/marks/index.js";
 import { heightOf, barStretch, riseOf, crossings, BOLD_RISE } from "../src/layers/marks/relief.js";
 import { dropAt, fullDrop, FLOOR } from "../src/layers/marks/wedge.js";
+import { arrowOutline, lanes, BALANCE } from "../src/layers/marks/arrows.js";
+import { worthFor, marksFor, spots, MOST } from "../src/layers/marks/stipple.js";
+import { tokenFor, beadsASecond, ionsASecond, timeWords, tokenWords, PER_FMOL, BUSIEST } from "../src/layers/marks/beads.js";
+import { membranesOf, pushPull, membraneCharge, largest } from "../src/layers/membrane.js";
+import { Closeup, freeRect, cardPlace, PIECE } from "../src/layers/closeup.js";
+import { ionColours } from "../src/layers/ions.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const declarations = JSON.parse(await readFile(path.join(ROOT, "data", "layers", "layers.json"), "utf8"));
@@ -75,6 +81,25 @@ test("the potential terms are the two terms of the engine's own law, each divide
   // A negative ion: the same terms with its valence.
   const chloride = potentialTerms({ inside: 10, outside: 120, voltage: -0.07, valence: -1, temperature: 310 });
   assert.equal(chloride.sum, GAS * 310 * (Math.log(10) - Math.log(120)) + -1 * FARADAY * -0.07);
+  // Which way a term drives its ion is read from the term in J/mol, never from the volts: dividing by z F
+  // turns a negative ion's sign round. Potassium: more of it inside pushes it out, a negative inside pulls it in.
+  assert.deepEqual(potassium.drives, { concentration: "out", electrical: "in", sum: "out" });
+  assert.deepEqual([potassium.size.concentration, potassium.size.electrical, potassium.size.sum], [Math.abs(potassium.volts.concentration), 0.07, Math.abs(potassium.volts.sum)]);
+  // The negative ion: more of it outside pushes it in, and the negative inside pushes it out, though its
+  // concentration term in volts is positive and its electrical term in volts negative.
+  assert.ok(chloride.volts.concentration > 0 && chloride.volts.electrical < 0);
+  assert.ok(chloride.concentration < 0 && chloride.electrical > 0);
+  assert.deepEqual(chloride.drives, { concentration: "in", electrical: "out", sum: chloride.sum > 0 ? "out" : "in" });
+  assert.equal(chloride.drives.sum, "out", "at -70 mV with 10 mM inside and 120 mM outside, the voltage wins by a few millivolts");
+  assert.ok(Math.abs(chloride.size.sum - 0.00362) < 1e-4, `what is left for the negative ion is ${chloride.size.sum} V`);
+  // The numbers of a judged run, worked out by hand in 64 bits (cell_63 of e07-v1 a-donor-fast-k1-d37-s1.0 seed 5 at 1170 s):
+  // the generic negative ion M, 13.0883 mM inside and 140 mM outside at -20.589 mV.
+  const m = potentialTerms({ inside: 13.0883, outside: 140, voltage: -0.020589, valence: -1, temperature: 310 });
+  assert.deepEqual([m.drives.concentration, m.drives.electrical, m.drives.sum], ["in", "out", "in"]);
+  assert.ok(Math.abs(m.size.concentration - 0.063309) < 2e-6 && Math.abs(m.size.sum - 0.04272) < 2e-6, JSON.stringify(m.size));
+  // In balance to the last digit: nothing is left, and it drives the ion neither way.
+  const still = potentialTerms({ inside: 5, outside: 5, voltage: 0, valence: 1, temperature: 310 });
+  assert.deepEqual([still.sum, still.drives.sum, still.drives.concentration, still.drives.electrical], [0, null, null, null]);
   // What the engine refuses, the viewer does not work out.
   for (const bad of [{ inside: 0 }, { outside: -1 }, { valence: 0 }, { temperature: 0 }, { voltage: NaN }]) {
     assert.equal(potentialTerms({ inside: 140, outside: 5, voltage: -0.07, valence: 1, temperature: 310, ...bad }), null);
@@ -86,7 +111,9 @@ test("the potential terms are the two terms of the engine's own law, each divide
 test("the declared layers follow the contract, and each names a mark the viewer has", () => {
   assert.equal(declarations.format, LAYERS_FORMAT);
   assert.deepEqual(PROBLEMS, []);
-  assert.deepEqual(LAYERS.map((item) => item.id), ["voltage-tint", "voltage-relief", "junction-drops"]);
+  assert.deepEqual(LAYERS.map((item) => item.id), ["voltage-tint", "voltage-relief", "junction-drops", "ion-push-pull", "membrane-charge", "ion-traffic"]);
+  // The two layers of a chosen cell's membrane are drawn on its close-up, not on the sheet.
+  assert.deepEqual(LAYERS.filter((item) => MARKS[item.mark].surface === "membrane").map((item) => [item.id, item.mark, item.channels[0], item.quantity.derivation]), [["ion-push-pull", "arrows", "arrows", "potential terms"], ["membrane-charge", "stipple", "surface", "charge"], ["ion-traffic", "beads", "motion", "rate"]]);
   for (const item of LAYERS) {
     assert.ok(contract.includes(`\`${item.id}\``), `the contract's table does not list ${item.id}`);
     assert.ok(MARKS[item.mark], `${item.id}: no mark ${item.mark}`);
@@ -118,6 +145,22 @@ test("a layer's declaration that breaks the contract is refused with the reason"
     const problems = validateLayer(bad, MARKS);
     assert.ok(problems.some((problem) => expected.test(problem)), `expected ${expected}, got ${JSON.stringify(problems)}`);
   }
+  // A rule with several inputs: the layer names what may fill each part of it, and no part the rule does not have.
+  const several = [
+    [(bad) => delete bad.quantity.of.temperature, /its rule needs temperature, and it names nothing for it/],
+    [(bad) => (bad.quantity.of.inside = [{ amount: "amount" }]), /its rule needs inside/],
+    [(bad) => (bad.quantity.of.permeability = ["membrane_permeability"]), /permeability is not a part of the rule potential terms/],
+    [(bad) => (bad.quantity.of = "vm"), /its rule needs voltage/],
+  ];
+  for (const [damage, expected] of several) {
+    const bad = JSON.parse(JSON.stringify(layer("ion-push-pull")));
+    damage(bad);
+    const problems = validateLayer(bad, MARKS);
+    assert.ok(problems.some((problem) => expected.test(problem)), `expected ${expected}, got ${JSON.stringify(problems)}`);
+  }
+  assert.deepEqual(Object.keys(partsOf(layer("ion-push-pull").quantity)), ["voltage", "inside", "outside", "temperature", "valence"]);
+  assert.deepEqual(Object.keys(partsOf(layer("membrane-charge").quantity)), ["voltage", "capacitance", "area"]);
+  assert.equal(partsOf(layer("junction-drops").quantity.first_of[2]), null, "a difference has one input");
   const twice = readDeclarations({ format: LAYERS_FORMAT, layers: [good, good] }, MARKS);
   assert.equal(twice.layers.length, 1);
   assert.match(twice.problems.join(" "), /used twice/);
@@ -173,7 +216,10 @@ test("a sign the run does not declare itself says where it comes from, and a rec
 test("a run is offered the layers it can feed: the declared ones, and a colouring and a relief of every other record over its cells", () => {
   const { run } = made();
   const offers = layersFor(run, LAYERS, MARKS);
-  assert.deepEqual(offers.map((item) => [item.layer.id, item.ok]), [["voltage-tint", true], ["voltage-relief", true], ["junction-drops", true], ["generation-tint", true], ["generation-relief", true]]);
+  assert.deepEqual(offers.map((item) => [item.layer.id, item.ok]), [["voltage-tint", true], ["voltage-relief", true], ["junction-drops", true], ["ion-push-pull", false], ["membrane-charge", false], ["ion-traffic", false], ["generation-tint", true], ["generation-relief", true]]);
+  assert.equal(offer(run, "ion-traffic").why, NOT_SAVED);
+  // This run's view lists no membranes: its one voltage per cell is no membrane's own, and it is said.
+  for (const id of ["ion-push-pull", "membrane-charge"]) assert.equal(offer(run, id).why, "This run saved the membrane voltage for each cell, not for each membrane.");
   assert.equal(offer(run, "voltage-tint").source.id, "vm");
   assert.equal(offer(run, "generation-relief").layer.plain, true);
   // The drops: this run kept neither the junctions' own voltage nor each cell's potential, so
@@ -544,9 +590,36 @@ function lensFor(runs) {
     const body = files.get(name);
     return { ok: Boolean(body), status: body ? 200 : 404, json: async () => JSON.parse(JSON.stringify(body)) };
   };
-  const palette = { seq0: PALETTE[0], seq1: PALETTE[1], seq2: PALETTE[2], seq3: PALETTE[3], seq4: PALETTE[4], stUnstated: "#9aa6b2", fg: "#12283a", bg: "#eef2f6" };
-  const stage = { palette, invalidate() {}, scene: { add() {}, remove() {} }, sun: {}, rig: { setView() {}, limits: {}, instant: true, flyTo() {}, distance: 100 }, camera: { fov: 40, aspect: 1.6 }, width: 1400, height: 900, reducedMotion: true };
-  const labels = { clear() {}, calloutFrame: null, add: (spec) => ({ ...spec, element: { classList: { add() {}, remove() {} } }, hidden: false }), setText: (item, text) => (item.text = text) };
+  const palette = { seq0: PALETTE[0], seq1: PALETTE[1], seq2: PALETTE[2], seq3: PALETTE[3], seq4: PALETTE[4], stUnstated: "#9aa6b2", fg: "#12283a", bg: "#eef2f6", bioMembrane: "#2fb3a3", dark: false };
+  // A camera that stands in for the stage's: it looks down on the sheet from a little way off, with no window behind it.
+  const camera = new THREE.PerspectiveCamera(34, 1400 / 900, 0.1, 5000);
+  camera.position.set(0, 220, 200);
+  camera.lookAt(0, 0, 0);
+  camera.updateMatrixWorld();
+  const stage = {
+    palette, invalidate() {}, scene: { add() {}, remove() {} }, sun: {}, rig: { setView() {}, limits: {}, instant: true, flyTo() {}, distance: 100, azimuth: 0, polar: 0.8 }, camera, width: 1400, height: 900, reducedMotion: true,
+    project(point, out) {
+      out.copy(point).project(camera);
+      out.x = (out.x * 0.5 + 0.5) * 1400;
+      out.y = (-out.y * 0.5 + 0.5) * 900;
+      return out;
+    },
+  };
+  const shown = [];
+  const labels = {
+    shown,
+    clear: () => shown.splice(0),
+    calloutFrame: null,
+    keepClear: { top: 56 },
+    blocked: () => [{ left: 0, top: 56, right: 303, bottom: 900 }],
+    add: (spec) => {
+      const item = { ...spec, element: { classList: { add() {}, remove() {} }, style: {}, offsetWidth: 300, offsetHeight: 44 }, hidden: false, width: 60, height: 16 };
+      shown.push(item);
+      return item;
+    },
+    setText: (item, text) => (item.text = text),
+    remove: (item) => shown.splice(shown.indexOf(item), 1),
+  };
   const index = { format: "cells.visualizer.replay_index@1", experiments: [{ id: "e07-v1", label: "A made-up experiment", records: { vm: { label: "Membrane voltage", shown_between: [-0.09, -0.01] } } }], runs: runs.map((run) => run.entry) };
   const lens = new ReplayLens(stage, { raw: { replays: index } }, labels);
   lens.onChrome = () => lens.chrome();
@@ -569,7 +642,8 @@ test("the replay opens as it always did: coloured by voltage, with the height re
   assert.deepEqual(legend.keys.map((item) => item.key), ["seam", "frame", "ring"], "the sheet's standing marks are listed as before");
   assert.equal(legend.folded, undefined, "and nothing asks for them to fold away");
   assert.deepEqual(rowsOf(lens), ["Height: Off | Membrane voltage* | Generation (synthetic)", "Junctions: Off* | Voltage drops"]);
-  assert.deepEqual(legend.layers.cannot, []);
+  // This made-up run lists no membranes, so the two layers of a membrane are named as ones it cannot feed.
+  assert.deepEqual(legend.layers.cannot.map((item) => item.id), ["ion-push-pull", "membrane-charge", "ion-traffic"]);
   assert.deepEqual(legend.layers.keys, []);
   assert.deepEqual(asked.filter((name) => name.includes("junction-gate")), [], "no record in a file of its own is fetched before a layer needs it");
   // The card's choice of colour: the records a colouring layer can show.
@@ -625,7 +699,8 @@ test("the drops are fetched when switched on, drawn beside the other layers, exp
   assert.deepEqual(rowsOf(lens)[1], "Junctions: Off | Voltage drops*");
   // The panel: what each layer shows, and what stands behind its numbers.
   const panel = lens.describe("layers:shown");
-  assert.deepEqual(panel.sections.map((section) => section.title), ["Colour: membrane voltage", "Height: membrane voltage", "Junctions: voltage drops"]);
+  assert.deepEqual(panel.sections.map((section) => section.title), ["Colour: membrane voltage", "Height: membrane voltage", "Junctions: voltage drops", "Not shown for this run"]);
+  assert.deepEqual(panel.sections[3].items.map((item) => item.label), ["Arrows: push and pull on ions", "Membrane: membrane charge", "Motion: ion traffic"]);
   const drops = panel.sections[2].items;
   assert.deepEqual(drops.map((item) => item.label), ["What it shows", "Its numbers: worked out by the viewer", "What else the run saved about it"]);
   assert.match(drops[1].lines.join(" "), /Worked out by the viewer from the saved membrane voltage.*held bath at 0 V.*So the difference is the voltage across the junction itself.*Saved by the run; computed by/);
@@ -659,16 +734,390 @@ test("a layer a run cannot feed is listed with the reason and cannot be switched
   await lens.ready;
   lens.activate();
   const layers = lens.chrome().legend.layers;
-  assert.deepEqual(layers.cannot.map((item) => [item.id, item.label]), [["junction-drops", "Junctions: voltage drops"]]);
+  assert.deepEqual(layers.cannot.map((item) => [item.id, item.label]), [["junction-drops", "Junctions: voltage drops"], ["ion-push-pull", "Arrows: push and pull on ions"], ["membrane-charge", "Membrane: membrane charge"], ["ion-traffic", "Motion: ion traffic"]]);
   assert.match(layers.cannot[0].why, /did not save each junction's voltage/);
   assert.deepEqual(rowsOf(lens), ["Height: Off | Membrane voltage* | Generation (synthetic)"], "it has no row of its own to press");
   await lens.setLayer("junction-drops", true);
   assert.deepEqual(lens.switch.on, ["voltage-tint", "voltage-relief"]);
   assert.match(lens.describe("layers:shown").sections.at(-1).items[0].detail, /did not save each junction's voltage/);
+  await lens.setLayer("ion-push-pull", true);
+  assert.deepEqual(lens.switch.on, ["voltage-tint", "voltage-relief"], "a layer the run cannot feed cannot be switched on");
   // The other run can feed the drops, but its gate's file does not come: nothing is drawn, and the row says why.
   await lens.show(lost.entry.id);
   await lens.setLayer("junction-drops", true);
   assert.deepEqual(lens.switch.on, ["voltage-tint", "voltage-relief"]);
   const row = lens.chrome().legend.layers.rows.find((item) => item.channel === "links");
   assert.match(row.problem, /could not be fetched: .*answered 404/);
+});
+
+// ------------------------------------------------------------ rules with several inputs, and one cell's membrane
+
+test("a rule with several inputs is fed part by part: a saved record, one for each species, or a constant the view states", async () => {
+  const { run, parts } = made({ membrane: true });
+  const push = offer(run, "ion-push-pull"), stored = offer(run, "membrane-charge");
+  assert.equal(push.ok, true, push.why);
+  assert.equal(stored.ok, true, stored.why);
+  // Each part of the rule, with what fills it in this run.
+  assert.deepEqual(Object.fromEntries(Object.entries(push.inputs).map(([part, input]) => [part, `${input.how}: ${input.name}`])), {
+    voltage: "record: membrane_voltage_V",
+    inside: "records: concentration_mM",
+    outside: "constant: extracellular_concentration_mM",
+    temperature: "constant: temperature",
+    valence: "constant: valence",
+  });
+  assert.deepEqual(Object.fromEntries(Object.entries(stored.inputs).map(([part, input]) => [part, `${input.how}: ${input.name}`])), { voltage: "record: membrane_voltage_V", capacitance: "constant: membrane_capacitance", area: "constant: membrane_area" });
+  assert.equal(push.source.id, "membrane_voltage_V");
+  assert.equal(push.source.lives_on, "membrane");
+  // The concentrations come in files of their own, one for each ion: they are fetched when the layer is switched on. The charge needs none.
+  assert.deepEqual(push.parts, ["concentration-na", "concentration-k", "concentration-m"]);
+  assert.deepEqual(stored.parts, []);
+  assert.deepEqual(family(run, "concentration_mM").map((record) => [record.species, record.loaded]), [["Na", false], ["K", false], ["M", false]]);
+  for (const part of push.parts) await loadPart(run, part, { root: null, fetcher: fetcherOf(parts) });
+  assert.deepEqual(offer(run, "ion-push-pull").parts, []);
+  // A record that comes in a file of its own is no plain colouring: the offers do not grow once it is fetched.
+  assert.deepEqual(layersFor(run, LAYERS, MARKS).map((item) => item.layer.id), ["voltage-tint", "voltage-relief", "junction-drops", "ion-push-pull", "membrane-charge", "ion-traffic", "generation-tint", "generation-relief"]);
+  // A constant is read as the view states it, with its account of why nothing changes it.
+  assert.deepEqual({ ...constantOf(run, "membrane_capacitance"), says: null }, { id: "membrane_capacitance", label: "Membrane capacitance", unit: "F", lives_on: "membrane", set: "membrane", axes: ["membrane"], says: null, from: "definition.json", constant: true });
+  assert.equal(constantOf(run, "membrane_thickness"), null);
+  assert.equal(run.constants.get("extracellular_concentration_mM").at(7, 1), 5, "potassium outside, at any bath");
+  assert.equal(run.constants.get("temperature").at(), 310);
+});
+
+test("what a run does not give for a part of a rule is said in the page's words, and the layer is not offered", () => {
+  // No word on which way the voltage is positive: an arrow would have no way to point.
+  const unsigned = made({ membrane: "unsigned" }).run;
+  for (const id of ["ion-push-pull", "membrane-charge"]) assert.deepEqual([offer(unsigned, id).ok, offer(unsigned, id).why], [false, "This run saved the membrane voltage, but does not say which way it is positive."]);
+  // No constants, with the view's reason: the definition's values may have changed during the run.
+  const unstated = made({ membrane: "unstated" }).run;
+  assert.equal(offer(unstated, "ion-push-pull").why, "This run did not save the concentration of each ion outside over time. Not stated as a constant: the run's model (synthetic) is not one whose operators the viewer knows.");
+  assert.equal(offer(unstated, "membrane-charge").why, "This run did not save the membrane's capacitance over time. Not stated as a constant: the run's model (synthetic) is not one whose operators the viewer knows.");
+  // A view with constants and concentrations, and no word on which membrane lies on which cell.
+  const { file, entry } = syntheticRun({ membrane: true });
+  const membranes = file.view.sets.find((set) => set.id === "membrane");
+  delete membranes.geometry;
+  delete membranes.outside;
+  assert.equal(offer(openReplay(file, entry), "ion-push-pull").why, "This run's files do not say which membrane lies on which cell, and which outside it faces.");
+  // A run that saved amounts and no concentrations is fed by the amount over the volume the view states.
+  const amounts = syntheticRun({ membrane: true });
+  for (const record of amounts.file.view.records) {
+    if (record.field !== "concentration_mM") continue;
+    record.field = "amount";
+    record.id = `amount.${record.species}`;
+    record.unit = "fmol";
+  }
+  const fed = offer(openReplay(amounts.file, amounts.entry), "ion-push-pull");
+  assert.equal(fed.ok, true, fed.why);
+  assert.deepEqual([fed.inputs.inside.how, fed.inputs.inside.amount.name, fed.inputs.inside.over.name], ["ratio", "amount", "volume"]);
+});
+
+test("the push and pull on each ion at one membrane: the rule's own terms on the run's own numbers, and the way each drives its ion", async () => {
+  const { run, parts } = made({ membrane: true });
+  for (const part of offer(run, "ion-push-pull").parts) await loadPart(run, part, { root: null, fetcher: fetcherOf(parts) });
+  const fed = offer(run, "ion-push-pull");
+  const reader = pushPull(run, fed), membranes = membranesOf(run);
+  assert.deepEqual(reader.species, ["Na", "K", "M"]);
+  assert.deepEqual(reader.missing, [{ id: "P", lacks: "its concentration in the cell" }]);
+  assert.deepEqual(membranes.of(40), [40]);
+  // One membrane at one record, against the rule applied by hand to the saved arrays.
+  const step = run.indexAt(1170), membrane = 40, cell = membranes.cell[membrane];
+  const voltage = run.records.get("vm").at(step, cell);
+  const terms = reader.at(step, membrane);
+  const bath = { Na: 145, K: 5, M: 140 }, valence = { Na: 1, K: 1, M: -1 };
+  for (const term of terms) {
+    const inside = run.records.get(`concentration_mM.${term.id}`).at(step, cell);
+    const byHand = potentialTerms({ inside, outside: bath[term.id], voltage, valence: valence[term.id], temperature: 310 });
+    assert.deepEqual({ inside: term.inside, outside: term.outside, voltage: term.voltage, valence: term.valence, temperature: term.temperature }, { inside, outside: bath[term.id], voltage, valence: valence[term.id], temperature: 310 });
+    assert.deepEqual([term.concentration, term.electrical, term.sum, term.size, term.drives], [byHand.concentration, byHand.electrical, byHand.sum, byHand.size, byHand.drives]);
+  }
+  // Sodium is pushed and pulled inwards; potassium pushed out and pulled in; the negative ion pushed in and pulled out.
+  assert.deepEqual(terms.map((term) => [term.id, term.drives.concentration, term.drives.electrical]), [["Na", "in", "in"], ["K", "out", "in"], ["M", "in", "out"]]);
+  assert.ok(terms[0].size.sum > terms[0].size.concentration, "for sodium the two add up");
+  // The scale of the arrows is the run's largest term, over every membrane and every valid record.
+  const most = largest(run, membranes.ids.length, (at, index) => Math.max(...reader.at(at, index).map((term) => Math.max(term.size.concentration, term.size.electrical, term.size.sum))));
+  assert.ok(most > terms[0].size.sum * 0.9 && most < 0.2, `the largest term of the run is ${most} V`);
+});
+
+test("the charge of one membrane is its capacitance times its voltage, counted in charges and for each square micrometre", () => {
+  const { run } = made({ membrane: true });
+  const reader = membraneCharge(run, offer(run, "membrane-charge"));
+  const step = run.indexAt(600), membrane = 3;
+  const voltage = run.records.get("vm").at(step, 3);
+  const reading = reader.at(step, membrane);
+  assert.equal(reading.coulombs, 1.6e-11 * voltage);
+  assert.equal(reading.charges, Math.abs(1.6e-11 * voltage) / ELEMENTARY);
+  assert.equal(chargesIn(-2 * ELEMENTARY), 2);
+  assert.equal(reading.per_um2, reading.charges / (3.2e-10 * 1e12));
+  assert.equal(reading.inside, "minus", "a negative voltage: the inner face carries the minus");
+  // About 23,000 charges on a square micrometre at -75 mV with 0.05 F/m2: one ion in thousands.
+  assert.ok(reading.per_um2 > 20000 && reading.per_um2 < 26000, String(reading.per_um2));
+  // A positive voltage puts the plus at the inner face; the record's sign, where it says the outside is the higher, turns the voltage round.
+  const turned = syntheticRun({ membrane: true });
+  for (const record of turned.file.view.records) if (record.sign) record.sign = { ...record.sign, high: "outside" };
+  const other = openReplay(turned.file, turned.entry);
+  assert.equal(membraneCharge(other, offer(other, "membrane-charge")).at(step, membrane).inside, "plus");
+});
+
+test("how many marks stand for a charge, and where: one worth for the whole run, and places that never move", () => {
+  // One mark is one charge while the run's largest count fits; then two, five, ten.
+  assert.deepEqual([worthFor(124), worthFor(MOST), worthFor(MOST + 1), worthFor(700), worthFor(1500)], [1, 1, 2, 5, 10]);
+  assert.deepEqual([marksFor(123.97, 1), marksFor(32.13, 1), marksFor(0.4, 1), marksFor(700, 5), marksFor(1e6, 1)], [124, 32, 0, 140, MOST]);
+  // The places at a face are a fixed sequence: the first N are the same whatever N is, so a mark never moves when the count changes.
+  const outer = spots(PIECE, 1), inner = spots(PIECE, -1);
+  assert.equal(outer.length, MOST);
+  assert.deepEqual(spots(PIECE, 1).slice(0, 40), outer.slice(0, 40));
+  for (const [x, y, z] of outer) assert.ok(Math.abs(x) < PIECE.width / 2 && Math.abs(z) < PIECE.depth / 2 && y > PIECE.thick / 2 && y < PIECE.thick / 2 + 0.3, `${[x, y, z]}`);
+  for (const [, y] of inner) assert.ok(y < -PIECE.thick / 2 && y > -PIECE.thick / 2 - 0.3);
+  assert.notDeepEqual(outer[0].map(Math.abs), inner[0].map(Math.abs), "the two faces are not mirror images");
+  // They fill the face evenly at any count: no two of the first sixty stand on one another.
+  for (let a = 0; a < 60; a++) for (let b = a + 1; b < 60; b++) assert.ok(Math.hypot(outer[a][0] - outer[b][0], outer[a][2] - outer[b][2]) > 0.04, `${a} and ${b}`);
+  // No mark is put under the close-up's own words.
+  const clear = spots(PIECE, 1, (x, y, z) => Closeup.free(x, y, z));
+  assert.ok(clear.every(([x, y, z]) => Closeup.free(x, y, z)) && clear.length === MOST);
+  assert.equal(Closeup.free(-PIECE.width / 2 + 0.3, 0.55, 0), false);
+});
+
+test("an arrow is as long as its term and points the way its ion is driven; the ions stand in lanes along the piece", () => {
+  // An arrow enters the membrane at one face, crosses it, and stands its length out from the other face.
+  const up = arrowOutline(1, 0.6, 0.05, true, 0.3), down = arrowOutline(1, 0.6, 0.05, false, 0.3);
+  assert.equal(up.length, 7);
+  assert.deepEqual(up[3], [1, 0.15 + 0.6], "its tip stands 0.6 out from the outer face");
+  assert.deepEqual(down[3], [1, -0.15 - 0.6]);
+  assert.deepEqual([up[0], up[6]], [[0.95, -0.15], [1.05, -0.15]], "an arrow out of the cell enters at the inner face");
+  assert.deepEqual([down[0], down[6]], [[0.95, 0.15], [1.05, 0.15]], "an arrow into the cell enters at the outer face");
+  // A term smaller than a head: the head is as long as the term, and stands on the face the arrow leaves by.
+  const small = arrowOutline(0, 0.04, 0.05, true, 0.3);
+  assert.deepEqual([small[3], small[2][1], small[4][1]], [[0, 0.15 + 0.04], 0.15, 0.15]);
+  // Nothing of an arrow's size is in the part that crosses the membrane: two arrows differ by their lengths alone.
+  assert.ok(Math.abs(arrowOutline(0, 0.9, 0.05, true, 0.3)[3][1] - up[3][1] - 0.3) < 1e-12);
+  // Under a millivolt is drawn as a ring: in balance.
+  assert.equal(BALANCE, 0.001);
+  const three = lanes(3), five = lanes(5);
+  assert.equal(three.length, 3);
+  assert.ok(three[0].x - three[0].apart > -PIECE.width / 2 + 0.82, "the first ion stands clear of the words Outside and Inside");
+  assert.ok(three[2].x + three[2].apart < PIECE.width / 2);
+  assert.ok(five[1].x - five[0].x > 2 * five[0].apart, "with more ions the arrows stand closer, and still apart");
+});
+
+test("the close-up stands in the free part of the window, above its cell where there is room", () => {
+  // The largest rectangle no panel covers: beside the cards on the left and the panel on the right, above the timeline.
+  const free = freeRect(1440, 900, [{ left: 0, top: 60, right: 303, bottom: 900 }, { left: 1040, top: 56, right: 1440, bottom: 900 }, { left: 420, top: 820, right: 920, bottom: 890 }], 56);
+  assert.deepEqual([free.left, free.top, free.right, free.bottom], [303, 56, 1040, 820]);
+  assert.deepEqual(freeRect(390, 844, [], 56), { left: 0, top: 56, right: 390, bottom: 844, area: 390 * 788 });
+  // A phone: a card across the top and a panel across the bottom leave the middle.
+  const phone = freeRect(390, 844, [{ left: 8, top: 60, right: 382, bottom: 250 }, { left: 0, top: 520, right: 390, bottom: 844 }], 56);
+  assert.deepEqual([phone.top, phone.bottom], [250, 520]);
+  // Above the cell where it fits, the tie coming to the card's bottom; below it otherwise; inside the free part in any case.
+  const above = cardPlace({ x: 700, y: 600 }, free, 430, 320);
+  assert.deepEqual([above.side, above.x, above.y, above.fits], ["bottom", 700, 600 - 26 - 160, true]);
+  const below = cardPlace({ x: 700, y: 200 }, free, 430, 320);
+  assert.deepEqual([below.side, below.y, below.fits], ["top", 200 + 26 + 160, true]);
+  // With room on neither side the card lies over its cell, and says where the cell would have to stand for it to fit above.
+  const over = cardPlace({ x: 700, y: 400 }, free, 430, 420);
+  assert.deepEqual([over.fits, over.room], [false, { x: 700, y: 56 + 10 + 420 + 26 + 6 }]);
+  assert.ok(over.y - 210 >= free.top && over.y + 210 <= free.bottom);
+  const edge = cardPlace({ x: 320, y: 600 }, free, 430, 320);
+  assert.equal(edge.x, 303 + 10 + 215, "pushed in from the cards on the left");
+  const tight = cardPlace({ x: 200, y: 400 }, phone, 300, 240);
+  assert.ok(tight.y - 120 >= phone.top && tight.y + 120 <= phone.bottom, "kept between the card and the panel");
+  assert.equal(Closeup.widthFor(1440, free), 430);
+  assert.equal(Closeup.widthFor(390, { left: 0, right: 390 }), 300);
+});
+
+test("each ion has one fixed colour; a species the table does not know wears the neutral tone", async () => {
+  const table = JSON.parse(await readFile(path.join(ROOT, "data", "layers", "ions.json"), "utf8"));
+  const light = ionColours(table, ["Na", "K", "M", "P"], false), dark = ionColours(table, ["Na", "K", "M", "P"], true);
+  assert.deepEqual([...light], [["Na", "#eb6834"], ["K", "#2a78d6"], ["M", "#1baf7a"], ["P", "#6e6a64"]]);
+  assert.deepEqual([...dark], [["Na", "#d95926"], ["K", "#3987e5"], ["M", "#199e70"], ["P", "#b3aea6"]]);
+  // The same ion has the same colour whatever else the run holds, and in whatever order.
+  assert.equal(ionColours(table, ["K", "Ca", "Na"], false).get("Na"), light.get("Na"));
+  assert.equal(ionColours(table, ["K", "Ca", "Na"], false).get("Ca"), table.other.light);
+  // Cl and the generic M share the colour of a definition's mobile negative ion; where a run holds both, the later takes the neutral tone.
+  assert.deepEqual([...ionColours(table, ["Cl", "M"], false)], [["Cl", "#1baf7a"], ["M", "#6e6a64"]]);
+  assert.equal(ionColours(table, ["Cl"], false).get("Cl"), ionColours(table, ["M"], false).get("M"));
+});
+
+test("with a cell chosen, a layer on its membrane is drawn on a close-up: built for that cell, read at the record shown, taken down with the choice", async (t) => {
+  const first = syntheticRun({ membrane: true }), second = syntheticRun({ seed: 2 });
+  const { lens, asked, restore } = lensFor([first, second]);
+  t.after(restore);
+  await lens.ready;
+  lens.activate();
+  lens.seek(1170);
+  assert.deepEqual(rowsOf(lens), ["Height: Off | Membrane voltage* | Generation (synthetic)", "Junctions: Off* | Voltage drops", "Membrane: Off* | Membrane charge", "Arrows: Off* | Push and pull on ions"]);
+  // Switched on with no cell chosen: the records are fetched, nothing is drawn yet, and the switch says how to see it.
+  await lens.setLayer("ion-push-pull", true);
+  assert.deepEqual(asked.filter((name) => name.includes("concentration")).sort(), ["k", "m", "na"].map((ion) => `${first.entry.id}.concentration-${ion}.json`));
+  assert.deepEqual(lens.switch.on, ["voltage-tint", "voltage-relief", "ion-push-pull"]);
+  assert.equal(lens.closeup, null);
+  assert.equal(lens.chrome().legend.layers.hint, "Choose a cell of the sheet: a piece of its membrane is drawn beside it.");
+  assert.match(lens.describe("layers:shown").sections[2].items.at(-1).detail, /No cell is chosen now/);
+  // A cell is chosen: the close-up is built for its membrane.
+  lens.setSelection("cell:40");
+  assert.deepEqual([lens.closeup.cell, lens.closeup.membrane], [40, { index: 40, id: "membrane_40", of: 1 }]);
+  assert.deepEqual([...lens.onMembrane.keys()], ["ion-push-pull"]);
+  assert.equal(lens.chrome().legend.layers.hint, null);
+  const arrows = lens.onMembrane.get("ion-push-pull").mark;
+  const step = lens.player.index, cell = 40;
+  const byHand = (id, bath, valence) => potentialTerms({ inside: lens.run.records.get(`concentration_mM.${id}`).at(step, cell), outside: bath, voltage: lens.run.records.get("vm").at(step, cell), valence, temperature: 310 });
+  assert.deepEqual(arrows.readings.map((term) => [term.id, term.size, term.drives]), [["Na", byHand("Na", 145, 1).size, byHand("Na", 145, 1).drives], ["K", byHand("K", 5, 1).size, byHand("K", 5, 1).drives], ["M", byHand("M", 140, -1).size, byHand("M", 140, -1).drives]]);
+  assert.ok(arrows.full >= Math.max(...arrows.readings.map((term) => term.size.sum)) && Number.isInteger(Math.round(arrows.full * 1e4)), `the full length of an arrow stands for ${arrows.full} V`);
+  // The legend: each ion with its own colour beside its name, and what each of the three arrows is.
+  const keys = lens.chrome().legend.layers.keys;
+  assert.deepEqual(keys.map((item) => item.key), ["ions", "arrow-hollow", "arrow-faint", "arrow-solid", "none"]);
+  assert.deepEqual(keys[0].chips, [{ label: "Na", colour: "#eb6834" }, { label: "K", colour: "#2a78d6" }, { label: "M", colour: "#1baf7a" }]);
+  assert.match(keys[4].text, /^P: not drawn\. This run did not save its concentration in the cell$/);
+  // The close-up says what it is: the membrane and the cell, the time, the run, and what it is worked out from.
+  lens.placeCloseup();
+  const words = lens.labels.shown.filter((label) => String(label.kind).startsWith("closeup")).map((label) => label.text);
+  const caption = words.find((text) => text.startsWith("Membrane of"));
+  // On a wide window it also says, in a line, what the three arrows are.
+  assert.equal(caption, "Membrane of cell_40 at 19 min 30 s\nsynthetic-example, seed 1\nWorked out by the viewer from the saved membrane voltage and ion concentrations, with the composition outside, temperature and valences of the run's definition.\nHollow arrow: the push of the concentration difference. Faint: the pull of the voltage. Solid: what is left.");
+  assert.ok(words.includes("Outside") && words.includes("Inside"));
+  assert.ok(words.some((text) => /^Na\n\d+ mV in$/.test(text)), JSON.stringify(words));
+  assert.ok(words.some((text) => /^K\n(\d+ mV (in|out)|in balance)$/.test(text)));
+  // It stands above its cell, clear of the cards on the left, three tenths of the window wide.
+  const placed = lens.closeup.placed;
+  assert.ok(placed.width === 420 && placed.side === "bottom" && placed.x - placed.width / 2 >= 303 && placed.y + placed.height / 2 < placed.cell.y && placed.y - placed.height / 2 > 56, JSON.stringify(placed));
+  // The cell's panel gives the numbers of the close-up at the record shown, each with the way it drives the ion.
+  const panel = lens.describe("cell:40");
+  assert.equal(panel.sections[0].title, "On its membrane at 19 min 30 s");
+  assert.deepEqual(panel.sections[0].items.map((item) => item.label), ["Na, valence 1", "K, valence 1", "M, valence −1", "P"]);
+  assert.match(panel.sections[0].items[0].lines.join(" | "), /^Push of the concentration difference: [\d.]+ mV into the cell \| Pull of the voltage \(−[\d.]+ mV\): [\d.]+ mV into the cell \| What is left: [\d.]+ mV into the cell$/);
+  assert.match(panel.sections[0].items[2].lines.join(" | "), /Push of the concentration difference: [\d.]+ mV into the cell \| Pull of the voltage \(−[\d.]+ mV\): [\d.]+ mV out of the cell/);
+  assert.match(panel.sections[0].items[3].detail, /Not drawn: this run did not save its concentration in the cell/);
+  // The panel on what the layers show leaves the cell chosen, and says the rule and each of its inputs.
+  lens.setSelection("layers:shown");
+  assert.equal(lens.closeup?.cell, 40, "the close-up stays while the layers' panel is open");
+  const shown = lens.describe("layers:shown");
+  const push = shown.sections.find((section) => section.title === "Arrows: push and pull on ions");
+  assert.match(push.items[1].lines.join(" "), /Worked out by the viewer from the saved membrane voltage and concentration of each ion in the cell, with the concentration of each ion outside, the temperature and each ion's valence as the run's definition gives them: the two terms of the engine's own electrochemical potential difference/);
+  assert.match(push.items[1].lines.join(" "), /This run did not save the concentration of P in the cell: nothing is drawn for it\./);
+  assert.match(push.items.at(-1).detail, /On a piece of the membrane of cell_40/);
+  assert.deepEqual(shown.sections.map((section) => section.title), ["Colour: membrane voltage", "Height: membrane voltage", "Arrows: push and pull on ions", "cell_40: on its membrane at 19 min 30 s", "Not shown for this run"]);
+  // The charge beside it: its own channel, so the two show together.
+  await lens.setLayer("membrane-charge", true);
+  assert.deepEqual([...lens.onMembrane.keys()], ["membrane-charge", "ion-push-pull"], "in the order of the channels: the signs on the membrane, then the arrows");
+  const charge = lens.onMembrane.get("membrane-charge").mark;
+  const voltage = lens.run.records.get("vm").at(step, cell);
+  assert.deepEqual([charge.worth, charge.piece, charge.readings.marks], [1, { width_nm: 100, depth_nm: 25 }, Math.round((Math.abs(1.6e-11 * voltage) / ELEMENTARY / 320) * 0.0025)]);
+  assert.deepEqual(lens.chrome().legend.layers.keys.map((item) => item.key), ["charges", "ions", "arrow-hollow", "arrow-faint", "arrow-solid", "none"]);
+  assert.match(lens.chrome().legend.layers.keys[0].text, /^Each mark is one charge on a piece of membrane 100 nm by 25 nm\. Where a mark sits is illustration; so is the membrane's thickness$/);
+  assert.match(lens.closeup.caption.text, /from the saved membrane voltage and ion concentrations, with the capacitance, area, composition outside, temperature and valences of the run's definition\.\nPlus and minus: each mark is one charge on a piece 100 nm by 25 nm\. Where a mark sits is illustration\.\nHollow arrow: /);
+  // Another cell: the close-up is built anew for it. The time moves: the numbers are those of the new record.
+  lens.setSelection("cell:7");
+  assert.equal(lens.closeup.cell, 7);
+  const before = lens.onMembrane.get("membrane-charge").mark.readings.voltage;
+  lens.seek(0);
+  assert.notEqual(lens.onMembrane.get("membrane-charge").mark.readings.voltage, before);
+  assert.equal(lens.onMembrane.get("membrane-charge").mark.readings.voltage, lens.run.records.get("vm").at(0, 7));
+  assert.match(lens.closeup.caption.text, /^Membrane of cell_7 at 0\.0 s\n/);
+  // No cell chosen: the close-up goes. The layers stay on, waiting for a cell.
+  lens.setSelection(null);
+  assert.equal(lens.closeup, null);
+  assert.equal(lens.onMembrane.size, 0);
+  assert.deepEqual(lens.switch.on, ["voltage-tint", "voltage-relief", "membrane-charge", "ion-push-pull"]);
+  assert.equal(lens.labels.shown.filter((label) => String(label.kind).startsWith("closeup")).length, 0, "its words go with it");
+  // A cell chosen and the layers switched off: the close-up goes too.
+  lens.setSelection("cell:7");
+  assert.equal(lens.closeup.cell, 7);
+  await lens.setLayer("ion-push-pull", false);
+  assert.deepEqual([...lens.onMembrane.keys()], ["membrane-charge"]);
+  await lens.setLayer("membrane-charge", false);
+  assert.equal(lens.closeup, null);
+  // A run that lists no membranes cannot feed them: switched on again, they are dropped when that run is shown.
+  await lens.setLayer("membrane-charge", true);
+  assert.equal(lens.closeup.cell, 7);
+  await lens.show(second.entry.id);
+  assert.equal(lens.closeup, null);
+  assert.deepEqual(lens.chrome().legend.layers.cannot.map((item) => item.id), ["ion-push-pull", "membrane-charge", "ion-traffic"]);
+});
+
+test("at a record the run does not count as valid, nothing is drawn on the membrane and no number is given", async (t) => {
+  const { lens, restore } = lensFor([syntheticRun({ membrane: true, invalidFrom: 1000 })]);
+  t.after(restore);
+  await lens.ready;
+  lens.activate();
+  await lens.setLayers("ion-push-pull,membrane-charge");
+  lens.setSelection("cell:12");
+  lens.seek(500);
+  assert.ok(lens.onMembrane.get("ion-push-pull").mark.readings.length === 3 && lens.onMembrane.get("membrane-charge").mark.readings.marks > 0);
+  lens.seek(1200);
+  assert.equal(lens.onMembrane.get("ion-push-pull").mark.readings, null);
+  assert.equal(lens.onMembrane.get("membrane-charge").mark.readings, null);
+  const numbers = lens.describe("cell:12").sections[0];
+  assert.deepEqual(numbers.items.map((item) => item.label), ["Not a valid record"]);
+  // Strength changes how a sign is drawn, never its numbers.
+  lens.seek(500);
+  const quiet = JSON.stringify([lens.onMembrane.get("ion-push-pull").mark.readings.map((term) => term.size), lens.onMembrane.get("membrane-charge").mark.readings.marks]);
+  lens.setStrength("bold");
+  assert.equal(JSON.stringify([lens.onMembrane.get("ion-push-pull").mark.readings.map((term) => term.size), lens.onMembrane.get("membrane-charge").mark.readings.marks]), quiet);
+});
+
+// ------------------------------------------------------------ beads: their place, before a run feeds them
+
+test("beads have their place: a layer on the motion channel, declared and waiting for a run that saved the amounts carried", async (t) => {
+  const traffic = layer("ion-traffic");
+  assert.deepEqual({ mark: traffic.mark, channels: traffic.channels, quantity: traffic.quantity }, { mark: "beads", channels: ["motion"], quantity: { derivation: "rate", of: ["channel_transferred"] } });
+  assert.deepEqual({ channels: MARKS.beads.channels, lives_on: MARKS.beads.lives_on, surface: MARKS.beads.surface, built: MARKS.beads.built }, { channels: ["motion"], lives_on: ["channel population", "pump population", "membrane"], surface: "membrane", built: false });
+  assert.match(traffic.says, /A bead is a token of a rate, not an ion/);
+  // A run that did not save what crossed its channels: said, as for any layer.
+  const { run } = made({ membrane: true });
+  assert.deepEqual([offer(run, "ion-traffic").ok, offer(run, "ion-traffic").why], [false, NOT_SAVED]);
+  // A run that did: what the rule needs of the record is checked, and then the layer waits for its mark.
+  const carried = (change) => {
+    const { file, entry } = syntheticRun({ membrane: true });
+    const source = file.view.records.find((record) => record.id === "generation");
+    file.view.sets.push({ id: "channel", holds: "channel population", scale: "cell", ids: file.view.sets[0].ids.map((_, index) => `channel_${index}`), geometry: { kind: "on", set: "membrane", index: file.view.sets[0].ids.map((_, index) => index) } });
+    const record = { ...source, id: "channel_transferred", label: "Carried through a channel population (made up)", unit: "fmol", set: "channel", axes: ["time", "channel"], kind: "cumulative", sign: { says: "a positive amount has left the channel's cell for its outside", from: "cell", to: "outside node", by: "made up with the rest" } };
+    change(record);
+    file.view.records.push(record);
+    assert.deepEqual(validateReplay(file), []);
+    return offer(openReplay(file, entry), "ion-traffic");
+  };
+  assert.deepEqual([carried(() => {}).ok, carried(() => {}).why], [false, "This run saved it. The viewer's beads are not built yet: they come with the first run that saved the amounts carried through channels and pumps."]);
+  assert.equal(carried((record) => (record.kind = "level")).why, "This run saved it, but not as a total since the run's start: no rate can be worked out from it.");
+  assert.equal(carried((record) => delete record.sign).why, "This run saved it, but does not say which way it is positive: a bead would have no way to go.");
+  // In the page: named among the layers this run cannot feed, and not to be switched on.
+  const { lens, restore } = lensFor([syntheticRun({ membrane: true })]);
+  t.after(restore);
+  await lens.ready;
+  lens.activate();
+  assert.deepEqual(lens.chrome().legend.layers.cannot.map((item) => [item.id, item.label, item.why]), [["ion-traffic", "Motion: ion traffic", NOT_SAVED]]);
+  await lens.setLayer("ion-traffic", true);
+  assert.ok(!lens.switch.on.includes("ion-traffic"));
+  // The picture's time is a setting of the view: true speed as it opens.
+  assert.equal(lens.slow, 1);
+  lens.setSlow(1000);
+  assert.equal(lens.slow, 1000);
+});
+
+test("a bead is a token of a rate: how many ions one stands for, how many pass a second, and what time the picture keeps", () => {
+  assert.equal(PER_FMOL, 6.02214076e8);
+  assert.equal(ionsASecond(0.03), 0.03 * 6.02214076e8);
+  // The busiest stream of a run passes about ten beads a second: 18 million ions a second at true speed make a bead 2 million ions.
+  assert.equal(BUSIEST, 10);
+  assert.equal(tokenFor(1.8e7), 2_000_000);
+  assert.equal(beadsASecond(1.8e7, 2_000_000), 9);
+  // Slowed, a bead stands for fewer ions; slowed enough, a bead is an ion, and never less.
+  assert.deepEqual([tokenFor(1.8e7, 1000), tokenFor(1.8e7, 1e6), tokenFor(1.8e7, 1e9), tokenFor(3, 1)], [2000, 2, 1, 1]);
+  assert.equal(beadsASecond(1.8e7, 2000, 1000), 9, "the same stream passes as many beads a second at any slow-down");
+  // The rate sets how many pass: a stream a tenth as busy passes a tenth as many, and a rate's sign changes nothing of the count.
+  assert.equal(beadsASecond(-1.8e6, 2_000_000), 0.9);
+  assert.equal(tokenFor(-1.8e7), 2_000_000);
+  for (const busiest of [7, 950, 12_345, 4.4e9]) {
+    const token = tokenFor(busiest), passing = beadsASecond(busiest, token);
+    assert.ok(passing <= BUSIEST + 1e-9 && passing > BUSIEST / 2.5 - 1e-9, `${busiest} ions a second: ${passing} beads of ${token}`);
+    assert.match(String(token), /^[125]0*$/, "a token is 1, 2 or 5 times a power of ten");
+  }
+  // What the legend says of the token and of the time.
+  assert.equal(tokenWords(2_000_000), "One bead is 2,000,000 ions");
+  assert.equal(tokenWords(1), "One bead is one ion");
+  assert.equal(timeWords(1), "True speed: one second here is one second in the cell");
+  assert.equal(timeWords(1000), "Slowed 1,000 times: one second here is one millisecond in the cell");
+  assert.equal(timeWords(1e6), "Slowed 1,000,000 times: one second here is one microsecond in the cell");
+  assert.equal(timeWords(250), "Slowed 250 times: one second here is 4 milliseconds in the cell");
+  assert.deepEqual(MARKS.beads.keys(1.8e7, 1).map((item) => [item.key, item.text]), [
+    ["bead", "One bead is 2,000,000 ions. More beads a second means more ions a second; how fast a bead travels stands for nothing"],
+    ["time", "True speed: one second here is one second in the cell"],
+  ]);
 });

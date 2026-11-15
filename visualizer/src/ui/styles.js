@@ -252,6 +252,27 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .key-wedge-hollow::after { content: ""; position: absolute; inset: 0; background: var(--bg-raised); clip-path: polygon(16% 26%, 68% 50%, 16% 74%); }
 .key-break { width: 12px; height: 12px; margin-left: 4px; background: linear-gradient(to right, var(--fg) 0 4px, transparent 4px 8px, var(--fg) 8px 12px); }
 .key-level { height: 3px; margin-top: 7px; background: var(--fg); border-radius: 2px; }
+.layer-hint { padding: 3px 8px; font-size: 12px; line-height: 1.35; color: var(--fg); }
+.experiments + .eyebrow { margin-top: 10px; }
+.legend-key-chips { grid-template-columns: 1fr; }
+.key-chips { display: inline-flex; gap: 9px; margin-right: 8px; color: var(--fg); font-weight: 500; }
+.key-chip i { display: inline-block; width: 9px; height: 9px; margin-right: 4px; border-radius: 2px; }
+.key-arrow-hollow, .key-arrow-faint, .key-arrow-solid { width: 12px; height: 13px; margin-left: 4px; background: var(--fg); clip-path: polygon(50% 0, 100% 46%, 68% 46%, 68% 100%, 32% 100%, 32% 46%, 0 46%); }
+.key-arrow-faint { opacity: .45; }
+.key-arrow-hollow::after { content: ""; position: absolute; inset: 0; background: var(--bg-raised); clip-path: polygon(50% 20%, 76% 37%, 57% 37%, 57% 100%, 43% 100%, 43% 37%, 24% 37%); }
+.key-charges { width: 20px; height: 13px; }
+.key-charges::before, .key-charges::after { position: absolute; top: -3px; font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--fg); }
+.key-charges::before { content: "+"; left: 1px; }
+.key-charges::after { content: "\\2212"; left: 11px; }
+.key-bead { width: 9px; height: 9px; margin: 3px 0 0 6px; border-radius: 50%; background: var(--fg); }
+.key-time { width: 11px; height: 11px; margin: 2px 0 0 5px; border: 1.5px solid var(--fg); border-radius: 50%; }
+.key-time::after { content: ""; position: absolute; left: 4px; top: 1px; width: 1.5px; height: 5px; background: var(--fg); }
+.label-closeup { font-size: 11.5px; font-weight: 500; line-height: 1.25; color: var(--fg); pointer-events: none; text-align: center; white-space: pre-line; font-variant-numeric: tabular-nums; }
+.label-closeup-ion::first-line { font-weight: 700; }
+.label-closeup-number { font-size: 10.5px; color: var(--muted); }
+.label-closeup-side { font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.label-closeup-caption { font-size: 11px; font-weight: 400; color: var(--muted); white-space: pre-line; }
+.label-closeup-caption::first-line { font-weight: 600; color: var(--fg); }
 
 /* ---------------------------------------------------------------- replay: the timeline */
 cells-timeline { position: absolute; left: 268px; right: 244px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); max-width: 780px; margin-inline: auto; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 7px 12px 8px; }

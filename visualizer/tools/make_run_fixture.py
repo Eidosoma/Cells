@@ -4,7 +4,7 @@
     python3 tools/make_run_fixture.py            # writes tests/fixtures/
     python3 tools/make_run_fixture.py --out DIR  # writes the same files into DIR
 
-Three folders, each in the layout of one kind of evidence folder, on the same 19-cell
+Four folders, each in the layout of one kind of evidence folder, on the same 19-cell
 hexagonal sheet:
 
     run-small/   an E07-v1 folder: runs/<arm>/seedN, a summary with a class, snapshot/
@@ -12,6 +12,9 @@ hexagonal sheet:
                  ran to its planned end, the other records a refusal
     run-cue/     a W1 pilot folder: <study>/run with a definition per world, per-cell
                  voltages and a cue as a schedule; one study records a failure
+    run-history/ two runs in the layout of the engine's shared output paths: one with
+                 trajectory.npz, one with windows.jsonl and a chunk for each window; the
+                 same numbers in both, under the engine's own names for its readouts
 
 and beside them overlay.json and selection.json, which name all three experiments.
 Every number is invented here. No engine ran, and nothing in these folders is evidence.
@@ -39,8 +42,9 @@ FIXTURES = HERE.parent / "tests" / "fixtures"
 OUT = FIXTURES / "run-small"
 ARMS = FIXTURES / "run-arms"
 CUE = FIXTURES / "run-cue"
+HISTORY = FIXTURES / "run-history"
 EXPERIMENT, ARM, SEED = "synthetic-sheet", "synthetic-s1.0", 1
-ARMS_EXPERIMENT, CUE_EXPERIMENT = "synthetic-arms", "synthetic-cue"
+ARMS_EXPERIMENT, CUE_EXPERIMENT, HISTORY_EXPERIMENT = "synthetic-arms", "synthetic-cue", "synthetic-history"
 SYNTHETIC = "synthetic fixture"
 DIRECTIONS = ((1, 0), (0, 1), (-1, 1), (-1, 0), (0, -1), (1, -1))
 RADIUS, DISC_RING = 2, 1
@@ -153,20 +157,58 @@ def turnover_records(cells, pairs, disc, events, marks, fallen=None, lowered=())
     return arrays, times, regular, vm
 
 
-def turnover_definition(cells, junctions, events, newcomer, full=False):
-    """A definition in the shape of a turnover run's. `full` adds what an E07-v1 definition
-    states and the pre-screen fixture leaves out: each cell's membrane and its held bath, the
-    junctions' gate law, and the laws of replacement and junction formation."""
+# What a full definition states of every cell, membrane and bath: invented, like every number here.
+VOLUME_PL, CAPACITANCE_F, AREA_M2, TEMPERATURE_K = 0.75, 1.6e-11, 3.2e-10, 310.0
+SPECIES = (("Na", 1), ("K", 1), ("M", -1), ("P", -1))
+BATH_FMOL = {"Na": 145.0, "K": 5.0, "M": 140.0, "P": 10.0}  # in a bath of 1 pL: mM
+CONC_MM = (8.0, 140.0, 20.0)  # what turnover_records saves for the first three species, in cell 0
+
+
+def turnover_definition(cells, junctions, events, newcomer, full=False, first=None):
+    """A definition in the shape of a turnover run's. `full` writes what a judged run's
+    definition states and the bare fixture leaves out: the model's own name and its laws of
+    replacement, the species with their valences, the temperature, each cell's amounts and
+    charge, its one membrane with a capacitance and an area, and its held bath. The names of
+    the model and of its laws are the engine's, because the adapter states a constant only
+    for a model it knows; the numbers are invented. `first` is the first record's voltage of
+    every cell: a full definition's charges are that voltage times the capacitance, as a real
+    definition's are."""
     model = {
         "id": "synthetic_sheet@0",
-        "cells": [{"id": cell, "volume_pL": 0.75} for cell in cells],
+        "cells": [{"id": cell, "volume_pL": VOLUME_PL} for cell in cells],
         "junctions": junctions,
     }
     if full:
-        model["junctions"] = [dict(junction, gate={"law": "synthetic_junction_gate@0"}) for junction in junctions]
-        model["extracellular"] = [{"id": f"bath_{number}", "reservoir": True, "boundary_potential_V": 0.0} for number in range(len(cells))]
-        model["membranes"] = [{"id": f"membrane_{number}", "inside": cell, "outside": f"bath_{number}"} for number, cell in enumerate(cells)]
-        model["replacement"] = {"law": "synthetic_replacement@0", "junction_formation": {"law": "synthetic_junction_formation@0"}}
+        amounts = lambda number: {**{name: (CONC_MM[row] + 0.01 * number) * VOLUME_PL for row, (name, _) in enumerate(SPECIES[:3])}, "P": 76.0}  # noqa: E731
+        model = {
+            "id": "resolved_pump_replacement@1",
+            "temperature_K": TEMPERATURE_K,
+            "species": [{"id": name, "valence": valence} for name, valence in SPECIES],
+            "cells": [
+                {"id": cell, "volume_pL": VOLUME_PL, "initial_amount_fmol": amounts(number), "fixed_charge_equivalent_fmol": 0.0, "initial_charge_C": first[number] * CAPACITANCE_F}
+                for number, cell in enumerate(cells)
+            ],
+            "extracellular": [
+                {"id": f"bath_{number}", "volume_pL": 1.0, "initial_amount_fmol": dict(BATH_FMOL), "fixed_charge_equivalent_fmol": 0.0, "initial_charge_C": 0.0, "reservoir": True, "boundary_potential_V": 0.0}
+                for number in range(len(cells))
+            ],
+            "membranes": [
+                {"id": f"membrane_{number}", "inside": cell, "outside": f"bath_{number}", "area_m2": AREA_M2, "capacitance_F": CAPACITANCE_F, "permeability_m_per_s": {"Na": 5e-11, "K": 1e-10, "M": 1e-10, "P": 0.0}, "law": "constant_field@1", "pump": None, "calcium_pump": None}
+                for number, cell in enumerate(cells)
+            ],
+            "junctions": [dict(junction, gate={"law": "junction_voltage_relaxation@1"}) for junction in junctions],
+            "faces": [],
+            "closure": {"law": "resolved_capacitor_components_current_continuity@1", "gauge_reference": None},
+            "channels": [],
+            "junction_heat_booking": "trapezoid_nonnegative@1",
+            "replacement": {
+                "law": "scheduled_cell_replacement@1",
+                "inner_model": "resolved_pump_tissue@3",
+                "junction_formation": {"law": "delayed_first_order_junction_formation@1", "initial_abundance": 0.0, "lag_s": LAG_S, "time_constant_s": TAU_S, "gate_at_arrival": "law_open"},
+                "templates": [{"id": "h_isolated", "volume_pL": VOLUME_PL, "fixed_charge_equivalent_fmol": 0.0, "amounts_fmol": amounts(0), "channel_gates": {}, "route_values": {"channel_abundance": {}, "membrane_permeability_m_per_s": {}}}],
+                "template_capacity": 1,
+            },
+        }  # fmt: skip
     return {
         "schema_version": 1,
         "note": f"{SYNTHETIC}: not a Cells definition",
@@ -200,13 +242,13 @@ def write_small(sheet):
     every, end = round(RECORD_S / DT), round(END_S / DT)
     marks = sorted({0} | set(range(every, end + 1, every)) | {step for step, *_ in events} | {end})
     fallen = order[2]  # this copy falls from D to H after its replacement
-    arrays, times, regular, _ = turnover_records(cells, pairs, disc, events, marks, fallen=fallen)
-    count = len(marks)
+    arrays, times, regular, voltages = turnover_records(cells, pairs, disc, events, marks, fallen=fallen)
+    count, first = len(marks), voltages[: len(cells)]
 
     run = OUT / "runs" / ARM / f"seed{SEED}"
     run.mkdir(parents=True, exist_ok=True)
     write_npz(run / "records.npz", arrays)
-    write_json(run / "definition.json", turnover_definition(cells, junctions, events, "donor_copy", full=True), indent=None)
+    write_json(run / "definition.json", turnover_definition(cells, junctions, events, "donor_copy", full=True, first=first), indent=None)
     write_json(
         run / "plan.json",
         {
@@ -321,7 +363,9 @@ def write_arms(sheet):
         folder = ARMS / "arms" / name
         folder.mkdir(parents=True, exist_ok=True)
         write_npz(folder / "records.npz", arrays)
-        write_json(folder / "definition.json", turnover_definition(cells, junctions, events, "isolated_template" if kind == "iso" else "donor_copy"), indent=None)
+        # The arm with isolated newcomers has a full definition, as the real arms have; the other is left bare,
+        # so that the adapter is also met with a definition that states too little.
+        write_json(folder / "definition.json", turnover_definition(cells, junctions, events, "isolated_template" if kind == "iso" else "donor_copy", full=kind == "iso", first=vm[:width]), indent=None)
         write_json(
             folder / "plan.json",
             {
@@ -522,21 +566,119 @@ def write_cue(sheet):
     return entry, {"evidence_folder": CUE.name, "runs": [f"{study}/world-1" for study, _ in written]}
 
 
+def write_history(sheet):
+    """run-history: two runs in the layout of the engine's shared output paths, with the same invented numbers.
+
+    `whole/run` holds trajectory.npz; `windowed/run` holds windows.jsonl and one chunk for each
+    of two windows, the second of which begins with the record the first ended on. Readouts
+    stand under the engine's own names (observed_<field> at observation_times). Arrays are made
+    for two more places than the run uses, as the engine makes them for its capacity.
+    """
+    sites, index, cells, pairs, junctions, disc, neighbours = sheet
+    n, j, spare = len(cells), len(pairs), 2
+    times = [0.0, 10.0, 20.0, 30.0, 40.0]
+    voltage = lambda cell, t: (D_V if cell in disc else H_V) + 1e-5 * cell + 2e-6 * t  # noqa: E731
+    definition = turnover_definition(cells, junctions, [], "donor_copy", full=True, first=[voltage(cell, 0.0) for cell in range(n)])
+    model = definition["model"]
+    # A composition over the pump tissue with no operator: the engine's own names for the model and its inner model.
+    del model["replacement"]
+    model.update({"id": "resolved_pump_composite@1", "inner_model": "resolved_pump_tissue@3", "operators": []})
+    model["channels"] = [{"id": f"kir_{number}", "membrane_id": f"membrane_{number}", "kinetic_law": "kir2p1_mh2@1", "abundance": 1.0} for number in range(n)]
+    definition["experiment"] = {"end_time": times[-1], "observation_times": times}
+    species = [name for name, _ in SPECIES]
+
+    def padded(values_at, width):
+        """One row for each time: `width` values and then the spare places, which hold zero."""
+        return [value for t in times for value in [*values_at(t), *([0.0] * spare)]][: len(times) * (width + spare)]
+
+    amount = lambda row, cell: ((CONC_MM[row] + 0.01 * cell) if row < 3 else 101.0) * VOLUME_PL  # noqa: E731
+    fields = {
+        # A voltage for each membrane; the potential of its cell; the baths are held at 0 V.
+        "membrane_voltage_V": ((n + spare,), padded(lambda t: [voltage(cell, t) for cell in range(n)], n)),
+        "cell_potential_V": ((n + spare,), padded(lambda t: [voltage(cell, t) for cell in range(n)], n)),
+        "extracellular_potential_V": ((n + spare,), padded(lambda t: [0.0] * n, n)),
+        # A junction's voltage is the potential of its sender less that of its receiver, as the engine has it.
+        "junction_voltage_V": ((j + spare,), padded(lambda t: [voltage(cells.index(item["sender"]), t) - voltage(cells.index(item["receiver"]), t) for item in junctions], j)),
+        "junction_gate": ((j + spare,), padded(lambda t: [0.25 if (a in disc) != (b in disc) else 1.0 for a, b in pairs], j)),
+        "pump_cycles": ((n + spare,), padded(lambda t: [0.002 * t * (1 + 0.01 * cell) for cell in range(n)], n)),
+        "membrane_dissipated_energy_pJ": ((n + spare,), padded(lambda t: [0.03 * t for _ in range(n)], n)),
+        "channel_transferred": ((n + spare,), padded(lambda t: [0.004 * t * (1 + 0.02 * cell) for cell in range(n)], n)),
+    }
+    # One row for each species, then the places: amounts in the cell and outside, and what crossed each membrane since the start.
+    for field, value in (
+        ("amount", lambda row, place, t: amount(row, place) + (0.001 * t if row == 1 else 0.0)),
+        ("extracellular_amount", lambda row, place, t: BATH_FMOL[species[row]]),
+        ("membrane_transferred", lambda row, place, t: (0.001, -0.002, 0.0005, 0.0)[row] * t * (1 + 0.01 * place)),
+    ):
+        fields[field] = ((len(species), n + spare), [v for t in times for row in range(len(species)) for v in [*[value(row, place, t) for place in range(n)], *([0.0] * spare)]])
+
+    def arrays(rows):
+        """The .npz arrays for some of the records: observation_times and each observed field."""
+        out = {"observation_times": npy("<f8", (len(rows),), [times[row] for row in rows])}
+        for field, (shape, values) in fields.items():
+            width = 1
+            for size in shape:
+                width *= size
+            out[f"observed_{field}"] = npy("<f8", (len(rows), *shape), [value for row in rows for value in values[row * width : (row + 1) * width]])
+        return out
+
+    summary = {"status": "complete", "start_time": 0.0, "end_time": times[-1], "executed_steps": 8000, "active_cells": n, "note": f"{SYNTHETIC}: no engine ran"}
+    whole = HISTORY / "whole" / "run"
+    whole.mkdir(parents=True, exist_ok=True)
+    write_npz(whole / "trajectory.npz", arrays(range(len(times))))
+    write_json(whole / "resolved_config.json", definition, indent=None)
+    write_json(whole / "summary.json", summary)
+    windowed = HISTORY / "windowed" / "run"
+    (windowed / "chunks").mkdir(parents=True, exist_ok=True)
+    lines = []
+    # Two windows; the second begins with the record the first ended on. A third kept no readouts.
+    for number, rows in enumerate(([0, 1, 2], [2, 3, 4])):
+        write_npz(windowed / "chunks" / f"window-{number:08d}.npz", arrays(rows))
+        lines.append({"kind": "window", "index": number, "start_time": times[rows[0]], "end_time": times[rows[-1]], "accepted_records": 0, "observation_records": len(rows), "path": f"chunks/window-{number:08d}.npz"})
+    lines.append({"kind": "window", "index": 2, "start_time": times[-1], "end_time": times[-1], "accepted_records": 0, "observation_records": 0, "path": None})
+    lines.append({"kind": "checkpoint", "step_index": 8000, "time": times[-1], "path": "snapshots/step-0000008000"})
+    (windowed / "windows.jsonl").write_text("".join(json.dumps(line, sort_keys=True) + "\n" for line in lines), encoding="utf-8")
+    write_json(windowed / "resolved_config.json", definition, indent=None)
+    write_json(windowed / "summary.json", summary)
+    (HISTORY / "README.md").write_text(
+        "# Synthetic runs in the layout of the engine's shared output paths\n\n"
+        "Written by `tools/make_run_fixture.py` for `tests/adapt_run.test.mjs`. Every number is invented: no engine\n"
+        "ran, and nothing here is evidence. Do not edit by hand; change the tool and run it again.\n\n"
+        f"- {n} cells with one membrane and one held bath each, {j} junctions, {n} channel populations, {len(species)} species.\n"
+        f"- {len(times)} observation times. `whole/run` holds them in `trajectory.npz`; `windowed/run` in two window chunks.\n"
+        f"- Arrays are made for {spare} more places than the run uses, as the engine makes them for its capacity.\n"
+    )
+    print(f"wrote {HISTORY.name}: {n} cells, {j} junctions, {len(times)} observation times, as one file and as two windows")
+    entry = {
+        "adapter": "standard-history",
+        "development": True,
+        "label": "Synthetic development run (test fixture)",
+        "plain": "Invented numbers in the layout of the engine's shared output paths. No engine ran; nothing here is evidence.",
+        "sources": [],
+        "engine_entities": [],
+        "outcome": {"judged": False, "status": "A development run: not judged"},
+        "records": {"vm": {"label": "Membrane voltage"}},
+        "parameters": {"execution.dt": {"label": "Time step", "unit": "s"}, "model.inner_model": {"label": "Inner model"}},
+        "readouts": {"status": {"label": "Status"}, "end_time": {"label": "End", "unit": "s"}},
+    }
+    return entry, {"evidence_folder": HISTORY.name, "runs": ["whole/run", "windowed/run"]}
+
+
 def main(argv=None):
-    global FIXTURES, OUT, ARMS, CUE
+    global FIXTURES, OUT, ARMS, CUE, HISTORY
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("--out", default=str(FIXTURES), help="the folder to write the three run folders, overlay.json and selection.json into")
+    parser.add_argument("--out", default=str(FIXTURES), help="the folder to write the four run folders, overlay.json and selection.json into")
     FIXTURES = Path(parser.parse_args(argv).out).resolve()
-    OUT, ARMS, CUE = FIXTURES / "run-small", FIXTURES / "run-arms", FIXTURES / "run-cue"
+    OUT, ARMS, CUE, HISTORY = FIXTURES / "run-small", FIXTURES / "run-arms", FIXTURES / "run-cue", FIXTURES / "run-history"
     sheet = the_sheet()
-    experiments, selection = {}, {"note": f"{SYNTHETIC}: the three synthetic experiments, each with the folder beside this file that holds it."}
-    for identifier, (entry, selected) in ((EXPERIMENT, write_small(sheet)), (ARMS_EXPERIMENT, write_arms(sheet)), (CUE_EXPERIMENT, write_cue(sheet))):
+    experiments, selection = {}, {"note": f"{SYNTHETIC}: the four synthetic experiments, each with the folder beside this file that holds it."}
+    for identifier, (entry, selected) in ((EXPERIMENT, write_small(sheet)), (ARMS_EXPERIMENT, write_arms(sheet)), (CUE_EXPERIMENT, write_cue(sheet)), (HISTORY_EXPERIMENT, write_history(sheet))):
         experiments[identifier] = entry
         selection[identifier] = selected
     write_json(FIXTURES / "overlay.json", {"format": "cells.visualizer.replay_overlay@1", "note": f"{SYNTHETIC}: labels for the adapter's test only.", "experiments": experiments})
     write_json(FIXTURES / "selection.json", selection)
-    size = sum(path.stat().st_size for folder in (OUT, ARMS, CUE) for path in folder.rglob("*") if path.is_file())
-    print(f"wrote overlay.json and selection.json; {size:,} bytes in the three folders of {FIXTURES.name}/")
+    size = sum(path.stat().st_size for folder in (OUT, ARMS, CUE, HISTORY) for path in folder.rglob("*") if path.is_file())
+    print(f"wrote overlay.json and selection.json; {size:,} bytes in the four folders of {FIXTURES.name}/")
 
 
 if __name__ == "__main__":

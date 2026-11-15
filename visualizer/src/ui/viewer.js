@@ -861,24 +861,23 @@ class CellsViewer extends HTMLElement {
           ]
         : [];
     return [
-      h("p", { class: "eyebrow" }, experiments.length > 1 ? "Experiments" : "Experiment"),
-      // Several experiments: a row each, with what the record says it found. Many: a list to choose from.
-      experiments.length > 6
-        ? chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}`]), experiments.find((item) => item.active)?.first)
-        : experiments.length > 1
-          ? h(
-              "div",
-              { class: "experiments", role: "group", "aria-label": "Experiments" },
-              experiments.map((item) =>
-                h(
-                  "button",
-                  { class: "exp-row", type: "button", "aria-pressed": String(item.active), "aria-label": `${item.label}. ${item.outcome?.spoken || ""}`, onclick: () => pick(item.first) },
-                  h("span", { class: "exp-name" }, item.label),
-                  h("span", { class: "exp-found" }, found(item.outcome))
-                )
-              )
-            )
-          : h("p", { class: "card-title" }, heading),
+      // Development runs stand under a heading of their own, apart from the experiments: a catalogue entry says `development`.
+      ...(() => {
+        const row = (item) =>
+          h(
+            "button",
+            { class: "exp-row", type: "button", "aria-pressed": String(item.active), "aria-label": `${item.label}. ${item.outcome?.spoken || ""}`, onclick: () => pick(item.first) },
+            h("span", { class: "exp-name" }, item.label),
+            h("span", { class: "exp-found" }, found(item.outcome))
+          );
+        const judged = experiments.filter((item) => !item.development), development = experiments.filter((item) => item.development);
+        const group = (list, label) => [h("p", { class: "eyebrow" }, label), h("div", { class: "experiments", role: "group", "aria-label": label }, list.map(row))];
+        // Many: a list to choose from, with a development run named as one.
+        if (experiments.length > 6) return [h("p", { class: "eyebrow" }, "Experiments"), chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.development ? "Development run: " : ""}${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}`]), experiments.find((item) => item.active)?.first)];
+        // One: its name. Several: a row each, with what the record says it found.
+        if (experiments.length <= 1) return [h("p", { class: "eyebrow" }, development.length ? "Development run" : "Experiment"), h("p", { class: "card-title" }, heading)];
+        return [...(judged.length ? group(judged, judged.length > 1 ? "Experiments" : "Experiment") : []), ...(development.length ? group(development, development.length > 1 ? "Development runs" : "Development run") : [])];
+      })(),
       // The first sentence says what the experiment asks; the rest is a click away.
       ...(() => {
         const parts = /^(.*?[.?!])\s+(.+)$/s.exec(text || "");

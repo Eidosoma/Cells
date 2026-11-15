@@ -122,7 +122,9 @@ test("every array lies inside the payload, on a multiple of four bytes, with its
     assert.equal(item.offset % 4, 0, `${item.id}: offset ${item.offset}`);
     const bytes = item.shape.reduce((a, b) => a * b, 1) * Type.BYTES_PER_ELEMENT;
     assert.ok(item.offset + bytes <= payloadOf(item).length, `${item.id} runs past the payload`);
-    spans.push([item.offset, item.offset + bytes, item.id, item.part || ""]);
+    // A record declared the same as another (a membrane's voltage, where each cell has one membrane) is that array, not a second one.
+    if (item.same_as) assert.deepEqual([item.offset, item.dtype, item.shape], [record(item.same_as).offset, record(item.same_as).dtype, record(item.same_as).shape], `${item.id} is the array of ${item.same_as}`);
+    else spans.push([item.offset, item.offset + bytes, item.id, item.part || ""]);
     for (const key of ["id", "label", "unit", "axes", "dtype", "offset", "shape", "range"]) assert.ok(key in item, `${item.id} lacks ${key}`);
     assert.equal(item.axes.length, item.shape.length, `${item.id}: one axis per dimension`);
 
@@ -137,11 +139,12 @@ test("every array lies inside the payload, on a multiple of four bytes, with its
 });
 
 test("a record in a file of its own: the file is the run's, of the stated length, and listed in the catalogue", () => {
-  assert.deepEqual(view.parts, [{ id: "junction-gate", label: "Each junction's gate", file: `runs/${RUN_ID}.junction-gate.json`, byte_length: partPayloads["junction-gate"].length }]);
+  assert.deepEqual(view.parts[0], { id: "junction-gate", label: "Each junction's gate", file: `runs/${RUN_ID}.junction-gate.json`, byte_length: partPayloads["junction-gate"].length });
+  assert.deepEqual(view.parts.map((part) => part.id), ["junction-gate", "concentration-na", "concentration-k", "concentration-m"]);
   const file = partFiles["junction-gate"];
   assert.deepEqual({ format: file.format, run: file.run, part: file.part, encoding: file.payload.encoding, byte_length: file.payload.byte_length }, { format: "cells.visualizer.replay_part@1", run: RUN_ID, part: "junction-gate", encoding: "base64", byte_length: partPayloads["junction-gate"].length });
   const gate = record("junction_gate");
-  assert.deepEqual({ part: gate.part, set: gate.set, layer: gate.layer, kind: gate.kind, owner: gate.owner, quantised: gate.quantised, offset: gate.offset }, { part: "junction-gate", set: "junction", layer: "junctions", kind: "level", owner: "synthetic_junction_gate@0", quantised: true, offset: 0 });
+  assert.deepEqual({ part: gate.part, set: gate.set, layer: gate.layer, kind: gate.kind, owner: gate.owner, quantised: gate.quantised, offset: gate.offset }, { part: "junction-gate", set: "junction", layer: "junctions", kind: "level", owner: "junction_voltage_relaxation@1", quantised: true, offset: 0 });
   assert.deepEqual(gate.shape, record("junction_abundance").shape);
   // The fixture shuts the gate of every junction across the disc's edge to a quarter; the others are open.
   const stored = [...values(gate)].map((value) => value * gate.scale);
@@ -149,21 +152,24 @@ test("a record in a file of its own: the file is the run's, of the stated length
   const saved = fixtureJson("runs", RUN, "definition.json").model.junctions.length;
   assert.equal(stored.length, view.records.find((item) => item.id === "t").shape[0] * saved);
   // The record of the times, and everything the sheet opens with, stay in the run's own file.
-  for (const id of ["t", "vm", "generation", "junction_abundance", "regular", "valid"]) assert.equal(record(id).part, undefined, `${id} is in the run's own file`);
-  // The catalogue lists the file with its size, so that it can be published without opening the run.
+  for (const id of ["t", "vm", "membrane_voltage_V", "generation", "junction_abundance", "regular", "valid"]) assert.equal(record(id).part, undefined, `${id} is in the run's own file`);
+  // The catalogue lists every file with its size, so that it can be published without opening the run.
   const [row] = index.runs;
-  assert.deepEqual(row.parts, [{ id: "junction-gate", file: `runs/${RUN_ID}.junction-gate.json`, bytes: statSync(path.join(out, `${RUN_ID}.junction-gate.json`)).size }]);
-  assert.ok(row.parts[0].bytes < 1_000_000);
+  assert.deepEqual(row.parts, view.parts.map((part) => ({ id: part.id, file: `runs/${RUN_ID}.${part.id}.json`, bytes: statSync(path.join(out, `${RUN_ID}.${part.id}.json`)).size })));
+  for (const part of row.parts) assert.ok(part.bytes < 1_000_000, part.id);
   assert.ok(view.layers.some((layer) => layer.id === "junctions"), "the gate's layer is listed");
   assert.match(view.derivation.join(" "), /Each junction's gate .* in a file of its own beside this one/);
 });
 
 test("what a quantity layer needs of a record is stated only where the run's files state it", () => {
   // Kind and owner: from the driver and from the definition's own names.
-  assert.deepEqual(["vm", "generation", "junction_abundance"].map((id) => [record(id).kind, record(id).owner]), [["level", "synthetic_sheet@0"], ["level", "synthetic_replacement@0"], ["level", "synthetic_junction_formation@0"]]);
-  // The fixture's definition states no sign for the voltage, so none is written.
-  for (const item of view.records) assert.equal(item.sign, undefined, `${item.id}: a sign the run does not state`);
-  assert.match(view.derivation.join(" "), /Which way the membrane voltage is positive is stated by neither/);
+  assert.deepEqual(["vm", "generation", "junction_abundance"].map((id) => [record(id).kind, record(id).owner]), [["level", "resolved_pump_replacement@1"], ["level", "scheduled_cell_replacement@1"], ["level", "delayed_first_order_junction_formation@1"]]);
+  // No record but the voltage is given a sign; the voltage's is the adapter's reading of the run's files, and says so.
+  for (const item of view.records) if (!["vm", "membrane_voltage_V"].includes(item.id)) assert.equal(item.sign, undefined, `${item.id}: a sign the run does not state`);
+  assert.deepEqual({ high: record("vm").sign.high, says: record("vm").sign.says }, { high: "inside", says: "a positive voltage means the cell's inside is positive against its outside" });
+  assert.match(record("vm").sign.by, /the viewer's reading of the run's own files, not a declaration by the run.*saved voltage equals the charge its definition gives the cell, over the capacitance/);
+  assert.doesNotMatch(record("vm").sign.by, /confirmed by the owner/, "this sign is not one the owner of the engine's core confirmed");
+  assert.match(view.derivation.join(" "), /Which way the membrane voltage is positive is not declared by the run\. It is read from the run's own files/);
   // The records with no set are no quantity of a layer.
   for (const id of ["t", "regular", "valid"]) assert.deepEqual([record(id).kind, record(id).owner], [undefined, undefined]);
   // Every cell's surroundings share one potential: each membrane's outside is a held bath at 0 V in the definition.
@@ -216,6 +222,160 @@ test("where the definition does not say that the surroundings share one potentia
     assert.equal(result.status, 0, `${name}: ${result.stderr}`);
     assert.equal(readJson(path.join(target, `${RUN_ID}.json`)).view.surroundings, undefined, `${name}: the view still says the surroundings share one potential`);
   }
+});
+
+/** Adapt a copy of the fixture whose definition a test has changed (and its plan, with `plan`), and give back the run's view. */
+function viewAfter(name, damage, plan = null) {
+  const copy = copyOfFixture(name);
+  const file = path.join(copy, "runs", RUN, "definition.json");
+  const definition = readJson(file);
+  damage(definition);
+  writeFileSync(file, JSON.stringify(definition));
+  if (plan) {
+    const planned = readJson(path.join(copy, "runs", RUN, "plan.json"));
+    plan(planned);
+    writeFileSync(path.join(copy, "runs", RUN, "plan.json"), JSON.stringify(planned));
+  }
+  const target = path.join(copy, "out");
+  const result = adapt(copy, target);
+  assert.equal(result.status, 0, `${name}: ${result.stderr}`);
+  return readJson(path.join(target, `${RUN_ID}.json`)).view;
+}
+
+test("each ion's concentration is a record of its own, in a file of its own, as the run saved it", () => {
+  const definition = fixtureJson("runs", RUN, "definition.json");
+  const cells = definition.model.cells.length, times = record("t").shape[0];
+  // The fixture saves 8, 140 and 20 mM for its first three species, a hundredth more for each cell along.
+  for (const [species, first] of [["Na", 8.0], ["K", 140.0], ["M", 20.0]]) {
+    const item = record(`concentration_mM.${species}`);
+    assert.deepEqual(
+      { unit: item.unit, set: item.set, layer: item.layer, kind: item.kind, owner: item.owner, field: item.field, species: item.species, part: item.part, dtype: item.dtype, axes: item.axes, shape: item.shape, quantised: item.quantised },
+      { unit: "mM", set: "cell", layer: "ions", kind: "level", owner: "resolved_pump_replacement@1", field: "concentration_mM", species, part: `concentration-${species.toLowerCase()}`, dtype: "float32", axes: ["time", "cell"], shape: [times, cells], quantised: undefined }
+    );
+    const stored = values(item);
+    for (const step of [0, times - 1]) for (const cell of [0, 7, cells - 1]) assert.equal(stored[step * cells + cell], Math.fround(first + 0.01 * cell), `${species} at record ${step}, cell ${cell}`);
+  }
+  // The fourth species was not saved: no record is made up for it, and the view says so.
+  assert.equal(record("concentration_mM.P"), undefined);
+  const said = view.derivation.join(" ");
+  assert.match(said, /takes the first 3 species of the definition, in its order \(Na, K, M\), each cell's amount over its volume, in mM/);
+  assert.match(said, /That is checked: at the first record every value equals the definition's own amount over its own volume/);
+  assert.match(said, /The run did not save the concentration of P\./);
+  assert.ok(view.layers.some((layer) => layer.id === "ions"), "the concentrations' layer is listed");
+});
+
+test("the membranes, their outsides and the species are sets of the view; a membrane's voltage is the cell's own array", () => {
+  const definition = fixtureJson("runs", RUN, "definition.json");
+  const cells = set("cell").ids.length;
+  assert.deepEqual(set("species").ids, ["Na", "K", "M", "P"]);
+  assert.deepEqual({ holds: set("outside").holds, ids: set("outside").ids }, { holds: "outside node", ids: definition.model.extracellular.map((node) => node.id) });
+  const membranes = set("membrane");
+  assert.deepEqual(membranes.ids, definition.model.membranes.map((membrane) => membrane.id));
+  // Each membrane lies on the cell its definition names as its inside, and faces the bath it names as its outside.
+  assert.deepEqual(membranes.geometry, { kind: "on", set: "cell", index: definition.model.membranes.map((membrane) => set("cell").ids.indexOf(membrane.inside)) });
+  assert.deepEqual(membranes.outside, { set: "outside", index: definition.model.membranes.map((membrane) => set("outside").ids.indexOf(membrane.outside)) });
+  assert.deepEqual(membranes.geometry.index, Array.from({ length: cells }, (_, index) => index), "one membrane for each cell, in the cells' order");
+  const own = record("membrane_voltage_V"), saved = record("vm");
+  assert.deepEqual({ set: own.set, axes: own.axes, same_as: own.same_as, offset: own.offset, shape: own.shape, sign: own.sign, marks: own.marks }, { set: "membrane", axes: ["time", "membrane"], same_as: "vm", offset: saved.offset, shape: saved.shape, sign: saved.sign, marks: undefined });
+  assert.match(view.derivation.join(" "), /The run saved one voltage per cell\. Its definition gives every cell exactly one membrane, in the cells' order.*no array is added/);
+  assert.deepEqual(validateReplay(replay), []);
+});
+
+test("the constants of the definition are stated with the definition's own numbers, each with why nothing changes it", () => {
+  const { model } = fixtureJson("runs", RUN, "definition.json");
+  const constant = (id) => view.constants.find((item) => item.id === id);
+  assert.deepEqual(view.constants.map((item) => item.id), ["temperature", "valence", "volume", "extracellular_volume", "membrane_capacitance", "membrane_area", "extracellular_concentration_mM"]);
+  assert.deepEqual({ unit: constant("temperature").unit, axes: constant("temperature").axes, values: constant("temperature").values }, { unit: "K", axes: [], values: model.temperature_K });
+  assert.deepEqual({ axes: constant("valence").axes, values: constant("valence").values }, { axes: ["species"], values: model.species.map((item) => item.valence) });
+  assert.deepEqual({ unit: constant("volume").unit, set: constant("volume").set, values: constant("volume").values }, { unit: "pL", set: "cell", values: model.cells.map((cell) => cell.volume_pL) });
+  assert.deepEqual({ unit: constant("membrane_capacitance").unit, set: constant("membrane_capacitance").set, axes: constant("membrane_capacitance").axes, values: constant("membrane_capacitance").values }, { unit: "F", set: "membrane", axes: ["membrane"], values: model.membranes.map((membrane) => membrane.capacitance_F) });
+  assert.deepEqual({ unit: constant("membrane_area").unit, values: constant("membrane_area").values }, { unit: "m2", values: model.membranes.map((membrane) => membrane.area_m2) });
+  // The composition outside: each held bath's declared amounts over its declared volume, for every species.
+  const outside = constant("extracellular_concentration_mM");
+  assert.deepEqual({ unit: outside.unit, set: outside.set, axes: outside.axes }, { unit: "mM", set: "outside", axes: ["species", "outside"] });
+  assert.deepEqual(outside.values, model.species.map((item) => model.extracellular.map((node) => node.initial_amount_fmol[item.id] / node.volume_pL)));
+  assert.deepEqual(outside.values.map((row) => row[0]), [145, 5, 140, 10]);
+  for (const item of view.constants) {
+    assert.equal(item.from, "definition.json", item.id);
+    assert.ok(item.says.length > 30, `${item.id} says why it is a constant of this run`);
+  }
+  assert.match(constant("membrane_capacitance").says, /a newcomer's template names no capacitance and no area \(checked on the definition\), and no control of the run changes one/);
+  assert.match(constant("volume").says, /A replacement keeps the volume of its place/);
+  assert.match(outside.says, /held bath.*A held bath keeps its composition, and the run schedules no control of a bath/);
+  assert.equal(view.unstated, undefined, "nothing is left unstated for this run");
+  assert.match(view.derivation.join(" "), /Named constants \(temperature, valence, volume, extracellular_volume, membrane_capacitance, membrane_area, extracellular_concentration_mM\) are the definition's own numbers/);
+});
+
+test("a definition the adapter does not know everything of states no constant, and says why", () => {
+  const cases = [
+    ["another model", (definition) => (definition.model.id = "some_other_tissue@4"), /the run's model \(some_other_tissue@4\) is not one whose operators the viewer knows/],
+    ["a part of the model it does not know", (definition) => (definition.model.water = { law: "osmotic_water@1" }), /the run's model has a part the viewer does not know \(water\)/],
+    ["a part of the definition it does not know", (definition) => (definition.operators = [{ law: "bath_schedule@1" }]), /the run's definition has a part the viewer does not know \(operators\)/],
+    ["a control it does not know", (definition) => (definition.experiment.bath_controls = []), /the run schedules a control the viewer does not know \(bath_controls\)/],
+    ["a control that schedules more than an availability", (definition) => (definition.experiment.membrane_controls = [{ membrane_id: "membrane_0", schedule: [{ time: 0, availability: 1, capacitance_F: 2e-11 }] }]), /a control of the run \(membrane_controls\) schedules more than an availability/],
+    ["another replacement law", (definition) => (definition.model.replacement.law = "scheduled_cell_division@1"), /replaces cells by a law the viewer does not know \(law: scheduled_cell_division@1\)/],
+    ["another inner model", (definition) => (definition.model.replacement.inner_model = "resolved_pump_water@1"), /a law the viewer does not know \(inner model: resolved_pump_water@1\)/],
+    ["a template that names a capacitance", (definition) => (definition.model.replacement.templates[0].capacitance_F = 3e-11), /a newcomer's template gives a value the viewer does not know \(capacitance_F\)/],
+    ["a template whose route values name an area", (definition) => (definition.model.replacement.templates[0].route_values.membrane_area_m2 = 1e-10), /a newcomer's template gives a value the viewer does not know \(membrane_area_m2\)/],
+    ["a replacement that names a volume", (definition) => (definition.experiment.replacement_events[0].volume_pL = 0.9), /a replacement gives a value the viewer does not know \(volume_pL\)/],
+    // The first replacement takes a template in place of a donor (in the plan too), and the template has another volume than its place.
+    ["a template of another volume than its place", (definition) => {
+      definition.model.replacement.templates[0].volume_pL = 0.9;
+      Object.assign(definition.experiment.replacement_events[0], { newcomer: "isolated_template", template: "h_isolated", donor: null });
+    }, /a newcomer's template has another volume than the cell it replaces/, (plan) => (plan.events[0][2] = null)],
+    ["a membrane with a value it does not know", (definition) => (definition.model.membranes[2].capacitance_schedule = []), /gives its membranes a value the viewer does not know \(capacitance_schedule\)/],
+  ];
+  for (const [name, damage, why, plan] of cases) {
+    const changed = viewAfter(`constants-${name.replace(/[^a-z]+/g, "-")}`, damage, plan);
+    assert.equal(changed.constants, undefined, `${name}: a constant is still stated`);
+    assert.deepEqual(changed.unstated.map((item) => item.id), ["temperature", "valence", "volume", "extracellular_volume", "membrane_capacitance", "membrane_area", "extracellular_concentration_mM"], name);
+    for (const item of changed.unstated) assert.match(item.why, why, `${name}: ${item.id}`);
+    assert.match(changed.derivation.join(" "), /Not stated as constants: temperature, valence, volume, extracellular_volume, membrane_capacitance, membrane_area, extracellular_concentration_mM\./, name);
+    assert.deepEqual(validateReplay({ format: "cells.visualizer.replay@1", view: changed, payload: replay.payload }).filter((problem) => !/runs past/.test(problem)), [], name);
+  }
+});
+
+test("a value the definition does not give is left out by itself, and the others stay", () => {
+  const stated = (changed) => (changed.constants || []).map((item) => item.id);
+  const left = (changed) => Object.fromEntries((changed.unstated || []).map((item) => [item.id, item.why]));
+  // A bath that is not held: its composition changes during the run and was not saved.
+  let changed = viewAfter("constant-bath-not-held", (definition) => (definition.model.extracellular[4].reservoir = false));
+  assert.deepEqual(stated(changed), ["temperature", "valence", "volume", "extracellular_volume", "membrane_capacitance", "membrane_area"]);
+  assert.match(left(changed).extracellular_concentration_mM, /not every membrane's outside is a held bath with a declared composition, and the run did not save the composition outside over time/);
+  // A membrane with no capacitance in the definition.
+  changed = viewAfter("constant-no-capacitance", (definition) => delete definition.model.membranes[3].capacitance_F);
+  assert.deepEqual(stated(changed), ["temperature", "valence", "volume", "extracellular_volume", "membrane_area", "extracellular_concentration_mM"]);
+  assert.match(left(changed).membrane_capacitance, /does not give every membrane its capacitance/);
+  // No temperature.
+  changed = viewAfter("constant-no-temperature", (definition) => delete definition.model.temperature_K);
+  assert.ok(!stated(changed).includes("temperature") && /gives no temperature/.test(left(changed).temperature));
+});
+
+test("the voltage's sign is said only where every cell's first voltage is its declared charge over its membrane's capacitance", () => {
+  const signs = (changed) => changed.records.filter((item) => item.sign).map((item) => item.id);
+  // One cell whose declared charge does not give its first saved voltage: the reading does not hold, and nothing is said.
+  let changed = viewAfter("sign-one-charge-off", (definition) => (definition.model.cells[5].initial_charge_C *= 1.001));
+  assert.deepEqual(signs(changed), []);
+  assert.match(changed.derivation.join(" "), /Which way the membrane voltage is positive is stated by neither, so it is shown as a level and given no direction/);
+  assert.ok(changed.records.some((item) => item.id === "membrane_voltage_V"), "the membranes' own declaration of the voltage does not rest on the sign");
+  // A charge of the other sign, a missing capacitance, a cell with two membranes: the same.
+  changed = viewAfter("sign-other-way", (definition) => (definition.model.cells[0].initial_charge_C *= -1));
+  assert.deepEqual(signs(changed), []);
+  changed = viewAfter("sign-no-capacitance", (definition) => delete definition.model.membranes[0].capacitance_F);
+  assert.deepEqual(signs(changed), []);
+  changed = viewAfter("sign-two-membranes", (definition) => definition.model.membranes.push({ ...definition.model.membranes[0], id: "membrane_extra" }));
+  assert.deepEqual(signs(changed), []);
+  assert.ok(!changed.records.some((item) => item.id === "membrane_voltage_V"), "with two membranes on a cell, the cell's saved voltage is not declared as a membrane's");
+  assert.equal(changed.sets.find((item) => item.id === "membrane").ids.length, set("cell").ids.length + 1);
+});
+
+test("concentrations whose species and unit the run's files do not show are left out, and said to be", () => {
+  // The definition's amounts no longer give the first saved concentrations: which row is which species is not shown.
+  const changed = viewAfter("concentration-not-shown", (definition) => (definition.model.cells[2].initial_amount_fmol.K *= 1.5));
+  assert.ok(!changed.records.some((item) => item.field === "concentration_mM"));
+  assert.deepEqual(changed.parts.map((part) => part.id), ["junction-gate"]);
+  assert.ok(!changed.layers.some((layer) => layer.id === "ions"));
+  assert.match(changed.derivation.join(" "), /records\.npz holds concentrations, but the run's files do not show which species and which unit they are.*They are left out/);
 });
 
 test("times, sets and records agree with one another", () => {
@@ -393,7 +553,8 @@ test("the fixtures kept in the checkout are the ones the tool writes", (t) => {
 // ---------------------------------------------------------------- several experiments
 
 const SHARED = ["--overlay", path.join(FIXTURES, "overlay.json"), "--selection", path.join(FIXTURES, "selection.json")];
-const ARMS = "synthetic-arms", CUE = "synthetic-cue";
+const ARMS = "synthetic-arms", CUE = "synthetic-cue", HISTORY = "synthetic-history";
+const WHOLE = "synthetic-history--whole-run", WINDOWED = "synthetic-history--windowed-run";
 const ISO = "synthetic-arms--synthetic-iso-s1.0", DONOR = "synthetic-arms--synthetic-donor-s1.0";
 const WRITTEN = "synthetic-cue--study-a-world-1--seed3", REFUSED = "synthetic-cue--study-b-world-1--seed3";
 const PATHS = /\/home\/|\/mnt\/|\/Users\/|\/tmp\/|[A-Za-z]:\\\\/;
@@ -417,8 +578,8 @@ const curated = readJson(path.join(FIXTURES, "overlay.json")).experiments;
 
 test("one call adapts every experiment of the selection into one catalogue", () => {
   assert.equal(catalogue.format, "cells.visualizer.replay_index@1");
-  assert.deepEqual(catalogue.experiments.map((item) => item.id), [EXPERIMENT, ARMS, CUE], "experiments stand in the overlay's order");
-  assert.deepEqual(catalogue.runs.map((item) => item.id), [RUN_ID, ISO, DONOR, WRITTEN, REFUSED], "each experiment's runs follow, in the selection's order");
+  assert.deepEqual(catalogue.experiments.map((item) => item.id), [EXPERIMENT, ARMS, CUE, HISTORY], "experiments stand in the overlay's order");
+  assert.deepEqual(catalogue.runs.map((item) => item.id), [RUN_ID, ISO, DONOR, WRITTEN, REFUSED, WHOLE, WINDOWED], "each experiment's runs follow, in the selection's order");
   for (const experiment of catalogue.experiments) {
     const { adapter, ...entry } = curated[experiment.id];
     assert.deepEqual(experiment, { id: experiment.id, ...entry }, `${experiment.id}: the catalogue copies the overlay's entry, with its outcome and stops`);
@@ -455,6 +616,8 @@ test("adapting one experiment leaves the others' entries and files in place", ()
 
   const third = tool("--evidence", FIXTURES, "--experiment", CUE, ...SHARED, "--out", steps);
   assert.equal(third.status, 0, third.stderr);
+  const fourth = tool("--evidence", FIXTURES, "--experiment", HISTORY, ...SHARED, "--out", steps);
+  assert.equal(fourth.status, 0, fourth.stderr);
   const one = filesOf(all), several = filesOf(steps);
   assert.deepEqual(Object.keys(several), Object.keys(one));
   for (const name of Object.keys(one)) assert.ok(several[name].equals(one[name]), `${name} differs between one call and three`);
@@ -462,7 +625,7 @@ test("adapting one experiment leaves the others' entries and files in place", ()
   // An experiment adapted again has exactly the runs of that call; a file it no longer lists stays on disk.
   const again = tool("--experiment", ARMS, "--root", path.join(FIXTURES, "run-arms"), "--run", "synthetic-iso-s1.0", ...SHARED, "--out", steps);
   assert.equal(again.status, 0, again.stderr);
-  assert.deepEqual(readJson(path.join(steps, "index.json")).runs.map((item) => item.id), [RUN_ID, ISO, WRITTEN, REFUSED]);
+  assert.deepEqual(readJson(path.join(steps, "index.json")).runs.map((item) => item.id), [RUN_ID, ISO, WRITTEN, REFUSED, WHOLE, WINDOWED]);
   assert.ok(existsSync(path.join(steps, `${DONOR}.json`)), "nothing is deleted");
   assert.match(again.stderr, /not in the catalogue and were left in place/);
 });
@@ -473,7 +636,7 @@ test("a kept run whose file is gone is taken out of the catalogue, and said to b
   rmSync(path.join(copy, `${DONOR}.json`));
   const result = tool("--experiment", EXPERIMENT, "--root", FIXTURE, ...SHARED, "--out", copy);
   assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(readJson(path.join(copy, "index.json")).runs.map((item) => item.id), [RUN_ID, ISO, WRITTEN, REFUSED]);
+  assert.deepEqual(readJson(path.join(copy, "index.json")).runs.map((item) => item.id), [RUN_ID, ISO, WRITTEN, REFUSED, WHOLE, WINDOWED]);
   assert.match(result.stderr, /synthetic-arms have no file/);
 });
 
@@ -505,6 +668,162 @@ test("what the call is asked for is checked before any run is read", () => {
 });
 
 // ---------------------------------------------------------------- a run with no seed and no class
+
+/** The values of one record of an opened run, whether they lie in the run's own file or in one of its parts. */
+function valuesOf(folder, opened, name) {
+  const item = opened.record(name);
+  const source = item.part ? readJson(path.join(folder, `${opened.view.run.id}.${item.part}.json`)).payload.data : opened.file.payload.data;
+  const bytes = Buffer.from(source, "base64");
+  const count = item.shape.reduce((a, b) => a * b, 1);
+  return new Float32Array(bytes.buffer.slice(bytes.byteOffset + item.offset, bytes.byteOffset + item.offset + count * 4));
+}
+
+test("a run written by the engine's shared output path is read under the engine's own names, one file for each field", () => {
+  const whole = open(all, WHOLE);
+  const definition = readJson(path.join(FIXTURES, "run-history", "whole", "run", "resolved_config.json"));
+  const cells = definition.model.cells.length, junctions = definition.model.junctions.length;
+  assert.deepEqual(validateReplay(whole.file), []);
+  assert.deepEqual(whole.view.sets.map((item) => [item.id, item.ids.length, item.holds]), [["cell", cells, undefined], ["junction", junctions, undefined], ["species", 4, undefined], ["outside", cells, "outside node"], ["membrane", cells, undefined], ["channel", cells, "channel population"]]);
+  assert.deepEqual(whole.view.sets.at(-1).geometry, { kind: "on", set: "membrane", index: Array.from({ length: cells }, (_, index) => index) });
+  // The records are the engine's readouts, by its names; one for each species where a field has a row for each.
+  assert.deepEqual(whole.view.records.map((item) => item.id), [
+    "t", "membrane_voltage_V", "vm", "cell_potential_V", "extracellular_potential_V", "junction_voltage_V", "junction_gate",
+    "amount.Na", "amount.K", "amount.M", "amount.P", "extracellular_amount.Na", "extracellular_amount.K", "extracellular_amount.M", "extracellular_amount.P",
+    "membrane_transferred.Na", "membrane_transferred.K", "membrane_transferred.M", "membrane_transferred.P", "channel_transferred", "pump_cycles", "membrane_dissipated_energy_pJ",
+  ]);
+  // What the sheet opens with is in the run's own file; every other field is in a file of its own.
+  assert.deepEqual(whole.view.records.filter((item) => !item.part).map((item) => item.id), ["t", "membrane_voltage_V", "vm", "cell_potential_V"]);
+  assert.deepEqual(whole.view.parts.map((part) => part.id), ["extracellular-potential-v", "junction-voltage-v", "junction-gate", "amount", "extracellular-amount", "membrane-transferred", "channel-transferred", "pump-cycles", "membrane-dissipated-energy-pj"]);
+  assert.deepEqual(catalogue.runs.find((row) => row.id === WHOLE).parts.map((part) => [part.id, part.bytes]), whole.view.parts.map((part) => [part.id, statSync(path.join(all, `${WHOLE}.${part.id}.json`)).size]));
+  // The numbers are the run's: a value for each of the run's places, the spare places of the engine's arrays cut off.
+  const voltage = valuesOf(all, whole, "membrane_voltage_V");
+  assert.equal(voltage.length, 5 * cells);
+  assert.equal(voltage[3 * cells + 7], Math.fround(-0.0796 + 1e-5 * 7 + 2e-6 * 30) === voltage[3 * cells + 7] ? voltage[3 * cells + 7] : Math.fround(-0.0215 + 1e-5 * 7 + 2e-6 * 30));
+  assert.equal(valuesOf(all, whole, "amount.K")[2 * cells + 4], Math.fround((140 + 0.01 * 4) * 0.75 + 0.001 * 20));
+  assert.equal(valuesOf(all, whole, "extracellular_amount.M")[cells + 2], 140);
+  assert.equal(valuesOf(all, whole, "channel_transferred")[4 * cells + 5], Math.fround(0.004 * 40 * (1 + 0.02 * 5)));
+  // Each cell has one membrane: the membranes' voltage is also the cells', the same array.
+  assert.deepEqual({ set: whole.record("vm").set, same_as: whole.record("vm").same_as, offset: whole.record("vm").offset }, { set: "cell", same_as: "membrane_voltage_V", offset: whole.record("membrane_voltage_V").offset });
+  // Kind, unit and the way a carried amount is positive: the viewer's own table for this family of models, saying where each sign comes from.
+  assert.deepEqual([whole.record("amount.Na").kind, whole.record("amount.Na").unit, whole.record("amount.Na").field, whole.record("amount.Na").species], ["amount", "fmol", "amount", "Na"]);
+  const carried = whole.record("membrane_transferred.K");
+  assert.deepEqual([carried.kind, carried.unit, carried.sign.from, carried.sign.to], ["cumulative", "fmol", "cell", "outside node"]);
+  assert.match(carried.sign.by, /confirmed by the owner of its core on 15 November 2026/);
+  assert.deepEqual([whole.record("pump_cycles").sign.from, whole.record("pump_cycles").sign.to], ["outside node", "cell"]);
+  assert.equal(whole.record("membrane_dissipated_energy_pJ").sign, undefined);
+  // Which way a voltage is positive is read from the run's own arrays, and said to be.
+  assert.equal(whole.record("membrane_voltage_V").sign.high, "inside");
+  assert.match(whole.record("membrane_voltage_V").sign.by, /the viewer's reading of the run's own saved arrays, not a declaration by the run: at every record each membrane's saved voltage equals the saved potential of its cell less that of the outside node it faces/);
+  assert.equal(whole.record("junction_voltage_V").sign.high, "first");
+  assert.match(whole.record("junction_voltage_V").sign.by, /each junction's saved voltage equals the saved potential of its sender less that of its receiver/);
+  // A composition with no operator over the known inner model: its definition's values are constants of the run.
+  assert.deepEqual(whole.view.constants.map((item) => item.id), ["temperature", "valence", "volume", "extracellular_volume", "membrane_capacitance", "membrane_area", "extracellular_concentration_mM"]);
+  assert.deepEqual(whole.view.run.engine_models, ["resolved_pump_composite@1", "resolved_pump_tissue@3"]);
+  assert.deepEqual([whole.view.run.stop, whole.view.run.end_s, whole.view.run.seed, whole.view.run.revision], ["complete", 40, null, null]);
+  assert.equal(whole.view.events.length, 0);
+  // It stands in the catalogue as a development run, apart from the experiments.
+  assert.equal(catalogue.experiments.find((item) => item.id === HISTORY).development, true);
+  assert.equal(catalogue.experiments.find((item) => item.id === HISTORY).outcome.judged, false);
+});
+
+test("a windowed run gives the same records as the same run in one file: its windows put end to end, a repeated record left out", () => {
+  const whole = open(all, WHOLE), windowed = open(all, WINDOWED);
+  assert.equal(windowed.file.payload.data, whole.file.payload.data);
+  assert.deepEqual(windowed.view.records, whole.view.records);
+  for (const part of whole.view.parts) assert.equal(readJson(path.join(all, `${WINDOWED}.${part.id}.json`)).payload.data, readJson(path.join(all, `${WHOLE}.${part.id}.json`)).payload.data, part.id);
+  assert.match(windowed.view.derivation.join(" "), /put end to end from its 2 window file\(s\) in the order windows\.jsonl lists them/);
+  assert.match(windowed.view.derivation.join(" "), /1 record\(s\) at the first time of a window repeat the record at the end of the window before, and are left out/);
+  assert.match(whole.view.derivation.join(" "), /trajectory\.npz, the arrays called observed_/);
+});
+
+test("the engine's output with an operator, a model of another family, or a voltage that is not the potentials' difference", () => {
+  const adaptHistory = (name, change) => {
+    const copy = path.join(scratch, `history-${name}`);
+    cpSync(path.join(FIXTURES, "run-history"), path.join(copy, "run-history"), { recursive: true });
+    for (const file of ["overlay.json", "selection.json"]) cpSync(path.join(FIXTURES, file), path.join(copy, file));
+    const file = path.join(copy, "run-history", "whole", "run", "resolved_config.json");
+    const definition = readJson(file);
+    change(definition);
+    writeFileSync(file, JSON.stringify(definition));
+    const result = tool("--evidence", copy, "--experiment", HISTORY, "--run", "whole/run", "--overlay", path.join(copy, "overlay.json"), "--selection", path.join(copy, "selection.json"), "--out", path.join(copy, "out"));
+    assert.equal(result.status, 0, `${name}: ${result.stderr}`);
+    return open(path.join(copy, "out"), WHOLE);
+  };
+  // An operator the adapter does not know: the definition's values may change, so none is stated, and the operator is named.
+  const operated = adaptHistory("operator", (definition) => definition.model.operators.push({ law: "scheduled_species_exchange@1" }));
+  assert.equal(operated.view.constants, undefined);
+  for (const item of operated.view.unstated) assert.match(item.why, /the run's composition has an operator whose effect on these values the viewer does not know \(scheduled_species_exchange@1\)/);
+  assert.deepEqual(operated.view.run.engine_models, ["resolved_pump_composite@1", "resolved_pump_tissue@3", "scheduled_species_exchange@1"]);
+  assert.equal(operated.record("membrane_transferred.Na").sign.from, "cell", "the family's signs do not depend on the constants");
+  // A model of another family: no kind and no sign from the viewer's table; a unit only where the field's name ends in one.
+  const other = adaptHistory("family", (definition) => (definition.model.id = "some_other_family@2"));
+  assert.deepEqual([other.record("amount.Na").kind, other.record("amount.Na").unit, other.record("membrane_transferred.Na").sign], [undefined, "", undefined]);
+  assert.equal(other.record("membrane_dissipated_energy_pJ").unit, "pJ");
+  assert.equal(other.record("membrane_voltage_V").sign.high, "inside", "the voltage's sign is read from the arrays, whatever the family");
+  assert.match(other.view.derivation.join(" "), /The run's model \(some_other_family@2\) is not of the family the viewer's table speaks of/);
+  // A world with no junctions: the fields that lie on junctions are empty, and the view says so; nothing is called misshapen.
+  const alone = adaptHistory("no-junctions", (definition) => (definition.model.junctions = []));
+  assert.ok(!alone.view.records.some((item) => item.set === "junction"));
+  assert.match(alone.view.derivation.join(" "), /The run has no junctions, so the fields that lie on them are empty and are not packaged: junction_voltage_V, junction_gate\./);
+  assert.doesNotMatch(alone.view.derivation.join(" "), /do not have the shape/);
+  // A cell with two membranes: no voltage is declared for a cell, and none is averaged.
+  const patched = adaptHistory("two-membranes", (definition) => {
+    definition.model.membranes[1].inside = definition.model.membranes[0].inside;
+  });
+  assert.equal(patched.record("vm"), undefined);
+  assert.equal(patched.record("membrane_voltage_V").sign, undefined, "its voltage is no longer the potential of its cell less its outside's, so no sign is read");
+  assert.match(patched.view.derivation.join(" "), /A cell of this run has several membranes, or none: no voltage is declared for a cell, and none is averaged/);
+});
+
+test("cells whose junctions make no hexagonal sheet are drawn side by side, and the view says so", () => {
+  const copy = path.join(scratch, "history-row");
+  cpSync(path.join(FIXTURES, "run-history"), path.join(copy, "run-history"), { recursive: true });
+  for (const file of ["overlay.json", "selection.json"]) cpSync(path.join(FIXTURES, file), path.join(copy, file));
+  const file = path.join(copy, "run-history", "whole", "run", "resolved_config.json");
+  const definition = readJson(file);
+  // Only the junctions between cells that follow one another in the definition are kept: a chain, no sheet.
+  const order = definition.model.cells.map((cell) => cell.id);
+  definition.model.junctions = definition.model.junctions.filter((junction) => Math.abs(order.indexOf(junction.sender) - order.indexOf(junction.receiver)) === 1).slice(0, 3);
+  writeFileSync(file, JSON.stringify(definition));
+  const result = tool("--evidence", copy, "--experiment", HISTORY, "--run", "whole/run", "--overlay", path.join(copy, "overlay.json"), "--selection", path.join(copy, "selection.json"), "--out", path.join(copy, "out"));
+  assert.equal(result.status, 0, result.stderr);
+  const { view, file: written } = open(path.join(copy, "out"), WHOLE);
+  assert.deepEqual(validateReplay(written), []);
+  assert.match(view.derivation[0], /its junctions do not make a hexagonal sheet\. The cells are drawn side by side in the definition's order/);
+  const faces = view.sets[0].geometry.faces, vertices = view.sets[0].geometry.vertices;
+  const middle = (face) => face.reduce((sum, vertex) => sum + vertices[vertex][1], 0) / face.length;
+  assert.ok(faces.every((face) => Math.abs(middle(face) - middle(faces[0])) < 1e-6), "the cells stand in one row");
+});
+
+test("the pre-screen's arms go the same way: a full definition states its constants, a bare one states none and says why", () => {
+  // The arm with isolated newcomers has a full definition: a template takes each place, and has the place's volume.
+  const full = open(all, ISO);
+  assert.deepEqual(full.view.constants.map((item) => item.id), ["temperature", "valence", "volume", "extracellular_volume", "membrane_capacitance", "membrane_area", "extracellular_concentration_mM"]);
+  assert.equal(full.view.unstated, undefined);
+  assert.deepEqual(full.view.sets.map((item) => item.id), ["cell", "junction", "species", "outside", "membrane"]);
+  assert.deepEqual(full.view.records.filter((item) => item.field === "concentration_mM").map((item) => item.species), ["Na", "K", "M"]);
+  assert.equal(full.record("vm").sign.high, "inside");
+  assert.equal(full.record("membrane_voltage_V").same_as, "vm");
+  assert.deepEqual(validateReplay(full.file), []);
+  // The other arm's definition names a model the adapter does not know and lists no membranes: nothing is stated.
+  const bare = open(all, DONOR);
+  assert.equal(bare.view.constants, undefined);
+  assert.deepEqual(bare.view.unstated.map((item) => item.id), ["temperature", "valence", "volume", "extracellular_volume", "membrane_capacitance", "membrane_area", "extracellular_concentration_mM"]);
+  for (const item of bare.view.unstated) assert.match(item.why, /the run's model \(synthetic_sheet@0\) is not one whose operators the viewer knows/);
+  assert.deepEqual(bare.view.sets.map((item) => item.id), ["cell", "junction"], "no membranes are listed, so none are made up");
+  assert.ok(!bare.view.records.some((item) => item.sign || item.id === "membrane_voltage_V" || item.field));
+  assert.match(bare.view.derivation.join(" "), /records\.npz holds concentrations, but the run's files do not show which species and which unit they are/);
+  assert.deepEqual(validateReplay(bare.file), []);
+});
+
+test("a pilot world saved one voltage per cell, averaged over its patches of membrane: no membrane is declared for it", () => {
+  const { view, file } = open(all, WRITTEN);
+  assert.deepEqual(view.sets.map((item) => item.id), ["cell", "junction"]);
+  assert.equal(view.constants, undefined);
+  assert.ok(!view.records.some((item) => item.id === "membrane_voltage_V" || item.field || item.sign));
+  assert.match(view.records.find((item) => item.id === "vm").note, /averages the membrane voltages of the cell's patches/);
+  assert.deepEqual(validateReplay(file), []);
+});
 
 test("a run with no seed and no class carries neither", () => {
   const { view, run } = open(all, ISO);
@@ -691,8 +1010,10 @@ test("every file of a real output folder passes the viewer's own checks", { skip
       assert.deepEqual([held.format, held.run, held.part], ["cells.visualizer.replay_part@1", row.id, part.id]);
       const before = run.records.size;
       run.attach(part.id, Uint8Array.from(Buffer.from(held.payload.data, "base64")).buffer);
-      assert.ok(run.records.size > before && run.pending.size === 0, `${row.id}: the part ${part.id} gave no record`);
+      assert.ok(run.records.size > before, `${row.id}: the part ${part.id} gave no record`);
     }
+    // With every part in, no record is left waiting for a file.
+    assert.equal(run.pending.size, 0, `${row.id}: a record names a part the run does not list`);
   }
   for (const id of experiments.keys()) assert.ok(real.runs.some((row) => row.experiment === id), `${id} has no runs`);
   console.log(`  ${real.runs.length} runs of ${experiments.size} experiments, ${(total / 1e6).toFixed(1)} MB in all`);

@@ -3,7 +3,7 @@
 // which layers a run can feed and why not, and the rule that one layer holds each visual
 // channel. The marks are in ./marks/, the rules for working a number out in ./derive.js.
 
-import { declared, declaredOn, behind } from "./records.js";
+import { declared, declaredOn, behind, family, constantOf } from "./records.js";
 import { DERIVATIONS, isDerivation } from "./derive.js";
 
 export const LAYERS_FORMAT = "cells.visualizer.quantity_layers@1";
@@ -18,6 +18,8 @@ export const SHARED_SURROUNDINGS = "shared surroundings";
 const text = (value) => typeof value === "string" && value.trim().length > 0;
 const names = (value) => (Array.isArray(value) ? value.filter(text) : text(value) ? [value] : []);
 const lower = (words) => (words ? words.charAt(0).toLowerCase() + words.slice(1) : "");
+const capital = (words) => (words ? words.charAt(0).toUpperCase() + words.slice(1) : "");
+const bare = (words) => String(words || "").replace(/^the /, "");
 
 /**
  * The quantities a layer may take its numbers from, in the order it prefers them. Most
@@ -28,6 +30,13 @@ export const alternatives = (layer) => (Array.isArray(layer?.quantity?.first_of)
 
 /** The names under which a quantity's record may be saved: the engine's readout name, or an adapter's. */
 export const recordNames = (quantity) => names(quantity?.record ?? quantity?.of);
+
+/** The parts a rule is worked out from, where it has several ({ part: { on, per, signed, says } }); or null. */
+export const partsOf = (quantity) => DERIVATIONS[quantity?.derivation]?.inputs || null;
+
+/** The ways a layer names to fill one part of a rule, in the order it prefers them: a name, or { amount, over }. */
+const waysOf = (value) => (Array.isArray(value) ? value : value ? [value] : []);
+const isWay = (way) => text(way) || (way && typeof way === "object" && text(way.amount) && text(way.over));
 
 /** What is wrong with one layer's declaration, given the marks that exist ({ name: { channels, lives_on } }). */
 export function validateLayer(layer, marks = {}) {
@@ -49,7 +58,13 @@ export function validateLayer(layer, marks = {}) {
     }
     if (quantity.derivation !== undefined) {
       if (!isDerivation(quantity.derivation)) problems.push(`${quantity.derivation} is not one of the declared rules`);
-      if (!names(quantity.of).length) problems.push("a derived quantity names the record it is worked out from");
+      const parts = partsOf(quantity);
+      if (parts) {
+        // A rule with several inputs: the layer names what may fill each part.
+        const given = quantity.of && typeof quantity.of === "object" && !Array.isArray(quantity.of) ? quantity.of : {};
+        for (const part of Object.keys(parts)) if (!waysOf(given[part]).length || !waysOf(given[part]).every(isWay)) problems.push(`its rule needs ${part}, and it names nothing for it`);
+        for (const part of Object.keys(given)) if (!parts[part]) problems.push(`${part} is not a part of the rule ${quantity.derivation}`);
+      } else if (!names(quantity.of).length) problems.push("a derived quantity names the record it is worked out from");
       if (quantity.where !== undefined && quantity.where !== SHARED_SURROUNDINGS) problems.push(`${quantity.where} is not a condition the contract names`);
     } else if (!names(quantity.record).length) problems.push("a quantity names neither a record nor a rule");
   }
@@ -83,16 +98,98 @@ function sourceOf(run, quantity) {
   return null;
 }
 
+/** One named thing of a run that may fill a part of a rule: its records (one, or one for each species), or its constant. */
+function thingOf(run, name) {
+  const members = family(run, name);
+  if (members.length) return { how: "records", name, members };
+  const record = declared(run, name);
+  if (record) return { how: "record", name, record };
+  const constant = constantOf(run, name);
+  return constant ? { how: "constant", name, constant } : null;
+}
+
+/**
+ * Whether one way fills one part of a rule: { ok, why, sure, … }. `sure` marks a reason that
+ * says more than "not saved": the run has the thing, in a form the rule cannot read.
+ */
+function fillWay(run, way, spec) {
+  if (typeof way === "object") {
+    // An amount over a volume: a concentration, where the run saved amounts.
+    const amount = fillWay(run, way.amount, spec), over = amount.ok ? fillWay(run, way.over, { on: spec.on, says: "the volume those amounts are in" }) : null;
+    if (!amount.ok) return amount;
+    if (!over.ok) return over;
+    return { ok: true, how: "ratio", name: way.amount, amount, over, parts: [...amount.parts, ...over.parts] };
+  }
+  const thing = thingOf(run, way);
+  if (!thing) {
+    const unstated = run.unstated?.get(way);
+    return { ok: false, sure: Boolean(unstated), why: unstated ? `This run did not save ${spec.says} over time. ${unstated}` : `This run did not save ${spec.says}.` };
+  }
+  const wrong = (found) => ({ ok: false, sure: true, why: `This run saved ${spec.says} for each ${found || "thing it does not name"}, not for each ${spec.on}.` });
+  if (thing.how === "constant") {
+    const { constant } = thing;
+    const perSpecies = constant.axes.includes("species");
+    if (Boolean(spec.per) !== perSpecies) return { ok: false, sure: true, why: `This run's definition gives ${spec.says} ${perSpecies ? "for each species" : "as one value"}, which the rule cannot read.` };
+    if (constant.set && spec.on && spec.on !== "world" && constant.lives_on !== spec.on) return wrong(constant.lives_on);
+    return { ok: true, ...thing, parts: [] };
+  }
+  const records = thing.how === "records" ? thing.members : [thing.record];
+  if (Boolean(spec.per) !== (thing.how === "records")) return { ok: false, sure: true, why: `This run saved ${spec.says} ${thing.how === "records" ? "for each species" : "as one record"}, which the rule cannot read.` };
+  if (spec.on && records.some((record) => record.lives_on !== spec.on)) return wrong(records[0].lives_on);
+  if (spec.signed && records.some((record) => !record.sign)) return { ok: false, sure: true, why: `This run saved ${spec.says}, but does not say which way it is positive.` };
+  return { ok: true, ...thing, parts: [...new Set(records.filter((record) => !record.loaded && record.part).map((record) => record.part))] };
+}
+
+/** Whether a run can feed a rule that has several inputs: { ok, why, source, inputs, parts, livesOn }. */
+function tryParts(run, quantity) {
+  const parts = partsOf(quantity), inputs = {}, files = new Set();
+  for (const [part, spec] of Object.entries(parts)) {
+    let filled = null, why = null;
+    for (const way of waysOf(quantity.of?.[part])) {
+      const tried = fillWay(run, way, spec);
+      if (tried.ok) {
+        filled = tried;
+        break;
+      }
+      if (!why || (tried.sure && !why.sure)) why = tried;
+    }
+    if (!filled) return { ok: false, why: why?.why || NOT_SAVED };
+    inputs[part] = { part, says: spec.says, ...filled };
+    for (const file of filled.parts) files.add(file);
+  }
+  // The rule is for one membrane: the run must say which cell each membrane lies on, and which outside it faces.
+  const membranes = run.sets.get("membrane");
+  const outside = membranes?.outside ? run.sets.get(membranes.outside.set) : null;
+  const facesOutside = !Object.values(parts).some((spec) => spec.on === "outside node") || (outside && (outside.holds || outside.id) === "outside node");
+  if (!(membranes?.geometry?.kind === "on" && membranes.geometry.set === "cell") || !facesOutside) {
+    return { ok: false, why: "This run's files do not say which membrane lies on which cell, and which outside it faces." };
+  }
+  const lead = inputs.voltage || Object.values(inputs)[0];
+  return { ok: true, why: null, source: lead.record || lead.members?.[0] || null, across: null, inputs, parts: [...files], livesOn: "membrane" };
+}
+
 /** Whether a run can feed one quantity through a mark: { ok, why, source, across, parts }. */
 function tryQuantity(run, quantity, mark) {
-  const source = sourceOf(run, quantity);
+  if (partsOf(quantity)) {
+    const tried = tryParts(run, quantity);
+    if (!tried.ok) return tried;
+    if (!mark.lives_on.includes(tried.livesOn)) return { ok: false, why: `Its mark is drawn on ${mark.lives_on.join(" or ")}s, and this rule is for one ${tried.livesOn}.` };
+    return tried;
+  }
+  // A record saved once for each species (the amount of each ion carried) stands in for the quantity by its first.
+  const source = sourceOf(run, quantity) || recordNames(quantity).map((name) => family(run, name)[0]).find(Boolean) || null;
   if (!source) return { ok: false, why: NOT_SAVED };
   if (quantity.signed && !source.sign) return { ok: false, why: "This run saved it, but does not say which way it is positive." };
+  if (quantity.derivation === "rate") {
+    // A mean rate is the growth of a total between two records: only a total can be differenced, and only a declared sign gives the way.
+    if (source.kind !== "cumulative") return { ok: false, why: "This run saved it, but not as a total since the run's start: no rate can be worked out from it." };
+    if (!source.sign) return { ok: false, why: "This run saved it, but does not say which way it is positive: a bead would have no way to go." };
+  }
   let livesOn = source.lives_on, across = null;
   if (quantity.derivation === "difference") {
     // A difference is across the links between the entities the record lies on.
     across = [...run.sets.values()].find((set) => set.geometry?.kind === "links" && set.geometry.between === source.set && (!quantity.across || (set.holds || set.id) === quantity.across)) || null;
-    if (!across) return { ok: false, why: `This run has no ${quantity.across || "link"}s between its ${source.set}s.` };
+    if (!across || !across.ids.length) return { ok: false, why: `This run has no ${quantity.across || "link"}s between its ${source.set}s.` };
     if (quantity.where === SHARED_SURROUNDINGS && run.view?.surroundings?.shared !== true) {
       return { ok: false, why: "This run did not save each junction's voltage, and its files do not say that all its cells' surroundings share one potential: the difference of two membrane voltages would not be the junction's voltage." };
     }
@@ -123,6 +220,8 @@ export function feeds(run, layer, marks) {
     why = tried.why;
   }
   if (!found) return { ok: false, why, parts: [], lacking: [], extras: [] };
+  // A mark that has its place and does not draw yet: the run saved what the layer needs, and the layer waits.
+  if (mark.built === false) return { ok: false, why: `This run saved it. ${mark.waits || "The viewer does not draw this layer yet."}`, parts: [], lacking: [], extras: [] };
   const parts = new Set(found.parts), lacking = [], extras = [];
   for (const extra of layer.also || []) {
     const record = sourceOf(run, extra);
@@ -132,7 +231,7 @@ export function feeds(run, layer, marks) {
       extras.push({ ...extra, record: record.id });
     }
   }
-  return { ok: true, why: null, quantity: found.quantity, source: found.source, across: found.across, parts: [...parts], lacking, extras };
+  return { ok: true, why: null, quantity: found.quantity, source: found.source, across: found.across, inputs: found.inputs || null, parts: [...parts], lacking, extras };
 }
 
 /**
@@ -146,7 +245,8 @@ export function layersFor(run, declarations, marks) {
   const shown = (mark) => new Set(layers.filter((layer) => layer.mark === mark).flatMap((layer) => alternatives(layer).filter((quantity) => !quantity.derivation).flatMap(recordNames)));
   const tinted = shown("tint"), raised = shown("relief");
   for (const record of declaredOn(run, "cell")) {
-    if (record.quantised || !record.loaded) continue;
+    // A record that comes in a file of its own is not offered here: it would appear only once another layer had fetched it.
+    if (record.quantised || !record.loaded || record.part) continue;
     const name = record.id.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
     if (marks.tint && !tinted.has(record.id)) layers.push({ id: `${name}-tint`, label: record.label, quantity: { record: record.id }, mark: "tint", channels: ["colour"], says: `Each cell is coloured by its ${lower(record.label)}.`, plain: true });
     if (marks.relief && !raised.has(record.id)) layers.push({ id: `${name}-relief`, label: record.label, quantity: { record: record.id }, mark: "relief", channels: ["height"], says: `Each cell stands as high as its ${lower(record.label)}.`, plain: true });
@@ -213,14 +313,35 @@ export class Switch {
  * `feeds` gave for the layer. `lines` is all of it, in order.
  */
 export function account(run, layer, fed) {
-  const { quantity, source, lacking = [], extras = [] } = fed;
+  const { quantity, source, inputs = null, lacking = [], extras = [] } = fed;
   const rule = quantity?.derivation ? DERIVATIONS[quantity.derivation] : null;
   const numbers = [];
-  if (rule) {
-    numbers.push(rule.says(`the saved ${lower(source?.label || recordNames(quantity)[0])}`));
-    if (quantity.where === SHARED_SURROUNDINGS && run.view?.surroundings?.says) numbers.push(`${run.view.surroundings.says} So the difference is the voltage across the junction itself.`);
+  if (rule && inputs) {
+    // A rule with several inputs: each is named with where it comes from, the saved ones first.
+    const all = Object.values(inputs);
+    const saved = all.filter((input) => input.how !== "constant"), stated = all.filter((input) => input.how === "constant");
+    const list = (items) => (items.length > 1 ? `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}` : items[0] || "");
+    const words = [
+      saved.length ? `the saved ${list(saved.map((input) => (input.how === "ratio" ? `${bare(input.says)} (an amount over a volume)` : bare(input.says))))}` : "",
+      stated.length ? `${list(stated.map((input) => input.says))} as the run's definition gives ${stated.length > 1 ? "them" : "it"}` : "",
+    ].filter(Boolean);
+    numbers.push(rule.says(words.join(", with ")));
+    for (const input of saved) for (const record of input.record ? [input.record] : input.members ? input.members.slice(0, 1) : [input.amount.record || input.amount.members?.[0]].filter(Boolean)) numbers.push(`${capital(input.says)}: ${lower(behind(record))}`);
+    for (const input of stated) numbers.push(`${capital(input.says)}: ${lower(input.constant.says)}`);
+    // What the run did not save for some of its species is said, species by species.
+    const species = run.sets.get("species")?.ids || [];
+    for (const input of saved) {
+      if (!input.members) continue;
+      const missing = species.filter((id) => !input.members.some((member) => member.species === id));
+      if (missing.length) numbers.push(`This run did not save ${input.says.replace("each ion", list(missing))}: nothing is drawn for ${missing.length > 1 ? "them" : "it"}.`);
+    }
+  } else {
+    if (rule) {
+      numbers.push(rule.says(`the saved ${lower(source?.label || recordNames(quantity)[0])}`));
+      if (quantity.where === SHARED_SURROUNDINGS && run.view?.surroundings?.says) numbers.push(`${run.view.surroundings.says} So the difference is the voltage across the junction itself.`);
+    }
+    numbers.push(behind(source));
   }
-  numbers.push(behind(source));
   const more = [...extras.map((extra) => extra.says), ...lacking.map((item) => item.says)];
   return {
     id: layer.id,

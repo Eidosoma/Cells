@@ -37,6 +37,7 @@ import json
 import math
 import re
 import sys
+import zipfile
 from array import array
 from pathlib import Path, PurePosixPath
 from types import SimpleNamespace
@@ -314,8 +315,13 @@ def sphere_diameter_um(volume_pL):
     return (6.0 * volume_pL * 1000.0 / math.pi) ** (1.0 / 3.0)
 
 
-def lay_out(name, model, derivation):
-    """The cells and junctions of a definition, placed on the lattice their junctions make."""
+def lay_out(name, model, derivation, row=False):
+    """The cells and junctions of a definition, placed on the lattice their junctions make.
+
+    With `row`, cells whose junctions make no hexagonal sheet (two cells, a chain, a world
+    that is no sheet) are drawn side by side in the definition's order, and the view says so;
+    without it such a run is refused.
+    """
     cells = [cell["id"] for cell in model["cells"]]
     junctions = [junction["id"] for junction in model["junctions"]]
     cell_index = {identifier: index for index, identifier in enumerate(cells)}
@@ -326,15 +332,25 @@ def lay_out(name, model, derivation):
     try:
         lattice = embed(len(cells), ends)
     except LayoutError as error:
-        raise Refused(f"{name}: {error}") from None
+        if not row:
+            raise Refused(f"{name}: {error}") from None
+        lattice = None
     volumes = [cell["volume_pL"] for cell in model["cells"]]
     volume = sum(volumes) / len(volumes)
     pitch = sphere_diameter_um(volume)
-    vertices, faces, _ = hexagons(lattice, pitch)
-    derivation.append(
-        "Cell positions: the run saves no coordinates. They are an exact hexagonal lattice laid out from the saved junctions "
-        "(which two cells each joins). Where the sheet sits, which way it is turned and its handedness are arbitrary."
-    )
+    if lattice is None:
+        vertices, faces, _ = hexagons([(index, 0) for index in range(len(cells))], pitch)
+        beside = sum(1 for a, b in ends if abs(a - b) == 1)
+        derivation.append(
+            "Cell positions: the run saves no coordinates, and its junctions do not make a hexagonal sheet. The cells are drawn side by side in the definition's order. "
+            f"A junction is drawn only between cells that stand next to each other in that row ({beside} of {len(ends)})."
+        )
+    else:
+        vertices, faces, _ = hexagons(lattice, pitch)
+        derivation.append(
+            "Cell positions: the run saves no coordinates. They are an exact hexagonal lattice laid out from the saved junctions "
+            "(which two cells each joins). Where the sheet sits, which way it is turned and its handedness are arbitrary."
+        )
     derivation.append(
         f"Cell size: the distance between neighbouring cells is the diameter of a sphere of the declared cell volume ({volume:.4g} pL gives "
         f"{pitch:.2f} um{'' if max(volumes) == min(volumes) else ', from the mean volume'}). The run declares volumes and areas, not shapes; each cell is drawn as a regular hexagon."
@@ -428,6 +444,304 @@ def surroundings_of(definition):
     return {"shared": True, "potential_V": potential, "says": f"In this run every cell's surroundings are a held bath at {potential:g} V: its definition says so, and nothing it schedules changes a bath's potential."}
 
 
+# ---------------------------------------------------------------- what a definition holds constant
+#
+# Two of the viewer's derivations read values from a run's definition: the temperature, each
+# species' valence, a membrane's capacitance and area, the composition of a held bath
+# (schema/QUANTITY_LAYERS.md, rule 1). They may do so only where no operator of that run
+# changes the value. The adapter decides that from definition.json alone, by a list of what
+# it knows, as KNOWN_CONTROLS does: a model, a law, a key or a control it does not know means
+# that nothing is stated as a constant, and a layer that needs one is listed for that run
+# with the reason.
+#
+# What the known replacement law may change is the engine's own contract for it, read in
+# src/cells/models/operators/cell_replacement.py on main at 0854c7af (15 November 2026): it
+# writes the replaced cells' amounts, resets their channel gates and the gates of their
+# junctions, books the held baths' plate charge, and provides each place's route values
+# (channel permeability and abundance, leak permeability, pump capacities) with a factor on
+# junction availability. Templates are checked against the declared volume of their place
+# ("so no other operator may provide a volume") and pump densities are scaled by the declared
+# patch area ("so none may provide an area"). It names no capacitance. That reading is why
+# the keys below are the whole list; the test itself is on the definition.
+KNOWN_TOP_KEYS = {"schema_version", "model", "experiment", "execution", "note"}
+KNOWN_MODEL_KEYS = {"id", "temperature_K", "species", "cells", "extracellular", "membranes", "junctions", "faces", "closure", "channels", "junction_heat_booking", "replacement"}
+KNOWN_MODELS = {
+    # model id: the replacement law, the inner model and the junction formation law it must name (None: no replacement at all)
+    "resolved_pump_replacement@1": {"law": "scheduled_cell_replacement@1", "inner_model": "resolved_pump_tissue@3", "junction_formation": "delayed_first_order_junction_formation@1"},
+    "resolved_pump_tissue@3": None,
+    # The composite over the same inner model, with no operator: an operator is a law of its own, and none is known here yet.
+    "resolved_pump_composite@1": None,
+}
+# The models whose fields the viewer's own table (TISSUE_FIELDS) speaks of.
+TISSUE_FAMILY = set(KNOWN_MODELS)
+KNOWN_REPLACEMENT_KEYS = {"law", "inner_model", "junction_formation", "templates", "template_capacity"}
+KNOWN_TEMPLATE_KEYS = {"id", "volume_pL", "fixed_charge_equivalent_fmol", "amounts_fmol", "channel_gates", "route_values"}
+KNOWN_ROUTE_VALUES = {"channel_permeability_m_per_s", "channel_abundance", "membrane_permeability_m_per_s", "pump_capacity_fmol_per_s_m2", "calcium_pump_capacity_fmol_per_s_m2"}
+KNOWN_EVENT_KEYS = {"time", "slot", "newcomer", "template", "donor", "carrier_id"}
+KNOWN_CONTROL_KEYS = {"schedule", "membrane_id", "junction_id", "pump_id", "channel_id"}
+KNOWN_STEP_KEYS = {"time", "availability"}
+KNOWN_CELL_KEYS = {"id", "volume_pL", "initial_amount_fmol", "fixed_charge_equivalent_fmol", "initial_charge_C"}
+KNOWN_MEMBRANE_KEYS = {"id", "inside", "outside", "area_m2", "capacitance_F", "permeability_m_per_s", "law", "pump", "calcium_pump"}
+KNOWN_OUTSIDE_KEYS = {"id", "volume_pL", "initial_amount_fmol", "fixed_charge_equivalent_fmol", "initial_charge_C", "reservoir", "boundary_potential_V"}
+CLOSE = dict(rel_tol=1e-9, abs_tol=1e-18)
+
+
+def is_number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def unknown(found, known):
+    """The first key of a set that the adapter does not know, or None."""
+    extra = sorted(set(found) - known)
+    return extra[0] if extra else None
+
+
+def what_may_change(definition):
+    """Why the adapter cannot say that this run leaves its definition's values alone, or None when it can.
+
+    None means: the model, its laws and every key and control of the definition are ones the
+    adapter knows, and none of them changes a temperature, a valence, a volume, a membrane's
+    capacitance or area, or the composition of a held bath. Each test is on the definition.
+    """
+    if not isinstance(definition, dict):
+        return "the run has no definition the adapter can read"
+    model, experiment = definition.get("model"), definition.get("experiment")
+    if not isinstance(model, dict) or not isinstance(experiment, dict):
+        return "the run's definition has no model or no experiment"
+    key = unknown(definition, KNOWN_TOP_KEYS)
+    if key:
+        return f"the run's definition has a part the viewer does not know ({key}), which may change values during the run"
+    if model.get("id") not in KNOWN_MODELS:
+        return f"the run's model ({model.get('id')}) is not one whose operators the viewer knows"
+    if model["id"] == "resolved_pump_composite@1":
+        # A composition: its inner model must be the one known, and it may list no operator the viewer does not know (it knows none yet).
+        if model.get("inner_model") != "resolved_pump_tissue@3":
+            return f"the run's composition is over an inner model the viewer does not know ({model.get('inner_model')})"
+        laws = [operator.get("law") if isinstance(operator, dict) else None for operator in model.get("operators") or []]
+        if laws:
+            return f"the run's composition has an operator whose effect on these values the viewer does not know ({laws[0]})"
+    key = unknown(model, KNOWN_MODEL_KEYS | ({"inner_model", "operators"} if model["id"] == "resolved_pump_composite@1" else set()))
+    if key:
+        return f"the run's model has a part the viewer does not know ({key}), which may change values during the run"
+    key = unknown(experiment, KNOWN_CONTROLS)
+    if key:
+        return f"the run schedules a control the viewer does not know ({key})"
+    for control in sorted(set(experiment) & {name for name in KNOWN_CONTROLS if name.endswith("_controls")}):
+        for item in experiment[control] or []:
+            if not isinstance(item, dict) or unknown(item, KNOWN_CONTROL_KEYS) or any(not isinstance(step, dict) or unknown(step, KNOWN_STEP_KEYS) for step in item.get("schedule") or []):
+                return f"a control of the run ({control}) schedules more than an availability"
+    for group, known in (("cells", KNOWN_CELL_KEYS), ("membranes", KNOWN_MEMBRANE_KEYS), ("extracellular", KNOWN_OUTSIDE_KEYS)):
+        for item in model.get(group) or []:
+            key = unknown(item, known) if isinstance(item, dict) else "an entry that is not an object"
+            if key:
+                return f"the run's definition gives its {group} a value the viewer does not know ({key})"
+    wanted, replacement = KNOWN_MODELS[model["id"]], model.get("replacement")
+    if wanted is None:
+        if replacement is not None or experiment.get("replacement_events"):
+            return "the run's model names no replacement law, yet its definition schedules replacements"
+        return None
+    if not isinstance(replacement, dict):
+        return "the run's model replaces cells, and its definition does not say by which law"
+    key = unknown(replacement, KNOWN_REPLACEMENT_KEYS)
+    if key:
+        return f"the run's replacement has a part the viewer does not know ({key})"
+    named = {"law": replacement.get("law"), "inner_model": replacement.get("inner_model"), "junction_formation": (replacement.get("junction_formation") or {}).get("law")}
+    for part, law in wanted.items():
+        if named[part] != law:
+            return f"the run replaces cells by a law the viewer does not know ({part.replace('_', ' ')}: {named[part]})"
+    volumes = {cell.get("id"): cell.get("volume_pL") for cell in model.get("cells") or [] if isinstance(cell, dict)}
+    templates = {}
+    for template in replacement.get("templates") or []:
+        key = unknown(template, KNOWN_TEMPLATE_KEYS) if isinstance(template, dict) else "an entry that is not an object"
+        if not key:
+            values = template.get("route_values") or {}
+            key = unknown(values, KNOWN_ROUTE_VALUES) if isinstance(values, dict) else "route values that are not an object"
+        if key:
+            return f"a newcomer's template gives a value the viewer does not know ({key})"
+        templates[template.get("id")] = template
+    for event in experiment.get("replacement_events") or []:
+        key = unknown(event, KNOWN_EVENT_KEYS) if isinstance(event, dict) else "an entry that is not an object"
+        if key:
+            return f"a replacement gives a value the viewer does not know ({key})"
+        if event.get("template") is not None:
+            template = templates.get(event["template"])
+            if template is None or not is_number(template.get("volume_pL")) or not is_number(volumes.get(event.get("slot"))) or not math.isclose(template["volume_pL"], volumes[event["slot"]], **CLOSE):
+                return "a newcomer's template has another volume than the cell it replaces, or names none"
+    return None
+
+
+def membranes_of(definition, sheet):
+    """Each membrane's cell and outside node, by index, as the definition lists them; or None.
+
+    Returned as {"ids", "cell", "outside", "nodes"}: the membranes' ids, for each the index of
+    its cell in the sheet and of its outside node, and the outside nodes' ids.
+    """
+    model = definition.get("model") or {}
+    membranes, outside = model.get("membranes"), model.get("extracellular")
+    if not isinstance(membranes, list) or not isinstance(outside, list) or not membranes or not outside:
+        return None
+    nodes = [node.get("id") for node in outside if isinstance(node, dict)]
+    node_index = {identifier: index for index, identifier in enumerate(nodes)}
+    if len(nodes) != len(outside) or len(node_index) != len(nodes) or any(not isinstance(identifier, str) for identifier in nodes):
+        return None
+    ids, cells, sides = [], [], []
+    for membrane in membranes:
+        if not isinstance(membrane, dict) or not isinstance(membrane.get("id"), str) or membrane.get("inside") not in sheet.cell_index or membrane.get("outside") not in node_index:
+            return None
+        ids.append(membrane["id"])
+        cells.append(sheet.cell_index[membrane["inside"]])
+        sides.append(node_index[membrane["outside"]])
+    if len(set(ids)) != len(ids):
+        return None
+    return {"ids": ids, "cell": cells, "outside": sides, "nodes": nodes}
+
+
+def one_membrane_each(membranes, sheet):
+    """Whether every cell has exactly one membrane, and the membranes stand in the cells' order."""
+    return membranes is not None and membranes["cell"] == list(range(len(sheet.cells)))
+
+
+def definition_constants(definition, sheet, membranes):
+    """The values a derivation may read from the definition, as (constants, unstated).
+
+    constants is a list for view.constants; unstated is [{"id", "why"}] for each value the view
+    does not state, with the reason in plain words. Every value is the definition's own number.
+    """
+    ids = ("temperature", "valence", "volume", "extracellular_volume", "membrane_capacitance", "membrane_area", "extracellular_concentration_mM")
+    why = what_may_change(definition)
+    if why:
+        return [], [{"id": identifier, "why": f"Not stated as a constant: {why}."} for identifier in ids]
+    model = definition["model"]
+    constants, unstated = [], []
+
+    def state(identifier, label, unit, axes, values, says, **extra):
+        constants.append({"id": identifier, "label": label, "unit": unit, **extra, "axes": axes, "values": values, "from": "definition.json", "says": says})
+
+    def leave(identifier, reason):
+        unstated.append({"id": identifier, "why": f"Not stated as a constant: {reason}."})
+
+    nothing = "Nothing this run schedules changes it: its model, its laws and its controls are ones the viewer knows, and none of them does."
+    if is_number(model.get("temperature_K")) and model["temperature_K"] > 0:
+        state("temperature", "Temperature", "K", [], float(model["temperature_K"]), f"The model's temperature in the run's definition. {nothing}")
+    else:
+        leave("temperature", "the run's definition gives no temperature")
+    species = [item for item in model.get("species") or [] if isinstance(item, dict)]
+    if species and all(isinstance(item.get("id"), str) and isinstance(item.get("valence"), int) and not isinstance(item.get("valence"), bool) for item in species) and len({item["id"] for item in species}) == len(species):
+        state("valence", "Valence", "1", ["species"], [item["valence"] for item in species], "Each species' valence in the run's definition.")
+    else:
+        species = []
+        leave("valence", "the run's definition does not list its species with their valences")
+    cells = [cell for cell in model.get("cells") or [] if isinstance(cell, dict)]
+    if len(cells) == len(sheet.cells) and all(is_number(cell.get("volume_pL")) and cell["volume_pL"] > 0 for cell in cells):
+        state(
+            "volume", "Cell volume", "pL", ["cell"], [float(cell["volume_pL"]) for cell in cells],
+            "Each cell's volume in the run's definition. A replacement keeps the volume of its place: a newcomer's template states that same volume (checked on the definition), and a copy of a donor names none.",
+            set="cell",
+        )  # fmt: skip
+    else:
+        leave("volume", "the run's definition does not give every cell a volume")
+    outsides = [node for node in model.get("extracellular") or [] if isinstance(node, dict)]
+    if outsides and len(outsides) == len(model.get("extracellular") or []) and all(is_number(node.get("volume_pL")) and node["volume_pL"] > 0 for node in outsides):
+        state(
+            "extracellular_volume", "Volume outside", "pL", ["outside"], [float(node["volume_pL"]) for node in outsides],
+            f"Each outside node's volume in the run's definition. {nothing}",
+            set="outside",
+        )  # fmt: skip
+    else:
+        leave("extracellular_volume", "the run's definition does not give every outside node a volume")
+    listed = model.get("membranes") or []
+    if membranes is None:
+        if any(constant["id"] == "extracellular_volume" for constant in constants):
+            constants[:] = [constant for constant in constants if constant["id"] != "extracellular_volume"]
+            leave("extracellular_volume", "the run's definition does not list each membrane with its cell and its outside, so the view lists no outside nodes")
+        for identifier in ("membrane_capacitance", "membrane_area", "extracellular_concentration_mM"):
+            leave(identifier, "the run's definition does not list each membrane with its cell and its outside")
+        return constants, unstated
+    kept = "A replacement gives a cell new contents, gates and route strengths: a newcomer's template names no capacitance and no area (checked on the definition), and no control of the run changes one."
+    for identifier, label, key, unit in (("membrane_capacitance", "Membrane capacitance", "capacitance_F", "F"), ("membrane_area", "Membrane area", "area_m2", "m2")):
+        if all(is_number(membrane.get(key)) and membrane[key] > 0 for membrane in listed):
+            state(identifier, label, unit, ["membrane"], [float(membrane[key]) for membrane in listed], f"Each membrane's {label.split()[-1]} in the run's definition. {kept}", set="membrane")
+        else:
+            leave(identifier, f"the run's definition does not give every membrane its {label.split()[-1]}")
+    # The composition outside: only where every membrane's outside is a held bath, whose amounts stay as declared.
+    nodes = model.get("extracellular") or []
+    faced = sorted(set(membranes["outside"]))
+    held = bool(species) and all(
+        nodes[index].get("reservoir") is True and is_number(nodes[index].get("volume_pL")) and nodes[index]["volume_pL"] > 0
+        and isinstance(nodes[index].get("initial_amount_fmol"), dict) and all(is_number(nodes[index]["initial_amount_fmol"].get(item["id"])) for item in species)
+        for index in faced
+    )  # fmt: skip
+    if held and faced == list(range(len(nodes))):
+        values = [[nodes[index]["initial_amount_fmol"][item["id"]] / nodes[index]["volume_pL"] for index in range(len(nodes))] for item in species]
+        state(
+            "extracellular_concentration_mM", "Concentration outside", "mM", ["species", "outside"], values,
+            "Each cell's outside is a held bath: its declared amount of each species over its declared volume (fmol over pL is mM). A held bath keeps its composition, and the run schedules no control of a bath.",
+            set="outside",
+        )  # fmt: skip
+    else:
+        leave("extracellular_concentration_mM", "not every membrane's outside is a held bath with a declared composition, and the run did not save the composition outside over time")
+    return constants, unstated
+
+
+# Where the sign of the voltage comes from. It is not one of the signs the owner of the engine's core confirmed
+# (TISSUE_SIGN_BY): it is read from each run's own files, and said to be.
+VOLTAGE_SIGN_BY = (
+    "the viewer's reading of the run's own files, not a declaration by the run: at the first record every cell's saved voltage equals the charge its definition gives the cell, "
+    "over the capacitance it gives the cell's membrane"
+)
+
+
+def voltage_sign(saved, definition, sheet, membranes):
+    """Which way the saved membrane voltage is positive, as the run's own files show it; or None.
+
+    The run declares no sign. Its definition gives each cell a charge and each membrane a
+    capacitance, and where every cell has one membrane to a held bath the first record's voltage
+    is that charge over that capacitance. Where this holds for every cell, a positive voltage
+    means the inside is positive against the outside; where it does not, nothing is said.
+    """
+    if not one_membrane_each(membranes, sheet) or saved["t"].values[0] != 0.0:
+        return None
+    model = definition.get("model") or {}
+    cells, listed = model.get("cells") or [], model.get("membranes") or []
+    first = saved["vm"].values[: len(sheet.cells)]
+    for index, voltage in enumerate(first):
+        charge, capacitance = cells[index].get("initial_charge_C"), listed[index].get("capacitance_F")
+        if not is_number(charge) or not is_number(capacitance) or capacitance <= 0 or charge == 0 or not math.isclose(voltage, charge / capacitance, rel_tol=1e-9, abs_tol=1e-12):
+            return None
+    return {
+        "says": "a positive voltage means the cell's inside is positive against its outside",
+        "high": "inside",
+        "by": VOLTAGE_SIGN_BY,
+    }
+
+
+def concentration_species(saved, definition, sheet):
+    """The species of each row of the saved concentrations, as the run's own files show them; or None.
+
+    records.npz names no species and no unit. The driver that wrote it takes the first rows of
+    the definition's species, each cell's amount over its volume. That is checked here on the
+    first record against the definition's own amounts and volumes; where it does not hold, the
+    concentrations are left out.
+    """
+    conc = saved.get("conc")
+    model = definition.get("model") or {}
+    species, cells = model.get("species") or [], model.get("cells") or []
+    width = len(sheet.cells)
+    if conc is None or len(conc.shape) != 3 or conc.shape[2] != width or conc.shape[1] > len(species) or len(cells) != width or saved["t"].values[0] != 0.0:
+        return None
+    names = []
+    for row in range(conc.shape[1]):
+        identifier = species[row].get("id") if isinstance(species[row], dict) else None
+        if not isinstance(identifier, str):
+            return None
+        for index, cell in enumerate(cells):
+            amount, volume = (cell.get("initial_amount_fmol") or {}).get(identifier), cell.get("volume_pL")
+            if not is_number(amount) or not is_number(volume) or volume <= 0 or not math.isclose(conc.values[row * width + index], amount / volume, rel_tol=1e-9, abs_tol=1e-12):
+                return None
+        names.append(identifier)
+    return names if len(set(names)) == len(names) else None
+
+
 def increasing(name, times):
     if any(later <= earlier for earlier, later in zip(times, times[1:])):
         raise Refused(f"{name}: the record times do not increase")
@@ -444,7 +758,8 @@ def turnover_records(name, folder, sheet, result, threshold, grid, entry, deriva
     needs them (schema/QUANTITY_LAYERS.md, rule 10): [{"id", "label", "payload"}].
     """
     cells, junctions = sheet.cells, sheet.junctions
-    owners = owners_of(definition or {})
+    definition = definition or {}
+    owners = owners_of(definition)
     saved = read_npz(folder / "records.npz", ["t", "vm", "generation", "abundance", "regular", "valid"])
     count = saved["t"].shape[0]
     expected = {"t": (count,), "vm": (count, len(cells)), "generation": (count, len(cells)), "abundance": (count, len(junctions)), "regular": (count,), "valid": (count,)}
@@ -459,9 +774,19 @@ def turnover_records(name, folder, sheet, result, threshold, grid, entry, deriva
     label_of = lambda identifier, fallback: labels.get(identifier, {}).get("label", fallback)  # noqa: E731
     payload, records = Payload(), []
     records.append(describe(payload, "t", "Time", "s", ["time"], "float32", (count,), array("f", times)))
-    records.append(
-        describe(payload, "vm", label_of("vm", "Membrane voltage"), "V", ["time", "cell"], "float32", saved["vm"].shape, array("f", saved["vm"].values), set="cell", layer="membrane", marks=d_mark(threshold), kind="level", owner=owners["vm"])
-    )
+    membranes = membranes_of(definition, sheet)
+    sign = voltage_sign(saved, definition, sheet, membranes)
+    voltage = describe(
+        payload, "vm", label_of("vm", "Membrane voltage"), "V", ["time", "cell"], "float32", saved["vm"].shape, array("f", saved["vm"].values),
+        set="cell", layer="membrane", marks=d_mark(threshold), kind="level", owner=owners["vm"], sign=sign,
+    )  # fmt: skip
+    records.append(voltage)
+    if one_membrane_each(membranes, sheet):
+        # The same numbers, declared over the membranes: no array is added.
+        records.append({**{key: value for key, value in voltage.items() if key != "marks"}, "id": "membrane_voltage_V", "set": "membrane", "axes": ["time", "membrane"], "same_as": "vm"})
+        derivation.append(
+            "The run saved one voltage per cell. Its definition gives every cell exactly one membrane, in the cells' order, so the same numbers are also declared as each membrane's voltage (membrane_voltage_V); no array is added."
+        )
     generation = saved["generation"].values
     if min(generation) < 0:
         raise Refused(f"{name}: a negative generation")
@@ -500,7 +825,12 @@ def turnover_records(name, folder, sheet, result, threshold, grid, entry, deriva
     stated = "the model or law that the run's definition.json names for that state" if any(owners.values()) else "not stated: the run's definition.json names no model or law for these states"
     derivation.append(
         f"What kind of number each record is (a level) is read from the driver that wrote records.npz, which states none. Each record's owner is {stated}. "
-        "Which way the membrane voltage is positive is stated by neither, so it is shown as a level and given no direction."
+        + (
+            "Which way the membrane voltage is positive is not declared by the run. It is read from the run's own files: at the first record every cell's saved voltage equals the charge "
+            "its definition gives the cell, over the capacitance it gives the cell's membrane. So a positive voltage means the inside is positive against the outside; the legend says where this comes from."
+            if sign
+            else "Which way the membrane voltage is positive is stated by neither, so it is shown as a level and given no direction."
+        )
     )
     parts = []
     # Each junction's gate, where the run saved it, goes in a file of its own: only the layer that reads it fetches it.
@@ -520,7 +850,71 @@ def turnover_records(name, folder, sheet, result, threshold, grid, entry, deriva
         )
         parts.append({"id": "junction-gate", "label": "Each junction's gate", "payload": own})
         derivation.append("Each junction's gate (how far it is open, 0 to 1) is stored in 256 steps, for drawing only, in a file of its own beside this one; the run saved it as 64-bit numbers.")
-    return payload, records, saved, parts
+    # Each ion's concentration in each cell, where the run saved it: one record and one file per ion.
+    try:
+        saved["conc"] = read_npz(folder / "records.npz", ["conc"])["conc"]
+    except ValueError:
+        pass
+    if "conc" in saved:
+        conc = saved["conc"]
+        if len(conc.shape) != 3 or conc.shape[0] != count or conc.shape[2] != len(cells):
+            raise Refused(f"{name}: records.npz conc has shape {conc.shape}, expected {(count, 'species', len(cells))}")
+        named = concentration_species(saved, definition, sheet)
+        if named is None:
+            derivation.append(
+                "records.npz holds concentrations, but the run's files do not show which species and which unit they are: the first record is not the definition's amounts over its volumes, row by row. They are left out."
+            )
+        else:
+            rows, width, used = conc.shape[1], len(cells), set()
+            for row, species in enumerate(named):
+                slug = re.sub(r"[^a-z0-9]+", "-", species.lower()).strip("-") or f"row-{row}"
+                if slug in used:
+                    slug = f"{slug}-{row}"
+                used.add(slug)
+                own = Payload()
+                stored = array("f", (conc.values[(step * rows + row) * width + cell] for step in range(count) for cell in range(width)))
+                if not all(math.isfinite(value) and value > 0 for value in stored):
+                    raise Refused(f"{name}: a concentration of {species} is not a positive number")
+                records.append(
+                    describe(
+                        own, f"concentration_mM.{species}", f"{species} in the cell", "mM", ["time", "cell"], "float32", (count, width), stored,
+                        set="cell", layer="ions", kind="level", owner=owners["vm"], field="concentration_mM", species=species, part=f"concentration-{slug}",
+                    )
+                )  # fmt: skip
+                parts.append({"id": f"concentration-{slug}", "label": f"The concentration of {species} in each cell", "payload": own})
+            listed = [item.get("id") for item in (definition.get("model") or {}).get("species") or [] if isinstance(item, dict)]
+            unsaved = [identifier for identifier in listed if identifier not in named]
+            derivation.append(
+                f"Concentrations: records.npz holds {rows} rows per record and names no species and no unit. The driver that wrote it takes the first {rows} species of the definition, "
+                f"in its order ({', '.join(named)}), each cell's amount over its volume, in mM. That is checked: at the first record every value equals the definition's own amount over its own volume. "
+                "Each ion's concentration is stored as 32-bit numbers in a file of its own beside this one; the run saved 64-bit."
+                + (f" The run did not save the concentration of {', '.join(unsaved)}." if unsaved else "")
+            )
+    return payload, records, saved, parts, membranes
+
+
+def species_of(definition):
+    """The ids of the definition's species, in its order, where it lists them; or None."""
+    listed = (definition.get("model") or {}).get("species")
+    if not isinstance(listed, list) or not listed or any(not isinstance(item, dict) or not isinstance(item.get("id"), str) for item in listed):
+        return None
+    ids = [item["id"] for item in listed]
+    return ids if len(set(ids)) == len(ids) else None
+
+
+def quantity_inputs(definition, sheet, membranes, derivation):
+    """What the quantity layers need beside the records, as keywords for assemble: the membranes, the species, the constants."""
+    species = species_of(definition)
+    constants, unstated = definition_constants(definition, sheet, membranes)
+    if constants:
+        derivation.append(
+            f"Named constants ({', '.join(constant['id'] for constant in constants)}) are the definition's own numbers. They are stated because the adapter knows everything the definition can change "
+            "(its model, its replacement law, every key of its cells, membranes, outsides, templates and replacements, and every control) and none of it changes them: "
+            "a newcomer's template states the volume of the place it takes and names no capacitance and no area, a control schedules an availability only, and every cell's outside is a held bath."
+        )
+    if unstated and (definition.get("model") or {}).get("membranes"):
+        derivation.append(f"Not stated as constants: {', '.join(item['id'] for item in unstated)}. The reason: {unstated[0]['why'].replace('Not stated as a constant: ', '', 1)}")
+    return {"membranes": membranes, "species": species, "constants": constants, "unstated": unstated}
 
 
 def replacement_events(name, definition, plan, sheet, last, derivation):
@@ -592,9 +986,11 @@ def refusal_of(recorded):
     return recorded or None
 
 
-def assemble(run, layers, stated, sheet, records, regions, events, derivation, parts=(), surroundings=None):
+def assemble(run, layers, stated, sheet, records, regions, events, derivation, parts=(), surroundings=None, membranes=None, species=None, constants=(), unstated=()):
     if any(record.get("layer") == "junctions" for record in records):
         layers = tuple(layers) + (("junctions", "Junction gating"),)
+    if any(record.get("layer") == "ions" for record in records):
+        layers = tuple(layers) + (("ions", "Ion concentrations"),)
     view = {
         "format": VIEW_FORMAT,
         "derived": True,
@@ -618,6 +1014,18 @@ def assemble(run, layers, stated, sheet, records, regions, events, derivation, p
         view["parts"] = [{"id": part["id"], "label": part["label"], "file": f"runs/{run['id']}.{part['id']}.json", "byte_length": part["payload"].length} for part in parts]
     if surroundings:
         view["surroundings"] = surroundings
+    # What a layer on one cell's membrane needs to find its way: which membrane is on which cell and faces which outside.
+    if species:
+        view["sets"].append({"id": "species", "ids": species})
+    if membranes:
+        view["sets"].append({"id": "outside", "holds": "outside node", "scale": "cell", "ids": membranes["nodes"]})
+        view["sets"].append(
+            {"id": "membrane", "scale": "cell", "ids": membranes["ids"], "geometry": {"kind": "on", "set": "cell", "index": membranes["cell"]}, "outside": {"set": "outside", "index": membranes["outside"]}}
+        )
+    if constants:
+        view["constants"] = list(constants)
+    if unstated:
+        view["unstated"] = list(unstated)
     return view
 
 
@@ -678,7 +1086,7 @@ def adapt_e07_v1(root, name, experiment, entry):
     sheet = lay_out(name, definition["model"], derivation)
     snapshot = snapshot_named(root, (result.get("provenance") or {}).get("source"), "snapshot")
     threshold, grid = driver_marks(root, snapshot, "validation.tissue.e07_v1_run", "validation.tissue.e07_v1_turnover", derivation)
-    payload, records, saved, parts = turnover_records(name, folder, sheet, result, threshold, grid, entry, derivation, definition)
+    payload, records, saved, parts, membranes = turnover_records(name, folder, sheet, result, threshold, grid, entry, derivation, definition)
     events, dropped = replacement_events(name, definition, plan, sheet, saved["t"].values[-1], derivation)
 
     regions = []
@@ -713,7 +1121,7 @@ def adapt_e07_v1(root, name, experiment, entry):
     surroundings = surroundings_of(definition)
     if surroundings:
         derivation.append("That every cell's surroundings share one potential is read from definition.json: each membrane's outside is a held bath (a reservoir), all at one boundary potential, and the experiment schedules no control of a bath.")
-    view = assemble(run, TURNOVER_LAYERS, stated, sheet, records, regions, events, derivation, parts, surroundings)
+    view = assemble(run, TURNOVER_LAYERS, stated, sheet, records, regions, events, derivation, parts, surroundings, **quantity_inputs(definition, sheet, membranes, derivation))
     notes = turnover_notes(saved, sheet, events, dropped, revision, threshold, regions)
     notes["parts"] = {part["id"]: part["payload"].data() for part in parts}
     return view, payload.data(), notes
@@ -750,7 +1158,7 @@ def adapt_turnover_literature(root, name, experiment, entry):
     driver = "validation.tissue.heredity_turnover_literature"
     snapshot = snapshot_named(root, (result.get("provenance") or {}).get("source"))
     threshold, grid = driver_marks(root, snapshot, driver, driver, derivation)
-    payload, records, saved, parts = turnover_records(name, folder, sheet, result, threshold, grid, entry, derivation, definition)
+    payload, records, saved, parts, membranes = turnover_records(name, folder, sheet, result, threshold, grid, entry, derivation, definition)
     events, dropped = replacement_events(name, definition, plan, sheet, saved["t"].values[-1], derivation)
 
     # The driver replaces only the disc's cells, in the order of the plan's permutation.
@@ -778,7 +1186,7 @@ def adapt_turnover_literature(root, name, experiment, entry):
     surroundings = surroundings_of(definition)
     if surroundings:
         derivation.append("That every cell's surroundings share one potential is read from definition.json: each membrane's outside is a held bath (a reservoir), all at one boundary potential, and the experiment schedules no control of a bath.")
-    view = assemble(run, TURNOVER_LAYERS, stated, sheet, records, [disc], events, derivation, parts, surroundings)
+    view = assemble(run, TURNOVER_LAYERS, stated, sheet, records, [disc], events, derivation, parts, surroundings, **quantity_inputs(definition, sheet, membranes, derivation))
     notes = turnover_notes(saved, sheet, events, dropped, revision, threshold, [disc])
     notes["counts_checked"] = counted
     notes["parts"] = {part["id"]: part["payload"].data() for part in parts}
@@ -997,7 +1405,288 @@ def own_counts(path):
     return series
 
 
-ADAPTERS = {"e07-v1": adapt_e07_v1, "heredity-turnover-literature": adapt_turnover_literature, "heredity-pilot-w1": adapt_pilot_w1}
+# ---------------------------------------------------------------- the engine's own output
+#
+# A run written by the engine's shared output paths (cells.io.write_run and
+# cells.window_io.write_windowed_run): resolved_config.json (the definition) beside either
+# trajectory.npz, or windows.jsonl with one chunk of arrays for each window. The readouts
+# the run observed are saved under the engine's own names, as observed_<field> at
+# observation_times; those names are the records' names here.
+#
+# Where each field lies is the viewer's own table for the tissue family, by field name, until
+# the engine's run view declares it (docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md): its axes after
+# time, what the page calls it, and the layer of the view it belongs to.
+HISTORY_FIELDS = {
+    "membrane_voltage_V": (("membrane",), "Membrane voltage", "membrane"),
+    "cell_potential_V": (("cell",), "Cell potential", "membrane"),
+    "extracellular_potential_V": (("outside",), "Potential outside", "membrane"),
+    "junction_voltage_V": (("junction",), "Junction voltage", "junctions"),
+    "junction_gate": (("junction",), "Junction gate", "junctions"),
+    "amount": (("species", "cell"), "Amount in the cell", "ions"),
+    "extracellular_amount": (("species", "outside"), "Amount outside", "ions"),
+    "membrane_transferred": (("species", "membrane"), "Carried across the membrane", "transport"),
+    "channel_transferred": (("channel",), "Carried through a channel population", "transport"),
+    "junction_transferred": (("species", "junction"), "Carried through a junction", "transport"),
+    "face_transferred": (("species", "face"), "Carried across a face", "transport"),
+    "reservoir_supplied": (("species", "outside"), "Supplied by a reservoir", "transport"),
+    "pump_cycles": (("membrane",), "Pump cycles", "transport"),
+    "membrane_dissipated_energy_pJ": (("membrane",), "Energy dissipated at the membrane", "energy"),
+    "channel_dissipated_energy_pJ": (("channel",), "Energy dissipated in a channel population", "energy"),
+    "junction_dissipated_energy_pJ": (("junction",), "Energy dissipated in a junction", "energy"),
+    "face_dissipated_energy_pJ": (("face",), "Energy dissipated across a face", "energy"),
+    "pump_dissipated_energy_pJ": (("membrane",), "Energy dissipated by a pump", "energy"),
+    "metabolic_work_pJ": (("membrane",), "Metabolic work", "energy"),
+}
+HISTORY_LAYERS = (("membrane", "Voltages"), ("junctions", "Junctions"), ("ions", "Amounts of each species"), ("transport", "Amounts carried"), ("energy", "Energy"))
+# What the sheet opens with stays in the run's own file; every other field goes in a file of its own (rule 10).
+HISTORY_MAIN = ("membrane_voltage_V", "cell_potential_V")
+HISTORY_SETS = {"cell": "cells", "membrane": "membranes", "junction": "junctions", "outside": "extracellular", "face": "faces", "channel": "channels"}
+RUN_FOLDER = re.compile(r"[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\Z")
+SIGN_FROM_ARRAYS = "the viewer's reading of the run's own saved arrays, not a declaration by the run"
+
+
+def npz_names(path):
+    """The names of the arrays a .npz file holds, without reading them."""
+    with zipfile.ZipFile(path) as archive:
+        return [info.filename[:-4] for info in archive.infolist() if info.filename.endswith(".npy")]
+
+
+def history_arrays(name, folder, derivation):
+    """The readouts a run kept, as ({field: (shape, flat values)}, times, how many windows): from trajectory.npz, or from the chunks windows.jsonl lists."""
+    wanted = ["observation_times"] + [f"observed_{field}" for field in HISTORY_FIELDS]
+    single = folder / "trajectory.npz"
+    if single.is_file():
+        names = set(npz_names(single))
+        if "observation_times" not in names:
+            raise Refused(f"{name}: trajectory.npz holds no observation times: the run kept no readouts")
+        chunks = [read_npz(single, [item for item in wanted if item in names])]
+        derivation.append("Records: the readouts the engine's shared output path wrote at the run's observation times (trajectory.npz, the arrays called observed_...), under the engine's own names.")
+    elif (folder / "windows.jsonl").is_file():
+        chunks = []
+        for line in (folder / "windows.jsonl").read_text(encoding="utf-8").splitlines():
+            try:
+                item = json.loads(line)
+            except ValueError:
+                raise Refused(f"{name}: windows.jsonl has a line that is not JSON") from None
+            if not (isinstance(item, dict) and item.get("kind") == "window" and item.get("observation_records") and isinstance(item.get("path"), str)):
+                continue
+            if not RUN_FOLDER.match(item["path"]) or not (folder / item["path"]).is_file():
+                raise Refused(f"{name}: windows.jsonl names a chunk that is not in the run's folder")
+            names = set(npz_names(folder / item["path"]))
+            chunks.append(read_npz(folder / item["path"], [entry for entry in wanted if entry in names]))
+        if not chunks:
+            raise Refused(f"{name}: no window of the run kept its readouts")
+        derivation.append(f"Records: the readouts the engine's windowed output path wrote at the run's observation times, put end to end from its {len(chunks)} window file(s) in the order windows.jsonl lists them, under the engine's own names.")
+    else:
+        raise Refused(f"{name}: neither trajectory.npz nor windows.jsonl is in the run's folder")
+    times, fields = [], {}
+    kept = set(chunks[0]) - {"observation_times"}
+    for chunk in chunks:
+        kept &= set(chunk)
+    dropped = 0
+    for chunk in chunks:
+        count = chunk["observation_times"].shape[0]
+        for row in range(count):
+            time = chunk["observation_times"].values[row]
+            if times and time == times[-1]:
+                dropped += 1  # a record at a window's first time repeats the one at the last window's end
+                continue
+            times.append(time)
+            for key in kept:
+                shape = chunk[key].shape
+                width = 1
+                for size in shape[1:]:
+                    width *= size
+                if shape[0] != count:
+                    raise Refused(f"{name}: {key} has {shape[0]} rows for {count} observation times")
+                entry = fields.setdefault(key[len("observed_"):], [shape[1:], array("d")])
+                if tuple(entry[0]) != tuple(shape[1:]):
+                    raise Refused(f"{name}: {key} changes its shape between windows")
+                entry[1].extend(chunk[key].values[row * width : (row + 1) * width])
+    if dropped:
+        derivation.append(f"{dropped} record(s) at the first time of a window repeat the record at the end of the window before, and are left out.")
+    increasing(name, times)
+    return fields, times, len(chunks)
+
+
+def tissue_of(config):
+    """The part of a definition that lists the tissue (cells, membranes, junctions, outsides): the model itself, or the ionic part of a larger one."""
+    model = config.get("model") if isinstance(config, dict) else None
+    for candidate in (model, (model or {}).get("ionic") if isinstance(model, dict) else None):
+        if isinstance(candidate, dict) and all(isinstance(candidate.get(key), list) for key in ("cells", "membranes", "junctions", "extracellular")):
+            return candidate
+    return None
+
+
+def adapt_history(root, name, experiment, entry):
+    """One run written by the engine's shared output path (a folder that holds resolved_config.json and its arrays)."""
+    if not RUN_FOLDER.match(name):
+        raise Refused(f"'{name}' is not a run folder's name")
+    folder = root / name
+    if not folder.is_dir():
+        raise Refused(f"no run folder {name} in {root.name}/")
+    config = read_json(folder / "resolved_config.json")
+    tissue = tissue_of(config)
+    if tissue is None:
+        raise Refused(f"{name}: its definition lists no cells, membranes, junctions and outside nodes the adapter can read")
+    model_id = (config.get("model") or {}).get("id")
+    family = model_id in TISSUE_FAMILY
+    derivation = []
+    sheet = lay_out(name, tissue, derivation, row=True)
+    fields, times, windows = history_arrays(name, folder, derivation)
+    count = len(times)
+    # The definition as the constants and the surroundings are read from: the tissue with the run's own experiment.
+    definition = config if tissue is config.get("model") else {"model": tissue, "experiment": config.get("experiment") or {}}
+    membranes = membranes_of(definition, sheet)
+    species = species_of(definition) or []
+    index_of = {key: {item.get("id"): number for number, item in enumerate(tissue.get(HISTORY_SETS[key]) or []) if isinstance(item, dict)} for key in HISTORY_SETS}
+    sizes = {key: len(tissue.get(listed) or []) for key, listed in HISTORY_SETS.items()}
+    sizes["species"] = len(species)
+
+    def rows(field):
+        """A field's values as {species or None: flat values over (time, the first n entities)}, with its set; or None when it is not there or does not fit."""
+        if field not in fields:
+            return None
+        axes, (shape, values) = HISTORY_FIELDS[field][0], fields[field]
+        shape = tuple(shape)
+        # A channel population's total may be kept for each species or as one number: its shape says which.
+        if field == "channel_transferred" and len(shape) == 2:
+            axes = ("species", "channel")
+        if len(shape) != len(axes) or any(shape[k] < sizes[axis] for k, axis in enumerate(axes)) or (axes[0] == "species" and shape[0] != sizes["species"]) or not sizes[axes[-1]]:
+            return None
+        entity, width, n = axes[-1], shape[-1], sizes[axes[-1]]
+        per = len(values) // count
+        if axes[0] == "species":
+            out = {name_: array("f", (values[step * per + row * width + k] for step in range(count) for k in range(n))) for row, name_ in enumerate(species)}
+        else:
+            out = {None: array("f", (values[step * per + k] for step in range(count) for k in range(n)))}
+        return entity, n, out
+
+    payload, records, parts, used_layers = Payload(), [], [], set()
+    records.append(describe(payload, "t", "Time", "s", ["time"], "float32", (count,), array("f", times)))
+    owner = model_id if isinstance(model_id, str) else None
+    signs = {}
+    # Which way the voltages are positive is checked on the saved arrays themselves, wherever they allow it.
+    voltage, inner, outer = fields.get("membrane_voltage_V"), fields.get("cell_potential_V"), fields.get("extracellular_potential_V")
+    if membranes and voltage and inner and outer and all(tuple(item[0])[0] >= size for item, size in ((voltage, sizes["membrane"]), (inner, sizes["cell"]), (outer, sizes["outside"]))):
+        widths = [tuple(item[0])[0] for item in (voltage, inner, outer)]
+        # The reading holds at every record, and at least one voltage is not nought: one that is nought everywhere shows no sign.
+        if all(
+            math.isclose(voltage[1][step * widths[0] + m], inner[1][step * widths[1] + membranes["cell"][m]] - outer[1][step * widths[2] + membranes["outside"][m]], rel_tol=1e-9, abs_tol=1e-12)
+            for step in range(count) for m in range(sizes["membrane"])
+        ) and any(abs(voltage[1][step * widths[0] + m]) > 1e-9 for step in range(count) for m in range(sizes["membrane"])):  # fmt: skip
+            signs["membrane_voltage_V"] = {"says": "a positive voltage means the cell's inside is at a higher potential than its outside", "high": "inside", "by": f"{SIGN_FROM_ARRAYS}: at every record each membrane's saved voltage equals the saved potential of its cell less that of the outside node it faces"}
+    across = fields.get("junction_voltage_V")
+    if across and inner and sizes["junction"] and tuple(across[0])[0] >= sizes["junction"]:
+        wide, cells_wide = tuple(across[0])[0], tuple(inner[0])[0]
+        if all(
+            math.isclose(across[1][step * wide + j], inner[1][step * cells_wide + sheet.ends[j][0]] - inner[1][step * cells_wide + sheet.ends[j][1]], rel_tol=1e-9, abs_tol=1e-12)
+            for step in range(count) for j in range(sizes["junction"])
+        ) and any(abs(across[1][step * wide + j]) > 1e-9 for step in range(count) for j in range(sizes["junction"])):  # fmt: skip
+            signs["junction_voltage_V"] = {"says": "a positive voltage means the junction's first cell, its sender, is at the higher potential", "high": "first", "by": f"{SIGN_FROM_ARRAYS}: at every record each junction's saved voltage equals the saved potential of its sender less that of its receiver"}
+
+    def declare(target, field, entity, n, values, species_id=None, part=None):
+        table = tissue_field(field) if family else None
+        unit = (table or {}).get("unit") or ("V" if field.endswith("_V") else "pJ" if field.endswith("_pJ") else "")
+        sign = signs.get(field) or (table or {}).get("sign")
+        label = HISTORY_FIELDS[field][1] if species_id is None else f"{HISTORY_FIELDS[field][1]}: {species_id}"
+        layer = HISTORY_FIELDS[field][2]
+        used_layers.add(layer)
+        extra = {"field": field, "species": species_id} if species_id is not None else {}
+        return describe(
+            target, field if species_id is None else f"{field}.{species_id}", label, unit, ["time", entity], "float32", (count, n), values,
+            set=entity, layer=layer, kind=(table or {}).get("kind"), owner=owner, sign=sign, part=part, **extra,
+        )  # fmt: skip
+
+    left_out, empty = [], []
+    for field in HISTORY_FIELDS:
+        found = rows(field)
+        if found is None:
+            if field in fields:
+                (empty if not sizes[HISTORY_FIELDS[field][0][-1]] else left_out).append(field)
+            continue
+        entity, n, values = found
+        if field in HISTORY_MAIN:
+            records.append(declare(payload, field, entity, n, values[None]))
+            continue
+        slug = re.sub(r"[^a-z0-9]+", "-", field.lower()).strip("-")
+        # One file for the field where it fits under the size limit; one for each species where it does not.
+        together = sum(len(item) * 4 for item in values.values()) * 4 / 3 < LIMIT_BYTES * 0.92
+        own = Payload()
+        for species_id, item in values.items():
+            part = slug if together or species_id is None else f"{slug}-{re.sub(r'[^a-z0-9]+', '-', species_id.lower()).strip('-')}"
+            if not together and species_id is not None:
+                own = Payload()
+            records.append(declare(own, field, entity, n, item, species_id, part))
+            if not together and species_id is not None:
+                parts.append({"id": part, "label": f"{HISTORY_FIELDS[field][1]}: {species_id}", "payload": own})
+        if together or None in values:
+            parts.append({"id": slug, "label": HISTORY_FIELDS[field][1], "payload": own})
+    if not any(record.get("set") == "cell" for record in records):
+        raise Refused(f"{name}: the run kept no readout over its cells that the sheet could be coloured by")
+    # Where every cell has one membrane, in the cells' order, the membranes' voltage is also each cell's: the same array, declared over the cells.
+    own_voltage = next((record for record in records if record["id"] == "membrane_voltage_V"), None)
+    if own_voltage and one_membrane_each(membranes, sheet):
+        records.insert(records.index(own_voltage) + 1, {**own_voltage, "id": "vm", "set": "cell", "axes": ["time", "cell"], "same_as": "membrane_voltage_V"})
+        derivation.append("The run's definition gives every cell exactly one membrane, in the cells' order, so each membrane's saved voltage is also declared as its cell's (vm); no array is added.")
+    elif own_voltage:
+        derivation.append("A cell of this run has several membranes, or none: no voltage is declared for a cell, and none is averaged. The sheet is coloured by a record the run kept for each cell.")
+    if left_out:
+        derivation.append(f"Left out, because their arrays do not have the shape the adapter knows for them: {', '.join(left_out)}.")
+    if empty:
+        places = sorted({HISTORY_FIELDS[field][0][-1] for field in empty})
+        derivation.append(f"The run has no {' and no '.join(HISTORY_SETS[place] for place in places)}, so the fields that lie on them are empty and are not packaged: {', '.join(empty)}.")
+    derivation.append("Times and values are stored as 32-bit numbers; the run saved 64-bit. Every field but the two the sheet opens with is in a file of its own beside this one.")
+    derivation.append(
+        "Which entity each column is: the arrays name none. Columns are taken in the order of the run's definition (its cells, membranes, junctions, outside nodes, faces and channel populations), "
+        "and only as many as the definition lists: an array made for more places than the run uses is cut there."
+    )
+    if family:
+        derivation.append(
+            "What kind of number each record is, its unit and, for the amounts carried, which way is positive come from the viewer's own table for this family of models; "
+            "the signs in it are the engine's convention as the owner of its core confirmed it on 15 November 2026. The run's files declare none of these."
+        )
+    else:
+        derivation.append(f"The run's model ({model_id}) is not of the family the viewer's table speaks of: no kind and no sign is given for its records, and a unit only where the field's name ends in one.")
+    for field, sign in signs.items():
+        derivation.append(f"Which way {HISTORY_FIELDS[field][1].lower()} is positive is not declared by the run. It is read from its arrays: {sign['by'].split(': ', 1)[1]}.")
+    stated = layers_stated(entry, derivation)
+    summary = read_json(folder / "summary.json") if (folder / "summary.json").is_file() else {}
+    plan = {"execution": config.get("execution") or {}, "model": {key: value for key, value in (config.get("model") or {}).items() if not isinstance(value, (list, dict))}}
+    parameters, readouts = copied(entry, plan, summary if isinstance(summary, dict) else {}, {})
+    derivation.append("Parameters are copied under their own names from resolved_config.json (execution and the model's plain values) and readouts from summary.json. The run's files name no revision of the engine by its commit, so none is given.")
+    models = [model_id] if isinstance(model_id, str) else []
+    composed = config.get("model") or {}
+    if isinstance(composed.get("inner_model"), str):
+        models += [composed["inner_model"], *[operator.get("law") for operator in composed.get("operators") or [] if isinstance(operator, dict) and isinstance(operator.get("law"), str)]]
+    arm = re.sub(r"[^A-Za-z0-9._-]+", "-", name)
+    run = run_facts(
+        experiment, arm, None, label=None, group=None, engine_models=models, revision=None, end_s=times[-1],
+        stop=summary.get("status") if isinstance(summary, dict) and isinstance(summary.get("status"), str) else None, parameters=parameters, readouts=readouts,
+    )  # fmt: skip
+    surroundings = surroundings_of(definition)
+    if surroundings:
+        derivation.append("That every cell's surroundings share one potential is read from the definition: each membrane's outside is a held bath (a reservoir), all at one boundary potential, and the experiment schedules no control of a bath.")
+    inputs = quantity_inputs(definition, sheet, membranes, derivation)
+    layers = tuple(item for item in HISTORY_LAYERS if item[0] in used_layers)
+    view = assemble(run, layers, stated, sheet, records, [], [], derivation, parts, surroundings, **inputs)
+    # The faces between outside nodes and the channel populations on membranes, where the definition lists them.
+    faces = [face for face in tissue.get("faces") or [] if isinstance(face, dict)]
+    if membranes and faces and all(face.get("sender") in index_of["outside"] and face.get("receiver") in index_of["outside"] and isinstance(face.get("id"), str) for face in faces):
+        view["sets"].append({"id": "face", "holds": "face", "scale": "cell", "ids": [face["id"] for face in faces], "geometry": {"kind": "links", "between": "outside", "ends": [[index_of["outside"][face["sender"]], index_of["outside"][face["receiver"]]] for face in faces]}})
+    channels = [channel for channel in tissue.get("channels") or [] if isinstance(channel, dict)]
+    if membranes and channels and all(channel.get("membrane_id") in index_of["membrane"] and isinstance(channel.get("id"), str) for channel in channels):
+        view["sets"].append({"id": "channel", "holds": "channel population", "scale": "cell", "ids": [channel["id"] for channel in channels], "geometry": {"kind": "on", "set": "membrane", "index": [index_of["membrane"][channel["membrane_id"]] for channel in channels]}})
+    listed = {item["id"] for item in view["sets"]}
+    missing = sorted({record["set"] for record in records if record.get("set")} - listed)
+    if missing:
+        raise Refused(f"{name}: records lie on {', '.join(missing)}, which the definition does not list in a form the adapter can read")
+    notes = {"records": count, "cells": len(sheet.cells), "junctions": len(sheet.junctions), "events": 0, "revision": None, "pitch_um": sheet.pitch, "windows": windows}
+    notes["parts"] = {part["id"]: part["payload"].data() for part in parts}
+    return view, payload.data(), notes
+
+
+ADAPTERS = {"e07-v1": adapt_e07_v1, "heredity-turnover-literature": adapt_turnover_literature, "heredity-pilot-w1": adapt_pilot_w1, "standard-history": adapt_history}
 
 
 # ---------------------------------------------------------------- writing

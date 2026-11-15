@@ -112,7 +112,7 @@ Checked on E07-v1's judged run (`definition.json`, `records.npz`, `plan.json`):
 | Identity | `definition.json` lists cells, membranes, junctions and channels in array order | Order is implied; fine for an adapter |
 | Topology | Junctions name their `sender` and `receiver` | None |
 | Geometry | Only areas and volumes | **No coordinates** |
-| Records | `records.npz`: `t`, `vm`, `conc`, `osm`, `abundance`, `gate`, `generation` | No units or axes written down; no kind, no sign and no owner |
+| Records | `records.npz`: `t`, `vm`, `conc`, `osm`, `abundance`, `gate`, `generation` | No units or axes written down; no kind, no sign and no owner; no species for the rows of `conc` (the adapter checks them against the definition at the first record); `osm` is not packaged, since no layer reads it |
 | Events | `definition.json` `replacement_events`, `plan.json` `events` | None |
 | Representation | Not stated | Missing |
 
@@ -190,16 +190,34 @@ Rules that tighten the run view above:
       it;
     - `sign`, for a signed record: `{"says": "what positive means, in words"}`; for a
       level on links also `"high": "first"` or `"second"`, the end that is at the higher
-      value when the record is positive; for a transfer `"from"` and `"to"`, the two ends
-      in the order a positive amount goes. A record with no `sign` is drawn as a level or
-      a size, never with a direction. Where the run's own files do not declare the sign
-      and an adapter takes it from a table of its own, the sign carries `"by"`, which
-      says in plain words where it comes from, and the legend repeats it. The adapter's
-      table for the tissue family (`TISSUE_FIELDS` in `tools/adapt_run.py`) is the
-      engine's own convention as the owner of its core confirmed it on 15 November 2026:
-      a positive transfer leaves the cell for its outside, or the sender for the
+      value when the record is positive; for a level on membranes `"high": "inside"` or
+      `"outside"`, the side that is the higher; for a transfer `"from"` and `"to"`, the
+      two ends in the order a positive amount goes. A record with no `sign` is drawn as a
+      level or a size, never with a direction. Where the run's own files do not declare
+      the sign and an adapter takes it from a table of its own, the sign carries `"by"`,
+      which says in plain words where it comes from, and the legend repeats it. The
+      adapter's table for the tissue family (`TISSUE_FIELDS` in `tools/adapt_run.py`) is
+      the engine's own convention as the owner of its core confirmed it on 15 November
+      2026: a positive transfer leaves the cell for its outside, or the sender for the
       receiver; pump cycles are positive inwards. It is not carried over to the older
-      single-cell model, whose flux is positive from bath into cell;
+      single-cell model, whose flux is positive from bath into cell.
+      **The membrane voltage's sign is not in that table and was not confirmed.** The
+      adapter reads it from each run's own files, and its `by` says so: where every cell
+      has one membrane, the run's first record is at time 0, and each cell's saved
+      voltage there equals the charge its definition gives the cell over the capacitance
+      it gives the cell's membrane, a positive voltage means the inside is positive
+      against the outside (`"high": "inside"`). Where that does not hold for every cell,
+      no sign is written, and a layer that needs a direction is not offered;
+    - `field` and `species`: a quantity the run saved once for each species (a
+      concentration of each ion) is one record for each, all with the same `field` and
+      each with its `species`, one of the ids of the set `species`. Its id is
+      `<field>.<species>`;
+    - `same_as`: the id of another record that is this same array, declared over another
+      set. An adapter writes it where a run saved one voltage for each cell and its
+      definition gives each cell exactly one membrane, in the cells' order: the record
+      `membrane_voltage_V` over the membranes is then the array of `vm` over the cells,
+      and no array is added. Where a cell has several membranes, or the saved voltage is
+      a mean over them, no such record is written;
     - what it lives on is its `set` (a set may say `holds`, one of the contract's words,
       where its id is not one), and how it is represented is its layer's `representation`.
   - **A record in a file of its own** carries `part`, the id of one of `view.parts`; its
@@ -209,6 +227,36 @@ Rules that tighten the run view above:
 - **`view.sets[]`.** Cells of a sheet use `polygons` (`vertices` as `[x, y]` in
   `view.space.unit`, `faces` as lists of vertex indices, one per cell, in the order of
   `ids`). Junctions use `links` with `ends` as pairs of indices into the named set.
+  Where the run's definition lists them, three more sets say what a layer on one
+  membrane needs to find its way:
+  - `species`: the ids of the definition's species, in its order (`{"id": "species",
+    "ids": ["Na", "K"]}`). A generic row keeps its own id;
+  - `outside`: the outside nodes, `"holds": "outside node"`;
+  - `membrane`: the membranes, each on its cell and facing its outside:
+    `"geometry": {"kind": "on", "set": "cell", "index": [...]}` gives, for each
+    membrane, the index of its cell, and `"outside": {"set": "outside", "index": [...]}`
+    the index of the outside node it faces.
+- **`view.constants[]`** (optional) are named constants of the run's definition: values
+  that a derivation of a quantity layer may read in place of a saved record
+  (`schema/QUANTITY_LAYERS.md`, rule 1). `[{"id", "label", "unit", "set", "axes",
+  "values", "from", "says"}]`: `axes` names the sets its values run along (none for one
+  number, `["membrane"]` for one for each membrane, `["species", "outside"]` for one for
+  each species at each outside node), `values` is nested accordingly, `from` is the file
+  they were read in, and `says` gives, in plain words, why nothing in this run changes
+  them. Ids are the engine's own names where it has one: `temperature` (K), `valence`,
+  `volume` (pL), `membrane_capacitance` (F), `membrane_area` (m2); and
+  `extracellular_concentration_mM`, each held bath's declared amounts over its declared
+  volume. **A constant is stated only where the adapter knows everything the definition
+  can change**, by a list of what it knows (`what_may_change` in `tools/adapt_run.py`):
+  the model and its laws of replacement, every key of its cells, membranes, outsides,
+  templates and replacements, and every control with what it schedules. For the turnover
+  runs: a newcomer's template states the volume of the place it takes (checked equal)
+  and names no capacitance and no area; a control schedules an availability only; every
+  cell's outside is a held bath. Anything the adapter does not know means that no
+  constant is stated.
+- **`view.unstated[]`** (optional) lists what the view does not state as a constant, each
+  with the reason: `[{"id", "why"}]`. A layer that needs one is then listed for the run
+  with that reason.
 - **`view.parts[]`** (optional) list the files that hold records of their own, so that a
   run's own file stays near 1 MB whatever its layers can show:
   `[{"id", "label", "file", "byte_length"}]`. `id` is lower-case letters, digits and
@@ -270,6 +318,49 @@ publishes the runs knows every file without opening one.
 
 **Several experiments.** One catalogue holds every experiment adapted into the folder,
 each with its runs; adapting one experiment leaves the others' entries and files in place.
+
+**Development runs.** An entry may say `"development": true`: its runs are development
+runs of the engine, not an experiment. The page lists them under a heading of their own
+("Development runs"), apart from the experiments, with `outcome.judged` false and the
+words its entry gives ("Development run, no verdict").
+
+### A run written by the engine's shared output path
+
+The adapter `standard-history` reads a run folder that the engine's own writers made
+(`cells.io.write_run`, or `cells.window_io.write_windowed_run`): `resolved_config.json`
+beside `trajectory.npz`, or beside `windows.jsonl` with one chunk of arrays for each
+window. It takes the readouts the run observed, `observed_<field>` at `observation_times`
+(the windows put end to end), and keeps the engine's own names for them: the record of
+`observed_membrane_voltage_V` is `membrane_voltage_V`.
+
+- **Where a field lies** (its axes after time), what the page calls it and its view
+  layer are the adapter's table by field name (`HISTORY_FIELDS`), until the engine's run
+  view declares them. Kind, unit and the sign of an amount carried are the adapter's
+  table for the tissue family (`TISSUE_FIELDS`), used only for a model of that family
+  (`resolved_pump_tissue@3`, `resolved_pump_composite@1`, `resolved_pump_replacement@1`);
+  a model of another family gets no kind and no sign, and a unit only where a field's
+  name ends in one.
+- **Which entity a column is:** the arrays name none. Columns follow the definition's
+  order, and an array made for more places than the run uses is cut at the definition's
+  count. Sets: `cell`, `junction`, `species`, `outside`, `membrane`, and where the
+  definition lists them `face` (links between outside nodes, `"holds": "face"`) and
+  `channel` (on membranes, `"holds": "channel population"`).
+- **A field with a row for each species** becomes one record for each (`amount.Na`).
+- **Signs read from the arrays:** where each membrane's saved voltage equals, at every
+  record, the saved potential of its cell less that of the outside it faces, and is not
+  nought throughout, `membrane_voltage_V` gets `"high": "inside"`; where each junction's
+  saved voltage equals its sender's potential less its receiver's, `junction_voltage_V`
+  gets `"high": "first"`. Each `by` says it is the viewer's reading of the run's own
+  arrays.
+- **A voltage for a cell** (`vm`) is declared only where every cell has exactly one
+  membrane, as the same array (`same_as`). Nothing is averaged.
+- **Files:** `t`, `membrane_voltage_V` and `cell_potential_V` in the run's own file;
+  every other field in a part of its own, cut by species where one file would pass the
+  size limit.
+- **Cells with no hexagonal sheet** (two cells, one cell, a chain) are drawn side by side
+  in the definition's order, and the view says so.
+- **Constants** follow the same rule as for every run: a composition with an operator
+  the adapter does not know states none, and names the operator.
 
 **What an experiment found** is two separate facts, both curated from the record, each
 with the record's own line and a source. The viewer shows them and derives neither.

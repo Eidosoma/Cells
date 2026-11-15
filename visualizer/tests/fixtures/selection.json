@@ -1,5 +1,5 @@
 {
- "note": "synthetic fixture: the three synthetic experiments, each with the folder beside this file that holds it.",
+ "note": "synthetic fixture: the four synthetic experiments, each with the folder beside this file that holds it.",
  "synthetic-sheet": {
   "evidence_folder": "run-small",
   "runs": [
@@ -18,6 +18,13 @@
   "runs": [
    "study-a/world-1",
    "study-b/world-1"
+  ]
+ },
+ "synthetic-history": {
+  "evidence_folder": "run-history",
+  "runs": [
+   "whole/run",
+   "windowed/run"
   ]
  }
 }

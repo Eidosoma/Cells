@@ -6,6 +6,10 @@
 // junctions form, a frame marks a region the run's plan names (the disc), and a ring with
 // an arrow marks each replacement as it happens.
 //
+// A layer that lives on a membrane is drawn on a close-up of one chosen cell's membrane: a
+// piece of glass beside the sheet, tied to its cell, that follows the time of the replay
+// and says what it is. It is there while a cell is chosen and such a layer is on.
+//
 // It shows what the run saved. Every step is a saved record and nothing is interpolated;
 // a record the run does not count as valid is drawn grey, never as data. The class shown
 // with a run is the one the experiment's own summary records: the viewer judges nothing.
@@ -22,7 +26,11 @@ import { MARKS } from "../layers/marks/index.js";
 import { paint } from "../layers/marks/tint.js";
 import { raise } from "../layers/marks/relief.js";
 import { layersFor, readDeclarations, account, Switch, CHANNELS, CHANNEL_WORDS, STRENGTHS } from "../layers/layers.js";
+import { Closeup, freeRect } from "../layers/closeup.js";
+import { membranesOf } from "../layers/membrane.js";
+import { ionColours } from "../layers/ions.js";
 import declaredLayers from "../../data/layers/layers.json" with { type: "json" };
+import ionTable from "../../data/layers/ions.json" with { type: "json" };
 
 const INSET = 0.055; // each cell is drawn a little small, so cells read as separate tiles
 const MARK_SECONDS = 45; // how long, in the run's time, a replacement stays marked
@@ -65,12 +73,24 @@ export class ReplayLens {
     this.wanted = new Set(); // ids of layers the visitor switched on (kept across runs)
     this.off = new Set(); // channels the visitor switched off
     this.layerError = null; // { id, text }: a layer whose records could not be fetched
+    // The close-up of a chosen cell's membrane, and the layers drawn on it.
+    this.closeup = null;
+    this.onMembrane = new Map(); // the id of a layer that lives on a membrane and is on -> { layer, fed, mark }
+    this.memos = new Map(); // what a mark worked out once for the run shown (the scale of its arrows)
+    this.slow = 1; // how much a layer on the motion channel is slowed: 1 is true speed
+    this.glass = new THREE.Color();
+    this.raised = new THREE.Color();
+    this.ions = new Map(); // species id -> { css, colour } for the run shown and the theme
     this.setRamp(stage.palette);
     this.player.addEventListener("time", () => {
       this.draw();
       this.stage.invalidate();
+      if (!this.player.playing) this.numbersMoved();
     });
-    this.player.addEventListener("state", () => this.stage.invalidate());
+    this.player.addEventListener("state", () => {
+      this.stage.invalidate();
+      this.numbersMoved();
+    });
     this.ready = this.runId ? this.show(this.runId) : Promise.resolve();
   }
 
@@ -122,6 +142,7 @@ export class ReplayLens {
   open(run) {
     this.clear();
     this.run = run;
+    this.setIons();
     this.cells = run.sets.get("cell");
     const choices = this.cells ? run.recordsOn("cell").filter((record) => !record.quantised) : [];
     this.record = choices.find((record) => record.id === this.recordId) || choices.find((record) => record.id === "vm") || choices[0] || null;
@@ -142,6 +163,8 @@ export class ReplayLens {
   }
 
   clear() {
+    this.dropCloseup();
+    this.memos.clear();
     for (const { mark } of this.drawn.values()) mark.dispose();
     this.drawn.clear();
     this.surface = null;
@@ -367,9 +390,27 @@ export class ReplayLens {
     for (const id of this.wanted) if (!this.switch.isOn(id) && this.offer(id)?.ok) this.setLayer(id, true, { silent: true });
   }
 
-  /** The colours a mark may use: the ramp of a magnitude, the tone of no value, the page's ink and its ground. */
+  /**
+   * The colours a mark may use: the ramp of a magnitude, the tone of no value, the page's ink
+   * and its ground, the colour of the page's membranes, and each ion's own colour.
+   */
   colours() {
-    return { ramp: this.ramp, neutral: this.neutral, ink: this.ink, ground: this.ground };
+    const other = { css: "#888888", colour: this.ink };
+    return {
+      ramp: this.ramp, neutral: this.neutral, ink: this.ink, ground: this.ground, raised: this.raised, glass: this.glass,
+      ion: (id) => (this.ions.get(id) || other).colour,
+      ionCss: (id) => (this.ions.get(id) || other).css,
+    };
+  }
+
+  /** The layers that are on and that this run feeds, in the order of the channels: [{ layer, fed, mark }], on the sheet or on a membrane. */
+  layersOn() {
+    return this.switch.on.map((id) => this.drawn.get(id) || this.onMembrane.get(id) || (this.offer(id)?.ok ? { layer: this.offer(id).layer, fed: this.offer(id), mark: null } : null)).filter(Boolean);
+  }
+
+  /** Whether a layer is drawn on a membrane, on the close-up of a chosen cell, and not on the sheet. */
+  livesOnMembrane(fed) {
+    return MARKS[fed.layer.mark]?.surface === "membrane";
   }
 
   /** Build the marks of the layers that are on, for the run shown. */
@@ -380,7 +421,7 @@ export class ReplayLens {
     const context = { surface: this.surface, run: this.run, scaleOf: (record) => this.scaleOf(record), shown: display, strength: this.switch.strength, colours: this.colours() };
     for (const id of this.switch.on) {
       const fed = this.offer(id);
-      if (!fed?.ok || fed.parts.length) continue;
+      if (!fed?.ok || fed.parts.length || this.livesOnMembrane(fed)) continue;
       this.drawn.set(id, { layer: fed.layer, fed, mark: MARKS[fed.layer.mark].create({ ...context, layer: fed.layer, fed }) });
     }
     // What the tags, the panel and the chart speak of: the record that colours the sheet, or else the one that raises it.
@@ -390,6 +431,161 @@ export class ReplayLens {
       this.recordId = this.record.id;
     }
     this.tags = null; // a label of a mark may have come or gone
+    this.buildCloseup();
+  }
+
+  // ------------------------------------------------------------ the close-up of a chosen cell's membrane
+
+  /** The membrane the close-up shows for a cell: the cell's first, with how many it has; or null. */
+  membraneOf(number_) {
+    const membranes = this.run ? membranesOf(this.run) : null;
+    const own = membranes && number_ !== null && number_ !== undefined ? membranes.of(number_) : [];
+    return own.length ? { index: own[0], id: membranes.ids[own[0]], of: own.length } : null;
+  }
+
+  /**
+   * Build the close-up, or take it down: it is there while a cell is chosen and a layer
+   * that lives on a membrane is on, for a run that says which membrane lies on that cell.
+   */
+  buildCloseup() {
+    this.dropCloseup();
+    if (!this.surface || this.selected === null) return;
+    const on = this.switch.on.map((id) => this.offer(id)).filter((fed) => fed?.ok && !fed.parts.length && this.livesOnMembrane(fed));
+    const membrane = this.membraneOf(this.selected);
+    if (!on.length || !membrane) return;
+    this.closeup = new Closeup({ root: this.root, colours: this.colours() });
+    this.closeup.membrane = membrane;
+    this.closeup.cell = this.selected;
+    const memo = (key, make) => {
+      if (!this.memos.has(key)) this.memos.set(key, make());
+      return this.memos.get(key);
+    };
+    const context = { surface: this.closeup.surface, run: this.run, membrane: membrane.index, strength: this.switch.strength, colours: this.colours(), memo, slow: () => this.slow };
+    for (const fed of on) this.onMembrane.set(fed.layer.id, { layer: fed.layer, fed, mark: MARKS[fed.layer.mark].create({ ...context, layer: fed.layer, fed }) });
+    this.tags = null;
+    // Once the window has settled (a panel may be opening), the view makes room for the close-up if it has none.
+    this.roomIn = 350;
+  }
+
+  /**
+   * Where the close-up has room neither above its cell nor below it, the view moves, at the
+   * same distance and angle, until the cell stands where the close-up fits above it.
+   */
+  makeRoom() {
+    const { closeup, stage } = this;
+    if (!closeup || !this.active || !this.sheet) return;
+    this.placeCloseup();
+    const placed = closeup.placed;
+    if (!placed || placed.fits) return;
+    const rig = stage.rig;
+    // A pixel's length in the scene, at the cell's own distance along the line of sight.
+    const cell = this.sheet.cells[closeup.cell].top;
+    const depth = cell.clone().sub(stage.camera.position).dot(stage.camera.getWorldDirection(new THREE.Vector3()));
+    const perPixel = (2 * Math.max(depth, 1e-6) * Math.tan((stage.camera.fov * Math.PI) / 360)) / stage.height;
+    const across = (placed.room.x - placed.cell.x) * perPixel, down = ((placed.room.y + 8 - placed.cell.y) * perPixel) / Math.max(0.2, Math.cos(rig.polar));
+    // What is on the ground moves right on the screen when the view looks further left, and down when it looks further away.
+    const right = new THREE.Vector3(Math.cos(rig.azimuth), 0, -Math.sin(rig.azimuth)), away = new THREE.Vector3(-Math.sin(rig.azimuth), 0, -Math.cos(rig.azimuth));
+    rig.flyTo({ target: rig.target.clone().addScaledVector(right, -across).addScaledVector(away, down) }, 600);
+  }
+
+  dropCloseup() {
+    for (const { mark } of this.onMembrane.values()) mark.dispose();
+    this.onMembrane.clear();
+    if (this.closeup) {
+      this.closeup.dispose();
+      this.closeup = null;
+      this.tags = null;
+    }
+  }
+
+  /** What the close-up says of itself: the membrane and the cell, the time, the run, and what its numbers are worked out from. */
+  closeupCaption() {
+    const { closeup, run } = this;
+    const entry = this.catalogue.byId.get(this.runId);
+    const name = this.cells.ids[closeup.cell];
+    const which = closeup.membrane.of > 1 ? `Membrane ${closeup.membrane.id}, one of ${closeup.membrane.of} of ${name}` : `Membrane of ${name}`;
+    // The inputs of every layer drawn on it, each once: the saved ones, then the definition's.
+    const saved = [], stated = [];
+    for (const { fed } of this.onMembrane.values()) {
+      for (const input of Object.values(fed.inputs || {})) {
+        const list = input.how === "constant" ? stated : saved;
+        const words = SHORT[input.part] || input.says;
+        if (!list.includes(words)) list.push(words);
+      }
+    }
+    const list = (items) => (items.length > 1 ? `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}` : items[0] || "");
+    const from = [saved.length ? `the saved ${list(saved)}` : "", stated.length ? `the ${list(stated)} of the run's definition` : ""].filter(Boolean).join(", with ");
+    // On a wide window the close-up also says what its signs are; on a narrow one the legend alone does, to keep the card low.
+    const notes = this.stage.width >= 760 ? [...this.onMembrane.values()].map(({ mark }) => mark.note?.(number)).filter(Boolean) : [];
+    return [`${which} at ${clock(this.player.time, { precise: true })}`, this.catalogue.title(entry), `Worked out by the viewer from ${from}.`, ...notes].join("\n");
+  }
+
+  /** Place the close-up for the frame about to be drawn: in the free part of the window, by its cell. */
+  placeCloseup() {
+    const { closeup, stage } = this;
+    if (!closeup || !this.active || !this.sheet) return;
+    const cell = this.sheet.cells[closeup.cell];
+    if (!cell) return;
+    const blocked = this.labels.blocked ? this.labels.blocked() : [];
+    const key = `${stage.width}x${stage.height}:${blocked.map((box) => [box.left, box.top, box.right, box.bottom].map(Math.round).join(",")).join(";")}`;
+    if (this.freeKey !== key) {
+      this.freeKey = key;
+      this.free = freeRect(stage.width, stage.height, blocked, this.labels.keepClear?.top || 0);
+    }
+    closeup.place(stage, cell.top, this.free);
+  }
+
+  /**
+   * The numbers on the chosen cell's membrane at the record shown, for the panel: one item
+   * for each ion with its three terms and the way each drives the ion, and one for the charge.
+   */
+  membraneNumbers() {
+    if (!this.closeup || !this.run) return null;
+    const step = this.player.index, valid = this.run.isValid(step);
+    const items = [];
+    const way = (drive) => (drive === "out" ? "out of the cell" : drive === "in" ? "into the cell" : "neither way");
+    const mv = (volts) => `${number(volts * 1000, 1)} mV`;
+    for (const { layer, mark } of this.onMembrane.values()) {
+      if (!valid) continue;
+      if (layer.mark === "arrows") {
+        mark.at(step).forEach((term, k) => {
+          const id = mark.species[k];
+          if (!term) return items.push({ label: id, detail: "no value at this record" });
+          items.push({
+            label: `${id}, valence ${number(term.valence, 0)}`,
+            detail: `${number(term.inside, 2)} mM inside, ${number(term.outside, 2)} mM outside`,
+            lines: [
+              `Push of the concentration difference: ${mv(term.size.concentration)} ${way(term.drives.concentration)}`,
+              `Pull of the voltage (${mv(term.voltage)}): ${mv(term.size.electrical)} ${way(term.drives.electrical)}`,
+              term.size.sum < 0.001 ? `What is left: ${number(term.size.sum * 1000, 2)} mV, in balance` : `What is left: ${mv(term.size.sum)} ${way(term.drives.sum)}`,
+            ],
+          });
+        });
+        for (const item of mark.missing) items.push({ label: item.id, detail: `Not drawn: this run did not save ${item.lacks}.` });
+      }
+      if (layer.mark === "stipple") {
+        const charge = mark.at(step);
+        const whole = Math.round(charge.charges).toLocaleString("en-US");
+        items.push({
+          label: "Charge",
+          detail: `${number(charge.coulombs * 1e12, 3)} pC at the inner face`,
+          lines: [
+            `Capacitance ${number(charge.capacitance * 1e12, 3)} pF times voltage ${mv(charge.voltage)}: ${whole} charges on the whole membrane of ${number(charge.area * 1e12, 1)} square micrometres`,
+            `${Math.round(charge.per_um2).toLocaleString("en-US")} charges on each square micrometre; ${number(charge.on_piece, 1)} on the piece drawn (${mark.piece.width_nm} nm by ${mark.piece.depth_nm} nm), so ${charge.marks} ${charge.inside === "plus" ? "plus" : "minus"} marks stand at the inner face and as many of the other sign at the outer face`,
+          ],
+        });
+      }
+    }
+    const title = this.player.playing ? "On its membrane (pause to read a moment)" : `On its membrane at ${clock(this.player.time, { precise: true })}`;
+    if (this.player.playing) return { title, items: [{ label: "The run is playing", detail: "The numbers of a moment are given when the run is paused." }] };
+    if (!valid) return { title, items: [{ label: "Not a valid record", detail: "The run does not count this record as valid: nothing is worked out from it." }] };
+    return { title, items, note: "Worked out by the viewer from this run's saved records and its definition; the panel on what the layers show says how." };
+  }
+
+  /** The numbers the panel gives are those of one moment: when the playhead rests elsewhere, the panel is written again. */
+  numbersMoved() {
+    if (!this.closeup || !this.active) return;
+    if (this.panel === LAYERS || this.panel === CELL + this.closeup.cell) this.onPanel?.();
   }
 
   /**
@@ -444,7 +640,7 @@ export class ReplayLens {
   setStrength(value) {
     if (!STRENGTHS.includes(value) || value === this.switch.strength) return;
     this.switch.setStrength(value);
-    for (const { mark } of this.drawn.values()) mark.setStrength?.(value);
+    for (const { mark } of [...this.drawn.values(), ...this.onMembrane.values()]) mark.setStrength?.(value);
     this.tags = null;
     this.draw();
     this.onChrome?.();
@@ -552,6 +748,9 @@ export class ReplayLens {
 
     this.outline("hover", this.hovered !== this.selected ? this.hovered : null);
     this.outline("pick", this.selected);
+    // What is drawn on the chosen cell's membrane follows the same record.
+    for (const { mark } of this.onMembrane.values()) mark.update(step, valid);
+    if (this.closeup) this.closeup.caption.set(this.closeupCaption());
     this.tag();
   }
 
@@ -580,6 +779,7 @@ export class ReplayLens {
     const labels = this.labels;
     if (!this.tags) {
       labels.clear();
+      this.closeup?.detach();
       labels.calloutFrame = null;
       this.tags = { regions: [], hover: null, pick: null };
       const experiment = this.catalogue.experimentOf(this.catalogue.byId.get(this.runId));
@@ -593,6 +793,8 @@ export class ReplayLens {
       this.tags.hover.boost = this.tags.pick.boost = 1000;
       // A bold relief stands a bar beside the sheet: how much of the quantity one stretch of height is.
       this.tags.bar = labels.add({ text: "", anchor: new THREE.Vector3(), priority: 320, kind: "note label-region", lift: 6 });
+      // The close-up's own words: the ions' names and readings, which side is which, and its caption.
+      this.closeup?.attach(labels);
     }
     const bar = this.markOn("height")?.mark.bar || null;
     this.tags.bar.hidden = !bar;
@@ -622,7 +824,7 @@ export class ReplayLens {
     if (typeof id !== "string") return false;
     if (id.startsWith(RUN)) return this.catalogue.byId.has(id.slice(RUN.length));
     if (id.startsWith(CELL)) return Boolean(this.sheet) && Number(id.slice(CELL.length)) < this.sheet.cells.length;
-    if (id === LAYERS) return Boolean(this.sheet) && this.drawn.size > 0;
+    if (id === LAYERS) return Boolean(this.sheet) && this.layersOn().length > 0;
     return false;
   }
 
@@ -704,7 +906,8 @@ export class ReplayLens {
         events: replaced.map((event) => ({ time: event.time, label: `Replaced (${word} ${event.label || ""})`.replace(" )", ")") })),
         extra: generation && generation !== this.record ? (step) => `generation ${generation.at(step, number_)}` : null,
       },
-      sections,
+      // With a layer on its membrane drawn, the numbers of the close-up at the record shown come first.
+      sections: this.closeup?.cell === number_ ? [this.membraneNumbers(), ...sections].filter(Boolean) : sections,
       sources: [],
     };
   }
@@ -735,7 +938,7 @@ export class ReplayLens {
         // With runs of several experiments, the card also picks the experiment.
         experiments: [...this.catalogue.experiments.values()]
           .filter((item) => this.catalogue.runs.some((one) => one.experiment === item.id))
-          .map((item) => ({ id: item.id, label: item.label, active: item.id === entry?.experiment, first: this.catalogue.runs.find((one) => one.experiment === item.id).id, outcome: this.catalogue.outcomeOf(item) })),
+          .map((item) => ({ id: item.id, label: item.label, active: item.id === entry?.experiment, first: this.catalogue.runs.find((one) => one.experiment === item.id).id, outcome: this.catalogue.outcomeOf(item), development: Boolean(item.development) })),
         runs: this.catalogue.runs
           .filter((item) => item.experiment === entry?.experiment)
           .map((item) => ({ id: item.id, title: item.arm, sub: item.seed === null || item.seed === undefined ? "" : `seed ${item.seed}`, klass: this.catalogue.classOf(item)?.label || "", early: this.catalogue.endOf(item).early, active: item.id === this.runId })),
@@ -800,24 +1003,31 @@ export class ReplayLens {
     // The signs the layers add to the sheet, each with what it stands for.
     const keys = [], listed = new Set();
     for (const channel of CHANNELS) {
-      const drawn = this.markOn(channel);
+      const drawn = this.markOn(channel) || this.onMembrane.get(this.switch.holder(channel));
       if (!drawn || listed.has(drawn) || !drawn.mark.keys) continue;
       listed.add(drawn);
       keys.push(...drawn.mark.keys(number));
     }
-    return { title: "Layers", rows, cannot, keys, strength: { options: STRENGTHS.map((value) => ({ id: value, label: value.charAt(0).toUpperCase() + value.slice(1), on: this.switch.strength === value })) }, details: this.drawn.size ? LAYERS : null };
+    // A layer on a membrane is drawn for a chosen cell: with none chosen, the switch says how to see it.
+    const waiting = this.layersOn().filter((item) => this.livesOnMembrane(item.fed) && !this.onMembrane.has(item.layer.id));
+    const hint = waiting.length ? "Choose a cell of the sheet: a piece of its membrane is drawn beside it." : null;
+    return { title: "Layers", rows, cannot, keys, hint, strength: { options: STRENGTHS.map((value) => ({ id: value, label: value.charAt(0).toUpperCase() + value.slice(1), on: this.switch.strength === value })) }, details: this.layersOn().length ? LAYERS : null };
   }
 
   /** What the panel says of the layers that are on: what each shows and what stands behind its numbers (rule 4). */
   describeLayers() {
     const entry = this.catalogue.byId.get(this.runId);
     const experiment = this.catalogue.experimentOf(entry);
-    const sections = [...this.drawn.values()].map(({ layer, fed }) => {
+    const sections = this.layersOn().map(({ layer, fed }) => {
       const said = account(this.run, layer, fed);
       const items = [{ label: "What it shows", detail: said.shows }, { label: said.derived ? "Its numbers: worked out by the viewer" : "Its numbers: saved by the run", lines: said.numbers }];
       if (said.more.length) items.push({ label: "What else the run saved about it", lines: said.more });
+      if (this.livesOnMembrane(fed)) items.push({ label: "Where it is drawn", detail: this.onMembrane.has(layer.id) ? `On a piece of the membrane of ${this.cells.ids[this.closeup.cell]}, the cell chosen, beside the sheet.` : "On a piece of the membrane of a chosen cell, beside the sheet. No cell is chosen now." });
       return { title: `${said.channel}: ${lower(this.layerLabel(fed))}`, items };
     });
+    // The numbers of the close-up at the record shown, where a cell is chosen.
+    const numbers = this.membraneNumbers();
+    if (numbers) sections.push({ ...numbers, title: `${this.cells.ids[this.closeup.cell]}: ${lower(numbers.title)}` });
     const cannot = this.offers.filter((item) => !item.ok && !item.layer.plain);
     if (cannot.length) sections.push({ title: "Not shown for this run", items: cannot.map((item) => ({ label: `${CHANNEL_WORDS[item.layer.channels[0]]}: ${lower(item.layer.label)}`, detail: item.why })) });
     return {
@@ -825,7 +1035,7 @@ export class ReplayLens {
       label: "What the layers show",
       eyebrow: experiment.label,
       kind: "layers",
-      plain: "A layer draws one quantity onto the sheet from numbers this run saved. One layer holds each visual channel: the colour, the height, the signs on the junctions.",
+      plain: "A layer draws one quantity onto the sheet, or onto a piece of a chosen cell's membrane, from numbers this run saved. One layer holds each visual channel: the colour, the height, the signs on the junctions, the arrows through a membrane, the marks at its faces.",
       note: "A number is either saved by the run, or worked out by the viewer from saved ones by a stated rule. The viewer computes no law of the engine again.",
       chips: [{ label: this.catalogue.title(entry), title: "The run these layers are drawn on." }],
       facts: [["Drawn", this.switch.strength]],
@@ -906,8 +1116,15 @@ export class ReplayLens {
       if (runId !== this.runId) this.show(runId);
     } else if (id?.startsWith(CELL) && this.has(id)) {
       this.selected = Number(id.slice(CELL.length));
-    } else {
+    } else if (id !== LAYERS) {
+      // The panel on what the layers show leaves the chosen cell chosen: its close-up stays.
       this.selected = null;
+    }
+    // The close-up follows the cell chosen, while a layer that lives on a membrane is on.
+    const wanted = this.selected !== null && this.switch.on.some((layer) => this.offer(layer)?.ok && this.livesOnMembrane(this.offer(layer))) ? this.selected : null;
+    if ((this.closeup?.cell ?? null) !== wanted) {
+      this.buildCloseup();
+      this.onChrome?.();
     }
     this.draw();
     this.stage.invalidate();
@@ -953,14 +1170,52 @@ export class ReplayLens {
     const rig = this.stage.rig, home = this.homeView();
     if (id?.startsWith(CELL) && this.has(id)) {
       const cell = this.sheet.cells[Number(id.slice(CELL.length))];
-      rig.flyTo({ target: new THREE.Vector3(cell.centre[0], 0, cell.centre[1]).lerp(home.target, 0.45), distance: Math.min(rig.distance, home.distance * 0.72) }, 900);
+      const target = new THREE.Vector3(cell.centre[0], 0, cell.centre[1]).lerp(home.target, 0.45), distance = Math.min(rig.distance, home.distance * 0.72);
+      if (this.closeup) {
+        // The close-up stands above its cell: the view looks at a point beyond the cell, so that the two share the window.
+        const { stage } = this;
+        const card = Closeup.widthFor(stage.width, this.free || { left: 0, right: stage.width }) * 0.78;
+        const down = Math.min(0.3 * stage.height, (card + 26) / 2); // how far below the middle the cell is to stand, in pixels
+        const perPixel = (2 * distance * Math.tan((stage.camera.fov * Math.PI) / 360)) / stage.height;
+        const beyond = (down * perPixel) / Math.max(0.2, Math.cos(rig.polar));
+        target.set(cell.centre[0], 0, cell.centre[1]).add(new THREE.Vector3(-Math.sin(rig.azimuth), 0, -Math.cos(rig.azimuth)).multiplyScalar(beyond));
+      }
+      rig.flyTo({ target, distance }, 900);
     } else {
       rig.flyTo(home, 900);
     }
   }
 
   update(dt) {
-    return this.active ? this.player.tick(dt) : false;
+    const playing = this.active ? this.player.tick(dt) : false;
+    this.placeCloseup();
+    // A mark that moves (a layer on the motion channel) is advanced on every frame, and keeps the frames coming.
+    let moving = false;
+    if (this.active) for (const { mark } of [...this.drawn.values(), ...this.onMembrane.values()]) if (mark.tick) moving = mark.tick(dt, this.slow) || moving;
+    // A close-up just built waits a moment for the window to settle, then asks for room once.
+    let waiting = false;
+    if (this.closeup && this.roomIn > 0) {
+      this.roomIn -= dt;
+      waiting = this.roomIn > 0;
+      if (!waiting) {
+        this.makeRoom();
+        // The view may have moved at once (a still picture, reduced motion): the close-up is placed again for it, and one more frame is drawn.
+        this.placeCloseup();
+        this.stage.invalidate();
+      }
+    }
+    return playing || waiting || moving;
+  }
+
+  /**
+   * How much a layer on the motion channel is slowed: 1 is true speed (a second here is a
+   * second in the cell). The legend states it with what one token stands for (rule 3).
+   */
+  setSlow(value) {
+    if (!(value >= 1) || value === this.slow) return;
+    this.slow = value;
+    this.onChrome?.();
+    this.stage.invalidate();
   }
 
   setRamp(palette) {
@@ -968,6 +1223,16 @@ export class ReplayLens {
     this.neutral = parse(palette.stUnstated);
     this.ink.set(palette.fg);
     this.ground.set(palette.bg);
+    this.glass.set(palette.bioMembrane);
+    this.raised.set(palette.bgRaised || palette.bg);
+    this.dark = Boolean(palette.dark);
+    this.setIons();
+  }
+
+  /** Each ion's own colour for the run shown and the theme: the same for an ion wherever it is drawn. */
+  setIons() {
+    const species = this.run?.sets.get("species")?.ids || [];
+    this.ions = new Map([...ionColours(ionTable, species, this.dark)].map(([id, css]) => [id, { css, colour: new THREE.Color(css) }]));
   }
 
   applyInk() {
@@ -979,7 +1244,8 @@ export class ReplayLens {
   applyPalette(palette) {
     this.setRamp(palette);
     this.applyInk();
-    for (const { mark } of this.drawn?.values() || []) mark.setColours?.(this.colours());
+    for (const { mark } of [...(this.drawn?.values() || []), ...(this.onMembrane?.values() || [])]) mark.setColours?.(this.colours());
+    this.closeup?.setColours(this.colours());
     this.draw();
     if (this.active) this.onChrome?.();
     this.stage.invalidate();
@@ -991,6 +1257,8 @@ export class ReplayLens {
 }
 
 const lower = (text) => (text ? text.charAt(0).toLowerCase() + text.slice(1) : "");
+// The close-up's caption names each input of a rule in a word or two.
+const SHORT = { voltage: "membrane voltage", inside: "ion concentrations", outside: "composition outside", temperature: "temperature", valence: "valences", capacitance: "capacitance", area: "area" };
 const cssOf = ([r, g, b]) => `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
 
 /** Flat bands of a given width along a list of edges ([[x, y], [x, y]]), in the plane y = 0. */
