@@ -65,7 +65,8 @@ def _check_pair(n_a0, n_b0, V_a, V_b, PA):
 
 def closed_pair(t, n_a0, n_b0, V_a, V_b, PA, rt=None):
     """The closed pair at time t (s): dict(n_a, n_b, c_a, c_b, flux_fmol_per_s (a to b), k,
-    c_eq, delta_a (n_a - n_a0, formed stably), heat_pJ and work_pJ (with rt))."""
+    c_eq, delta_a (n_a - n_a0, formed stably), heat_pJ, heat_scale_pJ (its rounding scale) and
+    work_pJ (with rt))."""
     _check_pair(n_a0, n_b0, V_a, V_b, PA)
     k = rate_constant(PA, V_a, V_b)
     N = n_a0 + n_b0
@@ -81,6 +82,10 @@ def closed_pair(t, n_a0, n_b0, V_a, V_b, PA, rt=None):
     if rt is not None:
         out["heat_pJ"] = 0.0 - (increment(n_a0, delta_a, V_a, rt)
                                 + increment(n_b0, -delta_a, V_b, rt))  # 0.0 - x: no -0.0
+        # The heat's rounding scale: near equal starts the heat is second order in the gradient
+        # while its terms are first order, so its float error is a few eps x this, not x heat.
+        out["heat_scale_pJ"] = (increment_terms(n_a0, delta_a, V_a, rt)
+                                + increment_terms(n_b0, -delta_a, V_b, rt))
         out["work_pJ"] = 0.0
     return out
 

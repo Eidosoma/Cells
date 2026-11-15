@@ -3,7 +3,8 @@
     python -m validation.passive.passive_crosschecks --out DIR
 
 Writes DIR/crosschecks.json and DIR/log.txt:
-* a start-ratio sweep c_a0/c_b0 from 1 to 1e12 (a trace start): the closed form (float) and the
+* a start-ratio sweep c_a0/c_b0 from 1 through near-equal starts (1 + 1e-8, 1 + 1e-3) to 1e12
+  (a trace start): the closed form (float; its heat also in eps x its rounding scale) and the
   integration (Radau rtol 1e-12, DOP853 rtol 1e-13) against the 50-digit closed form, for the
   amounts and the heat, with the integration's closure H + dG and material residual;
 * the closed test's properties: zero flux at equal concentrations with unequal volumes, reversal
@@ -42,7 +43,7 @@ def sweep():
     out = {}
     k = pr.rate_constant(PA, V_A, V_B)
     times = (0.01 / k, 0.5 / k, 1.0 / k, 3.0 / k)
-    for ratio in (1.0, 1e2, 1e4, 1e8, 1e12):
+    for ratio in (1.0, 1.0 + 1e-8, 1.0 + 1e-3, 1e2, 1e4, 1e8, 1e12):
         n_a0, n_b0 = 1.0 * V_A, 1.0 / ratio * V_B
         world = pr.World(RT, {"a": pr.Compartment(V_A, n_a0), "b": pr.Compartment(V_B, n_b0)},
                          {"j": pr.Route("a", "b", PA)})
@@ -50,12 +51,16 @@ def sweep():
         for label, kw in (("closed_form", None), ("radau_1e-12", dict(method="Radau", rtol=1e-12)),
                           ("dop853_1e-13", dict(method="DOP853", rtol=1e-13))):
             run = None if kw is None else pr.integrate(world, times[-1], record=times, **kw)
-            worst = dict(n_a=0.0, n_b=0.0, heat=0.0, closure=0.0, material=0.0)
+            worst = dict(n_a=0.0, n_b=0.0, heat=0.0, closure=0.0, material=0.0,
+                         heat_eps_scale=0.0)
             for t in times:
                 ex = pr.exact_closed_pair(t, n_a0, n_b0, V_A, V_B, PA, RT)
                 if run is None:
                     got = pr.closed_pair(t, n_a0, n_b0, V_A, V_B, PA, rt=RT)
                     na, nb, heat = got["n_a"], got["n_b"], got["heat_pJ"]
+                    worst["heat_eps_scale"] = max(worst["heat_eps_scale"], abs(
+                        heat - float(ex["heat"])) / (np.finfo(float).eps
+                                                     * max(got["heat_scale_pJ"], 1e-300)))
                 else:
                     r = run.at[t]
                     na, nb, heat = r["n_fmol"]["a"], r["n_fmol"]["b"], r["heat_pJ"]
@@ -143,6 +148,8 @@ def main(argv=None):
     rev = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True,
                          text=True, check=False).stdout.strip()
     started = time.perf_counter()
+    # Run from a frozen snapshot folder (not a checkout), git_revision is None: the snapshot's
+    # SNAPSHOT.json carries the revision.
     result = dict(kind="cells.passive_reference_crosschecks@1", git_revision=rev or None,
                   python=sys.version, numpy=np.__version__, scipy=scipy.__version__,
                   platform=platform.platform(), rt_pJ_per_fmol=RT)

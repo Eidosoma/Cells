@@ -168,3 +168,32 @@ def test_refusals():
     with pytest.raises(ValueError):
         pr.check_world(pr.World(RT, {"a": pr.Compartment(1.0, 1.0)},
                                 {"j": pr.Route("a", "a", PA)}))
+
+
+@pytest.mark.parametrize("ratio", [1.0 + 1e-8, 1.0 + 1e-3])
+def test_near_equal_starts_hold_the_heat_to_its_rounding_scale(ratio):
+    n_a0, n_b0 = 1.0 * V_A, 1.0 / ratio * V_B
+    k = pr.rate_constant(PA, V_A, V_B)
+    for t in (0.1 / k, 3.0 / k):
+        cf = pr.closed_pair(t, n_a0, n_b0, V_A, V_B, PA, rt=RT)
+        exact = float(pr.exact_closed_pair(t, n_a0, n_b0, V_A, V_B, PA, RT)["heat"])
+        assert exact > 0.0
+        # The heat is second order in the gradient, its terms first order: judged on the scale.
+        assert abs(cf["heat_pJ"] - exact) <= 8 * EPS * cf["heat_scale_pJ"]
+
+
+def test_a_three_compartment_chain_with_the_default_method():
+    world = pr.World(RT, {"a": pr.Compartment(1.0, 3.0), "b": pr.Compartment(2.0, 1e-12),
+                          "c": pr.Compartment(0.5, 0.2)},
+                     {"ab": pr.Route("a", "b", 2e-18), "bc": pr.Route("b", "c", 5e-18)})
+    k = pr.rate_constant(2e-18, 1.0, 2.0)
+    T = 40.0 / k
+    run = pr.integrate(world, T, record=(1.0 / k, T))
+    for t in (1.0 / k, T):
+        r = run.at[t]
+        assert abs(r["material_residual_fmol"]) <= 1e-12 * 3.2
+        assert abs(r["closure_pJ"]) <= 1e-12 * RT * 3.2
+        assert r["heat_pJ"] > 0.0
+    c_eq = 3.2 / 3.5
+    for x in ("a", "b", "c"):
+        assert run.at[T]["c_mM"][x] == pytest.approx(c_eq, rel=1e-9)
