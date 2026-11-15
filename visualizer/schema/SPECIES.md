@@ -112,6 +112,31 @@ says the engine models an organism unless the project's record says so.
   how many membranes, a wall or none, a nucleus or none, the organelles of an animal
   cell, a chromosome and its length, a count of ribosomes. `SPECIES_SHAPES.md` gives the
   list. A part the viewer does not know is a warning.
+- **Appendages are a general part** (the user, 15 November 2026: "lets draw flagella, pili
+  as a general feature, and with the optoin later to soom into the motor").
+  `cell.parts.appendages` is a list, and each entry describes one kind of thread or hair
+  that stands out from the cell, for any species:
+
+  ```json
+  {"kind": "flagellum", "label": "Flagella", "count": [4, 10], "length_um": [5, 10],
+   "width_nm": 20, "where": "all over", "from": "inner membrane",
+   "base": {"id": "flagellar-motor", "label": "Flagellar motor", "mark": "complex", "value": "flagellum"},
+   "sources": ["a key of the species' sources"]}
+  ```
+
+  - `kind` is a word the viewer can draw: `flagellum` (a long, wavy thread), `pilus` (a
+    short, straight hair); others are added as a species needs them.
+  - `count`, `length_um` and `width_nm` are a number or a range, each with a source; `where`
+    says where on the cell they stand (`all over`, `one pole`, `both poles`, `one side`),
+    and `from` which of the cell's membranes they start at.
+  - **Drawn as scenery.** Nothing in the engine stands behind an appendage, so it is drawn
+    in the neutral glass of scenery, and its panel says so. Where the count is too large
+    to draw, a part of it is drawn and the picture says how many of how many.
+  - **`base`** names the machine at the foot of the appendage (a flagellum's motor), so
+    that a closer view of it can be added later: its `id` and `label`, and the mark and
+    value under which the species' own proteins list its parts
+    (`schema/SPECIES_PROTEINS.md`, `highlights`). Until that view exists, choosing the
+    base shows those proteins.
 - **Every number has a basis.** A size or a count in `shape` or `parts` is either a fact
   with a source in `cell.facts`, or it is said in the level's `note` to be the picture's
   choice.
