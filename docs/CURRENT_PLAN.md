@@ -44,7 +44,7 @@ experiment).
 | Coupling out of the inventory (D155, scoped by D156) | **Numerically qualified** (15 November): the judged protocol passed, with second order against independent references for reciprocal feedback (A4) and a species setting a channel (A5). CPU only, within its scope line |
 | Excitable tissue (D155) | Design accepted narrowly, for M1 and M2 on @3 (D170). The generic cell is 0.01 F/m² (candidate A), on post-hoc probe evidence; the junction floor is provisional until M1's sheet runs |
 | Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestone 1 landed; FR-1's milestone 1 in progress |
-| The inner-model design note (D172: one inner model, made modular in place) | Drafted; being revised for D172's route. Earlier wording: not started; the lead commissions it. It gathers Track E's new laws (the slow-recovery j gate, Ca-dependent inactivation, possibly a Kv4-type transient outward current), `junction_ungated@1` (D170), FR-4's pump, FR-1's implicit bounding patch, the coupling stage hook and the bound-term fixes |
+| The D172 restructure (one modular inner model, `resolved_pump_tissue@3`) | **In implementation** (D176, 15 November). It runs on the integration branch `integration-d172` from tag `d172-base-2026-11-15`, in six parallel streams with one integrated acceptance gate and landing. The [note](INNER_MODEL_V4_DESIGN.md) is the design. FR-4 and FR-5 are the priority consumers |
 | Field-solver interface | Designed; code waits for the GH200 numbers |
 | One production execution path, compile policy, registry | Not started. D147's policy for composite definitions landed on 14 November |
 
