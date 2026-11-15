@@ -66,6 +66,13 @@ class Kind:
       [species, cell] and `outside` [species, outside node] the stage's total node rates (fmol/s;
       explicit stages without the implicit face drift); a false check refuses the step (FR-4's
       envelope: the closure's lag at the stage's transport).
+    - step size (B7 for kinds): `stage_term(read, control, p, *, xp)` -> [cell] conductance (S)
+      of the kind's charged routes at the stage (a pump's electrogenic slope), added to
+      membrane_rate's per-stage refusal, dt x rate <= EXPLICIT_STEP_BOUND; `bound_rate(spec,
+      declaration)` -> 1/s, a definition-time bound term the host step checks hold to the same
+      bound (the passive law's dt L <= 1).
+    - one writer: `held_rows(declaration)` -> ((species, node ID), ...), rows the kind reads and
+      never moves (held fuel); binding refuses any inner route or other kind that moves one.
     - step end: `book(applied, start, end, p, dt, *, xp)` -> ({own state field: new value},
       valid), after the tableau's combination; `applied(name)` is the step's applied rate of a
       state field (the tableau's weights), `start` the step's start state and `end` its end
@@ -100,6 +107,9 @@ class Kind:
     stage_rows: Callable | None = None
     rates: Callable | None = None
     stage_check: Callable | None = None
+    stage_term: Callable | None = None
+    bound_rate: Callable | None = None
+    held_rows: Callable | None = None
     book: Callable | None = None
     ledger_terms: Callable | None = None
     domain: Callable | None = None
