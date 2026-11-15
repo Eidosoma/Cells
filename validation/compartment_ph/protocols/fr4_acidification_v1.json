@@ -6,8 +6,14 @@
  "registration": {
   "status": "not registered",
   "no_judged_run_yet": "No run of this world exists: the core's insertion points (stage reads, transporters, held rows, the face-free term) and this branch's laws are not yet wired",
-  "basis": ["docs/COMPARTMENT_PH_TRANSFER_DESIGN.md (on main at f615dd8)", "the inner-model note §7.4 (the interface)", "D176 (FR-4's first case: maintained fuel)", "the charged-patch test, fr45/charged_patch/ (CRITERION.md, CP_RESULT.md)"],
-  "launch": "each judged unit through scripts/run_detached.sh, CPU 0 or as the lead assigns, --oom-first, cap 2G unless a development run measures more"
+  "basis": [
+   "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md (on main at f615dd8)",
+   "the inner-model note §7.4 (the interface)",
+   "D176 (FR-4's first case: maintained fuel)",
+   "the charged-patch test, fr45/charged_patch/ (CRITERION.md, CP_RESULT.md)"
+  ],
+  "launch": "each judged unit through scripts/run_detached.sh, CPU 0 or as the lead assigns, --oom-first, cap 2G unless a development run measures more",
+  "path": "The lead registers it, from a clean snapshot of the integrated candidate, after this world's dt study and a rehearsal (the D150/MG0c path). It travels with fr45-physics's merge into integration-d172, since it depends on integration code, and reaches main with the single landing (the coordinator's ruling, 15 November)"
  },
  "rung": "FR-4, acceptance 1 (numerical verification, D174's first claim kind; no living-cell claim)",
  "question": "Does the inner model, with rapid_proton_buffer@1, proton_atp_mass_action_positive@1 on maintained held fuel, proton_constant_field_leak@1 and @3's K+ constant-field route on the bounding patch, reproduce buffered acidification of a lumped compartment against its gradient, to an independent reference, at the world's declared step, with closed ledgers, and fail where its controls say it must?",
@@ -19,9 +25,15 @@
   "maintained_held_rows@1 (the fuel rows; name as the core lands it)",
   "cell_owned_compartments@1 (the compartment's identity; its refusal 4 lifted for K+-class routes under B7)"
  ],
- "scope": "Maintained fuel only (no depletion or recovery: that is the finite-fuel case's acceptance, D176 item 2). The K+ counterion only, at 5e-10 m/s (Cl- at lysosomal values and every ionic pore wait for the implicit patch). A lumped population of N = 1000 identical compartments as one node, declared; the single-compartment form is declared and run only as the floor check (C8). Fixed volume (no water). The cytosol's pH within its fuel band (7.2 ± 0.05). Explicit ARS(2,2,2) at the world's declared dt; no implicit patch in this rung",
+ "scope": "Maintained fuel only (no depletion or recovery: that is the finite-fuel case's acceptance, D176 item 2). The K+ counterion only, at 5e-10 m/s (Cl- at lysosomal values and every ionic pore wait for the implicit patch). A lumped population of N = 1000 identical compartments as one node, declared; the single-compartment form is reported, not judged, in version 1 (a later version may judge it once species-scaled energy floors exist). Fixed volume (no water). The cytosol's pH within its fuel band (7.2 ± 0.05). Explicit ARS(2,2,2) at the world's declared dt; no implicit patch in this rung",
  "driver": "validation/compartment_ph/dt_study.py (--run once wired), with validation/compartment_ph/definitions.py fr4_world and parameters.World",
- "judged_parts": ["dt_study", "reference", "envelope", "ledgers", "controls"],
+ "judged_parts": [
+  "dt_study",
+  "reference",
+  "envelope",
+  "ledgers",
+  "controls"
+ ],
  "theory_sources": {
   "closure": "the rapid-buffer approximation; organelle-pH models carry a buffer capacity (Grabe and Oster 2001; Ishida et al. 2013; quoted in CLOSED_COMPARTMENT_DESIGN §3.2)",
   "pump_form": "processes/kinetic_pump.py's thermodynamically consistent form (cycles = capacity x saturation x (1 - exp(dG/RT)))",
@@ -40,8 +52,23 @@
   "species_rows": 9,
   "declared_dt_s": 0.001,
   "declared_product_max_side": "dt x G_K/C_b = 0.0253 (world-declared, not an engine bound; B7 enters the shared bound at its ordinary constant)",
-  "ladder_s": [0.002, 0.001, 0.0005, 0.00025],
-  "material_floors_fmol": {"Na": 1e-10, "K": 1e-10, "Cl": 1e-10, "H": 1e-16, "B_c": 1e-12, "B_L": 1e-12, "ATP": 1e-12, "ADP": 1e-12, "Pi": 1e-12},
+  "ladder_s": [
+   0.002,
+   0.001,
+   0.0005,
+   0.00025
+  ],
+  "material_floors_fmol": {
+   "Na": 1e-10,
+   "K": 1e-10,
+   "Cl": 1e-10,
+   "H": 1e-16,
+   "B_c": 1e-12,
+   "B_L": 1e-12,
+   "ATP": 1e-12,
+   "ADP": 1e-12,
+   "Pi": 1e-12
+  },
   "records": "901 rows, every 1 s"
  },
  "predictions_at_drafting": {
@@ -54,7 +81,7 @@
  "rules": {
   "dt_study": "S5's form, as D150's and MG0c's: per record, the step term |q(dt) - q(dt/2)| and the observed orders log2 of successive max-norm differences on the three finest rungs; the rule detects bias, not order",
   "state_error": "at the declared 1 ms, the Richardson-estimated error of the lumen pH <= 1e-3 pH units and of V_b <= 1e-3 of its range",
-  "reference": "at 1 ms against the independent reference: the budget the references agent declares before comparing; this protocol does not set it",
+  "reference": "at 1 ms against the independent reference, within J4's budget. The budget is fixed in this protocol before registration, as a stated multiple of the references agent's measured floor on this world (as Track R's A4 did), with its basis written here. The references agent supplies the floor and does not set the budget (the coordinator's ruling, 15 November)",
   "envelope": "lambda >= 1e3 rho at every stage of every buffered node (rapid_proton_buffer.envelope_valid), counted and reported; any failure fails the part",
   "ledgers": "material per species within its declared floor at every record; charge within the capacitor tolerance; energy residual over flows <= 2e-3 at 1 ms (today's booking) and falling at second order down the ladder",
   "bands": "the cytosol's pH within 7.2 ± 0.05 at every stage (the pump's domain refuses otherwise)",
@@ -66,7 +93,7 @@
   "J1_admission": "every rung admitted and run without refusal",
   "J2_orders": "observed orders of lumen pH, V_b, lumen K and pump cycles in [1.8, 2.2] on the three finest rungs",
   "J3_state_error": "the state_error rule at 1 ms",
-  "J4_reference": "the reference rule at 1 ms",
+  "J4_reference": "the reference rule at 1 ms. Budget: to be fixed before registration as k x the references agent's measured floor on this world, with k and its basis recorded here; pending that floor",
   "J5_envelope": "the envelope rule",
   "J6_ledgers": "the ledgers rule, and the bands rule",
   "J7_controls": "every control below caught as registered"
@@ -80,8 +107,18 @@
   "species_only": "a species-only guard world (D150's form) where the closure and the leak are the only energy flows, judged at rounding",
   "delta_g_per_law": "a NumPy dG test per law per step (the kernels' contract tests, extended to the wired step)"
  },
- "reported_not_judged": ["the single-compartment form's ledger floors (C8 of the charged-patch analysis: H at about 1.6 free ions at pH 7.4)", "compile time, memory and the cost per step", "the steady-state pH (a consequence of generic parameters, not a claim)"],
- "what_it_does_not_show": ["finite fuel, depletion or recovery", "Cl- counterions, ionic pores or the implicit patch", "water or volume change", "any living-cell or organelle-specific claim (the parameters are generic)", "the closure's kinetic regime (it is a reduced representation inside its envelope)"],
+ "reported_not_judged": [
+  "the single-compartment form's ledger floors (C8 of the charged-patch analysis: H at about 1.6 free ions at pH 7.4)",
+  "compile time, memory and the cost per step",
+  "the steady-state pH (a consequence of generic parameters, not a claim)"
+ ],
+ "what_it_does_not_show": [
+  "finite fuel, depletion or recovery",
+  "Cl- counterions, ionic pores or the implicit patch",
+  "water or volume change",
+  "any living-cell or organelle-specific claim (the parameters are generic)",
+  "the closure's kinetic regime (it is a reduced representation inside its envelope)"
+ ],
  "disclosures": [
   "The declared step (1 ms, max-side 0.025) and the K+ permeability (5e-10 m/s) were chosen with the charged-patch test's runs 02-04 in view: explicit steps were refused by the energy booking above about 0.09 (log-mean) on worlds with no pump or buffer, so the 0.05 world-declared limit and its factor-of-two margin are extrapolations this protocol's dt study tests",
   "The K+ counterion replaced Cl- after the same runs showed lysosomal Cl- needs 0.01-0.03 ms explicitly",
@@ -90,18 +127,28 @@
   "The buffers' pK values, k_on and the pump's constants are generic declarations, not fits; no run of this world has been made",
   "The dt ladder (2, 1, 0.5, 0.25 ms) was chosen with the 0.05 threshold in view, so that the coarsest rung sits at it"
  ],
- "questions_for_the_lead": [
-  "Who registers this protocol, and from which integrated candidate's snapshot",
-  "Whether J4's budget comes from the references agent alone (proposed) or is fixed here",
-  "Whether the single-compartment form should be a judged arm once species-scaled energy floors exist"
- ],
+ "questions_for_the_lead": [],
  "development_runs": {
   "runs": [
-   {"path": "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/charged_patch/run-02", "status": "development (charged-patch test), not this world"},
-   {"path": "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/charged_patch/run-03", "status": "development (charged-patch test), not this world"},
-   {"path": "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/charged_patch/run-04", "status": "development (state against booking), not this world"}
+   {
+    "path": "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/charged_patch/run-02",
+    "status": "development (charged-patch test), not this world"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/charged_patch/run-03",
+    "status": "development (charged-patch test), not this world"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/charged_patch/run-04",
+    "status": "development (state against booking), not this world"
+   }
   ],
   "fr4_world_runs": []
  },
- "outcome_rules": "PASS when J1-J7 hold; otherwise the failing criteria are reported with their values and the world declares the finest rung that passes, without repair or retuning after the judged run"
+ "outcome_rules": "PASS when J1-J7 hold; otherwise the failing criteria are reported with their values and the world declares the finest rung that passes, without repair or retuning after the judged run",
+ "questions_answered": [
+  "Registration: the lead, from a clean snapshot of the integrated candidate, after the dt study and a rehearsal; the protocol travels with the branch's merge into integration-d172 and reaches main with the single landing",
+  "J4's budget: fixed here before registration from the references agent's measured floor (a stated multiple, basis written down); the agent supplies the floor only",
+  "The single-compartment form: reported, not judged, in version 1"
+ ]
 }
