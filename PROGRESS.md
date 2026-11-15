@@ -73,6 +73,145 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **MG0c (D152): the protocol after its rehearsal on main and the final check (15 November 2026).**
+  It is still PROPOSED. Tier 1 at the merge e1cdc79: 329 files, no changed outcome.
+  - **The rehearsal on main 58b6f14:** every judged entry ran on a registered dry-run copy, in its own
+    unit on CPUs 5 and 7. The verdict was 55 of 55, and 10,103 values were identical to the
+    development runs, apart from one count of control re-integrations.
+  - **The redraft:**
+    - runtime limits of about 3× the rehearsal plus 10 minutes;
+    - the lanes as rehearsed, with judge-guards at a 5 GiB minimum cap;
+    - the development runs restored as its basis;
+    - the launcher alone enforces caps, CPUs and limits.
+  - [Evidence](/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/HANDOFF.md).
+    Registration and one judged run follow.
+
+- **The coupling operator `species_regulated_availability@1` is numerically qualified (judged,
+  15 November 2026).** The protocol was registered at abe4ef5 (tag
+  `coupling-v1-registered-2026-11-15`), and one judged run was made from a clean snapshot of that
+  commit ([verdict](/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/judged/verdict/verdict.json); [log](/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/judged/judged.log)).
+  - **The verdict passed:** all 47 judged criteria, with 16 reported. The verdict's source revision
+    is the registration commit. The run took 1,378 s on one CPU and peaked at 0.98 GB.
+  - **What was judged:** the order against the independent references, in the band [1.7, 2.3]
+    fixed in advance.
+    - A4, reciprocal feedback (R-feedback): V, the amounts and U, plus all six observables of the
+      fast arm.
+    - A5, a species setting a channel's availability (R-cell): V and the amounts.
+    - A1, the factor values against R-fac's exact path.
+    - All four controls were caught: the regulatory state at first order, a factor one step
+      stale, and two basal-level δ controls.
+  - **The judged run is bit for bit identical to the rehearsal** in every part and control
+    ([compare](/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/judged/compare-to-rehearsal.json)).
+  - **The scope:**
+    - CPU only, in version 1;
+    - A4 starts from the reference's state at 50 ms and sits at the explicit-rate bound's edge;
+    - the horizons are 2 s and 1 s;
+    - no pumps or gated channels;
+    - A10 is out of scope.
+  - **Disclosed:** the band, the judged observables, the registered δ and the rounding-scale rule
+    were fixed with the development results in view.
+
+- **The coupling operator's qualification protocol, after its rehearsal and the final check (15
+  November 2026).** It is still PROPOSED. Tier 1 at the merge d8ee24a: 329 files, no changed outcome.
+  - **The rehearsal on main 0448f9f:** the judged entries were refused while PROPOSED. The dry run
+    reproduced the development run bit for bit, with the δ-controls at their registered δ by
+    design, and its verdict passes with every control caught.
+  - **The final check** (with the advisor):
+    - a `register` path in MG0c's form, with the verdict from a registered copy identical to the
+      rehearsal's;
+    - the refusal tests are safe with the protocol registered;
+    - D147: 0 free offsets in all nine worlds;
+    - a runtime limit of 4,500 s, with the rerun-once rule for infrastructure endings;
+    - the disclosures recorded.
+  - [Evidence](/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/HANDOFF.md). Registration and
+    one judged run follow.
+
+- **The coupling operator's qualification protocol (milestone 4, PROPOSED) and the composition
+  matrix landed (15 November 2026).** Validation, tests and docs only, during MG0c's `src/` hold.
+  Tier 1 at the merge 200b796: 329 files, no changed outcome
+  ([summary](/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/land-gate1-200b796c/summary.json)).
+  - **The protocol** ([JSON](validation/tissue/regulated_availability_protocol.json);
+    [note](docs/INVENTORY_COUPLING_DESIGN.md) §10;
+    [evidence](/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/HANDOFF.md)):
+    - **What is judged:** the order against the independent references, in a band of [1.7, 2.3]
+      fixed in advance, with a minimum number of resolved pairs per rule. That is 47 judged
+      criteria and 16 reported.
+    - **The controls:** the regulatory state at first order, and a factor one step stale, both
+      near order 1.0; plus basal-level δ controls. Every one is caught on the development run.
+    - **The 1 ms errors** are a tier-3 regression guard, not judged.
+    - **Version 1 runs on CPU only.** The scope line is recorded.
+    - **Next:** the rehearsal on main, the final check with the advisor, registration and one
+      judged run.
+  - **The composition matrix:** all 17 operators, regenerated from their declarations by a tier-1
+    test.
+    - Real and nominal refusals are tagged. A nominal tag means disjoint slots, not that the pair
+      is safe under today's adapter (D174).
+    - Every definition rule cites its test. The composite's RK4 composition rule now has one.
+
+- **Syn3A, the proposed minimal-cell track: the evidence audit (14 November 2026, the user's
+  request).** This is an assessment only; no engine model ran
+  ([note](docs/SYN3A_MINIMAL_CELL_TRACK.md);
+  [evidence](/mnt/workspaces/Cells/syn3a-20261114-01/HANDOFF.md)).
+  - **15 public resources checked at their primary sources,** and the user's brief's claims
+    verified or corrected.
+    - Pelletier 2021's data DOI does not resolve.
+    - The 2026 membrane archive is molecular dynamics only; its wet-lab data are in the journal's
+      source data.
+    - The 2024 lipid-diet study used a labelled derivative strain.
+  - **79 MB downloaded** into `/mnt/datasets/Cells/syn3a/`, with a manifest per source. The 4D
+    model's outputs await the user's approval (D138).
+  - **Proposed first milestone:** reconstituted-vesicle permeability, with fitting kept separate
+    from prediction. The open questions are the user's.
+
+- **The coupling operator's milestone 3, and Track E's independent references, landed (14
+  November 2026).** Validation, tests and docs only, during MG0c's `src/` hold. Tier 1 at the merge
+  8b7ad24: 326 files, no changed outcome ([summary](/mnt/workspaces/Cells/independent-references-20261114-01/land-gate1-8b7ad241/summary.json)).
+  - **`species_regulated_availability@1` against the independent references (A4 and A5)**
+    ([note](docs/INVENTORY_COUPLING_DESIGN.md) §9;
+    [evidence](/mnt/workspaces/Cells/inventory-coupling-m3-20261114-01/HANDOFF.md)).
+    - **A4, reciprocal feedback:** two cells, with a contact set by each cell's regulatory state.
+      Observed order 2.0 in V, the amounts and U at dt 1 to 0.125 ms, against R-feedback at Radau
+      rtol 1e-10. The fast arm gives 1.97–2.00.
+    - **A5, a species setting a channel's availability:** order 2.00 in V and the amounts. The
+      factor is exact to rounding.
+    - **The record** run from a frozen snapshot reproduced the development errors bit for bit.
+    - **Disclosed choices**, logged before the record run:
+      - A4 starts from the reference's state at 50 ms and sits at the edge of the explicit-rate
+        bound;
+      - the horizons are 2 s and 1 s;
+      - the worlds have no pumps or gated channels.
+    - **Not registered:** the proposed 1 ms tolerances (twice the measured error). On this build
+      they cannot fail, so they become regression guards. The judged item of the coming PROPOSED
+      protocol is the order against the reference, on pairs at least 100 floors above it, with a
+      control that breaks the order (the advisor's review).
+  - **Track E's references (`validation/excitable/`)** were written by a separate agent that read
+    no engine code ([usage](validation/excitable/REFERENCES_USAGE.md);
+    [evidence](/mnt/workspaces/Cells/independent-references-20261114-01/HANDOFF.md)).
+    - **What they cover:** the single cell with the declared laws and the pump; the passive cable
+      and its linear limit; the strong-coupling limit; the chain protocols of the appendix's §8,
+      including the mid-chain segment and the 0.01 F/m² cells.
+    - **Self-tests:** 16, tier 1. At rtol 1e-11 every observable moves by 1e-11 or less.
+    - **The blind check:** the entry-junction voltages at block sites match the engine's to 0.02
+      mV, and the coupling-only arm reaches 120.6 mV at s·r_gj = 10, supporting the floor of 20
+      (D170).
+    - **The ambiguities it flagged in §8.4** go to Track E's appendix: the observation window of
+      the far-end S1–S2 interval, the coupling for the capture runs, and APD measured from the
+      stimulus end.
+  - **The coupling references gained** `jac_sparsity` and `Run.integrate`. Their 44 self-tests
+    are unchanged.
+
+- **The visualizer merged into main (14 November 2026, the user's request).** It adds the
+  `visualizer` branch's 45 commits, all under `visualizer/`: the three.js viewer with its replay
+  and lenses, the run adapter, the planarian protein atlas from public sources, and their tests
+  and fixtures. Nothing outside `visualizer/` changed.
+  - **Gate:** the tree-scanning guards ran on the merge and passed: D147's drivers, the BETSE
+    boundary, J2's bright line, the source-profile boundary, the continuity bypass and the
+    source-order tests. That was 62 passed and 31 skipped, the skips being the existing D131 ones.
+  - **No full tier gate ran.** The tier runner collects `tests/` only, so the visualizer's own
+    tests are outside it.
+  - [Log](/mnt/workspaces/Cells/visualizer-merge-20261114/guards.log). The visualizer session
+    keeps developing on its branch.
+
 - **Combined landing (14 November 2026):** FR-10's milestone 1, the coupling operator's
   milestone 2 and MG0c's revised protocol. Tier 1 and 2 at the merge f0e154a: 420 files, no
   changed outcome ([summary](/mnt/workspaces/Cells/inventory-coupling-m2-20261114-01/land-gate12-f0e154a0/summary.json)). The coupling operator's two tier-3 files
@@ -144,8 +283,9 @@ machine-readable inputs, results, checks and failures.
   - **The limits:**
     - the channel laws' +60 mV domain, against A's +56.65 mV at the chain's end cell;
     - the junction gate law's 120 mV domain at block sites (118.1 mV at s·r_gj = 10), so the floor
-      s·r_gj ≥ 20 is provisional. The independent reference, written blind, matches the engine
-      to 0.02 mV, and finds 10 unsafe in the coupling-only arm (120.6 mV);
+      s·r_gj ≥ 20 is provisional. The independent reference's junction voltages, computed
+      blind, match the engine's to 0.02 mV, and it finds 10 unsafe in the coupling-only arm
+      (120.6 mV);
     - `junction_ungated@1` named for the inner-model note.
   - **Landed:** the note, its equations appendix and the probe driver
     (`validation/tissue/excitable_probe.py`). Tier 1 at the merge 7bbda57: 323 files, no

@@ -41,14 +41,14 @@ experiment).
 | Checkpoint continuity (D153) | Implemented and guarded for CPU vector windows and on the GPU (the extension landed on 14 November) |
 | Phase markers | Completion records implemented; start and failure records pending |
 | Run-view output (D154) | Requirement recorded; design pending |
-| Coupling out of the inventory (D155, scoped by D156) | Design accepted. Milestone 1 implemented and guarded: the junction and channel targets are bitwise against scheduled availability. Milestone 2 implemented and guarded: the regulatory state, restart, batches and compositions. Milestone 3, A4 and A5 against the independent references, in progress |
+| Coupling out of the inventory (D155, scoped by D156) | **Numerically qualified** (15 November): the judged protocol passed, with second order against independent references for reciprocal feedback (A4) and a species setting a channel (A5). CPU only, within its scope line |
 | Excitable tissue (D155) | Design accepted narrowly, for M1 and M2 on @3 (D170). The generic cell is 0.01 F/m² (candidate A), on post-hoc probe evidence; the junction floor is provisional until M1's sheet runs |
 | Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestone 1 landed; FR-1's milestone 1 in progress |
-| The inner-model (@4) design note | Not started; the lead commissions it. It gathers Track E's new laws (the slow-recovery j gate, Ca-dependent inactivation, possibly a Kv4-type transient outward current), `junction_ungated@1` (D170), FR-4's pump, FR-1's implicit bounding patch, the coupling stage hook and the bound-term fixes |
+| The inner-model design note (D172: one inner model, made modular in place) | Drafted; being revised for D172's route. Earlier wording: not started; the lead commissions it. It gathers Track E's new laws (the slow-recovery j gate, Ca-dependent inactivation, possibly a Kv4-type transient outward current), `junction_ungated@1` (D170), FR-4's pump, FR-1's implicit bounding patch, the coupling stage hook and the bound-term fixes |
 | Field-solver interface | Designed; code waits for the GH200 numbers |
 | One production execution path, compile policy, registry | Not started. D147's policy for composite definitions landed on 14 November |
 
-**The working order** (D156; six agents from 14 November, D155):
+**The working order** (D156; six agents from 14 November, D155, and seven from that evening, D171):
 1. **Now, in parallel:** the conduction probe on the engine as it is (Track E); D150's judged
    qualification; D152's MG0c with a compiled composition; the coupling design (Track R).
 2. **Next:** one minimal inventory → effective control → measurable electrical-response case,

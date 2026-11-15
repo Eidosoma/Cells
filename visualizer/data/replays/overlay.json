@@ -1,0 +1,539 @@
+{
+  "format": "cells.visualizer.replay_overlay@1",
+  "note": "Labels and plain lines for replays, curated from the experiments' own documents. The adapter copies an experiment's entry into the catalogue and copies from a run only the parameters and readouts named here. A replay shows what the run recorded and never computes a verdict of its own.",
+  "experiments": {
+    "e07-v1": {
+      "label": "E07-v1: renewal",
+      "plain": "Can a voltage pattern written into a tissue survive while its cells are replaced? A disc of cells sits at a depolarised voltage (D) in a sheet of 127 cells at their resting voltage (H). Cells are then replaced one at a time by a copy of a neighbour, and each run is compared with plain copying on the same schedule.",
+      "sources": [
+        {
+          "path": "docs/HEREDITY_FIRST_EXPERIMENT.md"
+        },
+        {
+          "path": "docs/E07_V1_DESIGN.md",
+          "where": "3. Design"
+        },
+        {
+          "path": "docs/E07_V1_DESIGN.md",
+          "where": "6. Readouts, analysis rules and the proposed judged items"
+        }
+      ],
+      "outcome": {
+        "judged": true,
+        "status": "Judged, 13 and 14 November 2026",
+        "answer": "no",
+        "label": "The disc did not renew",
+        "text": "Under donor-copy turnover the written disc did not renew, and the coupling's effect was far smaller than predicted. 8 of 15 scored predictions held.",
+        "sources": [
+          {
+            "path": "PROGRESS.md",
+            "where": "E07-v1 judged (13–14 November)"
+          },
+          {
+            "path": "docs/CURRENT_PLAN.md",
+            "where": "Gate: coupled renewal"
+          }
+        ]
+      },
+      "stops": {
+        "planned end": {
+          "label": "Ran to its planned end"
+        },
+        "all_h": {
+          "label": "Stopped early: every cell had fallen to H",
+          "early": true
+        }
+      },
+      "engine_entities": [
+        "exp.e07v1",
+        "models.replacement",
+        "cap.replacement"
+      ],
+      "groups": {
+        "control": {
+          "label": "Control: disc only",
+          "plain": "Only the disc's cells are replaced, each by a copy of a neighbour inside the disc. Under plain copying the pattern passes by construction, so the control isolates the electrical loss of D copies."
+        },
+        "fast k1": {
+          "label": "Inheritance route, fast k1",
+          "plain": "Cells across the whole sheet are replaced by copies of a neighbour, drawn blind to its state. Each cell stays 17 minutes before it is replaced."
+        },
+        "central k1": {
+          "label": "Inheritance route, central k1",
+          "plain": "Cells across the whole sheet are replaced by copies of a neighbour, drawn blind to its state. Each cell stays 40 minutes before it is replaced."
+        },
+        "fast k3": {
+          "label": "Inheritance route, fast k3",
+          "plain": "Cells across the whole sheet are replaced by copies of a neighbour, drawn blind to its state. Each cell stays 51 minutes before it is replaced."
+        },
+        "threshold-finding": {
+          "label": "Boundary set",
+          "plain": "Isolated newcomers with fast junction formation: how fast must junctions form for a newcomer to be recruited into the written state?"
+        }
+      },
+      "classes": [
+        {
+          "id": "neutral",
+          "label": "Neutral",
+          "description": "At the judged record: |ΔJ| ≤ δ, D-loss ≤ 2% and recruitment ≤ 2%."
+        },
+        {
+          "id": "erosion",
+          "label": "Erosion",
+          "description": "At the judged record: ΔJ < −δ or D-loss > 5%, and not recruitment."
+        },
+        {
+          "id": "recruitment",
+          "label": "Recruitment",
+          "description": "At the judged record: ΔJ > +δ or recruitment > 5%, and not erosion."
+        },
+        {
+          "id": "mixed",
+          "label": "Mixed",
+          "description": "Both the erosion and the recruitment conditions hold."
+        },
+        {
+          "id": "small bias",
+          "label": "Small bias",
+          "description": "Anything else: none of the other classes holds."
+        }
+      ],
+      "class_note": "The class is the one the experiment's own summary records for this run, judged at its judged record against the paired copy-only null.",
+      "regions": {
+        "disc": {
+          "label": "The disc",
+          "plain": "The cells that start in the written state D."
+        }
+      },
+      "records": {
+        "vm": {
+          "label": "Membrane voltage",
+          "plain": "The voltage across each cell's membrane. D cells are depolarised; H cells are at the resting voltage.",
+          "shown_between": [
+            -0.09,
+            -0.01
+          ]
+        },
+        "generation": {
+          "label": "Generation",
+          "plain": "How many times the cell in this place has been replaced."
+        },
+        "junction_abundance": {
+          "label": "Junction abundance",
+          "plain": "How far the junctions between two cells have formed. A newcomer's junctions start low and form over time."
+        }
+      },
+      "events": {
+        "replacement": {
+          "label": "Replacement",
+          "plain": "A cell is removed and a copy of the donor cell takes its place."
+        }
+      },
+      "parameters": {
+        "size": {
+          "label": "Disc size",
+          "unit": "cells"
+        },
+        "s": {
+          "label": "Junction coupling s"
+        },
+        "kind": {
+          "label": "Newcomer"
+        },
+        "scope": {
+          "label": "Cells replaced"
+        },
+        "rule": {
+          "label": "Donor rule"
+        },
+        "formation.lag_s": {
+          "label": "Junction formation lag",
+          "unit": "s"
+        },
+        "formation.time_constant_s": {
+          "label": "Junction formation time constant",
+          "unit": "s"
+        },
+        "residence_s": {
+          "label": "Residence time R",
+          "unit": "s"
+        },
+        "interval_s": {
+          "label": "Time between replacements",
+          "unit": "s"
+        },
+        "judged_at": {
+          "label": "Judged at"
+        },
+        "dt": {
+          "label": "Time step",
+          "unit": "s"
+        }
+      },
+      "readouts": {
+        "judged_s": {
+          "label": "Judged record",
+          "unit": "s"
+        },
+        "J_engine": {
+          "label": "J in the run",
+          "plain": "The overlap (Jaccard) of the cells in D with the disc, over the whole sheet, at the judged record."
+        },
+        "J_null": {
+          "label": "J under plain copying",
+          "plain": "The same overlap for the paired copy-only null: labels copied along the same schedule and donor draws, without the engine."
+        },
+        "delta_J": {
+          "label": "ΔJ",
+          "plain": "J in the run minus J under plain copying."
+        },
+        "delta": {
+          "label": "δ",
+          "plain": "The tolerance: 2 over the disc's size."
+        },
+        "D_copies": {
+          "label": "D copies arrived"
+        },
+        "D_copies_lost": {
+          "label": "D copies that fell to H"
+        },
+        "D_loss_fraction": {
+          "label": "D-loss fraction",
+          "plain": "D copies that fell to H before their own replacement, over the D copies arrived."
+        },
+        "H_copies": {
+          "label": "H copies arrived"
+        },
+        "H_copies_converted": {
+          "label": "H copies converted to D"
+        },
+        "recruitment_fraction": {
+          "label": "Recruitment fraction",
+          "plain": "H copies converted to D, over the H copies arrived."
+        },
+        "founders_lost": {
+          "label": "Founders lost"
+        },
+        "d_outside_max": {
+          "label": "Most D cells outside the disc"
+        },
+        "delta_J_over_records.mean": {
+          "label": "ΔJ over the records, mean"
+        },
+        "delta_J_over_records.min": {
+          "label": "ΔJ over the records, lowest"
+        },
+        "delta_J_over_records.max": {
+          "label": "ΔJ over the records, highest"
+        }
+      }
+    },
+    "heredity-turnover-literature": {
+      "label": "Turnover pre-screen: the literature newcomer rule",
+      "plain": "A development run before E07-v1: can a voltage pattern written into a tissue renew itself when its cells are replaced the way the literature describes? A disc of cells sits at a depolarised voltage (D) in a sheet of 127 cells at their resting voltage (H). Only the disc's cells are replaced, the oldest first. A newcomer arrives with no junctions and forms them over tens of minutes; it is either a fresh cell at the resting voltage or a copy of a neighbour. Each run starts two minutes after a brief cue wrote the disc.",
+      "sources": [
+        {
+          "path": "validation/tissue/heredity_turnover_literature.py",
+          "where": "The driver's opening note: question, world and start, turnover, readouts, stop rules"
+        },
+        {
+          "path": "docs/HEREDITY_FIRST_EXPERIMENT.md",
+          "where": "Where the design stands (11 November 2026): Renewal"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D139: Cell replacement (G2) rules"
+        }
+      ],
+      "outcome": {
+        "judged": false,
+        "status": "Development pre-screen, not judged; 11 to 13 November 2026",
+        "answer": null,
+        "text": "Heredity turnover under the literature newcomer rule: no disc renewed, and B1 failed in all 21 arms, as predicted (11–13 November; development pre-screen, not judged).",
+        "sources": [
+          {
+            "path": "PROGRESS.md",
+            "where": "Runs: Heredity turnover under the literature newcomer rule (11–13 November)"
+          }
+        ]
+      },
+      "stops": {
+        "planned end": {
+          "label": "Ran to its planned end"
+        },
+        "all_h": {
+          "label": "Stopped early: every cell had fallen to H",
+          "early": true
+        }
+      },
+      "engine_entities": [
+        "models.replacement",
+        "op.scheduled_cell_replacement@1",
+        "cap.replacement",
+        "cap.sheet"
+      ],
+      "groups": {
+        "iso": {
+          "label": "Isolated newcomers",
+          "plain": "Each replaced cell's place is taken by a fresh cell at the resting voltage (H). It arrives with no junctions to its neighbours and forms them after a lag, over tens of minutes."
+        },
+        "donor": {
+          "label": "Donor copies",
+          "plain": "Each replaced cell's place is taken by a copy of one of its neighbours, drawn at random from inside or outside the disc: the neighbour divides into the place. The copy arrives with no junctions and forms them after a lag, over tens of minutes."
+        }
+      },
+      "regions": {
+        "disc": {
+          "label": "The disc",
+          "plain": "The cells a cue wrote into the depolarised state D before the run starts. Only these cells are replaced."
+        }
+      },
+      "records": {
+        "vm": {
+          "label": "Membrane voltage",
+          "plain": "The voltage across each cell's membrane. D cells are depolarised; H cells are at the resting voltage.",
+          "shown_between": [
+            -0.09,
+            -0.01
+          ]
+        },
+        "generation": {
+          "label": "Generation",
+          "plain": "How many times the cell in this place has been replaced."
+        },
+        "junction_abundance": {
+          "label": "Junction abundance",
+          "plain": "How far the junctions between two cells have formed. A newcomer's junctions start at zero and form over time."
+        }
+      },
+      "events": {
+        "replacement": {
+          "label": "Replacement",
+          "plain": "A disc cell is removed and a newcomer takes its place: a fresh cell at the resting voltage (isolated newcomers) or a copy of a neighbouring cell (donor copies)."
+        }
+      },
+      "parameters": {
+        "size": {
+          "label": "Disc size",
+          "unit": "cells"
+        },
+        "s": {
+          "label": "Junction coupling s"
+        },
+        "kind": {
+          "label": "Newcomer"
+        },
+        "bracket": {
+          "label": "Junction formation bracket"
+        },
+        "formation.lag_s": {
+          "label": "Junction formation lag",
+          "unit": "s"
+        },
+        "formation.time_constant_s": {
+          "label": "Junction formation time constant",
+          "unit": "s"
+        },
+        "k": {
+          "label": "Residence, in formation times (k)"
+        },
+        "residence_s": {
+          "label": "Residence time R",
+          "unit": "s"
+        },
+        "interval_s": {
+          "label": "Time between replacements",
+          "unit": "s"
+        },
+        "turnover_complete_s.0": {
+          "label": "First turnover complete, at",
+          "unit": "s"
+        },
+        "turnover_complete_s.1": {
+          "label": "Second turnover complete, at",
+          "unit": "s"
+        },
+        "end_s": {
+          "label": "Planned end",
+          "unit": "s"
+        },
+        "start.seconds_after_cue_off_at_t0": {
+          "label": "Start, after the cue ended",
+          "unit": "s"
+        },
+        "seeds.order": {
+          "label": "Seed of the replacement order"
+        },
+        "seeds.donor": {
+          "label": "Seed of the donor draws"
+        },
+        "dt": {
+          "label": "Time step",
+          "unit": "s"
+        }
+      },
+      "readouts": {
+        "jaccard_after_turnover.0": {
+          "label": "J after the first turnover",
+          "plain": "The overlap (Jaccard) of the cells in D with the disc, once every disc cell has been replaced once. Where the run had already ended with every cell at H, the run records 0."
+        },
+        "jaccard_after_turnover_basis.0": {
+          "label": "J after the first turnover, read from"
+        },
+        "jaccard_after_turnover.1": {
+          "label": "J after the second turnover",
+          "plain": "The same overlap once every disc cell has been replaced twice."
+        },
+        "jaccard_after_turnover_basis.1": {
+          "label": "J after the second turnover, read from"
+        },
+        "d_inside_after_turnover.0": {
+          "label": "D cells in the disc after the first turnover"
+        },
+        "d_inside_after_turnover.1": {
+          "label": "D cells in the disc after the second turnover"
+        },
+        "first_disc_loss_s": {
+          "label": "First record with a disc cell out of D",
+          "unit": "s"
+        },
+        "first_jaccard_below_0p8_s": {
+          "label": "First record with J below 0.8",
+          "unit": "s"
+        },
+        "all_h_s": {
+          "label": "First record with no cell in D",
+          "unit": "s"
+        },
+        "d_inside_end": {
+          "label": "D cells in the disc at the end"
+        },
+        "max_d_outside": {
+          "label": "Most D cells outside the disc"
+        },
+        "newcomers": {
+          "label": "Newcomers arrived"
+        },
+        "isolated_newcomers_ever_D": {
+          "label": "Isolated newcomers that were ever in D"
+        },
+        "founders_lost_before_replacement": {
+          "label": "Founders that fell to H before their replacement"
+        },
+        "d_newcomers_lost_before_replacement": {
+          "label": "Newcomers that arrived in D and fell to H before their replacement"
+        },
+        "largest_10s_fall_of_D_beyond_events.cells": {
+          "label": "Largest fall in D cells between two records",
+          "unit": "cells",
+          "plain": "The largest drop in the sheet's count of D cells from one 10 s record to the next, not counting D cells that a replacement removed in between."
+        },
+        "largest_10s_fall_of_D_beyond_events.at_s": {
+          "label": "Largest fall, at",
+          "unit": "s"
+        },
+        "osmotic.max_excess": {
+          "label": "Largest osmotic excess",
+          "plain": "The largest rise of a cell's osmolarity over the resting (H) start, as a fraction. The driver flags 0.10 and ends a run at 0.15."
+        },
+        "b1_jaccard_0p8_through_two_turnovers": {
+          "label": "B1: J at least 0.8 through two turnovers",
+          "plain": "True where both turnovers were reached, J never fell below 0.8 and no cell passed the osmotic limit."
+        }
+      }
+    },
+    "heredity-pilot-w1": {
+      "label": "W1: heredity pilot",
+      "plain": "A development pilot before E07-v1: can a brief cue write a voltage pattern into a tissue? The tissue has 225 cells, all at their resting voltage (H). For two seconds an added sodium leak opens in the cells of a disc of 19 or 37 cells. The replays show these two runs on the full tissue: one second before the cue, the cue, and three seconds after it. The pilot's 70-minute runs, in which five of six written discs held, used a simpler sheet of 127 cells and are not among the replays.",
+      "sources": [
+        {
+          "path": "validation/tissue/heredity_pilot.py",
+          "where": "The driver's opening note: question, world, mapping onto E07-v1, cue"
+        },
+        {
+          "path": "docs/HEREDITY_FIRST_EXPERIMENT.md",
+          "where": "Where the design stands (11 November 2026): Retention"
+        }
+      ],
+      "outcome": {
+        "judged": false,
+        "status": "Development pilot, not judged; 10 and 11 November 2026",
+        "answer": null,
+        "text": "Heredity pilot W1: the cue writes discs; fresh discs hold for 70 min (10–11 November; development, not judged).",
+        "sources": [
+          {
+            "path": "PROGRESS.md",
+            "where": "Runs: Heredity pilot W1: the cue writes discs; fresh discs hold for 70 min (10–11 November)"
+          }
+        ]
+      },
+      "engine_entities": [
+        "exp.w1",
+        "models.pump_tissue",
+        "exec.schedule",
+        "cap.sheet"
+      ],
+      "groups": {
+        "pilot-04": {
+          "label": "Full tissue",
+          "plain": "The full tissue of 225 cells and the fluid between them, at coupling 1.0: one second at rest, a two-second cue on the disc, and three seconds after it. It ran with the engine's opt-in junction-heat booking; with the default booking the engine refuses the cue's first step."
+        }
+      },
+      "regions": {
+        "disc": {
+          "label": "The disc",
+          "plain": "The cells the cue acts on."
+        }
+      },
+      "records": {
+        "vm": {
+          "label": "Membrane voltage",
+          "plain": "The voltage across each cell's membrane, averaged over the cell's membrane patches. D cells are depolarised; H cells are at the resting voltage.",
+          "shown_between": [
+            -0.09,
+            0.01
+          ]
+        }
+      },
+      "events": {
+        "cue_on": {
+          "label": "Cue on",
+          "plain": "The cue starts in this cell: an added sodium leak, nine times the cell's own, opens in its membrane."
+        },
+        "cue_off": {
+          "label": "Cue off",
+          "plain": "The cue ends in this cell: the added leak closes."
+        }
+      },
+      "parameters": {
+        "disc_cells": {
+          "label": "Disc size",
+          "unit": "cells"
+        },
+        "s": {
+          "label": "Junction coupling s"
+        },
+        "phases_s.preparation_end": {
+          "label": "Preparation ends, records start",
+          "unit": "s"
+        },
+        "phases_s.cue_on": {
+          "label": "Cue on, at",
+          "unit": "s"
+        },
+        "phases_s.cue_off": {
+          "label": "Cue off, at",
+          "unit": "s"
+        },
+        "execution.dt": {
+          "label": "Time step",
+          "unit": "s"
+        },
+        "model.junction_heat_booking": {
+          "label": "Junction-heat booking"
+        }
+      },
+      "readouts": {}
+    }
+  }
+}

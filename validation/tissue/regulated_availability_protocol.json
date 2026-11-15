@@ -1,0 +1,1332 @@
+{
+ "id": "coupling_regulated_availability_v1",
+ "status": "registered by the lead (registrar), 15 November 2026, after the rehearsal on main (0448f9fc), the dry run with a registered copy, the final check with the advisor and its five items (head 7cfe185a), and a registration-path check from the landed tree; one judged run follows from a clean snapshot of main at this registration commit",
+ "registration": {
+  "status": "registered by the lead (registrar), 15 November 2026, after the rehearsal on main (0448f9fc), the dry run with a registered copy, the final check with the advisor and its five items (head 7cfe185a), and a registration-path check from the landed tree; one judged run follows from a clean snapshot of main at this registration commit",
+  "registrar": "the lead",
+  "date": "2026-11-15",
+  "basis": [
+   "rehearsal: /mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/rehearsal/ (refusals while PROPOSED; every part bitwise against dev-476c6e01 apart from the \u03b4-controls at their registered \u03b4; the judge's verdict on the dry-run copy passes)",
+   "final-check items: the register path added and run; the refusal tests pass with the checked-in protocol registered; D147: 0 free offsets in all nine worlds; the runtime limit 4,500 s; the attempt rule; the disclosures",
+   "the advisor's final check (14-15 November): the order criteria judged in the a-priori band [1.7, 2.3]; the 1 ms pins are a regression guard, not judged"
+  ],
+  "scope_reminder": "CPU only in version 1; A4 from the reference's state at 50 ms at the explicit-rate bound's edge; horizons 2 s (A4) and 1 s (A5); no pumps or gated channels; A10 out of scope",
+  "judged_run": "one run, launched by the lead with the protocol's resources.launch command on an exclusive CPU"
+ },
+ "operator": "species_regulated_availability@1",
+ "models": [
+  "resolved_pump_composite@1",
+  "resolved_pump_tissue@3",
+  "species_regulated_availability@1",
+  "scheduled_species_turnover@1 (A5's regulator)"
+ ],
+ "references": "validation/coupling (R-fac, R-feedback, R-cell) through REFERENCES_USAGE.md",
+ "generator": "validation/tissue/regulated_availability_dt_study.py",
+ "judge": "validation/tissue/regulated_availability_judge.py",
+ "controls_module": "validation/tissue/regulated_availability_controls.py",
+ "ladder_s": [
+  0.001,
+  0.0005,
+  0.00025,
+  0.000125
+ ],
+ "band": [
+  1.7,
+  2.3
+ ],
+ "resolution": {
+  "floor_factor": 100.0,
+  "rounding": {
+   "s": 1e-13,
+   "a_eff": 1e-13,
+   "F": 1e-13,
+   "U": "steps_eps_max"
+  }
+ },
+ "observables": [
+  "V",
+  "amounts",
+  "a_eff",
+  "s",
+  "U",
+  "F"
+ ],
+ "judged_parts": [
+  "a1",
+  "a4",
+  "a5",
+  "controls"
+ ],
+ "judged_observables": {
+  "a4.baseline": [
+   "V"
+  ],
+  "a4.coupled": [
+   "V",
+   "amounts",
+   "U"
+  ],
+  "a4.fast": [
+   "V",
+   "amounts",
+   "a_eff",
+   "s",
+   "U",
+   "F"
+  ],
+  "a5.baseline": [
+   "V",
+   "amounts"
+  ],
+  "a5.coupled": [
+   "V",
+   "amounts"
+  ]
+ },
+ "minimum_resolved_pairs": {
+  "a4.baseline.V": 2,
+  "a4.coupled.V": 2,
+  "a4.coupled.amounts": 1,
+  "a4.coupled.U": 1,
+  "a4.fast.V": 2,
+  "a4.fast.amounts": 2,
+  "a4.fast.a_eff": 2,
+  "a4.fast.s": 2,
+  "a4.fast.U": 2,
+  "a4.fast.F": 2,
+  "a5.baseline.V": 2,
+  "a5.baseline.amounts": 1,
+  "a5.coupled.V": 2,
+  "a5.coupled.amounts": 1
+ },
+ "control_arms": {
+  "first_order_state": "a4.coupled",
+  "lagged_factor": "a4.coupled",
+  "delta_basal_a4": "a4.coupled",
+  "delta_basal_a5": "a5.coupled"
+ },
+ "registered_control_deltas": {
+  "delta_basal_a4": 2e-05,
+  "delta_basal_a5": 4.9999999999999996e-06
+ },
+ "criteria": [
+  {
+   "id": "A1_host_within_bound",
+   "metrics": [
+    "parts.a1.host.max_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "A1, host: every grid point's absolute error in eps against R-fac's exact path is within its a priori bound (4 + 2 f (1 - f) n (|ln x| + |ln K| + 1); 4 for state laws; the sum plus 1 for a product)",
+   "judged": true
+  },
+  {
+   "id": "A1_host_exact_points",
+   "metrics": [
+    "parts.a1.host.exact_points_exact"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "A1, host: at x = 0 the factor is exactly 0 (activation) or 1 (inhibition)",
+   "judged": true
+  },
+  {
+   "id": "A1_device_within_bound",
+   "metrics": [
+    "parts.a1.device.max_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "A1, device: every grid point's absolute error in eps against R-fac's exact path is within its a priori bound (4 + 2 f (1 - f) n (|ln x| + |ln K| + 1); 4 for state laws; the sum plus 1 for a product)",
+   "judged": true
+  },
+  {
+   "id": "A1_device_exact_points",
+   "metrics": [
+    "parts.a1.device.exact_points_exact"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "A1, device: at x = 0 the factor is exactly 0 (activation) or 1 (inhibition)",
+   "judged": true
+  },
+  {
+   "id": "A1_products_within_bound",
+   "metrics": [
+    "parts.a1.products.max_ratio"
+   ],
+   "comparison": "le",
+   "threshold": 1.0,
+   "basis": "A1, products: every grid point's absolute error in eps against R-fac's exact path is within its a priori bound (4 + 2 f (1 - f) n (|ln x| + |ln K| + 1); 4 for state laws; the sum plus 1 for a product)",
+   "judged": true
+  },
+  {
+   "id": "A1_products_exact_points",
+   "metrics": [
+    "parts.a1.products.exact_points_exact"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "A1, products: at x = 0 the factor is exactly 0 (activation) or 1 (inhibition)",
+   "judged": true
+  },
+  {
+   "id": "A4_baseline_V_order",
+   "metrics": [
+    "derived.a4.baseline.V.in_band"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every resolved pair's observed order of V lies in [1.7, 2.3] (resolved: the finer error at least 100 floors and its rounding scale)",
+   "judged": true
+  },
+  {
+   "id": "A4_baseline_V_resolved",
+   "metrics": [
+    "derived.a4.baseline.V.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 2,
+   "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one)",
+   "judged": true
+  },
+  {
+   "id": "A4_baseline_amounts_reported",
+   "metrics": [
+    "derived.a4.baseline.amounts.errors",
+    "derived.a4.baseline.amounts.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A4_baseline_a_eff_reported",
+   "metrics": [
+    "derived.a4.baseline.a_eff.errors",
+    "derived.a4.baseline.a_eff.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A4_baseline_s_reported",
+   "metrics": [
+    "derived.a4.baseline.s.errors",
+    "derived.a4.baseline.s.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A4_baseline_U_reported",
+   "metrics": [
+    "derived.a4.baseline.U.errors",
+    "derived.a4.baseline.U.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A4_baseline_F_reported",
+   "metrics": [
+    "derived.a4.baseline.F.errors",
+    "derived.a4.baseline.F.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A4_baseline_start",
+   "metrics": [
+    "derived.a4.baseline.row0_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-15,
+   "basis": "row 0 is the reference's start (a priori: both start from it)",
+   "judged": true
+  },
+  {
+   "id": "A4_coupled_V_order",
+   "metrics": [
+    "derived.a4.coupled.V.in_band"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every resolved pair's observed order of V lies in [1.7, 2.3] (resolved: the finer error at least 100 floors and its rounding scale)",
+   "judged": true
+  },
+  {
+   "id": "A4_coupled_V_resolved",
+   "metrics": [
+    "derived.a4.coupled.V.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 2,
+   "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one)",
+   "judged": true
+  },
+  {
+   "id": "A4_coupled_amounts_order",
+   "metrics": [
+    "derived.a4.coupled.amounts.in_band"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every resolved pair's observed order of amounts lies in [1.7, 2.3] (resolved: the finer error at least 100 floors and its rounding scale)",
+   "judged": true
+  },
+  {
+   "id": "A4_coupled_amounts_resolved",
+   "metrics": [
+    "derived.a4.coupled.amounts.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one)",
+   "judged": true
+  },
+  {
+   "id": "A4_coupled_U_order",
+   "metrics": [
+    "derived.a4.coupled.U.in_band"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every resolved pair's observed order of U lies in [1.7, 2.3] (resolved: the finer error at least 100 floors and its rounding scale)",
+   "judged": true
+  },
+  {
+   "id": "A4_coupled_U_resolved",
+   "metrics": [
+    "derived.a4.coupled.U.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one)",
+   "judged": true
+  },
+  {
+   "id": "A4_coupled_a_eff_reported",
+   "metrics": [
+    "derived.a4.coupled.a_eff.errors",
+    "derived.a4.coupled.a_eff.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A4_coupled_s_reported",
+   "metrics": [
+    "derived.a4.coupled.s.errors",
+    "derived.a4.coupled.s.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A4_coupled_F_reported",
+   "metrics": [
+    "derived.a4.coupled.F.errors",
+    "derived.a4.coupled.F.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A4_coupled_start",
+   "metrics": [
+    "derived.a4.coupled.row0_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-15,
+   "basis": "row 0 is the reference's start (a priori: both start from it)",
+   "judged": true
+  },
+  {
+   "id": "A4_fast_V_order",
+   "metrics": [
+    "derived.a4.fast.V.in_band"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every resolved pair's observed order of V lies in [1.7, 2.3] (resolved: the finer error at least 100 floors and its rounding scale)",
+   "judged": true
+  },
+  {
+   "id": "A4_fast_V_resolved",
+   "metrics": [
+    "derived.a4.fast.V.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 2,
+   "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one)",
+   "judged": true
+  },
+  {
+   "id": "A4_fast_amounts_order",
+   "metrics": [
+    "derived.a4.fast.amounts.in_band"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every resolved pair's observed order of amounts lies in [1.7, 2.3] (resolved: the finer error at least 100 floors and its rounding scale)",
+   "judged": true
+  },
+  {
+   "id": "A4_fast_amounts_resolved",
+   "metrics": [
+    "derived.a4.fast.amounts.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 2,
+   "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one)",
+   "judged": true
+  },
+  {
+   "id": "A4_fast_a_eff_order",
+   "metrics": [
+    "derived.a4.fast.a_eff.in_band"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every resolved pair's observed order of a_eff lies in [1.7, 2.3] (resolved: the finer error at least 100 floors and its rounding scale)",
+   "judged": true
+  },
+  {
+   "id": "A4_fast_a_eff_resolved",
+   "metrics": [
+    "derived.a4.fast.a_eff.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 2,
+   "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one)",
+   "judged": true
+  },
+  {
+   "id": "A4_fast_s_order",
+   "metrics": [
+    "derived.a4.fast.s.in_band"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every resolved pair's observed order of s lies in [1.7, 2.3] (resolved: the finer error at least 100 floors and its rounding scale)",
+   "judged": true
+  },
+  {
+   "id": "A4_fast_s_resolved",
+   "metrics": [
+    "derived.a4.fast.s.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 2,
+   "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one)",
+   "judged": true
+  },
+  {
+   "id": "A4_fast_U_order",
+   "metrics": [
+    "derived.a4.fast.U.in_band"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every resolved pair's observed order of U lies in [1.7, 2.3] (resolved: the finer error at least 100 floors and its rounding scale)",
+   "judged": true
+  },
+  {
+   "id": "A4_fast_U_resolved",
+   "metrics": [
+    "derived.a4.fast.U.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 2,
+   "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one)",
+   "judged": true
+  },
+  {
+   "id": "A4_fast_F_order",
+   "metrics": [
+    "derived.a4.fast.F.in_band"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every resolved pair's observed order of F lies in [1.7, 2.3] (resolved: the finer error at least 100 floors and its rounding scale)",
+   "judged": true
+  },
+  {
+   "id": "A4_fast_F_resolved",
+   "metrics": [
+    "derived.a4.fast.F.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 2,
+   "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one)",
+   "judged": true
+  },
+  {
+   "id": "A4_fast_start",
+   "metrics": [
+    "derived.a4.fast.row0_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-15,
+   "basis": "row 0 is the reference's start (a priori: both start from it)",
+   "judged": true
+  },
+  {
+   "id": "A5_baseline_V_order",
+   "metrics": [
+    "derived.a5.baseline.V.in_band"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every resolved pair's observed order of V lies in [1.7, 2.3] (resolved: the finer error at least 100 floors and its rounding scale)",
+   "judged": true
+  },
+  {
+   "id": "A5_baseline_V_resolved",
+   "metrics": [
+    "derived.a5.baseline.V.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 2,
+   "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one)",
+   "judged": true
+  },
+  {
+   "id": "A5_baseline_amounts_order",
+   "metrics": [
+    "derived.a5.baseline.amounts.in_band"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every resolved pair's observed order of amounts lies in [1.7, 2.3] (resolved: the finer error at least 100 floors and its rounding scale)",
+   "judged": true
+  },
+  {
+   "id": "A5_baseline_amounts_resolved",
+   "metrics": [
+    "derived.a5.baseline.amounts.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one)",
+   "judged": true
+  },
+  {
+   "id": "A5_baseline_a_eff_reported",
+   "metrics": [
+    "derived.a5.baseline.a_eff.errors",
+    "derived.a5.baseline.a_eff.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A5_baseline_s_reported",
+   "metrics": [
+    "derived.a5.baseline.s.errors",
+    "derived.a5.baseline.s.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A5_baseline_U_reported",
+   "metrics": [
+    "derived.a5.baseline.U.errors",
+    "derived.a5.baseline.U.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A5_baseline_F_reported",
+   "metrics": [
+    "derived.a5.baseline.F.errors",
+    "derived.a5.baseline.F.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A5_baseline_start",
+   "metrics": [
+    "derived.a5.baseline.row0_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-15,
+   "basis": "row 0 is the reference's start (a priori: both start from it)",
+   "judged": true
+  },
+  {
+   "id": "A5_coupled_V_order",
+   "metrics": [
+    "derived.a5.coupled.V.in_band"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every resolved pair's observed order of V lies in [1.7, 2.3] (resolved: the finer error at least 100 floors and its rounding scale)",
+   "judged": true
+  },
+  {
+   "id": "A5_coupled_V_resolved",
+   "metrics": [
+    "derived.a5.coupled.V.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 2,
+   "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one)",
+   "judged": true
+  },
+  {
+   "id": "A5_coupled_amounts_order",
+   "metrics": [
+    "derived.a5.coupled.amounts.in_band"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "every resolved pair's observed order of amounts lies in [1.7, 2.3] (resolved: the finer error at least 100 floors and its rounding scale)",
+   "judged": true
+  },
+  {
+   "id": "A5_coupled_amounts_resolved",
+   "metrics": [
+    "derived.a5.coupled.amounts.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one)",
+   "judged": true
+  },
+  {
+   "id": "A5_coupled_a_eff_reported",
+   "metrics": [
+    "derived.a5.coupled.a_eff.errors",
+    "derived.a5.coupled.a_eff.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A5_coupled_s_reported",
+   "metrics": [
+    "derived.a5.coupled.s.errors",
+    "derived.a5.coupled.s.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A5_coupled_U_reported",
+   "metrics": [
+    "derived.a5.coupled.U.errors",
+    "derived.a5.coupled.U.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A5_coupled_F_reported",
+   "metrics": [
+    "derived.a5.coupled.F.errors",
+    "derived.a5.coupled.F.resolved"
+   ],
+   "comparison": "ge",
+   "threshold": 0,
+   "basis": "reported, not judged (the errors over the ladder, then the resolved pairs): no resolved pair, or (for s, a_eff and F) not every pair resolved in development",
+   "judged": false
+  },
+  {
+   "id": "A5_coupled_start",
+   "metrics": [
+    "derived.a5.coupled.row0_max"
+   ],
+   "comparison": "le",
+   "threshold": 1e-15,
+   "basis": "row 0 is the reference's start (a priori: both start from it)",
+   "judged": true
+  },
+  {
+   "id": "A4_baseline_gate_held",
+   "metrics": [
+    "derived.a4.baseline.gates_held"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "the contact's gate stays at exactly 1 in every run (the reference's gate is fixed open)",
+   "judged": true
+  },
+  {
+   "id": "A4_coupled_gate_held",
+   "metrics": [
+    "derived.a4.coupled.gates_held"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "the contact's gate stays at exactly 1 in every run (the reference's gate is fixed open)",
+   "judged": true
+  },
+  {
+   "id": "A4_fast_gate_held",
+   "metrics": [
+    "derived.a4.fast.gates_held"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "the contact's gate stays at exactly 1 in every run (the reference's gate is fixed open)",
+   "judged": true
+  },
+  {
+   "id": "A5_coupled_factor_at_rounding",
+   "metrics": [
+    "derived.a5.coupled.a_eff.max_error",
+    "derived.a5.coupled.F.max_error"
+   ],
+   "comparison": "le",
+   "threshold": 1.4210854715202004e-14,
+   "basis": "A5's factor is the law at X, which D150's turnover gives exactly on the grid: the error is rounding at every dt (64 eps, a priori)",
+   "judged": true
+  },
+  {
+   "id": "control_first_order_state_caught",
+   "metrics": [
+    "derived.controls.first_order_state.caught"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "control: the regulatory state integrated at first order (explicit Euler half-steps), on a4.coupled, puts a resolved pair of a judged observable out of the band (the rule can fail)",
+   "judged": true
+  },
+  {
+   "id": "control_lagged_factor_caught",
+   "metrics": [
+    "derived.controls.lagged_factor.caught"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "control: the factor one step stale, on a4.coupled, puts a resolved pair of a judged observable out of the band (the rule can fail)",
+   "judged": true
+  },
+  {
+   "id": "control_delta_basal_a4_caught",
+   "metrics": [
+    "derived.controls.delta_basal_a4.caught"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "control: A4's basal level times (1 + \u03b4) at the registered \u03b4, on a4.coupled, puts a resolved pair of a judged observable out of the band (the rule can fail)",
+   "judged": true
+  },
+  {
+   "id": "control_delta_basal_a5_caught",
+   "metrics": [
+    "derived.controls.delta_basal_a5.caught"
+   ],
+   "comparison": "ge",
+   "threshold": 1,
+   "basis": "control: A5's basal level times (1 + \u03b4) at the registered \u03b4, on a5.coupled, puts a resolved pair of a judged observable out of the band (the rule can fail)",
+   "judged": true
+  }
+ ],
+ "regression_pins_1ms": {
+  "judged": false,
+  "pins": {
+   "a4.coupled.V": 1.5005871822904027e-08,
+   "a4.coupled.amounts": 4.577827894536313e-09,
+   "a4.coupled.a_eff": 1.915750891257062e-11,
+   "a4.coupled.s": 6.993916557007651e-11,
+   "a4.coupled.U": 1.6255485846272677e-10,
+   "a4.coupled.F": 1.915750891257062e-11,
+   "a5.coupled.V": 5.837828404020584e-08,
+   "a5.coupled.amounts": 2.125034370692447e-09,
+   "a5.coupled.a_eff": 1e-13,
+   "a5.coupled.F": 1e-13
+  },
+  "basis": "a regression guard, not a qualification (the lead's ruling): twice the development error at 1 ms, at least 100 floors and 1e-13 for dimensionless quantities; tests/unit/test_species_regulated_availability_regression.py"
+ },
+ "scope": {
+  "worlds": "A4 (R-feedback): two 2 pL cells on 4 pF patches facing held baths, joined by a contact of 2e-8 m/s with its gate held at 1; a state of Na in both, its complement on the contact (side both, basal 0.2); 2 s, started from the reference's own state at 50 ms (after the contact's voltage transient); the contact sits at the edge of @3's explicit-rate bound at 1 ms. A fast arm at k_on + k_off = 900/s. A5 (R-cell): one cell with a K-leak population read at once from a neutral regulator with D150's turnover and a production pulse; 1 s.",
+  "not_covered": "pumps and gated channels (the references model neither); horizons beyond 2 s (A4) and 1 s (A5); A10, the first consumer (its crossing level above the A.3 commitment limit is never reached: refuse it or mark it unreachable, the references agent's note, for A10's own protocol); A2's states against R-state (milestone 2's closed forms stand); restart, windows, batches and the bitwise items, which are tier tests",
+  "gpu": "CPU-only in version 1 (proposed, the lead's recommendation): the floors, the band's resolution and A4's fragile observables were measured on CPU; an L4 variant is a later protocol with its own development runs",
+  "a1": "the references agent's form: the absolute error in eps (fr.eps_error) against R-fac's exact path, not a relative-ulp criterion (too strict in deep Hill tails), within an a priori bound per point"
+ },
+ "attempt_rule": "D150's: one judged run from a clean execution snapshot of main into a new directory. An infrastructure ending (a timeout at the launcher's runtime limit, a runtime kill, an OOM kill, a signal, or an incomplete results.json) is rerun once from the same snapshot into a new directory; a failed criterion is a verdict, not a retry",
+ "disclosures": [
+  "The band [1.7, 2.3] was set around the scheme's order 2 (the lead's ruling) with the development orders, 1.97 to 2.08 on resolved pairs, in view",
+  "The judged observables (V, the amounts and U wherever resolved; s, a_eff and F only where every pair is resolved) and each rule's minimum resolved pairs (the development count less one) are rules applied to the development run, so they were fixed with its results in view",
+  "The registered deltas (2e-5 and 5e-6) are the development deltas rounded up on a 1-2-5 grid; the development deltas were set from that run's own finest errors (a plateau at 10 times the finest error in V)",
+  "The rounding-scale rule (N eps max|U| for U; 1e-13 for s, a_eff and F) was written after the development record showed A4's uncoupled U pair at 2.33, with errors of 8.6e-13 and 1.7e-13 s at accumulated rounding; the rule excludes that pair, and U is reported only in that arm",
+  "A1's bound (4 + 2 f (1 - f) n (|ln x| + |ln K| + 1) eps) and the 100-floor factor were written before A1 and the dt study first ran",
+  "The development run of record comes from the snapshot of 476c6e01 and the rehearsal from main at 0448f9fc; the rehearsal's records equal the development run's bit for bit, the \u03b4-controls apart (run at the registered \u03b4 by design)"
+ ],
+ "d147": {
+  "worlds": [
+   {
+    "world": "a4.baseline",
+    "model": "resolved_pump_composite@1",
+    "inner_model": "resolved_pump_tissue@3",
+    "free_field_offsets": 0,
+    "declared_field_solver": "capacitive_reduction_gauged_damped_newton@2",
+    "solver_for_auto": "capacitive_reduction_gauged_damped_newton@2"
+   },
+   {
+    "world": "a4.coupled",
+    "model": "resolved_pump_composite@1",
+    "inner_model": "resolved_pump_tissue@3",
+    "free_field_offsets": 0,
+    "declared_field_solver": "capacitive_reduction_gauged_damped_newton@2",
+    "solver_for_auto": "capacitive_reduction_gauged_damped_newton@2"
+   },
+   {
+    "world": "a4.fast",
+    "model": "resolved_pump_composite@1",
+    "inner_model": "resolved_pump_tissue@3",
+    "free_field_offsets": 0,
+    "declared_field_solver": "capacitive_reduction_gauged_damped_newton@2",
+    "solver_for_auto": "capacitive_reduction_gauged_damped_newton@2"
+   },
+   {
+    "world": "a5.baseline",
+    "model": "resolved_pump_composite@1",
+    "inner_model": "resolved_pump_tissue@3",
+    "free_field_offsets": 0,
+    "declared_field_solver": "capacitive_reduction_gauged_damped_newton@2",
+    "solver_for_auto": "capacitive_reduction_gauged_damped_newton@2"
+   },
+   {
+    "world": "a5.coupled",
+    "model": "resolved_pump_composite@1",
+    "inner_model": "resolved_pump_tissue@3",
+    "free_field_offsets": 0,
+    "declared_field_solver": "capacitive_reduction_gauged_damped_newton@2",
+    "solver_for_auto": "capacitive_reduction_gauged_damped_newton@2"
+   },
+   {
+    "world": "controls.first_order_state",
+    "model": "resolved_pump_composite@1",
+    "inner_model": "resolved_pump_tissue@3",
+    "free_field_offsets": 0,
+    "declared_field_solver": "capacitive_reduction_gauged_damped_newton@2",
+    "solver_for_auto": "capacitive_reduction_gauged_damped_newton@2"
+   },
+   {
+    "world": "controls.lagged_factor",
+    "model": "resolved_pump_composite@1",
+    "inner_model": "resolved_pump_tissue@3",
+    "free_field_offsets": 0,
+    "declared_field_solver": "capacitive_reduction_gauged_damped_newton@2",
+    "solver_for_auto": "capacitive_reduction_gauged_damped_newton@2"
+   },
+   {
+    "world": "controls.delta_basal_a4",
+    "model": "resolved_pump_composite@1",
+    "inner_model": "resolved_pump_tissue@3",
+    "free_field_offsets": 0,
+    "declared_field_solver": "capacitive_reduction_gauged_damped_newton@2",
+    "solver_for_auto": "capacitive_reduction_gauged_damped_newton@2"
+   },
+   {
+    "world": "controls.delta_basal_a5",
+    "model": "resolved_pump_composite@1",
+    "inner_model": "resolved_pump_tissue@3",
+    "free_field_offsets": 0,
+    "declared_field_solver": "capacitive_reduction_gauged_damped_newton@2",
+    "solver_for_auto": "capacitive_reduction_gauged_damped_newton@2"
+   }
+  ],
+  "max_free_field_offsets": 0,
+  "declared_field_solvers": [
+   "capacitive_reduction_gauged_damped_newton@2"
+  ],
+  "automatic_choice_agrees": true
+ },
+ "steps_before_judgement": [
+  "the lead's review of this draft with the advisor",
+  "a rehearsal: the judged entry from a snapshot, refused while PROPOSED (the guard) (done: protocol['rehearsal'])",
+  "a dry run: the judged entries with a registered dry-run copy, from the snapshot to be judged, every part, compared bitwise with the development run (done: protocol['rehearsal'])",
+  "the final check of the registered values against the dry run",
+  "registration by the lead (the status alone changes)",
+  "one judged run and its verdict"
+ ],
+ "development_runs": [
+  {
+   "path": "/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/dev-476c6e01/results.json",
+   "source": {
+    "kind": "snapshot",
+    "git_revision": "476c6e017937d74680186cc6ad6c0a4c375de9f0",
+    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": "complete"
+   },
+   "status": "Development run"
+  }
+ ],
+ "development_summary": {
+  "a4.baseline": {
+   "V": {
+    "orders": [
+     2.0094385879118764,
+     2.004614933414535,
+     2.0022066988809466
+    ],
+    "resolved": 3
+   },
+   "amounts": {
+    "orders": [
+     2.0228399763581115,
+     1.647698256069119,
+     0.9068905956085185
+    ],
+    "resolved": 0
+   },
+   "a_eff": {
+    "orders": [
+     null,
+     null,
+     null
+    ],
+    "resolved": 0
+   },
+   "s": {
+    "orders": [
+     2.0005073048551347,
+     2.0038233745786282,
+     2.0163315401406834
+    ],
+    "resolved": 1
+   },
+   "U": {
+    "orders": [
+     2.3298586526282956,
+     2.1422167736090434,
+     1.7394560804634025
+    ],
+    "resolved": 0
+   },
+   "F": {
+    "orders": [
+     null,
+     null,
+     null
+    ],
+    "resolved": 0
+   }
+  },
+  "a4.coupled": {
+   "V": {
+    "orders": [
+     2.081286782670606,
+     2.0388692456154307,
+     2.0190157831174402
+    ],
+    "resolved": 3
+   },
+   "amounts": {
+    "orders": [
+     1.9991045723710559,
+     1.996709603815353,
+     1.9886132396981935
+    ],
+    "resolved": 2
+   },
+   "a_eff": {
+    "orders": [
+     2.006985578005921,
+     2.0279771471790573,
+     2.112032150965827
+    ],
+    "resolved": 0
+   },
+   "s": {
+    "orders": [
+     1.996450055121349,
+     1.9857150087347595,
+     1.9407907491342493
+    ],
+    "resolved": 0
+   },
+   "U": {
+    "orders": [
+     1.9997990052430246,
+     2.0002758823166062,
+     2.0023589761285696
+    ],
+    "resolved": 2
+   },
+   "F": {
+    "orders": [
+     2.006985578005921,
+     2.0279771471790573,
+     2.112032150965827
+    ],
+    "resolved": 0
+   }
+  },
+  "a4.fast": {
+   "V": {
+    "orders": [
+     1.9941776164333547,
+     1.997490123022677,
+     1.9949503891503468
+    ],
+    "resolved": 3
+   },
+   "amounts": {
+    "orders": [
+     1.982031872928621,
+     1.995499435918819,
+     1.9988321107643474
+    ],
+    "resolved": 3
+   },
+   "a_eff": {
+    "orders": [
+     1.9662576462623376,
+     1.9909353425214549,
+     1.9949829382957898
+    ],
+    "resolved": 3
+   },
+   "s": {
+    "orders": [
+     1.9664131948753425,
+     1.9909715361412057,
+     1.9949740453904037
+    ],
+    "resolved": 3
+   },
+   "U": {
+    "orders": [
+     1.9819972150947514,
+     1.995500645835128,
+     1.9988528467232503
+    ],
+    "resolved": 3
+   },
+   "F": {
+    "orders": [
+     1.9662576462623376,
+     1.9909353425214549,
+     1.9949829382957898
+    ],
+    "resolved": 3
+   }
+  },
+  "a5.baseline": {
+   "V": {
+    "orders": [
+     2.009256919773713,
+     2.004623059288259,
+     2.0023093981567506
+    ],
+    "resolved": 3
+   },
+   "amounts": {
+    "orders": [
+     2.0094326724611027,
+     2.0058443582116983,
+     2.007829489509985
+    ],
+    "resolved": 2
+   },
+   "a_eff": {
+    "orders": [
+     null,
+     null,
+     null
+    ],
+    "resolved": 0
+   },
+   "s": {
+    "orders": [
+     null,
+     null,
+     null
+    ],
+    "resolved": 0
+   },
+   "U": {
+    "orders": [
+     null,
+     null,
+     null
+    ],
+    "resolved": 0
+   },
+   "F": {
+    "orders": [
+     null,
+     null,
+     null
+    ],
+    "resolved": 0
+   }
+  },
+  "a5.coupled": {
+   "V": {
+    "orders": [
+     2.004152418091417,
+     2.0020648379263917,
+     2.0009973281905
+    ],
+    "resolved": 3
+   },
+   "amounts": {
+    "orders": [
+     2.0034000327359336,
+     1.9993812159283697,
+     1.987679728364132
+    ],
+    "resolved": 2
+   },
+   "a_eff": {
+    "orders": [
+     0.0,
+     -1.222392421336448,
+     -0.6520766965796931
+    ],
+    "resolved": 0
+   },
+   "s": {
+    "orders": [
+     null,
+     null,
+     null
+    ],
+    "resolved": 0
+   },
+   "U": {
+    "orders": [
+     null,
+     null,
+     null
+    ],
+    "resolved": 0
+   },
+   "F": {
+    "orders": [
+     0.0,
+     -1.222392421336448,
+     -0.6520766965796931
+    ],
+    "resolved": 0
+   }
+  }
+ },
+ "development_controls": {
+  "first_order_state": {
+   "caught": 1,
+   "arm": "a4.coupled",
+   "orders": {
+    "V": [
+     0.9387701978748173,
+     0.9723511278950513,
+     0.9868337178941762
+    ],
+    "amounts": [
+     1.0010203597937306,
+     1.0005096946483358,
+     1.0002541587354092
+    ],
+    "U": [
+     1.0012606616316326,
+     1.000630231351159,
+     1.0003150700366181
+    ]
+   },
+   "resolved": {
+    "V": 3,
+    "amounts": 3,
+    "U": 3
+   },
+   "delta": null
+  },
+  "lagged_factor": {
+   "caught": 1,
+   "arm": "a4.coupled",
+   "orders": {
+    "V": [
+     1.0289577358457438,
+     1.0134494913894374,
+     1.0064888324654047
+    ],
+    "amounts": [
+     1.0002177564609527,
+     1.0001090795573837,
+     1.0000547013940055
+    ],
+    "U": [
+     0.9999838143581334,
+     0.9999919677333111,
+     0.9999960216686188
+    ]
+   },
+   "resolved": {
+    "V": 3,
+    "amounts": 3,
+    "U": 3
+   },
+   "delta": null
+  },
+  "delta_basal_a4": {
+   "caught": 1,
+   "arm": "a4.coupled",
+   "orders": {
+    "V": [
+     1.8268340215807948,
+     1.0859291070324175,
+     -0.004612901083079489
+    ],
+    "amounts": [
+     -0.008774294819659906,
+     -0.002185333894753094,
+     -0.0005458166382564658
+    ],
+    "U": [
+     -0.019272917206378297,
+     -0.004778834128330195,
+     -0.001191770451606459
+    ]
+   },
+   "resolved": {
+    "V": 3,
+    "amounts": 3,
+    "U": 3
+   },
+   "delta": 1.803188652336386e-05
+  },
+  "delta_basal_a5": {
+   "caught": 1,
+   "arm": "a5.coupled",
+   "orders": {
+    "V": [
+     1.6767436333179877,
+     0.752504402872069,
+     0.13575094877937827
+    ],
+    "amounts": [
+     1.4142030546956783,
+     0.5609711968176629,
+     0.0511787239255632
+    ]
+   },
+   "resolved": {
+    "V": 3,
+    "amounts": 3
+   },
+   "delta": 3.04797103929641e-06
+  }
+ },
+ "questions": [
+  "Answered by the lead (14 November 2026): the band [1.7, 2.3] stands, set a priori around the scheme's order; the minimum resolved pairs and U's rounding-scale rule stand, and A4's uncoupled U stays reported; version 1 is CPU-only, an L4 variant later"
+ ],
+ "rehearsal": {
+  "snapshot": {
+   "git_revision": "0448f9fcfc64555f22b1795e68cbb740abbf6fbf",
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "status": "complete"
+  },
+  "refusals_while_proposed": {
+   "refused-generator": {
+    "message": "Refused: the protocol is not registered (its status does not begin 'registered')",
+    "wrote_nothing": true
+   },
+   "refused-judge": {
+    "message": "Refused: the protocol is not registered (its status does not begin 'registered')",
+    "wrote_nothing": true
+   }
+  },
+  "judged_run": {
+   "status": "Judged run of coupling_regulated_availability_v1",
+   "complete": true,
+   "source": {
+    "kind": "snapshot",
+    "git_revision": "0448f9fcfc64555f22b1795e68cbb740abbf6fbf",
+    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": "complete"
+   },
+   "parts": [
+    "a1",
+    "a4",
+    "a5",
+    "controls"
+   ],
+   "part_wall_s": {
+    "a1": 0.725591504946351,
+    "a4": 535.4089361899532,
+    "a5": 217.50346715701744,
+    "controls": 545.4266399326734
+   }
+  },
+  "judged_run_wall_s": 1299.1,
+  "verdict": {
+   "kind": "Judged verdict",
+   "passed": true,
+   "controls_caught": {
+    "first_order_state": 1,
+    "lagged_factor": 1,
+    "delta_basal_a4": 1,
+    "delta_basal_a5": 1
+   }
+  },
+  "bitwise_against_development": {
+   "development": "dev-476c6e01/results.json",
+   "parts": {
+    "a1": true,
+    "a4": true,
+    "a5": true,
+    "controls.delta_basal_a4": null,
+    "controls.delta_basal_a5": null,
+    "controls.first_order_state": true,
+    "controls.lagged_factor": true
+   },
+   "by_design": [
+    "controls.delta_basal_a4",
+    "controls.delta_basal_a5"
+   ],
+   "differing": []
+  },
+  "memory_peak_bytes": 980779008,
+  "memory_cap": "4G",
+  "passed": true
+ },
+ "resources": {
+  "cpus": 1,
+  "memory_cap": "4G",
+  "observed_memory_peak_bytes": 980779008,
+  "observed_wall_s": 1299.1,
+  "runtime_max_s": 4500,
+  "basis": "three times the rehearsal's wall time on one CPU plus 10 minutes, rounded up to the minute (D150's rule; shared CPUs ran 1.65 to 4.6 times slow on 14 November)",
+  "enforced_by": "the launcher: scripts/run_detached.sh with the memory cap, --oom-first and --runtime-max; neither the generator nor the judge reads these fields",
+  "launch": "scripts/run_detached.sh UNIT 4G --cpus CPU --oom-first --runtime-max RUNTIME_MAX_S -- python -m validation.tissue.regulated_availability_dt_study judged validation/tissue/regulated_availability_protocol.json NEW_DIR (from the clean snapshot of main to be judged); then python -m validation.tissue.regulated_availability_judge judged PROTOCOL NEW_DIR/results.json VERDICT_DIR"
+ }
+}

@@ -80,8 +80,8 @@ Do not interrupt an active computation merely to stop assistant polling.
 Follow-up audits and regression jobs should wait for the user's next instruction.
 
 From 8 November 2026 a single lead agent coordinates this checkout, with at most
-six subagents working on disjoint files (raised from four by the user on 14 November
-2026, D155). Within the plan agreed with the user,
+seven subagents working on disjoint files (raised by the user from four to six on 14
+November 2026, D155, and to seven the same evening, D171). Within the plan agreed with the user,
 the lead may start planned follow-up runs without waiting for a status request.
 It relies on completion notifications, not repeated polling.
 

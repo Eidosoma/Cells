@@ -2,7 +2,20 @@
  "schema": "cells.morphogenesis_protocol@1",
  "id": "mg0c-turing-v1",
  "title": "MG0c: Turing patterning at the predicted wavelength, local_species_reactions@1's first acceptance on resolved_pump_tissue@3's species transport",
- "status": "PROPOSED (drafted 14 November 2026 by the D152 engine agent from the development runs named in development_runs, revised the same day after the lead's review with the advisor (review); not registered, and no judged run is made before the lead registers it)",
+ "status": "registered by the lead (registrar), 15 November 2026, after the rehearsal on main 58b6f14 (every judged entry on a registered dry-run copy: 55 of 55, values identical to the development runs), the final check with the advisor and its four items (head 82555c9), and a registration-path check from the landed tree; one judged run follows from a clean snapshot of main at this registration commit",
+ "registration": {
+  "status": "registered by the lead (registrar), 15 November 2026, after the rehearsal on main 58b6f14 (every judged entry on a registered dry-run copy: 55 of 55, values identical to the development runs), the final check with the advisor and its four items (head 82555c9), and a registration-path check from the landed tree; one judged run follows from a clean snapshot of main at this registration commit",
+  "registrar": "the lead",
+  "date": "2026-11-15",
+  "no_judged_run_yet": "No judged run of mg0c-turing-v1 exists at registration. The runs whose records carry the label 'Judged run of mg0c-turing-v1' (rehearsal-58b6f14) are rehearsal runs on a registered dry-run copy, labelled so only because they ran under --protocol on that copy.",
+  "basis": [
+   "development runs (pre-FR-9): development_runs.basis, from which the thresholds and the 165 registered deltas derive",
+   "rehearsal: /mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/",
+   "registration-path check: /mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/regcheck-landed-9cf3b69/ (a copy of the landed protocol registered with the real command; judge and combine on the rehearsal's outputs give the same 55 verdicts and pass)",
+   "diff 58b6f14..main: no change under src/ or to MG0c's driver, fixtures, references or guard files; only mg0c_protocol.py and the protocol JSON"
+  ],
+  "launch": "each entry through scripts/run_detached.sh with the protocol's caps, CPUs and runtime limits, using rehearse_entry.sh unchanged (copied into the judged run's inputs), lanes as rehearsed: CPU 5 a then c; CPU 7 b then q7 then judge-guards; then judge and combine"
+ },
  "rung": "MG0c",
  "question": "Does local_species_reactions@1, composed with @3's species transport on a closed chain, run the declared discrete system: the engine order's own map for linear networks and for Schnakenberg linearised, exact mode propagation and the nonlinear pattern to the scheme's step terms, only admissible modes growing, the predicted dominant mode and growth rate, the staircase of fastest modes against the domain's length, decay below the critical ratio, and closed accounting?",
  "engine_models": [
@@ -11,7 +24,7 @@
   "local_species_reactions@1 (src/cells/models/operators/species_reactions.py): driven mass action; ideal_detailed_balance_mass_action@1 in guard 2's passive world",
   "cells.core.inventory_species (D150) declares the network's species"
  ],
- "scope": "MG0c's judged arms run local_species_reactions@1's driven mass action only, of orders 0, 1 and 3 (Schnakenberg's four reactions; guard 2's open world and the sites world, orders 0 and 1), at outside nodes, with resolved_pump_tissue@3's species transport on faces in resolved_pump_composite@1, with five species per world (three quiescent ions and the network's two), within the 7 species the scope stays at: D150's cap of 16 since FR-9 / D165 is not exercised. One judged guard world departs from driven mass action, flagged for the lead (question 1): guard 2's passive world runs ideal_detailed_balance_mass_action@1 (A <-> B, linear) at outside nodes, judged against the engine order's exact map. Every other use of the passive law, Michaelis-Menten, Hill factors, cell routes, D150's writers and the mixed-node heat and work split enters only through test files; the heat and work split is guarded, not qualified, until the first mixed-node protocol. A qualified statement from this protocol carries this scope",
+ "scope": "MG0c's judged arms run local_species_reactions@1's driven mass action only, of orders 0, 1 and 3 (Schnakenberg's four reactions; guard 2's open world and the sites world, orders 0 and 1), at outside nodes, with resolved_pump_tissue@3's species transport on faces in resolved_pump_composite@1, with five species per world (three quiescent ions and the network's two), within the 7 species the scope stays at: D150's cap of 16 since FR-9 / D165 is not exercised. One judged guard world departs from driven mass action, kept judged at the lead's answer (review.answers): guard 2's passive world runs ideal_detailed_balance_mass_action@1 (A <-> B, linear) at outside nodes, judged against the engine order's exact map. Every other use of the passive law, Michaelis-Menten, Hill factors, cell routes, D150's writers and the mixed-node heat and work split enters only through test files; the heat and work split is guarded, not qualified, until the first mixed-node protocol. A qualified statement from this protocol carries this scope",
  "driver": "validation/morphogenesis/mg0c_turing.py",
  "judged_parts": [
   "d147",
@@ -466,11 +479,11 @@
   "orders": "per record, log2 of successive max-norm differences |q(dt) - q(dt/2)| / |q(dt/2) - q(dt/4)|, where both lie above 64 eps x the scale; the stop rule: every measurable difference decreases",
   "linearised_map": "ruling 3: Q1's engine against the linearised engine-order map within 1e-6 at 50 ms (the development's worst 1.3e-07); its control, the exact propagator, must fail it there (the development's smallest 3.3e-06). At 25 and 12.5 ms the agreement is reported (linearised_map_by_dt), since the smallest discretisation error there (8.2e-07 and 2.1e-07) lies below 1e-6",
   "controls": "ruling (c), by parameter: each of k, a, b, D_U and D_V perturbed in the reference by (1 + delta) on Q1's items (the exact propagator with K = k J(a, b) and D, the whole 1-2-5 grid from 1e-14 to 0.5) and on Q6's (the reference re-integrated, bisected on the 1-2-5 grid from 1e-9 to 1e-1). A control is kept when 10 x its smallest caught delta is at most 1e-2 and is registered there; the others are removed with their reasons (controls.removed); every parameter keeps at least one, so each is caught by a judged criterion at a small delta with 10 x margin (Control_k to Control_D_V). Each criterion requires every kept control of its parameter to catch at its registered delta, stricter than the ruling's 'at least one'",
-  "controls_evaluable": "why the control criteria fail outside a judged run: they read caught_at_registered, which the driver writes only when the registered deltas are loaded, that is under --protocol (a judged run, or a registered dry-run copy). A development run has no registered deltas, so the metric is missing and evaluate fails a missing metric (development_values names them not evaluable). Their passing path has never run for these five criteria (milestone 3's dry run loaded the old k and D_V deltas on Q1's quick part alone), so the rehearsal on main must run them to a pass on a registered dry-run copy before registration",
+  "controls_evaluable": "why the control criteria fail outside a judged run: they read caught_at_registered, which the driver writes only when the registered deltas are loaded, that is under --protocol (a judged run, or a registered dry-run copy). A development run has no registered deltas, so the metric is missing and evaluate fails a missing metric (development_values names them not evaluable). Their passing path had never run for these five criteria (milestone 3's dry run loaded the old k and D_V deltas on Q1's quick part alone), so the rehearsal on main ran them on a registered dry-run copy before registration: every one passed there (development_values)",
   "near_ties": "ruling 5: Q4's fit tolerance is Q3's 1e-2, relative; the fastest two candidates at a length are a near tie when their gap is below 2 x 1e-2 x the larger |rate|, from the references alone before any run, and such a length is excluded; the sign margin (the smallest |rate| over 1e-2 x the largest) is reported beside it",
   "judged_run": "once, after registration, from a fresh clean execution snapshot of main (validation/source_snapshot.py, no dirty patch), through scripts/run_detached.sh. A failure is recorded and diagnosed, never retuned",
   "attempts": "an attempt that ends by infrastructure before its verdict is written is not a verdict: an out-of-memory kill, a unit stopped by the slice, a host crash, a harness timeout, a unit killed by its runtime limit (--runtime-max), a part run that ends incomplete (the judge refuses it: results.json's requested parts and complete), or a guard file whose process ends by a signal (judge-guards then writes infrastructure.json, not verdict.json). It is recorded with its logs and partial outputs and rerun once from the same snapshot; each attempt writes its own output directory, since every judged entry refuses an existing one. A second infrastructure ending goes to the lead, as does any other ending without a verdict. A run that has written its verdict is final (S5's rule). A part the engine refuses is a verdict: its criteria fail; a test failure or error inside a completed guards run is a verdict too",
-  "timing": "each judged unit runs through scripts/run_detached.sh with --oom-first in its own unit, its --runtime-max about 3 x its development seconds plus 10 min (development_runs.timing: development's figures until the rehearsal measures them; judge-guards from the guard files' seconds, uncapped per file; judge and combine, which run nothing, 600 s), q7 with a cap of at least 5 GiB (ruling 9) and unit b likewise (resources). The judged units run without --wait-headroom: the lead launches each only after checking that the slice has room for the unit's development peak plus a margin, so each runtime limit measures the entry alone and no wait can spend the single rerun",
+  "timing": "each judged unit runs through scripts/run_detached.sh with --oom-first in its own unit, its --runtime-max about 3 x its seconds plus 10 min (development_runs.timing: the rehearsal's on main; judge-guards from the guard files' seconds, uncapped per file; judge and combine, which run nothing, 600 s), q7 with a cap of at least 5 GiB (ruling 9) and unit b likewise (resources); the lanes: CPU 5: unit a, then unit c; CPU 7: unit b, then q7, then judge-guards; then judge and combine, which run nothing. The judged units run without --wait-headroom: the lead launches each only after checking that the slice has room for the unit's development peak plus a margin, so each runtime limit measures the entry alone and no wait can spend the single rerun",
   "resolved_start": "every run starts resolved: the uniform state with a mode of 1e-7 c* or seeded noise of 1e-3 c*, never a switch-on from the trace",
   "judge_entries": {
    "environment": "every entry from the snapshot's root with PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= and /mnt/workspaces/Cells/venv-cpu/bin/python (CPU backend only, float64)",
@@ -479,7 +492,8 @@
    "judge": "python -m validation.morphogenesis.mg0c_turing judge --output OUT --protocol THIS_FILE --results RUN_DIR/results.json ...: the parts' verdict, refusing runs of another protocol, from another snapshot or incomplete",
    "guards": "python -m validation.morphogenesis.mg0c_turing judge-guards --output OUT --protocol THIS_FILE: pytest on guards_of_record.tests from the snapshot, one file at a time with no per-file cap; OUT/verdict.json with each file's counts, exit code and duration",
    "combined": "python -m validation.morphogenesis.mg0c_turing combine --output OUT --protocol THIS_FILE --results PARTS_OUT GUARDS_OUT: the one qualification verdict (every criterion, the guards' files, the scope line, the snapshot's revision), refusing verdicts of another protocol or from another snapshot",
-   "register": "python -m validation.morphogenesis.mg0c_protocol register THIS_FILE RECORD_JSON: the lead's registration; the status and the lead's record alone"
+   "register": "python -m validation.morphogenesis.mg0c_protocol register THIS_FILE RECORD_JSON: the lead's registration; the status and the lead's record alone",
+   "launcher": "each entry in its own unit: scripts/run_detached.sh NAME CAP --cpus CPU --oom-first --runtime-max LIMIT --env UNIT=NAME -- rehearse_entry.sh SNAPSHOT SNAPSHOT/validation/morphogenesis/protocols/mg0c_turing_v1.json OUT ENTRY [ARGS], with rehearse_entry.sh the rehearsal's launcher (/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/, copied unchanged into the judged run's inputs): it runs the entry from the snapshot's root with judge_entries.environment, never creates OUT (the entry does), and writes OUT.log, OUT.run.txt and the unit's memory record beside OUT. The caps, lanes and runtime limits (development_runs.units and timing) are enforced by the launcher alone (run_detached.sh's MemoryMax, CPUAffinity and RuntimeMaxSec): no code reads them"
   }
  },
  "criteria": [
@@ -1955,12 +1969,30 @@
    "10": "split by file: the same-material test is a regression guard outside the judged list; supply counted once, the rejected step, restart and batch stay judged guards"
   },
   "blocking": {
-   "a": "the scope line (scope), with guard 2's passive world flagged (question 1)",
+   "a": "the scope line (scope), with guard 2's passive world named (question 1, answered: it stays judged)",
    "b": "D150's pre-registration amendments carried over: judge-guards with its own verdict, uncapped per file; one combine verdict; the attempt rule's infrastructure endings; rules.timing; register with the lead's record, read by the guard; why the control criteria are evaluable only in a judged run (rules.controls_evaluable)",
    "c": "controls by parameter (rules.controls; controls.coverage, controls.removed)",
    "d": "\u00a76.4's amplitude corrected to a defined, measured quantity, and the prototype's 0.68 identified as another measure, time and start (findings.amplitude; the design note's \u00a76.4 and \u00a711.4)"
   },
-  "d147": "done and recorded: every MG0c world has 0 free field offsets with solver @2 (d147)"
+  "d147": "done and recorded: every MG0c world has 0 free field offsets with solver @2 (d147)",
+  "answers_by": "the lead, 14 November 2026, landing the revision at main 58b6f14 (the combined landing f0e154a)",
+  "answers": {
+   "1": "keep guard 2's passive world judged, with the disclosure: both candidate rules pass on the development runs (the usage note's at 0.008 to 0.021, D150's at 0.96), so the choice was about fragility, not the outcome; the final check before registration can revisit it",
+   "2": "yes, the split is intended: the true-kinetics heat and work comparisons against dr.integrate_node are regression guards of record; the judged guards keep the rounding-level agreement with nr.run_half_steps and the passive relaxation's total heat; the scope line's 'guarded, not qualified' is right"
+  },
+  "confirmed": [
+   "Q4_near_ties_as_registered",
+   "every kept control must catch",
+   "unit b at 5 GiB or more until the rehearsal measures it",
+   "controls.at_grid_floor",
+   "\u00a76.4's Q7 row",
+   "the refusal test on a PROPOSED copy"
+  ],
+  "accepted_disclosures": [
+   "the 1e-2 cutoff relative to mg0c/checks-r2.json",
+   "the development runs predating FR-9"
+  ],
+  "rehearsal_asked": "record unit b's peak and Q6's re-integrated control catches, and run every control's passing path on the registered dry-run copy"
  },
  "findings": {
   "ratio_4_55": "Q1's 4.55 (L/l = 6, n = 6, the 50 and 25 ms pair; then 4.22) is the scheme's higher-order term, not the floor: the map alone against the exact propagator gives the same ratios (/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/checks-r2.json: the linearised engine-order map alone (cr.strang_mode_map, K = k J) against the exact propagator at L/l = 6, n = 6 gives 1.27e-3, 2.79e-4 and 6.61e-5 at 50, 25 and 12.5 ms (ratios 4.549 and 4.223), with dt D_V lambda_6 = 0.40 at 50 ms); the floor there is 1.3e-07 at 50 ms, under 1e-3 of the engine's 50 ms error",
@@ -1995,27 +2027,29 @@
  "disclosures": [
   "Guard 2's rule (ruling 8), 1e-14 x steps x the scale from REFERENCES_USAGE.md, was chosen with D150's steps x eps x the scale in view, at which the development's passive world sits at 0.96 (8,000 steps at 12.5 ms); the long-double iteration shows that rounding is the engine's own, linear in steps",
   "The small-delta cutoff (a kept control's registered delta at most 1e-2) and Q4's fit tolerance (Q3's 1e-2) were fixed before the a, b and D_U thresholds were measured, but with the k and D_V thresholds, Q4's top-two gaps and every Q1 mode's slow-eigenvalue sensitivity to all five parameters in view (mg0c/checks-r2.json, written before the cutoff); those sensitivities estimate the thresholds to within about 5 x (controls.removed)",
-  "The development runs come from snapshots before FR-9 (D165, the species cap raised to 16); the rehearsal on main redrafts this protocol with one generator command"
+  "The development runs came from snapshots before FR-9 (D165, the species cap raised to 16). This protocol is drafted from the rehearsal's runs on main 58b6f14 (FR-9 and the combined landing included), which reproduce them at every non-timing leaf (mg0c/compare_rehearsal.py -> rehearsal-58b6f14/compare-a.json, -b, -q7 and -c in /mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/: every part identical but Q6's controls_integrations, 38 against 32, the registered deltas' extra re-integrations; Q4's near-tie leaves are the judged run's own, equal to those derived at drafting)"
  ],
- "questions_for_the_lead": [
+ "questions_for_the_lead": [],
+ "questions_answered": [
   "1. The scope line: guard 2's passive world runs the passive law in judged criteria (G2_passive_*), against the lead's 'driven mass action only'. Ruling 8 rules on that very criterion (D150's 0.96 is the passive world's ratio), so this draft keeps it judged and names it in the scope line. Keep it so, or move it to the guards (test_species_reactions_composition.py already runs it, 10 s)?",
   "2. Ruling 7's consequence: with \u00a711.1's pins in test_species_reactions_accuracy.py, the comparisons of heat and work against the true kinetics (dr.integrate_node: the share onset, the background guard, the crossing, the reversal onset) leave the judged list. The judged guards keep dissipation as rounding-level agreement with nr.run_half_steps (the same half-steps) and the passive relaxation's total heat against dr.passive_equilibrium's drop (1e-12). The coordinator's milestone-3 instruction kept the independent kinetic and dissipation comparisons as guards of record: is this split what the lead intends?"
  ],
  "pre_registration_amendments": [],
  "outcome_rules": "pass when the combined verdict passes: every judged criterion and every guard of record. A failure is recorded and kept; a revised protocol gets a new id and is reported as weaker evidence",
- "resources": "CPUs 5 and 7 (CPU backend only), each unit detached through scripts/run_detached.sh with --oom-first; memory caps 4 GiB for units a and c, at least 5 GiB for q7 (ruling 9: a cap kill would spend the single rerun) and, by the same reasoning, for unit b until the rehearsal measures it (q7 alone peaked at 1.8 GB and q6 alone at 0.87 GB (cgroup peaks, dev-7495288-q7 and -q6), so the old unit b's 3.5 GB (q6, q3, q5 and q7 in one process) was not q7's batch alone; unit b is that run's prefix, so its peak is at most 3.5 GB, but unmeasured); judge-guards uncapped per file; the development peaks and seconds in development_runs.timing",
+ "resources": "CPUs 5 and 7 (CPU backend only), each unit detached through scripts/run_detached.sh with --oom-first; memory caps 4 GiB for units a and c, at least 5 GiB for q7 (ruling 9: a cap kill would spend the single rerun) and, by the same reasoning, for unit b (its peak in the rehearsal on main was 2.55 GB, measured as the lead asked; the cap stays at 5 GiB, as confirmed until measured, since a cap kill would spend the single rerun (the lead may lower it at the final check)); judge-guards uncapped per file in time, its memory cap proposed at 5 GiB (judge-guards peaked at 3.18 GB in the rehearsal under a 4 GiB cap; 5 GiB is proposed for the judged run by ruling 9's reasoning); judge and combine 2 and 1 GiB; the units' peaks and seconds in development_runs.timing",
  "development_runs": {
   "runs": [
    {
-    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/a/results.json",
+    "status": "Judged run of mg0c-turing-v1",
     "source": {
-     "clean": true,
-     "git_revision": "d4cee8724968cb3dffed371a42c5e7472c0f2077",
+     "git_revision": "58b6f14fea9c03dda3dd27830763242116855226",
      "kind": "snapshot",
      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-d4cee87"
+     "status": "complete"
     },
     "parts": [
+     "d147",
      "floor",
      "linear",
      "q1",
@@ -2024,110 +2058,202 @@
      "theory",
      "timing"
     ],
-    "peak_GB": 2.61
+    "peak_GB": 2.59
    },
    {
-    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-b/results.json",
+    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/b/results.json",
+    "status": "Judged run of mg0c-turing-v1",
     "source": {
-     "clean": true,
-     "git_revision": "d4cee8724968cb3dffed371a42c5e7472c0f2077",
+     "git_revision": "58b6f14fea9c03dda3dd27830763242116855226",
      "kind": "snapshot",
      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-d4cee87"
+     "status": "complete"
     },
     "parts": [
      "q3",
      "q5",
-     "q6",
-     "q7"
+     "q6"
     ],
-    "peak_GB": 3.52
+    "peak_GB": 2.55
    },
    {
-    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-c/results.json",
+    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/q7/results.json",
+    "status": "Judged run of mg0c-turing-v1",
     "source": {
-     "clean": true,
-     "git_revision": "d4cee8724968cb3dffed371a42c5e7472c0f2077",
+     "git_revision": "58b6f14fea9c03dda3dd27830763242116855226",
      "kind": "snapshot",
      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-d4cee87"
+     "status": "complete"
+    },
+    "parts": [
+     "q7"
+    ],
+    "peak_GB": 1.79
+   },
+   {
+    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/c/results.json",
+    "status": "Judged run of mg0c-turing-v1",
+    "source": {
+     "git_revision": "58b6f14fea9c03dda3dd27830763242116855226",
+     "kind": "snapshot",
+     "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "status": "complete"
     },
     "parts": [
      "q4"
     ],
     "peak_GB": 0.98
-   },
-   {
-    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-3e7399a-d/results.json",
-    "source": {
-     "clean": true,
-     "git_revision": "3e7399a30cdbf7934ef3ac33c0b21b426d3e10aa",
-     "kind": "snapshot",
-     "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-3e7399a"
-    },
-    "parts": [
-     "d147"
-    ],
-    "peak_GB": 0.12
-   },
-   {
-    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q1/results.json",
-    "source": {
-     "clean": true,
-     "git_revision": "7495288b842c1fa7e525f8e74139f0cf8b1434e9",
-     "kind": "snapshot",
-     "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-7495288"
-    },
-    "parts": [
-     "q1"
-    ],
-    "peak_GB": 2.17
-   },
-   {
-    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q6/results.json",
-    "source": {
-     "clean": true,
-     "git_revision": "7495288b842c1fa7e525f8e74139f0cf8b1434e9",
-     "kind": "snapshot",
-     "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-7495288"
-    },
-    "parts": [
-     "q6"
-    ],
-    "peak_GB": 0.87
-   },
-   {
-    "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q7/results.json",
-    "source": {
-     "clean": true,
-     "git_revision": "7495288b842c1fa7e525f8e74139f0cf8b1434e9",
-     "kind": "snapshot",
-     "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-7495288"
-    },
-    "parts": [
-     "q7"
-    ],
-    "peak_GB": 1.8
    }
   ],
   "part_sources": {
-   "floor": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
-   "linear": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
-   "q1": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q1/results.json",
-   "q2": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
-   "sites": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
-   "theory": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
-   "timing": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
-   "q3": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-b/results.json",
-   "q5": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-b/results.json",
-   "q6": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q6/results.json",
-   "q7": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q7/results.json",
-   "q4": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-c/results.json",
-   "d147": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-3e7399a-d/results.json"
+   "d147": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/a/results.json",
+   "floor": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/a/results.json",
+   "linear": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/a/results.json",
+   "q1": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/a/results.json",
+   "q2": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/a/results.json",
+   "sites": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/a/results.json",
+   "theory": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/a/results.json",
+   "timing": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/a/results.json",
+   "q3": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/b/results.json",
+   "q5": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/b/results.json",
+   "q6": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/b/results.json",
+   "q7": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/q7/results.json",
+   "q4": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/c/results.json"
+  },
+  "basis": {
+   "runs": [
+    {
+     "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+     "status": "Development run of MG0c (D152 v1, milestone 3); not judged.",
+     "source": {
+      "clean": true,
+      "git_revision": "d4cee8724968cb3dffed371a42c5e7472c0f2077",
+      "kind": "snapshot",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-d4cee87"
+     },
+     "parts": [
+      "floor",
+      "linear",
+      "q1",
+      "q2",
+      "sites",
+      "theory",
+      "timing"
+     ],
+     "peak_GB": 2.61
+    },
+    {
+     "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-b/results.json",
+     "status": "Development run of MG0c (D152 v1, milestone 3); not judged.",
+     "source": {
+      "clean": true,
+      "git_revision": "d4cee8724968cb3dffed371a42c5e7472c0f2077",
+      "kind": "snapshot",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-d4cee87"
+     },
+     "parts": [
+      "q3",
+      "q5",
+      "q6",
+      "q7"
+     ],
+     "peak_GB": 3.52
+    },
+    {
+     "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-c/results.json",
+     "status": "Development run of MG0c (D152 v1, milestone 3); not judged.",
+     "source": {
+      "clean": true,
+      "git_revision": "d4cee8724968cb3dffed371a42c5e7472c0f2077",
+      "kind": "snapshot",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-d4cee87"
+     },
+     "parts": [
+      "q4"
+     ],
+     "peak_GB": 0.98
+    },
+    {
+     "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-3e7399a-d/results.json",
+     "status": "Development run of MG0c (D152 v1, milestone 3); not judged.",
+     "source": {
+      "clean": true,
+      "git_revision": "3e7399a30cdbf7934ef3ac33c0b21b426d3e10aa",
+      "kind": "snapshot",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-3e7399a"
+     },
+     "parts": [
+      "d147"
+     ],
+     "peak_GB": 0.12
+    },
+    {
+     "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q1/results.json",
+     "status": "Development run of MG0c (D152 v1, milestone 3); not judged.",
+     "source": {
+      "clean": true,
+      "git_revision": "7495288b842c1fa7e525f8e74139f0cf8b1434e9",
+      "kind": "snapshot",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-7495288"
+     },
+     "parts": [
+      "q1"
+     ],
+     "peak_GB": 2.17
+    },
+    {
+     "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q6/results.json",
+     "status": "Development run of MG0c (D152 v1, milestone 3); not judged.",
+     "source": {
+      "clean": true,
+      "git_revision": "7495288b842c1fa7e525f8e74139f0cf8b1434e9",
+      "kind": "snapshot",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-7495288"
+     },
+     "parts": [
+      "q6"
+     ],
+     "peak_GB": 0.87
+    },
+    {
+     "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q7/results.json",
+     "status": "Development run of MG0c (D152 v1, milestone 3); not judged.",
+     "source": {
+      "clean": true,
+      "git_revision": "7495288b842c1fa7e525f8e74139f0cf8b1434e9",
+      "kind": "snapshot",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-7495288"
+     },
+     "parts": [
+      "q7"
+     ],
+     "peak_GB": 1.8
+    }
+   ],
+   "part_sources": {
+    "floor": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+    "linear": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+    "q1": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q1/results.json",
+    "q2": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+    "sites": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+    "theory": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+    "timing": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+    "q3": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-b/results.json",
+    "q5": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-b/results.json",
+    "q6": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q6/results.json",
+    "q7": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q7/results.json",
+    "q4": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-c/results.json",
+    "d147": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-3e7399a-d/results.json"
+   },
+   "same_criteria_deltas_and_controls": true,
+   "note": "the thresholds and the registered deltas were first derived from these development runs, from snapshots before FR-9 (D165); drafting from them gives the same criteria, thresholds, registered deltas and controls as drafting from the runs above (checked at drafting), whose values they reproduce at every non-timing leaf (disclosures)"
   },
   "units": {
    "a": {
@@ -2156,74 +2282,74 @@
     "parts": [
      "q7"
     ],
-    "cpu": 5,
+    "cpu": 7,
     "min_cap_GiB": 5
    },
    "c": {
     "parts": [
      "q4"
     ],
-    "cpu": 7
+    "cpu": 5
    },
    "guards": {
     "entry": "judge-guards",
-    "cpu": 5
+    "cpu": 7,
+    "min_cap_GiB": 5
    }
   },
   "timing": {
    "units": {
     "a": {
-     "development_seconds": 3117,
-     "runtime_max_seconds": 9951,
+     "development_seconds": 3940,
+     "runtime_max_seconds": 12419,
+     "measured_in": "the rehearsal on main",
      "source_runs": [
-      "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-3e7399a-d/results.json",
-      "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q1/results.json",
-      "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json"
+      "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/a/results.json"
      ]
     },
     "b": {
-     "development_seconds": 5672,
-     "runtime_max_seconds": 17617,
+     "development_seconds": 6132,
+     "runtime_max_seconds": 18994,
+     "measured_in": "the rehearsal on main",
      "source_runs": [
-      "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q6/results.json",
-      "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-b/results.json"
+      "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/b/results.json"
      ]
     },
     "q7": {
-     "development_seconds": 211,
-     "runtime_max_seconds": 1234,
+     "development_seconds": 397,
+     "runtime_max_seconds": 1791,
+     "measured_in": "the rehearsal on main",
      "source_runs": [
-      "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q7/results.json"
+      "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/q7/results.json"
      ]
     },
     "c": {
-     "development_seconds": 3134,
-     "runtime_max_seconds": 10002,
+     "development_seconds": 4390,
+     "runtime_max_seconds": 13768,
+     "measured_in": "the rehearsal on main",
      "source_runs": [
-      "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-c/results.json"
+      "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/c/results.json"
      ]
     },
     "guards": {
-     "development_seconds": 1787,
-     "runtime_max_seconds": 5961,
-     "source": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tests/: final-5de1c96-guards, final-5de1c96-runs and m3-3e7399a (the tier-3 files under load, before the review's split); tests/test_tiers.json (the tier-1 files)"
+     "development_seconds": 3155,
+     "runtime_max_seconds": 10065,
+     "measured_in": "the rehearsal on main",
+     "source": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/guards/verdict.json"
     }
    },
    "development_peaks_GB": {
-    "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json": 2.61,
-    "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-b/results.json": 3.52,
-    "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-c/results.json": 0.98,
-    "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-3e7399a-d/results.json": 0.12,
-    "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q1/results.json": 2.17,
-    "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q6/results.json": 0.87,
-    "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q7/results.json": 1.8,
-    "guards": 3.28
+    "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/a/results.json": 2.59,
+    "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/b/results.json": 2.55,
+    "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/q7/results.json": 1.79,
+    "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/c/results.json": 0.98,
+    "guards": 3.18
    }
   },
   "drafted_by": {
    "kind": "checkout",
    "root": "/home/robert/Cells/.claude/worktrees/agent-a6b2e9cd180913a24",
-   "git_revision": "786c5d0776aa4feaa3b4bfaddbee4dc6ad6af6de",
+   "git_revision": "5c0bb0a0f3f3d3aa98f067de58e667e76db213d8",
    "dirty": ""
   }
  },
@@ -2709,6 +2835,44 @@
     5e-05,
     2e-06,
     5e-07
+   ],
+   "passed": true,
+   "values": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
    ]
   },
   "Control_a": {
@@ -2748,6 +2912,43 @@
     0.0005,
     1e-09,
     1e-09
+   ],
+   "passed": true,
+   "values": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
    ]
   },
   "Control_b": {
@@ -2783,6 +2984,39 @@
     0.001,
     1e-09,
     1e-09
+   ],
+   "passed": true,
+   "values": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
    ]
   },
   "Control_D_U": {
@@ -2826,6 +3060,47 @@
     5e-05,
     4.9999999999999996e-06,
     5e-07
+   ],
+   "passed": true,
+   "values": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
    ]
   },
   "Control_D_V": {
@@ -2859,6 +3134,37 @@
     0.0005,
     5e-05,
     4.9999999999999996e-06
+   ],
+   "passed": true,
+   "values": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
    ]
   }
  }

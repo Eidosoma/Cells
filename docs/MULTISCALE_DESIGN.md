@@ -117,6 +117,8 @@ phenotype label inferred by an observer.
 
 ## Spatial and temporal scales
 
+*The modular core's [levels of detail](ARCHITECTURE.md#levels-of-detail) (D175) states how these principles apply to the composite's law declarations.*
+
 Support different representations through explicit adapters rather than pretending
 that every level is the same kind of object:
 

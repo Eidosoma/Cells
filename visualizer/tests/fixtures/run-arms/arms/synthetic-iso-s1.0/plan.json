@@ -1,0 +1,74 @@
+{
+ "kind": "iso",
+ "bracket": "fast",
+ "formation": {
+  "lag_s": 5.0,
+  "time_constant_s": 15.0
+ },
+ "formation_time_s": 20.0,
+ "k": 1,
+ "residence_s": 60.0,
+ "size": 7,
+ "s": 1.0,
+ "dt": 0.005,
+ "end_s": 60.0,
+ "interval_s": 8.571428571428571,
+ "permutation": [
+  7,
+  12,
+  15,
+  1,
+  6,
+  9,
+  14
+ ],
+ "events": [
+  [
+   1714,
+   7,
+   null,
+   "n0"
+  ],
+  [
+   5142,
+   12,
+   null,
+   "n1"
+  ],
+  [
+   8571,
+   15,
+   null,
+   "n2"
+  ],
+  [
+   13714,
+   1,
+   null,
+   "n3"
+  ],
+  [
+   17142,
+   6,
+   null,
+   "n4"
+  ],
+  [
+   20571,
+   9,
+   null,
+   "n5"
+  ]
+ ],
+ "turnover_complete_s": [
+  55.0,
+  115.0
+ ],
+ "start": {
+  "seconds_after_cue_off_at_t0": 117.5
+ },
+ "seeds": {
+  "order": 11,
+  "donor": 12
+ }
+}
