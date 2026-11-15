@@ -1,0 +1,247 @@
+"""The kind interface's rules (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)), on the host.
+
+- Non-commuting hooks on the same rows are refused at binding: two kinds' stage reads on a
+  shared row are refused, disjoint rows are admitted, and a stage read must declare its rows.
+  Bookings commute by construction: every kind's book receives the same end state, and a booking
+  that writes anything but its kind's own state fields is refused.
+- Field order and hook order are named apart: reversing the hook order reverses the stage reads'
+  calls and moves no field.
+- Check-path hooks trace on the device: a domain that branches on a value in Python, a ledger
+  term of an unknown role or a non-scalar domain is refused at binding.
+"""
+
+import copy
+
+import numpy as np
+import pytest
+
+from cells.core import kind_registry
+from cells.core.specs import ConfigError, parse_spec
+from cells.core.surface_pump_v3_spec import control_values
+from cells.models import surface_pump_v3
+from cells.models.registry import get_model
+from validation.tissue import pump_water_fixtures as water_fixtures
+
+
+def planted(name, key, **hooks):
+    """A planted kind with one state field, one layout field and one control, plus hooks."""
+    return kind_registry.Kind(
+        kind_id=f"tests.{name}@1",
+        model_key=key,
+        state_axes=((f"{name}_value", ("cell_slot",)),),
+        layout_fields=(f"{name}_rate",),
+        control_fields=(f"{name}_availability",),
+        parse=lambda entries, base: tuple(sorted(entries.items())),
+        to_dict=lambda declaration: dict(declaration),
+        structure_entry=lambda declaration: (),
+        initial=lambda spec, declaration, layout: (
+            {f"{name}_value": np.zeros(spec.execution.capacity)},
+            {f"{name}_rate": np.asarray([1.0])},
+        ),
+        control_values=lambda spec, declaration, times: {
+            f"{name}_availability": np.ones(len(times))
+        },
+        **hooks,
+    )
+
+
+def registry(*kinds):
+    out = kind_registry.KindRegistry()
+    for kind in kinds:
+        out.register(kind)
+    return out
+
+
+def declaring(*keys):
+    raw = copy.deepcopy(water_fixtures.heredity_cell("D", end_time=0.004))
+    for key in keys:
+        raw["model"][key] = {"rate": 1.0}
+    return raw
+
+
+def reader(name, key, rows, calls=None):
+    def stage_read(state, p, *, xp):
+        if calls is not None:
+            calls.append(name)
+        return state, True
+
+    return planted(name, key, stage_read=stage_read, stage_rows=lambda declaration: rows)
+
+
+def host_inputs(spec):
+    impl = get_model(spec.model)
+    state, p = impl.initial_values(spec)
+    control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+    return impl, state, p, control
+
+
+def test_stage_reads_on_a_shared_row_are_refused_at_binding():
+    shared = (("K", "cell_0"),)
+    kinds = registry(reader("alpha", "alpha_block", shared), reader("beta", "beta_block", shared))
+    with kind_registry.scope(kinds):
+        with pytest.raises(ConfigError, match=r"tests.alpha@1 and tests.beta@1 both read row"):
+            parse_spec(declaring("alpha_block", "beta_block"))
+    apart = registry(
+        reader("alpha", "alpha_block", (("K", "cell_0"),)),
+        reader("beta", "beta_block", (("Na", "cell_0"),)),
+    )
+    with kind_registry.scope(apart):
+        parse_spec(declaring("alpha_block", "beta_block"))  # Disjoint rows: admitted.
+    unrowed = planted("alpha", "alpha_block", stage_read=lambda state, p, *, xp: (state, True))
+    with kind_registry.scope(registry(unrowed)):
+        with pytest.raises(ConfigError, match="declares no stage rows"):
+            parse_spec(declaring("alpha_block"))
+
+
+def test_a_stage_read_changes_concentrations_never_charge():
+    """A read that halves the cell's K for the rates: K's membrane flux changes, the potentials
+    do not (the field solve keeps the stored charges; solving on the read's amounts would move
+    the cell by about 400 V)."""
+    plain = parse_spec(declaring())
+    k = list(plain.model.species_ids).index("K")
+
+    def halving(state, p, *, xp):
+        amount = p.amount_reference + state.amount_increment
+        rows = np.zeros(amount.shape, dtype=bool)
+        rows[k, 0] = True
+        increment = xp.where(rows, state.amount_increment - 0.5 * amount, state.amount_increment)
+        return state._replace(amount_increment=increment), True
+
+    impl, state, p, control = host_inputs(plain)
+    base = impl.readouts(state, control, p, xp=np)
+    kind = planted(
+        "alpha", "alpha_block", stage_read=halving, stage_rows=lambda declaration: (("K", "cell_0"),)
+    )
+    with kind_registry.scope(registry(kind)):
+        impl, state, p, control = host_inputs(parse_spec(declaring("alpha_block")))
+        read = impl.readouts(state, control, p, xp=np)
+    np.testing.assert_allclose(read.field.potential_V, base.field.potential_V, rtol=0, atol=1e-12)
+    flux = read.field.rates.membrane_flux_fmol_s[k], base.field.rates.membrane_flux_fmol_s[k]
+    assert not np.allclose(*flux)
+
+
+def test_a_failed_stage_read_refuses_the_row_and_the_step():
+    """Valid while the kind's value is below one half: refused at binding when the initial state
+    fails it; a step whose end state fails it is refused (domain_valid reads at the end)."""
+
+    def gated(state, p, *, xp):
+        return state, xp.all(state.alpha_value < 0.5)
+
+    def book(applied, start, end, p, dt, *, xp):
+        return {"alpha_value": end.alpha_value + 1.0}
+
+    rows = dict(stage_read=gated, stage_rows=lambda declaration: ())
+    with kind_registry.scope(registry(planted("alpha", "alpha_block", book=book, **rows))):
+        spec = parse_spec(declaring("alpha_block"))  # The read holds at the start.
+        impl, state, p, control = host_inputs(spec)
+        assert impl.readouts(state, control, p, xp=np).valid
+        new, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+    assert not valid  # The end state's read failed: the step is refused, the state kept.
+    assert float(new.alpha_value[0]) == 0.0
+
+    def failing(state, p, *, xp):
+        return state, xp.asarray(False)
+
+    with kind_registry.scope(registry(planted("alpha", "alpha_block", stage_read=failing,
+                                              stage_rows=lambda declaration: ()))):  # fmt: skip
+        with pytest.raises(ConfigError, match="domain invalid"):
+            parse_spec(declaring("alpha_block"))
+
+
+def test_a_kinds_stored_term_joins_the_energy_ledger():
+    kind = planted(
+        "alpha", "alpha_block", ledger_terms=lambda state, p, *, xp: {"stored_pJ": state.alpha_value}
+    )
+    with kind_registry.scope(registry(kind)):
+        impl, state, p, _ = host_inputs(parse_spec(declaring("alpha_block")))
+        before = impl.balances(state, p)["energy"]
+        after = impl.balances(state._replace(alpha_value=state.alpha_value + 2.5), p)["energy"]
+    assert after - before == pytest.approx(2.5 * len(state.alpha_value), rel=1e-12)
+
+
+def test_bookings_see_one_end_state_and_write_only_their_own_fields():
+    seen = {}
+
+    def probe(name):
+        def book(applied, start, end, p, dt, *, xp):
+            seen[name] = end
+            return {f"{name}_value": getattr(end, f"{name}_value") + dt}
+
+        return planted(name, f"{name}_block", book=book)
+
+    with kind_registry.scope(registry(probe("alpha"), probe("beta"))):
+        spec = parse_spec(declaring("alpha_block", "beta_block"))
+        impl, state, p, control = host_inputs(spec)
+        new, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+    assert valid
+    assert seen["alpha"] is seen["beta"]  # One end state for every kind: bookings commute.
+    assert float(new.alpha_value[0]) == float(new.beta_value[0]) == spec.execution.dt
+
+    def trespass(applied, start, end, p, dt, *, xp):
+        return {"amount_increment": end.amount_increment}
+
+    with kind_registry.scope(registry(planted("alpha", "alpha_block", book=trespass))):
+        spec = parse_spec(declaring("alpha_block"))
+        impl, state, p, control = host_inputs(spec)
+        with pytest.raises(ValueError, match="writes only its own state fields"):
+            impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+
+
+def test_hook_order_is_named_apart_from_field_order(monkeypatch):
+    calls = []
+    kinds = registry(
+        reader("alpha", "alpha_block", (("K", "cell_0"),), calls),
+        reader("beta", "beta_block", (("Na", "cell_0"),), calls),
+    )
+    with kind_registry.scope(kinds):
+        spec = parse_spec(declaring("beta_block", "alpha_block"))
+        impl, state, p, control = host_inputs(spec)
+        fields = impl.STATE_TYPE._fields
+        assert fields[-2:] == ("alpha_value", "beta_value")  # Field order: canonical.
+        calls.clear()
+        impl.readouts(state, control, p, xp=np)
+        # Each evaluation of the reads (the stage entry, then domain_valid) runs in hook order,
+        # which in version 1 equals the field order.
+        assert calls and calls == ["alpha", "beta"] * (len(calls) // 2)
+        monkeypatch.setattr(
+            surface_pump_v3,
+            "hook_order",
+            lambda structure: tuple(reversed([k for k, _ in structure.kinds])),
+        )
+        calls.clear()
+        impl.readouts(state, control, p, xp=np)
+        assert calls and calls == ["beta", "alpha"] * (len(calls) // 2)  # Another hook order...
+        assert surface_pump_v3.kind_types(impl.structure).STATE_TYPE._fields == fields
+        assert surface_pump_v3.kind_types(impl.structure).STATE_TYPE is impl.STATE_TYPE
+        # ...moves no field, so no snapshot layout or compile-key tree.
+
+
+def test_check_path_hooks_must_trace_on_the_device():
+    def branching(state, p, *, xp):
+        if state.alpha_value[0] >= 0:  # A value branch: fine on the host, not traceable.
+            return xp.asarray(True)
+        return xp.asarray(False)
+
+    def unknown_role(state, p, *, xp):
+        return {"momentum": xp.zeros(())}
+
+    def per_cell(state, p, *, xp):
+        return xp.isfinite(state.alpha_value)
+
+    for hooks, message in (
+        (dict(domain=branching), "domain hook does not trace on the device"),
+        (dict(ledger_terms=unknown_role), r"returns unknown terms \['momentum'\]"),
+        (dict(domain=per_cell), "domain hook must return one boolean"),
+        (dict(control_domain=lambda c, p, *, xp: c.membrane), "control_domain hook must return"),
+    ):
+        with kind_registry.scope(registry(planted("alpha", "alpha_block", **hooks))):
+            with pytest.raises(ConfigError, match=message):
+                parse_spec(declaring("alpha_block"))
+    traceable = planted(
+        "alpha",
+        "alpha_block",
+        domain=lambda state, p, *, xp: xp.all(state.alpha_value >= 0),
+        ledger_terms=lambda state, p, *, xp: {"work_pJ": state.alpha_value},
+    )
+    with kind_registry.scope(registry(traceable)):
+        parse_spec(declaring("alpha_block"))  # Admitted.
