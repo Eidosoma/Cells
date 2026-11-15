@@ -21,14 +21,18 @@ thresholds; a missing metric fails its criterion).
 
 Usage:
   python -m validation.morphogenesis.mg0c_protocol draft OUTPUT_JSON RESULTS_JSON [...]
-      [--guards GUARDS_OUT]
+      [--guards GUARDS_OUT] [--basis RESULTS_JSON [...]]
       each RESULTS_JSON a complete run of the driver (development, or the rehearsal's on a
       registered dry-run copy), in order: a later run's part replaces an earlier run's, each
-      part's run recorded; GUARDS_OUT a judge-guards output directory, for the guards' timing
+      part's run recorded; GUARDS_OUT a judge-guards output directory, for the guards' timing;
+      --basis the development runs the thresholds and deltas were first derived from, named in
+      development_runs.basis and refused unless they give the same criteria, thresholds,
+      registered deltas and controls
   python -m validation.morphogenesis.mg0c_protocol register PROTOCOL_JSON RECORD_JSON
       the lead's registration: RECORD_JSON is the lead's record (its status begins 'registered')
 """
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -884,7 +888,29 @@ def q5_cap_binds(parts):
     return out
 
 
-def draft(output, paths, guards=None):
+def basis_record(paths, criteria, deltas, controls):
+    """The development runs the thresholds and registered deltas were first derived from, named
+    beside the runs drafted from: refused unless drafting from them gives the same criteria (ids,
+    metric paths, comparisons, thresholds and bases), registered deltas and controls."""
+    results, runs, origin = merged(paths)
+    parts = results["parts"]
+    own_controls, own_deltas, own = controls_by_parameter(parts)
+    if (criteria_for(parts) + own_controls, own_deltas, own) != (criteria, deltas, controls):
+        raise SystemExit("Refused: the basis runs give other criteria, deltas or controls")
+    return dict(
+        runs=runs,
+        part_sources=origin,
+        same_criteria_deltas_and_controls=True,
+        note=(
+            "the thresholds and the registered deltas were first derived from these development "
+            "runs, from snapshots before FR-9 (D165); drafting from them gives the same criteria, "
+            "thresholds, registered deltas and controls as drafting from the runs above (checked "
+            "at drafting), whose values they reproduce at every non-timing leaf (disclosures)"
+        ),
+    )
+
+
+def draft(output, paths, guards=None, basis=None):
     results, runs, origin = merged(paths)
     parts = results["parts"]
     criteria = criteria_for(parts)
@@ -1144,6 +1170,19 @@ def draft(output, paths, guards=None):
                     "python -m validation.morphogenesis.mg0c_protocol register THIS_FILE "
                     "RECORD_JSON: the lead's registration; the status and the lead's record alone"
                 ),
+                launcher=(
+                    "each entry in its own unit: scripts/run_detached.sh NAME CAP --cpus CPU "
+                    "--oom-first --runtime-max LIMIT --env UNIT=NAME -- rehearse_entry.sh SNAPSHOT "
+                    "SNAPSHOT/validation/morphogenesis/protocols/mg0c_turing_v1.json OUT ENTRY "
+                    "[ARGS], with rehearse_entry.sh the rehearsal's launcher "
+                    "(/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/, "
+                    "copied unchanged into the judged run's inputs): it runs the entry from the "
+                    "snapshot's root with judge_entries.environment, never creates OUT (the "
+                    "entry does), and writes OUT.log, OUT.run.txt and the unit's memory record "
+                    "beside OUT. The caps, lanes and runtime limits (development_runs.units and "
+                    "timing) are enforced by the launcher alone (run_detached.sh's MemoryMax, "
+                    "CPUAffinity and RuntimeMaxSec): no code reads them"
+                ),
             ),
         ),
         criteria=criteria,
@@ -1218,11 +1257,14 @@ def draft(output, paths, guards=None):
         development_runs=dict(
             runs=runs,
             part_sources=origin,
+            basis=basis_record(basis, criteria, deltas, controls) if basis else None,
             units=UNITS,
             timing=timing,
             drafted_by=mg.source_identity(),
         ),
     )
+    if not basis:
+        del protocol["development_runs"]["basis"]
     protocol["development_values"] = development_values(protocol, results)
     Path(output).write_text(json.dumps(mg.plain(protocol), indent=1) + "\n")
     failed = [k for k, v in protocol["development_values"].items() if v.get("passed") is False]
@@ -1255,16 +1297,23 @@ def register(protocol_path, record_path):
     return out
 
 
-if __name__ == "__main__":
-    action, *arguments = sys.argv[1:] or [""]
-    guards = None
-    if "--guards" in arguments:
-        at = arguments.index("--guards")
-        guards = arguments[at + 1]
-        del arguments[at : at + 2]
-    if action == "draft" and len(arguments) >= 2:
-        draft(arguments[0], arguments[1:], guards)
-    elif action == "register" and len(arguments) == 2:
-        register(*arguments)
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    commands = parser.add_subparsers(dest="action", required=True)
+    drafting = commands.add_parser("draft")
+    drafting.add_argument("output")
+    drafting.add_argument("results", nargs="+")
+    drafting.add_argument("--guards")
+    drafting.add_argument("--basis", nargs="+")
+    registering = commands.add_parser("register")
+    registering.add_argument("protocol")
+    registering.add_argument("record")
+    args = parser.parse_args(argv)
+    if args.action == "draft":
+        draft(args.output, args.results, args.guards, args.basis)
     else:
-        raise SystemExit(__doc__)
+        register(args.protocol, args.record)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
