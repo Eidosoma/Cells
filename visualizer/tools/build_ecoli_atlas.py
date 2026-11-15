@@ -68,6 +68,7 @@ OUT_DIR = ROOT / "data" / "proteins" / "ecoli"
 CLIENT = "atlas-builder/1.0"
 PATHS = re.compile(r"/(?:home|mnt|Users|tmp)/")
 MINE = "the visualizer's E. coli agent"
+TOOL = "tools/build_ecoli_atlas.py"  # named in the MANIFEST of what it downloads
 
 SPECIES_ID = "ecoli"
 LABEL = "E. coli"
@@ -346,7 +347,7 @@ def fetch(datasets, refresh=False, pause=1.2, tries=6):
         manifest["record"] = SOURCES[request["source"]]
         manifest["files"] = sorted([item for item in manifest["files"] if item["name"] != entry["name"]] + [entry], key=lambda item: item["name"])
         manifest["manifest_written_utc"] = H.utc_now()
-        manifest["note"] = f"Added by {MINE}: downloaded as untrusted data by tools/build_ecoli_atlas.py of the Cells checkout. Nothing here was executed."
+        manifest["note"] = f"Added by {MINE}: downloaded as untrusted data by {TOOL} of the Cells checkout. Nothing here was executed."
         (folder / "MANIFEST.json").write_text(json.dumps(manifest, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
         print(f"200  {request['source']}/{request['file']}  {len(body)}", flush=True)
         time.sleep(pause)

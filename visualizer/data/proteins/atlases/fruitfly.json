@@ -1,0 +1,2432 @@
+{
+ "format": "cells.visualizer.species_atlas@1",
+ "species": {
+  "id": "fruitfly",
+  "label": "Fruit fly",
+  "organism": "Drosophila melanogaster",
+  "taxon": 7227,
+  "plain": "The fruit fly of the laboratory, with 13,814 genes in UniProt's reference proteome. This is what the family signatures of Cells' machines find among the one protein shown for each gene."
+ },
+ "made": "2026-11-15",
+ "method": [
+  "The fly's proteins are the 13,814 of UniProt's gene-by-gene set of the reference proteome UP000000803 (release 2026_04): one for each gene, 3,850 with a reviewed entry and 9,964 with an unreviewed one.",
+  "Licences were read before anything was copied; each is stated in sources.",
+  "Each unit's family was taken from its own human candidates, by the same InterPro signatures that the other species' atlases ask. The build checks that the candidates carry them.",
+  "Each signature was looked for among the InterPro entries UniProt gives each protein. A unit counts as found only where a protein carries the signature of a family that makes the machine itself; an accessory family alone does not make it found.",
+  "Where no protein carries the family the engine's law names and proteins carry another family asked for the same machine (innexins, for gap junctions), the finding is 'different family'.",
+  "A product with a reviewed entry is listed as a reviewed entry, one with an unreviewed entry as a family signature. Either is a candidate by family: several units of one family (the Kv1 channels) list the same proteins, and nothing here says which protein does which unit's work.",
+  "No similarity search was run, and nothing is called an ortholog."
+ ],
+ "sources": [
+  {
+   "name": "UniProt",
+   "url": "https://www.uniprot.org/",
+   "release": "2026_04",
+   "accessed": "2026-11-15",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
+   "holds": "the entries of the fly's proteins, reviewed and unreviewed, with the InterPro entries UniProt gives each; the signatures of the units' human candidates"
+  },
+  {
+   "name": "InterPro",
+   "url": "https://www.ebi.ac.uk/interpro/",
+   "release": "111.0",
+   "accessed": "2026-11-15",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456.",
+   "holds": "the identifiers and names of the family signatures"
+  }
+ ],
+ "not_copied": "No sequence is copied. FlyBase is linked to; nothing was downloaded from it, and the FlyBase genes used here are those UniProt gives its entries.",
+ "units": {
+  "U01": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): NaCP60E and para. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Sodium channel protein 60E",
+     "gene": "NaCP60E",
+     "role": "voltage-gated sodium channel alpha subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9W0Y8"
+      }
+     ],
+     "length": 2844,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Sodium channel protein para",
+     "gene": "para",
+     "role": "voltage-gated sodium channel alpha subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P35500"
+      }
+     ],
+     "length": 2131,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U02": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): NaCP60E and para. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Sodium channel protein 60E",
+     "gene": "NaCP60E",
+     "role": "voltage-gated sodium channel alpha subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9W0Y8"
+      }
+     ],
+     "length": 2844,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Sodium channel protein para",
+     "gene": "para",
+     "role": "voltage-gated sodium channel alpha subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P35500"
+      }
+     ],
+     "length": 2131,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U03": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): NaCP60E and para. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Sodium channel protein 60E",
+     "gene": "NaCP60E",
+     "role": "voltage-gated sodium channel alpha subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9W0Y8"
+      }
+     ],
+     "length": 2844,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Sodium channel protein para",
+     "gene": "para",
+     "role": "voltage-gated sodium channel alpha subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P35500"
+      }
+     ],
+     "length": 2131,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U04": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): NaCP60E and para. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Sodium channel protein 60E",
+     "gene": "NaCP60E",
+     "role": "voltage-gated sodium channel alpha subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9W0Y8"
+      }
+     ],
+     "length": 2844,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Sodium channel protein para",
+     "gene": "para",
+     "role": "voltage-gated sodium channel alpha subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P35500"
+      }
+     ],
+     "length": 2131,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U05": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983): Hk and Sh. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Potassium voltage-gated channel protein Shaker",
+     "gene": "Sh",
+     "role": "Kv1-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P08510"
+      }
+     ],
+     "length": 655,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR003972 (Potassium channel, voltage dependent, Kv1). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Hyperkinetic, isoform M",
+     "gene": "Hk",
+     "role": "Kv-beta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PHI0"
+      }
+     ],
+     "length": 887,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U06": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983): Hk and Sh. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Potassium voltage-gated channel protein Shaker",
+     "gene": "Sh",
+     "role": "Kv1-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P08510"
+      }
+     ],
+     "length": 655,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR003972 (Potassium channel, voltage dependent, Kv1). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Hyperkinetic, isoform M",
+     "gene": "Hk",
+     "role": "Kv-beta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PHI0"
+      }
+     ],
+     "length": 887,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U07": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983): Hk and Sh. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Potassium voltage-gated channel protein Shaker",
+     "gene": "Sh",
+     "role": "Kv1-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P08510"
+      }
+     ],
+     "length": 655,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR003972 (Potassium channel, voltage dependent, Kv1). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Hyperkinetic, isoform M",
+     "gene": "Hk",
+     "role": "Kv-beta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PHI0"
+      }
+     ],
+     "length": 887,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U08": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983): Hk and Sh. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Potassium voltage-gated channel protein Shaker",
+     "gene": "Sh",
+     "role": "Kv1-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P08510"
+      }
+     ],
+     "length": 655,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR003972 (Potassium channel, voltage dependent, Kv1). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Hyperkinetic, isoform M",
+     "gene": "Hk",
+     "role": "Kv-beta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PHI0"
+      }
+     ],
+     "length": 887,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U09": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983): Hk and Sh. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Potassium voltage-gated channel protein Shaker",
+     "gene": "Sh",
+     "role": "Kv1-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P08510"
+      }
+     ],
+     "length": 655,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR003972 (Potassium channel, voltage dependent, Kv1). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Hyperkinetic, isoform M",
+     "gene": "Hk",
+     "role": "Kv-beta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PHI0"
+      }
+     ],
+     "length": 887,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U10": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983): Hk and Sh. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Potassium voltage-gated channel protein Shaker",
+     "gene": "Sh",
+     "role": "Kv1-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P08510"
+      }
+     ],
+     "length": 655,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR003972 (Potassium channel, voltage dependent, Kv1). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Hyperkinetic, isoform M",
+     "gene": "Hk",
+     "role": "Kv-beta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PHI0"
+      }
+     ],
+     "length": 887,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U11": {
+   "finding": "none found",
+   "note": "None of its 13,814 proteins carries the signature of Kv2-type potassium channels (IPR003973). The unit's human candidates carry it, so the search finds the family where it exists. The fly's Shab, a voltage-gated potassium channel by its entry's name (\"Potassium voltage-gated channel protein Shab\"), carries the signature of another family of such channels (IPR003971, Potassium channel, voltage dependent, Kv5/Kv9) and not this one, so a search by signature does not list it.",
+   "products": []
+  },
+  "U12": {
+   "finding": "none found",
+   "note": "None of its 13,814 proteins carries the signature of Kv2-type potassium channels (IPR003973). The unit's human candidates carry it, so the search finds the family where it exists. The fly's Shab, a voltage-gated potassium channel by its entry's name (\"Potassium voltage-gated channel protein Shab\"), carries the signature of another family of such channels (IPR003971, Potassium channel, voltage dependent, Kv5/Kv9) and not this one, so a search by signature does not list it.",
+   "products": []
+  },
+  "U13": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of Kv3-type potassium channels (IPR003974): Shaw and Shawl. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Potassium voltage-gated channel protein Shaw",
+     "gene": "Shaw",
+     "role": "Kv3-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P17972"
+      }
+     ],
+     "length": 498,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Shaw-like, isoform C",
+     "gene": "Shawl",
+     "role": "Kv3-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A8DYR5"
+      }
+     ],
+     "length": 937,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U14": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of Kv3-type potassium channels (IPR003974): Shaw and Shawl. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Potassium voltage-gated channel protein Shaw",
+     "gene": "Shaw",
+     "role": "Kv3-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P17972"
+      }
+     ],
+     "length": 498,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Shaw-like, isoform C",
+     "gene": "Shawl",
+     "role": "Kv3-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A8DYR5"
+      }
+     ],
+     "length": 937,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U15": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of Kv3-type potassium channels (IPR003974): Shaw and Shawl. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Potassium voltage-gated channel protein Shaw",
+     "gene": "Shaw",
+     "role": "Kv3-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P17972"
+      }
+     ],
+     "length": 498,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Shaw-like, isoform C",
+     "gene": "Shawl",
+     "role": "Kv3-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A8DYR5"
+      }
+     ],
+     "length": 937,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U16": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of Kv3-type potassium channels (IPR003974): Shaw and Shawl. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Potassium voltage-gated channel protein Shaw",
+     "gene": "Shaw",
+     "role": "Kv3-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P17972"
+      }
+     ],
+     "length": 498,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Shaw-like, isoform C",
+     "gene": "Shawl",
+     "role": "Kv3-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A8DYR5"
+      }
+     ],
+     "length": 937,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U17": {
+   "finding": "found",
+   "note": "1 protein of its 13,814 carries the signature of Kv4-type potassium channels (IPR003975): Shal. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Potassium voltage-gated channel protein Shal",
+     "gene": "Shal",
+     "role": "Kv4-type potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P17971"
+      }
+     ],
+     "length": 571,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR003975 (Potassium channel, voltage dependent, Kv4). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U18": {
+   "finding": "nothing to look for",
+   "note": "The inventory gives this unit no gene product: it is a default shape of current, not a named channel.",
+   "products": []
+  },
+  "U19": {
+   "finding": "found",
+   "note": "3 proteins of its 13,814 carry the signature of inward-rectifier potassium channels (IPR016449, IPR040445, IPR041647): Irk1, Irk2 and Irk3. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Inwardly rectifying potassium channel 1, isoform F",
+     "gene": "Irk1",
+     "role": "inward-rectifier potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A0A0B4KH86"
+      }
+     ],
+     "length": 652,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR016449, IPR040445, IPR041647 (Potassium channel, inwardly rectifying, Kir; Potassium channel, inwardly rectifying, transmembrane domain; Inward rectifier potassium channel, C-terminal). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Inwardly rectifying potassium channel 2, isoform D",
+     "gene": "Irk2",
+     "role": "inward-rectifier potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A0A0B4LHI9"
+      }
+     ],
+     "length": 454,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR016449, IPR040445, IPR041647 (Potassium channel, inwardly rectifying, Kir; Potassium channel, inwardly rectifying, transmembrane domain; Inward rectifier potassium channel, C-terminal). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Inwardly rectifying potassium channel 3, isoform D",
+     "gene": "Irk3",
+     "role": "inward-rectifier potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "B7YZX2"
+      }
+     ],
+     "length": 446,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR016449, IPR040445, IPR041647 (Potassium channel, inwardly rectifying, Kir; Potassium channel, inwardly rectifying, transmembrane domain; Inward rectifier potassium channel, C-terminal). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U20": {
+   "finding": "found",
+   "note": "1 protein of its 13,814 carries the signature of HCN-type channels (IPR051413, IPR013621): Ih. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "I[[h]] channel, isoform E",
+     "gene": "Ih",
+     "role": "HCN-type channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A1Z9N7"
+      }
+     ],
+     "length": 1327,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051413, IPR013621 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel; Ion transport N-terminal). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U21": {
+   "finding": "found",
+   "note": "1 protein of its 13,814 carries the signature of HCN-type channels (IPR051413, IPR013621): Ih. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "I[[h]] channel, isoform E",
+     "gene": "Ih",
+     "role": "HCN-type channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A1Z9N7"
+      }
+     ],
+     "length": 1327,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051413, IPR013621 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel; Ion transport N-terminal). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U22": {
+   "finding": "found",
+   "note": "1 protein of its 13,814 carries the signature of HCN-type channels (IPR051413, IPR013621): Ih. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "I[[h]] channel, isoform E",
+     "gene": "Ih",
+     "role": "HCN-type channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A1Z9N7"
+      }
+     ],
+     "length": 1327,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051413, IPR013621 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel; Ion transport N-terminal). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U23": {
+   "finding": "found",
+   "note": "1 protein of its 13,814 carries the signature of HCN-type channels (IPR051413, IPR013621): Ih. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "I[[h]] channel, isoform E",
+     "gene": "Ih",
+     "role": "HCN-type channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A1Z9N7"
+      }
+     ],
+     "length": 1327,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051413, IPR013621 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel; Ion transport N-terminal). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U24": {
+   "finding": "found",
+   "note": "6 proteins of its 13,814 carry the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680): Ca-alpha1D, Ca-beta, Ca-Ma2d, Q5BI42, stj and stol. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Voltage-dependent calcium channel type D subunit alpha-1",
+     "gene": "Ca-alpha1D",
+     "role": "L-type calcium channel alpha-1 subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q24270"
+      }
+     ],
+     "length": 2669,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR005446 (Voltage-dependent calcium channel, L-type, alpha-1 subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ca2+-channel-protein-beta-subunit, isoform L",
+     "gene": "Ca-beta",
+     "role": "calcium channel beta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PD84"
+      }
+     ],
+     "length": 844,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A",
+     "gene": "Ca-Ma2d",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q8IP22"
+      }
+     ],
+     "length": 1215,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "VWFA and cache domain-containing protein CG16868",
+     "gene": null,
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q5BI42"
+      }
+     ],
+     "length": 1449,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Straightjacket, isoform C",
+     "gene": "stj",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A0A0B4K866"
+      }
+     ],
+     "length": 1271,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Stolid, isoform H",
+     "gene": "stol",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "X2J9Z3"
+      }
+     ],
+     "length": 1271,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U25": {
+   "finding": "found",
+   "note": "6 proteins of its 13,814 carry the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680): Ca-alpha1D, Ca-beta, Ca-Ma2d, Q5BI42, stj and stol. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Voltage-dependent calcium channel type D subunit alpha-1",
+     "gene": "Ca-alpha1D",
+     "role": "L-type calcium channel alpha-1 subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q24270"
+      }
+     ],
+     "length": 2669,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR005446 (Voltage-dependent calcium channel, L-type, alpha-1 subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ca2+-channel-protein-beta-subunit, isoform L",
+     "gene": "Ca-beta",
+     "role": "calcium channel beta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PD84"
+      }
+     ],
+     "length": 844,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A",
+     "gene": "Ca-Ma2d",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q8IP22"
+      }
+     ],
+     "length": 1215,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "VWFA and cache domain-containing protein CG16868",
+     "gene": null,
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q5BI42"
+      }
+     ],
+     "length": 1449,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Straightjacket, isoform C",
+     "gene": "stj",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A0A0B4K866"
+      }
+     ],
+     "length": 1271,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Stolid, isoform H",
+     "gene": "stol",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "X2J9Z3"
+      }
+     ],
+     "length": 1271,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U26": {
+   "finding": "found",
+   "note": "6 proteins of its 13,814 carry the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680): Ca-alpha1D, Ca-beta, Ca-Ma2d, Q5BI42, stj and stol. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Voltage-dependent calcium channel type D subunit alpha-1",
+     "gene": "Ca-alpha1D",
+     "role": "L-type calcium channel alpha-1 subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q24270"
+      }
+     ],
+     "length": 2669,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR005446 (Voltage-dependent calcium channel, L-type, alpha-1 subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ca2+-channel-protein-beta-subunit, isoform L",
+     "gene": "Ca-beta",
+     "role": "calcium channel beta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PD84"
+      }
+     ],
+     "length": 844,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A",
+     "gene": "Ca-Ma2d",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q8IP22"
+      }
+     ],
+     "length": 1215,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "VWFA and cache domain-containing protein CG16868",
+     "gene": null,
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q5BI42"
+      }
+     ],
+     "length": 1449,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Straightjacket, isoform C",
+     "gene": "stj",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A0A0B4K866"
+      }
+     ],
+     "length": 1271,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Stolid, isoform H",
+     "gene": "stol",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "X2J9Z3"
+      }
+     ],
+     "length": 1271,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U27": {
+   "finding": "found",
+   "note": "7 proteins of its 13,814 carry the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680): Ca-alpha1D, Ca-beta, Ca-Ma2d, cac, Q5BI42, stj and stol. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Voltage-dependent calcium channel type D subunit alpha-1",
+     "gene": "Ca-alpha1D",
+     "role": "voltage-gated calcium channel alpha-1 subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q24270"
+      }
+     ],
+     "length": 2669,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Voltage-dependent calcium channel type A subunit alpha-1",
+     "gene": "cac",
+     "role": "voltage-gated calcium channel alpha-1 subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P91645"
+      }
+     ],
+     "length": 1851,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ca2+-channel-protein-beta-subunit, isoform L",
+     "gene": "Ca-beta",
+     "role": "calcium channel beta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PD84"
+      }
+     ],
+     "length": 844,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A",
+     "gene": "Ca-Ma2d",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q8IP22"
+      }
+     ],
+     "length": 1215,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "VWFA and cache domain-containing protein CG16868",
+     "gene": null,
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q5BI42"
+      }
+     ],
+     "length": 1449,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Straightjacket, isoform C",
+     "gene": "stj",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A0A0B4K866"
+      }
+     ],
+     "length": 1271,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Stolid, isoform H",
+     "gene": "stol",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "X2J9Z3"
+      }
+     ],
+     "length": 1271,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U28": {
+   "finding": "found",
+   "note": "7 proteins of its 13,814 carry the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680): Ca-alpha1D, Ca-beta, Ca-Ma2d, cac, Q5BI42, stj and stol. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Voltage-dependent calcium channel type D subunit alpha-1",
+     "gene": "Ca-alpha1D",
+     "role": "voltage-gated calcium channel alpha-1 subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q24270"
+      }
+     ],
+     "length": 2669,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Voltage-dependent calcium channel type A subunit alpha-1",
+     "gene": "cac",
+     "role": "voltage-gated calcium channel alpha-1 subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P91645"
+      }
+     ],
+     "length": 1851,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ca2+-channel-protein-beta-subunit, isoform L",
+     "gene": "Ca-beta",
+     "role": "calcium channel beta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PD84"
+      }
+     ],
+     "length": 844,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A",
+     "gene": "Ca-Ma2d",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q8IP22"
+      }
+     ],
+     "length": 1215,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "VWFA and cache domain-containing protein CG16868",
+     "gene": null,
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q5BI42"
+      }
+     ],
+     "length": 1449,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Straightjacket, isoform C",
+     "gene": "stj",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A0A0B4K866"
+      }
+     ],
+     "length": 1271,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Stolid, isoform H",
+     "gene": "stol",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "X2J9Z3"
+      }
+     ],
+     "length": 1271,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U29": {
+   "finding": "found",
+   "note": "7 proteins of its 13,814 carry the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680): Ca-alpha1D, Ca-beta, Ca-Ma2d, cac, Q5BI42, stj and stol. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Voltage-dependent calcium channel type D subunit alpha-1",
+     "gene": "Ca-alpha1D",
+     "role": "voltage-gated calcium channel alpha-1 subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q24270"
+      }
+     ],
+     "length": 2669,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Voltage-dependent calcium channel type A subunit alpha-1",
+     "gene": "cac",
+     "role": "voltage-gated calcium channel alpha-1 subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P91645"
+      }
+     ],
+     "length": 1851,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ca2+-channel-protein-beta-subunit, isoform L",
+     "gene": "Ca-beta",
+     "role": "calcium channel beta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PD84"
+      }
+     ],
+     "length": 844,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A",
+     "gene": "Ca-Ma2d",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q8IP22"
+      }
+     ],
+     "length": 1215,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "VWFA and cache domain-containing protein CG16868",
+     "gene": null,
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q5BI42"
+      }
+     ],
+     "length": 1449,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Straightjacket, isoform C",
+     "gene": "stj",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A0A0B4K866"
+      }
+     ],
+     "length": 1271,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Stolid, isoform H",
+     "gene": "stol",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "X2J9Z3"
+      }
+     ],
+     "length": 1271,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U30": {
+   "finding": "found",
+   "note": "7 proteins of its 13,814 carry the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680): Ca-alpha1D, Ca-beta, Ca-Ma2d, cac, Q5BI42, stj and stol. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Voltage-dependent calcium channel type D subunit alpha-1",
+     "gene": "Ca-alpha1D",
+     "role": "voltage-gated calcium channel alpha-1 subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q24270"
+      }
+     ],
+     "length": 2669,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Voltage-dependent calcium channel type A subunit alpha-1",
+     "gene": "cac",
+     "role": "voltage-gated calcium channel alpha-1 subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P91645"
+      }
+     ],
+     "length": 1851,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ca2+-channel-protein-beta-subunit, isoform L",
+     "gene": "Ca-beta",
+     "role": "calcium channel beta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PD84"
+      }
+     ],
+     "length": 844,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A",
+     "gene": "Ca-Ma2d",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q8IP22"
+      }
+     ],
+     "length": 1215,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "VWFA and cache domain-containing protein CG16868",
+     "gene": null,
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q5BI42"
+      }
+     ],
+     "length": 1449,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Straightjacket, isoform C",
+     "gene": "stj",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A0A0B4K866"
+      }
+     ],
+     "length": 1271,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Stolid, isoform H",
+     "gene": "stol",
+     "role": "calcium channel alpha-2/delta subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "X2J9Z3"
+      }
+     ],
+     "length": 1271,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U31": {
+   "finding": "found",
+   "note": "1 protein of its 13,814 carries the signature of T-type calcium channel alpha-1 subunits (IPR005445): Ca-alpha1T. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Ca[2+]-channel protein alpha[[1]] subunit T, isoform F",
+     "gene": "Ca-alpha1T",
+     "role": "T-type calcium channel alpha-1 subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PGH9"
+      }
+     ],
+     "length": 3218,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR005445 (Voltage-dependent calcium channel, T-type, alpha-1 subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U32": {
+   "finding": "found",
+   "note": "1 protein of its 13,814 carries the signature of T-type calcium channel alpha-1 subunits (IPR005445): Ca-alpha1T. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Ca[2+]-channel protein alpha[[1]] subunit T, isoform F",
+     "gene": "Ca-alpha1T",
+     "role": "T-type calcium channel alpha-1 subunits",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PGH9"
+      }
+     ],
+     "length": 3218,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR005445 (Voltage-dependent calcium channel, T-type, alpha-1 subunit). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U33": {
+   "finding": "found",
+   "note": "3 proteins of its 13,814 carry the signature of BK calcium-activated potassium channels and SK calcium-activated potassium channels (IPR047871, IPR015449): SK, slo and SLO2. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Calcium-activated potassium channel slowpoke",
+     "gene": "slo",
+     "role": "BK calcium-activated potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q03720"
+      }
+     ],
+     "length": 1200,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR047871 (Calcium-activated potassium channel slowpoke-like). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Slowpoke 2, isoform D",
+     "gene": "SLO2",
+     "role": "BK calcium-activated potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A8DY93"
+      }
+     ],
+     "length": 1878,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR047871 (Calcium-activated potassium channel slowpoke-like). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Small conductance calcium-activated potassium channel protein",
+     "gene": "SK",
+     "role": "SK calcium-activated potassium channels",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q7KVW5"
+      }
+     ],
+     "length": 927,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR015449 (Potassium channel, calcium-activated, SK). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U34": {
+   "finding": "nothing to look for",
+   "note": "A background conductance that the inventory ties to no protein.",
+   "products": []
+  },
+  "U35": {
+   "finding": "nothing to look for",
+   "note": "A lumped permeability of the whole membrane, not a population of proteins.",
+   "products": []
+  },
+  "U36": {
+   "finding": "different family",
+   "note": "None of its 13,814 proteins carries the signature of connexins (IPR000500, IPR013092), the family the engine's law names. 8 proteins carry that of innexins (IPR000990), the other family this machine is asked for, as on the planarian's side of the atlas: Inx2, Inx3, Inx5, Inx6, Inx7, ogre, shakB and zpg.",
+   "products": [
+    {
+     "name": "Innexin inx2",
+     "gene": "Inx2",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9V427"
+      }
+     ],
+     "length": 367,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx3",
+     "gene": "Inx3",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VAS7"
+      }
+     ],
+     "length": 395,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx5",
+     "gene": "Inx5",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VWL5"
+      }
+     ],
+     "length": 419,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx6",
+     "gene": "Inx6",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VR82"
+      }
+     ],
+     "length": 481,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx7",
+     "gene": "Inx7",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9V3W6"
+      }
+     ],
+     "length": 438,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx1",
+     "gene": "ogre",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P27716"
+      }
+     ],
+     "length": 362,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin shaking-B",
+     "gene": "shakB",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P33085"
+      }
+     ],
+     "length": 372,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx4",
+     "gene": "zpg",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VRX6"
+      }
+     ],
+     "length": 367,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U37": {
+   "finding": "different family",
+   "note": "None of its 13,814 proteins carries the signature of connexins (IPR000500, IPR013092), the family the engine's law names. 8 proteins carry that of innexins (IPR000990), the other family this machine is asked for, as on the planarian's side of the atlas: Inx2, Inx3, Inx5, Inx6, Inx7, ogre, shakB and zpg.",
+   "products": [
+    {
+     "name": "Innexin inx2",
+     "gene": "Inx2",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9V427"
+      }
+     ],
+     "length": 367,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx3",
+     "gene": "Inx3",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VAS7"
+      }
+     ],
+     "length": 395,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx5",
+     "gene": "Inx5",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VWL5"
+      }
+     ],
+     "length": 419,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx6",
+     "gene": "Inx6",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VR82"
+      }
+     ],
+     "length": 481,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx7",
+     "gene": "Inx7",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9V3W6"
+      }
+     ],
+     "length": 438,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx1",
+     "gene": "ogre",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P27716"
+      }
+     ],
+     "length": 362,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin shaking-B",
+     "gene": "shakB",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P33085"
+      }
+     ],
+     "length": 372,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx4",
+     "gene": "zpg",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VRX6"
+      }
+     ],
+     "length": 367,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U38": {
+   "finding": "different family",
+   "note": "None of its 13,814 proteins carries the signature of connexins (IPR000500, IPR013092), the family the engine's law names. 8 proteins carry that of innexins (IPR000990), the other family this machine is asked for, as on the planarian's side of the atlas: Inx2, Inx3, Inx5, Inx6, Inx7, ogre, shakB and zpg.",
+   "products": [
+    {
+     "name": "Innexin inx2",
+     "gene": "Inx2",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9V427"
+      }
+     ],
+     "length": 367,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx3",
+     "gene": "Inx3",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VAS7"
+      }
+     ],
+     "length": 395,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx5",
+     "gene": "Inx5",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VWL5"
+      }
+     ],
+     "length": 419,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx6",
+     "gene": "Inx6",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VR82"
+      }
+     ],
+     "length": 481,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx7",
+     "gene": "Inx7",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9V3W6"
+      }
+     ],
+     "length": 438,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx1",
+     "gene": "ogre",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P27716"
+      }
+     ],
+     "length": 362,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin shaking-B",
+     "gene": "shakB",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P33085"
+      }
+     ],
+     "length": 372,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Innexin inx4",
+     "gene": "zpg",
+     "role": "innexins",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VRX6"
+      }
+     ],
+     "length": 367,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U39": {
+   "finding": "found",
+   "note": "8 proteins of its 13,814 carry the signature of the sodium-potassium pump's alpha subunit and its beta subunit (IPR005775, IPR000402): Atpalpha, Dmel\\CG5250, Dmel\\CG33310, JYalpha, JYbeta2, nrv1, nrv2 and nrv3. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Sodium/potassium-transporting ATPase subunit alpha",
+     "gene": "Atpalpha",
+     "role": "the sodium-potassium pump's alpha subunit",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P13607"
+      }
+     ],
+     "length": 1041,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR005775 (P-type ATPase subfamily IIC, subunit alpha). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Sodium/potassium-transporting ATPase subunit alpha",
+     "gene": "JYalpha",
+     "role": "the sodium-potassium pump's alpha subunit",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A8QI34"
+      }
+     ],
+     "length": 1009,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR005775 (P-type ATPase subfamily IIC, subunit alpha). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Uncharacterized protein",
+     "gene": "Dmel\\CG5250",
+     "role": "its beta subunit",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VDY7"
+      }
+     ],
+     "length": 311,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR000402 (Sodium/potassium-transporting ATPase subunit beta). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Uncharacterized protein",
+     "gene": "Dmel\\CG33310",
+     "role": "its beta subunit",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q7KT77"
+      }
+     ],
+     "length": 876,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR000402 (Sodium/potassium-transporting ATPase subunit beta). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Uncharacterized protein",
+     "gene": "JYbeta2",
+     "role": "its beta subunit",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9V3Q7"
+      }
+     ],
+     "length": 353,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR000402 (Sodium/potassium-transporting ATPase subunit beta). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Sodium/potassium-transporting ATPase subunit beta-1",
+     "gene": "nrv1",
+     "role": "its beta subunit",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q24046"
+      }
+     ],
+     "length": 309,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000402 (Sodium/potassium-transporting ATPase subunit beta). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Sodium/potassium-transporting ATPase subunit beta-2",
+     "gene": "nrv2",
+     "role": "its beta subunit",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q24048"
+      }
+     ],
+     "length": 323,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000402 (Sodium/potassium-transporting ATPase subunit beta). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Nervana 3, isoform E",
+     "gene": "nrv3",
+     "role": "its beta subunit",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PDX8"
+      }
+     ],
+     "length": 313,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR000402 (Sodium/potassium-transporting ATPase subunit beta). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U40": {
+   "finding": "found",
+   "note": "1 protein of its 13,814 carries the signature of plasma-membrane calcium pumps (IPR006408): PMCA. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Calcium-transporting ATPase",
+     "gene": "PMCA",
+     "role": "plasma-membrane calcium pumps",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q59DP9"
+      }
+     ],
+     "length": 1255,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U41": {
+   "finding": "found",
+   "note": "1 protein of its 13,814 carries the signature of SERCA-type calcium pumps (IPR005782): SERCA. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Calcium-transporting ATPase sarcoplasmic/endoplasmic reticulum type",
+     "gene": "SERCA",
+     "role": "SERCA-type calcium pumps",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P22700"
+      }
+     ],
+     "length": 1020,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR005782 (P-type ATPase, subfamily IIA, SERCA-type). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U42": {
+   "finding": "found",
+   "note": "1 protein of its 13,814 carries the signature of sodium-calcium exchangers (IPR004836): Calx. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Sodium/calcium exchanger Calx",
+     "gene": "Calx",
+     "role": "sodium-calcium exchangers",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VDG5"
+      }
+     ],
+     "length": 950,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR004836 (Sodium/calcium exchanger protein). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U43": {
+   "finding": "found",
+   "note": "2 proteins of its 13,814 carry the signature of inositol trisphosphate receptors and ryanodine receptors (IPR000493, IPR013333): Itpr and RyR. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Inositol 1,4,5-trisphosphate receptor",
+     "gene": "Itpr",
+     "role": "inositol trisphosphate receptors",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "P29993"
+      }
+     ],
+     "length": 2837,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR000493 (Inositol 1,4,5-trisphosphate receptor). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Ryanodine receptor",
+     "gene": "RyR",
+     "role": "ryanodine receptors",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q24498"
+      }
+     ],
+     "length": 5127,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR013333 (Ryanodine receptor). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U44": {
+   "finding": "found",
+   "note": "5 proteins of its 13,814 carry the signature of potassium-chloride cotransporters and the wider SLC12 transporter family (IPR000076, IPR004842): Dmel\\CG10413, EG:8D8.3, kcc, Ncc69 and NKCC. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Kazachoc, isoform G",
+     "gene": "kcc",
+     "role": "potassium-chloride cotransporters",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A0A0B4LGD3"
+      }
+     ],
+     "length": 1077,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR000076 (K/Cl co-transporter). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Solute carrier family 12 member 9",
+     "gene": "Dmel\\CG10413",
+     "role": "the wider SLC12 transporter family",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VJ75"
+      }
+     ],
+     "length": 941,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Solute carrier family 12 member 8",
+     "gene": "EG:8D8.3",
+     "role": "the wider SLC12 transporter family",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "O46100"
+      }
+     ],
+     "length": 712,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Sodium chloride cotransporter 69, isoform E",
+     "gene": "Ncc69",
+     "role": "the wider SLC12 transporter family",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PI37"
+      }
+     ],
+     "length": 1207,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Sodium potassium chloride cotransporter, isoform B",
+     "gene": "NKCC",
+     "role": "the wider SLC12 transporter family",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VNC7"
+      }
+     ],
+     "length": 1068,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U45": {
+   "finding": "found",
+   "note": "5 proteins of its 13,814 carry the signature of sodium-potassium-chloride cotransporters and the wider SLC12 transporter family (IPR002443, IPR004842): Dmel\\CG10413, EG:8D8.3, kcc, Ncc69 and NKCC. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Sodium chloride cotransporter 69, isoform E",
+     "gene": "Ncc69",
+     "role": "sodium-potassium-chloride cotransporters",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9PI37"
+      }
+     ],
+     "length": 1207,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR002443 (Solute carrier family 12 member 1/2). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Solute carrier family 12 member 9",
+     "gene": "Dmel\\CG10413",
+     "role": "the wider SLC12 transporter family",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VJ75"
+      }
+     ],
+     "length": 941,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Solute carrier family 12 member 8",
+     "gene": "EG:8D8.3",
+     "role": "the wider SLC12 transporter family",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "O46100"
+      }
+     ],
+     "length": 712,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Kazachoc, isoform G",
+     "gene": "kcc",
+     "role": "the wider SLC12 transporter family",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A0A0B4LGD3"
+      }
+     ],
+     "length": 1077,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Sodium potassium chloride cotransporter, isoform B",
+     "gene": "NKCC",
+     "role": "the wider SLC12 transporter family",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VNC7"
+      }
+     ],
+     "length": 1068,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U46": {
+   "finding": "nothing to look for",
+   "note": "A slot that each model configuration fills with a transporter of its own; it has no fixed protein in any species.",
+   "products": []
+  },
+  "U47": {
+   "finding": "found",
+   "note": "6 proteins of its 13,814 carry the signature of the mitochondrial calcium uniporter, its regulator EMRE and its MICU regulators (IPR039055, IPR006769, IPR018782, IPR039800): Dmel\\CG4704, Dmel\\CG43321, EMRE, MCU, MICU1 and MICU3. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+   "products": [
+    {
+     "name": "Calcium uniporter protein, mitochondrial",
+     "gene": "MCU",
+     "role": "the mitochondrial calcium uniporter",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q8IQ70"
+      }
+     ],
+     "length": 366,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Essential MCU regulator, mitochondrial",
+     "gene": "Dmel\\CG43321",
+     "role": "its regulator EMRE",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "M9NEV9"
+      }
+     ],
+     "length": 65,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR018782 (Essential MCU regulator, mitochondrial). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Essential MCU regulator, mitochondrial",
+     "gene": "EMRE",
+     "role": "its regulator EMRE",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q7JX57"
+      }
+     ],
+     "length": 97,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR018782 (Essential MCU regulator, mitochondrial). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "EF-hand domain-containing protein",
+     "gene": "Dmel\\CG4704",
+     "role": "its MICU regulators",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9VCT5"
+      }
+     ],
+     "length": 354,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR039800 (Calcium uptake protein 1/2/3). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Calcium uptake protein 1 homolog, mitochondrial",
+     "gene": "MICU1",
+     "role": "its MICU regulators",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A2VEI2"
+      }
+     ],
+     "length": 525,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR039800 (Calcium uptake protein 1/2/3). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Mitochondrial calcium uptake 3, isoform D",
+     "gene": "MICU3",
+     "role": "its MICU regulators",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "A0A0B4KHF1"
+      }
+     ],
+     "length": 524,
+     "evidence": "family signature",
+     "evidence_note": "Its unreviewed UniProtKB entry carries IPR039800 (Calcium uptake protein 1/2/3). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U48": {
+   "finding": "nothing to look for",
+   "note": "A protein cage designed in the laboratory, with no gene in any organism, so there is nothing to look for in this one.",
+   "products": []
+  },
+  "U49": {
+   "finding": "nothing to look for",
+   "note": "A lumped water permeability of the membrane; water channels (aquaporins) are not part of it.",
+   "products": []
+  }
+ },
+ "extra": []
+}

@@ -275,6 +275,14 @@ stacked in the page. Fixed on 15 November 2026, before the human data was made.
 - **Marks of a curated proteome.** `seen` is there the database's level of evidence that
   the protein exists, and its label says so; `where` is the database's own words for the
   place; `family` names the family of a protein listed under `lone`.
+- **A whole reference proteome.** Where a species' catalogue is its whole reference
+  proteome, reviewed and unreviewed entries together (the fruit fly, at the user's word of
+  15 November 2026), one marker stands for each gene: the protein that the database's own
+  gene-by-gene set gives for it. The mark `reviewed` says whether its entry was written by
+  a curator, and the mark `entries` counts the proteome's entries for its gene. A place
+  that a rule system states in an unreviewed entry is `stated` with the evidence `rule`.
+  The file gives, under `curated`, how many places rest on each kind of evidence, for
+  reviewed and for unreviewed entries apart, so that the page can say how sure it is.
 - **A cell with two membranes of its own** (a bacterium with an inner and an outer
   membrane) has the shelves `inner`, `outer` and `membrane`, in that order. The cytoplasm
   is `inside` of `inner`; what is outside the cell is `outside` of `outer`. Of the space
