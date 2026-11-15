@@ -89,6 +89,11 @@
           "date": "2026-11-15",
           "engine_revision": "c7c0d706",
           "note": "One species for the whole page (Human, Planarian, Syn3A, M. pneumoniae): the switch in the top bar sets the levels, the shapes, what the cell holds and the species' side of the protein atlas, all from data files. Syn3A and M. pneumoniae end at their cell; the human heart and body are rough placeholders. The map shows the coupling operator as numerically qualified and MG0c's protocol as registered. Checked at 4e89be16 on a clean checkout: 55 of 55 real-input checks, 38 of 38 species checks, 177 tests (176 pass, 1 skipped). The species' own proteins on shelves are not drawn yet. The 59 run files were not sent again"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "a784a0b3",
+          "note": "The species' facts now rest on permissively licensed sources only: every source in the data files is classed by licence, and no value comes from a non-commercial source or one with no stated terms (M. pneumoniae is drawn with 300 ribosomes, from an open paper's measurement). The map shows both the coupling operator and the reactions operator as numerically qualified (MG0c judged, 55 of 55). Checked on a clean checkout of the branch head: 55 of 55 real-input checks, 38 of 38 species checks, 185 tests (184 pass, 1 skipped). The 59 run files were not sent again"
         }
       ],
       "files": "out/cells-architecture.files.json lists the run files published beside the page (generated, not committed)"
