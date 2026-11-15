@@ -80,6 +80,9 @@ experiment).
    5. The module system's stage 1, one external law (D180), after the user's decisions in its §6.
 3. **Queued follow-ups** (each its own gated change):
    - insertion@2's gate fix, before `check_onsets` is lifted (§7.4 (j));
+   - a kind hook so that rows written by operators join the passive law's exact-scope fixpoint,
+     moving those routes to tableau booking. Design it with the core under D180. Until then the
+     composite refuses an operator that writes an exact-booked route's row (fail-closed, version 1);
    - ledger lists read from the implementation object;
    - moving the host-side window checks, 91% of long-run time, into device windows;
    - the summation tree, if species counts go well past 16.
