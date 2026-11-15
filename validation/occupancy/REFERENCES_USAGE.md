@@ -180,8 +180,7 @@ declaration order, with multipliers mb and mi [populations] (default 1). It retu
 
 ## Measured, and recommended settings
 
-These are from `occupancy-crosschecks-01` (see Evidence): the full run, from snapshot c5ac9986, 63 s
-on CPU 0.
+These are from the full cross-check runs (see Evidence) on CPU 0.
 
 | Check | Result |
 | --- | --- |
@@ -248,5 +247,7 @@ on CPU 0.
 
 ## Evidence
 
-`/mnt/workspaces/Cells/independent-references-20261115-01/` (HANDOFF.md): `occupancy-crosschecks-01/`
-(crosschecks.json, log.txt), run from the frozen snapshot `occupancy-snapshot-01` (c5ac9986).
+`/mnt/workspaces/Cells/independent-references-20261115-01/` (HANDOFF.md): `occupancy-crosschecks-02/`
+(crosschecks.json, log.txt), run from the frozen snapshot `occupancy-snapshot-02` (86064dae). The
+first run, `occupancy-crosschecks-01/` from c5ac9986, gave the same numbers without the per-node,
+washout and α items.
