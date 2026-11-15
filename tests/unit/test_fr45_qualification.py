@@ -497,3 +497,24 @@ def test_a_judged_fr5_part_takes_only_the_engines_extract_from_its_own_snapshot(
                                                          root=tmp_path)
     assert generator.start_refusal(synthetic_extract(), judged=False, root=tmp_path) is None
     assert "--start" in generator.start_refusal(None, judged=False, root=tmp_path)
+
+
+@pytest.mark.parametrize("which", ["fr4", "fr5"])
+def test_the_judged_path_registers_guards_merges_and_passes(tmp_path, which):
+    """register on a PROPOSED copy, then the judge's judged entry on judged-form unit results from
+    a clean snapshot: the guard, the merge (one part per unit) and the verdict, in sequence."""
+    path = copy(tmp_path, which, "PROPOSED (a test copy)")
+    record = tmp_path / "record.json"
+    record.write_text(json.dumps(dict(status="registered by the lead (a test copy)")))
+    drafter.register(path, record)
+    parts = fr4_parts() if which == "fr4" else fr5_parts()
+    files = []
+    for name, value in parts.items():  # one results file per unit, as the launch template runs
+        files.append(tmp_path / f"{name}.json")
+        files[-1].write_text(json.dumps(results({name: value}, which)))
+    out = tmp_path / "verdict"
+    record = judge.main(["judged", str(path), str(out), *map(str, files)])
+    assert record["kind"] == "Judged verdict" and record["passed"]
+    assert set(record["part_sources"]) == set(generator.PARTS[which])
+    with pytest.raises(SystemExit, match="exists"):
+        judge.main(["judged", str(path), str(out), *map(str, files)])

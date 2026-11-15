@@ -322,6 +322,11 @@ QUESTIONS = {
         "plus its rounding allowance, which the seam must report: the cytosol holds about 105 "
         "fmol of H_eq (one ulp is 1.4e-14 fmol), so the declared H floor of 1e-16 fmol cannot "
         "hold alone",
+        "6. The resolution rule is this draft's choice: a rung difference counts only at or above "
+        "N eps max|q| (N the finer rung's steps, a worst-case accumulation), and an observable "
+        "whose finest differences fall under it has no order, so J2 fails for it. Lumen K at "
+        "the 0.25 ms rung needs a difference of about 7e-9 fmol (3.6e6 steps x eps x 9.2 "
+        "fmol). Keep the rule, or judge such an observable as converged at rounding?",
     ],
     "fr5": [
         "1. dt_study_criteria_written_first still says 'state error at 1 ms as J3' and 'the "
@@ -343,6 +348,9 @@ QUESTIONS = {
         "7. Cost: the start 1.8 CPU-h, then per arm 6.0 for the ladder and 0.8 for the control: "
         "15.4 CPU-h upper bound; as parallel units about 2 h for the start, then 3.2 h for the "
         "0.125 ms rungs",
+        "8. The resolution rule, as FR-4's question 6: a difference counts at N eps max|q| or "
+        "above, else the observable has no order and J2 fails for it (the 0.125 ms rungs take "
+        "3.2e6 steps)",
     ],
 }
 DISCLOSURE = (

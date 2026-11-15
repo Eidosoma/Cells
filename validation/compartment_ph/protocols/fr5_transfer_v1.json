@@ -958,6 +958,7 @@
   "4. The controls run at the declared 0.5 ms only, while J1 reads 'both arms and their controls ... at every rung': controls on every rung would add about 5.2 CPU-h per arm",
   "5. J6's 'to the material floor': as FR-4's question 5 (the engine's own H tolerance)",
   "6. J7's 'each passive route's heat >= 0' is judged on the increments of each route's cumulative heat between records, at >= -1e-12 pJ (the booking probe's allowance)",
-  "7. Cost: the start 1.8 CPU-h, then per arm 6.0 for the ladder and 0.8 for the control: 15.4 CPU-h upper bound; as parallel units about 2 h for the start, then 3.2 h for the 0.125 ms rungs"
+  "7. Cost: the start 1.8 CPU-h, then per arm 6.0 for the ladder and 0.8 for the control: 15.4 CPU-h upper bound; as parallel units about 2 h for the start, then 3.2 h for the 0.125 ms rungs",
+  "8. The resolution rule, as FR-4's question 6: a difference counts at N eps max|q| or above, else the observable has no order and J2 fails for it (the 0.125 ms rungs take 3.2e6 steps)"
  ]
 }

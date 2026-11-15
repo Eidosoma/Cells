@@ -149,7 +149,8 @@
   "2. J6's 'falls at second order down the ladder' has no band: the smallest resolved order of the energy residual over flows is judged >= 1.8 (the band's lower edge; falling faster is no defect). Confirm",
   "3. Cost: with the ladder and the controls inside the judged run, the upper bound is 6.75 CPU-h for the rungs plus 2.7 for K1-K3 (the runbook's 0.9 was one rung); as parallel units the 0.25 ms rung bounds the wall time at about 3.6 h, for the development dt study, the rehearsal and the judged run each",
   "4. K3's engine part reruns the 1 ms world only for the envelope at the lowered k_on (the trajectory is rung_1ms's, since k_on enters only the check): keep it as its own 0.9 CPU-h unit, as 'at run time' says?",
-  "5. J6's material check uses the engine's own per-species tolerance, the declared floor plus its rounding allowance, which the seam must report: the cytosol holds about 105 fmol of H_eq (one ulp is 1.4e-14 fmol), so the declared H floor of 1e-16 fmol cannot hold alone"
+  "5. J6's material check uses the engine's own per-species tolerance, the declared floor plus its rounding allowance, which the seam must report: the cytosol holds about 105 fmol of H_eq (one ulp is 1.4e-14 fmol), so the declared H floor of 1e-16 fmol cannot hold alone",
+  "6. The resolution rule is this draft's choice: a rung difference counts only at or above N eps max|q| (N the finer rung's steps, a worst-case accumulation), and an observable whose finest differences fall under it has no order, so J2 fails for it. Lumen K at the 0.25 ms rung needs a difference of about 7e-9 fmol (3.6e6 steps x eps x 9.2 fmol). Keep the rule, or judge such an observable as converged at rounding?"
  ],
  "development_runs": {
   "runs": [
