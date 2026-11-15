@@ -12,7 +12,7 @@ Numbers are as built on 15 November 2026; the build prints them again.
 
 | | |
 | --- | --- |
-| The species file | `data/species/ecoli.json`, in the form `schema/SPECIES.md` fixes (12 KB) |
+| The species file | `data/species/ecoli.json`, in the form `schema/SPECIES.md` fixes (15 KB) |
 | Its side of the atlas | `data/proteins/atlases/ecoli.json`: an entry for each of the 49 units (42 KB) |
 | Its own proteins | `data/proteins/ecoli/`: `shelves.json` (143 KB), `proteins.tsv` (514 KB), `README.md` |
 | The tool | `tools/build_ecoli_atlas.py`: `fetch`, `build`, `members`. Standard library only |
@@ -167,10 +167,10 @@ Two marks pick out the machines of the proposed track. Both come from permissive
 
 The cell view was not edited. These are what a picture of this cell lacks:
 
-- **Flagella.** The cell swims with flagella that grow all over its surface. The view
-  draws no appendage: it has no part for a filament, a hook or a motor that reaches
-  through both membranes.
-- **Fimbriae (pili).** 28 proteins state the fimbrium as their place. Nothing is drawn.
+- **Flagella and fimbriae.** They are now in the species file as appendages, a general
+  part of the contract (the user, 15 November 2026: "lets draw flagella, pili as a
+  general feature"). The drawing is another agent's, in the cell lens, and is not there
+  yet.
 - **The chemoreceptor array.** The receptors and the proteins bound to them form a patch
   at the membrane. The view scatters membrane proteins evenly and has no part for a
   patch.
@@ -181,6 +181,91 @@ The cell view was not edited. These are what a picture of this cell lacks:
 
 Each would be a general feature of the cell view (an appendage, a patch on a membrane, a
 filled space between two shells), useful for any bacterium, not a part for E. coli alone.
+
+## Appendages: flagella and fimbriae, as data
+
+Written through the tool into `cell.parts.appendages`; each number is also a fact on the
+species' card. Every source is an open paper under CC BY, saved with its record and its
+full text. The build stops if a sentence it rests on is gone.
+
+| | Flagella | Type 1 fimbriae |
+| --- | --- | --- |
+| `kind` | `flagellum` | `pilus` |
+| How many on a cell | 1 to 5 | 200 to 500 |
+| How long | 5 to 10 µm | up to 1 µm |
+| How wide | 20 to 40 nm | 7 to 10 nm |
+| Where | all over | all over (the picture's choice) |
+| Starts at | the inner membrane | the outer membrane |
+
+- **How many flagella.** One study of single swimming cells sorted its wild-type cells
+  by the flagella each carried, from 1 to 5 (Mears and others 2014). Another paper takes
+  an average of 3.4 for an E. coli cell (Schavemaker and Lynch 2022). The range written
+  is the first; the average is in the fact. Larger figures were not found in a source
+  read here, so none is written.
+- **How long.** "Typically" 5 to 10 µm (Dvoriashyna and Lauga 2021); 7.5 µm by the one
+  measurement that Schavemaker and Lynch use.
+- **How wide: the sources disagree.** About 20 nm (Zhuang and Lo 2025, of bacterial
+  flagella in general) and 40 nm (Dvoriashyna and Lauga 2021). The file gives 20 to
+  40 nm, and its fact says that the two disagree.
+- **Where.** All over the cell body (Dvoriashyna and Lauga 2021; UniProt's description
+  of the organism says the same). The motor at the foot sits in the inner membrane:
+  UniProt states FliF, MotA and MotB there.
+- **Fimbriae.** 200 to 500 on a cell, up to 1 µm long, about 7 to 10 nm wide, standing
+  out from the outer membrane: one paper's summary (Jahnke and others 2016, which worked
+  with strains of MG1655). No source read here says where on the cell they stand, so
+  "all over" is the picture's choice, and the level's note says so.
+- **The F pilus does not belong on this cell.** It is made by the F plasmid. The strain
+  as sequenced, MG1655, does not carry it: the proteome holds none of the plasmid's
+  `tra` genes. One open paper describes "MG1655 F′" as a derivative "that carries the F
+  conjugative plasmid and expresses F pili" (Rendueles and others 2012, PLoS Pathogens,
+  CC BY; read at Europe PMC, not saved). A K-12 cell that carries F would be a later
+  option of its own.
+- **The base.** The flagellum's entry names `{"id": "flagellar-motor", "label":
+  "Flagellar motor", "mark": "complex", "value": "flagellum"}`. The mark and the value
+  are those of `shelves.json`, where 34 proteins carry them; the build and the test
+  check it.
+
+## For a closer view of the motor, later
+
+Not built. This lists what such a view would have to draw, for a later decision. It is
+not a design.
+
+| Part, as the literature names it | Proteins among the 34 marked `complex: flagellum` | Rough size or number |
+| --- | --- | --- |
+| MS ring, in the inner membrane; part of the rotor | `fliF` | M ring about 30 nm across, S ring about 24.5 nm |
+| C ring, on the cytoplasmic face of the MS ring; the rotor's switch | `fliG`, `fliM`, `fliN` | about 45 nm across |
+| Stator units, around the rotor in the inner membrane | `motA`, `motB` | about 10 units at high load; "at least 11" at the most |
+| Export gate, in the inner membrane | `flhA`, `flhB`, `fliO`, `fliP`, `fliQ`, `fliR` | |
+| ATPase ring, in the cytoplasm | `fliH`, `fliI`, `fliJ` | 12 FliH to 6 FliI to 1 FliJ |
+| Rod, the drive shaft | `flgB`, `flgC`, `flgF`, `flgG`, `fliE` | |
+| L ring and P ring | `flgH` (stated at the outer membrane), `flgI` (in the periplasm) | together about 25 nm across |
+| Hook, the universal joint | `flgE`; its length control `fliK` | about 50 nm long; about 100 to 120 copies of FlgE |
+| Hook-associated proteins, and the filament's cap | `flgK`, `flgL`; `fliD` | about 10 copies of FliD |
+| Filament | `fliC` | about 10,000 copies of FliC; sizes as above |
+| Others the Gene Ontology puts in the flagellum | `cheY`, `cheZ`, `ycgR` (a brake), `fliL`, `flhE`, `lafU` | |
+
+- **Where the sizes and numbers come from.** The rings' widths, the stator units at
+  high load, the hook's copies and the ATPase ring are from Nakamura and Minamino 2019;
+  the hook's length from Zhuang and Lo 2025; the largest number of stators and the copies
+  of FliJ, FliD, FlgE and FliC in one E. coli flagellum from Schavemaker and Lynch 2022.
+  All three are CC BY and saved.
+- **Most were measured in *Salmonella*,** whose motor the reviews treat together with
+  E. coli's: the rings' widths and the hook's 120 copies are stated for Salmonella.
+- **Which protein makes which part** is by the names of the UniProt entries (rod, hook,
+  L-ring, P-ring, M-ring, motor switch, hook-associated, flagellin), and by Nakamura and
+  Minamino for the MS ring, the C ring and the ATPase ring.
+- **Open structures to draw from** (accessions and titles as the Protein Data Bank's
+  records give them, read on 15 November 2026; no structure was downloaded):
+  - the whole basal body: 7CGO (motor-hook complex), 7NVG (basal body), both Salmonella;
+  - LP ring: 7BGL, 7CBL (Salmonella); MS ring: 6SD4 (Salmonella FliF);
+  - C ring with its switch: 8UMD, 8UOX (Salmonella); FliG alone: 1LKV, 3HJL (other bacteria);
+  - stator: 6YKM, 6YKP (*Campylobacter jejuni* MotAB), 6YSL (*Bacillus subtilis* MotAB);
+  - hook: 6K3I (Salmonella); filament: 1UCU (Salmonella), 7SN4 (E. coli O157:H7);
+  - cap: 5H5V (E. coli FliD).
+- **Only two of these are of E. coli,** and none is stated to be of K-12. A picture drawn
+  from them shows the motor of the family, not this strain's own.
+- **The Protein Data Bank's terms were not read for this note.** They are to be read and
+  saved before anything is drawn from a structure.
 
 ## Sources and terms
 
@@ -194,6 +279,12 @@ Every source's terms were read and saved before anything was taken.
 | GenBank U00096.3 | "NCBI places no restrictions on the use or distribution of the GenBank data" | The record's title, length and topology. No sequence |
 | Volkmer and Heinemann 2011, PLoS One 6:e23126 | CC BY | The cell's length, width and volume |
 | Urich and others 2008, PLoS One 3:e2527 | CC BY | The range of ribosomes in a cell |
+| Mears and others 2014, eLife 3:e01916 | CC BY | The flagella counted on single cells |
+| Schavemaker and Lynch 2022, eLife 11:e77266 | CC BY | The average number of flagella and a flagellum's length; for the note, the stators and the copies of four proteins |
+| Dvoriashyna and Lauga 2021, PLoS One 16:e0254551 | CC BY | Where the flagella stand, their length, one figure for their width |
+| Zhuang and Lo 2025, Biomolecules 15:170 | CC BY | The other figure for the width; for the note, the hook's length |
+| Jahnke and others 2016, Molecules 21:985 | CC BY | The fimbriae's number, length and width, and the membrane they stand on |
+| Nakamura and Minamino 2019, Biomolecules 9:279 | CC BY | For the note only: the motor's rings, stator units, hook and ATPase ring |
 
 The build stops if a saved page no longer states its terms as read, or if a paper's text
 no longer holds a sentence a fact rests on.

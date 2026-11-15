@@ -59,7 +59,21 @@ test("the species file says what it is: a data-only organism, proposed and never
   assert.deepEqual(species.levels.map((level) => level.id), ["molecules", "cell"]);
   assert.deepEqual(species.levels[1].shape, { kind: "capsule", length_um: 2.5, across_um: 1 });
   assert.match(species.levels[1].note, /the picture's choice/);
-  assert.deepEqual(species.cell.parts, { membranes: 2, wall: true, nucleus: false, chromosome_kbp: 4642, ribosomes: 6800 });
+  const { appendages, ...parts } = species.cell.parts;
+  assert.deepEqual(parts, { membranes: 2, wall: true, nucleus: false, chromosome_kbp: 4642, ribosomes: 6800 });
+  // Its appendages (schema/SPECIES.md): flagella and type 1 fimbriae, each number a fact with a permissive source, and
+  // at the foot of a flagellum the mark and value under which the shelves list the motor's proteins.
+  assert.deepEqual(appendages.map((item) => [item.kind, item.label, item.count, item.length_um, item.width_nm, item.where, item.from]), [
+    ["flagellum", "Flagella", [1, 5], [5, 10], [20, 40], "all over", "inner membrane"],
+    ["pilus", "Type 1 fimbriae", [200, 500], 1, [7, 10], "all over", "outer membrane"],
+  ]);
+  const base = appendages[0].base;
+  assert.deepEqual(base, { id: "flagellar-motor", label: "Flagellar motor", mark: "complex", value: "flagellum" });
+  assert.ok(shelves.marks[base.mark].values.includes(base.value), "the base names a mark and a value of the shelves");
+  assert.equal(count(table, (row) => row[base.mark] === base.value), 34);
+  assert.equal(shelves.highlights.rows.filter((row) => row[0] === base.mark && row[1] === base.value).length, 34);
+  for (const item of appendages) assert.ok(item.sources.length && item.sources.every((key) => species.sources[key]?.class === "permissive"), item.label);
+  for (const label of ["Flagella", "Where the flagella stand", "Type 1 fimbriae"]) assert.ok(species.cell.facts.some((fact) => fact.label === label), label);
   // The same capabilities as the other single cells, each with a place or the reason it has none.
   const other = await json(path.join(ROOT, "data", "species", "mpneumoniae.json"));
   assert.deepEqual(Object.keys(species.cell.capabilities).sort(), Object.keys(other.cell.capabilities).sort());

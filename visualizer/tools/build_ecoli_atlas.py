@@ -113,6 +113,22 @@ PAPERS = {
         "text": "Urich T, Lanzén A, Qi J, Huson DH, Schleper C, Schuster SC (2008) Simultaneous assessment of soil microbial community structure and function through analysis of the meta-transcriptome. PLoS One 3:e2527.",
         "holds": [r"E\. coli cells have been estimated to contain between 6,800 and 72,000 ribosomes, depending on the growth phase"],
     },
+    # The appendages. A paper with no text here is cited as its record at Europe PMC gives it.
+    "mears2014": {"pmc": "PMC3917375", "doi": "10.7554/eLife.01916", "licence": "CC BY",
+                  "holds": [r"plotted separately for different numbers of flagella per cell \( ?N flag = 1, purple; 2, blue; 3, green; 4, red; 5, cyan ?\)"]},
+    "schavemaker2022": {"pmc": "PMC9323006", "doi": "10.7554/eLife.77266", "licence": "CC BY",
+                        "holds": [r"a single 7\.5 µm long \( ?Turner et al\., 2000 ?\) flagellum", r"With an average number of 3\.4 flagella per E\. coli cell", r"The maximum number of stators, per flagellum, is at least 11",
+                                  r"a single E\. coli flagellum contains 1 FliJ protein \(part of exporter\), 10 FliD.s \(filament cap\), 100 FlgE.s \(hook\), and 10 4 FliCs \(filament\)"]},
+    "dvoriashyna2021": {"pmc": "PMC8291660", "doi": "10.1371/journal.pone.0254551", "licence": "CC BY",
+                        "holds": [r"which is peritrichous, meaning that it has several flagella distributed over the cell body", r"typically O\(5–10\) μ ?m in length and 40 nm in diameter"]},
+    "zhuang2025": {"pmc": "PMC11853445", "doi": "10.3390/biom15020170", "licence": "CC BY",
+                   "holds": [r"a long extracellular filament approximately 20 nm in diameter, a hook about 50 nm in length"]},
+    "jahnke2016": {"pmc": "PMC6274349", "doi": "10.3390/molecules21080985", "licence": "CC BY",
+                   "holds": [r"extend from the cellular outer membrane \(in Gram-negative bacteria\) with prevalence of 200–500 copies per cell", r"fimbriae reach up to 1 μ ?m in length and are approximately 7–10 nm in diameter"]},
+    # Read for the note's list of the motor's parts (docs/ECOLI.md); no fact of the species file rests on it.
+    "nakamura2019": {"pmc": "PMC6680979", "doi": "10.3390/biom9070279", "licence": "CC BY", "use": "note",
+                     "holds": [r"Diameters of the LP ring complex, the S ring, the M ring, and the C ring are ~25 nm, ~24\.5 nm, ~30 nm, and ~45 nm, respectively, in Salmonella", r"can accommodate about 10 stator units around a rotor in E\. coli and Salmonella",
+                               r"The Salmonella hook is formed by about 120 copies of the hook protein FlgE", r"The MS ring is composed of the transmembrane protein FliF", r"FliG, FliM, and FliN form the C ring on the cytoplasmic face of the MS ring", r"with a 12 FliH to 6 FliI to 1 FliJ stoichiometry"]},
 }
 RIBOSOMES_DRAWN = 6800  # the low end of the range the paper gives
 
@@ -123,7 +139,7 @@ SOURCES = {
     },
     NCBI: {"what": f"NCBI's summary of the genome record {GENOME} (Escherichia coli K-12 substrain MG1655): its title, length and topology; and GenBank's statement on the use of its data. No sequence was downloaded", "licence": "NCBI places no restrictions on the use or distribution of the GenBank data"},
     TERMS: {"what": "The pages on which two databases of this organism state their terms, read before deciding that nothing is taken from them: BioCyc's page on downloads (for EcoCyc) and the front page of STEPdb", "licence": "Each page is its owner's: kept as the record of what was read"},
-    PAPERS_AT: {"what": "Two open papers from Europe PMC, each as its record there (with its licence) and its full text: one for the cell's size and volume, one for the number of its ribosomes", "licence": "CC BY, each as its record at Europe PMC states"},
+    PAPERS_AT: {"what": "Open papers from Europe PMC, each as its record there (with its licence) and its full text: for the cell's size and volume, the number of its ribosomes, its flagella and its fimbriae, and the parts of the flagellar motor", "licence": "CC BY, each as its record at Europe PMC states"},
 }
 
 
@@ -355,7 +371,7 @@ def paper_text(d, key):
     """A paper's running text, with the licence its record gives; the build stops if a sentence a fact rests on is gone."""
     record = json.loads(d.text(PAPERS_AT, f"{key}_record.json"))["resultList"]["result"]
     found = next((item for item in record if item.get("pmcid") == PAPERS[key]["pmc"]), None)
-    if found is None or (found.get("license") or "").lower() != "cc by" or found.get("doi") != PAPERS[key]["doi"]:
+    if found is None or (found.get("license") or "").lower() != "cc by" or (found.get("doi") or "").lower() != PAPERS[key]["doi"].lower():
         raise SystemExit(f"{key}: its record at Europe PMC no longer gives the licence CC BY and the paper's DOI; read it again")
     raw = d.text(PAPERS_AT, f"{key}_fulltext.xml")
     text = re.sub(r"\s+", " ", html.unescape(re.sub(r"(?s)<[^>]+>", " ", re.sub(r"(?s)<(table-wrap|ref-list)\b.*?</\1>", " ", raw))))
@@ -365,6 +381,17 @@ def paper_text(d, key):
         if not re.search(pattern, text):
             raise SystemExit(f"{key}: the saved text no longer holds what a fact rests on ({pattern})")
     return text
+
+
+def paper_cite(d, key):
+    """A paper's citation: as written here, or as its saved record at Europe PMC gives it."""
+    if PAPERS[key].get("text"):
+        return PAPERS[key]["text"]
+    record = next(item for item in json.loads(d.text(PAPERS_AT, f"{key}_record.json"))["resultList"]["result"] if item.get("pmcid") == PAPERS[key]["pmc"])
+    clean = lambda words: re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", words or ""))).strip().rstrip(".")
+    journal = record.get("journalInfo", {})
+    where = " ".join(part for part in (clean(journal.get("journal", {}).get("title")), f"{journal.get('volume')}:{record.get('pageInfo')}" if journal.get("volume") and record.get("pageInfo") else journal.get("volume") or "") if part)
+    return f"{clean(record['authorString'])} ({record['pubYear']}) {clean(record['title'])}. {where}."
 
 
 def check_terms(d):
@@ -810,8 +837,20 @@ def build(datasets_folder, snapshot):
     species_sources = {
         "uniprot": uniprot_source,
         "genbank": {"text": f"GenBank {GENOME}: {record['title']}.", "url": f"https://www.ncbi.nlm.nih.gov/nuccore/{GENOME}", "licence": "No restriction: \"NCBI places no restrictions on the use or distribution of the GenBank data\".", "class": "permissive", "accessed": d.day(NCBI, f"genbank_{GENOME}_summary.json")},
-        **{key_: {"text": paper["text"], "doi": paper["doi"], "licence": "CC BY", "class": "permissive", "accessed": d.day(PAPERS_AT, f"{key_}_fulltext.xml")} for key_, paper in PAPERS.items()},
+        **{key_: {"text": paper_cite(d, key_), "doi": paper["doi"], "licence": "CC BY", "class": "permissive", "accessed": d.day(PAPERS_AT, f"{key_}_fulltext.xml")} for key_, paper in PAPERS.items() if paper.get("use") != "note"},
     }
+    # The appendages (schema/SPECIES.md): each number is a fact below, with its source.
+    base = {"id": "flagellar-motor", "label": "Flagellar motor", "mark": "complex", "value": "flagellum"}
+    if base["value"] not in marks[base["mark"]]["values"] or not complexes_said[base["value"]]:
+        raise SystemExit("the mark and value named at the foot of a flagellum are not the shelves' own")
+    for needed in ("fliF", "motA", "motB"):
+        if placed[by_name[needed]]["shelf"] != "inner" or placed[by_name[needed]]["side"] != "in":
+            raise SystemExit(f"{needed} is not stated to be in the inner membrane; the species file says the motor sits there")
+    f_plasmid = sorted(name for name in by_name if re.fullmatch(r"tra[A-Z]", name))
+    appendages = [
+        {"kind": "flagellum", "label": "Flagella", "count": [1, 5], "length_um": [5, 10], "width_nm": [20, 40], "where": "all over", "from": "inner membrane", "base": base, "sources": ["mears2014", "schavemaker2022", "dvoriashyna2021", "zhuang2025", "uniprot"]},
+        {"kind": "pilus", "label": "Type 1 fimbriae", "count": [200, 500], "length_um": 1, "width_nm": [7, 10], "where": "all over", "from": "outer membrane", "sources": ["jahnke2016"]},
+    ]
     capabilities = {
         "cap.membrane": {"place": "present", "note": "It has two membranes. By UniProt's vocabulary the inner one separates the cytoplasm from the periplasm, and the outer one the periplasm from the cell's surroundings. No source read for this file measured a voltage across either."},
         "cap.channels": {"place": "present", "note": f"Not the channels of animal cells: none of its proteins carries the signature of a channel family that Cells has a law for. {len(channels)} of its proteins carry the signature of a bacterial channel family: {channels_said}."},
@@ -848,7 +887,7 @@ def build(datasets_folder, snapshot):
         "modelled": {"state": "proposed", "text": "The project's record adds it as a data-only organism, for a proposed track whose first stage is bacterial chemotaxis in a well-mixed cell; the track is on hold (decision D179, 15 November 2026). Nothing of it is in the engine: no organism definition, no model and no run."},
         "levels": [
             {"id": "molecules"},
-            {"id": "cell", "label": "One cell", "shape": {"kind": "capsule", "length_um": 2.5, "across_um": 1}, "note": f"Drawn as a rod 2.5 µm long and 1 µm across: the picture's choice, within the ranges given for the cell. Its second membrane and its wall are drawn as clear shells around the cell membrane, and its {RIBOSOMES_DRAWN:,} ribosomes are the low end of the range one paper gives. The real cell also carries flagella and fimbriae on its surface, which this shape cannot show.", "sources": ["volkmer2011", "urich2008", "uniprot"]},
+            {"id": "cell", "label": "One cell", "shape": {"kind": "capsule", "length_um": 2.5, "across_um": 1}, "note": f"Drawn as a rod 2.5 µm long and 1 µm across: the picture's choice, within the ranges given for the cell. Its second membrane and its wall are drawn as clear shells around the cell membrane, and its {RIBOSOMES_DRAWN:,} ribosomes are the low end of the range one paper gives. Its flagella and fimbriae are given as appendages, with the ranges their sources give; that the fimbriae stand all over the cell is the picture's choice, since no source read for this file says where they stand.", "sources": ["volkmer2011", "urich2008", "uniprot"]},
         ],
         "no_further_levels": "A single-celled organism: each cell lives on its own, so there is no tissue, organ or body.",
         "cell": {
@@ -861,6 +900,9 @@ def build(datasets_folder, snapshot):
                 {"label": "Proteins", "value": f"{len(entries):,} in UniProt's reference proteome of strain K-12, every one with a reviewed entry", "sources": ["uniprot"]},
                 {"label": "Ribosomes", "value": "between 6,800 and 72,000 in a cell, depending on its phase of growth, as one open paper sums up earlier estimates", "sources": ["urich2008"]},
                 {"label": "Movement", "value": "swims with flagella that grow all over its surface, or does not move", "sources": ["uniprot"]},
+                {"label": "Flagella", "value": "1 to 5 on a cell in one study of single cells, and 3.4 on average by another paper; each a thread typically 5 to 10 µm long (7.5 µm by one measurement). Of the width the sources disagree: about 20 nm by one, 40 nm by another", "sources": ["mears2014", "schavemaker2022", "dvoriashyna2021", "zhuang2025"]},
+                {"label": "Where the flagella stand", "value": f"all over the cell body; the motor at the foot of each sits in the inner membrane, where its ring protein FliF and its stator proteins MotA and MotB are stated to be. {len(complexes_said['flagellum'])} proteins are parts of the flagellum by the Gene Ontology terms UniProt gives them", "sources": ["dvoriashyna2021", "uniprot"]},
+                {"label": "Type 1 fimbriae", "value": "200 to 500 on a cell by one paper's summary, each up to 1 µm long and about 7 to 10 nm wide, standing out from the outer membrane", "sources": ["jahnke2016"]},
                 {"label": "Chemotaxis", "value": f"{len(chemotaxis)} of its proteins carry UniProt's keyword for chemotaxis ({listed(by_gene(chemotaxis))}), and {len(complexes_said['flagellum'])} are parts of the flagellum by the Gene Ontology terms UniProt gives them", "sources": ["uniprot"]},
                 {"label": "Energy", "value": "respiration and fermentation: it lives with or without oxygen", "sources": ["uniprot"]},
                 {"label": "Where it lives", "value": "the lower gut of animals; it survives when released to the natural environment", "sources": ["uniprot"]},
@@ -868,7 +910,7 @@ def build(datasets_folder, snapshot):
                 {"label": "Signalling", "value": f"{two_component} proteins carry UniProt's keyword for two-component regulatory systems", "sources": ["uniprot"]},
                 {"label": "Strain", "value": f"K-12; the genome record is of its substrain MG1655, and UniProt's proteome is of the same genome assembly ({proteome['genomeAssembly']['assemblyId']})", "sources": ["genbank", "uniprot"]},
             ],
-            "parts": {"membranes": 2, "wall": True, "nucleus": False, "chromosome_kbp": round(genome_length / 1000), "ribosomes": RIBOSOMES_DRAWN},
+            "parts": {"membranes": 2, "wall": True, "nucleus": False, "chromosome_kbp": round(genome_length / 1000), "ribosomes": RIBOSOMES_DRAWN, "appendages": appendages},
             "capabilities": capabilities,
         },
         "capability_sources": {key_: ["uniprot"] for key_ in capabilities if key_ not in ("cap.grn", "cap.replacement", "cap.mechanics", "cap.sheet", "cap.repair", "cap.junctions")} | {"cap.junctions": ["uniprot"]},
@@ -917,7 +959,7 @@ f"{len(M.BACTERIAL_CHANNELS)} further signatures, of the channels a bacterium co
         "channels": channel_hits, "p_type": own["p_type"], "proteasome": by_gene(proteasome), "control": control, "genome_length": genome_length,
         "moved": {"proteins": by_gene(moved), "behind": dict(moved_behind), "lipid_anchors_first_stated_at": dict(anchored), "cell_membrane_on_inner": plain_words, "membrane_not_named": unnamed},
         "beside": {gene(accession): [family["of"], asked_by] for accession, (family, asked_by) in beside.items()}, "highlights": len(highlight_rows),
-        "pointers": pointers, "two_component": two_component, "isoforms": {gene(a): entry["isoforms"] for a, entry in entries.items() if entry["isoforms"] > 1},
+        "pointers": pointers, "two_component": two_component, "f_plasmid_genes": f_plasmid, "papers": {key_: paper_cite(d, key_) for key_ in PAPERS}, "isoforms": {gene(a): entry["isoforms"] for a, entry in entries.items() if entry["isoforms"] > 1},
         "per_protein": {protein: [key(placed[protein]["shelf"]), placed[protein]["side"], placed[protein]["basis"], placed[protein]["rule"]] for protein in sequence},
     }
     files_out = {"shelves": body, "table": table, "species": species_text, "atlas": atlas_text}

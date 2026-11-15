@@ -49,7 +49,6 @@ close-up shows a pump, and says in the species' words that no channel has a plac
 | `chromosome_kbp` | a length in thousands of base pairs | A chromosome lying free in the cell. Only for a cell without a nucleus |
 | `ribosomes` | a count | Free ribosomes, as scenery: protein synthesis is not a capability |
 | `appendages` | a list, as `SPECIES.md` sets out | Threads and hairs that stand out from the cell (a flagellum, a pilus), as scenery; each may name the machine at its foot |
-| `appendages` | a list, one entry for each kind | Threads and hairs that stand out from the cell (flagella, pili), as scenery: `SPECIES.md`, "Appendages are a general part", gives the entry |
 
 A capability is drawn where its structure is. Marked `absent` in `cell.capabilities`, it
 is not drawn and the species' card lists it with its `why`. A capability that is present

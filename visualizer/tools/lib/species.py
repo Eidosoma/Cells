@@ -26,7 +26,12 @@ CELL_KINDS = {
     "capsule": ({"length_um", "across_um"}, {"tip_um"}),
     "prism": ({"sides", "height_um"}, {"across_um", "radius_um", "corner_um", "edge_um"}),
 }
-PARTS = {"membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes"}
+PARTS = {"membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes", "appendages"}
+# An appendage: a thread or a hair that stands out from the cell (schema/SPECIES.md, "Appendages are a general part").
+APPENDAGE_KEYS = {"kind", "label", "count", "length_um", "width_nm", "where", "from", "base", "sources"}
+APPENDAGE_KINDS = ("flagellum", "pilus")
+APPENDAGE_WHERE = ("all over", "one pole", "both poles", "one side")
+APPENDAGE_FROM = ("cell membrane", "inner membrane", "outer membrane")
 LEVEL_FIELDS = {"id", "label", "shape", "note", "notes", "sources", "centre_um", "view", "label_um", "sheet_mark", "fade_in_um", "fade_out_um"}
 PART_KINDS = {"loft", "lines", "discs"}
 # The structure a capability is drawn at, where it is not the cell as a whole.
@@ -327,6 +332,39 @@ class Reader:
                 problems.append(f"cell.parts.{key} is a number above zero")
         if parts.get("nucleus") and "chromosome_kbp" in parts:
             problems.append("a free chromosome is drawn only in a cell without a nucleus")
+        # Appendages: each a kind the viewer can draw, with its count and sizes (a number or a
+        # range of two), where it stands, the membrane it starts at, and the sources of its numbers.
+        appendages = parts.get("appendages", [])
+        if not isinstance(appendages, list):
+            problems.append("cell.parts.appendages is a list")
+            appendages = []
+        amount = lambda value: positive(value) or (isinstance(value, list) and len(value) == 2 and all(positive(item) for item in value) and value[0] <= value[1])
+        for index, item in enumerate(appendages):
+            where = f"cell.parts.appendages[{index}]"
+            if not isinstance(item, dict):
+                problems.append(f"{where} is keyed")
+                continue
+            if set(item) - APPENDAGE_KEYS:
+                problems.append(f"{where} has a key the contract does not give: {', '.join(sorted(set(item) - APPENDAGE_KEYS))}")
+            if item.get("kind") not in APPENDAGE_KINDS:
+                problems.append(f"{where}.kind is one of {', '.join(APPENDAGE_KINDS)}")
+            if not (isinstance(item.get("label"), str) and item["label"].strip()):
+                problems.append(f"{where} has no label")
+            for key in ("count", "length_um", "width_nm"):
+                if not amount(item.get(key)):
+                    problems.append(f"{where}.{key} is a number above zero, or a range of two")
+            if item.get("where") not in APPENDAGE_WHERE:
+                problems.append(f"{where}.where is one of {', '.join(APPENDAGE_WHERE)}")
+            if item.get("from") not in APPENDAGE_FROM:
+                problems.append(f"{where}.from is one of {', '.join(APPENDAGE_FROM)}")
+            if (item.get("from") == "cell membrane") != (parts.get("membranes", 1) == 1):
+                problems.append(f"{where}.from names a membrane the cell does not have")
+            cited = item.get("sources")
+            if not (isinstance(cited, list) and cited and all(key in sources for key in cited)):
+                problems.append(f"{where}.sources names keys of the species' sources")
+            base = item.get("base")
+            if base is not None and not (isinstance(base, dict) and set(base) == {"id", "label", "mark", "value"} and all(isinstance(value, str) and value.strip() for value in base.values())):
+                problems.append(f"{where}.base gives an id, a label, and the mark and value of its proteins")
         held = set(ORGANELLES if organelles is None and parts.get("nucleus", True) else organelles or [])
         capabilities = cell.get("capabilities", {})
         if not isinstance(capabilities, dict):
