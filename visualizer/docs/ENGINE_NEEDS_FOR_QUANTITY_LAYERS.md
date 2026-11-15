@@ -286,7 +286,7 @@ Nothing of this is on main yet.
 | 6. Pumps | Yes. The view states each pump's rows per cycle by role, from its law declaration. In version 1 pumps stay columns of the membrane set, and the view says so |
 | 7. Species | Yes. Each species' identity comes from the species registry (on the integration branch) |
 | 8. Records over several files | One entry for a record, with a list of file and row range |
-| 9. A first real feed | Put to the user by the lead, with the timing of a further request of the user's for looping replays of each species' cell; the lead passes on the decision |
+| 9. A first real feed | Approved by the user the same day, as the lead reported: two small development runs through existing drivers and the shared output path, keeping the standard history at a modest cadence (a sheet of a few dozen cells with a written voltage pattern; one small world with a secreted species). They are development runs, not experiments, and apart from the user's further request for looping replays of each species' cell |
 
 The four questions: law declarations are readable from the definition's side; the
 levels-of-detail fields will be carried for a record's law when they land; a set's entry
