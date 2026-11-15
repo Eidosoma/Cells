@@ -404,6 +404,51 @@ def test_a_division_names_its_parent_and_daughters(monkeypatch):
     run_view.validate(plan.view({}, "write_run"))
 
 
+def test_the_inner_model_alone_carries_its_laws_and_gate_rows():
+    """@3 alone (the heredity cell, with Kir2.1 and NaV1.2 populations): every record is @3's,
+    each population carries its law with its provenance, and its gate rows name the set gate."""
+    from cells.models import inner_laws
+    from tests import partition_fixtures as pf
+
+    spec = parse_spec(pf.parent())
+    plan = run_view.prepare(spec, run_view.Request(), layout=initialise(spec).layout)
+    view = plan.view({"observation": [("trajectory.npz", 2)]}, "write_run")
+    run_view.validate(view)
+    assert view["run"]["engine_models"] == ["resolved_pump_tissue@3"]
+    assert view["run"]["composition"] is None
+    assert {r["owner"] for r in view["records"]} == {"resolved_pump_tissue@3"}
+    sets = {s["id"]: s for s in view["sets"]}
+    laws = [law for law in sets["channel"]["laws"] if law is not None]
+    assert laws and all(
+        law["provenance"] == inner_laws.CHANNEL_LAWS[law["law_id"]].provenance for law in laws
+    )
+    assert sets["gate"]["ids"] == ["gate_0", "gate_1"]
+    gated = [law for law in laws if law["gates"]]
+    assert gated and all(law["gates"] == ["m", "h"] for law in gated)
+    assert not any(sets["membrane"]["pumps"])  # The fixture removes the parent's pump.
+    assert {c["id"] for c in view["constants"]} == set(run_view.VIEW_FIELD_AXES)
+
+
+def test_pumps_are_membrane_columns_with_their_rows_per_cycle():
+    """Requirement 6: each pump's law, provenance and rows per cycle by role (inward-positive),
+    from its law's declaration, on its membrane's entry."""
+    from cells.models import inner_laws
+    from validation.tissue import pump_water_fixtures as wfx
+
+    spec = parse_spec(wfx.heredity_cell("H", dt=1e-3, end_time=0.004))
+    plan = run_view.prepare(spec, run_view.Request(), layout=initialise(spec).layout)
+    pumps = [p for p in plan.sets["membrane"]["pumps"] if p is not None]
+    assert pumps
+    for pump in pumps:
+        law = inner_laws.PUMP_LAWS[pump["law_id"]]
+        assert [(m["role"], m["count"]) for m in pump["per_cycle"]] == list(law.moves)
+        assert [m["species"] for m in pump["per_cycle"]] == ["Na", "K"]
+        assert pump["per_cycle_sign"] == "inward-positive"
+        assert pump["provenance"] == law.provenance
+    cycles = plan.fields["pump_cycles"]
+    assert cycles.sign["from"] == "outside" and cycles.sign["to"] == "inside"
+
+
 # ------------------------------------------------------------------ declarations
 
 

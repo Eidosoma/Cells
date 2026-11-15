@@ -1372,7 +1372,9 @@ def write_view(directory, spec=None, *, out=None, run=None, geometry=None, bases
 
     directory: the run's folder (resolved_config.json with trajectory.npz, or windows.jsonl);
     spec: its definition, read from resolved_config.json when not given; out: where to write
-    view.json (default: beside the run). Paths in the view are relative to the run's folder."""
+    view.json (default: beside the run). Paths in the view are relative to the run's folder.
+    A world of batch_io.write_batch_run is such a folder; a world of a windowed batch is not
+    (its index and checkpoints are the batch's): its view is written by the run itself."""
     from cells.core.specs import parse_spec, read_json
 
     directory = Path(directory)
