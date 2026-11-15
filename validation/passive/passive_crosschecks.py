@@ -73,7 +73,7 @@ def sweep():
                 h = float(ex["heat"])
                 worst["heat"] = max(worst["heat"], abs(heat - h) / h if h > 0 else abs(heat))
             row[label] = dict(worst_relative=worst, steps=None if run is None else run.steps)
-        out[f"{ratio:g}"] = row
+        out[f"{ratio:.12g}"] = row
         log("sweep", ratio, {k_: v["worst_relative"] for k_, v in row.items()})
     return out
 
