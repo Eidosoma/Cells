@@ -65,7 +65,11 @@ experiment).
       - the operator contract's view declarations, and the default `view_events` entity form fixed
         to `{"cell": id}`;
       - @3's own units, readout axes and layers, which replace the writer's interim table;
-      - door S recording the merged view of each changed field.
+      - door S recording the merged view of each changed field;
+      - the visualizer's reading of the worked example: its eleven items, in
+        `visualizer/docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` on the visualizer branch at d818cb34.
+        Items 1 and 10 are answered from the engine's code. `exchange_moved_fmol` is cumulative and
+        positive outward. The saved `membrane_transferred` holds the passive routes only.
       FR-11's interim planarian loop comes after these.
    4. The packed GPU planner. It is built on branch `packed-gpu-planner` (cf919da3) and passes its
       CPU evidence, including a rehearsal of the staged L4 plan on the 825-node tissue.
