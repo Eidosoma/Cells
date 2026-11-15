@@ -1,7 +1,7 @@
 {
   "format": "cells.visualizer.architecture-overlay@1",
   "title": "Cells architecture",
-  "as_of": "2026-11-14",
+  "as_of": "2026-11-15",
   "source_base_url": "https://github.com/Eidosoma/Cells/blob/main/",
   "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
   "statuses": [
@@ -1178,6 +1178,24 @@
       ]
     },
     {
+      "id": "laws.levels_of_detail",
+      "label": "Levels of detail",
+      "layer": "laws",
+      "status": "designed",
+      "as_of": "2026-11-15",
+      "plain": "A mechanism can be represented in more or less detail, chosen for each mechanism and each question: no single detail level holds for a whole world. Two representations of one mechanism show the same quantities at their physical interface, each closes its own ledgers, and the difference between them belongs to a declared error budget. Set in the architecture document on 15 November 2026 (D175) as a target: its fields are reserved in the modular rework's law design, and its first use waits for the fuel representation.",
+      "sources": [
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D175: Levels of detail as declared representations"
+        },
+        {
+          "path": "docs/ARCHITECTURE.md",
+          "where": "Levels of detail"
+        }
+      ]
+    },
+    {
       "id": "laws.other",
       "catch_all": true,
       "label": "Other laws",
@@ -1326,12 +1344,12 @@
       "label": "Composite tissue model",
       "layer": "models",
       "status": "qualified",
-      "as_of": "2026-11-14",
+      "as_of": "2026-11-15",
       "match": [
         "src/cells/models/pump_composite.py",
         "src/cells/models/pump_composite_adapter.py"
       ],
-      "plain": "The newer design: the pump tissue's own step plus declared operators, so new combinations are definitions and not new model modules. Numerically qualified on CPU through its frozen-model guards and judged in E07-v1; agreement on the GPU is in progress.",
+      "plain": "The newer design: the pump tissue's own step plus declared operators, so new combinations are definitions and not new model modules. Numerically qualified on CPU through its frozen-model guards and judged in E07-v1. On the L4 GPU it agrees within the registered tolerance (W1, W2, and Q1 to Q6 of G2-Q1 pass); the one criterion that asks for bitwise equality fails, from the GPU's own nondeterminism, and stays open.",
       "sources": [
         {
           "path": "docs/PUMP_COMPOSITE.md"
@@ -1339,6 +1357,39 @@
         {
           "path": "docs/CURRENT_PLAN.md",
           "where": "Status on 14 November 2026, and the working order (D156)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The composite's L4 agreement"
+        }
+      ]
+    },
+    {
+      "id": "models.modular",
+      "label": "Modular inner model",
+      "layer": "models",
+      "status": "designed",
+      "as_of": "2026-11-15",
+      "plain": "The tissue model is being rebuilt in place as one modular model: each channel law, junction law, pump, fuel source and solver becomes a separate declared piece, and no second inner model is kept beside it (the user's decision, D172). The architecture document lists what the rebuilt core must do, and the design note carries the decisions on fuel and on qualification (D176). The work is in implementation on an integration branch since 15 November 2026 and is not on main: before it lands, every affected registered protocol is run again on the integrated candidate, E07 included. The model keeps its name.",
+      "sources": [
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D172: One inner model, made modular in place"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D176: The modular rework proceeds, with FR-4 and FR-5 as its priority consumers"
+        },
+        {
+          "path": "docs/ARCHITECTURE.md",
+          "where": "The modular core (D172, D174)"
+        },
+        {
+          "path": "docs/INNER_MODEL_V4_DESIGN.md"
+        },
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "The D172 restructure"
         }
       ]
     },
@@ -3455,6 +3506,18 @@
       "to": "op.site_occupancy@1",
       "kind": "extends",
       "label": "the later milestones build on the first"
+    },
+    {
+      "from": "models.modular",
+      "to": "models.pump_tissue",
+      "kind": "extends",
+      "label": "rebuilds the tissue model @3 in place, under the same name"
+    },
+    {
+      "from": "laws.levels_of_detail",
+      "to": "models.modular",
+      "kind": "requires",
+      "label": "its fields are reserved in the rework's law design"
     }
   ],
   "relation_kinds": [
