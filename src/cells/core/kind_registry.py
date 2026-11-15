@@ -33,11 +33,50 @@ class Kind:
     """One kind's declaration (§7.4 (k)). Fields are appended in canonical kind order.
 
     state_axes: ((field, (axis, ...)), ...); layout_fields, control_fields and readout_columns:
-    field names. Every hook is optional and pure, closing over the kind's declaration only.
-    Scope rules (§7.4 (j), ruled): its ledger terms fold into today's ten ledgers by role; its
-    state fields are observation columns right after today's state fields; its material moves
-    land in the shared inventory; its controls are availabilities in [0, 1] unless
-    control_domain says otherwise.
+    field names. Every hook is optional and pure, closing over the kind's declaration only (P5:
+    never over a value). No kind reads another kind's fields. Scope rules (§7.4 (j), ruled): its
+    ledger terms fold into today's ten ledgers by role; its state fields are observation columns
+    right after today's state fields; its material moves land in the shared inventory; its
+    controls are availabilities in [0, 1] unless control_domain says otherwise.
+
+    The hooks, as resolved_pump_tissue@3 calls them (`p` is the world's layout, in the
+    structure's layout type; `state` and `control` are in the structure's state and control
+    types; `declaration` is what `parse` returned):
+    - definition: `parse(entries, base)` -> declaration, from the kind's model-key block and the
+      parsed @2 base definition; `to_dict(declaration)` -> that block; `structure_entry(
+      declaration)` -> its hashable, value-free part of the structure (compile key, batch
+      signature, cached implementation); `initial(spec, declaration, layout)` -> ({state field:
+      array}, {layout field: array}); `control_values(spec, declaration, times)` -> {control
+      field: [time, ...] array}; `moved_rows(declaration)` -> ((species, node ID), ...) or
+      ((species, node ID, law ID), ...), the rows it moves in the step; `check_definition(spec)`,
+      its refusals, after the species registry's and before @3's.
+    - stage: `stage_read(state, p, *, xp)` -> (the state whose amount fields hold the amounts
+      every rate of the stage reads, valid), composed in hook order; a failed read refuses the
+      step, and domain_valid evaluates the reads at every checked state (the step's end
+      included). The read changes the concentrations the rates see, never charge: the field
+      solve keeps the stored rows' charges. It must declare `stage_rows(declaration)` ->
+      ((species, node ID), ...), every row it reads or rewrites, and two kinds' stage reads on a
+      shared row are refused at binding (they do not commute). `rates(state, potentials,
+      control, p, *, xp)` -> surface_pump_v3.KindRates: inward-positive node changes (cell
+      [species, cell], outside [species, outside node]) into the shared inventory, the kind's own
+      state derivatives {field: array}, and heat and work rates (pJ/s); `potentials` are the
+      stage's node potentials, cells then outside nodes (V).
+    - step end: `book(applied, start, end, p, dt, *, xp)` -> {own state field: new value}, after
+      the tableau's combination; `applied(name)` is the step's applied rate of a state field
+      (the tableau's weights), `start` the step's start state and `end` its end state before any
+      kind books, the same for every kind, and only the kind's own state fields may be written,
+      so bookings commute.
+    - checks (traced on the device at binding, with stage_read, so the device's row checks
+      include them as the host's do; they branch on no value in Python): `domain(state, p, *,
+      xp)` -> one bool, and-ed into domain_valid; `control_domain(control, p, *, xp)` -> one
+      bool, in place of the [0, 1] rule for its controls; `ledger_terms(state, p, *, xp)` ->
+      {"cell": [species, cell], "outside": [species, outside node], "heat_pJ": ..., "work_pJ":
+      ..., "stored_pJ": ...} (any subset): cumulative inward-positive node transfers, heat and
+      work accumulators, and the free energy the kind stores beyond the stored rows' own terms
+      (its change since the start), folded into balances, device_balances and the ledger
+      magnitudes by role.
+    - observation: `readouts(state, control, p, *, xp)` -> its readout columns, in order, after
+      today's (on the host).
     """
 
     kind_id: str
@@ -52,6 +91,7 @@ class Kind:
     initial: Callable | None = None
     control_values: Callable | None = None
     stage_read: Callable | None = None
+    stage_rows: Callable | None = None
     rates: Callable | None = None
     book: Callable | None = None
     ledger_terms: Callable | None = None
@@ -60,6 +100,11 @@ class Kind:
     readouts: Callable | None = None
     moved_rows: Callable | None = None
     check_definition: Callable | None = None
+
+    @property
+    def state_fields(self):
+        """The kind's own state field names, in declared order."""
+        return tuple(field for field, _ in self.state_axes)
 
 
 class KindRegistry:

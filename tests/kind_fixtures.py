@@ -22,7 +22,7 @@ import numpy as np
 from cells.core.kind_registry import Kind, KindRegistry
 from cells.core.specs import ConfigError
 from cells.numerics.species_sums import species_sum
-from cells.processes.electrochemistry import R
+from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 KIND_ID = "tests.exchange@1"
 MODEL_KEY = "test_exchange"
@@ -75,7 +75,7 @@ def control_values(spec, declaration, times):
 
 
 def stage_read(state, p, *, xp):
-    return state  # The identity: the seam is exercised, the amounts unchanged.
+    return state, True  # The identity: the seam is exercised, the amounts unchanged.
 
 
 def _flow(p, control):
@@ -116,7 +116,7 @@ def _scatter(flow, outside, p):
     return out
 
 
-def book(applied, start, stage, p, dt, *, xp):
+def book(applied, start, end, p, dt, *, xp):
     # The tableau already integrated the accumulators. Re-booking `moved` from the step's applied
     # rate is the same quantity, so the seam is exercised and nothing changes.
     return dict(exchange_moved_fmol=start.exchange_moved_fmol + dt * applied("exchange_moved_fmol"))
@@ -163,6 +163,7 @@ EXCHANGE = Kind(
     initial=_spy("initial", initial),
     control_values=_spy("control_values", control_values),
     stage_read=_spy("stage_read", stage_read),
+    stage_rows=lambda declaration: (),  # The identity read touches no row.
     rates=_spy("rates", rates),
     book=_spy("book", book),
     ledger_terms=_spy("ledger_terms", ledger_terms),
@@ -173,9 +174,11 @@ EXCHANGE = Kind(
 )
 
 
-def registry():
+def registry(*more):
     out = KindRegistry()
     out.register(EXCHANGE)
+    for kind in more:
+        out.register(kind)
     return out
 
 
@@ -185,5 +188,142 @@ def declare(raw, *, species="B", rate=1e-3):
     m = raw["model"]
     m[MODEL_KEY] = dict(
         species=species, cell=m["cells"][0]["id"], node=m["extracellular"][0]["id"], rate_fmol_s=rate
+    )
+    return raw
+
+
+# ------------------------------------------------------------------ the charged planted kind
+# `tests.carrier@1`: a declared species, charged or not, carried outward across one membrane
+# patch at a constant declared rate: B5's charged role in miniature (a proton pump moving H+
+# from its patch's inside to its outside). Its moves land in the shared inventory, so the field
+# solve sees their charge (rule (c)). Its work is the carried species' electrochemical
+# free-energy change at the stage's potentials, so the energy ledger closes with the
+# capacitor's energy (rule (a)). carrier(electrical=False) books the chemical part only: a
+# planted error that the energy ledger must catch.
+
+CARRIER_ID = "tests.carrier@1"
+CARRIER_KEY = "test_carrier"
+
+
+def _carrier_parse(entries, base):
+    m = base.model
+    if set(entries) != {"species", "membrane", "rate_fmol_s"}:
+        raise ConfigError("test_carrier declares species, membrane and rate_fmol_s")
+    if entries["species"] not in m.species_ids:
+        raise ConfigError("test_carrier: unknown species")
+    patches = {p.id: p for p in m.membranes}
+    if entries["membrane"] not in patches:
+        raise ConfigError("test_carrier: unknown membrane patch")
+    rate = float(entries["rate_fmol_s"])
+    if not rate >= 0:
+        raise ConfigError("test_carrier: rate_fmol_s must be nonnegative")
+    patch = patches[entries["membrane"]]
+    return (entries["species"], patch.id, patch.inside, patch.outside, rate)
+
+
+def _carrier_to_dict(declaration):
+    species, membrane, _, _, rate = declaration
+    return dict(species=species, membrane=membrane, rate_fmol_s=rate)
+
+
+def _carrier_initial(spec, declaration, layout):
+    species, membrane, _, _, rate = declaration
+    m, k = spec.model, spec.execution.membrane_capacity
+    rates = np.zeros((len(m.species_ids), k))
+    rates[m.species_ids.index(species), [p.id for p in m.membranes].index(membrane)] = rate
+    state = dict(carrier_transferred=np.zeros_like(rates), carrier_work_pJ=np.zeros(k))
+    return state, dict(carrier_rate_fmol_s=rates)
+
+
+def _carrier_controls(spec, declaration, times):
+    return dict(carrier_availability=np.ones((len(times), 1)))
+
+
+def _carrier_flow(p, control, *, xp):
+    """Outward flow [species, membrane] (fmol/s) on the active patches."""
+    return xp.where(p.membrane_active, p.carrier_rate_fmol_s * control.carrier_availability[0], 0.0)
+
+
+def _carrier_rates(electrical):
+    def rates(state, potentials, control, p, *, xp):
+        from cells.models.surface_pump_v3 import KindRates
+        from cells.numerics.extracellular_field import scatter
+
+        flow = _carrier_flow(p, control, xp=xp)
+        ci, co = _potentials(state, p, xp=xp)
+        cell, node, n = p.membrane_cell, p.membrane_outside, p.active.size
+        mu = R * p.temperature * (xp.log(co[:, node]) - xp.log(ci[:, cell]))  # J/mol, out - in
+        if electrical:
+            mu = mu + p.valence * F * (potentials[n + node] - potentials[cell])
+        work = 1e-3 * species_sum(flow * mu, xp=xp)  # pJ/s per patch: the free energy it stores.
+        return KindRates(
+            cell=-scatter(flow, ci, (cell,), xp=xp),
+            outside=scatter(flow, co, (node,), xp=xp),
+            derivatives=dict(carrier_transferred=flow, carrier_work_pJ=work),
+            heat_pJ_s=xp.zeros(()),
+            work_pJ_s=work,
+        )
+
+    return rates
+
+
+def _carrier_ledger_terms(state, p, *, xp):
+    from cells.numerics.extracellular_field import scatter
+
+    moved = state.carrier_transferred  # Cumulative outward [species, membrane].
+    return dict(
+        cell=-scatter(moved, state.amount_increment, (p.membrane_cell,), xp=xp),
+        outside=scatter(moved, state.extracellular_amount_increment, (p.membrane_outside,), xp=xp),
+        work_pJ=state.carrier_work_pJ,
+    )
+
+
+def _carrier_domain(state, p, *, xp):
+    moved, work = state.carrier_transferred, state.carrier_work_pJ
+    valid = xp.all(xp.isfinite(moved) & (moved >= 0)) & xp.all(xp.isfinite(work))
+    return valid & xp.all(xp.where(p.membrane_active, True, (moved == 0) & (work == 0)))
+
+
+def _carrier_readouts(state, control, p, *, xp):
+    current = CHARGE_PER_FMOL * species_sum(p.valence * _carrier_flow(p, control, xp=xp), xp=xp)
+    return (current,)  # Outward current per patch (A).
+
+
+def _carrier_moved_rows(declaration):
+    species, _, inside, outside, _ = declaration
+    return ((species, inside), (species, outside))
+
+
+def carrier(*, electrical=True):
+    """The charged planted kind; electrical=False omits the electrical part of its work."""
+    return Kind(
+        kind_id=CARRIER_ID,
+        model_key=CARRIER_KEY,
+        state_axes=(
+            ("carrier_transferred", ("species", "membrane_slot")),
+            ("carrier_work_pJ", ("membrane_slot",)),
+        ),
+        layout_fields=("carrier_rate_fmol_s",),
+        control_fields=("carrier_availability",),
+        readout_columns=("carrier_current_A",),
+        parse=_carrier_parse,
+        to_dict=_carrier_to_dict,
+        structure_entry=lambda declaration: (),
+        initial=_carrier_initial,
+        control_values=_carrier_controls,
+        rates=_carrier_rates(electrical),
+        ledger_terms=_carrier_ledger_terms,
+        domain=_carrier_domain,
+        readouts=_carrier_readouts,
+        moved_rows=_carrier_moved_rows,
+    )
+
+
+def declare_carrier(raw, *, species="K", rate=1e-3, membrane=None):
+    """raw with the carrier declared on a membrane patch (its first by default)."""
+    raw = copy.deepcopy(raw)
+    m = raw["model"]
+    m[CARRIER_KEY] = dict(
+        species=species, membrane=membrane or m["membranes"][0]["id"], rate_fmol_s=rate
     )
     return raw
