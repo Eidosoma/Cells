@@ -443,9 +443,12 @@ program (§9.1).
 
 ## 9. Ownership, solver invalidation and compartment identity (list (b))
 
-### 9.1 Three things kept apart
+### 9.1 Three things kept apart (B6: with its first consumer, unless moved into R)
 
-| Concept | Today | After R |
+Today's column is from `pump_composite_adapter` (`FIELD_INPUTS`, `refresh_field`,
+`check_field_inputs`) and `membrane_state.VIEW_FIELDS`.
+
+| Concept | Today | Once it lands |
 | --- | --- | --- |
 | Owning a membrane population (abundance, sites) | Membrane state provides `channel_abundance`, and its provision of `membrane_capacitance` makes the world a field-input world | An owner declares the population fields it changes; abundance is not a field input |
 | Changing geometry or capacitance | Any provider of a field input | Only a mechanism whose **changed slots** include a field input (§8) |
@@ -458,7 +461,7 @@ program (§9.1).
 
 FR-3's separate owner stays as accepted.
 
-### 9.2 Compartment identity as a host-side map
+### 9.2 Compartment identity as a host-side map (B2)
 
 - **The map** is at the definition boundary, beside species identity (§10.2): compartment ID,
   owner cell, role (cytosol, lysosome, vesicle, ER or mitochondrion), storage slot (today an
