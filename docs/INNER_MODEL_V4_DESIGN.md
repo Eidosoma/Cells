@@ -113,7 +113,7 @@ HANDOFF.md holds every probe's criterion, written before its run, its amendments
 | GPU-native execution: no per-cell Python dispatch or CPU solver; compile, memory and end-to-end measured | **Covered** by static dispatch; **new:** the measurements list in the gate | §2, §3 |
 | Scoped composition (door S, with the runtime merge) | **New:** the design | §8 |
 | Ownership, geometry and solver invalidation; compartment identity as a host map | **New:** the design | §9 |
-| Material identity and fuel | **Covered,** after a contradiction is corrected: the route (c) draft recommended pool state, which contradicts the requirement unless the pool is those amounts. **New:** inventory rows with one authority for each standard potential, the first case, the two boundaries | §10 |
+| Material identity and fuel | **Covered,** after a contradiction is corrected: the route (c) draft recommended pool state, which contradicts the requirement unless the pool is those amounts. **New:** inventory rows with one authority for each standard potential, the first case, the two boundaries; species identity consolidated, with one explicit order for every sum over species (D165, amended) | §10 |
 | Transport laws by physical contract | **New:** the passive law joins R as list (a)'s added law. Its kernel is the constant-field route at valence 0, per the Syn3A audit. It is tested on the closed, fixed-volume two-compartment boundary, with water qualified separately | §11 |
 | State roles and time | **New:** evolution roles apart from conservation relationships; counters that declare steps or events; the step context. Interfaces only, in list (b) | §12 |
 | Reuse cases and the results gate | **Covered** (the results gate); **new:** a required-results list that must execute, the planted tests, and the four reuse cases placed | §3, §15 |
@@ -918,6 +918,8 @@ runs.
 **P3, the I0 sweep**, with planted controls of known answer. *Entered after the run.*
 
 **P5, the constants inventory.** *Entered after the run.*
+
+**P6, memory and step cost against the species count.** *Entered after the run.*
 
 (P4, the cost of per-law dispatch, was folded into P2 as its amendment 2.)
 
