@@ -178,3 +178,20 @@ def test_the_revised_fr5_arms_their_start_horizon_and_budget():
     g = (96485.33212**2 / (8.314462618 * w.temperature_K)) * 1e-5 * w.patch_area_m2 * (
         1000 * 10 ** -5.1)
     assert g / w.patch_capacitance_F * 1e-3 == pytest.approx(0.0287, abs=5e-4)
+
+
+def test_the_fr4_pump_is_the_transporter_kinds_entry_with_the_registrys_drive():
+    """FR-4's pump in cells.transporter@1's form (held fuel, which the kind holds; no ΔG° of its
+    own), and the fuel rows' registry potentials give the world's declared Δ_rG'°."""
+    from validation.compartment_ph.parameters import R
+
+    d = defs.fr4_world()
+    (pump,) = d["model"]["transporters"]
+    assert (pump["law"], pump["role"], pump["stoichiometry"]) == (defs.PUMP_LAW, "H", 2)
+    assert pump["fuel"] == dict(kind=defs.HELD_FUEL, node=defs.CELL, rows=["ATP", "ADP", "Pi"],
+                                ph_ref=7.2, ph_band=0.05)
+    assert "held_rows" not in d["model"] and "transporter_controls" not in d["experiment"]
+    mu = {e["id"]: e.get("standard_mu_RT") for e in d["model"]["species"]}
+    w = World()
+    drive = R * w.temperature_K * (mu["ADP"] + mu["Pi"] - mu["ATP"])
+    assert drive == pytest.approx(w.delta_g0_prime_J_mol, rel=1e-14)

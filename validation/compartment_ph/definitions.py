@@ -6,8 +6,9 @@
   nine species rows (Na, K, Cl, H as proton equivalents, B_c, B_L, ATP, ADP, Pi);
 - **the pending parts,** under §7.4's published names, for the core's insertion points: the
   species registry entries (`standard_mu_RT`), the stage read (`stage_reads`), the transporter
-  population (`transporters`, `transporter_controls`), the proton leak (`passive_routes`), the
-  held fuel rows, and FR-1's compartment declaration.
+  population (`transporters`, cells.transporter@1's form: the proton pump on held fuel, whose
+  rows the kind holds), the proton leak (`passive_routes`), and FR-1's compartment declaration.
+  Δ_rG'° is the registry's: the fuel rows' potentials (`fuel_potentials_RT`).
 
 `today_only(definition)` strips the pending parts. Today's parser refuses them by design until the
 core lands them. Absent rows (a buffer at the other node, fuel outside the cytosol) carry 0, and
@@ -31,14 +32,17 @@ import json
 import math
 from dataclasses import replace
 
-from validation.compartment_ph.parameters import CHARGE_PER_FMOL, World, h_from_ph
+from validation.compartment_ph.parameters import CHARGE_PER_FMOL, R, World, h_from_ph
 
 SPECIES = (("Na", 1), ("K", 1), ("Cl", -1), ("H", 1), ("B_c", -1), ("B_L", -1),
            ("ATP", 0), ("ADP", 0), ("Pi", 0))
-PENDING_MODEL_KEYS = ("stage_reads", "transporters", "passive_routes", "held_rows", "operators",
+PENDING_MODEL_KEYS = ("stage_reads", "transporters", "passive_routes", "operators",
                       "standard_concentration_mM")
 BACKGROUND_ROWS = ("B_c", "B_L", "ATP", "ADP", "Pi")
-PENDING_EXPERIMENT_KEYS = ("transporter_controls", "passive_route_controls")
+PENDING_EXPERIMENT_KEYS = ("passive_route_controls",)
+FUEL_ROWS = ("ATP", "ADP", "Pi")
+PUMP_LAW = "cells.proton_atp_mass_action_positive@1"
+HELD_FUEL = "maintained_held_rows@1"
 CELL, BATH, LUMEN = "cell_0", "bath_0", "lumen_0"
 PLASMA, BOUNDING = "plasma_0", "bounding_0"
 RECORD_EVERY_S = 1.0
@@ -94,6 +98,12 @@ def _patch(world, pid, outside, area, permeability):
                 law="constant_field@1", pump=None, calcium_pump=None)
 
 
+def fuel_potentials_RT(world):
+    """The fuel rows' registry potentials (mu°'/RT at c0). Only the reaction's sum is declared,
+    Δ_rG'° = mu°'(ADP) + mu°'(Pi) - mu°'(ATP) (a generic value, §13), so ATP and Pi carry 0."""
+    return dict(ATP=0.0, ADP=world.delta_g0_prime_J_mol / (R * world.temperature_K), Pi=0.0)
+
+
 def fr4_world(world=None, *, dt_s=None):
     """The FR-4 definition (today's parts plus the pending parts); world.control() is P_K = 0."""
     w = world or World()
@@ -110,6 +120,8 @@ def fr4_world(world=None, *, dt_s=None):
             entry.update(standard_mu_RT=0.0, protonated_standard_mu_RT=b.mu_acid_minus_base_RT)
         if s == "H":
             entry.update(standard_mu_RT=0.0)  # the proton row declares its own potential
+        if s in FUEL_ROWS:  # Δ_rG'° comes from the registry only (B3)
+            entry.update(standard_mu_RT=fuel_potentials_RT(w)[s])
         if s in BACKGROUND_ROWS:
             entry.update(background=dict(trace_mM=w.trace_mM, floor_fmol=w.trace_floor_fmol))
         species.append(entry)
@@ -128,12 +140,10 @@ def fr4_world(world=None, *, dt_s=None):
         stage_reads=[dict(read_id="rapid_proton_buffer@1", proton_row="H",
                           buffers={CELL: ["B_c"], LUMEN: ["B_L"]},
                           k_on_per_mM_s={b.name: b.k_on_per_mM_s for b in registry.values()})],
-        held_rows=dict(law="maintained_held_rows@1", node=CELL, rows=["ATP", "ADP", "Pi"]),
-        transporters=[dict(id="pump_0", patch=BOUNDING, law="proton_atp_mass_action_positive@1",
-                           capacity_fmol_s=w.pump_capacity_fmol_s, protons_per_cycle=w.pump_n,
-                           km_proton_mM=w.km_proton_mM, km_atp_mM=w.km_atp_mM,
-                           fuel=dict(node=CELL, rows=["ATP", "ADP", "Pi"],
-                                     delta_g0_prime_J_mol=w.delta_g0_prime_J_mol,
+        transporters=[dict(id="pump_0", patch=BOUNDING, law=PUMP_LAW,
+                           capacity_fmol_s=w.pump_capacity_fmol_s, stoichiometry=w.pump_n,
+                           km_role_mM=w.km_proton_mM, km_atp_mM=w.km_atp_mM, role="H",
+                           fuel=dict(kind=HELD_FUEL, node=CELL, rows=list(FUEL_ROWS),
                                      ph_ref=w.cytosol_mM["pH"], ph_band=w.fuel_ph_band))],
         passive_routes=[dict(id="proton_leak_0", patch=BOUNDING,
                              law="proton_constant_field_leak@1",
@@ -149,8 +159,6 @@ def fr4_world(world=None, *, dt_s=None):
         junction_controls=[], pump_controls=[], calcium_pump_controls=[], channel_controls=[],
         end_time=steps * dt,
         observation_times=[k * dt for k in range(0, steps + 1, stride)],
-        transporter_controls=[dict(transporter_id="pump_0",
-                                   schedule=[dict(time=0.0, availability=1.0)])],
         passive_route_controls=[dict(route_id="proton_leak_0",
                                      schedule=[dict(time=0.0, availability=1.0)])],
     )
