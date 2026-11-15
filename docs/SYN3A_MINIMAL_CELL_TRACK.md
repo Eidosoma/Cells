@@ -102,7 +102,7 @@ Status: **the track was adopted on 14 November 2026 (D173).**
 | Replication (Thornburg et al. 2026, *Cell* 189:2582) | BioProject PRJNA1257452 | 9 MiSeq runs, 3.8 GB of reads | Syn3A-mCherry; SP4; 5, 9 and 21 h, 3 replicates each. The 5 h runs were released on 17 November 2025, after bioRxiv v1 | Related strain. The ori:ter ratio is inferred | Run metadata |
 | Reconstituted membranes: archive (Presutti et al. 2026, *Nat. Commun.*) | Zenodo 10.5281/zenodo.20613506 (concept 20613505) | One zip, 590 MB, 2.5 GB unpacked. **Martini 3 MD only.** CC BY | Coarse-grained bilayers and vesicles, 0–80% cholesterol, 293 K and 310 K | Another simulator | Record, listing and 20 small members, by range requests |
 | Reconstituted membranes: journal files | Source Data (343 KB), SI (22 MB) | Glycerol traces numeric. The KCl and ribose traces and the DLS size distributions are images only. **Article CC BY-NC-ND** | Synthetic vesicles of three five-lipid mixtures; 20 °C; stopped-flow calcein assay for water, glycerol and D-ribose; Langmuir monolayers; cryo-TEM | Reconstituted (traces). The coefficients are fitted | Yes |
-| Reconstituted membranes, same assay (Frallicciardi et al. 2022, *Nat. Commun.* 13:1605) | The paper's source-data repository, 91 files, about 4.2 MB; MD on Zenodo 10.5281/zenodo.6010416 | Raw stopped-flow traces: time plus 6–9 acquisitions, 1,000–3,000 points over 20–60 s, for KCl (water), formate, lactate and, on DOPC, POPC and DPPC, glycerol. One exemplary DLS distribution per composition. Paper CC BY; **the repository has no licence file** | Calcein-loaded vesicles of DOPC, POPC, DPPC, a chain-length series and sterol series; 20 °C; about 300 mOsm/kg after mixing | Reconstituted (traces); fitted (coefficients) | 16 files, 1.1 MB (§6.2); the MD archive not downloaded |
+| Reconstituted membranes, same assay (Frallicciardi et al. 2022, *Nat. Commun.* 13:1605) | The paper's source-data repository, 91 files, about 4.2 MB; MD on Zenodo 10.5281/zenodo.6010416 | Raw stopped-flow traces: time plus 6–9 acquisitions, 1,000–3,000 points over 20–60 s, for KCl (water), formate, lactate and, on DOPC, POPC and DPPC, glycerol. One exemplary DLS distribution per composition. Paper CC BY; **the repository has no licence file** | Calcein-loaded vesicles of DOPC, POPC, DPPC, a chain-length series and sterol series; 20 °C; about 300 mOsm/kg after mixing | Reconstituted (traces); fitted (coefficients) | 16 data files (1.1 MB) and the SI (1.5 MB, with the per-trace fits of Table 6); the MD archive not downloaded |
 | The 4D model | Repository `Luthey-Schulten-Lab/Minimal_Cell_4DWCM`; Zenodo 15579158 is the concept DOI of record 15579159 | Zip of 12.0 GB: frozen code, inputs, 50 count-and-flux CSVs (302 MB), 4 trajectories (11.7 GB). Zenodo CC BY; **no licence file in the repository** | — | Another simulator | Metadata and listing; nothing cloned or run |
 | Genome | GenBank CP016816.2, updated 12 April 2018 | Feature table | — | Measured (annotation) | Yes |
 
@@ -169,7 +169,8 @@ registration anywhere and no archive capture.
 
 ## 3. What was downloaded, and what waits
 
-- **Syn3A:** 80 MB in 18 source folders (the earlier 17 plus the Frallicciardi subset).
+- **Syn3A:** 82 MB in 18 source folders (the earlier 17 plus the Frallicciardi subset and its
+  CC BY SI).
 - ***M. pneumoniae*:** 4.4 MB in 3 folders (§9).
 - **How the files were handled.** Every file was only streamed to disk and hashed. Workbooks were
   read as XML with the standard library, and nothing downloaded was executed.
