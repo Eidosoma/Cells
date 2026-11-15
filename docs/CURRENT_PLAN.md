@@ -44,25 +44,35 @@ experiment).
 | Coupling out of the inventory (D155, scoped by D156) | **Numerically qualified** (15 November): the judged protocol passed, with second order against independent references for reciprocal feedback (A4) and a species setting a channel (A5). CPU only, within its scope line |
 | Excitable tissue (D155) | Design accepted narrowly, for M1 and M2 on @3 (D170). The generic cell is 0.01 F/m² (candidate A), on post-hoc probe evidence; the junction floor is provisional until M1's sheet runs |
 | Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestones 1 and 2, FR-1's milestone 1 and FR-3's milestone 1 landed (15 November). FR-4 and FR-5's design note is proposed |
-| The D172 restructure (one modular inner model, `resolved_pump_tissue@3`) | **In implementation** (D176, 15 November). It runs on the integration branch `integration-d172` from tag `d172-base-2026-11-15`, in six parallel streams with one integrated acceptance gate and landing. The [note](INNER_MODEL_V4_DESIGN.md) is the design. FR-4 and FR-5 are the priority consumers |
+| The D172 restructure (one modular inner model, `resolved_pump_tissue@3`) | **In implementation** (D176). It runs on the integration branch `integration-d172` from tag `d172-base-2026-11-15`, with one integrated acceptance gate and landing; the [note](INNER_MODEL_V4_DESIGN.md) is the design. On the branch by the evening of 15 November: door S, the species registry, per-law dispatch with the padding fill, the registry hook and B7, all bitwise against the tag's records. The kind interface (§7.4 (k)) and schema A's first stage are committed on the core's branch. The integrated landing is estimated at about 25 November (§15.6). The end game is staged and rehearsed (D181). FR-4 and FR-5 are the priority consumers |
 | Field-solver interface | Designed; code waits for the GH200 numbers |
 | One production execution path, compile policy, registry | Not started. D147's policy for composite definitions landed on 14 November |
 
-**The working order** (D156; six agents from 14 November, D155, and seven from that evening, D171):
-1. **Now, in parallel:** the conduction probe on the engine as it is (Track E); D150's judged
-   qualification; D152's MG0c with a compiled composition; the coupling design (Track R).
-2. **Next:** one minimal inventory → effective control → measurable electrical-response case,
-   qualified against an independent coupled-ODE reference.
-3. **Then:** newborn integration in four named steps, and state-triggered division (the
-   lifecycle gate's milestone 2).
-4. **The architecture block** (one agent): D147's composite policy and FR-9's cap landed on 14
-   November. Next come the table of which operators admit and refuse which, the phase start and
-   failure records, and D154's writer. Nothing under `src/` lands between MG0c's rehearsal and
-   its registration.
-5. **After GH200:** the sparse field solver, the parked D148 rounds, and the conduction
-   workloads in the measurement plan.
-6. **Held:** the full gene-regulation track and catalogue stage 3 (D145). E07-v2 is proposed,
-   with three questions waiting for the user.
+**The working order** (updated 15 November 2026; seven agents, D171):
+1. **Now: D172's round to its integrated landing.**
+   - **Critical path:** schema A with the kind seams (the core), then FR-4's transporter kind (the
+     FR-4/FR-5 owner), then A7's summation order (the left fold, D176), then the end game: the
+     results gate, crossrev, tiers, the affected protocols and the flagged L4 block (D181).
+   - **In parallel:** B4's stage read and the passive law's insertion point (the core); the adapter
+     and the families' refusals (the integration owner); O3's run-view declarations (the operators).
+2. **Next, after the landing, in order:**
+   1. FR-4 and FR-5: registration, rehearsal and judged runs on the landed core.
+   2. The finite-fuel case (D176 item 2) against its independent reference.
+   3. The run-view writer with the visualizer's nine requirements, then FR-11's interim planarian
+      loop.
+   4. The packed GPU planner and its one-time qualification.
+   5. The module system's stage 1, one external law (D180), after the user's decisions in its §6.
+3. **Queued follow-ups** (each its own gated change):
+   - insertion@2's gate fix, before `check_onsets` is lifted (§7.4 (j));
+   - ledger lists read from the implementation object;
+   - moving the host-side window checks, 91% of long-run time, into device windows;
+   - the summation tree, if species counts go well past 16.
+4. **After GH200:** the sparse field solver, the parked D148 rounds, and the conduction workloads
+   in the measurement plan.
+5. **Held:**
+   - the full gene-regulation track and catalogue stage 3 (D145);
+   - the FEP track (D179);
+   - E07-v1's re-run (D181). E07-v2 is proposed, with three questions waiting for the user.
 
 ## The aim, restated
 
