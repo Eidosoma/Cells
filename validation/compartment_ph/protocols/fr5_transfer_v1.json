@@ -75,7 +75,7 @@
  "criteria": {
   "J1_admission": "both arms at every rung, and their controls at the declared step, admitted and run without refusal",
   "J2_orders": "the dt study's orders on the three finest rungs, for the lumen's X, the lumen's pH and V_b, by FR-4's classes rule; the damage d exact at rounding on every rung pair (each difference under its floor)",
-  "J3_state_error": "at the declared 0.5 ms, the Richardson-estimated error of the lumen's X <= the X budget and of the lumen's pH <= 1e-3",
+  "J3_state_error": "at the declared 0.5 ms, the Richardson-estimated error of the lumen's X <= the X budget and of the pH at every buffered node, the lumen and the cytosol (the maximum over both), <= 1e-3 (pre-run correction, the lead, 15 November 2026)",
   "J4_reference": "the X and pH budgets above, against the reference started at tr.Start",
   "J5_envelope": "the closure's state-dependent envelope (rapid_proton_buffer.lag_estimate_ph <= 1e-3 pH) at every stage of every buffered node, including through the damage window",
   "J6_protons": "H_eq conserved except across routes: the change of H_eq at each node equals the sum of its routes' proton transfers (pump, leak, proton pore) to H's material allowance (FR-4's rules.ledgers), at every record",
@@ -139,7 +139,8 @@
   "pre-run correction, 15 November 2026, the lead's ruling on the charge check: it reads the engine's charge residual and its capacitor tolerance from the records (ledgers.charge_residual_C and charge_tolerance_C); Q5's record-computed allowance (the judge's, from the amounts) covers material only, since computing charge from the records would need the node charges and capacitances in them",
   "pre-run correction, 15 November 2026, the lead's ruling on the pH budget's node, as FR-4's J4: the pH budget judges every buffered node, the lumen and the cytosol: the maximum over both nodes and every record of |pH_engine - pH_reference| within 1e-3, against the reference started at tr.Start (J4); it had named the lumen alone",
   "pre-run correction, 15 November 2026, the lead's ruling on the execution path: every engine part runs its world as the one world of a vector window (cells.core.vector_windows; the generator's judged runs, validation/compartment_ph/engine_records.run with path 'vector'), which checks every accepted row on the device with the host checks' own functions and bounds (the domain with the kinds' domains and B4's read; the ten ledgers with the kinds' terms against the same ledger limits and magnitudes; dissipation at the same 1e-12 pJ tolerance) in place of the windowed runner's checks on the host. The in-step checks (B4's read and envelope, the pump's domain and pH band, B7 per stage and node, the bookings' validity) are the same compiled step on both paths, and the observed rows' readouts and continuity checks stay on the host; the host path stays for development. Measured before any judged run (fr45-transporter 427e4a05, CPU 1, FR-4's rung_1ms over 20 s on both paths from one clean snapshot): every record bitwise equal to the host path's except two leak accumulators (the leak's cumulative proton transfer and heat, relative 5e-14 and 1e-13); the check diagnostics differ at rounding only; a refusal differs in its text (the device path's WorldCheckError names the failed checks and the first failing row), not in its verdict; the run phase 7.46 times faster (0.95 against 7.13 ms per step), the compile cost named as such (48 s against 23 s per unit), so every judged unit runs about 7.5 times faster",
-  "pre-run correction, 15 November 2026, the lead's ruling on the cost and the rehearsal, as FR-4's: on the vector path FR-5's units scale with FR-4's measured 0.95 ms per step (about 48 s of compile per unit; FR-5's world, with more routes and rows, at its own rate, measured by its rehearsal), in place of the charged-patch test's upper bound, and the rehearsal runs the full horizon, not a shortened one"
+  "pre-run correction, 15 November 2026, the lead's ruling on the cost and the rehearsal, as FR-4's: on the vector path FR-5's units scale with FR-4's measured 0.95 ms per step (about 48 s of compile per unit; FR-5's world, with more routes and rows, at its own rate, measured by its rehearsal), in place of the charged-patch test's upper bound, and the rehearsal runs the full horizon, not a shortened one",
+  "pre-run correction, 15 November 2026, the lead's ruling on J3's and J4_start's nodes: as J4's, the Richardson-estimated state error of the pH (J3) and the start check (J4_start, row 0 against the reference at rounding) judge the pH of every buffered node, the lumen and the cytosol, the maximum over both; V_b stays as written. Stricter, and free: the records hold both nodes"
  ],
  "development_runs": {
   "runs": [],
@@ -361,13 +362,13 @@
     "judged": true
    },
    {
-    "id": "J3_T_pH_L",
+    "id": "J3_T_pH",
     "metrics": [
-     "derived.T.state_error.pH_L"
+     "derived.T.state_error.pH"
     ],
     "comparison": "le",
     "threshold": 0.001,
-    "basis": "at 0.5 ms the Richardson-estimated error of the lumen's pH",
+    "basis": "at 0.5 ms the Richardson-estimated error of the pH at every buffered node, the lumen and the cytosol: the maximum over both (pre-run correction, the lead, 15 November 2026)",
     "judged": true
    },
    {
@@ -403,12 +404,12 @@
    {
     "id": "J4_T_start",
     "metrics": [
-     "derived.T.start.pH_L",
+     "derived.T.start.pH",
      "derived.T.start.V_b"
     ],
     "comparison": "le",
     "threshold": 1e-11,
-    "basis": "every rung's and the control's row 0 is the reference's start at rounding (one extract for both)",
+    "basis": "every rung's and the control's row 0 is the reference's start at rounding (one extract for both): the pH at every buffered node, the lumen and the cytosol (the maximum over both; pre-run correction, the lead, 15 November 2026), and V_b",
     "judged": true
    },
    {
@@ -658,13 +659,13 @@
     "judged": true
    },
    {
-    "id": "J3_R_pH_L",
+    "id": "J3_R_pH",
     "metrics": [
-     "derived.R.state_error.pH_L"
+     "derived.R.state_error.pH"
     ],
     "comparison": "le",
     "threshold": 0.001,
-    "basis": "at 0.5 ms the Richardson-estimated error of the lumen's pH",
+    "basis": "at 0.5 ms the Richardson-estimated error of the pH at every buffered node, the lumen and the cytosol: the maximum over both (pre-run correction, the lead, 15 November 2026)",
     "judged": true
    },
    {
@@ -700,12 +701,12 @@
    {
     "id": "J4_R_start",
     "metrics": [
-     "derived.R.start.pH_L",
+     "derived.R.start.pH",
      "derived.R.start.V_b"
     ],
     "comparison": "le",
     "threshold": 1e-11,
-    "basis": "every rung's and the control's row 0 is the reference's start at rounding (one extract for both)",
+    "basis": "every rung's and the control's row 0 is the reference's start at rounding (one extract for both): the pH at every buffered node, the lumen and the cytosol (the maximum over both; pre-run correction, the lead, 15 November 2026), and V_b",
     "judged": true
    },
    {

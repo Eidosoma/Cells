@@ -95,16 +95,20 @@ def criteria_fr4():
                       "bound exceeds 2.2; reversed fails (rules.dt_study)")
             for x in ("pH_L", "V_b", "K_L", "cycles")]
     out += [
-        criterion("J3_state_error_pH_L", [f"{d}.state_error.pH_L"], "le", PH_BUDGET,
-                  "at 1 ms the Richardson-estimated error of the lumen's pH (4/3 D(1, 0.5 ms))"),
+        criterion("J3_state_error_pH", [f"{d}.state_error.pH"], "le", PH_BUDGET,
+                  "at 1 ms the Richardson-estimated error of the pH (4/3 D(1, 0.5 ms)) at every "
+                  "buffered node, the lumen and the cytosol: the maximum over both (pre-run "
+                  "correction, the lead, 15 November 2026)"),
         criterion("J3_state_error_V_b", [f"{d}.state_error.V_b_over_range"], "le", 1e-3,
                   "at 1 ms the Richardson-estimated error of V_b over its range at 1 ms"),
         criterion("J4_reference_pH", [f"{d}.reference.pH_max_abs"], "le", PH_BUDGET,
                   "|pH_engine - pH_reference| at every record at 1 ms (R-closure on the declared "
                   f"world), {J4_NODES}"),
-        criterion("J4_start", [f"{d}.reference.start_pH_L", f"{d}.reference.start_V_b"], "le",
+        criterion("J4_start", [f"{d}.reference.start_pH", f"{d}.reference.start_V_b"], "le",
                   START_TOLERANCE, "row 0 is the reference's start at rounding (both from the "
-                  "declared pH 7.2 state)"),
+                  "declared pH 7.2 state): the pH at every buffered node, the lumen and the "
+                  "cytosol (the maximum over both; pre-run correction, the lead, 15 November "
+                  "2026), and V_b"),
         criterion("J4_reported", [f"{d}.reference.{x}_max_abs"
                                   for x in ("pH_L", "pH_c", "V_b", "K_L", "cycles")]
                   + [f"{d}.reference.floor_pH_L", f"{d}.reference.floor_pH"], "ge", 0,
@@ -201,8 +205,10 @@ def criteria_fr5():
             criterion(f"J3_{arm}_X_L", [f"{d}.state_error.X_L_over_budget"], "le", 1,
                       "at the declared 0.5 ms the Richardson-estimated error of the lumen's X, in "
                       "X's budget B = 1e-3 X_L(0)"),
-            criterion(f"J3_{arm}_pH_L", [f"{d}.state_error.pH_L"], "le", PH_BUDGET,
-                      "at 0.5 ms the Richardson-estimated error of the lumen's pH"),
+            criterion(f"J3_{arm}_pH", [f"{d}.state_error.pH"], "le", PH_BUDGET,
+                      "at 0.5 ms the Richardson-estimated error of the pH at every buffered "
+                      "node, the lumen and the cytosol: the maximum over both (pre-run "
+                      "correction, the lead, 15 November 2026)"),
             criterion(f"J4_{arm}_X_L", [f"{d}.reference.X_L_over_budget"], "le", 1,
                       "|X_L,engine - X_L,reference| <= B at every record (the reference from "
                       "tr.Start)"),
@@ -210,9 +216,11 @@ def criteria_fr5():
                       "the conditioned route's cumulative transfer within B at every record"),
             criterion(f"J4_{arm}_pH", [f"{d}.reference.pH_max_abs"], "le", PH_BUDGET,
                       f"|pH_engine - pH_reference| <= 1e-3 at every record, {J4_NODES}"),
-            criterion(f"J4_{arm}_start", [f"{d}.start.pH_L", f"{d}.start.V_b"], "le",
+            criterion(f"J4_{arm}_start", [f"{d}.start.pH", f"{d}.start.V_b"], "le",
                       START_TOLERANCE, "every rung's and the control's row 0 is the reference's "
-                      "start at rounding (one extract for both)"),
+                      "start at rounding (one extract for both): the pH at every buffered node, "
+                      "the lumen and the cytosol (the maximum over both; pre-run correction, the "
+                      "lead, 15 November 2026), and V_b"),
             criterion(f"J4_{arm}_start_X_L", [f"{d}.start.X_L_over_budget"], "le",
                       START_X_OVER_BUDGET, "X_L's row 0 is the reference's (the same products)"),
             criterion(f"J4_{arm}_reported", [f"{d}.reference.floor_X_L_over_budget",
@@ -520,6 +528,9 @@ PROSE = {
         "(its initial lag estimate about 1e4 pH; the reason the envelope's, since the same world "
         "is admitted with B4's stage check removed), and in the kinetic reference the closure "
         "departs beyond 1e-3 pH units",
+        ("rules", "state_error"): "at the declared 1 ms, the Richardson-estimated error of the pH "
+        "at every buffered node, the lumen and the cytosol (the maximum over both), <= 1e-3 pH "
+        "units and of V_b <= 1e-3 of its range (pre-run correction, the lead, 15 November 2026)",
         ("rules", "timing"): "each unit through scripts/run_detached.sh; one rung per unit; on "
         "the vector path (the execution path) FR-4's world costs 0.95 ms per step after about "
         "48 s of compile per unit (measured on fr45-transporter 427e4a05, CPU 1), replacing the "
@@ -551,6 +562,10 @@ PROSE = {
         "increment reported",
         ("criteria", "J8_cargo"): "X conserved across lumen, cytosol and bath to its material "
         "allowance; whatever leaves the lumen arrives in the cytosol on the same route",
+        ("criteria", "J3_state_error"): "at the declared 0.5 ms, the Richardson-estimated error of "
+        "the lumen's X <= the X budget and of the pH at every buffered node, the lumen and the "
+        "cytosol (the maximum over both), <= 1e-3 (pre-run correction, the lead, 15 November "
+        "2026)",
         ("budgets", "pH"): "|pH_engine - pH_reference| <= 1e-3 at every record at every buffered "
         "node, the lumen and the cytosol, the maximum over both nodes (FR-4's J4; pre-run "
         "correction, the lead, 15 November 2026)",
@@ -598,6 +613,13 @@ J4_NODES_FR5 = (
     "both nodes and every record of |pH_engine - pH_reference| within 1e-3, against the "
     "reference started at tr.Start (J4); it had named the lumen alone"
 )
+J3_START_NODES = (
+    "pre-run correction, 15 November 2026, the lead's ruling on J3's and J4_start's nodes: as "
+    "J4's, the Richardson-estimated state error of the pH (J3) and the start check (J4_start, row "
+    "0 against the reference at rounding) judge the pH of every buffered node, the lumen and the "
+    "cytosol, the maximum over both; V_b stays as written. Stricter, and free: the records hold "
+    "both nodes"
+)
 EXECUTION_PATH = (
     "pre-run correction, 15 November 2026, the lead's ruling on the execution path: every engine "
     "part runs its world as the one world of a vector window (cells.core.vector_windows; the "
@@ -639,6 +661,7 @@ CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
         J4_NODES_FR4,
         EXECUTION_PATH,
         COST_FR4,
+        J3_START_NODES,
         "pre-run correction, 15 November 2026, the lead's rulings on refusal semantics and K2: "
         "B4's envelope check refuses the step at the first stage beyond the budget, so J5 judges "
         "zero envelope refusals in a completed part and the engine's reported running maximum of "
@@ -657,6 +680,7 @@ CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
         J4_NODES_FR5,
         EXECUTION_PATH,
         COST_FR5,
+        J3_START_NODES,
         "pre-run correction, 15 November 2026, the lead's ruling on refusal semantics: B4's "
         "envelope check refuses the step at the first stage beyond the budget, so J5 judges zero "
         "envelope refusals in a completed part and the engine's reported running maximum of the "
