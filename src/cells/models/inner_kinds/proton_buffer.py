@@ -137,7 +137,16 @@ def initial(spec, declaration, layout):
     start = SimpleNamespace(**(dict(layout) | own))
     amounts = np.concatenate((start.amount_reference, start.extracellular_amount_reference), axis=1)
     own["proton_buffer_initial_pJ"] = _declared_terms(start, amounts, xp=np)
-    return {}, own
+    # Gap 7's running extrema start at the start's own values (the lag at zero).
+    h, _, _, _, _ = _closure(amounts, start, np)
+    _, active = _nodes(start, np)
+    ph = np.where(active, -np.log10(np.where(active, h, 1.0) / closure.PH_REFERENCE_mM), 0.0)
+    state = dict(
+        proton_buffer_max_lag_pH=np.zeros(n + o),
+        proton_buffer_min_pH=ph,
+        proton_buffer_max_pH=ph.copy(),
+    )
+    return state, own
 
 
 def _nodes(p, xp):
@@ -198,22 +207,53 @@ def stage_rows(declaration):
     return tuple(out)
 
 
-def stage_check(read, cell, outside, p, *, xp):
-    """FR-4's envelope (§4.2): the closure's estimated lag behind the kinetic system, at the
-    stage's transport, within the budget at every buffered node."""
+def _stage(read, cell, outside, p, xp):
+    """(lag [node] in pH units, 0 off the buffered nodes; pH [node] of the read; active) at a
+    stage: the kernel's lag estimate at the stage's transport of the proton row (dH̄_eq/dt)."""
     volume, active = _nodes(p, xp)
     amounts = _amounts(read, p, xp)
     rows = p.proton_buffer_rows
     member = p.proton_buffer_member & active[None, :]
     buffered = xp.any(member, axis=0)
     safe_volume = xp.where(active, volume, 1.0)
-    h = xp.where(buffered, amounts[rows[0]] / safe_volume, 1.0)
+    free = amounts[rows[0]] / safe_volume  # The read's h at buffered nodes, H̄ elsewhere.
+    h = xp.where(buffered, free, 1.0)
     buffer = xp.where(member, amounts[rows[1:]] / safe_volume[None, :], 0.0)
-    rate = xp.concatenate((cell[rows[0]], outside[rows[0]])) / safe_volume  # dH̄_eq/dt, mM/s
-    inside = closure.envelope_valid(
+    rate = xp.concatenate((cell[rows[0]], outside[rows[0]])) / safe_volume  # mM/s
+    lag = closure.lag_estimate_ph(
         h, buffer, p.proton_buffer_k_mM[:, None], p.proton_buffer_k_on[:, None], rate, member, xp=xp
     )
-    return xp.all(xp.where(buffered, inside, True))
+    ph = -xp.log10(xp.where(active, free, 1.0) / closure.PH_REFERENCE_mM)
+    return xp.where(buffered, lag, 0.0), ph, active
+
+
+def stage_check(read, cell, outside, p, *, xp):
+    """FR-4's envelope (§4.2): the closure's estimated lag behind the kinetic system, at the
+    stage's transport, within the budget at every buffered node; a breach refuses the step (the
+    verdict), and stage_values reports the margin."""
+    lag, _, _ = _stage(read, cell, outside, p, xp)
+    return xp.all(lag <= closure.LAG_BUDGET_PH)
+
+
+def stage_values(read, cell, outside, p, *, xp):
+    """Gap 7: the stage's lag and pH per node, for their running extrema over every stage."""
+    lag, ph, active = _stage(read, cell, outside, p, xp)
+    return dict(
+        proton_buffer_max_lag_pH=lag,
+        proton_buffer_min_pH=xp.where(active, ph, xp.inf),
+        proton_buffer_max_pH=xp.where(active, ph, -xp.inf),
+    )
+
+
+def domain(state, p, *, xp):
+    """The extrema fields stay finite, the lag nonnegative, and min pH <= max pH."""
+    lag, low, high = (
+        state.proton_buffer_max_lag_pH,
+        state.proton_buffer_min_pH,
+        state.proton_buffer_max_pH,
+    )
+    finite = xp.all(xp.isfinite(lag) & xp.isfinite(low) & xp.isfinite(high))
+    return finite & xp.all(lag >= 0) & xp.all(low <= high)
 
 
 def _declared_terms(p, amounts, *, xp):
@@ -295,6 +335,19 @@ PROTON_BUFFER = BUILTIN.register(
     Kind(
         kind_id=KIND_ID,
         model_key=MODEL_KEY,
+        # Gap 7: running extrema over every IMEX stage, per node (cells, then outside nodes).
+        state_axes=(
+            ("proton_buffer_max_lag_pH", ("node",)),
+            ("proton_buffer_min_pH", ("node",)),
+            ("proton_buffer_max_pH", ("node",)),
+        ),
+        stage_values=stage_values,
+        stage_extrema=(
+            ("proton_buffer_max_lag_pH", "max"),
+            ("proton_buffer_min_pH", "min"),
+            ("proton_buffer_max_pH", "max"),
+        ),
+        domain=domain,
         layout_fields=(
             "proton_buffer_rows",
             "proton_buffer_member",

@@ -468,6 +468,39 @@ def _kind_bookings(kinds, applied, start, end, p, dt, *, xp):
     return booked, valid
 
 
+def _stage_extrema(kinds, start, states, rates, p, *, xp):
+    """Gap 7: each kind's stage_values at every explicit stage (its read state and the stage's
+    total node rates, as stage_check sees them), reduced over the stages as its stage_extrema
+    say, from the step start's value: {own state field: running extremum}."""
+    out = {}
+    for kind in kinds:
+        if kind.stage_values is None:
+            continue
+        how = dict(kind.stage_extrema)
+        per_stage = [
+            kind.stage_values(
+                _stage_read(state, p, kinds, xp=xp)[0],
+                stage_rates.amount_increment,
+                stage_rates.extracellular_amount_increment,
+                p,
+                xp=xp,
+            )
+            for state, stage_rates in zip(states, rates, strict=True)
+        ]
+        for name in per_stage[0]:
+            if name not in kind.state_fields or how.get(name) not in ("max", "min"):
+                raise ValueError(
+                    f"Kind {kind.kind_id}'s stage value {name} is not one of its state fields "
+                    "with a declared extremum (max or min)"
+                )
+            reduce = xp.maximum if how[name] == "max" else xp.minimum
+            value = getattr(start, name)
+            for values in per_stage:
+                value = reduce(value, values[name])
+            out[name] = value
+    return out
+
+
 def _availabilities(control, kinds):
     """Rule (d): today's control fields and the kinds' availability controls (those of kinds
     without a control_domain hook), each held to [0, 1]."""
@@ -986,6 +1019,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     rates, ok, *process = explicit_rates(state, start, control, p, xp=xp, **hook)
     processes += process
     explicit, implicit, valid = [rates], [None], valid & ok
+    explicit_states = [state]  # Each explicit stage's state (gap 7's per-stage values).
     # Channel currents are explicit: refuse the step where their actual
     # conductance at an explicit stage exceeds the family's stability bound.
     valid &= dt * membrane_rate(state, control, p, xp=xp, structure=structure) <= (
@@ -1023,6 +1057,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
             rates, ok, *process = explicit_rates(stage, potential, control, p, xp=xp, **hook)
             processes += process
             explicit.append(rates)
+            explicit_states.append(stage)
             valid &= ok & (
                 dt * membrane_rate(stage, control, p, xp=xp, structure=structure)
                 <= EXPLICIT_STEP_BOUND
@@ -1064,6 +1099,9 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
             junction_dissipated_energy_pJ=state.junction_dissipated_energy_pJ
             + 0.5 * dt * (explicit[0].junction_dissipated_energy_pJ + end_power)
         )
+    if kinds:  # Gap 7: the kinds' per-stage values, their running extrema over the stages.
+        extrema = _stage_extrema(kinds, state, explicit_states, explicit, p, xp=xp)
+        stage = stage._replace(**extrema)
     if kinds:  # §7.4 (k), book: a kind's bookings from the step's applied rates.
         booked, ok = _kind_bookings(kinds, applied, state, stage, p, dt, xp=xp)
         stage, valid = stage._replace(**booked), valid & ok

@@ -153,9 +153,9 @@ def with_standard_part(state, p, *, xp):
     from cells.processes.electrochemistry import R
 
     amounts = proton_buffer._amounts(state, p, xp)
-    start = np.concatenate((p.amount_reference, p.extracellular_amount_reference), axis=1)
+    start = xp.concatenate((p.amount_reference, p.extracellular_amount_reference), axis=1)
     row = p.proton_buffer_rows[0]
-    standard = p.proton_buffer_proton_mu_RT - np.log(p.proton_buffer_c0_mM)
+    standard = p.proton_buffer_proton_mu_RT - xp.log(p.proton_buffer_c0_mM)
     extra = 1e-3 * R * p.temperature * (amounts[row] - start[row]) * standard
     stored = proton_buffer.ledger_terms(state, p, xp=xp)["stored_pJ"]
     return dict(stored_pJ=stored + extra)
@@ -190,6 +190,12 @@ def test_carried_protons_close_material_and_energy_with_the_declared_term():
     b = list(spec.model.species_ids).index("B")
     assert float(final.amount_increment[b, 0]) == 0.0  # Buffer totals never move.
     assert obs.pH[-1, 0] > CELL_PH  # Protons left: the cell alkalinises a little.
+    # Gap 7: the running extrema over every stage (the margin; a breach would refuse the step).
+    lag = np.asarray(final.proton_buffer_max_lag_pH)
+    assert 0.0 < float(lag[0]) <= 1e-3 and float(lag[1]) == 0.0  # Buffered cell; bath.
+    low, high = np.asarray(final.proton_buffer_min_pH), np.asarray(final.proton_buffer_max_pH)
+    assert float(low[0]) == pytest.approx(CELL_PH, abs=1e-9)  # The start's stage: pH rises.
+    assert CELL_PH < float(high[0]) <= float(obs.pH[-1, 0])  # The last stage precedes the end.
     charge = CHARGE_PER_FMOL * moved
     assert float(final.electrode_charge_transferred_C[0]) == pytest.approx(charge, rel=1e-9)
     assert result.diagnostics["max_energy_balance_relative"] < 1e-3

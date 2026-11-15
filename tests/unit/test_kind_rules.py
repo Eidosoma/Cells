@@ -204,6 +204,33 @@ def test_a_kinds_conductance_and_bound_term_join_the_step_rules():
             surface_pump_v3.check_steps(parse_spec(declaring("alpha_block")), steps, None)
 
 
+def test_stage_values_give_running_extrema_over_the_steps_stages():
+    """Gap 7: a kind's stage values, reduced over the step's explicit stages from the start's
+    value as its stage_extrema say; an undeclared reduction is refused."""
+    seen = []
+
+    def values(read, cell, outside, p, *, xp):
+        seen.append(len(seen))
+        return {"alpha_value": xp.where(p.active, 3.0 + len(seen), 0.0)}  # 4, 5, ... by stage.
+
+    for how, expected in (("max", 5.0), ("min", 0.0)):  # Two explicit stages (ARS(2,2,2)).
+        kind = planted(
+            "alpha", "alpha_block", stage_values=values, stage_extrema=(("alpha_value", how),)
+        )
+        with kind_registry.scope(registry(kind)):
+            spec = parse_spec(declaring("alpha_block"))
+            impl, state, p, control = host_inputs(spec)
+            seen.clear()
+            new, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+        assert valid and len(seen) == 2
+        assert float(new.alpha_value[0]) == expected, how
+    with kind_registry.scope(registry(planted("alpha", "alpha_block", stage_values=values))):
+        spec = parse_spec(declaring("alpha_block"))
+        impl, state, p, control = host_inputs(spec)
+        with pytest.raises(ValueError, match="declared extremum"):
+            impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+
+
 def test_a_held_row_has_one_writer():
     """Gap 8: a row a kind holds is moved by nothing in the step: refused where a route or another
     kind moves it, admitted where nothing does."""

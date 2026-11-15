@@ -73,6 +73,12 @@ class Kind:
       bound (the passive law's dt L <= 1).
     - one writer: `held_rows(declaration)` -> ((species, node ID), ...), rows the kind reads and
       never moves (held fuel); binding refuses any inner route or other kind that moves one.
+    - per-stage diagnostics (gap 7): `stage_values(read, cell, outside, p, *, xp)` -> {own state
+      field: value} at every explicit stage of an IMEX step, with the stage_check's arguments;
+      `stage_extrema` = ((field, "max" | "min"), ...) names the reduction. The step's end state
+      holds each field's running extremum: the start's value and every stage of the step (the
+      closure's largest lag, the cytosol's smallest and largest pH). RK4 steps leave them as
+      they are.
     - step end: `book(applied, start, end, p, dt, *, xp)` -> ({own state field: new value},
       valid), after the tableau's combination; `applied(name)` is the step's applied rate of a
       state field (the tableau's weights), `start` the step's start state and `end` its end
@@ -110,6 +116,8 @@ class Kind:
     stage_term: Callable | None = None
     bound_rate: Callable | None = None
     held_rows: Callable | None = None
+    stage_values: Callable | None = None
+    stage_extrema: tuple = ()
     book: Callable | None = None
     ledger_terms: Callable | None = None
     domain: Callable | None = None
