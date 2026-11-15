@@ -311,7 +311,30 @@ dissipation).
 
 ### 5.2 Inventory 2: parameters frozen into programs
 
-*P5's result is written here (§17).*
+**P5's result (15 November, 00:47–00:52 UTC; 279 s).**
+- **No world needed a second executable.** In all nine worlds the value twin traced the same three
+  programs as the original: the same jaxpr text, the same closed-over constants and the same batch
+  signature. The worlds:
+  - plain @3: the heredity cell and the gated sheet;
+  - water, the symport, replacement, and replacement with routes;
+  - D150's turnover arm;
+  - an MG0c reaction chain;
+  - injection.
+
+  The twins scaled 8 to 92 rate-like parameters each.
+- **The value search's hits are coincidences, checked against the code:**
+  - 140.0 is the junction-gate law's coefficient;
+  - 12.0 and 0.12 appear as kernel literals, while `km_na_mM` and the symport's steepness are
+    layout arrays (`pump_km_na`, `symport_steepness`);
+  - 1e-10 is the execution's material tolerance (`device_check_constants`);
+  - 0.001 and 1e-15 are law and floor literals;
+  - 5.684e-14 is 2⁻⁴⁴.
+- **So no definition-derived value is frozen into the step's programs today.** Same-structure
+  parameter sweeps reuse one executable, within P5's scope.
+- **P5's scope:** the step's three programs, and rate-like parameters of the model block. Schedules,
+  event times, dt and window length are outside it (dt is a traced input, per crossrev).
+- **R must keep this property,** by §2.2's rule: implementations close over structure only. List
+  (a)'s A4 makes it a test.
 
 **What the code says** (**S**): the layout, controls and state reach the window program as
 arguments, so a parameter held in the layout is a binding. A value frozen into a program can come
@@ -928,9 +951,12 @@ runs.
 
 **P2, per-law dispatch against today's** (results and cost). *Entered after the run.*
 
-**P3, the I0 sweep**, with planted controls of known answer. *Entered after the run.*
+**P3, the I0 sweep**, with planted controls of known answer.
+- **The first run was void, by a probe bug.** The layout holds valence as a column, so the neutral mask failed in every world that declares a neutral species, the controls included.
+- **Its ion-only worlds stand:** E07-v1's, the 56 L4 qualification worlds and Track R's A4 worlds. None was refused or bound more tightly, and P5's face-free gauge was excluded as required.
+- **A rerun** of the controls, D150, MG0c and Track R (amendment 3) is queued. *Entered after it.*
 
-**P5, the constants inventory.** *Entered after the run.*
+**P5, the constants inventory.** All nine worlds share one executable with their parameter twins; the value-search hits are coincidences checked in code (§5.2).
 
 **P6, memory and step cost against the species count.** *Entered after the run.*
 
