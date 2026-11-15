@@ -166,6 +166,20 @@ def test_a_route_on_a_row_another_route_moves_keeps_the_tableau_booking():
         assert a.tobytes() == b.tobytes(), name
 
 
+def test_a_route_sharing_a_row_with_a_tableau_booked_route_is_not_exact():
+    """§7.5's scope is rows that exact-booked routes alone move: a route on the wall patch (to the
+    held bath: tableau-booked) shares S's cell row with the contact route, so neither is exact
+    (the advisor's case; without the fixpoint the contact route was marked exact and its raw sums
+    would refuse every step)."""
+    wall = route("wall_S", P / 100, host=("patch", "wall_cell_0"))
+    spec = parse_spec(closed_pair(routes=[route("leak_S", P), wall]))
+    _, p = get_model(spec.model).initial_values(spec)
+    assert p.passive_exact.tolist() == [False, False]  # Sorted by ID: leak_S, wall_S.
+    spec = parse_spec(closed_pair(routes=[route("leak_S", P), route("leak_T", P / 2)]))
+    _, p = get_model(spec.model).initial_values(spec)
+    assert p.passive_exact.tolist() == [True, True]  # Two exact routes on the same rows.
+
+
 def test_binding_refuses_charged_species_a_carrying_host_and_a_fast_route():
     with pytest.raises(ConfigError, match="neutral species only"):
         parse_spec(closed_pair(routes=[route("leak_K", P, species="K")]))

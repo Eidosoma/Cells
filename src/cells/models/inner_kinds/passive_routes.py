@@ -161,21 +161,39 @@ def _node_ids(spec):
 
 
 def _exact(spec, declaration):
-    """Version 1's scope, per route: a neutral route whose carried rows (species, end node) are
-    moved by passive routes alone, with neither end a held bath; the leak never."""
+    """Version 1's scope, per route: a neutral route whose every carried row (species, end node) is
+    moved by exact-booked passive routes alone, neither end a held bath; the leak never.
+
+    A fixpoint over shared rows: a route starts as a candidate unless it is the leak, touches a
+    held bath or shares a row with a non-passive mover (moved_nodes); then any candidate sharing a
+    row with a passive route that is not one drops out, until nothing changes. So a route beside
+    a tableau-booked passive route on one row is tableau-booked too. Operators' writers (the
+    registry's moved_in_step) are the composite's admission."""
     from cells.models.surface_pump_v3 import moved_nodes
 
     m = spec.model
     held = {o.id for o in m.extracellular if o.reservoir}
     movers = moved_nodes(m)
-    out = []
-    for route in declaration:
-        ok = route.law == LAW_ID and route.outside not in held
-        for node in (route.inside, route.outside):
-            others = [w for w in movers.get((route.species, node), ()) if w != KIND_ID]
-            ok = ok and not (route.permeability > 0 and others)
-        out.append(ok)
-    return np.asarray(out, dtype=bool)
+    rows, candidate = {}, []
+    for k, route in enumerate(declaration):
+        ends = [(route.species, route.inside), (route.species, route.outside)]
+        if route.permeability > 0:
+            for row in ends:
+                rows.setdefault(row, []).append(k)
+        others = any(w != KIND_ID for row in ends for w in movers.get(row, ()))
+        candidate.append(
+            route.law == LAW_ID
+            and route.outside not in held
+            and not (route.permeability > 0 and others)
+        )
+    changed = True
+    while changed:
+        changed = False
+        for k, route in enumerate(declaration):
+            ends = [(route.species, route.inside), (route.species, route.outside)]
+            if candidate[k] and any(not candidate[j] for row in ends for j in rows.get(row, ())):
+                candidate[k], changed = False, True
+    return np.asarray(candidate, dtype=bool)
 
 
 def initial(spec, declaration, layout):
@@ -329,7 +347,7 @@ def _booking(start, end, p, *, xp):
         + scatter(xp.abs(mu_out * carried), zero, (p.passive_outside,), xp=xp)
     )
     bound = RAW_SUM_FACTOR * np.finfo(float).eps * magnitude
-    heat = xp.sum(xp.where(exact, shares, 0.0), axis=0)
+    heat = species_sum(xp.where(exact, shares, 0.0), xp=xp)  # A7: the species fold.
     return heat, ~negative, xp.abs(summed - (g1 - g0)), bound, rows
 
 
