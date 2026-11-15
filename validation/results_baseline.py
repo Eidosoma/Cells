@@ -340,6 +340,7 @@ def save(directory, sets, worlds, max_steps, origin):
                     traceback=traceback.format_exc()[-4000:],
                 )
             record["seconds"] = perf_counter() - started
+            jax.clear_caches()  # Each world's executables are released: memory stays per world.
             np.savez_compressed(directory / set_name / f"{stem(name)}.npz", **arrays)
             (directory / set_name / f"{stem(name)}.json").write_text(
                 json.dumps(record, default=str) + "\n"
