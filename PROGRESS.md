@@ -76,6 +76,17 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The L4 agreement driver gained a flagged mode, and D181 is recorded (15 November 2026).**
+  Validation only. Tier 1 at the merge: 344 files, no changed outcome.
+  - **The mode:** `composite_l4_agreement.py terms --mode flagged` takes one run and its confirming
+    repeat, both under `--xla_gpu_deterministic_ops=true`. The backend term is measured under the
+    flag, and the run-to-run term is exactly 0. A repeat that isn't bitwise stops the block.
+  - **The unflagged path is unchanged.**
+  - **Why:** Q7's analysis on the L4 showed the flag gives bitwise repeats of the 825-node tissue,
+    15 of 15 pairs.
+  - **D181:** E07-v1's re-run is held, and its worlds are covered by the results gate. The round's
+    13-run L4 block runs under the flag.
+
 - **The coupling operator's matched-arm export ran (15 November 2026, D177).** It is development
   evidence, with no registered or judged verdict
   ([EXPORT.md](/mnt/workspaces/Cells/coupling-export-20261115-01/EXPORT.md)).
