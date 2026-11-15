@@ -16,7 +16,7 @@ One data file, the scene, drawn through four lenses, in this order:
 
 | Lens | What you see |
 | --- | --- |
-| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar. **The species list sets the levels, the shapes and what the cell holds:** Human, Planarian and Fruit fly under Animals; Syn3A, M. pneumoniae and E. coli under Bacteria. A single-celled species ends at its cell; the outlines of organs and bodies (the planarian's brain and worm, the human's heart and body, the fly's wing and the fly) are placeholders. The cell has a resting look, with a switch back to the plain picture |
+| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar. **The species list sets the levels, the shapes and what the cell holds:** Human, Planarian and Fruit fly under Animals; Syn3A, M. pneumoniae and E. coli under Bacteria; Thale cress under Plants. A single-celled species ends at its cell; the outlines of organs and bodies (the planarian's brain and worm, the human's heart and body, the fly's wing and the fly, the cress's leaf and rosette) are placeholders. The cell has a resting look, with a switch back to the plain picture |
 | **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER and mitochondrial units inside. Each links to its engine part and out to the public atlases. For the species shown it gives the gene products that would make each machine (Human and Planarian today), and it shows every species' own proteins on shelves: each protein by its side of a membrane, as families that open where there are thousands |
 | **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Quantity layers draw onto it what cannot be seen: voltage as height, the drops across junctions, the push and pull on each ion, the charge on a membrane, what flows, where energy is dissipated, a secreted signal. Shown only when replays have been made |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
@@ -99,7 +99,8 @@ is shown. What changes is the gene products that would make each machine in that
 and how sure that is. Nothing here says the engine models a species' protein.
 
 - **The species list** is the page's one Species control, a drop-down in which the
-  species stand under the headings their files give (`group`: Animals, Bacteria). It is
+  species stand under the headings their files give (`group`: Animals, Bacteria, Plants).
+  It is
   in the bar on a wide window, and in the view's card on a narrow one or when the bar is
   full. The page opens on the species
   whose file says `default` (the planarian). `species=<id>` in the address sets it,
@@ -169,9 +170,9 @@ must bve configurable as well based on our different species as we add them".
   with outlines for an organ or a body under `data/species/shapes/`
   (`schema/SPECIES_SHAPES.md`). The viewer holds no drawing of any species; a test checks
   that no module names one.
-- **What Cells models of a species is said on the page.** Human, Planarian and Fruit fly
-  are `generic`: Cells models a generic cell and sheet, and the species lends names or
-  outlines. JCVI-syn3A, Mycoplasma pneumoniae and E. coli are `proposed`: nothing of them
+- **What Cells models of a species is said on the page.** Human, Planarian, Fruit fly and
+  Thale cress are `generic`: Cells models a generic cell and sheet, and the species lends
+  names or outlines (no plant cell is modelled, and thale cress's card says so). JCVI-syn3A, Mycoplasma pneumoniae and E. coli are `proposed`: nothing of them
   is in the engine, and the picture shows where Cells' capabilities would have a place in
   them.
   This is the viewer's switch; the engine has no organism switch.
@@ -202,15 +203,24 @@ must bve configurable as well based on our different species as we add them".
   protein is part of (the flagellum, the chemoreceptor array, the ribosome).
   `docs/HUMAN_PROTEOME.md`, `docs/ECOLI.md` and `docs/FRUITFLY.md` give each one's
   method and counts.
-- **Thale cress is held back.** Its files are in the folder and are checked like any
-  other (27,368 proteins, one for each gene, on nine shelves: `docs/THALECRESS.md`), and
-  the overlay names it under `species_held`. The viewer cannot yet draw a plant cell's
-  chloroplasts and vacuole, and a species is never shown with parts it does not have in
-  place of the ones it has. Taking the entry away brings the species in.
+- **A plant cell is drawn from the same files.** Thale cress has 27,368 proteins, one for
+  each gene, on nine shelves (`docs/THALECRESS.md`): a plant cell adds the plastid
+  envelope, the thylakoid membrane and the vacuole's membrane. Its cell is a box with a
+  wall, a large vacuole that presses the other parts to the side, and chloroplasts
+  against the membrane; its sheet is packed in squares, which is the picture's choice
+  (the sheets Cells has run are joined in sixes). The vacuole, the chloroplasts and the
+  wall are scenery: nothing in the engine stands behind them.
+- **A species can be held back** by naming it under `species_held` in the map's overlay,
+  where the viewer cannot yet draw what its cell needs: its files stay and are checked,
+  and the scene carries nothing of it. Thale cress was held so until a plant cell could
+  be drawn; no species is held today.
 - **Threads and hairs are a general part** (`cell.parts.appendages` in `schema/SPECIES.md`;
-  the user, 15 November 2026: "lets draw flagella, pili as a general feature"). E. coli's
-  file gives its flagella and pili with their counts, sizes and sources. Drawing them is
-  in progress.
+  the user, 15 November 2026: "lets draw flagella, pili as a general feature"). E. coli
+  draws 3 of its 1 to 5 flagella and 120 of its 200 to 500 pili, and the picture says how
+  many of how many. The foot of a flagellum can be chosen: it opens the Protein atlas on
+  the 34 proteins of the species' flagellum. A closer view of the motor is not built.
+  A further kind of thread or organelle is one small function in
+  `src/lenses/cell_scenery.js`.
 - **Licence classes.** Every source in a data file states its licence and its class:
   permissive, non-commercial, or no stated terms. A data file holds no value from a source
   that is not permissive (the user's rule, D173); such a source is a pointer in words.

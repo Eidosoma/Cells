@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-15",
-  "generated_at": "2026-11-15T21:15:57Z",
+  "generated_at": "2026-11-15T22:06:53Z",
   "revision": "2c00d08d",
   "revision_date": "2026-11-15",
   "dirty": false,
@@ -1962,6 +1962,88 @@
       "note": "The membrane part of the system that brings in glucose, the cell's fuel. Its ATP comes from fermenting that sugar."
      }
     ]
+   },
+   {
+    "id": "thalecress",
+    "label": "Thale cress",
+    "organism": "Arabidopsis thaliana",
+    "taxon": 3702,
+    "plain": "A small flowering plant of the laboratory, with 27,368 genes in UniProt's reference proteome. The units of the law inventory are machines of animal cells; this is what their family signatures find among the one protein shown for each gene.",
+    "made": "2026-11-15",
+    "method": [
+     "The plant's proteins are the 27,368 of UniProt's gene-by-gene set of the reference proteome UP000006548 (release 2026_04): one for each gene, 16,212 with a reviewed entry and 11,156 with an unreviewed one.",
+     "Licences were read before anything was copied; each is stated in sources.",
+     "Each unit's family was taken from its own human candidates, by the same InterPro signatures that the other species' atlases ask. The build checks that the candidates carry them.",
+     "Each signature was looked for among the InterPro entries UniProt gives each protein. A unit counts as found only where a protein carries the signature of a family that makes the machine itself; an accessory family alone does not make it found.",
+     "A plant has channels and pumps of families of its own, which no unit of the inventory stands for. They are not listed here: the search asks only for the families of Cells' units. 'Different family' is given only where the inventory's table names another family for the same machine, and it names none that a plant has.",
+     "A product with a reviewed entry is listed as a reviewed entry, one with an unreviewed entry as a family signature. Either is a candidate by family, and nothing here says which protein does which unit's work.",
+     "No similarity search was run, and nothing is called an ortholog.",
+     "The inventory has 49 units. One of them, an engineered protein cage, is left out of the picture for now: it is a designed protein, not a part of a cell. The 48 others are shown and counted here."
+    ],
+    "sources": [
+     {
+      "name": "UniProt",
+      "url": "https://www.uniprot.org/",
+      "release": "2026_04",
+      "accessed": "2026-11-15",
+      "licence": "CC BY 4.0",
+      "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
+      "holds": "the entries of the plant's proteins, reviewed and unreviewed, with the InterPro entries UniProt gives each; the signatures of the units' human candidates; the vocabulary's words on plasmodesmata"
+     },
+     {
+      "name": "InterPro",
+      "url": "https://www.ebi.ac.uk/interpro/",
+      "release": "111.0",
+      "accessed": "2026-11-15",
+      "licence": "CC0 1.0",
+      "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456.",
+      "holds": "the identifiers and names of the family signatures"
+     }
+    ],
+    "not_copied": "No sequence is copied. The plant's own database, TAIR, is linked to nowhere and nothing was downloaded from it: its pages refused this tool, so its terms could not be read. The Araport genes used here are those UniProt gives its entries.",
+    "counts": {
+     "units": 48,
+     "with_products": 5,
+     "products": 19,
+     "candidates": 0
+    },
+    "findings": [
+     {
+      "id": "found",
+      "count": 5
+     },
+     {
+      "id": "different family",
+      "count": 0
+     },
+     {
+      "id": "none found",
+      "count": 38
+     },
+     {
+      "id": "nothing to look for",
+      "count": 5
+     }
+    ],
+    "evidence": [
+     {
+      "id": "reviewed entry",
+      "count": 19
+     },
+     {
+      "id": "named in a publication",
+      "count": 0
+     },
+     {
+      "id": "family signature",
+      "count": 0
+     },
+     {
+      "id": "similarity search",
+      "count": 0
+     }
+    ],
+    "extra": []
    }
   ],
   "findings": [
@@ -2665,6 +2747,204 @@
      {
       "name": "Thornburg and others 2022",
       "class": "non-commercial"
+     }
+    ]
+   },
+   {
+    "id": "thalecress",
+    "file": "proteins/thalecress/shelves.json",
+    "bytes": 708875,
+    "made": "2026-11-15",
+    "from": "UniProtKB release 2026_04: the reference proteome UP000006548 of Arabidopsis thaliana, 39,144 entries (16,217 reviewed, 22,927 unreviewed) for 27,368 genes. One protein is shown for each gene, the one that UniProt's own gene-by-gene set of the proteome gives: 27,368 proteins, 16,212 with a reviewed entry and 11,156 with an unreviewed one. The proteome's other 11,776 entries are further forms of the same genes; each protein counts its gene's entries in the mark 'entries'.",
+    "kind": "families",
+    "proteins": 27368,
+    "families": 2662,
+    "no_family": 8700,
+    "parts": 666,
+    "members": [
+     "members-00.json",
+     "members-01.json",
+     "members-02.json",
+     "members-03.json",
+     "members-04.json",
+     "members-05.json",
+     "members-06.json",
+     "members-07.json",
+     "members-08.json",
+     "members-09.json",
+     "members-10.json",
+     "members-11.json",
+     "members-12.json",
+     "members-13.json"
+    ],
+    "lone": 2037,
+    "lone_parts": 153,
+    "family_lines": 4110,
+    "counts": {
+     "outside": 2837,
+     "in": 4922,
+     "inside": 6081,
+     "not known": 13528
+    },
+    "shelves": [
+     {
+      "id": "cell",
+      "label": "Cell membrane",
+      "proteins": 4598,
+      "counts": {
+       "outside": 1712,
+       "in": 807,
+       "inside": 1795,
+       "not known": 284
+      }
+     },
+     {
+      "id": "er",
+      "label": "Endoplasmic reticulum membrane",
+      "proteins": 554,
+      "counts": {
+       "outside": 3,
+       "in": 423,
+       "inside": 81,
+       "not known": 47
+      }
+     },
+     {
+      "id": "mito",
+      "label": "Mitochondrial inner membrane",
+      "proteins": 837,
+      "counts": {
+       "outside": 25,
+       "in": 135,
+       "inside": 99,
+       "not known": 578
+      }
+     },
+     {
+      "id": "plastid",
+      "label": "Plastid envelope",
+      "proteins": 1251,
+      "counts": {
+       "outside": 3,
+       "in": 200,
+       "inside": 248,
+       "not known": 800
+      }
+     },
+     {
+      "id": "thylakoid",
+      "label": "Thylakoid membrane",
+      "proteins": 214,
+      "counts": {
+       "outside": 14,
+       "in": 106,
+       "inside": 59,
+       "not known": 35
+      }
+     },
+     {
+      "id": "vacuole",
+      "label": "Vacuole membrane",
+      "proteins": 198,
+      "counts": {
+       "outside": 0,
+       "in": 108,
+       "inside": 54,
+       "not known": 36
+      }
+     },
+     {
+      "id": "nucleus",
+      "label": "Nuclear envelope",
+      "proteins": 3794,
+      "counts": {
+       "outside": 0,
+       "in": 25,
+       "inside": 3717,
+       "not known": 52
+      }
+     },
+     {
+      "id": "other",
+      "label": "Other membranes",
+      "proteins": 831,
+      "counts": {
+       "outside": 23,
+       "in": 474,
+       "inside": 13,
+       "not known": 321
+      }
+     },
+     {
+      "id": "membrane",
+      "label": "A membrane, not told which",
+      "proteins": 3809,
+      "counts": {
+       "outside": 1057,
+       "in": 2644,
+       "inside": 15,
+       "not known": 93
+      }
+     }
+    ],
+    "no_shelf": 11282,
+    "sources": [
+     {
+      "name": "UniProt",
+      "class": "permissive"
+     },
+     {
+      "name": "InterPro",
+      "class": "permissive"
+     },
+     {
+      "name": "Gene Ontology",
+      "class": "permissive"
+     },
+     {
+      "name": "PROSITE",
+      "class": "non-commercial",
+      "through": "UniProt"
+     },
+     {
+      "name": "HAMAP",
+      "class": "permissive",
+      "through": "UniProt"
+     },
+     {
+      "name": "TMHMM",
+      "class": "non-commercial",
+      "through": "UniProt"
+     },
+     {
+      "name": "Phobius",
+      "class": "non-commercial",
+      "through": "UniProt"
+     },
+     {
+      "name": "SignalP",
+      "class": "non-commercial",
+      "through": "UniProt"
+     },
+     {
+      "name": "TargetP",
+      "class": "non-commercial",
+      "through": "UniProt"
+     },
+     {
+      "name": "Memsat",
+      "class": "no stated terms",
+      "through": "UniProt"
+     },
+     {
+      "name": "Predotar",
+      "class": "no stated terms",
+      "through": "UniProt"
+     },
+     {
+      "name": "big-PI",
+      "class": "no stated terms",
+      "through": "UniProt"
      }
     ]
    }
@@ -4351,6 +4631,254 @@
     "jahnke2016": {
      "text": "Jahnke JP, Terrell JL, Smith AM, Cheng X, Stratis-Cullum DN (2016) Influences of Adhesion Variability on the \"Living\" Dynamics of Filamentous Bacteria in Microfluidic Channels. Molecules (Basel, Switzerland) 21:E985.",
      "doi": "10.3390/molecules21080985",
+     "licence": "CC BY",
+     "class": "permissive",
+     "accessed": "2026-11-15"
+    }
+   }
+  },
+  {
+   "id": "thalecress",
+   "label": "Thale cress",
+   "organism": "Arabidopsis thaliana",
+   "taxon": 3702,
+   "plain": "A small flowering plant of the laboratory: 27,368 genes in UniProt's reference proteome, with one protein shown for each. Its cells have a wall, a large vacuole and chloroplasts, and membranes that an animal cell lacks.",
+   "group": "Plants",
+   "order": 70,
+   "made": "2026-11-15",
+   "modelled": {
+    "state": "generic",
+    "text": "Cells models a generic cell and a sheet of such cells, with laws that name the channels and pumps of animal cells. No plant cell is modelled, and the project's record names no model of this plant. The leaf and the rosette are placeholder outlines: nothing at those scales is simulated."
+   },
+   "default": false,
+   "levels": [
+    {
+     "id": "molecules"
+    },
+    {
+     "id": "cell",
+     "shape": {
+      "kind": "prism",
+      "sides": 4,
+      "across_um": 47,
+      "height_um": 45,
+      "corner_um": 4
+     },
+     "note": "The cell drawn is a box with a wall, for a cell of the leaf's upper layer (a palisade cell). It is 47 µm across, the width of the cylinder that one paper uses for such a cell, and 45 µm high: the picture's choice of the height at which a box of that width holds the 100 picolitres the paper gives. Its square outline is the picture's choice too. No plant cell is modelled.",
+     "notes": [
+      {
+       "text": "A leaf cell, as a box with a wall"
+      },
+      {
+       "text": "Its square outline is the picture's choice",
+       "roomy": true
+      }
+     ],
+     "sources": [
+      "tolleter2024"
+     ],
+     "fade_out_um": [
+      280,
+      440
+     ]
+    },
+    {
+     "id": "tissue",
+     "shape": {
+      "kind": "cell sheet",
+      "rings": 6,
+      "beyond": [
+       [
+        8,
+        0.34
+       ],
+       [
+        10,
+        0.2
+       ],
+       [
+        11,
+        0.1
+       ]
+      ]
+     },
+     "note": "The sheet stands for the one Cells simulates: a single layer of coupled cells. It is drawn packed in squares, as box-shaped cells stand side against side; that packing is the picture's choice, and the sheets Cells has run are joined in sixes. It stands for no particular tissue of the plant, and a plant's cells are joined by plasmodesmata, which the sheet does not model.",
+     "notes": [
+      {
+       "text": "The sheet Cells simulates: a single layer of coupled cells",
+       "short": "The simulated sheet"
+      }
+     ],
+     "fade_in_um": [
+      240,
+      440
+     ]
+    },
+    {
+     "id": "organ",
+     "label": "Leaf",
+     "shape": {
+      "kind": "outline",
+      "ref": "thalecress",
+      "parts": [
+       "leaf"
+      ],
+      "context": [
+       "other leaves"
+      ]
+     },
+     "note": "The outline drawn is one leaf of the rosette, as a placeholder. The leaf is the picture's choice of organ: it is what a visitor knows of the plant, and where its chloroplasts work. No leaf is modelled. The sheet of cells is drawn on the leaf so that the scales follow one another; it is not the leaf's tissue. The leaf is drawn 17 mm long and 9 mm wide: the picture's choice of a blade whose area is near the 121 mm² that one paper gives for its reference leaf.",
+     "sheet_mark": {
+      "band": 0.02,
+      "note": "The sheet, to scale: drawn on the leaf for the scales only"
+     },
+     "notes": [
+      {
+       "text": "A leaf: a placeholder outline"
+      },
+      {
+       "text": "The leaf's own cells are not modelled",
+       "lift": -22,
+       "roomy": true
+      }
+     ],
+     "sources": [
+      "tolleter2024"
+     ]
+    },
+    {
+     "id": "organism",
+     "label": "Whole plant",
+     "shape": {
+      "kind": "outline",
+      "ref": "thalecress"
+     },
+     "note": "The outline drawn is a rosette of 8 leaves seen from above, as a placeholder. The sheet of cells is drawn on one leaf for the scales only. The number of leaves, their lengths and the rosette's width are the picture's choice: the paper's three-week-old rosette has 29 leaves, and no measurement of a rosette's width was read for this file. The plant's stem, flowers and roots are not drawn.",
+     "sheet_mark": {
+      "band": 0.02,
+      "note": "The sheet, to scale",
+      "roomy": true
+     },
+     "notes": [
+      {
+       "text": "A rosette of leaves: a placeholder outline"
+      }
+     ],
+     "sources": [
+      "tolleter2024"
+     ]
+    }
+   ],
+   "cell": {
+    "facts": [
+     {
+      "label": "Proteins",
+      "value": "27,368 genes in UniProt's reference proteome, with 39,144 entries: 16,217 reviewed by a curator and 22,927 annotated automatically. One protein is shown for each gene",
+      "sources": [
+       "uniprot"
+      ]
+     },
+     {
+      "label": "A leaf cell's size",
+      "value": "100 picolitres for a cell of the leaf's upper layer (a palisade cell) and 60 for one of the layer below, by one paper's atlas of the leaf, which takes the palisade cell as a cylinder of radius 23.7 µm",
+      "sources": [
+       "tolleter2024"
+      ]
+     },
+     {
+      "label": "Chloroplasts",
+      "value": "100 in a palisade cell, each of 93 femtolitres on average",
+      "sources": [
+       "tolleter2024"
+      ]
+     },
+     {
+      "label": "Vacuole",
+      "value": "the largest part of a leaf's cellular volume: 84%",
+      "sources": [
+       "tolleter2024"
+      ]
+     },
+     {
+      "label": "Wall",
+      "value": "150 nm thick on average, for the leaf's skin cells and inner cells",
+      "sources": [
+       "tolleter2024"
+      ]
+     },
+     {
+      "label": "Leaf and rosette",
+      "value": "the paper's reference leaf has a surface of 121 mm²; its three-week-old rosette has 29 leaves with 10,500 mm² of leaf in all",
+      "sources": [
+       "tolleter2024"
+      ]
+     },
+     {
+      "label": "What joins its cells",
+      "value": "plasmodesmata, channels lined by the cell membrane that cross the wall between two cells; 32 of its proteins are stated to be there",
+      "sources": [
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Cells' machines",
+      "value": "of the 49 units of the law inventory, 5 have proteins of the same family in the plant; 38 were not found, the gap junctions and the sodium-potassium pump among them",
+      "sources": [
+       "uniprot"
+      ]
+     }
+    ],
+    "parts": {
+     "membranes": 1,
+     "wall": true,
+     "wall_nm": 150,
+     "nucleus": true,
+     "organelles": [
+      "er",
+      "golgi",
+      "mitochondria",
+      "chloroplasts",
+      "vacuole"
+     ],
+     "organelle_sizes": {
+      "chloroplasts": {
+       "count": 100,
+       "volume_fl": 93,
+       "across_um": 5.6,
+       "sources": [
+        "tolleter2024"
+       ]
+      },
+      "vacuole": {
+       "share": 0.84,
+       "sources": [
+        "tolleter2024"
+       ]
+      }
+     }
+    },
+    "capabilities": {
+     "cap.junctions": {
+      "place": "absent",
+      "why": "A plant's cells are not joined by gap junctions: none of its proteins carries the signature of connexins or innexins. They are joined by plasmodesmata, channels through the wall, which Cells does not model."
+     },
+     "cap.pumps": {
+      "place": "present",
+      "note": "Not the sodium-potassium pump of animal cells: none of its proteins carries the signature of that pump's own chain. Other pumps of the same wide family are found; the units that find them say which."
+     }
+    }
+   },
+   "sources": {
+    "uniprot": {
+     "text": "UniProt Consortium, UniProt release 2026_04: the reference proteome UP000006548 (Arabidopsis thaliana), its entries and its gene-by-gene set, and UniProt's vocabulary of subcellular locations.",
+     "url": "https://www.uniprot.org/proteomes/UP000006548",
+     "licence": "CC BY 4.0",
+     "class": "permissive",
+     "accessed": "2026-11-15"
+    },
+    "tolleter2024": {
+     "text": "Tolleter D, Smith EN, Dupont-Thibert C, Uwizeye C, Vile D, Gloaguen P, Falconet D, Finazzi G, Vandenbrouck Y, Curien G (2024) The Arabidopsis leaf quantitative atlas: a cellular and subcellular mapping through unified data integration. Quantitative plant biology 5:e2.",
+     "doi": "10.1017/qpb.2024.1",
      "licence": "CC BY",
      "class": "permissive",
      "accessed": "2026-11-15"
@@ -12432,6 +12960,1322 @@
      "alone": 0.95
     }
    ]
+  },
+  "thalecress": {
+   "format": "cells.visualizer.outline@1",
+   "note": "One leaf of thale cress and a rosette of 8 leaves seen from above, as placeholder outlines. The leaf is drawn 17 mm long and 9 mm wide: the picture's choice of a blade whose area is near the 121 mm² that one open paper gives for its reference leaf (the paper is named in the species file). The number of leaves, their lengths, the rosette's width and the leaf's thickness are the picture's choice, and no measurement was read for them. The numbers were written out by tools/build_thalecress_atlas.py from one rounded blade, turned about the plant's centre.",
+   "tissue_on": {
+    "at_um": [
+     10500,
+     103,
+     0
+    ],
+    "clearance_um": 3,
+    "note": "On the upper side of one leaf, half-way along it."
+   },
+   "parts": [
+    {
+     "name": "leaf",
+     "group": "leaf",
+     "kind": "loft",
+     "stations": [
+      [
+       2000,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       3062,
+       0,
+       0,
+       3663,
+       200
+      ],
+      [
+       4125,
+       0,
+       0,
+       5306,
+       200
+      ],
+      [
+       5188,
+       0,
+       0,
+       6514,
+       200
+      ],
+      [
+       6250,
+       0,
+       0,
+       7438,
+       200
+      ],
+      [
+       7312,
+       0,
+       0,
+       8131,
+       200
+      ],
+      [
+       8375,
+       0,
+       0,
+       8617,
+       200
+      ],
+      [
+       9438,
+       0,
+       0,
+       8904,
+       200
+      ],
+      [
+       10500,
+       0,
+       0,
+       9000,
+       200
+      ],
+      [
+       11562,
+       0,
+       0,
+       8904,
+       200
+      ],
+      [
+       12625,
+       0,
+       0,
+       8617,
+       200
+      ],
+      [
+       13688,
+       0,
+       0,
+       8131,
+       200
+      ],
+      [
+       14750,
+       0,
+       0,
+       7438,
+       200
+      ],
+      [
+       15812,
+       0,
+       0,
+       6514,
+       200
+      ],
+      [
+       16875,
+       0,
+       0,
+       5306,
+       200
+      ],
+      [
+       17938,
+       0,
+       0,
+       3663,
+       200
+      ],
+      [
+       19000,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "rings": {
+      "every": 4,
+      "first": 2,
+      "points": 18
+     },
+     "lines": [
+      0.5,
+      1.5
+     ],
+     "strength": 0.8,
+     "alone": 0.95,
+     "edge": 0.8,
+     "pick": 10
+    },
+    {
+     "name": "other leaves",
+     "kind": "lines",
+     "paths": [
+      {
+       "points": [
+        [
+         1414,
+         0,
+         1414
+        ],
+        [
+         927,
+         0,
+         3246
+        ],
+        [
+         1080,
+         0,
+         4438
+        ],
+        [
+         1370,
+         0,
+         5493
+        ],
+        [
+         1750,
+         0,
+         6457
+        ],
+        [
+         2203,
+         0,
+         7349
+        ],
+        [
+         2722,
+         0,
+         8175
+        ],
+        [
+         3303,
+         0,
+         8939
+        ],
+        [
+         3946,
+         0,
+         9641
+        ],
+        [
+         4648,
+         0,
+         10284
+        ],
+        [
+         5412,
+         0,
+         10865
+        ],
+        [
+         6238,
+         0,
+         11384
+        ],
+        [
+         7130,
+         0,
+         11837
+        ],
+        [
+         8094,
+         0,
+         12217
+        ],
+        [
+         9149,
+         0,
+         12507
+        ],
+        [
+         10341,
+         0,
+         12660
+        ],
+        [
+         12173,
+         0,
+         12173
+        ],
+        [
+         12660,
+         0,
+         10341
+        ],
+        [
+         12507,
+         0,
+         9149
+        ],
+        [
+         12217,
+         0,
+         8094
+        ],
+        [
+         11837,
+         0,
+         7130
+        ],
+        [
+         11384,
+         0,
+         6238
+        ],
+        [
+         10865,
+         0,
+         5412
+        ],
+        [
+         10284,
+         0,
+         4648
+        ],
+        [
+         9641,
+         0,
+         3946
+        ],
+        [
+         8939,
+         0,
+         3303
+        ],
+        [
+         8175,
+         0,
+         2722
+        ],
+        [
+         7349,
+         0,
+         2203
+        ],
+        [
+         6457,
+         0,
+         1750
+        ],
+        [
+         5493,
+         0,
+         1370
+        ],
+        [
+         4438,
+         0,
+         1080
+        ],
+        [
+         3246,
+         0,
+         927
+        ]
+       ],
+       "closed": true
+      },
+      {
+       "points": [
+        [
+         0,
+         0,
+         2000
+        ],
+        [
+         -1447,
+         0,
+         2839
+        ],
+        [
+         -2096,
+         0,
+         3679
+        ],
+        [
+         -2573,
+         0,
+         4518
+        ],
+        [
+         -2938,
+         0,
+         5358
+        ],
+        [
+         -3212,
+         0,
+         6197
+        ],
+        [
+         -3404,
+         0,
+         7036
+        ],
+        [
+         -3517,
+         0,
+         7876
+        ],
+        [
+         -3555,
+         0,
+         8715
+        ],
+        [
+         -3517,
+         0,
+         9554
+        ],
+        [
+         -3404,
+         0,
+         10394
+        ],
+        [
+         -3212,
+         0,
+         11233
+        ],
+        [
+         -2938,
+         0,
+         12072
+        ],
+        [
+         -2573,
+         0,
+         12912
+        ],
+        [
+         -2096,
+         0,
+         13751
+        ],
+        [
+         -1447,
+         0,
+         14591
+        ],
+        [
+         0,
+         0,
+         15430
+        ],
+        [
+         1447,
+         0,
+         14591
+        ],
+        [
+         2096,
+         0,
+         13751
+        ],
+        [
+         2573,
+         0,
+         12912
+        ],
+        [
+         2938,
+         0,
+         12072
+        ],
+        [
+         3212,
+         0,
+         11233
+        ],
+        [
+         3404,
+         0,
+         10394
+        ],
+        [
+         3517,
+         0,
+         9554
+        ],
+        [
+         3555,
+         0,
+         8715
+        ],
+        [
+         3517,
+         0,
+         7876
+        ],
+        [
+         3404,
+         0,
+         7036
+        ],
+        [
+         3212,
+         0,
+         6197
+        ],
+        [
+         2938,
+         0,
+         5358
+        ],
+        [
+         2573,
+         0,
+         4518
+        ],
+        [
+         2096,
+         0,
+         3679
+        ],
+        [
+         1447,
+         0,
+         2839
+        ]
+       ],
+       "closed": true
+      },
+      {
+       "points": [
+        [
+         -1414,
+         0,
+         1414
+        ],
+        [
+         -3389,
+         0,
+         889
+        ],
+        [
+         -4675,
+         0,
+         1054
+        ],
+        [
+         -5812,
+         0,
+         1367
+        ],
+        [
+         -6852,
+         0,
+         1777
+        ],
+        [
+         -7813,
+         0,
+         2265
+        ],
+        [
+         -8704,
+         0,
+         2824
+        ],
+        [
+         -9527,
+         0,
+         3451
+        ],
+        [
+         -10285,
+         0,
+         4144
+        ],
+        [
+         -10977,
+         0,
+         4901
+        ],
+        [
+         -11604,
+         0,
+         5724
+        ],
+        [
+         -12163,
+         0,
+         6615
+        ],
+        [
+         -12652,
+         0,
+         7577
+        ],
+        [
+         -13062,
+         0,
+         8617
+        ],
+        [
+         -13375,
+         0,
+         9754
+        ],
+        [
+         -13539,
+         0,
+         11039
+        ],
+        [
+         -13014,
+         0,
+         13014
+        ],
+        [
+         -11039,
+         0,
+         13539
+        ],
+        [
+         -9754,
+         0,
+         13375
+        ],
+        [
+         -8617,
+         0,
+         13062
+        ],
+        [
+         -7577,
+         0,
+         12652
+        ],
+        [
+         -6615,
+         0,
+         12163
+        ],
+        [
+         -5724,
+         0,
+         11604
+        ],
+        [
+         -4901,
+         0,
+         10977
+        ],
+        [
+         -4144,
+         0,
+         10285
+        ],
+        [
+         -3451,
+         0,
+         9527
+        ],
+        [
+         -2824,
+         0,
+         8704
+        ],
+        [
+         -2265,
+         0,
+         7813
+        ],
+        [
+         -1777,
+         0,
+         6852
+        ],
+        [
+         -1367,
+         0,
+         5812
+        ],
+        [
+         -1054,
+         0,
+         4675
+        ],
+        [
+         -889,
+         0,
+         3389
+        ]
+       ],
+       "closed": true
+      },
+      {
+       "points": [
+        [
+         -2000,
+         0,
+         0
+        ],
+        [
+         -2914,
+         0,
+         -1575
+        ],
+        [
+         -3828,
+         0,
+         -2282
+        ],
+        [
+         -4741,
+         0,
+         -2801
+        ],
+        [
+         -5655,
+         0,
+         -3198
+        ],
+        [
+         -6569,
+         0,
+         -3496
+        ],
+        [
+         -7482,
+         0,
+         -3705
+        ],
+        [
+         -8396,
+         0,
+         -3829
+        ],
+        [
+         -9310,
+         0,
+         -3870
+        ],
+        [
+         -10224,
+         0,
+         -3829
+        ],
+        [
+         -11138,
+         0,
+         -3705
+        ],
+        [
+         -12051,
+         0,
+         -3496
+        ],
+        [
+         -12965,
+         0,
+         -3198
+        ],
+        [
+         -13879,
+         0,
+         -2801
+        ],
+        [
+         -14792,
+         0,
+         -2282
+        ],
+        [
+         -15706,
+         0,
+         -1575
+        ],
+        [
+         -16620,
+         0,
+         0
+        ],
+        [
+         -15706,
+         0,
+         1575
+        ],
+        [
+         -14792,
+         0,
+         2282
+        ],
+        [
+         -13879,
+         0,
+         2801
+        ],
+        [
+         -12965,
+         0,
+         3198
+        ],
+        [
+         -12051,
+         0,
+         3496
+        ],
+        [
+         -11138,
+         0,
+         3705
+        ],
+        [
+         -10224,
+         0,
+         3829
+        ],
+        [
+         -9310,
+         0,
+         3870
+        ],
+        [
+         -8396,
+         0,
+         3829
+        ],
+        [
+         -7482,
+         0,
+         3705
+        ],
+        [
+         -6569,
+         0,
+         3496
+        ],
+        [
+         -5655,
+         0,
+         3198
+        ],
+        [
+         -4741,
+         0,
+         2801
+        ],
+        [
+         -3827,
+         0,
+         2282
+        ],
+        [
+         -2914,
+         0,
+         1575
+        ]
+       ],
+       "closed": true
+      },
+      {
+       "points": [
+        [
+         -1414,
+         0,
+         -1414
+        ],
+        [
+         -1004,
+         0,
+         -2959
+        ],
+        [
+         -1132,
+         0,
+         -3965
+        ],
+        [
+         -1377,
+         0,
+         -4855
+        ],
+        [
+         -1698,
+         0,
+         -5669
+        ],
+        [
+         -2080,
+         0,
+         -6421
+        ],
+        [
+         -2518,
+         0,
+         -7118
+        ],
+        [
+         -3008,
+         0,
+         -7762
+        ],
+        [
+         -3550,
+         0,
+         -8354
+        ],
+        [
+         -4142,
+         0,
+         -8896
+        ],
+        [
+         -4787,
+         0,
+         -9387
+        ],
+        [
+         -5483,
+         0,
+         -9824
+        ],
+        [
+         -6236,
+         0,
+         -10206
+        ],
+        [
+         -7049,
+         0,
+         -10527
+        ],
+        [
+         -7939,
+         0,
+         -10772
+        ],
+        [
+         -8945,
+         0,
+         -10901
+        ],
+        [
+         -10490,
+         0,
+         -10490
+        ],
+        [
+         -10901,
+         0,
+         -8945
+        ],
+        [
+         -10772,
+         0,
+         -7939
+        ],
+        [
+         -10527,
+         0,
+         -7049
+        ],
+        [
+         -10206,
+         0,
+         -6236
+        ],
+        [
+         -9824,
+         0,
+         -5483
+        ],
+        [
+         -9387,
+         0,
+         -4787
+        ],
+        [
+         -8896,
+         0,
+         -4142
+        ],
+        [
+         -8354,
+         0,
+         -3550
+        ],
+        [
+         -7762,
+         0,
+         -3008
+        ],
+        [
+         -7118,
+         0,
+         -2518
+        ],
+        [
+         -6421,
+         0,
+         -2080
+        ],
+        [
+         -5669,
+         0,
+         -1698
+        ],
+        [
+         -4855,
+         0,
+         -1377
+        ],
+        [
+         -3965,
+         0,
+         -1132
+        ],
+        [
+         -2959,
+         0,
+         -1004
+        ]
+       ],
+       "closed": true
+      },
+      {
+       "points": [
+        [
+         0,
+         0,
+         -2000
+        ],
+        [
+         1703,
+         0,
+         -2988
+        ],
+        [
+         2468,
+         0,
+         -3976
+        ],
+        [
+         3029,
+         0,
+         -4964
+        ],
+        [
+         3459,
+         0,
+         -5953
+        ],
+        [
+         3781,
+         0,
+         -6941
+        ],
+        [
+         4007,
+         0,
+         -7929
+        ],
+        [
+         4141,
+         0,
+         -8917
+        ],
+        [
+         4185,
+         0,
+         -9905
+        ],
+        [
+         4141,
+         0,
+         -10893
+        ],
+        [
+         4007,
+         0,
+         -11881
+        ],
+        [
+         3781,
+         0,
+         -12869
+        ],
+        [
+         3459,
+         0,
+         -13857
+        ],
+        [
+         3029,
+         0,
+         -14846
+        ],
+        [
+         2468,
+         0,
+         -15834
+        ],
+        [
+         1703,
+         0,
+         -16822
+        ],
+        [
+         0,
+         0,
+         -17810
+        ],
+        [
+         -1703,
+         0,
+         -16822
+        ],
+        [
+         -2468,
+         0,
+         -15834
+        ],
+        [
+         -3029,
+         0,
+         -14846
+        ],
+        [
+         -3459,
+         0,
+         -13857
+        ],
+        [
+         -3781,
+         0,
+         -12869
+        ],
+        [
+         -4007,
+         0,
+         -11881
+        ],
+        [
+         -4141,
+         0,
+         -10893
+        ],
+        [
+         -4185,
+         0,
+         -9905
+        ],
+        [
+         -4141,
+         0,
+         -8917
+        ],
+        [
+         -4007,
+         0,
+         -7929
+        ],
+        [
+         -3781,
+         0,
+         -6941
+        ],
+        [
+         -3459,
+         0,
+         -5952
+        ],
+        [
+         -3029,
+         0,
+         -4964
+        ],
+        [
+         -2468,
+         0,
+         -3976
+        ],
+        [
+         -1703,
+         0,
+         -2988
+        ]
+       ],
+       "closed": true
+      },
+      {
+       "points": [
+        [
+         1414,
+         0,
+         -1414
+        ],
+        [
+         3103,
+         0,
+         -966
+        ],
+        [
+         4202,
+         0,
+         -1106
+        ],
+        [
+         5174,
+         0,
+         -1374
+        ],
+        [
+         6063,
+         0,
+         -1724
+        ],
+        [
+         6885,
+         0,
+         -2142
+        ],
+        [
+         7646,
+         0,
+         -2620
+        ],
+        [
+         8350,
+         0,
+         -3156
+        ],
+        [
+         8998,
+         0,
+         -3748
+        ],
+        [
+         9590,
+         0,
+         -4395
+        ],
+        [
+         10126,
+         0,
+         -5099
+        ],
+        [
+         10604,
+         0,
+         -5861
+        ],
+        [
+         11022,
+         0,
+         -6683
+        ],
+        [
+         11372,
+         0,
+         -7572
+        ],
+        [
+         11640,
+         0,
+         -8544
+        ],
+        [
+         11780,
+         0,
+         -9643
+        ],
+        [
+         11331,
+         0,
+         -11331
+        ],
+        [
+         9643,
+         0,
+         -11780
+        ],
+        [
+         8544,
+         0,
+         -11640
+        ],
+        [
+         7572,
+         0,
+         -11372
+        ],
+        [
+         6683,
+         0,
+         -11022
+        ],
+        [
+         5861,
+         0,
+         -10604
+        ],
+        [
+         5099,
+         0,
+         -10126
+        ],
+        [
+         4395,
+         0,
+         -9590
+        ],
+        [
+         3748,
+         0,
+         -8998
+        ],
+        [
+         3156,
+         0,
+         -8350
+        ],
+        [
+         2620,
+         0,
+         -7646
+        ],
+        [
+         2142,
+         0,
+         -6885
+        ],
+        [
+         1724,
+         0,
+         -6063
+        ],
+        [
+         1374,
+         0,
+         -5174
+        ],
+        [
+         1106,
+         0,
+         -4202
+        ],
+        [
+         966,
+         0,
+         -3103
+        ]
+       ],
+       "closed": true
+      }
+     ],
+     "strength": 0.7
+    }
+   ]
   }
  },
  "left_out": [
@@ -12451,14 +14295,6 @@
    "since": "2026-11-15",
    "says": "an engineered protein cage",
    "reason": "it is a designed protein, not a part of a cell"
-  },
-  {
-   "id": "species.thalecress",
-   "kind": "species",
-   "label": "Thale cress",
-   "since": "2026-11-15",
-   "says": "thale cress",
-   "reason": "a plant cell's chloroplasts and vacuole cannot be drawn yet"
   }
  ],
  "entities": [

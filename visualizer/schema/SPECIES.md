@@ -152,11 +152,12 @@ says the engine models an organism unless the project's record says so.
     panel that says what the machine is, with a door into the Protein atlas: the species'
     own proteins, with that mark's value picked out.
 - **A species may be held back from the picture.** Where the viewer cannot yet draw what
-  a species' cell needs (a plant cell's chloroplasts and vacuole), its files are kept and
-  checked like any other, and the map's overlay names it under `species_held` with since
-  when, how the page names it and why. The scene then carries nothing of it but one line
-  among what is left out; taking the entry away brings the species in. A species is never
-  shown with parts it does not have in place of the ones it has.
+  a species' cell needs, its files are kept and checked like any other, and the map's
+  overlay names it under `species_held` with since when, how the page names it and why.
+  The scene then carries nothing of it but one line among what is left out; taking the
+  entry away brings the species in. A species is never shown with parts it does not have
+  in place of the ones it has. (Thale cress was held so on 15 November 2026, until a
+  plant cell's chloroplasts and vacuole could be drawn; no species is held today.)
 - **Every number has a basis.** A size or a count in `shape` or `parts` is either a fact
   with a source in `cell.facts`, or it is said in the level's `note` to be the picture's
   choice.

@@ -64,7 +64,7 @@
      ]
     ]
    },
-   "note": "The sheet is the one Cells simulates: a single layer of coupled cells. It stands for no particular tissue of the plant, and a plant's cells are joined by plasmodesmata, which the sheet does not model.",
+   "note": "The sheet stands for the one Cells simulates: a single layer of coupled cells. It is drawn packed in squares, as box-shaped cells stand side against side; that packing is the picture's choice, and the sheets Cells has run are joined in sixes. It stands for no particular tissue of the plant, and a plant's cells are joined by plasmodesmata, which the sheet does not model.",
    "notes": [
     {
      "text": "The sheet Cells simulates: a single layer of coupled cells",

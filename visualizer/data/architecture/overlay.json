@@ -4385,11 +4385,5 @@
       "description": "A capability and the engine parts behind it."
     }
   ],
-  "species_held": {
-    "thalecress": {
-      "since": "2026-11-15",
-      "says": "thale cress",
-      "reason": "a plant cell's chloroplasts and vacuole cannot be drawn yet"
-    }
-  }
+  "species_held": {}
 }
