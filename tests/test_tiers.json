@@ -86,7 +86,8 @@
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-transfer-03/measured.json",
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-fuel/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/acceptance/tiers-tools-20261115/measured.json",
-  "/mnt/workspaces/Cells/independent-references-20261115-01/compartment-k2b-tiers/run/measured.json"
+  "/mnt/workspaces/Cells/independent-references-20261115-01/compartment-k2b-tiers/run/measured.json",
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dev-427e4a05/tiers-measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -707,6 +708,13 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-15T20:44:02+00:00"
+  },
+  {
+   "git_revision": "89305b508033952a5fc7ccf75c9ed5953fe0c2f8",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/fr45-tests-89305b50",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T22:29:27+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1010,6 +1018,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_atp_transporter.py",
+    "seconds": 1.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
     }
    },
    {
@@ -1843,6 +1859,38 @@
     "counts": {
      "passed": 2,
      "skipped": 29
+    }
+   },
+   {
+    "file": "tests/unit/test_fr45_damage_and_worlds.py",
+    "seconds": 2.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 18
+    }
+   },
+   {
+    "file": "tests/unit/test_fr45_patch_implicit.py",
+    "seconds": 2.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_fr45_proton_laws.py",
+    "seconds": 2.68,
+    "exit_code": 0,
+    "counts": {
+     "passed": 36
+    }
+   },
+   {
+    "file": "tests/unit/test_fr45_qualification.py",
+    "seconds": 3.27,
+    "exit_code": 0,
+    "counts": {
+     "passed": 30
     }
    },
    {
@@ -4005,6 +4053,14 @@
     }
    },
    {
+    "file": "tests/unit/test_fr45_reference_stage.py",
+    "seconds": 28.91,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
     "file": "tests/unit/test_graph_evaluation.py",
     "seconds": 59.53,
     "exit_code": 1,
@@ -4496,6 +4552,14 @@
     "counts": {
      "failed": 1,
      "passed": 44
+    }
+   },
+   {
+    "file": "tests/unit/test_transporter_kind.py",
+    "seconds": 76.35,
+    "exit_code": 0,
+    "counts": {
+     "passed": 30
     }
    }
   ],
@@ -5015,6 +5079,12 @@
    {
     "file": "tests/unit/test_finite_ecm_polygon_preparation.py",
     "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_fr4_world_engine.py",
+    "seconds": 90.1,
     "exit_code": null,
     "counts": {}
    },
