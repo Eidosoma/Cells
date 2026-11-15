@@ -1004,12 +1004,22 @@ the insertion point is CORE's. Its conventions, fixed here:
   routes at each node. That is finding 3's z = 0 term for its routes, declared as its bound term.
   A dt-study criterion covers accuracy. Exact booking closes the ledger up to h = 2, so it no
   longer signals an overshoot by itself (§7.5).
-- **As built (core-d172 6a43f189):** the kind `cells.passive_routes@1`
-  (`models/inner_kinds/passive_routes.py`), model key `passive_routes`: a list of {id, law,
-  membrane | junction, permeability_m_per_s}. Its flux is the kernel's on the read amounts,
-  inward from the host's outside end to its inside end; its fields are as above; its step is
-  `bound_rate` (gap 5); version 1's scope mask (`passive_exact`) is set at binding from
-  `moved_nodes`, and a route touching a held bath is never exact.
+- **As built (core-d172 6a43f189, 7af1382f; the lead's ruling: one kind, laws by contract):** the
+  kind `cells.passive_routes@1` (`models/inner_kinds/passive_routes.py`), model key
+  `passive_routes` in FR-4's form (`validation/compartment_ph/definitions.py`): a list of {id,
+  patch | junction, law, permeability_m_per_s (one number), species (the neutral law's row; the
+  leak's defaults to H), factors (empty: FR-5's damage and pH condition come with FR-5's laws)}.
+  - `passive_neutral_permeation@1`: the kernel's Fick flux on the read amounts, inward from the
+    host's outside end to its inside end; §7.5's exact booking where version 1's scope mask
+    (`passive_exact`, set at binding from `moved_nodes`; a route touching a held bath is never
+    exact) allows; its step is `bound_rate` (gap 5).
+  - `proton_constant_field_leak@1` (`processes/proton_leak.py`): an H⁺ constant-field route on a
+    membrane patch at the patch voltage, reading free h through B4's read at buffered nodes;
+    tableau-booked (charged: never exact); its max-side slope conductance is its `stage_term`
+    (B7, gap 5) and its flux joins the membrane current (gap 9); its row must be B4's proton row
+    where B4 is declared.
+- **B4's declaration (7af1382f)** is FR-4's `stage_reads` list: [{read_id:
+  "rapid_proton_buffer@1", proton_row, buffers, k_on_per_mM_s}], one read in version 1.
 
 #### (j) The per-structure schema: three options, and the ruling (A, 15 November)
 
@@ -1264,7 +1274,9 @@ undeclared built-in changes nothing:
    [species, outside node]) into the shared inventory, where the field solve sees their charge
    (rule (c)); its own state fields' derivatives; heat and work rates, which join the energy rate
    by role (rule (a)). `potentials` are the stage's node potentials, cells then outside nodes.
-   They are added after today's terms, in hook order. `KindRates.membrane_flux` (outward
+   They are added after today's terms, in hook order. `KindRates.valid` (7af1382f) is the
+   kind's own domain at the stage's read and potentials (a charged law's V-dependent domain,
+   such as |ΔG_cyc/RT| ≤ 80), and-ed into the stage's validity. `KindRates.membrane_flux` (outward
    [species, membrane], optional) joins the patches' total flux and membrane current
    (observations; gap 9, 669f8ed6).
    - **Step size (B7 for kinds; gap 5, 669f8ed6):** `stage_term(read, control, p, *, xp)` →
@@ -1294,7 +1306,9 @@ undeclared built-in changes nothing:
 5. **`domain(state, p, *, xp)` → one bool,** and-ed into `domain_valid`, on the host and the
    device; **`control_domain(control, p, *, xp)` → one bool,** in place of the [0, 1] rule for
    its controls (rule (d)).
-6. **`readouts(state, control, p, *, xp)` → its readout columns,** in order, which
+6. **`readouts(state, read, potentials, control, p, *, xp)` → its readout columns** (7af1382f:
+   the stored state, the row's read and its node potentials, so a charged law reports its
+   instantaneous rate at a buffered node), in order, which
    `observe_history` writes after today's.
 7. **`moved_rows(declaration)`** → ((species, node ID), ...), or ((species, node ID, law ID),
    ...), the rows it moves in the step, joined into `moved_rows` (the registry's `moved_in_step`
