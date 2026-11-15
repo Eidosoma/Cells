@@ -2,7 +2,20 @@
  "schema": "cells.morphogenesis_protocol@1",
  "id": "mg0c-turing-v1",
  "title": "MG0c: Turing patterning at the predicted wavelength, local_species_reactions@1's first acceptance on resolved_pump_tissue@3's species transport",
- "status": "PROPOSED (drafted 14 November 2026 by the D152 engine agent, revised the same day after the lead's review with the advisor (review), from the rehearsal's runs on main named in development_runs; not registered, and no judged run is made before the lead registers it)",
+ "status": "registered by the lead (registrar), 15 November 2026, after the rehearsal on main 58b6f14 (every judged entry on a registered dry-run copy: 55 of 55, values identical to the development runs), the final check with the advisor and its four items (head 82555c9), and a registration-path check from the landed tree; one judged run follows from a clean snapshot of main at this registration commit",
+ "registration": {
+  "status": "registered by the lead (registrar), 15 November 2026, after the rehearsal on main 58b6f14 (every judged entry on a registered dry-run copy: 55 of 55, values identical to the development runs), the final check with the advisor and its four items (head 82555c9), and a registration-path check from the landed tree; one judged run follows from a clean snapshot of main at this registration commit",
+  "registrar": "the lead",
+  "date": "2026-11-15",
+  "no_judged_run_yet": "No judged run of mg0c-turing-v1 exists at registration. The runs whose records carry the label 'Judged run of mg0c-turing-v1' (rehearsal-58b6f14) are rehearsal runs on a registered dry-run copy, labelled so only because they ran under --protocol on that copy.",
+  "basis": [
+   "development runs (pre-FR-9): development_runs.basis, from which the thresholds and the 165 registered deltas derive",
+   "rehearsal: /mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/",
+   "registration-path check: /mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/regcheck-landed-9cf3b69/ (a copy of the landed protocol registered with the real command; judge and combine on the rehearsal's outputs give the same 55 verdicts and pass)",
+   "diff 58b6f14..main: no change under src/ or to MG0c's driver, fixtures, references or guard files; only mg0c_protocol.py and the protocol JSON"
+  ],
+  "launch": "each entry through scripts/run_detached.sh with the protocol's caps, CPUs and runtime limits, using rehearse_entry.sh unchanged (copied into the judged run's inputs), lanes as rehearsed: CPU 5 a then c; CPU 7 b then q7 then judge-guards; then judge and combine"
+ },
  "rung": "MG0c",
  "question": "Does local_species_reactions@1, composed with @3's species transport on a closed chain, run the declared discrete system: the engine order's own map for linear networks and for Schnakenberg linearised, exact mode propagation and the nonlinear pattern to the scheme's step terms, only admissible modes growing, the predicted dominant mode and growth rate, the staircase of fastest modes against the domain's length, decay below the critical ratio, and closed accounting?",
  "engine_models": [
