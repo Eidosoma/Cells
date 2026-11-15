@@ -72,7 +72,8 @@
   "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-1ee9456/measured.json",
   "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-b75ca7d/measured.json",
   "/mnt/workspaces/Cells/closed-compartment-m1-20261114-01/land-measure-fr/measured.json",
-  "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-e3fb7ab/measured.json"
+  "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-e3fb7ab/measured.json",
+  "/mnt/workspaces/Cells/test-split-20261115-01/run-534cd37/tiers/measured.json"
  ],
  "measured_provenance": [
   {
@@ -593,6 +594,14 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a4ff7607b6a2e4388",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-15T00:48:18+00:00"
+  },
+  {
+   "git_revision": "534cd3790148603581c820829158db81012d8f02",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/test-split-20261115-01/snapshot-534cd37",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T05:40:25+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3633,6 +3642,22 @@
     }
    },
    {
+    "file": "tests/unit/test_cell_owned_compartments_restart.py",
+    "seconds": 66.8,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_cell_owned_compartments_restart_snapshot.py",
+    "seconds": 70.48,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
     "file": "tests/unit/test_cell_owned_compartments_silence.py",
     "seconds": 46.52,
     "exit_code": 0,
@@ -3941,6 +3966,22 @@
     }
    },
    {
+    "file": "tests/unit/test_site_occupancy_idle.py",
+    "seconds": 49.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_site_occupancy_idle_empty.py",
+    "seconds": 41.12,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
     "file": "tests/unit/test_site_occupancy_restart.py",
     "seconds": 86.01,
     "exit_code": 0,
@@ -3954,6 +3995,38 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_site_occupancy_stage.py",
+    "seconds": 31.09,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_site_occupancy_stage_step.py",
+    "seconds": 49.37,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_site_occupancy_vector.py",
+    "seconds": 82.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_site_occupancy_vector_reverse.py",
+    "seconds": 53.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
     }
    },
    {
@@ -4593,12 +4666,6 @@
     "counts": {}
    },
    {
-    "file": "tests/unit/test_cell_owned_compartments_restart.py",
-    "seconds": 90.21,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
     "file": "tests/unit/test_cell_replacement.py",
     "seconds": 90.19,
     "exit_code": null,
@@ -4988,24 +5055,6 @@
    },
    {
     "file": "tests/unit/test_secreted_species_runs.py",
-    "seconds": 90.13,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_site_occupancy_idle.py",
-    "seconds": 90.12,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_site_occupancy_stage.py",
-    "seconds": 90.13,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_site_occupancy_vector.py",
     "seconds": 90.13,
     "exit_code": null,
     "counts": {}
