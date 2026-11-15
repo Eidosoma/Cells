@@ -19,7 +19,13 @@ What this draft decides from the development run, by rules fixed here (not by fi
   100 floors, and at least 1e-13 for a dimensionless quantity.
 It refuses to draft if a control is not caught on the development run.
 
+With a rehearsal record (--rehearsal REHEARSAL_JSON: the rehearsal's facts on main, gathered from
+its evidence), the redraft carries them and the judged run's resource budget: twice the rehearsal's
+wall time per unit, rounded up to the minute, and its memory cap of record. The criteria are drawn
+from the development run alone, so a redraft leaves them unchanged.
+
 Usage: python -m validation.tissue.regulated_availability_protocol RESULTS_JSON [OUTPUT_JSON]
+       [--rehearsal REHEARSAL_JSON]
 """
 
 import json
@@ -339,11 +345,39 @@ def draft(results, results_path):
     return protocol
 
 
+def with_rehearsal(protocol, rehearsal):
+    """The rehearsal's facts, and the judged run's resource budget from them."""
+    if not rehearsal.get("passed"):
+        raise SystemExit("Refused: the rehearsal record does not pass; nothing is redrafted")
+    wall = rehearsal["judged_run_wall_s"]
+    protocol["rehearsal"] = rehearsal
+    protocol["resources"] = dict(
+        cpus=1,
+        memory_cap=rehearsal["memory_cap"],
+        observed_memory_peak_bytes=rehearsal["memory_peak_bytes"],
+        observed_wall_s=wall,
+        runtime_max_s=60 * math.ceil(2 * wall / 60),
+        basis="twice the rehearsal's wall time on one CPU, rounded up to the minute",
+    )
+    protocol["steps_before_judgement"] = [
+        step + (" (done: protocol['rehearsal'])" if step.startswith("a rehearsal") else "")
+        for step in protocol["steps_before_judgement"]
+    ]
+    return protocol
+
+
 def main(argv):
+    rehearsal = None
+    if "--rehearsal" in argv:
+        i = argv.index("--rehearsal")
+        rehearsal = json.loads(Path(argv[i + 1]).read_text())
+        argv = argv[:i] + argv[i + 2 :]
     results_path = Path(argv[0])
     out = Path(argv[1]) if len(argv) > 1 else PROTOCOL
     results = json.loads(results_path.read_text())
     protocol = draft(results, results_path)
+    if rehearsal is not None:
+        protocol = with_rehearsal(protocol, rehearsal)
     out.write_text(json.dumps(protocol, indent=1) + "\n")
     judged = [c["id"] for c in protocol["criteria"] if c["judged"]]
     print(out, len(judged), "judged criteria")
