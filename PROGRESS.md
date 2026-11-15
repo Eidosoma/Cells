@@ -73,6 +73,24 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-1's and FR-3's four slowest test files split (15 November 2026)**, tests only, with every
+  assertion kept. Each of the eight new files fits the 90 s cap, so FR-3's idle, stage and vector
+  checks and FR-1's restart now run in the routine tier 2. Tier 1 and 2 at the merge e05619e: 449
+  files, no changed outcome.
+
+- **The G2 judge records the numerical environment (15 November 2026).** This is a record-only,
+  validation-only change before today's L4 gap. `cell_replacement_judge.provenance()` now writes
+  `XLA_FLAGS` and `JAX_DISABLE_JIT`, from `cells.io.runtime_identity()`, into every item record, so
+  a Q7 run under the deterministic flag shows it. The verdict rule is unchanged: the 7 saved item
+  records of L4 run C keep their verdicts. Tier 1 at the merge 541fad5: 335 files, no changed
+  outcome.
+
+- **The crossrev baseline of record is renewed at df5826f** (D148 criterion 4 for FR-1's contract
+  change; it also covers item 3). All eight sets are identical to their records: base,
+  qualification, injection, volume and division against baseline-da94f81; species and reactions
+  against their da94f81 records; and coupling against its first record at f2ada38
+  ([records](/mnt/workspaces/Cells/architecture-block-20261114-01/baseline-df5826f/)).
+
 - **Phase start and failure records landed (item 3 of the architecture block, 15 November 2026).**
   Tier 1 and 2 at the merge 85346c8: 440 files, no changed outcome
   ([evidence](/mnt/workspaces/Cells/architecture-block-20261114-01/HANDOFF.md)).
