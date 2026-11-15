@@ -962,15 +962,21 @@ class CellsViewer extends HTMLElement {
     ].filter(Boolean);
   }
 
-  /** The view's card sits above the legend; it takes the room the legend leaves and scrolls beyond that. */
+  /**
+   * The view's card sits above the legend; it takes the room the legend leaves and scrolls beyond that.
+   * The card keeps a least height, and the legend never lies over it: in a short window, or where the
+   * page's own font did not arrive and its words run longer, the legend scrolls within what is left.
+   */
   fitCard() {
-    const card = this.viewCard;
+    const card = this.viewCard, least = 150;
     if (card.hidden || this.clientWidth < 760) {
       card.style.maxHeight = "";
+      this.legend.style.maxHeight = "";
       return;
     }
+    this.legend.style.maxHeight = `${Math.max(120, this.clientHeight - card.offsetTop - least - 12 - 16)}px`;
     const legend = this.legend.hidden ? 0 : this.legend.offsetHeight + 16;
-    card.style.maxHeight = `${Math.max(150, this.clientHeight - card.offsetTop - legend - 12)}px`;
+    card.style.maxHeight = `${Math.max(least, this.clientHeight - card.offsetTop - legend - 12)}px`;
   }
 
   segmented(label, options, active, onPick) {

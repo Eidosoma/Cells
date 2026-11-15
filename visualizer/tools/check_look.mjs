@@ -348,7 +348,14 @@ try {
     check("choosing Rich again tries all of it once more", s.step === 0 && s.drawn.join() === SEVEN, JSON.stringify([s.step, s.drawn]));
 
     // Status colours carry a meaning: filmic light is left out of them.
-    await press(button("Colour", "Status"), "Colour: Status");
+    // The look was switched on again a moment ago, and its first frames are slow where the picture is drawn in
+    // software. The cards may be rebuilt after such a frame; a press that falls across that loses its release.
+    // So one frame is let through first, and the press is made again if it was lost.
+    await frame();
+    for (let tries = 0; tries < 3; tries++) {
+      await press(button("Colour", "Status"), "Colour: Status");
+      if (await evaluate(`${V}.current.colourBy === "status"`)) break;
+    }
     s = await state();
     check("with Colour: Status, filmic light is left out, so each status keeps its colour", s.tone === 0 && s.exposure === 1 && s.filmicFits === false && s.drawn.includes("filmic") && s.studio, JSON.stringify([s.tone, s.exposure, s.filmicFits]));
     await shot("switch-status");
