@@ -206,3 +206,194 @@ the record, from snapshot `compartment-ph-snapshot-02` (95f835fb).
   window, the flux errors and the reaction heat.
 - **Provenance:** the driver ran from a snapshot folder, not a checkout, so the snapshot's
   SNAPSHOT.json carries the revision.
+
+# FR-5: R-transfer, damage, leak and reseal, and pH-conditioned transfer
+
+- **Sources:** the same note's §8 (the routing door's factors), §9 (FR-5's laws), §13.2 (the world)
+  and Appendix A (FR-5's states, fluxes and energy identity).
+- **Not blind:** §13.2's claims, under "What it shows", were read before the runs. The note quotes
+  no FR-5 results.
+
+| Module | What it gives |
+| --- | --- |
+| `validation/compartment_ph/transfer_reference.py` (`tr`) | R-transfer: FR-4's R-closure with cargo X, the damage pore and the conditioned transfer; the exact damage law; the steady start |
+| `validation/compartment_ph/transfer_crosschecks.py` | The driver behind the numbers below (`--out DIR`; about 70 s of CPU) |
+
+**Self-tests:** `tests/unit/test_compartment_transfer_references.py`, 6 tests, tier 1. The folder's
+independence tests cover this module too.
+
+## The laws, as the reference computes them
+
+- **Damage** (§9) is exact on each constant piece of its schedules:
+  d(t) = d_k e^(−s τ) + (a/s)(1 − e^(−s τ)), with a = k_inj u_inj, b = k_res u_res, s = a + b and
+  τ = t − t_k. Both terms are non-negative. The schedules' breakpoints are integration segment
+  ends.
+- **The proton leak with damage** (Appendix A): J_H = 1e15 (P_H + d P_pore,H) A_b ψ(u)
+  (h_c − h_L e^(−u)). The pore's share is its own route (`J_H_pore`), with its own heat.
+- **Cargo X** (z = 0): each route carries J_r = 1e15 m_r P_r A_b (c_X,c − c_X,L).
+  - m_r is §8's `multiply`: 1, f(pH_L), d, or f(pH_L)·d.
+  - It is evaluated on the state at every time (the stage form).
+  - f(pH) = 1/(1 + 10^(m (pH − pH₅₀))). It is computed without overflow at any pH.
+- **Energy:** ΔG_stored + Q = W.
+  - G_stored adds n_X RT (ln(c_X/c°) − 1) at each node to FR-4's.
+  - Each route's heat J Δμ̃ and amount are kept apart (`heat_by_route_pJ`, `moved_fmol`).
+- **The start** (§13.2): FR-4's world at its steady state, here R-closure at 3600 s, plus X at 1 mM
+  in the lumen and 1e-4 mM in the cytosol.
+  - The fixed charges stay FR-4's (§13).
+  - To compare with the engine, pass its checkpoint as `tr.Start(Heq_fmol, ions_fmol, X_fmol)`.
+
+```python
+from validation.compartment_ph import transfer_reference as tr
+
+start, steady = tr.steady_start()                 # FR-4 at 3600 s, plus X
+run = tr.integrate(tr.acceptance_world(start=start), 900.0, record=ts)
+f1 = tr.acceptance_world(start=start, conditioned=False)  # the control f = 1
+d0 = tr.acceptance_world(start=start, damaged=False)      # the control d = 0
+```
+
+`run.at[t]` holds FR-4's keys, plus:
+- `X_c`, `X_L` (fmol) and `cX_c`, `cX_L` (mM);
+- `d`, `f`, `J_H_pore` and `J_X` {route};
+- `heat_by_route_pJ` {pump, leak_H, pore_H, ion_K, X_route};
+- `moved_fmol` {H_pore, X_route}, from c to L since the start.
+
+## Measured (`compartment-transfer-crosschecks-01`, from snapshot `compartment-transfer-snapshot-01`)
+
+§13.2's world over 900 s, with 199 records (log-spaced to 100 s, every 0.5 s on [100, 140] s, then
+every 10 s).
+
+**The start** (FR-4 at 3600 s):
+- pH_L 5.0946273, pH_c 7.2180313 and V_b −7.330 mV;
+- net H⁺ flux −2.1e-16 fmol/s, J_K −4.9e-15 fmol/s;
+- pH_L moved by 4.9e-10 since 1800 s.
+
+| The declared world | Result |
+| --- | --- |
+| X while the lumen is acidic (f = 0.977) | X crosses at once, with a time constant of 8.4 s. c_X,L is 0.89 mM at 1 s, 0.31 at 10 s, and 0.0155 at 99.5 s, where the gradient is 7.2e-6 of the start's |
+| Damage (d = 0.99995 at 110 s) | The pore moves 0.162 fmol of H⁺ out of the lumen. pH_L rises from 5.0946 to a peak of **5.238** at 138 s; f falls only to **0.918** |
+| The pore's release of X | 4.2e-7 fmol, **6.4e-6 of the lumen's start**: X has already crossed |
+| Resealing | The pump re-acidifies: pH_L within 0.01 of the start by 350 s and within 0.001 by 490 s; 5.094628 at 900 s |
+| Heat by route at 900 s (pJ) | Pump 48.55, leak 49.10, pore 2.03, K⁺ 0.023, X transfer 0.698, X pore 2.3e-10 |
+| W; Q; cycles | 99.71 pJ; 100.41 pJ (X's relaxation releases stored energy); 1.940 fmol |
+| Energy residual; material drift (H_eq, X, K); φ_c | ≤ 8.0e-12 pJ; ≤ 1.1e-15, 1.7e-15 and 2.9e-15 relative; ≤ 1.8e-11 V |
+| Floor (rtol 1e-11 against 1e-12) | pH_L within 5.5e-14, c_X,L within 1.6e-15 mM |
+
+| Negative control | Against the declared run |
+| --- | --- |
+| f ≡ 1 | X: up to **8.5e-3 mM** in the lumen (at 9.4 s), from f's 2.3% at the start. pH: 8.9e-15 |
+| d ≡ 0 | pH_L: up to **0.144** (at 138 s), the damage's proton leak. X: up to **5.9e-6 mM** (at 101 s), with no burst in either run |
+
+## Finding for the lead: §13.2's world does not show two of its four claims
+
+- **"X crosses while the lumen is acidic, and not when it is not":** only the first half holds.
+  The lumen never stops being acidic (pH ≤ 5.24 against pH₅₀ 5.5), so the condition never closes.
+- **"Damage opens a proton leak that raises the lumen's pH and releases X":** the pH rises, but
+  only by 0.14. No X is released: 6.4e-6 of the start.
+- **Why:**
+  - At P_X = 1e-8 m/s across the lumen's area-to-volume ratio, X relaxes with a time constant of
+    8.4 s. Its gradient is below 1% of the start's by 40 s, long before the damage at 100 s.
+  - P_pore,H = 1e-6 m/s only raises the leak's permeability 2.7-fold.
+- **The negative controls therefore test little:**
+  - d ≡ 0 differs in pH (0.144) but not in X (5.9e-6 mM);
+  - f ≡ 1 differs by f's 2.3% at the start.
+- **What would show the claims** (the driver's grid, to 300 s, energy residuals ≤ 2.1e-11 pJ):
+
+| P_X (m/s) | X left in the lumen at 99.5 s | X released by the pore by 300 s |
+| --- | --- | --- |
+| 1e-8 (declared) | 1.5% | 6.4e-6 |
+| 1e-10 | 89% | 87% |
+| 1e-11 | 98.8% | 97% |
+
+| P_pore,H (m/s) | Peak pH_L | Smallest f |
+| --- | --- | --- |
+| 1e-6 (declared) | 5.24 | 0.918 |
+| 1e-5 | 5.64 | 0.208 |
+| 1e-4 | 6.28 | 7.6e-4 |
+
+  So a release burst needs P_X ≲ 1e-10 m/s, and closing the condition needs P_pore,H ≳ 1e-4 m/s.
+  The choice is the owner's. The reference runs any of them.
+
+## Readings
+
+- **The start:** "a saved checkpoint and a declared start" is read as FR-4's steady state. The
+  reference computes its own; pass the engine's checkpoint for a comparison.
+- **The pore's proton heat** is booked apart from the leak's (each route its own heat, §9). Their
+  sum is Appendix A's single J_H term.
+- **The transfer route is not scaled by d,** as in Appendix A's J_X, and §13.2 declares no f·d
+  route. The reference supports f·d (`CargoRoute(conditioned=True, damaged=True)`), and its
+  self-test checks it.
+
+# Finite fuel (item 4): the reference's specification, proposed before it is built
+
+No engine note specifies the finite-fuel case yet, so this section declares what its reference
+will compute. It is a proposal for the lead to confirm, from:
+- ARCHITECTURE.md's "Material identity and fuel" (F2, and "the first case");
+- D176, decisions 1 and 2;
+- D152's §2.2 (the passive reaction law);
+- this note's §5 and §6.
+
+## The world: one fixed volume, closed
+
+- **Nodes:** the cell c, which is the fuel node, with volume V_c; and a store s (V_s), across one
+  patch of area A. There is no bath term, water or division.
+- **Rows:** all are neutral, with potentials transformed at the cell's pH_ref and pMg_ref (§5.2).
+  - ATP, ADP and Pi, a donor D and its product P, at c;
+  - the pumped solute Y, at c and s.
+- **One authority:** each row's μ°'/RT. The reaction and the pump both read it.
+
+## The laws
+
+- **The regeneration reaction** at c: D + ADP + Pi ⇌ P + ATP, by D152's
+  `ideal_detailed_balance_mass_action@1`:
+
+      v = m(t) V_c c° k_f [a_D a_ADP a_Pi − e^(Δ_rG'°_reg/RT) a_P a_ATP],   a = c/c°
+
+  - Δ_rG'°_reg = μ°'(P) + μ°'(ATP) − μ°'(D) − μ°'(ADP) − μ°'(Pi).
+  - m(t) ∈ [0, 1] is a declared schedule.
+  - Its heat, −Δ_rG_reg v, is never negative.
+- **The pump,** §6's form with Y in place of H⁺ and no voltage term. Per cycle it hydrolyses one
+  ATP to ADP + Pi at c, and moves n Y from c to s:
+  - ΔG_cyc = Δ_rG'_ATP + n RT ln(c_Y,s/c_Y,c);
+  - Δ_rG'_ATP = Δ_rG'°_hyd + RT ln(c_ADP c_Pi/(c_ATP c°)), with Δ_rG'°_hyd = μ°'(ADP) + μ°'(Pi)
+    − μ°'(ATP);
+  - J_cyc = k a S (1 − e^(ΔG_cyc/RT)), with S = [1 + (K_Y/c_Y,c)^n]⁻¹ [1 + K_ATP/c_ATP]⁻¹;
+  - its heat is −ΔG_cyc J_cyc.
+- **The leak of Y:** J_Y = 1e15 P_Y A (c_Y,s − c_Y,c), from s to c (Fick's law at z = 0). Its heat
+  is J_Y RT ln(c_Y,s/c_Y,c).
+
+## Accounting
+
+- **Moieties:** ATP + ADP (adenine), ATP + Pi (phosphate), D + P (the donor) and Y are each
+  conserved, by both the reaction and the pump.
+- **Energy, with finite fuel:** ΔG_stored + Q = 0, with G_stored = Σ n (μ°' + RT (ln(c/c°) − 1))
+  over every row.
+- **Energy, with held fuel:** ATP, ADP and Pi are held (§5.1), and ΔG_stored + Q = W, with
+  W = ∫ (−Δ_rG'_ATP) J_cyc dt.
+
+## The runs
+
+1. **Depletion and recovery.** The regeneration runs, then stops (m = 0 on a declared window),
+   then runs again.
+   - While it is stopped, ATP falls and ADP and Pi rise. So Δ_rG'_ATP and S fall, J_cyc falls,
+     and Y's gradient decays.
+   - When it runs again, the fuel and the pump recover.
+2. **Against held fuel:** the same world with ATP, ADP and Pi held, where nothing depletes.
+3. **The negative control:** m ≡ 1, with no depletion window.
+
+## Why not FR-4's proton pump
+
+§5.2 refuses finite fuel at a node with a dynamic proton row in version 1, because regeneration's
+protons would need explicit booking. The first case therefore moves a neutral solute. When §5.2's
+boundary is designed, the same reference extends to the proton pump with the cell's H row.
+
+## Generic numbers, to be confirmed
+
+| Quantity | Value |
+| --- | --- |
+| Volumes and patch area | V_c 4.18879 pL, V_s 6.54498e-2 pL, A 7.85398e-10 m² |
+| Starting rows (mM) | ATP 3, ADP 0.3, Pi 3, D 30, P 3; Y 10 on both sides |
+| Standard terms | Δ_rG'°_hyd −30.5 kJ/mol; μ°'(D) − μ°'(P) = 60 kJ/mol, so Δ_rG'°_reg = −29.5 kJ/mol |
+| The pump | k 0.05 fmol/s, n 1, K_Y 1 mM, K_ATP 0.1 mM, a = 1 |
+| The leak | P_Y 1e-9 m/s |
+| The reaction | k_f 1e3 s⁻¹ (about 0.1 fmol/s forward at the start, above the pump's demand) |
+| The depletion window | m = 0 on [100, 300) s; the run lasts 900 s |
