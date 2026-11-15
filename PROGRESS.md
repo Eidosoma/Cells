@@ -73,6 +73,18 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-3's independent site-occupancy references landed (15 November 2026).** They are in
+  `validation/occupancy/` and were written code-blind
+  ([usage](validation/occupancy/REFERENCES_USAGE.md);
+  [evidence](/mnt/workspaces/Cells/independent-references-20261115-01/HANDOFF.md)). Tier 1 at the
+  merge 66d248d: 338 files, no changed outcome.
+  - **R-ode** integrates the full binding kinetics (Radau, rtol 1e-12, cross-checked by DOP853).
+    - Against the saturable sink, the day-one guard converges at orders 0.980 and 0.998 in ε.
+    - Its floor sits well below the engine errors to be judged.
+  - **R-dG** re-implements the per-step bookings independently. Its ledger closes within 0.41 ε of
+    scale, and its heat and work converge at second order.
+  - **20 self-tests, tier 1.**
+
 - **Track E, M1's development work landed (15 November 2026).** Validation only; no judged claim.
   Tier 1 at the merge 0385674: 337 files, no changed outcome
   ([evidence](/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/HANDOFF.md)).
