@@ -28,10 +28,17 @@ original version-specific milestones without acting as a current task board.
 
 Added 15 November 2026. D172 settled the direction: one active inner model, made modular in place.
 An external architecture review then set the boundary and acceptance below, and the lead adopted
-it after reviewing it with the advisor (D174). Every statement carries a status:
-- **holds today**;
-- **target**, meaning D172's single restructure round;
+it after reviewing it with the advisor (D174). A second review of this section clarified it the
+same day. Every statement carries a status:
+- **holds today**, meaning in code read or in a landed test;
+- **target**, meaning decided but not yet met, in D172's restructure round or in a later accepted
+  milestone, as marked;
 - **open**, meaning not yet decided.
+
+The implementation note names the minimum cases required to land D172, and the consumer cases
+completed in subsequent accepted milestones. A target interface does not by itself bring its
+consumer's full scientific qualification into the restructuring. The results gate keeps D172's
+output and registered-protocol checks, and adds required-case execution and the planted-change test.
 
 Where older sections of this document differ, this section applies.
 
@@ -47,7 +54,10 @@ Where older sections of this document differ, this section applies.
 
 - **Arrays in the loop.** The composite builder assembles these parts into one bound array program.
   Python objects and modular interfaces belong to definition, validation and binding, and the
-  production time loop runs on arrays. **Holds today** for @3 and its operators.
+  production time loop runs on arrays. **Holds today in the vector-window path:** the composite's
+  checked step and its device checks run vmapped inside one compiled scan (`vector_windows.py`,
+  `pump_composite.device_checks`). Host-side per-row checks in other paths belong to the audit
+  below.
 - **The test of reuse.** A second biological use case runs on the same laws and state through
   configuration. A new organism or experiment adds engine physics only for a mechanism the engine
   lacks (D144). **Target.**
@@ -68,12 +78,21 @@ Where older sections of this document differ, this section applies.
   - **Undeclared mechanisms are absent from the traced program. Target.**
     - Today @3 traces all three gated channel laws for every population, and the law table's length
       is a literal in every program (the inner-model probe, 14 November).
-    - So per-law dispatch is required. If it moves results at rounding, the restructure round
-      re-runs every registered protocol.
-  - **Same-structure parameter sweeps reuse one compiled executable. Open,** until the constants
-    baked into programs are inventoried.
-  - **State, step checks and refusals stay inside device windows. Open,** until the host-side
-    per-row checks are inventoried.
+    - So per-law dispatch is required. It means build-time selection of the declared kernels; a
+      runtime switch over the whole catalogue would still trace absent mechanisms.
+    - If it moves results at rounding, the restructure round re-runs every registered protocol.
+  - **Executable reuse and device-resident checks. Target; implementation audit pending.**
+    - For a fixed law set, numerical plan, compatible array shapes, dtypes and device placement,
+      parameter-only changes reuse the executable.
+    - Production state advancement, step checks and refusal handling remain inside device windows.
+    - Host boundary checks and requested output processing remain allowed. So do the host checks on
+      every row that qualification and development runs use.
+    - **Holds today in the vector-window path.** Steps and device checks run vmapped inside one
+      compiled scan. Executables are reused by step and check function, rows, array structure,
+      shapes, dtypes and placement (`vector_windows.compile_window`). So parameter values passed as
+      arrays reuse the executable, but constants baked into a model's functions do not.
+    - **The audit** lists the exceptions: constants baked into programs, and checks or refusals run
+      on the host per row in production paths.
   - **Adding a mechanism adds no per-cell Python dispatch and no CPU solver to the production loop.
     Target.**
   - **Compile time, host and device memory, and end-to-end time are measured on representative
@@ -123,7 +142,8 @@ Where older sections of this document differ, this section applies.
     is independent of today's storage as an outside node.
   - Sensing and transfer laws address a species in a named compartment, so one law serves
     cytosolic, lysosomal and mitochondrial cases.
-  - Today FR-1's operator names each compartment's node, bounding patch and owner.
+  - The accepted FR-1 design names each compartment's node, bounding patch and owner. Its operator
+    is on a branch, not yet on main.
 - **Acceptance:**
   - an occupancy-only world with fixed field inputs avoids the field refresh;
   - a capacitance-changing world triggers it;
@@ -136,9 +156,10 @@ Where older sections of this document differ, this section applies.
 - **One authoritative account per physical quantity. Target.** Free and bound ligand may live in
   different arrays, but they resolve to one species identity and one conserved total.
 - **Species identity and the background and trace policy are consolidated at the definition
-  boundary. Target.** New laws then add no pairwise identity checks between operators. Today
-  operators check each other's declarations, as FR-3's identity check does against D150's and
-  D152's.
+  boundary. Target.** New laws then add no pairwise identity checks between operators. Today the
+  coupling operator checks species identity against D150's and D152's declarations
+  (`species_regulated_availability.py`), and FR-3's accepted design proposes extending that
+  pattern.
 - **Fuel: the requirement is fixed, the representation is open.**
   - **The requirement:** reactions can make and spend fuel; pumps draw from those same amounts;
     each standard chemical potential has one authority; water and division get explicit interfaces
@@ -161,32 +182,34 @@ Where older sections of this document differ, this section applies.
 - **Holds today: exchange is a driven route.** `scheduled_species_exchange@1` books the free-energy
   change of what it moves as signed supplied work, with no heat. A matching concentration trajectory
   through paired routes does not make it passive permeation.
-- **What a passive permeation law must show,** in a fixed-volume case:
-  - zero net flux at equal chemical potential;
-  - reversal when the driving force reverses;
-  - conserved material;
-  - zero external work;
-  - dissipation equal to the free-energy decrease.
+- **What a passive permeation law must show. Target.**
+  - In a closed, fixed-volume two-compartment test, it conserves material, has zero net flux at
+    equal chemical potential, reverses with the driving force, and dissipates the free-energy
+    decrease without externally supplied work.
+  - In a held-bath system, the total balance includes the declared reservoir work.
+  - Its composition with water is qualified separately, using the same amounts and current volumes.
 
-  Then its composition with water is qualified. **Target.** A new generic passive law is expected in
-  D172's round, reusing the common inventory, geometry and numerical machinery.
+  A new generic passive law is expected in D172's round, reusing the common inventory, geometry and
+  numerical machinery. First it is checked which admissible topology is closed for the test species,
+  since FR-1's compartments sit in worlds with a held bath.
 - **The reuse rule.** A law is reused only where its physical contract, its energy role included,
   matches.
 
 ### State roles and time
 
-- **Each field declares its role. Target.** The roles are:
-  - a continuous dynamical variable;
-  - an algebraic or conserved constraint;
-  - an accumulated physical history;
-  - discrete event state or an exact counter.
+- **Each field declares its evolution role. Target.** The roles are continuous dynamical state,
+  algebraic state, accumulated history, and discrete event state. Conservation laws are
+  relationships over those fields; an evolving amount may take part in several invariants.
+- **Exact counters declare whether they count numerical steps or physical events. Target.** Physical
+  time and crossing-time interpretation come from the numerical plan. The coupling operator's
+  crossing record counts numerical steps today, and its declaration will say so.
 - **Numerical plans carry time explicitly. Target, interfaces only.**
   - They carry the interval and stage time and the next compulsory event boundary, so a future coarse
     step respects doses, regulatory writes and timed events.
   - Stiff chemistry may run as a qualified local implicit or substepped block, with explicit exchange
     stages and residual checks. The physical law stays one law while its numerical treatment
     evolves.
-- **FR-8's eventual acceptance. Open,** in FR-8's order.
+- **FR-8's eventual acceptance. Target, in FR-8's own milestone.**
   - An intervention during a slow interval.
   - Histories and integer state preserved.
   - Crossing-time accuracy.
@@ -196,6 +219,9 @@ Where older sections of this document differ, this section applies.
   Fixed-step restrictions stay until then. The two-clock assay strategy stays within its scope.
 
 ### Reuse cases and the results gate
+
+Which cases must land with D172 and which come with their consumers is listed in the implementation
+note.
 
 | Case | What it exercises | Status |
 | --- | --- | --- |

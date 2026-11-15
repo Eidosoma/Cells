@@ -5613,6 +5613,18 @@ main. Approved branch work continues.
 - The fuel requirement is fixed. Its representation is open.
 - The reviewers' text is kept outside the public repository.
 
+**Amended 2026-11-15.** The user forwarded a second review, of 6f76b8d: "from adviser on the latest
+plan, get also your adviser on it and make changes as needed". With the advisor, five
+clarifications were adopted into the section:
+- The GPU guarantees are targets with an implementation audit pending, not open. Per-law dispatch
+  means build-time selection.
+- The status legend now separates D172's landing scope from later consumer milestones.
+- Evolution roles are kept apart from conservation relationships, and counters declare what they
+  count.
+- The passive test runs on a closed two-compartment system, with reservoir work counted in
+  held-bath worlds.
+- Two present-tense examples were corrected.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
