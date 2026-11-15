@@ -68,7 +68,8 @@
   "/mnt/workspaces/Cells/inventory-coupling-m2-20261114-01/land-measure-3a7fbfb/measured.json",
   "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/tiers/measure-454fa75/measured.json",
   "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-1ee9456/measured.json",
-  "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-b75ca7d/measured.json"
+  "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-b75ca7d/measured.json",
+  "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-e3fb7ab/measured.json"
  ],
  "measured_provenance": [
   {
@@ -561,6 +562,13 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a4ff7607b6a2e4388",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-14T22:07:10+00:00"
+  },
+  {
+   "git_revision": "e3fb7ab7e1719f3c2f059d6f5d26ab89f6bf0b6b",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a4ff7607b6a2e4388",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T00:48:18+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2182,6 +2190,14 @@
     }
    },
    {
+    "file": "tests/unit/test_phase_records.py",
+    "seconds": 8.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
+    }
+   },
+   {
     "file": "tests/unit/test_physical_ionic_graph.py",
     "seconds": 2.77,
     "exit_code": 1,
@@ -3733,8 +3749,16 @@
     }
    },
    {
+    "file": "tests/unit/test_phase_records_vector.py",
+    "seconds": 67.49,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
     "file": "tests/unit/test_phases.py",
-    "seconds": 43.57,
+    "seconds": 61.31,
     "exit_code": 0,
     "counts": {
      "passed": 5
