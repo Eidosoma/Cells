@@ -1047,20 +1047,16 @@ class Composition:
         schedule union is checked on the compact initial state (the domain and a
         valid field), then each operator's own checks run.
 
-        The species registry's checks run first, on this definition: the inner parser's hook sees
-        the inner definition only, so an operator's in-step mover of a two-form row, or an operator
-        that names one, is refused here (core/species_registry.py; D176).
+        The RK4 composition rule comes first: it reads only the solver, so it refuses from the
+        declarations before the definition is read. Then the definition's declared kinds must be
+        the inner structure's (schema A): a composition bound without the definition's structure
+        (the full catalogue) would drop them.
 
-        The definition's declared kinds must be the inner structure's (schema A): a composition
-        bound without the definition's structure (the full catalogue) would drop them.
+        The species registry's checks run next, ahead of every other check of the definition: the
+        inner parser's hook sees the inner definition only, so an operator's in-step mover of a
+        two-form row, or an operator that names one, is refused here (core/species_registry.py;
+        D176).
         """
-        kinds = tuple(kind_id for kind_id, _ in getattr(spec.model, "kinds", ()))
-        if kinds != tuple(getattr(self.inner, "KINDS", ())):
-            raise ConfigError(
-                f"The definition declares the kinds {list(kinds)}, but the composition's inner "
-                f"structure declares {list(getattr(self.inner, 'KINDS', ()))}"
-            )
-        species_registry.check_definition(spec)
         solver = spec.execution.solver
         if solver == "rk4" and self.coupled:
             if (
@@ -1072,6 +1068,13 @@ class Composition:
                     "An RK4 composition with a coupled operator cannot hold event maps, "
                     "split-only parts or integer state"
                 )
+        kinds = tuple(kind_id for kind_id, _ in getattr(spec.model, "kinds", ()))
+        if kinds != tuple(getattr(self.inner, "KINDS", ())):
+            raise ConfigError(
+                f"The definition declares the kinds {list(kinds)}, but the composition's inner "
+                f"structure declares {list(getattr(self.inner, 'KINDS', ()))}"
+            )
+        species_registry.check_definition(spec)
         scoped = scope_errors(self.inner, [(op, d) for op, d, _ in entries(spec)], spec)
         if scoped:
             raise ConfigError("Invalid operator composition: " + "; ".join(scoped))
