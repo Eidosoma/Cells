@@ -985,8 +985,165 @@ the insertion point is CORE's. Its conventions, fixed here:
 - **The heat is booked in the law's own field, never in the membrane or junction fields:**
   `passive_dissipated_energy_pJ` [passive route], with the transfers in `passive_transferred`
   [species, passive route]. Both exist only where the law is declared, and both join @3's
-  material and energy ledgers. The booking is §7.5's exact one.
+  material and energy ledgers. The booking is §7.5's exact one, on the neutral rows that only
+  exact-booked passive routes move (version 1's scope); elsewhere it is today's tableau booking.
 - **Bound:** finding 3's term covers the routes (§13.6).
+- **Its own step (ruled):** dt × L ≤ 1, with L = 1e15·PA·(1/V_a + 1/V_b) summed over the
+  routes at each node. That is finding 3's z = 0 term for its routes, declared as its bound term.
+  A dt-study criterion covers accuracy. Exact booking closes the ledger up to h = 2, so it no
+  longer signals an overshoot by itself (§7.5).
+
+#### (j) The per-structure schema: three options, and the ruling (A, 15 November)
+
+**What it must do.** New kinds add state, layout, control and observation fields: FR-4's
+transporter with its fuel rows, its stage read and the passive law ((i)). B7 adds none. A world
+that declares none of them keeps today's types. A world that declares one carries that kind's
+fields and no others ((d), the "Schema" level).
+
+**How types are used today** (the facts the options are judged on):
+- **Snapshots** are npz archives keyed by the state's and layout's field names. Reading requires
+  the archive's key set to equal `model.STATE_TYPE._fields` plus the layout's, and builds
+  `model.STATE_TYPE(*…)` (`io.py`). A restart requires `type(checkpoint.state) is
+  model.STATE_TYPE` (`core/runner.py`).
+- **Results and the acceptance owner's baseline** flatten histories, observations, diagnostics and
+  final states by field name (`results_baseline.py`'s `flatten`). D176's gate compares key sets as
+  well as bits.
+- **The compile key** holds the argument tree, which includes its NamedTuple types, and the leaves'
+  shapes (§7.4 (e) 4; 43812f59).
+- **The composite already builds its types per composition.** Its STATE_AXES is the inner model's
+  plus each operator's, and it builds `CompositeState`, its layouts and its Observations from them
+  (`pump_composite.py`). Operators address fields by name (`state.x`, `_replace(x=…)`).
+- **Generic code builds and splits states positionally:** `STATE_TYPE(*(…))` and
+  `type(state)(*(v[i] for v in state))` (rates, readouts, windows, checks). That is about 50 sites
+  in `core/` and more in the models and operators.
+
+**Option A: types per structure, on the implementation object.**
+- **The design.** The object carries its structure's STATE_AXES, STATE_TYPE, LAYOUT_TYPE (and the
+  floor layout), the Control type the schedule fills (a transporter's controls), OBSERVATION_FIELDS
+  and Observations. They hold today's fields in today's order,
+  then each declared kind's fields in kind order. A structure that declares no new kind returns
+  today's module types themselves, the same class objects. Classes are cached by field set, so
+  structures with the same kinds share one class, and they get deterministic names
+  (`SurfacePumpChannelState[transporter]`).
+- **Checkpoints:** today's worlds unchanged (same keys, same class). A kind's world writes and
+  reads its own fields. `io.py` and the runner already read `model.STATE_TYPE`, and the object
+  supplies it.
+- **Observation columns:** today's worlds unchanged. A kind appends its columns, as an operator
+  does in the composite.
+- **Compile key:** today's worlds' trees unchanged. A kind's world has its own tree and so its own
+  executable, which it needs anyway for its own program.
+- **D176's gate:** today's worlds bitwise, with no new leaves and no renamed keys, by construction.
+  It can be tested by identity: `impl.STATE_TYPE is surface_pump_v3.STATE_TYPE`.
+- **Operators by name:** today's fields are unchanged. An operator that reads or writes a kind's
+  field declares that kind. The composite's admission refuses it at binding in a world without
+  the kind, so there are no runtime presence checks.
+- **Cost:** about 1 agent-day, as costed in (h).
+  - @3's own builders that name the module's STATE_TYPE take the structure's instead; the dispatch
+    commits already thread the structure.
+  - The composite builds from `inner.STATE_AXES`, so its types follow once INT's switch passes the
+    object.
+- **Risks:**
+  - A re-created class would break `type(…) is` and the compile cache, hence the cache by field
+    set.
+  - No pickling is involved: snapshots are npz by name.
+
+**Option B: one superset type, with zero-size fields for undeclared kinds.**
+- **Checkpoints:** every world's snapshots gain every kind's keys as empty arrays. Today's
+  snapshots no longer load (the key-set check) unless the reader tolerates missing empty keys.
+- **Observation columns:** every world gains empty columns.
+- **Compile key:** every world's tree gains zero-size leaves. So every program changes, every
+  executable recompiles, and crossrev's records change.
+- **D176's gate:** fails as written, with new keys in every world. It would pass only with a
+  comparator exemption for empty new keys, which the gate does not have.
+- **Operators by name:** the simplest, since every field always exists. But every reduction over a
+  kind's field must handle empty arrays (initial values for max and min), in every operator and
+  check.
+- **Later kinds:** each new kind changes every world again.
+
+**Option C: today's types plus one extension container, `kinds`, empty for today's worlds.**
+- **Checkpoints:** the container is a new field name in every world's state. The npz writer and
+  reader must flatten it to prefixed keys and skip it when empty. Otherwise today's snapshots stop
+  loading, and an empty tuple would be saved as an empty array.
+- **Observation columns:** unchanged, if the observer ignores the container. A kind's columns come
+  from inside it.
+- **Compile key:** an empty container (a dict or an empty NamedTuple) adds no leaves, but every
+  world's tree changes by one node. The programs are unchanged (the jaxpr is over leaves), and
+  executables recompile once.
+- **D176's gate:** leaves are identical. Keys are identical in the acceptance owner's `flatten` for
+  a dict or empty-NamedTuple container (no keys), but not for an empty tuple (a new key). The
+  snapshot IO still has to change.
+- **Operators by name:** today's fields are unchanged. A kind's field is reached as
+  `state.kinds.<kind>.<field>`, and `_replace` needs a nested form. Every positional build or split
+  of a state must skip or recurse into the container: the ~50 sites in `core/` and those in the
+  models and operators.
+- **Its merit:** later kinds are added inside the container without touching today's fields.
+
+**A later kind, and a kind declared by two laws (the same under A, B and C).** Fields belong to
+the kind, not to a law:
+- The kind has one population axis, and each population's law code selects its kernel, as
+  channel slots do.
+- A field that only some laws need is present when any declared law needs it, sized by the
+  largest declaring law, as `gate_rows` is today.
+
+Examples:
+- **FR-4's charged buffering:**
+  - Buffer rows are inventory rows on the species axis, so they need no new state.
+  - The closure's declaration adds layout fields: the buffered (node, row) mask, k_on and c0.
+  - It adds one state accumulator, the closure's free-energy term ΔG_buf per node for the energy
+    ledger.
+  - It adds one diagnostic column, the stage residual |g|/H̄_eq.
+  - Under A all of these appear only where the closure is declared.
+- **Fuel:**
+  - Held fuel (`maintained_held_rows@1`) adds the maintenance's material record per population
+    (+1 ATP, −1 ADP, −1 Pi per cycle).
+  - Finite fuel adds only its standard-potential term's accumulator: its rows are inventory rows,
+    moved by the pump.
+  - A world declaring both fuel kinds carries both.
+- **Two transporter laws:** one transporter population axis, each population with its law code.
+  Cycles and ledgers are per population. A law with an extra internal state adds a field sized by
+  the largest such law.
+
+**Recommendation: A.**
+- **Why A:**
+  - Under A alone, today's worlds get the very same type objects as today. D176's gate, the
+    snapshots, crossrev and the compile cache then need no exemption and no IO change.
+  - It follows the composite's existing per-composition pattern, and the implementation object
+    is already its home.
+- **Why not C:** C's isolation of kinds is attractive, but it changes today's types by one field
+  and touches every positional build and split of a state.
+- **Why not B:** B changes every world now, and again at every new kind.
+- **A's own risks** are handled by caching classes by field set, with deterministic names, and by
+  a static admission rule for operators that need a kind's fields.
+- **Cost and coordination:** about 1 agent-day, inside FR-4's first insertion point. INT's switch
+  is the only coordination needed: the composite then builds from the object's STATE_AXES.
+- **Acceptance for A:**
+  - today's worlds' types are the module's own (identity);
+  - a planted kind adds exactly its fields, at the end;
+  - a kind's world round-trips through a snapshot;
+  - the results gate is bitwise for today's worlds.
+
+**The lead's ruling (15 November, after the advisor's review and INT's comments): A, with three
+additions to its acceptance.**
+1. **Canonical kind order.** The appended kinds' fields follow the registry's canonical kind
+   order, never the definition's declaration order. Test: two worlds that declare the same kinds in
+   different orders get the same class, compile key and snapshot layout.
+2. **The families' refusal must exist.**
+   - Replacement@1 and both water families bind full-catalogue types at import and build states
+     positionally, so a planted kind in each family is refused at binding.
+   - An operator that reads a kind's field declares `REQUIRES_KINDS = (...)`, and
+     `structure_errors` refuses a missing kind, naming the operator and the kind.
+   - INT builds both, and the adapter's forwarding of the object's types: `STATE_AXES`,
+     `STATE_TYPE`, `STATE_FIELDS`, the layout and control types, `OBSERVATION_FIELDS`.
+3. **A planted kind through the run paths.** Its snapshot round trip runs in a fresh process, and
+   the planted kind also runs on the vector-window path, since packing depends on it.
+
+**CORE's part (about one day, after the registry hook and B7):**
+- the object's per-structure types, cached by field set in canonical order;
+- today's classes returned for today's structures;
+- the identity test, the planted-kind test, the fresh-process round trip and the vector-window
+  run.
+
+INT merges CORE's types first, then the adapter's forwarding.
 
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 
@@ -1012,38 +1169,58 @@ the insertion point is CORE's. Its conventions, fixed here:
     over the step (its limit, the potential at the start amount, when Δn_row = 0). The shares sum
     to ΔG_row exactly, as in D152's per-route hybrid and FR45's kernel (`divided_potential_RT`). A
     route's heat is minus the sum of its shares at its two ends;
-  - **a tableau-booked route on the same row** keeps its own quadrature heat. The rows it moves
-    still give every booking route its divided-difference share over the row's total change, so
-    the booking routes' part is exact and the rest keeps today's tolerance;
-  - **charged species:** the electrical part is the capacitor energy's change, exact for the
+  - **version 1's scope (ruled):** neutral rows only (the passive law is valence 0), and only rows
+    that exact-booked passive routes alone move. This is checked at binding, from `moved_rows` and
+    the operators' `moved_in_step`. A passive route on a row that a pump or a tableau-booked route
+    also moves keeps today's tableau booking and checks: there μ̄ would average over a change the
+    route did not make. The accepted cost: FR-4's acidified compartment, pumped and leaked, keeps
+    its energy-ledger step limit (dt·G/C_b ≈ 0.05, declared by its worlds) until a pump booking by
+    the same divided differences is designed, a later item;
+  - **charged species (outside version 1):** the electrical part is the capacitor energy's change, exact for the
     linear capacitor through the step's mean patch voltage (V̄ Δq), split in the same way. The
     implicit patch, the first charged consumer, fixes it in its own module (FR45's
     `patch_booking_pJ`);
-  - **sign (a proposed correction, 15 November, for the lead's ruling; raised by the run view's
-    question):** a route's share can be negative while its row's total change is not, so the share
-    is booked only when it is ≥ 0:
-    - **why it can be negative:** under ARS(2,2,2) the explicit weights (δ, 1 − δ), δ < 0, can
-      reverse the applied transfer against stage rates of one sign; and at a charged row moved by
-      several routes, the chemical divided difference (weighted by the rows' amounts) and the
-      patch's mean voltage (linear in charge) average the step differently. For a neutral row the
-      share is ≥ 0 whenever the applied transfer and both end affinities agree in sign: μ̄ is the
-      mean of μ over the row's amount interval, and those intervals are ordered when both end
-      affinities are;
-    - **the rule:** a route books its share when its applied transfer and end-state affinity share
-      one nonzero sign and the share is ≥ 0; any other route books the trapezoid of its start and
-      end-state powers, each ≥ 0 for a passive law, as `trapezoid_nonnegative@1` books junction
-      heat. Not the tableau's quadrature, which δ can make negative (D152's hybrid can use its
-      quadrature because SSPRK(3,3)'s weights are positive);
-    - **so** every route's heat increment is ≥ 0 and its cumulative heat never falls, as the
-      family's dissipation check requires (every `*_dissipated_energy_pJ` field nonnegative and
-      non-decreasing per element at each accepted row, within 1e-12 pJ, else the step is refused).
-      The row closes exactly whenever every route moving it books its share, and otherwise within
-      the energy ledger's tolerance;
-    - **its cost:** the trapezoid samples the start power, so at a trace start it overbooks that
-      step's heat, as D152's quadrature does (its known limit, 5.4–5.6 times at a 1e-12 mM trace
-      in probe 2g). It does so only in the steps where the share is refused, the same steps in
-      which the quadrature would have been used before; the passive law's trace start is exact
-      wherever its share stands.
+  - **sign and refusal, ruled for version 1 (15 November)** (after FR45's probe, two rounds, and
+    the advisor's review; this replaces f81f213d's proposal and the earlier group rule, and R3's
+    clamp is dropped):
+    - **booking:** each route books its exact divided-difference share of each row's exact
+      free-energy decrease. No clamp, no scaling, no trapezoid, and no groups;
+    - **refusal:** a step with any negative raw share is refused, with the reason "negative exact
+      share: step-bound breach". That covers a negative row decrease too, since the shares sum to
+      it;
+    - **why a share can be negative at all:**
+      - Under ARS(2,2,2) the explicit weights (δ, 1 − δ), δ < 0, can reverse the applied transfer
+        against stage rates of one sign.
+      - For a neutral row the share is ≥ 0 whenever the applied transfer and both end affinities
+        agree in sign: μ̄ is the mean of μ over the row's amount interval, and those intervals are
+        ordered when both end affinities are.
+      - Reachability is not proven. With one route per pair, FR45 shows a negative share is
+        unreachable under dt·L ≤ 1. With several routes at a node, one route's end affinity can
+        still reverse, though the share stayed positive in FR45's example (a chain a–b–c with a
+        small pool c).
+      - So version 1 fails loudly if it ever happens. If real runs show refusals, R3 is revisited
+        with that evidence;
+    - **the raw-sum check, per row:** |Σ shares − ΔG_row,exact| ≤ about 16 × eps × Σ|terms|
+      (`increment_terms`, the references' rounding scale).
+      - At the probe's case-4 magnitudes that is about 1.3e-14 pJ. The honest sum, 7.5e-15 pJ,
+        passes it, and a planted sign flip, 1.84e-3 pJ, fails it.
+      - The factor is confirmed by a test at implementation;
+    - **the step bound:** the passive law declares dt × L ≤ 1 as its bound term, finding 3's z = 0
+      term for its routes (§7.4 (i), §13.6). L = 1e15·PA·(1/V_a + 1/V_b), summed over the routes
+      at each node. A dt-study criterion covers accuracy. Exact booking closes the ledger up to
+      h = 2, so it no longer signals an overshoot by itself;
+    - **for the run view:** route heat stays monotone, since a step with a negative share is
+      refused. A route's value is an exact attribution of its rows' decrease (the
+      divided-difference split), not a separately measurable quantity.
+  - **The probe's numbers.** They are recorded here because they exist only as data and hand-back
+    text: FR45's `fr45/booking-probe/` (`HANDOFF.md`, `results.json`, `round2.json`).
+    - R1 (the share, else the trapezoid) missed the ledger's allowance by 48× to 480× wherever its
+      trapezoid fired.
+    - R3's clamp fired once, in case 4 at hγL = 0.6: raw shares −9.20e-4 and +2.727e-3 pJ against
+      the group's exact decrease of +1.806e-3 pJ. The honest clamp was 51% of the decrease.
+    - The raw shares summed to each row's exact decrease within 7.5e-15 pJ.
+    - A planted sign flip on the minor route missed the exact sum by 1.84e-3 pJ, so the raw-sum
+      check catches it, where the clamp would have absorbed it.
 - **Static and declared.** Only a route law that declares the booking computes it. Today's routes
   (the membrane and junction constant-field routes, the channels, the faces) keep the tableau
   booking, so every existing program is unchanged. The booking needs the step's start amounts and
@@ -1051,10 +1228,15 @@ the insertion point is CORE's. Its conventions, fixed here:
 - **When.** It is implemented with its first consumer, the passive law's insertion point, and
   reused by the implicit patch and FR-10's onset. A tighter face-free bound constant than the
   ordinary one belongs with it (§13.6).
-- **Acceptance, with its first consumer:** on the closed pair the heat equals the exact free-energy
-  decrease to rounding; a trace start (1e-12 mM) is admitted; a planted sign error fails the
-  dissipation check; and a step built to make a share negative (a transfer reversed by δ, or a
-  charged row with a voltage swing) books the trapezoid, with the route's heat still ≥ 0.
+- **Acceptance, with its first consumer:**
+  - on the closed pair each row's raw shares sum to its exact decrease within the raw-sum check,
+    with the factor 16 confirmed by a test;
+  - a trace start (1e-12 mM) is admitted;
+  - a planted sign flip on a minor route fails the raw-sum check;
+  - a step built to make a raw share negative is refused with "negative exact share: step-bound
+    breach";
+  - a passive route on a pumped row keeps today's tableau booking, bitwise;
+  - binding refuses no world of today's.
 
 ## 8. Scoped composition: door S's runtime merge (list (a))
 
