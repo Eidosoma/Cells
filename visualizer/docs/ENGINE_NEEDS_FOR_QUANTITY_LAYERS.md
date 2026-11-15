@@ -269,3 +269,27 @@ Nothing is asked for these; they are what the layers were built to expect.
   output paths (`io.write_run`, `window_io`).
 - Evolution roles, the compartment map with oriented endpoints, the law declarations
   and the reserved levels-of-detail fields (INNER_MODEL §12, §9.2, §7.4 (b), §7.1).
+
+## The lead's answers (15 November 2026)
+
+The lead read this note at `d0201f3a` and answered the same day. Requests 1 to 8 go to
+the owner of the run view's writer as requirements, in the round of the modular rework.
+Nothing of this is on main yet.
+
+| Request | Answer |
+| --- | --- |
+| 1. Standard history | Yes. A run that is to be shown goes through a shared output path with observation times, or its driver describes its records through `write_view`. A declared recording subset (fields, elements, cadence) is accepted as a requirement on the writer, and the view records the subset |
+| 2. Direction of signed records | Yes. The view declares, for each signed field, its from-set, its to-set and which way is positive, beside `UNITS` and `OBSERVATION_AXES`; membranes take theirs from the compartment map's oriented endpoints. The owner of the core confirms this note's reading of the tissue family when the table is written: the legend keeps its caveat until then |
+| 3. Kinds | Yes. A small table in the writer (level, amount, cumulative, rate), like `UNITS`; once the evolution roles land, the kinds come from them |
+| 4. Owner down to the law | Yes. Each entry of a set carries its law's `law_id`, and its provenance once declared; both are readable where the writer works |
+| 5. Inputs of the two derivations | Choice (a): a view field is written as a record whenever an operator of the composition declares a change to it, and is a named constant of the definition otherwise. The two potential terms stay the viewer's declared derivation |
+| 6. Pumps | Yes. The view states each pump's rows per cycle by role, from its law declaration. In version 1 pumps stay columns of the membrane set, and the view says so |
+| 7. Species | Yes. Each species' identity comes from the species registry (on the integration branch) |
+| 8. Records over several files | One entry for a record, with a list of file and row range |
+| 9. A first real feed | Put to the user by the lead, with the timing of a further request of the user's for looping replays of each species' cell; the lead passes on the decision |
+
+The four questions: law declarations are readable from the definition's side; the
+levels-of-detail fields will be carried for a record's law when they land; a set's entry
+for a compartment node will carry its role and owner from the compartment map; whether a
+route's cumulative heat never falls under the exact heat booking is asked of the core's
+owner, answer to follow.
