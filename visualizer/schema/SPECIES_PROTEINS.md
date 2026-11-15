@@ -58,6 +58,8 @@ catalogue table, the same bytes every time.
   - `inside`: enclosed by the membrane, free or attached to its inner face;
   - `not known`: the sources do not say and nothing predicts it. Such a protein is drawn
     apart, never placed by guess.
+- **`shelf`** is the id of one of the file's shelves (or null, where the section on a
+  curated proteome allows it). A family, and a part, has at most one line on a shelf.
 - **`basis`** says how the side is known:
   - `stated`: a curated entry or a paper states it for this organism;
   - `predicted`: read from the sequence (membrane-spanning segments, an export signal);
@@ -163,6 +165,8 @@ its members, each a protein of the catalogue.
   cell's membranes together, and its `outside` says what "beyond a membrane" then covers.
 - **The members' file** written beside the page has the format
   `cells.visualizer.species_protein_members@1` and holds `columns` and `members`.
+- **`by_basis`**, for each side how many proteins have it by each basis, is given by
+  every catalogue in families: the page's words on how sides are known rest on it.
 
 ## A curated proteome: several shelves, places as stated
 
@@ -227,6 +231,14 @@ stacked in the page. Fixed on 15 November 2026, before the human data was made.
   is null and its side `not known`, and a family has one line with a null shelf for such
   members. It counts for no shelf and stands in the page's one set-apart area, in front
   of every shelf.
+- **Counts on several shelves.** `counts` stays the four sides over the whole catalogue.
+  `shelf_counts` gives the same four for each shelf, under the shelf's id, and under
+  `no shelf` for the proteins on none. `distinct_families` gives the number of families,
+  where `families` has more lines than that. Each is checked against the lines.
+- **A shelf may give `in`,** how a protein in its membrane is said ("In a membrane of the
+  Golgi or of a vesicle"), where its label does not read within a sentence. A label reads
+  without it when it is a singular name ("Nuclear envelope"), a plural ending in
+  "membranes", or begins with "A".
 
 ## In the page
 

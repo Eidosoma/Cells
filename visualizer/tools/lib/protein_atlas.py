@@ -476,6 +476,27 @@ def shelf_links(words):
     return {key: plain(value) if isinstance(value, dict) else [plain(item) for item in value] for key, value in words.get("links", {}).items()}
 
 
+# The name under which a file with several shelves counts the proteins that are on none.
+SHELF_NONE = "no shelf"
+
+
+def _off_shelf(ids, shelf, sides):
+    """What is wrong with the shelf of a line whose proteins sit on these sides, or None.
+
+    A line's shelf is one of the file's, or null. With one shelf, null is that shelf. With
+    several, null is no shelf at all, which only proteins with no known side may have.
+    """
+    if not ids:
+        return None  # the shelves themselves are not sound, which is said already
+    if shelf is None:
+        if len(ids) > 1 and any(count and side != "not known" for side, count in sides.items()):
+            return "it is on no shelf, yet a side of it is known"
+        return None
+    if shelf not in ids:
+        return f"its shelf {shelf!r} is not one of the file's"
+    return None
+
+
 def read_shelves(folder):
     """What the scene says of each species' own proteins: (summaries, warnings).
 
@@ -483,6 +504,8 @@ def read_shelves(folder):
     (schema/SPECIES_PROTEINS.md). A file that breaks it is warned about and left out; it
     never stops the build. The scene gets the file's name beside the page, its counts and
     its sources, and for a large catalogue the names of the files of its families' members.
+    Where a species has several shelves, the scene also gets each shelf's id, label and
+    counts, and how many proteins are on no shelf.
     """
     summaries, warnings = [], []
     folder = Path(folder) if folder else None
@@ -520,6 +543,13 @@ def _shelves_summary(name, data, size, problems):
     shelves = data.get("shelves")
     if not isinstance(shelves, list) or not shelves or not all(isinstance(shelf, dict) and all(_text(shelf.get(key)) for key in ("id", "label", "outside", "inside")) for shelf in shelves):
         problems.append("its shelves need an id, a label and the names of their two sides")
+        shelves = []
+    # Several shelves: every line is on one of them or on none, and each shelf is counted on its own.
+    shelf_ids = [shelf["id"] for shelf in shelves]
+    several = len(shelf_ids) > 1
+    if several and (len(set(shelf_ids)) != len(shelf_ids) or SHELF_NONE in shelf_ids):
+        problems.append("its shelves do not each have an id of their own")
+    on_shelf = {shelf: Counter() for shelf in [*shelf_ids, None]}
     sources = data.get("sources")
     if not isinstance(sources, list) or not sources or not all(isinstance(source, dict) and _text(source.get("name")) and _text(source.get("licence")) for source in sources):
         problems.append("every source needs a name and its licence")
@@ -556,8 +586,13 @@ def _shelves_summary(name, data, size, problems):
             if set(line[at["marks"]] or {}) - marks:
                 problems.append(f"{line[at['id']]}: it carries a mark that is not declared")
                 break
+            wrong = _off_shelf(shelf_ids, line[at["shelf"]], {line[at["side"]]: 1})
+            if wrong:
+                problems.append(f"{line[at['id']]}: {wrong}")
+                break
             ids.add(line[at["id"]])
             counts[line[at["side"]]] += 1
+            on_shelf[line[at["shelf"]] if several else None][line[at["side"]]] += 1
         if len(ids) != len(listed):
             problems.append("two proteins share an identifier")
         summary.update(kind="proteins", proteins=len(listed))
@@ -572,11 +607,14 @@ def _shelves_summary(name, data, size, problems):
         part_columns = none.get("part_columns") or []
         part_at = {key: index for index, key in enumerate(part_columns)}
         parts = none.get("parts") or []
-        if parts and any(key not in part_at for key in ("id", "label", "side", "count", "sides", "file", "at")):
+        if parts and any(key not in part_at for key in ("id", "label", "side", "count", "sides", "file", "at", *(["shelf"] if several else []))):
             problems.append("the parts of no_family lack a column")
             return None
+        if several and not parts and none.get("count"):
+            problems.append("on several shelves the proteins with no family are given in parts, each on its shelf")
         files = []
-        for line, where in [(line, at) for line in grouped] + [(line, part_at) for line in parts]:
+        seen = set()
+        for line, where, what in [(line, at, "family") for line in grouped] + [(line, part_at, "part") for line in parts]:
             if not isinstance(line, list):
                 problems.append("a family's line is not a list")
                 break
@@ -587,9 +625,21 @@ def _shelves_summary(name, data, size, problems):
             if not isinstance(file, str) or not SHELF_FILE.match(file) or not isinstance(span, list) or len(span) != 2 or span[1] - span[0] != count:
                 problems.append(f"{line[where['id']]}: its file and its place in it do not hold its {count} members")
                 break
+            # Its shelf: one of the file's, or none; and a family has one line on a shelf, not two.
+            shelf = line[where["shelf"]] if "shelf" in where else None
+            wrong = _off_shelf(shelf_ids, shelf, sides)
+            if not wrong and several and shelf is None and line[where["side"]] != "not known":
+                wrong = "it is on no shelf, yet it stands on a side"
+            if not wrong and (what, line[where["id"]], shelf) in seen:
+                wrong = f"the {what} has two lines on one shelf"
+            if wrong:
+                problems.append(f"{line[where['id']]}: {wrong}")
+                break
+            seen.add((what, line[where["id"]], shelf))
             if file not in files:
                 files.append(file)
             counts.update(sides)
+            on_shelf[shelf if several else None].update(sides)
         if not parts:
             # No family, given whole: it opens like one family.
             counts.update(none.get("sides") or {})
@@ -600,10 +650,28 @@ def _shelves_summary(name, data, size, problems):
         if sum(line[part_at["count"]] for line in parts if isinstance(line, list)) != (none.get("count", 0) if parts else 0):
             problems.append("the parts of no_family do not add up to its count")
         summary.update(kind="families", proteins=sum(counts.values()), families=len(grouped), no_family=none.get("count", 0), parts=len(parts), members=sorted(files))
+        if several:
+            # A family split over shelves is one family: the scene counts the families, and their lines apart.
+            distinct = len({line[at["id"]] for line in grouped if isinstance(line, list)})
+            summary.update(families=distinct, family_lines=len(grouped))
+            if isinstance(data.get("distinct_families"), int) and data["distinct_families"] != distinct:
+                problems.append(f"it says it has {data['distinct_families']} families; its lines are of {distinct}")
     stated = data.get("counts")
     if isinstance(stated, dict) and {side: stated.get(side, 0) for side in SHELF_SIDES} != {side: counts[side] for side in SHELF_SIDES}:
         problems.append("its counts by side are not those of its lines")
     summary["counts"] = {side: counts[side] for side in SHELF_SIDES}
+    if several:
+        said = data.get("shelf_counts")
+        if isinstance(said, dict):
+            if set(said) - set(shelf_ids) - {SHELF_NONE}:
+                problems.append("it counts a shelf that it does not have")
+            for shelf in [*shelf_ids, None]:
+                given = said.get(SHELF_NONE if shelf is None else shelf) or {}
+                if not isinstance(given, dict) or {side: given.get(side, 0) for side in SHELF_SIDES} != {side: on_shelf[shelf][side] for side in SHELF_SIDES}:
+                    problems.append(f"its counts for {'the proteins on no shelf' if shelf is None else 'the shelf ' + shelf} are not those of its lines")
+                    break
+        summary["shelves"] = [{"id": shelf["id"], "label": shelf["label"], "proteins": sum(on_shelf[shelf["id"]].values()), "counts": {side: on_shelf[shelf["id"]][side] for side in SHELF_SIDES}} for shelf in shelves]
+        summary["no_shelf"] = sum(on_shelf[None].values())
     summary["sources"] = [{key: source[key] for key in ("name", "url", "release", "accessed", "licence", "class", "through", "holds", "cite") if _text(source.get(key))} for source in sources]
     return summary
 
