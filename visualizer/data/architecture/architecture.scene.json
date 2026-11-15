@@ -5,8 +5,8 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-15",
-  "generated_at": "2026-11-15T16:56:23Z",
-  "revision": "1f80e2ee",
+  "generated_at": "2026-11-15T17:10:34Z",
+  "revision": "d0c747c7",
   "revision_date": "2026-11-15",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
@@ -375,7 +375,7 @@
      "covers_all": true
     }
    },
-   "checked_at": "1f80e2ee"
+   "checked_at": "d0c747c7"
   },
   "counts": {
    "units": 48,
@@ -603,6 +603,464 @@
      "with_products": 43,
      "products": 93
     }
+   },
+   {
+    "id": "ecoli",
+    "label": "E. coli",
+    "organism": "Escherichia coli K-12",
+    "taxon": 83333,
+    "plain": "A rod-shaped bacterium of the animal gut with 4,403 proteins in UniProt's reference proteome of strain K-12. The units of the law inventory are machines of animal cells; this is what the same families' signatures find in it.",
+    "made": "2026-11-15",
+    "method": [
+     "The organism's proteins are the 4,403 reviewed entries of UniProt's reference proteome UP000000625 (release 2026_04), one protein each.",
+     "Licences were read before anything was copied; each is stated in sources.",
+     "A unit counts as found only where a protein carries the signature of a family that makes the machine itself (the subunit that forms the channel, or the pump's own chain). A protein that carries only the signature of a family that goes with the machine (a regulator, an accessory subunit) is no candidate: the unit's note names it, and it is listed under extra. This reading is the file's own.",
+     "Each unit's family was taken from its own human candidates, by the same InterPro signatures that the planarian, Syn3A and M. pneumoniae atlases ask. The build checks that the candidates carry them.",
+     "Each signature was looked for among the InterPro entries UniProt gives each of the 4,403 proteins. No unit's own family was found; 1 protein carries the signature of an accessory family alone.",
+     "A control for every signature: how many reviewed UniProtKB entries of all bacteria carry it; each unit's note gives what came back.",
+     "8 further signatures, of the channels a bacterium could have (potassium, chloride, magnesium, water and membrane-stretch channels), were looked for as well; the 15 proteins that carry them are listed under extra (the potassium channel domain (kch); the large-conductance mechanosensitive channel (MscL) (mscL); the mechanosensitive channel MscS (mscK, mscM, mscS, ybdG, ybiO and ynaI); chloride channels of the ClC family (clcA, clcB and yfeO); aquaporins and their relatives (major intrinsic proteins) (aqpZ and glpF); CorA-type magnesium channels (corA and zntB)), with the cell's P-type ATPases and the catalytic head of its ATP synthase.",
+     "No similarity search was run, and nothing is called an ortholog.",
+     "The inventory has 49 units. One of them, an engineered protein cage, is left out of the picture for now: it is a designed protein, not a part of a cell. The 48 others are shown and counted here."
+    ],
+    "sources": [
+     {
+      "name": "UniProt",
+      "url": "https://www.uniprot.org/",
+      "release": "2026_04",
+      "accessed": "2026-11-15",
+      "licence": "CC BY 4.0",
+      "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
+      "holds": "the reviewed entries of the organism's proteins, with the InterPro entries UniProt gives each; the signatures of the units' human candidates; the control counts"
+     },
+     {
+      "name": "InterPro",
+      "url": "https://www.ebi.ac.uk/interpro/",
+      "release": "111.0",
+      "accessed": "2026-11-15",
+      "licence": "CC0 1.0",
+      "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456.",
+      "holds": "the identifiers and names of the family signatures"
+     }
+    ],
+    "not_copied": "No sequence is copied. Nothing is taken from the organism's own curated databases: EcoCyc's data files need a paid subscription, and STEPdb states no terms of use. Both are named in the note as places to read.",
+    "counts": {
+     "units": 48,
+     "with_products": 0,
+     "products": 0,
+     "candidates": 0
+    },
+    "findings": [
+     {
+      "id": "found",
+      "count": 0
+     },
+     {
+      "id": "different family",
+      "count": 0
+     },
+     {
+      "id": "none found",
+      "count": 43
+     },
+     {
+      "id": "nothing to look for",
+      "count": 5
+     }
+    ],
+    "evidence": [
+     {
+      "id": "reviewed entry",
+      "count": 0
+     },
+     {
+      "id": "named in a publication",
+      "count": 0
+     },
+     {
+      "id": "family signature",
+      "count": 0
+     },
+     {
+      "id": "similarity search",
+      "count": 0
+     }
+    ],
+    "extra": [
+     {
+      "label": "kch",
+      "detail": "Voltage-gated potassium channel Kch",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "417 amino acids",
+       "Its reviewed UniProtKB entry names it \"Voltage-gated potassium channel Kch\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR013099 (Potassium channel domain)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P31069",
+        "url": "https://www.uniprot.org/uniprotkb/P31069/entry"
+       }
+      ],
+      "note": "Carries the signature of the potassium channel domain. The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "mscL",
+      "detail": "Large-conductance mechanosensitive channel",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "136 amino acids",
+       "Its reviewed UniProtKB entry names it \"Large-conductance mechanosensitive channel\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR001185 (Large-conductance mechanosensitive channel)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P0A742",
+        "url": "https://www.uniprot.org/uniprotkb/P0A742/entry"
+       }
+      ],
+      "note": "Carries the signature of the large-conductance mechanosensitive channel (MscL). The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "mscK",
+      "detail": "Mechanosensitive channel MscK",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "1,120 amino acids",
+       "Its reviewed UniProtKB entry names it \"Mechanosensitive channel MscK\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR006685 (Mechanosensitive ion channel MscS, beta domain)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P77338",
+        "url": "https://www.uniprot.org/uniprotkb/P77338/entry"
+       }
+      ],
+      "note": "Carries the signature of the mechanosensitive channel MscS. The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "mscM",
+      "detail": "Miniconductance mechanosensitive channel MscM",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "1,107 amino acids",
+       "Its reviewed UniProtKB entry names it \"Miniconductance mechanosensitive channel MscM\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR006685 (Mechanosensitive ion channel MscS, beta domain)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P39285",
+        "url": "https://www.uniprot.org/uniprotkb/P39285/entry"
+       }
+      ],
+      "note": "Carries the signature of the mechanosensitive channel MscS. The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "mscS",
+      "detail": "Small-conductance mechanosensitive channel",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "286 amino acids",
+       "Its reviewed UniProtKB entry names it \"Small-conductance mechanosensitive channel\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR006685 (Mechanosensitive ion channel MscS, beta domain)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P0C0S1",
+        "url": "https://www.uniprot.org/uniprotkb/P0C0S1/entry"
+       }
+      ],
+      "note": "Carries the signature of the mechanosensitive channel MscS. The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "ybdG",
+      "detail": "Mechanosensing system component YbdG, channel",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "415 amino acids",
+       "Its reviewed UniProtKB entry names it \"Mechanosensing system component YbdG\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR006685 (Mechanosensitive ion channel MscS, beta domain)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P0AAT4",
+        "url": "https://www.uniprot.org/uniprotkb/P0AAT4/entry"
+       }
+      ],
+      "note": "Carries the signature of the mechanosensitive channel MscS. The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "ybiO",
+      "detail": "Moderate conductance mechanosensitive channel YbiO",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "741 amino acids",
+       "Its reviewed UniProtKB entry names it \"Moderate conductance mechanosensitive channel YbiO\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR006685 (Mechanosensitive ion channel MscS, beta domain)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P75783",
+        "url": "https://www.uniprot.org/uniprotkb/P75783/entry"
+       }
+      ],
+      "note": "Carries the signature of the mechanosensitive channel MscS. The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "ynaI",
+      "detail": "Low conductance mechanosensitive channel YnaI",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "343 amino acids",
+       "Its reviewed UniProtKB entry names it \"Low conductance mechanosensitive channel YnaI\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR006685 (Mechanosensitive ion channel MscS, beta domain)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P0AEB5",
+        "url": "https://www.uniprot.org/uniprotkb/P0AEB5/entry"
+       }
+      ],
+      "note": "Carries the signature of the mechanosensitive channel MscS. The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "clcA",
+      "detail": "H(+)/Cl(-) exchange transporter ClcA, channel",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "473 amino acids",
+       "Its reviewed UniProtKB entry names it \"H(+)/Cl(-) exchange transporter ClcA\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR001807 (Chloride channel)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P37019",
+        "url": "https://www.uniprot.org/uniprotkb/P37019/entry"
+       }
+      ],
+      "note": "Carries the signature of chloride channels of the ClC family. The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "clcB",
+      "detail": "Voltage-gated ClC-type chloride channel ClcB",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "418 amino acids",
+       "Its reviewed UniProtKB entry names it \"Voltage-gated ClC-type chloride channel ClcB\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR001807 (Chloride channel)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P76175",
+        "url": "https://www.uniprot.org/uniprotkb/P76175/entry"
+       }
+      ],
+      "note": "Carries the signature of chloride channels of the ClC family. The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "yfeO",
+      "detail": "Putative ion-transport protein YfeO, channel",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "418 amino acids",
+       "Its reviewed UniProtKB entry names it \"Putative ion-transport protein YfeO\", with UniProt's level of evidence \"inferred from homology\". The entry carries IPR001807 (Chloride channel)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P67729",
+        "url": "https://www.uniprot.org/uniprotkb/P67729/entry"
+       }
+      ],
+      "note": "Carries the signature of chloride channels of the ClC family. The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "aqpZ",
+      "detail": "Aquaporin Z, channel",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "231 amino acids",
+       "Its reviewed UniProtKB entry names it \"Aquaporin Z\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR000425 (Major intrinsic protein)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P60844",
+        "url": "https://www.uniprot.org/uniprotkb/P60844/entry"
+       }
+      ],
+      "note": "Carries the signature of aquaporins and their relatives (major intrinsic proteins). The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "glpF",
+      "detail": "Glycerol uptake facilitator protein, channel",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "281 amino acids",
+       "Its reviewed UniProtKB entry names it \"Glycerol uptake facilitator protein\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR000425 (Major intrinsic protein)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P0AER0",
+        "url": "https://www.uniprot.org/uniprotkb/P0AER0/entry"
+       }
+      ],
+      "note": "Carries the signature of aquaporins and their relatives (major intrinsic proteins). The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "corA",
+      "detail": "Magnesium transport protein CorA, channel",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "316 amino acids",
+       "Its reviewed UniProtKB entry names it \"Magnesium transport protein CorA\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR002523 (Mg2+ transporter protein, CorA-like/Zinc transport protein ZntB)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P0ABI4",
+        "url": "https://www.uniprot.org/uniprotkb/P0ABI4/entry"
+       }
+      ],
+      "note": "Carries the signature of CorA-type magnesium channels. The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "zntB",
+      "detail": "Zinc transport protein ZntB, channel",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "327 amino acids",
+       "Its reviewed UniProtKB entry names it \"Zinc transport protein ZntB\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR002523 (Mg2+ transporter protein, CorA-like/Zinc transport protein ZntB)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P64423",
+        "url": "https://www.uniprot.org/uniprotkb/P64423/entry"
+       }
+      ],
+      "note": "Carries the signature of CorA-type magnesium channels. The law inventory has no unit for this family; it is one of the cell's own channels."
+     },
+     {
+      "label": "copA",
+      "detail": "Copper-exporting P-type ATPase, ion pump",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "834 amino acids",
+       "Its reviewed UniProtKB entry names it \"Copper-exporting P-type ATPase\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR001757 (P-type ATPase)."
+      ],
+      "links": [
+       {
+        "text": "UniProt Q59385",
+        "url": "https://www.uniprot.org/uniprotkb/Q59385/entry"
+       }
+      ],
+      "note": "A P-type ATPase, of the wider family of the animal ion pumps; it carries the signature of neither the sodium-potassium pump nor the calcium pumps that the inventory has units for."
+     },
+     {
+      "label": "kdpB",
+      "detail": "Potassium-transporting ATPase ATP-binding subunit, ion pump",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "682 amino acids",
+       "Its reviewed UniProtKB entry names it \"Potassium-transporting ATPase ATP-binding subunit\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR001757 (P-type ATPase)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P03960",
+        "url": "https://www.uniprot.org/uniprotkb/P03960/entry"
+       }
+      ],
+      "note": "A P-type ATPase, of the wider family of the animal ion pumps; it carries the signature of neither the sodium-potassium pump nor the calcium pumps that the inventory has units for."
+     },
+     {
+      "label": "mgtA",
+      "detail": "Magnesium-transporting ATPase, P-type 1, ion pump",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "898 amino acids",
+       "Its reviewed UniProtKB entry names it \"Magnesium-transporting ATPase, P-type 1\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR001757 (P-type ATPase)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P0ABB8",
+        "url": "https://www.uniprot.org/uniprotkb/P0ABB8/entry"
+       }
+      ],
+      "note": "A P-type ATPase, of the wider family of the animal ion pumps; it carries the signature of neither the sodium-potassium pump nor the calcium pumps that the inventory has units for."
+     },
+     {
+      "label": "zntA",
+      "detail": "Zinc/cadmium/lead-transporting P-type ATPase, ion pump",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "732 amino acids",
+       "Its reviewed UniProtKB entry names it \"Zinc/cadmium/lead-transporting P-type ATPase\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR001757 (P-type ATPase)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P37617",
+        "url": "https://www.uniprot.org/uniprotkb/P37617/entry"
+       }
+      ],
+      "note": "A P-type ATPase, of the wider family of the animal ion pumps; it carries the signature of neither the sodium-potassium pump nor the calcium pumps that the inventory has units for."
+     },
+     {
+      "label": "atpA",
+      "detail": "ATP synthase subunit alpha, catalytic head",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "513 amino acids",
+       "Its reviewed UniProtKB entry names it \"ATP synthase subunit alpha\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P0ABB0",
+        "url": "https://www.uniprot.org/uniprotkb/P0ABB0/entry"
+       }
+      ],
+      "note": "Part of the cell's F-type ATP synthase, which sits in its inner membrane. The law inventory has no F-type ATPase."
+     },
+     {
+      "label": "atpD",
+      "detail": "ATP synthase subunit beta, catalytic head",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "460 amino acids",
+       "Its reviewed UniProtKB entry names it \"ATP synthase subunit beta\", with UniProt's level of evidence \"evidence at protein level\". The entry carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P0ABB4",
+        "url": "https://www.uniprot.org/uniprotkb/P0ABB4/entry"
+       }
+      ],
+      "note": "Part of the cell's F-type ATP synthase, which sits in its inner membrane. The law inventory has no F-type ATPase."
+     },
+     {
+      "label": "yfbK",
+      "detail": "Uncharacterized protein YfbK, accessory-subunit family",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "575 amino acids",
+       "Its reviewed UniProtKB entry names it \"Uncharacterized protein YfbK\", with UniProt's level of evidence \"predicted\". The entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P76481",
+        "url": "https://www.uniprot.org/uniprotkb/P76481/entry"
+       }
+      ],
+      "note": "Carries the family signature of calcium channel alpha-2/delta subunits, which go with a channel and make none by themselves. No protein of this organism carries the signature of a family that makes such a channel, so it is a candidate for no unit (U24 to U30 asked for it)."
+     }
+    ]
    },
    {
     "id": "mpneumoniae",
@@ -1481,6 +1939,172 @@
   "no_entry": "This atlas has no entry for this unit.",
   "shelves": [
    {
+    "id": "ecoli",
+    "file": "proteins/ecoli/shelves.json",
+    "bytes": 143281,
+    "made": "2026-11-15",
+    "from": "UniProtKB release 2026_04: the 4,403 reviewed entries of the reference proteome UP000000625 of Escherichia coli strain K-12, one protein each; with the other forms that 11 of them describe, 4,415 sequences. The proteome holds 0 unreviewed entries: every protein of it is listed, for 4,403 genes.",
+    "kind": "families",
+    "proteins": 4403,
+    "families": 408,
+    "no_family": 593,
+    "parts": 163,
+    "members": [
+     "members-00.json",
+     "members-01.json",
+     "members-02.json"
+    ],
+    "lone": 2606,
+    "lone_parts": 70,
+    "family_lines": 489,
+    "counts": {
+     "outside": 381,
+     "in": 986,
+     "inside": 754,
+     "not known": 2282
+    },
+    "shelves": [
+     {
+      "id": "inner",
+      "label": "Cell inner membrane",
+      "proteins": 1969,
+      "counts": {
+       "outside": 200,
+       "in": 917,
+       "inside": 744,
+       "not known": 108
+      }
+     },
+     {
+      "id": "outer",
+      "label": "Cell outer membrane",
+      "proteins": 137,
+      "counts": {
+       "outside": 37,
+       "in": 43,
+       "inside": 10,
+       "not known": 47
+      }
+     },
+     {
+      "id": "membrane",
+      "label": "A membrane, not told which",
+      "proteins": 174,
+      "counts": {
+       "outside": 144,
+       "in": 26,
+       "inside": 0,
+       "not known": 4
+      }
+     }
+    ],
+    "no_shelf": 2123,
+    "sources": [
+     {
+      "name": "UniProt",
+      "url": "https://www.uniprot.org/",
+      "release": "2026_04",
+      "accessed": "2026-11-15",
+      "licence": "CC BY 4.0",
+      "class": "permissive",
+      "holds": "for each reviewed entry of the reference proteome: its name, gene, locus, length, level of evidence and keywords, the places it states with the evidence for each, its membrane-spanning segments and signal peptide, and the InterPro entries and Gene Ontology terms UniProt gives it; and UniProt's vocabulary of places. The programs that its pages name behind the segments and signal peptides it predicts are sources below. Of its own: 0 statements rest on a rule of its rule base, and 1 stated place rests on a sequence analysis for which it names no program",
+      "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)"
+     },
+     {
+      "name": "InterPro",
+      "url": "https://www.ebi.ac.uk/interpro/",
+      "release": "111.0",
+      "accessed": "2026-11-15",
+      "licence": "CC0 1.0",
+      "class": "permissive",
+      "holds": "the type and name of each entry, the tree of broader and narrower entries, and the mapping of entries to Gene Ontology terms",
+      "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456."
+     },
+     {
+      "name": "Gene Ontology",
+      "url": "https://geneontology.org/",
+      "release": "releases/2026-07-26",
+      "accessed": "2026-11-15",
+      "licence": "CC BY 4.0",
+      "class": "permissive",
+      "holds": "the names of terms and which term is a kind or a part of which; no term's text is copied beyond the names of the districts' and the assemblies' terms",
+      "cite": "Ashburner et al. Gene ontology: tool for the unification of biology. Nat Genet. 2000 May;25(1):25-9. DOI: 10.1038/75556; The Gene Ontology Consortium. The Gene Ontology knowledgebase in 2026. Nucleic Acids Res. 2025 Dec 18;gkaf1292. DOI: 10.1093/nar/gkaf1292"
+     },
+     {
+      "name": "PROSITE",
+      "url": "https://prosite.expasy.org/prosite_license.html",
+      "accessed": "2026-11-15",
+      "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee",
+      "class": "non-commercial",
+      "through": "UniProt",
+      "holds": "Nothing was downloaded from it but its statement of terms, and nothing of it is copied. Its rules (ProRule) are named in UniProt's entries as what stands behind a statement. 66 placements rest on them alone: 32 by the statement of place that decides the shelf (5 rules), 11 by the statement that the protein spans the membrane, and 47 by a side read here from a feature that a rule gives."
+     },
+     {
+      "name": "HAMAP",
+      "url": "https://hamap.expasy.org/hamap_about.html",
+      "accessed": "2026-11-15",
+      "licence": "CC BY 4.0",
+      "class": "permissive",
+      "through": "UniProt",
+      "holds": "Nothing was downloaded from it but its statement of terms. Its family rules are named in UniProt's entries as what stands behind a statement. 138 placements rest on them alone: 109 by the statement of place that decides the shelf (107 rules), 41 by the statement that the protein spans the membrane, 4 by the stated face, and 2 by a side read here from a feature that a rule gives."
+     },
+     {
+      "name": "TMHMM",
+      "url": "https://services.healthtech.dtu.dk/services/TMHMM-2.0/",
+      "accessed": "2026-11-15",
+      "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research, and any other user must obtain a commercial licence. It is a licence of the program: no clause speaks of predictions made with it",
+      "class": "non-commercial",
+      "through": "UniProt",
+      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which. 191 placements rest on segments that an entry gives by sequence analysis alone: 2 are read here from such segments (basis predicted; 4 are read from segments in all), and behind a curator's statement 189 are said to span the membrane on a sequence analysis and 8 have a stated place that rests on a sequence analysis in an entry with such segments."
+     },
+     {
+      "name": "Phobius",
+      "url": "https://phobius.sbc.su.se/download",
+      "accessed": "2026-11-15",
+      "licence": "For academic users only: the program may be used for private study, education or nonprofit research, and other users are asked to write to its author. The terms are of the program: they do not speak of predictions made with it",
+      "class": "non-commercial",
+      "through": "UniProt",
+      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which; and one of the four it names for signal peptides. The placements are those counted under TMHMM (191) and under SignalP (99)."
+     },
+     {
+      "name": "SignalP",
+      "url": "https://services.healthtech.dtu.dk/services/SignalP-5.0/",
+      "accessed": "2026-11-15",
+      "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research, and any other user must obtain a commercial licence. It is a licence of the program: no clause speaks of predictions made with it",
+      "class": "non-commercial",
+      "through": "UniProt",
+      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. 99 placements rest on a signal peptide that an entry gives by sequence analysis alone: 99 are read here from such a signal (basis predicted; 159 are read from a signal peptide in all), and behind a curator's statement 0 have a stated place that rests on a sequence analysis in an entry with such a signal and no such segment."
+     },
+     {
+      "name": "TargetP",
+      "url": "https://services.healthtech.dtu.dk/services/TargetP-2.0/",
+      "accessed": "2026-11-15",
+      "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research, and any other user must obtain a commercial licence. It is a licence of the program: no clause speaks of predictions made with it",
+      "class": "non-commercial",
+      "through": "UniProt",
+      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. The placements are those counted under SignalP (99)."
+     },
+     {
+      "name": "Memsat",
+      "url": "https://www.uniprot.org/help/transmem",
+      "accessed": "2026-11-15",
+      "licence": "Terms not read: UniProt's help names Memsat without a version or an address, so no page of terms could be tied to the program it runs",
+      "class": "no stated terms",
+      "through": "UniProt",
+      "holds": "Nothing was downloaded from it. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which. The placements are those counted under TMHMM (191)."
+     },
+     {
+      "name": "Predotar",
+      "url": "https://www.uniprot.org/help/signal",
+      "accessed": "2026-11-15",
+      "licence": "Terms not read: the program's own page answers this tool with a check for a browser, so its terms could not be read",
+      "class": "no stated terms",
+      "through": "UniProt",
+      "holds": "Nothing was downloaded from it. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. The placements are those counted under SignalP (99)."
+     }
+    ]
+   },
+   {
     "id": "human",
     "file": "proteins/human/shelves.json",
     "bytes": 759765,
@@ -2100,6 +2724,12 @@
     {
      "text": "Human Protein Atlas",
      "url": "https://www.proteinatlas.org/search/{id}"
+    }
+   ],
+   "ecoli": [
+    {
+     "text": "UniProt {id}",
+     "url": "https://www.uniprot.org/uniprotkb/{id}/entry"
     }
    ],
    "family": {
@@ -3198,6 +3828,261 @@
      "text": "UniProt Consortium, UniProt release 2026_04: the curated entries of taxon 272634, and the archived sequences of the taxon with the family signatures on them.",
      "url": "https://www.uniprot.org/uniprotkb?query=taxonomy_id:272634",
      "licence": "CC BY 4.0",
+     "class": "permissive",
+     "accessed": "2026-11-15"
+    }
+   }
+  },
+  {
+   "id": "ecoli",
+   "label": "E. coli",
+   "organism": "Escherichia coli K-12",
+   "taxon": 83333,
+   "plain": "A rod-shaped bacterium of the animal gut: 4,403 proteins in UniProt's reference proteome of strain K-12, in a cell a few micrometres long with two membranes and a wall between them. It swims with flagella.",
+   "group": "Bacteria",
+   "order": 50,
+   "made": "2026-11-15",
+   "modelled": {
+    "state": "proposed",
+    "text": "The project's record adds it as a data-only organism, for a proposed track whose first stage is bacterial chemotaxis in a well-mixed cell; the track is on hold (decision D179, 15 November 2026). Nothing of it is in the engine: no organism definition, no model and no run."
+   },
+   "default": false,
+   "levels": [
+    {
+     "id": "molecules"
+    },
+    {
+     "id": "cell",
+     "label": "One cell",
+     "shape": {
+      "kind": "capsule",
+      "length_um": 2.5,
+      "across_um": 1
+     },
+     "note": "Drawn as a rod 2.5 µm long and 1 µm across: the picture's choice, within the ranges given for the cell. Its second membrane and its wall are drawn as clear shells around the cell membrane, and its 6,800 ribosomes are the low end of the range one paper gives. The real cell also carries flagella and fimbriae on its surface, which this shape cannot show.",
+     "sources": [
+      "volkmer2011",
+      "urich2008",
+      "uniprot"
+     ]
+    }
+   ],
+   "no_further_levels": "A single-celled organism: each cell lives on its own, so there is no tissue, organ or body.",
+   "cell": {
+    "facts": [
+     {
+      "label": "Shape and size",
+      "value": "a straight rod; earlier work put its average length between 1.6 and 3.1 µm and its width at 0.7 to 1.1 µm, and one study measured 1.6 µm (cells at rest) to 3.9 µm (cells growing on a rich medium) in length and 1.26 µm in width",
+      "sources": [
+       "volkmer2011",
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Volume",
+      "value": "1.5 to 4.4 femtolitres, by the conditions it grows in",
+      "sources": [
+       "volkmer2011"
+      ]
+     },
+     {
+      "label": "Envelope",
+      "value": "two membranes: the inner one separates the cytoplasm from the periplasm, the outer one the periplasm from the cell's surroundings; the cell wall lies between them",
+      "sources": [
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Inside",
+      "value": "a bacterium, with no nucleus: its chromosome lies in a region of the cytoplasm that no membrane surrounds",
+      "sources": [
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Chromosome",
+      "value": "one circle of 4,641,652 base pairs",
+      "sources": [
+       "genbank"
+      ]
+     },
+     {
+      "label": "Proteins",
+      "value": "4,403 in UniProt's reference proteome of strain K-12, every one with a reviewed entry",
+      "sources": [
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Ribosomes",
+      "value": "between 6,800 and 72,000 in a cell, depending on its phase of growth, as one open paper sums up earlier estimates",
+      "sources": [
+       "urich2008"
+      ]
+     },
+     {
+      "label": "Movement",
+      "value": "swims with flagella that grow all over its surface, or does not move",
+      "sources": [
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Chemotaxis",
+      "value": "22 of its proteins carry UniProt's keyword for chemotaxis (aer, cheA, cheB, cheR, cheW, cheY, cheZ, dppA, fliG, fliJ, fliL, fliM, fliN, fliO, mglB, motA, motB, rbsB, tap, tar, trg and tsr), and 34 are parts of the flagellum by the Gene Ontology terms UniProt gives them",
+      "sources": [
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Energy",
+      "value": "respiration and fermentation: it lives with or without oxygen",
+      "sources": [
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Where it lives",
+      "value": "the lower gut of animals; it survives when released to the natural environment",
+      "sources": [
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Ion channels",
+      "value": "none of the animal families Cells has laws for; 15 proteins of bacterial channel families (aqpZ, clcA, clcB, corA, glpF, kch, mscK, mscL, mscM, mscS, ybdG, ybiO, yfeO, ynaI and zntB)",
+      "sources": [
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Signalling",
+      "value": "64 proteins carry UniProt's keyword for two-component regulatory systems",
+      "sources": [
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Strain",
+      "value": "K-12; the genome record is of its substrain MG1655, and UniProt's proteome is of the same genome assembly (GCA_000005845.2)",
+      "sources": [
+       "genbank",
+       "uniprot"
+      ]
+     }
+    ],
+    "parts": {
+     "membranes": 2,
+     "wall": true,
+     "nucleus": false,
+     "chromosome_kbp": 4642,
+     "ribosomes": 6800
+    },
+    "capabilities": {
+     "cap.membrane": {
+      "place": "present",
+      "note": "It has two membranes. By UniProt's vocabulary the inner one separates the cytoplasm from the periplasm, and the outer one the periplasm from the cell's surroundings. No source read for this file measured a voltage across either."
+     },
+     "cap.channels": {
+      "place": "present",
+      "note": "Not the channels of animal cells: none of its proteins carries the signature of a channel family that Cells has a law for. 15 of its proteins carry the signature of a bacterial channel family: the potassium channel domain (kch); the large-conductance mechanosensitive channel (MscL) (mscL); the mechanosensitive channel MscS (mscK, mscM, mscS, ybdG, ybiO and ynaI); chloride channels of the ClC family (clcA, clcB and yfeO); aquaporins and their relatives (major intrinsic proteins) (aqpZ and glpF); CorA-type magnesium channels (corA and zntB)."
+     },
+     "cap.pumps": {
+      "place": "present",
+      "note": "Not the pumps of animal cells: none of its proteins carries the signature of the sodium-potassium pump. Its P-type ATPases (copA, kdpB, mgtA and zntA) and its ATP synthase are stated to be in the inner membrane."
+     },
+     "cap.junctions": {
+      "place": "absent",
+      "why": "It lives as single cells and has no gap junctions: none of its proteins carries the signature of connexins or innexins."
+     },
+     "cap.extracellular": {
+      "place": "present",
+      "note": "Two spaces lie beyond its inner membrane: the periplasm, between its two membranes, and what surrounds the cell, the lower gut of an animal or wherever it is released."
+     },
+     "cap.water": {
+      "place": "present",
+      "note": "By UniProt's vocabulary a wall lies between its two membranes and plays a part in the cell's shape and stability. One of its proteins, AqpZ, carries the signature of the aquaporin family."
+     },
+     "cap.calcium": {
+      "place": "absent",
+      "why": "It has no endoplasmic reticulum, the store this capability concerns: no entry of its proteome states a place in one, and none of its proteins carries the signature of the store's calcium pump or of its release channels."
+     },
+     "cap.energy": {
+      "place": "present",
+      "note": "It lives by respiration and by fermentation, with or without oxygen; its ATP synthase is stated to be in the inner membrane."
+     },
+     "cap.mitochondria": {
+      "place": "absent",
+      "why": "It is a bacterium and has no mitochondria: no entry of its proteome states a place in one. Its ATP synthase is in the inner membrane."
+     },
+     "cap.circuits": {
+      "place": "present",
+      "note": "At the chromosome, which lies in a region of the cytoplasm that no membrane surrounds: there is no nucleus. 64 of its proteins carry UniProt's keyword for two-component regulatory systems."
+     },
+     "cap.grn": {
+      "place": "absent",
+      "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."
+     },
+     "cap.trafficking": {
+      "place": "absent",
+      "why": "It has no endoplasmic reticulum and no Golgi: no entry of its proteome states a place in either. By the names of their entries, its proteins cross or enter the inner membrane through the Sec and Tat translocases."
+     },
+     "cap.machines": {
+      "place": "present",
+      "note": "Its ribosomes, RNA polymerase, the ATP synthase, the protein translocases and the motor of its flagella. One of its proteins carries the signature of the proteasome's subunits: its entry names it \"ATP-dependent protease subunit HslV\"."
+     },
+     "cap.secretion": {
+      "place": "present",
+      "note": "Some of its proteins are stated to be secreted, and porins and transporters carry molecules across its two membranes. Signalling between its own cells was not looked for."
+     },
+     "cap.repair": {
+      "place": "present",
+      "note": "The place would be its envelope. No source read for this file describes an injury of it or its resealing in this organism."
+     },
+     "cap.division": {
+      "place": "present",
+      "note": "It divides as a single cell: its proteome names the cell division protein FtsZ."
+     },
+     "cap.replacement": {
+      "place": "absent",
+      "why": "It forms no tissue, so there is no neighbour for a new cell to replace."
+     },
+     "cap.mechanics": {
+      "place": "absent",
+      "why": "It forms no sheet: its cells share no edges to pull on. Its own movement, swimming with flagella, is not what this capability models."
+     },
+     "cap.sheet": {
+      "place": "absent",
+      "why": "It lives as single cells and forms no sheet of coupled cells."
+     }
+    }
+   },
+   "sources": {
+    "uniprot": {
+     "text": "UniProt Consortium, UniProt release 2026_04: the reviewed entries of the reference proteome UP000000625 (Escherichia coli strain K-12), the proteome's own description, and UniProt's vocabulary of subcellular locations.",
+     "url": "https://www.uniprot.org/proteomes/UP000000625",
+     "licence": "CC BY 4.0",
+     "class": "permissive",
+     "accessed": "2026-11-15"
+    },
+    "genbank": {
+     "text": "GenBank U00096.3: Escherichia coli str. K-12 substr. MG1655, complete genome.",
+     "url": "https://www.ncbi.nlm.nih.gov/nuccore/U00096.3",
+     "licence": "No restriction: \"NCBI places no restrictions on the use or distribution of the GenBank data\".",
+     "class": "permissive",
+     "accessed": "2026-11-15"
+    },
+    "volkmer2011": {
+     "text": "Volkmer B, Heinemann M (2011) Condition-dependent cell volume and concentration of Escherichia coli to facilitate data conversion for systems biology modeling. PLoS One 6:e23126.",
+     "doi": "10.1371/journal.pone.0023126",
+     "licence": "CC BY",
+     "class": "permissive",
+     "accessed": "2026-11-15"
+    },
+    "urich2008": {
+     "text": "Urich T, Lanzén A, Qi J, Huson DH, Schleper C, Schuster SC (2008) Simultaneous assessment of soil microbial community structure and function through analysis of the meta-transcriptome. PLoS One 3:e2527.",
+     "doi": "10.1371/journal.pone.0002527",
+     "licence": "CC BY",
      "class": "permissive",
      "accessed": "2026-11-15"
     }
@@ -16891,6 +17776,12 @@
    ],
    "keywords": "nav1p2_m3h_regularized@1 SCN2A SCN1B SCN2B SCN3B SCN4B 6J8E",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -17252,6 +18143,12 @@
    ],
    "keywords": "nav1p3_m3h_regularized@1 SCN3A SCN1B SCN2B SCN3B SCN4B",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -17633,6 +18530,12 @@
    ],
    "keywords": "nav1p6_persistent_m@1 nav_ml_instantaneous@1 SCN8A SCN1B SCN2B SCN3B SCN4B",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -18085,6 +18988,12 @@
    ],
    "keywords": "navrat2_m3h_regularized@1 navrat1_m3h_regularized@1 navrat3_m3h_regularized@1 SCN1A SCN2A SCN3A SCN8A SCN1B SCN2B SCN3B SCN4B",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -18448,6 +19357,12 @@
    ],
    "keywords": "kv1p1_mh2@1 KCNA1 KCNAB1 KCNAB2 KCNAB3 2A79",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -18964,6 +19879,12 @@
    ],
    "keywords": "kv1p2_mh@1 KCNA2 KCNAB1 KCNAB2 KCNAB3 2A79",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -19500,6 +20421,12 @@
    ],
    "keywords": "kv1p3_mh@1 kv1p3_ml_dynamic_m@1 KCNA3 KCNAB1 KCNAB2 KCNAB3 2A79",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -20012,6 +20939,12 @@
    ],
    "keywords": "kv1p4_mh@1 KCNA4 KCNAB1 KCNAB2 KCNAB3 2A79",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -20562,6 +21495,12 @@
    ],
    "keywords": "kv1p5_mh@1 kv1p5_ml_dynamic_m@1 kv1p5s_ml_slow_dynamic_m@1 KCNA5 KCNAB1 KCNAB2 KCNAB3 2A79",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -21078,6 +22017,12 @@
    ],
    "keywords": "kv1p6_mh@1 KCNA6 KCNAB1 KCNAB2 KCNAB3 2A79",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -21490,6 +22435,12 @@
    ],
    "keywords": "kv2p1_mh@1 kv2p1_ml_dynamic_m@1 KCNB1",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv2-type potassium channels (IPR003973). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv2-type potassium channels (IPR003973). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -21662,6 +22613,12 @@
    ],
    "keywords": "kv2p2_mh@1 KCNB2",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv2-type potassium channels (IPR003973). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv2-type potassium channels (IPR003973). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -21859,6 +22816,12 @@
    ],
    "keywords": "kv3p1_m@1 KCNC1 7PHH",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv3-type potassium channels (IPR003974). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -22363,6 +23326,12 @@
    ],
    "keywords": "kv3p2_m2@1 KCNC2",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv3-type potassium channels (IPR003974). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -22867,6 +23836,12 @@
    ],
    "keywords": "kv3p3_m2h_long_tau@1 KCNC3",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv3-type potassium channels (IPR003974). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -23368,6 +24343,12 @@
    ],
    "keywords": "kv3p4_mh@1 KCNC4",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv3-type potassium channels (IPR003974). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -23900,6 +24881,12 @@
    ],
    "keywords": "k_fast_mh@1 KCND2 KCND3",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv4-type potassium channels (IPR003975). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv4-type potassium channels (IPR003975). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -24065,6 +25052,12 @@
    ],
    "keywords": "kv_ml1_dynamic_m@1",
    "species": {
+    "ecoli": {
+     "finding": "nothing to look for",
+     "note": "The inventory gives this unit no gene product: it is a default shape of current, not a named channel. This organism has a protein with the potassium channel domain (kch), listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "nothing to look for",
      "note": "The inventory gives this unit no gene product: it is a default shape of current, not a named channel. No potassium channel of any family searched was found in this organism.",
@@ -24249,6 +25242,12 @@
    ],
    "keywords": "kir2p1_mh2@1 kir_ml_instantaneous@1 KCNJ2 7ZDZ",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of inward-rectifier potassium channels (IPR016449, IPR040445, IPR041647). Among the reviewed UniProtKB entries of all bacteria, 2 entries carry one of the signatures asked. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of inward-rectifier potassium channels (IPR016449, IPR040445, IPR041647). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -24413,6 +25412,12 @@
    ],
    "keywords": "hcn1_m@1 HCN1 5U6O",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of HCN-type channels (IPR051413, IPR013621). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -24723,6 +25728,12 @@
    ],
    "keywords": "hcn2_m@1 hcn2_camp_m@1 hcn2_ml_depolarization_activated_instantaneous@1 HCN2 5U6O",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of HCN-type channels (IPR051413, IPR013621). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -25033,6 +26044,12 @@
    ],
    "keywords": "hcn4_m@1 hcn4_camp_m@1 hcn4_ml_depolarization_activated_instantaneous@1 HCN4 7NP3",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of HCN-type channels (IPR051413, IPR013621). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -25278,6 +26295,12 @@
    ],
    "keywords": "hcn_leak_open@1 HCN2",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of HCN-type channels (IPR051413, IPR013621). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -25821,6 +26844,12 @@
    ],
    "keywords": "cav1p2_m2h@1 CACNA1C CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY 5GJV",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of L-type calcium channel alpha-1 subunits (IPR005446), the family that makes the machine itself. 1 protein (yfbK) carries that of calcium channel alpha-2/delta subunits (IPR051173), which go with the machine and make none by themselves: with nothing to go with, it is no candidate for the unit, and is listed under extra. Among the reviewed UniProtKB entries of all bacteria, 1 entry carries one of the signatures asked. The unit's human candidates carry them, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -26421,6 +27450,12 @@
    ],
    "keywords": "cav1p3_m2h@1 cav_l_ml_instantaneous@1 cav_l_ml2_instantaneous@1 CACNA1D CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of L-type calcium channel alpha-1 subunits (IPR005446), the family that makes the machine itself. 1 protein (yfbK) carries that of calcium channel alpha-2/delta subunits (IPR051173), which go with the machine and make none by themselves: with nothing to go with, it is no candidate for the unit, and is listed under extra. Among the reviewed UniProtKB entries of all bacteria, 1 entry carries one of the signatures asked. The unit's human candidates carry them, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -27031,6 +28066,12 @@
    ],
    "keywords": "ca_l2_m2h@1 ca_l3_shift15_m2h@1 CACNA1C CACNA1D CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 5GJV",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of L-type calcium channel alpha-1 subunits (IPR005446), the family that makes the machine itself. 1 protein (yfbK) carries that of calcium channel alpha-2/delta subunits (IPR051173), which go with the machine and make none by themselves: with nothing to go with, it is no candidate for the unit, and is listed under extra. Among the reviewed UniProtKB entries of all bacteria, 1 entry carries one of the signatures asked. The unit's human candidates carry them, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -27715,6 +28756,12 @@
    ],
    "keywords": "cav_g_m2h_regularized@1 CACNA1C CACNA1D CACNA1A CACNA1B CACNA1E CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated calcium channel alpha-1 subunits (IPR002077), the family that makes the machine itself. 1 protein (yfbK) carries that of calcium channel alpha-2/delta subunits (IPR051173), which go with the machine and make none by themselves: with nothing to go with, it is no candidate for the unit, and is listed under extra. Among the reviewed UniProtKB entries of all bacteria, 1 entry carries one of the signatures asked. The unit's human candidates carry them, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -28346,6 +29393,12 @@
    ],
    "keywords": "cav2p1_m@1 CACNA1A CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated calcium channel alpha-1 subunits (IPR002077), the family that makes the machine itself. 1 protein (yfbK) carries that of calcium channel alpha-2/delta subunits (IPR051173), which go with the machine and make none by themselves: with nothing to go with, it is no candidate for the unit, and is listed under extra. Among the reviewed UniProtKB entries of all bacteria, 1 entry carries one of the signatures asked. The unit's human candidates carry them, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -28965,6 +30018,12 @@
    ],
    "keywords": "cav2p2_m2h_regularized@1 cav_n_ml_instantaneous@1 CACNA1B CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated calcium channel alpha-1 subunits (IPR002077), the family that makes the machine itself. 1 protein (yfbK) carries that of calcium channel alpha-2/delta subunits (IPR051173), which go with the machine and make none by themselves: with nothing to go with, it is no candidate for the unit, and is listed under extra. Among the reviewed UniProtKB entries of all bacteria, 1 entry carries one of the signatures asked. The unit's human candidates carry them, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -29564,6 +30623,12 @@
    ],
    "keywords": "cav2p3_mh@1 CACNA1E CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated calcium channel alpha-1 subunits (IPR002077), the family that makes the machine itself. 1 protein (yfbK) carries that of calcium channel alpha-2/delta subunits (IPR051173), which go with the machine and make none by themselves: with nothing to go with, it is no candidate for the unit, and is listed under extra. Among the reviewed UniProtKB entries of all bacteria, 1 entry carries one of the signatures asked. The unit's human candidates carry them, so the search finds the family where it exists.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -29941,6 +31006,12 @@
    ],
    "keywords": "cav3p1_mh_piecewise_tau_m@1 cav_t_ml_instantaneous@1 CACNA1G 6KZO",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -30138,6 +31209,12 @@
    ],
    "keywords": "cav3p3_mh@1 CACNA1I 6KZO",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -30554,6 +31631,12 @@
    ],
    "keywords": "cagpotassium_numeric_mM_scale@1 KCNMA1 KCNN1 KCNN2 KCNN3 KCNMB1 KCNMB2 KCNMB3 KCNMB4 6V38 6V22",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of BK calcium-activated potassium channels, SK calcium-activated potassium channels and BK channel beta subunits (IPR047871, IPR015449, IPR003930). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of BK calcium-activated potassium channels, SK calcium-activated potassium channels and BK channel beta subunits (IPR047871, IPR015449, IPR003930). UniProtKB holds 4 entries of mollicutes, the class of bacteria it belongs to, that carry one of them. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -31124,6 +32207,12 @@
    ],
    "keywords": "naleak_always_open@1 kleak_always_open@1 caleak_always_open@1 clleak_always_open@1 catleak_na_k@1 catleak2_na_k_ca@1 neutral_mobile_leak@1",
    "species": {
+    "ecoli": {
+     "finding": "nothing to look for",
+     "note": "A background conductance that the inventory ties to no protein.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "nothing to look for",
      "note": "A background conductance that the inventory ties to no protein.",
@@ -31222,6 +32311,12 @@
    ],
    "keywords": "constant_field@1",
    "species": {
+    "ecoli": {
+     "finding": "nothing to look for",
+     "note": "A lumped permeability of the whole membrane, not a population of proteins.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "nothing to look for",
      "note": "A lumped permeability of the whole membrane, not a population of proteins.",
@@ -31438,6 +32533,12 @@
    ],
    "keywords": "junction_voltage_relaxation@1 symmetric_opposing_relaxation@1 delayed_first_order_junction_formation@1 GJA1 7Z22",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
@@ -32695,6 +33796,12 @@
    ],
    "keywords": "GJC1",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
@@ -33982,6 +35089,12 @@
    ],
    "keywords": "GJA5 GJA4",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
@@ -35534,6 +36647,12 @@
    ],
    "keywords": "nak_atp_mass_action_positive@1 nak_atp_affinity_tanh@1 ATP1A1 ATP1A2 ATP1A3 ATP1A4 ATP1B1 ATP1B2 ATP1B3 FXYD1 FXYD2 7E1Z 4HYT",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of the sodium-potassium pump's alpha subunit, its beta subunit and its FXYD regulators (IPR005775, IPR000402, IPR000272). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. The wider family, the P-type ATPases, has 4 members here (copA, kdpB, mgtA and zntA), listed under extra; none carries this signature.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of the sodium-potassium pump's alpha subunit, its beta subunit and its FXYD regulators (IPR005775, IPR000402, IPR000272). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. The wider family, the P-type ATPases, has one member here, annotated only as a cation-transporting ATPase (locus MPN_209, listed under extra). It does not carry the mark of the sodium-potassium pump.",
@@ -36161,6 +37280,12 @@
    ],
    "keywords": "plasma_calcium_pump_positive@1 ca_atp_mass_action_positive@1 finite_atp_pmca_positive@1 ATP2B1 ATP2B2 ATP2B3 ATP2B4 NPTN BSG 6A69",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of plasma-membrane calcium pumps (IPR006408). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. The wider family, the P-type ATPases, has 4 members here (copA, kdpB, mgtA and zntA), listed under extra; none carries this signature.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of plasma-membrane calcium pumps (IPR006408). UniProtKB holds 6 entries of mollicutes, the class of bacteria it belongs to, that carry it. The unit's human candidates carry it, so the search finds the family where it exists. The wider family, the P-type ATPases, has one member here, annotated only as a cation-transporting ATPase (locus MPN_209, listed under extra). Which cation it carries is not established in any source read here, and it does not carry this signature.",
@@ -36496,6 +37621,12 @@
    ],
    "keywords": "er_calcium_pump_positive@1 finite_atp_er_1ca_positive@1 ATP2A1 ATP2A2 ATP2A3 1SU4",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of SERCA-type calcium pumps (IPR005782). Among the reviewed UniProtKB entries of all bacteria, 1 entry carries it. The unit's human candidates carry it, so the search finds the family where it exists. No entry of its proteome states a place in an endoplasmic reticulum, the store this machine sits in.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of SERCA-type calcium pumps (IPR005782). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It is a bacterium with a single membrane and no internal compartments, so it has no endoplasmic reticulum for this machine to sit in.",
@@ -36771,6 +37902,12 @@
    ],
    "keywords": "ncx_3na_1ca_symmetric_barrier@1 SLC8A1 SLC8A2 SLC8A3 8SGJ",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of sodium-calcium exchangers (IPR004836). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own transporters are in its protein catalogue.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of sodium-calcium exchangers (IPR004836). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Nothing in its annotation is named a sodium-calcium exchanger.",
@@ -37171,6 +38308,12 @@
    ],
    "keywords": "er_calcium_release@1 ip3_er_release@1 ITPR1 ITPR2 ITPR3 RYR1 RYR2 RYR3 6DQJ 3J8H",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of inositol trisphosphate receptors and ryanodine receptors (IPR000493, IPR013333). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. No entry of its proteome states a place in an endoplasmic reticulum, the store this machine sits in.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of inositol trisphosphate receptors and ryanodine receptors (IPR000493, IPR013333). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It is a bacterium with a single membrane and no internal compartments, so it has no endoplasmic reticulum for this machine to sit in.",
@@ -37499,6 +38642,12 @@
    ],
    "keywords": "kcc_reversible_tanh@1 k_anion_symport_mass_action@1 SLC12A4 SLC12A5 SLC12A6 SLC12A7 6KKR 6M23",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of potassium-chloride cotransporters and the wider SLC12 transporter family (IPR000076, IPR004842). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own transporters are in its protein catalogue.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of potassium-chloride cotransporters and the wider SLC12 transporter family (IPR000076, IPR004842). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Its annotation names no chloride-coupled cotransporter.",
@@ -37711,6 +38860,12 @@
    ],
    "keywords": "nkcc_reversible_tanh@1 SLC12A2 SLC12A1 6PZT",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of sodium-potassium-chloride cotransporters and the wider SLC12 transporter family (IPR002443, IPR004842). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own transporters are in its protein catalogue.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of sodium-potassium-chloride cotransporters and the wider SLC12 transporter family (IPR002443, IPR004842). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Its annotation names no chloride-coupled cotransporter.",
@@ -37826,6 +38981,12 @@
    ],
    "keywords": "electroneutral_symport_reversible_tanh@1 cell_zone_transporter@1",
    "species": {
+    "ecoli": {
+     "finding": "nothing to look for",
+     "note": "A slot that each model configuration fills with a transporter of its own; it has no fixed protein in any species. This organism's own transporters are in its protein catalogue.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "nothing to look for",
      "note": "A slot that each model configuration fills with a transporter of its own; it has no fixed protein in any species. This organism's own transporters are in its protein catalogue.",
@@ -38075,6 +39236,12 @@
    ],
    "keywords": "mitochondrial_passive_continuous_si@1 MCU SMDT1 MICU1 MICU2 6WDN",
    "species": {
+    "ecoli": {
+     "finding": "none found",
+     "note": "None of the 4,403 proteins of its reference proteome carries the signature of the mitochondrial calcium uniporter, its regulator EMRE and its MICU regulators (IPR039055, IPR006769, IPR018782, IPR039800). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. It is a bacterium: no entry of its proteome states a place in a mitochondrion.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of the mitochondrial calcium uniporter, its regulator EMRE and its MICU regulators (IPR039055, IPR006769, IPR018782, IPR039800). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It is a bacterium and has no mitochondria.",
@@ -38238,6 +39405,12 @@
    ],
    "keywords": "ideal_osmosis_linear_compliance_water@1",
    "species": {
+    "ecoli": {
+     "finding": "nothing to look for",
+     "note": "A lumped water permeability of the membrane; water channels (aquaporins) are not part of it. 2 proteins of this organism carry the aquaporin family's signature (aqpZ and glpF), listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "nothing to look for",
      "note": "A lumped water permeability of the membrane; water channels (aquaporins) are not part of it. One protein of this organism carries the aquaporin family's signature: the glycerol facilitator GlpF (locus MPN_043), listed under extra.",
