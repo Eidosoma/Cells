@@ -107,7 +107,7 @@
   "J1_admission": "the four rungs, K1, K2 and the reference admitted and run without refusal; K3 is refused by design, its catch J7 (pre-run correction, the lead, 15 November 2026)",
   "J2_orders": "observed orders of lumen pH, V_b, lumen K and pump cycles on the three finest rungs, by the classes rule (rules.dt_study)",
   "J3_state_error": "the state_error rule at 1 ms",
-  "J4_reference": "the reference rule at 1 ms: |pH_engine - pH_reference| <= 1e-3 at every record, with V_b, lumen K and pump cycles reported against the reference beside it",
+  "J4_reference": "the reference rule at 1 ms: |pH_engine - pH_reference| <= 1e-3 at every record at every buffered node, the lumen and the cytosol (the maximum over both nodes and every record; pre-run correction, the lead, 15 November 2026), with V_b, lumen K and pump cycles reported against the reference beside it",
   "J5_envelope": "the envelope rule: zero envelope refusals, and the engine's reported running maximum of the lag estimate within 1e-3 pH at every buffered node",
   "J6_ledgers": "the ledgers rule (material within its allowance), and the bands rule",
   "J7_controls": "every control below caught as registered"
@@ -150,7 +150,8 @@
   "pre-run correction, 15 November 2026, the lead's ruling on FR4's Q5 (the H floor): the 1e-16 fmol H floor sits below one ulp of the cytosol's H_eq, so the check changes: the material allowance is the declared floor plus N eps max over records of the species' total (N the run's steps), computed by the judge from the records, never read from the engine, and reported per species",
   "pre-run correction, 15 November 2026, the lead's ruling on FR4's Q6 (resolution): one ruling with FR-5's Q3 and Q8. The floor F = N eps max|q| (N the finer rung's steps) is kept; on the two judged differences, each with its own floor: resolved (both >= F) lies in [1.8, 2.2]; at rounding (both < F) passes; mixed (the coarser >= F, the finer < F) passes unless the implied lower bound log2(coarser difference / finer floor) exceeds 2.2; reversed (the coarser < F, the finer >= F) fails. The judge reports each observable's class with its differences and floors; J3 and J4 still judge every observable against its budget",
   "pre-run correction, 15 November 2026, the lead's rulings on refusal semantics and K2: B4's envelope check refuses the step at the first stage beyond the budget, so J5 judges zero envelope refusals in a completed part and the engine's reported running maximum of the lag estimate (proton_buffer_max_lag_pH, gap 7) within 1e-3 pH at every buffered node; K3 is caught when the engine refuses its world at the definition through the envelope (its reason the envelope's: the same world is admitted with B4's stage check removed), and leaves J1; K2 is a self-consistent reversed pump (moves, energetics and ledger terms reversed), which every ledger closes, so only J4 against the independent reference can catch it (max over records |pH - pH_ref| >= 2e-3, as ruled), the reference recording that its effect exceeds the budget (D176's G3); the moves flipped alone stay a unit guard in the tests. Verdicts are unchanged in kind: a refusal is a verdict",
-  "pre-run correction, 15 November 2026, the lead's ruling on the charge check: it reads the engine's charge residual and its capacitor tolerance from the records (ledgers.charge_residual_C and charge_tolerance_C); Q5's record-computed allowance (the judge's, from the amounts) covers material only, since computing charge from the records would need the node charges and capacitances in them"
+  "pre-run correction, 15 November 2026, the lead's ruling on the charge check: it reads the engine's charge residual and its capacitor tolerance from the records (ledgers.charge_residual_C and charge_tolerance_C); Q5's record-computed allowance (the judge's, from the amounts) covers material only, since computing charge from the records would need the node charges and capacitances in them",
+  "pre-run correction, 15 November 2026, the lead's ruling on J4's node: J4, and so K2's catch, judges the pH of every buffered node, the lumen and the cytosol: the maximum over both nodes and every record of |pH_engine - pH_reference| within 1e-3 (K2: at least 2e-3). The protocol had not named the node. The independent references found that either reading catches K2(b) (R-closure: the lumen's difference reaches 2e-3 at the first record, 1 s, and the cytosol's at 35 s; 3.276 and 0.0192 pH at 900 s)"
  ],
  "questions_for_the_lead": [],
  "development_runs": {
@@ -215,9 +216,14 @@
    ],
    "reference_observables": [
     "pH_L",
+    "pH_c",
     "V_b",
     "K_L",
     "cycles"
+   ],
+   "ph_nodes": [
+    "pH_L",
+    "pH_c"
    ],
    "cytosol_pH": 7.2,
    "band": [
@@ -326,13 +332,13 @@
     "judged": true
    },
    {
-    "id": "J4_reference_pH_L",
+    "id": "J4_reference_pH",
     "metrics": [
-     "derived.reference.pH_L_max_abs"
+     "derived.reference.pH_max_abs"
     ],
     "comparison": "le",
     "threshold": 0.001,
-    "basis": "|pH_engine - pH_reference| at every record at 1 ms (R-closure on the declared world)",
+    "basis": "|pH_engine - pH_reference| at every record at 1 ms (R-closure on the declared world), at every buffered node, the lumen and the cytosol: the maximum over both nodes and every record (pre-run correction, the lead, 15 November 2026)",
     "judged": true
    },
    {
@@ -349,14 +355,17 @@
    {
     "id": "J4_reported",
     "metrics": [
+     "derived.reference.pH_L_max_abs",
+     "derived.reference.pH_c_max_abs",
      "derived.reference.V_b_max_abs",
      "derived.reference.K_L_max_abs",
      "derived.reference.cycles_max_abs",
-     "derived.reference.floor_pH_L"
+     "derived.reference.floor_pH_L",
+     "derived.reference.floor_pH"
     ],
     "comparison": "ge",
     "threshold": 0,
-    "basis": "reported beside J4: V_b, lumen K and the pump's cycles against the reference; the reference's floor (rtol 1e-11 against 1e-12)",
+    "basis": "reported beside J4: each node's pH, V_b, lumen K and the pump's cycles against the reference; the reference's floor (rtol 1e-11 against 1e-12)",
     "judged": false
    },
    {
@@ -472,12 +481,23 @@
    {
     "id": "J7_K2_planted_sign",
     "metrics": [
-     "derived.controls.k2.pH_L_max_abs_vs_reference"
+     "derived.controls.k2.pH_max_abs_vs_reference"
     ],
     "comparison": "ge",
     "threshold": 0.002,
-    "basis": "K2: a self-consistent reversed pump (moves, energetics and ledger terms reversed), which every ledger closes, fails J4 by more than its budget: max over records |pH - pH_reference| >= 2 x 1e-3 (the lead's rulings)",
+    "basis": "K2: a self-consistent reversed pump (moves, energetics and ledger terms reversed), which every ledger closes, fails J4 by more than its budget: max over the buffered nodes (the lumen and the cytosol) and the records of |pH - pH_reference| >= 2 x 1e-3 (the lead's rulings)",
     "judged": true
+   },
+   {
+    "id": "J7_K2_reported",
+    "metrics": [
+     "derived.controls.k2.pH_L_max_abs_vs_reference",
+     "derived.controls.k2.pH_c_max_abs_vs_reference"
+    ],
+    "comparison": "ge",
+    "threshold": 0,
+    "basis": "K2: each node's pH against the reference, reported",
+    "judged": false
    },
    {
     "id": "J7_K3_envelope_flags",

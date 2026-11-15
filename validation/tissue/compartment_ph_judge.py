@@ -12,6 +12,9 @@ generator.
 The arithmetic, fixed before any run (the same on engine and reference records):
 * **Records** are keyed by integer second; every series is aligned with its part's `record_s`.
 * **Differences:** D(a, b) = max over shared records of |q_a - q_b| (the max norm).
+* **J4's pH** (the lead's ruling of 15 November 2026, a dated pre-run correction): the pH of every
+  buffered node, the lumen's and the cytosol's (the derivation's `ph_nodes`), the largest D over
+  those nodes; None when any node's series is missing. K2's catch reads the same maximum.
 * **Floors:** each rung difference has its floor F = N eps max|q| (N the finer rung's steps, max|q|
   over the finer rung's records): below it, the difference is accumulated rounding.
 * **Orders, by class** (the lead's ruling of 15 November 2026), on the two differences of the three
@@ -190,6 +193,12 @@ def ratio(a, b):
 def max_or_none(values):
     values = list(values)
     return None if not values or any(v is None for v in values) else max(values)
+
+
+def ph_max_abs(part_a, part_b, nodes):
+    """J4's pH difference: the largest D(a, b) over every buffered node's pH series (`nodes`)
+    and the shared records; None when any node's series is missing (a missing value fails)."""
+    return max_or_none(max_abs_difference(part_a, part_b, x) for x in nodes)
 
 
 def series(part, name):
@@ -392,8 +401,10 @@ def derive_fr4(parts, derivation):
     out["reference"] = {f"{x}_max_abs": max_abs_difference(eng, ref, x)
                         for x in d["reference_observables"]}
     out["reference"].update(
+        pH_max_abs=ph_max_abs(eng, ref, d["ph_nodes"]),
         start_pH_L=row0(eng, ref, "pH_L"), start_V_b=row0(eng, ref, "V_b"),
-        floor_pH_L=max_abs_difference(ref, floor, "pH_L"))
+        floor_pH_L=max_abs_difference(ref, floor, "pH_L"),
+        floor_pH=ph_max_abs(ref, floor, d["ph_nodes"]))
     out["envelope"] = envelope(parts, rungs)
     out["ledgers"] = dict(
         material=material(parts, rungs, d),
@@ -406,7 +417,9 @@ def derive_fr4(parts, derivation):
     out["controls"] = dict(
         k1=dict(control_drop_ph=drop(parts.get(k1_name)), declared_drop_ph=drop(eng),
                 reference_control_drop_ph=drop(worlds.get("control_k1"))),
-        k2=dict(pH_L_max_abs_vs_reference=max_abs_difference(parts.get(k2_name), ref, "pH_L")),
+        k2=dict(pH_max_abs_vs_reference=ph_max_abs(parts.get(k2_name), ref, d["ph_nodes"]),
+                **{f"{x}_max_abs_vs_reference": max_abs_difference(parts.get(k2_name), ref, x)
+                   for x in d["ph_nodes"]}),
         k3=dict(engine_max_lag_ph=k3["max_lag_ph"],
                 engine_stages_beyond=envelope_refusal(parts.get(k3_name)),
                 kinetic_departure_ph=max_abs_difference(worlds.get("kinetic_outside"), ref,
@@ -440,8 +453,11 @@ def derive_arm(parts, arm, d):
         X_L_over_budget=ratio(max_abs_difference(eng, ref, "X_L"), budget),
         transfer_over_budget=ratio(max_abs_difference(eng, ref, transfer), budget),
         pH_L_max_abs=max_abs_difference(eng, ref, "pH_L"),
+        pH_c_max_abs=max_abs_difference(eng, ref, "pH_c"),
+        pH_max_abs=ph_max_abs(eng, ref, d["ph_nodes"]),
         floor_X_L_over_budget=ratio(max_abs_difference(ref, ref_floor, "X_L"), budget),
         floor_pH_L=max_abs_difference(ref, ref_floor, "pH_L"),
+        floor_pH=ph_max_abs(ref, ref_floor, d["ph_nodes"]),
     )
     starts = [eng] + [parts.get(n) for n in rungs if n != declared] + [ctl]
     out["start"] = dict(

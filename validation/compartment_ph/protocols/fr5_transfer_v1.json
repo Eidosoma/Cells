@@ -69,7 +69,7 @@
  },
  "budgets": {
   "X": "|X_L,engine - X_L,reference| <= 1e-3 of the lumen's initial X at every record; the conditioned route's cumulative transfer within 1e-3 x X_L(0) x V_L (fmol). Basis: the declared physical accuracy, as FR-4's J3 and J4; the references' floor shows they resolve it",
-  "pH": "|pH_L,engine - pH_L,reference| <= 1e-3 at every record (FR-4's J4)",
+  "pH": "|pH_engine - pH_reference| <= 1e-3 at every record at every buffered node, the lumen and the cytosol, the maximum over both nodes (FR-4's J4; pre-run correction, the lead, 15 November 2026)",
   "controls_margin": "each control differs from its arm by at least 10x the X budget on the same quantities (G1 exact contract tests plus G3 scientific negative controls, D176)"
  },
  "criteria": {
@@ -136,7 +136,8 @@
   "pre-run correction, 15 November 2026, the lead's ruling on FR5's Q7 (cost): as FR-4's Q3",
   "pre-run correction, 15 November 2026, the lead's ruling on FR5's Q8 (resolution): as FR-4's Q6",
   "pre-run correction, 15 November 2026, the lead's ruling on refusal semantics: B4's envelope check refuses the step at the first stage beyond the budget, so J5 judges zero envelope refusals in a completed part and the engine's reported running maximum of the lag estimate (gap 7) within 1e-3 pH at every buffered node",
-  "pre-run correction, 15 November 2026, the lead's ruling on the charge check: it reads the engine's charge residual and its capacitor tolerance from the records (ledgers.charge_residual_C and charge_tolerance_C); Q5's record-computed allowance (the judge's, from the amounts) covers material only, since computing charge from the records would need the node charges and capacitances in them"
+  "pre-run correction, 15 November 2026, the lead's ruling on the charge check: it reads the engine's charge residual and its capacitor tolerance from the records (ledgers.charge_residual_C and charge_tolerance_C); Q5's record-computed allowance (the judge's, from the amounts) covers material only, since computing charge from the records would need the node charges and capacitances in them",
+  "pre-run correction, 15 November 2026, the lead's ruling on the pH budget's node, as FR-4's J4: the pH budget judges every buffered node, the lumen and the cytosol: the maximum over both nodes and every record of |pH_engine - pH_reference| within 1e-3, against the reference started at tr.Start (J4); it had named the lumen alone"
  ],
  "development_runs": {
   "runs": [],
@@ -248,6 +249,10 @@
    ],
    "exact_observables": [
     "d"
+   ],
+   "ph_nodes": [
+    "pH_L",
+    "pH_c"
    ],
    "x_budget_fraction": 0.001,
    "cytosol_pH": 7.2,
@@ -384,13 +389,13 @@
     "judged": true
    },
    {
-    "id": "J4_T_pH_L",
+    "id": "J4_T_pH",
     "metrics": [
-     "derived.T.reference.pH_L_max_abs"
+     "derived.T.reference.pH_max_abs"
     ],
     "comparison": "le",
     "threshold": 0.001,
-    "basis": "|pH_L,engine - pH_L,reference| <= 1e-3 at every record",
+    "basis": "|pH_engine - pH_reference| <= 1e-3 at every record, at every buffered node, the lumen and the cytosol: the maximum over both nodes and every record (pre-run correction, the lead, 15 November 2026)",
     "judged": true
    },
    {
@@ -418,11 +423,14 @@
     "id": "J4_T_reported",
     "metrics": [
      "derived.T.reference.floor_X_L_over_budget",
-     "derived.T.reference.floor_pH_L"
+     "derived.T.reference.floor_pH_L",
+     "derived.T.reference.floor_pH",
+     "derived.T.reference.pH_L_max_abs",
+     "derived.T.reference.pH_c_max_abs"
     ],
     "comparison": "ge",
     "threshold": 0,
-    "basis": "the reference's floor, reported",
+    "basis": "the reference's floor and each node's pH against the reference, reported",
     "judged": false
    },
    {
@@ -678,13 +686,13 @@
     "judged": true
    },
    {
-    "id": "J4_R_pH_L",
+    "id": "J4_R_pH",
     "metrics": [
-     "derived.R.reference.pH_L_max_abs"
+     "derived.R.reference.pH_max_abs"
     ],
     "comparison": "le",
     "threshold": 0.001,
-    "basis": "|pH_L,engine - pH_L,reference| <= 1e-3 at every record",
+    "basis": "|pH_engine - pH_reference| <= 1e-3 at every record, at every buffered node, the lumen and the cytosol: the maximum over both nodes and every record (pre-run correction, the lead, 15 November 2026)",
     "judged": true
    },
    {
@@ -712,11 +720,14 @@
     "id": "J4_R_reported",
     "metrics": [
      "derived.R.reference.floor_X_L_over_budget",
-     "derived.R.reference.floor_pH_L"
+     "derived.R.reference.floor_pH_L",
+     "derived.R.reference.floor_pH",
+     "derived.R.reference.pH_L_max_abs",
+     "derived.R.reference.pH_c_max_abs"
     ],
     "comparison": "ge",
     "threshold": 0,
-    "basis": "the reference's floor, reported",
+    "basis": "the reference's floor and each node's pH against the reference, reported",
     "judged": false
    },
    {
