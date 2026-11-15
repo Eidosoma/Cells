@@ -1,0 +1,7 @@
+{
+ "kind": "cells.checkout_source_snapshot@1",
+ "git_revision": "0123456789abcdef0123456789abcdef01234567",
+ "repository": "/home/nobody/checkout",
+ "status": "complete",
+ "note": "synthetic fixture"
+}
