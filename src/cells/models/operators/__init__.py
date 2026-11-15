@@ -20,6 +20,7 @@ from cells.models.operators.osmotic_water import OsmoticWater
 from cells.models.operators.partition import IsopotentialPartition
 from cells.models.operators.restricted_lumen import RestrictedCleftLumen
 from cells.models.operators.restricted_lumen_v2 import RestrictedCleftLumenV2
+from cells.models.operators.site_occupancy import SiteOccupancy
 from cells.models.operators.species_exchange import ScheduledSpeciesExchange
 from cells.models.operators.species_reactions import LocalSpeciesReactions
 from cells.models.operators.species_regulated_availability import SpeciesRegulatedAvailability
@@ -46,5 +47,6 @@ OPERATORS = {
         check_declarations(SpeciesRegulatedAvailability)(),
         check_declarations(ScheduledBathComposition)(),
         check_declarations(CellOwnedCompartments)(),
+        check_declarations(SiteOccupancy)(),
     )
 }

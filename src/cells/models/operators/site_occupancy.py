@@ -42,15 +42,19 @@ composite's structure check refuses the providers and closers of what it reads a
 
 import math
 from dataclasses import dataclass
+from typing import NamedTuple
 
+import jax.numpy as jnp
 import numpy as np
 
 from cells.core import pump_composite_spec as composite_spec
 from cells.core.multispecies_spec import identifier
 from cells.core.specs import ConfigError, _fields
+from cells.models import pump_composite_adapter as adapter
 from cells.models.operators import species_common as common
 from cells.models.operators.contract import Operator
 from cells.models.operators.membrane_state import parse_catalogue
+from cells.processes.electrochemistry import R as R_GAS
 
 LAW_ID = "site_occupancy@1"
 BINDING_LAW = "langmuir_site_binding@1"
@@ -91,6 +95,13 @@ LAYOUT_FIELDS = (
     "site_receiving_cell",  # [population] int64: the patch's cell (internalisation), else 0.
     "site_internalises",  # [population] bool.
     "site_component",  # [population] int64: its static component (§3.3).
+    "site_component_count",  # [components]: its shape is the number of components (static).
+    "site_pool_kind",  # [pool] int64: CELL or OUTSIDE; a pool is a ligand row at one node.
+    "site_pool_node",  # [pool] int64: its node on that axis.
+    "site_pool_row",  # [pool] int64: its ligand row.
+    "site_pool_component",  # [pool] int64.
+    "site_facing_pool",  # [population] int64: the pool it binds from.
+    "site_receiving_pool",  # [population] int64: the pool it internalises into (else its facing).
 )
 CONTROL_FIELDS = ("site_binding_multiplier", "site_internalisation_multiplier")
 LEDGERS = ("site_bound_entity", "site_moiety_entity")
@@ -595,6 +606,25 @@ def bind(spec, declaration):
         receiving.append(
             cells.index(receiving_cell(m, p)) if p.internalisation_rate is not None else 0
         )
+    component = components(spec, declaration)
+    pools, facing_pool, receiving_pool = [], [], []
+    for k, p in enumerate(declaration.populations):
+        key = (kinds[k], nodes[k], ids.index(p.ligand))
+        if key not in pools:
+            pools.append(key)
+        facing_pool.append(pools.index(key))
+        if p.internalisation_rate is not None:
+            key = (CELL, receiving[k], ids.index(p.ligand))
+            if key not in pools:
+                pools.append(key)
+            receiving_pool.append(pools.index(key))
+        else:
+            receiving_pool.append(facing_pool[-1])
+    pool_component = [0] * len(pools)
+    for k in range(n):
+        pool_component[facing_pool[k]] = int(component[k])
+        pool_component[receiving_pool[k]] = int(component[k])
+    count = int(component.max()) + 1 if n else 0
     layout = dict(
         site_capacity_fmol=capacity,
         site_free_anchor_fmol=capacity - bound,
@@ -616,7 +646,14 @@ def bind(spec, declaration):
         site_internalises=np.asarray(
             [p.internalisation_rate is not None for p in declaration.populations], dtype=bool
         ).reshape(n),
-        site_component=components(spec, declaration),
+        site_component=component,
+        site_component_count=np.zeros(count),
+        site_pool_kind=np.asarray([k for k, _, _ in pools], dtype=np.int64).reshape(len(pools)),
+        site_pool_node=np.asarray([v for _, v, _ in pools], dtype=np.int64).reshape(len(pools)),
+        site_pool_row=np.asarray([r for _, _, r in pools], dtype=np.int64).reshape(len(pools)),
+        site_pool_component=np.asarray(pool_component, dtype=np.int64).reshape(len(pools)),
+        site_facing_pool=np.asarray(facing_pool, dtype=np.int64).reshape(n),
+        site_receiving_pool=np.asarray(receiving_pool, dtype=np.int64).reshape(n),
     )
     x = spec.execution
     state = {
@@ -661,7 +698,490 @@ def identity_block(declaration):
     )
 
 
-# The half-step and its bookings (stage B) follow the operator's declarations below.
+# ------------------------------------------------------------------ the half-step (stage B)
+#
+# The integrator below is D152's SSPRK(3,3) under its unidirectional stage condition, with D152's
+# exact bookings and per-route hybrid (models/operators/species_reactions.py, half_step_terms),
+# reimplemented here over the site network, because D152's files stay untouched while MG0c is
+# judged (the lead, 15 November 2026). It duplicates a numerical block: a consolidation item for
+# D172's round, one shared numerical block in the inner model's numerical plan serving D152 and
+# FR-3 (docs/SITE_OCCUPANCY_DESIGN.md §12).
+
+THETA = 0.5  # The stage condition h max L <= THETA at every stage (dt L <= 1 at one sub-step).
+SERIES_BELOW = 1e-6  # |x| below which (1 + x) log1p(x) / x takes its series.
+SITE_FLOOR_FMOL = 1e-20  # The own ledgers' floor: D150's species-scale material floor.
+ROUNDING = 2.5  # The family's per-step rounding allowance, eps x steps x magnitude.
+
+
+def _scatter(values, index, size, *, xp):
+    """values [k] summed onto [size] by index [k]."""
+    if xp is jnp:
+        return jnp.zeros(size, dtype=values.dtype).at[index].add(values)
+    out = np.zeros(size)
+    np.add.at(out, np.asarray(index), values)
+    return out
+
+
+def _scatter2(values, row, node, shape, *, xp):
+    """values [k] summed onto [rows, nodes] at (row[k], node[k])."""
+    if xp is jnp:
+        return jnp.zeros(shape, dtype=values.dtype).at[row, node].add(values)
+    out = np.zeros(shape)
+    np.add.at(out, (np.asarray(row), np.asarray(node)), values)
+    return out
+
+
+def _ratio(x, *, xp):
+    """(1 + x) log1p(x) / x, with its series 1 + x/2 - x^2/6 for |x| < SERIES_BELOW."""
+    small = xp.abs(x) < SERIES_BELOW
+    return xp.where(
+        small, 1.0 + x / 2 - x * x / 6, (1.0 + x) * xp.log1p(x) / xp.where(small, 1.0, x)
+    )
+
+
+def _xlogy(x, y, *, xp):
+    zero = x == 0
+    return xp.where(zero, 0.0, x * xp.log(xp.where(zero, 1.0, y)))
+
+
+def site_free_energy(a, d, standard, capacity, rt, *, xp):
+    """(dg, its absolute terms), pJ: the change of g(x) = mu° x + RT x ln(x/S) from a to a + d
+    (§3.3's stable increments: a > 0, and the a = 0 branch, xlogy)."""
+    positive = a > 0
+    safe = xp.where(positive, a, 1.0)
+    log_a = xp.log(safe / capacity)
+    grow = xp.log1p(d / safe)
+    first = d * log_a
+    second = (a + d) * grow
+    zero_branch = _xlogy(d, xp.where(d > 0, d, 1.0) / capacity, xp=xp)
+    linear = standard * d
+    dg = linear + rt * xp.where(positive, first + second, zero_branch)
+    terms = xp.abs(linear) + rt * xp.where(
+        positive, xp.abs(first) + xp.abs(second), xp.abs(zero_branch)
+    )
+    return dg, terms
+
+
+def site_potential(a, d, standard, capacity, rt, *, xp):
+    """mu-bar, pJ/fmol: the divided difference of g over [a, a + d] (padded finite at a = d = 0)."""
+    positive = a > 0
+    safe = xp.where(positive, a, 1.0)
+    bulk = xp.log(safe / capacity) + _ratio(d / safe, xp=xp)
+    start = xp.log(xp.where(d > 0, d, capacity) / capacity)  # a = 0: mu° + RT ln(d / S).
+    return standard + rt * xp.where(positive, bulk, start)
+
+
+def pool_amounts(state, p, *, xp):
+    """[pool] the free ligand at each node pool (fmol): @3's physical amount of its row there."""
+    is_cell = p.site_pool_kind == CELL
+    rows, nodes = p.site_pool_row, p.site_pool_node
+    cell_node = xp.where(is_cell, nodes, 0)
+    outside_node = xp.where(is_cell, 0, nodes)
+    cells = p.amount_reference[rows, cell_node] + state.amount_increment[rows, cell_node]
+    outside = (
+        p.extracellular_amount_reference[rows, outside_node]
+        + state.extracellular_amount_increment[rows, outside_node]
+    )
+    return xp.where(is_cell, cells, outside)
+
+
+def pool_volumes(p, *, xp):
+    is_cell = p.site_pool_kind == CELL
+    nodes = p.site_pool_node
+    return xp.where(
+        is_cell,
+        p.volume[xp.where(is_cell, nodes, 0)],
+        p.extracellular_volume[xp.where(is_cell, 0, nodes)],
+    )
+
+
+class SiteStep(NamedTuple):
+    """One half-step of the site network: everything the update and the bookings read."""
+
+    dn: object  # [pool] the free ligand's change.
+    dbound: object  # [population] B's change; R's is its negation.
+    binding: object  # [population] the binding extent (signed).
+    internalised: object  # [population] the internalisation extent (>= 0).
+    on: object  # [population] a route with a positive multiplier.
+    pool_on: object  # [pool] a pool that a route with a positive multiplier touches.
+    pool_heat: object  # [pool] pJ, booked at the pool's node.
+    work: object  # [population] pJ.
+    magnitude: object  # [population] pJ.
+    nonreversing: object  # [population] the hybrid's branch for the binding route.
+    rates: object  # ((J, U) at Y1, Y2, Y3), fmol/s.
+    max_hl: object
+    valid: object
+
+
+def _route_rates(n, R, B, vol, mb, mi, p, *, xp):
+    f = p.site_facing_pool
+    c = n[f] / vol[f]
+    J = mb * (p.site_on_rate * c * R - p.site_off_rate * B)
+    U = mi * p.site_internalisation_rate * B
+    return J, U, c
+
+
+def _stage(n, R, B, vol, mb, mi, h, p, *, xp):
+    """(J, U, the stage condition h max L <= THETA, max h L) at these amounts (§4.2)."""
+    J, U, c = _route_rates(n, R, B, vol, mb, mi, p, xp=xp)
+    f = p.site_facing_pool
+    size = n.shape[0]
+    load_n = _scatter(mb * p.site_on_rate * R, f, size, xp=xp) / vol
+    load_r = mb * p.site_on_rate * c
+    load_b = mb * p.site_off_rate + mi * p.site_internalisation_rate
+    hl = h * xp.concatenate((load_n, load_r, load_b))
+    worst = xp.max(hl, initial=0.0)
+    return J, U, worst <= THETA, worst
+
+
+def _change(J, U, p, size, *, xp):
+    """(dn [pool], dB [population]) of the binding rates J and the internalisation rates U."""
+    dn = -_scatter(J, p.site_facing_pool, size, xp=xp) + _scatter(
+        U, p.site_receiving_pool, size, xp=xp
+    )
+    return dn, J - U
+
+
+def _affinity(n, R, B, vol, p, *, xp):
+    """The binding route's A / RT = ln(c R / (K_d B)) (finite padding where a pool is empty: the
+    sign of the empty side's limit)."""
+    c = n[p.site_facing_pool] / vol[p.site_facing_pool]
+    full = (R > 0) & (B > 0) & (c > 0)
+    safe_r = xp.where(full, R, 1.0)
+    safe_b = xp.where(full, B, 1.0)
+    safe_c = xp.where(full, c, 1.0)
+    value = xp.log(safe_c) + xp.log(safe_r) - p.site_standard_RT - xp.log(safe_b)
+    return xp.where(full, value, xp.where(B > 0, -1.0, 1.0))
+
+
+def half_step_terms(state, mb, mi, h, p, *, xp):
+    """SSPRK(3,3) over h on the site network (§4.2) and its bookings (§3.3): a SiteStep."""
+    mi = xp.where(p.site_internalises, mi, 0.0)
+    n = pool_amounts(state, p, xp=xp)
+    vol = pool_volumes(p, xp=xp)
+    R = p.site_free_anchor_fmol + state.site_free_increment_fmol
+    B = p.site_bound_anchor_fmol + state.site_bound_increment_fmol
+    size = n.shape[0]
+    J1, I1, ok1, l1 = _stage(n, R, B, vol, mb, mi, h, p, xp=xp)
+    dn1, db1 = _change(J1, I1, p, size, xp=xp)
+    n2, B2, R2 = n + h * dn1, B + h * db1, R - h * db1
+    J2, I2, ok2, l2 = _stage(n2, R2, B2, vol, mb, mi, h, p, xp=xp)
+    dn2, db2 = _change(J2, I2, p, size, xp=xp)
+    n3 = n + 0.25 * h * (dn1 + dn2)
+    B3 = B + 0.25 * h * (db1 + db2)
+    R3 = R - 0.25 * h * (db1 + db2)
+    J3, I3, ok3, l3 = _stage(n3, R3, B3, vol, mb, mi, h, p, xp=xp)
+    binding = h * (J1 + J2 + 4.0 * J3) / 6.0
+    internalised = h * (I1 + I2 + 4.0 * I3) / 6.0
+    dn, dbound = _change(binding, internalised, p, size, xp=xp)
+    end_n, end_b, end_r = n + dn, B + dbound, R - dbound
+    valid = ok1 & ok2 & ok3
+    for pools, sites_b, sites_r in ((n2, B2, R2), (n3, B3, R3), (end_n, end_b, end_r)):
+        valid &= xp.all(xp.isfinite(pools) & (pools > 0))
+        valid &= xp.all(xp.isfinite(sites_b) & (sites_b >= 0))
+        valid &= xp.all(xp.isfinite(sites_r) & (sites_r >= 0))
+    rt = 1e-3 * R_GAS * p.temperature
+    standard = rt * p.site_standard_RT
+    capacity = p.site_capacity_fmol
+    on = (mb > 0) | (mi > 0)
+    f, g = p.site_facing_pool, p.site_receiving_pool
+    internalises = p.site_internalises
+    touched = _scatter(xp.where(on, 1.0, 0.0), f, size, xp=xp)
+    touched = touched + _scatter(xp.where(on & internalises, 1.0, 0.0), g, size, xp=xp)
+    pool_on = touched > 0
+    # The exact dG of every pool over the half-step, with its absolute terms.
+    change = xp.where(pool_on, dn, 0.0)
+    pool_dg = adapter.species_chemical_free_energy_pJ(n, change, vol, p.temperature, xp=xp)
+    pool_terms = adapter.species_chemical_magnitude_pJ(n, change, vol, p.temperature, xp=xp)
+    dg_b, terms_b = site_free_energy(B, dbound, standard, capacity, rt, xp=xp)
+    dg_r, terms_r = site_free_energy(R, -dbound, 0.0, capacity, rt, xp=xp)
+    # The class of each component in this step (§3.3, 2.): mixed if any of its internalisation
+    # routes has a positive multiplier, else passive-only.
+    count = p.site_component_count.shape[0]
+    mixed_component = (
+        _scatter(xp.where((mi > 0) & internalises, 1.0, 0.0), p.site_component, count, xp=xp) > 0
+    )
+    mixed = mixed_component[p.site_component]
+    pool_mixed = mixed_component[p.site_pool_component]
+    # Passive-only: each facing node's sub-system books H = -dG, and no work.
+    subsystem = pool_dg + _scatter(xp.where(mixed, 0.0, dg_b + dg_r), f, size, xp=xp)
+    # Mixed: average-vector-field shares with divided-difference potentials, and the hybrid heat on
+    # each binding route (its share unless it reverses within the step, else its quadrature).
+    mu_n = rt * (xp.log(n / vol) + _ratio(change / n, xp=xp) - 1.0)
+    mu_b = site_potential(B, dbound, standard, capacity, rt, xp=xp)
+    mu_r = site_potential(R, -dbound, 0.0, capacity, rt, xp=xp)
+    share_b = binding * (mu_b - mu_r - mu_n[f])
+    share_i = internalised * (mu_r + mu_n[g] - mu_b)
+    a1 = _affinity(n, R, B, vol, p, xp=xp)
+    a2 = _affinity(n2, R2, B2, vol, p, xp=xp)
+    a3 = _affinity(n3, R3, B3, vol, p, xp=xp)
+    a_end = _affinity(end_n, end_r, end_b, vol, p, xp=xp)
+    sign = xp.sign(J1)
+    nonreversing = (
+        (sign != 0) & (xp.sign(J2) == sign) & (xp.sign(J3) == sign) & (xp.sign(a_end) == sign)
+    )
+    quadrature = h * rt * (J1 * a1 + J2 * a2 + 4.0 * J3 * a3) / 6.0
+    route_heat = xp.where(nonreversing, -share_b, quadrature)
+    route_heat = xp.where(mixed & (mb > 0), route_heat, 0.0)
+    pool_heat = xp.where(
+        pool_mixed, _scatter(route_heat, f, size, xp=xp), -xp.where(pool_on, subsystem, 0.0)
+    )
+    work = xp.where(mixed, share_i + share_b + route_heat, 0.0)
+    magnitude = terms_b + terms_r + xp.abs(share_b) + xp.abs(share_i) + xp.abs(route_heat)
+    magnitude = magnitude + pool_terms[f] + xp.where(internalises, pool_terms[g], 0.0)
+    for value in (pool_heat, work, magnitude):
+        valid &= xp.all(xp.isfinite(value))
+    worst = xp.maximum(xp.maximum(l1, l2), l3)
+    return SiteStep(
+        dn,
+        dbound,
+        binding,
+        internalised,
+        on,
+        pool_on,
+        pool_heat,
+        work,
+        magnitude,
+        nonreversing,
+        ((J1, I1), (J2, I2), (J3, I3)),
+        worst,
+        valid,
+    )
+
+
+NON_NEGATIVE = ("site_internalised_fmol", "site_energy_magnitude_pJ")
+SIGNED = (
+    "site_free_increment_fmol",
+    "site_bound_increment_fmol",
+    "site_bound_net_fmol",
+    "site_dissipated_energy_pJ",
+    "site_outside_dissipated_energy_pJ",
+    "site_work_pJ",
+)
+
+
+def site_domain_valid(state, p, *, xp):
+    """Its own fields finite and signed as booked, and its pools: R >= 0 and B >= 0."""
+    valid = xp.asarray(True)
+    for name in NON_NEGATIVE:
+        value = getattr(state, name)
+        valid &= xp.all(xp.isfinite(value)) & xp.all(value >= 0)
+    for name in SIGNED:
+        valid &= xp.all(xp.isfinite(getattr(state, name)))
+    R = p.site_free_anchor_fmol + state.site_free_increment_fmol
+    B = p.site_bound_anchor_fmol + state.site_bound_increment_fmol
+    return valid & xp.all(R >= 0) & xp.all(B >= 0)
+
+
+def site_half_step(state, mb, mi, h, p, *, xp=jnp):
+    """(state after h of the site network, validity). Each entry is selected where a route with a
+    positive multiplier writes it, else its start value (never offset by a computed zero, §4.8)."""
+    step = half_step_terms(state, mb, mi, h, p, xp=xp)
+    on = step.on
+    is_cell = p.site_pool_kind == CELL
+    rows, nodes = p.site_pool_row, p.site_pool_node
+    dn = xp.where(step.pool_on, step.dn, 0.0)
+    cell_dn = _scatter2(
+        xp.where(is_cell, dn, 0.0),
+        rows,
+        xp.where(is_cell, nodes, 0),
+        state.amount_increment.shape,
+        xp=xp,
+    )
+    outside_dn = _scatter2(
+        xp.where(is_cell, 0.0, dn),
+        rows,
+        xp.where(is_cell, 0, nodes),
+        state.extracellular_amount_increment.shape,
+        xp=xp,
+    )
+    cell_written = (
+        _scatter2(
+            xp.where(is_cell & step.pool_on, 1.0, 0.0),
+            rows,
+            xp.where(is_cell, nodes, 0),
+            state.amount_increment.shape,
+            xp=xp,
+        )
+        > 0
+    )
+    outside_written = (
+        _scatter2(
+            xp.where(~is_cell & step.pool_on, 1.0, 0.0),
+            rows,
+            xp.where(is_cell, 0, nodes),
+            state.extracellular_amount_increment.shape,
+            xp=xp,
+        )
+        > 0
+    )
+    heat_cell = _scatter(
+        xp.where(is_cell & step.pool_on, step.pool_heat, 0.0),
+        xp.where(is_cell, nodes, 0),
+        state.site_dissipated_energy_pJ.shape[0],
+        xp=xp,
+    )
+    heat_outside = _scatter(
+        xp.where(~is_cell & step.pool_on, step.pool_heat, 0.0),
+        xp.where(is_cell, 0, nodes),
+        state.site_outside_dissipated_energy_pJ.shape[0],
+        xp=xp,
+    )
+    heated_cell = (
+        _scatter(
+            xp.where(is_cell & step.pool_on, 1.0, 0.0),
+            xp.where(is_cell, nodes, 0),
+            state.site_dissipated_energy_pJ.shape[0],
+            xp=xp,
+        )
+        > 0
+    )
+    heated_outside = (
+        _scatter(
+            xp.where(~is_cell & step.pool_on, 1.0, 0.0),
+            xp.where(is_cell, 0, nodes),
+            state.site_outside_dissipated_energy_pJ.shape[0],
+            xp=xp,
+        )
+        > 0
+    )
+    new = state._replace(
+        amount_increment=xp.where(
+            cell_written, state.amount_increment + cell_dn, state.amount_increment
+        ),
+        extracellular_amount_increment=xp.where(
+            outside_written,
+            state.extracellular_amount_increment + outside_dn,
+            state.extracellular_amount_increment,
+        ),
+        site_free_increment_fmol=xp.where(
+            on, state.site_free_increment_fmol - step.dbound, state.site_free_increment_fmol
+        ),
+        site_bound_increment_fmol=xp.where(
+            on, state.site_bound_increment_fmol + step.dbound, state.site_bound_increment_fmol
+        ),
+        site_bound_net_fmol=xp.where(
+            on, state.site_bound_net_fmol + step.binding, state.site_bound_net_fmol
+        ),
+        site_internalised_fmol=xp.where(
+            on, state.site_internalised_fmol + step.internalised, state.site_internalised_fmol
+        ),
+        site_dissipated_energy_pJ=xp.where(
+            heated_cell,
+            state.site_dissipated_energy_pJ + heat_cell,
+            state.site_dissipated_energy_pJ,
+        ),
+        site_outside_dissipated_energy_pJ=xp.where(
+            heated_outside,
+            state.site_outside_dissipated_energy_pJ + heat_outside,
+            state.site_outside_dissipated_energy_pJ,
+        ),
+        site_work_pJ=xp.where(on, state.site_work_pJ + step.work, state.site_work_pJ),
+        site_energy_magnitude_pJ=xp.where(
+            on, state.site_energy_magnitude_pJ + step.magnitude, state.site_energy_magnitude_pJ
+        ),
+    )
+    return new, step.valid & site_domain_valid(new, p, xp=xp)
+
+
+def site_energy(row, p, *, xp):
+    """(G_site(now) - G_site(declared), its absolute terms), pJ, summed over the populations: the
+    owner's endpoint free energy relative to the declared reference (§3.3)."""
+    rt = 1e-3 * R_GAS * p.temperature
+    capacity = p.site_capacity_fmol
+    dg_b, terms_b = site_free_energy(
+        p.site_bound_anchor_fmol,
+        row.site_bound_increment_fmol,
+        rt * p.site_standard_RT,
+        capacity,
+        rt,
+        xp=xp,
+    )
+    dg_r, terms_r = site_free_energy(
+        p.site_free_anchor_fmol, row.site_free_increment_fmol, 0.0, capacity, rt, xp=xp
+    )
+    return xp.sum(dg_b + dg_r), xp.sum(terms_b + terms_r)
+
+
+def material_terms(row, p, shape_cell, shape_outside, *, xp):
+    """(local [species, cell], outside [species, outside]) terms, removed - supplied (D150's sign):
+    the facing node loses net binding, the receiving cell gains what is internalised."""
+    is_cell = p.site_facing_kind == CELL
+    rows = p.site_ligand_row
+    nodes = p.site_facing_node
+    local = _scatter2(
+        xp.where(is_cell, row.site_bound_net_fmol, 0.0),
+        rows,
+        xp.where(is_cell, nodes, 0),
+        shape_cell,
+        xp=xp,
+    )
+    local = local - _scatter2(
+        xp.where(p.site_internalises, row.site_internalised_fmol, 0.0),
+        rows,
+        p.site_receiving_cell,
+        shape_cell,
+        xp=xp,
+    )
+    outside = _scatter2(
+        xp.where(is_cell, 0.0, row.site_bound_net_fmol),
+        rows,
+        xp.where(is_cell, 0, nodes),
+        shape_outside,
+        xp=xp,
+    )
+    return local, outside
+
+
+def material_magnitudes(row, p, shape_cell, shape_outside, *, xp):
+    is_cell = p.site_facing_kind == CELL
+    rows = p.site_ligand_row
+    nodes = p.site_facing_node
+    moved = xp.abs(row.site_bound_net_fmol)
+    local = _scatter2(
+        xp.where(is_cell, moved, 0.0), rows, xp.where(is_cell, nodes, 0), shape_cell, xp=xp
+    )
+    local = local + _scatter2(
+        xp.where(p.site_internalises, row.site_internalised_fmol, 0.0),
+        rows,
+        p.site_receiving_cell,
+        shape_cell,
+        xp=xp,
+    )
+    outside = _scatter2(
+        xp.where(is_cell, 0.0, moved), rows, xp.where(is_cell, 0, nodes), shape_outside, xp=xp
+    )
+    return local, outside
+
+
+def readouts(row, control, p):
+    """[population] (B/S, J, I) at a row's state and its held controls, in NumPy."""
+    mb = np.asarray(control.site_binding_multiplier)
+    mi = np.where(
+        np.asarray(p.site_internalises), np.asarray(control.site_internalisation_multiplier), 0.0
+    )
+    n = pool_amounts(row, p, xp=np)
+    vol = pool_volumes(p, xp=np)
+    R = np.asarray(p.site_free_anchor_fmol) + np.asarray(row.site_free_increment_fmol)
+    B = np.asarray(p.site_bound_anchor_fmol) + np.asarray(row.site_bound_increment_fmol)
+    J, U, _ = _route_rates(n, R, B, vol, mb, mi, p, xp=np)
+    return B / np.asarray(p.site_capacity_fmol), J, U
+
+
+def stage_report(state, control, p, dt):
+    """Host-side diagnosis of a refused step (§4.2): the largest h L over the three stages and the
+    condition's verdict, as D152's stage_report."""
+    step = half_step_terms(
+        state,
+        np.asarray(control.site_binding_multiplier),
+        np.asarray(control.site_internalisation_multiplier),
+        0.5 * dt,
+        p,
+        xp=np,
+    )
+    return dict(
+        max_hL=float(step.max_hl), admitted=bool(step.max_hl <= THETA), valid=bool(step.valid)
+    )
 
 
 class SiteOccupancy(Operator):
@@ -770,3 +1290,96 @@ class SiteOccupancy(Operator):
 
     def statically_idle(self, p):
         return p.site_capacity_fmol.shape[0] == 0
+
+    # ------------------------------------------------------------ step parts
+
+    def half_step(self, state, h, control, p, *, xp):
+        return site_half_step(
+            state,
+            control.site_binding_multiplier,
+            control.site_internalisation_multiplier,
+            h,
+            p,
+            xp=xp,
+        )
+
+    def control_valid(self, control, p, *, xp):
+        valid = xp.asarray(True)
+        for m in (control.site_binding_multiplier, control.site_internalisation_multiplier):
+            valid &= xp.all(xp.isfinite(m) & (m >= 0))
+        return valid
+
+    def rates(self, state, control, p, view, *, xp):
+        return {k: xp.zeros_like(getattr(state, k)) for k in self.STATE_AXES}, None, None
+
+    def rate_checks(self, state, control, p, valid, *, xp):
+        return valid & site_domain_valid(state, p, xp=xp)
+
+    def domain_valid(self, state, p, valid, *, xp):
+        own = site_domain_valid(state, p, xp=xp)
+        return own if valid is None else valid & own
+
+    # ------------------------------------------------------------ ledgers
+
+    def ledger_terms(self, result, row, p, *, xp):
+        """@3's local and outside ledgers gain net binding at the facing node and lose what is
+        internalised at the receiving cell (removed - supplied); the total sums them; the energy
+        ledger gains the site free energy's change + heat - work (§2.5, §3.3)."""
+        local, outside = material_terms(
+            row, p, result["local"].shape, result["outside"].shape, xp=xp
+        )
+        result["local"] = result["local"] + local
+        result["outside"] = result["outside"] + outside
+        result["total"] = result["total"] + xp.sum(local, axis=1) + xp.sum(outside, axis=1)
+        energy, _ = site_energy(row, p, xp=xp)
+        result["energy"] = (
+            result["energy"]
+            + energy
+            + xp.sum(row.site_dissipated_energy_pJ)
+            + xp.sum(row.site_outside_dissipated_energy_pJ)
+            - xp.sum(row.site_work_pJ)
+        )
+        return result, self.own_ledgers(row, p, xp=xp)
+
+    def own_ledgers(self, row, p, *, xp):
+        return {
+            "site_bound_entity": row.site_bound_increment_fmol
+            - (row.site_bound_net_fmol - row.site_internalised_fmol),
+            "site_moiety_entity": row.site_free_increment_fmol + row.site_bound_increment_fmol,
+        }
+
+    def own_magnitudes(self, row, p, *, xp):
+        return (
+            xp.abs(row.site_bound_increment_fmol)
+            + xp.abs(row.site_bound_net_fmol)
+            + xp.abs(row.site_internalised_fmol),
+            xp.abs(row.site_free_increment_fmol) + xp.abs(row.site_bound_increment_fmol),
+        )
+
+    def own_bounds(self, magnitudes, steps):
+        rounding = ROUNDING * np.finfo(float).eps * steps
+        return tuple(SITE_FLOOR_FMOL + rounding * m for m in magnitudes)
+
+    def magnitude_terms(self, magnitudes, row, p, *, xp):
+        """The moved amounts in the material ledgers' magnitudes, and every booking's absolute
+        terms with the site free energy's in the energy ledger's."""
+        local, outside = material_magnitudes(
+            row, p, magnitudes[0].shape, magnitudes[1].shape, xp=xp
+        )
+        magnitudes[0] = magnitudes[0] + local
+        magnitudes[1] = magnitudes[1] + outside
+        magnitudes[2] = magnitudes[2] + xp.sum(local, axis=1) + xp.sum(outside, axis=1)
+        _, terms = site_energy(row, p, xp=xp)
+        energy = terms + xp.sum(row.site_energy_magnitude_pJ)
+        magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
+        return magnitudes
+
+    # ------------------------------------------------------------ observations
+
+    def observe(self, row, state, control, p, view, model, spec):
+        columns = {k: getattr(state, k) for k in self.STATE_AXES}
+        occupancy, binding, internalisation = readouts(state, control, p)
+        columns["site_occupancy"] = occupancy
+        columns["site_binding_rate_fmol_per_s"] = binding
+        columns["site_internalisation_rate_fmol_per_s"] = internalisation
+        return columns

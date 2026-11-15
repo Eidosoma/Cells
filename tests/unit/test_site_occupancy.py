@@ -1,9 +1,7 @@
 """Stage A of FR-3's milestone 1: site_occupancy@1's contract fit, in NumPy (no compile).
 
 docs/SITE_OCCUPANCY_DESIGN.md §1, §2, §4.3, §6.2; criteria A1 to A5 in
-/mnt/workspaces/Cells/site-occupancy-m1-20261115-01/HANDOFF.md, fixed before any code. The operator
-is registered for these tests only (monkeypatch), since it is registered in OPERATORS only with its
-half-step (stage B):
+/mnt/workspaces/Cells/site-occupancy-m1-20261115-01/HANDOFF.md, fixed before any code:
 * A1, every refusal of §6.2 fires with its reason;
 * A2, the declaration round-trips;
 * A3, the binding layout: S = alpha nu N / N_f, B0 = theta0 S, R0 = S - B0, ln(K_d / 1 mM), the
@@ -32,11 +30,6 @@ from cells.models.registry import get_model
 from validation.tissue import compartment_fixtures as cfx
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import site_occupancy_fixtures as sfx
-
-
-@pytest.fixture(autouse=True)
-def registered(monkeypatch):
-    monkeypatch.setitem(OPERATORS, so.LAW_ID, so.SiteOccupancy())
 
 
 def world(populations=None, **kwargs):

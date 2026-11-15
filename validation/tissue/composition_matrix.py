@@ -57,6 +57,7 @@ TURNOVER, EXCHANGE = "scheduled_species_turnover@1", "scheduled_species_exchange
 REACTIONS, COUPLING = "local_species_reactions@1", "species_regulated_availability@1"
 BATH = "scheduled_bath_composition@1"
 COMPARTMENTS = "cell_owned_compartments@1"
+SITES = "site_occupancy@1"
 
 OPS = "src/cells/models/operators/"
 TESTS = "tests/unit/"
@@ -468,10 +469,72 @@ def _tags():
         "D (the closed-compartment design §1.5)",
         (),
     )
+    # FR-3's site occupancy reads the volumes, the masks and the outside anchors as declared
+    # (site_occupancy.CONFLICTS_VIEW, docs/SITE_OCCUPANCY_DESIGN.md §1.5 and §6).
+    for name in ("volume", "extracellular_volume"):
+        tags[("reads", SITES, WATER, name)] = (
+            REAL,
+            "The site half-step reads its facing nodes' declared volumes (pool_volumes); water "
+            "changes them",
+            (),
+        )
+    for lumen in (LUMEN_1, LUMEN_2):
+        tags[("reads", SITES, lumen, "extracellular_volume")] = (
+            REAL,
+            "The site half-step reads its facing nodes' declared volumes; a lumen changes its "
+            "node's volume (not shown nominal)",
+            (),
+        )
+    tags[("reads", SITES, BATH, "extracellular_amount_reference")] = (
+        NOMINAL,
+        "The sites read the outside anchors only at their facing pools, which are finite nodes "
+        "(a population facing a held bath is refused: parse_population; pool_amounts), and the "
+        "bath schedule provides the declared array off its baths and schedules held baths only "
+        "(held_view, parse_declaration): the slots are disjoint",
+        (
+            OPS + "site_occupancy.py::parse_population",
+            OPS + "site_occupancy.py::pool_amounts",
+            OPS + "bath_schedule.py::held_view",
+            OPS + "bath_schedule.py::parse_declaration",
+        ),
+    )
+    for name in ("extracellular_amount_reference", "membrane_active", "outside_active"):
+        tags[("reads", SITES, INSERTION_1, name)] = (
+            REAL,
+            "Insertion@1 opens onset patches and nodes and changes their anchors; a population's "
+            "patch or facing node may be one (not shown nominal)",
+            (),
+        )
+    for name in ("membrane_active", "outside_active"):
+        tags[("reads-closed", SITES, INSERTION_2, name)] = (
+            REAL,
+            "Insertion@2 closes onset patches and nodes until their onset; a population's patch "
+            "or facing node may be one (not shown nominal)",
+            (),
+        )
+    tags[("reads-closed", SITES, PARTITION, "active")] = (
+        REAL,
+        "The partition retires cells, an owner of sites included: the sites' split at division "
+        "is a door (the site-occupancy design §5.1)",
+        (),
+    )
     return tags
 
 
 TAGS = _tags()
+
+
+def _off_list(admitted_by_declarations):
+    """The compartments' off-list pairs that the declarations admit (marks) or refuse (behind)."""
+    out = []
+    for law in LAWS:
+        if law in compartments_operator.ADMITTED:
+            continue
+        for pair in ((COMPARTMENTS, law), (law, COMPARTMENTS)):
+            if (not errors(sequence(*pair))) == admitted_by_declarations:
+                out.append(pair)
+    return tuple(out)
+
 
 # ------------------------------------------------------------------ the rules at the definition
 
@@ -683,13 +746,10 @@ RULES = (
         test=TESTS + "test_cell_owned_compartments.py::test_the_admitted_list_fails_closed",
         tag=REAL,
         why="A new operator may treat outside nodes as environment (the closed-compartment design "
-        "§4); every law off the list is also refused by the declarations",
-        behind=tuple(
-            pair
-            for law in LAWS
-            if law not in compartments_operator.ADMITTED
-            for pair in ((COMPARTMENTS, law), (law, COMPARTMENTS))
-        ),
+        "§4). It marks the off-list pairs the declarations admit (site occupancy: FR-1's door for "
+        "it, §4) and stands behind the declarations' refusals of the rest",
+        marks=_off_list(True),
+        behind=_off_list(False),
     ),
     dict(
         rule="replacement@1 schedules no event on a compartment's owner and names no owner as a "
