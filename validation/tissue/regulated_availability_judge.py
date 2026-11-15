@@ -24,6 +24,10 @@ arm judges has a resolved pair out of the band.
 Usage:
   python -m validation.tissue.regulated_availability_judge dev PROTOCOL RESULTS OUT_DIR
   python -m validation.tissue.regulated_availability_judge judged PROTOCOL RESULTS OUT_DIR
+  python -m validation.tissue.regulated_availability_judge compare RESULTS_A RESULTS_B OUT_JSON
+`compare` checks two runs' records bit for bit (the rehearsal against the development run): every
+record of every part, leaving out run times. A δ-control run at another δ is reported as such,
+not as a difference.
 A judged verdict is refused unless the protocol is registered, the results are a complete judged
 run of it from a clean execution snapshot, and OUT_DIR is new.
 """
@@ -138,7 +142,71 @@ def refusal(protocol, results, out_dir):
     return None
 
 
+TIMING_KEYS = {"wall_s"}
+
+
+def differences(a, b, path=""):
+    """Paths where two records differ (floats compared as their bits: JSON keeps every bit)."""
+    if isinstance(a, dict) and isinstance(b, dict):
+        out = []
+        for key in sorted(set(a) | set(b)):
+            if key in TIMING_KEYS:
+                continue
+            if key not in a or key not in b:
+                out.append(f"{path}.{key} (present in one run only)")
+                continue
+            out += differences(a[key], b[key], f"{path}.{key}")
+        return out
+    if isinstance(a, list) and isinstance(b, list):
+        if len(a) != len(b):
+            return [f"{path} (lengths {len(a)} and {len(b)})"]
+        out = []
+        for i, (x, y) in enumerate(zip(a, b, strict=True)):
+            out += differences(x, y, f"{path}[{i}]")
+        return out
+    return [] if a == b and type(a) is type(b) else [path]
+
+
+def compare(path_a, path_b, out_json):
+    a = json.loads(Path(path_a).read_text())
+    b = json.loads(Path(path_b).read_text())
+    report = dict(a=str(path_a), b=str(path_b), a_source=a.get("source"), b_source=b.get("source"))
+    parts = {}
+    for name in sorted(set(a["parts"]) | set(b["parts"])):
+        if name not in a["parts"] or name not in b["parts"]:
+            parts[name] = "in one run only"
+            continue
+        if name == "controls":
+            controls = {}
+            for control in sorted(set(a["parts"][name]) | set(b["parts"][name])):
+                x, y = a["parts"][name].get(control), b["parts"][name].get(control)
+                if control in TIMING_KEYS:
+                    continue
+                if x is None or y is None:
+                    controls[control] = "in one run only"
+                elif isinstance(x, dict) and x.get("delta") != y.get("delta"):
+                    controls[control] = dict(
+                        identical=None,
+                        note="a δ-control at another δ (registered against development)",
+                        delta_a=x.get("delta"),
+                        delta_b=y.get("delta"),
+                    )
+                else:
+                    found = differences(x, y)
+                    controls[control] = dict(identical=not found, differences=found[:20])
+            parts[name] = controls
+        else:
+            found = differences(a["parts"][name], b["parts"][name])
+            parts[name] = dict(identical=not found, differences=found[:20])
+    report["parts"] = parts
+    Path(out_json).write_text(json.dumps(report, indent=1) + "\n")
+    print(json.dumps(parts, indent=1)[:3000])
+    return report
+
+
 def main(argv):
+    if argv and argv[0] == "compare":
+        return compare(*argv[1:])
     mode, protocol_path, results_path, out_dir = argv
     protocol = json.loads(Path(protocol_path).read_text())
     results = json.loads(Path(results_path).read_text())
