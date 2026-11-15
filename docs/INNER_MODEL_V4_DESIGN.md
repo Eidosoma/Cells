@@ -668,6 +668,13 @@ registry code.
    - `compile_window`'s key gains the model's `structure_key`, which the object sets to its
      structure (and the composite to its inner structure and operator list). The step and check
      functions stay in the key.
+   - **The packed planner's key (built on `core-d172`):** `vector_windows.world_key` is the part
+     of the key one world fixes: the structure key, the step and check functions, and the tree,
+     shapes and dtypes of the world's state, parameters, activity mask and check constants,
+     without the world axis. `spec_world_key(model, spec, start)` computes it on the host, before
+     any compile; `compile_window` builds its own key through it (`window_key`: the world part,
+     then the observation rows, the round arrays' shapes, the world count and the placement), so
+     the two cannot drift. Value twins get equal keys (`tests/unit/test_window_key.py`).
 
 #### (f) Answers to the operators stream (its PLAN.md §4)
 
@@ -1214,30 +1221,47 @@ canonical kind order (sorted ID) that schema A's types use:
 - `KIND_ID`, and its laws' declarations in its own module, as `inner_laws` holds the channels';
 - its fields: state axes, layout fields, control fields and observation columns, each with its
   axes' names. Schema A appends them in canonical order;
-- `parse(raw_model, raw_experiment, base)` → its declaration; `to_dict(declaration)` → its raw
-  keys; `control_values(spec, times)` → its control fields;
-- `initial(spec, layout)` → its state and layout fields;
-- `structure_entry(declaration)` → its hashable part of the InnerStructure. That part enters the
-  compile key, the batch signature and the cached implementation.
+- `parse(entries, base)` → its declaration, from its model-key block (`entries`) and the parsed
+  @2 base definition; `to_dict(declaration)` → that block; `control_values(spec, declaration,
+  times)` → {control field: [time, ...]}, constant over the run in version 1;
+- `initial(spec, declaration, layout)` → ({state field: array}, {layout field: array});
+- `structure_entry(declaration)` → its hashable, value-free part of the InnerStructure. That part
+  enters the compile key, the batch signature and the cached implementation.
 
-**The hooks the core calls.** Each is optional; a kind supplies the ones it needs:
-1. **`stage_read(amounts, layout, *, xp)` → amounts,** at the concentration entry of every stage:
-   `explicit_rates`, `implicit_rates`, `rhs` and `readouts` call it before any rate reads a
-   concentration. B4 uses it; reads compose in canonical order.
-2. **`rates(state, potentials, control, layout, *, xp)` → a kind's rates:** per-row material
-   changes (inward-positive at nodes) and its own state derivatives (cycles, say). They are added
-   after today's terms, in canonical order.
-3. **`book(applied, start, end, layout, *, xp)` → state increments** (heat, work, a standard
-   term), from the step's applied transfer in `imex_step` after the tableau's combination. §7.5's
-   exact booking is one. Under RK4 the kind's derivative fields integrate like any state.
-4. **`ledger_terms(state, layout)` → its material transfers, energy terms and magnitudes,**
-   added in `balances`, `device_balances` and the magnitudes, so every ledger closes with its
+**The hooks the core calls, as built** (schema A, `core-d172`; the authoritative list is the
+`Kind` docstring in `core/kind_registry.py`). Each is optional; a kind supplies the ones it
+needs. `p` is the world's layout and `state`, `control` are in the structure's own types:
+1. **`stage_read(state, p, *, xp)` → the state whose amount fields hold the amounts the stage's
+   rates read,** at the concentration entry of every stage: `readouts` (so `rhs`),
+   `explicit_rates` and `imex_step`'s face weights call it before any rate reads a
+   concentration; `implicit_rates` uses the frozen weights. B4 uses it; reads compose in hook
+   order. **The read changes concentrations, never charge:** the field solve takes the stored
+   rows' charges (FR-4's H_eq and buffer totals), and only the rates see the read amounts. A
+   stage read declares `stage_rows(declaration)` → ((species, node ID), ...), every row it reads
+   or rewrites.
+2. **`rates(state, potentials, control, p, *, xp)` → `KindRates(cell, outside, derivatives,
+   heat_pJ_s, work_pJ_s)`:** inward-positive node changes (cell [species, cell], outside
+   [species, outside node]) into the shared inventory, where the field solve sees their charge
+   (rule (c)); its own state fields' derivatives; heat and work rates, which join the energy rate
+   by role (rule (a)). `potentials` are the stage's node potentials, cells then outside nodes.
+   They are added after today's terms, in hook order.
+3. **`book(applied, start, end, p, dt, *, xp)` → {own state field: new value},** in `imex_step`
+   after the tableau's combination; `applied(name)` is the step's applied rate of a state field
+   (the tableau's explicit and implicit weights). Every kind receives the same end state (before
+   any kind books) and may write only its own state fields, so bookings commute. §7.5's exact
+   booking is one. Under RK4 the kind's derivative fields integrate like any state.
+4. **`ledger_terms(state, p, *, xp)` → {"cell", "outside", "heat_pJ", "work_pJ"} (any subset):**
+   cumulative inward-positive node transfers and heat and work accumulators, folded by role into
+   `balances`, `device_balances` and the ledger magnitudes, so every ledger closes with its
    moves.
-5. **`domain(state, layout, *, xp)` → bool,** and-ed into `domain_valid`, on the host and the
-   device.
-6. **`readouts(…)` → its observation columns,** which `observe_history` writes.
-7. **`moved_rows(declaration)`** → the (species, node) rows it moves in the step, joined into
-   `moved_rows` (the registry's `moved_in_step` reads them).
+5. **`domain(state, p, *, xp)` → one bool,** and-ed into `domain_valid`, on the host and the
+   device; **`control_domain(control, p, *, xp)` → one bool,** in place of the [0, 1] rule for
+   its controls (rule (d)).
+6. **`readouts(state, control, p, *, xp)` → its readout columns,** in order, which
+   `observe_history` writes after today's.
+7. **`moved_rows(declaration)`** → ((species, node ID), ...), or ((species, node ID, law ID),
+   ...), the rows it moves in the step, joined into `moved_rows` (the registry's `moved_in_step`
+   reads them).
 8. **`check_definition(spec)`:** its definition-time refusals (for example B5's held-row admission
    and ΔG° against the registry). It runs after the registry's checks and before @3's.
 
@@ -1248,10 +1272,29 @@ canonical kind order (sorted ID) that schema A's types use:
   seam change, through CORE.
 - **An undeclared kind is absent:** no field, no kernel, no hook call. A4's criterion extends to
   kinds.
+- **Two orders, named apart** (docs/MODULE_SYSTEM_DESIGN.md §7, D180): the field order is
+  `structure.kinds`, canonical by sorted ID. The hook-evaluation order is a separate name, equal
+  to the field order in version 1, so a later dependency order moves no field or snapshot layout.
+- **No global codes for kinds:** kinds and their laws carry no code. A kind's law index is bound
+  per definition by the resolved structure, and no global code sequence is hardened. Today's
+  channel LAW_CODES stay as they are.
+- **Non-commuting hooks on the same rows are refused at binding.** Of the hooks, only stage reads
+  compose: two kinds' stage reads on a shared row (their `stage_rows`) are refused at binding, and
+  a stage read that declares no rows is refused. Bookings commute by construction (one end state
+  for every kind, own fields only); rates, ledger terms and domains add or and. Version 1 has one
+  stage read, so no declared world is refused.
+- **The planted kinds are registered from outside `src/cells`,** under a non-`cells` namespace
+  (`tests.`), on a test-local registry.
+- **Ledger lists stay the shared literals in this round** (rule (a)). Reading them from the
+  implementation object would change @1's and @2's shared check code, so it follows the landing,
+  with its own D148 case.
 - **Hooks on the check path trace on the device.** `domain`, `control_domain` and
   `ledger_terms` take `xp`, trace under jnp and branch on no value in Python. So the device's
   per-row checks include kinds as the host's do. That leaves room to move host-side checks into
   device windows: the coupling export measured them at 91% of the runner path's wall time.
+  Enforced at binding: `check_definition` traces each of them once (`jax.eval_shape`) on the
+  definition's initial state, and refuses a hook that does not trace, a domain that is not one
+  bool, and a ledger term of an unknown role or shape.
 - **The planted kind of schema A's acceptance implements every hook** with trivial physics: a
   neutral species exchanged at a constant rate between two nodes, with its own ledgers. So each
   seam is exercised before any real kind lands.
