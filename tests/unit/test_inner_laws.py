@@ -27,7 +27,14 @@ from cells.core import surface_pump_v3_spec as spec3
 from cells.core.specs import parse_spec
 from cells.models import inner_laws, surface_pump_v3
 from cells.models.registry import get_model
-from cells.processes import calcium_atpase, junction_gate, kinetic_pump, sodium_channels
+from cells.processes import (
+    calcium_atpase,
+    junction_gate,
+    kinetic_pump,
+    potassium_channels,
+    sodium_channels,
+    voltage_gates,
+)
 from validation.tissue import pump_water_fixtures as water_fixtures
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
@@ -86,6 +93,40 @@ def bits(value):
 def same_bits(a, b):
     a, b = np.asarray(a), np.asarray(b)
     return a.shape == b.shape and a.dtype == b.dtype and np.array_equal(bits(a), bits(b))
+
+
+def zero_sign_only(a, b):
+    """Equal values whose bit patterns differ only at zeros (-0.0 against +0.0)."""
+    a, b = np.asarray(a), np.asarray(b)
+    if a.shape != b.shape or a.dtype != np.float64 or b.dtype != np.float64:
+        return False
+    a = np.ascontiguousarray(np.atleast_1d(a)).ravel()
+    b = np.ascontiguousarray(np.atleast_1d(b)).ravel()
+    differ = a.view(np.uint64) != b.view(np.uint64)
+    return bool(np.all((a[differ] == 0) & (b[differ] == 0)))
+
+
+# Compiled rates of an undeclared pump: exact zeros where today's compiled padding gives zeros of
+# either sign (XLA's kernel at the neutral padding inputs is a tiny value, not +0.0 as NumPy's),
+# so these may differ in the sign of a zero only. Integrated, +0.0 + dt (±0.0) is +0.0, so states
+# and the host's observations stay bitwise (test_inner_dispatch_steps; check K2).
+PUMP_RATE_KEYS = {
+    f"derivative.{k}"
+    for k in (
+        "pump_dissipated_energy_pJ",
+        "metabolic_work_pJ",
+        "calcium_pump_dissipated_energy_pJ",
+        "calcium_metabolic_work_pJ",
+    )
+}
+
+
+def compiled_matches(compiled, reference):
+    """Every compiled readout bitwise, or (undeclared pumps' rates) equal up to zeros' signs."""
+    for key in reference:
+        if same_bits(compiled[key], reference[key]):
+            continue
+        assert key in PUMP_RATE_KEYS and zero_sign_only(compiled[key], reference[key]), key
 
 
 def voltages():
@@ -377,13 +418,87 @@ def test_dispatch_readouts_are_todays_with_the_host_padding_fill():
         reference = flat_readouts(jax.jit(surface_pump_v3.readouts)(state, control, p))
         inactive = ~np.asarray(p.channel_active)
         kv = spec3.KV1P5_LAW_ID in impl.declared_channel_laws
-        for key in reference:
-            if key in ("channel_targets", "channel_tau_s") and not kv and inactive.any():
+        padding = ("channel_targets", "channel_tau_s")
+        for key in padding:
+            if not kv and inactive.any():
                 assert same_bits(compiled[key][..., ~inactive], reference[key][..., ~inactive])
                 fill = 0.0 if key == "channel_targets" else 1.0
                 assert np.all(compiled[key][..., inactive] == fill)
             else:
                 assert same_bits(compiled[key], reference[key]), key
+        compiled_matches(
+            {k: v for k, v in compiled.items() if k not in padding},
+            {k: v for k, v in reference.items() if k not in padding},
+        )
+
+
+def without_pumps(raw):
+    """raw with no pump on any patch (and no pump schedule)."""
+    raw = copy.deepcopy(raw)
+    for membrane in raw["model"]["membranes"]:
+        membrane["pump"] = None
+    raw["experiment"]["pump_controls"] = []
+    return raw
+
+
+KERNELS = {
+    "kv1p5": (voltage_gates, "kinetics"),
+    "kir2p1": (potassium_channels, "kir2p1_kinetics"),
+    "nav1p2": (sodium_channels, "nav1p2_kinetics"),
+    "nak_pump": (kinetic_pump, "kinetics"),
+    "calcium_pump": (calcium_atpase, "kinetics"),
+    "junction_rhs": (junction_gate, "rhs"),
+    "junction_domain": (junction_gate, "domain_valid"),
+}
+
+
+def traced_kernels(monkeypatch, model, spec):
+    """How often each law's kernel is called while the checked step is traced (no compile)."""
+    calls = dict.fromkeys(KERNELS, 0)
+    for name, (module, attribute) in KERNELS.items():
+        original = getattr(module, attribute)
+
+        def spy(*args, _name=name, _original=original, **kwargs):
+            calls[_name] += 1
+            return _original(*args, **kwargs)
+
+        monkeypatch.setattr(module, attribute, spy)
+    jaxpr_text(model, spec)
+    monkeypatch.undo()
+    return calls
+
+
+def test_undeclared_kernels_are_never_traced(monkeypatch):
+    """A4's first test, by spies on every kernel: the object's step calls only the declared laws'
+    kernels while it is traced, the module's own (today's catalogue) calls every one."""
+    heredity = water_fixtures.heredity_cell("D", end_time=0.01)  # Kir2.1, NaV1.2, Na/K pump.
+    cases = {
+        "heredity_D": (heredity, {"kir2p1", "nav1p2", "nak_pump"}),
+        "no_pumps": (without_pumps(heredity), {"kir2p1", "nav1p2"}),
+        "no_nav": (without_law(heredity, spec3.NAV1P2_LAW_ID), {"kir2p1", "nak_pump"}),
+    }
+    for name, (raw, declared) in cases.items():
+        spec = parse_spec(raw)
+        mine = traced_kernels(monkeypatch, get_model(spec.model), spec)
+        assert {k for k, n in mine.items() if n} == declared, (name, mine)
+        today = traced_kernels(monkeypatch, surface_pump_v3, spec)
+        assert all(today.values()), (name, today)
+
+
+def test_pump_and_junction_dispatch_readouts_are_todays():
+    """Undeclared pumps and junction laws give today's bits through today's expressions, on the
+    host and compiled, in worlds without a calcium pump, without any pump and with junctions."""
+    heredity = water_fixtures.heredity_cell("D", end_time=0.01)
+    for raw in (heredity, without_pumps(heredity), water_fixtures.gated_sheet(end_time=0.01)):
+        spec = parse_spec(raw)
+        impl = get_model(spec.model)
+        state, control, p = initial(spec, impl)
+        host = flat_readouts(impl.readouts(state, control, p, xp=np))
+        today = flat_readouts(surface_pump_v3.readouts(state, control, p, xp=np))
+        assert all(same_bits(host[k], today[k]) for k in today)
+        compiled = flat_readouts(jax.jit(impl.readouts)(state, control, p))
+        reference = flat_readouts(jax.jit(surface_pump_v3.readouts)(state, control, p))
+        compiled_matches(compiled, reference)
 
 
 def test_batch_signature_carries_the_structure():

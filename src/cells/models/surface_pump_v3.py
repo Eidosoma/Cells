@@ -297,6 +297,48 @@ def channel_heat(heat, p, *, xp=jnp):
     )
 
 
+def nak_pump_rates(ci, co, delta_mu, control, p, *, xp=jnp, structure=None):
+    """(Rates, domain arguments) of the Na/K pump law at its patches' inputs [species, membrane].
+
+    Undeclared (§7.4 (c)): its kernel is not traced; its rates are exact zeros, which today's
+    masked expressions turn into the same bits as a pump-free membrane's padding (whose drive and
+    cycle energy are exactly +0.0), and its arguments are None (no domain to check).
+    """
+    if structure is not None and pump.LAW_ID not in structure.pump_laws:
+        zero = xp.zeros_like(p.pump_capacity)
+        return pump.Rates(zero, zero, zero), None
+    args = (
+        *pumps.role_inputs(ci, co, delta_mu, p.temperature, p, xp=xp),
+        pumps.pump_parameters(p),
+        control.pump,
+    )
+    return pump.kinetics(*args, xp=xp), args
+
+
+def calcium_pump_rates(ci, co, voltage, control, p, *, xp=jnp, structure=None):
+    """surface_pump_v2.calcium_rates where the calcium pump law is declared; else its exact zeros.
+
+    (cycles, dissipation, metabolic power, affinity, domain arguments or None), with the zeros
+    through calcium_rates' own expressions, so a pump-free membrane keeps today's bits.
+    """
+    if structure is not None and calcium_atpase.LAW_ID not in structure.pump_laws:
+        zero = xp.zeros_like(p.calcium_pump_capacity)
+        cycles = xp.where(p.calcium_pump_present, zero, 0.0)
+        affinity = xp.where(p.calcium_pump_present, zero, 0.0)
+        return cycles, -1e-3 * cycles * zero, -1e-3 * cycles * zero, affinity, None
+    return second.calcium_rates(ci, co, voltage, control, p, xp=xp)
+
+
+def junction_gate_rhs(gate, junction_voltage, p, *, xp=jnp, structure=None):
+    """The junction law's gate derivative; exact zeros, with no kernel, where none is declared.
+
+    Callers keep today's mask on active junctions, so the catalogue path's program is today's.
+    """
+    if structure is not None and not structure.junction_laws:
+        return xp.zeros_like(gate)
+    return junction_gate.rhs(gate, junction_voltage, kinetic.junction_parameters(p), xp=xp)
+
+
 def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None):
     """surface_pump_v2.readouts with the channel populations' currents and gate rates.
 
@@ -326,30 +368,30 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         structure=structure,
     )
     gate_rate = xp.where(p.channel_gate_active, (target - state.channel_gate) / tau, 0.0)
-    args = (
-        *pumps.role_inputs(
-            ci[:, p.membrane_cell],
-            co[:, p.membrane_outside],
-            r.membrane_delta_mu_J_mol,
-            p.temperature,
-            p,
-            xp=xp,
-        ),
-        pumps.pump_parameters(p),
-        control.pump,
+    pr, args = nak_pump_rates(
+        ci[:, p.membrane_cell],
+        co[:, p.membrane_outside],
+        r.membrane_delta_mu_J_mol,
+        control,
+        p,
+        xp=xp,
+        structure=structure,
     )
-    pr = pump.kinetics(*args, xp=xp)
     cycles = xp.where(p.pump_present, pr.cycles_fmol_s, 0.0)
     pump_d = -1e-3 * cycles * pr.cycle_free_energy_J_mol
     metabolic = -1e-3 * cycles * pr.chemical_drive_J_mol
-    ca_cycles, ca_d, ca_metabolic, ca_affinity, ca_args = second.calcium_rates(
-        ci[:, p.membrane_cell], co[:, p.membrane_outside], r.membrane_voltage_V, control, p, xp=xp
+    ca_cycles, ca_d, ca_metabolic, ca_affinity, ca_args = calcium_pump_rates(
+        ci[:, p.membrane_cell],
+        co[:, p.membrane_outside],
+        r.membrane_voltage_V,
+        control,
+        p,
+        xp=xp,
+        structure=structure,
     )
     jgate_rate = xp.where(
         p.junction_active,
-        junction_gate.rhs(
-            state.junction_gate, r.junction_voltage_V, kinetic.junction_parameters(p), xp=xp
-        ),
+        junction_gate_rhs(state.junction_gate, r.junction_voltage_V, p, xp=xp, structure=structure),
         0.0,
     )
     # Inward-positive pump stoichiometries, outward-positive channel flux.
@@ -432,22 +474,26 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         ca_d,
         ca_metabolic,
     )
-    valid = v.converged & xp.all(pump.domain_valid(*args, xp=xp))
-    valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
+    valid = v.converged
+    if args is not None:  # The Na/K pump's domain, where its law is declared.
+        valid = valid & xp.all(pump.domain_valid(*args, xp=xp))
+    if ca_args is not None:
+        valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
     valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
     if process is not None:
         valid &= process.valid
     for value in control:
         valid &= xp.all(xp.isfinite(value) & (value >= 0) & (value <= 1))
-    valid &= xp.all(
-        junction_gate.domain_valid(
-            state.junction_gate,
-            r.junction_voltage_V,
-            kinetic.junction_parameters(p),
-            control.junction,
-            xp=xp,
+    if structure is None or structure.junction_laws:
+        valid &= xp.all(
+            junction_gate.domain_valid(
+                state.junction_gate,
+                r.junction_voltage_V,
+                kinetic.junction_parameters(p),
+                control.junction,
+                xp=xp,
+            )
         )
-    )
     for value in result:
         valid &= xp.all(xp.isfinite(value))
     for value in (qdot, dphi, chemical, capacitor, dissipation, energy):
@@ -577,22 +623,24 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
         xp=xp,
         structure=structure,
     )
-    args = (
-        *pumps.role_inputs(
-            ci[:, p.membrane_cell],
-            co[:, p.membrane_outside],
-            r.membrane_delta_mu_J_mol,
-            p.temperature,
-            p,
-            xp=xp,
-        ),
-        pumps.pump_parameters(p),
-        control.pump,
+    rate, args = nak_pump_rates(
+        ci[:, p.membrane_cell],
+        co[:, p.membrane_outside],
+        r.membrane_delta_mu_J_mol,
+        control,
+        p,
+        xp=xp,
+        structure=structure,
     )
-    rate = pump.kinetics(*args, xp=xp)
     cycles = xp.where(p.pump_present, rate.cycles_fmol_s, 0.0)
-    ca_cycles, ca_d, ca_metabolic, _, ca_args = second.calcium_rates(
-        ci[:, p.membrane_cell], co[:, p.membrane_outside], r.membrane_voltage_V, control, p, xp=xp
+    ca_cycles, ca_d, ca_metabolic, _, ca_args = calcium_pump_rates(
+        ci[:, p.membrane_cell],
+        co[:, p.membrane_outside],
+        r.membrane_voltage_V,
+        control,
+        p,
+        xp=xp,
+        structure=structure,
     )
     extra = (
         -p.stoichiometry * cycles
@@ -615,8 +663,8 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
         - scatter(diffusion, zero, (p.face_sender,), xp=xp)
         + scatter(diffusion, zero, (p.face_receiver,), xp=xp)
     )
-    gate = junction_gate.rhs(
-        state.junction_gate, r.junction_voltage_V, kinetic.junction_parameters(p), xp=xp
+    gate = junction_gate_rhs(
+        state.junction_gate, r.junction_voltage_V, p, xp=xp, structure=structure
     )
     outside_zero = xp.zeros_like(p.boundary_V)
     rates = STATE_TYPE(
@@ -643,18 +691,22 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
         ca_d,
         ca_metabolic,
     )
-    valid = r.valid & xp.all(pump.domain_valid(*args, xp=xp))
-    valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
+    valid = r.valid
+    if args is not None:  # The Na/K pump's domain, where its law is declared.
+        valid = valid & xp.all(pump.domain_valid(*args, xp=xp))
+    if ca_args is not None:
+        valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
     valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
-    valid &= xp.all(
-        junction_gate.domain_valid(
-            state.junction_gate,
-            r.junction_voltage_V,
-            kinetic.junction_parameters(p),
-            control.junction,
-            xp=xp,
+    if structure is None or structure.junction_laws:
+        valid &= xp.all(
+            junction_gate.domain_valid(
+                state.junction_gate,
+                r.junction_voltage_V,
+                kinetic.junction_parameters(p),
+                control.junction,
+                xp=xp,
+            )
         )
-    )
     for value in (*control, *rates):
         valid &= xp.all(xp.isfinite(value))
     for value in control:

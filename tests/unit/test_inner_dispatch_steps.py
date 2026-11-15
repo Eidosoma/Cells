@@ -3,9 +3,10 @@
 The implementation object's compiled checked step (only the declared laws' kernels traced)
 against the module's own (today's dispatch over the full catalogue), from each world's initial
 state, for a few steps: every state field of every step and every step's validity, bitwise. The
-worlds: a heredity cell (Kir2.1 and NaV1.2, ARS(2,2,2)), the five-law padded release world
-(ARS(2,2,2)) and the RK4 single patch (all five laws). Probe P2 showed the same on seven worlds;
-this is its guard in the engine.
+worlds: a heredity cell (Kir2.1 and NaV1.2, the Na/K pump only, no junction; ARS(2,2,2)), the
+same without any pump, the gated sheet (junctions), the five-law padded release world (both
+pumps, ARS(2,2,2)) and the RK4 single patch (all five laws). Probe P2 showed the channel half on
+seven worlds; this is its guard in the engine, with the pumps and the junction law.
 """
 
 import jax
@@ -24,9 +25,18 @@ ARS = "imex_ars222_face_electromigration@1"
 STEPS = 12
 
 
+def without_pumps(raw):
+    for membrane in raw["model"]["membranes"]:
+        membrane["pump"] = None
+    raw["experiment"]["pump_controls"] = []
+    return raw
+
+
 def worlds():
     return {
         "heredity_D": water_fixtures.heredity_cell("D", end_time=0.02),
+        "heredity_D_no_pumps": without_pumps(water_fixtures.heredity_cell("D", end_time=0.02)),
+        "gated_sheet": water_fixtures.gated_sheet(end_time=0.02),
         "release": fixtures.definition("release", solver=ARS),
         "rk4_single_patch": fixtures.single_patch(),
     }
