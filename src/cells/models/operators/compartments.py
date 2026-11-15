@@ -30,12 +30,14 @@ Refused at the definition, each with its reason (§1.4, §1.5):
 The stationary analysis does not admit the composite (its own ID check).
 
 Identity is a host-side map (identity_map; ARCHITECTURE.md's modular core, D174): per compartment,
-its ID, its owner, its role, its storage and its oriented bounding membrane. The map's shape is
-independent of today's storage as an outside node, which is one field of it; its values are not yet.
-In version 1 a compartment's ID is its node's ID (§1.4), and its role is fixed as "lumen": the
+its declared ID, its owner, its declared role, its storage and its oriented bounding membrane. The
+ID is the compartment's own: a declared string, unique among every ID of the world (the node's
+included), so the map does not depend on today's storage as an outside node, which is one field of
+it. The role is a declared short string, "lumen" by default when the declaration omits it (the map
+and the summary record which). **No physics depends on the role in version 1**: it is metadata,
+like the label, carried to the map, the summary and later the run view. Every version-1
 compartment lies outside its bounding membrane, whose inside is the owner's cytosol (§1.1), so
-V_b = phi_owner - phi_compartment is @3's patch voltage. A declared ID distinct from the node, and a
-declared role, would make the values independent too; the @1 schema has neither.
+V_b = phi_owner - phi_compartment is @3's patch voltage, whatever its role.
 Labels and references are metadata: they reach the map and the summary, never an array. The
 transfer law is D150's exchange, unchanged (§2), a driven route (D174): it books the free-energy
 change of what it moves as signed work, with no heat. Loading is an export route on the bounding
@@ -76,15 +78,20 @@ CONFLICTS_VIEW = (
     "junction_active",
     "face_active",
 )
-COMPARTMENT_FIELDS = {"node", "patch", "owner", "label", "reference"}
-ROLE = "lumen"  # Version 1: outside its bounding membrane, whose inside is the owner's cytosol.
+COMPARTMENT_FIELDS = {"id", "node", "patch", "owner", "label", "reference"}
+OPTIONAL_FIELDS = {"role"}
+ROLE = "lumen"  # The default role when a declaration omits it; no physics depends on a role.
+ROLE_LENGTH = 40  # A role is a short string.
 
 
 @dataclass(frozen=True)
 class Compartment:
-    node: str  # The compartment's @3 outside node, and its stable compartment id.
+    id: str  # The compartment's own stable ID, unique among the world's IDs.
+    node: str  # Its storage today: its @3 outside node.
     patch: str  # Its bounding patch.
     owner: str  # The owner's cell id: the founder carrier, which never changes (version 1).
+    role: str  # A short string; metadata only in version 1.
+    role_declared: bool  # False when the declaration omitted the role (the default ROLE).
     label: str | None  # Free text; metadata only.
     reference: str | None  # An opaque ontology reference; metadata only.
 
@@ -104,6 +111,30 @@ def _metadata(value, what):
     if type(value) is not str or not value.strip():
         raise ConfigError(f"{LAW_ID}: a compartment's {what} is null or a non-empty string")
     return value
+
+
+def world_ids(model):
+    """Every ID the world declares: species, cells, outside nodes, patches, pumps, junctions,
+    faces and channel populations."""
+    ids = {*model.species_ids}
+    ids |= {c.id for c in (*model.cells, *model.extracellular)}
+    ids |= {p.id for p in model.membranes}
+    ids |= {pump.id for p in model.membranes for pump in (p.pump, p.calcium_pump) if pump}
+    ids |= {j.id for j in model.junctions} | {f.id for f in model.faces}
+    return ids | {c.id for c in model.channels}
+
+
+def _role(entry):
+    """(role, declared): a declared short string, or the default ROLE."""
+    if "role" not in entry:
+        return ROLE, False
+    role = entry["role"]
+    if type(role) is not str or not role.strip() or role != role.strip() or len(role) > ROLE_LENGTH:
+        raise ConfigError(
+            f"{LAW_ID}: a compartment's role is a short string (1 to {ROLE_LENGTH} characters, no "
+            "surrounding spaces); no physics depends on it in version 1"
+        )
+    return role, True
 
 
 def capacitor_components(model):
@@ -158,12 +189,27 @@ def parse_declaration(raw, base):
     cells = {c.id for c in m.cells}
     components = capacitor_components(m)
     held = {components[c.id] for c in m.extracellular if c.reservoir}
+    taken = world_ids(m)
     compartments = []
     for entry in raw["compartments"]:
         if not isinstance(entry, dict):
             raise ConfigError(f"{LAW_ID}: each compartment is an object")
-        _fields(entry, COMPARTMENT_FIELDS, "compartment")
+        _fields(
+            {k: v for k, v in entry.items() if k not in OPTIONAL_FIELDS},
+            COMPARTMENT_FIELDS,
+            "compartment",
+        )
         node, patch, owner = (identifier(entry[k]) for k in ("node", "patch", "owner"))
+        # The compartment's own ID: unique among the world's IDs and the other compartments'.
+        cid = identifier(entry["id"])
+        if cid in taken:
+            raise ConfigError(
+                f"{LAW_ID}: the compartment ID {cid!r} collides with an ID the world already "
+                "declares (a compartment's ID is its own, distinct from its node's)"
+            )
+        if cid in {c.id for c in compartments}:
+            raise ConfigError(f"{LAW_ID}: the compartment ID {cid!r} is declared twice")
+        role, role_declared = _role(entry)
         # 1. The node.
         if node not in outside:
             raise ConfigError(f"{LAW_ID}: compartment {node!r} is not a declared outside node")
@@ -211,7 +257,9 @@ def parse_declaration(raw, base):
             )
         label = _metadata(entry["label"], "label")
         reference = _metadata(entry["reference"], "reference")
-        compartments.append(Compartment(node, patch, owner, label, reference))
+        compartments.append(
+            Compartment(cid, node, patch, owner, role, role_declared, label, reference)
+        )
     # 3. One compartment per node.
     nodes = [c.node for c in compartments]
     if len(set(nodes)) != len(nodes):
@@ -227,7 +275,15 @@ def declaration_to_dict(declaration):
     return dict(
         law=declaration.law,
         compartments=[
-            dict(node=c.node, patch=c.patch, owner=c.owner, label=c.label, reference=c.reference)
+            dict(
+                id=c.id,
+                node=c.node,
+                patch=c.patch,
+                owner=c.owner,
+                **(dict(role=c.role) if c.role_declared else {}),
+                label=c.label,
+                reference=c.reference,
+            )
             for c in declaration.compartments
         ],
     )
@@ -262,24 +318,27 @@ def check_definition(spec, declaration):
 def identity_map(model, declaration):
     """The host-side compartment map (D174): one entry per compartment, in declared order.
 
-    {id, owner {cell, slot, carrier}, role, storage {kind, node, slot}, membrane {patch, slot,
-    inside {kind, id, slot}, outside {kind, id}, voltage}, label, reference}. Slots are today's
-    array columns. The owner's carrier is its founder, which never changes in version 1 (§1.5).
+    {id, owner {cell, slot, carrier}, role, role_declared, storage {kind, node, slot}, membrane
+    {patch, slot, inside {kind, id, slot}, outside {kind, id}, voltage}, label, reference}. The ID
+    and the role are the declared ones (role_declared False: the default ROLE); the node is storage.
+    Slots are today's array columns. The owner's carrier is its founder, which never changes in
+    version 1 (§1.5). No physics depends on the role in version 1.
     """
     cells = [c.id for c in model.cells]
     outside = [c.id for c in model.extracellular]
     patches = [p.id for p in model.membranes]
     return tuple(
         dict(
-            id=c.node,
+            id=c.id,
             owner=dict(cell=c.owner, slot=cells.index(c.owner), carrier=c.owner),
-            role=ROLE,
+            role=c.role,
+            role_declared=c.role_declared,
             storage=dict(kind="outside_node", node=c.node, slot=outside.index(c.node)),
             membrane=dict(
                 patch=c.patch,
                 slot=patches.index(c.patch),
                 inside=dict(kind="cell", id=c.owner, slot=cells.index(c.owner)),
-                outside=dict(kind="compartment", id=c.node),
+                outside=dict(kind="compartment", id=c.id),
                 voltage="inside minus outside: V_b = phi_owner - phi_compartment",
             ),
             label=c.label,
@@ -311,6 +370,8 @@ class CellOwnedCompartments(Operator):
         return {
             "compartments_law": LAW_ID,
             "compartments": list(identity_map(spec.model, declaration)),
+            "compartments_role_default": ROLE,  # Entries with role_declared False carry it.
+            "compartments_role_physics": "none in version 1: a role is metadata",
             "compartments_scope": (
                 "version 1: neutral and electrically silent (no ion route on a bounding patch, a "
                 "zero charge anchor, a held-bath topology), at a fixed volume; owners are never "

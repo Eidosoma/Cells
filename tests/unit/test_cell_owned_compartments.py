@@ -161,22 +161,25 @@ def test_the_declaration_parses_round_trips_and_names_its_compartments():
     assert [d.law for d in spec.model.operators] == ["scheduled_species_exchange@1", LAW]
     declaration = spec.model.operators[-1]
     assert declaration.compartments == (
-        comp.Compartment("ecs_0", "contact_0", "cell_0", "lysosome pool", None),
+        comp.Compartment(
+            "lys_0", "ecs_0", "contact_0", "cell_0", "lumen", False, "lysosome pool", None
+        ),
     )
     assert parse_spec(cs.to_dict(spec)) == spec
     op = OPERATORS[LAW]
     summary = op.summary(spec, declaration, (), None)
     assert summary["compartments"] == [
         dict(
-            id="ecs_0",
+            id="lys_0",
             owner=dict(cell="cell_0", slot=0, carrier="cell_0"),
             role="lumen",
+            role_declared=False,
             storage=dict(kind="outside_node", node="ecs_0", slot=1),
             membrane=dict(
                 patch="contact_0",
                 slot=1,
                 inside=dict(kind="cell", id="cell_0", slot=0),
-                outside=dict(kind="compartment", id="ecs_0"),
+                outside=dict(kind="compartment", id="lys_0"),
                 voltage="inside minus outside: V_b = phi_owner - phi_compartment",
             ),
             label="lysosome pool",
@@ -205,16 +208,27 @@ def test_two_compartments_in_one_cell_stay_distinct_in_the_identity_map():
         raw,
         [
             cfx.compartment(label="lysosome pool"),
-            cfx.compartment(node="ecs_1", patch="contact_1", label="secretory granules"),
+            cfx.compartment(
+                cid="gran_0",
+                node="ecs_1",
+                patch="contact_1",
+                label="secretory granules",
+                role="granule lumen",
+            ),
         ],
     )
     spec = parse_spec(raw)
     entries = comp.identity_map(spec.model, spec.model.operators[-1])
-    assert [e["id"] for e in entries] == ["ecs_0", "ecs_1"]
+    assert [e["id"] for e in entries] == ["lys_0", "gran_0"]
+    assert [(e["role"], e["role_declared"]) for e in entries] == [
+        ("lumen", False),
+        ("granule lumen", True),
+    ]
+    assert [e["storage"]["node"] for e in entries] == ["ecs_0", "ecs_1"]
     assert {e["owner"]["cell"] for e in entries} == {"cell_0"}
     assert [e["storage"]["slot"] for e in entries] == [1, 2]
     assert [e["membrane"]["patch"] for e in entries] == ["contact_0", "contact_1"]
-    assert [e["membrane"]["outside"]["id"] for e in entries] == ["ecs_0", "ecs_1"]
+    assert [e["membrane"]["outside"]["id"] for e in entries] == ["lys_0", "gran_0"]
     assert all(e["membrane"]["inside"] == dict(kind="cell", id="cell_0", slot=0) for e in entries)
     assert OPERATORS[LAW].summary(spec, spec.model.operators[-1], (), None)["compartments"] == list(
         entries
@@ -226,6 +240,21 @@ def test_a_label_or_a_reference_changes_no_binding():
     for label, reference in (("secretory granules", None), (None, "GO:0005764")):
         other = cfx.bindings(declared(w(), [cfx.compartment(label=label, reference=reference)]))
         assert cfx.same_bindings(plain, other) == []
+    for cid, role in (("lys_9", None), ("lys_0", "lysosome lumen")):  # Metadata too.
+        other = cfx.bindings(declared(w(), [cfx.compartment(cid=cid, role=role)]))
+        assert cfx.same_bindings(plain, other) == []
+
+
+def test_a_declared_role_round_trips_and_the_default_is_recorded():
+    spec = parse_spec(declared(w(), [cfx.compartment(role="lysosome lumen")]))
+    assert parse_spec(cs.to_dict(spec)) == spec
+    entry = comp.identity_map(spec.model, spec.model.operators[-1])[0]
+    assert (entry["role"], entry["role_declared"]) == ("lysosome lumen", True)
+    plain = parse_spec(w())
+    assert "role" not in cs.to_dict(plain)["model"]["operators"][-1]["compartments"][0]
+    summary = OPERATORS[LAW].summary(plain, plain.model.operators[-1], (), None)
+    assert summary["compartments_role_default"] == "lumen"
+    assert summary["compartments"][0]["role_declared"] is False
 
 
 def closed_world(gauge):
@@ -291,6 +320,33 @@ def channelled():
     return raw
 
 
+def pumped():
+    """A Na/K pump on the bounding patch (refusal 4's pump branch)."""
+    raw = w()
+    bounding = next(p for p in raw["model"]["membranes"] if p["id"] == "contact_0")
+    bounding["pump"] = dict(
+        id="pump_c",
+        law="nak_atp_mass_action_positive@1",
+        roles=dict(sodium="Na", potassium="K"),
+        stoichiometry=dict(Na=-3, K=2),
+        capacity_fmol_per_s=1e-3,
+        km_na_mM=12.0,
+        km_k_mM=0.2,
+        km_atp_mM=0.5,
+        metabolism=dict(
+            kind="maintained_chemical_reservoirs@1",
+            atp_mM=1.5,
+            adp_mM=0.1,
+            pi_mM=0.1,
+            delta_g0_J_per_mol=-37000.0,
+        ),
+    )
+    raw["experiment"]["pump_controls"] = [
+        dict(pump_id="pump_c", schedule=[dict(time=0.0, availability=1.0)])
+    ]
+    return raw
+
+
 def charged():
     raw = w()
     lumen = node(raw, "ecs_0")
@@ -329,10 +385,37 @@ REFUSALS = {
     ),
     "a patch on another cell": (misowned, "not on its declared owner 'cell_1'"),
     "two compartments on one node": (
-        lambda: declared(w(), [cfx.compartment(), cfx.compartment(label="again")]),
+        lambda: declared(w(), [cfx.compartment(), cfx.compartment(cid="lys_1", label="again")]),
         "one compartment per node",
     ),
     "an ion route on the bounding patch": (permeable, "carries an ion route"),
+    "a pump on the bounding patch": (pumped, "carries an ion route"),
+    "an ID that is its node's": (
+        lambda: declared(w(), [cfx.compartment(cid="ecs_0")]),
+        "collides with an ID the world already declares",
+    ),
+    "an ID that is a cell's": (
+        lambda: declared(w(), [cfx.compartment(cid="cell_0")]),
+        "collides with an ID the world already declares",
+    ),
+    "an ID that is a species'": (
+        lambda: declared(w(), [cfx.compartment(cid="S")]),
+        "collides with an ID the world already declares",
+    ),
+    "an ID declared twice": (
+        lambda: declared(w(), [cfx.compartment(), cfx.compartment(node="nowhere")]),
+        "is declared twice",
+    ),
+    "an empty role": (lambda: declared(w(), [cfx.compartment(role="")]), "a short string"),
+    "a role with spaces around it": (
+        lambda: declared(w(), [cfx.compartment(role=" lumen")]),
+        "a short string",
+    ),
+    "a role too long": (lambda: declared(w(), [cfx.compartment(role="x" * 41)]), "a short string"),
+    "a role that is not a string": (
+        lambda: declared(w(), [cfx.compartment(role=5)]),
+        "a short string",
+    ),
     "a channel population on the bounding patch": (channelled, "carries an ion route"),
     "a charge anchor": (charged, "nonzero charge anchor"),
     "no held bath in the owner's component": (lambda: closed_world("bath"), "with no held bath"),

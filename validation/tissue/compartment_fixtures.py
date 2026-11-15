@@ -46,8 +46,19 @@ PLANTED_ROUTE = 1e-13  # m/s of K on the bounding patch: planted control (a).
 PLANTED_ANCHOR_C = 1e-17  # C on the compartment: planted control (b), V_b = -1e-4 V.
 
 
-def compartment(node=NODE, patch=PATCH, owner=OWNER, label="lysosome pool", reference=None):
-    return dict(node=node, patch=patch, owner=owner, label=label, reference=reference)
+def compartment(
+    cid="lys_0",
+    node=NODE,
+    patch=PATCH,
+    owner=OWNER,
+    label="lysosome pool",
+    reference=None,
+    role=None,
+):
+    """One declaration entry: its own ID `cid`, its node (storage), patch and owner; `role` is
+    omitted (the default) when None."""
+    entry = dict(id=cid, node=node, patch=patch, owner=owner, label=label, reference=reference)
+    return entry if role is None else entry | dict(role=role)
 
 
 def with_compartments(raw, compartments):

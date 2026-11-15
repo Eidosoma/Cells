@@ -235,15 +235,20 @@ its own node.
 {
   "law": "cell_owned_compartments@1",
   "compartments": [
-    {"node": "lys_0", "patch": "lys_0_membrane", "owner": "cell_0",
-     "label": "lysosome pool", "reference": null}
+    {"id": "lys_0", "node": "ecs_lys_0", "patch": "lys_0_membrane", "owner": "cell_0",
+     "role": "lumen", "label": "lysosome pool", "reference": null}
   ]
 }
 ```
 
-- `node`: the compartment's @3 outside node, and its stable compartment id.
+- `id`: the compartment's own stable ID, a string unique among every ID of the world, its node's
+  included (the lead's ruling with D174, built in milestone 1: identity independent of storage).
+- `node`: the compartment's @3 outside node, its storage today.
 - `patch`: its bounding patch.
 - `owner`: the owner's cell id. In version 1 this is the founder carrier, which never changes (§1.5).
+- `role`: optional, a short string (1 to 40 characters), "lumen" by default when omitted; the
+  identity map and the summary record whether it was declared. **No physics depends on the role in
+  version 1:** it is metadata, carried to the map, the summary and later the run view.
 - `label`: free text. `reference`: null or an opaque ontology reference, for example a Gene Ontology
   cellular-component term. Both are metadata only: they reach the summary and the run view, never an
   array. S2's guard applies: changing either changes no binding, program or trajectory. Generic laws
@@ -954,21 +959,23 @@ with one import and one line.
 - `CONFLICTS_VIEW` lists the volumes, the areas, the capacitances and the masks. Through the
   composite's structure check it refuses water and what requires it, membrane state, insertion@1
   and @2, the partition, the bridge and the lumens.
-- **Identity is a host-side map** (`compartments.identity_map`; D174's "compartment identity is a
-  host-side map", made complete for version 1). Each entry holds:
-  - the compartment's ID;
+- **Identity is a host-side map, independent of storage** (`compartments.identity_map`; D174's
+  "compartment identity is a host-side map"). Each entry holds:
+  - the compartment's declared ID;
   - its owner (cell, slot, carrier);
-  - its role ("lumen" in version 1, outside its bounding membrane);
+  - its declared role, with whether it was declared;
   - its storage (`outside_node`, the node and its slot);
   - its oriented bounding membrane: the patch and its slot, the inside endpoint the owner cell, the
-    outside endpoint the compartment, and V_b = φ_owner − φ_compartment;
+    outside endpoint the compartment (by its ID), and V_b = φ_owner − φ_compartment;
   - the label and the reference.
-  **The map's shape is independent of storage, but its values are not yet.** Storage as an outside
-  node is one field of the map. In version 1, though, the ID is the node's ID (§1.4), and the role
-  is fixed as "lumen", not declared. Full independence needs a declared ID distinct from the node
-  and a declared role. Neither is in the @1 schema, and adding them is free only before landing:
-  the lead's decision. The summary carries the map. Two compartments in one cell stay distinct
-  (tested). A label or reference changes no binding.
+- **The ID and the role are declared** (the lead's ruling before landing).
+  - The ID is a string, unique among every ID of the world. A collision with the node, a cell, a
+    species or another compartment is refused.
+  - The role is a short string, "lumen" by default when omitted. The map and the summary
+    (`compartments_role_default`) record which.
+  - **No physics depends on the role in version 1.** Like the label, the ID, the role and the
+    reference change no binding (tested).
+  - The summary carries the map. Two compartments in one cell stay distinct (tested).
 - **Exchange is a driven route** (D174). §0, §2.1 and §2.3 now say so: it books signed work and no
   heat, and a pair that follows Fick's trajectory is not a passive permeation. The passive law is
   door T1, with D174's five requirements.
