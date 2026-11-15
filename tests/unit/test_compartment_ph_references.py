@@ -177,6 +177,42 @@ def test_the_negative_control_stalls_far_beyond_the_budget():
     assert abs(kin.at[T]["pH_L"] - without.at[T]["pH_L"]) < BUDGET
 
 
+def test_k2b_the_reversed_pump_is_opposite_at_the_start_and_closes_its_ledgers():
+    """K2(b), fr4_acidification_v1's controls.K2_planted_sign (e71f1200): the declared law with its
+    two sides exchanged. At the start both pumps move the same protons in opposite directions; the
+    protocol's dG_cyc and S hold at any state; its own ledgers close; it alkalinizes the lumen."""
+    decl = ph._Model(ph.acceptance_world(), kinetic=False)
+    rev = ph._Model(ph.acceptance_world(reversed_pump=True), kinetic=False)
+    td = decl.transport(decl.speciation(decl.y0), 0.0)
+    tr = rev.transport(rev.speciation(rev.y0), 0.0)
+    assert td["J_H_pump"] > 0 > tr["J_H_pump"]  # c to L declared; L to c reversed
+    assert tr["J_H_pump"] == pytest.approx(-td["J_H_pump"], rel=1e-14)  # equal pH, V_b = 0
+    p, rt, F = rev.w.pump, rev.rt, rev.F
+    sp = rev.speciation(rev.y0)
+    hc, hL, Vb = 6e-5, 2e-4, -0.01
+    sp = [dict(sp[0], h=hc), dict(sp[1], h=hL)]
+    t2 = rev.transport(sp, Vb)
+    dG_atp = p.dG0_prime_J_per_mol + rt * math.log(0.3 * 3.0 / (3.0 * C0))
+    dG = dG_atp + p.n * (rt * math.log(hc / hL) + F * Vb)
+    assert t2["dG_cyc"] == pytest.approx(dG, rel=1e-13)
+    S = 1.0 / (1.0 + (p.K_H_mM / hL) ** p.n) / (1.0 + p.K_ATP_mM / p.ATP_mM)
+    assert t2["J_cyc"] == pytest.approx(p.capacity_fmol_per_s * S * -math.expm1(dG / rt),
+                                        rel=1e-12)
+    assert t2["J_H_pump"] == -p.n * t2["J_cyc"] and -t2["dG_cyc"] * t2["J_cyc"] >= 0.0
+    T = 20.0
+    run = ph.integrate(ph.acceptance_world(reversed_pump=True), T, record=(T,))
+    declared = ph.integrate(ph.acceptance_world(), T, record=(T,))
+    r, m = run.at[T], run.model
+    assert r["work_pJ"] > 0 and r["heat_pJ"] > 0
+    assert abs(r["energy_residual_pJ"]) <= 1e-10 * r["work_pJ"]
+    assert r["Heq_c"] + r["Heq_L"] == pytest.approx(sum(m.Heq0), rel=1e-12)
+    K0 = m.ions0[0]["K"] + m.ions0[1]["K"]
+    assert r["ions_c"]["K"] + r["ions_L"]["K"] == pytest.approx(K0, rel=1e-13)
+    assert abs(r["phi_c"]) <= 1e-9
+    assert r["pH_L"] > 7.2 > declared.at[T]["pH_L"]  # it alkalinizes where the declared acidifies
+    assert r["J_ions"]["K"] > 0 and r["Vb"] > 0  # K+ follows into the lumen, now the negative side
+
+
 def test_the_pump_law_vanishes_at_static_head_and_reverses():
     w = ph.acceptance_world()
     m = ph._Model(w, kinetic=False)

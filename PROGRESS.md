@@ -24,8 +24,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     branch `integration-d172`, from tag `d172-base-2026-11-15`, until one integrated landing; main
     takes docs, validation and tests. FR-4 and FR-5 are the round's priority consumers.
   - **Proposed designs:** the FR-4/FR-5 physics note and the run view (D154).
-  - **Open on the L4:** Q7, the run-to-run nondeterminism at 825 nodes. The W1 full-tissue hold
-    runs its third segment.
+  - **On the L4:** Q7's run-to-run nondeterminism at 825 nodes goes away under the deterministic
+    flag (15 of 15 bitwise pairs, D181). Its judged run follows tonight's GPU column. The W1
+    full-tissue hold runs its fourth segment.
 - **Single lead agent from 8 November**, with at most seven subagents on disjoint files (six from
   14 November, D155; seven the same evening, D171). Work continues on `main`, and milestones are
   tagged.
@@ -75,6 +76,27 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **A7's results-gate tolerance rehearsal: physical fields bitwise in all 113 worlds (15 November
+  2026).** This is development evidence for the round's results gate
+  ([note](/mnt/workspaces/Cells/d172-restructure-20261115-01/operators/summation/out/rehearsal/NOTE.md)).
+  - **Setup:** the results baseline tool, unchanged, saved the tag's 113 worlds with A7's serial
+    left fold installed, the barrier at every listed site. It ran in unit `cells-sum-rehearsal`
+    on CPU 3, 17:33–18:53 UTC.
+  - **Bitwise:** 31 of 113 worlds are identical. In the other 82, only ledger and diagnostic arrays
+    moved: the reservoir work, junction, face and lumen heat, the energy-balance observations and
+    the residual diagnostics. No amount, gate, potential, voltage, transfer, volume or D152 amount
+    moved, and the one refusal matched in type and message.
+  - **The tolerance file written before the run:** 108 of 113 worlds within tolerance. The five
+    failures were missing or zero bounds on movements at rounding, at most 3.5e-18 pJ against
+    2–6 pJ ledgers.
+  - **The final file** (`a7-g1-tolerance.json`, 862 patterns) makes three changes after seeing the
+    data, each named in the file. Each gives a zero or missing bound an absolute floor of
+    16 eps × its own energy scale. Under it, all 113 worlds are within tolerance, and the closest
+    approach is 0.27 of a bound. The lead accepted the changes, because no physical field gained
+    a pattern.
+  - **Next:** tonight's GPU column (`cells-sum-gpu`, after the hold's segment 4) decides the
+    barrier's placement, then D182 records A7.
 
 - **The L4 agreement driver gained a flagged mode, and D181 is recorded (15 November 2026).**
   Validation only. Tier 1 at the merge: 344 files, no changed outcome.

@@ -668,6 +668,13 @@ registry code.
    - `compile_window`'s key gains the model's `structure_key`, which the object sets to its
      structure (and the composite to its inner structure and operator list). The step and check
      functions stay in the key.
+   - **The packed planner's key (built on `core-d172`):** `vector_windows.world_key` is the part
+     of the key one world fixes: the structure key, the step and check functions, and the tree,
+     shapes and dtypes of the world's state, parameters, activity mask and check constants,
+     without the world axis. `spec_world_key(model, spec, start)` computes it on the host, before
+     any compile; `compile_window` builds its own key through it (`window_key`: the world part,
+     then the observation rows, the round arrays' shapes, the world count and the placement), so
+     the two cannot drift. Value twins get equal keys (`tests/unit/test_window_key.py`).
 
 #### (f) Answers to the operators stream (its PLAN.md §4)
 
@@ -766,10 +773,15 @@ registry code.
    - **Reads at a split** (FR-5's factors on the routing door) call the same pure `evaluate` on the
      split's state. They are first order in dt there, as FR-4's note says.
    - **Coverage and padding** (the FR-4/FR-5 owner's two notes, 15 November):
-     - a read declares every node it covers, buffered or not. The closure covers every node that
-       holds the H row: at an unbuffered node h = H̄, and its free-energy term is −RT ln c° per
-       proton, not zero (μ°(H⁺) = 0 at 1 M, while @3's row term is referenced to 1 mM). So the slot
-       evaluates the term on every covered node;
+     - a read declares every node it covers, buffered or not. At an unbuffered node h = H̄.
+       **Superseded (B4, core-d172 8f405f12; checked by the FR-4/FR-5 owner, FR-4's note §4.4 on
+       main 85108c77):** the kernel's declared term carries the proton's standard part,
+       RT H_eq (μ°(H⁺)/RT − ln c°), which @3's routes and its reservoir work never book (they use
+       RT ln c with c in mM). With it, a proton exchanged with a held bath would leave RT ln c° in
+       the energy ledger. So the kind books the term in @3's convention: the kernel's
+       `declared_term_pJ` less that standard part, which is zero at every unbuffered node, with
+       H_eq-derivative RT ln(h/H̄). The kernel stays unedited and convention-neutral; the kind
+       owns the engine's 1 mM convention (`models/inner_kinds/proton_buffer.py`);
      - the slot masks padding, as @3 masks its own padded slots. Before `evaluate`, an inactive
        node's amounts are replaced by a benign value, as `physical_amounts`' padding reads
        concentration 1. After it, that node's validity is ignored, and its values and energy term
@@ -992,6 +1004,25 @@ the insertion point is CORE's. Its conventions, fixed here:
   routes at each node. That is finding 3's z = 0 term for its routes, declared as its bound term.
   A dt-study criterion covers accuracy. Exact booking closes the ledger up to h = 2, so it no
   longer signals an overshoot by itself (§7.5).
+- **As built (core-d172 6a43f189, 7af1382f; the lead's ruling: one kind, laws by contract):** the
+  kind `cells.passive_routes@1` (`models/inner_kinds/passive_routes.py`), model key
+  `passive_routes` in FR-4's form (`validation/compartment_ph/definitions.py`): a list of {id,
+  patch | junction, law, permeability_m_per_s (one number), species (the neutral law's row; the
+  leak's defaults to H), factors (empty: FR-5's damage and pH condition come with FR-5's laws)}.
+  - `passive_neutral_permeation@1`: the kernel's Fick flux on the read amounts, inward from the
+    host's outside end to its inside end; §7.5's exact booking where version 1's scope mask
+    (`passive_exact`, set at binding from `moved_nodes`; a route touching a held bath is never
+    exact) allows; its step is `bound_rate` (gap 5). The mask is a fixpoint over shared rows
+    (1e57af61): a route sharing a row with a tableau-booked passive route is tableau-booked too,
+    so every exact row is moved by exact routes alone. The operators' writers (`moved_in_step`)
+    join at the composite's admission (INT).
+  - `proton_constant_field_leak@1` (`processes/proton_leak.py`): an H⁺ constant-field route on a
+    membrane patch at the patch voltage, reading free h through B4's read at buffered nodes;
+    tableau-booked (charged: never exact); its max-side slope conductance is its `stage_term`
+    (B7, gap 5) and its flux joins the membrane current (gap 9); its row must be B4's proton row
+    where B4 is declared.
+- **B4's declaration (7af1382f)** is FR-4's `stage_reads` list: [{read_id:
+  "rapid_proton_buffer@1", proton_row, buffers, k_on_per_mM_s}], one read in version 1.
 
 #### (j) The per-structure schema: three options, and the ruling (A, 15 November)
 
@@ -1214,30 +1245,77 @@ canonical kind order (sorted ID) that schema A's types use:
 - `KIND_ID`, and its laws' declarations in its own module, as `inner_laws` holds the channels';
 - its fields: state axes, layout fields, control fields and observation columns, each with its
   axes' names. Schema A appends them in canonical order;
-- `parse(raw_model, raw_experiment, base)` → its declaration; `to_dict(declaration)` → its raw
-  keys; `control_values(spec, times)` → its control fields;
-- `initial(spec, layout)` → its state and layout fields;
-- `structure_entry(declaration)` → its hashable part of the InnerStructure. That part enters the
-  compile key, the batch signature and the cached implementation.
+- `parse(entries, base)` → its declaration, from its model-key block (`entries`) and the parsed
+  @2 base definition; `to_dict(declaration)` → that block; `control_values(spec, declaration,
+  times)` → {control field: [time, ...]}, constant over the run in version 1;
+- `initial(spec, declaration, layout)` → ({state field: array}, {layout field: array});
+- `structure_entry(declaration)` → its hashable, value-free part of the InnerStructure. That part
+  enters the compile key, the batch signature and the cached implementation.
 
-**The hooks the core calls.** Each is optional; a kind supplies the ones it needs:
-1. **`stage_read(amounts, layout, *, xp)` → amounts,** at the concentration entry of every stage:
-   `explicit_rates`, `implicit_rates`, `rhs` and `readouts` call it before any rate reads a
-   concentration. B4 uses it; reads compose in canonical order.
-2. **`rates(state, potentials, control, layout, *, xp)` → a kind's rates:** per-row material
-   changes (inward-positive at nodes) and its own state derivatives (cycles, say). They are added
-   after today's terms, in canonical order.
-3. **`book(applied, start, end, layout, *, xp)` → state increments** (heat, work, a standard
-   term), from the step's applied transfer in `imex_step` after the tableau's combination. §7.5's
-   exact booking is one. Under RK4 the kind's derivative fields integrate like any state.
-4. **`ledger_terms(state, layout)` → its material transfers, energy terms and magnitudes,**
-   added in `balances`, `device_balances` and the magnitudes, so every ledger closes with its
+**The hooks the core calls, as built** (schema A, `core-d172` e71dac25, with the stage check and
+the bookings' validity from 307daf3a and 6c850d91; the authoritative list is the `Kind` docstring
+in `core/kind_registry.py`). Each is optional; a kind supplies the ones it needs. `p` is the
+world's layout and `state`, `control` are in the structure's own types. **Built-in kinds**
+register on `BUILTIN` from their own package: `kind_registry.active()` imports
+`cells.models.inner_kinds` by name once, so the core imports no kind module and a registered,
+undeclared built-in changes nothing:
+1. **`stage_read(state, p, *, xp)` → (the state whose amount fields hold the amounts the stage's
+   rates read, valid),** at the concentration entry of every stage: `readouts` (so `rhs`),
+   `explicit_rates` and `imex_step`'s face weights call it before any rate reads a
+   concentration; `implicit_rates` uses the frozen weights. B4 uses it; reads compose in hook
+   order. **A failed read refuses the row and the step,** and `domain_valid` evaluates the reads
+   at every checked state, the step's end included (§7.4 (g) 1). **The read changes
+   concentrations, never charge:** the field solve takes the stored rows' charges (FR-4's H_eq
+   and buffer totals), and only the rates see the read amounts. A stage read declares
+   `stage_rows(declaration)` → ((species, node ID), ...), every row it reads or rewrites.
+   - **`stage_check(read, cell, outside, p, *, xp)` → one bool,** after every rate of a stage
+     (`readouts` and `explicit_rates`), with the read state and the stage's total node rates; a
+     false check refuses the row or the step. FR-4's envelope (the closure's lag at the stage's
+     transport) is one.
+2. **`rates(state, potentials, control, p, *, xp)` → `KindRates(cell, outside, derivatives,
+   heat_pJ_s, work_pJ_s)`:** inward-positive node changes (cell [species, cell], outside
+   [species, outside node]) into the shared inventory, where the field solve sees their charge
+   (rule (c)); its own state fields' derivatives; heat and work rates, which join the energy rate
+   by role (rule (a)). `potentials` are the stage's node potentials, cells then outside nodes.
+   They are added after today's terms, in hook order. `KindRates.valid` (7af1382f) is the
+   kind's own domain at the stage's read and potentials (a charged law's V-dependent domain,
+   such as |ΔG_cyc/RT| ≤ 80), and-ed into the stage's validity. `KindRates.membrane_flux` (outward
+   [species, membrane], optional) joins the patches' total flux and membrane current
+   (observations; gap 9, 669f8ed6).
+   - **Step size (B7 for kinds; gap 5, 669f8ed6):** `stage_term(read, control, p, *, xp)` →
+     [cell] conductance (S) at the stage, added to `membrane_rate`'s per-stage refusal;
+     `bound_rate(spec, declaration)` → 1/s, a definition-time term the host step checks hold to
+     the same bound (the passive law's dt·L ≤ 1).
+   - **One writer (gap 8, 669f8ed6):** `held_rows(declaration)` → ((species, node ID), ...), rows
+     the kind reads and never moves; binding refuses any inner route or other kind that moves
+     one. The operators' writers are the composite's admission.
+   - **Per-stage diagnostics (gap 7, dfe1234c):** `stage_values(read, cell, outside, p, *, xp)` →
+     {own state field: value} at every explicit IMEX stage, with `stage_extrema` = ((field,
+     "max" | "min"), ...); the step's end state holds each field's running extremum over every
+     stage so far (RK4 leaves them). B4 reports `proton_buffer_max_lag_pH`, `_min_pH` and
+     `_max_pH` per node; an envelope breach stays a refusal (the verdict), these are the margin.
+3. **`book(applied, start, end, p, dt, *, xp)` → ({own state field: new value}, valid),** in
+   `imex_step` after the tableau's combination; `applied(name)` is the step's applied rate of a
+   state field (the tableau's explicit and implicit weights). Every kind receives the same end
+   state (before any kind books) and may write only its own state fields, so bookings commute. A
+   false valid refuses the step: §7.5's "negative exact share: step-bound breach". §7.5's exact
+   booking is one. Under RK4 the kind's derivative fields integrate like any state.
+4. **`ledger_terms(state, p, *, xp)` → {"cell", "outside", "heat_pJ", "work_pJ", "stored_pJ"}
+   (any subset):** cumulative inward-positive node transfers, heat and work accumulators, and
+   `stored_pJ`, the free energy the kind holds beyond the stored rows' own terms (its change
+   since the start: FR-4's buffer term, finite fuel's standard term), folded by role into
+   `balances`, `device_balances` and the ledger magnitudes, so every ledger closes with its
    moves.
-5. **`domain(state, layout, *, xp)` → bool,** and-ed into `domain_valid`, on the host and the
-   device.
-6. **`readouts(…)` → its observation columns,** which `observe_history` writes.
-7. **`moved_rows(declaration)`** → the (species, node) rows it moves in the step, joined into
-   `moved_rows` (the registry's `moved_in_step` reads them).
+5. **`domain(state, p, *, xp)` → one bool,** and-ed into `domain_valid`, on the host and the
+   device; **`control_domain(control, p, *, xp)` → one bool,** in place of the [0, 1] rule for
+   its controls (rule (d)).
+6. **`readouts(state, read, potentials, control, p, *, xp)` → its readout columns** (7af1382f:
+   the stored state, the row's read and its node potentials, so a charged law reports its
+   instantaneous rate at a buffered node), in order, which
+   `observe_history` writes after today's.
+7. **`moved_rows(declaration)`** → ((species, node ID), ...), or ((species, node ID, law ID),
+   ...), the rows it moves in the step, joined into `moved_rows` (the registry's `moved_in_step`
+   reads them).
 8. **`check_definition(spec)`:** its definition-time refusals (for example B5's held-row admission
    and ΔG° against the registry). It runs after the registry's checks and before @3's.
 
@@ -1248,10 +1326,36 @@ canonical kind order (sorted ID) that schema A's types use:
   seam change, through CORE.
 - **An undeclared kind is absent:** no field, no kernel, no hook call. A4's criterion extends to
   kinds.
+- **Two orders, named apart** (docs/MODULE_SYSTEM_DESIGN.md §7, D180): the field order is
+  `structure.kinds`, canonical by sorted ID. The hook-evaluation order is a separate name, equal
+  to the field order in version 1, so a later dependency order moves no field or snapshot layout.
+- **No global codes for kinds:** kinds and their laws carry no code. A kind's law index is bound
+  per definition by the resolved structure, and no global code sequence is hardened. Today's
+  channel LAW_CODES stay as they are.
+- **Non-commuting hooks on the same rows are refused at binding.** Of the hooks, only stage reads
+  compose: two kinds' stage reads on a shared row (their `stage_rows`) are refused at binding, and
+  a stage read that declares no rows is refused. Bookings commute by construction (one end state
+  for every kind, own fields only); rates, ledger terms and domains add or and. Version 1 has one
+  stage read, so no declared world is refused.
+- **The planted kinds are registered from outside `src/cells`,** under a non-`cells` namespace
+  (`tests.`), on a test-local registry.
+- **The parsing surface (core-d172 d4b3c01f; D180):** a kind's `parse` and `check_definition`
+  refuse with `ConfigError` and may use `require_fields(value, expected, name)`,
+  `finite_number(value, name, *, positive=False)` and `bounded_integer(value, name, *,
+  minimum, maximum)`, all exported by `cells.core.kind_registry` (public names in
+  `cells.core.specs`, whose underscored helpers stay as aliases for today's callers). Kinds and
+  external modules use these, never the private names.
+- **Ledger lists stay the shared literals in this round** (rule (a)). Reading them from the
+  implementation object would change @1's and @2's shared check code, so it follows the landing,
+  with its own D148 case.
 - **Hooks on the check path trace on the device.** `domain`, `control_domain` and
   `ledger_terms` take `xp`, trace under jnp and branch on no value in Python. So the device's
   per-row checks include kinds as the host's do. That leaves room to move host-side checks into
   device windows: the coupling export measured them at 91% of the runner path's wall time.
+  Enforced at binding: `check_definition` traces each of them once (`jax.eval_shape`) on the
+  definition's initial state, with `stage_read` (which `domain_valid` evaluates) and
+  `stage_check`, and refuses a hook that does not trace, a domain, read or check that is not one
+  bool, and a ledger term of an unknown role or shape.
 - **The planted kind of schema A's acceptance implements every hook** with trivial physics: a
   neutral species exchanged at a constant rate between two nodes, with its own ledgers. So each
   seam is exercised before any real kind lands.
@@ -1346,6 +1450,15 @@ canonical kind order (sorted ID) that schema A's types use:
 - **When.** It is implemented with its first consumer, the passive law's insertion point, and
   reused by the implicit patch and FR-10's onset. A tighter face-free bound constant than the
   ordinary one belongs with it (§13.6).
+- **Built (core-d172 6a43f189), with its acceptance as tests** (`tests/unit/
+  test_passive_routes_kind.py`, the closed pair being FR-1's face-free world W as plain @3, k =
+  100/s at dt = 1 ms): the pair relaxes as REF's closed form says and its heat is the engine's own
+  free-energy decrease to 1e-10; a trace start is admitted while the tableau's booking of the same
+  run fails the energy ledger; the honest raw sums stay within the factor 16 and a planted sign
+  flip on a minor route fails; an uphill step's negative share is refused; a route on a row
+  another route moves keeps the tableau's booking bitwise; binding refuses a charged species and
+  a carrying host. On the device and host path a refusal is the step's (the booking's validity);
+  the reason's text is the module's `NEGATIVE_SHARE`.
 - **Acceptance, with its first consumer:**
   - on the closed pair each row's raw shares sum to its exact decrease within the raw-sum check,
     with the factor 16 confirmed by a test;
