@@ -5,8 +5,8 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-15",
-  "generated_at": "2026-11-15T17:33:11Z",
-  "revision": "d0c747c7",
+  "generated_at": "2026-11-15T17:51:11Z",
+  "revision": "63a477d9",
   "revision_date": "2026-11-15",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
@@ -375,7 +375,7 @@
      "covers_all": true
     }
    },
-   "checked_at": "d0c747c7"
+   "checked_at": "63a477d9"
   },
   "counts": {
    "units": 48,
@@ -2002,105 +2002,55 @@
     "sources": [
      {
       "name": "UniProt",
-      "url": "https://www.uniprot.org/",
-      "release": "2026_04",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
-      "class": "permissive",
-      "holds": "for each reviewed entry of the reference proteome: its name, gene, locus, length, level of evidence and keywords, the places it states with the evidence for each, its membrane-spanning segments and signal peptide, and the InterPro entries and Gene Ontology terms UniProt gives it; and UniProt's vocabulary of places. The programs that its pages name behind the segments and signal peptides it predicts are sources below. Of its own: 0 statements rest on a rule of its rule base, and 1 stated place rests on a sequence analysis for which it names no program",
-      "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)"
+      "class": "permissive"
      },
      {
       "name": "InterPro",
-      "url": "https://www.ebi.ac.uk/interpro/",
-      "release": "111.0",
-      "accessed": "2026-11-15",
-      "licence": "CC0 1.0",
-      "class": "permissive",
-      "holds": "the type and name of each entry, the tree of broader and narrower entries, and the mapping of entries to Gene Ontology terms",
-      "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456."
+      "class": "permissive"
      },
      {
       "name": "Gene Ontology",
-      "url": "https://geneontology.org/",
-      "release": "releases/2026-07-26",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
-      "class": "permissive",
-      "holds": "the names of terms and which term is a kind or a part of which; no term's text is copied beyond the names of the districts' and the assemblies' terms",
-      "cite": "Ashburner et al. Gene ontology: tool for the unification of biology. Nat Genet. 2000 May;25(1):25-9. DOI: 10.1038/75556; The Gene Ontology Consortium. The Gene Ontology knowledgebase in 2026. Nucleic Acids Res. 2025 Dec 18;gkaf1292. DOI: 10.1093/nar/gkaf1292"
+      "class": "permissive"
      },
      {
       "name": "PROSITE",
-      "url": "https://prosite.expasy.org/prosite_license.html",
-      "accessed": "2026-11-15",
-      "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and nothing of it is copied. Its rules (ProRule) are named in UniProt's entries as what stands behind a statement. 66 placements rest on them alone: 32 by the statement of place that decides the shelf (5 rules), 11 by the statement that the protein spans the membrane, and 47 by a side read here from a feature that a rule gives."
+      "through": "UniProt"
      },
      {
       "name": "HAMAP",
-      "url": "https://hamap.expasy.org/hamap_about.html",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
       "class": "permissive",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms. Its family rules are named in UniProt's entries as what stands behind a statement. 138 placements rest on them alone: 109 by the statement of place that decides the shelf (107 rules), 41 by the statement that the protein spans the membrane, 4 by the stated face, and 2 by a side read here from a feature that a rule gives."
+      "through": "UniProt"
      },
      {
       "name": "TMHMM",
-      "url": "https://services.healthtech.dtu.dk/services/TMHMM-2.0/",
-      "accessed": "2026-11-15",
-      "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research, and any other user must obtain a commercial licence. It is a licence of the program: no clause speaks of predictions made with it",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which. 191 placements rest on segments that an entry gives by sequence analysis alone: 2 are read here from such segments (basis predicted; 4 are read from segments in all), and behind a curator's statement 189 are said to span the membrane on a sequence analysis and 8 have a stated place that rests on a sequence analysis in an entry with such segments."
+      "through": "UniProt"
      },
      {
       "name": "Phobius",
-      "url": "https://phobius.sbc.su.se/download",
-      "accessed": "2026-11-15",
-      "licence": "For academic users only: the program may be used for private study, education or nonprofit research, and other users are asked to write to its author. The terms are of the program: they do not speak of predictions made with it",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which; and one of the four it names for signal peptides. The placements are those counted under TMHMM (191) and under SignalP (99)."
+      "through": "UniProt"
      },
      {
       "name": "SignalP",
-      "url": "https://services.healthtech.dtu.dk/services/SignalP-5.0/",
-      "accessed": "2026-11-15",
-      "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research, and any other user must obtain a commercial licence. It is a licence of the program: no clause speaks of predictions made with it",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. 99 placements rest on a signal peptide that an entry gives by sequence analysis alone: 99 are read here from such a signal (basis predicted; 159 are read from a signal peptide in all), and behind a curator's statement 0 have a stated place that rests on a sequence analysis in an entry with such a signal and no such segment."
+      "through": "UniProt"
      },
      {
       "name": "TargetP",
-      "url": "https://services.healthtech.dtu.dk/services/TargetP-2.0/",
-      "accessed": "2026-11-15",
-      "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research, and any other user must obtain a commercial licence. It is a licence of the program: no clause speaks of predictions made with it",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. The placements are those counted under SignalP (99)."
+      "through": "UniProt"
      },
      {
       "name": "Memsat",
-      "url": "https://www.uniprot.org/help/transmem",
-      "accessed": "2026-11-15",
-      "licence": "Terms not read: UniProt's help names Memsat without a version or an address, so no page of terms could be tied to the program it runs",
       "class": "no stated terms",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which. The placements are those counted under TMHMM (191)."
+      "through": "UniProt"
      },
      {
       "name": "Predotar",
-      "url": "https://www.uniprot.org/help/signal",
-      "accessed": "2026-11-15",
-      "licence": "Terms not read: the program's own page answers this tool with a check for a browser, so its terms could not be read",
       "class": "no stated terms",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. The placements are those counted under SignalP (99)."
+      "through": "UniProt"
      }
     ]
    },
@@ -2209,114 +2159,60 @@
     "sources": [
      {
       "name": "UniProt",
-      "url": "https://www.uniprot.org/",
-      "release": "2026_04",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
-      "class": "permissive",
-      "holds": "for each reviewed entry of the human reference proteome: its name, gene, length and level of evidence, the places it states with the evidence for each, its membrane-spanning segments and signal peptide, the isoforms it describes, the InterPro entries and the Gene Ontology terms UniProt gives it; and UniProt's vocabulary of places. Its own pages name the programs behind the segments and signal peptides it predicts (TMHMM, Memsat, Phobius and a hydrophobic moment plot for the segments; Phobius, Predotar, SignalP and TargetP for the signal peptides); each is a source below, with what rests on it. Of UniProt's own: 2 statements that a protein spans a membrane rest on a rule of its rule base (RuleBase), and 13 stated places rest on a sequence analysis in entries that carry no segment or signal peptide of that kind, for which it names no program",
-      "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)"
+      "class": "permissive"
      },
      {
       "name": "InterPro",
-      "url": "https://www.ebi.ac.uk/interpro/",
-      "release": "111.0",
-      "accessed": "2026-11-15",
-      "licence": "CC0 1.0",
-      "class": "permissive",
-      "holds": "the type and name of each entry, the tree of broader and narrower entries, and the mapping of entries to Gene Ontology terms",
-      "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456."
+      "class": "permissive"
      },
      {
       "name": "Gene Ontology",
-      "url": "https://geneontology.org/",
-      "release": "releases/2026-07-26",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
-      "class": "permissive",
-      "holds": "the names of terms and which term is a kind or a part of which; no term's text is copied beyond the names of the districts' terms",
-      "cite": "Ashburner et al. Gene ontology: tool for the unification of biology. Nat Genet. 2000 May;25(1):25-9. DOI: 10.1038/75556; The Gene Ontology Consortium. The Gene Ontology knowledgebase in 2026. Nucleic Acids Res. 2025 Dec 18;gkaf1292. DOI: 10.1093/nar/gkaf1292"
+      "class": "permissive"
      },
      {
       "name": "PROSITE",
-      "url": "https://prosite.expasy.org/prosite_license.html",
-      "accessed": "2026-11-15",
-      "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and nothing of it is copied. Its rules (ProRule) are named in UniProt's entries as what stands behind a statement. 289 placements rest on them alone: 281 by the statement of place that decides the shelf (44 rules; most often PRU00108 for 71, PRU00981 for 36, PRU00187 for 35), 11 by the statement that the protein spans the membrane, and 1 by a side read here from segments that a rule gives. They were read in UniProt's entries."
+      "through": "UniProt"
      },
      {
       "name": "HAMAP",
-      "url": "https://hamap.expasy.org/hamap_about.html",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
       "class": "permissive",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms. Its family rules are named in UniProt's entries as what stands behind a statement. 54 placements rest on them alone: 39 by the statement of place that decides the shelf (37 rules), 14 by the statement that the protein spans the membrane, 4 by the stated face, and 2 by a side read here from segments that a rule gives."
+      "through": "UniProt"
      },
      {
       "name": "TMHMM",
-      "url": "https://services.healthtech.dtu.dk/services/TMHMM-2.0/",
-      "accessed": "2026-11-15",
-      "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research, and any other user must obtain a commercial licence. It is a licence of the program: no clause speaks of predictions made with it",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which. 1,533 placements rest on segments that an entry gives by sequence analysis alone: 103 are read here from such segments (basis predicted; 119 are read from segments in all), and behind a curator's statement 1,429 are said to span the membrane on a sequence analysis and 148 have a stated place that rests on a sequence analysis in an entry with such segments."
+      "through": "UniProt"
      },
      {
       "name": "Phobius",
-      "url": "https://phobius.sbc.su.se/download",
-      "accessed": "2026-11-15",
-      "licence": "For academic users only: the program may be used for private study, education or nonprofit research, and other users are asked to write to its author. The terms are of the program: they do not speak of predictions made with it",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which; and one of the four it names for signal peptides. The placements are those counted under TMHMM (1,533) and under SignalP (256)."
+      "through": "UniProt"
      },
      {
       "name": "SignalP",
-      "url": "https://services.healthtech.dtu.dk/services/SignalP-5.0/",
-      "accessed": "2026-11-15",
-      "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research, and any other user must obtain a commercial licence. It is a licence of the program: no clause speaks of predictions made with it",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. 256 placements rest on a signal peptide that an entry gives by sequence analysis alone: 249 are read here from such a signal (basis predicted; 311 are read from a signal peptide in all), and behind a curator's statement 7 have a stated place that rests on a sequence analysis in an entry with such a signal and no such segment."
+      "through": "UniProt"
      },
      {
       "name": "TargetP",
-      "url": "https://services.healthtech.dtu.dk/services/TargetP-2.0/",
-      "accessed": "2026-11-15",
-      "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research, and any other user must obtain a commercial licence. It is a licence of the program: no clause speaks of predictions made with it",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. The placements are those counted under SignalP (256)."
+      "through": "UniProt"
      },
      {
       "name": "Memsat",
-      "url": "https://www.uniprot.org/help/transmem",
-      "accessed": "2026-11-15",
-      "licence": "Terms not read: UniProt's help names Memsat without a version or an address, so no page of terms could be tied to the program it runs",
       "class": "no stated terms",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which. The placements are those counted under TMHMM (1,533)."
+      "through": "UniProt"
      },
      {
       "name": "Predotar",
-      "url": "https://www.uniprot.org/help/signal",
-      "accessed": "2026-11-15",
-      "licence": "Terms not read: the program's own page answers this tool with a check for a browser, so its terms could not be read",
       "class": "no stated terms",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. The placements are those counted under SignalP (256)."
+      "through": "UniProt"
      },
      {
       "name": "big-PI",
-      "url": "https://mendel.imp.ac.at/gpi/gpi_server.html",
-      "accessed": "2026-11-15",
-      "licence": "No open licence stated: the predictor's own page gives no terms of use",
       "class": "no stated terms",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its own page, and the program was not run here. The predictor that UniProt's help names for the GPI anchors it predicts. 4 placements rest on a GPI anchor that the entry states on a sequence analysis alone: such an anchor puts the protein on the face away from the cytoplasm."
+      "through": "UniProt"
      }
     ]
    },
@@ -2337,99 +2233,55 @@
     "sources": [
      {
       "name": "GenBank",
-      "url": "https://www.ncbi.nlm.nih.gov/nuccore/U00089.2",
-      "accessed": "2026-11-15",
-      "licence": "NCBI places no restrictions on the use or distribution of GenBank data; this record states none",
-      "class": "permissive",
-      "holds": "the locus tags and lengths of the proteins, and the names of those without a UniProtKB entry"
+      "class": "permissive"
      },
      {
       "name": "UniProt",
-      "url": "https://www.uniprot.org/",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
-      "class": "permissive",
-      "holds": "release 2026_04: each protein's name and gene, its stated location with the evidence for it, its membrane-spanning segments, signal and lipid anchor, its keywords and its level of evidence"
+      "class": "permissive"
      },
      {
       "name": "Lluch-Senar and others 2015",
-      "url": "https://doi.org/10.15252/msb.20145558",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
-      "class": "permissive",
-      "holds": "each gene's class and its essentiality, from Supplementary Table S2"
+      "class": "permissive"
      },
      {
       "name": "PROSITE",
-      "url": "https://prosite.expasy.org/prosite_license.html",
-      "accessed": "2026-11-15",
-      "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and nothing of it is copied. Its rules are named in UniProt's entries as what stands behind a statement: 51 predicted placements rest on them (PRU00303, 45 placements; PRU00426, 1 placement; PRU00427, 2 placements; PRU00441, 3 placements), and in 10 more a curator states the place while the entry's segments, signal or lipid anchor are given by one of its rules. They were read in UniProt's entries."
+      "through": "UniProt"
      },
      {
       "name": "HAMAP",
-      "url": "https://hamap.expasy.org/hamap_about.html",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
       "class": "permissive",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms. Its family rules are named in UniProt's entries as what stands behind a statement: 92 predicted placements rest on them, 1 stated placement stands in an entry whose segments they give, and 9 proteins are said to be at the membrane by them."
+      "through": "UniProt"
      },
      {
       "name": "TMHMM",
-      "url": "https://services.healthtech.dtu.dk/services/TMHMM-2.0/",
-      "accessed": "2026-11-15",
-      "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which. 5 placements predicted in the membrane rest on such segments, and in 87 more a curator or an experiment states that the protein spans the membrane while the entry gives its segments by sequence analysis alone."
+      "through": "UniProt"
      },
      {
       "name": "Phobius",
-      "url": "https://phobius.sbc.su.se/download",
-      "accessed": "2026-11-15",
-      "licence": "For academic users only: the program may be used for private study, education or nonprofit research, and other users are asked to write to its author. The terms are of the program: they do not speak of predictions made with it",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which; and one of the four it names for signal peptides. The placements are those counted under TMHMM and SignalP."
+      "through": "UniProt"
      },
      {
       "name": "SignalP",
-      "url": "https://services.healthtech.dtu.dk/services/SignalP-5.0/",
-      "accessed": "2026-11-15",
-      "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. 1 placement predicted outside rests on such a signal, and in 2 more a curator states the place while the entry gives the signal or the lipid anchor by sequence analysis alone."
+      "through": "UniProt"
      },
      {
       "name": "TargetP",
-      "url": "https://services.healthtech.dtu.dk/services/TargetP-2.0/",
-      "accessed": "2026-11-15",
-      "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. The placements are those counted under SignalP."
+      "through": "UniProt"
      },
      {
       "name": "Memsat",
-      "url": "https://www.uniprot.org/help/transmem",
-      "accessed": "2026-11-15",
-      "licence": "Terms not read: UniProt's help names Memsat without a version or an address, so no page of terms could be tied to the program it runs",
       "class": "no stated terms",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which. The placements are those counted under TMHMM."
+      "through": "UniProt"
      },
      {
       "name": "Predotar",
-      "url": "https://www.uniprot.org/help/signal",
-      "accessed": "2026-11-15",
-      "licence": "Terms not read: the program's own page answers this tool with a check for a browser, so its terms could not be read",
       "class": "no stated terms",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. The placements are those counted under SignalP."
+      "through": "UniProt"
      }
     ]
    },
@@ -2464,88 +2316,44 @@
     "sources": [
      {
       "name": "WormBase ParaSite",
-      "url": "https://parasite.wormbase.org/",
-      "release": "WBPS19",
-      "accessed": "2026-11-15",
-      "licence": "The database's disclaimer: \"Ensembl imposes no restrictions on access to, or use of, the data provided and the software used to analyse and present it. Ensembl data generated by members of the project are available without restriction.\" It goes on: \"Some of the data and software included in the distribution may be subject to third-party constraints. Users of the data and software are solely responsible for establishing the nature of and complying with any such restrictions.\" It asks that the genome's paper and the database be cited.",
-      "class": "permissive",
-      "holds": "the gene models; and, from its BioMart, the helices TMHMM predicts and the signal peptides SignalP predicts on each predicted protein",
-      "cite": "Howe and others (2017) WormBase ParaSite - a comprehensive resource for helminth genomics. Mol Biochem Parasitol 215:2-10. Genome: Ivanković and others (2024) A comparative analysis of planarian genomes reveals regulatory conservation in the face of rapid structural divergence. Nat Commun 15:8215. The database's page of this annotation names no paper. That it is the annotation this paper describes is inferred, not stated by either: the assembly has the paper's name (schMedS3 haplotype 1), the count of coding genes in the second haplotype is the same in both (21,310), and in the first it is 21,392 here against the paper's 21,401."
+      "class": "permissive"
      },
      {
       "name": "InterPro",
-      "url": "https://www.ebi.ac.uk/interpro/",
-      "release": "111.0",
-      "accessed": "2026-11-15",
-      "licence": "CC0 1.0",
-      "class": "permissive",
-      "holds": "the type and name of each entry, the tree of broader and narrower entries, and the mapping of entries to Gene Ontology terms",
-      "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456."
+      "class": "permissive"
      },
      {
       "name": "Gene Ontology",
-      "url": "https://geneontology.org/",
-      "release": "releases/2026-07-26",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
-      "class": "permissive",
-      "holds": "the names of terms and which term is a kind or a part of which; no term's text is copied beyond the names of the districts' and the places' terms",
-      "cite": "Ashburner et al. Gene ontology: tool for the unification of biology. Nat Genet. 2000 May;25(1):25-9. DOI: 10.1038/75556; The Gene Ontology Consortium. The Gene Ontology knowledgebase in 2026. Nucleic Acids Res. 2025 Dec 18;gkaf1292. DOI: 10.1093/nar/gkaf1292"
+      "class": "permissive"
      },
      {
       "name": "UniProt",
-      "url": "https://www.uniprot.org/",
-      "release": "2026_04",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
-      "class": "permissive",
-      "holds": "for each of the species' entries: the membrane-spanning segments, the signal peptide and the subcellular location it gives, whether the sequence's beginning is missing, and its Gene Ontology terms",
-      "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)"
+      "class": "permissive"
      },
      {
       "name": "TMHMM",
-      "url": "https://services.healthtech.dtu.dk/services/TMHMM-2.0/",
-      "accessed": "2026-11-15",
-      "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it",
       "class": "non-commercial",
-      "through": "WormBase ParaSite and UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. WormBase ParaSite ran it and SignalP on the gene models' proteins: 16,566 predicted sides rest on what the two found or did not find (4,218 in a membrane by helices, 599 with one helix and a signal peptide, 965 outside by a signal peptide, 10,784 inside because neither found anything). UniProt's sequence analysis keeps a segment where TMHMM and Phobius overlap: 578 entries are placed in a membrane by such segments, and 249 inside because nothing was found."
+      "through": "WormBase ParaSite and UniProt"
      },
      {
       "name": "SignalP",
-      "url": "https://services.healthtech.dtu.dk/services/SignalP-5.0/",
-      "accessed": "2026-11-15",
-      "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it",
       "class": "non-commercial",
-      "through": "WormBase ParaSite and UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. The gene models' sides are those counted under TMHMM. UniProt's sequence analysis gives the signal peptide SignalP predicts where TMHMM or Phobius bears it out: 131 entries are placed outside by one."
+      "through": "WormBase ParaSite and UniProt"
      },
      {
       "name": "Phobius",
-      "url": "https://phobius.sbc.su.se/download",
-      "accessed": "2026-11-15",
-      "licence": "For academic users only: the program may be used for private study, education or nonprofit research, and other users are asked to write to its author. The terms are of the program: they do not speak of predictions made with it",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. The entries' segments and signal peptides are those counted under TMHMM and SignalP."
+      "through": "UniProt"
      },
      {
       "name": "PROSITE",
-      "url": "https://prosite.expasy.org/prosite_license.html",
-      "accessed": "2026-11-15",
-      "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee",
       "class": "non-commercial",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms, and nothing of it is copied. Its rules are named in UniProt's entries as what stands behind a statement: 3 entries are placed in a membrane by segments that carry one, and 146 are placed by function on a stated place that names one, 50 of them on no other rule."
+      "through": "UniProt"
      },
      {
       "name": "HAMAP",
-      "url": "https://hamap.expasy.org/hamap_about.html",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
       "class": "permissive",
-      "through": "UniProt",
-      "holds": "Nothing was downloaded from it but its statement of terms. 1 entry is placed by function on a place that one of its family rules states."
+      "through": "UniProt"
      }
     ]
    },
@@ -2566,122 +2374,57 @@
     "sources": [
      {
       "name": "GenBank",
-      "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2",
-      "accessed": "2026-11-14",
-      "licence": "NCBI places no restrictions on the use or distribution of GenBank data; this record states none",
-      "class": "permissive",
-      "holds": "The proteins, their names and lengths. Their sequences were read and are not copied.",
-      "cite": "Glass J (2017) Synthetic bacterium JCVI-Syn3A, complete genome. GenBank CP016816.2."
+      "class": "permissive"
      },
      {
       "name": "Breuer and others 2019",
-      "url": "https://doi.org/10.7554/elife.36842",
-      "accessed": "2026-11-14",
-      "licence": "CC BY 4.0",
-      "class": "permissive",
-      "holds": "The functional classes that name the districts, essentiality, detection and estimated copies (supplementary files 3 and 5).",
-      "cite": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842."
+      "class": "permissive"
      },
      {
       "name": "UniParc",
-      "url": "https://www.uniprot.org/uniparc?query=taxonomy_id:2144189",
-      "accessed": "2026-11-14",
-      "licence": "CC BY 4.0",
-      "class": "permissive",
-      "holds": "The sequences, and where PROSITE's lipoprotein profile matches them, as UniProt's archive records the matches. The profile itself is PROSITE's: it was not downloaded and is not copied.",
-      "cite": "UniProt Consortium, UniParc release 2026_04: the archived protein sequences of taxon 2144189."
+      "class": "permissive"
      },
      {
       "name": "UniProtKB",
-      "url": "https://www.uniprot.org/",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
-      "class": "permissive",
-      "holds": "The place those entries state and what stands behind it, for the proteins whose side is stated or that are said to be at the membrane.",
-      "cite": "UniProt Consortium, UniProtKB release 2026_04: reviewed entries of other organisms with the same sequences."
+      "class": "permissive"
      },
      {
       "name": "Biopython 1.85",
-      "url": "https://github.com/biopython/biopython/blob/biopython-185/Bio/SeqUtils/ProtParamData.py",
-      "accessed": "2026-11-15",
-      "licence": "Biopython License Agreement or BSD 3-Clause License",
-      "class": "permissive",
-      "holds": "The 20 values of Kyte and Doolittle's hydropathy scale that the sequences are read with, as this file lists them.",
-      "cite": "The Biopython contributors, Biopython release 1.85: the file Bio/SeqUtils/ProtParamData.py, which lists the scale and names Kyte and Doolittle's paper of 1982 as its origin."
+      "class": "permissive"
      },
      {
       "name": "Paulet and others 2011",
-      "url": "https://doi.org/10.1186/1471-2105-12-135",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 2.0",
-      "class": "permissive",
-      "holds": "The usual reading of the scale: a window of 19 residues, and a mean above 1.6 for a stretch that spans a membrane.",
-      "cite": "Paulet and others (2011) Hydrophobic pulses predict transmembrane helix irregularities and channel transmembrane units. BMC Bioinformatics 12:135."
+      "class": "permissive"
      },
      {
       "name": "Christodoulides and others 2018",
-      "url": "https://doi.org/10.3389/fmicb.2018.01682",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
-      "class": "permissive",
-      "holds": "That the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface.",
-      "cite": "Christodoulides and others (2018) The Role of Lipoproteins in Mycoplasma-Mediated Immunomodulation. Front Microbiol 9:1682."
+      "class": "permissive"
      },
      {
       "name": "PROSITE",
-      "url": "https://prosite.expasy.org/prosite_license.html",
-      "accessed": "2026-11-15",
-      "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee",
       "class": "non-commercial",
-      "through": "UniParc",
-      "holds": "Nothing was downloaded from it but its statement of terms, and nothing of it is copied. Its lipoprotein profile is the origin of the matches that UniProt's archive records on these sequences: the mark lipid_anchor of 14 proteins rests on those matches, 13 of them placed outside and 1 in the membrane, as they were read in UniProt's archive.",
-      "cite": "SIB Swiss Institute of Bioinformatics, PROSITE: its profile PS51257."
+      "through": "UniParc"
      },
      {
       "name": "HAMAP",
-      "url": "https://hamap.expasy.org/hamap_about.html",
-      "accessed": "2026-11-15",
-      "licence": "CC BY 4.0",
       "class": "permissive",
-      "through": "UniProtKB",
-      "holds": "Nothing was downloaded from it but its statement of terms. Its family rules are what reviewed entries of other organisms give a place by: the stated side of 5 proteins and the place at the membrane of 1 rest on them, as read in UniProt's entries.",
-      "cite": "SIB Swiss Institute of Bioinformatics, HAMAP: its family rules, as UniProt applies them in reviewed entries."
+      "through": "UniProtKB"
      },
      {
       "name": "Kyte and Doolittle 1982",
-      "url": "https://doi.org/10.1016/0022-2836(82)90515-0",
-      "accessed": "2026-11-15",
-      "licence": "No open licence stated: the paper's record names none and does not count it as open access",
-      "class": "no stated terms",
-      "holds": "Nothing is taken from it: a pointer to the paper that defined the hydropathy scale. The scale's values were taken from Biopython's file, and only this paper's bibliographic record was read.",
-      "cite": "Kyte and Doolittle (1982) A simple method for displaying the hydropathic character of a protein. J Mol Biol 157:105-132."
+      "class": "no stated terms"
      },
      {
       "name": "L'Hernault and Arduengo 1992",
-      "url": "https://doi.org/10.1083/jcb.119.1.55",
-      "accessed": "2026-11-15",
-      "licence": "CC BY-NC-SA 4.0",
-      "class": "non-commercial",
-      "holds": "Nothing is taken from it: a pointer to a paper that uses the hydropathy scale to find the membrane-spanning stretches of a protein.",
-      "cite": "L'Hernault and Arduengo (1992) Mutation of a putative sperm membrane protein in Caenorhabditis elegans prevents sperm differentiation but not its associated meiotic divisions. J Cell Biol 119:55-68."
+      "class": "non-commercial"
      },
      {
       "name": "Chambaud and others 1999",
-      "url": "https://doi.org/10.1016/s0966-842x(99)01641-8",
-      "accessed": "2026-11-15",
-      "licence": "No open licence stated: the paper's record names none and does not count it as open access",
-      "class": "no stated terms",
-      "holds": "Nothing is taken from it: a pointer to a review of where the lipoproteins of mycoplasmas are anchored. Only its bibliographic record was read.",
-      "cite": "Chambaud and others (1999) Interactions between mycoplasma lipoproteins and the host immune system. Trends Microbiol 7:493-499."
+      "class": "no stated terms"
      },
      {
       "name": "Thornburg and others 2022",
-      "url": "https://doi.org/10.1016/j.cell.2021.12.025",
-      "accessed": "2026-11-14",
-      "licence": "CC BY-NC-ND 4.0",
-      "class": "non-commercial",
-      "holds": "Nothing is taken from it: a pointer to the whole-cell model's own count of membrane proteins and of their copies, for comparison with this file's.",
-      "cite": "Thornburg and others (2022) Fundamental behaviors emerge from simulations of a living minimal cell. Cell 185:345-360.e28."
+      "class": "non-commercial"
      }
     ]
    }
@@ -16336,10 +16079,10 @@
     ],
     [
      "Lines of Python",
-     "82,222"
+     "82,268"
     ]
    ],
-   "weight": 82222
+   "weight": 82268
   },
   {
    "id": "val.division",
@@ -16571,7 +16314,7 @@
     ],
     [
      "Lines of Python",
-     "236,133"
+     "236,179"
     ],
     [
      "Tier 1 test files",
@@ -16592,7 +16335,7 @@
      "where": "Milestones and provenance"
     }
    ],
-   "weight": 236133
+   "weight": 236179
   },
   {
    "id": "val.results_gate",
