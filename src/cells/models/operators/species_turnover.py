@@ -412,6 +412,7 @@ def key_of(route):
 
 class ScheduledSpeciesTurnover(Operator):
     LAW_ID = LAW_ID
+    IDENTITY_ROLE = "author"  # Species registry (D176): it declares its species.
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"
@@ -453,6 +454,9 @@ class ScheduledSpeciesTurnover(Operator):
             spec, declaration.routes, schedule, declaration.templates, LAW_ID
         )
         return (common.control_arrays(tables, times, 1)[..., 0],)
+
+    def species_identities(self, declaration):
+        return declaration.species
 
     def check_definition(self, spec, declaration, schedule, model):
         common.check_species_cap(spec, LAW_ID)
