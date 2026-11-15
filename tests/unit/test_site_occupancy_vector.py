@@ -1,11 +1,14 @@
-"""B4 of FR-3's milestone 1: a vector-window batch (restart is test_site_occupancy_restart.py).
+"""B4 of FR-3's milestone 1: a vector-window batch against its scalar runs.
 
 Criteria fixed before any code (/mnt/workspaces/Cells/site-occupancy-m1-20261115-01/HANDOFF.md):
 * restart from a checkpoint mid-run, in process and through a written snapshot: bitwise against the
   run (the binding multiplier changes at the checkpoint's time);
 * a vector-window batch of three worlds with different k_on: each within 1e-12 of its scalar run's
   final state (relative to each field's scale), and bitwise against the reversed batch.
-The mixed face-free world under ARS(2,2,2) at 1 ms. A few compiles: not tier 1.
+This file holds the scalar arm of the second; its reversed arm is
+test_site_occupancy_vector_reverse.py (split from this file for the 90 s cap), and restart is
+test_site_occupancy_restart.py. The mixed face-free world under ARS(2,2,2) at 1 ms. Two compiles:
+not tier 1.
 """
 
 import jax
@@ -21,6 +24,7 @@ from validation.tissue import site_occupancy_fixtures as sfx
 jax.config.update("jax_enable_x64", True)
 
 END, DT, CHANGE = 0.01, 1e-3, 0.005
+K_ON = (1e3, 2e3, 5e2)
 
 
 def world(k_on=1e3):
@@ -32,24 +36,14 @@ def world(k_on=1e3):
     return parse_spec(sfx.face_free_sites(pops, end=END, dt=DT, controls=controls))
 
 
-def test_a_vector_batch_matches_scalar_runs_and_its_reverse():
-    specs = [world(k_on) for k_on in (1e3, 2e3, 5e2)]
-
-    def batch(order):
-        worlds = tuple(WorldSpec(i + 1, specs[j]) for i, j in enumerate(order))
-        return run_vector_windowed(
-            BatchSpec(worlds, len(worlds), 10**6, 2**31), WindowPolicy(4, "checkpoints")
-        )
-
-    forward, backward = batch([0, 1, 2]), batch([2, 1, 0])
+def test_a_vector_batch_matches_its_scalar_runs():
+    specs = [world(k_on) for k_on in K_ON]
+    worlds = tuple(WorldSpec(i + 1, spec) for i, spec in enumerate(specs))
+    batch = run_vector_windowed(
+        BatchSpec(worlds, len(worlds), 10**6, 2**31), WindowPolicy(4, "checkpoints")
+    )
     for k, spec in enumerate(specs):
-        final = forward.worlds[k + 1].final.state
-        reverse = backward.worlds[3 - k].final.state
-        for name in type(final)._fields:
-            assert (
-                np.asarray(getattr(final, name)).tobytes()
-                == np.asarray(getattr(reverse, name)).tobytes()
-            ), (k, name)
+        final = batch.worlds[k + 1].final.state
         single = run(spec).history
         for name in type(final)._fields:
             a, b = np.asarray(getattr(final, name)), np.asarray(getattr(single, name))[-1]
