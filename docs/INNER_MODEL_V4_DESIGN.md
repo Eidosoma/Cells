@@ -1821,7 +1821,7 @@ guard.
 | Term | Shape | Run-time half |
 | --- | --- | --- |
 | Finding 3's z = 0 material term | 2 × the maximum over neutral species and nodes of Σ P·A/V over junction and membrane routes, on R5's worst cases (water's minimum volumes, insertion's largest areas) | None needed (**S**): it depends on neither openings nor concentrations. The earlier ruling named both functions; the lead decides |
-| The face-free-node term | The maximum over **free** face-free finite nodes of Σ_m G_m / C_node at the declared state, with held baths, the gauge and the layout's fixed nodes excluded | A declared stage term in the inner model. Until it exists, channels and pumps on such a patch are refused |
+| The face-free-node term | The maximum over **free** face-free finite nodes of Σ_m G_m / C_node at the declared state, with held baths, the gauge and the layout's fixed nodes excluded | None in this round, and the refusal R is not adopted (the lead's ruling, 15 November; below) |
 
 **Parking.**
 - CURRENT_PLAN's "parked D148 rounds" (after GH200) are FIELD_SOLVER_INTERFACE_DESIGN §6.5's
@@ -1858,6 +1858,23 @@ dispatch commits (§7.4 (h)).
 - FR-4 declares its own step, 0.025 on the max-side G, confirmed by its own dt study.
 - A tighter constant belongs with the exact heat booking (§7.5), which removes the energy-ledger
   limit the charged-patch test measured.
+- **Built:** `119ffb74` on `core-d172` (`neutral_material_rate`, `face_free_node_rate`, read by
+  `explicit_rate_bound`). Its D148 record covers @3 through P3 and @1 and @2 through the @1/@2
+  sweep (`core/HANDOFF.md`, "Check D148-B7").
+
+**The refusal R is not adopted (the lead's ruling, 15 November).**
+- **What R was:** P3 tested R, the refusal of channels and pumps on a patch facing a free
+  face-free node "until the run-time half exists".
+- **Why not:** R would refuse FR-4's own world. Its proton pump (a transporter) and its K⁺ route
+  sit on the lumen's bounding patch, which faces a free face-free node.
+- **What admits such worlds instead:**
+  - B7's host-only bound at the ordinary constant, with both terms;
+  - each world's declared step, checked by its dt study: FR-4 declares 0.025 on the max-side G,
+    FR-5 0.5 ms on the patch total;
+  - the implicit patch's stage checks, when that slot comes.
+- **Later, with its own record:** a run-time half for gated channels on face-free patches. This
+  round does not need it, since FR-4's and FR-5's routes are constant-field routes and a
+  transporter, not gated channels.
 
 ## 14. The operators in R
 
