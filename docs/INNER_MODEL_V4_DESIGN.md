@@ -51,7 +51,7 @@
     - With Track E's M2 judged wholly before or wholly after R.
     - With in-flight `src/` branches re-gated after it.
     - At a quiet point, with main tagged first.
-11. **Effort** (§15). R is large: eight work packages, about **19–27 agent-days**, landing
+11. **Effort** (§15). R is large: eight work packages, about **19–28 agent-days**, landing
     together under one tag and one gate, plus CPU hours for the re-runs and an L4 gap.
 
 **What this note gathers.**
@@ -86,10 +86,10 @@ HANDOFF.md holds every probe's criterion, written before its run, its amendments
 | GPU-native execution: no per-cell Python dispatch or CPU solver; compile, memory and end-to-end measured | **Covered** by static dispatch; **new:** the measurements list in the gate | §2, §3 |
 | Scoped composition (door S, with the runtime merge) | **New:** the design | §8 |
 | Ownership, geometry and solver invalidation; compartment identity as a host map | **New:** the design | §9 |
-| Material identity and fuel | **Revised.** The route (c) draft recommended pool state, which contradicts the requirement unless the pool is those amounts. Now: inventory rows, one authority for each standard potential, the first case, the two boundaries | §10 |
+| Material identity and fuel | **Covered,** after a contradiction is corrected: the route (c) draft recommended pool state, which contradicts the requirement unless the pool is those amounts. **New:** inventory rows with one authority for each standard potential, the first case, the two boundaries | §10 |
 | Transport laws by physical contract | **New:** the passive permeation law joins R | §11 |
 | State roles and time | **New:** interfaces only | §12 |
-| Reuse cases and the results gate | **Revised:** a required-results list that must execute, plus the planted test; the four reuse cases placed | §3, §15 |
+| Reuse cases and the results gate | **Covered** (the results gate); **new:** a required-results list that must execute, the planted tests, and the four reuse cases placed | §3, §15 |
 | Order | **Covered** | §15 |
 
 ## 1. The code facts the design turns on (read at f2ada38d)
@@ -174,7 +174,10 @@ HANDOFF.md holds every probe's criterion, written before its run, its amendments
   existing world: shown, not assumed.
 
 **Every piece gets D136's idle guard:** declared but switched off, against the world without it,
-bitwise. An exactly-zero contribution changes no sum.
+bitwise. An exactly-zero contribution changes no sum's value. **The known exception is signed
+zero:** −0.0 + 0.0 is +0.0, and the gate compares bit patterns (FIELD_SOLVER_INTERFACE_DESIGN.md
+§6.5 flags the same). A difference in signed zeros only is reported as such, not as a moved
+result.
 
 **What R does not touch.** The code @3 shares with @1 and @2 (`surface_pump.py`,
 `surface_pump_v2.py`, `surface_tissue`, `numerics/surface_transport`): R calls it unchanged. The
@@ -244,6 +247,22 @@ world gave compile and execution times.
 | Guarded batch (`core/batch.py`) | As above, per world under `lax.map` | **All of `check_values`**, per world | Observers |
 | Vector windows (`core/vector_windows.py`) | The step's refusals, and the device row checks (`device_checks`): domain, every ledger (operators' own included, `Composition.DEVICE_CHECKS`), dissipation | **None.** Only per-window summaries leave the device | Observers and continuity checks; the window endpoint |
 | Every path, at the definition | — | Parsing, operator refusals, `check_definition`, `StepChecks` (once per clock, by chunk) | — |
+
+**By operator** (their declarations at f2ada38d). Every operator's in-step refusals run inside the
+program on every path: its `domain_valid`, `control_valid` and `rate_checks`.
+
+| Operator | Own ledgers (host per row on the scalar, window and batch paths; device rows on vector windows) | Other host work |
+| --- | --- | --- |
+| `scheduled_bath_composition@1` | `bath_dose`, `bath_dose_free_energy`, `bath_neutrality` | — |
+| `membrane_entity_state@1` | `membrane_area_entity`, `membrane_capacitance_entity`, `population_abundance_entity` | Its observation columns |
+| `ideal_osmosis_linear_compliance_water@1` | Water's ledgers | Its observation columns, which replace the energy columns |
+| `isopotential_partition@1` | `partition_material`, `partition_area`, `partition_capacitance`, `partition_units` | **It retires slots:** on the host paths, `_check_actual_domains` reads every actual row at its view. On vector windows, the device checks evaluate the same domain |
+| `restricted_cleft_lumen@1` and `@2` | `lumen_fill` | Their observation columns |
+| Replacement@1 and @2, injection, insertion@1 and @2, D150's exchange and turnover, D152's reactions, the bridge, the coupling operator, the symport | None of their own. Their terms enter @3's ledgers (`ledger_terms`) | Observation columns (replacement, the symport, reactions, the coupling operator, whose factors `held_schedules` holds for observation) |
+
+So no operator has a per-row check that exists only on the host (**S**). The composite's device
+checks carry every ledger (`DEVICE_CHECKS` = the domain, @3's ledgers and each operator's own, and
+dissipation).
 
 - **What this means for D174's "state, step checks and refusals stay inside device windows":** it
   holds today on the vector-window path only (**S**, from the code). It needs `device_checks`,
@@ -442,6 +461,11 @@ FR-3's separate owner stays as accepted.
 - **After R,** species identity, background and trace policy, and each species' standard
   potential are declared once, at the definition boundary. Laws read them; none redeclares them.
 - **This is what makes F2 below meet "one authority".**
+- **One hole to close.** Today's pump declares its own hydrolysis free energy (`metabolism`'s
+  `delta_g0_J_per_mol`). Under finite fuel that would be a second source for the same quantity.
+  - The finite-fuel kind therefore takes ΔG° from the species' declared potentials and has no
+    `delta_g0` of its own.
+  - The maintained kind keeps its own: its reservoir is external, not the shared amounts.
 - **Effort** (**S**): 1.5–2 agent-days, including moving D152's block to read it.
 
 ### 10.3 The representation: options against the requirement
@@ -655,14 +679,14 @@ Its work packages can run in parallel on disjoint files:
 | Work package | Content | Effort (agent-days, **S**) |
 | --- | --- | --- |
 | WP1. The inner model | §2 and §7: declarations, per-law dispatch, the structure-keyed implementation, I0 if P3 is clean | 4–6 |
-| WP2. The operators | §14 | 4–5.5 |
+| WP2. The operators | §14 | 4–6 |
 | WP3. Door S | §8 | 3–4 |
 | WP4. Ownership and the compartment map | §9 | 2–3 |
 | WP5. Identity and standard potentials | §10.2 | 1.5–2 |
 | WP6. State roles and stage time | §12 | 1–1.5 |
 | WP7. The passive law | §11 | 2–3 |
 | WP8. The results gate | §3: the required-results list, G1's comparison tool, the planted tests, G4's measurements | 1.5–2 |
-| **R in total** | | **about 19–27**, plus CPU hours (G1 about an hour; G2 the protocols' own costs, with E07-v1 about 50 core-hours in full) and an L4 gap (§5.3) |
+| **R in total** | | **about 19–28**, plus CPU hours (G1 about an hour; G2 the protocols' own costs, with E07-v1 about 50 core-hours in full) and an L4 gap (§5.3) |
 
 **After R, in their accepted order:**
 - `junction_ungated@1`: 1.5–2;
