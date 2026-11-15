@@ -1936,7 +1936,7 @@ def kick_chain_run(args, s, *, n, dt, kick_mV, kicked, span):
         return bool(np.all(vm[recent] < -0.030) and t[-1] > 0.03)
 
     r = execute(raw, stop=stop)
-    rec = record(raw, r, s=s, n=n, dt_s=dt, kick_mV=kick_mV, kicked=kicked)
+    rec = record(raw, r, s=s, n=n, dt_s=dt, kick_mV=kick_mV, kicked=kicked, control="excitable")
     try:
         rec["static_bounds"] = static_bounds(raw)
     except ConfigError as error:
