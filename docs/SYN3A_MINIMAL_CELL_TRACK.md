@@ -43,11 +43,15 @@ Status: **the track was adopted on 14 November 2026 (D173).**
 - **The vesicle physics already runs in the engine, as a probe (§5).**
   - **Admission:** a vesicle with no channels and no pumps is admitted under water@1, starting
     from the stepped state.
-  - **Accuracy:** its shrinkage matches the closed form to 1e-8 relative, at second order.
+  - **Accuracy:** its shrinkage matches the closed form at second order, to between 1e-8 and
+    3e-7 relative at the finest step, depending on the world.
   - **A permeant neutral row:** a row on the inner model's own constant-field route (valence 0, so
-    Fick's law) gives the full shrink-and-swell, within 6e-8 of an independent two-variable
-    reference.
-  - **What fails:** a start from a trace concentration is refused by the energy ledger.
+    Fick's law) gives the shrinkage and the start of recovery over the 2 s run, within 6e-8 of an
+    independent two-variable reference. No run went on to full recovery.
+  - **What fails:** a start from a trace concentration is refused by the energy ledger. The
+    experiment's own start (no glycerol in the lumen) is such a start, so **S2-M1 cannot be judged
+    on today's engine.** A declared start at 1e-4 of the bath runs, at an osmotic bias of about
+    4e-5 (**S**), but it is a workaround.
 - **Exchange is a driven route, not passive permeation, as D174 records.** It books signed work
   and no heat.
   - The constant-field route meets the passive contract's items in the probe, except for its
@@ -61,13 +65,17 @@ Status: **the track was adopted on 14 November 2026 (D173).**
   membranes. Its claims are kept apart:
   - numerical verification;
   - calibration on the impermeant traces;
-  - a held-out prediction of the permeant traces on the same membranes, using the Frallicciardi
-    2022 data, which are numeric, public and from the same assay;
-  - then Syn3A-lipid vesicles as an application, with no living-cell claim.
+  - a held-out prediction of the permeant traces' minima on the same membranes, using the
+    Frallicciardi 2022 data, which are numeric, public and from the same assay. A host-side check
+    shows this arm can fail. The authors' own fits also show that the observation model is part
+    of what it tests (§6.1);
+  - then Syn3A-lipid vesicles, reported only, with no living-cell claim.
 - ***M. pneumoniae* is richer in measured physiology, and should lead an energy, transport and pH
   stage tied to FR-4 (§9).**
-  - It has measured protein turnover, absolute mRNA and protein copy numbers under several
-    perturbations, and glucose, lactate, acetate and medium-pH time courses.
+  - It has measured protein turnover, and absolute mRNA and protein copy numbers under several
+    perturbations.
+  - It has numeric pH-challenge and rebuffering data (glucose, protein, lactate). Its batch
+    glucose, lactate, acetate and pH time courses are not yet confirmed numeric.
   - Its integrated database is offline, and most of its "1,748 data sets" are growth curves.
 - **Metabolism is 10 to 100 times beyond today's 16-species cap, and gene expression is
   low-copy** (§4.3). Stage 4 needs both F8 (metabolism at scale) and F11 (a stochastic regime).
@@ -121,11 +129,21 @@ November 2026. The paper's DOI for its source data, analysis code and extra vide
 **Reading.** The DOI was most likely reserved and never published (**S**): there is no
 registration anywhere and no archive capture.
 
+**Not searched**, so the user's side need not assume it was covered:
+- Mendeley Data's own site search (a script-driven page, not attempted);
+- the NIST and MIT lab web pages;
+- the authors' personal accounts on code hosts;
+- general dataset search engines.
+
 **Related public data found on the way:**
-- **Moger-Reischer et al. 2023, "Evolution of a minimal cell."** Figshare
-  10.6084/m9.figshare.23119985, CC BY. Cell size (699 MB), FtsZ (390 MB), growth curves (8 MB)
-  and fitness (176 MB) for JCVI-syn3B and syn1.0. This is related-strain evidence for Stage 5;
-  not downloaded.
+- **Moger-Reischer et al. 2023, "Evolution of a minimal cell."** *Nature* 620:122, PMC10396959,
+  CC BY; data on figshare 10.6084/m9.figshare.23119985, CC BY.
+  - It evolved JCVI-syn3B and the non-minimal JCVI-syn1.0 for 2,000 generations.
+  - The non-minimal cell's size rose 80% while the minimal cell's did not, which the authors
+    trace to epistatic *ftsZ* mutations.
+  - The deposit holds cell size (699 MB), FtsZ (390 MB), growth curves (8 MB) and fitness
+    (176 MB).
+  - Related-strain evidence for Stage 5; not downloaded.
 - **The Syn3B FtsZ:mCherry plasmid record,** Mendeley 10.17632/x59cx6ns2h. This is the 4D
   paper's imaging strain; the record holds no images.
 - **The 2022 model's ori/quarter/terminus qPCR,** Mendeley 10.17632/nprw2h5tx6.
@@ -196,7 +214,8 @@ registration anywhere and no archive capture.
   in the osmotic pressure.
 - **A neutral row on the inner model's constant-field route.** At valence 0, the
   Goldman–Hodgkin–Katz flux reduces to J = P·A·(c_o − c_i), and the route books heat. Under
-  water it gives the full shrink-and-swell. It fails from a trace start.
+  water it gives the shrinkage and the start of recovery seen in the probes' 2 s runs. It fails
+  from a trace start.
 - **Batched worlds,** for size distributions. The observation model is driver code (validation),
   not engine physics.
 
@@ -260,14 +279,16 @@ explain them. Registering that expectation makes the series a falsification cont
 - the cytoplasmic osmolarity (unmeasured; a labelled prior);
 - the strain (mCherry).
 
-**A bioelectric prior from relatives.** For mycoplasma membranes, published measurements give:
+**A bioelectric prior from relatives.** For mycoplasma membranes, published measurements give
+(abstracts read on PubMed):
 - a proton-motive force of 70–130 mV and energy-dependent volume regulation in *M. gallisepticum*
-  (Rottem, Linker and Wilson 1981, *J. Bacteriol.* 145:1299);
-- about −80 mV by carbocyanine dyes, with K⁺ and Na⁺ diffusion potentials (Schummer and Schiefer
-  1983, a review).
+  (Rottem, Linker and Wilson 1981, *J. Bacteriol.* 145:1299; PMID 7204343);
+- about −80 mV by calibrated carbocyanine dyes, with K⁺ and Na⁺ diffusion potentials (Schummer
+  and Schiefer 1983, *Yale J. Biol. Med.*; PMID 6089453).
 
 A value of about −85 mV with an internal pH 0.5 above the medium is reported for *M. mycoides
-capri*, Syn3A's parent. Its primary paper was not verified.
+capri*, Syn3A's parent. This came from a search summary only; the primary paper was not found
+or verified.
 
 ### 4.3 Stage 4: metabolism, protein inventory and growth
 
@@ -359,7 +380,7 @@ The world is the same vesicle with a valence-0 row G:
 | --- | --- |
 | Lumen at a trace (1e-6 mM, a 1.2 × 10⁸-fold step), dt 0.5 or 0.05 ms, water on or off | **Refused** by the inner model's energy ledger ("Resolved pump accounting failed: energy"). With water closed too, so the route's own booking fails |
 | Lumen 120 mM, no gradient | Runs; nothing moves |
-| 10-fold step | Runs. The vesicle shrinks to 0.675 V0 and recovers. Volume within **6.1e-8** of an independent two-variable reference |
+| 10-fold step | Runs. The vesicle shrinks to 0.675 V0 and has begun to recover by the end of the run (0.717 V0 at 2 s). Volume within **6.1e-8** of an independent two-variable reference |
 | 100-fold and 10⁴-fold steps | Run. Energy residual 6.9e-8 and 3.3e-4 relative, the latter 16% of the 2e-3 tolerance |
 | Reversed gradient (lumen 120, bath 12 mM) | Runs. The G amount falls (efflux); in the forward case it rises |
 | Heat | The membrane heat is positive and monotone in every run |
@@ -391,9 +412,39 @@ own operators meet water.
 | Kind | What | Data | Judged? |
 | --- | --- | --- | --- |
 | Numerical verification | The passive law and water against closed forms and an independent reference written blind: the five contract items at fixed volume, then shrink-and-swell with water, with dt refinement. A trace start is included | None | Yes, numerically |
-| Calibration | Per membrane (POPC, DOPC, DPPC): P_w and K_SV fitted on the KCl traces with the exemplary DLS distribution; P_gly fitted on a late window of the glycerol trace only (t > 20 water time constants). The published coefficients reproduced as a consistency check | Frallicciardi 2022 | No: reported as calibration |
-| Protein-free vesicle prediction, held out | On the same membranes: each glycerol trace's early, water-dominated window (time to minimum, depth, residuals against the acquisitions' spread), with nothing refit. This is a different osmolyte and gradient on the same membrane. **S:** glycerol relaxes about 30–40 times more slowly than water in the fluid and Syn3A-lipid membranes, so the windows separate; DPPC is checked when calibrated | Frallicciardi 2022 | **Yes, the milestone's judged claim** |
-| Syn3A-lipid application | The three Syn3A-lipid mixtures' glycerol traces, early window. The published P_w is an input. K_SV and the size prior are transferred from the same-lab calibration, an assumption the held-out arm tests first. Mixture-to-mixture interpolation is reported only as a consistency check, since it passes by hand | Presutti 2026 | Yes, labelled as transferred calibration |
+| Calibration | Per membrane (POPC, DOPC, DPPC): P_w and the quenching parameter fitted on the KCl traces with the exemplary DLS distribution; P_gly fitted on a late window of the glycerol trace only (t > 20 water time constants). The published coefficients reproduced as a consistency check | Frallicciardi 2022 | No: reported as calibration |
+| Protein-free vesicle prediction, held out | On the same membranes: each glycerol trace's fluorescence minimum (its time and depth) with nothing refit. It is a permeant osmolyte at **about the same gradient** as KCl (every osmolyte was dosed to about 300 mOsm/kg), so what is held out is the coupled water-and-solute dynamics, not a new gradient | Frallicciardi 2022 | **Yes, the milestone's judged claim** (see the check below) |
+| Syn3A-lipid application | The three Syn3A-lipid mixtures' glycerol traces. The published P_w is an input. K_SV and the size prior would have to be transferred from another membrane, which the authors' own fits do not support (below). So a miss would not be interpretable | Presutti 2026 | **Reported, not judged.** Mixture-to-mixture interpolation is only a consistency check, since it passes by hand |
+
+**The check that this arm can fail.** It was run host-side, not in the engine (`heldout/`).
+- **The model:** a crude ensemble model fitted to the public traces, weighted by the DLS
+  intensity distribution as an assumption.
+- **POPC:** the glycerol minimum is 0.142 ± 0.011 deep at 0.36 ± 0.04 s (9 acquisitions). The
+  KCl trace instead reaches 0.197 on a plateau after 2–3 s. So the permeant trace is not a
+  replicate of the impermeant one.
+- **The prediction:** with P_w and the quenching parameter from KCl, and P_gly from the late
+  window only, the predicted minimum is 0.150 at 0.41 s for POPC. For DOPC it is 0.140 at
+  0.28 s, against 0.121 ± 0.026 at 0.29 ± 0.03 s. Both are within 1.4 s.d.
+- **The sensitivity:** halving or doubling P_gly moves the predicted minimum by 1.5–2.5 s.d. An
+  impermeant solute would sit near 0.19 at 3–4 s.
+- **The correction this forces:** glycerol relaxes only about 10–20 times more slowly than water
+  in these fluid membranes (fitted P_gly about 3e-6 and 8e-6 cm/s), not the 30–40 times
+  estimated for the Syn3A-lipid mixtures.
+
+**What the authors' fits show** (Frallicciardi SI Table 6, exemplary fits with one DLS
+distribution, CC BY).
+- K_SV is refit per trace, and it varies 1.2- to 10-fold between traces of one membrane: POPC
+  about 3.0 × 10⁴ for KCl and 3.0 × 10⁵ for glycerol.
+- The jointly fitted P_w from the glycerol trace differs from the KCl trace's by 1.6 times
+  (POPC) and 3.3 times (DOPC).
+
+**So the arm tests the observation model as much as the transport.** S2-M1 must declare, before
+its judged run:
+- how K_SV and the size weighting are handled;
+- a control that refits K_SV per trace, as the authors do, showing how far the verdict depends on
+  it.
+
+A miss with K_SV fixed would not by itself point at the engine.
 | Held-out living-cell prediction | None. The public data allow none at this stage. Stage 3's lysis needs F5 | — | — |
 
 ### 6.2 Its structure
@@ -422,8 +473,11 @@ own operators meet water.
 ### 6.3 Why this design
 
 - **It is choosing by measured perturbations.** The public data's only same-membrane perturbation
-  is a second osmolyte. That is what the engine can be judged on without a composition rule
-  Cells lacks.
+  is a second, permeant osmolyte at about the same gradient. There is no second gradient, size
+  series or repeat DLS distribution. That is what the engine can be judged on without a
+  composition rule Cells lacks.
+- **It cannot be judged on today's engine.** The lumen starts without glycerol, a trace start the
+  energy ledger refuses (§5.2). It waits for the passive law's exact booking.
 - **It reuses an architecture case.** The vesicle is one of the architecture's named reuse cases.
 - **Everything it needs is general.** The passive law also serves drugs, metabolic wastes, gases
   and FR-1's compartments.
@@ -480,7 +534,7 @@ leads toward *M. pneumoniae*'s pH stage (§9).
 | Source | Identifier, licence | Strain, conditions | What was measured | What is inferred or simulated | Downloaded |
 | --- | --- | --- | --- | --- | --- |
 | Maier et al. 2011, *Mol. Syst. Biol.* 7:511 | 10.1038/msb.2011.38, PMC3159969; CC BY-NC-SA 3.0. MS raw data were placed on Tranche (ProteomeCommons); not checked | Strain not named in the methods; Hayflick medium as in Yus et al. 2009, attached growth; 24 h sampling over 4 days; perturbations at 96 h: **0.5 M NaCl osmotic stress**, mitomycin C, heat shock at 42 °C; a minimal-medium arm. Controls 9 replicates, perturbations duplicates | Average copies per cell of 413 proteins (anchored by labelled reference peptides; about 1.5–1.8-fold error); **turnover of 231 proteins** (SILAC chase, 1–8 days); mRNA copies per cell (tiling arrays with spike-ins; GEO); the proteome's response to each perturbation | Stochastic expression simulations | Tables S1–S8 (zip, 310 KB), SI text, model file: `maier2011-msb` |
-| Wodke et al. 2013, *Mol. Syst. Biol.* 9:653 | 10.1038/msb.2013.6, PMC3658275; CC BY-NC-SA 3.0; model iJW145 (BioModels MODEL1301290000) | Rich and defined media, glucose (strain and temperature not checked in this round) | **Batch time courses:** glucose consumed, lactate and acetate secreted, protein, medium pH 7.8 → 5.5 over 4 days. **36 h at pre-set pH 5.5–8.0:** glucose used and protein made (Fig. 4A–B), and recovery after a shift back (Fig. 4C). ¹³C-glucose labelling | ATP production (about 60,000 per cell per second at 36 h), the ATPase's share (up to 57%), maintenance: FBA with fitted constraints, never to be used as measurements | Fig. 4 and SI Fig. 2–3 source data, Tables S1–S17, SI: `wodke2013-msb` (2.0 MB) |
+| Wodke et al. 2013, *Mol. Syst. Biol.* 9:653 | 10.1038/msb.2013.6, PMC3658275; CC BY-NC-SA 3.0; model iJW145 (BioModels MODEL1301290000) | Rich and defined media, glucose (strain and temperature not checked in this round) | **Batch time courses:** glucose consumed, lactate and acetate secreted, protein, medium pH 7.8 → 5.5 over 4 days. **36 h at pre-set pH 5.5–8.0:** glucose used and protein made (Fig. 4A–B), and recovery after a shift back (Fig. 4C). ¹³C-glucose labelling | ATP production (about 60,000 per cell per second at 36 h), the ATPase's share (up to 57%), maintenance: FBA with fitted constraints, never to be used as measurements | Fig. 4 and SI Fig. 2–3 source data, Tables S1–S17, SI: `wodke2013-msb` (2.0 MB). **Numeric, from the files' labels:** Fig. 4A–B (glucose and protein, days 2–3, Hayflick and rebuffered) and Fig. 4C (lactate and glucose time courses, with and without rebuffering). The batch time courses behind SI Fig. S5 were **not located** as a table: Table S6 lists acetic and lactic acid concentrations, but the binary .xls values were not parsed |
 | Chen et al. 2016, *NAR* 44:1192 | 10.1093/nar/gkw004, PMC4756857; CC BY-NC 4.0 | Consistent conditions from one group | The 1,748 data sets: **1,300 growth curves** at various nutrient concentrations (Yus et al. 2009), about 300 transcriptome data sets along growth and under stress, 57 proteome data sets along growth, interactions, modifications, turnover, metabolome (86 of 152 predicted metabolites), essentiality | — | The data workbook (Tables S1–S15) and index: `chen2016-nar` (1.9 MB) |
 | MyMpn (Wodke et al. 2015, *NAR* database issue) | 10.1093/nar/gku1105, PMC4383923; CC BY-NC 4.0 | — | The integrated database: **offline** (HTTP 404 at both addresses, 15 November 2026). Each data set must be fetched from its original deposit | — | — |
 | Dobbs, Jensen and Mahamid 2026, *Cell* | 10.1016/j.cell.2026.08.054, PMID 42790420; not in PMC | Strain M129-B7; native and antibiotic-perturbed cells | 140 subtomogram-average maps of translation states; EMD-53631 verified | — | Metadata only |
@@ -505,9 +559,10 @@ leads toward *M. pneumoniae*'s pH stage (§9).
 
 **Yes: an energy, transport and pH stage (call it 4a), tied to FR-4 and finite fuel.**
 - **The measured targets:**
-  - glucose consumed, lactate and acetate secreted, medium pH and protein over a batch;
-  - the response to pre-set medium pH;
-  - recovery.
+  - the response to pre-set medium pH: glucose used and protein made (numeric source data);
+  - lactate and glucose time courses with and without rebuffering (numeric source data);
+  - the batch time courses of glucose, lactate, acetate, pH and protein. These are a
+    supplementary figure; confirm they are numeric before relying on them.
 - **What it would exercise:** a held or finite medium with pH (FR-4), proton transport, secretion,
   reactions that make and spend fuel (§11), and a growth readout.
 - **A rule for the data:** the paper's ATP budgets are model-derived and must stay apart from the
