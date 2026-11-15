@@ -101,7 +101,7 @@
   "bands": "the cytosol's pH within 7.2 ± 0.05 at every stage (the pump's domain refuses otherwise)",
   "judged_run": "once, after registration, from a fresh clean execution snapshot of the integrated candidate (validation/source_snapshot.py)",
   "attempts": "an attempt that ends by infrastructure before its verdict is written is not a verdict; a refusal by the engine is a verdict",
-  "timing": "each unit through scripts/run_detached.sh; one rung per unit; the 900 s world at 1 ms is about 0.9 CPU-hours by the charged-patch test's upper-bound cost"
+  "timing": "each unit through scripts/run_detached.sh; one rung per unit; on the vector path (the execution path) FR-4's world costs 0.95 ms per step after about 48 s of compile per unit (measured on fr45-transporter 427e4a05, CPU 1), replacing the charged-patch test's upper bound of 0.9 CPU-hours per 1 ms rung: the 900 s world at 1 ms about 15 minutes, the ladder's 6.75e6 steps about 1.8 CPU-hours, K1 and K2 about 15 minutes each and K3 seconds; the rehearsal runs the full horizon (pre-run correction, the lead, 15 November 2026)"
  },
  "criteria": {
   "J1_admission": "the four rungs, K1, K2 and the reference admitted and run without refusal; K3 is refused by design, its catch J7 (pre-run correction, the lead, 15 November 2026)",
@@ -151,7 +151,9 @@
   "pre-run correction, 15 November 2026, the lead's ruling on FR4's Q6 (resolution): one ruling with FR-5's Q3 and Q8. The floor F = N eps max|q| (N the finer rung's steps) is kept; on the two judged differences, each with its own floor: resolved (both >= F) lies in [1.8, 2.2]; at rounding (both < F) passes; mixed (the coarser >= F, the finer < F) passes unless the implied lower bound log2(coarser difference / finer floor) exceeds 2.2; reversed (the coarser < F, the finer >= F) fails. The judge reports each observable's class with its differences and floors; J3 and J4 still judge every observable against its budget",
   "pre-run correction, 15 November 2026, the lead's rulings on refusal semantics and K2: B4's envelope check refuses the step at the first stage beyond the budget, so J5 judges zero envelope refusals in a completed part and the engine's reported running maximum of the lag estimate (proton_buffer_max_lag_pH, gap 7) within 1e-3 pH at every buffered node; K3 is caught when the engine refuses its world at the definition through the envelope (its reason the envelope's: the same world is admitted with B4's stage check removed), and leaves J1; K2 is a self-consistent reversed pump (moves, energetics and ledger terms reversed), which every ledger closes, so only J4 against the independent reference can catch it (max over records |pH - pH_ref| >= 2e-3, as ruled), the reference recording that its effect exceeds the budget (D176's G3); the moves flipped alone stay a unit guard in the tests. Verdicts are unchanged in kind: a refusal is a verdict",
   "pre-run correction, 15 November 2026, the lead's ruling on the charge check: it reads the engine's charge residual and its capacitor tolerance from the records (ledgers.charge_residual_C and charge_tolerance_C); Q5's record-computed allowance (the judge's, from the amounts) covers material only, since computing charge from the records would need the node charges and capacitances in them",
-  "pre-run correction, 15 November 2026, the lead's ruling on J4's node: J4, and so K2's catch, judges the pH of every buffered node, the lumen and the cytosol: the maximum over both nodes and every record of |pH_engine - pH_reference| within 1e-3 (K2: at least 2e-3). The protocol had not named the node. The independent references found that either reading catches K2(b) (R-closure: the lumen's difference reaches 2e-3 at the first record, 1 s, and the cytosol's at 35 s; 3.276 and 0.0192 pH at 900 s)"
+  "pre-run correction, 15 November 2026, the lead's ruling on J4's node: J4, and so K2's catch, judges the pH of every buffered node, the lumen and the cytosol: the maximum over both nodes and every record of |pH_engine - pH_reference| within 1e-3 (K2: at least 2e-3). The protocol had not named the node. The independent references found that either reading catches K2(b) (R-closure: the lumen's difference reaches 2e-3 at the first record, 1 s, and the cytosol's at 35 s; 3.276 and 0.0192 pH at 900 s)",
+  "pre-run correction, 15 November 2026, the lead's ruling on the execution path: every engine part runs its world as the one world of a vector window (cells.core.vector_windows; the generator's judged runs, validation/compartment_ph/engine_records.run with path 'vector'), which checks every accepted row on the device with the host checks' own functions and bounds (the domain with the kinds' domains and B4's read; the ten ledgers with the kinds' terms against the same ledger limits and magnitudes; dissipation at the same 1e-12 pJ tolerance) in place of the windowed runner's checks on the host. The in-step checks (B4's read and envelope, the pump's domain and pH band, B7 per stage and node, the bookings' validity) are the same compiled step on both paths, and the observed rows' readouts and continuity checks stay on the host; the host path stays for development. Measured before any judged run (fr45-transporter 427e4a05, CPU 1, FR-4's rung_1ms over 20 s on both paths from one clean snapshot): every record bitwise equal to the host path's except two leak accumulators (the leak's cumulative proton transfer and heat, relative 5e-14 and 1e-13); the check diagnostics differ at rounding only; a refusal differs in its text (the device path's WorldCheckError names the failed checks and the first failing row), not in its verdict; the run phase 7.46 times faster (0.95 against 7.13 ms per step), the compile cost named as such (48 s against 23 s per unit), so every judged unit runs about 7.5 times faster",
+  "pre-run correction, 15 November 2026, the lead's ruling on the cost and the rehearsal: on the vector path a pass costs about the ladder's 6.75e6 steps at 0.95 ms per step (about 1.8 CPU-hours), K1 and K2 about 15 minutes each and K3 seconds, with about 48 s of compile per unit; that measured per-step cost replaces the charged-patch test's 0.9 CPU-hour upper bound in the timing rule (Q3's ruling: the first development rung measured it, 0.27 ms per step and 7.08 ms of host checks per row over 900 s on the host path), and at that cost the rehearsal runs the full horizon, not a shortened one"
  ],
  "questions_for_the_lead": [],
  "development_runs": {
@@ -523,35 +525,36 @@
   "units": {
    "rung_2ms": {
     "steps": 450000,
-    "cpu_hours_upper": 0.45
+    "cpu_hours": 0.13
    },
    "rung_1ms": {
     "steps": 900000,
-    "cpu_hours_upper": 0.9
+    "cpu_hours": 0.25
    },
    "rung_0p5ms": {
     "steps": 1800000,
-    "cpu_hours_upper": 1.8
+    "cpu_hours": 0.49
    },
    "rung_0p25ms": {
     "steps": 3600000,
-    "cpu_hours_upper": 3.6
+    "cpu_hours": 0.96
    },
    "control_k1": {
     "steps": 900000,
-    "cpu_hours_upper": 0.9
+    "cpu_hours": 0.25
    },
    "control_k2": {
     "steps": 900000,
-    "cpu_hours_upper": 0.9
+    "cpu_hours": 0.25
    },
    "control_k3": {
-    "steps": 900000,
-    "cpu_hours_upper": 0.9
+    "steps": 0,
+    "cpu_hours": null,
+    "note": "refused at the definition through the envelope: seconds"
    },
    "reference": {
     "steps": null,
-    "cpu_hours_upper": null,
+    "cpu_hours": null,
     "note": "the references: minutes"
    }
   },
@@ -562,7 +565,7 @@
    "judge": "/mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.compartment_ph_judge judged SNAPSHOT/validation/compartment_ph/protocols/fr4_acidification_v1.json OUT/verdict OUT/*/results.json (in its own unit: 1G, 600 s; it runs nothing)",
    "runtime_max_rule": "3 x the rehearsal's wall time of the unit plus 600 s, rounded up to the minute (D150's rule)",
    "caps": "2G per unit (the runbook) until the rehearsal measures the peaks",
-   "cost_note": "the units' cpu_hours_upper use the charged-patch test's 3.6 ms per step, an upper bound from another world; the first development rung measures the real cost before anything is budgeted (the lead's ruling, 15 November 2026)",
+   "cost_note": "the units' cpu_hours use the vector path's measured cost on FR-4's world, 0.95 ms per step plus about 48 s of compile per unit (fr45-transporter 427e4a05, CPU 1), in place of the charged-patch test's 3.6 ms upper bound (pre-run correction, the lead, 15 November 2026); the rehearsal runs the full horizon and measures each unit, a world with more routes and rows (FR-5's) at its own rate",
    "no_wait_headroom": "judged units run without --wait-headroom: the wait would run inside the unit and count against its runtime limit; the lead checks the slice's room before each launch",
    "attempts": "an infrastructure ending (a runtime or memory kill, a signal, an incomplete results.json) is rerun once from the same snapshot into a new OUT/PART; a refusal by the engine is a verdict",
    "enforced_by": "the launcher alone (run_detached.sh's MemoryMax, CPUAffinity and RuntimeMaxSec): no code reads these fields"

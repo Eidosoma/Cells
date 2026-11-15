@@ -8,9 +8,10 @@ the judge needs beside the prose (`judge`):
   fixes the arithmetic itself);
 * `criteria`: the machine criteria, each a metric path, a comparison and a threshold taken from
   the prose (MG0c's evaluator form; `judged: false` marks a reported item);
-* `units` and `resources`: one part per unit, the upper-bound costs (3.6 ms per step, the
-  charged-patch test's runner path), and the launch command as a template until the rehearsal
-  measures each unit (D150's rule: 3 x its wall time plus 10 minutes).
+* `units` and `resources`: one part per unit, its cost at the vector path's measured rate on
+  FR-4's world (0.95 ms per step plus about 48 s of compile per unit; the execution path, a dated
+  pre-run correction), and the launch command as a template until the rehearsal measures each
+  unit (D150's rule: 3 x its wall time plus 10 minutes).
 `draft` writes that section into a PROPOSED protocol in place, sets `judged_parts` to the
 generator's parts, and moves the hand-drafted registration plan to `registration_plan`, so that
 `register` can add the lead's record under `registration` (MG0c's form). Rerunning it changes
@@ -37,7 +38,10 @@ J4_NODES = ("at every buffered node, the lumen and the cytosol: the maximum over
             "every record (pre-run correction, the lead, 15 November 2026)")
 START_TOLERANCE = 1e-11  # row 0 against the reference: rounding (the reference stage's)
 START_X_OVER_BUDGET = 1e-9  # X_L's row 0 in budgets: the same products, so rounding
-COST_S_PER_STEP = 3.6e-3  # the upper bound of the runbook (the charged-patch test's runner path)
+# The vector path's measured cost on FR-4's world (fr45-transporter 427e4a05, CPU 1, rung_1ms over
+# 20 s): the run phase per step, and the compile per unit (the pre-run correction on the cost).
+COST_S_PER_STEP = 0.95e-3
+COMPILE_S = 48.0
 PYTHON = "/mnt/workspaces/Cells/venv-cpu/bin/python"
 FILES = {"fr4": "fr4_acidification_v1.json", "fr5": "fr5_transfer_v1.json"}
 WRITTEN = ("15 November 2026, by the FR-4/FR-5 physics owner, before any run of this world (no "
@@ -289,7 +293,11 @@ def units(which):
     out = {}
     for part in generator.PARTS[which]:
         if part == "reference":
-            out[part] = dict(steps=None, cpu_hours_upper=None, note="the references: minutes")
+            out[part] = dict(steps=None, cpu_hours=None, note="the references: minutes")
+            continue
+        if part == "control_k3":  # Refused at the definition (the lead's ruling): no step runs.
+            out[part] = dict(steps=0, cpu_hours=None,
+                             note="refused at the definition through the envelope: seconds")
             continue
         if which == "fr4":
             dt = generator.FR4_RUNGS.get(part, generator.FR4_DECLARED_DT)
@@ -299,7 +307,8 @@ def units(which):
         else:
             dt = generator.FR5_RUNGS.get(part, (None, dt_study.FR5_DECLARED_DT_S))[1]
             steps = round(400.0 / dt)
-        out[part] = dict(steps=steps, cpu_hours_upper=round(steps * COST_S_PER_STEP / 3600, 2))
+        out[part] = dict(steps=steps,
+                         cpu_hours=round((steps * COST_S_PER_STEP + COMPILE_S) / 3600, 2))
     return out
 
 
@@ -323,9 +332,12 @@ def resources(which):
         runtime_max_rule="3 x the rehearsal's wall time of the unit plus 600 s, rounded up to the "
                          "minute (D150's rule)",
         caps="2G per unit (the runbook) until the rehearsal measures the peaks",
-        cost_note="the units' cpu_hours_upper use the charged-patch test's 3.6 ms per step, an "
-                  "upper bound from another world; the first development rung measures the real "
-                  "cost before anything is budgeted (the lead's ruling, 15 November 2026)",
+        cost_note="the units' cpu_hours use the vector path's measured cost on FR-4's world, "
+                  "0.95 ms per step plus about 48 s of compile per unit (fr45-transporter "
+                  "427e4a05, CPU 1), in place of the charged-patch test's 3.6 ms upper bound "
+                  "(pre-run correction, the lead, 15 November 2026); the rehearsal runs the full "
+                  "horizon and measures each unit, a world with more routes and rows (FR-5's) at "
+                  "its own rate",
         no_wait_headroom="judged units run without --wait-headroom: the wait would run inside "
                          "the unit and count against its runtime limit; the lead checks the "
                          "slice's room before each launch",
@@ -508,6 +520,13 @@ PROSE = {
         "(its initial lag estimate about 1e4 pH; the reason the envelope's, since the same world "
         "is admitted with B4's stage check removed), and in the kinetic reference the closure "
         "departs beyond 1e-3 pH units",
+        ("rules", "timing"): "each unit through scripts/run_detached.sh; one rung per unit; on "
+        "the vector path (the execution path) FR-4's world costs 0.95 ms per step after about "
+        "48 s of compile per unit (measured on fr45-transporter 427e4a05, CPU 1), replacing the "
+        "charged-patch test's upper bound of 0.9 CPU-hours per 1 ms rung: the 900 s world at 1 ms "
+        "about 15 minutes, the ladder's 6.75e6 steps about 1.8 CPU-hours, K1 and K2 about 15 "
+        "minutes each and K3 seconds; the rehearsal runs the full horizon (pre-run correction, "
+        "the lead, 15 November 2026)",
         ("rules", "ledgers"): "material per species within its allowance at every record: the "
         "declared floor plus N eps max over records of the species' total over the cell, the "
         "lumen and the bath (N the run's steps), computed by the judge from the records and "
@@ -579,10 +598,47 @@ J4_NODES_FR5 = (
     "both nodes and every record of |pH_engine - pH_reference| within 1e-3, against the "
     "reference started at tr.Start (J4); it had named the lumen alone"
 )
+EXECUTION_PATH = (
+    "pre-run correction, 15 November 2026, the lead's ruling on the execution path: every engine "
+    "part runs its world as the one world of a vector window (cells.core.vector_windows; the "
+    "generator's judged runs, validation/compartment_ph/engine_records.run with path 'vector'), "
+    "which checks every accepted row on the device with the host checks' own functions and bounds "
+    "(the domain with the kinds' domains and B4's read; the ten ledgers with the kinds' terms "
+    "against the same ledger limits and magnitudes; dissipation at the same 1e-12 pJ tolerance) "
+    "in place of the windowed runner's checks on the host. The in-step checks (B4's read and "
+    "envelope, the pump's domain and pH band, B7 per stage and node, the bookings' validity) are "
+    "the same compiled step on both paths, and the observed rows' readouts and continuity checks "
+    "stay on the host; the host path stays for development. Measured before any judged run "
+    "(fr45-transporter 427e4a05, CPU 1, FR-4's rung_1ms over 20 s on both paths from one clean "
+    "snapshot): every record bitwise equal to the host path's except two leak accumulators (the "
+    "leak's cumulative proton transfer and heat, relative 5e-14 and 1e-13); the check "
+    "diagnostics differ at rounding only; a refusal differs in its text (the device path's "
+    "WorldCheckError names the failed checks and the first failing row), not in its verdict; the "
+    "run phase 7.46 times faster (0.95 against 7.13 ms per step), the compile cost named as such "
+    "(48 s against 23 s per unit), so every judged unit runs about 7.5 times faster"
+)
+COST_FR4 = (
+    "pre-run correction, 15 November 2026, the lead's ruling on the cost and the rehearsal: on the "
+    "vector path a pass costs about the ladder's 6.75e6 steps at 0.95 ms per step (about 1.8 "
+    "CPU-hours), K1 and K2 about 15 minutes each and K3 seconds, with about 48 s of compile per "
+    "unit; that measured per-step cost replaces the charged-patch test's 0.9 CPU-hour upper "
+    "bound in the timing rule (Q3's ruling: the first development rung measured it, 0.27 ms per "
+    "step and 7.08 ms of host checks per row over 900 s on the host path), and at that cost the "
+    "rehearsal runs the full horizon, not a shortened one"
+)
+COST_FR5 = (
+    "pre-run correction, 15 November 2026, the lead's ruling on the cost and the rehearsal, as "
+    "FR-4's: on the vector path FR-5's units scale with FR-4's measured 0.95 ms per step (about "
+    "48 s of compile per unit; FR-5's world, with more routes and rows, at its own rate, measured "
+    "by its rehearsal), in place of the charged-patch test's upper bound, and the rehearsal runs "
+    "the full horizon, not a shortened one"
+)
 CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
     "fr4": [
         CHARGE_CHECK,
         J4_NODES_FR4,
+        EXECUTION_PATH,
+        COST_FR4,
         "pre-run correction, 15 November 2026, the lead's rulings on refusal semantics and K2: "
         "B4's envelope check refuses the step at the first stage beyond the budget, so J5 judges "
         "zero envelope refusals in a completed part and the engine's reported running maximum of "
@@ -599,6 +655,8 @@ CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
     "fr5": [
         CHARGE_CHECK,
         J4_NODES_FR5,
+        EXECUTION_PATH,
+        COST_FR5,
         "pre-run correction, 15 November 2026, the lead's ruling on refusal semantics: B4's "
         "envelope check refuses the step at the first stage beyond the budget, so J5 judges zero "
         "envelope refusals in a completed part and the engine's reported running maximum of the "
