@@ -52,6 +52,9 @@ class Records:
         routes = dict(m.kinds).get("cells.passive_routes@1", ())
         self.routes = [r.id for r in routes]
         _, self.p = model.initial_values(spec)
+        from cells.core import kind_registry
+
+        self.pump = kind_registry.active().lookup("cells.transporter@1")  # Planted or not.
         self.tol = np.asarray(spec.execution.material_balance_atol_fmol)
         self.rtol = surface_pump_v3.ENERGY_RTOL[spec.execution.solver]
         self.dt = spec.execution.dt
@@ -86,7 +89,11 @@ class Records:
             V_b=float(obs.membrane_voltage_V[j, b]),
             cycles=float(state.transporter_cycles[b]),
             work_pJ=float(state.transporter_metabolic_work_pJ[b]),
-            moved_H_pump=float(p.transporter_stoichiometry[b] * state.transporter_cycles[b]),
+            moved_H_pump=float(  # The kind's own cumulative H transfer into the lumen.
+                self.pump.ledger_terms(state, p, xp=np)["outside"][
+                    self.ids.index("H"), self.outside.index(defs.LUMEN)
+                ]
+            ),
             heat_pump_pJ=float(state.transporter_dissipated_energy_pJ[b]),
             heat_bounding_0_K_pJ=float(state.membrane_dissipated_energy_pJ[b]),
         )
@@ -131,8 +138,12 @@ class Records:
     def stage(self, completed):
         """B4's running extrema at the last record, and the envelope refusals (gap 7)."""
         if self.last is None:
-            return dict(envelope_max_lag_ph=None, envelope_stages_beyond=None,
-                        cytosol_pH_min=None, cytosol_pH_max=None)
+            return dict(
+                envelope_max_lag_ph=None,
+                envelope_stages_beyond=None,
+                cytosol_pH_min=None,
+                cytosol_pH_max=None,
+            )
         cell = self.cells.index(defs.CELL)
         return dict(
             envelope_max_lag_ph=float(np.max(self.last.proton_buffer_max_lag_pH)),
@@ -152,7 +163,7 @@ class Records:
 
 
 def envelope_reason(definition):
-    """"envelope" when the development world, refused at the definition, is admitted with B4's
+    """ "envelope" when the development world, refused at the definition, is admitted with B4's
     stage check alone removed (every other built-in kind as registered), else None."""
     import dataclasses
 
@@ -182,8 +193,18 @@ def run(definition, *, registry=None, window_steps=WINDOW_STEPS):
     from cells.core.windows import WindowPolicy, run_windowed
     from cells.models.registry import get_model
 
-    out = dict(admitted=False, completed=False, refusal=None, refusal_reason=None, steps=0,
-               record_s=[], series={}, amounts_fmol={}, stage={}, ledgers={})
+    out = dict(
+        admitted=False,
+        completed=False,
+        refusal=None,
+        refusal_reason=None,
+        steps=0,
+        record_s=[],
+        series={},
+        amounts_fmol={},
+        stage={},
+        ledgers={},
+    )
     with kind_registry.scope(registry) if registry is not None else nullcontext():
         try:
             spec = parse_spec(defs.development_world(definition))
@@ -203,7 +224,11 @@ def run(definition, *, registry=None, window_steps=WINDOW_STEPS):
             out["steps"] = int(round(sink.record_s[-1] / spec.execution.dt)) if sink.record_s else 0
             return out
     out.update(sink.record(completed=True))
-    out.update(completed=True, steps=int(result.final.step_index - result.start_step),
-               diagnostics=dict(result.diagnostics), timings=dict(result.timings),
-               resources={k: v for k, v in result.resources.items() if np.isscalar(v)})
+    out.update(
+        completed=True,
+        steps=int(result.final.step_index - result.start_step),
+        diagnostics=dict(result.diagnostics),
+        timings=dict(result.timings),
+        resources={k: v for k, v in result.resources.items() if np.isscalar(v)},
+    )
     return out

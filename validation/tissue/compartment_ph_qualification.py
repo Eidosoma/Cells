@@ -9,9 +9,10 @@ the units (MG0c's form).
 Parts of fr4-acidification-v1 (`judge.units` in the protocol):
 * rung_2ms, rung_1ms, rung_0p5ms, rung_0p25ms: definitions.fr4_world(World()) at each dt of
   dt_study.LADDER_S, 900 s, records every 1 s;
-* control_k1 (P_K = 0), control_k2 (the pump's moves flipped: a planted law registered only
-  inside its block) and control_k3 (the lumen buffer's k_on at 1e-3 /mM/s on the closure's
-  declaration), each at the declared 1 ms;
+* control_k1 (P_K = 0), control_k2 (the self-consistent reversed pump, the lead's ruling (b):
+  validation/compartment_ph/planted.py's planted law, registered only inside its block) and
+  control_k3 (the lumen buffer's k_on at 1e-3 /mM/s on the closure's declaration, refused at the
+  definition through the envelope), each at the declared 1 ms;
 * reference: R-closure on the declared world, its floor, P_K = 0 and R-kinetic with the lumen's
   k_on at 1e-3 (validation/tissue/compartment_ph_reference_stage.fr4_reference).
 Parts of fr5-transfer-v1:
@@ -89,14 +90,11 @@ ENGINE_PARTS = {*FR4_RUNGS, *FR4_CONTROLS, "start", *FR5_RUNGS, *FR5_CONTROL_PAR
 # What remains a stand-in on this branch, and why, and the parts each one blocks. Empty once
 # everything is wired.
 STAND_INS = {
-    "planted_sign": "K2's planted law (the lead's ruling (b): a self-consistent reversed pump) "
-                    "is not wired yet",
     "start_checkpoint": "FR-5's start part (the engine's snapshot and the start extract) is not "
                         "wired yet",
     "fr5_kinds": "FR-5's damage state and its routes' factors are not in the engine yet",
 }
 STAND_IN_PARTS = {
-    "planted_sign": {"control_k2"},
     "start_checkpoint": {"start"},
     "fr5_kinds": {*FR5_RUNGS, *FR5_CONTROL_PARTS},
 }
@@ -156,13 +154,15 @@ def engine_run(definition, *, planted=None, checkpoint_dir=None):
     backend in float64. `planted` names a planted law registered only inside its block (K2).
     With `checkpoint_dir` (FR-5's start part) it is to write the engine's snapshot there at the
     end (cells.io.write_snapshot) and return, under `extract`, definitions.start_extract(
-    producer="engine", ...) of that state; both are stand-ins (STAND_INS)."""
+    producer="engine", ...) of that state, a stand-in (STAND_INS)."""
     from validation.compartment_ph import engine_records
+    from validation.compartment_ph import planted as plants
 
-    if planted is not None:
-        raise NotWired(STAND_INS["planted_sign"])
     if checkpoint_dir is not None:
         raise NotWired(STAND_INS["start_checkpoint"])
+    if planted is not None:  # K2's reversed pump, registered only inside its block.
+        registry = plants.registry(plants.PLANTED[planted]())
+        return engine_records.run(definition, registry=registry)
     return engine_records.run(definition)
 
 
