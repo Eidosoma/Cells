@@ -1336,6 +1336,12 @@ undeclared built-in changes nothing:
   stage read, so no declared world is refused.
 - **The planted kinds are registered from outside `src/cells`,** under a non-`cells` namespace
   (`tests.`), on a test-local registry.
+- **The parsing surface (core-d172 d4b3c01f; D180):** a kind's `parse` and `check_definition`
+  refuse with `ConfigError` and may use `require_fields(value, expected, name)`,
+  `finite_number(value, name, *, positive=False)` and `bounded_integer(value, name, *,
+  minimum, maximum)`, all exported by `cells.core.kind_registry` (public names in
+  `cells.core.specs`, whose underscored helpers stay as aliases for today's callers). Kinds and
+  external modules use these, never the private names.
 - **Ledger lists stay the shared literals in this round** (rule (a)). Reading them from the
   implementation object would change @1's and @2's shared check code, so it follows the landing,
   with its own D148 case.
