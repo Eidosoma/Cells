@@ -825,9 +825,9 @@ def unit_b_memory(runs, origin):
     if peak is None or not _rehearsal(runs):
         return UNIT_B_MEMORY
     return (
-        f"unit b (q6, q3, q5) peaked at {peak:g} GB in the rehearsal on main, measured as the lead "
-        "asked; its cap stays at 5 GiB, as confirmed until measured, since a cap kill would spend "
-        "the single rerun (the lead may lower it at the final check)"
+        f"its peak in the rehearsal on main was {peak:g} GB, measured as the lead asked; the cap "
+        "stays at 5 GiB, as confirmed until measured, since a cap kill would spend the single "
+        "rerun (the lead may lower it at the final check)"
     )
 
 
