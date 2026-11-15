@@ -36,8 +36,10 @@
    every channel and selected afterwards, even in worlds that have no channels.
    - After R, the laws a world declares are chosen when its program is built. A switch at run time
      over the whole catalogue would still compile the absent ones.
-   - A probe measured whether separating them moves any result. *Result: §4.*
-   - **If results move, even at rounding, R re-runs every registered protocol in full.**
+   - A probe measured whether separating them moves any result: **it does not.** In seven worlds,
+     every value at every step was bit-for-bit the same, with smaller programs (§4).
+   - Had results moved, even at rounding, R would re-run every registered protocol in full. On
+     this evidence the gate runs bitwise.
 4. **R is accepted by results, not by identical programs** (§3).
    - A named list of required scientific results must actually execute and match.
    - Every existing world gives the same CPU results.
@@ -272,7 +274,40 @@ Every state field of every step was compared bitwise, together with the Jacobian
 right-hand side and of one step for the heredity cell and the water composition. Two runs per
 world gave compile and execution times.
 
-*The result, its cost and its consequence for G1 and G2 are written here from P2's records (§17).*
+**The result (15 November, 00:52–01:25 UTC; records in `probe2/out/`).**
+- **Per-law dispatch changes no result.** Every forward state field of every recorded step is
+  bitwise identical to today's code in all seven worlds (C1). That includes the water composition
+  and the 127-cell sheet.
+  - The Jacobians of the right-hand side and of one step are bitwise identical for the heredity cell
+    and the water composition (C2).
+  - The planted one-ulp change differs from today's in every world (C0), so the comparison is not
+    blind.
+  - No world differs by signed zeros only.
+- **The cost is a smaller program, at no measurable time.**
+
+| World (steps) | Checked-step equations, today → per-law | First run, compile and execute (s), today / per-law | Second run, execute only (s), today / per-law |
+| --- | --- | --- | --- |
+| Heredity cell (201) | 7,768 → 7,578 | 27.5 / 41.9 | 0.72 / 1.22 |
+| Five-law padded world (14) | 7,812 → 7,802 | 86.2 / 77.3 | 1.38 / 0.74 |
+| Seven-cell gated sheet (101) | 7,776 → 7,586 | 70.4 / 49.3 | 0.85 / 0.62 |
+| Generic cell, an action potential at 5 µs (801) | 7,768 → 7,758 | 57.6 / 53.8 | 3.31 / 4.18 |
+| RK4 single patch (401) | 1,844 → 1,844 | 111.7 / 102.7 | 2.04 / 5.74 |
+| Water composition (101) | 9,011 → 8,821 | 51.7 / 48.5 | 0.72 / 0.65 |
+| 127-cell sheet (51) | 7,776 → 7,586 | 66.6 / 65.6 | 2.04 / 3.09 |
+
+  - Worlds without Kv1.5 lose 190 equations; worlds with all three gated laws lose the selection
+    chain's 10.
+  - **The timings are within the loaded machine's noise:** they go both ways, by up to 2.8×. A cost
+    claim needs G4's measurements on a quiet machine.
+  - **Every second run compiled nothing** (XLA's compile log). Within one process, the window path
+    reuses its executable.
+- **The consequence:**
+  - G1 runs bitwise, and the rounding contingency of §3 does not apply on this evidence.
+  - Status carries forward on CPU through the full gate, and G2 re-runs the registered protocols as
+    a confirmation.
+  - Judges that differentiate the step still re-run in full (§3), since P2's Jacobians cover two
+    worlds, not W1's and W2's.
+  - P2 tests the dispatch change alone. The rest of R (A2–A7) is tested by the results gate.
 
 ## 5. The GPU
 
@@ -922,8 +957,8 @@ A larger R delays the work labelled blocking, so each wait is stated:
 1. **The fuel representation** (§10), possibly the user's. Recommended: **F2**, inventory rows with
    one authority per standard potential (§10.2). F1 and F3 contradict D174's requirement.
 2. **The name** (§6). Recommended: keep `resolved_pump_tissue@3`, with D147 amended as written.
-3. **Rounding in G1** (§3, §4). If P2 shows per-law dispatch moves results, the tolerance is
-   stated before the run and G2 runs in full. Recommended: as written.
+3. **Rounding in G1** (§3, §4). P2 found per-law dispatch bitwise, so G1 runs bitwise. The
+   rounding contingency stays written, for the rest of R. Recommended: as written.
 4. **I0** (§13.6). Finding 3's term rides in R with the passive law if P3 refuses nothing, and
    needs no run-time half. The face-free term waits for P1 and FR-4 (B7).
 5. **The cost-savers** (§3): sample E07-v1 only if G1 is bitwise; derivative-program judges always
@@ -949,7 +984,7 @@ runs.
   - an empty layout leaf is a jaxpr input in every program, though `jax.jit` dropped it from the
     lowered StableHLO in one world.
 
-**P2, per-law dispatch against today's** (results and cost). *Entered after the run.*
+**P2, per-law dispatch against today's** (results and cost). In seven worlds, the forward runs and two worlds' Jacobians are bitwise identical. Programs lose 10 to 190 equations. Times are within noise, and second runs compile nothing (§4).
 
 **P3, the I0 sweep**, with planted controls of known answer.
 - **The first run was void, by a probe bug.** The layout holds valence as a column, so the neutral mask failed in every world that declares a neutral species, the controls included.
