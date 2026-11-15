@@ -821,6 +821,12 @@ registry code.
   - the implicit-route slot with faces behind it, 1–1.5.
 - **Its timing is the lead's call** (§15.6, option 3). After A7, FR-4's code can merge from about
   day 12.5–18. Before A5, R lands 3.5–5 days later.
+- **How an operator reaches the implementation object is INT's contract question.** Operators
+  receive state, control and layout only, and today import `surface_pump_v3` directly. The contract
+  can pass the composite's inner object to the parts that call the inner model (replacement's event
+  map, water's coupled RK4 part); or those calls stay on structure-free module functions where one
+  suffices (replacement's post-event junction voltages need only the field solve). OPS's event-map
+  work waits on INT's answer.
 - **Files in no stream's list:**
   - `core/surface_pump_v3_spec.py` (the parser and `LAW_CODES`), taken as the core's unless the
     lead says otherwise;
