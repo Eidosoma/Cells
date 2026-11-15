@@ -27,8 +27,9 @@ The declaration (model key `transporters`, absent unless declared), one entry pe
     supplies the work −Δ_rG'_ATP per cycle, booked as the kind's work, and its material, +1 ATP,
     −1 ADP and −1 Pi per cycle, recorded in `transporter_fuel_supplied_fmol` (an observation:
     the held rows do not change, so no material ledger moves);
-  - `finite_fuel_rows@1`: the pump moves its fuel rows. Refused in version 1 until its stored
-    part is wired (gap 2: the stage energy rate's standard-potential term).
+  - `finite_fuel_rows@1`: the pump moves its fuel rows, and the kind books their standard term
+    Σ μ°' Δn as stored_pJ. Refused in this round: the stage energy-rate observation's
+    standard-potential term waits for the landing (gap 2).
   `ph_ref` and `ph_band` are the fuel node's transformed-potential band (§5.2): required under the
   proton law, whose domain refuses |pH_in − ph_ref| > ph_band at the read's free h; null under
   the neutral law, which names no proton row in version 1.
@@ -42,12 +43,11 @@ What the hooks do:
   outside into the shared inventory (rule (c)), so a charged role charges the field. Heat is
   −cycles x ΔG_cyc and the held fuel's work −cycles x Δ_rG'_ATP; the kind's own fields integrate
   with the tableau like any state.
-- **The law's domain at the stage's own inputs** (development stopgap, named in the lane's
-  report): a slot outside its law's domain (|ΔG_cyc/RT| > 80, a non-positive input, the proton
-  law's pH band) makes the cycles derivative NaN, which the core's finiteness check of the
-  stage's rates turns into a refused stage (@3's rhs pattern). stage_check has no potentials and
-  domain sees the stored state, so neither can test the charged law's domain; the seam asked of
-  the core (a (state, valid) pattern, such as KindRates.valid) replaces this.
+- **The law's domain at the stage's own inputs** (KindRates.valid): a slot outside its law's
+  domain (|ΔG_cyc/RT| > 80 with the patch voltage, a non-positive input, the proton law's pH
+  band at the read's free h) refuses the row or the step.
+- **readouts:** the instantaneous cycle rate, ΔG_cyc and Δ_rG'_ATP per patch at the observed
+  row's read and potentials (free h at buffered nodes); zero where no population.
 - **membrane_flux** (gap 9): the role's outward flux across each patch joins the patches' total
   flux and, for a charged role, the membrane current.
 - **stage_term** (gap 5, B7 for kinds): each charged population's electrogenic slope at the
@@ -70,8 +70,15 @@ from dataclasses import dataclass
 import numpy as np
 
 from cells.core import species_registry
-from cells.core.kind_registry import BUILTIN, Kind, qualified
-from cells.core.specs import ConfigError, _fields, _number
+from cells.core.kind_registry import (
+    BUILTIN,
+    ConfigError,
+    Kind,
+    bounded_integer,
+    finite_number,
+    qualified,
+    require_fields,
+)
 from cells.numerics.extracellular_field import scatter
 from cells.processes import atp_transporter as neutral
 from cells.processes import proton_pump as proton
@@ -123,9 +130,14 @@ LAYOUT_FIELDS = (
     "transporter_ph_band",
 )
 CONTROL_FIELDS = ("transporter_availability",)
+READOUT_COLUMNS = (
+    "transporter_cycle_rate_fmol_s",
+    "transporter_cycle_free_energy_J_mol",
+    "transporter_chemical_drive_J_mol",
+)
 GAP_FINITE_FUEL = (
-    "finite fuel (finite_fuel_rows@1) is refused in version 1 until its stored part is wired: "
-    "the stage energy rate's standard-potential term (gap 2, after the landing)"
+    "finite fuel (finite_fuel_rows@1) is refused in this round: the stage energy-rate "
+    "observation's standard-potential term waits for the landing (gap 2)"
 )
 
 
@@ -161,7 +173,7 @@ def _taken_ids(m):
 
 
 def _fuel(raw, where, law, patch, role, valence):
-    fuel = _fields(raw, set(FUEL_FIELDS), f"{where}'s fuel")
+    fuel = require_fields(raw, set(FUEL_FIELDS), f"{where}'s fuel")
     if fuel["kind"] not in FUEL_KINDS:
         raise ConfigError(f"{where}: fuel kind is one of {', '.join(FUEL_KINDS)}")
     if fuel["node"] != patch.inside:
@@ -187,8 +199,8 @@ def _fuel(raw, where, law, patch, role, valence):
                 f"{where}: the proton pump runs on held fuel in version 1 (finite fuel at a node "
                 "with a dynamic proton row is refused, §5.2)"
             )
-        ph_ref = _number(ph_ref, f"{where}: ph_ref", positive=True)
-        ph_band = _number(ph_band, f"{where}: ph_band")
+        ph_ref = finite_number(ph_ref, f"{where}: ph_ref", positive=True)
+        ph_band = finite_number(ph_band, f"{where}: ph_band")
     elif ph_ref is not None or ph_band is not None:
         raise ConfigError(
             f"{where}: the neutral law names no proton row in version 1, so its fuel declares no "
@@ -209,7 +221,7 @@ def parse(entries, base):
     taken, ids, used = _taken_ids(m), set(), set()
     out = []
     for raw in entries:
-        _fields(raw, set(ENTRY_FIELDS), "a transporter population")
+        require_fields(raw, set(ENTRY_FIELDS), "a transporter population")
         name = raw["id"]
         if not isinstance(name, str) or not name or name in ids or name in taken:
             raise ConfigError(f"transporter ID {name!r} must be unique among the model's IDs")
@@ -234,18 +246,21 @@ def parse(entries, base):
             raise ConfigError(f"{where}: the proton pump's role has valence +1")
         if law == NEUTRAL_LAW and valence[role] != 0:
             raise ConfigError(f"{where}: the neutral law's role has valence 0")
-        n = raw["stoichiometry"]
-        if type(n) is not int or not STOICHIOMETRY_RANGE[0] <= n <= STOICHIOMETRY_RANGE[1]:
-            raise ConfigError(f"{where}: stoichiometry is an integer from 1 to 4")
+        n = bounded_integer(
+            raw["stoichiometry"],
+            f"{where}: stoichiometry",
+            minimum=STOICHIOMETRY_RANGE[0],
+            maximum=STOICHIOMETRY_RANGE[1],
+        )
         out.append(
             Population(
                 name,
                 patch.id,
                 law,
-                _number(raw["capacity_fmol_s"], f"{where}: capacity_fmol_s"),
+                finite_number(raw["capacity_fmol_s"], f"{where}: capacity_fmol_s"),
                 n,
-                _number(raw["km_role_mM"], f"{where}: km_role_mM", positive=True),
-                _number(raw["km_atp_mM"], f"{where}: km_atp_mM", positive=True),
+                finite_number(raw["km_role_mM"], f"{where}: km_role_mM", positive=True),
+                finite_number(raw["km_atp_mM"], f"{where}: km_atp_mM", positive=True),
                 role,
                 *_fuel(raw["fuel"], where, law, patch, role, valence),
                 patch.inside,
@@ -530,8 +545,7 @@ def rates(state, potentials, control, p, *, xp):
             outward, state.extracellular_amount_increment, (p.membrane_outside,), xp=xp
         ),
         derivatives=dict(
-            # The law's domain at the stage's own inputs refuses the stage (module docstring).
-            transporter_cycles=xp.where(valid, cycles, xp.nan),
+            transporter_cycles=moved,
             transporter_dissipated_energy_pJ=heat,
             transporter_metabolic_work_pJ=work,
             transporter_fuel_supplied_fmol=_supply_record(moved, p, species, xp=xp),
@@ -539,7 +553,16 @@ def rates(state, potentials, control, p, *, xp):
         heat_pJ_s=heat,
         work_pJ_s=work,
         membrane_flux=outward,  # Gap 9: joins the patches' flux and current.
+        valid=xp.all(valid),  # The laws' domains at the stage's read and potentials.
     )
+
+
+def readouts(state, read, potentials, control, p, *, xp):
+    """READOUT_COLUMNS per patch at the observed row's read and potentials; zero where no
+    population."""
+    del state
+    values = kinetics(read, potentials, control.transporter_availability, p, xp=xp)[:3]
+    return tuple(xp.where(p.transporter_present, value, 0.0) for value in values)
 
 
 def stage_term(read, control, p, *, xp):
@@ -609,6 +632,7 @@ TRANSPORTER = BUILTIN.register(
         state_axes=STATE_AXES,
         layout_fields=LAYOUT_FIELDS,
         control_fields=CONTROL_FIELDS,
+        readout_columns=READOUT_COLUMNS,
         parse=parse,
         to_dict=to_dict,
         structure_entry=structure_entry,
@@ -620,6 +644,7 @@ TRANSPORTER = BUILTIN.register(
         held_rows=held_rows,
         ledger_terms=ledger_terms,
         domain=domain,
+        readouts=readouts,
         moved_rows=moved_rows,
         check_definition=check_definition,
     )
