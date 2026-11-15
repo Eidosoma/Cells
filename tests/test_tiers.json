@@ -85,7 +85,8 @@
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-transfer-03/measured.json",
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-fuel/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/acceptance/tiers-tools-20261115/measured.json",
-  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/head/tiers-45e0c186/measured.json"
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/head/tiers-45e0c186/measured.json",
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/batch/tiers-0ae1943a/measured.json"
  ],
  "measured_provenance": [
   {
@@ -699,6 +700,14 @@
    "root": "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/head/snapshot-45e0c186",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-15T15:10:25+00:00"
+  },
+  {
+   "git_revision": "0ae1943aa0e3cdb5f1c0f2128b0df3d0d7127758",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/batch/snapshot-0ae1943a",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T18:17:58+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1267,6 +1276,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 15
+    }
+   },
+   {
+    "file": "tests/unit/test_bound_terms.py",
+    "seconds": 3.68,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
     }
    },
    {
@@ -2550,6 +2567,14 @@
     }
    },
    {
+    "file": "tests/unit/test_pump_composite_registry.py",
+    "seconds": 4.43,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
     "file": "tests/unit/test_pump_composite_rk4.py",
     "seconds": 3.94,
     "exit_code": 0,
@@ -3117,7 +3142,7 @@
    },
    {
     "file": "tests/unit/test_species_registry.py",
-    "seconds": 19.4,
+    "seconds": 5.33,
     "exit_code": 0,
     "counts": {
      "passed": 9
@@ -3125,10 +3150,18 @@
    },
    {
     "file": "tests/unit/test_species_registry_forms.py",
-    "seconds": 15.0,
+    "seconds": 4.83,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_species_registry_hook.py",
+    "seconds": 5.53,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
     }
    },
    {
@@ -3949,6 +3982,22 @@
     }
    },
    {
+    "file": "tests/unit/test_delivery_world.py",
+    "seconds": 37.31,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_delivery_world_order.py",
+    "seconds": 70.98,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
     "file": "tests/unit/test_division_cleft_reference.py",
     "seconds": 72.33,
     "exit_code": 0,
@@ -4006,11 +4055,11 @@
     }
    },
    {
-    "file": "tests/unit/test_inner_laws.py",
-    "seconds": 21.3,
+    "file": "tests/unit/test_inner_executable_reuse.py",
+    "seconds": 66.98,
     "exit_code": 0,
     "counts": {
-     "passed": 11
+     "passed": 1
     }
    },
    {
@@ -4931,18 +4980,6 @@
     "counts": {}
    },
    {
-    "file": "tests/unit/test_delivery_world.py",
-    "seconds": 90.84,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_delivery_world_order.py",
-    "seconds": 90.42,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
     "file": "tests/unit/test_division_diagnostic_record_rings.py",
     "seconds": 90.01,
     "exit_code": null,
@@ -5013,6 +5050,18 @@
    {
     "file": "tests/unit/test_hcn_extra_catalog.py",
     "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_inner_dispatch_steps.py",
+    "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_inner_laws.py",
+    "seconds": 90.12,
     "exit_code": null,
     "counts": {}
    },
