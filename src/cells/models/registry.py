@@ -698,18 +698,18 @@ def get_model(spec):
     from cells.core.surface_pump_water_spec import SurfacePumpWaterModel
     from cells.core.surface_pump_water_v2_spec import SurfacePumpRegulatedWaterModel
 
-    if isinstance(spec, SurfacePumpRegulatedWaterModel):
+    if isinstance(spec, SurfacePumpRegulatedWaterModel):  # One model per inner structure.
         from cells.models import surface_pump_water_v2
 
-        return surface_pump_water_v2
+        return surface_pump_water_v2.model_for(spec)
     if isinstance(spec, SurfacePumpWaterModel):
         from cells.models import surface_pump_water
 
-        return surface_pump_water
+        return surface_pump_water.model_for(spec)
     if isinstance(spec, CellReplacementModel):
         from cells.models import cell_replacement
 
-        return cell_replacement
+        return cell_replacement.model_for(spec)
     from cells.core.pump_composite_spec import CompositeModel
 
     if isinstance(spec, CompositeModel):  # One cached implementation per operator list.

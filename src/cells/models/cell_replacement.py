@@ -44,6 +44,7 @@ its own implementation on the model's test and qualification worlds (evidence:
 re-exported here; the definition format is unchanged.
 """
 
+import sys
 from dataclasses import replace
 
 import numpy as np
@@ -102,6 +103,7 @@ rebind = first.rebind
 
 # The composition this identity runs (one cached implementation).
 _model = pump_composite.implementation(ionic.MODEL_ID, (OPERATION_LAW_ID,))
+LAWS = (OPERATION_LAW_ID,)
 STATE_AXES = _model.STATE_AXES
 STATE_TYPE = _model.STATE_TYPE
 LAYOUT_TYPE = _model.LAYOUT_TYPE
@@ -257,3 +259,9 @@ def summarize(history, diagnostics, spec):
         "lineage": lineage(spec, generation),
         "composition": composition_identity(spec),
     }
+
+
+def model_for(model):
+    """registry.get_model's answer (I2): this family for its declared inner structure,
+    one composition per structure (pump_composite.FamilyModel)."""
+    return pump_composite.family_model(sys.modules[__name__], LAWS, ionic.structure(model))

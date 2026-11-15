@@ -45,7 +45,7 @@ def regulated(state="D", **kw):
 
 def test_definition_round_trip_and_dispatch():
     spec = parse_spec(regulated())
-    assert get_model(spec.model) is surface_pump_water_v2
+    assert get_model(spec.model).module is surface_pump_water_v2  # I2: per structure.
     assert parse_spec(spec.to_dict()) == spec
     assert [r.membrane_id for r in spec.model.symport.routes] == ["membrane_0"]
 
