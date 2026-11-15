@@ -14,7 +14,8 @@ without reading its source.
 | `validation/passive/passive_reference.py` (`pr`) | The closed pair's closed form (float and 50 digits), its equilibrium, the per-step exact heat, and an independent integration of any graph of closed compartments |
 | `validation/passive/passive_crosschecks.py` | The driver behind the measured numbers below (`--out DIR`; seconds) |
 
-**Self-tests:** `tests/unit/test_passive_references.py`, 9 tests, tier 1, about 4 s. They also check
+**Self-tests:** `tests/unit/test_passive_references.py`, 12 tests, tier 1, about 8 s (a
+three-compartment chain on the default Radau included). They also check
 that nothing here imports `cells` or `validation.tissue`.
 
 ## The law and the world
@@ -82,11 +83,25 @@ run = pr.integrate(world, t_end, record=(...))
 - **The integrated heat is independent evidence for H.** Unlike FR-3's, no term cancels between H
   and ΔG here.
 
-## Measured (`passive-crosschecks-01`)
+## Measured (`passive-crosschecks-03`, from snapshot `passive-snapshot-03`)
+
+All against 50 digits, at t = 0.01/k to 3/k. Relative errors unless stated.
+
+| Start ratio c_a0/c_b0 | Closed form: amounts; heat | Radau at 1e-12: amounts; heat; closure (of RT·N) | DOP853 at 1e-13: amounts; heat; closure |
+| --- | --- | --- | --- |
+| 1 (equal) | 0; 0 | 0; 0; 0 | 0; 0; 0 |
+| 1 + 1e-8 | 2.2e-16; 4.0e-8, but **0.36 ε × the heat's rounding scale** | 8.9e-16; 6.7e-8; 1.7e-24 | 7.8e-16; 1.7e-7; 2.2e-24 |
+| 1 + 1e-3 | 0; 1.9e-13 (0.13 ε × scale) | 8.9e-16; 1.1e-12; 2.5e-19 | 2.2e-16; 3.8e-13; 4.5e-20 |
+| 1e2 to 1e12 (a trace start) | ≤ 3.3e-16; ≤ 2.3e-15 (≤ 0.76 ε × scale) | ≤ 4.2e-15; ≤ 7.1e-15; ≤ 1.3e-15 | ≤ 3.4e-15; ≤ 3.7e-14; ≤ 1.2e-14 |
+
+- **Near equal starts, judge the heat on its rounding scale** (`heat_scale_pJ`), not relative to
+  itself. The heat is second order in the gradient while its terms are first order, so a relative
+  error grows as the gradient vanishes, while the error in ε × scale stays below 1.
+- **The integrations' heat** is relative to a heat that, at 1 + 1e-8, is about 1e-17 of RT·N.
+- **Material** is conserved within 3.8e-15 in every integration.
 
 | Check | Result |
 | --- | --- |
-| Start ratio c_a0/c_b0 = 1 to 1e12 (a trace start), against 50 digits at t = 0.01/k to 3/k | Closed form: amounts within 3.3e-16, heat within 2.3e-15. Radau at 1e-12 and DOP853 at 1e-13: amounts within 4.2e-15, heat within 7.1e-15, closure within 1.3e-15 of RT·N, material within 3.8e-15 |
 | Equal concentrations with unequal volumes (n/V equal in floats) | Flux exactly 0, heat exactly 0 |
 | Reversal and swapping the compartments | Exact antisymmetry; heat monotone and non-negative |
 | The per-step heat, 5,000 random steps from trace to large amounts | Within 1.24 ε × scale of 50 digits |
@@ -109,4 +124,8 @@ run = pr.integrate(world, t_end, record=(...))
 
 ## Evidence
 
-`/mnt/workspaces/Cells/independent-references-20261115-01/` (HANDOFF.md): `passive-crosschecks-01/`.
+`/mnt/workspaces/Cells/independent-references-20261115-01/` (HANDOFF.md): `passive-crosschecks-03/`, the
+record, from snapshot `passive-snapshot-03` (f4720aff). The runs from snapshots 01 and 02 are kept.
+In run 02 the sweep key `{ratio:g}` let the 1 + 1e-8 row overwrite the ratio-1 row.
+- The driver ran from a snapshot folder, not a checkout, so its `git_revision` field is empty, and
+  the snapshot's SNAPSHOT.json carries the revision.
