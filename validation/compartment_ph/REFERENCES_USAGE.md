@@ -317,7 +317,8 @@ every 10 s).
 
 - **The note's revision:** both findings (§4.2's envelope above, §13.2 here) are against the note
   at f3ec04cd. §4.2 has since been revised, so read "§4.2 says" as that revision's text.
-- **The start is undefined to the budget.**
+- **The start is undefined to the budget.** *Answered by 220d6e4d: the start is FR-4's
+  checkpoint at 1800 s.*
   - FR-4's 900 s acceptance run ends at pH_L 5.09601, while the steady state is 5.09463,
     reached by about 1800 s.
   - The gap, 1.4e-3 pH, exceeds the 1e-3 budget, so "FR-4's world at its steady state" is not
@@ -325,7 +326,8 @@ every 10 s).
   - The owner should declare the checkpoint's time. Otherwise a comparison starts from the
     engine's own checkpoint, passed as `tr.Start`. The reference computes its own at 3600 s.
 - **No budget is declared for X.** G1/G3 require a control's effect to exceed the declared budget,
-  so the two controls cannot be judged on X until §13.2 declares one.
+  so the two controls cannot be judged on X until §13.2 declares one. *Answered by 220d6e4d:
+  1e-3 of X_L(0), used in the arms section above.*
 - **Resealing is off before 110 s,** as §13.2's "k_res 0.05 s⁻¹ from 110 s" reads. With it on
   throughout, d would peak near k_inj/(k_inj + k_res) = 0.952 rather than 0.99995.
 - **The pore's proton heat** is booked apart from the leak's (each route its own heat, §9). Their
@@ -388,8 +390,9 @@ CPU 7; driver `transfer_arms_crosschecks.py`.
 4. **Both controls clear 10× the budget,** by far: 314 B (T) and 872 B (R) in X_L.
 5. **The explicit-limit figure:** confirmed, 0.029 from the pore alone at pH 5.1 (0.030 with the
    leak).
-   - With K⁺'s route, the patch's total reaches 0.048 of the declared 0.05: inside, but with
-     little margin.
+   - **A reading:** 0.048 is the figure only if the 0.05 bound applies to the patch's total over
+     its routes, where K⁺'s route adds about 0.025. Per route, the proton routes peak at 0.022 over
+     the runs.
 
 ### The follow-up: what the shortfalls need
 
@@ -401,12 +404,29 @@ the record.
 | Re-acidification, with the run extended to 1500 s | T: pH_L 5.333 at 400 s, back within 0.01 of the start by 640 s and within 0.001 by 780 s. R: 5.421 at 400 s, then 680 s and 820 s |
 | Arm T's smallest f against the window (damage from 60 s) | [60, 120]: 0.022 (peak 5.912). [60, 180]: 5.9e-3 (6.057). [60, 240]: 2.9e-3 (6.133). [60, 360]: **1.5e-3** (6.204) |
 
+**Arm T's "the transfer stops", judged on the budget's own quantity.** The second probe,
+`compartment-transfer-arms-01-followup2.log`, measures the conditioned route's cumulative transfer
+while pH_L is above pH₅₀.
+
+| Damage window | Above pH₅₀ | Transfer while above (B; fraction of X_L(0)) | Before damage, 0–59 s |
+| --- | --- | --- | --- |
+| [60, 120] (declared) | 74–326 s | **152 B**; 0.152 | 497 B |
+| [60, 180] | 74–434 s | 155 B; 0.155 | 497 B |
+| [60, 240] | 74–517 s | 155 B; 0.155 | 497 B |
+| [60, 360] | 74–658 s | 156 B; 0.156 | 497 B |
+
+- **So arm T shows "slows", not "stops".** About 150 budgets cross while the lumen is alkaline.
+  The mean rate falls about 14-fold.
+- **A longer window does not change it.** Most of the transfer happens while f passes through its
+  half-open range, on the way up and on the way down.
+- **The owner must restate the claim,** for example as a reduced transfer with its number, or
+  change the condition's sharpness. That second option was not explored here.
+
 **The nearest changes, for the owner to choose between:**
 - **For "re-acidifies" to mean back within 0.01 pH:** a horizon of about 700 s, or 850 s for 0.001.
   Otherwise, state the claim as "back below pH₅₀", which 400 s shows.
-- **For f near the estimated 1.6e-3:** a 300-s damage window in arm T ([60, 360] s).
-  - Otherwise, keep [60, 120] s and state f ≈ 0.02. The conditioned flux still falls 56-fold, and
-    the control differs by 314 B.
+- **For f near the estimated 1.6e-3:** a 300-s damage window in arm T ([60, 360] s). It does
+  not make the transfer stop (above).
 
 # Finite fuel (item 4): R-fuel
 
@@ -425,6 +445,12 @@ yet, so the sections below are the reference's own specification, from:
 
 **Self-tests:** `tests/unit/test_compartment_fuel_references.py`, 5 tests. The folder's
 independence tests cover this module too.
+
+**Limits:**
+- The pump is exercised at n = 1 only.
+- The schedule is on/off (`off_windows`), though the specification allows m ∈ [0, 1].
+- The specification and the reference share an author, so only an engine note can check the
+  specification itself.
 
 ```python
 from validation.compartment_ph import fuel_reference as fr
