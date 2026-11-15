@@ -285,13 +285,40 @@ def test_a_complete_fr4_run_passes_every_criterion_and_each_planted_error_fails_
         "J2_order_K_L", "J2_order_V_b", "J2_order_cycles", "J2_order_pH_L", "J6_energy_falls"]
     parts = fr4_parts()
     parts["rung_1ms"]["series"]["pH_L"] = [p + 2e-3 for p in parts["rung_1ms"]["series"]["pH_L"]]
-    assert {"J4_reference_pH_L", "J4_start"} <= set(failed(parts, protocol))
+    assert {"J4_reference_pH", "J4_start"} <= set(failed(parts, protocol))
     parts = fr4_parts()
     parts["control_k2"]["series"] = fr4_series([float(s) for s in range(901)], 1e-3)
     assert failed(parts, protocol) == ["J7_K2_planted_sign"]  # a control that is not caught
     parts = fr4_parts()
     parts["rung_0p5ms"]["stage"]["envelope_stages_beyond"] = 3
     assert failed(parts, protocol) == ["J5_envelope_count"]
+
+
+def test_j4_and_k2s_catch_judge_every_buffered_node():
+    """The lead's ruling (15 November 2026): J4, and so K2's catch, judges the pH of the lumen and
+    the cytosol, the maximum over both nodes and every record; FR-5's pH budget the same."""
+    protocol, t = PROTOCOLS["fr4"], [float(s) for s in range(901)]
+    parts = fr4_parts()
+    s = parts["rung_1ms"]["series"]
+    s["pH_c"] = [p + 1.5e-3 * grow(r, 10) for p, r in zip(s["pH_c"], t, strict=True)]
+    assert failed(parts, protocol) == ["J4_reference_pH"]  # the cytosol alone, the lumen exact
+    derived = judge.derive(parts, protocol)["reference"]
+    assert derived["pH_max_abs"] == derived["pH_c_max_abs"] > derived["pH_L_max_abs"]
+    parts = fr4_parts()
+    uncaught = fr4_series(t, 1e-3)  # K2's lumen as the declared world's: caught by the cytosol
+    for shift, expected in ((3e-3, []), (1e-3, ["J7_K2_planted_sign"])):
+        k2 = dict(uncaught, pH_c=[p - shift * grow(r, 10) for p, r in zip(uncaught["pH_c"], t,
+                                                                         strict=True)])
+        parts["control_k2"]["series"] = k2
+        assert failed(parts, protocol) == expected
+    del parts["control_k2"]["series"]["pH_c"]  # a node missing fails through None
+    assert failed(parts, protocol) == ["J7_K2_planted_sign"]
+    protocol, t = PROTOCOLS["fr5"], [float(s) for s in range(401)]
+    for arm in ("T", "R"):
+        parts = fr5_parts()
+        s = parts[f"{arm}_rung_0p5ms"]["series"]
+        s["pH_c"] = [p + 1.5e-3 * grow(r, 10) for p, r in zip(s["pH_c"], t, strict=True)]
+        assert failed(parts, protocol) == [f"J4_{arm}_pH"]
 
 
 def test_a_missing_or_refused_part_fails_its_criteria_through_none():
@@ -302,7 +329,7 @@ def test_a_missing_or_refused_part_fails_its_criteria_through_none():
     assert "J1_admission" in got and "J2_order_pH_L" in got
     parts = fr4_parts()
     parts["rung_1ms"].update(completed=False, refusal="refused at run time")
-    assert {"J1_admission", "J3_state_error_pH_L", "J4_reference_pH_L"} <= set(
+    assert {"J1_admission", "J3_state_error_pH_L", "J4_reference_pH"} <= set(
         failed(parts, protocol))
 
 
