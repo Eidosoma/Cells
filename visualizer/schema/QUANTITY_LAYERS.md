@@ -73,7 +73,12 @@ the viewer changes.
    **A signed record is drawn with a direction only where its sign is declared.** Until
    the run view declares which way is positive, a layer shows the size alone; where a
    direction must be shown it is the viewer's reading of the engine's code, and the
-   legend says so.
+   legend says so. For the tissue family that reading was confirmed by the owner of the
+   engine's core on 15 November 2026 (a positive transfer leaves the cell for its
+   outside, or the sender for the receiver; pump cycles are positive inwards): a layer
+   may draw by it, and its legend says the convention is the engine's own, confirmed and
+   not yet declared in the run's view
+   (`docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md`).
 2. **One layer on each visual channel.** The channels are `colour`, `height`, `links`
    (signs on junctions), `surface` (signs on a membrane), `arrows`, `motion` and `glow`.
    Switching a layer on takes its channels from whichever layer held them. Layers on

@@ -293,3 +293,21 @@ levels-of-detail fields will be carried for a record's law when they land; a set
 for a compartment node will carry its role and owner from the compartment map; whether a
 route's cumulative heat never falls under the exact heat booking is asked of the core's
 owner, answer to follow.
+
+### From the owner of the core, through the lead (15 November 2026)
+
+- **Signs in the tissue family: this note's reading is right.** A positive
+  `membrane_transferred` leaves the patch's cell for its outside node.
+  `channel_transferred` is added unchanged into its patch's membrane total, so it has the
+  same sign. A positive junction or face transfer leaves the sender for the receiver.
+- **Two exceptions.** Pump cycles are positive inwards (stoichiometry times cycles, which
+  the balance subtracts from the membrane total). `reservoir_supplied` is positive into
+  the outside node.
+- The single-cell specification's flux, positive from bath into cell, is that model's
+  own convention.
+- **Heat.** Every `*_dissipated_energy_pJ` field that exists today is checked to be zero
+  or more and never to fall, per element, at each accepted row (with an allowance of
+  1e-12 pJ); a run that would lower one is refused. So the energy layer may take them as
+  totals that only grow. Under the exact booking of the rework a route's own share can
+  be negative while its row's total is not: whether a route's heat still only grows
+  there awaits the lead's ruling.
