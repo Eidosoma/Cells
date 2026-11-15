@@ -32,6 +32,7 @@ says the engine models an organism unless the project's record says so.
   "organism": "JCVI-syn3A",
   "taxon": 2144189,
   "plain": "One or two sentences on the organism and why it is here.",
+  "group": "Bacteria",
   "order": 30,
   "default": false,
   "made": "2026-11-14",
@@ -62,6 +63,11 @@ says the engine models an organism unless the project's record says so.
 
 ## Rules
 
+- **`group`** (optional) is the heading the species stands under in the page's list of
+  species, in a few words: `Animals`, `Bacteria`. Species with the same heading stand
+  together, the headings in the order of their first species and the species in the order
+  of `order`. A species without one stands under no heading. The headings come from the
+  files alone: the viewer holds no list of them.
 - **`levels`** run from small to large. Their ids come from the fixed list `molecules`,
   `cell`, `tissue`, `organ`, `organism`. A species lists only the levels it has;
   `molecules` and `cell` are required. A species without `tissue`, `organ` or `organism`

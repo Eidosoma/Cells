@@ -478,6 +478,12 @@ class CellsViewer extends HTMLElement {
    */
   renderSpecies(chrome) {
     const species = chrome.view?.species || chrome.card?.species || null;
+    // The control is drawn afresh: its list, if open, stays with the new button; with no
+    // control left to belong to (another view), it closes.
+    this.speciesButton = null;
+    queueMicrotask(() => {
+      if (this.speciesMenu?.open && !this.speciesButton?.isConnected) this.closeSpecies({ focus: false });
+    });
     this.speciesInBar = Boolean(species) && this.clientWidth >= SPECIES_IN_BAR;
     this.speciesBox.hidden = !this.speciesInBar;
     this.bar.classList.toggle("with-species", this.speciesInBar);
@@ -489,7 +495,7 @@ class CellsViewer extends HTMLElement {
     // statement a species of this scene would show beside it. The end of the bar gives way first
     // (its stamp shortens), so that is measured too: the List button must stay whole.
     const statement = h("button", { class: "species-state", type: "button" });
-    this.speciesBox.append(h("span", { class: "species-label" }, "Species"), this.speciesButtons(species), statement);
+    this.speciesBox.append(h("span", { class: "species-label" }, "Species"), this.speciesPicker(species), statement);
     const end = this.indexButton.parentElement;
     const words = [...new Set((this.model.raw.species || []).map((item) => MODELLED[item.modelled?.state] || item.modelled?.state).filter(Boolean))];
     const holds = () =>
@@ -516,22 +522,206 @@ class CellsViewer extends HTMLElement {
     else statement.remove();
   }
 
-  speciesButtons(species) {
-    // Pressing a species redraws the control, so the focus is put back on the button pressed.
-    const pick = (id) => {
-      this.setSpecies(id);
-      [...this.shadowRoot.querySelectorAll("[data-species]")].find((button) => button.dataset.species === id && button.offsetParent)?.focus({ preventScroll: true });
-    };
-    return h(
-      "div",
-      { class: "seg seg-many", role: "group", "aria-label": "Species" },
-      species.options.map(([id, label, title]) => h("button", { type: "button", dataset: { species: id, atlas: id }, title: title || "", "aria-pressed": String(id === species.active), onclick: () => pick(id) }, label))
+  /**
+   * The species as the list shows them: in the order of the files, under the headings the
+   * files give (a species file's `group`; schema/SPECIES.md). Each row says the species'
+   * name, its organism, and what Cells models of it.
+   */
+  speciesRows(species) {
+    const said = new Map((this.model.raw.species || []).map((item) => [item.id, item]));
+    const rows = species.options.map(([id, label, organism]) => {
+      const item = said.get(id) || {};
+      const state = item.modelled?.state || null;
+      return { id, label, organism: organism || item.organism || "", state, word: state ? MODELLED[state] || state : "", group: item.group || "" };
+    });
+    // Species with one heading stand together, the headings in the order of their first species; those with none come last.
+    const headings = [...new Set(rows.map((row) => row.group).filter(Boolean))];
+    return [...headings.flatMap((group) => rows.filter((row) => row.group === group)), ...rows.filter((row) => !row.group)];
+  }
+
+  /**
+   * The species switch is a dropdown: one button that names the species in view and opens a
+   * list of them. It is a list of the page's own and not the browser's select: each row says
+   * three things (the species, its organism, what Cells models of it), the rows stand under
+   * headings, and the list keeps the page's look in light and dark, on a phone too. The
+   * button is a combobox that owns a listbox: the focus stays on the button while the keys
+   * move the list's active row, which is what a screen reader announces.
+   */
+  speciesPicker(species) {
+    const menu = (this.speciesMenu ||= { open: false, active: null, typed: "", typedAt: 0 });
+    const rows = this.speciesRows(species);
+    const current = rows.find((row) => row.id === species.active) || rows[0];
+    // Every name lies in the button, one over the other, so that its width does not change with the species.
+    const names = rows.map((row) => h("span", row.id === current.id ? {} : { "aria-hidden": "true" }, row.label));
+    const button = h(
+      "button",
+      { class: "species-pick", type: "button", role: "combobox", "aria-haspopup": "listbox", "aria-controls": "species-list", "aria-expanded": String(menu.open), "aria-label": `Species: ${current.label}`, dataset: { speciesPick: current.id } },
+      h("span", { class: "species-pick-name" }, names),
+      h("span", { class: "species-pick-caret", "aria-hidden": "true" })
     );
+    button.addEventListener("click", () => (menu.open ? this.closeSpecies() : this.openSpecies()));
+    button.addEventListener("keydown", (event) => this.speciesKey(event));
+    this.speciesButton = button;
+    this.speciesShown = { rows, active: current.id };
+    // Redrawn while its list was open (a file arrived, the window changed): the list stays, under the new button.
+    if (menu.open) queueMicrotask(() => menu.open && this.speciesButton === button && this.showSpecies({ focus: true }));
+    return button;
+  }
+
+  /** The list of species, built once and filled each time it is shown. */
+  speciesListbox() {
+    if (this.speciesList) return this.speciesList;
+    const list = (this.speciesList = h("div", { class: "species-list", role: "listbox", id: "species-list", "aria-label": "Species", hidden: true }));
+    // A press on the list must not take the focus from the button, which holds it while the list is open.
+    list.addEventListener("mousedown", (event) => event.preventDefault());
+    list.addEventListener("pointermove", (event) => {
+      const id = event.target.closest?.("[data-species]")?.dataset.species;
+      if (id && id !== this.speciesMenu.active) this.moveSpecies(id, { scroll: false });
+    });
+    list.addEventListener("click", (event) => {
+      const id = event.target.closest?.("[data-species]")?.dataset.species;
+      if (id) this.chooseSpecies(id);
+    });
+    // While the list is open a clear sheet lies over the rest of the page: a press beside the
+    // list closes it and does nothing else (it does not also pick the part that lay under it).
+    const veil = (this.speciesVeil = h("div", { class: "species-veil", hidden: true }));
+    veil.addEventListener("mousedown", (event) => event.preventDefault());
+    veil.addEventListener("click", () => this.closeSpecies({ focus: false }));
+    this.frame.append(veil, list);
+    // A press outside the viewer closes it too, and so does leaving the window.
+    this.speciesOutside = (event) => {
+      const path = event.composedPath();
+      if (!path.includes(this.frame)) this.closeSpecies({ focus: false });
+    };
+    this.speciesAway = () => this.closeSpecies({ focus: false });
+    return list;
+  }
+
+  /** Fill the list, put it under the button and mark its active row. */
+  showSpecies({ focus = false } = {}) {
+    const menu = this.speciesMenu, button = this.speciesButton, shown = this.speciesShown;
+    if (!menu || !button?.isConnected || !shown) return;
+    const list = this.speciesListbox();
+    if (!shown.rows.some((row) => row.id === menu.active)) menu.active = shown.active;
+    const option = (row) =>
+      h(
+        "div",
+        { class: `species-option${row.id === menu.active ? " is-active" : ""}`, role: "option", id: `species-option-${row.id}`, "aria-selected": String(row.id === shown.active), "aria-label": [row.label, row.organism, row.word].filter(Boolean).join(", "), dataset: { species: row.id, atlas: row.id } },
+        h("span", { class: "species-option-name" }, row.label),
+        row.word ? h("span", { class: "species-option-state", dataset: { state: row.state } }, row.word) : null,
+        row.organism ? h("span", { class: "species-option-organism" }, row.organism) : null
+      );
+    const headings = [...new Set(shown.rows.map((row) => row.group))];
+    list.replaceChildren(
+      ...headings.map((group) =>
+        h("div", { class: "species-group", role: "group", "aria-label": group || "Other species" }, group ? h("div", { class: "species-group-name", "aria-hidden": "true" }, group) : null, shown.rows.filter((row) => row.group === group).map(option))
+      )
+    );
+    list.hidden = this.speciesVeil.hidden = false;
+    // Under the button, within the frame; as wide as its rows need, and no taller than the room below.
+    const frame = this.frame.getBoundingClientRect(), at = button.getBoundingClientRect();
+    const width = Math.min(Math.max(at.width, 320), frame.width - 16);
+    const top = at.bottom - frame.top + 6;
+    list.style.width = `${width}px`;
+    list.style.left = `${Math.max(8, Math.min(at.left - frame.left, frame.width - width - 8))}px`;
+    list.style.top = `${top}px`;
+    list.style.maxHeight = `${Math.max(120, frame.height - top - 12)}px`;
+    button.setAttribute("aria-expanded", "true");
+    button.setAttribute("aria-activedescendant", `species-option-${menu.active}`);
+    list.querySelector(".is-active")?.scrollIntoView({ block: "nearest" });
+    if (focus && this.shadowRoot.activeElement !== button) button.focus({ preventScroll: true });
+  }
+
+  /** Open the list of species, on the species in view or on the one named. */
+  openSpecies(active) {
+    const menu = this.speciesMenu;
+    if (!menu || !this.speciesButton?.isConnected) return;
+    menu.open = true;
+    menu.active = active || this.speciesShown.active;
+    this.showSpecies({ focus: true });
+    window.addEventListener("pointerdown", this.speciesOutside, true);
+    window.addEventListener("blur", this.speciesAway);
+  }
+
+  /** Close it, choosing nothing. The focus goes back to the button unless the visitor went elsewhere. */
+  closeSpecies({ focus = true } = {}) {
+    const menu = this.speciesMenu;
+    if (!menu?.open) return;
+    menu.open = false;
+    menu.typed = "";
+    if (this.speciesList) this.speciesList.hidden = this.speciesVeil.hidden = true;
+    window.removeEventListener("pointerdown", this.speciesOutside, true);
+    window.removeEventListener("blur", this.speciesAway);
+    const button = this.speciesButton;
+    if (!button?.isConnected) return;
+    button.setAttribute("aria-expanded", "false");
+    button.removeAttribute("aria-activedescendant");
+    if (focus) button.focus({ preventScroll: true });
+  }
+
+  /** Make another row the active one: what the keys and the pointer move, before anything is chosen. */
+  moveSpecies(id, { scroll = true } = {}) {
+    const menu = this.speciesMenu, list = this.speciesList;
+    if (!menu?.open || !list) return;
+    menu.active = id;
+    for (const row of list.querySelectorAll("[data-species]")) row.classList.toggle("is-active", row.dataset.species === id);
+    this.speciesButton?.setAttribute("aria-activedescendant", `species-option-${id}`);
+    if (scroll) list.querySelector(".is-active")?.scrollIntoView({ block: "nearest" });
+  }
+
+  /** Show the species chosen. The control is redrawn with it, so the focus is put back on its button. */
+  chooseSpecies(id) {
+    this.closeSpecies({ focus: false });
+    this.setSpecies(id);
+    this.speciesButton?.focus({ preventScroll: true });
+  }
+
+  /** The keys of the dropdown: open, move, choose, close, and a letter to go to a species by its name. */
+  speciesKey(event) {
+    const menu = this.speciesMenu, rows = this.speciesShown?.rows || [], key = event.key;
+    if (!menu || !rows.length || event.ctrlKey || event.metaKey || event.altKey) return;
+    const at = rows.findIndex((row) => row.id === menu.active);
+    const to = (index) => this.moveSpecies(rows[Math.max(0, Math.min(rows.length - 1, index))].id);
+    const letter = () => {
+      if (key.length !== 1 || key === " ") return false;
+      // Letters typed in quick succession spell the start of a name; one letter again goes to the next that begins with it.
+      const now = performance.now();
+      menu.typed = now - menu.typedAt < 700 ? menu.typed + key.toLowerCase() : key.toLowerCase();
+      menu.typedAt = now;
+      // By the name the row shows first; by the organism's name only where no row's own name begins so.
+      const begins = (text) => (list) => list.find((row) => row && row.label.toLowerCase().startsWith(text)) || list.find((row) => row && row.organism.toLowerCase().startsWith(text));
+      const from = menu.open ? at : rows.findIndex((row) => row.id === this.speciesShown.active);
+      const ordered = [...rows.slice(from + 1), ...rows.slice(0, from + 1)];
+      const found = (menu.typed.length > 1 && begins(menu.typed)([rows[from], ...ordered])) || begins(menu.typed.at(-1))(ordered);
+      if (!found) return true;
+      if (menu.open) this.moveSpecies(found.id);
+      else this.openSpecies(found.id);
+      return true;
+    };
+    if (!menu.open) {
+      if (["Enter", " ", "ArrowDown", "ArrowUp", "Home", "End"].includes(key)) {
+        event.preventDefault();
+        this.openSpecies(key === "Home" ? rows[0].id : key === "End" ? rows.at(-1).id : undefined);
+      } else if (letter()) event.preventDefault();
+      return;
+    }
+    if (key === "Escape") {
+      // Closing the list is all Escape does here: it does not also let go of what is selected.
+      event.preventDefault();
+      event.stopPropagation();
+      this.closeSpecies();
+    } else if (key === "ArrowDown") (event.preventDefault(), to(at + 1));
+    else if (key === "ArrowUp") (event.preventDefault(), to(at - 1));
+    else if (key === "Home" || key === "PageUp") (event.preventDefault(), to(0));
+    else if (key === "End" || key === "PageDown") (event.preventDefault(), to(rows.length - 1));
+    else if (key === "Enter" || key === " ") (event.preventDefault(), this.chooseSpecies(menu.active));
+    else if (key === "Tab") this.closeSpecies({ focus: false }); // the focus moves on; nothing is chosen
+    else if (letter()) event.preventDefault();
   }
 
   /** The switch as a row of a card. */
   speciesRow(species) {
-    return h("div", { class: "seg-row seg-species" }, h("span", { class: "seg-label" }, "Species"), this.speciesButtons(species));
+    return h("div", { class: "seg-row seg-species" }, h("span", { class: "seg-label" }, "Species"), this.speciesPicker(species));
   }
 
   /** What Cells models of the species shown, in two or three words; pressing it opens all that is said of the species. */

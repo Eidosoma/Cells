@@ -111,6 +111,15 @@ const press = async (selector) => {
   await click(at.x, at.y);
   await sleep(250);
 };
+// The species switch is a dropdown: press its pill, wait for the list, press the species' row.
+const pickSpecies = async (id) => {
+  const listOpen = () => evaluate(`(() => { const box = ${VIEWER}.shadowRoot.querySelector(".species-list"); return Boolean(box && !box.hidden); })()`);
+  if (!(await listOpen())) await press(".species-pick");
+  for (let tries = 0; tries < 30 && !(await listOpen()); tries++) await sleep(100);
+  await press(`.species-list [data-atlas="${id}"]`);
+  for (let tries = 0; tries < 30 && (await listOpen()); tries++) await sleep(100);
+  await sleep(150);
+};
 // The species whose side of the atlas is the inventory's own. The page opens on the species whose
 // file says default, which may be another, so the checks of the inventory's side ask for it by name.
 const ownAtlas = () => evaluate(`(() => { const atlases = ${VIEWER}.model.raw.proteins.atlases || []; return (atlases.find((atlas) => atlas.reference) || atlases[0])?.id ?? null; })()`);
@@ -124,7 +133,8 @@ const speciesState = () =>
       lens: viewer.state.lens,
       atlas: viewer.state.atlas ?? null,
       attribute: viewer.dataset.atlas ?? null,
-      species: [...root.querySelectorAll("[data-atlas]")].filter((button) => button.offsetParent).map((button) => ({ id: button.dataset.atlas, label: button.textContent, pressed: button.getAttribute("aria-pressed") === "true" })),
+      // The species the dropdown offers, with the one in view (the switch is one pill and a list since 15 November 2026).
+      species: [...root.querySelectorAll(".species-pick")].some((button) => button.offsetParent) && viewer.speciesShown ? viewer.speciesShown.rows.map((row) => ({ id: row.id, label: row.label, pressed: row.id === viewer.speciesShown.active })) : [],
       heading: text(".view-card .card-title"),
       organism: text(".view-card .card-organism"),
       stats: [...root.querySelectorAll(".view-card .stat b")].map((item) => item.textContent).join(" "),
@@ -249,7 +259,7 @@ try {
       const human = s;
       check("species: the inventory's own side has the page's species switch, no rings and no findings", s.species.find((item) => item.pressed)?.id === s.atlas && s.marks === 0 && s.findings === "", JSON.stringify([s.atlas, s.species, s.marks, s.findings]));
 
-      await press(`[data-atlas="${other.id}"]`);
+      await pickSpecies(other.id);
       s = await speciesState();
       check("species: a click on another species shows its atlas", s.atlas === other.id && s.attribute === other.id && s.heading !== human.heading && s.species.find((item) => item.id === other.id).pressed, JSON.stringify([s.atlas, s.attribute, s.heading]));
       check("species: the card gives the species' own name, counts and sources", Boolean(s.organism) && s.stats !== human.stats && /How it was made/.test(s.details) && /Sources and licences/.test(s.details), JSON.stringify([s.organism, s.stats, s.details]));
@@ -312,7 +322,7 @@ try {
       s = await speciesState();
       check("species: the species is kept when another view is visited", s.lens === "proteins" && s.atlas === other.id && s.marks > 0, JSON.stringify([s.lens, s.atlas, s.marks]));
       if (family) await evaluate(`${VIEWER}.select(${JSON.stringify(family)})`);
-      await press(`[data-atlas="${human.atlas}"]`);
+      await pickSpecies(human.atlas);
       s = await speciesState();
       check("species: back on the inventory's atlas, the card, the legend and the picture are as before", s.atlas === human.atlas && s.heading === human.heading && s.stats === human.stats && s.findings === "" && s.marks === 0 && s.lit === s.units && s.mapping === human.mapping, JSON.stringify([s.atlas, s.heading, s.findings, s.marks, s.lit]));
       check("species: the selected unit lists the inventory's candidates again", !family || (Boolean(s.panel) && s.panel.finding === null && /Candidate products/.test(s.panel.heads) && s.panel.lawNote === null), JSON.stringify(s.panel));

@@ -72,7 +72,7 @@ const column = (name) => COLUMNS.indexOf(name);
 
 test("the species file says what it is, as the contract sets out", () => {
   assert.equal(species.format, "cells.visualizer.species@1");
-  assert.deepEqual(Object.keys(species), ["format", "id", "label", "organism", "taxon", "plain", "order", "default", "made", "modelled", "levels", "no_further_levels", "cell", "capability_sources", "sources"]);
+  assert.deepEqual(Object.keys(species), ["format", "id", "label", "organism", "taxon", "plain", "group", "order", "default", "made", "modelled", "levels", "no_further_levels", "cell", "capability_sources", "sources"]);
   assert.equal(species.id, "mpneumoniae");
   assert.equal(path.basename(SPECIES), `${species.id}.json`);
   assert.equal(species.label, "M. pneumoniae");

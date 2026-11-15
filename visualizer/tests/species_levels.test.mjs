@@ -138,6 +138,8 @@ test("what breaks the contracts is warned about, and the species is left out", a
     ["a shape file that is not there", (data) => (data.levels[3].shape.ref = "missing"), /cannot be read/],
     ["a part the shape file does not have", (data) => (data.levels[3].shape.parts = ["wings"]), /no part named wings/],
     ["a machine path", (data) => (data.plain = "See /home/someone/notes."), /machine path/],
+    ["a heading for the list that is not a few words", (data) => (data.group = ["Bacteria"]), /group is a heading of a few words/],
+    ["an empty heading for the list", (data) => (data.group = " "), /group is a heading of a few words/],
     ["framing the level does not take", (data) => (data.levels[3].camera = "near"), /does not take camera/],
   ];
   for (const [name, change, expected] of cases) {
@@ -431,4 +433,23 @@ test("the viewer holds no drawing that belongs to one species, and names no spec
 
 test("the page has styles for the species switch and the rail's note", () => {
   for (const selector of [".species", ".species-state", ".rail-note", ".with-species"]) assert.ok(css.includes(selector), selector);
+});
+
+test("the species switch is a dropdown: a pill, a list of the page's own with its rows and headings, and a sheet under it", () => {
+  for (const selector of [".species-pick", ".species-pick-caret", ".species-list", ".species-veil", ".species-group-name", ".species-option", ".species-option-organism", ".species-option-state", ".species-option.is-active"]) assert.ok(css.includes(selector), selector);
+  // The organism is written in italics, and the row of buttons the switch used to be is gone from the bar's rules.
+  assert.match(css, /\.species-option-organism \{[^}]*font-style: italic/);
+  assert.ok(!css.includes(".species .seg button"), "the bar no longer styles a row of species buttons");
+});
+
+test("a species may say under which heading it stands in the list, and the scene carries it", async () => {
+  const grouped = await read({ rodlet: madeUp((data) => (data.group = "Bacteria")) }, { rodlet: body() });
+  assert.deepEqual(grouped.warnings, []);
+  assert.equal(grouped.species[0].group, "Bacteria");
+  assert.ok(!("group" in sound.species[0]), "a species without one has none in the scene");
+  // The repository's own: each has a heading, and the species of one heading stand together in the files' order.
+  const headings = own.species.map((item) => item.group);
+  assert.ok(headings.every((group) => typeof group === "string" && group.trim()), JSON.stringify(headings));
+  const firsts = [...new Set(headings)];
+  assert.deepEqual(headings, firsts.flatMap((group) => headings.filter((other) => other === group)), "the species of one heading follow one another");
 });

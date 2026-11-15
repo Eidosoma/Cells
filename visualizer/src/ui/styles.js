@@ -311,14 +311,33 @@ cells-trace { display: grid; gap: 4px; }
 .panel-more ul { display: grid; gap: 6px; margin-top: 6px; font-size: 12.5px; color: var(--muted); }
 
 /* ---------------------------------------------------------------- protein atlas: one species' side */
-/* The switch between species takes any number of them and wraps onto more rows. */
-.seg-many { display: flex; flex-wrap: wrap; gap: 2px; }
 /* The species switch: in the bar on a wide window, at the head of a card on a narrow one. */
 .species { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
 .species-label { font-family: var(--font-display); font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
-.species .seg { background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line); border-radius: 999px; padding: 3px; flex-wrap: nowrap; }
-.species .seg button { padding: 5px 12px; border-radius: 999px; font-size: 13px; }
-.species .seg button[aria-pressed="true"] { background: color-mix(in srgb, var(--fg) 12%, transparent); box-shadow: none; }
+/* The switch is a dropdown: a pill that names the species in view, and a list of the page's own under it. */
+.species-pick { display: inline-flex; align-items: center; gap: 9px; padding: 6px 12px 6px 14px; border-radius: 999px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line); font-size: 13px; font-weight: 500; white-space: nowrap; }
+.species-pick:hover, .species-pick[aria-expanded="true"] { background: color-mix(in srgb, var(--fg) 8%, var(--bg-raised)); }
+/* Every species' name lies in the pill, one over the other: its width is that of the longest and does not change with the species. */
+.species-pick-name { display: inline-grid; text-align: left; }
+.species-pick-name > * { grid-area: 1 / 1; }
+.species-pick-name > [aria-hidden="true"] { visibility: hidden; }
+.species-pick-caret { flex: none; width: 7px; height: 7px; margin-top: -4px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); opacity: .7; }
+.species-pick[aria-expanded="true"] .species-pick-caret { margin-top: 3px; transform: rotate(225deg); }
+.seg-species .species-pick { width: 100%; justify-content: space-between; padding: 5px 10px 5px 11px; border-radius: 8px; font-size: 12.5px; }
+.species-veil { position: absolute; inset: 0; z-index: 5; }
+.species-list { position: absolute; z-index: 6; display: grid; align-content: start; gap: 2px; padding: 6px; overflow-y: auto; overscroll-behavior: contain; border-radius: 12px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line), 0 16px 36px -16px rgb(0 0 0 / .5); }
+.species-group { display: grid; gap: 2px; }
+.species-group + .species-group { margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--line); }
+.species-group-name { padding: 3px 9px 2px; font-family: var(--font-display); font-size: 10.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+/* A row: the name and what Cells models of it on one line, the organism under them across the row. */
+.species-option { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 1px 10px; padding: 7px 9px; border-radius: 8px; cursor: pointer; }
+.species-option-name { grid-column: 1; grid-row: 1; font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+.species-option-organism { grid-column: 1 / -1; grid-row: 2; font-size: 12px; font-style: italic; line-height: 1.3; color: var(--muted); overflow-wrap: break-word; }
+.species-option-state { grid-column: 2; grid-row: 1; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); white-space: nowrap; }
+.species-option-state[data-state="proposed"] { color: var(--fg); box-shadow: inset 0 0 0 1.5px var(--fg); }
+.species-option.is-active { background: color-mix(in srgb, var(--fg) 9%, transparent); }
+/* The species in view carries a tick after its name. */
+.species-option[aria-selected="true"] .species-option-name::after { content: ""; display: inline-block; width: 4px; height: 8px; margin: 0 0 1px 9px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); }
 .species-state { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); white-space: nowrap; }
 .species-state::after { content: "›"; margin-left: 6px; opacity: .6; }
 .species-state:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
@@ -326,7 +345,6 @@ cells-trace { display: grid; gap: 4px; }
 .species-state[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 .species-line { margin: -1px 0 1px; }
 .rail-note { max-width: 148px; font-size: 11.5px; line-height: 1.35; color: var(--muted); padding: 6px 8px 3px; margin-top: 2px; border-top: 1px solid var(--line); }
-@media (max-width: 1460px) { .species-label { display: none; } }
 /* With the species switch in it, the bar stays on one line: the date gives way first. */
 .with-species { flex-wrap: nowrap; }
 .with-species .bar-end { flex: 0 1 auto; overflow: hidden; }
@@ -341,7 +359,6 @@ cells-trace { display: grid; gap: 4px; }
 .with-species[data-tight="2"] .switch .long { display: none; }
 .with-species[data-tight="2"] .switch .short { display: inline; }
 .with-species[data-tight="2"] .stamp { display: none; }
-.seg-many button { flex: 1 1 auto; padding: 4px 9px; white-space: nowrap; }
 .card-organism { font-size: 12.5px; font-style: italic; margin-top: -3px; }
 /* A species file may hold a long word (a file's name, an identifier): it wraps inside the card. */
 .view-card:not(.run-card) > * { min-width: 0; }
@@ -420,13 +437,12 @@ cells-trace { display: grid; gap: 4px; }
   cells-index { top: 56px; }
   .view { top: 54px; width: 208px; padding: 6px 8px; gap: 4px; }
   .view-note { display: none; }
+  .view-note.look-says { display: block; }
   .seg-row { grid-template-columns: 46px 1fr; }
   .has-panel .scalebar, .has-panel .view { display: none; }
   .scalebar { bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
   .seg button { padding: 4px 2px; font-size: 12px; white-space: nowrap; }
-  .seg-many button { padding: 4px 7px; }
-  .seg-row.seg-species { grid-template-columns: 1fr; }
-  .seg-species .seg-label { display: none; }
+  .species-option { padding: 9px 9px; }
   .caveat { width: calc(100% - 32px); bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
   .rail { top: 124px; transform: none; right: max(10px, env(safe-area-inset-right, 0px)); }
   .rail .rail-title { display: none; }

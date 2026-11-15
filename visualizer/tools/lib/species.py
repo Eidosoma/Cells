@@ -251,6 +251,9 @@ class Reader:
                 problems.append(f"it has no {key}")
         if not number(data.get("order")):
             problems.append("order is a number")
+        # The heading the species stands under in the list of species; a few words, or not given.
+        if data.get("group") is not None and not (isinstance(data["group"], str) and data["group"].strip() and len(data["group"]) <= 40):
+            problems.append("group is a heading of a few words")
         if not isinstance(data.get("default", False), bool):
             problems.append("default is true or false")
         if not (isinstance(data.get("made"), str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", data["made"])):
@@ -369,7 +372,7 @@ class Reader:
         for key, level in self.capabilities.items():
             if level == "tissue" and not tissue and key not in capabilities:
                 self.remark(where, f"{key} belongs to a tissue, which this species does not have; it is listed with no_further_levels as its reason")
-        out = {key: data[key] for key in ("id", "label", "organism", "taxon", "plain", "order", "made", "modelled") if key in data}
+        out = {key: data[key] for key in ("id", "label", "organism", "taxon", "plain", "group", "order", "made", "modelled") if key in data}
         out["default"] = bool(data.get("default", False))
         out["levels"] = levels
         if further:

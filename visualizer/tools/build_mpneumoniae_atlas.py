@@ -1268,6 +1268,7 @@ def build_species(c):
         "organism": ORGANISM,
         "taxon": TAXON,
         "plain": f"A small bacterium of the human airways, among the smallest organisms that copy themselves: {count} proteins in the genome record frozen here, in a thin cell about 2 µm long with one membrane, no wall and an attachment organelle at one end.",
+        "group": "Bacteria",
         "order": 40,
         "default": False,
         "made": MADE,

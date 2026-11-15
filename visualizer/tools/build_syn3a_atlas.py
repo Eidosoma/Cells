@@ -1024,6 +1024,7 @@ def build_species(c):
         "organism": ORGANISM,
         "taxon": TAXON,
         "plain": "A bacterium with a designed, minimised genome: 452 protein-coding genes kept from Mycoplasma mycoides, in a cell about 400 nm across with one membrane and no wall. It grows on its own in a rich medium, and its genome is smaller than that of any natural cell that does.",
+        "group": "Bacteria",
         "order": 30,
         "default": False,
         "made": MADE,
