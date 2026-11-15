@@ -162,3 +162,28 @@ def test_the_registry_is_restored_after_the_block_even_when_it_raises(kind):
                 pass
         assert law in OPERATORS
     assert OPERATORS == before and law not in OPERATORS
+
+
+def test_the_record_comparison_finds_every_difference_but_run_times(tmp_path):
+    """The rehearsal's bitwise check of two runs' records: a changed float, a missing record and a
+    δ-control at another δ are reported; run times are not records."""
+    base = dict(
+        parts=dict(
+            a4=dict(coupled=dict(runs=[dict(errors=dict(V=[1e-9, 2e-9]), wall_s=3.0)])),
+            controls=dict(delta_basal_a4=dict(delta=2e-5, runs=[]), wall_s=9.0),
+        )
+    )
+    same = json.loads(json.dumps(base))
+    same["parts"]["a4"]["coupled"]["runs"][0]["wall_s"] = 7.0
+    moved = json.loads(json.dumps(base))
+    moved["parts"]["a4"]["coupled"]["runs"][0]["errors"]["V"][1] = np.nextafter(2e-9, 1.0)
+    moved["parts"]["controls"]["delta_basal_a4"]["delta"] = 1.8e-5
+    paths = {}
+    for name, value in dict(base=base, same=same, moved=moved).items():
+        paths[name] = tmp_path / f"{name}.json"
+        paths[name].write_text(json.dumps(value))
+    identical = judge.compare(paths["base"], paths["same"], tmp_path / "c1.json")["parts"]
+    assert identical["a4"]["identical"] and identical["controls"]["delta_basal_a4"]["identical"]
+    report = judge.compare(paths["base"], paths["moved"], tmp_path / "c2.json")["parts"]
+    assert report["a4"]["differences"] == [".coupled.runs[0].errors.V[1]"]
+    assert report["controls"]["delta_basal_a4"]["identical"] is None
