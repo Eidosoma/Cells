@@ -1462,7 +1462,7 @@
         "src/cells/models/operators/contract.py",
         "src/cells/models/operators/__init__.py"
       ],
-      "plain": "What every operator must declare: the state it owns, what it writes and reads, its energy bookings and its conflicts. Checked when a model is built. A matrix of which of the composite's 17 operators can run together is regenerated from these declarations by a test (15 November 2026).",
+      "plain": "What every operator must declare: the state it owns, what it writes and reads, its energy bookings and its conflicts. Checked when a model is built. A matrix of which of the composite's 19 operators can run together is regenerated from these declarations by a test (15 November 2026).",
       "sources": [
         {
           "path": "docs/PUMP_COMPOSITE_V2_DESIGN.md"
@@ -1474,6 +1474,10 @@
         {
           "path": "PROGRESS.md",
           "where": "The coupling operator's qualification protocol (milestone 4, PROPOSED) and the composition"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "FR-1 milestone 1, FR-10 milestone 2 and FR-3 milestone 1 landed (15 November 2026)"
         }
       ]
     },
@@ -1496,7 +1500,7 @@
       "layer": "operators",
       "status": "designed",
       "as_of": "2026-11-14",
-      "plain": "A closed compartment inside a cell: a finite node the cell owns, bounded by one patch of its membrane, with its own volume and its own rows of the shared inventory. The user's high priority (14 November 2026). Its design is accepted (D169, 14 November 2026); its first milestone is in progress.",
+      "plain": "A closed compartment inside a cell: a finite node the cell owns, bounded by one patch of its membrane, with its own volume and its own rows of the shared inventory. The user's high priority (14 November 2026). Its design is accepted (D169, 14 November 2026). Its first milestone, the declaration of a compartment, landed on 15 November 2026 as an operator; the compartment's own volume and inventory come in later milestones.",
       "sources": [
         {
           "path": "docs/CLOSED_COMPARTMENT_DESIGN.md"
@@ -1504,6 +1508,10 @@
         {
           "path": "docs/FEATURE_REQUESTS.md",
           "where": "FR-1"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "FR-1 milestone 1, FR-10 milestone 2 and FR-3 milestone 1 landed (15 November 2026)"
         }
       ]
     },
@@ -1527,7 +1535,7 @@
       "layer": "operators",
       "status": "designed",
       "as_of": "2026-11-14",
-      "plain": "Binding sites as state on a membrane domain or contact, with bound and free molecules in one material ledger. Its design is accepted (D169, 14 November 2026); code follows the internal compartment.",
+      "plain": "Binding sites as state on a membrane domain or contact, with bound and free molecules in one material ledger. Its design is accepted (D169, 14 November 2026). Its first milestone landed on 15 November 2026 as an operator; later milestones follow.",
       "sources": [
         {
           "path": "docs/SITE_OCCUPANCY_DESIGN.md"
@@ -1535,6 +1543,10 @@
         {
           "path": "docs/FEATURE_REQUESTS.md",
           "where": "FR-3"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "FR-1 milestone 1, FR-10 milestone 2 and FR-3 milestone 1 landed (15 November 2026)"
         }
       ]
     },
@@ -2322,7 +2334,7 @@
         "label": "Scheduled bath",
         "status": "landed",
         "as_of": "2026-11-14",
-        "plain": "A held bath whose composition changes on a schedule in the composite model, for a wash-in, a wash-out or a dose. Each dose, its work and its compensating charge are booked in the operator's own records. Its first milestone landed on 14 November 2026, for feature request FR-10. It is development code, guarded by tests; its qualification comes later. A dose is admitted only in bounded steps: stairs of 100 times from nothing, and steps of 10 times between resolved levels.",
+        "plain": "A held bath whose composition changes on a schedule in the composite model, for a wash-in, a wash-out or a dose. Each dose, its work and its compensating charge are booked in the operator's own records. Its first two milestones landed on 14 and 15 November 2026, for feature request FR-10. A dose step is admitted only where a measured passing point covers it; every other step is refused. It is development code, guarded by tests; its qualification comes later.",
         "sources": [
           {
             "path": "PROGRESS.md",
@@ -2335,6 +2347,54 @@
           {
             "path": "docs/FEATURE_REQUESTS.md",
             "where": "FR-10"
+          },
+          {
+            "path": "PROGRESS.md",
+            "where": "FR-1 milestone 1, FR-10 milestone 2 and FR-3 milestone 1 landed (15 November 2026)"
+          },
+          {
+            "path": "docs/BATH_SCHEDULE_DESIGN.md",
+            "where": "8. Milestone 2: the step refusal and the species cap (15 November 2026)"
+          }
+        ]
+      },
+      "cell_owned_compartments@1": {
+        "label": "Cell-owned compartments",
+        "status": "landed",
+        "as_of": "2026-11-15",
+        "plain": "A compartment that a cell owns, declared with its own identity and role: the first step toward closed compartments inside cells. Its first milestone landed on 15 November 2026 (feature request FR-1): the declaration alone, which leaves every existing run unchanged; no physics depends on the role yet. It is development code, guarded by tests; its qualification comes later.",
+        "sources": [
+          {
+            "path": "PROGRESS.md",
+            "where": "FR-1 milestone 1, FR-10 milestone 2 and FR-3 milestone 1 landed (15 November 2026)"
+          },
+          {
+            "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+            "where": "12. Milestone 1 as built (14 November 2026)"
+          },
+          {
+            "path": "docs/FEATURE_REQUESTS.md",
+            "where": "FR-1"
+          }
+        ]
+      },
+      "site_occupancy@1": {
+        "label": "Site occupancy",
+        "status": "landed",
+        "as_of": "2026-11-15",
+        "plain": "Binding sites that molecules occupy and leave, owned by an operator of their own, so that a world with occupancy alone never has to refresh the electric field. Its first milestone landed on 15 November 2026 (feature request FR-3). It is development code, guarded by tests; its qualification comes later.",
+        "sources": [
+          {
+            "path": "PROGRESS.md",
+            "where": "FR-1 milestone 1, FR-10 milestone 2 and FR-3 milestone 1 landed (15 November 2026)"
+          },
+          {
+            "path": "docs/SITE_OCCUPANCY_DESIGN.md",
+            "where": "12. Milestone 1 as built (15 November 2026)"
+          },
+          {
+            "path": "docs/FEATURE_REQUESTS.md",
+            "where": "FR-3"
           }
         ]
       }
@@ -3375,6 +3435,18 @@
       "to": "val.coupling",
       "kind": "compared_with",
       "label": "its judged qualification, 15 November 2026"
+    },
+    {
+      "from": "fr.internal_compartment",
+      "to": "op.cell_owned_compartments@1",
+      "kind": "extends",
+      "label": "the later milestones build on the declaration"
+    },
+    {
+      "from": "fr.site_occupancy",
+      "to": "op.site_occupancy@1",
+      "kind": "extends",
+      "label": "the later milestones build on the first"
     }
   ],
   "relation_kinds": [
