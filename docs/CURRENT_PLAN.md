@@ -67,7 +67,12 @@ experiment).
       - @3's own units, readout axes and layers, which replace the writer's interim table;
       - door S recording the merged view of each changed field.
       FR-11's interim planarian loop comes after these.
-   4. The packed GPU planner and its one-time qualification.
+   4. The packed GPU planner. It is built on branch `packed-gpu-planner` (cf919da3) and passes its
+      CPU evidence, including a rehearsal of the staged L4 plan on the 825-node tissue.
+      - Its one-time GPU qualification runs on the merged head, under the lead's rulings. Packed
+        against lone is judged on every field, and the field solver is set to `auto`.
+      - The core seams it asked for follow: a public window-arguments constructor, mask-and-continue
+        on the device, a world ID on every vectorized refusal, and a typed memory refusal.
    5. The module system's stage 1, one external law (D180), after the user's decisions in its §6.
 3. **Queued follow-ups** (each its own gated change):
    - insertion@2's gate fix, before `check_onsets` is lifted (§7.4 (j));
