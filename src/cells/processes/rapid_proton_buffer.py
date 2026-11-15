@@ -21,8 +21,12 @@ inner model's convention (D152 §3.3): per species n (RT (ln c - 1) + mu°'), c 
 mu°' = RT (mu°/RT - ln c0). dG*/dH_eq is the free proton's potential. The closure owns the declared
 term G* minus the inner model's own per-row term on the stored rows (RT n (ln(n/V) - 1)).
 
-Envelope (§4.2, declared before any comparison): lambda = min_k k_on,k (h + b_k + K_k) >= 1e3 rho,
-with rho = ln 10 |dH/dt| / beta, at every stage. The step size plays no part in it.
+Envelope (§4.2, revised after the FR-4 references' run 02): the closure's estimated first-order lag
+behind the kinetic system, (rho/lambda)(beta/ln 10 - h)/(h ln 10) pH units, stays within the
+declared budget (1e-3 pH) at every stage. lambda = min_k k_on,k (h + b_k + K_k) over the buffers
+present, and rho = ln 10 |dH/dt| / beta. The bound-to-free factor (beta/ln 10 - h)/h is about
+1.5e4 at the FR-4 lumen's start, so a fixed lambda/rho ratio does not imply the budget. The step
+size plays no part.
 
 Pure functions in the xp style of processes/: no state, no layout, no clipping. Invalid inputs give
 valid=False; the composing model refuses the step.
@@ -39,7 +43,7 @@ READ_ID = "rapid_proton_buffer@1"
 STANDARD_STATE_mM = 1000.0
 RESIDUAL_RTOL = 1e-13  # |g(h)| / H at the returned root; above it the read fails.
 BISECTION_STEPS = 80  # Log-space bisection for several buffers: full double precision.
-ENVELOPE_RATIO = 1e3  # lambda >= ENVELOPE_RATIO * rho (§4.2).
+LAG_BUDGET_PH = 1e-3  # the declared budget the estimated lag must stay within (§4.2).
 LN10 = float(np.log(10.0))
 
 
@@ -176,11 +180,20 @@ def drive_rate(total_rate_mM_s, h, buffer_mM, k_mM, *, xp=jnp):
     return LN10 * xp.abs(total_rate_mM_s) / buffer_capacity(h, buffer_mM, k_mM, xp=xp)
 
 
-def envelope_valid(h, buffer_mM, k_mM, k_on_per_mM_s, total_rate_mM_s, *, xp=jnp):
-    """§4.2's run-time envelope check, lambda >= ENVELOPE_RATIO * rho, per node."""
+def lag_estimate_ph(h, buffer_mM, k_mM, k_on_per_mM_s, total_rate_mM_s, *, xp=jnp):
+    """The closure's first-order lag behind the kinetic system (pH units), from Appendix A.2:
+    (rho / lambda) (beta/ln 10 - h) / (h ln 10),
+    with beta/ln 10 - h = h sum_k B_k K_k / (h + K_k)^2."""
     lam = relaxation_rate(h, buffer_mM, k_mM, k_on_per_mM_s, xp=xp)
     rho = drive_rate(total_rate_mM_s, h, buffer_mM, k_mM, xp=xp)
-    return lam >= ENVELOPE_RATIO * rho
+    bound_slope = xp.sum(buffer_mM * k_mM / (h + k_mM) ** 2, axis=0)
+    return (rho / lam) * bound_slope / LN10
+
+
+def envelope_valid(h, buffer_mM, k_mM, k_on_per_mM_s, total_rate_mM_s, *,
+                   budget_ph=LAG_BUDGET_PH, xp=jnp):
+    """§4.2's run-time check, state-dependent: the estimated lag within the budget, per node."""
+    return lag_estimate_ph(h, buffer_mM, k_mM, k_on_per_mM_s, total_rate_mM_s, xp=xp) <= budget_ph
 
 
 class ReadLayout(NamedTuple):

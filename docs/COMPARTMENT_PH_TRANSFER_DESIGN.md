@@ -49,7 +49,7 @@ branch `fr45-physics` from tag `d172-base-2026-11-15`. It is design before code.
      Newton on the compartment's amounts, with exact booking and no change to the global field
      factorization.
    - **FR-4's first world runs explicitly** with a small K⁺ conductance (5e-10 m/s at 140 mM:
-     0.025 at 1 ms, carrying the pump's current at about 8 mV, **S**), with its dt declared by the
+     0.025 at 1 ms, carrying the pump's current at about 2 mV, **S**), with its dt declared by the
      world.
 5. **Fuel is maintained under F2:** held ATP, ADP and Pi rows at the owner's cytosol, with one
    authority for their standard potentials. The scope label is "maintained fuel: no depletion".
@@ -179,30 +179,50 @@ The closure is a reduced representation under D175, and declares its four fields
   k_on in mM⁻¹ s⁻¹). The slowest of them is λ = min_k λ_k.
 - **The slow rate:** transport drives the free protons at ρ = |dH̄_eq/dt| / (β/ln 10) (1/s). That
   is the relative rate at which the equilibrium h moves, from the stage's transport.
-- **The envelope:** λ ≥ 10³ ρ at every stage of every node the closure serves.
-  - Both sides are computable at run time, from the declared k_on (a registry value of the buffer,
-    used only for this check and the reference) and the stage's fluxes.
-  - The run checks the envelope at every stage and refuses a stage outside it, with the reason.
-  - **No clause in dt.** The closure is evaluated exactly at every stage, so its error is the
-    kinetic system's lag behind equilibrium, of order ρ/λ, whatever the step. A dt clause would tie
-    a physical envelope to the numerics, and a dt study would move it. The step's own error is
-    the dt study's, as for any law.
+- **The envelope, revised (state-dependent) after the FR-4 references' run 02**
+  (`validation/compartment_ph/REFERENCES_USAGE.md`): the closure's estimated lag behind the kinetic
+  system stays within the budget at every stage of every node the closure serves:
+
+      |ΔpH| ≈ (ρ/λ) (β/ln 10 − h) / (h ln 10) ≤ 1e-3,   β/ln 10 − h = h Σ_k B̄_k K_k/(h + K_k)².
+
+  - **Derivation, from A.2 to first order (S):**
+    - transport moves H_eq at rate dH̄/dt;
+    - the bound part's equilibrium moves at that rate times the bound share (β/ln 10 − h)/(β/ln 10);
+    - the bound pool relaxes toward it at λ, so it lags by about that rate over λ;
+    - the lagging protons sit in the free pool, so the error in h is that lag, and
+      ΔpH = δh/(h ln 10).
+    - With ρ = ln 10 |dH̄/dt|/β, this is the expression above.
+  - **Why the earlier fixed ratio λ ≥ 10³ρ failed** (the references found it): it omits the
+    bound-to-free factor (β/ln 10 − h)/(h ln 10).
+    - That factor is about 1.5e4 at the lumen's start (pH 7.2) and about 210 at pH 5.1.
+    - In §13.1's world the old ratio passes from k_on ≈ 0.83 mM⁻¹ s⁻¹, but the budget holds only
+      from k_on ≈ 1.28e4.
+    - At k_on = 1e3 the ratio holds by about 1.2e3, yet the lumen lags the closure by 1.26e-2 pH.
+      That case is kept as a planted test (`test_planted_the_old_fixed_ratio_admits_a_case_the_lag_check_refuses`).
+  - **Computable at run time,** from the declared k_on (a registry value of the buffer, used only
+    for this check and the reference), the stage's fluxes and the closure's state
+    (`rapid_proton_buffer.lag_estimate_ph`). The run refuses a stage outside it, with the reason.
+  - **No clause in dt.** The closure is evaluated exactly at every stage, so its error is this lag,
+    whatever the step. A dt clause would tie a physical envelope to the numerics, and a dt study
+    would move it. The step's own error is the dt study's, as for any law.
 - **The error budget:** |pH_closure − pH_kinetic| ≤ 1e-3 pH units at every record time. So is the
   closure's error in H_eq-weighted fluxes, at 1e-3 relative. It is checked against Appendix A's
   kinetic reference.
 - **The case outside the envelope, which must fail the budget:** FR-4's §13.1 world with the lumen
   buffer's k_on lowered to 1e-3 mM⁻¹ s⁻¹ (1 M⁻¹ s⁻¹).
   - Then λ is about 0.04 s⁻¹ (**S**, at b ≈ 38 mM). Early in the acidification, ρ is about
-    0.1 s⁻¹: 0.25 mM/s of pumped protons against β ≈ 5.1 mM/pH.
+    0.031 s⁻¹. The pump's saturation S is about 0.276 at pH 7.2, so about 2,760 H⁺/s per member
+    are pumped, or 0.07 mM/s against β ≈ 5.1 mM/pH.
   - The kinetic reference lags the closure by a large fraction of a pH unit there.
   - Both the run-time envelope check and the comparison must flag it.
 - **The inside cases:** k_on of 1e10 M⁻¹ s⁻¹ (1e7 mM⁻¹ s⁻¹) and 1e8 M⁻¹ s⁻¹ (1e5 mM⁻¹ s⁻¹).
   The reference's convergence toward the closure is shown as k_on grows (Appendix A).
-- **Checked against §13.1's world (S):**
-  - Early acidification: ρ ≈ 0.1 s⁻¹, with b ≈ 38 mM, so λ ≈ 3.8e6 s⁻¹ at 1e5 mM⁻¹ s⁻¹.
-  - Near its steady state, pH ≈ 5 with b ≈ 3.6 mM: λ ≈ 3.7e5 s⁻¹ at 1e5 mM⁻¹ s⁻¹, while ρ → 0.
-  - So both inside cases stay inside λ ≥ 10³ ρ throughout, and the outside case is out by orders of
-    magnitude.
+- **Checked against §13.1's world (S, and the references' run 02):**
+  - Early acidification: ρ ≈ 0.031 s⁻¹ and the bound-to-free factor is about 1.5e4. At 1e5 mM⁻¹ s⁻¹,
+    λ ≈ 3.8e6 s⁻¹, so the estimated lag is about 1.3e-4 pH. At 1e7 it is about 1.3e-6.
+  - Near the steady state (pH ≈ 5): the factor is about 210 and ρ → 0.
+  - So both inside cases stay within the budget throughout, and the outside case is out by orders
+    of magnitude. Neither was affected by the revision.
 
 D152's charged reactions (§11, item 4) remain the route for **slow** charged kinetics, such as
 uncatalysed CO₂ hydration. They are not on FR-4's critical path.
@@ -640,7 +660,7 @@ radius 250 nm each, as one node.
     members ÷ N_A × 10¹⁵); K_H 1e-4 mM, K_ATP 0.1 mM, a = 1;
   - the proton leak, P_H 6e-5 cm/s (6e-7 m/s);
   - the counterion K⁺ at 5e-10 m/s (5e-8 cm/s). For the lumped node that is G_K ≈ 2.0e-10 S,
-    which carries the pump's 1.6 pA at about 8 mV (**S**).
+    which carries the pump's early current, about 0.44 pA (2,760 H⁺/s per member at S ≈ 0.276), at about 2.2 mV (**S**).
 - **The run:** 900 s, explicit at dt = 1 ms (dt × G_K/C_b = 0.025 on the max-side G), with B7.
 - **What it shows:** lumen pH falling to a steady state where pumping balances the leak; K⁺ leaving
   in step with the pumped charge; V_b small.

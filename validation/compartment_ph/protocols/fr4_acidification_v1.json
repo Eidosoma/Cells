@@ -76,13 +76,15 @@
   "static_head_V": -0.266,
   "control_stall": "about 0.06 pH units (2.2e-5 fmol per member against a buffer of 3.4e-4 fmol per pH unit at pH 7.2)",
   "steady_state": "near pH 5 (pump against leak; the advisor's arithmetic), for orientation only",
-  "note": "for orientation only: the judged run recomputes every prediction"
+  "note": "for orientation only: the judged run recomputes every prediction",
+  "early_rho_per_s": 0.031,
+  "early_pump_current_pA": "about 0.44 (2,760 H+/s per member at the pump's saturation 0.276), carried by the K+ route at about 2.2 mV"
  },
  "rules": {
   "dt_study": "S5's form, as D150's and MG0c's: per record, the step term |q(dt) - q(dt/2)| and the observed orders log2 of successive max-norm differences on the three finest rungs; the rule detects bias, not order",
   "state_error": "at the declared 1 ms, the Richardson-estimated error of the lumen pH <= 1e-3 pH units and of V_b <= 1e-3 of its range",
-  "reference": "at 1 ms against the independent reference, within J4's budget. The budget is fixed in this protocol before registration, as a stated multiple of the references agent's measured floor on this world (as Track R's A4 did), with its basis written here. The references agent supplies the floor and does not set the budget (the coordinator's ruling, 15 November)",
-  "envelope": "lambda >= 1e3 rho at every stage of every buffered node (rapid_proton_buffer.envelope_valid), counted and reported; any failure fails the part",
+  "reference": "at 1 ms against the independent reference, within J4's budget of 1e-3 pH: the declared physical accuracy, the same as J3's. Basis: the references agent's measured floor on this world (about 5e-14 pH) shows the reference resolves that budget by about ten orders of magnitude; a multiple of the floor would sit far below the engine's own discretisation error at 1 ms, so J4 could never pass (the coordinator's corrected ruling, 15 November)",
+  "envelope": "the closure's estimated first-order lag behind the kinetic system, (rho/lambda)(beta/ln 10 - h)/(h ln 10), within 1e-3 pH at every stage of every buffered node (rapid_proton_buffer.lag_estimate_ph), counted and reported; any failure fails the part. Revised before registration: the FR-4 references' run 02 showed the earlier fixed ratio lambda >= 1e3 rho does not imply the budget (it passes from k_on 0.83 /mM/s, the budget only from about 1.28e4)",
   "ledgers": "material per species within its declared floor at every record; charge within the capacitor tolerance; energy residual over flows <= 2e-3 at 1 ms (today's booking) and falling at second order down the ladder",
   "bands": "the cytosol's pH within 7.2 ± 0.05 at every stage (the pump's domain refuses otherwise)",
   "judged_run": "once, after registration, from a fresh clean execution snapshot of the integrated candidate (validation/source_snapshot.py)",
@@ -93,8 +95,8 @@
   "J1_admission": "every rung admitted and run without refusal",
   "J2_orders": "observed orders of lumen pH, V_b, lumen K and pump cycles in [1.8, 2.2] on the three finest rungs",
   "J3_state_error": "the state_error rule at 1 ms",
-  "J4_reference": "the reference rule at 1 ms. Budget: to be fixed before registration as k x the references agent's measured floor on this world, with k and its basis recorded here; pending that floor",
-  "J5_envelope": "the envelope rule",
+  "J4_reference": "the reference rule at 1 ms: |pH_engine - pH_reference| <= 1e-3 at every record, with V_b, lumen K and pump cycles reported against the reference beside it",
+  "J5_envelope": "the envelope rule (the state-dependent lag check)",
   "J6_ledgers": "the ledgers rule, and the bands rule",
   "J7_controls": "every control below caught as registered"
  },
@@ -125,7 +127,8 @@
   "The lumped population (N = 1000) was chosen after the floor arithmetic (CP4) showed a single compartment's pump energy sits within 6% of the absolute energy floor",
   "The closure's envelope lost its dt clause after the advisor's check that §13's inside case would otherwise leave it near steady state; the 1e3 ratio and the 1e-3 pH budget were fixed before any comparison exists",
   "The buffers' pK values, k_on and the pump's constants are generic declarations, not fits; no run of this world has been made",
-  "The dt ladder (2, 1, 0.5, 0.25 ms) was chosen with the 0.05 threshold in view, so that the coarsest rung sits at it"
+  "The dt ladder (2, 1, 0.5, 0.25 ms) was chosen with the 0.05 threshold in view, so that the coarsest rung sits at it",
+  "The envelope check was revised before any run of this world, after the FR-4 references' run 02 found that the fixed ratio admitted k_on = 1e3 with a 1.26e-2 pH lag; the revised check is the state-dependent lag estimate, with that case kept as a planted test"
  ],
  "questions_for_the_lead": [],
  "development_runs": {
@@ -148,7 +151,7 @@
  "outcome_rules": "PASS when J1-J7 hold; otherwise the failing criteria are reported with their values and the world declares the finest rung that passes, without repair or retuning after the judged run",
  "questions_answered": [
   "Registration: the lead, from a clean snapshot of the integrated candidate, after the dt study and a rehearsal; the protocol travels with the branch's merge into integration-d172 and reaches main with the single landing",
-  "J4's budget: fixed here before registration from the references agent's measured floor (a stated multiple, basis written down); the agent supplies the floor only",
-  "The single-compartment form: reported, not judged, in version 1"
+  "The single-compartment form: reported, not judged, in version 1",
+  "J4's budget (corrected ruling): 1e-3 pH, the declared physical accuracy consistent with J3; the references' floor (about 5e-14 pH) shows the reference resolves it by many orders, as written in the reference rule"
  ]
 }

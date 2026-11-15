@@ -25,7 +25,9 @@ LADDER_S = (2e-3, 1e-3, 5e-4, 2.5e-4)  # dt x G/C_b = 0.051, 0.025, 0.013, 0.006
 OBSERVABLES = ("lumen_pH", "patch_voltage_V", "lumen_K_fmol", "pump_cycles_fmol")
 
 CRITERIA = {
-    "written": "before any run (this file's revision is the record)",
+    "written": "before any run (this file's revision is the record); C7 revised on 15 "
+               "November, still before any run, to the state-dependent lag check (the FR-4 "
+               "references' run 02 found the fixed ratio insufficient)",
     "world": "parameters.World() (FR-4 §13.1), 900 s, explicit ARS(2,2,2), B7 present",
     "ladder_s": LADDER_S,
     "checks": {
@@ -39,7 +41,8 @@ CRITERIA = {
         "C5_ledgers": "material per species within its declared floor (H at 1e-16 fmol), charge "
                       "within the capacitor tolerance, at every record",
         "C6_bands": "the cytosol's pH stays within 7.2 ± 0.05 (the fuel band) on every rung",
-        "C7_envelope": "the closure's envelope (lambda >= 1e3 rho) holds at every stage",
+        "C7_envelope": "the closure's estimated lag (rapid_proton_buffer.lag_estimate_ph) is "
+                       "within 1e-3 pH at every stage of every buffered node",
         "C8_reference": "at 1 ms, agreement with the references agent's solution of Appendix A "
                         "within the budget that agent declares before comparing",
         "C9_control": "the P_K = 0 control at 1 ms stalls within 0.1 pH units, against a drop of "

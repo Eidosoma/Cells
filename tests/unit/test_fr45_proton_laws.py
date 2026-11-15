@@ -118,14 +118,34 @@ def test_closure_speciation_minimises_the_free_energy():
 
 
 def test_envelope_flags_the_declared_outside_case_and_admits_the_inside_ones():
-    # §4.2: the FR-4 lumen early in acidification, b ~ 38 mM, rho ~ 0.1 /s.
+    # §4.2, revised: the FR-4 lumen at its start (pH 7.2, B_L 40 mM, pK 6), rho = 0.031 /s (the
+    # pump's saturation S = 0.276 there). The check is the estimated lag within 1e-3 pH.
     h = np.array([ph_to_h(7.2)])
     b = np.array([[40.0]])
     k = np.array([[ph_to_h(6.0)]])
-    rate = 0.1 * buf.buffer_capacity(h, b, k, xp=np) / LN10  # mM/s giving rho = 0.1 /s
+    rate = 0.031 * buf.buffer_capacity(h, b, k, xp=np) / LN10  # mM/s giving rho = 0.031 /s
     assert buf.envelope_valid(h, b, k, np.array([[1e7]]), rate, xp=np).all()
     assert buf.envelope_valid(h, b, k, np.array([[1e5]]), rate, xp=np).all()
     assert not buf.envelope_valid(h, b, k, np.array([[1e-3]]), rate, xp=np).any()
+
+
+def test_planted_the_old_fixed_ratio_admits_a_case_the_lag_check_refuses():
+    # The FR-4 references' run 02: at k_on = 1e3 /mM/s, lambda/rho is about 1.2e3 (the old
+    # lambda >= 1e3 rho passes) while the lumen lags the closure by about 1.26e-2 pH.
+    h = np.array([ph_to_h(7.2)])
+    b = np.array([[40.0]])
+    k = np.array([[ph_to_h(6.0)]])
+    rate = 0.031 * buf.buffer_capacity(h, b, k, xp=np) / LN10
+    k_on = np.array([[1e3]])
+    lam = buf.relaxation_rate(h, b, k, k_on, xp=np)
+    rho = buf.drive_rate(rate, h, b, k, xp=np)
+    assert (lam >= 1e3 * rho).all()  # the old check would pass
+    lag = buf.lag_estimate_ph(h, b, k, k_on, rate, xp=np)
+    assert lag[0] == pytest.approx(1.26e-2, rel=0.05)  # the references' measured lag
+    assert not buf.envelope_valid(h, b, k, k_on, rate, xp=np).any()
+    # The threshold the references found: the budget holds from k_on of about 1.28e4.
+    assert buf.envelope_valid(h, b, k, np.array([[1.3e4]]), rate, xp=np).all()
+    assert not buf.envelope_valid(h, b, k, np.array([[1.2e4]]), rate, xp=np).any()
 
 
 def test_stage_read_over_cells_and_outside_nodes():
