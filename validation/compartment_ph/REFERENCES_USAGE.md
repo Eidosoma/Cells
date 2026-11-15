@@ -219,8 +219,8 @@ the record, from snapshot `compartment-ph-snapshot-02` (95f835fb).
 | `validation/compartment_ph/transfer_reference.py` (`tr`) | R-transfer: FR-4's R-closure with cargo X, the damage pore and the conditioned transfer; the exact damage law; the steady start |
 | `validation/compartment_ph/transfer_crosschecks.py` | The driver behind the numbers below (`--out DIR`; about 70 s of CPU) |
 
-**Self-tests:** `tests/unit/test_compartment_transfer_references.py`, 6 tests, tier 1. The folder's
-independence tests cover this module too.
+**Self-tests:** `tests/unit/test_compartment_transfer_references.py`, 6 tests, tier 1, 6.8 s on
+CPU 7. The folder's independence tests cover this module too.
 
 ## The laws, as the reference computes them
 
