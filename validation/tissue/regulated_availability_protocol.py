@@ -19,7 +19,20 @@ What this draft decides from the development run, by rules fixed here (not by fi
   100 floors, and at least 1e-13 for a dimensionless quantity.
 It refuses to draft if a control is not caught on the development run.
 
-Usage: python -m validation.tissue.regulated_availability_protocol RESULTS_JSON [OUTPUT_JSON]
+With a rehearsal record (--rehearsal REHEARSAL_JSON: the rehearsal's facts on main, gathered from
+its evidence), the redraft carries them and the judged run's resource budget (below) with its
+memory cap of record. The criteria are drawn from the development run alone, so a redraft leaves
+them unchanged. Every draft also records D147's facts for every world it runs (`d147`) and the
+disclosures of what was fixed with development results in view.
+
+The judged run's resource budget is three times the rehearsal's wall time plus ten minutes
+(D150's rule); the launcher enforces it. Registration is the lead's, through `register` (MG0c's
+form): the record's status replaces PROPOSED and the record follows it.
+
+Usage: python -m validation.tissue.regulated_availability_protocol draft RESULTS_JSON
+       [OUTPUT_JSON] [--rehearsal REHEARSAL_JSON]
+       python -m validation.tissue.regulated_availability_protocol register PROTOCOL_JSON
+       RECORD_JSON
 """
 
 import json
@@ -302,14 +315,18 @@ def draft(results, results_path):
     )
     protocol["scope"] = scope()
     protocol["attempt_rule"] = (
-        "D150's: one judged run from a clean execution snapshot of main into a new directory; an "
-        "infrastructure ending (an incomplete results.json) is rerun once from the same snapshot; "
-        "a failed criterion is a verdict, not a retry"
+        "D150's: one judged run from a clean execution snapshot of main into a new directory. An "
+        "infrastructure ending (a timeout at the launcher's runtime limit, a runtime kill, an OOM "
+        "kill, a signal, or an incomplete results.json) is rerun once from the same snapshot into "
+        "a new directory; a failed criterion is a verdict, not a retry"
     )
+    protocol["disclosures"] = DISCLOSURES
+    protocol["d147"] = d147_worlds()
     protocol["steps_before_judgement"] = [
         "the lead's review of this draft with the advisor",
         "a rehearsal: the judged entry from a snapshot, refused while PROPOSED (the guard)",
-        "a dry run: a development run from the snapshot to be judged, judged in dev mode",
+        "a dry run: the judged entries with a registered dry-run copy, from the snapshot to be "
+        "judged, every part, compared bitwise with the development run",
         "the final check of the registered values against the dry run",
         "registration by the lead (the status alone changes)",
         "one judged run and its verdict",
@@ -331,19 +348,190 @@ def draft(results, results_path):
     }
     protocol["development_controls"] = controls
     protocol["questions"] = [
-        "Is the band [1.7, 2.3] right for a judged order on 3 pairs, with the observed orders "
-        "2.00 to 2.08 in development?",
-        "Should A4's baseline U, at accumulated rounding in development, stay reported only?",
-        "GPU: CPU-only in version 1, with an L4 variant later (proposed)?",
+        "Answered by the lead (14 November 2026): the band [1.7, 2.3] stands, set a priori "
+        "around the scheme's order; the minimum resolved pairs and U's rounding-scale rule "
+        "stand, and A4's uncoupled U stays reported; version 1 is CPU-only, an L4 variant later",
     ]
     return protocol
 
 
+DISCLOSURES = [
+    "The band [1.7, 2.3] was set around the scheme's order 2 (the lead's ruling) with the "
+    "development orders, 1.97 to 2.08 on resolved pairs, in view",
+    "The judged observables (V, the amounts and U wherever resolved; s, a_eff and F only where "
+    "every pair is resolved) and each rule's minimum resolved pairs (the development count less "
+    "one) are rules applied to the development run, so they were fixed with its results in view",
+    "The registered deltas (2e-5 and 5e-6) are the development deltas rounded up on a 1-2-5 "
+    "grid; the development deltas were set from that run's own finest errors (a plateau at 10 "
+    "times the finest error in V)",
+    "The rounding-scale rule (N eps max|U| for U; 1e-13 for s, a_eff and F) was written after "
+    "the development record showed A4's uncoupled U pair at 2.33, with errors of 8.6e-13 and "
+    "1.7e-13 s at accumulated rounding; the rule excludes that pair, and U is reported only in "
+    "that arm",
+    "A1's bound (4 + 2 f (1 - f) n (|ln x| + |ln K| + 1) eps) and the 100-floor factor were "
+    "written before A1 and the dt study first ran",
+    "The development run of record comes from the snapshot of 476c6e01 and the rehearsal from "
+    "main at 0448f9fc; the rehearsal's records equal the development run's bit for bit, the "
+    "δ-controls apart (run at the registered δ by design)",
+]
+
+
+def d147_worlds():
+    """D147's facts for every world the protocol runs (the lead's final check, as MG0c's
+    hand-back): validation/tissue/field_solver_choice.free_field_offsets, the declared field
+    solver and solver_for's automatic choice, at the ladder's first dt (the layout does not
+    depend on dt). Each cell's capacitor component holds its own held bath, so 0 free offsets
+    are expected; any free offset refuses the draft (D147: such a world declares @3)."""
+    from validation.coupling import cells_reference as rc
+    from validation.tissue import field_solver_choice as fsc
+    from validation.tissue import regulated_availability_controls as controls_module
+    from validation.tissue import regulated_availability_dt_study as generator
+    from validation.tissue import regulated_availability_references as rr
+
+    def initial_of(world):
+        reference = rc.simulate(world, 0.01, record=(0.01,))
+        return {
+            c: (reference.initial[c]["V"], reference.initial[c]["background_fmol"])
+            for c in world.cells
+        }
+
+    def raw_of(world, spec_, initial, control=None):
+        times = [0.0, *generator.grid_records(spec_["end"], spec_["every"], generator.DTS[0])]
+        raw = rr.engine_definition(
+            world, dt=generator.DTS[0], end=spec_["end"], times=times, initial=initial
+        )
+        return raw if control is None else controls_module.as_control(raw, control)
+
+    a4, a5 = generator.a4_world(), rr.cell_world
+    a4_initial, a5_initial = initial_of(a4()), initial_of(a5())
+    A4, A5 = generator.A4, generator.A5
+    worlds = [
+        ("a4.baseline", raw_of(a4(enabled=0), A4, initial_of(a4(enabled=0))), None),
+        ("a4.coupled", raw_of(a4(), A4, a4_initial), None),
+        ("a4.fast", raw_of(a4(**A4["fast"]), A4, initial_of(a4(**A4["fast"]))), None),
+        ("a5.baseline", raw_of(a5(**A5["baseline"]), A5, initial_of(a5(**A5["baseline"]))), None),
+        ("a5.coupled", raw_of(a5(), A5, a5_initial), None),
+        (
+            "controls.first_order_state",
+            raw_of(a4(), A4, a4_initial, "first_order_state"),
+            "first_order_state",
+        ),
+        ("controls.lagged_factor", raw_of(a4(), A4, a4_initial, "lagged_factor"), "lagged_factor"),
+        ("controls.delta_basal_a4", raw_of(a4(basal=A4["basal"] * 1.00002), A4, a4_initial), None),
+        ("controls.delta_basal_a5", raw_of(a5(basal=A5["basal"] * 1.000005), A5, a5_initial), None),
+    ]
+    records = []
+    for label, raw, control in worlds:
+        if control is None:
+            free, auto = fsc.free_field_offsets(raw), fsc.solver_for(raw)
+        else:
+            with controls_module.registered(control):
+                free, auto = fsc.free_field_offsets(raw), fsc.solver_for(raw)
+        records.append(
+            dict(
+                world=label,
+                model=raw["model"]["id"],
+                inner_model=raw["model"].get("inner_model"),
+                free_field_offsets=free,
+                declared_field_solver=raw["execution"]["field_solver"],
+                solver_for_auto=auto,
+            )
+        )
+    worst = max(r["free_field_offsets"] for r in records)
+    if worst > 0:
+        raise SystemExit("Refused: a protocol world has free field offsets (D147): tell the lead")
+    return dict(
+        worlds=records,
+        max_free_field_offsets=worst,
+        declared_field_solvers=sorted({r["declared_field_solver"] for r in records}),
+        automatic_choice_agrees=all(
+            r["solver_for_auto"] == r["declared_field_solver"] for r in records
+        ),
+    )
+
+
+def with_rehearsal(protocol, rehearsal):
+    """The rehearsal's facts, and the judged run's resource budget from them."""
+    if not rehearsal.get("passed"):
+        raise SystemExit("Refused: the rehearsal record does not pass; nothing is redrafted")
+    wall = rehearsal["judged_run_wall_s"]
+    protocol["rehearsal"] = rehearsal
+    protocol["resources"] = dict(
+        cpus=1,
+        memory_cap=rehearsal["memory_cap"],
+        observed_memory_peak_bytes=rehearsal["memory_peak_bytes"],
+        observed_wall_s=wall,
+        runtime_max_s=60 * math.ceil((3 * wall + 600) / 60),
+        basis=(
+            "three times the rehearsal's wall time on one CPU plus 10 minutes, rounded up to the "
+            "minute (D150's rule; shared CPUs ran 1.65 to 4.6 times slow on 14 November)"
+        ),
+        enforced_by=(
+            "the launcher: scripts/run_detached.sh with the memory cap, --oom-first and "
+            "--runtime-max; neither the generator nor the judge reads these fields"
+        ),
+        launch=(
+            "scripts/run_detached.sh UNIT 4G --cpus CPU --oom-first --runtime-max "
+            "RUNTIME_MAX_S -- python -m validation.tissue.regulated_availability_dt_study judged "
+            "validation/tissue/regulated_availability_protocol.json NEW_DIR (from the clean "
+            "snapshot of main to be judged); then python -m "
+            "validation.tissue.regulated_availability_judge judged PROTOCOL NEW_DIR/results.json "
+            "VERDICT_DIR"
+        ),
+    )
+    protocol["steps_before_judgement"] = [
+        step
+        + (
+            " (done: protocol['rehearsal'])"
+            if step.startswith(("a rehearsal", "a dry run"))
+            else ""
+        )
+        for step in protocol["steps_before_judgement"]
+    ]
+    return protocol
+
+
+def register(protocol_path, record_path):
+    """The lead's registration (MG0c's form): the PROPOSED protocol takes the record's status and,
+    after it, the record itself (the lead's, never pre-filled here); every other leaf stays as
+    drafted. Refused for a protocol already registered or recorded, or a record whose status does
+    not begin 'registered'."""
+    path = Path(protocol_path)
+    protocol = json.loads(path.read_text())
+    record = json.loads(Path(record_path).read_text())
+    if not str(protocol.get("status")).startswith("PROPOSED") or "registration" in protocol:
+        raise SystemExit("Refused: only a PROPOSED protocol without a registration record")
+    if not (isinstance(record, dict) and str(record.get("status", "")).startswith("registered")):
+        raise SystemExit("Refused: the registration record's status must begin 'registered'")
+    out = {}
+    for key, value in protocol.items():
+        out[key] = record["status"] if key == "status" else value
+        if key == "status":
+            out["registration"] = dict(record)
+    path.write_text(json.dumps(out, indent=1) + "\n")
+    print(path)
+    return out
+
+
 def main(argv):
+    if not argv or argv[0] not in ("draft", "register"):
+        raise SystemExit(__doc__)
+    action, argv = argv[0], argv[1:]
+    if action == "register":
+        if len(argv) != 2:
+            raise SystemExit("Usage: register PROTOCOL_JSON RECORD_JSON")
+        return register(*argv)
+    rehearsal = None
+    if "--rehearsal" in argv:
+        i = argv.index("--rehearsal")
+        rehearsal = json.loads(Path(argv[i + 1]).read_text())
+        argv = argv[:i] + argv[i + 2 :]
     results_path = Path(argv[0])
     out = Path(argv[1]) if len(argv) > 1 else PROTOCOL
     results = json.loads(results_path.read_text())
     protocol = draft(results, results_path)
+    if rehearsal is not None:
+        protocol = with_rehearsal(protocol, rehearsal)
     out.write_text(json.dumps(protocol, indent=1) + "\n")
     judged = [c["id"] for c in protocol["criteria"] if c["judged"]]
     print(out, len(judged), "judged criteria")

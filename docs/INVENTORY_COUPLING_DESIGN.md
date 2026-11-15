@@ -1613,6 +1613,60 @@ is not registered.
 - **§9.2's tolerance table** is superseded as a qualification by the order criterion. Its values
   are now the regression pins.
 
+### 10.6 The rehearsal on main (15 November 2026)
+
+Everything ran from a clean snapshot of main at 0448f9fc, on one CPU. Evidence is in `rehearsal/`
+of the milestone-4 folder (`rehearsal.json`, `rehearsal.log`).
+
+- **Refusals while PROPOSED.** The generator's and the judge's judged entries were refused ("the
+  protocol is not registered"), and neither wrote anything.
+- **The dry run.** A registered dry-run copy, kept in the evidence folder only, ran every part
+  through the judged entry in 1,299 s, with a memory peak of 981 MB.
+- **Its records against dev-476c6e01**, bit for bit (the judge's `compare` entry):
+  - A1, A4, A5 and the two order controls are identical;
+  - the δ-controls differ by design, run at the registered δ (2e-5 and 5e-6). Both are caught:
+    A4's V orders 1.80, 0.97 and −0.01, and A5's 1.27, 0.48 and 0.05.
+- **The judge's verdict on the copy passes.** It is a rehearsal, not a judgement.
+- **The redraft.** It adds the rehearsal record and the judged run's resource budget, and marks
+  the rehearsal and dry-run steps done. The budget is one CPU and a 4G cap; its runtime limit is
+  §10.7's. The criteria, registered δ and pins are unchanged.
+- **What remains:** the final check, the registration and one judged run.
+
+### 10.7 The advisor's final check (15 November 2026)
+
+- **Registration.** The rehearsal's dry-run copy was made by editing its status in a script. The
+  drafter had no `register` path, so none had run.
+  - The drafter now has one in MG0c's form: `register PROTOCOL RECORD`. The record's status
+    replaces PROPOSED and the record follows it. A registered protocol, or a record whose status
+    does not begin "registered", is refused. Tier 1 tests it.
+  - A copy of the redraft registered with it judges the rehearsal's results with the same
+    verdict as the rehearsal, criterion for criterion and value for value.
+- **No test trips once the protocol is registered.** In a temporary copy of the committed tree,
+  the checked-in protocol was registered with `register`. Both tests that read it pass there:
+  the protocol test (13) and the regression guard (2). No test asserts "not registered" against
+  the checked-in file or starts a judged run from it; the refusal test writes its own PROPOSED
+  protocol.
+- **D147.** All nine worlds the protocol runs have 0 free field offsets:
+  - A4's three arms and A5's two;
+  - the four controls.
+
+  Each declares `capacitive_reduction_gauged_damped_newton@2`, which agrees with the automatic
+  choice. The draft refuses any free offset, and tier 1 checks it.
+- **The runtime limit** is 4,500 s: three times the rehearsal plus 10 minutes, rounded up to the
+  minute (D150's rule; shared CPUs ran 1.65 to 4.6 times slow on 14 November).
+  - The launcher enforces it, together with the cap (`scripts/run_detached.sh`, `--runtime-max`);
+    no code reads the budget fields. The protocol writes out the launch command.
+  - The attempt rule reruns any infrastructure ending once from the same snapshot: a timeout, a
+    runtime kill, an OOM kill, a signal or an incomplete run.
+- **Disclosures.** The protocol states what was fixed with development results in view:
+  - the band;
+  - the choice of judged observables and their minimum pairs;
+  - the registered δ;
+  - the rounding-scale rule that excludes A4's uncoupled U pair at 2.33.
+
+  A1's bound and the 100-floor factor came before the runs.
+- **The criteria, registered δ and pins are unchanged.**
+
 ## Appendix A. Equations for the independent references
 
 **Milestone 1's amendments apply here (§7).**
