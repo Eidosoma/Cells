@@ -59,11 +59,6 @@ from cells.core.specs import ConfigError, _fields
 EVIDENCE_KINDS = ("label_only", "expressed_isoform", "native_current", "model")
 MODEL_SOURCE = "the model's species entries"
 ROLES = ("author", "user")
-# Transitional, until local_species_reactions@1's owner declares species_identities (D176's round;
-# the one change its owner makes): D152's identities, read from its declaration's species.
-TRANSITIONAL_IDENTITIES = {
-    "local_species_reactions@1": lambda declaration: tuple(s.identity for s in declaration.species),
-}
 
 
 @dataclass(frozen=True)
@@ -247,12 +242,8 @@ def _entries(spec):
 
 
 def operator_identities(op, declaration):
-    """The identities an operator declares: its species_identities, else the transitional map."""
-    method = getattr(op, "species_identities", None)
-    if method is not None:
-        return tuple(method(declaration))
-    read = TRANSITIONAL_IDENTITIES.get(op.LAW_ID)
-    return tuple(read(declaration)) if read is not None else ()
+    """The identities an operator declares (the contract's species_identities: none by default)."""
+    return tuple(op.species_identities(declaration))
 
 
 def identities(spec):
