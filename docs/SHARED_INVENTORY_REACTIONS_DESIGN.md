@@ -1,12 +1,29 @@
 # Reactions on the shared inventory (design)
 
-**Status: accepted, 14 November 2026 (the lead, with the advisor); rulings in §9.** Code follows
-D150 version 1's code (after S5a), as D152 orders. Milestones 1 and 2 are accepted and landed (§11,
-§11.1, §11.2). Milestone 3, MG0c's driver, its development runs and a PROPOSED protocol (§11.3), is
-landed. The lead's review of the protocol is answered in a revised PROPOSED protocol (§11.4), which
-the lead landed. The rehearsal on main ran every judged entry to a pass on a registered dry-run
-copy, and the protocol is redrafted from it (§11.5). The lead's final check and registration come
-next; no judged run is made before the lead registers the protocol.
+**Status: numerically qualified within MG0c's scope, 15 November 2026.**
+- **The design** was accepted on 14 November 2026 (the lead, with the advisor; rulings in §9).
+- **Milestones 1 and 2** (§11 to §11.2) and milestone 3, MG0c's driver and protocol (§11.3 to
+  §11.5), are landed.
+- **The judged run passed.** It ran the registered protocol `mg0c-turing-v1` at registration commit
+  5ab4326 (§11.6). The run met:
+  - 55 of 55 judged criteria, every kept control caught;
+  - all 10 guard files;
+  - the combined verdict;
+  - and every value identical to the rehearsal's.
+- **Tags:** `mg0c-v1-registered-2026-11-15` and `mg0c-v1-qualified-2026-11-15`.
+
+**The scope of the qualification** is the protocol's scope line:
+- **What runs judged:** `local_species_reactions@1`'s driven mass action, of orders 0, 1 and 3, at
+  outside nodes. It runs with `resolved_pump_tissue@3`'s species transport on faces in
+  `resolved_pump_composite@1`, five species per world.
+- **One judged guard world** uses `ideal_detailed_balance_mass_action@1`: guard 2's passive
+  world.
+- **Guarded by tests only, not qualified:**
+  - the passive law's other uses;
+  - Michaelis–Menten and Hill factors;
+  - cell routes and D150's writers;
+  - the mixed-node heat and work split.
+- **No biological claim:** the parameters are synthetic.
 
 **History of this note:**
 - The lead's rulings on §9's questions are recorded against each question.
@@ -2443,6 +2460,52 @@ the rehearsal's.
    verdict. All 55 verdicts must match.
 4. The lead registers through `register` with the lead's record.
 5. One judged run follows, from a fresh snapshot of main at the registration commit.
+
+### 11.6 The judged run (15 November 2026)
+
+- **Registration.** The lead registered `mg0c-turing-v1` in commit 5ab4326, which changed the
+  status and the registration record only. It came after three steps:
+  - the rehearsal (§11.5);
+  - the final check with the advisor;
+  - a check of the registration path from the landed tree, in which judge and combine were rerun
+    on the rehearsal's outputs.
+- **The run.** Every entry ran from the clean snapshot of 5ab4326 (`snapshot-judged-5ab4326a`),
+  each in its own unit. Each entry was launched through `scripts/run_detached.sh` and the
+  rehearsal's `rehearse_entry.sh`, copied unchanged into the run's inputs, with the snapshot's
+  registered protocol as its argument. The lanes, caps and limits were the protocol's.
+- **Timeline.** The run started at 01:55 UTC. The lead's `orchestrate.sh` launched each successor
+  when its lane was free. Every unit succeeded, with no out-of-memory event. The run took 1 h
+  52 min in all.
+
+| Entry | Lane | Wall time (limit) | Peak (cap) | Rehearsal |
+| --- | --- | --- | --- | --- |
+| Unit a (d147, theory, timing, linear, floor, q1, q2, sites) | CPU 5 | 62.6 min (207 min) | 2.62 GB (4 GiB) | 66 min, 2.59 GB |
+| Unit b (q6, q3, q5) | CPU 7 | 74.1 min (317 min) | 2.54 GB (5 GiB) | 102 min, 2.55 GB |
+| q7 | CPU 7 | 2.8 min (30 min) | 1.77 GB (5 GiB) | 7 min, 1.79 GB |
+| Unit c (q4) | CPU 5 | 48.3 min (229 min) | 0.98 GB (4 GiB) | 73 min, 0.98 GB |
+| judge-guards | CPU 7 | 18.0 min (168 min) | 3.24 GB (5 GiB) | 53 min, 3.18 GB |
+| judge | CPU 5 | 1 s (10 min) | 0.10 GB (2 GiB) | 5 s |
+| combine | CPU 5 | 2 s (10 min) | 0.10 GB (1 GiB) | 2 s |
+
+- **The verdict.** `combine/verdict.json` is `cells.mg0c_qualification_verdict@1` and passed. Its
+  snapshot revision is 5ab4326, and it carries the scope line.
+  - **The judge:** 55 of 55 judged criteria. The five control criteria passed with every kept
+    control caught at its registered δ: k 35, a 34, b 30, D_U 38 and D_V 28.
+  - **judge-guards:** all 10 files exit 0, 205 tests, 1,080 s in all.
+- **Against the rehearsal.** 10,502 non-timing values were compared, all identical and none
+  present on only one side (`compare-judged-vs-rehearsal.json`): a 4,122, b 5,323, q7 25 and c
+  1,032. The rehearsal in turn reproduced the development runs (§11.5). The judged run's numbers
+  are therefore those of the protocol's basis.
+- **Timing.** The run was faster than the rehearsal, especially for the guards and unit b. Every
+  unit stayed well inside its runtime limit, and every peak matched the rehearsal's to within
+  0.06 GB.
+- **Evidence.** In `/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/`:
+  - `judged-5ab4326a/`: each entry's output directory, with the entry's log, `run.txt` and
+    memory record beside it, and `compare-judged-vs-rehearsal.json`;
+  - `judged-inputs-5ab4326a/`: `orchestrate.sh`, its log and the copied `rehearse_entry.sh`.
+
+  PROGRESS and the plan are at c269339.
+- **What it qualifies** is the status line's scope, numerically. It makes no biological claim.
 
 ## Appendix A. Equations for the independent references
 
