@@ -9,7 +9,9 @@
 // which is removed when the run ends. Whoever takes the lock first sweeps what a run
 // that died left behind.
 
+import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, statSync, utimesSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { ROOT } from "./build_page.mjs";
 
@@ -46,6 +48,19 @@ export async function acquireBrowser({ wait = 20 * 60 * 1000 } = {}) {
       if (Date.now() - started > wait) throw new Error("another browser run has held the lock for too long");
       await sleep(1000 + Math.random() * 1000);
     }
+  }
+  // A browser run draws in software and can take a whole processor or more. The engine's own
+  // jobs share this machine and come first (the lead's request, 15 November 2026): the run and
+  // the Chrome it starts take the lowest priority and keep to one processor (CELLS_BROWSER_CPU,
+  // 3 by default; "any" leaves them free). Both are inherited by what the run starts.
+  try {
+    os.setPriority(19);
+  } catch {}
+  const cpu = process.env.CELLS_BROWSER_CPU || "3";
+  if (cpu !== "any") {
+    try {
+      execFileSync("taskset", ["-a", "-cp", cpu, String(process.pid)], { stdio: "ignore" });
+    } catch {}
   }
   const beat = setInterval(() => {
     try {
