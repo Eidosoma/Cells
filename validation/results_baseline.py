@@ -87,13 +87,44 @@ def _w2():
 
 def _g2():
     from validation.tissue import cell_replacement_judge as judge
+    from validation.tissue import cell_replacement_qualification as qual
     from validation.tissue import composite_l4_agreement as agreement
 
     predictions = agreement.registered("g2")[0]
-    out = {name: copy.deepcopy(e["definition"]) for name, e in predictions["cases"].items()}
+    # At the judge's step (judge.engine runs qual.at_dt(raw, 1e-3)): the predictions' own
+    # step does not land on their observation times.
+    out = {name: qual.at_dt(e["definition"], 1e-3) for name, e in predictions["cases"].items()}
     out["W37"] = judge.w37_raw()
     out["Q7_tissue"] = judge.q7_raw(judge.REGISTERED["q7_channel_scale"])
     return out
+
+
+def _operators():
+    """Operator worlds that run at the tag: a law-steady replacement (gate_at_arrival law_steady,
+    as tests/unit/test_cell_replacement.py's compiled run; crossrev's replacement_steady is
+    refused at the tag, so it gives no output to compare) with an inner schedule change."""
+    from cells.core.cell_replacement_spec import exact_event_times
+    from validation.tissue import cell_replacement_fixtures as rfx
+
+    dt = 1e-3
+    t1, t2, t3 = exact_event_times((10, 20, 30), dt)
+    raw = rfx.heredity_sheet(1, 0, dt=dt, end_time=50 * dt)
+    raw["experiment"]["observation_times"] = list(exact_event_times((0, 10, 11, 30, 31, 50), dt))
+    for control in raw["experiment"]["channel_controls"]:
+        if control["channel_id"].startswith("nav_"):
+            control["schedule"] = [
+                dict(time=0.0, availability=control["schedule"][0]["availability"]),
+                dict(time=t2, availability=0.5),
+            ]
+    templates = [
+        rfx.template_from_cell(raw, "cell_1", "h"),
+        rfx.template_from_cell(raw, "cell_3", "d"),
+    ]
+    steady = dict(rfx.FORMATION, initial_abundance=1.0, lag_s=0.0, gate_at_arrival="law_steady")
+    events = ((t1, "cell_0", "h", "n1"), (t3, "cell_3", "h", "n2"))
+    return {
+        "replacement_law_steady": rfx.with_replacement(raw, templates, events, formation=steady)
+    }
 
 
 def _s3():
@@ -150,6 +181,7 @@ SETS = {
     "crossrev-coupling": _crossrev(
         "validation.tissue.regulated_availability_crossrev", "coupling_worlds"
     ),
+    "operators": _operators,
     "protocol-w1": _w1,
     "protocol-w2": _w2,
     "protocol-g2": _g2,
@@ -207,14 +239,39 @@ def checkpoint_arrays(checkpoint, prefix):
     return out
 
 
+def _channel_active(layout):
+    found = [v for k, v in flatten(layout).items() if k.split(".")[-1] == "channel_active"]
+    return np.asarray(found[0]).astype(bool).tolist() if found else None
+
+
+def channel_activity(spec, final=None):
+    """The channel slots' activity, for the comparator's padding rule (check K1): static when no
+    operator provides channel_active through the view or closes masks (then the layout's mask is
+    the run's), with the layout's mask at the start and at the end of the run."""
+    from cells.core.state import initialise
+    from cells.models.registry import get_model
+
+    model = get_model(spec.model)
+    providers = getattr(model, "providers", ()) or ()
+    static = not getattr(model, "closers", ()) and not any(
+        "channel_active" in getattr(op, "VIEW_FIELDS", ()) for op in providers
+    )
+    return dict(
+        static=bool(static),
+        initial=_channel_active(initialise(spec).layout),
+        final=None if final is None else _channel_active(final.layout),
+    )
+
+
 def run_world(raw, max_steps):
-    """(arrays, steps) of the world's first scalar window of at most max_steps steps."""
+    """(arrays, steps, channel activity) of the world's first scalar window of at most
+    max_steps steps."""
     from cells.core.specs import parse_spec
     from cells.core.windows import WindowPolicy, iter_windows
 
     spec = parse_spec(raw)
     result = next(iter(iter_windows(spec, WindowPolicy(max_steps, "checkpoints"))))
-    return result_arrays(result), len(result.times) - 1
+    return result_arrays(result), len(result.times) - 1, channel_activity(spec, result.final)
 
 
 def run_paths(raw):
@@ -327,11 +384,16 @@ def save(directory, sets, worlds, max_steps, origin):
             started, record = perf_counter(), dict(name=name, definition=raw)
             try:
                 if set_name == "run-paths":
+                    from cells.core.specs import parse_spec
+
                     arrays = {
                         f"{path}:{k}": v for path, a in run_paths(raw).items() for k, v in a.items()
                     }
+                    # The run paths' final layouts are not kept: activity at the start only.
+                    activity = channel_activity(parse_spec(raw))
+                    record["channel_activity"] = activity | dict(final=activity["initial"])
                 else:
-                    arrays, record["steps"] = run_world(raw, max_steps)
+                    arrays, record["steps"], record["channel_activity"] = run_world(raw, max_steps)
             except Exception as error:  # A refusal is an output: its type and message.
                 arrays = {}
                 record["refusal"] = dict(
@@ -365,6 +427,34 @@ def save(directory, sets, worlds, max_steps, origin):
 # ------------------------------------------------------------------ compare
 
 
+# Check K1 (core/padding-check/k1.json): per-law dispatch changes only these two readouts, and only
+# at inactive channel slots; there they hold padding, not physics.
+PADDING_COLUMNS = ("channel_targets", "channel_tau_s")
+
+
+def inactive_slots(base, other, set_name, name):
+    """Channel slots inactive for the whole run in both records (a boolean list), or None: the
+    activity must be static (no operator provides channel_active or closes masks) and the slot
+    inactive in the layout at the start and at the end of both runs."""
+    records = [json.loads((d / set_name / f"{stem(name)}.json").read_text()) for d in (base, other)]
+    activity = [r.get("channel_activity") for r in records]
+    if not all(a and a["static"] and a["initial"] is not None for a in activity):
+        return None
+    masks = [a["initial"] for a in activity] + [a["final"] or a["initial"] for a in activity]
+    if len({len(m) for m in masks}) != 1:
+        return None
+    return [not any(m[k] for m in masks) for k in range(len(masks[0]))]
+
+
+def padding_only(p, q, inactive):
+    """Whether p and q differ only in last-axis columns of slots inactive for the whole run."""
+    if inactive is None or p.ndim == 0 or p.shape[-1] != len(inactive):
+        return False
+    differs = ~((p == q) | (np.isnan(p) & np.isnan(q))) if p.dtype.kind in "fc" else p != q
+    columns = np.any(differs.reshape(-1, p.shape[-1]), axis=0)
+    return bool(np.all(~columns | np.asarray(inactive)))
+
+
 def tolerance_for(key, tolerances):
     for pattern, tol in tolerances.items():
         if fnmatch.fnmatch(key, pattern):
@@ -393,7 +483,8 @@ def compare(base, other, tolerances):
             np.load(other / set_name / f"{stem(name)}.npz"),
         )
         keys = sorted(set(x.files) | set(y.files))
-        worst, failing = 0.0, []
+        inactive = inactive_slots(base, other, set_name, name)
+        worst, failing, padded = 0.0, [], []
         for key in keys:
             if key not in x.files or key not in y.files:
                 failing.append(dict(key=key, problem="missing"))
@@ -405,6 +496,9 @@ def compare(base, other, tolerances):
                 )
                 continue
             if np.array_equal(p, q, equal_nan=p.dtype.kind in "fc") and p.tobytes() == q.tobytes():
+                continue
+            if key.split(".")[-1] in PADDING_COLUMNS and padding_only(p, q, inactive):
+                padded.append(key)  # Check K1: per-law dispatch's padding at inactive slots.
                 continue
             tol = tolerance_for(f"{world}:{key}", tolerances)
             if p.dtype.kind not in "fc" or tol is None:
@@ -425,6 +519,7 @@ def compare(base, other, tolerances):
                 equal=not failing,
                 failing=failing[:20],
                 failing_count=len(failing),
+                padding_only=padded,
                 largest_relative_within_tolerance=worst,
             )
         )
