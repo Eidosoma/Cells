@@ -428,6 +428,40 @@ while pH_L is above pH₅₀.
 - **For f near the estimated 1.6e-3:** a 300-s damage window in arm T ([60, 360] s). It does
   not make the transfer stop (above).
 
+### The restated claims (fr45-physics a593c0a2), confirmed on the record
+
+`compartment-transfer-arms-01-readout.py`, with its log and JSON, sits beside the record.
+- **How it was produced:** the readout re-integrates the record's worlds with the record's own code
+  (snapshot 02, b73769ad). It reproduces the record's stored X_L fractions and peak pH exactly,
+  with differences of 0.0.
+- **Crossing times** are resolved by Brent's method on re-integrations.
+- **Rates** are taken from the conditioned route's cumulative transfer, in units of B.
+
+| Claim | On the record | Holds |
+| --- | --- | --- |
+| Arm T: while pH_L > pH₅₀, the conditioned mean rate falls at least 10× below its pre-damage mean | Pre-damage, over [0, 60] s: **8.375 B/s**. Above pH₅₀, over [73.081, 326.882] s: **0.6120 B/s**. Ratio **13.69** | Yes |
+| pH_L back below pH₅₀ before 400 s | Arm T: **326.882 s**; arm R: **366.882 s** (up-crossings at 73.081 s and 113.081 s) | Yes |
+| Arm R: at least 0.8 of X_L(0) released inside the window | **0.8736** through the pore over [100, 160] s | Yes |
+
+In arm R, the conditioned route carries nothing while pH_L > pH₅₀: the burst has already equalised
+c_X,L and c_X,c.
+
+**Dependence on the start state.** The readout was repeated from FR-4's state at 900 s, whose
+pH_L is 1.38e-3 above the 1800 s state.
+
+| Quantity | Shift from that 1.38e-3 pH offset |
+| --- | --- |
+| Crossing times | ≤ 0.008 s |
+| Arm T's ratio | 13.686 → 13.682 |
+| Arm R's release | +1.5e-5 |
+| X_L along the run | Up to 8.5e-5 of X_L(0), that is **0.085 B** |
+
+- **No restated claim depends on the start** at the level of an engine checkpoint.
+- **The X budget itself is start-sensitive.** The engine-against-reference difference in X_L moves
+  by about 0.06 B per 1e-3 pH of start offset. So the comparison should start the reference from
+  the engine's own checkpoint (`tr.Start`). Otherwise a start offset of about 1.6e-2 pH would
+  consume the whole budget.
+
 # Finite fuel (item 4): R-fuel
 
 The lead chose option (a) on 15 November 2026: a neutral solute Y moved by an ATP-driven pump in
