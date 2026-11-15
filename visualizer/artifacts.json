@@ -94,9 +94,14 @@
           "date": "2026-11-15",
           "engine_revision": "a784a0b3",
           "note": "The species' facts now rest on permissively licensed sources only: every source in the data files is classed by licence, and no value comes from a non-commercial source or one with no stated terms (M. pneumoniae is drawn with 300 ribosomes, from an open paper's measurement). The map shows both the coupling operator and the reactions operator as numerically qualified (MG0c judged, 55 of 55). Checked on a clean checkout of the branch head: 55 of 55 real-input checks, 38 of 38 species checks, 185 tests (184 pass, 1 skipped). The 59 run files were not sent again"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "887e359b",
+          "note": "Each species' own proteins on shelves in the protein atlas, in one format: Syn3A's 455 and M. pneumoniae's 688 one marker each, the planarian's 18,882 as families that open; a switch on the card moves between Cells' 49 machines and the species' own proteins. 12 protein files (3.4 MB) are now published beside the page with the 59 runs: 72 files with the page. The map shows the cell-owned compartment and site-occupancy operators and the run-view design note. Checked at b760d062: 55 of 55 real-input checks, 41 of 41 species checks, shelves checks 17 of 17 (Syn3A), 18 of 18 (planarian) and 6 of 6 (without the files); 211 tests (210 pass, 1 skipped)"
         }
       ],
-      "files": "out/cells-architecture.files.json lists the run files published beside the page (generated, not committed)"
+      "files": "out/cells-architecture.files.json lists the files published beside the page: the runs and the species' own proteins (generated, not committed)"
     }
   }
 }
