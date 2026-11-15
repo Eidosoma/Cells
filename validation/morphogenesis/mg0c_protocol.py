@@ -21,12 +21,18 @@ thresholds; a missing metric fails its criterion).
 
 Usage:
   python -m validation.morphogenesis.mg0c_protocol draft OUTPUT_JSON RESULTS_JSON [...]
-      each RESULTS_JSON a complete development run of the driver, in order: a later run's part
-      replaces an earlier run's (the reruns after the review), each part's run recorded
+      [--guards GUARDS_OUT] [--basis RESULTS_JSON [...]]
+      each RESULTS_JSON a complete run of the driver (development, or the rehearsal's on a
+      registered dry-run copy), in order: a later run's part replaces an earlier run's, each
+      part's run recorded; GUARDS_OUT a judge-guards output directory, for the guards' timing;
+      --basis the development runs the thresholds and deltas were first derived from, named in
+      development_runs.basis and refused unless they give the same criteria, thresholds,
+      registered deltas and controls
   python -m validation.morphogenesis.mg0c_protocol register PROTOCOL_JSON RECORD_JSON
       the lead's registration: RECORD_JSON is the lead's record (its status begins 'registered')
 """
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -37,9 +43,9 @@ from validation.morphogenesis import mg0c_turing as mg
 from validation.morphogenesis.mg0a_gradient import _lookup, evaluate
 
 STATUS = (
-    "PROPOSED (drafted 14 November 2026 by the D152 engine agent from the development runs named "
-    "in development_runs, revised the same day after the lead's review with the advisor (review); "
-    "not registered, and no judged run is made before the lead registers it)"
+    "PROPOSED (drafted 14 November 2026 by the D152 engine agent, revised the same day after the "
+    "lead's review with the advisor (review), from {source} named in development_runs; not "
+    "registered, and no judged run is made before the lead registers it)"
 )
 JUDGED_PARTS = (
     "d147",
@@ -108,9 +114,13 @@ UNIT_B_MEMORY = (  # Why unit b keeps a 5 GiB cap until the rehearsal (the round
 UNITS = dict(  # Ruling 9: q7 alone, with a cap of at least 5 GiB; unit b too (UNIT_B_MEMORY).
     a=dict(parts=["d147", "theory", "timing", "linear", "floor", "q1", "q2", "sites"], cpu=5),
     b=dict(parts=["q6", "q3", "q5"], cpu=7, min_cap_GiB=5),
-    q7=dict(parts=["q7"], cpu=5, min_cap_GiB=5),
-    c=dict(parts=["q4"], cpu=7),
-    guards=dict(entry="judge-guards", cpu=5),
+    q7=dict(parts=["q7"], cpu=7, min_cap_GiB=5),
+    c=dict(parts=["q4"], cpu=5),
+    guards=dict(entry="judge-guards", cpu=7, min_cap_GiB=5),  # Proposed (GUARDS_MEMORY).
+)
+LANES = (  # As the rehearsal ran them, each successor launched by hand when its lane is free.
+    "CPU 5: unit a, then unit c; CPU 7: unit b, then q7, then judge-guards; then judge and "
+    "combine, which run nothing"
 )
 SCOPE = (
     "MG0c's judged arms run local_species_reactions@1's driven mass action only, of orders 0, 1 "
@@ -118,8 +128,9 @@ SCOPE = (
     "1), at outside nodes, with resolved_pump_tissue@3's species transport on faces in "
     "resolved_pump_composite@1, with five species per world (three quiescent ions and the "
     "network's two), within the 7 species the scope stays at: D150's cap of 16 since FR-9 / D165 "
-    "is not exercised. One judged guard world departs from driven mass action, flagged for the "
-    "lead (question 1): guard 2's passive world runs ideal_detailed_balance_mass_action@1 "
+    "is not exercised. One judged guard world departs from driven mass action, kept judged at "
+    "the lead's answer (review.answers): guard 2's passive world runs "
+    "ideal_detailed_balance_mass_action@1 "
     "(A <-> B, linear) at outside nodes, judged against the engine order's exact map. Every other "
     "use of "
     "the passive law, Michaelis-Menten, Hill factors, cell routes, D150's writers and the "
@@ -152,7 +163,8 @@ REVIEW = dict(
         "list; supply counted once, the rejected step, restart and batch stay judged guards",
     },
     blocking={
-        "a": "the scope line (scope), with guard 2's passive world flagged (question 1)",
+        "a": "the scope line (scope), with guard 2's passive world named (question 1, answered: it "
+        "stays judged)",
         "b": "D150's pre-registration amendments carried over: judge-guards with its own verdict, "
         "uncapped per file; one combine verdict; the attempt rule's infrastructure endings; "
         "rules.timing; register with the lead's record, read by the guard; why the control "
@@ -163,6 +175,42 @@ REVIEW = dict(
         "§6.4 and §11.4)",
     },
     d147="done and recorded: every MG0c world has 0 free field offsets with solver @2 (d147)",
+    answers_by=(
+        "the lead, 14 November 2026, landing the revision at main 58b6f14 (the combined landing "
+        "f0e154a)"
+    ),
+    answers={
+        "1": "keep guard 2's passive world judged, with the disclosure: both candidate rules pass "
+        "on the development runs (the usage note's at 0.008 to 0.021, D150's at 0.96), so the "
+        "choice was about fragility, not the outcome; the final check before registration can "
+        "revisit it",
+        "2": "yes, the split is intended: the true-kinetics heat and work comparisons against "
+        "dr.integrate_node are regression guards of record; the judged guards keep the "
+        "rounding-level agreement with nr.run_half_steps and the passive relaxation's total heat; "
+        "the scope line's 'guarded, not qualified' is right",
+    },
+    confirmed=[
+        "Q4_near_ties_as_registered",
+        "every kept control must catch",
+        "unit b at 5 GiB or more until the rehearsal measures it",
+        "controls.at_grid_floor",
+        "§6.4's Q7 row",
+        "the refusal test on a PROPOSED copy",
+    ],
+    accepted_disclosures=[
+        "the 1e-2 cutoff relative to mg0c/checks-r2.json",
+        "the development runs predating FR-9",
+    ],
+    rehearsal_asked=(
+        "record unit b's peak and Q6's re-integrated control catches, and run every control's "
+        "passing path on the registered dry-run copy"
+    ),
+)
+REHEARSAL_COMPARISON = (  # The rehearsal against development (evidence, not a run part).
+    "mg0c/compare_rehearsal.py -> rehearsal-58b6f14/compare-a.json, -b, -q7 and -c in "
+    "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/: every part identical but "
+    "Q6's controls_integrations, 38 against 32, the registered deltas' extra re-integrations; Q4's "
+    "near-tie leaves are the judged run's own, equal to those derived at drafting"
 )
 DISCLOSURES = [
     "Guard 2's rule (ruling 8), 1e-14 x steps x the scale from REFERENCES_USAGE.md, was chosen "
@@ -174,10 +222,16 @@ DISCLOSURES = [
     "the k and D_V thresholds, Q4's top-two gaps and every Q1 mode's slow-eigenvalue sensitivity "
     "to all five parameters in view (mg0c/checks-r2.json, written before the cutoff); those "
     "sensitivities estimate the thresholds to within about 5 x (controls.removed)",
-    "The development runs come from snapshots before FR-9 (D165, the species cap raised to 16); "
-    "the rehearsal on main redrafts this protocol with one generator command",
+    "The development runs came from snapshots before FR-9 (D165, the species cap raised to 16). "
+    "This protocol is drafted from the rehearsal's runs on main 58b6f14 (FR-9 and the combined "
+    f"landing included), which reproduce them at every non-timing leaf ({REHEARSAL_COMPARISON})",
 ]
-QUESTIONS = [
+GUARDS_MEMORY = (  # Proposed for the judged run from the rehearsal's peak (the lead decides).
+    "judge-guards peaked at 3.18 GB in the rehearsal under a 4 GiB cap; 5 GiB is proposed for the "
+    "judged run by ruling 9's reasoning"
+)
+QUESTIONS = []  # Questions 1 and 2 are answered (review.answers), as asked:
+ASKED = [
     "1. The scope line: guard 2's passive world runs the passive law in judged criteria "
     "(G2_passive_*), against the lead's 'driven mass action only'. Ruling 8 rules on that very "
     "criterion (D150's 0.96 is the passive world's ratio), so this draft keeps it judged and "
@@ -206,12 +260,20 @@ PROTOTYPE_B2 = (  # §6.4's 0.68 u0, identified in the prototype's record (evide
 
 
 def _peak_gb(results_path):
-    """The development unit's cgroup memory peak beside its results.json (dev.sh), in GB."""
-    path = Path(results_path).parent / "memory.peak"
-    try:
-        return round(int(path.read_text().split()[0]) / 1e9, 2)
-    except (OSError, ValueError, IndexError):
-        return None
+    """The unit's cgroup memory peak, in GB: inside the run's directory (mg0c/dev.sh) or beside it
+    as DIR.memory.peak (mg0c/rehearse_entry.sh, since a judged entry's directory is its own)."""
+    folder = Path(results_path).parent
+    for path in (folder / "memory.peak", folder.with_name(folder.name + ".memory.peak")):
+        try:
+            return round(int(path.read_text().split()[0]) / 1e9, 2)
+        except (OSError, ValueError, IndexError):
+            continue
+    return None
+
+
+def _rehearsal(runs):
+    """Whether every run is a judged-form run (the rehearsal's, on a registered dry-run copy)."""
+    return all(str(run.get("status", "")).startswith("Judged run of") for run in runs)
 
 
 def linearised_map_summary(parts):
@@ -284,6 +346,7 @@ def merged(paths):
         runs.append(
             dict(
                 path=str(path),
+                status=data.get("status"),
                 source=data["source"],
                 parts=sorted(data["parts"]),
                 peak_GB=_peak_gb(path),
@@ -716,15 +779,19 @@ def development_values(protocol, results):
                     for m in c["metrics"]
                 ],
             )
+            if all(x is not None for x in v["values"]):  # A run on a registered copy.
+                out[v["id"]].update(passed=v["passed"], values=v["values"])
         else:
             out[v["id"]] = dict(passed=v["passed"], values=v["values"])
     return out
 
 
-def unit_timing(results, runs, origin):
-    """Development seconds per judged unit (the parts' own seconds) and the runtime limits at about
-    3 x them, labelled development's until the rehearsal measures them; the development peaks."""
+def unit_timing(results, runs, origin, guards=None):
+    """Seconds per judged unit (the parts' own seconds in the runs drafted from) and the runtime
+    limits at about 3 x them plus 10 min; the units' peaks. The guards' from a judge-guards verdict
+    directory when given (its files' seconds; its peak beside it), else GUARDS_DEVELOPMENT."""
     seconds = {n: results["parts"][n]["seconds"] for n in results["parts"]}
+    measured_in = "the rehearsal on main" if _rehearsal(runs) else "development"
     out = {}
     for unit, spec in UNITS.items():
         if "parts" not in spec:
@@ -733,17 +800,39 @@ def unit_timing(results, runs, origin):
         out[unit] = dict(
             development_seconds=round(total),
             runtime_max_seconds=int(3 * total + 600),
+            measured_in=measured_in,
             source_runs=sorted({origin[n] for n in spec["parts"] if n in origin}),
         )
-    total = sum(GUARDS_DEVELOPMENT["seconds"].values())
+    peaks = {run["path"]: run["peak_GB"] for run in runs}
+    if guards is None:
+        total, source = sum(GUARDS_DEVELOPMENT["seconds"].values()), GUARDS_DEVELOPMENT["evidence"]
+        peaks["guards"], guards_measured = GUARDS_DEVELOPMENT["peak_GB"], "development"
+    else:
+        verdict = json.loads((Path(guards) / "verdict.json").read_text())
+        total = sum(f["seconds"] for f in verdict["files"])
+        source = str(Path(guards) / "verdict.json")
+        peaks["guards"] = _peak_gb(Path(guards) / "verdict.json")
+        guards_measured = "the rehearsal on main" if _rehearsal(runs) else "a judge-guards run"
     out["guards"] = dict(
         development_seconds=round(total),
         runtime_max_seconds=int(3 * total + 600),
-        source=GUARDS_DEVELOPMENT["evidence"],
+        measured_in=guards_measured,
+        source=source,
     )
-    peaks = {run["path"]: run["peak_GB"] for run in runs}
-    peaks["guards"] = GUARDS_DEVELOPMENT["peak_GB"]
     return dict(units=out, development_peaks_GB=peaks)
+
+
+def unit_b_memory(runs, origin):
+    """Unit b's cap (ruling 9's reasoning, the lead's confirmation until measured) with its peak."""
+    path = origin.get("q6")
+    peak = next((r["peak_GB"] for r in runs if r["path"] == path), None)
+    if peak is None or not _rehearsal(runs):
+        return UNIT_B_MEMORY
+    return (
+        f"its peak in the rehearsal on main was {peak:g} GB, measured as the lead asked; the cap "
+        "stays at 5 GiB, as confirmed until measured, since a cap kill would spend the single "
+        "rerun (the lead may lower it at the final check)"
+    )
 
 
 def q4_near_ties(q4):
@@ -799,14 +888,37 @@ def q5_cap_binds(parts):
     return out
 
 
-def draft(output, paths):
+def basis_record(paths, criteria, deltas, controls):
+    """The development runs the thresholds and registered deltas were first derived from, named
+    beside the runs drafted from: refused unless drafting from them gives the same criteria (ids,
+    metric paths, comparisons, thresholds and bases), registered deltas and controls."""
+    results, runs, origin = merged(paths)
+    parts = results["parts"]
+    own_controls, own_deltas, own = controls_by_parameter(parts)
+    if (criteria_for(parts) + own_controls, own_deltas, own) != (criteria, deltas, controls):
+        raise SystemExit("Refused: the basis runs give other criteria, deltas or controls")
+    return dict(
+        runs=runs,
+        part_sources=origin,
+        same_criteria_deltas_and_controls=True,
+        note=(
+            "the thresholds and the registered deltas were first derived from these development "
+            "runs, from snapshots before FR-9 (D165); drafting from them gives the same criteria, "
+            "thresholds, registered deltas and controls as drafting from the runs above (checked "
+            "at drafting), whose values they reproduce at every non-timing leaf (disclosures)"
+        ),
+    )
+
+
+def draft(output, paths, guards=None, basis=None):
     results, runs, origin = merged(paths)
     parts = results["parts"]
     criteria = criteria_for(parts)
     control_criteria, deltas, controls = controls_by_parameter(parts)
     criteria += control_criteria
     theory = parts["theory"]
-    timing = unit_timing(results, runs, origin)
+    timing = unit_timing(results, runs, origin, guards)
+    rehearsal = _rehearsal(runs)
     q4 = parts["q4"]
     q1 = parts["q1"]
     maps = linearised_map_summary(parts)
@@ -818,7 +930,9 @@ def draft(output, paths):
             "MG0c: Turing patterning at the predicted wavelength, local_species_reactions@1's "
             "first acceptance on resolved_pump_tissue@3's species transport"
         ),
-        status=STATUS,
+        status=STATUS.format(
+            source="the rehearsal's runs on main" if rehearsal else "the development runs"
+        ),
         rung="MG0c",
         question=(
             "Does local_species_reactions@1, composed with @3's species transport on a closed "
@@ -955,9 +1069,20 @@ def draft(output, paths):
                 "are loaded, that is under --protocol (a judged run, or a registered dry-run "
                 "copy). A development run has no registered deltas, so the metric is missing and "
                 "evaluate fails a missing metric (development_values names them not evaluable). "
-                "Their passing path has never run for these five criteria (milestone 3's dry run "
+                "Their passing path had never run for these five criteria (milestone 3's dry run "
                 "loaded the old k and D_V deltas on Q1's quick part alone), so the rehearsal on "
-                "main must run them to a pass on a registered dry-run copy before registration"
+                "main ran them on a registered dry-run copy before registration"
+                + (
+                    ": every one passed there (development_values)"
+                    if rehearsal
+                    and all(
+                        protocol_values.get("passed") is True
+                        for protocol_values in development_values(
+                            dict(criteria=control_criteria), results
+                        ).values()
+                    )
+                    else ""
+                )
             ),
             near_ties=(
                 "ruling 5: Q4's fit tolerance is Q3's 1e-2, relative; the fastest two candidates "
@@ -986,11 +1111,16 @@ def draft(output, paths):
             ),
             timing=(
                 "each judged unit runs through scripts/run_detached.sh with --oom-first in its own "
-                "unit, its --runtime-max about 3 x its development seconds plus 10 min "
-                "(development_runs.timing: development's figures until the rehearsal measures "
-                "them; judge-guards from the guard files' seconds, uncapped per file; judge and "
+                "unit, its --runtime-max about 3 x its seconds plus 10 min "
+                + (
+                    "(development_runs.timing: the rehearsal's on main; "
+                    if rehearsal
+                    else "(development_runs.timing: development's figures until the rehearsal "
+                    "measures them; "
+                )
+                + "judge-guards from the guard files' seconds, uncapped per file; judge and "
                 "combine, which run nothing, 600 s), q7 with a cap of at least 5 GiB (ruling 9) "
-                "and unit b likewise (resources). "
+                f"and unit b likewise (resources); the lanes: {LANES}. "
                 "The judged units run without "
                 "--wait-headroom: the lead launches each only after checking that the slice has "
                 "room for the unit's development peak plus a margin, so each runtime limit "
@@ -1039,6 +1169,19 @@ def draft(output, paths):
                 register=(
                     "python -m validation.morphogenesis.mg0c_protocol register THIS_FILE "
                     "RECORD_JSON: the lead's registration; the status and the lead's record alone"
+                ),
+                launcher=(
+                    "each entry in its own unit: scripts/run_detached.sh NAME CAP --cpus CPU "
+                    "--oom-first --runtime-max LIMIT --env UNIT=NAME -- rehearse_entry.sh SNAPSHOT "
+                    "SNAPSHOT/validation/morphogenesis/protocols/mg0c_turing_v1.json OUT ENTRY "
+                    "[ARGS], with rehearse_entry.sh the rehearsal's launcher "
+                    "(/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/, "
+                    "copied unchanged into the judged run's inputs): it runs the entry from the "
+                    "snapshot's root with judge_entries.environment, never creates OUT (the "
+                    "entry does), and writes OUT.log, OUT.run.txt and the unit's memory record "
+                    "beside OUT. The caps, lanes and runtime limits (development_runs.units and "
+                    "timing) are enforced by the launcher alone (run_detached.sh's MemoryMax, "
+                    "CPUAffinity and RuntimeMaxSec): no code reads them"
                 ),
             ),
         ),
@@ -1096,6 +1239,7 @@ def draft(output, paths):
         linearised_map_by_dt=maps,
         disclosures=DISCLOSURES,
         questions_for_the_lead=QUESTIONS,
+        questions_answered=ASKED,
         pre_registration_amendments=[],
         outcome_rules=(
             "pass when the combined verdict passes: every judged criterion and every guard of "
@@ -1106,17 +1250,21 @@ def draft(output, paths):
             "CPUs 5 and 7 (CPU backend only), each unit detached through scripts/run_detached.sh "
             "with --oom-first; memory caps 4 GiB for units a and c, at least 5 GiB for q7 (ruling "
             "9: a cap kill would spend the single rerun) and, by the same reasoning, for unit b "
-            f"until the rehearsal measures it ({UNIT_B_MEMORY}); judge-guards uncapped per file; "
-            "the development peaks and seconds in development_runs.timing"
+            f"({unit_b_memory(runs, origin)}); judge-guards uncapped per file in time, its memory "
+            f"cap proposed at 5 GiB ({GUARDS_MEMORY}); judge and combine 2 and 1 GiB; the units' "
+            "peaks and seconds in development_runs.timing"
         ),
         development_runs=dict(
             runs=runs,
             part_sources=origin,
+            basis=basis_record(basis, criteria, deltas, controls) if basis else None,
             units=UNITS,
             timing=timing,
             drafted_by=mg.source_identity(),
         ),
     )
+    if not basis:
+        del protocol["development_runs"]["basis"]
     protocol["development_values"] = development_values(protocol, results)
     Path(output).write_text(json.dumps(mg.plain(protocol), indent=1) + "\n")
     failed = [k for k, v in protocol["development_values"].items() if v.get("passed") is False]
@@ -1149,11 +1297,23 @@ def register(protocol_path, record_path):
     return out
 
 
-if __name__ == "__main__":
-    action, *arguments = sys.argv[1:] or [""]
-    if action == "draft" and len(arguments) >= 2:
-        draft(arguments[0], arguments[1:])
-    elif action == "register" and len(arguments) == 2:
-        register(*arguments)
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    commands = parser.add_subparsers(dest="action", required=True)
+    drafting = commands.add_parser("draft")
+    drafting.add_argument("output")
+    drafting.add_argument("results", nargs="+")
+    drafting.add_argument("--guards")
+    drafting.add_argument("--basis", nargs="+")
+    registering = commands.add_parser("register")
+    registering.add_argument("protocol")
+    registering.add_argument("record")
+    args = parser.parse_args(argv)
+    if args.action == "draft":
+        draft(args.output, args.results, args.guards, args.basis)
     else:
-        raise SystemExit(__doc__)
+        register(args.protocol, args.record)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
