@@ -14,7 +14,8 @@ The arithmetic, fixed before any run (the same on engine and reference records):
 * **Differences:** D(a, b) = max over shared records of |q_a - q_b| (the max norm).
 * **J4's pH** (the lead's ruling of 15 November 2026, a dated pre-run correction): the pH of every
   buffered node, the lumen's and the cytosol's (the derivation's `ph_nodes`), the largest D over
-  those nodes; None when any node's series is missing. K2's catch reads the same maximum.
+  those nodes; None when any node's series is missing. K2's catch reads the same maximum, and so
+  do J3's pH state error and J4_start's pH (the lead's later ruling, the same day).
 * **Floors:** each rung difference has its floor F = N eps max|q| (N the finer rung's steps, max|q|
   over the finer rung's records): below it, the difference is accumulated rounding.
 * **Orders, by class** (the lead's ruling of 15 November 2026), on the two differences of the three
@@ -193,6 +194,17 @@ def ratio(a, b):
 def max_or_none(values):
     values = list(values)
     return None if not values or any(v is None for v in values) else max(values)
+
+
+def richardson_ph(parts, declared, half, nodes):
+    """J3's pH state error: the largest Richardson error over every buffered node's pH series
+    (`nodes`); None when any is missing."""
+    return max_or_none(richardson(parts, declared, half, x) for x in nodes)
+
+
+def row0_ph(part_a, part_b, nodes):
+    """J4_start's pH: the largest row-0 difference over every buffered node's pH series."""
+    return max_or_none(row0(part_a, part_b, x) for x in nodes)
 
 
 def ph_max_abs(part_a, part_b, nodes):
@@ -387,7 +399,9 @@ def derive_fr4(parts, derivation):
     v_b = series(parts.get(declared), "V_b")
     v_range = None if v_b is None else max(v_b) - min(v_b)
     out["state_error"] = dict(
+        pH=richardson_ph(parts, declared, half, d["ph_nodes"]),
         pH_L=richardson(parts, declared, half, "pH_L"),
+        pH_c=richardson(parts, declared, half, "pH_c"),
         V_b=richardson(parts, declared, half, "V_b"),
         V_b_range=v_range,
         V_b_over_range=ratio(richardson(parts, declared, half, "V_b"), v_range),
@@ -402,7 +416,8 @@ def derive_fr4(parts, derivation):
                         for x in d["reference_observables"]}
     out["reference"].update(
         pH_max_abs=ph_max_abs(eng, ref, d["ph_nodes"]),
-        start_pH_L=row0(eng, ref, "pH_L"), start_V_b=row0(eng, ref, "V_b"),
+        start_pH=row0_ph(eng, ref, d["ph_nodes"]), start_pH_L=row0(eng, ref, "pH_L"),
+        start_pH_c=row0(eng, ref, "pH_c"), start_V_b=row0(eng, ref, "V_b"),
         floor_pH_L=max_abs_difference(ref, floor, "pH_L"),
         floor_pH=ph_max_abs(ref, floor, d["ph_nodes"]))
     out["envelope"] = envelope(parts, rungs)
@@ -447,7 +462,9 @@ def derive_arm(parts, arm, d):
                      for x in [*d["order_observables"], *d.get("exact_observables", [])]}
     out["state_error"] = dict(
         X_L_over_budget=ratio(richardson(parts, declared, half, "X_L"), budget),
-        pH_L=richardson(parts, declared, half, "pH_L"))
+        pH=richardson_ph(parts, declared, half, d["ph_nodes"]),
+        pH_L=richardson(parts, declared, half, "pH_L"),
+        pH_c=richardson(parts, declared, half, "pH_c"))
     transfer = a["conditioned_transfer"]
     out["reference"] = dict(
         X_L_over_budget=ratio(max_abs_difference(eng, ref, "X_L"), budget),
@@ -461,7 +478,9 @@ def derive_arm(parts, arm, d):
     )
     starts = [eng] + [parts.get(n) for n in rungs if n != declared] + [ctl]
     out["start"] = dict(
+        pH=max_or_none([row0_ph(p, ref, d["ph_nodes"]) for p in starts]),
         pH_L=max_or_none([row0(p, ref, "pH_L") for p in starts]),
+        pH_c=max_or_none([row0(p, ref, "pH_c") for p in starts]),
         V_b=max_or_none([row0(p, ref, "V_b") for p in starts]),
         X_L_over_budget=ratio(max_or_none([row0(p, ref, "X_L") for p in starts]), budget))
     out["envelope"] = envelope(parts, list(rungs) + [control])

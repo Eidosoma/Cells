@@ -94,7 +94,7 @@
  },
  "rules": {
   "dt_study": "S5's form, as D150's and MG0c's: per record, the step term |q(dt) - q(dt/2)|, and the observed orders log2 of successive max-norm differences on the three finest rungs; the rule detects bias, not order. Each difference has its floor F = N eps max|q| (N the finer rung's steps). On the two judged differences: resolved (both >= F) lies in [1.8, 2.2]; at rounding (both < F) passes; mixed (the coarser >= F, the finer < F) passes unless the implied lower bound log2(coarser difference / finer floor) exceeds 2.2; reversed (the coarser < F, the finer >= F) fails; each observable's class is reported with its differences and floors (pre-run correction, the lead, 15 November 2026)",
-  "state_error": "at the declared 1 ms, the Richardson-estimated error of the lumen pH <= 1e-3 pH units and of V_b <= 1e-3 of its range",
+  "state_error": "at the declared 1 ms, the Richardson-estimated error of the pH at every buffered node, the lumen and the cytosol (the maximum over both), <= 1e-3 pH units and of V_b <= 1e-3 of its range (pre-run correction, the lead, 15 November 2026)",
   "reference": "at 1 ms against the independent reference, within J4's budget of 1e-3 pH: the declared physical accuracy, the same as J3's. Basis: the references agent's measured floor on this world (about 5e-14 pH) shows the reference resolves that budget by about ten orders of magnitude; a multiple of the floor would sit far below the engine's own discretisation error at 1 ms, so J4 could never pass (the coordinator's corrected ruling, 15 November)",
   "envelope": "the closure's estimated first-order lag behind the kinetic system, (rho/lambda)(beta/ln 10 - h)/(h ln 10), within 1e-3 pH at every stage of every buffered node (rapid_proton_buffer.lag_estimate_ph). The engine refuses the step at the first stage beyond it (B4's stage check), so a completed part has none and a refusal fails the part; it reports the running maximum of the estimate over every stage (proton_buffer_max_lag_pH, gap 7) as the margin (pre-run correction, the lead, 15 November 2026). Revised before registration: the FR-4 references' run 02 showed the earlier fixed ratio lambda >= 1e3 rho does not imply the budget (it passes from k_on 0.83 /mM/s, the budget only from about 1.28e4)",
   "ledgers": "material per species within its allowance at every record: the declared floor plus N eps max over records of the species' total over the cell, the lumen and the bath (N the run's steps), computed by the judge from the records and reported per species (pre-run correction, the lead, 15 November 2026); charge within the capacitor tolerance; energy residual over flows <= 2e-3 at 1 ms (today's booking), falling at second order down the ladder (the classes, with no upper edge)",
@@ -153,7 +153,8 @@
   "pre-run correction, 15 November 2026, the lead's ruling on the charge check: it reads the engine's charge residual and its capacitor tolerance from the records (ledgers.charge_residual_C and charge_tolerance_C); Q5's record-computed allowance (the judge's, from the amounts) covers material only, since computing charge from the records would need the node charges and capacitances in them",
   "pre-run correction, 15 November 2026, the lead's ruling on J4's node: J4, and so K2's catch, judges the pH of every buffered node, the lumen and the cytosol: the maximum over both nodes and every record of |pH_engine - pH_reference| within 1e-3 (K2: at least 2e-3). The protocol had not named the node. The independent references found that either reading catches K2(b) (R-closure: the lumen's difference reaches 2e-3 at the first record, 1 s, and the cytosol's at 35 s; 3.276 and 0.0192 pH at 900 s)",
   "pre-run correction, 15 November 2026, the lead's ruling on the execution path: every engine part runs its world as the one world of a vector window (cells.core.vector_windows; the generator's judged runs, validation/compartment_ph/engine_records.run with path 'vector'), which checks every accepted row on the device with the host checks' own functions and bounds (the domain with the kinds' domains and B4's read; the ten ledgers with the kinds' terms against the same ledger limits and magnitudes; dissipation at the same 1e-12 pJ tolerance) in place of the windowed runner's checks on the host. The in-step checks (B4's read and envelope, the pump's domain and pH band, B7 per stage and node, the bookings' validity) are the same compiled step on both paths, and the observed rows' readouts and continuity checks stay on the host; the host path stays for development. Measured before any judged run (fr45-transporter 427e4a05, CPU 1, FR-4's rung_1ms over 20 s on both paths from one clean snapshot): every record bitwise equal to the host path's except two leak accumulators (the leak's cumulative proton transfer and heat, relative 5e-14 and 1e-13); the check diagnostics differ at rounding only; a refusal differs in its text (the device path's WorldCheckError names the failed checks and the first failing row), not in its verdict; the run phase 7.46 times faster (0.95 against 7.13 ms per step), the compile cost named as such (48 s against 23 s per unit), so every judged unit runs about 7.5 times faster",
-  "pre-run correction, 15 November 2026, the lead's ruling on the cost and the rehearsal: on the vector path a pass costs about the ladder's 6.75e6 steps at 0.95 ms per step (about 1.8 CPU-hours), K1 and K2 about 15 minutes each and K3 seconds, with about 48 s of compile per unit; that measured per-step cost replaces the charged-patch test's 0.9 CPU-hour upper bound in the timing rule (Q3's ruling: the first development rung measured it, 0.27 ms per step and 7.08 ms of host checks per row over 900 s on the host path), and at that cost the rehearsal runs the full horizon, not a shortened one"
+  "pre-run correction, 15 November 2026, the lead's ruling on the cost and the rehearsal: on the vector path a pass costs about the ladder's 6.75e6 steps at 0.95 ms per step (about 1.8 CPU-hours), K1 and K2 about 15 minutes each and K3 seconds, with about 48 s of compile per unit; that measured per-step cost replaces the charged-patch test's 0.9 CPU-hour upper bound in the timing rule (Q3's ruling: the first development rung measured it, 0.27 ms per step and 7.08 ms of host checks per row over 900 s on the host path), and at that cost the rehearsal runs the full horizon, not a shortened one",
+  "pre-run correction, 15 November 2026, the lead's ruling on J3's and J4_start's nodes: as J4's, the Richardson-estimated state error of the pH (J3) and the start check (J4_start, row 0 against the reference at rounding) judge the pH of every buffered node, the lumen and the cytosol, the maximum over both; V_b stays as written. Stricter, and free: the records hold both nodes"
  ],
  "questions_for_the_lead": [],
  "development_runs": {
@@ -314,13 +315,13 @@
     "judged": true
    },
    {
-    "id": "J3_state_error_pH_L",
+    "id": "J3_state_error_pH",
     "metrics": [
-     "derived.state_error.pH_L"
+     "derived.state_error.pH"
     ],
     "comparison": "le",
     "threshold": 0.001,
-    "basis": "at 1 ms the Richardson-estimated error of the lumen's pH (4/3 D(1, 0.5 ms))",
+    "basis": "at 1 ms the Richardson-estimated error of the pH (4/3 D(1, 0.5 ms)) at every buffered node, the lumen and the cytosol: the maximum over both (pre-run correction, the lead, 15 November 2026)",
     "judged": true
    },
    {
@@ -346,12 +347,12 @@
    {
     "id": "J4_start",
     "metrics": [
-     "derived.reference.start_pH_L",
+     "derived.reference.start_pH",
      "derived.reference.start_V_b"
     ],
     "comparison": "le",
     "threshold": 1e-11,
-    "basis": "row 0 is the reference's start at rounding (both from the declared pH 7.2 state)",
+    "basis": "row 0 is the reference's start at rounding (both from the declared pH 7.2 state): the pH at every buffered node, the lumen and the cytosol (the maximum over both; pre-run correction, the lead, 15 November 2026), and V_b",
     "judged": true
    },
    {

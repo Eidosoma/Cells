@@ -299,8 +299,9 @@ def test_j4_and_k2s_catch_judge_every_buffered_node():
     the cytosol, the maximum over both nodes and every record; FR-5's pH budget the same."""
     protocol, t = PROTOCOLS["fr4"], [float(s) for s in range(901)]
     parts = fr4_parts()
-    s = parts["rung_1ms"]["series"]
-    s["pH_c"] = [p + 1.5e-3 * grow(r, 10) for p, r in zip(s["pH_c"], t, strict=True)]
+    for rung in ("rung_1ms", "rung_0p5ms"):  # The same at the half rung: J3 sees no step error.
+        s = parts[rung]["series"]
+        s["pH_c"] = [p + 1.5e-3 * grow(r, 10) for p, r in zip(s["pH_c"], t, strict=True)]
     assert failed(parts, protocol) == ["J4_reference_pH"]  # the cytosol alone, the lumen exact
     derived = judge.derive(parts, protocol)["reference"]
     assert derived["pH_max_abs"] == derived["pH_c_max_abs"] > derived["pH_L_max_abs"]
@@ -316,9 +317,38 @@ def test_j4_and_k2s_catch_judge_every_buffered_node():
     protocol, t = PROTOCOLS["fr5"], [float(s) for s in range(401)]
     for arm in ("T", "R"):
         parts = fr5_parts()
-        s = parts[f"{arm}_rung_0p5ms"]["series"]
-        s["pH_c"] = [p + 1.5e-3 * grow(r, 10) for p, r in zip(s["pH_c"], t, strict=True)]
+        for rung in (f"{arm}_rung_0p5ms", f"{arm}_rung_0p25ms"):  # J3 sees no step error.
+            s = parts[rung]["series"]
+            s["pH_c"] = [p + 1.5e-3 * grow(r, 10) for p, r in zip(s["pH_c"], t, strict=True)]
         assert failed(parts, protocol) == [f"J4_{arm}_pH"]
+
+
+def test_j3_and_j4_start_judge_every_buffered_node():
+    """The lead's later ruling (15 November 2026): J3's pH state error and J4_start judge every
+    buffered node too, the maximum over the lumen and the cytosol (V_b as written): a cytosol-only
+    step error at the half rung fails J3, and a cytosol-only row-0 offset fails J4_start, the
+    lumen's in budget; FR-5's arms the same."""
+    protocol, t = PROTOCOLS["fr4"], [float(s) for s in range(901)]
+    parts = fr4_parts()
+    s = parts["rung_0p5ms"]["series"]
+    s["pH_c"] = [p + 1e-3 * grow(r, 10) for p, r in zip(s["pH_c"], t, strict=True)]
+    assert failed(parts, protocol) == ["J3_state_error_pH"]
+    derived = judge.derive(parts, protocol)["state_error"]
+    assert derived["pH"] == derived["pH_c"] > derived["pH_L"]
+    parts = fr4_parts()
+    s = parts["rung_1ms"]["series"]
+    s["pH_c"] = [s["pH_c"][0] + 1e-9, *s["pH_c"][1:]]
+    assert failed(parts, protocol) == ["J4_start"]
+    protocol, t = PROTOCOLS["fr5"], [float(s) for s in range(401)]
+    for arm in ("T", "R"):
+        parts = fr5_parts()
+        s = parts[f"{arm}_rung_0p25ms"]["series"]
+        s["pH_c"] = [p + 1e-3 * grow(r, 10) for p, r in zip(s["pH_c"], t, strict=True)]
+        assert failed(parts, protocol) == [f"J3_{arm}_pH"]
+        parts = fr5_parts()
+        s = parts[f"{arm}_rung_1ms"]["series"]
+        s["pH_c"] = [s["pH_c"][0] + 1e-9, *s["pH_c"][1:]]
+        assert failed(parts, protocol) == [f"J4_{arm}_start"]
 
 
 def test_a_missing_or_refused_part_fails_its_criteria_through_none():
@@ -329,7 +359,7 @@ def test_a_missing_or_refused_part_fails_its_criteria_through_none():
     assert "J1_admission" in got and "J2_order_pH_L" in got
     parts = fr4_parts()
     parts["rung_1ms"].update(completed=False, refusal="refused at run time")
-    assert {"J1_admission", "J3_state_error_pH_L", "J4_reference_pH"} <= set(
+    assert {"J1_admission", "J3_state_error_pH", "J4_reference_pH"} <= set(
         failed(parts, protocol))
 
 
