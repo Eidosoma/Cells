@@ -773,10 +773,15 @@ registry code.
    - **Reads at a split** (FR-5's factors on the routing door) call the same pure `evaluate` on the
      split's state. They are first order in dt there, as FR-4's note says.
    - **Coverage and padding** (the FR-4/FR-5 owner's two notes, 15 November):
-     - a read declares every node it covers, buffered or not. The closure covers every node that
-       holds the H row: at an unbuffered node h = H̄, and its free-energy term is −RT ln c° per
-       proton, not zero (μ°(H⁺) = 0 at 1 M, while @3's row term is referenced to 1 mM). So the slot
-       evaluates the term on every covered node;
+     - a read declares every node it covers, buffered or not. At an unbuffered node h = H̄.
+       **Superseded (B4, core-d172 8f405f12; checked by the FR-4/FR-5 owner, FR-4's note §4.4 on
+       main 85108c77):** the kernel's declared term carries the proton's standard part,
+       RT H_eq (μ°(H⁺)/RT − ln c°), which @3's routes and its reservoir work never book (they use
+       RT ln c with c in mM). With it, a proton exchanged with a held bath would leave RT ln c° in
+       the energy ledger. So the kind books the term in @3's convention: the kernel's
+       `declared_term_pJ` less that standard part, which is zero at every unbuffered node, with
+       H_eq-derivative RT ln(h/H̄). The kernel stays unedited and convention-neutral; the kind
+       owns the engine's 1 mM convention (`models/inner_kinds/proton_buffer.py`);
      - the slot masks padding, as @3 masks its own padded slots. Before `evaluate`, an inactive
        node's amounts are replaced by a benign value, as `physical_amounts`' padding reads
        concentration 1. After it, that node's validity is ignored, and its values and energy term
@@ -1253,7 +1258,16 @@ undeclared built-in changes nothing:
    [species, outside node]) into the shared inventory, where the field solve sees their charge
    (rule (c)); its own state fields' derivatives; heat and work rates, which join the energy rate
    by role (rule (a)). `potentials` are the stage's node potentials, cells then outside nodes.
-   They are added after today's terms, in hook order.
+   They are added after today's terms, in hook order. `KindRates.membrane_flux` (outward
+   [species, membrane], optional) joins the patches' total flux and membrane current
+   (observations; gap 9, 669f8ed6).
+   - **Step size (B7 for kinds; gap 5, 669f8ed6):** `stage_term(read, control, p, *, xp)` →
+     [cell] conductance (S) at the stage, added to `membrane_rate`'s per-stage refusal;
+     `bound_rate(spec, declaration)` → 1/s, a definition-time term the host step checks hold to
+     the same bound (the passive law's dt·L ≤ 1).
+   - **One writer (gap 8, 669f8ed6):** `held_rows(declaration)` → ((species, node ID), ...), rows
+     the kind reads and never moves; binding refuses any inner route or other kind that moves
+     one. The operators' writers are the composite's admission.
 3. **`book(applied, start, end, p, dt, *, xp)` → ({own state field: new value}, valid),** in
    `imex_step` after the tableau's combination; `applied(name)` is the step's applied rate of a
    state field (the tableau's explicit and implicit weights). Every kind receives the same end
