@@ -49,8 +49,10 @@ process: it must add no membrane conductance the family's bound does not cover
 (an electroneutral process adds none). With no process the code is unchanged.
 """
 
+import sys
 from dataclasses import make_dataclass, replace
-from functools import cached_property
+from functools import cache, cached_property
+from types import MappingProxyType
 from typing import NamedTuple
 
 import jax
@@ -69,6 +71,7 @@ from cells.core.surface_pump_v3_spec import (
     projection,
 )
 from cells.coupling.selective import selective_flux
+from cells.models import inner_laws
 from cells.models import kinetic_finite_extracellular as pumps
 from cells.models import surface_kinetic as kinetic
 from cells.models import surface_pump as first
@@ -129,9 +132,10 @@ EXPLICIT_STEP_BOUND = first.EXPLICIT_STEP_BOUND
 GATE_INTEGRATOR_ID = gates.LAW_ID
 VOLTAGE_DOMAIN_V = voltage_gates.VOLTAGE_DOMAIN_V
 # RK4 reference steps keep the resolved channel family's qualified bounds
-# (surface_kinetic.check_steps): 2.5 us with NaV1.2, 25 us with Kv1.5/Kir2.1.
-RK4_SODIUM_STEP = 2.5e-6
-RK4_POTASSIUM_STEP = 25e-6
+# (surface_kinetic.check_steps): 2.5 us with NaV1.2, 25 us with Kv1.5/Kir2.1. The laws'
+# declarations hold them (models/inner_laws.py).
+RK4_SODIUM_STEP = inner_laws.RK4_SODIUM_STEP_S
+RK4_POTASSIUM_STEP = inner_laws.RK4_POTASSIUM_STEP_S
 
 parameters = first.parameters
 batch_signature = first.batch_signature
@@ -1119,3 +1123,144 @@ def summarize(history, diagnostics, spec):
         "membrane_transfer_ledger": "baseline passive only; channel and pump ledgers separate",
         "junction_heat_booking": spec.model.junction_heat_booking,
     }
+
+
+# ------------------------------------------------------------------ declared structure (D172)
+# docs/INNER_MODEL_V4_DESIGN.md §7.4: what a definition declares is structure (Python values,
+# never a parameter value); every value is a layout array. registry.get_model returns one
+# implementation object per structure, cached, so equal structures share the object, its
+# functions and their compiled executables. This is the first API commit: the object already
+# has its final surface, but its functions are still this module's own, today's dispatch over
+# the full catalogue, so every program is unchanged. The dispatch commits bind the
+# structure-dependent functions to the declared laws only.
+
+
+def structure(model):
+    """The InnerStructure of a parsed @3 (or composite) model block, on the host."""
+    codes = inner_laws.channel_codes()
+    declared = sorted({c.kinetic_law for c in model.channels}, key=codes.__getitem__)
+    pump_laws = {m.pump.law for m in model.membranes if m.pump is not None}
+    pump_laws |= {m.calcium_pump.law for m in model.membranes if m.calcium_pump is not None}
+    fuels = {
+        p.metabolism.kind
+        for m in model.membranes
+        for p in (m.pump, m.calcium_pump)
+        if p is not None
+    }
+    return inner_laws.InnerStructure(
+        declared_channel_laws=tuple(declared),
+        junction_laws=tuple(sorted({j.law for j in model.junctions})),
+        pump_laws=tuple(law for law in inner_laws.PUMP_LAWS if law in pump_laws),
+        fuel_kinds=tuple(sorted(fuels)),
+        junction_heat_booking=model.junction_heat_booking,
+    )
+
+
+def moved_rows(model):
+    """Every in-step mover of the inner model, by species (§7.4 (f), answer 6), on the host.
+
+    {species: ((mover kind, law ID, entity IDs), ...)} for the species something moves inside
+    @3's step: membrane and junction routes with nonzero permeability, faces with nonzero
+    diffusivity, each declared channel law's permeant ions on its populations, and the pumps'
+    transported ions on their patches. Today's pumps hold their fuel as parameters, so they move
+    no fuel row; a species absent from the mapping is moved by nothing in the step.
+    """
+    movers = {s: [] for s in model.species_ids}
+
+    def add(species, kind, law, entities):
+        if entities:
+            movers[species].append((kind, law, tuple(entities)))
+
+    for row, s in enumerate(model.species_ids):
+        route = inner_laws.MEMBRANE_ROUTE_LAW_ID
+        add(s, "membrane", route, [m.id for m in model.membranes if m.permeability_m_per_s[row]])
+        add(s, "junction", route, [j.id for j in model.junctions if j.permeability_m_per_s[row]])
+        add(
+            s,
+            "face",
+            inner_laws.FACE_ROUTE_LAW_ID,
+            [f.id for f in model.faces if f.diffusivity_m2_per_s[row]],
+        )
+    for law in structure(model).declared_channel_laws:
+        for s in model.species_ids:
+            add(
+                s,
+                "channel",
+                law,
+                [
+                    c.id
+                    for c in model.channels
+                    if c.kinetic_law == law
+                    and any(i.species_id == s and i.relative_permeability for i in c.permeant_ions)
+                ],
+            )
+    for s in model.species_ids:
+        add(s, "pump", pump.LAW_ID, [m.id for m in model.membranes if m.pump and s in m.pump.roles])
+        add(
+            s,
+            "pump",
+            calcium_atpase.LAW_ID,
+            [m.id for m in model.membranes if m.calcium_pump and m.calcium_pump.role == s],
+        )
+    return MappingProxyType({s: tuple(v) for s, v in movers.items() if v})
+
+
+class InnerImplementation:
+    """resolved_pump_tissue@3 for one declared structure (§7.4 (c)); see implementation().
+
+    It has every public name of this module, with the same signature: structure-free names
+    (types, constants, parameters, physical_amounts, projection, rebind, ...) are the module's
+    own objects, and the step, readout, domain, check and observation functions are taken from
+    it by every consumer. New names: structure, structure_key, declared_channel_laws,
+    law_columns, gate_rows, junction_kinetics.
+    """
+
+    def __init__(self, structure):
+        self.structure = structure
+        self.structure_key = (MODEL_ID, structure)
+        self.law_columns = MappingProxyType(
+            {law: column for column, law in enumerate(structure.declared_channel_laws)}
+        )
+
+    def __getattr__(self, name):
+        # Only reached for names the object does not define: this module's own.
+        if name.startswith("__"):
+            raise AttributeError(name)
+        try:
+            return getattr(_MODULE, name)
+        except AttributeError:
+            raise AttributeError(
+                f"resolved_pump_tissue@3 implementation has no attribute {name!r}"
+            ) from None
+
+    def __dir__(self):
+        return sorted(set(dir(_MODULE)) | set(vars(self)) | set(dir(type(self))))
+
+    def __repr__(self):
+        return f"<{MODEL_ID} implementation for {self.structure!r}>"
+
+    @property
+    def declared_channel_laws(self):
+        return self.structure.declared_channel_laws
+
+    @property
+    def gate_rows(self):
+        return self.structure.gate_rows
+
+    def junction_kinetics(self, voltage, p, *, xp=jnp):
+        """The declared junction law's kinetics at junction voltages (junction_gate.Rates)."""
+        return junction_gate.kinetics(voltage, kinetic.junction_parameters(p), xp=xp)
+
+
+@cache
+def implementation(structure):
+    """The one InnerImplementation of a structure (cached: equal structures share it)."""
+    return InnerImplementation(structure)
+
+
+def model_for(model):
+    """registry.get_model's answer for a parsed @3 model block."""
+    return implementation(structure(model))
+
+
+_MODULE = sys.modules[__name__]

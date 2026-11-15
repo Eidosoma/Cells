@@ -716,10 +716,10 @@ def get_model(spec):
         from cells.models import pump_composite
 
         return pump_composite.model_for(spec)
-    if isinstance(spec, SurfacePumpChannelModel):
+    if isinstance(spec, SurfacePumpChannelModel):  # One implementation per declared structure.
         from cells.models import surface_pump_v3
 
-        return surface_pump_v3
+        return surface_pump_v3.model_for(spec)
     if isinstance(spec, SurfacePumpModelV2):
         from cells.models import surface_pump_v2
 

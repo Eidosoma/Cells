@@ -130,7 +130,9 @@ def test_without_channels_reproduces_resolved_pump_tissue_2(solver):
     magnitude, which admits a compiled reordering.
     """
     spec = parse_spec(fixtures.definition("release", solver=solver, channels=False))
-    assert get_model(spec.model) is surface_pump_v3
+    model = get_model(spec.model)
+    assert isinstance(model, surface_pump_v3.InnerImplementation)
+    assert model.structure == surface_pump_v3.structure(spec.model)
     assert parse_spec(spec.to_dict()) == spec
     reference = parse_spec(second.definition("release", solver=solver))
     assert get_model(reference.model) is surface_pump_v2
@@ -410,7 +412,9 @@ def test_round_trip_configs_and_temperatures():
     root = Path(__file__).resolve().parents[2]
     for name in ("resolved_pump_tissue_channels.json", "resolved_pump_tissue_channels_cell.json"):
         spec = parse_spec(json.loads((root / "configs" / name).read_text()))
-        assert get_model(spec.model) is surface_pump_v3 and spec.model.channels
+        model = get_model(spec.model)
+        assert isinstance(model, surface_pump_v3.InnerImplementation)
+        assert model.declared_channel_laws and spec.model.channels
         assert parse_spec(spec.to_dict()) == spec
     # Kv1.5 at 298 and 310 K: the gates have no temperature term (as the source
     # law); the constant-field flux and its affinity use the declared temperature.
