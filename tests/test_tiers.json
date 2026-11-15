@@ -86,7 +86,8 @@
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-fuel/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/acceptance/tiers-tools-20261115/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/head/tiers-45e0c186/measured.json",
-  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/batch/tiers-0ae1943a/measured.json"
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/batch/tiers-0ae1943a/measured.json",
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/split-v3/tiers-4e360c8a/measured-cap90.json"
  ],
  "measured_provenance": [
   {
@@ -708,6 +709,13 @@
    "root": "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/batch/snapshot-0ae1943a",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-15T18:17:58+00:00"
+  },
+  {
+   "git_revision": "d6bba16520adb059f19745776ad3c74315ac6822",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a987b987e846ec6c7",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T18:14:54+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3440,6 +3448,14 @@
     }
    },
    {
+    "file": "tests/unit/test_surface_pump_v3_configs.py",
+    "seconds": 2.93,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
     "file": "tests/unit/test_surface_reference.py",
     "seconds": 2.07,
     "exit_code": 0,
@@ -4502,6 +4518,23 @@
     "exit_code": 0,
     "counts": {
      "passed": 11
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_pump_v3_definitions.py",
+    "seconds": 41.39,
+    "exit_code": 0,
+    "counts": {
+     "passed": 14
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_pump_v3_heredity.py",
+    "seconds": 28.43,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1,
+     "skipped": 1
     }
    },
    {
@@ -5758,16 +5791,26 @@
     "counts": {}
    },
    {
-    "file": "tests/unit/test_surface_pump_v3.py",
-    "seconds": 90.19,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
     "file": "tests/unit/test_surface_pump_v3_device_checks.py",
     "seconds": 90.12,
     "exit_code": null,
     "counts": {}
+   },
+   {
+    "file": "tests/unit/test_surface_pump_v3_gates_equivalence.py",
+    "seconds": 543.36,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_pump_v3_imex.py",
+    "seconds": 497.49,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
    },
    {
     "file": "tests/unit/test_surface_pump_v3_junction_heat.py",

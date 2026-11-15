@@ -1,0 +1,132 @@
+"""resolved_pump_tissue@3: the explicit-stage guard and the definition errors (a shard of the
+former test_surface_pump_v3.py).
+"""
+
+import os
+
+import jax
+import numpy as np
+import pytest
+
+from cells.core.errors import NumericalError
+from cells.core.runner import run
+from cells.core.specs import ConfigError, parse_spec
+from cells.core.surface_pump_v3_spec import control_values
+from cells.models import surface_pump_v3
+from cells.models.registry import get_model
+from cells.numerics import surface_imex as imex
+from validation.tissue import surface_pump_v3_fixtures as fixtures
+
+BACKEND = os.environ.get("CELLS_COMPONENT_BACKEND", "cpu")
+SOLVERS = (imex.EULER_ID, imex.ARS222_ID)
+CHANNEL_FIELDS = ("channel_gate", "channel_transferred", "channel_dissipated_energy_pJ")
+CHANNEL_OBSERVATIONS = (
+    *CHANNEL_FIELDS,
+    "channel_flux_fmol_s",
+    "channel_targets",
+    "channel_tau_s",
+    "channel_availability",
+)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def x64():
+    jax.config.update("jax_enable_x64", True)
+
+
+def scaled_difference(a, b):
+    a, b = np.asarray(a, dtype=float), np.asarray(b, dtype=float)
+    scale = max(np.max(np.abs(a), initial=0), np.max(np.abs(b), initial=0))
+    return 0.0 if scale == 0 else float(np.max(np.abs(a - b)) / scale)
+
+
+def initial(raw):
+    spec = parse_spec(raw)
+    state, layout = get_model(spec.model).initial_values(spec)
+    controls = control_values(spec, [0.0])
+    return spec, state, layout, type(controls)(*(v[0] for v in controls))
+
+
+@pytest.fixture(autouse=True)
+def clear_compiled_programs():
+    """Release the compiled programs after every test: these tests compile many programs
+    and one process otherwise keeps them all (the unsplit file hit a 4 GB cap in tier 3)."""
+    yield
+    jax.clear_caches()
+
+
+def test_explicit_stage_guard_refuses_open_sodium_channels():
+    """A fully open NaV1.2 population is stiff: refused at 1 ms, admitted at 0.2 ms."""
+    raw = fixtures.heredity_cells([fixtures.HEREDITY_STATES["D"][:4]], end_time=0.01)
+    raw["model"]["channels"][1]["initial_gate"] = [1.0, 1.0]
+    spec, state, p, control = initial(raw)
+    rate = float(surface_pump_v3.membrane_rate(state, control, p, xp=np))
+    assert 2500 < rate < 3000  # F^2/RT P c / (C/A) for 2.5e-7 m/s, 0.05 F/m^2.
+    step = jax.jit(surface_pump_v3.checked_step)
+    kept, valid = step(state, 1e-3, control, p, p.active)
+    assert not valid
+    for a, b in zip(kept, state, strict=True):
+        np.testing.assert_array_equal(np.asarray(a), b)
+    _, valid = step(state, 2e-4, control, p, p.active)
+    assert valid
+    with pytest.raises(NumericalError):
+        run(spec)
+    # The pre-screen states are far from it (open Kir2.1 dominates at H, about
+    # 28 /s): window currents admit millisecond steps.
+    for name in ("H", "D"):
+        _, state, p, control = initial(
+            fixtures.heredity_cells([fixtures.HEREDITY_STATES[name][:4]], end_time=0.01)
+        )
+        assert 1e-3 * float(surface_pump_v3.membrane_rate(state, control, p, xp=np)) < 0.05
+
+
+@pytest.mark.parametrize(
+    "fault",
+    [
+        "retired_law_id",
+        "unknown_law",
+        "ion",
+        "ion_ratio",
+        "leak_gates",
+        "gate_count",
+        "patch",
+        "missing_controls",
+        "unknown_control",
+        "duplicate_id",
+        "capacity",
+        "missing_channels",
+        "hot",
+    ],
+)
+def test_definition_errors_reject(fault):
+    raw = fixtures.definition("clamped", solver=imex.ARS222_ID)
+    m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    channel = m["channels"][2]  # NaV1.2 on patch 2.
+    if fault == "retired_law_id":  # Renamed to nav1p2_m3h_regularized@1 (stage B).
+        channel["kinetic_law"] = "betse_nav1p2_m3h_regularized@1"
+    elif fault == "unknown_law":
+        channel["kinetic_law"] = "nav1p3_m3h_regularized@1"
+    elif fault == "ion":
+        channel["permeant_ions"] = [dict(species_id="K", relative_permeability=1.0)]
+    elif fault == "ion_ratio":
+        channel["permeant_ions"][0]["relative_permeability"] = 0.5
+    elif fault == "leak_gates":
+        m["channels"][6]["initial_gate"] = [0.5, 0.5]
+    elif fault == "gate_count":
+        channel["initial_gate"] = [0.5]
+    elif fault == "patch":
+        channel["membrane_id"] = "membrane_9"
+    elif fault == "missing_controls":
+        e["channel_controls"].pop()
+    elif fault == "unknown_control":
+        e["channel_controls"][0]["channel_id"] = "channel_99"
+    elif fault == "duplicate_id":
+        channel["id"] = "calcium_pump_0"
+    elif fault == "capacity":
+        x["channel_capacity"] = len(m["channels"]) - 1
+    elif fault == "missing_channels":
+        del m["channels"]
+    else:
+        m["temperature_K"] = 400.5
+    with pytest.raises(ConfigError):
+        parse_spec(raw)
