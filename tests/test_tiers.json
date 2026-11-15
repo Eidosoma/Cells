@@ -75,7 +75,10 @@
   "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-e3fb7ab/measured.json",
   "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/land-measure-q7prov/measured.json",
   "/mnt/workspaces/Cells/test-split-20261115-01/run-534cd37/tiers/measured.json",
-  "/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/tiers/measure-landing/measured.json"
+  "/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/tiers/measure-landing/measured.json",
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-02/measured.json",
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-02/measured.json"
  ],
  "measured_provenance": [
   {
@@ -618,6 +621,27 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a76bfeaf3e7eececa",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-15T07:52:42+00:00"
+  },
+  {
+   "git_revision": "49a074a90f3191841a76ec8a4a8e72ea587e229f",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T11:26:20+00:00"
+  },
+  {
+   "git_revision": "86064daee06c22fa895f917690f55170b973bcfe",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T11:34:04+00:00"
+  },
+  {
+   "git_revision": "86064daee06c22fa895f917690f55170b973bcfe",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T11:34:04+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2220,6 +2244,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_occupancy_references.py",
+    "seconds": 12.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 20
     }
    },
    {
