@@ -4,7 +4,8 @@ Status: **fixed for the viewer, 15 November 2026**, so that each species' data c
 made before the drawing is. The user, asked whether Syn3A's own membrane machines should
 be drawn on a shelf of their own: "yes, let's have all the shelfs simmilar format inside
 outside for syn3a and all of them - humans have a 100k ones so let's maybe think about
-that last".
+that last". And of the catalogues too large for one marker each: "we should show them all
+but maybe cool expandable protein families, same for humans".
 
 The protein atlas draws the machines Cells has laws for. A species' side of it
 (`SPECIES_ATLAS.md`) says which of those machines the species has. This file is the other
@@ -74,11 +75,43 @@ catalogue table, the same bytes every time.
   values, whether it is measured, and its source. A mark is included only where the
   source's terms allow a copy.
 - **Size.** A species' file stays under 1 MB. A catalogue too large for that, or for one
-  marker each to be read, is not cut down silently: it is given by family, in a form this
-  contract does not yet fix. Human is the last to be done.
+  marker each to be read, is never cut down: it is shown whole, as families that open
+  (below). Human is the last to be done.
 - **Terms and honesty** are as in `SPECIES_ATLAS.md`: every source with its terms, no
   machine path, nothing copied from a source that forbids it, and no word that the engine
   models a protein beyond `unit`.
+
+## Large catalogues: families that open
+
+Where a species has more proteins than can be read as one marker each (the planarian's
+18,882; human), **every protein is still shown, grouped into families that open**. A
+family is one marker on its shelf, sized by how many proteins it holds; opening it shows
+its members, each a protein of the catalogue.
+
+`shelves.json` then holds `families` in place of `proteins`:
+
+```json
+{
+  "family_columns": ["id", "label", "shelf", "side", "group", "count", "sides", "file", "at"],
+  "families": [
+    ["IPR000990", "Innexin", "cell", "in", "channels", 68, {"in": 61, "inside": 5, "not known": 2}, "members-03.json", [1200, 1268]]
+  ],
+  "no_family": {"label": "No family assigned", "count": 0, "sides": {}, "file": "members-09.json", "at": [0, 0]},
+  "family_from": "How a protein is given its one family, and from which source.",
+  "member_columns": ["id", "label", "gene", "side", "basis", "length", "unit", "marks"]
+}
+```
+
+- **One family for each protein.** `family_from` says how it is chosen where a protein
+  matches several, and which source names the families. A protein with no family is not
+  dropped: it is listed under `no_family`, which opens like any other.
+- **A family stands on the side where most of its members sit.** `sides` counts its
+  members on each side, and each member keeps its own side and basis.
+- **Members are cut into files** of a few thousand proteins, in the families' order, so
+  that opening a family fetches one file. `file` and `at` say where a family's members
+  are. The page builder writes those files beside the page from the catalogue table; they
+  are not kept in the repository, where the table already is.
+- A family's `group` is its district, as for a protein.
 
 ## In the page
 
