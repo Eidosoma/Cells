@@ -462,9 +462,13 @@ def admissible(bounds):
 
 
 def ladder_dt(limit, cap):
-    bound = cap if limit is None else min(limit, cap)
+    """The largest ladder step at or below the cap and strictly below the static limit.
+
+    Probe 1's version excluded the cap itself (its planned 10 us ran at 5 us); D170 ruling 6
+    asks that the ladder include its own cap.
+    """
     for dt in DT_LADDER:
-        if dt <= bound * (1 - 1e-12):
+        if dt <= cap * (1 + 1e-12) and (limit is None or dt < limit * (1 - 1e-12)):
             return dt
     return DT_LADDER[-1]
 
@@ -1830,7 +1834,202 @@ def part_verdict(args):
     )
 
 
+def span_cv(activation, lo, hi):
+    """The inverse least-squares slope of activation time against index over cells lo..hi."""
+    if hi <= lo or any(activation[i] is None for i in range(lo, hi + 1)):
+        return None
+    slope = np.polyfit(np.arange(lo, hi + 1), [activation[i] for i in range(lo, hi + 1)], 1)[0]
+    return float(1.0 / slope) if slope > 0 else None
+
+
+def part_lengths(args):
+    """C4's measurement fix (design note section 6; M1 PLAN amendment 2): CV against chain
+    length, stimulus strength and span, with the first ten cells beyond the stimulus and the
+    last ten excluded."""
+    set_point(args.nav, args.kir, args.cm)
+    out = dict(
+        provenance=provenance(),
+        plan=PLAN,
+        part="lengths",
+        point=dict(nav_m_s=args.nav, kir_m_s=args.kir, cm_F_m2=args.cm, kv_m_s=args.kv),
+        cases=[],
+    )
+    out["rest"] = relax_rest(args.kv)
+    path = Path(args.output) / "lengths.json"
+    lo = args.stim_cells + 10
+    longest = max(args.length_n)
+    for s in args.length_s:
+        bounds = static_bounds(definition(longest, dt=1e-5, end_time=0.01, kv_m_s=args.kv, s=s))
+        dt = ladder_dt(admissible(bounds), args.dt_cap)
+        for n in args.length_n:
+            hi = n - 11
+            for k in args.strengths:
+                c = chain_run(
+                    args, s, n=n, dt=dt, m_s=k * args.stim_m_s * stimulus_scale(), span=(lo, hi)
+                )
+                c.update(strength=k, span=[lo, hi], dt_s=dt)
+                act = (c.get("measures") or {}).get("activation_s")
+                if act:
+                    cuts = np.linspace(lo, hi, 4).round().astype(int).tolist()
+                    c["subspan_cv_cells_per_s"] = [
+                        span_cv(act, a, b) for a, b in zip(cuts[:-1], cuts[1:], strict=False)
+                    ]
+                    c["shared_span_cv_cells_per_s"] = span_cv(act, lo, min(args.length_n) - 11)
+                out["cases"].append(c)
+                log_chain(f"length s {s:g} n {n} strength {k:g} dt {dt:g}", c)
+                write_json(path, out)
+    rows = {}
+    for c in out["cases"]:
+        rows[(c["s"], c["n"], c["strength"])] = c
+    criteria = {}
+    short, long_ = min(args.length_n), max(args.length_n)
+    base, strong = min(args.strengths), max(args.strengths)
+    for s in args.length_s:
+        a, b = rows.get((s, short, base), {}), rows.get((s, long_, base), {})
+        c2 = rows.get((s, long_, strong), {})
+        cv_short, cv_long = a.get("shared_span_cv_cells_per_s"), b.get("shared_span_cv_cells_per_s")
+        sub_cvs = [v for v in b.get("subspan_cv_cells_per_s") or [] if v]
+        cv1 = (b.get("measures") or {}).get("cv_cells_per_s")
+        cv2 = (c2.get("measures") or {}).get("cv_cells_per_s")
+        criteria[str(s)] = dict(
+            L1_end_effect=relative(cv_short, cv_long),
+            L2_steadiness=None
+            if len(sub_cvs) < 3
+            else (max(sub_cvs) - min(sub_cvs)) / min(sub_cvs),
+            L3_strength=relative(cv2, cv1),
+            refused=[
+                c["label"] if c.get("label") else c.get("n") for c in (a, b, c2) if c.get("refusal")
+            ],
+        )
+        row = criteria[str(s)]
+        row["met"] = not row["refused"] and all(
+            row[k] is not None and row[k] < 0.02
+            for k in ("L1_end_effect", "L2_steadiness", "L3_strength")
+        )
+    out["criteria"] = criteria
+    out["peak_rss_mb"] = peak_rss_mb()
+    write_json(path, out)
+    log(f"lengths criteria: {criteria}")
+
+
+def kick_chain_run(args, s, *, n, dt, kick_mV, kicked, span):
+    """A chain launched by kicks on its first cells at t = 0: no stimulus onset in the run."""
+    raw = definition(
+        n,
+        dt=dt,
+        end_time=args.chain_end,
+        kv_m_s=args.kv,
+        s=s,
+        booking=args.booking,
+        kicks={i: kick_mV for i in range(kicked)},
+    )
+
+    def stop(o):  # The far end fired and 15 ms passed, or 25 ms all quiet after 30 ms.
+        t = o["times"]
+        if not t or t[-1] < 0.01:
+            return False
+        vm = np.asarray(o["vm"])
+        far = crossings(t, vm[:, -1], -0.030)
+        if far and t[-1] > far[0] + 0.015:
+            return True
+        recent = np.asarray(t) > t[-1] - 0.025
+        return bool(np.all(vm[recent] < -0.030) and t[-1] > 0.03)
+
+    r = execute(raw, stop=stop)
+    rec = record(raw, r, s=s, n=n, dt_s=dt, kick_mV=kick_mV, kicked=kicked)
+    try:
+        rec["static_bounds"] = static_bounds(raw)
+    except ConfigError as error:
+        rec["static_bounds"] = dict(refusal=str(error))
+    if len(r["times"]) > 2:
+        t, vm = np.asarray(r["times"]), np.asarray(r["vm"])
+        rec["measures"] = chain_measures(
+            t, vm, stim_cells=list(range(kicked)), stim_end=0.0, span=span
+        )
+        rec["vm_max_V"] = float(vm.max())
+    return rec
+
+
+def part_steps(args):
+    """C5's measurement fix (design note section 6; M1 PLAN amendment 2): the wave's own
+    largest admissible step. The wave is launched by kicks at t = 0, so no stimulus onset
+    enters the run; the steps are the largest the static bounds admit, below a cap."""
+    set_point(args.nav, args.kir, args.cm)
+    out = dict(
+        provenance=provenance(),
+        plan=PLAN,
+        part="steps",
+        point=dict(nav_m_s=args.nav, kir_m_s=args.kir, cm_F_m2=args.cm, kv_m_s=args.kv),
+        cases=[],
+    )
+    out["rest"] = relax_rest(args.kv)
+    path = Path(args.output) / "steps.json"
+    n = args.n_long
+    kick = 1e3 * (args.kick_to_V - POINT["rest"][0])
+    span = (args.stim_cells + 10, n - 11)
+    criteria = {}
+    for s in args.step_s:
+        limit = admissible(
+            static_bounds(definition(n, dt=1e-5, end_time=0.01, kv_m_s=args.kv, s=s))
+        )
+        dts = [
+            dt for dt in DT_LADDER if dt <= args.step_cap * (1 + 1e-12) and dt < limit * (1 - 1e-12)
+        ][: args.step_count]
+        runs = []
+        for dt in dts:
+            c = kick_chain_run(args, s, n=n, dt=dt, kick_mV=kick, kicked=args.stim_cells, span=span)
+            runs.append(c)
+            out["cases"].append(c)
+            log_chain(f"steps s {s:g} dt {dt:g}", c)
+            write_json(path, out)
+        finest = runs[-1] if runs else {}
+        f_cv = (finest.get("measures") or {}).get("cv_cells_per_s")
+        f_act = (finest.get("measures") or {}).get("activation_s")
+        table = []
+        for c in runs:
+            m = c.get("measures") or {}
+            shift = None
+            if f_act and m.get("activation_s"):
+                pairs = [
+                    (x, y)
+                    for x, y in zip(m["activation_s"], f_act, strict=False)
+                    if x is not None and y is not None
+                ]
+                shift = max(abs(x - y) for x, y in pairs) if pairs else None
+            table.append(
+                dict(
+                    dt_s=c["dt_s"],
+                    refused=bool(c.get("refusal")),
+                    attribution=(c.get("attribution") or {}).get("at_last_accepted"),
+                    cv_cells_per_s=m.get("cv_cells_per_s"),
+                    cv_over_finest=relative(m.get("cv_cells_per_s"), f_cv),
+                    activation_shift_s=shift,
+                    propagated=m.get("propagated_to_end"),
+                    energy=(c.get("diagnostics") or {}).get("max_energy_balance_relative"),
+                )
+            )
+        good = [
+            r["dt_s"]
+            for r in table
+            if not r["refused"]
+            and r["propagated"]
+            and r["cv_over_finest"] is not None
+            and r["cv_over_finest"] < 0.01
+        ]
+        criteria[str(s)] = dict(
+            static_limit_s=limit,
+            table=table,
+            largest_good_dt_s=max(good) if good else None,
+        )
+    out["criteria"] = criteria
+    out["peak_rss_mb"] = peak_rss_mb()
+    write_json(path, out)
+    log(f"steps criteria: { {k: v['largest_good_dt_s'] for k, v in criteria.items()} }")
+
+
 PARTS = dict(
+    lengths=part_lengths,
+    steps=part_steps,
     segment=part_segment,
     domain=part_domain,
     single=part_single,
@@ -1887,13 +2086,20 @@ def main(argv=None):
     a.add_argument("--device-end", type=float, default=0.05)
     a.add_argument("--device-window", type=int, default=512)
     a.add_argument("--keep-traces", action="store_true")
+    a.add_argument("--length-s", type=float, nargs="+", default=[100.0, 1000.0, 3000.0])
+    a.add_argument("--length-n", type=int, nargs="+", default=[40, 80])
+    a.add_argument("--strengths", type=float, nargs="+", default=[1.0, 2.0])
+    a.add_argument("--step-s", type=float, nargs="+", default=[100.0, 300.0])
+    a.add_argument("--step-cap", type=float, default=1e-4)
+    a.add_argument("--step-count", type=int, default=4)
+    a.add_argument("--kick-to-V", type=float, default=0.0, help="steps: the kicked cells' V(0)")
     a.add_argument(
         "--booking",
         default="trapezoid_nonnegative@1",
         help="the chain's junction-heat booking (E07-v1's registered one by default)",
     )
     args = a.parse_args(argv)
-    if args.part in ("chain", "device", "segment") and args.kv is None:
+    if args.part in ("chain", "device", "segment", "lengths", "steps") and args.kv is None:
         a.error("chain and device need --kv explicitly")
     if args.part == "device" and args.kick_to is None:
         a.error("device needs --kick-to explicitly")
