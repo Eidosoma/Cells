@@ -9,9 +9,10 @@ from scipy.integrate import solve_ivp
 
 from cells.processes import patch_damage as dmg
 from cells.processes import ph_condition as phc
+from cells.processes import rapid_proton_buffer as buf
 from validation.compartment_ph import definitions as defs
 from validation.compartment_ph import dt_study
-from validation.compartment_ph.parameters import DamageWorld, World
+from validation.compartment_ph.parameters import ARM_R, ARM_T, DamageWorld, World
 
 # --- bounding_patch_damage@1 -------------------------------------------------------------------
 
@@ -136,3 +137,43 @@ def test_absent_rows_are_declared_traces_with_background_and_k_on_sits_on_the_re
     assert d["model"]["standard_concentration_mM"] == 1000.0
     today = defs.today_only(d)
     assert all("background" not in e for e in today["model"]["species"])
+
+
+def test_the_fixture_uses_the_registry_keys_and_its_k_matches_the_kernel():
+    # The operators' keys (e66fea95): base form at z, protonated form at z + 1, H its own, c0 on
+    # the model. The registry's K = c0 exp(mu_HB - mu_B - mu_H) must equal the kernel's.
+    d = defs.fr4_world()
+    entries = {e["id"]: e for e in d["model"]["species"]}
+    assert entries["H"]["standard_mu_RT"] == 0.0
+    c0 = d["model"]["standard_concentration_mM"]
+    for row, pk in (("B_c", 7.2), ("B_L", 6.0)):
+        e = entries[row]
+        assert e["standard_mu_RT"] == 0.0
+        assert e["protonated_standard_mu_RT"] == pytest.approx(-pk * math.log(10.0), rel=1e-15)
+        k_registry = c0 * math.exp(e["protonated_standard_mu_RT"] - e["standard_mu_RT"]
+                                   - entries["H"]["standard_mu_RT"])
+        k_kernel = buf.dissociation_constant_mM(e["protonated_standard_mu_RT"], e["standard_mu_RT"],
+                                                entries["H"]["standard_mu_RT"], c0_mM=c0, xp=np)
+        assert k_kernel == pytest.approx(k_registry, rel=1e-15)
+        assert -math.log10(k_kernel / 1000.0) == pytest.approx(pk, abs=1e-12)
+    for key in ("standard_mu_RT", "protonated_standard_mu_RT", "background"):
+        assert all(key not in e for e in defs.today_only(d)["model"]["species"])
+
+
+def test_the_revised_fr5_arms_their_start_horizon_and_budget():
+    assert (ARM_T.cargo_transfer_m_s, ARM_T.injury_window_s, ARM_T.pore_cargo_m_s) == (
+        1e-9, (60.0, 120.0), 0.0)
+    assert (ARM_R.cargo_transfer_m_s, ARM_R.injury_window_s, ARM_R.pore_cargo_m_s) == (
+        1e-10, (100.0, 160.0), 1e-6)
+    for arm in (ARM_T, ARM_R):
+        assert arm.pore_proton_m_s == 1e-5 and arm.start_checkpoint_s == 1800.0
+        assert arm.x_budget_fraction == 1e-3 and arm.control_margin == 10.0
+        d = defs.fr5_world(arm)
+        assert d["start"]["checkpoint_time_s"] == 1800.0
+        assert d["experiment"]["end_time"] == pytest.approx(arm.horizon_s)
+        assert "start" not in defs.today_only(d)
+    # The proton pore stays explicit at 1 ms: max-side dt x G/C_b at pH 5.1 is about 0.029.
+    w = World()
+    g = (96485.33212**2 / (8.314462618 * w.temperature_K)) * 1e-5 * w.patch_area_m2 * (
+        1000 * 10 ** -5.1)
+    assert g / w.patch_capacitance_F * 1e-3 == pytest.approx(0.0287, abs=5e-4)

@@ -117,17 +117,36 @@ class World:
 
 @dataclass(frozen=True)
 class DamageWorld:
-    """FR-5 §13.2: damage, leak, reseal and pH-gated transfer, on FR-4's state."""
+    """FR-5 §13.2 (revised after the references' R-transfer runs): two arms on FR-4's state.
 
+    - Arm T, the condition: X crosses while the lumen is acidic and stops when a proton-only
+      damage raises the lumen's pH above pH50 (no cargo pore), then resumes after resealing.
+    - Arm R, the release: X is held in the lumen by a slow gated route until damage opens a cargo
+      pore and a proton pore, giving a release burst; resealing lets the pump re-acidify.
+    The start is FR-4's engine checkpoint at 1800 s (steady state), passed to the references as
+    tr.Start. X's budget: 1e-3 of the lumen's initial X at every record, for the lumen's X and
+    the gated route's cumulative transfer; each control must differ by at least 10 x the budget.
+    """
+
+    arm: str = "R"
     base: World = World()
+    start_checkpoint_s: float = 1800.0  # FR-4's run to steady state; FR-5's t = 0
+    horizon_s: float = 400.0
     cargo_lumen_mM: float = 1.0
     cargo_cytosol_mM: float = 1e-4  # a resolved start, not a trace
-    cargo_transfer_m_s: float = 1e-8
+    cargo_transfer_m_s: float = 1e-10
     ph50: float = 5.5
     ph_slope: float = 4.0
     injury_rate_per_s: float = 1.0
-    injury_window_s: tuple = (100.0, 110.0)
+    injury_window_s: tuple = (100.0, 160.0)
     resealing_rate_per_s: float = 0.05
-    pore_proton_m_s: float = 1e-6
+    pore_proton_m_s: float = 1e-5  # explicit at 1 ms: max-side dt x G/C_b = 0.029 at pH 5.1
     pore_cargo_m_s: float = 1e-6
+    x_budget_fraction: float = 1e-3  # of the lumen's initial X
+    control_margin: float = 10.0  # each control's effect >= this x the budget
     ionic_pores: bool = False  # refused in version 1, until the implicit patch (§9)
+
+
+ARM_T = DamageWorld(arm="T", cargo_transfer_m_s=1e-9, injury_window_s=(60.0, 120.0),
+                    pore_cargo_m_s=0.0)
+ARM_R = DamageWorld(arm="R")

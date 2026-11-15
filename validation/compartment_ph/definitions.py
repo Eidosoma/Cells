@@ -18,6 +18,7 @@ Pi. The closure's mask is the declared (node, row) pairs, so a trace is never a 
 
 import copy
 import math
+from dataclasses import replace
 
 from validation.compartment_ph.parameters import World, h_from_ph
 
@@ -79,8 +80,11 @@ def fr4_world(world=None, *, dt_s=None):
         entry = dict(id=s, valence=z)
         if s in registry:  # §4.1: the acid form's potential relative to the base, mu_H = 0
             b = registry[s]
-            # Pending the operators' key for the protonated form's potential (relayed later).
-            entry.update(standard_mu_RT=dict(base=0.0, acid=b.mu_acid_minus_base_RT))
+            # The operators' registry keys (e66fea95): the base form's mu°/RT at valence z and the
+            # protonated form's at z + 1, at the same c0.
+            entry.update(standard_mu_RT=0.0, protonated_standard_mu_RT=b.mu_acid_minus_base_RT)
+        if s == "H":
+            entry.update(standard_mu_RT=0.0)  # the proton row declares its own potential
         if s in BACKGROUND_ROWS:
             entry.update(background=dict(trace_mM=w.trace_mM, floor_fmol=w.trace_floor_fmol))
         species.append(entry)
@@ -137,10 +141,15 @@ def fr4_world(world=None, *, dt_s=None):
 
 
 def fr5_world(damage_world, *, dt_s=None):
-    """FR-5's definition: FR-4's plus the cargo X, the damage control state and its routes."""
+    """FR-5's definition for one arm (parameters.ARM_T or ARM_R): FR-4's plus the cargo X, the
+    damage control state and its routes, over the arm's horizon, started from FR-4's engine
+    checkpoint at dw.start_checkpoint_s (the `start` key; the reference receives it as tr.Start)."""
     dw = damage_world
-    base = fr4_world(dw.base, dt_s=dt_s)
+    base = fr4_world(replace(dw.base, end_s=dw.horizon_s), dt_s=dt_s)
     m, e = base["model"], base["experiment"]
+    base["start"] = dict(from_world="fr4", checkpoint_time_s=dw.start_checkpoint_s,
+                         note="FR-4's engine checkpoint at steady state; the cargo X is added "
+                              "at its declared start amounts")
     m["species"].append(dict(id="X", valence=0))
     for node in m["cells"] + m["extracellular"]:
         volume = node["volume_pL"]
@@ -174,10 +183,11 @@ def fr5_world(damage_world, *, dt_s=None):
 def today_only(definition):
     """The definition without its pending parts: what today's parser can read."""
     out = copy.deepcopy(definition)
+    out.pop("start", None)
     for key in PENDING_MODEL_KEYS + ("patch_damage",):
         out["model"].pop(key, None)
     for entry in out["model"]["species"]:
-        for key in ("standard_mu_RT", "background"):
+        for key in ("standard_mu_RT", "protonated_standard_mu_RT", "background"):
             entry.pop(key, None)
     for key in PENDING_EXPERIMENT_KEYS + ("damage_controls",):
         out["experiment"].pop(key, None)
