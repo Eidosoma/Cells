@@ -255,7 +255,7 @@ A replay draws what a run saved, and nothing else.
   engine writes its own view file, the adapter is replaced and the view stays.
 
 Two experiments are replayed today, 59 runs in all. A run's records for the quantity
-layers are in files of their own beside it, fetched when a layer is switched on: 296
+layers are in files of their own beside it, fetched when a layer is switched on: 295
 files and 96 MB in all, each under 1 MB (the largest is 0.89 MB), and a run is loaded
 only when it is shown:
 
@@ -328,8 +328,15 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
   viewer feeds the secreted species, the transfers and the glow. An example with
   invented numbers, marked as such on the picture and in the legend, feeds ion traffic
   and a sheet's transfers until a saved run of a sheet carries those totals.
-- **Not built yet:** flux in the Cell view (beads with bloom, on a selected part or all
-  at once), the field between cells, the tension web and the wavefront.
+- **Flux in the Cell view is built on the branch and not yet published** (15 November
+  2026; not yet seen in a browser). A Flux switch in the Cell view's legend, off as the
+  page opens; a chosen part shows its flux alone; beads with bloom. No species has a
+  looping run of its own yet, so what shows is illustration, marked "Illustration: not a
+  run", of the form "direction only": pumps and secreted signals go the way the engine's
+  own laws say (cited in `data/layers/flux.json`), channels, junctions and water are
+  drawn both ways with none claimed, and fuel draws nothing. No textbook direction is
+  drawn.
+- **Not built yet:** the field between cells, the tension web and the wavefront.
   `docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` lists what the layers ask of the engine,
   with the lead's answers.
 
@@ -474,8 +481,9 @@ The visualizer session publishes its own artifacts (the user, 14 November 2026).
 2. Publish `out/cells-architecture.html` to the URL in `artifacts.json`, with the files
    listed in `out/cells-architecture.files.json` beside it: the runs (`runs/<run id>.json`)
    and the species' own proteins (`proteins/<species>/shelves.json` and the planarian's
-   `members-NN.json`). On 15 November 2026 that is 331 files (109 MB): 295 files of the 59
-   runs and 36 files of proteins. A publish takes at most 255 files and 64 MB, so a full
+   `members-NN.json`). On 15 November 2026 that is 378 files (115 MB): 327 files of the 61
+   runs (59 of the experiments, the development run and the example) and 51 files of
+   proteins. A publish takes at most 255 files and 64 MB, so a full
    set goes up in several publishes to the same URL; a later publish keeps the files it
    does not send, so only what changed needs sending. `npm run stage` lays the export out
    as the artifact is, in a folder that is kept as the record of what was published, and
@@ -490,7 +498,7 @@ allowlist; everything else is inside the page.
 
 Everything that makes the page is in this folder on the branch `visualizer`, except two
 things that are remade: `node_modules/`, and the replay files under `out/runs/`, which
-stay out of git (59 runs in 295 files, 96 MB).
+stay out of git (61 runs in 327 files, 96 MB).
 
 1. `npm install`
 2. `npm run adapt:runs -- --evidence /mnt/workspaces/Cells` remakes `out/runs/` from the
