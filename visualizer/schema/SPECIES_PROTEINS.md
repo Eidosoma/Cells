@@ -275,6 +275,23 @@ stacked in the page. Fixed on 15 November 2026, before the human data was made.
 - **Marks of a curated proteome.** `seen` is there the database's level of evidence that
   the protein exists, and its label says so; `where` is the database's own words for the
   place; `family` names the family of a protein listed under `lone`.
+- **A plant cell has three shelves more:** `plastid` (the plastid's envelope), `thylakoid`
+  (the thylakoid membrane) and `vacuole` (the vacuole's membrane), after `mito` and before
+  `nucleus`. A membrane has a shelf of its own where enough proteins stand on it to be
+  read as one; the plant's other membranes stay on `other`.
+  - The plastid's envelope has two membranes, which stand as one shelf: a protein in
+    either, or held between them, is `in`; the stroma is `inside`; the envelope's
+    cytoplasmic face is `outside`. A protein stated to be in the plastid with no part of
+    it named stands beside this shelf, side `not known`.
+  - The thylakoid membrane lies within the stroma: its lumen is `inside`, the stroma
+    `outside`. A protein free in the stroma stands on `plastid`, side `inside`; a protein
+    held at the thylakoid membrane and facing the stroma stands on `thylakoid`, side
+    `outside`.
+  - The vacuole is `inside` of `vacuole`; its membrane's cytoplasmic face is `outside`.
+  - A protein of the cell wall, or of the space outside the cell membrane, stands on
+    `cell`, side `outside`, with the wall in its mark `where`. A protein of the
+    plasmodesmata, which join a plant's cells, stands on `cell`.
+  - The file counts these apart, under `plant`.
 - **A whole reference proteome.** Where a species' catalogue is its whole reference
   proteome, reviewed and unreviewed entries together (the fruit fly, at the user's word of
   15 November 2026), one marker stands for each gene: the protein that the database's own

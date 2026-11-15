@@ -87,6 +87,7 @@ OWN_SYSTEMS = ("ARBA", "RuleBase", "PIRNR", "SAAS", "unnamed analysis")  # UniPr
 OWNERS = {"PROSITE-ProRule", "HAMAP-Rule", "segments", "signal", "big-PI", "TMHMM", "Phobius", "SignalP", *OWN_SYSTEMS}
 TABLE_COLUMNS = [*H.TABLE_COLUMNS, "reviewed", "entries"]
 
+GENE_DB = ("FlyBase", "FBgn")  # the database whose gene identifiers tie a gene's entries together, and how they begin
 listed, plural = E.listed, E.plural
 
 
@@ -173,7 +174,7 @@ def read_entries(d, vocabulary):
         gene = next((g[key]["value"] for g in genes for key in ("geneName", "orderedLocusNames", "orfNames") if isinstance(g.get(key), dict)), "")
         if not gene and genes:
             gene = next((names[0]["value"] for g in genes for key in ("orfNames", "orderedLocusNames") for names in [g.get(key) or []] if names), "")
-        flybase = sorted({ref["id"] for ref in item.get("uniProtKBCrossReferences", []) if ref["database"] == "FlyBase" and ref["id"].startswith("FBgn")})
+        flybase = sorted({ref["id"] for ref in item.get("uniProtKBCrossReferences", []) if ref["database"] == GENE_DB[0] and ref["id"].startswith(GENE_DB[1])})
         features = Counter(feature["type"] for feature in item.get("features", []))
         displayed, described = None, 0
         for comment in item.get("comments", []):

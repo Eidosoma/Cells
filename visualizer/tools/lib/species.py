@@ -19,14 +19,17 @@ LEVELS = ["molecules", "cell", "tissue", "organ", "organism"]
 FURTHER = ["tissue", "organ", "organism"]
 STATES = ["generic", "proposed", "modelled"]
 PLACES = ["absent", "present"]
-ORGANELLES = ["er", "golgi", "mitochondria"]
+ORGANELLES = ["er", "golgi", "mitochondria", "chloroplasts", "vacuole"]
+ANIMAL_ORGANELLES = ["er", "golgi", "mitochondria"]  # what a cell with a nucleus holds where its file does not say
+# The size and number of an organelle (schema/SPECIES_SHAPES.md): how many, how large, or what share of the cell it fills.
+ORGANELLE_SIZE_KEYS = {"count", "volume_fl", "across_um", "share", "sources"}
 # What a cell's shape may be, with what each kind must and may take.
 CELL_KINDS = {
     "sphere": ({"across_um"}, set()),
     "capsule": ({"length_um", "across_um"}, {"tip_um"}),
     "prism": ({"sides", "height_um"}, {"across_um", "radius_um", "corner_um", "edge_um"}),
 }
-PARTS = {"membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes", "appendages"}
+PARTS = {"membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes", "appendages", "wall_nm", "organelle_sizes"}
 # An appendage: a thread or a hair that stands out from the cell (schema/SPECIES.md, "Appendages are a general part").
 APPENDAGE_KEYS = {"kind", "label", "count", "length_um", "width_nm", "where", "from", "base", "sources"}
 APPENDAGE_KINDS = ("flagellum", "pilus")
@@ -365,7 +368,35 @@ class Reader:
             base = item.get("base")
             if base is not None and not (isinstance(base, dict) and set(base) == {"id", "label", "mark", "value"} and all(isinstance(value, str) and value.strip() for value in base.values())):
                 problems.append(f"{where}.base gives an id, a label, and the mark and value of its proteins")
-        held = set(ORGANELLES if organelles is None and parts.get("nucleus", True) else organelles or [])
+        held = set(ANIMAL_ORGANELLES if organelles is None and parts.get("nucleus", True) else organelles or [])
+        # A wall's thickness, and the size and number of the organelles the cell holds: each a number or a range of two.
+        if "wall_nm" in parts:
+            if not amount(parts["wall_nm"]):
+                problems.append("cell.parts.wall_nm is a number above zero, or a range of two")
+            if not parts.get("wall"):
+                problems.append("a wall's thickness is given only for a cell with a wall")
+        sizes = parts.get("organelle_sizes", {})
+        if not isinstance(sizes, dict):
+            problems.append("cell.parts.organelle_sizes is keyed by organelle")
+            sizes = {}
+        for word, item in sizes.items():
+            where = f"cell.parts.organelle_sizes.{word}"
+            if word not in held:
+                problems.append(f"{where}: the cell does not hold this organelle")
+            if not isinstance(item, dict) or set(item) - ORGANELLE_SIZE_KEYS:
+                problems.append(f"{where} takes {', '.join(sorted(ORGANELLE_SIZE_KEYS))}")
+                continue
+            for key in ("count", "volume_fl", "across_um"):
+                if key in item and not amount(item[key]):
+                    problems.append(f"{where}.{key} is a number above zero, or a range of two")
+            share = item.get("share")
+            if share is not None and not all(isinstance(value, (int, float)) and not isinstance(value, bool) and 0 < value <= 1 for value in (share if isinstance(share, list) and len(share) == 2 else [share])):
+                problems.append(f"{where}.share is a part of the cell's volume, above 0 and at most 1, or a range of two")
+            if not set(item) & {"count", "volume_fl", "across_um", "share"}:
+                problems.append(f"{where} gives no number")
+            cited = item.get("sources")
+            if not (isinstance(cited, list) and cited and all(key in sources for key in cited)):
+                problems.append(f"{where}.sources names keys of the species' sources")
         capabilities = cell.get("capabilities", {})
         if not isinstance(capabilities, dict):
             problems.append("cell.capabilities is keyed")

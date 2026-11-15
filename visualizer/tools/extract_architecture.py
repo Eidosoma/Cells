@@ -650,6 +650,25 @@ def main():
     hidden = {item["id"] for item in build.left_out if item["kind"] == "capability"}
     species, shapes, breaches, noted = read_species(arguments.species, {item["id"]: item["scale"] for item in overlay["capabilities"]}, hidden)
     build.warnings.extend(breaches)
+    # A species may be held back from the picture for now (the overlay's `species_held`): its
+    # files stay in the repository and are read and checked like any other, and the scene
+    # carries nothing of it (no species, shape, atlas or proteins) but one line among what is
+    # left out, which says why. Taking the entry out of the overlay brings the species in.
+    for identifier, hold in sorted((overlay.get("species_held") or {}).items()):
+        if not all(isinstance(hold.get(key), str) and hold[key].strip() for key in ("since", "says", "reason")):
+            build.warnings.append(f"held back: {identifier} needs since, says and reason")
+            continue
+        known = [item for item in species if item["id"] == identifier]
+        if not known:
+            build.warnings.append(f"held back: there is no species file for {identifier}")
+            continue
+        species = [item for item in species if item["id"] != identifier]
+        used = {level["shape"]["ref"] for item in species for level in item["levels"] if level.get("shape", {}).get("kind") == "outline"}
+        shapes = {key: value for key, value in shapes.items() if key in used}
+        if build.proteins:
+            for key in ("atlases", "shelves"):
+                build.proteins[key] = [item for item in build.proteins.get(key, []) if item["id"] != identifier]
+        build.left_out.append({"id": f"species.{identifier}", "kind": "species", "label": known[0].get("label") or identifier, "since": hold["since"], "says": hold["says"], "reason": hold["reason"]})
     model_groups = [
         {**group, "description": build.reword("model_groups", group["id"], "description", group.get("description"))} if "description" in group else group
         for group in overlay["model_groups"]

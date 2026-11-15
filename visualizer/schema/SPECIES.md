@@ -109,8 +109,13 @@ says the engine models an organism unless the project's record says so.
   implement the capability stay on the Engine view, which maps the code; the flag's
   `engine_note` is added to their text, so each says that it is not drawn elsewhere.
 - **`cell.parts`** says what the cell holds, from a fixed list the viewer can draw:
-  how many membranes, a wall or none, a nucleus or none, the organelles of an animal
-  cell, a chromosome and its length, a count of ribosomes. `SPECIES_SHAPES.md` gives the
+  how many membranes, a wall or none, a nucleus or none, the organelles it holds (an
+  animal cell's `er`, `golgi` and `mitochondria`; a plant cell's `chloroplasts` and
+  `vacuole` beside them), a chromosome and its length, a count of ribosomes.
+  `organelle_sizes` gives, for an organelle the cell holds, how many there are (`count`),
+  how large each is (`volume_fl`, `across_um`) or what share of the cell's volume it fills
+  (`share`), each a number or a range of two with the keys of its sources; `wall_nm` gives
+  a wall's thickness. Each is a fact of the card as well. `SPECIES_SHAPES.md` gives the
   list. A part the viewer does not know is a warning.
 - **Appendages are a general part** (the user, 15 November 2026: "lets draw flagella, pili
   as a general feature, and with the optoin later to soom into the motor").
@@ -137,6 +142,12 @@ says the engine models an organism unless the project's record says so.
     value under which the species' own proteins list its parts
     (`schema/SPECIES_PROTEINS.md`, `highlights`). Until that view exists, choosing the
     base shows those proteins.
+- **A species may be held back from the picture.** Where the viewer cannot yet draw what
+  a species' cell needs (a plant cell's chloroplasts and vacuole), its files are kept and
+  checked like any other, and the map's overlay names it under `species_held` with since
+  when, how the page names it and why. The scene then carries nothing of it but one line
+  among what is left out; taking the entry away brings the species in. A species is never
+  shown with parts it does not have in place of the ones it has.
 - **Every number has a basis.** A size or a count in `shape` or `parts` is either a fact
   with a source in `cell.facts`, or it is said in the level's `note` to be the picture's
   choice.

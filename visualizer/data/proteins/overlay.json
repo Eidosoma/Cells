@@ -285,6 +285,13 @@
           "checked": "The pattern of links.uniprot above. The catalogue's identifiers are UniProtKB accessions, of reviewed entries and of unreviewed ones; on 15 November 2026 UniProt's interface gave both kinds among the proteome's entries (P35500, para; A0A0B4K6R4)."
         }
       ],
+      "thalecress": [
+        {
+          "text": "UniProt {id}",
+          "url": "https://www.uniprot.org/uniprotkb/{id}/entry",
+          "checked": "The pattern of links.uniprot above. The catalogue's identifiers are UniProtKB accessions, of reviewed entries and of unreviewed ones; on 15 November 2026 UniProt's interface gave the proteome's entries, P20649 (AHA1) among them."
+        }
+      ],
       "family": {
         "text": "InterPro {id}",
         "url": "https://www.ebi.ac.uk/interpro/entry/InterPro/{id}/",

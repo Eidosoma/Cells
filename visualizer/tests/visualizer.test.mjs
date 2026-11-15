@@ -84,7 +84,13 @@ test("the protein atlas matches the inventory it was made from, less what is lef
 test("what an overlay leaves out of the picture is named once in the scene, and nothing else points at it", () => {
   const listed = scene.left_out;
   assert.ok(Array.isArray(listed), "the scene has no list of what is left out: rebuild it");
-  const expected = [...leftOutCapabilities.map((item) => item.id), ...leftOutUnits.map((unit) => `unit.${unit.id}`)];
+  // A species held back from the picture for now is named there too, and is nowhere else in the scene.
+  const held = Object.keys(overlay.species_held || {});
+  const expected = [...leftOutCapabilities.map((item) => item.id), ...leftOutUnits.map((unit) => `unit.${unit.id}`), ...held.map((id) => `species.${id}`)];
+  for (const id of held) {
+    assert.ok(!scene.species.some((item) => item.id === id), `${id} is held back, yet the scene lists it as a species`);
+    assert.ok(!scene.proteins.atlases.some((item) => item.id === id) && !scene.proteins.shelves.some((item) => item.id === id), `${id} is held back, yet the scene carries its atlas or its proteins`);
+  }
   assert.deepEqual(listed.map((item) => item.id).sort(), [...expected].sort());
   const ids = new Set(scene.entities.map((entity) => entity.id));
   for (const item of listed) {

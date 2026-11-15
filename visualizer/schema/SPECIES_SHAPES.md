@@ -45,7 +45,9 @@ close-up shows a pump, and says in the species' words that no channel has a plac
 | `membranes` | 1 or 2 | The cell membrane; a second one is an outer shell, as scenery |
 | `wall` | true or false | A wall outside the membrane, as scenery |
 | `nucleus` | true or false | A nucleus with its envelope |
-| `organelles` | a list from `er`, `golgi`, `mitochondria` | The organelles of an animal cell. Left out, a cell with a nucleus has all three and a cell without one has none |
+| `organelles` | a list from `er`, `golgi`, `mitochondria`, `chloroplasts`, `vacuole` | The organelles the cell holds. The first three are an animal cell's: left out, a cell with a nucleus has those three and a cell without one has none. `chloroplasts` and `vacuole` (one large central vacuole) are a plant cell's, and are named only where the file lists them |
+| `organelle_sizes` | keyed by organelle: `count`, `volume_fl`, `across_um`, `share`, `sources` | How many of an organelle the cell holds and how large each is, or what share of the cell's volume it fills (above 0, at most 1). Each a number or a range of two, with the keys of its sources; each number is also a fact of the species' card |
+| `wall_nm` | a thickness in nanometres, or a range of two | How thick the wall is, for a cell with a wall |
 | `chromosome_kbp` | a length in thousands of base pairs | A chromosome lying free in the cell. Only for a cell without a nucleus |
 | `ribosomes` | a count | Free ribosomes, as scenery: protein synthesis is not a capability |
 | `appendages` | a list, as `SPECIES.md` sets out | Threads and hairs that stand out from the cell (a flagellum, a pilus), as scenery; each may name the machine at its foot |
