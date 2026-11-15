@@ -1613,6 +1613,25 @@ is not registered.
 - **§9.2's tolerance table** is superseded as a qualification by the order criterion. Its values
   are now the regression pins.
 
+### 10.6 The rehearsal on main (15 November 2026)
+
+Everything ran from a clean snapshot of main at 0448f9fc, on one CPU. Evidence is in `rehearsal/`
+of the milestone-4 folder (`rehearsal.json`, `rehearsal.log`).
+
+- **Refusals while PROPOSED.** The generator's and the judge's judged entries were refused ("the
+  protocol is not registered"), and neither wrote anything.
+- **The dry run.** A registered dry-run copy, kept in the evidence folder only, ran every part
+  through the judged entry in 1,299 s, with a memory peak of 981 MB.
+- **Its records against dev-476c6e01**, bit for bit (the judge's `compare` entry):
+  - A1, A4, A5 and the two order controls are identical;
+  - the δ-controls differ by design, run at the registered δ (2e-5 and 5e-6). Both are caught:
+    A4's V orders 1.80, 0.97 and −0.01, and A5's 1.27, 0.48 and 0.05.
+- **The judge's verdict on the copy passes.** It is a rehearsal, not a judgement.
+- **The redraft.** It adds the rehearsal record and the judged run's resource budget: one CPU,
+  a 4G cap, and a runtime limit of 2,640 s, twice the rehearsal rounded up to the minute. It
+  marks the rehearsal and dry-run steps done. The criteria, registered δ and pins are unchanged.
+- **What remains:** the final check, the registration and one judged run.
+
 ## Appendix A. Equations for the independent references
 
 **Milestone 1's amendments apply here (§7).**
