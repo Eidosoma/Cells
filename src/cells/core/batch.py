@@ -295,9 +295,16 @@ def run_batch(spec, checkpoints=None, *, timing_repeats=1):
     """Execute independent worlds, refusing the whole batch on any failure.
 
     timing_repeats > 1 explicitly benchmarks the SAME initial numerical input,
-    with one untimed warm-up. Only one biological trajectory is returned.
+    with one untimed warm-up. Only one biological trajectory is returned. Its phases
+    write start, completion and failure records (core.phases.Recorder).
     """
+    with phases.Recorder() as record:
+        return _run_batch(spec, checkpoints, timing_repeats, record)
+
+
+def _run_batch(spec, checkpoints, timing_repeats, record):
     started = perf_counter()
+    record.start("preparation")
     _integer(timing_repeats, "timing_repeats", maximum=10)
     plan = plan_batch(spec)
     spec = plan.spec
@@ -341,16 +348,17 @@ def run_batch(spec, checkpoints=None, *, timing_repeats=1):
     )
     jax.block_until_ready(inputs)
     prepared = perf_counter()
-    phases.mark("preparation", worlds=len(spec.worlds), seconds=prepared - started)
+    record.end("preparation", worlds=len(spec.worlds), seconds=prepared - started)
     compile_seconds, warmup_seconds = 0.0, 0.0
     samples, compiler_memory = [], None
     domain = getattr(model, "domain_valid", None)
     rhs, stepper = getattr(model, "rhs", None), getattr(model, "checked_step", None)
     if longest:
         if spec.worlds[0].simulation.execution.jit:
+            record.start("compile")
             compiled = _compiled_batch.lower(inputs, rhs, domain, stepper).compile()
             compile_seconds = perf_counter() - prepared
-            phases.mark("compile", seconds=compile_seconds)
+            record.end("compile", seconds=compile_seconds)
             stats = compiled.memory_analysis()
             if stats is not None:
                 compiler_memory = {
@@ -372,6 +380,7 @@ def run_batch(spec, checkpoints=None, *, timing_repeats=1):
                 with jax.disable_jit():
                     return _batch_rollout(inputs, rhs, domain, stepper)
 
+        record.start("execute", worlds=len(spec.worlds))
         if timing_repeats > 1:
             warm = perf_counter()
             jax.block_until_ready(execute())
@@ -381,7 +390,7 @@ def run_batch(spec, checkpoints=None, *, timing_repeats=1):
             outputs = execute()
             jax.block_until_ready(outputs)
             samples.append(perf_counter() - tick)
-        phases.mark("execute", worlds=len(spec.worlds), seconds=samples[-1])
+        record.end("execute", worlds=len(spec.worlds), seconds=samples[-1])
         final, history, valid = outputs
         failed = np.argwhere(~np.asarray(valid))
         if len(failed):

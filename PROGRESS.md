@@ -73,6 +73,28 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The crossrev baseline of record is renewed at df5826f** (D148 criterion 4 for FR-1's contract
+  change; it also covers item 3). All eight sets are identical to their records: base,
+  qualification, injection, volume and division against baseline-da94f81; species and reactions
+  against their da94f81 records; and coupling against its first record at f2ada38
+  ([records](/mnt/workspaces/Cells/architecture-block-20261114-01/baseline-df5826f/)).
+
+- **Phase start and failure records landed (item 3 of the architecture block, 15 November 2026).**
+  Tier 1 and 2 at the merge 85346c8: 440 files, no changed outcome
+  ([evidence](/mnt/workspaces/Cells/architecture-block-20261114-01/HANDOFF.md)).
+  - **What it records:** `core/phases.py` gains a `Recorder` per run path (runner, batch, windows,
+    vector windows).
+    - Each marked phase writes `<phase>.start`.
+    - Any exception leaving a path writes exactly one failure record (phase, type, seconds,
+      message), then propagates unchanged.
+    - Everything is at INFO, with no added device synchronisation.
+  - **Checks:**
+    - crossrev identical in all eight sets;
+    - the four run paths bitwise before and after the change (92 arrays);
+    - all seven run-path tier-3 files pass.
+  - **The run-view writer note** (`docs/RUN_VIEW_DESIGN.md`, D154) lands as proposed. It is under
+    the lead's review.
+
 - **FR-1 milestone 1, FR-10 milestone 2 and FR-3 milestone 1 landed (15 November 2026).** Tier 1
   and 2 at the merge a917d72: 438 files, no changed outcome. The four files over the 90 s cap
   passed when run on their own. This is development code; each qualification comes later.
