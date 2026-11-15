@@ -123,6 +123,7 @@ class CellsViewer extends HTMLElement {
     root.addEventListener("cells-isolate", (event) => this.setIsolate(event.detail));
     root.addEventListener("cells-together", (event) => this.current?.setTogether?.(event.detail));
     root.addEventListener("cells-finding", (event) => this.current?.setFinding?.(event.detail));
+    root.addEventListener("cells-door", (event) => this.openDoor(event.detail));
     // Quantity layers of a replay: which layer holds a channel, and how strongly the marks are drawn.
     root.addEventListener("cells-layer", (event) => this.current?.setLayer?.(event.detail.id, event.detail.on));
     root.addEventListener("cells-strength", (event) => this.current?.setStrength?.(event.detail));
@@ -338,6 +339,24 @@ class CellsViewer extends HTMLElement {
       groups.get(key).push(entity);
     }
     return [...groups].map(([key, entities]) => ({ label: this.model.groups.find((group) => group.id === key)?.label || key, entities }));
+  }
+
+  /**
+   * A door from a part of one view into another view: open that view and show there what the
+   * door names. The foot of a flagellum opens the Protein atlas on the species' own proteins
+   * ("show": which of the atlas's two drawings) with one set of them picked out (a mark and its value).
+   */
+  openDoor({ lens, show, mark, value }) {
+    if (!this.views.some((view) => view.id === lens)) return;
+    this.select(null);
+    this.setLens(lens, true);
+    const view = this.current;
+    Promise.resolve(show && view?.setMode ? view.setMode(show, { user: true }) : view?.ready).then(() => {
+      if (this.current !== view) return; // another view was chosen meanwhile
+      if (mark) view.setMark?.(mark);
+      if (value !== undefined) view.setFinding?.(String(value));
+      this.renderChrome();
+    });
   }
 
   // ------------------------------------------------------------ state changes

@@ -6,6 +6,7 @@
 //   node tools/check_input.mjs            (CHECK_ONLY=engine|atlas|species|experiments|cell|zoom runs one part;
 //                                          CHECK_RUNS=DIR serves replays from another folder;
 //                                          CHECK_SCENE=FILE draws another scene file;
+//                                          CHECK_SPECIES=ID runs the cell and zoom parts on that species' cell;
 //                                          CHECK_LOOK=plain draws the Cell view with the look as it was, which
 //                                          a server that draws in software does much faster: the cell and zoom
 //                                          parts test clicks, not the look (tools/check_look.mjs tests that))
@@ -453,7 +454,7 @@ try {
 
   // ---------------------------------------------------------------- cell lens
   // The Cell view's look (src/core/look.js) is rich unless CHECK_LOOK names another: "plain", or "full" for every effect held on.
-  const cellView = `lens=cell${process.env.CHECK_LOOK ? `&look=${process.env.CHECK_LOOK}` : ""}`;
+  const cellView = `lens=cell${process.env.CHECK_LOOK ? `&look=${process.env.CHECK_LOOK}` : ""}${process.env.CHECK_SPECIES ? `&species=${process.env.CHECK_SPECIES}` : ""}`;
   // On a busy machine, or with the rich look drawn in software, one frame may take seconds. The
   // cell and zoom parts therefore wait for what they are about to read or click, never for a fixed time.
   const until = async (expression, seconds = 180) => {
@@ -483,7 +484,10 @@ try {
   await settled();
   const nucleus = await screen(probe("nucleus"));
   await click(nucleus.x, nucleus.y); // through the sketched gene-network cage around it
-  check("cell: clicking the nucleus selects regulatory circuits", (await selected()) === "cap.circuits", String(await selected()));
+  // A cell without a nucleus has a free chromosome under the cut face of its cytoplasm: a click over it
+  // meets the cytoplasm first, and the chromosome is chosen by its name (the label checks below).
+  if (await evaluate(`Boolean(${VIEWER}.current.species.cell.parts.nucleus ?? true)`)) check("cell: clicking the nucleus selects regulatory circuits", (await selected()) === "cap.circuits", String(await selected()));
+  else check("cell: a click over the free chromosome meets the cytoplasm that lies over it, or the chromosome", ["cap.reactions", "cap.circuits"].includes(await selected()), String(await selected()));
   await clear();
 
   // Above the cut the membrane is clipped; a click there must not select it.
@@ -512,6 +516,8 @@ try {
   await press("Status");
   check("switch: Colour to Status recolours the cell", (await evaluate(`${VIEWER}.current.colourBy`)) === "status");
   await press("Biology");
+  // A cell under two micrometres is drawn in one size mode: its card has no Sizes switch to press.
+  if (await evaluate(`${VIEWER}.current.modes.length > 1`)) {
   await press("To scale");
   await until(`(() => { const lens = ${VIEWER}.current; return lens.sizeMode === "real" && lens.zones.some((zone) => zone.root.visible && zone.name === "cell" && zone.mode === "real"); })()`, 120);
   await settled();
@@ -522,6 +528,9 @@ try {
   check("switch: the to-scale nucleus can be clicked", (await selected()) === "cap.circuits", String(await selected()));
   await clear();
   await press("Schematic");
+  } else {
+    check("switch: a cell drawn in one size mode has no Sizes switch", !(await evaluate(`[...${VIEWER}.shadowRoot.querySelectorAll(".seg button")].some((item) => item.textContent === "To scale")`)));
+  }
   // Labels are rebuilt for the mode and shown after the next drawn frame; wait for one.
   for (let tries = 0; tries < 60; tries++) {
     if (await evaluate(`Boolean(${VIEWER}.shadowRoot.querySelector(".label-part:not(.is-off)"))`)) break;

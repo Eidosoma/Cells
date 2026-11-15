@@ -32,7 +32,8 @@
 // are large enough to see, so the picture is already near scale.
 
 import * as THREE from "../three.js";
-import { REF, cellFrame } from "./shapes.js";
+import { REF, cellFrame, packing } from "./shapes.js";
+import { buildScenery, vacuoleOf, middle } from "./cell_scenery.js";
 
 // The layer's packing in the frame: six-sided, this far from a cell's centre to a corner.
 export const HEX = { radius: REF.radius };
@@ -164,12 +165,12 @@ const SPOT = {
   furrow: 2.32,
   charges: [2.9, 3.25, 3.95, 4.25],
 };
-// The cell's neighbours in the layer, as turns round the cell from the junction: six, a sixth of a turn apart.
-const NEIGHBOUR_TURNS = [0, 1, 2, 3, 4, 5].map((step) => step * SIXTH);
 const GAP_CORNER = (3 * Math.PI) / 2; // the corner at which the space between cells is named
-const NUCLEUS = new THREE.Vector3(2.6, CUT - 0.3, -2.2);
-const ER_FACING = 2.42; // the side of the nucleus the ER wraps, as an angle
-const GOLGI = new THREE.Vector3(-4.9, CUT + 0.15, 4.3);
+// Where the nucleus, the ER beside it and the Golgi sit in a cell that has room for them in its
+// middle. In a cell with a large vacuole each is pressed out to the side (buildCell).
+const NUCLEUS_HOME = new THREE.Vector3(2.6, CUT - 0.3, -2.2);
+const ER_HOME = 2.42; // the side of the nucleus the ER wraps, as an angle
+const GOLGI_HOME = new THREE.Vector3(-4.9, CUT + 0.15, 4.3);
 const MACHINE = new THREE.Vector3(-7.2, CUT + 0.9, -1.0);
 const MITO_AT_SURFACE = [[-4.7, -4.5, 0.5, 2.5], [6.9, 0.9, 1.45, 2.1], [1.9, 6.1, -0.35, 2.7]]; // x, z, turn, and how far it keeps from the cell's sides
 const CAGES_AT_SURFACE = [new THREE.Vector3(4.9, CUT + 0.55, 3.9), new THREE.Vector3(-1.4, CUT + 0.5, -7.0)];
@@ -218,7 +219,12 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   const inCut = (point) => point.y > (CUT + 0.01) * frame.u; // a point of the world, above the cut
   // How far inside the cell a point is: from its sides, its base and its outer face.
   const inside = frame.inside;
-  const inCytoplasm = (point, clear = 0.6, wall = 1.1) => inside(point) > wall && point.y < CUT + 0.2 && (!parts.nucleus || point.distanceTo(NUCLEUS) > style.nucleusRadius + clear);
+  // A plant cell's vacuole takes up most of the cell: what else the cell holds lies between it and the membrane.
+  const vacuole = vacuoleOf(frame, parts);
+  const inCytoplasm = (point, clear = 0.6, wall = 1.1) =>
+    vacuole
+      ? inside(point) > Math.min(wall, vacuole.inset * 0.3) && point.y < CUT + 0.2 && !vacuole.holds(point) && (!parts.nucleus || point.distanceTo(NUCLEUS) > style.nucleusRadius + clear)
+      : inside(point) > wall && point.y < CUT + 0.2 && (!parts.nucleus || point.distanceTo(NUCLEUS) > style.nucleusRadius + clear);
   const widest = frame.equator.widest;
   const scatter = (count, test = inCytoplasm) => {
     const found = [];
@@ -233,8 +239,17 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   const seat = (point, margin) => {
     const seated = point.clone();
     for (let tries = 0; tries < 60 && outline.depth(seated.x, seated.z) < margin; tries++) seated.set(seated.x * 0.99, seated.y, seated.z * 0.99);
+    // Beside a vacuole a part is pressed against the side: it moves out, the way it lies from the
+    // middle, until it is as near the membrane as its own margin lets it. It then reaches into the vacuole.
+    if (vacuole) {
+      if (Math.hypot(seated.x, seated.z) < 0.5) seated.x += 0.5;
+      for (let tries = 0; tries < 600 && outline.depth(seated.x, seated.z) > margin + 0.04; tries++) seated.set(seated.x * 1.01, seated.y, seated.z * 1.01);
+    }
     return seated;
   };
+  const NUCLEUS = vacuole ? seat(NUCLEUS_HOME, style.nucleusRadius + 0.35) : NUCLEUS_HOME;
+  const ER_FACING = vacuole ? Math.atan2(-NUCLEUS.z, -NUCLEUS.x) + 0.5 : ER_HOME; // beside a vacuole the ER lies on the nucleus's inner side
+  const GOLGI = vacuole ? seat(GOLGI_HOME, style.golgi.inner + style.golgi.gap * 4 + 0.6) : GOLGI_HOME;
   const prism = frame.solid();
   const skinAt = surfaceSampler(prism);
   const junction = cell.neighbours && has("junctions"); // a junction needs a neighbour to lead to
@@ -286,7 +301,10 @@ export function buildCell(ctx, studsCtx, mode, cell) {
     studsCtx.sprite(membrane, "−", outline.point(angle, real ? -0.5 : -1.15, CUT + 0.3), style.charge);
   }
   // A wall, or a second membrane, lies outside the cell membrane: scenery, drawn as clear shells.
-  const shells = [...(parts.membranes === 2 ? [1.035] : []), ...(parts.wall ? [parts.membranes === 2 ? 1.075 : 1.045] : [])];
+  // Where the species gives the wall's thickness and the picture is to scale, the wall stands that far out;
+  // in the schematic picture it is enlarged like the other parts, so that it can be seen.
+  const wallGrow = !parts.wall ? 1 : parts.wall_nm !== undefined && real ? 1 + middle(parts.wall_nm) / 1000 / frame.u / widest : parts.membranes === 2 ? 1.075 : 1.045;
+  const shells = [...(parts.membranes === 2 ? [1.035] : []), ...(parts.wall ? [wallGrow] : [])];
   for (const grow of shells) {
     const outer = new THREE.Mesh(prism, ctx.neutral({ opacity: 0.1, glass: 0.35, clip: true, side: THREE.DoubleSide }));
     outer.scale.setScalar(grow);
@@ -352,7 +370,9 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   // in a packed sheet and where the sheet's own cells stand. They are scenery: faint glass
   // that cannot be clicked, opened by the same cut. The one the junction leads to is drawn a
   // little stronger; the others are only a thin outline where the cut passes through them.
-  const neighbours = cell.neighbours ? NEIGHBOUR_TURNS.map((turn) => radial(turn).multiplyScalar(LATTICE)) : [];
+  // How the layer is packed follows from the cell's own sides (shapes.js): four-sided cells in squares, others in sixes.
+  const pack = packing(cell.shape.kind === "prism" ? cell.shape.sides : 6);
+  const neighbours = cell.neighbours ? pack.turns.map((turn) => radial(turn).multiplyScalar(LATTICE)) : [];
   const cells = [new THREE.Vector3(), ...neighbours]; // where the seven stand
   if (cell.neighbours) {
     const glass = ctx.neutral({ opacity: 0.03, glass: 0.12, clip: true, side: THREE.DoubleSide });
@@ -421,12 +441,12 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   if (cell.neighbours) {
     // The plate reaches as far as the seven cells do: its edge follows their outer corners.
     const under = BASE - style.floor;
-    const cornerOf = (at, corner) => radial(TWELFTH + corner * SIXTH).multiplyScalar(HEX.radius).add(at).setY(under);
+    const cornerOf = (at, corner) => radial(pack.corner(corner)).multiplyScalar(pack.radius).add(at).setY(under);
     const footing = neighbours.flatMap((at, index) => [-1, 0, 1].map((corner) => cornerOf(at, index + corner)));
     ctx.illustrate(new THREE.Mesh(fan(footing), ctx.neutral({ opacity: 0.05, side: THREE.DoubleSide })));
     const tiles = [], lined = new Set();
     for (const at of cells) {
-      for (let corner = 0; corner < 6; corner++) {
+      for (let corner = 0; corner < pack.sides; corner++) {
         const a = cornerOf(at, corner), b = cornerOf(at, corner + 1);
         const key = [a, b].map((point) => `${point.x.toFixed(1)},${point.z.toFixed(1)}`).sort().join("|");
         if (lined.has(key)) continue;
@@ -439,8 +459,10 @@ export function buildCell(ctx, studsCtx, mode, cell) {
 
   // ---------------------------------------------------------------- cytoplasm
   const chemistry = ctx.part("cytoplasm", outline.point(Math.atan2(-7.4, -3.9), -1.45, CUT + 0.15));
+  const gelEdge = outline.ring(real ? -0.003 : -style.band * 0.72, real ? CUT - 0.0006 : CUT - 0.02, 16);
   const gel = new THREE.Mesh(
-    fan(outline.ring(real ? -0.003 : -style.band * 0.72, real ? CUT - 0.0006 : CUT - 0.02, 16)),
+    // Beside a vacuole the cytoplasm is the rim between it and the membrane: the vacuole's own section is left clear.
+    vacuole ? band(outline.ring(-vacuole.inset, real ? CUT - 0.0006 : CUT - 0.02, 16), gelEdge) : fan(gelEdge),
     chemistry.material({ hue: "bioCyto", opacity: real ? 0.42 : 0.3, side: THREE.DoubleSide, roughness: 0.12, depthWrite: false, rim: 0 })
   );
   gel.renderOrder = 3;
@@ -697,10 +719,16 @@ export function buildCell(ctx, studsCtx, mode, cell) {
       const which = Math.floor(random() * shapes.length), scale = 0.85 + random() * 0.35;
       // Turned any way that keeps both its ends inside the cell and out of the nucleus.
       const reach = (shapes[which].length / 2) * scale;
-      let direction = unit(random);
+      // Beside a vacuole it lies along the side it is pressed against: across the way out of the cell there.
+      const lying = () => {
+        const out = new THREE.Vector3(inside(position.clone().setX(position.x - 0.05)) - inside(position.clone().setX(position.x + 0.05)), inside(position.clone().setY(position.y - 0.05)) - inside(position.clone().setY(position.y + 0.05)), inside(position.clone().setZ(position.z - 0.05)) - inside(position.clone().setZ(position.z + 0.05)));
+        const way = unit(random);
+        return out.lengthSq() > 1e-9 ? way.addScaledVector(out.normalize(), -way.dot(out)).normalize() : way;
+      };
+      let direction = vacuole ? lying() : unit(random);
       for (let tries = 0; tries < 16; tries++) {
         if ([1, -1].every((end) => inCytoplasm(position.clone().addScaledVector(direction, end * reach), 0.35, 0.45))) break;
-        direction = unit(random);
+        direction = vacuole ? lying() : unit(random);
       }
       placed[which].push({ position, turn: along(direction), scale });
     }
@@ -886,15 +914,15 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   }
   if (has("extracellular") && cell.neighbours) {
   const clearOf = (point, clear) => cells.every((at) => outline.depth(point.x - at.x, point.z - at.z) < -clear);
-  const gapAt = (angle) => radial(angle).multiplyScalar(HEX.radius); // where the cell and two of its neighbours meet
-  const outside = ctx.part("extracellular", gapAt(GAP_CORNER).setY(CUT - 0.5));
+  const gapAt = (angle) => radial(angle).multiplyScalar(pack.radius); // where the cell and its neighbours meet at a corner
+  const outside = ctx.part("extracellular", gapAt(pack.sides === 6 ? GAP_CORNER : pack.cornerNear(GAP_CORNER)).setY(CUT - 0.5));
   // Kept clear: what stands in the cut edge, the charges, and the stretch that the close-up of the membrane shows.
   const shown = [...taken, ...SPOT.charges.map((angle) => [angle, 0.6]), [SPOT.channels[1], 3.4]].map(([angle, stretch]) => [outline.reach(angle), stretch]);
   const between = (count, clear) => {
     const found = [];
     let guard = 0;
     while (found.length < count * (real ? 0.5 : 0.35) && guard++ < count * 200) {
-      const corner = TWELFTH + Math.floor(random() * 6) * SIXTH;
+      const corner = pack.corner(Math.floor(random() * pack.sides));
       const down = (real ? random() ** 2 : random()) * (CUT + 0.1 - BASE - 0.6); // to scale, most are near the cut, where the gap is seen from above
       const point = gapAt(corner).addScaledVector(radial(random() * Math.PI * 2), (real ? 0.7 : 1.3) * Math.sqrt(random())).setY(CUT + 0.1 - down);
       if (Math.abs(corner - SPOT.wound) < 0.01 && point.y > CUT - 2.4) continue; // what leaves the wound is drawn there
@@ -914,10 +942,6 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   else outside.add(instanced(new THREE.SphereGeometry(0.14, 8, 6), outside.material({ hue: "bioIon", opacity: 0.9 }), between(200, 0.2).map((position) => ({ position, scale: 0.6 + random() * 0.7 }))));
   }
 
-  // What the picture says in words beside the cell (the lens writes them under the stop's name).
-  // Short lines, so they stay clear of the names in the columns beside the cell.
-  handles.notes = cell.notes || [];
-
   handles.probes = {
     // In the nucleus, or in the middle of the free chromosome where a cell has no nucleus.
     nucleus: parts.nucleus ? NUCLEUS.clone().add(new THREE.Vector3(-0.9, style.nucleusRadius * 0.9, 0.9)) : coreAt.clone().add(new THREE.Vector3(-coreRadius * 0.2, coreRadius * 0.85, coreRadius * 0.2)),
@@ -927,6 +951,27 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   };
   // The outline, for the lens: a point of it, and how far inside it a point is.
   handles.shape = { point: outline.point, depth: (point) => outline.depth(point.x, point.z) };
+
+  // ---------------------------------------------------------------- scenery of the species' own
+  // Threads and hairs that stand out from the cell, and a plant cell's vacuole and chloroplasts
+  // (cell_scenery.js). Drawn last and from a stream of chance of their own, so that a cell
+  // without them is built exactly as before. They can be chosen: the lens describes each.
+  const scenery = buildScenery({
+    frame, u: frame.u, real, cut: CUT, parts, vacuole, inCut,
+    random: seeded(real ? 4203 : 4201),
+    skinAt, solid: prism, instanced, fan,
+    shells: { outer: parts.membranes === 2 ? 1.035 : 1, wall: wallGrow },
+    thinnest: 0.035, // no thread is drawn thinner than this, in the cell's frame: a cell of twenty micrometres has threads one can see
+    clear: [handles.probes.uncutSide], clearBy: 1.6,
+    glass: (options) => ctx.neutral(options),
+    line: (options) => ctx.neutralLine(options),
+    add: (object, id) => (id ? ctx.scenery(object, id) : ctx.illustrate(object)),
+  });
+  handles.scenery = scenery.items;
+  handles.reach = scenery.reach; // how far from the cell's middle its longest thread goes
+  // What the picture says in words beside the cell (the lens writes them under the stop's name).
+  // Short lines, so they stay clear of the names in the columns beside the cell.
+  handles.notes = [...(cell.notes || []), ...scenery.notes];
   return handles;
 }
 
@@ -1008,29 +1053,24 @@ export function buildMolecules(ctx, mode, frame, has = () => true) {
 // ------------------------------------------------------------------ tissue
 
 /** Axial coordinates of a six-sided sheet: 127 cells for six rings. */
-export function sheetCells(rings) {
-  const cells = [];
-  for (let q = -rings; q <= rings; q++) {
-    for (let r = Math.max(-rings, -q - rings); r <= Math.min(rings, -q + rings); r++) cells.push({ q, r });
-  }
-  return cells;
-}
-
-export const hexCentre = ({ q, r }) => new THREE.Vector3(HEX.radius * Math.sqrt(3) * (q + r / 2), 0, HEX.radius * 1.5 * r);
-
 /**
  * A sheet of the species' own cells, in the cell's frame: `rings` rings round the middle
  * cell, each cell `height` tall. `beyond` says how far the layer goes on as faint outlines,
- * as [ring, strength] pairs. The cells stand in a six-sided packing whatever the cell's shape.
+ * as [ring, strength] pairs. `sides` is the number of sides of the species' cell: the sheet
+ * is packed as that asks (shapes.js, packing), in squares for a four-sided cell, else in sixes.
  */
-export function buildTissue(ctx, { rings, height, beyond, notes }) {
-  const prism = new THREE.CylinderGeometry(HEX.radius * 0.955, HEX.radius * 0.955, height, 6);
+export function buildTissue(ctx, { rings, height, beyond, notes, sides = 6 }) {
+  const pack = packing(sides);
+  const hexCentre = pack.centre, sheetCells = pack.cells;
+  // A cell of the sheet: a prism of the packing's sides, with one side facing the first neighbour.
+  const prism = new THREE.CylinderGeometry(pack.radius * 0.955, pack.radius * 0.955, height, pack.sides);
+  if (pack.sides === 4) prism.rotateY(Math.PI / 4);
   const cells = sheetCells(rings);
   const same = (a, b) => a.q === b.q && a.r === b.r;
   const within = (cell) => cells.some((item) => same(item, cell));
   // Which cells show replacement and mechanics: fixed places in a sheet large enough to hold them.
   const leaving = within({ q: 3, r: -1 }) ? { q: 3, r: -1 } : null, arriving = within({ q: -2, r: 3 }) ? { q: -2, r: 3 } : null;
-  const inPatch = (cell) => rings >= 4 && cell.q + cell.r / 2 < -2.4 && cell.r < 0; // the mechanics patch
+  const inPatch = (cell) => rings >= 4 && (pack.sides === 4 ? cell.q : cell.q + cell.r / 2) < -2.4 && cell.r < 0; // the mechanics patch
   const plain = cells.filter((cell) => !(leaving && same(cell, leaving)) && !(arriving && same(cell, arriving)) && !inPatch(cell));
 
   const sheet = ctx.part("sheet", new THREE.Vector3(40, height / 2 + 6, -58));
@@ -1040,14 +1080,14 @@ export function buildTissue(ctx, { rings, height, beyond, notes }) {
   body.instanceColor.needsUpdate = true;
   sheet.add(body);
   // The cell this lens opens on, marked so the zoom out keeps its place.
-  const marker = new THREE.Mesh(new THREE.TorusGeometry(HEX.radius * 0.8, 0.5, 8, 6), ctx.neutral({ opacity: 0.9, colour: "fg" }));
-  marker.rotation.set(Math.PI / 2, 0, Math.PI / 6);
+  const marker = new THREE.Mesh(new THREE.TorusGeometry(pack.radius * 0.8, 0.5, 8, pack.sides), ctx.neutral({ opacity: 0.9, colour: "fg" }));
+  marker.rotation.set(Math.PI / 2, 0, pack.turn / 2);
   marker.position.y = height / 2 + 0.4;
   ctx.illustrate(marker);
   // Lines between neighbours: the junction network that couples the sheet.
   const links = [];
   for (const cell of cells) {
-    for (const [dq, dr] of [[1, 0], [0, 1], [-1, 1]]) {
+    for (const [dq, dr] of pack.links) {
       const other = { q: cell.q + dq, r: cell.r + dr };
       if (!cells.some((item) => same(item, other))) continue;
       const a = hexCentre(cell), b = hexCentre(other);
@@ -1078,8 +1118,8 @@ export function buildTissue(ctx, { rings, height, beyond, notes }) {
 
   // Mechanics: a patch drawn as its edges and vertices, the way the vertex model sees it.
   const corner = (cell, index) => {
-    const angle = (Math.PI / 3) * index + Math.PI / 6;
-    return hexCentre(cell).add(new THREE.Vector3(Math.cos(angle) * HEX.radius, height / 2 + 0.2, Math.sin(angle) * HEX.radius));
+    const angle = pack.sides === 6 ? (Math.PI / 3) * index + Math.PI / 6 : pack.corner(index);
+    return hexCentre(cell).add(new THREE.Vector3(Math.cos(angle) * pack.radius, height / 2 + 0.2, Math.sin(angle) * pack.radius));
   };
   const patch = cells.filter(inPatch);
   if (patch.length) {
@@ -1089,8 +1129,8 @@ export function buildTissue(ctx, { rings, height, beyond, notes }) {
     const edgeMaterial = mechanics.material({ hue: "bioCell", shade: -0.3 });
     const seen = new Set();
     for (const cell of patch) {
-      for (let index = 0; index < 6; index++) {
-        const a = corner(cell, index), b = corner(cell, (index + 1) % 6);
+      for (let index = 0; index < pack.sides; index++) {
+        const a = corner(cell, index), b = corner(cell, (index + 1) % pack.sides);
         const key = [a, b].map((point) => `${point.x.toFixed(1)},${point.z.toFixed(1)}`).sort().join("|");
         if (seen.has(key)) continue;
         seen.add(key);
@@ -1106,15 +1146,15 @@ export function buildTissue(ctx, { rings, height, beyond, notes }) {
   }
   // The layer goes on beyond the sheet: more cells of the same size, drawn as outlines only
   // and fainter with distance. Scenery: it says the sheet is a patch of a larger layer.
-  const ringOf = (cell) => Math.max(Math.abs(cell.q), Math.abs(cell.r), Math.abs(cell.q + cell.r));
+  const ringOf = pack.ring;
   const drawn = new Set();
   let inner = rings;
   for (const [outer, opacity] of beyond || []) {
     const segments = [];
     for (const cell of sheetCells(outer)) {
       if (ringOf(cell) <= inner) continue;
-      for (let index = 0; index < 6; index++) {
-        const a = corner(cell, index), b = corner(cell, (index + 1) % 6);
+      for (let index = 0; index < pack.sides; index++) {
+        const a = corner(cell, index), b = corner(cell, (index + 1) % pack.sides);
         const key = [a, b].map((point) => `${point.x.toFixed(1)},${point.z.toFixed(1)}`).sort().join("|");
         if (drawn.has(key)) continue;
         drawn.add(key);
@@ -1126,7 +1166,7 @@ export function buildTissue(ctx, { rings, height, beyond, notes }) {
   }
 
   // What the sheet stands for, in the species' words (the lens writes it under the stop's name).
-  return { extent: HEX.radius * Math.sqrt(3) * (rings * 2 + 1), notes: notes || [] };
+  return { extent: pack.pitch * (rings * 2 + 1), spread: pack.sides === 4 ? 1.24 : 1, notes: notes || [] };
 }
 
 export { instanced };

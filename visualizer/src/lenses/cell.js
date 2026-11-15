@@ -24,6 +24,7 @@ import { LookTrial } from "../core/look_trial.js";
 import { R, CUT, buildCell, buildMolecules, buildTissue } from "./cell_parts.js";
 import { REF, cellAcross } from "./shapes.js";
 import { buildOutline } from "./outline_parts.js";
+import { middle, words } from "./cell_scenery.js";
 
 const smooth = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -57,6 +58,45 @@ export const LOOK = { reach: 0.7, reachToScale: 0.3, reachOnScreen: 0.016, shade
 // The camera's half view on a wide screen, for working out where one level gives way to the next.
 const HALF_VIEW = Math.tan((34 * Math.PI) / 360);
 const nominal = (size) => Math.max(size[1] / (2 * HALF_VIEW), size[0] / (2 * HALF_VIEW * 1.5));
+
+/**
+ * A piece of the species' own scenery as the panel describes it: that it is scenery, what the
+ * species' file gives of it with its sources, and what was drawn. The foot of a thread says
+ * what machine it is and opens the Protein atlas on the species' proteins that make it.
+ */
+export function describeScenery(item, species, links) {
+  const SCENERY = { label: "Scenery", title: "Nothing in the engine stands behind it: it is drawn so that the cell looks as the species' cell does" };
+  const of = (value, unit) => words(value, unit);
+  const facts = item.facts || {};
+  const given = [];
+  if (facts.count !== undefined) given.push({ label: "How many on a cell", detail: of(facts.count) });
+  if (facts.length_um !== undefined) given.push({ label: "Length", detail: of(facts.length_um, "µm") });
+  if (facts.width_nm !== undefined) given.push({ label: "Width", detail: of(facts.width_nm, "nm") });
+  if (facts.across_um !== undefined) given.push({ label: "Across", detail: of(facts.across_um, "µm") });
+  if (facts.volume_fl !== undefined) given.push({ label: "Volume", detail: of(facts.volume_fl, "fl") });
+  if (facts.share !== undefined) given.push({ label: "Share of the cell's volume", detail: `${Math.round(middle(facts.share) * 100)}%` });
+  if (facts.where) given.push({ label: "Where on the cell", detail: facts.where });
+  if (facts.from) given.push({ label: "Starts at", detail: `the ${facts.from}` });
+  if (given.length) given[given.length - 1].links = links(item.sources);
+  if (item.kind === "base") {
+    const base = item.base;
+    return {
+      id: item.id, kind: "scenery", group: "biology", label: item.label, eyebrow: `${species.label} · scenery`, chips: [SCENERY],
+      plain: `The machine at the foot of each of the cell's ${String(item.of).toLowerCase()}. Nothing in the engine stands behind it, and no closer view of it is drawn yet.`,
+      note: "Its parts are among the species' own proteins: the Protein atlas shows them as one set.",
+      doors: base.mark && base.value ? [{ label: `Show the proteins of the ${item.label.toLowerCase()} in the Protein atlas`, lens: "proteins", show: "own", mark: base.mark, value: base.value }] : [],
+      sections: [{ title: "Sources", items: links(item.sources).length ? [{ label: "What the species' file gives of it", links: links(item.sources) }] : [] }],
+    };
+  }
+  return {
+    id: item.id, kind: "scenery", group: "biology", label: item.label, eyebrow: `${species.label} · scenery`, chips: [SCENERY],
+    plain: "Drawn as scenery: nothing in the engine stands behind it, so it has no status.",
+    sections: [
+      { title: "As the species' file gives it", items: given },
+      { title: "As drawn", items: (item.sizes || []).map(([label, text]) => ({ label, lines: [text] })) },
+    ],
+  };
+}
 
 // What Cells models of a species, in two or three words (schema/SPECIES.md, `modelled.state`).
 export const MODELLED = { generic: "Generic cell", proposed: "Proposed, not modelled", modelled: "Modelled" };
@@ -198,6 +238,7 @@ export class CellLens {
     this.root = new THREE.Group();
     this.zones = [];
     this.byEntity = new Map(); // entity id -> [Part]
+    this.sceneryLooks = new Map(); // id of a piece of scenery that can be chosen -> its materials
     this.selected = null;
     this.hovered = null;
     this.isolate = null;
@@ -297,6 +338,7 @@ export class CellLens {
     }
     this.zones = [];
     this.byEntity.clear();
+    this.sceneryLooks.clear();
   }
 
   // ------------------------------------------------------------ building
@@ -321,7 +363,9 @@ export class CellLens {
       scale: (id, anchor) => this.bind(this.model.get(id), zone, anchor, id),
       neutral: (options = {}) => {
         const material = new THREE.MeshStandardMaterial({ roughness: 0.6, metalness: 0, transparent: true, side: options.side ?? THREE.FrontSide, depthWrite: options.depthWrite ?? false });
-        if (options.glass) soften(material, { rim: 0.2, alphaRim: options.glass });
+        // Scenery takes the resting look as parts do: light through what is thin, a texture where one is asked for.
+        if (options.thin || options.texture) enrich(material, this.stage.numbers, { rim: 0.2, alphaRim: options.glass || 0, thin: options.thin || 0, texture: options.texture || null, unit: zone.root.scale.x });
+        else if (options.glass) soften(material, { rim: 0.2, alphaRim: options.glass });
         if (options.drift) jostle(material, this.stage.numbers, { reach: options.drift });
         if (options.contact === false) material.userData.noContact = true; // solid scenery that stays out of contact shade
         if (options.clip) material.clippingPlanes = zone.cutPlanes;
@@ -338,6 +382,13 @@ export class CellLens {
       illustrate: (object, zoneName) => {
         object.userData.unpickable = true;
         (zoneName ? this.zones.find((item) => item.name === zoneName) : zone).root.add(object);
+      },
+      // Scenery that can be chosen (cell_scenery.js): no capability stands behind it, and the lens describes it by this id.
+      scenery: (object, id) => {
+        object.userData.pick = id;
+        if (!this.sceneryLooks.has(id)) this.sceneryLooks.set(id, new Set());
+        object.traverse((item) => item.material && this.sceneryLooks.get(id).add(item.material));
+        zone.root.add(object);
       },
       sprite: (part, text, position, size) => {
         const sprite = glyphSprite(text, "#ffffff", size);
@@ -373,7 +424,7 @@ export class CellLens {
     if (tissue) {
       const zone = this.zone("tissue", null, u);
       const rings = tissue.shape.rings, height = this.cells[this.modes[0]].frame.top * 2;
-      this.sheet = buildTissue(this.context(zone), { rings, height, beyond: tissue.shape.beyond ?? [[rings + 2, 0.34], [rings + 4, 0.2], [rings + 5, 0.1]], notes: notesOf(tissue) });
+      this.sheet = buildTissue(this.context(zone), { rings, height, beyond: tissue.shape.beyond ?? [[rings + 2, 0.34], [rings + 4, 0.2], [rings + 5, 0.1]], notes: notesOf(tissue), sides: cell.shape.kind === "prism" ? cell.shape.sides : 6 });
       this.sheet.height = height;
       toWorld([zone]);
     }
@@ -422,7 +473,8 @@ export class CellLens {
     ];
     if (this.sheet) {
       const extent = this.sheet.extent;
-      stops.push({ id: "tissue", level: "tissue", zone: "tissue", anchor: new THREE.Vector3(0, this.sheet.height * 2.6, -extent * 0.5).multiplyScalar(u), size: [extent * 1.42 * u, extent * 1.0 * u], target: new THREE.Vector3(0, -6, 0).multiplyScalar(u), azimuth: 0.55, polar: 0.86 });
+      const spread = this.sheet.spread; // a sheet of squares is wider from corner to corner than a sheet of sixes
+      stops.push({ id: "tissue", level: "tissue", zone: "tissue", anchor: new THREE.Vector3(0, this.sheet.height * 2.6, -extent * 0.5).multiplyScalar(u), size: [extent * 1.42 * spread * u, extent * 1.0 * spread * u], target: new THREE.Vector3(0, -6, 0).multiplyScalar(u), azimuth: 0.55, polar: 0.86 });
     }
     // The organ with its surroundings and the sheet's ring in front; then the whole body. Both
     // are seen at a slant, so they have depth. Their frames are as tall as a wide screen needs,
@@ -472,7 +524,9 @@ export class CellLens {
     this.ranges = ranges;
     // The camera may go out as far as the largest level needs, and a little beyond. A very long
     // cell is framed at its middle, where its parts are; zooming out shows the whole of it.
-    this.maxDistance = Math.max(...stops.map((stop) => stop.size[0]), this.cells[this.modes[0]].frame.long * 1.3 * u) * 4;
+    // A thread that stands out from the cell may be many times its length: the cell stays framed
+    // as it is, and the camera may go out until the whole of the longest thread is in the picture.
+    this.maxDistance = Math.max(Math.max(...stops.map((stop) => stop.size[0]), this.cells[this.modes[0]].frame.long * 1.3 * u) * 4, (this.cells[this.modes[0]].reach || 0) * 3.5 * u);
   }
 
   /** The camera view that frames a stop on the current screen. */
@@ -496,6 +550,7 @@ export class CellLens {
 
   has(id) {
     if (this.species.id && id === `species:${this.species.id}`) return true;
+    if (this.sceneryItem(id)) return true;
     return this.model.get(id)?.group === "biology" && !this.absent.has(id);
   }
 
@@ -505,13 +560,15 @@ export class CellLens {
    */
   describe(id) {
     const species = this.species;
-    if (!species.id || id !== `species:${species.id}`) return null;
     const sources = species.sources || {};
     const links = (keys) =>
       (keys || [])
         .map((key) => sources[key])
         .filter(Boolean)
         .map((source) => ({ text: source.text, url: source.doi ? `https://doi.org/${source.doi}` : source.url }));
+    const scenery = this.sceneryItem(id);
+    if (scenery) return describeScenery(scenery, species, links);
+    if (!species.id || id !== `species:${species.id}`) return null;
     const absent = [...this.absent].map(([part, why]) => ({ entity: this.model.get(part), why })).filter((item) => item.entity?.kind === "capability");
     const drawn = LEVELS.filter(({ id: level }) => this.levels[level]).map(({ id: level, entity }) => ({ level: this.levels[level], entity: this.model.get(entity) }));
     return {
@@ -529,6 +586,12 @@ export class CellLens {
         { title: "Levels drawn", note: species.no_further_levels || null, items: drawn.map((item) => ({ label: item.level.label || item.entity?.label || item.level.id, lines: item.level.note ? [item.level.note] : [], links: links(item.level.sources) })) },
       ],
     };
+  }
+
+  /** A piece of the species' own scenery that can be chosen (a thread, its foot, a chloroplast), as the size mode shown drew it. */
+  sceneryItem(id) {
+    if (typeof id !== "string" || !id.startsWith("scenery:")) return null;
+    return (this.cells?.[this.sizeMode]?.scenery || []).find((item) => item.id === id) || null;
   }
 
   entities() {
@@ -851,6 +914,11 @@ export class CellLens {
           part.label.element.classList.toggle("is-focus", id === this.selected);
         }
       }
+    }
+    // Scenery that is chosen or under the pointer lights up a little, in its own neutral colour.
+    for (const [id, materials] of this.sceneryLooks) {
+      const hot = id === this.selected || id === this.hovered;
+      for (const material of materials) material.emissive?.copy(material.color).multiplyScalar(hot ? 0.55 : 0);
     }
     this.stage.invalidate();
   }

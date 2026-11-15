@@ -30,9 +30,10 @@ Where the cut lies, how parts are spread and the "Schematic" enlargement are the
 own, the same for every species. A cell under 2 µm across is drawn in one size mode only:
 at that size its molecules are large enough to see, so the picture is already near scale.
 
-A cell of a species that has a tissue level is drawn as one cell of a layer, with six
-neighbours round it and a thin plate under the layer, as scenery. A cell of a species
-without one stands alone.
+A cell of a species that has a tissue level is drawn as one cell of a layer, with its
+neighbours round it, side against side (four for a four-sided `prism`, six for any other
+cell), and a thin plate under the layer, as scenery. A cell of a species without one
+stands alone.
 
 The `molecules` level is the same for every species: a stretch of the cell's membrane,
 seen close, with a channel in it. Where a species marks ion channels `absent`, the
@@ -45,12 +46,12 @@ close-up shows a pump, and says in the species' words that no channel has a plac
 | `membranes` | 1 or 2 | The cell membrane; a second one is an outer shell, as scenery |
 | `wall` | true or false | A wall outside the membrane, as scenery |
 | `nucleus` | true or false | A nucleus with its envelope |
-| `organelles` | a list from `er`, `golgi`, `mitochondria`, `chloroplasts`, `vacuole` | The organelles the cell holds. The first three are an animal cell's: left out, a cell with a nucleus has those three and a cell without one has none. `chloroplasts` and `vacuole` (one large central vacuole) are a plant cell's, and are named only where the file lists them |
-| `organelle_sizes` | keyed by organelle: `count`, `volume_fl`, `across_um`, `share`, `sources` | How many of an organelle the cell holds and how large each is, or what share of the cell's volume it fills (above 0, at most 1). Each a number or a range of two, with the keys of its sources; each number is also a fact of the species' card |
-| `wall_nm` | a thickness in nanometres, or a range of two | How thick the wall is, for a cell with a wall |
+| `organelles` | a list from `er`, `golgi`, `mitochondria`, `chloroplasts`, `vacuole` | The organelles the cell holds. The first three are an animal cell's: left out, a cell with a nucleus has those three and a cell without one has none. `chloroplasts` and `vacuole` (one large central vacuole) are a plant cell's, and are named only where the file lists them. Both are scenery, in neutral glass: a chloroplast is a lens against the inside of the membrane; the vacuole takes the cell's own shape and presses the other parts to the side |
+| `organelle_sizes` | keyed by organelle: `count`, `volume_fl`, `across_um`, `share`, `sources` | How many of an organelle the cell holds and how large each is, or what share of the cell's volume it fills (above 0, at most 1). Each a number or a range of two, with the keys of its sources; each number is also a fact of the species' card. `chloroplasts` are drawn from `count` and `across_um`, and the picture says how many of how many; the `vacuole` from `share`, in both size modes |
+| `wall_nm` | a thickness in nanometres, or a range of two | How thick the wall is, for a cell with a wall. To scale the wall stands that far outside the cell membrane; in the schematic picture it is enlarged |
 | `chromosome_kbp` | a length in thousands of base pairs | A chromosome lying free in the cell. Only for a cell without a nucleus |
 | `ribosomes` | a count | Free ribosomes, as scenery: protein synthesis is not a capability |
-| `appendages` | a list, as `SPECIES.md` sets out | Threads and hairs that stand out from the cell (a flagellum, a pilus), as scenery; each may name the machine at its foot |
+| `appendages` | a list, as `SPECIES.md` sets out | Threads and hairs that stand out from the cell (a flagellum, a pilus), as scenery; each may name the machine at its foot. A piece of scenery that the species' file describes can be chosen: its panel says that it is scenery and gives the file's numbers with their sources |
 
 A capability is drawn where its structure is. Marked `absent` in `cell.capabilities`, it
 is not drawn and the species' card lists it with its `why`. A capability that is present
@@ -61,10 +62,12 @@ drawn; the build remarks on it.
 
 | Kind | Takes | What is drawn |
 | --- | --- | --- |
-| `cell sheet` | `rings`, how many rings of cells lie round the middle one (6 gives 127 cells); `beyond`, optional, a list of `[ring, strength]` out to which the layer goes on as faint outlines | A single layer of the species' own cells, packed side against side, each as wide and as tall as the cell |
+| `cell sheet` | `rings`, how many rings of cells lie round the middle one (6 gives 127 cells packed in sixes, or 13 by 13 packed in squares); `beyond`, optional, a list of `[ring, strength]` out to which the layer goes on as faint outlines | A single layer of the species' own cells, packed side against side, each as wide and as tall as the cell |
 
-The sheet is the one Cells simulates. Its cells stand in a six-sided packing whatever the
-cell's own shape.
+The sheet stands for the one Cells simulates. It is packed as the cell's sides ask, so
+that its cells stand side against side: in squares for a four-sided cell, in sixes for
+any other. The sheets Cells has run are joined in sixes; where a sheet is drawn in
+squares, that packing is the picture's choice, and the level's note says so.
 
 ## An organ or a body: `levels[organ].shape`, `levels[organism].shape`
 

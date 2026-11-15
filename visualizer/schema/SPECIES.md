@@ -133,15 +133,24 @@ says the engine models an organism unless the project's record says so.
     short, straight hair); others are added as a species needs them.
   - `count`, `length_um` and `width_nm` are a number or a range, each with a source; `where`
     says where on the cell they stand (`all over`, `one pole`, `both poles`, `one side`),
-    and `from` which of the cell's membranes they start at.
+    and `from` which of the cell's membranes they start at. The poles are the two ends of
+    the cell's long way.
   - **Drawn as scenery.** Nothing in the engine stands behind an appendage, so it is drawn
-    in the neutral glass of scenery, and its panel says so. Where the count is too large
-    to draw, a part of it is drawn and the picture says how many of how many.
+    in the neutral glass of scenery, and its panel says so. Of a range the middle is
+    drawn. Where the count is too large to draw, a part of it is drawn (at most 12
+    flagella and 120 pili, on the part of the cell that the cut keeps) and the picture
+    says how many of how many. A thread far longer than the cell is drawn whole: the cell
+    stays framed as it is, the picture says how long the threads are, and the camera may
+    go out until the whole of them shows.
+  - **It can be chosen.** Its panel gives the file's numbers with their sources, and what
+    was drawn.
   - **`base`** names the machine at the foot of the appendage (a flagellum's motor), so
     that a closer view of it can be added later: its `id` and `label`, and the mark and
     value under which the species' own proteins list its parts
-    (`schema/SPECIES_PROTEINS.md`, `highlights`). Until that view exists, choosing the
-    base shows those proteins.
+    (`schema/SPECIES_PROTEINS.md`, `highlights`). A base is drawn where the kind's drawing
+    gives the thread a foot. Until the closer view exists, choosing the foot opens a
+    panel that says what the machine is, with a door into the Protein atlas: the species'
+    own proteins, with that mark's value picked out.
 - **A species may be held back from the picture.** Where the viewer cannot yet draw what
   a species' cell needs (a plant cell's chloroplasts and vacuole), its files are kept and
   checked like any other, and the map's overlay names it under `species_held` with since

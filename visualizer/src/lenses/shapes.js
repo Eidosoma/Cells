@@ -327,3 +327,44 @@ export function cellFrame(shape, gap = 0) {
     inside: (point) => equator.depth3(point),
   };
 }
+
+/**
+ * How the cells of a layer are packed, from the number of sides of the species' cell: a
+ * four-sided cell stands in squares, every other cell in sixes, as a packed sheet does.
+ * All that the picture of a layer needs follows from this one answer: where the neighbours
+ * stand, where the corners of a cell's place are, which cells a sheet of so many rings
+ * holds, where each stands, and which are joined. Lengths are in the cell's frame.
+ */
+export function packing(sides) {
+  const four = sides === 4;
+  const count = four ? 4 : 6, turn = (2 * Math.PI) / count;
+  return {
+    sides: count,
+    turn,
+    /** From the middle of a cell's place to its corners. */
+    radius: four ? (LATTICE / 2) * Math.SQRT2 : REF.radius,
+    /** From one cell's middle to the next. */
+    pitch: LATTICE,
+    /** The neighbours that share a side with a cell, as turns from the side that faces angle 0. */
+    turns: Array.from({ length: count }, (_, step) => step * turn),
+    /** The angle of a corner of a cell's place: half a step past each side. */
+    corner: (index) => turn / 2 + index * turn,
+    /** The corner nearest an angle. */
+    cornerNear: (angle) => turn / 2 + Math.round((angle - turn / 2) / turn) * turn,
+    /** The cells of a sheet: so many rings round the middle one, each as its steps along the sheet's two ways. */
+    cells(rings) {
+      const cells = [];
+      for (let q = -rings; q <= rings; q++) {
+        if (four) for (let r = -rings; r <= rings; r++) cells.push({ q, r });
+        else for (let r = Math.max(-rings, -q - rings); r <= Math.min(rings, -q + rings); r++) cells.push({ q, r });
+      }
+      return cells;
+    },
+    /** Where a cell stands. */
+    centre: ({ q, r }) => (four ? new THREE.Vector3(LATTICE * q, 0, LATTICE * r) : new THREE.Vector3(REF.radius * Math.sqrt(3) * (q + r / 2), 0, REF.radius * 1.5 * r)),
+    /** Which ring round the middle cell a cell stands in. */
+    ring: ({ q, r }) => (four ? Math.max(Math.abs(q), Math.abs(r)) : Math.max(Math.abs(q), Math.abs(r), Math.abs(q + r))),
+    /** The steps from a cell to the neighbours it is joined to, each pair once. */
+    links: four ? [[1, 0], [0, 1]] : [[1, 0], [0, 1], [-1, 1]],
+  };
+}
