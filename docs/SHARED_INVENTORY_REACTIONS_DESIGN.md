@@ -2375,13 +2375,19 @@ entry as the judged run will, before registration.
 | Unit b (q6, q3, q5) | CPU 7 | 102 min | 2.55 GB (5 GiB) | complete; identical, except Q6's count of control integrations, 38 against 32: the registered deltas' re-integrations |
 | q7 | CPU 7 | 7 min | 1.79 GB (5 GiB) | complete; identical |
 | Unit c (q4) | CPU 5 | 73 min | 0.98 GB (4 GiB) | complete; identical. Its near-tie leaves are the judged run's own and equal those derived at drafting |
-| judge-guards | CPU 7 | 53 min | 3.18 GB (4 GiB) | passed: 10 files, 201 tests, each file exit 0 |
+| judge-guards | CPU 7 | 53 min | 3.18 GB (4 GiB) | passed: 10 files, 205 tests, each file exit 0 |
 | judge | CPU 5 | 5 s | 0.20 GB | passed: 55 of 55 criteria |
 | combine | CPU 5 | 2 s | — | passed: the one verdict (`cells.mg0c_qualification_verdict@1`) |
 
-The machine was loaded, so q1, q6, q7 and the tier-3 guard files took about 1.2 to 2.8 × their
-development times. The guards' composition file took 1,498 s, against 535 s uncapped from
-`snapshot-454fa75` (§11.4). The runtime limits that follow (below) carry that load.
+Against their development times, the parts took:
+- q6 1.13 ×, q5 1.10 ×, q1 1.24 ×, q4 1.40 × and q7 1.88 ×;
+- q3 0.95 ×.
+
+The tier-3 guard files took 1.5 to 2.8 × their earlier uncapped runs: §11.4's from
+`snapshot-454fa75` for `_reference_runs` and `_composition`, and milestone 2's for `_runs` and
+`_guards`. The composition file was slowest: 1,498 s against 535 s. These slowdowns are attributed to the
+machine's load from other units, which was not measured. The runtime limits that follow carry
+it.
 
 **What the rehearsal showed:**
 - **The control criteria pass.** All five run to a pass on the registered copy:
