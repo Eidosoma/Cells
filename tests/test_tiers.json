@@ -74,7 +74,8 @@
   "/mnt/workspaces/Cells/closed-compartment-m1-20261114-01/land-measure-fr/measured.json",
   "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-e3fb7ab/measured.json",
   "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/land-measure-q7prov/measured.json",
-  "/mnt/workspaces/Cells/test-split-20261115-01/run-534cd37/tiers/measured.json"
+  "/mnt/workspaces/Cells/test-split-20261115-01/run-534cd37/tiers/measured.json",
+  "/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/tiers/measure-landing/measured.json"
  ],
  "measured_provenance": [
   {
@@ -610,6 +611,13 @@
    "root": "/mnt/workspaces/Cells/test-split-20261115-01/snapshot-534cd37",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-15T05:40:25+00:00"
+  },
+  {
+   "git_revision": "94685819a17d231aa69d026c986318e3a7895eca",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a76bfeaf3e7eececa",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T07:52:42+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1351,6 +1359,14 @@
     }
    },
    {
+    "file": "tests/unit/test_conduction_observables.py",
+    "seconds": 0.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
     "file": "tests/unit/test_conservative_polygon_geometry.py",
     "seconds": 13.91,
     "exit_code": 1,
@@ -1534,6 +1550,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 55
+    }
+   },
+   {
+    "file": "tests/unit/test_excitable_import.py",
+    "seconds": 2.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
     }
    },
    {
