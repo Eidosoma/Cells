@@ -32,6 +32,7 @@ from dataclasses import asdict, dataclass, replace
 
 import numpy as np
 
+from cells.core import kind_registry
 from cells.core import species_registry as registry
 from cells.core import surface_kinetic_spec as kinetic
 from cells.core import surface_pump_spec as first
@@ -83,6 +84,10 @@ class SurfacePumpChannelModel:
     # to_dict writes nothing, so every definition without one keeps its fingerprint
     # (docs/INNER_MODEL_V4_DESIGN.md §7.4 (f) 7).
     species_registry: object = None
+    # Declared kinds (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j), (k)): ((namespaced kind ID, its
+    # parsed declaration), ...) in canonical order; () for every definition of today's, and then
+    # to_dict writes nothing, so fingerprints are unchanged.
+    kinds: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -174,6 +179,9 @@ def to_dict(spec):
         for entry in raw["model"]["species"]:
             entry.update(species.get(entry["id"], {}))
         raw["model"].update(keys)
+    for kind_id, declaration in m.kinds:  # Each declared kind's model key (§7.4 (k)).
+        kind = kind_registry.active().lookup(kind_id)
+        raw["model"][kind.model_key] = kind.to_dict(declaration)
     raw["experiment"]["channel_controls"] = [
         dict(channel_id=p.id, schedule=[asdict(c) for c in g])
         for p, g in zip(m.channels, e.channels, strict=True)
@@ -206,6 +214,10 @@ def parse(data):
     # The registry hook (§7.4 (f) 7): the registry's keys leave this copy's species entries and
     # model block before @2's strict species parse; None when the model declares none.
     declared = registry.parse_entries(m)
+    # Declared kinds (§7.4 (k)): each registered kind's model key leaves this copy before @2's
+    # strict parse; its entries are parsed with the base definition below.
+    kinds = kind_registry.active()
+    pending = {key: (kind, m.pop(key)) for key, kind in kinds.model_keys().items() if key in m}
     m["id"] = second.MODEL_ID
     base = second.parse(raw)
     ids, z = base.model.species_ids, base.model.valence
@@ -233,11 +245,20 @@ def parse(data):
         **{
             k: getattr(model, k)
             for k in SurfacePumpChannelModel.__dataclass_fields__
-            if k not in ("channels", "junction_heat_booking", "species_registry")
+            if k not in ("channels", "junction_heat_booking", "species_registry", "kinds")
         },
         channels=parsed,
         junction_heat_booking=booking,
         species_registry=declared,
+        kinds=tuple(
+            sorted(
+                (
+                    (kind_registry.qualified(kind.kind_id), kind.parse(entries, base))
+                    for kind, entries in pending.values()
+                ),
+                key=lambda item: item[0],
+            )
+        ),
     )
     experiment = Experiment(
         **{

@@ -65,6 +65,7 @@ class SurfacePumpRegulatedWaterModel:
     symport: Symport
     junction_heat_booking: str = water.ionic.DEFAULT_JUNCTION_HEAT
     species_registry: object = None  # @3's registry (its parser's hook), carried for projection.
+    kinds: tuple = ()  # @3's declared kinds, carried for projection (the family refuses them).
 
 
 class Control(NamedTuple):

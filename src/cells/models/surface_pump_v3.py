@@ -49,6 +49,7 @@ process: it must add no membrane conductance the family's bound does not cover
 (an electroneutral process adds none). With no process the code is unchanged.
 """
 
+import re
 import sys
 from dataclasses import make_dataclass, replace
 from functools import cache, cached_property, partial
@@ -59,6 +60,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from cells.core import kind_registry
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
 from cells.core.surface_pump_v3_spec import (
@@ -1273,7 +1275,18 @@ def structure(model):
         fuel_kinds=tuple(sorted(fuels)),
         junction_heat_booking=model.junction_heat_booking,
         padding_fill=_closes_slots(model),
+        kinds=_kind_entries(model),
     )
+
+
+def _kind_entries(model):
+    """((kind ID, structure entry), ...) of the declared kinds, from the active registry."""
+    registry = kind_registry.active()
+    entries = []
+    for kind_id, declaration in getattr(model, "kinds", ()):
+        kind = registry.lookup(kind_id)
+        entries.append((kind_id, kind.structure_entry(declaration) if kind.structure_entry else ()))
+    return tuple(entries)
 
 
 def _closes_slots(model):
@@ -1335,6 +1348,71 @@ def moved_rows(model):
     return MappingProxyType({s: tuple(v) for s, v in movers.items() if v})
 
 
+class KindTypes(NamedTuple):
+    """The types of one set of declared kinds (§7.4 (j), schema A)."""
+
+    STATE_AXES: object
+    STATE_TYPE: object
+    LAYOUT_TYPE: object
+    FLOOR_LAYOUT_TYPE: object
+    Control: object
+    OBSERVATION_FIELDS: tuple
+    Observations: object
+
+
+TODAYS_TYPES = KindTypes(
+    STATE_AXES, STATE_TYPE, LAYOUT_TYPE, FLOOR_LAYOUT_TYPE, Control, OBSERVATION_FIELDS, Observations
+)
+
+
+@cache
+def _kind_types(kind_ids, registry):
+    if not kind_ids:
+        return TODAYS_TYPES
+    kinds = [registry.lookup(kind_id) for kind_id in kind_ids]
+    label = "".join("_" + re.sub(r"\W", "_", kind_id) for kind_id in kind_ids)  # Deterministic.
+    axes = dict(STATE_AXES)
+    for kind in kinds:
+        for field, field_axes in kind.state_axes:
+            if field in axes:
+                raise ValueError(f"Kind {kind.kind_id}'s state field {field} is already declared")
+            axes[field] = list(field_axes)
+    state = NamedTuple("SurfacePumpChannelState" + label, [(k, object) for k in axes])
+    layout_extra = [field for kind in kinds for field in kind.layout_fields]
+    layout = NamedTuple(
+        "SurfacePumpChannelLayout" + label,
+        [(k, object) for k in (*LAYOUT_TYPE._fields, *layout_extra)],
+    )
+    floor = NamedTuple(
+        "SurfacePumpChannelFloorLayout" + label,
+        [(k, object) for k in (*FLOOR_LAYOUT_TYPE._fields, *layout_extra)],
+    )
+    control = NamedTuple(
+        "SurfacePumpChannelControl" + label,
+        [(k, object) for k in (*Control._fields, *(f for kind in kinds for f in kind.control_fields))],
+    )
+    # Rule (b): a kind's state fields are observation columns right after today's state fields
+    # (the windowed runner rebuilds states from observations by name); its readouts follow
+    # today's readouts.
+    today_state = len(STATE_TYPE._fields) + 1
+    fields = (
+        *OBSERVATION_FIELDS[:today_state],
+        *(field for kind in kinds for field, _ in kind.state_axes),
+        *OBSERVATION_FIELDS[today_state:],
+        *(column for kind in kinds for column in kind.readout_columns),
+    )
+    observations = make_dataclass(
+        "SurfacePumpChannelObservations" + label, [(k, np.ndarray) for k in fields], frozen=True
+    )
+    return KindTypes(axes, state, layout, floor, control, fields, observations)
+
+
+def kind_types(structure):
+    """The structure's types: today's own objects when it declares no kind (§7.4 (j), schema A),
+    else classes cached by the set of declared kinds, in canonical order."""
+    return _kind_types(tuple(kind_id for kind_id, _ in structure.kinds), kind_registry.active())
+
+
 class InnerImplementation:
     """resolved_pump_tissue@3 for one declared structure (§7.4 (c)); see implementation().
 
@@ -1356,6 +1434,8 @@ class InnerImplementation:
             setattr(self, name, partial(getattr(_MODULE, name), structure=structure))
         self.domain_valid.with_control = self.control_domain_valid
         self.batch_signature = structured_batch_signature
+        for name, value in kind_types(structure)._asdict().items():  # Schema A (§7.4 (j)).
+            setattr(self, name, value)
 
     def __getattr__(self, name):
         # Only reached for names the object does not define: this module's own.
