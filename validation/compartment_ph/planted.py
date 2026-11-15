@@ -16,7 +16,8 @@ protons exchanged and the patch voltage negated, its moves and ledger terms reve
 band stays the cytosol's (the kernel checks it at its inside proton, here the lumen's, so it is
 switched off there and checked at h_c). A planted law of a control, registered only inside its
 block: never a model of the engine. It composes from the transporter module's public stage helpers
-(gather, proton_law, role_rows, supply_record), never its private names.
+(gather, proton_law, patch_voltage, static_head_V, role_rows, supply_record), never its private
+names.
 """
 
 import dataclasses
@@ -28,10 +29,7 @@ def _reversed(state, potentials, availability, p, *, xp):
     from cells.processes import proton_pump as proton
 
     c_in, c_out, fuel = t.gather(state, p, xp=xp)
-    n = p.active.size
-    voltage = xp.where(
-        p.membrane_active, potentials[p.membrane_cell] - potentials[n + p.membrane_outside], 0.0
-    )
+    voltage = t.patch_voltage(potentials, p, xp=xp)
     i, q = t.proton_law(c_out, c_in, -voltage, fuel, p, xp=xp)  # The two sides exchanged.
     r = proton.kinetics(i, q, availability, xp=xp)
     unbanded = q._replace(fuel_ph_band=xp.full_like(q.fuel_ph_band, 1e300))
@@ -89,24 +87,26 @@ def _ledger_terms(state, p, *, xp):
     return dict(terms, cell=-terms["cell"], outside=-terms["outside"])
 
 
-def _stage_term(read, control, p, *, xp):
-    """The kernel's slope at the reversed pump's static head (the transporter's own form)."""
+def _stage_term(read, potentials, control, p, *, xp):
+    """The kernel's slope at the stage, the transporter's own form with the two sides exchanged:
+    at the stage's patch voltage, negated into the law's frame (the true slope, past its static
+    head included), or at the reversed law's static head when membrane_rate passes no
+    potentials."""
     from cells.models.inner_kinds import transporter as t
     from cells.numerics.extracellular_field import scatter
     from cells.processes import proton_pump as proton
-    from cells.processes.electrochemistry import F, R
 
     n = p.active.size
     if not p.transporter_proton.shape[-1]:
         return xp.zeros(n)
     c_in, c_out, fuel = t.gather(read, p, xp=xp)
     i, q = t.proton_law(c_out, c_in, xp.zeros_like(c_in), fuel, p, xp=xp)
-    head = (
-        proton.chemical_drive(i, q, xp=xp) / q.protons_per_cycle
-        + R * p.temperature * (xp.log(c_in) - xp.log(c_out))
-    ) / F
+    if potentials is None:  # Structure, not a value: the caller passes no potentials.
+        voltage = t.static_head_V(i, q, xp=xp)
+    else:
+        voltage = -t.patch_voltage(potentials, p, xp=xp)  # The law's frame: the sides exchanged.
     slope = proton.electrogenic_conductance_S(
-        i._replace(voltage_V=head), q, control.transporter_availability, xp=xp
+        i._replace(voltage_V=voltage), q, control.transporter_availability, xp=xp
     )
     slope = xp.where(p.transporter_proton & p.membrane_active, slope, 0.0)
     return scatter(slope, xp.zeros(n), (p.membrane_cell,), xp=xp)

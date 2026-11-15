@@ -140,3 +140,48 @@ def test_k2_the_reversed_pump_closes_every_ledger_and_alkalinizes_the_lumen():
     record = engine_records.run(short(defs.fr4_world()), registry=planted.registry(guard))
     assert record["admitted"] and not record["completed"]
     assert "accounting failed: local" in record["refusal"]
+
+
+def test_k2s_planted_slope_follows_the_patch_voltage_in_its_exchanged_frame():
+    """Item 7 (core-d172 5b1b931e): K2's planted law reads the stage's potentials in its own frame
+    (the two sides exchanged, the patch voltage negated), so its slope is e^a times its value at
+    its static head, a = n F (V - V_head) / RT with V_head the head in the patch's frame (about
+    +0.266 V at the start, where h_c = h_L): past it the reversed pump counts its e^a. Called bare
+    it is the head's. No run: the hook at the development world's start."""
+    import math
+
+    import numpy as np
+
+    from cells.core import kind_registry
+    from cells.core.surface_pump_v3_spec import control_values
+    from cells.models import surface_pump_v3
+    from cells.models.inner_kinds import proton_buffer, transporter
+    from cells.processes.electrochemistry import F, R
+    from validation.compartment_ph import planted
+
+    kind = planted.reversed_pump()
+    with kind_registry.scope(planted.registry(kind)):
+        spec = parse_spec(defs.development_world(defs.fr4_world()))
+        structure = surface_pump_v3.structure(spec.model)
+        state, p = surface_pump_v3.initial_values(spec, structure=structure)
+        controls = control_values(spec, [0.0])
+        control = type(controls)(*(v[0] for v in controls))
+        read, ok = proton_buffer.stage_read(state, p, xp=np)
+    assert bool(ok)
+    b = [m.id for m in spec.model.membranes].index(defs.BOUNDING)
+    cell = int(p.membrane_cell[b])
+    c_in, c_out, fuel = transporter.gather(read, p, xp=np)
+    i, q = transporter.proton_law(c_out, c_in, np.zeros_like(c_in), fuel, p, xp=np)
+    head = -float(transporter.static_head_V(i, q, xp=np)[b])  # The patch's frame.
+    bare = float(kind.stage_term(read, None, control, p, xp=np)[cell])
+
+    def potentials(voltage):  # The bounding patch's cell at V; the lumen and the bath at 0.
+        out = np.zeros(p.active.size + p.outside_active.size)
+        out[cell] = voltage
+        return out
+
+    a_unit = 2 * F / (R * spec.model.temperature_K)
+    for shift in (-0.05, 0.0, 0.02, 0.05):
+        term = float(kind.stage_term(read, potentials(head + shift), control, p, xp=np)[cell])
+        assert term == pytest.approx(bare * math.exp(a_unit * shift), rel=1e-9), shift
+    assert 0.25 < head < 0.3  # FR-4's drive near -51 kJ/mol, n = 2, h_c = h_L at the start.

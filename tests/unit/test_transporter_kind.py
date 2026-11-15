@@ -446,7 +446,7 @@ def test_the_pumps_slope_joins_the_step_rules():
         controls = control_values(spec, [0.0])
         control = type(controls)(*(v[0] for v in controls))
         read, ok = proton_buffer.stage_read(state, p, xp=np)
-        term = transporter.stage_term(read, control, p, xp=np)
+        term = transporter.stage_term(read, None, control, p, xp=np)  # Bare: the static head.
         rate = transporter.bound_rate(spec, dict(spec.model.kinds)[transporter.KIND_ID])
         surface_pump_v3.check_steps(spec, np.asarray([1e-3]), None)
         big = parse_spec(charged_world(capacity_fmol_s=2.0))
@@ -460,6 +460,58 @@ def test_the_pumps_slope_joins_the_step_rules():
     assert float(term[0]) == pytest.approx(unit * s_h, rel=1e-6)  # The read's free h.
     capacitance = spec.model.membranes[0].capacitance_F
     assert rate == pytest.approx(unit / capacitance, rel=1e-12)
+
+
+def test_the_pumps_slope_follows_the_voltage_past_its_static_head():
+    """Item 7 (core-d172 5b1b931e): stage_term takes the stage's node potentials, so the pump's
+    slope is the kernel's n F |d cycles/dV| at the patch voltage V, e^a times its static-head
+    value with a = n F (V_head - V) / RT: below it while the pump runs forward (V > V_head) and
+    above it past the head, where the patch drives it into reverse (V < V_head); called bare it
+    is the head's. Through membrane_rate the reversed slope breaches the 1 ms step bound where
+    the slope at the head does not."""
+    from cells.core.surface_pump_v3_spec import control_values
+
+    with charged():
+        spec = parse_spec(charged_world())
+        structure = surface_pump_v3.structure(spec.model)
+        state, p = surface_pump_v3.initial_values(spec, structure=structure)
+        controls = control_values(spec, [0.0])
+        control = type(controls)(*(v[0] for v in controls))
+        read, ok = proton_buffer.stage_read(state, p, xp=np)
+        c_in, c_out, fuel = transporter.gather(read, p, xp=np)
+        i, q = transporter.proton_law(c_in, c_out, np.zeros_like(c_in), fuel, p, xp=np)
+        head = float(transporter.static_head_V(i, q, xp=np)[0])
+        bare = float(transporter.stage_term(read, None, control, p, xp=np)[0])
+
+        def potentials(voltage):  # The patch's cell at V, its outside node (the bath) at 0.
+            out = np.zeros(p.active.size + p.outside_active.size)
+            out[p.membrane_cell[0]] = voltage
+            return out
+
+        def rate(voltage):
+            return 1e-3 * float(
+                surface_pump_v3.membrane_rate(
+                    state, control, p, xp=np, structure=structure, potentials=potentials(voltage)
+                )
+            )
+
+        a_unit = 2 * F / (R * spec.model.temperature_K)  # n F / RT, per volt below the head
+        for shift in (0.05, 0.0, -0.02, -0.05, -0.1):
+            v = head + shift
+            term = float(transporter.stage_term(read, potentials(v), control, p, xp=np)[0])
+            kernel = float(
+                proton.electrogenic_conductance_S(
+                    i._replace(voltage_V=np.full_like(c_in, v)), q,
+                    control.transporter_availability, xp=np,
+                )[0]
+            )  # fmt: skip
+            assert term == pytest.approx(kernel, rel=1e-12)
+            assert term == pytest.approx(bare * math.exp(-a_unit * shift), rel=1e-9), shift
+        past = float(transporter.stage_term(read, potentials(head - 0.05), control, p, xp=np)[0])
+        assert past / bare == pytest.approx(math.exp(0.05 * a_unit), rel=1e-9)  # About 42.
+        assert -0.3 < head < -0.25  # FR-4's drive: d_rG'_ATP near -51 kJ/mol, n = 2.
+        assert rate(head) <= surface_pump_v3.EXPLICIT_STEP_BOUND < rate(head - 0.2)
+    assert bool(ok)
 
 
 def test_the_ph_band_refuses_at_the_stage():
