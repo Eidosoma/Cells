@@ -143,7 +143,7 @@ Where older sections of this document differ, this section applies.
   - Sensing and transfer laws address a species in a named compartment, so one law serves
     cytosolic, lysosomal and mitochondrial cases.
   - The accepted FR-1 design names each compartment's node, bounding patch and owner. Its operator
-    is on a branch, not yet on main.
+    (`cell_owned_compartments@1`, milestone 1) is on main since 15 November.
 - **Acceptance:**
   - an occupancy-only world with fixed field inputs avoids the field refresh;
   - a capacitance-changing world triggers it;
@@ -285,8 +285,8 @@ require:
   - the detailed reference is itself numerically verified in that regime against an independent
     reference;
   - the declared comparisons are automated, and they report their scope.
-- **The first consumer comes after D174's fuel case. Target, a consumer milestone, waiting for the
-  fuel representation.**
+- **The first consumer comes after D174's fuel case. Target, a consumer milestone, after that case.**
+  The representation is decided (F2, D176).
   - D174's fuel case, one regeneration reaction and one pump, is the reduced closure.
   - The consumer milestone adds a small detailed regeneration network, sharing the same fuel amounts
     and pump interface.
@@ -301,9 +301,9 @@ note.
 
 | Case | What it exercises | Status |
 | --- | --- | --- |
-| Inventory → regulation → electrical response | Shared amounts, control routing, temporal coupling | Holds today numerically (Track R's A4 and A5). Its judged protocol is PROPOSED |
+| Inventory → regulation → electrical response | Shared amounts, control routing, temporal coupling | Numerically qualified (15 November): Track R's judged protocol passed, with A4 and A5 against independent references. CPU only |
 | Bath dose → uptake → compartment retention or reaction | Scoped views, compartment identity, material accounting | Target, needing door S |
-| Reaction → finite fuel → pump | Chemistry and electrics sharing one energy budget | Target, needing the fuel representation. Its single regeneration reaction is also the reduced closure of the first [levels-of-detail](#levels-of-detail) case |
+| Reaction → finite fuel → pump | Chemistry and electrics sharing one energy budget | Target. The representation is decided (F2, D176); this is D176's finite-fuel case. Its single regeneration reaction is also the reduced closure of the first [levels-of-detail](#levels-of-detail) case |
 | Neutral solute and water in a vesicle | Reuse across biological settings, changing concentration and volume | Target, needing the passive law. Syn3A's probe P0 checks capability |
 
 - **Organism data stays apart from engine mechanisms. Target.** The organism and evidence structure

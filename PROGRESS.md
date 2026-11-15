@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-14 UTC.
+Last updated: 2026-11-15 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -11,21 +11,24 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **14 November 2026.** The levels and the working order are in
+- **15 November 2026.** The levels and the working order are in
   [CURRENT_PLAN](docs/CURRENT_PLAN.md#status-on-14-november-2026-and-the-working-order-d156)
-  (D156). The runs below are newest first.
-  - **Numerically qualified:** S2, S3, Rm1 and S5a.
-  - **Judged:**
-    - E07-v1. The disc did not renew under donor-copy turnover, and the coupling's effect was
-      far smaller than predicted.
-    - Composite GPU agreement (in progress).
-  - **Numerically qualified, later the same day:** D150 secreted species (its stated scope).
-  - **Implemented and guarded:** D152 reactions (MG0c in progress), D153 checkpoint continuity, and water plus
-    replacement@2.
-  - **In design:** conduction (D155, first), coupling out of the inventory, and the D154
-    run-view output.
-- **Single lead agent from 8 November**, with at most six subagents on disjoint files from
-  14 November (four before; D155). Work continues on `main`, and milestones are tagged.
+  (D156, with D176's round). The runs below are newest first.
+  - **Judged (numerically qualified, CPU only, each within its scope line):** the coupling
+    operator `species_regulated_availability@1` (47 of 47) and MG0c's reactions operator
+    `local_species_reactions@1` (55 of 55).
+  - **Landed for development, not judged:** FR-1's and FR-3's first milestones, FR-10's first two,
+    the phase start and failure records, Track E's M1 development work, and independent references
+    for FR-3, FR-4 and the passive law.
+  - **In progress:** D172's single restructure round (D176). Engine changes go to the integration
+    branch `integration-d172`, from tag `d172-base-2026-11-15`, until one integrated landing; main
+    takes docs, validation and tests. FR-4 and FR-5 are the round's priority consumers.
+  - **Proposed designs:** the FR-4/FR-5 physics note and the run view (D154).
+  - **Open on the L4:** Q7, the run-to-run nondeterminism at 825 nodes. The W1 full-tissue hold
+    runs its third segment.
+- **Single lead agent from 8 November**, with at most seven subagents on disjoint files (six from
+  14 November, D155; seven the same evening, D171). Work continues on `main`, and milestones are
+  tagged.
 
 **Background: the reset of 8 November.**
 - **Reset on 8 November: BETSE is an external reference, not part of the engine.**
@@ -72,6 +75,50 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **FR-4's and the passive law's independent references landed (15 November 2026).** They are in
+  `validation/compartment_ph/` and `validation/passive/` and were written code-blind
+  ([FR-4 usage](validation/compartment_ph/REFERENCES_USAGE.md);
+  [passive usage](validation/passive/REFERENCES_USAGE.md);
+  [evidence](/mnt/workspaces/Cells/independent-references-20261115-01/HANDOFF.md)). Tier 1 at the
+  merge 22d4251: 340 files, no changed outcome.
+  - **FR-4's references** (R-closure and R-kinetic, Radau at rtol 1e-11) run the FR-4 note's
+    acceptance world for 900 s.
+    - The lumen acidifies from pH 7.2 to 5.096 against the gradient, and the cytosol stays within
+      0.018 pH. The energy identity closes within 2.2e-11 pJ.
+    - The kinetic system converges to the closure at first order in 1/k_on: the lumen's largest
+      lag is 1.26e-2, 1.28e-4 and 1.28e-6 pH at k_on = 1e3, 1e5 and 1e7 mM⁻¹ s⁻¹.
+    - With the counterion route removed (P_K = 0) the lumen stalls at pH 7.14. The route's effect
+      is 2.04 pH units, 2,044 times the 1e-3 pH budget.
+    - The declared outside case (the lumen's k_on at 1e-3) lags by up to 2.2 pH units and fails,
+      as the note requires.
+  - **A finding: the note's envelope did not imply its budget.** The check λ ≥ 10³ρ admitted k_on
+    four orders of magnitude below the point where the 1e-3 pH budget holds (about 1.28e4).
+    - The lag is (ρ/λ)(β/ln 10 − h)/(h ln 10). Its bound-to-free factor is about 1.5e4 at pH 7.2.
+    - The FR-4 owner replaced the fixed ratio with this state-dependent check and a planted test
+      (`fr45-physics`, 4f7e1a30). The check lands with FR-4's code on `integration-d172`; the
+      note's revision lands on main with the next docs batch.
+  - **The passive law's closed pair:** a closed form (floats and 50 digits) and Radau and DOP853
+    integrations of any closed graph.
+    - Flux and heat are exactly 0 at equal concentrations, and reversal is exactly antisymmetric.
+    - Heat is non-negative and monotone; material is conserved within 3.8e-15.
+    - The per-step heat is within 1.24 ε of its rounding scale over 5,000 random steps.
+    - The core owner's conventions answer its three questions: a junction's PA is
+      P·A·gate·availability, heat goes to the law's own field, and a trace is a start, never a
+      zero.
+  - **20 self-tests** (8 and 12), tier 1.
+
+- **FR-3's independent site-occupancy references landed (15 November 2026).** They are in
+  `validation/occupancy/` and were written code-blind
+  ([usage](validation/occupancy/REFERENCES_USAGE.md);
+  [evidence](/mnt/workspaces/Cells/independent-references-20261115-01/HANDOFF.md)). Tier 1 at the
+  merge 66d248d: 338 files, no changed outcome.
+  - **R-ode** integrates the full binding kinetics (Radau, rtol 1e-12, cross-checked by DOP853).
+    - Against the saturable sink, the day-one guard converges at orders 0.980 and 0.998 in ε.
+    - Its floor sits well below the engine errors to be judged.
+  - **R-dG** re-implements the per-step bookings independently. Its ledger closes within 0.41 ε of
+    scale, and its heat and work converge at second order.
+  - **20 self-tests, tier 1.**
 
 - **Track E, M1's development work landed (15 November 2026).** Validation only; no judged claim.
   Tier 1 at the merge 0385674: 337 files, no changed outcome
