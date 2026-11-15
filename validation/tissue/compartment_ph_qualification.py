@@ -119,12 +119,11 @@ ENGINE_READOUTS = dict(
                             "every buffered node",
         envelope_stages_beyond="the count of stages where it exceeds the budget (1e-3 pH)",
         cytosol_pH_min="the cytosol's smallest pH over every stage", cytosol_pH_max="its largest"),
-    ledgers=dict(
-        material_residual_fmol="per species, the largest residual of the engine's material check "
-                               "over the records",
-        material_tolerance_fmol="per species, the tolerance that check uses (the declared floor "
-                                "plus the engine's rounding allowance)",
-        charge_residual_C="the largest charge residual", charge_tolerance_C="its tolerance"),
+    amounts_fmol="{node: {species: [amount at each record]}} for every node and row: the judge "
+                 "computes the material check and its allowance from these (the lead's ruling, "
+                 "15 November 2026), never from an engine tolerance",
+    ledgers=dict(charge_residual_C="the largest charge residual", charge_tolerance_C="its "
+                 "tolerance"),
     part=dict(admitted="parsed and admitted", completed="ran to its end without a refusal",
               refusal="the engine's refusal message (a refusal is a verdict, not an ending)",
               steps="the steps taken", definition_sha256="the definition's identity"),

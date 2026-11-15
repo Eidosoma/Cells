@@ -12,18 +12,26 @@ generator.
 The arithmetic, fixed before any run (the same on engine and reference records):
 * **Records** are keyed by integer second; every series is aligned with its part's `record_s`.
 * **Differences:** D(a, b) = max over shared records of |q_a - q_b| (the max norm).
-* **Resolution:** a rung difference is resolved when it is at least N eps max|q| (N the finer
-  rung's steps, max|q| over the finer rung's records): below that it is accumulated rounding.
-* **Orders** come from the three finest rungs: log2(D(dt1, dt2) / D(dt2, dt3)), defined when both
-  differences are resolved (else None). Every successive pair's order is reported beside it.
+* **Floors:** each rung difference has its floor F = N eps max|q| (N the finer rung's steps, max|q|
+  over the finer rung's records): below it, the difference is accumulated rounding.
+* **Orders, by class** (the lead's ruling of 15 November 2026), on the two differences of the three
+  finest rungs, D1 (coarser) and D2: *resolved* (both at or above their floors) when log2(D1/D2)
+  lies in the band; *at rounding* (both under) passes; *mixed* (D1 at or above, D2 under) passes
+  unless the implied lower bound log2(D1/F2) exceeds the band's upper edge; *reversed* (D1 under,
+  D2 at or above) fails. Every pair's class is reported. An exactly integrated quantity (FR-5's d)
+  is expected at rounding on every pair. The energy residual takes the same classes with no upper
+  edge, on every successive pair of rungs.
 * **The Richardson error** at the declared dt is (4/3) D(dt, dt/2): the fixed nominal order p = 2,
   the scheme's (ARS(2,2,2)); the observed-order estimate is reported beside it.
 * **Crossings** of a level (pH50): the first record where the series rises above the level, then
   the first after it where it falls below, each linearly interpolated between its two records.
 * **Mean rates** of a cumulative transfer M (fmol, c to L positive) over [t0, t1]:
   |M(t1) - M(t0)| / (t1 - t0), with M linearly interpolated between records.
-* **Ledgers:** a residual over its tolerance, the tolerance the engine's own check uses and records
-  (`material_tolerance_fmol`: the declared floor plus the engine's rounding allowance).
+* **Material allowance** (the lead's ruling): per species, the declared floor plus N eps max over
+  the records of the species' total over the conserved nodes (N the run's steps), computed here
+  from the records and never read from the engine; the residual is |total(t) - total(0)|, and
+  the route ledgers (FR-5's J6 and J8) use the same allowance. The charge check still reads the
+  engine's residual and tolerance.
 * **Undefined values are None, never NaN:** records compare bitwise, and a None fails.
 
 Usage:
@@ -85,23 +93,44 @@ def log2_ratio(a, b):
     return math.log2(a / b) if a is not None and b is not None and a > 0 and b > 0 else None
 
 
-def ladder(parts, names, observable):
-    """Successive differences down a ladder of rung parts (coarse to fine), their resolution, the
-    successive orders, and the order on the three finest rungs."""
+def classify(coarser, finer, band):
+    """The class of two successive differences, each with its floor, and whether it passes
+    (band (low, high); high None for no upper edge)."""
+    low, high = band
+    if coarser["difference"] is None or finer["difference"] is None:
+        return dict(cls=None, order=None, lower_bound=None, passes=0)
+    if coarser["above"] and finer["above"]:
+        order = log2_ratio(coarser["difference"], finer["difference"])
+        ok = order is not None and order >= low and (high is None or order <= high)
+        return dict(cls="resolved", order=order, lower_bound=None, passes=int(ok))
+    if not coarser["above"] and not finer["above"]:
+        return dict(cls="at_rounding", order=None, lower_bound=None, passes=1)
+    if coarser["above"]:
+        bound = log2_ratio(coarser["difference"], finer["floor"])
+        ok = high is None or bound is None or bound <= high
+        return dict(cls="mixed", order=None, lower_bound=bound, passes=int(ok))
+    return dict(cls="reversed", order=None, lower_bound=None, passes=0)
+
+
+def ladder(parts, names, observable, band):
+    """Successive differences down a ladder of rung parts (coarse to fine), each with its floor,
+    every pair of successive differences classified, and the judged class on the three finest
+    rungs (`passes`, `order_finest`); `at_rounding_every_pair` is 1 when every difference is
+    under its floor."""
     rungs = [parts.get(n) for n in names]
     pairs = []
     for coarse, fine in zip(rungs, rungs[1:], strict=False):
         d = max_abs_difference(coarse, fine, observable)
-        needed = rounding_scale(fine, observable) if d is not None else None
-        pairs.append(dict(difference=d, needed=needed,
-                          resolved=bool(d is not None and d > 0 and d >= needed)))
-    orders = []
-    for p, q in zip(pairs, pairs[1:], strict=False):
-        both = p["resolved"] and q["resolved"]
-        orders.append(log2_ratio(p["difference"], q["difference"]) if both else None)
-    return dict(differences=[p["difference"] for p in pairs], needed=[p["needed"] for p in pairs],
-                resolved=[p["resolved"] for p in pairs], orders=orders,
-                order_finest=orders[-1] if orders else None)
+        floor = rounding_scale(fine, observable) if d is not None else None
+        pairs.append(dict(difference=d, floor=floor,
+                          above=None if d is None else bool(d > 0 and d >= floor)))
+    classes = [classify(a, b, band) for a, b in zip(pairs, pairs[1:], strict=False)]
+    judged = classes[-1] if classes else dict(cls=None, order=None, lower_bound=None, passes=0)
+    return dict(differences=[q["difference"] for q in pairs], floors=[q["floor"] for q in pairs],
+                classes=classes, judged_class=judged["cls"], passes=judged["passes"],
+                order_finest=judged["order"], lower_bound=judged["lower_bound"],
+                at_rounding_every_pair=int(bool(pairs) and all(q["above"] is False
+                                                                for q in pairs)))
 
 
 def richardson(parts, declared, half, observable):
@@ -206,19 +235,45 @@ def cytosol_band(parts, names, centre):
     return max_or_none(out)
 
 
-def material(parts, names):
-    """The engine's material check: the largest residual over its tolerance, per species and
-    record, over the named parts."""
-    out = []
+def totals(part, species, nodes):
+    """The species' total over the conserved nodes at every record, or None."""
+    amounts = (part or {}).get("amounts_fmol")
+    if not amounts or part.get("completed") is False:
+        return None
+    try:
+        columns = [amounts[node][species] for node in nodes]
+    except KeyError:
+        return None
+    return [math.fsum(values) for values in zip(*columns, strict=True)]
+
+
+def allowance(part, species, nodes, floors):
+    """The declared floor plus N eps max over the records of the species' total (N the steps)."""
+    total = totals(part, species, nodes)
+    if total is None or part.get("steps") is None:
+        return None
+    return floors[species] + part["steps"] * EPS * max(abs(t) for t in total)
+
+
+def material(parts, names, d):
+    """The judge's material check: per part and species, max |total(t) - total(0)| over the
+    allowance; the largest ratio, and each part's per-species record."""
+    report, ratios = {}, []
     for n in names:
-        ledgers = (parts.get(n) or {}).get("ledgers") or {}
-        residual, tolerance = ledgers.get("material_residual_fmol"), ledgers.get(
-            "material_tolerance_fmol")
-        if residual is None or tolerance is None:
-            out.append(None)
-            continue
-        out.append(max(r / tolerance[s] for s, r in residual.items()))
-    return max_or_none(out)
+        part, per = parts.get(n), {}
+        for species in d["species"]:
+            total = totals(part, species, d["conserved_nodes"])
+            if total is None:
+                per[species] = None
+                ratios.append(None)
+                continue
+            residual = max(abs(t - total[0]) for t in total)
+            room = allowance(part, species, d["conserved_nodes"], d["material_floors_fmol"])
+            per[species] = dict(residual_fmol=residual, allowance_fmol=room,
+                                ratio=residual / room)
+            ratios.append(residual / room)
+        report[n] = per
+    return dict(max_over_allowance=max_or_none(ratios), parts=report)
 
 
 def charge(parts, names):
@@ -238,29 +293,38 @@ def energy_over_flows(part):
     return max(values) if values else None
 
 
-def energy_ladder(parts, names):
-    """The energy residual over flows down the ladder: its successive orders where the finer
-    value is above rounding (N eps), and the smallest of them."""
+def energy_ladder(parts, names, low):
+    """The energy residual over flows down the ladder, each value with its floor N eps (N its
+    rung's steps), every successive pair classified with no upper edge and `low` as its lower
+    edge (the lead's ruling): `passes` when every pair passes; the smallest resolved order
+    reported."""
     values = [energy_over_flows(parts.get(n) or {}) for n in names]
-    orders = []
-    for i in range(len(names) - 1):
-        a, b = values[i], values[i + 1]
-        steps = (parts.get(names[i + 1]) or {}).get("steps")
-        resolved = b is not None and steps is not None and b >= steps * EPS
-        orders.append(log2_ratio(a, b) if resolved else None)
-    defined = [o for o in orders if o is not None]
-    return dict(values=values, orders=orders, smallest_order=min(defined) if defined else None)
+    points = []
+    for n, v in zip(names, values, strict=True):
+        steps = (parts.get(n) or {}).get("steps")
+        floor = None if steps is None else steps * EPS
+        points.append(dict(difference=v, floor=floor,
+                           above=None if v is None or floor is None else bool(v > 0 and
+                                                                               v >= floor)))
+    classes = [classify(a, b, (low, None))
+               for a, b in zip(points, points[1:], strict=False)]
+    resolved = [c["order"] for c in classes if c["cls"] == "resolved" and c["order"] is not None]
+    return dict(values=values, floors=[q["floor"] for q in points], classes=classes,
+                passes=int(bool(classes) and all(c["passes"] for c in classes)),
+                smallest_resolved_order=min(resolved) if resolved else None)
 
 
 def heat_increments(part, routes):
-    """The smallest increase of each route's cumulative heat between successive records."""
-    out = []
+    """Each route's smallest increase of its cumulative heat between successive records, and the
+    smallest over the routes (None when a route's series is missing)."""
+    each = {}
     for route in routes:
         s = series(part, f"heat_{route}_pJ")
-        if s is None:
-            return None
-        out += [b - a for a, b in zip(s, s[1:], strict=False)]
-    return min(out) if out else None
+        each[route] = None if s is None else min((b - a for a, b in zip(s, s[1:], strict=False)),
+                                                default=None)
+    values = list(each.values())
+    smallest = None if not values or any(v is None for v in values) else min(values)
+    return dict(each=each, smallest=smallest)
 
 
 def route_ledger(part, node_series, transfers, *, sign, tolerance):
@@ -294,7 +358,7 @@ def derive_fr4(parts, derivation):
     ref, floor = worlds.get("declared"), worlds.get("floor")
     engine_parts = list(rungs) + list(d["control_parts"])
     out = dict(admission=admission(parts, engine_parts + ["reference"]))
-    out["orders"] = {x: ladder(parts, rungs, x) for x in d["order_observables"]}
+    out["orders"] = {x: ladder(parts, rungs, x, d["band"]) for x in d["order_observables"]}
     v_b = series(parts.get(declared), "V_b")
     v_range = None if v_b is None else max(v_b) - min(v_b)
     out["state_error"] = dict(
@@ -316,10 +380,10 @@ def derive_fr4(parts, derivation):
         floor_pH_L=max_abs_difference(ref, floor, "pH_L"))
     out["envelope"] = envelope(parts, rungs)
     out["ledgers"] = dict(
-        material_over_tolerance=material(parts, rungs),
+        material=material(parts, rungs, d),
         charge_over_tolerance=charge(parts, rungs),
         energy_over_flows_at_declared=energy_over_flows(eng or {}),
-        energy=energy_ladder(parts, rungs),
+        energy=energy_ladder(parts, rungs, d["energy_order_low"]),
     )
     out["bands"] = dict(cytosol_pH_max_deviation=cytosol_band(parts, rungs, d["cytosol_pH"]))
     k1_name, k2_name, k3_name = d["control_parts"]
@@ -350,7 +414,8 @@ def derive_arm(parts, arm, d):
     budget = None if x_l is None else d["x_budget_fraction"] * x_l[0]
     out = dict(budget_fmol=budget,
                admission=admission(parts, list(rungs) + [control, "start", "reference"]))
-    out["orders"] = {x: ladder(parts, rungs, x) for x in d["order_observables"]}
+    out["orders"] = {x: ladder(parts, rungs, x, d["band"])
+                     for x in [*d["order_observables"], *d.get("exact_observables", [])]}
     out["state_error"] = dict(
         X_L_over_budget=ratio(richardson(parts, declared, half, "X_L"), budget),
         pH_L=richardson(parts, declared, half, "pH_L"))
@@ -368,25 +433,32 @@ def derive_arm(parts, arm, d):
         V_b=max_or_none([row0(p, ref, "V_b") for p in starts]),
         X_L_over_budget=ratio(max_or_none([row0(p, ref, "X_L") for p in starts]), budget))
     out["envelope"] = envelope(parts, list(rungs) + [control])
-    tolerance = ((eng or {}).get("ledgers") or {}).get("material_tolerance_fmol") or {}
+    nodes, floors = d["conserved_nodes"], d["material_floors_fmol"]
+    room_h, room_x = (allowance(eng, s_, nodes, floors) for s_ in ("H", "X"))
     protons = list(d["proton_transfers"])
     cargo = list(a["cargo_transfers"])
     out["protons"] = dict(
-        lumen_over_tolerance=route_ledger(eng or {}, "Heq_L", protons, sign=1,
-                                          tolerance=tolerance.get("H")),
-        cytosol_over_tolerance=route_ledger(eng or {}, "Heq_c", protons, sign=-1,
-                                            tolerance=tolerance.get("H")))
-    out["protons"]["max_over_tolerance"] = max_or_none(list(out["protons"].values()))
+        allowance_fmol=room_h,
+        lumen_over_allowance=route_ledger(eng or {}, "Heq_L", protons, sign=1, tolerance=room_h),
+        cytosol_over_allowance=route_ledger(eng or {}, "Heq_c", protons, sign=-1,
+                                            tolerance=room_h))
+    out["protons"]["max_over_allowance"] = max_or_none(
+        [out["protons"]["lumen_over_allowance"], out["protons"]["cytosol_over_allowance"]])
+    heat = heat_increments(eng or {}, a["passive_routes"])
     out["energy"] = dict(
         over_flows_at_declared=energy_over_flows(eng or {}),
-        ladder=energy_ladder(parts, rungs),
-        smallest_route_heat_increment_pJ=heat_increments(eng or {}, a["passive_routes"]))
+        ladder=energy_ladder(parts, rungs, d["energy_order_low"]),
+        route_heat_increments_pJ=heat["each"],
+        smallest_judged_route_heat_increment_pJ=heat_increments(
+            eng or {}, a["judged_heat_routes"])["smallest"])
+    material_report = material(parts, [declared], d)
+    x_report = (material_report["parts"].get(declared) or {}).get("X")
+    out["material"] = material_report
     out["cargo"] = dict(
-        material_over_tolerance=material(parts, [declared]),
-        lumen_over_tolerance=route_ledger(eng or {}, "X_L", cargo, sign=1,
-                                          tolerance=tolerance.get("X")),
-        cytosol_over_tolerance=route_ledger(eng or {}, "X_c", cargo, sign=-1,
-                                            tolerance=tolerance.get("X")))
+        allowance_fmol=room_x,
+        material_over_allowance=None if x_report is None else x_report["ratio"],
+        lumen_over_allowance=route_ledger(eng or {}, "X_L", cargo, sign=1, tolerance=room_x),
+        cytosol_over_allowance=route_ledger(eng or {}, "X_c", cargo, sign=-1, tolerance=room_x))
     d_series, f_series = series(eng, "d"), series(eng, "f")
     out["bands"] = dict(
         cytosol_pH_max_deviation=cytosol_band(parts, list(rungs) + [control], d["cytosol_pH"]),

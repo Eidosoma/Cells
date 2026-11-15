@@ -93,11 +93,11 @@
   "early_pump_current_pA": "about 0.44 (2,760 H+/s per member at the pump's saturation 0.276), carried by the K+ route at about 2.2 mV"
  },
  "rules": {
-  "dt_study": "S5's form, as D150's and MG0c's: per record, the step term |q(dt) - q(dt/2)| and the observed orders log2 of successive max-norm differences on the three finest rungs; the rule detects bias, not order",
+  "dt_study": "S5's form, as D150's and MG0c's: per record, the step term |q(dt) - q(dt/2)|, and the observed orders log2 of successive max-norm differences on the three finest rungs; the rule detects bias, not order. Each difference has its floor F = N eps max|q| (N the finer rung's steps). On the two judged differences: resolved (both >= F) lies in [1.8, 2.2]; at rounding (both < F) passes; mixed (the coarser >= F, the finer < F) passes unless the implied lower bound log2(coarser difference / finer floor) exceeds 2.2; reversed (the coarser < F, the finer >= F) fails; each observable's class is reported with its differences and floors (pre-run correction, the lead, 15 November 2026)",
   "state_error": "at the declared 1 ms, the Richardson-estimated error of the lumen pH <= 1e-3 pH units and of V_b <= 1e-3 of its range",
   "reference": "at 1 ms against the independent reference, within J4's budget of 1e-3 pH: the declared physical accuracy, the same as J3's. Basis: the references agent's measured floor on this world (about 5e-14 pH) shows the reference resolves that budget by about ten orders of magnitude; a multiple of the floor would sit far below the engine's own discretisation error at 1 ms, so J4 could never pass (the coordinator's corrected ruling, 15 November)",
   "envelope": "the closure's estimated first-order lag behind the kinetic system, (rho/lambda)(beta/ln 10 - h)/(h ln 10), within 1e-3 pH at every stage of every buffered node (rapid_proton_buffer.lag_estimate_ph), counted and reported; any failure fails the part. Revised before registration: the FR-4 references' run 02 showed the earlier fixed ratio lambda >= 1e3 rho does not imply the budget (it passes from k_on 0.83 /mM/s, the budget only from about 1.28e4)",
-  "ledgers": "material per species within its declared floor at every record; charge within the capacitor tolerance; energy residual over flows <= 2e-3 at 1 ms (today's booking) and falling at second order down the ladder",
+  "ledgers": "material per species within its allowance at every record: the declared floor plus N eps max over records of the species' total over the cell, the lumen and the bath (N the run's steps), computed by the judge from the records and reported per species (pre-run correction, the lead, 15 November 2026); charge within the capacitor tolerance; energy residual over flows <= 2e-3 at 1 ms (today's booking), falling at second order down the ladder (the classes, with no upper edge)",
   "bands": "the cytosol's pH within 7.2 ± 0.05 at every stage (the pump's domain refuses otherwise)",
   "judged_run": "once, after registration, from a fresh clean execution snapshot of the integrated candidate (validation/source_snapshot.py)",
   "attempts": "an attempt that ends by infrastructure before its verdict is written is not a verdict; a refusal by the engine is a verdict",
@@ -105,11 +105,11 @@
  },
  "criteria": {
   "J1_admission": "every rung admitted and run without refusal",
-  "J2_orders": "observed orders of lumen pH, V_b, lumen K and pump cycles in [1.8, 2.2] on the three finest rungs",
+  "J2_orders": "observed orders of lumen pH, V_b, lumen K and pump cycles on the three finest rungs, by the classes rule (rules.dt_study)",
   "J3_state_error": "the state_error rule at 1 ms",
   "J4_reference": "the reference rule at 1 ms: |pH_engine - pH_reference| <= 1e-3 at every record, with V_b, lumen K and pump cycles reported against the reference beside it",
   "J5_envelope": "the envelope rule (the state-dependent lag check)",
-  "J6_ledgers": "the ledgers rule, and the bands rule",
+  "J6_ledgers": "the ledgers rule (material within its allowance), and the bands rule",
   "J7_controls": "every control below caught as registered"
  },
  "controls": {
@@ -142,16 +142,15 @@
   "The dt ladder (2, 1, 0.5, 0.25 ms) was chosen with the 0.05 threshold in view, so that the coarsest rung sits at it",
   "The envelope check was revised before any run of this world, after the FR-4 references' run 02 found that the fixed ratio admitted k_on = 1e3 with a 1.26e-2 pH lag; the revised check is the state-dependent lag estimate, with that case kept as a planted test",
   "Absent rows: the world declares a 1e-9 mM trace (background 1e-9 mM, floor 1e-18 fmol) wherever a row does not apply, since absent rows are refused; the independent references use an exact 0 for the absent buffer. This is a declared difference: the closure's mask keys on the declared (node, row) pairs, so the traces are never live buffers, and their effect on the compared quantities is reported",
-  "The machine criteria (judge.criteria), the judge's arithmetic (judge.derivation and validation/tissue/compartment_ph_judge.py's docstring) and the units were written on 15 November 2026 from this protocol's prose criteria, rules and controls, before any run of this world (no engine run exists). The registration plan moved from 'registration' to 'registration_plan' so that the registration path adds the lead's record under 'registration' (MG0c's form), and judged_parts names the generator's parts"
+  "The machine criteria (judge.criteria), the judge's arithmetic (judge.derivation and validation/tissue/compartment_ph_judge.py's docstring) and the units were written on 15 November 2026 from this protocol's prose criteria, rules and controls, before any run of this world (no engine run exists). The registration plan moved from 'registration' to 'registration_plan' so that the registration path adds the lead's record under 'registration' (MG0c's form), and judged_parts names the generator's parts",
+  "pre-run correction, 15 November 2026, the lead's ruling on FR4's Q1 (K2): confirmed. K2 is caught when the maximum over records of |pH_engine - pH_reference| >= 2e-3",
+  "pre-run correction, 15 November 2026, the lead's ruling on FR4's Q2 (the energy residual's order): confirmed. The smallest resolved order of the energy residual is >= 1.8 and faster is no defect; Q6's classes apply to it, with no upper edge",
+  "pre-run correction, 15 November 2026, the lead's ruling on FR4's Q3 (cost): not a discrepancy. The runbook's 0.9 CPU-h was one 1 ms rung, and that figure is the charged-patch test's upper bound from another world; the first development rung measures the real cost before anything is budgeted, and the lead sets the rehearsal's horizon from it",
+  "pre-run correction, 15 November 2026, the lead's ruling on FR4's Q4 (K3's unit): confirmed. K3's engine part stays its own unit at 1 ms, because the run-time flag is what it tests; it needs gap 7's per-stage count or maximum, scheduled by the core before FR-4's registration",
+  "pre-run correction, 15 November 2026, the lead's ruling on FR4's Q5 (the H floor): the 1e-16 fmol H floor sits below one ulp of the cytosol's H_eq, so the check changes: the material allowance is the declared floor plus N eps max over records of the species' total (N the run's steps), computed by the judge from the records, never read from the engine, and reported per species",
+  "pre-run correction, 15 November 2026, the lead's ruling on FR4's Q6 (resolution): one ruling with FR-5's Q3 and Q8. The floor F = N eps max|q| (N the finer rung's steps) is kept; on the two judged differences, each with its own floor: resolved (both >= F) lies in [1.8, 2.2]; at rounding (both < F) passes; mixed (the coarser >= F, the finer < F) passes unless the implied lower bound log2(coarser difference / finer floor) exceeds 2.2; reversed (the coarser < F, the finer >= F) fails. The judge reports each observable's class with its differences and floors; J3 and J4 still judge every observable against its budget"
  ],
- "questions_for_the_lead": [
-  "1. K2: 'J4 must fail by more than its budget' is read as |pH - pH_reference| >= 2e-3 (the excess over the budget at least the budget). Confirm, or give the reading",
-  "2. J6's 'falls at second order down the ladder' has no band: the smallest resolved order of the energy residual over flows is judged >= 1.8 (the band's lower edge; falling faster is no defect). Confirm",
-  "3. Cost: with the ladder and the controls inside the judged run, the upper bound is 6.75 CPU-h for the rungs plus 2.7 for K1-K3 (the runbook's 0.9 was one rung); as parallel units the 0.25 ms rung bounds the wall time at about 3.6 h, for the development dt study, the rehearsal and the judged run each",
-  "4. K3's engine part reruns the 1 ms world only for the envelope at the lowered k_on (the trajectory is rung_1ms's, since k_on enters only the check): keep it as its own 0.9 CPU-h unit, as 'at run time' says?",
-  "5. J6's material check uses the engine's own per-species tolerance, the declared floor plus its rounding allowance, which the seam must report: the cytosol holds about 105 fmol of H_eq (one ulp is 1.4e-14 fmol), so the declared H floor of 1e-16 fmol cannot hold alone",
-  "6. The resolution rule is this draft's choice: a rung difference counts only at or above N eps max|q| (N the finer rung's steps, a worst-case accumulation), and an observable whose finest differences fall under it has no order, so J2 fails for it. Lumen K at the 0.25 ms rung needs a difference of about 7e-9 fmol (3.6e6 steps x eps x 9.2 fmol). Keep the rule, or judge such an observable as converged at rounding?"
- ],
+ "questions_for_the_lead": [],
  "development_runs": {
   "runs": [
    {
@@ -173,7 +172,13 @@
  "questions_answered": [
   "Registration: the lead, from a clean snapshot of the integrated candidate, after the dt study and a rehearsal; the protocol travels with the branch's merge into integration-d172 and reaches main with the single landing",
   "The single-compartment form: reported, not judged, in version 1",
-  "J4's budget (corrected ruling): 1e-3 pH, the declared physical accuracy consistent with J3; the references' floor (about 5e-14 pH) shows the reference resolves it by many orders, as written in the reference rule"
+  "J4's budget (corrected ruling): 1e-3 pH, the declared physical accuracy consistent with J3; the references' floor (about 5e-14 pH) shows the reference resolves it by many orders, as written in the reference rule",
+  "1. K2: 'J4 must fail by more than its budget' is read as |pH - pH_reference| >= 2e-3 (the excess over the budget at least the budget). Confirm, or give the reading RULED (pre-run correction, 15 November 2026, the lead's ruling on this question): Q1 (K2): confirmed. K2 is caught when the maximum over records of |pH_engine - pH_reference| >= 2e-3",
+  "2. J6's 'falls at second order down the ladder' has no band: the smallest resolved order of the energy residual over flows is judged >= 1.8 (the band's lower edge; falling faster is no defect). Confirm RULED (pre-run correction, 15 November 2026, the lead's ruling on this question): Q2 (the energy residual's order): confirmed. The smallest resolved order of the energy residual is >= 1.8 and faster is no defect; Q6's classes apply to it, with no upper edge",
+  "3. Cost: with the ladder and the controls inside the judged run, the upper bound is 6.75 CPU-h for the rungs plus 2.7 for K1-K3 (the runbook's 0.9 was one rung); as parallel units the 0.25 ms rung bounds the wall time at about 3.6 h, for the development dt study, the rehearsal and the judged run each RULED (pre-run correction, 15 November 2026, the lead's ruling on this question): Q3 (cost): not a discrepancy. The runbook's 0.9 CPU-h was one 1 ms rung, and that figure is the charged-patch test's upper bound from another world; the first development rung measures the real cost before anything is budgeted, and the lead sets the rehearsal's horizon from it",
+  "4. K3's engine part reruns the 1 ms world only for the envelope at the lowered k_on (the trajectory is rung_1ms's, since k_on enters only the check): keep it as its own 0.9 CPU-h unit, as 'at run time' says? RULED (pre-run correction, 15 November 2026, the lead's ruling on this question): Q4 (K3's unit): confirmed. K3's engine part stays its own unit at 1 ms, because the run-time flag is what it tests; it needs gap 7's per-stage count or maximum, scheduled by the core before FR-4's registration",
+  "5. J6's material check uses the engine's own per-species tolerance, the declared floor plus its rounding allowance, which the seam must report: the cytosol holds about 105 fmol of H_eq (one ulp is 1.4e-14 fmol), so the declared H floor of 1e-16 fmol cannot hold alone RULED (pre-run correction, 15 November 2026, the lead's ruling on this question): Q5 (the H floor): the 1e-16 fmol H floor sits below one ulp of the cytosol's H_eq, so the check changes: the material allowance is the declared floor plus N eps max over records of the species' total (N the run's steps), computed by the judge from the records, never read from the engine, and reported per species",
+  "6. The resolution rule is this draft's choice: a rung difference counts only at or above N eps max|q| (N the finer rung's steps, a worst-case accumulation), and an observable whose finest differences fall under it has no order, so J2 fails for it. Lumen K at the 0.25 ms rung needs a difference of about 7e-9 fmol (3.6e6 steps x eps x 9.2 fmol). Keep the rule, or judge such an observable as converged at rounding? RULED (pre-run correction, 15 November 2026, the lead's ruling on this question): Q6 (resolution): one ruling with FR-5's Q3 and Q8. The floor F = N eps max|q| (N the finer rung's steps) is kept; on the two judged differences, each with its own floor: resolved (both >= F) lies in [1.8, 2.2]; at rounding (both < F) passes; mixed (the coarser >= F, the finer < F) passes unless the implied lower bound log2(coarser difference / finer floor) exceeds 2.2; reversed (the coarser < F, the finer >= F) fails. The judge reports each observable's class with its differences and floors; J3 and J4 still judge every observable against its budget"
  ],
  "recording_rules": [
   "Keep conserved proton equivalents (H_eq, the stored row) apart from free h and pH (the closure's algebraic read): report both; the ledgers (J6) are judged on H_eq, the reference's pH (J4) on the read",
@@ -213,6 +218,38 @@
     "cycles"
    ],
    "cytosol_pH": 7.2,
+   "band": [
+    1.8,
+    2.2
+   ],
+   "energy_order_low": 1.8,
+   "species": [
+    "Na",
+    "K",
+    "Cl",
+    "H",
+    "B_c",
+    "B_L",
+    "ATP",
+    "ADP",
+    "Pi"
+   ],
+   "conserved_nodes": [
+    "cell_0",
+    "lumen_0",
+    "bath_0"
+   ],
+   "material_floors_fmol": {
+    "Na": 1e-10,
+    "K": 1e-10,
+    "Cl": 1e-10,
+    "H": 1e-16,
+    "B_c": 1e-18,
+    "B_L": 1e-18,
+    "ATP": 1e-18,
+    "ADP": 1e-18,
+    "Pi": 1e-18
+   },
    "arithmetic": "validation/tissue/compartment_ph_judge.py's docstring: max-norm differences on shared integer-second records; a difference resolved at N eps max|q| (N the finer rung's steps); orders on the three finest rungs; the Richardson error (4/3) D(dt, dt/2) at the nominal p = 2; crossings and mean rates by linear interpolation between records; ledgers over the engine's own tolerances; undefined values None"
   },
   "criteria": [
@@ -229,53 +266,41 @@
    {
     "id": "J2_order_pH_L",
     "metrics": [
-     "derived.orders.pH_L.order_finest"
+     "derived.orders.pH_L.passes"
     ],
-    "comparison": "within",
-    "threshold": [
-     1.8,
-     2.2
-    ],
-    "basis": "the observed order of pH_L on the three finest rungs (1, 0.5, 0.25 ms) lies in [1.8, 2.2]; an unresolved difference gives None, which fails",
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "pH_L on the three finest rungs (1, 0.5, 0.25 ms) by the classes rule: resolved in [1.8, 2.2]; at rounding passes; mixed passes unless its lower bound exceeds 2.2; reversed fails (rules.dt_study)",
     "judged": true
    },
    {
     "id": "J2_order_V_b",
     "metrics": [
-     "derived.orders.V_b.order_finest"
+     "derived.orders.V_b.passes"
     ],
-    "comparison": "within",
-    "threshold": [
-     1.8,
-     2.2
-    ],
-    "basis": "the observed order of V_b on the three finest rungs (1, 0.5, 0.25 ms) lies in [1.8, 2.2]; an unresolved difference gives None, which fails",
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "V_b on the three finest rungs (1, 0.5, 0.25 ms) by the classes rule: resolved in [1.8, 2.2]; at rounding passes; mixed passes unless its lower bound exceeds 2.2; reversed fails (rules.dt_study)",
     "judged": true
    },
    {
     "id": "J2_order_K_L",
     "metrics": [
-     "derived.orders.K_L.order_finest"
+     "derived.orders.K_L.passes"
     ],
-    "comparison": "within",
-    "threshold": [
-     1.8,
-     2.2
-    ],
-    "basis": "the observed order of K_L on the three finest rungs (1, 0.5, 0.25 ms) lies in [1.8, 2.2]; an unresolved difference gives None, which fails",
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "K_L on the three finest rungs (1, 0.5, 0.25 ms) by the classes rule: resolved in [1.8, 2.2]; at rounding passes; mixed passes unless its lower bound exceeds 2.2; reversed fails (rules.dt_study)",
     "judged": true
    },
    {
     "id": "J2_order_cycles",
     "metrics": [
-     "derived.orders.cycles.order_finest"
+     "derived.orders.cycles.passes"
     ],
-    "comparison": "within",
-    "threshold": [
-     1.8,
-     2.2
-    ],
-    "basis": "the observed order of cycles on the three finest rungs (1, 0.5, 0.25 ms) lies in [1.8, 2.2]; an unresolved difference gives None, which fails",
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "cycles on the three finest rungs (1, 0.5, 0.25 ms) by the classes rule: resolved in [1.8, 2.2]; at rounding passes; mixed passes unless its lower bound exceeds 2.2; reversed fails (rules.dt_study)",
     "judged": true
    },
    {
@@ -355,11 +380,11 @@
    {
     "id": "J6_material",
     "metrics": [
-     "derived.ledgers.material_over_tolerance"
+     "derived.ledgers.material.max_over_allowance"
     ],
     "comparison": "le",
     "threshold": 1,
-    "basis": "material per species within its declared floor, by the engine's own check, at every record of every rung",
+    "basis": "material per species within its allowance (the declared floor plus N eps max over records of its total, computed by the judge) at every record of every rung",
     "judged": true
    },
    {
@@ -385,12 +410,22 @@
    {
     "id": "J6_energy_falls",
     "metrics": [
-     "derived.ledgers.energy.smallest_order"
+     "derived.ledgers.energy.passes"
     ],
     "comparison": "ge",
-    "threshold": 1.8,
-    "basis": "the energy residual falls at second order down the ladder: its smallest resolved order at least the band's lower edge (the protocol gives no band; put to the lead)",
+    "threshold": 1,
+    "basis": "the energy residual falls at second order down the ladder: every successive pair by the classes rule with no upper edge (resolved orders >= 1.8)",
     "judged": true
+   },
+   {
+    "id": "J6_reported",
+    "metrics": [
+     "derived.ledgers.energy.smallest_resolved_order"
+    ],
+    "comparison": "ge",
+    "threshold": 0,
+    "basis": "the smallest resolved order of the energy residual, reported",
+    "judged": false
    },
    {
     "id": "J6_bands",
@@ -505,6 +540,7 @@
    "judge": "/mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.compartment_ph_judge judged SNAPSHOT/validation/compartment_ph/protocols/fr4_acidification_v1.json OUT/verdict OUT/*/results.json (in its own unit: 1G, 600 s; it runs nothing)",
    "runtime_max_rule": "3 x the rehearsal's wall time of the unit plus 600 s, rounded up to the minute (D150's rule)",
    "caps": "2G per unit (the runbook) until the rehearsal measures the peaks",
+   "cost_note": "the units' cpu_hours_upper use the charged-patch test's 3.6 ms per step, an upper bound from another world; the first development rung measures the real cost before anything is budgeted (the lead's ruling, 15 November 2026)",
    "no_wait_headroom": "judged units run without --wait-headroom: the wait would run inside the unit and count against its runtime limit; the lead checks the slice's room before each launch",
    "attempts": "an infrastructure ending (a runtime or memory kill, a signal, an incomplete results.json) is rerun once from the same snapshot into a new OUT/PART; a refusal by the engine is a verdict",
    "enforced_by": "the launcher alone (run_detached.sh's MemoryMax, CPUAffinity and RuntimeMaxSec): no code reads these fields"
@@ -546,9 +582,8 @@
     "cytosol_pH_min": "the cytosol's smallest pH over every stage",
     "cytosol_pH_max": "its largest"
    },
+   "amounts_fmol": "{node: {species: [amount at each record]}} for every node and row: the judge computes the material check and its allowance from these (the lead's ruling, 15 November 2026), never from an engine tolerance",
    "ledgers": {
-    "material_residual_fmol": "per species, the largest residual of the engine's material check over the records",
-    "material_tolerance_fmol": "per species, the tolerance that check uses (the declared floor plus the engine's rounding allowance)",
     "charge_residual_C": "the largest charge residual",
     "charge_tolerance_C": "its tolerance"
    },

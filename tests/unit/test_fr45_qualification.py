@@ -28,10 +28,27 @@ PROTOCOLS = {k: json.loads(p.read_text()) for k, p in generator.PROTOCOLS.items(
 # ------------------------------------------------------------------------ synthetic records
 
 
+SPECIES = [s for s, _ in defs.SPECIES]
+
+
+def amounts(series, n, cargo):
+    """Every node's amounts for the allowance: H, K and X move between cell and lumen with their
+    totals conserved; every other row is constant."""
+    out = {node: {s: [1.0 + k] * n for k, s in enumerate(SPECIES + (["X"] if cargo else []))}
+           for node in (defs.CELL, defs.LUMEN, defs.BATH)}
+    moving = dict(H=("Heq_L", 108.0), K=("K_L", 149.16), X=("X_L", 0.4843288))
+    for s, (name, total) in moving.items():
+        if name in series:
+            out[defs.LUMEN][s] = list(series[name])
+            out[defs.CELL][s] = [total - v for v in series[name]]
+    return out
+
+
 def part(dt, end, series, *, stage=None, ledgers=None, start=None):
     out = dict(kind="engine", dt_s=dt, end_s=end, steps=round(end / dt), admitted=True,
                completed=True, refusal=None, record_s=[float(t) for t in range(round(end) + 1)],
-               series=series, stage=stage or {}, ledgers=ledgers or {})
+               series=series, stage=stage or {}, ledgers=ledgers or {},
+               amounts_fmol=amounts(series, round(end) + 1, "X_L" in series))
     if start is not None:
         out["start"] = start
     return out
@@ -50,6 +67,7 @@ def fr4_series(t, dt, order=2, k1=False, k2=False):
         pH_L=ph, pH_c=[7.2 + 0.018 * grow(s, 100) for s in t],
         V_b=[-7.3e-3 * grow(s, 5) + 1e-8 * e * grow(s, 50) for s in t],
         K_L=[9.16 - 2.17 * grow(s, 100) + 1e-6 * e * grow(s, 50) for s in t],
+        Heq_L=[2.6 + 0.5 * grow(s, 100) + 1e-6 * e * grow(s, 50) for s in t],
         cycles=[2e-3 * s + 1e-6 * e * grow(s, 50) for s in t],
         energy_residual_pJ=[1e-4 * e * f for f in flows], energy_flows_pJ=flows)
 
@@ -59,9 +77,7 @@ def fr4_parts(order=2):
     `order`)."""
     stage = dict(envelope_max_lag_ph=1e-5, envelope_stages_beyond=0, cytosol_pH_min=7.2,
                  cytosol_pH_max=7.218)
-    ledgers = dict(material_residual_fmol={"H": 1e-15, "K": 1e-12},
-                   material_tolerance_fmol={"H": 1e-14, "K": 1e-10},
-                   charge_residual_C=1e-21, charge_tolerance_C=1e-18)
+    ledgers = dict(charge_residual_C=1e-21, charge_tolerance_C=1e-18)
     t = [float(s) for s in range(901)]
     parts = {}
     for name, dt in generator.FR4_RUNGS.items():
@@ -133,13 +149,11 @@ def fr5_arm_series(arm, t, dt, *, control=False, exact_d=False):
     return out
 
 
-def fr5_parts(*, exact_d=False, extract_sha="a" * 64):
+def fr5_parts(*, exact_d=True, extract_sha="a" * 64):
     t = [float(s) for s in range(401)]
     stage = dict(envelope_max_lag_ph=1e-4, envelope_stages_beyond=0, cytosol_pH_min=7.21,
                  cytosol_pH_max=7.22)
-    ledgers = dict(material_residual_fmol={"H": 1e-15, "X": 1e-16},
-                   material_tolerance_fmol={"H": 1e-12, "X": 1e-12},
-                   charge_residual_C=1e-21, charge_tolerance_C=1e-18)
+    ledgers = dict(charge_residual_C=1e-21, charge_tolerance_C=1e-18)
     start = dict(extract_sha256=extract_sha, producer="engine", time_s=1800.0)
     parts = dict(start=dict(kind="engine", admitted=True, completed=True,
                             extract_sha256=extract_sha))
@@ -169,24 +183,62 @@ def failed(parts, protocol):
 # ------------------------------------------------------------------------ the arithmetic
 
 
-def test_a_second_order_ladder_has_order_two_and_a_first_order_rung_leaves_the_band():
+def test_a_second_order_ladder_is_resolved_in_band_and_a_first_order_one_fails():
     parts = fr4_parts()
     rungs = list(generator.FR4_RUNGS)
-    good = judge.ladder(parts, rungs, "pH_L")
-    assert good["resolved"] == [True, True, True]
-    assert good["orders"] == pytest.approx([2.0, 2.0], abs=1e-6)  # rounding of the sums
-    bad = judge.ladder(fr4_parts(order=1), rungs, "pH_L")
-    assert bad["order_finest"] == pytest.approx(1.0, abs=1e-6)
+    good = judge.ladder(parts, rungs, "pH_L", (1.8, 2.2))
+    assert [c["cls"] for c in good["classes"]] == ["resolved", "resolved"]
+    assert [c["order"] for c in good["classes"]] == pytest.approx([2.0, 2.0], abs=1e-6)
+    assert good["passes"] == 1 and good["judged_class"] == "resolved"
+    bad = judge.ladder(fr4_parts(order=1), rungs, "pH_L", (1.8, 2.2))
+    assert bad["order_finest"] == pytest.approx(1.0, abs=1e-6) and bad["passes"] == 0
 
 
-def test_a_difference_under_accumulated_rounding_is_unresolved_and_gives_no_order():
+def test_differences_under_their_floors_are_at_rounding_and_pass():
     parts = fr4_parts()
     for name in generator.FR4_RUNGS:  # errors of 1e-13 pH: under N eps max|pH| at every rung
         dt = generator.FR4_RUNGS[name]
         parts[name]["series"]["pH_L"] = [7.2 + 1e-13 * (dt / 1e-3) ** 2 * grow(s, 50)
                                          for s in range(901)]
-    got = judge.ladder(parts, list(generator.FR4_RUNGS), "pH_L")
-    assert got["resolved"] == [False, False, False] and got["order_finest"] is None
+    got = judge.ladder(parts, list(generator.FR4_RUNGS), "pH_L", (1.8, 2.2))
+    assert got["judged_class"] == "at_rounding" and got["passes"] == 1
+    assert got["at_rounding_every_pair"] == 1 and got["order_finest"] is None
+
+
+def test_the_four_classes_of_two_differences_each_with_its_floor():
+    """The lead's ruling (15 November 2026): resolved in band; at rounding passes; mixed passes
+    unless its lower bound log2(D1/F2) exceeds the band's upper edge; reversed fails."""
+
+    def pair(d, floor):
+        return dict(difference=d, floor=floor, above=d > 0 and d >= floor)
+
+    band = (1.8, 2.2)
+    assert judge.classify(pair(4e-6, 1e-9), pair(1e-6, 1e-9), band)["passes"] == 1
+    assert judge.classify(pair(8e-6, 1e-9), pair(1e-6, 1e-9), band)["passes"] == 0  # order 3
+    rounding = judge.classify(pair(5e-10, 1e-9), pair(9e-10, 2e-9), band)
+    assert rounding["cls"] == "at_rounding" and rounding["passes"] == 1
+    mixed = judge.classify(pair(3e-9, 1e-9), pair(1e-9, 2e-9), band)
+    assert mixed["cls"] == "mixed" and mixed["lower_bound"] == pytest.approx(math.log2(1.5))
+    assert mixed["passes"] == 1
+    above = judge.classify(pair(1e-7, 1e-9), pair(1e-9, 2e-9), band)  # bound log2(50) > 2.2
+    assert above["cls"] == "mixed" and above["passes"] == 0
+    assert judge.classify(pair(1e-7, 1e-9), pair(1e-9, 2e-9), (1.8, None))["passes"] == 1
+    reversed_ = judge.classify(pair(5e-10, 1e-9), pair(3e-9, 2e-9), band)
+    assert reversed_["cls"] == "reversed" and reversed_["passes"] == 0
+
+
+def test_the_material_allowance_is_computed_by_the_judge_from_the_records():
+    """Floor plus N eps max over records of the species' total (the lead's ruling); a leak of H
+    beyond it fails J6, and the engine's tolerance is never read."""
+    protocol = PROTOCOLS["fr4"]
+    derived = judge.derive(fr4_parts(), protocol)
+    h = derived["ledgers"]["material"]["parts"]["rung_1ms"]["H"]
+    total = 108.0 + 1.0 + 3.0 * 1.0  # the lumen's and cell's H, and the bath's constant row
+    assert h["allowance_fmol"] == pytest.approx(1e-16 + 900000 * judge.EPS * total, rel=1e-6)
+    parts = fr4_parts()
+    lumen = parts["rung_1ms"]["amounts_fmol"][defs.LUMEN]["H"]
+    lumen[-1] += 1e-6  # material appears from nothing
+    assert failed(parts, protocol) == ["J6_material"]
 
 
 def test_the_richardson_error_is_the_true_error_of_a_second_order_rung():
@@ -267,9 +319,25 @@ def test_a_complete_fr5_run_passes_every_criterion_and_its_claims_and_controls_c
     assert "J11_R_release" in failed(parts, protocol)
 
 
-def test_an_exact_damage_state_gives_no_order_so_j2_fails_on_d():
-    """Question 3 to the lead: d's step is exact, so its rung differences are rounding."""
-    assert failed(fr5_parts(exact_d=True), PROTOCOLS["fr5"]) == ["J2_R_order_d", "J2_T_order_d"]
+def test_an_exact_damage_state_passes_and_a_resolved_one_fails_its_exactness():
+    """FR-5's Q3, ruled: d exact at rounding on every rung pair, fixed before the run."""
+    assert failed(fr5_parts(exact_d=True), PROTOCOLS["fr5"]) == []
+    assert failed(fr5_parts(exact_d=False), PROTOCOLS["fr5"]) == ["J2_R_d_exact", "J2_T_d_exact"]
+
+
+def test_route_heat_is_judged_on_the_routes_the_engine_does_not_refuse_per_step():
+    """FR-5's Q6, ruled: a fall in an exactly booked cargo route's heat is the engine's refusal
+    to make, not the judge's; a fall in the proton leak's fails J7."""
+    protocol = PROTOCOLS["fr5"]
+    parts = fr5_parts()
+    heat = parts["T_rung_0p5ms"]["series"]["heat_cargo_transfer_0_pJ"]
+    heat[200] -= 0.02  # the route's heat rises 0.01 pJ per record: this one falls
+    assert failed(parts, protocol) == []
+    derived = judge.derive(parts, protocol)
+    assert derived["T"]["energy"]["route_heat_increments_pJ"]["cargo_transfer_0"] < -1e-3
+    heat = parts["T_rung_0p5ms"]["series"]["heat_proton_leak_0_pJ"]
+    heat[200] -= 0.02
+    assert failed(parts, protocol) == ["J7_T_route_heat"]
 
 
 def test_every_prose_criterion_has_a_judged_machine_criterion():
@@ -284,7 +352,16 @@ def test_the_checked_in_judge_sections_are_the_drafters():
     for which, protocol in PROTOCOLS.items():
         assert protocol["judge"] == json.loads(json.dumps(drafter.judge_section(which)))
         assert protocol["judged_parts"] == list(generator.PARTS[which])
-        assert protocol["questions_for_the_lead"] == drafter.QUESTIONS[which]
+        assert protocol["questions_for_the_lead"] == []
+        for asked, ruling in zip(drafter.ASKED[which], drafter.RULINGS[which], strict=True):
+            assert any(a.startswith(asked) and ruling in a
+                       for a in protocol["questions_answered"])
+            assert f"{drafter.RULED} {which.upper()}'s {ruling}" in protocol["disclosures"]
+        for path, text in drafter.PROSE[which].items():
+            leaf = protocol
+            for key in path:
+                leaf = leaf[key]
+            assert leaf == text
 
 
 # ------------------------------------------------------------------------ refusals
