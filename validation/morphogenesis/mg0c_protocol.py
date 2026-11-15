@@ -112,7 +112,7 @@ UNITS = dict(  # Ruling 9: q7 alone, with a cap of at least 5 GiB; unit b too (U
     b=dict(parts=["q6", "q3", "q5"], cpu=7, min_cap_GiB=5),
     q7=dict(parts=["q7"], cpu=7, min_cap_GiB=5),
     c=dict(parts=["q4"], cpu=5),
-    guards=dict(entry="judge-guards", cpu=7),
+    guards=dict(entry="judge-guards", cpu=7, min_cap_GiB=5),  # Proposed (GUARDS_MEMORY).
 )
 LANES = (  # As the rehearsal ran them, each successor launched by hand when its lane is free.
     "CPU 5: unit a, then unit c; CPU 7: unit b, then q7, then judge-guards; then judge and "
@@ -202,6 +202,12 @@ REVIEW = dict(
         "passing path on the registered dry-run copy"
     ),
 )
+REHEARSAL_COMPARISON = (  # The rehearsal against development (evidence, not a run part).
+    "mg0c/compare_rehearsal.py -> rehearsal-58b6f14/compare-a.json, -b, -q7 and -c in "
+    "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/: every part identical but "
+    "Q6's controls_integrations, 38 against 32, the registered deltas' extra re-integrations; Q4's "
+    "near-tie leaves are the judged run's own, equal to those derived at drafting"
+)
 DISCLOSURES = [
     "Guard 2's rule (ruling 8), 1e-14 x steps x the scale from REFERENCES_USAGE.md, was chosen "
     "with D150's steps x eps x the scale in view, at which the development's passive world sits at "
@@ -212,9 +218,14 @@ DISCLOSURES = [
     "the k and D_V thresholds, Q4's top-two gaps and every Q1 mode's slow-eigenvalue sensitivity "
     "to all five parameters in view (mg0c/checks-r2.json, written before the cutoff); those "
     "sensitivities estimate the thresholds to within about 5 x (controls.removed)",
-    "The development runs come from snapshots before FR-9 (D165, the species cap raised to 16); "
-    "the rehearsal on main redrafts this protocol with one generator command",
+    "The development runs came from snapshots before FR-9 (D165, the species cap raised to 16). "
+    "This protocol is drafted from the rehearsal's runs on main 58b6f14 (FR-9 and the combined "
+    f"landing included), which reproduce them at every non-timing leaf ({REHEARSAL_COMPARISON})",
 ]
+GUARDS_MEMORY = (  # Proposed for the judged run from the rehearsal's peak (the lead decides).
+    "judge-guards peaked at 3.18 GB in the rehearsal under a 4 GiB cap; 5 GiB is proposed for the "
+    "judged run by ruling 9's reasoning"
+)
 QUESTIONS = []  # Questions 1 and 2 are answered (review.answers), as asked:
 ASKED = [
     "1. The scope line: guard 2's passive world runs the passive law in judged criteria "
@@ -1200,8 +1211,9 @@ def draft(output, paths, guards=None):
             "CPUs 5 and 7 (CPU backend only), each unit detached through scripts/run_detached.sh "
             "with --oom-first; memory caps 4 GiB for units a and c, at least 5 GiB for q7 (ruling "
             "9: a cap kill would spend the single rerun) and, by the same reasoning, for unit b "
-            f"({unit_b_memory(runs, origin)}); judge-guards uncapped per file; the units' peaks "
-            "and seconds in development_runs.timing"
+            f"({unit_b_memory(runs, origin)}); judge-guards uncapped per file in time, its memory "
+            f"cap proposed at 5 GiB ({GUARDS_MEMORY}); judge and combine 2 and 1 GiB; the units' "
+            "peaks and seconds in development_runs.timing"
         ),
         development_runs=dict(
             runs=runs,
