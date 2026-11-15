@@ -315,8 +315,19 @@ every 10 s).
 
 ## Readings
 
-- **The start:** "a saved checkpoint and a declared start" is read as FR-4's steady state. The
-  reference computes its own; pass the engine's checkpoint for a comparison.
+- **The note's revision:** both findings (§4.2's envelope above, §13.2 here) are against the note
+  at f3ec04cd. §4.2 has since been revised, so read "§4.2 says" as that revision's text.
+- **The start is undefined to the budget.**
+  - FR-4's 900 s acceptance run ends at pH_L 5.09601, while the steady state is 5.09463,
+    reached by about 1800 s.
+  - The gap, 1.4e-3 pH, exceeds the 1e-3 budget, so "FR-4's world at its steady state" is not
+    the end of FR-4's run.
+  - The owner should declare the checkpoint's time. Otherwise a comparison starts from the
+    engine's own checkpoint, passed as `tr.Start`. The reference computes its own at 3600 s.
+- **No budget is declared for X.** G1/G3 require a control's effect to exceed the declared budget,
+  so the two controls cannot be judged on X until §13.2 declares one.
+- **Resealing is off before 110 s,** as §13.2's "k_res 0.05 s⁻¹ from 110 s" reads. With it on
+  throughout, d would peak near k_inj/(k_inj + k_res) = 0.952 rather than 0.99995.
 - **The pore's proton heat** is booked apart from the leak's (each route its own heat, §9). Their
   sum is Appendix A's single J_H term.
 - **The transfer route is not scaled by d,** as in Appendix A's J_X, and §13.2 declares no f·d
@@ -393,7 +404,23 @@ boundary is designed, the same reference extends to the proton pump with the cel
 | Volumes and patch area | V_c 4.18879 pL, V_s 6.54498e-2 pL, A 7.85398e-10 m² |
 | Starting rows (mM) | ATP 3, ADP 0.3, Pi 3, D 30, P 3; Y 10 on both sides |
 | Standard terms | Δ_rG'°_hyd −30.5 kJ/mol; μ°'(D) − μ°'(P) = 60 kJ/mol, so Δ_rG'°_reg = −29.5 kJ/mol |
-| The pump | k 0.05 fmol/s, n 1, K_Y 1 mM, K_ATP 0.1 mM, a = 1 |
+| The pump | k 0.1 fmol/s, n 1, K_Y 1 mM, K_ATP 0.1 mM, a = 1 |
 | The leak | P_Y 1e-9 m/s |
-| The reaction | k_f 1e3 s⁻¹ (about 0.1 fmol/s forward at the start, above the pump's demand) |
+| The reaction | k_f 1e4 s⁻¹ (about 1.1 fmol/s forward at the start, well above the pump's demand) |
 | The depletion window | m = 0 on [100, 300) s; the run lasts 900 s |
+
+**Calibrated by a scratch integration (not the reference).**
+- **With these numbers:**
+  - over the window, ATP falls from 3.27 to 0.0002 mM;
+  - J_cyc falls from 8.7e-2 to 1.6e-4 fmol/s, while held fuel keeps it at 8.6e-2;
+  - Y in the store falls from 101 to 76 mM;
+  - within 100 s after the window, ATP is back at 3.26 mM and J_cyc at 8.7e-2.
+- **A smaller pump hardly depletes:**
+  - at k = 0.05 fmol/s, J_cyc falls only 5% (ATP 1.1 mM at the window's end);
+  - at k = 0.07, it falls 15%.
+- **Near zero ATP,** the law is evaluated as k S_Y (c_ATP − r)/(K_ATP + c_ATP), with
+  r = c_ADP c_Pi e^(Δ_rG'°_hyd/RT) (c_Y,s/c_Y,c)^n / c°.
+  - This is identical to §6's form for c_ATP > 0, and it stays finite at the integrator's trial
+    states.
+  - By estimate, |ΔG_cyc/RT| stays between about 5 (depleted) and 20 (fed), inside §6's domain
+    of 80.
