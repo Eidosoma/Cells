@@ -84,6 +84,11 @@
           "date": "2026-11-15",
           "engine_revision": "a456453b",
           "note": "Mycoplasma pneumoniae is a fourth species in the protein atlas: none of the inventory's 49 units is found in it, and nine of its own membrane machines are listed apart. The map shows the coupling operator's proposed qualification protocol, the composition matrix and the Syn3A track's revision. Still an interim view: the species switch that changes the levels and the shapes, and the shelves of each species' own proteins, are being built. Checked at 634ab261 on a clean checkout: 55 of 55 real-input checks; 146 tests (145 pass, 1 skipped). The 59 run files were not sent again"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "c7c0d706",
+          "note": "One species for the whole page (Human, Planarian, Syn3A, M. pneumoniae): the switch in the top bar sets the levels, the shapes, what the cell holds and the species' side of the protein atlas, all from data files. Syn3A and M. pneumoniae end at their cell; the human heart and body are rough placeholders. The map shows the coupling operator as numerically qualified and MG0c's protocol as registered. Checked at 4e89be16 on a clean checkout: 55 of 55 real-input checks, 38 of 38 species checks, 177 tests (176 pass, 1 skipped). The species' own proteins on shelves are not drawn yet. The 59 run files were not sent again"
         }
       ],
       "files": "out/cells-architecture.files.json lists the run files published beside the page (generated, not committed)"
