@@ -5353,6 +5353,15 @@ every composition D150 and D152 admit.
   - Worlds above 7 species are outside D150's judged scope until a protocol covers them.
   - Above 16 needs another probe.
 
+**Amended 2026-11-15, the user:** "so we should increase that limit as we need!"
+- The cap is raised whenever a consumer needs more species. Each raise:
+  - is a D148 change;
+  - comes with a guard world at the new size;
+  - measures the memory and step cost.
+- D172's restructure makes every species sum one explicit order, on host and device, in the same
+  round that consolidates species identity. A raise then needs only that guard and the cost
+  measurement, not a new summation-order probe (the lead's implementation).
+
 ## D166: A scheduled bath composition in the composite (FR-10) is logged at priority 2
 
 2026-11-14. The user supplied the request (FR-10), the last of the block, at the requester's
@@ -5430,7 +5439,8 @@ code check. The notes are [CLOSED_COMPARTMENT_DESIGN.md](CLOSED_COMPARTMENT_DESI
   - A dose from nothing is a known limit, extending D150's resolved-start ruling. It is refused in
     species-only worlds and unseen in mixed ones (probe 1). A staircase probe is requested.
   - Door S (slot-scoped provision) comes early, as a general contract feature. D152's conflict with
-    the schedule is nominal.
+    the schedule is nominal. *Amended by D174:* door S also covers the runtime merge onto the
+    accumulated view, so it is not host-only, and it joins D172's round.
 - **FR-3, the site occupancy.**
   - It is a new operator, `site_occupancy@1`, owning its populations and providing no field input.
   - It uses D152's unsplit SSPRK(3,3) with the per-route hybrid. The palindrome was measured and
@@ -5585,6 +5595,68 @@ contacting the authors and we will search for the missing data also help if need
 - ***M. pneumoniae* is audited soon,** amended the same evening by the user: "But also M. pneumoniae
   soon for validation if we have more real public data there". The Syn3A agent audits it next,
   for real measured public data to validate against, and says whether it should lead any stage.
+
+## D174: The external architecture review adopted into D172; the architecture document first
+
+2026-11-15. The user forwarded an external review of the D172 direction and asked: "from
+external reviewers, you review then get adviser then act on this", then "update the arhtecture doc
+before changing any code" and "afte3r review".
+
+**What the lead did.**
+- Reviewed it and checked three of its claims in the code:
+  - the adapter's view replaces whole fields per provider;
+  - exchange books signed work with no heat;
+  - the tier gate compares exit codes and failed and error counts only.
+- Adopted it after reviewing it with the advisor.
+- Wrote its requirements into [ARCHITECTURE.md](ARCHITECTURE.md), section "The modular core". Each
+  requirement there is marked holds today, target for D172, or open.
+
+**The rule:** no review-driven code, and no `src/` or `scripts/` landing, until that section is on
+main. Approved branch work continues.
+
+**Consequences, recorded there:**
+- Per-law dispatch replaces the option of keeping @3's five laws as one group.
+- A new passive permeation law is expected, since exchange is a driven route.
+- Door S includes the runtime merge onto the accumulated view and joins D172's round. This amends
+  D169.
+- The fuel requirement is fixed. Its representation is open.
+- The reviewers' text is kept outside the public repository.
+
+**Amended 2026-11-15.** The user forwarded a second review, of 6f76b8d: "from adviser on the latest
+plan, get also your adviser on it and make changes as needed". With the advisor, five
+clarifications were adopted into the section:
+- The GPU guarantees are targets with an implementation audit pending, not open. Per-law dispatch
+  means build-time selection.
+- The status legend now separates D172's landing scope from later consumer milestones.
+- Evolution roles are kept apart from conservation relationships, and counters declare what they
+  count.
+- The passive test runs on a closed two-compartment system, with reservoir work counted in
+  held-bath worlds.
+- Two present-tense examples were corrected.
+
+## D175: Levels of detail as declared representations
+
+2026-11-15. The user forwarded guidance approving a concise "Levels of detail" section, with six
+refinements, and asked: "review and also get a review from your adviser then update the arch docs".
+The lead adopted it after reviewing it with the advisor. It is now in
+[ARCHITECTURE.md](ARCHITECTURE.md#levels-of-detail), linked from both multiscale documents.
+
+**What it sets.**
+- Representations of a mechanism are declared per mechanism and per question; there is no global
+  detail level.
+- Compatibility is defined at the physical interface. Each representation closes its own ledgers,
+  and the transient difference between them belongs to the declared error budget.
+- One representation of a pathway per scope, enforced by a declared key.
+- Four optional fields, only on laws that stand in for something. They are a reserved interface in
+  D172's law design.
+- The representation is kept separate from the numerical method.
+- Assignments are fixed first.
+- The reduction is real in the kernels, not a runtime flag.
+- Numerical, reduction and biological validation are kept separate. The envelope is declared
+  before the comparison, and one case outside it must fail.
+
+**Its first consumer** follows D174's fuel case and waits for the fuel representation. The
+guidance's text is kept outside the public repository.
 
 ## Implementation choices and remaining work
 
