@@ -71,8 +71,8 @@
       species identity consolidated with every sum over species in one explicit order. That last
       item makes later raises of the species cap a guard and a measurement only (D165, amended).
     - **(b) Interfaces R only reserves:** evolution roles and step time, the compartment map,
-      the shared identity and potential declarations, the reads, transporters, fuel and implicit
-      routes.
+      the shared potential declarations, the reads, transporters, fuel and implicit routes, and
+      the four optional fields of a law that stands in for something (D175).
     - **(c) Qualifications that come in their consumers' own approved milestones:** Track E's
       laws, FR-1's delivery world, FR-4's pump, the fuel case, Syn3A's vesicles, FR-8.
 
@@ -365,6 +365,18 @@ The definition's population format stays as it is. The law, by its ID, declares:
 | RK4 reference step | Its own limit |
 | State roles | For its gates: continuous dynamical variables (§12) |
 | Provenance | `parity` (moved from the catalogue; moving is not calibrating), `cited` or `calibrated` |
+
+**Four optional fields, only on laws that stand in for something** (D175; ARCHITECTURE.md,
+"Levels of detail"). They are reserved in list (b) as B8; nothing in R uses them, and their first
+consumer comes after the fuel case.
+- **What it represents:** a declared key that admission compares, so one pathway has one
+  representation per scope, and the reference it was reduced from.
+- **What it preserves:** the state and history it retains.
+- **What can be asked of it:** the interventions, controls and observations it supports; others
+  are refused.
+- **Where it is qualified:** its validity envelope and error budget. Enforceable bounds, checked
+  at run time as the channel laws' voltage domains are today (`surface_pump_v3.channel_domain_valid`),
+  are kept apart from assumptions that need evidence.
 
 ### 7.2 Stage reads of moving rows
 
@@ -835,6 +847,7 @@ consumers.
 | B5. New kinds: transporters, finite fuel, implicit-route solvers, the stage hook | Their shapes only. Each kind brings its insertion point when it lands (§2.3) | FR-4; the fuel case; FR-4's patch and Track E's junctions; a named consumer of the hook |
 | B6. Ownership separated from solver invalidation (§9.1) | Unless the lead moves it into (a) | FR-2; FR-3's later step |
 | B7. The face-free bound term (§13.6), after P1 | Its shape | FR-4 |
+| B8. The four optional fields of a law that stands in for something (§7.1; D175) | Reserved in the law declaration's schema, unused | A reduced law after the fuel case |
 
 ### 15.3 List (c): consumer qualifications, in their own approved milestones
 
