@@ -985,8 +985,12 @@ the insertion point is CORE's. Its conventions, fixed here:
 - **The heat is booked in the law's own field, never in the membrane or junction fields:**
   `passive_dissipated_energy_pJ` [passive route], with the transfers in `passive_transferred`
   [species, passive route]. Both exist only where the law is declared, and both join @3's
-  material and energy ledgers. The booking is §7.5's exact one.
+  material and energy ledgers. The booking is §7.5's exact one, on rows that only exact-booked
+  passive routes move (version 1's scope); elsewhere it is today's tableau booking.
 - **Bound:** finding 3's term covers the routes (§13.6).
+- **Its own step:** exact booking closes the ledger up to h = dt·L = 2, so it no longer signals
+  an overshoot (§7.5). The law therefore declares its own step bound, or a dt-study criterion
+  that its acceptance runs, as FR-4 declares its 0.025 step on the max-side G.
 
 #### (j) The per-structure schema: three options (CORE's proposal for the lead's review with INT, 15 November; no code before the ruling)
 
@@ -1148,31 +1152,47 @@ Examples:
     linear capacitor through the step's mean patch voltage (V̄ Δq), split in the same way. The
     implicit patch, the first charged consumer, fixes it in its own module (FR45's
     `patch_booking_pJ`);
-  - **sign (a proposed correction, 15 November, for the lead's ruling; raised by the run view's
-    question):** a route's share can be negative while its row's total change is not, so the share
-    is booked only when it is ≥ 0:
-    - **why it can be negative:** under ARS(2,2,2) the explicit weights (δ, 1 − δ), δ < 0, can
-      reverse the applied transfer against stage rates of one sign; and at a charged row moved by
-      several routes, the chemical divided difference (weighted by the rows' amounts) and the
-      patch's mean voltage (linear in charge) average the step differently. For a neutral row the
-      share is ≥ 0 whenever the applied transfer and both end affinities agree in sign: μ̄ is the
-      mean of μ over the row's amount interval, and those intervals are ordered when both end
+  - **sign, scope and refusal: the lead's rulings of 15 November** (after FR45's probe,
+    `fr45/booking-probe/REPORT.md`, and the advisor's review; they replace the proposal of
+    f81f213d):
+    - **why a route's share can be negative** while its row's total change is not: under
+      ARS(2,2,2) the explicit weights (δ, 1 − δ), δ < 0, can reverse the applied transfer against
+      stage rates of one sign. And at a charged row moved by several routes, the chemical divided
+      difference (weighted by the rows' amounts) and the patch's mean voltage (linear in charge)
+      average the step differently. For a neutral row the share is ≥ 0 whenever the applied
+      transfer and both end affinities agree in sign, whatever else moved the rows: μ̄ is the mean
+      of μ over the row's amount interval, and those intervals are ordered when both end
       affinities are;
-    - **the rule:** a route books its share when its applied transfer and end-state affinity share
-      one nonzero sign and the share is ≥ 0; any other route books the trapezoid of its start and
-      end-state powers, each ≥ 0 for a passive law, as `trapezoid_nonnegative@1` books junction
-      heat. Not the tableau's quadrature, which δ can make negative (D152's hybrid can use its
-      quadrature because SSPRK(3,3)'s weights are positive);
-    - **so** every route's heat increment is ≥ 0 and its cumulative heat never falls, as the
-      family's dissipation check requires (every `*_dissipated_energy_pJ` field nonnegative and
-      non-decreasing per element at each accepted row, within 1e-12 pJ, else the step is refused).
-      The row closes exactly whenever every route moving it books its share, and otherwise within
-      the energy ledger's tolerance;
-    - **its cost:** the trapezoid samples the start power, so at a trace start it overbooks that
-      step's heat, as D152's quadrature does (its known limit, 5.4–5.6 times at a 1e-12 mM trace
-      in probe 2g). It does so only in the steps where the share is refused, the same steps in
-      which the quadrature would have been used before; the passive law's trace start is exact
-      wherever its share stands.
+    - **ruled (part 1):**
+      - The share-or-trapezoid rule (R1) is out: its trapezoid misses the ledger's allowance by
+        48× to 480× wherever it fires. **No trapezoid anywhere.**
+      - A passive group books its **exact total**, the sum of its routes' divided-difference
+        shares, which is the group's exact free-energy decrease.
+      - A step whose passive group's exact decrease is negative is **refused**, with that reason;
+    - **ruled (the scope, version 1):**
+      - Exact booking applies **only on rows moved solely by exact-booked passive routes**. It is
+        checked at binding, from `moved_rows` and the operators' `moved_in_step`.
+      - A passive route on a row that a pump or a tableau-booked route also moves keeps today's
+        tableau booking and today's checks. There the group's decrease could be read only as
+        μ̄-weighted transfers: μ̄ would average over a change the group did not make, and at
+        charged rows its sign would stop being the group's own. So a refusal could block FR-4's
+        own acidification (a pump against a passive leak).
+      - Within the scope, the negative-decrease refusal applies;
+    - **the accepted cost:** FR-4's acidified compartment, pumped and leaked, keeps its
+      energy-ledger step limit (dt·G/C_b ≈ 0.05, declared by its worlds) until a pump booking by
+      the same divided differences is designed. That is a later item, not in this round;
+    - **on hold: the per-route split (R3, clamp and scale within the group).** R3 sets negative
+      shares to zero and scales the group's positive shares so that they sum to the exact total;
+      every route's heat is then ≥ 0 and the ledger exact.
+      - The probe's cases had one route, or two positive shares, so the clamp never fired.
+      - FR45 now checks a mixed-sign group, and a planted sign error on a minor route while the
+        group's total stays positive, which the clamp could absorb silently. It also checks the
+        group's definition as the smallest closed set, using the version-1 groups.
+      - Until the ruling, the group's exact total is the booked quantity, and the routes' fields
+        hold no split;
+    - **overshoot is no longer signalled by the ledger:** with exact booking the ledger closes up
+      to h = dt·L = 2. So the passive law declares its own step bound or a dt-study criterion
+      ((i)), as FR-4 declares its 0.025 step on the max-side G.
 - **Static and declared.** Only a route law that declares the booking computes it. Today's routes
   (the membrane and junction constant-field routes, the channels, the faces) keep the tableau
   booking, so every existing program is unchanged. The booking needs the step's start amounts and
@@ -1180,10 +1200,16 @@ Examples:
 - **When.** It is implemented with its first consumer, the passive law's insertion point, and
   reused by the implicit patch and FR-10's onset. A tighter face-free bound constant than the
   ordinary one belongs with it (§13.6).
-- **Acceptance, with its first consumer:** on the closed pair the heat equals the exact free-energy
-  decrease to rounding; a trace start (1e-12 mM) is admitted; a planted sign error fails the
-  dissipation check; and a step built to make a share negative (a transfer reversed by δ, or a
-  charged row with a voltage swing) books the trapezoid, with the route's heat still ≥ 0.
+- **Acceptance, with its first consumer:**
+  - on the closed pair the group's heat equals the exact free-energy decrease to rounding;
+  - a trace start (1e-12 mM) is admitted;
+  - a planted sign error fails the dissipation check;
+  - within the scope, a step built to make the group's decrease negative is refused with its
+    reason;
+  - a passive route on a pumped row keeps today's tableau booking, bitwise;
+  - binding refuses no world of today's.
+
+  R3's per-route checks follow its ruling.
 
 ## 8. Scoped composition: door S's runtime merge (list (a))
 
