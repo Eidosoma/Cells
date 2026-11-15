@@ -62,6 +62,11 @@ What the hooks do:
 - **moved_rows:** the role at both nodes (and finite fuel's rows, when admitted).
 - **check_definition:** the registry's potentials for every fuel row, and finite fuel's refusal
   (gap 2).
+
+The stage helpers `gather` (the role's and fuel's concentrations per patch), `proton_law` (the
+proton kernel's inputs per patch), `role_rows` and `supply_record` are public, so a variant of
+this kind (a control's planted law, outside src/cells) composes from them, never from private
+names.
 """
 
 import math
@@ -444,7 +449,7 @@ def _concentrations(state, p, *, xp):
     )
 
 
-def _gather(state, p, *, xp):
+def gather(state, p, *, xp):
     """(role inside, role outside, fuel [3, membrane]) concentrations per membrane slot."""
     ci, co = _concentrations(state, p, xp=xp)
     inside, outside = ci[:, p.membrane_cell], co[:, p.membrane_outside]  # [S, membrane]
@@ -453,7 +458,7 @@ def _gather(state, p, *, xp):
     return inside[p.transporter_role, slots], outside[p.transporter_role, slots], fuel
 
 
-def _proton_law(c_in, c_out, voltage, fuel, p, *, xp):
+def proton_law(c_in, c_out, voltage, fuel, p, *, xp):
     """The proton kernel's (Inputs, Parameters) per membrane slot. Its c° is 1000 mM, so its
     Δ_rG'° is the registry's at c0 plus RT ln(1000 mM / c0)."""
     delta_g0 = p.transporter_drive0_J_mol + R * p.temperature * (
@@ -474,7 +479,7 @@ def _proton_law(c_in, c_out, voltage, fuel, p, *, xp):
 
 def kinetics(state, potentials, availability, p, *, xp):
     """(cycles, ΔG_cyc, Δ_rG'_ATP, domain) per membrane slot, each declared law on its slots."""
-    c_in, c_out, fuel = _gather(state, p, xp=xp)
+    c_in, c_out, fuel = gather(state, p, xp=xp)
     n = p.active.size
     voltage = xp.where(
         p.membrane_active, potentials[p.membrane_cell] - potentials[n + p.membrane_outside], 0.0
@@ -500,7 +505,7 @@ def kinetics(state, potentials, availability, p, *, xp):
         valid = valid & xp.where(mask, neutral.domain_valid(i, q, availability, xp=xp), True)
     if p.transporter_proton.shape[-1]:  # Static: the proton law is declared.
         mask = p.transporter_proton
-        i, q = _proton_law(c_in, c_out, voltage, fuel, p, xp=xp)
+        i, q = proton_law(c_in, c_out, voltage, fuel, p, xp=xp)
         r = proton.kinetics(i, q, availability, xp=xp)
         cycles = xp.where(mask, r.cycles_fmol_s, cycles)
         energy = xp.where(mask, r.cycle_free_energy_J_mol, energy)
@@ -509,12 +514,12 @@ def kinetics(state, potentials, availability, p, *, xp):
     return cycles, energy, drive, valid
 
 
-def _role_rows(p, species, *, xp):
+def role_rows(p, species, *, xp):
     """[S, membrane]: the role's row on every patch that carries a population."""
     return (xp.arange(species)[:, None] == p.transporter_role[None, :]) & p.transporter_present
 
 
-def _supply_record(cycles, p, species, *, xp):
+def supply_record(cycles, p, species, *, xp):
     """Held fuel's maintenance per cycle, [S, membrane]: +1 ATP, −1 ADP, −1 Pi."""
     rows = xp.arange(species)[:, None]
     held = p.transporter_held & p.transporter_present
@@ -535,7 +540,7 @@ def rates(state, potentials, control, p, *, xp):
     moved = xp.where(valid, cycles, 0.0)
     species = state.amount_increment.shape[0]
     outward = xp.where(
-        _role_rows(p, species, xp=xp), (p.transporter_stoichiometry * moved)[None, :], 0.0
+        role_rows(p, species, xp=xp), (p.transporter_stoichiometry * moved)[None, :], 0.0
     )
     heat = -1e-3 * moved * energy
     work = xp.where(p.transporter_held, -1e-3 * moved * drive, 0.0)
@@ -548,7 +553,7 @@ def rates(state, potentials, control, p, *, xp):
             transporter_cycles=moved,
             transporter_dissipated_energy_pJ=heat,
             transporter_metabolic_work_pJ=work,
-            transporter_fuel_supplied_fmol=_supply_record(moved, p, species, xp=xp),
+            transporter_fuel_supplied_fmol=supply_record(moved, p, species, xp=xp),
         ),
         heat_pJ_s=heat,
         work_pJ_s=work,
@@ -572,8 +577,8 @@ def stage_term(read, control, p, *, xp):
     n = p.active.size
     if not p.transporter_proton.shape[-1]:  # Static: no charged law is declared.
         return xp.zeros(n)
-    c_in, c_out, fuel = _gather(read, p, xp=xp)
-    i, q = _proton_law(c_in, c_out, xp.zeros_like(c_in), fuel, p, xp=xp)
+    c_in, c_out, fuel = gather(read, p, xp=xp)
+    i, q = proton_law(c_in, c_out, xp.zeros_like(c_in), fuel, p, xp=xp)
     head = (
         proton.chemical_drive(i, q, xp=xp) / q.protons_per_cycle
         + R * p.temperature * (xp.log(c_out) - xp.log(c_in))
@@ -592,7 +597,7 @@ def ledger_terms(state, p, *, xp):
     """The role's cumulative inward transfers at both nodes (n x cycles), heat and work."""
     species = state.amount_increment.shape[0]
     moved = p.transporter_stoichiometry * state.transporter_cycles
-    outward = xp.where(_role_rows(p, species, xp=xp), moved[None, :], 0.0)
+    outward = xp.where(role_rows(p, species, xp=xp), moved[None, :], 0.0)
     return dict(
         cell=-scatter(outward, state.amount_increment, (p.membrane_cell,), xp=xp),
         outside=scatter(

@@ -15,7 +15,8 @@ proton kernel (processes/proton_pump.py, unedited) evaluated with the inside and
 protons exchanged and the patch voltage negated, its moves and ledger terms reversed. The fuel
 band stays the cytosol's (the kernel checks it at its inside proton, here the lumen's, so it is
 switched off there and checked at h_c). A planted law of a control, registered only inside its
-block: never a model of the engine.
+block: never a model of the engine. It composes from the transporter module's public stage helpers
+(gather, proton_law, role_rows, supply_record), never its private names.
 """
 
 import dataclasses
@@ -26,12 +27,12 @@ def _reversed(state, potentials, availability, p, *, xp):
     from cells.models.inner_kinds import transporter as t
     from cells.processes import proton_pump as proton
 
-    c_in, c_out, fuel = t._gather(state, p, xp=xp)
+    c_in, c_out, fuel = t.gather(state, p, xp=xp)
     n = p.active.size
     voltage = xp.where(
         p.membrane_active, potentials[p.membrane_cell] - potentials[n + p.membrane_outside], 0.0
     )
-    i, q = t._proton_law(c_out, c_in, -voltage, fuel, p, xp=xp)  # The two sides exchanged.
+    i, q = t.proton_law(c_out, c_in, -voltage, fuel, p, xp=xp)  # The two sides exchanged.
     r = proton.kinetics(i, q, availability, xp=xp)
     unbanded = q._replace(fuel_ph_band=xp.full_like(q.fuel_ph_band, 1e300))
     valid = proton.domain_valid(i, unbanded, availability, xp=xp)
@@ -59,7 +60,7 @@ def _rates(state, potentials, control, p, *, xp):
     moved = xp.where(valid, cycles, 0.0)
     species = state.amount_increment.shape[0]
     inward = xp.where(
-        t._role_rows(p, species, xp=xp), (p.transporter_stoichiometry * moved)[None, :], 0.0
+        t.role_rows(p, species, xp=xp), (p.transporter_stoichiometry * moved)[None, :], 0.0
     )
     heat = -1e-3 * moved * energy
     work = xp.where(p.transporter_held, -1e-3 * moved * drive, 0.0)
@@ -72,7 +73,7 @@ def _rates(state, potentials, control, p, *, xp):
             transporter_cycles=moved,
             transporter_dissipated_energy_pJ=heat,
             transporter_metabolic_work_pJ=work,
-            transporter_fuel_supplied_fmol=t._supply_record(moved, p, species, xp=xp),
+            transporter_fuel_supplied_fmol=t.supply_record(moved, p, species, xp=xp),
         ),
         heat_pJ_s=heat,
         work_pJ_s=work,
@@ -98,8 +99,8 @@ def _stage_term(read, control, p, *, xp):
     n = p.active.size
     if not p.transporter_proton.shape[-1]:
         return xp.zeros(n)
-    c_in, c_out, fuel = t._gather(read, p, xp=xp)
-    i, q = t._proton_law(c_out, c_in, xp.zeros_like(c_in), fuel, p, xp=xp)
+    c_in, c_out, fuel = t.gather(read, p, xp=xp)
+    i, q = t.proton_law(c_out, c_in, xp.zeros_like(c_in), fuel, p, xp=xp)
     head = (
         proton.chemical_drive(i, q, xp=xp) / q.protons_per_cycle
         + R * p.temperature * (xp.log(c_in) - xp.log(c_out))
