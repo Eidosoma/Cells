@@ -48,8 +48,7 @@ from typing import NamedTuple
 
 import numpy as np
 
-from cells.core.kind_registry import BUILTIN, Kind
-from cells.core.specs import ConfigError
+from cells.core.kind_registry import BUILTIN, ConfigError, Kind
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import species_sum
 from cells.processes import passive_permeation as passive

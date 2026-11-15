@@ -42,8 +42,7 @@ from typing import NamedTuple
 import numpy as np
 
 from cells.core import species_registry
-from cells.core.kind_registry import BUILTIN, Kind
-from cells.core.specs import ConfigError
+from cells.core.kind_registry import BUILTIN, ConfigError, Kind
 from cells.processes import rapid_proton_buffer as closure
 from cells.processes.electrochemistry import R
 

@@ -19,8 +19,7 @@ from collections import Counter
 
 import numpy as np
 
-from cells.core.kind_registry import Kind, KindRegistry
-from cells.core.specs import ConfigError
+from cells.core.kind_registry import ConfigError, Kind, KindRegistry
 from cells.numerics.species_sums import species_sum
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
