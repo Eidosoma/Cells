@@ -483,7 +483,8 @@ cells-trace { display: grid; gap: 4px; }
   .view-note { display: none; }
   .seg-row { grid-template-columns: 46px 1fr; }
   .has-panel .scalebar, .has-panel .view { display: none; }
-  .scalebar { bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
+  /* Clear of a caveat that wraps to three lines, as it does where the page's own font did not arrive. */
+  .scalebar { bottom: calc(126px + env(safe-area-inset-bottom, 0px)); }
   .seg button { padding: 4px 2px; font-size: 12px; white-space: nowrap; }
   .species-option { padding: 9px 9px; }
   .caveat { width: calc(100% - 32px); bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
