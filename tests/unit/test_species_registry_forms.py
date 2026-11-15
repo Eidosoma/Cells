@@ -11,11 +11,15 @@
   K = c0 exp(mu°_HB - mu°_B - mu°_H): planted round trips to pK 7.2 and 6.0 at c0 = 1000 mM, the
   same K from consistently converted potentials at c0 = 1 mM. A route or reaction naming a two-form
   row is refused.
+* Moved by the step reads the inner model's movers from the core's join (surface_pump_v3's
+  moved_rows through the structure, §7.4 (f) 6 and (k) 7): the movers are the registry's earlier
+  walk's, and a planted kind that moves a two-form row is refused.
 """
 
 import copy
 import dataclasses
 import math
+import re
 from types import SimpleNamespace
 
 import pytest
@@ -205,3 +209,77 @@ def test_a_route_or_a_reaction_naming_a_two_form_row_is_refused(monkeypatch):
         ConfigError, match="species R has two forms .* scheduled_species_turnover@1 names it"
     ):
         registry.check_two_form_rows(_Spec(coupled, tagged))
+
+
+def walked(spec):
+    """The registry's own walk of the inner model before it read the core's join (e66fea95's
+    moved_in_step without its operators): {species: {kind: set of movers}}."""
+    m = registry._inner_model(spec)
+    ids, both = m.species_ids, ("cell", "outside")
+    moved = {s: {"cell": set(), "outside": set()} for s in ids}
+    for p in m.membranes:
+        for row, value in enumerate(p.permeability_m_per_s):
+            if value != 0:
+                for k in both:
+                    moved[ids[row]][k].add(f"membrane {p.id}")
+        if p.pump is not None:
+            for s in p.pump.roles:
+                for k in both:
+                    moved[s][k].add(f"the Na/K pump on membrane {p.id}")
+        if p.calcium_pump is not None:
+            for k in both:
+                moved[p.calcium_pump.role][k].add(f"the calcium pump on membrane {p.id}")
+    for j in m.junctions:
+        for row, value in enumerate(j.permeability_m_per_s):
+            if value != 0:
+                moved[ids[row]]["cell"].add(f"junction {j.id}")
+    for c in m.channels:
+        for ion in c.permeant_ions:
+            if ion.relative_permeability != 0:
+                for k in both:
+                    moved[ion.species_id][k].add(f"channel {c.id}")
+    for f in m.faces:
+        for row, value in enumerate(f.diffusivity_m2_per_s):
+            if value != 0:
+                moved[ids[row]]["outside"].add(f"face {f.id}")
+    return moved
+
+
+def test_the_core_join_gives_the_registry_walks_movers():
+    from validation.tissue import surface_pump_v3_fixtures as v3fx
+
+    for raw in (
+        sheet_with_buffer(),  # Junctions, channels, pumps.
+        v3fx.definition("release"),  # A calcium pump, padded slots.
+        rf.with_turnover(rf.sheet(), "cell_0", 0.5),  # A composite's inner model.
+    ):
+        spec = parse_spec(raw)
+        moved = registry.moved_in_step(spec)
+        expected = walked(spec)
+        for species, kinds in expected.items():
+            for kind, movers in kinds.items():
+                assert set(moved[species][kind]) == movers, (species, kind)
+
+
+def test_a_planted_kind_that_moves_a_two_form_row_is_refused(monkeypatch):
+    """A declared kind's moved rows reach moved_in_step through the core's join (§7.4 (k) 7):
+    planted here as one more entry of surface_pump_v3.moved_rows, (kind, law, node IDs)."""
+    from cells.models import surface_pump_v3
+
+    spec = parse_spec(sheet_with_buffer())
+    cell = spec.model.cells[0].id
+    two = dict(standard_mu_RT=0.0, protonated_standard_mu_RT=-7.2 * LN10)
+    declared = registry.build([dict(id="B", **two)], 1000.0)
+    registry.check_two_form_rows(_Spec(spec, declared))  # Today nothing moves B.
+    join = surface_pump_v3.moved_rows
+
+    def planted(model):
+        rows = dict(join(model))
+        rows["B"] = (*rows.get("B", ()), ("planted_kind", "planted_exchange@1", (cell,)))
+        return rows
+
+    monkeypatch.setattr(surface_pump_v3, "moved_rows", planted)
+    mover = f"planted_kind (planted_exchange@1) at {cell}"
+    assert registry.moved_in_step(spec)["B"] == {"cell": (mover,), "outside": ()}
+    with pytest.raises(ConfigError, match=rf"species B has two forms .*{re.escape(mover)} moves"):
+        registry.check_two_form_rows(_Spec(spec, declared))
