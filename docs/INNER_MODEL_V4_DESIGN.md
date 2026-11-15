@@ -1004,6 +1004,12 @@ the insertion point is CORE's. Its conventions, fixed here:
   routes at each node. That is finding 3's z = 0 term for its routes, declared as its bound term.
   A dt-study criterion covers accuracy. Exact booking closes the ledger up to h = 2, so it no
   longer signals an overshoot by itself (§7.5).
+- **As built (core-d172 6a43f189):** the kind `cells.passive_routes@1`
+  (`models/inner_kinds/passive_routes.py`), model key `passive_routes`: a list of {id, law,
+  membrane | junction, permeability_m_per_s}. Its flux is the kernel's on the read amounts,
+  inward from the host's outside end to its inside end; its fields are as above; its step is
+  `bound_rate` (gap 5); version 1's scope mask (`passive_exact`) is set at binding from
+  `moved_nodes`, and a route touching a held bath is never exact.
 
 #### (j) The per-structure schema: three options, and the ruling (A, 15 November)
 
@@ -1268,6 +1274,11 @@ undeclared built-in changes nothing:
    - **One writer (gap 8, 669f8ed6):** `held_rows(declaration)` → ((species, node ID), ...), rows
      the kind reads and never moves; binding refuses any inner route or other kind that moves
      one. The operators' writers are the composite's admission.
+   - **Per-stage diagnostics (gap 7, dfe1234c):** `stage_values(read, cell, outside, p, *, xp)` →
+     {own state field: value} at every explicit IMEX stage, with `stage_extrema` = ((field,
+     "max" | "min"), ...); the step's end state holds each field's running extremum over every
+     stage so far (RK4 leaves them). B4 reports `proton_buffer_max_lag_pH`, `_min_pH` and
+     `_max_pH` per node; an envelope breach stays a refusal (the verdict), these are the margin.
 3. **`book(applied, start, end, p, dt, *, xp)` → ({own state field: new value}, valid),** in
    `imex_step` after the tableau's combination; `applied(name)` is the step's applied rate of a
    state field (the tableau's explicit and implicit weights). Every kind receives the same end
@@ -1416,6 +1427,15 @@ undeclared built-in changes nothing:
 - **When.** It is implemented with its first consumer, the passive law's insertion point, and
   reused by the implicit patch and FR-10's onset. A tighter face-free bound constant than the
   ordinary one belongs with it (§13.6).
+- **Built (core-d172 6a43f189), with its acceptance as tests** (`tests/unit/
+  test_passive_routes_kind.py`, the closed pair being FR-1's face-free world W as plain @3, k =
+  100/s at dt = 1 ms): the pair relaxes as REF's closed form says and its heat is the engine's own
+  free-energy decrease to 1e-10; a trace start is admitted while the tableau's booking of the same
+  run fails the energy ledger; the honest raw sums stay within the factor 16 and a planted sign
+  flip on a minor route fails; an uphill step's negative share is refused; a route on a row
+  another route moves keeps the tableau's booking bitwise; binding refuses a charged species and
+  a carrying host. On the device and host path a refusal is the step's (the booking's validity);
+  the reason's text is the module's `NEGATIVE_SHARE`.
 - **Acceptance, with its first consumer:**
   - on the closed pair each row's raw shares sum to its exact decrease within the raw-sum check,
     with the factor 16 confirmed by a test;
