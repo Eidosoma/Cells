@@ -104,6 +104,10 @@ EXEMPT = {
     "validation-side Stepper)",
     "validation/division/static_cleft_egg_steps.py": DEVELOPMENT_TOOL
     + " (S0b step 3's step study: start_state takes R-full's J1 state from its record.json)",
+    "validation/tissue/excitable_import.py": DEVELOPMENT_TOOL
+    + " (Track E M1, D170 ruling 5: start_state takes one world's resolved_pump_tissue@3 "
+    "checkpoint into a conduction assay's definition; its import record names the source "
+    "manifest's digest and identities)",
     # Same-process restart and independent references.
     "validation/betse/fresh_rerun/workers.py": SAME
     + " (restart.npz written and read in one process)",

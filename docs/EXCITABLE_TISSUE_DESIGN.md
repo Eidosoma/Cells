@@ -30,6 +30,11 @@ serves that question as **general excitable-tissue physics, not a cardiac mode**
 - Its driver is `validation/tissue/excitable_probe.py`.
 - Its equations, for the independent reference, are in
   [the equations appendix](EXCITABLE_TISSUE_EQUATIONS.md).
+- M1's development runs on the 127-cell sheet are in
+  [excitable-tissue-m1-20261114-01](/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/), with
+  their driver `validation/tissue/excitable_sheet.py`. `HANDOFF.md` holds the results and
+  readings, and `PLAN.md` the criteria and amendment 1. They inform §5's activation and capture
+  rules and §10's predictions and refusals.
 
 **Engine models the probes ran:** `resolved_pump_tissue@3`, which is
 `nav1p2_m3h_regularized@1`, `kir2p1_mh2@1`, `kv1p5_mh@1`, `kleak_always_open@1` and
@@ -364,6 +369,17 @@ arm both act on availability.
   - The host energy-ledger tolerance (2e-3 of the flows) refuses 100 µs at point 2, and 25 µs
     at the chain's stimulus onset.
   - The heredity cell's slower upstroke is refused by the energy check alone, at 0.25–1 ms.
+  - **The stimulus onset (M1).** A switched conductance stimulus is refused at its onset by the
+    host energy ledger, with the cells at rest, when its strength times the step reaches 4e-12 m.
+    It is accepted at 2e-12 m:
+
+    | | Strength at 2.5 µs | at 5 µs | at 10 µs |
+    | --- | --- | --- | --- |
+    | Accepted (2e-12 m) | 8e-7 m/s | 4e-7 | 2e-7 |
+    | Refused (4e-12 m) | 1.6e-6 m/s | 8e-7 | 4e-7 |
+
+    The protocol's stimuli keep strength × step ≤ 2e-12 m, or ramp their onset. This is a limit of
+    the stimulus form, not of the tissue (`excitable_qualification_v1.json`, `stimulus_onset`).
 - **What converges.** ARS(2,2,2) is second order (single cell: peak error 1.5e-7 V at 10 µs
   against RK4), Euler first order. In the chain, CV at 5 µs and 2.5 µs agrees to 1.1e-6.
 - **The working step is 5 µs for chains.** The wave's own largest step is a qualification
@@ -482,9 +498,10 @@ D154's run view).
 | Observable | Definition (from the probe) |
 | --- | --- |
 | Activation time | Each cell's upward crossing of a declared level (−30 mV) after a declared arming time, interpolated within the accepted step; every crossing kept |
+| Activation by the cell's own upstroke (M1) | Over the cell's rise from −50 mV to its peak: the inward part of its net ionic membrane current, integrated (its **inward charge**), and its largest dVm/dt. The **source fraction** is the inward charge over C (V_peak − V_rest). A passive cell is a pure sink, with zero inward charge. A perturbed cell counts as activated only when it is a source. The threshold is registered from development runs, with passive twins as its measured floor. M1 showed why a peak margin cannot serve: strongly coupled cells peak within a few mV of their passive twins |
 | Conduction velocity | Inverse least-squares slope of activation time against path distance, over a declared span, in cells/s and m/s. In 2-D, from the activation-time gradient |
 | Refractoriness and recovery | The S1–S2 interval bracket for a response at a declared site, and for a second far-end wave; APD50 and APD90 from the upstroke |
-| Capture | The stimulus bracket for a propagated response |
+| Capture | **A launched front** (M1):<br>• every cell crosses the level;<br>• the stimulated cells cross within the stimulus;<br>• the mean activation per graph-distance ring from the stimulated cells rises strictly;<br>• every ring at distance ≥ 2 activates after the stimulus ends.<br>The front need not be steady: on the hexagon its column steps shrink. The bracket is reported in stimulus width and strength. M1's first rule ("every cell crosses") passed a delayed, synchronous firing at s = 1000 |
 | Block | The coupling or perturbation bracket between block and propagation, with the last activated cell |
 | Re-entry (later) | Phase singularities and cycle length, once the scale allows (§8) |
 
@@ -729,13 +746,14 @@ fractions × 7 arrangements, the scattered ones by seed).
 | **Question** | In a coupled excitable sheet, does a cluster of cells with reduced sodium availability and reduced coupling slow or block conduction more than the same fraction scattered? |
 | **Engine models** | `resolved_pump_tissue@3` (the generic 0.01 F/m² cell, `trapezoid_nonnegative@1`), with activation analysed on the host (§5). Later the mouse law set through @4 |
 | **World** | The 127-cell held-bath hexagon (`validation/stationary/worlds.hexagon(6)`), each cell the generic 0.01 F/m² cell at its relaxed rest. At s = 1000 the sheet's bound is 2.6 µs, so the protocol chooses between s = 1000 at 2.5 µs and s = 300 (bound 8.7 µs) at 5 µs (§4.2). The perturbation only loosens the bound |
-| **Stimulus** | A planar edge stimulus or a corner stimulus, declared per arm |
+| **Stimulus** | A planar edge stimulus, or a corner stimulus, declared per arm. Each one's width and strength must launch a front by §5's capture rule. At s = 300 the 1 ms planar stimulus at 2e-7 m/s does so in M1's control, though only by 0.04 ms (ring 2 at 3.04 ms). A shorter stimulus is safer |
 | **Perturbation** | For a fraction f of cells: NaV1.2 availability × r_Na (`channel_controls`) and availability × r_gj on every junction incident to them (`junction_controls`), from t = 0 |
 | **Sweep** | f ∈ {0, 0.05, 0.1, 0.2, 0.3, 0.5}. At fixed f, the arrangements are one compact disc, two discs, and scattered (5 seeds), with a clustering index (cluster-internal junction fraction) |
 | **Passive control arm** | The same sweep on the passive sheet (every voltage-gated population unavailable), with junction availability on the same schedule and a weak current or conductance stimulus. It reports electrotonic spread (space constant, input resistance, attenuation map) and so separates coupling geometry from excitability |
-| **Readouts** | Activation map; total activation time; activation delays across and beyond the cluster against the unperturbed sheet; block (cells not activated); capture; and, from §8, any re-entry in the slow regime. A local CV inside the cluster is reported only if §6's length checks show one exists at that coupling |
+| **Readouts** | Activation map; total activation time; activation delays across and beyond the cluster against the unperturbed sheet, the far column's mean delay among them; activation inside the cluster by each cell's own upstroke (§5); capture; and, from §8, any re-entry in the slow regime. A local CV inside the cluster is reported only if §6's length checks show one exists at that coupling |
 | **Values** | A generic sweep: r_Na and r_gj over a declared grid, informed by probe 2's segment results (§1). At A every junction keeps s·r_gj ≥ 20 (r_gj ≥ 0.02 at s = 1000, about 0.07 at s = 300), because a boundary below s·r_gj = 10 is expected to be refused by the junction gate law's domain (§1.2). The grid goes lower only if `junction_ungated@1` comes first (§3.3), or if the lead chooses B after its own segment run (§12). Every run reports its block-site junction voltage against 120 mV. The paper's Supplementary Tables 1–2 are not needed for it; they enter at M4, where a mouse comparison maps transcript fold changes to availabilities under a declared assumption |
-| **Predictions** | Registered before runs (D155 item 2). Candidates: (P1) at equal f, a compact cluster blocks at a higher r than scattered cells (source–sink); (P2) scattered cells slow conduction more at low f (Prudat and Kucera 2014's meandering); (P3) the passive arm's attenuation map predicts the excitable arm's block sites; (P4) where a cluster's boundary is a source–sink mismatch, partial uniform uncoupling can restore conduction (Rohr et al. 1997) |
+| **Predictions** | Registered before runs (D155 item 2), with thresholds, and tested on arrangements M1 did not run (other fractions, seeds and two discs). On the sheet the front goes around a cluster rather than being blocked beyond it, as M1's s = 300 runs showed, so the candidates are phrased for that. Each cites M1's development value at f = 0.15:<br>• **(Q1) Arrangement:** at equal f and r, scattered cells delay the far column more than one compact disc. M1: 0.36 against 0.21 ms at s·r_gj = 20. This is Prudat and Kucera's (2014) meandering.<br>• **(Q2) The load peaks:** a compact disc's far-column delay rises as its coupling falls from full, peaks at intermediate coupling, and falls as the disc decouples and the front passes around it. M1: the peak lies near s·r_gj = 36–54 in all three disc arms.<br>• **(Q3) Load, not excitability, at low coupling:** below that peak the combined arm's delay matches its passive twin's. Above it the passive twin delays more than the active disc, whose own sodium current offsets its load. M1: equal at s·r_gj = 20 and 24; at 210, 0.142 (passive) against 0.080 ms.<br>• **(Q4) Inside the cluster:** activation is lost gradually as r falls, interior cells first, read by each cell's own upstroke. M1, by peaks: two interior cells below 0 mV at s·r_gj ≤ 24, boundary cells above.<br>• **(Q5) No block beyond the cluster within the floor:** every unperturbed cell activates at s·r_gj ≥ 20. With `junction_ungated@1` (ruling 3's second option) the same question is asked below 20.<br>• **(Q6) The passive arm predicts the excitable arm's far-column delay** where Q3 says load dominates.<br>Earlier candidates that assumed block beyond the cluster (compact versus scattered block thresholds; uncoupling restoring conduction, after Rohr et al. 1997) move to the option with `junction_ungated@1` |
+| **Refusals (a proposal; D170's fallback covers M1 only)** | **The corner margin is thin.** M1 at s = 300 peaked at +57.7 mV at a far corner, 2.3 mV inside +60, with edges near +57.3 mV. Every run therefore reports per-class peaks and margins (corner, rim, end, collision, before block, and the perturbed cells), flagging any under 3 mV. At s = 1000 under a launched front (M1 amendment 1) the binding class was a perturbed disc cell, at +57.58 mV.<br>**If an M3 case at A is refused on the channel domain at a corner, an edge or a perturbed cell:** the case is not an outcome. That arm's comparison keeps only the strengths at which every arrangement ran without refusal, and the refusal is reported with its cell class.<br>**If the unperturbed control is refused, or refusals remove more than one strength from an arm,** M3 moves wholesale to B (peak +37.6 mV). That needs B's sheet development run in M1 first, because B has none |
 | **Gate** | After the qualification's judged run |
 
 ## 11. Milestones, effort and refusals
