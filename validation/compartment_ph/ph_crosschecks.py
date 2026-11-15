@@ -2,7 +2,7 @@
 
     python -m validation.compartment_ph.ph_crosschecks --out DIR
 
-Writes DIR/crosschecks.json and DIR/log.txt, with records log-spaced from 0.01 s and every 10 s:
+Writes DIR/crosschecks.json and DIR/log.txt, with records log-spaced from 1 us and every 10 s:
 1. buffered acidification against a gradient, K+ counterion and maintained fuel, by full kinetics
    (R-kinetic at k_on = 1e7 mM^-1 s^-1) and by the closure: lumen pH, V_b, the pump's cycles, the
    K+ moved, the energy identity, the cytosol's pH band (transformed_at(7.2, delta 0.05));
@@ -39,7 +39,7 @@ def log(*parts):
 
 
 def records():
-    return tuple(sorted({*np.geomspace(0.01, T, 80), *np.arange(10.0, T + 1e-9, 10.0)}))
+    return tuple(sorted({*np.geomspace(1e-6, T, 120), *np.arange(10.0, T + 1e-9, 10.0)}))
 
 
 def summary(run, rec):
@@ -76,17 +76,21 @@ def main(argv=None):
     closure = ph.integrate(w, T, record=rec)
     result["closure"] = summary(closure, rec)
     log("closure", result["closure"])
-    kin = {}
+    kin, wall = {}, {}
     for kon in (1e3, 1e5, 1e7):
+        t0 = time.perf_counter()
         kin[kon] = ph.integrate(w, T, record=rec, kinetic=True, k_on=(kon, kon))
+        wall[kon] = time.perf_counter() - t0
     result["kinetic_1e7"] = summary(kin[1e7], rec)
     log("kinetic 1e7", result["kinetic_1e7"])
     result["convergence"] = {
         f"{kon:g}": dict(lumen=max_dpH(kin[kon], closure, rec, "pH_L"),
                          cytosol=max_dpH(kin[kon], closure, rec, "pH_c"),
                          heat_difference_final_pJ=kin[kon].at[T]["heat_pJ"]
-                         - closure.at[T]["heat_pJ"])
+                         - closure.at[T]["heat_pJ"], steps=kin[kon].steps, wall_s=wall[kon])
         for kon in (1e3, 1e5, 1e7)}
+    lumen = [result["convergence"][f"{kon:g}"]["lumen"]["max"] for kon in (1e3, 1e5, 1e7)]
+    result["convergence_ratios_lumen"] = [lumen[0] / lumen[1], lumen[1] / lumen[2]]
     log("convergence", result["convergence"])
     outside = ph.integrate(w, T, record=rec, kinetic=True, k_on=(None, 1e-3))
     w_out = replace(w, lumen=replace(w.lumen, buffers=(replace(w.lumen.buffers[0],
