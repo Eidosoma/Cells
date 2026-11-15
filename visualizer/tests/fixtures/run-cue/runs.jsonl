@@ -1,0 +1,4 @@
+{"label": "a-prepare", "exit": 0, "source": "/mnt/nowhere/run-cue/source-01", "output": "study-a", "args": "prepare --seeds 3"}
+{"label": "a-run", "exit": 0, "source": "/mnt/nowhere/run-cue/source-01", "output": "study-a", "args": "run --seeds 3 --cue-seconds 1"}
+{"note": "synthetic fixture: a line that is not a launch"}
+{"label": "b-run", "exit": 1, "source": "/mnt/nowhere/run-cue/source-01", "output": "study-b", "args": "run --seeds 3 --cue-seconds 1"}

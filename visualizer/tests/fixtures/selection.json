@@ -1,0 +1,23 @@
+{
+ "note": "synthetic fixture: the three synthetic experiments, each with the folder beside this file that holds it.",
+ "synthetic-sheet": {
+  "evidence_folder": "run-small",
+  "runs": [
+   "synthetic-s1.0/seed1"
+  ]
+ },
+ "synthetic-arms": {
+  "evidence_folder": "run-arms",
+  "runs": [
+   "synthetic-iso-s1.0",
+   "synthetic-donor-s1.0"
+  ]
+ },
+ "synthetic-cue": {
+  "evidence_folder": "run-cue",
+  "runs": [
+   "study-a/world-1",
+   "study-b/world-1"
+  ]
+ }
+}

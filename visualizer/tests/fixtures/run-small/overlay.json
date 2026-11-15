@@ -1,0 +1,82 @@
+{
+ "format": "cells.visualizer.replay_overlay@1",
+ "note": "synthetic fixture: labels for the adapter's test only.",
+ "experiments": {
+  "synthetic-sheet": {
+   "adapter": "e07-v1",
+   "label": "Synthetic sheet (test fixture)",
+   "plain": "Invented numbers in the layout of an E07-v1 run folder. No engine ran; nothing here is evidence.",
+   "sources": [],
+   "engine_entities": [],
+   "groups": {
+    "control": {
+     "label": "Synthetic control",
+     "plain": "Three disc cells are replaced by a disc neighbour."
+    }
+   },
+   "classes": [
+    {
+     "id": "erosion",
+     "label": "Erosion",
+     "description": "Synthetic wording."
+    }
+   ],
+   "regions": {
+    "disc": {
+     "label": "The disc",
+     "plain": "The cells that start at the written voltage."
+    }
+   },
+   "records": {
+    "vm": {
+     "label": "Membrane voltage"
+    },
+    "junction_abundance": {
+     "label": "Junction abundance"
+    }
+   },
+   "events": {
+    "replacement": {
+     "label": "Replacement"
+    }
+   },
+   "parameters": {
+    "size": {
+     "label": "Disc size",
+     "unit": "cells"
+    },
+    "s": {
+     "label": "Coupling"
+    },
+    "scope": {
+     "label": "Cells replaced"
+    },
+    "formation.lag_s": {
+     "label": "Formation lag",
+     "unit": "s"
+    },
+    "not_in_the_plan": {
+     "label": "Absent"
+    }
+   },
+   "readouts": {
+    "judged_s": {
+     "label": "Judged record",
+     "unit": "s"
+    },
+    "delta_J": {
+     "label": "Delta J"
+    },
+    "recruitment_fraction": {
+     "label": "Recruitment fraction"
+    },
+    "delta_J_over_records.mean": {
+     "label": "Delta J over the records, mean"
+    },
+    "not_in_the_outcome": {
+     "label": "Absent"
+    }
+   }
+  }
+ }
+}
