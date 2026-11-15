@@ -130,13 +130,13 @@ def _operators():
 def _s3():
     from validation.division import cleft_egg_engine as egg
 
-    return {"cleft_egg": egg.definition(end=0.05)}
+    return {"cleft_egg": egg.definition()}  # Its own end; the first window keeps it short.
 
 
 def _d150():
     from validation.tissue import secreted_species_qualification as d150
 
-    return {name: d150.arm_world(name, end=0.05) for name in d150.ARMS}
+    return {name: d150.arm_world(name) for name in d150.ARMS}  # Own ends; first window only.
 
 
 def _e07():
@@ -341,10 +341,23 @@ def source():
     )
 
 
-def save(directory, sets, worlds, max_steps, origin):
+def save(directory, sets, worlds, max_steps, origin, append=False):
+    """Run and save every world; with append, add sets (none already there) to an existing
+    baseline from the same source, recording the addition in its manifest."""
     import jax
 
     jax.config.update("jax_enable_x64", True)
+    if append:
+        manifest = json.loads((directory / "manifest.json").read_text())
+        if manifest["source"] != source() or manifest["max_steps"] != max_steps:
+            raise SystemExit("append: the baseline's source or max_steps differs from this run's")
+        clash = [s for s in sets if (directory / s).exists()]
+        if clash:
+            raise SystemExit(f"append: the baseline already holds {clash}")
+        manifest.setdefault("appended", []).append(
+            dict(sets=list(sets), tool=str(Path(__file__).resolve()), at=time_now())
+        )
+        return _save_sets(directory, manifest, sets, worlds, max_steps, origin)
     directory.mkdir(parents=True, exist_ok=False)
     manifest = dict(
         kind="cells.results_baseline@1",
@@ -364,6 +377,18 @@ def save(directory, sets, worlds, max_steps, origin):
         definitions_from=str(origin) if origin else "built by this source's validation builders",
         worlds={},
     )
+    return _save_sets(directory, manifest, sets, worlds, max_steps, origin)
+
+
+def time_now():
+    from datetime import datetime, timezone
+
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _save_sets(directory, manifest, sets, worlds, max_steps, origin):
+    import jax
+
     for set_name in sets:
         if origin:
             records = [
@@ -550,6 +575,7 @@ def main(argv=None):
     two.add_argument("--worlds", nargs="*", default=[])
     two.add_argument("--max-steps", type=int, default=MAX_STEPS)
     two.add_argument("--from", dest="origin", type=Path)
+    two.add_argument("--append", action="store_true", help="add sets to an existing baseline")
     three = sub.add_parser("compare")
     three.add_argument("base", type=Path)
     three.add_argument("other", type=Path)
@@ -563,7 +589,9 @@ def main(argv=None):
             except Exception as error:
                 print(set_name, "builder error:", repr(error)[:300])
     elif args.action == "save":
-        manifest = save(args.directory, args.sets, set(args.worlds), args.max_steps, args.origin)
+        manifest = save(
+            args.directory, args.sets, set(args.worlds), args.max_steps, args.origin, args.append
+        )
         refused = [k for k, v in manifest["worlds"].items() if v.get("refusal")]
         errors = [k for k, v in manifest["worlds"].items() if "builder_error" in v]
         print(
