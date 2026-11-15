@@ -103,7 +103,14 @@ LICENCES = {
 #   no stated terms   no open licence is stated: nothing of it enters.
 # A source of the last two classes is a pointer: the files name it and say what is to be
 # read there, and take no value and no statement from it.
+#
+# A value that a permissive database gives out and a tool or rule system of another owner
+# computed stands on the terms of the database it was read from, and the tool behind it is
+# named and counted (the user's ruling of 15 November 2026). So each such tool is a source
+# of its own, with its own terms and class and with `through`, the database its results
+# were read in.
 PERMISSIVE, NON_COMMERCIAL, NO_TERMS = "permissive", "non-commercial", "no stated terms"
+RULING = "By the project's rule (the user, 15 November 2026), a value stands on the terms of the database it was read from, and the tool behind it is named and counted"
 LICENCE_CLASS = {
     "parrott2016": PERMISSIVE, "nakane2015": PERMISSIVE, "nakane2021": PERMISSIVE, "lluchsenar2015": PERMISSIVE,
     "weber2023": PERMISSIVE, "gaspari2020": PERMISSIVE, "awadh2021": PERMISSIVE, "li2021": PERMISSIVE,
@@ -1501,7 +1508,7 @@ def build_shelves(c):
         "proteins": proteins,
         "side_notes": {
             "stated": f"The protein's reviewed UniProtKB entry states where it is, on a curator's own word or on an experiment that the entry cites. The mark 'evidence' says which. Where the entry states that a protein spans the membrane ({spanning_stated} proteins), the segments it gives are predicted ones in every case: by UniProt's sequence analysis for {behind[ANALYSIS]}, by a PROSITE rule for {behind[PROSITE]} and by a HAMAP rule for {behind[HAMAP]}.",
-            "predicted": f"A statement of the protein's reviewed UniProtKB entry that is made by a rule, by sequence analysis or by likeness to a protein of another organism, and not on a curator's own word or an experiment. Of the {by_basis['predicted']} predicted sides, {told['hamap']} rest on HAMAP's family rules, {told['prosite']} on PROSITE's rules, {told['analysis']} on UniProt's sequence analysis alone and {told['likeness']} on likeness alone. PROSITE's lipoprotein rule (PRU00303) stands behind {lipo} of them: this file reads a lipoprotein signal as outside, because the protein is exported and then held by a lipid at the outer face of the membrane, which in a cell with one membrane is the cell's surface. Sequence analysis is, for membrane-spanning segments, TMHMM, Memsat, Phobius and the hydrophobic moment plot of Eisenberg and coworkers, a segment being kept where at least two agree; and for signal peptides Phobius, Predotar, SignalP and TargetP. PROSITE's terms are non-commercial, and TMHMM, SignalP, TargetP and Phobius are given out for academic use: each is named among the sources, with its terms and what rests on it.",
+            "predicted": f"A statement of the protein's reviewed UniProtKB entry that is made by a rule, by sequence analysis or by likeness to a protein of another organism, and not on a curator's own word or an experiment. Of the {by_basis['predicted']} predicted sides, {told['hamap']} rest on HAMAP's family rules, {told['prosite']} on PROSITE's rules, {told['analysis']} on UniProt's sequence analysis alone and {told['likeness']} on likeness alone. PROSITE's lipoprotein rule (PRU00303) stands behind {lipo} of them: this file reads a lipoprotein signal as outside, because the protein is exported and then held by a lipid at the outer face of the membrane, which in a cell with one membrane is the cell's surface. Sequence analysis is, for membrane-spanning segments, TMHMM, Memsat, Phobius and the hydrophobic moment plot of Eisenberg and coworkers, a segment being kept where at least two agree; and for signal peptides Phobius, Predotar, SignalP and TargetP. PROSITE's terms are non-commercial, and TMHMM, SignalP, TargetP and Phobius are given out for academic use: each is named among the sources, with its terms and what rests on it. {RULING}.",
             "by function": "Taken from what the protein does, only where that leaves no real doubt. A protein with no stated location is put inside if its UniProt keywords say it works on the ribosome, on transfer or ribosomal RNA, in transcription or on the chromosome (" + ", ".join(INSIDE_BY_FUNCTION) + "). A protein that its entry places at the membrane without saying on which face is put inside if it binds ATP or GTP, makes ATP or binds DNA, all of which are inside the cell.",
             "none": "No statement, no prediction and no function that settles it. These proteins are not placed.",
         },
@@ -1777,10 +1784,14 @@ part, and its page says that commercial users pay a licence fee "irrespective of
 method by which they access the database". The licences of TMHMM, SignalP and TargetP and
 the terms of Phobius are of the programs: they say who may run them and say nothing of
 predictions made with them, and it was UniProt that ran them. HAMAP is distributed under
-CC BY 4.0. Whether placements that rest on PROSITE's rules, or on the academic programs,
-may stay in a commercial project is the project's to decide and is not settled here.
-Until it is, every such placement is counted above and is said to be predicted wherever
-it is shown.
+CC BY 4.0.
+
+**The project's rule (the user, 15 November 2026): a value stands on the terms of the
+database it was read from, and the tool behind it is named and counted.** Every placement
+counted above was read in UniProt's entries, which UniProt gives out under CC BY 4.0, so
+each stands as UniProt gives it. Each tool and rule system is named in the table with its
+own terms and its count, and each such placement is said to be predicted wherever it is
+shown. This is the project's rule, and not a legal opinion.
 
 Cite:
 

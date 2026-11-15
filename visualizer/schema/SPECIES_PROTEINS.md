@@ -112,10 +112,13 @@ catalogue table, the same bytes every time.
   - `holds` begins "Nothing was downloaded from it" and says what rests on it, with counts.
   - A mark's `source` names the database its values were taken from; it may name the tool
     beside it.
-  - Where the tool's class is not permissive, the dependence awaits the project's
-    decision. The note beside the file lists it with its terms and its counts, and
-    `tests/licence_classes.test.mjs` names it under its species; one the test does not
-    name fails it. A permissive one (HAMAP) needs no listing.
+  - **A value stands on the terms of the database it was read from, and the tool behind
+    it is named and counted** (the user's ruling of 15 November 2026: the project's rule,
+    not a legal opinion). So where the tool's class is not permissive, the value stays.
+    The note beside the file lists the tool with its terms and its counts, and
+    `tests/licence_classes.test.mjs` keeps it in a register under its species; one the
+    register does not hold fails the test, so that a new one is noticed and put to the
+    user. A permissive one (HAMAP) needs no listing.
 - **Every source has a `class`, and a file holds no value from a source that is not
   permissive** (D173, 15 November 2026). `class` is one of `permissive` (CC BY, CC0, or
   a plain statement that no restriction is placed on use), `non-commercial` (a CC BY-NC
@@ -125,10 +128,10 @@ catalogue table, the same bytes every time.
   taken from it and what is to be read there; or, where a permissive source gives out
   results that originate in it (a database's record of another database's signature),
   with `through`, the name of that permissive source, and a `holds` that says nothing
-  was downloaded from it and what rests on it, as the bullet above sets out. Whether
-  such a dependence may stay is the project's decision, asked of the user on 15 November
-  2026; until it is made, each one is named and counted and the test lists it.
-  `tests/licence_classes.test.mjs` holds every file to it.
+  was downloaded from it and what rests on it, as the bullet above sets out. Such a
+  value may stay: by the user's ruling of 15 November 2026 it stands on the terms of the
+  database it was read from, and the tool behind it is named and counted, in the file
+  and in the test's register. `tests/licence_classes.test.mjs` holds every file to it.
 - A file may carry further keys of its own, such as the checks its tool ran. The drawing
   ignores what it does not know.
 - **Size.** A species' file stays under 1 MB. A catalogue too large for that, or for one

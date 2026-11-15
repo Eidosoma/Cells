@@ -20,7 +20,10 @@
 //   4. the note of each record has a section that names every such source;
 //   5. a tool or rule system whose results a permissive database gives out is a source of
 //      its own, with its own terms and `through`, the database its results were read in.
-//      Where it is not permissive, it is one of the dependences NAMED below, by species.
+//      By the user's ruling of 15 November 2026 such a value stands on the terms of the
+//      database it was read from, and the tool behind it is named and counted. Where the
+//      tool is not permissive, it is in the register NAMED below, by species, so that a
+//      new one is noticed and put to the user.
 //
 // It finds the records by their folders, so a record added later is held too. What it
 // cannot see is a value written into a sentence with no source named: the tools that
@@ -55,17 +58,22 @@ function classOf(licence) {
 
 // Which note speaks for which record: by the species or the subject the record is of.
 const NOTES = { syn3a: "docs/SYN3A.md", mpneumoniae: "docs/MPNEUMONIAE.md", planarian: "docs/PLANARIAN_ATLAS.md", planarian_bioelectric: "docs/PLANARIAN_BIOELECTRIC_EVIDENCE.md", human: "docs/HUMAN_PROTEOME.md" };
-// The dependences that are named and await the user's decision, by species: a tool or a
+// The register of the dependences that the user's ruling covers, by species: a tool or a
 // rule system that is not permissive, whose results a permissive database gives out and a
-// record rests on. Each is a source of its record with `through`, the database (or the
-// databases, joined by " and ") its results were read in. To list one here is not to
-// accept it: it says that the dependence is known, counted in the record and said in its
-// note. A dependence that is not listed fails this file, so none comes in unseen; one that
-// is listed and no longer in its record fails it too, so the list does not outlive them.
+// record rests on. The user ruled on 15 November 2026 that such a value stands on the
+// terms of the database it was read from, and that the tool behind it is named and
+// counted. So each is a source of its record with `through`, the database (or the
+// databases, joined by " and ") its results were read in, and each is said in the
+// record's note with its terms and its counts. The ruling is the project's rule and not a
+// legal opinion, so the register is kept: a dependence that is not listed fails this
+// file, so that a new one is noticed and put to the user before it is listed; one that
+// is listed and no longer in its record fails it too, so the register does not outlive
+// what it lists.
 //
-// JCVI-syn3A has none: its lipid anchors are read by the tool's own rule (15 November
-// 2026), and the one rule system behind its stated places, HAMAP, is permissive.
+// JCVI-syn3A's lipid anchors rest on the matches of PROSITE's lipoprotein profile, as
+// UniProt's archive records them. The human shelves' line is added with the human data.
 const NAMED = {
+  syn3a: { PROSITE: "UniParc" },
   mpneumoniae: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt" },
   planarian: { TMHMM: "WormBase ParaSite and UniProt", SignalP: "WormBase ParaSite and UniProt", Phobius: "UniProt", PROSITE: "UniProt" },
   human: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt", "big-PI": "UniProt" },
@@ -232,11 +240,13 @@ test("a species' shelves: every mark rests on a permissive source; any other sou
       if (source.through) {
         // A tool or rule system whose results were read in a permissive database: the
         // database is named, it is a source of the file that stands for itself, and
-        // nothing of the tool's own was taken.
+        // nothing of the tool's own was taken. The value stands on that database's terms
+        // (the user's ruling of 15 November 2026); the tool is named and counted, and one
+        // that is not permissive is in the register.
         assert.equal(typeof source.through, "string", `${where}: ${source.name}: through is the name of a source, or names joined by " and "`);
         for (const database of byName.has(source.through) ? [source.through] : source.through.split(" and ")) assert.ok(byName.has(database) && taken(byName.get(database)), `${where}: ${source.name} is read through ${database}, which is not a permissive source of the file that stands for itself`);
         assert.match(source.holds, /^Nothing was downloaded from it/, `${where}: ${source.name}`);
-        if (source.class !== "permissive") assert.equal(known[source.name], source.through, `${where}: ${source.name} is ${source.class} and is read through ${source.through}. It is not among the dependences named for ${shelves.species} in NAMED: the user must know of it before it is listed there`);
+        if (source.class !== "permissive") assert.equal(known[source.name], source.through, `${where}: ${source.name} is ${source.class} and is read through ${source.through}. It is not in the register NAMED for ${shelves.species}: a new dependence is put to the user before it is listed there`);
       } else if (source.class !== "permissive") {
         assert.match(source.holds, /^Nothing is taken from it: a pointer to /, `${where}: ${source.name} is ${source.class} and is not said to be a pointer`);
         assert.ok(!/\d/.test(source.holds), `${where}: the pointer ${source.name} gives a number: ${source.holds}`);
@@ -251,7 +261,6 @@ test("a species' shelves: every mark rests on a permissive source; any other sou
     for (const [name, through] of Object.entries(known)) assert.equal(byName.get(name)?.through, through, `${where}: NAMED lists ${name} through ${through}, and the record does not`);
   }
   for (const species of Object.keys(NAMED)) assert.ok(seen.has(species), `NAMED lists dependences for ${species}, and no shelves of it were found`);
-  assert.ok(!("syn3a" in NAMED), "JCVI-syn3A rests on no source that is not permissive");
 });
 
 // A quantity: a number with a unit, a span of residues, or a number in words before a unit of time.

@@ -101,10 +101,18 @@ LICENCES = {"breuer2019": "CC BY 4.0", "gilbert2021": "CC BY 4.0", "thornburg202
 #   no stated terms   no open licence is stated: nothing of it enters.
 # A source of the last two classes is a pointer: the files name it and say what is to be
 # read there, and take no value and no statement from it.
+#
+# A value that a permissive database gives out and a tool or rule system of another owner
+# computed stands on the terms of the database it was read from, and the tool behind it is
+# named and counted (the user's ruling of 15 November 2026). So the tool is a source of its
+# own, with its own terms and class and with `through`, the database its results were read
+# in. Here that is PROSITE, whose lipoprotein profile's matches UniProt's archive records,
+# and HAMAP, whose family rules stand behind places that reviewed entries state.
 PERMISSIVE, NON_COMMERCIAL, NO_TERMS = "permissive", "non-commercial", "no stated terms"
+RULING = "By the project's rule (the user, 15 November 2026), a value stands on the terms of the database it was read from, and the tool behind it is named and counted"
 CLASSES = {
+    "prosite": NON_COMMERCIAL,
     "breuer2019": PERMISSIVE, "gilbert2021": PERMISSIVE, "zhang2023": PERMISSIVE, "paulet2011": PERMISSIVE, "christodoulides2018": PERMISSIVE,
-    "desvaux2018": PERMISSIVE, "smithers2021": PERMISSIVE, "legood2020": PERMISSIVE,
     "thornburg2022": NON_COMMERCIAL, "lhernault1992": NON_COMMERCIAL,
     "pelletier2021": NO_TERMS, "chambaud1999": NO_TERMS, "kyte1982": NO_TERMS,
 }
@@ -112,11 +120,8 @@ CLASSES = {
 # that store records for it: all CC BY. They replace what was once read in papers under
 # non-commercial terms or with no stated terms.
 OPEN = "https://pmc-oa-opendata.s3.amazonaws.com"
-OPEN_TEXTS = {"zhang2023": "PMC9952402", "paulet2011": "PMC3110554", "christodoulides2018": "PMC6080569", "desvaux2018": "PMC5817068", "smithers2021": "PMC8689077", "legood2020": "PMC8048626"}
-OPEN_LICENCE = {"zhang2023": "CC BY 4.0", "paulet2011": "CC BY 2.0", "christodoulides2018": "CC BY 4.0", "desvaux2018": "CC BY 4.0", "smithers2021": "CC BY 4.0", "legood2020": "CC BY 4.0"}
-# The reviews the lipid-anchor rule is fixed from, and the one that says what it can miss,
-# were added on 15 November 2026, to a folder of their own.
-RULE_TEXTS = ("desvaux2018", "smithers2021", "legood2020")
+OPEN_TEXTS = {"zhang2023": "PMC9952402", "paulet2011": "PMC3110554", "christodoulides2018": "PMC6080569"}
+OPEN_LICENCE = {"zhang2023": "CC BY 4.0", "paulet2011": "CC BY 2.0", "christodoulides2018": "CC BY 4.0"}
 
 
 # ---------------------------------------------------------------------------------------
@@ -269,15 +274,6 @@ def rule_signatures():
     return sorted(out)
 
 
-def open_prefix(key):
-    """The first part of an open article's file name, which names the folder it is kept in."""
-    return "rule_open_" if key in RULE_TEXTS else "open_"
-
-
-def open_file(key, kind="xml"):
-    return f"{open_prefix(key)}{OPEN_TEXTS[key]}.{kind}"
-
-
 def efetch(record, kind):
     return f"{EUTILS}/efetch.fcgi?db=nuccore&id={record}&rettype={kind}&retmode=text&tool=atlas-builder"
 
@@ -330,11 +326,13 @@ def requests(snapshot, datasets=None):
     # licence the store records: what the files say of division, of the usual reading of
     # the hydropathy scale and of where mycoplasmas' lipoproteins sit rests on these.
     for key, pmc in sorted(OPEN_TEXTS.items()):
-        add(f"{open_prefix(key)}{pmc}.xml", f"{OPEN}/{pmc}.1/{pmc}.1.xml", f"the open text of the paper cited as {key}")
-        add(f"{open_prefix(key)}{pmc}.json", f"{OPEN}/{pmc}.1/{pmc}.1.json", f"the licence PubMed Central records for the paper cited as {key}")
-
-    # The terms of a rule system whose results UniProt gives out: reviewed entries state
-    # places by HAMAP's family rules. Nothing else is asked of HAMAP.
+        add(f"open_{pmc}.xml", f"{OPEN}/{pmc}.1/{pmc}.1.xml", f"the open text of the paper cited as {key}")
+        add(f"open_{pmc}.json", f"{OPEN}/{pmc}.1/{pmc}.1.json", f"the licence PubMed Central records for the paper cited as {key}")
+    # PROSITE's own terms. Nothing else is asked of PROSITE: where its lipoprotein profile
+    # matches is read in UniProt's archive.
+    add("prosite_license.html", "https://prosite.expasy.org/prosite_license.html", "PROSITE's licence conditions, read because UniProt's archive records the matches of a PROSITE profile")
+    # The terms of the other rule system whose results UniProt gives out: reviewed entries
+    # state places by HAMAP's family rules. Nothing else is asked of HAMAP.
     add("upstream_hamap_about.html", "https://hamap.expasy.org/hamap_about.html", "HAMAP's statement of its licence, read because reviewed UniProtKB entries state places by its family rules")
 
     # Terms of each source, read before anything was copied.
@@ -379,7 +377,7 @@ OWN = {
     "ncbi-pmc-PMC9985924": {"pmcid": "PMC9985924", "doi": "10.1016/j.cell.2021.12.025", "licence": "CC BY-NC-ND 4.0", "what": "Thornburg and others 2022, the author manuscript (JATS XML). Since 15 November 2026 the build reads it only for the licence it states: nothing of it enters the files"},
     "pmc-open-syn3a-licence-pass": {"licence": "Each article's own, all CC BY: Zhang and others 2023 (CC BY 4.0), Paulet and others 2011 (CC BY 2.0), Christodoulides and others 2018 (CC BY 4.0). The JSON beside each article records it", "what": "Open articles from PubMed Central's open-data store (JATS XML), added by the licence pass of 15 November 2026 so that what the Syn3A files state rests on sources whose terms allow it: a review that reports the genes needed for division, a paper that states the usual reading of the hydropathy scale, and a review on the lipoproteins of mycoplasmas"},
     "terms-syn3a-sources": {"what": "Terms of use as read before anything was copied: GenBank's data usage statement, the policy of the nucleotide sequence databases, InterPro's licence and EMBL-EBI's terms"},
-    "pmc-open-lipoprotein-signal": {"licence": "Each article's own, all CC BY 4.0: Desvaux and others 2018, Smithers and others 2021, Legood and others 2020. The JSON beside each article records it", "what": "Open articles from PubMed Central's open-data store (JATS XML), added on 15 November 2026: the reviews from which the Syn3A shelves' rule for a lipid anchor is fixed (the lipobox, and the parts and usual length of a lipoprotein's signal peptide), and one that says lipoboxes of other forms have been reported"},
+    "terms-prosite": {"licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee", "what": "PROSITE's licence conditions as its own page states them, saved by the licence pass of 15 November 2026. No PROSITE file was downloaded: the page is kept because the Syn3A shelves read, in UniProt's archive, where a PROSITE profile matches"},
     "terms-upstream-tools": {"what": "The terms of the tools and rule systems whose results a database gives out and the Syn3A shelves rest on, each as its own page states them. Added on 15 November 2026. Nothing but the page of terms was asked of any of them"},
     "biopython-185-protparam": {"licence": "Biopython License Agreement or BSD 3-Clause License", "what": "Biopython 1.85: the file that lists Kyte and Doolittle's hydropathy scale (Bio/SeqUtils/ProtParamData.py) and the licence file, saved as text; the 20 values the Syn3A shelves are computed with are checked against it"},
 }
@@ -393,7 +391,7 @@ PLACES = [
     ("genbank_CP014940", "ncbi-CP014940.1"), ("genbank_", "ncbi-CP016816-proteins"), ("link_check_ncbi_protein", "ncbi-CP016816-proteins"),
     ("terms_uniprot", "uniprot-syn3a"), ("uniprot", "uniprot-syn3a"), ("uniparc", "uniprot-syn3a"), ("control_uniprotkb", "uniprot-syn3a"),
     ("europepmc", "europepmc-syn3a-papers"), ("ncbi_pmc", "ncbi-pmc-PMC9985924"), ("terms_", "terms-syn3a-sources"),
-    ("biopython_185", "biopython-185-protparam"), ("rule_open_", "pmc-open-lipoprotein-signal"), ("open_", "pmc-open-syn3a-licence-pass"),
+    ("biopython_185", "biopython-185-protparam"), ("open_", "pmc-open-syn3a-licence-pass"), ("prosite_", "terms-prosite"),
     ("upstream_", "terms-upstream-tools"),
 ]
 HEADERS = [("X-Total-Results", "total_results"), ("X-UniProt-Release", "uniprot_release"), ("X-UniProt-Release-Date", "uniprot_release_date")]
@@ -708,6 +706,9 @@ class Context:
             item["uniparc"] = record["uniParcId"]
             item["interpro"] = sorted({feature["interproGroup"]["id"] for feature in record.get("sequenceFeatures", []) if feature.get("interproGroup")})
             item["same"] = sorted(a for a in record.get("uniProtKBAccessions", []) if "." not in a)
+            # The lipoprotein signature, where it starts at the first residue: the residue it ends on.
+            ends = [location["end"] for feature in record.get("sequenceFeatures", []) if feature["database"] == "PROSITE" and feature["databaseId"] == LIPOPROTEIN_PROFILE for location in feature["locations"] if location["start"] == 1]
+            item["lipobox"] = ends[0] if ends else None
         self.signature_names = {feature["interproGroup"]["id"]: feature["interproGroup"]["name"] for record in archive for feature in record.get("sequenceFeatures", []) if feature.get("interproGroup")}
         self.by_locus = {item["locus_tag"]: item for item in self.proteins}
         self.kb_entries = ev.json(f"uniprot_taxonomy_{TAXON}.json").get("statistics", {})
@@ -763,7 +764,7 @@ class Context:
 
 BREUER, GILBERT, THORNBURG = "europepmc_fulltext_PMC6609329.xml", "europepmc_fulltext_PMC8339304.xml", "ncbi_pmc_9985924.xml"
 LHERNAULT = "europepmc_fulltext_PMC2289639.xml"
-ZHANG, PAULET, CHRISTODOULIDES, DESVAUX, SMITHERS, LEGOOD = (open_file(key) for key in ("zhang2023", "paulet2011", "christodoulides2018", "desvaux2018", "smithers2021", "legood2020"))
+ZHANG, PAULET, CHRISTODOULIDES = (f"open_{OPEN_TEXTS[key]}.xml" for key in ("zhang2023", "paulet2011", "christodoulides2018"))
 # Every statement the files make from a paper is checked here against the saved text of a
 # permissive source. The two texts under non-commercial terms are read for their licence
 # statement alone.
@@ -797,17 +798,6 @@ SAID = [
     (PAULET, r"Creative Commons Attribution License \( ?http://creativecommons\.org/licenses/by/2\.0 ?\)"),
     (CHRISTODOULIDES, r"mycoplasmas usually induce an inflammatory and a humoral response preferentially directed against their membrane-bound, surface-exposed lipoproteins"),
     (CHRISTODOULIDES, r"Creative Commons Attribution License \(CC BY\)"),
-    # The lipid-anchor rule: the lipobox, for bacteria with one membrane, among which the
-    # mollicutes are counted; and the parts and usual length of a lipoprotein's signal peptide.
-    (DESVAUX, r"The consensus sequence for the lipobox is \[LVI\] -3 -\[ASTVI\] -2 -\[GAS\] -1 -\[C\] \+1"),
-    (DESVAUX, r"monoderm bacteria refer to species exhibiting only one biological membrane"),
-    (DESVAUX, r"bacteria of the class Mollicutes, comprising the genus Mycoplasma , cannot retain the Gram stain because they naturally lack a CW"),
-    (DESVAUX, r"creativecommons\.org/licenses/by/4\.0/ This is an open-access article distributed under the terms of the Creative Commons Attribution License \(CC BY\)"),
-    (SMITHERS, r"an N-terminal signal peptide that is on average 16–26 residues long"),
-    (SMITHERS, r"The signal peptide has three recognizable parts: an N-terminal positively charged sequence, a hydrophobic helix \(h-region\), and a C-terminal lipobox"),
-    (SMITHERS, r"creativecommons\.org/licenses/by/4\.0/ This is an open-access article distributed under the terms of the Creative Commons Attribution License \(CC BY\)"),
-    (LEGOOD, r"Variations in lipobox sequences have been reported but the invariant cysteine residue is always present"),
-    (LEGOOD, r"This is an open access article under the terms of the http://creativecommons\.org/licenses/by/4\.0/ License"),
     (GILBERT, r"small cell of radius 201\.26 nm with 503 ribosomes and large cell of radius 247\.42 nm with 820 ribosomes"),
     (GILBERT, r"small cell of radius 203\.52 nm with 684 ribosomes and large cell of radius 241\.20 nm with 1,095 ribosomes"),
     (GILBERT, r"the synthetic cells lack a cell wall"),
@@ -822,6 +812,10 @@ SAID = [
     ("terms_insdc_policy.html", r"no use restrictions or licensing requirements will be included in any sequence data records"),
     ("terms_uniprot_license.json", r"Creative Commons Attribution 4\.0 International \(CC BY 4\.0\) License"),
     ("terms_interpro_license.html", r"CC0"),
+    ("prosite_license.html", r"distributed under the Creative Commons Attribution-NonCommercial-NoDerivatives \(CC BY-NC-ND 4\.0\) License"),
+    ("prosite_license.html", r"Commercial users are asked to pay a yearly license fee"),
+    ("prosite_license.html", r"commercial users need their company to pay a license fee irrespective of the method by which they access the database"),
+    ("terms_uniprot_license.json", r"We cannot provide unrestricted permission regarding the use of the data, as some data may be covered by patents or other rights"),
     ("upstream_hamap_about.html", r"HAMAP is copyrighted by the SIB Swiss Institute of Bioinformatics and distributed under the Creative Commons Attribution \(CC BY 4\.0\) License"),
     ("terms_embl_ebi.html", r"EMBL-EBI itself places no additional restrictions on the use or redistribution of the data available via its Data Resources and Tools other than those provided by the original data owners"),
     ("proteomexchange_PXD008159.xml", r'title="JCVI_Syn3A"'),
@@ -840,7 +834,7 @@ def check_sources(c):
     # Central's own record of an open article, or the paper's bibliographic record, which
     # either names a licence or names none and says the paper is not open.
     for key, pmc in OPEN_TEXTS.items():
-        recorded = ev.json(open_file(key, "json"))
+        recorded = ev.json(f"open_{pmc}.json")
         if recorded["license_code"] != "CC BY" or recorded["pmcid"] != pmc or recorded["is_retracted"]:
             raise SystemExit(f"PubMed Central no longer records {pmc}, the paper cited as {key}, as an open article under CC BY")
     shelf_papers = {record["pmid"]: record for record in ev.json("europepmc_shelves_citations.json")["resultList"]["result"]}
@@ -918,14 +912,14 @@ def open_paper(c, key):
     """An open article read from PubMed Central's open-data store: who wrote it, its citation,
     and the day it was read. The authors are read from the article's own front matter."""
     pmc = OPEN_TEXTS[key]
-    recorded = c.evidence.json(open_file(key, "json"))
-    front = c.evidence.text(open_file(key)).split("</article-meta>")[0]
+    recorded = c.evidence.json(f"open_{pmc}.json")
+    front = c.evidence.text(f"open_{pmc}.xml").split("</article-meta>")[0]
     authors = re.findall(r'<contrib[^>]*contrib-type="author"[^>]*>.*?<surname>([^<]+)</surname>', front, re.S)
     where = re.fullmatch(r"(?P<journal>.+?)\. (?P<year>\d{4})[^;]*;(?P<place>[^.]+)\. doi: \S+", recorded["citation"])
     if not authors or not where:
         raise SystemExit(f"the saved record of {pmc} cannot be read as a citation")
     who = authors[0] if len(authors) == 1 else f"{authors[0]} and {authors[1]}" if len(authors) == 2 else f"{authors[0]} and others"
-    return {"who": who, "year": where["year"], "text": f"{who} ({where['year']}) {recorded['title'].rstrip('.')}. {where['journal']} {where['place']}.", "doi": recorded["doi"], "pmid": str(recorded["pmid"]), "accessed": c.evidence.day(open_file(key))}
+    return {"who": who, "year": where["year"], "text": f"{who} ({where['year']}) {recorded['title'].rstrip('.')}. {where['journal']} {where['place']}.", "doi": recorded["doi"], "pmid": str(recorded["pmid"]), "accessed": c.evidence.day(f"open_{pmc}.xml")}
 
 
 POINTER = "It is named so that it can be read, and nothing is taken from it."
@@ -1214,13 +1208,14 @@ def shelves_section(c, shelves):
     basis_total = Counter()
     for side in by_basis.values():
         basis_total.update(side)
-    inside, permeases, stated, anchors, membrane = checks["inside_by_class"], checks["permeases"], checks["stated"], checks["lipid_anchor"], checks["membrane"]
-    set_aside = f"{len(anchors['set_aside'])} ({listed(anchors['set_aside'])})" if anchors["set_aside"] else "none"
+    inside, permeases, stated, profile, membrane = checks["inside_by_class"], checks["permeases"], checks["stated"], checks["lipoprotein_profile"], checks["membrane"]
+    set_aside = listed(profile["set_aside"]) if profile["set_aside"] else "none"
     false_alarms = listed(inside["read_as_spanning"]) if inside["read_as_spanning"] else "none"
+    elsewhere = c.anchored_elsewhere
+    names, genes = listed(sorted(elsewhere)), listed(sorted(set(elsewhere.values())))
+    elsewhere_words = "" if not elsewhere else "\n  " + (f"One unreviewed entry of another organism ({names}), with the sequence of {genes}, carries" if len(elsewhere) == 1 else f"{len(elsewhere)} unreviewed entries of other organisms ({names}), with the sequences of {genes}, carry") + "\n  an automatic lipid-anchor mark from the PROSITE profile used below; it is set aside there."
     districts = "\n".join(f"| {group['label']} | {group['within']} | {group['count']} | " + " | ".join(str(group["sides"].get(side, 0)) for side in SIDES) + " |" for group in shelves["groups"])
     paulet, review = open_paper(c, "paulet2011"), open_paper(c, "christodoulides2018")
-    desvaux, smithers, legood = open_paper(c, "desvaux2018"), open_paper(c, "smithers2021"), open_paper(c, "legood2020")
-    box = "-".join(f"[{allowed}]" for allowed in LIPOBOX)
     unplaced = [row for row in shelves["proteins"] if row[4] == "not known"]
     spanning = checks["in_the_membrane"]
     behind = {"experiment": "an experiment", "curator": "a curator's inference", "similarity": "similarity to another protein", "rule": "a family rule"}
@@ -1251,30 +1246,21 @@ there is one shelf.
 - **Predicted ({basis_total['predicted']}).** This tool's own reading of the sequence. It is
   not the output of an established predictor: UniProt's archive holds family signatures on
   these sequences and no prediction of membrane-spanning stretches, and no UniProtKB entry
-  of any organism with one of these sequences gives one.
+  of any organism with one of these sequences gives one.{elsewhere_words}
   - *In the membrane:* a stretch of {WINDOW} residues whose mean hydropathy on Kyte and
     Doolittle's scale is {HYDROPHOBIC / 10} or more and which holds no charged residue, or
     {STRONG / 10} or more with at most one. The window and the {HYDROPHOBIC / 10} are the usual
     reading of that scale ({paulet['who']} {paulet['year']} state it). The conditions on
     charged residues are this tool's, set against the checks below.
-  - *Outside:* a lipid anchor, read by a rule of this tool's own. A bacterial lipoprotein is
-    made with a signal peptide of three parts: a positively charged beginning, a
-    hydrophobic stretch, and the lipobox, whose cysteine takes the lipid; the signal
-    peptide is on average 16 to 26 residues long ({smithers['who']} {smithers['year']}). The
-    rule takes the first cysteine that has a lipobox before it ({box}, the
-    form {desvaux['who']} {desvaux['year']} state for bacteria with one membrane), that sits
-    within the first {ANCHOR_REACH} residues, and that is preceded by a stretch of {SIGNAL_WINDOW} residues
-    with a mean hydropathy of {HYDROPHOBIC / 10} or more and no charged residue, with a lysine or an
-    arginine before that stretch. The reach of {ANCHOR_REACH} and the stretch of {SIGNAL_WINDOW} are this tool's own
-    choice, since no source read states a limit. The rule was fixed before it was run and
-    is not adjusted to any protein. The lipoproteins of mycoplasmas are bound to the
-    membrane and exposed on the cell's surface ({review['who']} {review['year']}); that is
-    said of mycoplasmas in general and was not measured in this strain.
+  - *Outside:* the lipoprotein signature (PROSITE {LIPOPROTEIN_PROFILE}, as UniProt's archive
+    gives it) from the first residue to a cysteine, with a hydrophobic stretch before the
+    cysteine. The lipoproteins of mycoplasmas are bound to the membrane and exposed on the
+    cell's surface ({review['who']} {review['year']}); that is said of mycoplasmas in general
+    and was not measured in this strain.
   - *Inside:* no such stretch and no lipid anchor. This includes proteins attached to the
     membrane's inner face, such as the ATP-binding parts of transporters.
-- **By function ({basis_total['by function']}).** The sequence has a hydrophobic stretch, or reads as
-  carrying a lipid anchor, but the protein's class in the 2019 paper leaves no doubt that
-  it works inside the cell:
+- **By function ({basis_total['by function']}).** The sequence has a hydrophobic stretch, but the
+  protein's class in the 2019 paper leaves no doubt that it works inside the cell:
   translation, transcription, the upkeep of DNA, sugar breakdown, the pentose phosphate
   pathway or nucleotide metabolism. Function is never used to place a transport protein.
 - **Not known ({counts['not known']}).** A hydrophobic stretch that holds charged residues, in a
@@ -1289,17 +1275,9 @@ there is one shelf.
 - **Proteins named as membrane-spanning.** All {permeases['proteins']} proteins that the annotation calls a
   permease are read as membrane-spanning.
 - **Stated places.** The reading agrees with all {stated['proteins']}.
-- **Lipid anchors.** The rule reads an anchor on {anchors['read']} proteins. {anchors['kept']} are kept: {anchors['placed_outside']} are placed outside, and
-  {anchors['placed_in']}, with a membrane-spanning stretch after the anchor, in the membrane. Set aside, because a
-  reviewed entry states the place or the protein's class leaves no doubt that it works
-  inside the cell: {set_aside}. No lipid was measured on any of them, and nothing here
-  checks the rule against a measurement: it is a reading of the sequence.
-  **The rule is strict and misses lipoproteins.** Lipoboxes of other forms have been
-  reported ({legood['who']} {legood['year']}), and a lipoprotein with such a one is not
-  called. It is then placed like any other protein: usually in the membrane, by the
-  hydrophobic stretch of its signal, with the mark that its one stretch is at its start
-  ({spanning['one_stretch_at_the_start']} proteins carry that mark). `docs/SYN3A.md` says how the rule compares with
-  the signature it replaced.
+- **The lipoprotein signature** matches {profile['sequences']} sequences. {profile['kept']} are kept: {profile['placed_outside']} are placed outside, and
+  {profile['placed_in']}, with a membrane-spanning stretch after the anchor, in the membrane. Set aside, for
+  want of a hydrophobic stretch before the cysteine: {set_aside}.
 - **Against the literature.** Here {counts['in']} proteins span the membrane and {counts['outside']} are anchored on it,
   {membrane['in_or_on']} together. {membrane['seen']} of them were seen in the proteomics, with an estimated {membrane['estimated_copies']:,} of
   the {membrane['all_estimated_copies']:,} copies. The 2022 whole-cell model gives its own count of membrane
@@ -1353,10 +1331,10 @@ def build_readme(c, rows, shelves):
         ("The records of the papers cited for the shelves", "europepmc_shelves_citations.json"),
         ("The open review cited for division", ZHANG), ("The open paper cited for the usual reading of the scale", PAULET),
         ("The open review cited for where lipoproteins sit", CHRISTODOULIDES),
-        ("The open review cited for the lipobox", DESVAUX), ("The open review cited for a lipoprotein's signal peptide", SMITHERS),
-        ("The open review cited for lipoboxes of other forms", LEGOOD), ("HAMAP's statement of its terms", "upstream_hamap_about.html"),
+        ("HAMAP's statement of its terms", "upstream_hamap_about.html"),
     ]
     inputs = "\n".join(f"| {what} | `{ev.read[name]['source']}` | `{ev.read[name]['file']}` | `{ev.read[name]['sha256']}` |" for what, name in built_from)
+    upstream = "\n".join(f"| {source['name']} | {source['licence']} | {source['class']} | {source['through']} | {source['holds'].split('. ', 1)[1]} |" for source in shelves["sources"] if source.get("through"))
     day_record, day_paper, day_archive = ev.day(f"genbank_{RECORD}_cds_aa.fa"), ev.day("elife_36842_supp3.xlsx"), ev.day(f"uniparc_{TAXON}.json")
     return f"""# Syn3A proteins: the start of a catalogue
 
@@ -1438,23 +1416,31 @@ other organisms' entries and says so.
 | --- | --- | --- |
 | [GenBank {RECORD}](https://www.ncbi.nlm.nih.gov/nuccore/{RECORD}), read {day_record} | Locus tags, gene names, products, protein identifiers, lengths | "NCBI places no restrictions on the use or distribution of the GenBank data"; submitters may claim rights in what they submitted, and this record states none |
 | [Breuer and others 2019](https://doi.org/{breuer['doi']}), supplementary files 3 and 5, read {day_paper} | Origin, functional class, essentiality, detection and estimated copies | CC BY 4.0 |
-| [UniProt](https://www.uniprot.org/), release {c.uniprot_release}, read {day_archive} | Archive identifiers, signatures, and other organisms' entries with the same sequence and the place they state | CC BY 4.0 |
+| [UniProt](https://www.uniprot.org/), release {c.uniprot_release}, read {day_archive} | Archive identifiers, signatures, where the lipoprotein signature matches, and other organisms' entries with the same sequence and the place they state | CC BY 4.0 |
 | [InterPro](https://www.ebi.ac.uk/interpro/) | The signatures' identifiers | CC0 1.0 |
 | [Biopython 1.85]({BIOPYTHON_PAGE}), read {ev.day("biopython_185_ProtParamData.py")} | The 20 values of Kyte and Doolittle's hydropathy scale, for `{SHELVES_FILE}` | Biopython License Agreement or BSD 3-Clause License |
 | [{open_paper(c, "paulet2011")["who"]} 2011](https://doi.org/{open_paper(c, "paulet2011")["doi"]}), read {open_paper(c, "paulet2011")["accessed"]} | The usual reading of the hydropathy scale: a window of {WINDOW} residues and a mean above {HYDROPHOBIC / 10} | {OPEN_LICENCE["paulet2011"]} |
 | [{open_paper(c, "christodoulides2018")["who"]} 2018](https://doi.org/{open_paper(c, "christodoulides2018")["doi"]}), read {open_paper(c, "christodoulides2018")["accessed"]} | That the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface | {OPEN_LICENCE["christodoulides2018"]} |
-| [{open_paper(c, "desvaux2018")["who"]} 2018](https://doi.org/{open_paper(c, "desvaux2018")["doi"]}), read {open_paper(c, "desvaux2018")["accessed"]} | The lipobox, as stated for bacteria with one membrane | {OPEN_LICENCE["desvaux2018"]} |
-| [{open_paper(c, "smithers2021")["who"]} 2021](https://doi.org/{open_paper(c, "smithers2021")["doi"]}), read {open_paper(c, "smithers2021")["accessed"]} | The three parts of a lipoprotein's signal peptide and its usual length | {OPEN_LICENCE["smithers2021"]} |
-| [{open_paper(c, "legood2020")["who"]} 2020](https://doi.org/{open_paper(c, "legood2020")["doi"]}), read {open_paper(c, "legood2020")["accessed"]} | That lipoboxes of other forms have been reported | {OPEN_LICENCE["legood2020"]} |
-| [HAMAP](https://hamap.expasy.org/hamap_about.html), read {ev.day("upstream_hamap_about.html")} | Nothing downloaded but its terms: its family rules are what reviewed UniProtKB entries state places by, and they were read in those entries | CC BY 4.0 |
 
 Every source above is permissive: its terms allow what is taken, with attribution.
 
-Nothing in this folder rests on a source of another class. The membrane-spanning
-stretches and the lipid anchors are this tool's own reading of the sequences, by rules
-fixed from open descriptions; no predictor's output and no signature of another database
-is read for them. The stated places are those of reviewed UniProtKB entries, which give
-them by HAMAP's family rules (HAMAP is distributed under CC BY 4.0) or by similarity.
+**What UniProt gives out that a rule system of another owner computed.** Two rule
+systems stand behind values of `{SHELVES_FILE}`. Each was read in UniProt's records and
+is named there as a source of its own, with its own terms as its own page states them.
+Nothing was downloaded from either but its page of terms, and nothing of either is
+copied.
+
+| Rule system | Its own terms | Class | Read through | What rests on it |
+| --- | --- | --- | --- | --- |
+{upstream}
+
+**The project's rule (the user, 15 November 2026): a value stands on the terms of the
+database it was read from, and the tool behind it is named and counted.** The matches of
+PROSITE's lipoprotein profile were read in UniProt's archive, which UniProt gives out
+under CC BY 4.0, so the {shelves['checks']['lipoprotein_profile']['kept']} proteins with the mark `lipid_anchor`, {shelves['checks']['lipoprotein_profile']['placed_outside']} of them placed outside,
+stand as UniProt's archive gives them. PROSITE's own terms are non-commercial
+(CC BY-NC-ND 4.0, with a licence fee asked of commercial users), which is why it is
+named and counted here. This is the project's rule, and not a legal opinion.
 
 **Named, with nothing taken.** These are pointers: each says what is to be read there.
 Nothing in this folder rests on them.
@@ -1473,9 +1459,6 @@ Cite:
 - The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)
 - {open_paper(c, "paulet2011")["text"]} doi:{open_paper(c, "paulet2011")["doi"]}
 - {open_paper(c, "christodoulides2018")["text"]} doi:{open_paper(c, "christodoulides2018")["doi"]}
-- {open_paper(c, "desvaux2018")["text"]} doi:{open_paper(c, "desvaux2018")["doi"]}
-- {open_paper(c, "smithers2021")["text"]} doi:{open_paper(c, "smithers2021")["doi"]}
-- {open_paper(c, "legood2020")["text"]} doi:{open_paper(c, "legood2020")["doi"]}
 
 ## The files they were built from
 
@@ -1513,14 +1496,8 @@ WINDOW = 19               # residues in a stretch long enough to span the membra
 HYDROPHOBIC = 16          # mean hydropathy, in tenths, at which a stretch counts as hydrophobic (1.6)
 STRONG = 22               # mean hydropathy, in tenths, at which one charged residue is allowed in it (2.2)
 CHARGED = "DEKR"
+LIPOPROTEIN_PROFILE = "PS51257"  # PROSITE's profile of the lipid attachment site of bacterial lipoproteins
 SIGNAL_START = 12         # the hydrophobic stretch of an export signal begins within these residues
-# The lipid anchor of a bacterial lipoprotein, read by this tool's own rule (see lipid_anchor).
-# The lipobox is the form Desvaux and others 2018 state for bacteria with one membrane; the
-# two numbers are this tool's own choice, fixed on 15 November 2026 before the rule was run
-# on any sequence, and not adjusted since.
-LIPOBOX = ("LVI", "ASTVI", "GAS")   # the residues allowed at -3, -2 and -1 of the cysteine
-ANCHOR_REACH = 40         # the cysteine sits at this residue or before
-SIGNAL_WINDOW = 10        # residues in the hydrophobic stretch of a lipoprotein's signal peptide
 # The 2019 paper's classes that leave no doubt that a protein works inside the cell. Used
 # only where the sequence has a hydrophobic stretch, and never for a transport protein.
 INSIDE_BY_FUNCTION = [
@@ -1537,7 +1514,7 @@ SIDES = ["outside", "in", "inside", "not known"]
 SOURCE_NAMES = {
     "genbank": "GenBank", "breuer2019": "Breuer and others 2019", "uniparc": "UniParc", "uniprotkb": "UniProtKB", "scale": "Biopython 1.85",
     "paulet2011": "Paulet and others 2011", "christodoulides2018": "Christodoulides and others 2018",
-    "desvaux2018": "Desvaux and others 2018", "smithers2021": "Smithers and others 2021", "legood2020": "Legood and others 2020", "kyte1982": "Kyte and Doolittle 1982", "lhernault1992": "L'Hernault and Arduengo 1992", "chambaud1999": "Chambaud and others 1999", "thornburg2022": "Thornburg and others 2022",
+    "prosite": "PROSITE", "kyte1982": "Kyte and Doolittle 1982", "lhernault1992": "L'Hernault and Arduengo 1992", "chambaud1999": "Chambaud and others 1999", "thornburg2022": "Thornburg and others 2022",
 }
 BASES = ["stated", "predicted", "by function", "none"]
 SHELF_COLUMNS = ["id", "label", "gene", "shelf", "side", "basis", "group", "length", "unit", "marks"]
@@ -1577,72 +1554,23 @@ def scan(sequence):
     return sorted(start + 1 for start in kept), best >= HYDROPHOBIC * WINDOW, best / (10 * WINDOW)
 
 
-def lipid_anchor(sequence):
-    """The cysteine a lipid is attached to, by this tool's own reading of the sequence, or None.
-
-    A bacterial lipoprotein is made with a signal peptide of three parts: a positively
-    charged beginning, a hydrophobic stretch, and the lipobox, whose cysteine takes the
-    lipid (Smithers and others 2021). The first cysteine is taken, at residue p, for which:
-      1. the three residues before it are a lipobox: [LVI] [ASTVI] [GAS] (Desvaux and others
-         2018, for bacteria with one membrane);
-      2. p is ANCHOR_REACH or less;
-      3. before it lies a window of SIGNAL_WINDOW residues whose mean hydropathy is
-         HYDROPHOBIC or more and which holds no charged residue;
-      4. a lysine or an arginine stands before that window.
-    The rule was written down before it was run, and is not adjusted to any protein."""
-    values = [HYDROPATHY[letter] for letter in sequence[:ANCHOR_REACH]]
-    for at in range(3, min(len(sequence), ANCHOR_REACH)):  # at is the cysteine's index from 0; p = at + 1
-        if sequence[at] != "C" or any(sequence[at - 3 + i] not in allowed for i, allowed in enumerate(LIPOBOX)):
-            continue
-        for start in range(1, at - SIGNAL_WINDOW + 1):  # the window is sequence[start:start + SIGNAL_WINDOW], ending before the cysteine
-            window = sequence[start:start + SIGNAL_WINDOW]
-            if any(letter in CHARGED for letter in window) or sum(values[start:start + SIGNAL_WINDOW]) < HYDROPHOBIC * SIGNAL_WINDOW:
-                continue
-            if any(letter in "KR" for letter in sequence[:start]):
-                return at + 1
-    return None
-
-
-def anchor_rule(desvaux, smithers):
-    """The lipid-anchor rule in words, with what is stated and what is the tool's own choice."""
-    box = "-".join(f"[{allowed}]" for allowed in LIPOBOX)
-    return (
-        f"A lipid anchor is read by a rule of this tool's own, fixed from open descriptions before it was run and not adjusted to any protein. "
-        f"A bacterial lipoprotein is made with a signal peptide of three parts, a positively charged beginning, a hydrophobic stretch and the lipobox, whose cysteine takes the lipid; the signal peptide is on average 16 to 26 residues long ({smithers['who']} {smithers['year']}). "
-        f"The rule takes the first cysteine that has a lipobox before it ({box}, the form {desvaux['who']} {desvaux['year']} state for bacteria with one membrane), that sits within the first {ANCHOR_REACH} residues, "
-        f"and that is preceded by a stretch of {SIGNAL_WINDOW} residues with a mean hydropathy of {HYDROPHOBIC / 10} or more and no charged residue, with a lysine or an arginine before that stretch. "
-        f"The reach of {ANCHOR_REACH} residues and the stretch of {SIGNAL_WINDOW} are this tool's own choice: no source read states a limit."
-    )
-
-
-# Made-up sequences, none a real protein: what the rule must say of each. The rule was
-# debugged on these alone.
-RULE_CHECKS = [
-    ("MKKLLSILGSISLVASSTTVVACGNKTEDSKK", 23),                      # a charged beginning, a hydrophobic stretch, the lipobox V-V-A-C
-    ("MKKLLSILGSISLVASSTTVVAAGNKTEDSKK", None),                    # no cysteine
-    ("MSELLSILGSISLVASSTTVVACGNKTEDSKK", None),                    # no lysine or arginine before the stretch
-    ("MKKDEEKRDSEDKKDTEDSKKLVACGNKTEDS", None),                    # no hydrophobic stretch before the cysteine
-    ("MKKLLSILGSISLVASSTTVVPCGNKTEDSKK", None),                    # the residue before the cysteine is not G, A or S
-    ("MK" + "A" * 38 + "LAACGNKTEDSKK", None),                       # the cysteine is at residue 44, past the reach
-    ("MK" + "A" * 34 + "LAACGNKTEDSKK", 40),                         # the cysteine is at residue 40, the last within reach
-    ("MKRIIALLAGLTLVGCSSNDKK", 16),                                # the stretch begins after the arginine
-    ("MKKLLSILGSISLVASSTTVVACGNKTEDSKKLLSILGSISLVASSTTVVAC", 23),  # of two cysteines, the first
-]
-
-
-def check_rule():
-    for sequence, expected in RULE_CHECKS:
-        if lipid_anchor(sequence) != expected:
-            raise SystemExit(f"the lipid-anchor rule no longer reads the made-up sequence {sequence[:24]}... as {expected}")
-    if (LIPOBOX, ANCHOR_REACH, SIGNAL_WINDOW, HYDROPHOBIC, CHARGED) != (("LVI", "ASTVI", "GAS"), 40, 10, 16, "DEKR"):
-        raise SystemExit("the lipid-anchor rule's numbers are not the ones fixed on 15 November 2026; the files' words on it must be rewritten")
+def lipid_anchor(protein, stretches):
+    """The cysteine a lipid is attached to, if the lipoprotein signature holds up: PROSITE's
+    profile from the first residue to a cysteine, with a hydrophobic stretch that begins
+    before it, as an export signal has."""
+    end = protein["lipobox"]
+    if not end or protein["sequence"][end - 1] != "C":
+        return None
+    if not any(start <= SIGNAL_START and start < end for start in stretches):
+        return None
+    return end
 
 
 # What stands behind a statement in a reviewed entry, by its evidence code, strongest first.
 EVIDENCE = [("experiment", {"ECO:0000269"}), ("curator", {"ECO:0000305", "ECO:0000303", "ECO:0000304"}), ("similarity", {"ECO:0000250"}), ("rule", {"ECO:0000255", "ECO:0000256", "ECO:0000259"})]
-# The rule systems whose statements may stand behind a stated place, as UniProt names them
-# in an entry's evidence, each with terms that were read and allow it. A rule of another
-# system stops the build until its terms are read.
+# The rule systems whose statements stand behind a stated place, as UniProt names them in
+# an entry's evidence, each with terms that were read. A rule of another system stops the
+# build until its terms are read and it is named among the sources.
 RULE_SYSTEMS = {"HAMAP-Rule": "HAMAP"}
 
 
@@ -1680,20 +1608,29 @@ def plural(n, one, many=None):
     return f"{n} {one if n == 1 else many or one + 's'}"
 
 
-def upstream_sources(c, checks):
-    """The rule systems behind the stated places, each as a source of its own: its terms as
-    its own page states them, and the source in whose entries its results were read."""
-    hamap = (checks["by_system"][("HAMAP", "side")], checks["by_system"][("HAMAP", "where")])
+def upstream_sources(c, checks, tally, anchored_in):
+    """The rule systems of another owner behind values of the shelves, each as a source of its
+    own: its terms as its own page states them, the source in whose records its results were
+    read, and what rests on it. PROSITE's lipoprotein profile stands behind the lipid
+    anchors; HAMAP's family rules stand behind places that reviewed entries state."""
+    ev = c.evidence
     if set(system for system, _ in checks["by_system"]) - {"HAMAP"}:
         raise SystemExit("a stated place rests on a rule system that the shelves do not name as a source")
-    if not any(hamap):
-        return []
-    rests = listed([words for words in (f"the stated side of {plural(hamap[0], 'protein')}" if hamap[0] else "", f"the place at the membrane of {hamap[1]}" if hamap[1] else "") if words])
-    return [{
-        "name": "HAMAP", "cite": "SIB Swiss Institute of Bioinformatics, HAMAP: its family rules, as UniProt applies them in reviewed entries.", "url": "https://hamap.expasy.org/hamap_about.html",
-        "licence": "CC BY 4.0", "class": PERMISSIVE, "accessed": c.evidence.day("upstream_hamap_about.html"), "through": SOURCE_NAMES["uniprotkb"],
-        "holds": f"Nothing was downloaded from it but its statement of terms. Its family rules are what reviewed entries of other organisms give a place by: {rests} rests on them, as read in UniProt's entries.",
+    kept = checks["profile_kept"]
+    out = [{
+        "name": SOURCE_NAMES["prosite"], "cite": f"SIB Swiss Institute of Bioinformatics, PROSITE: its profile {LIPOPROTEIN_PROFILE}.", "url": "https://prosite.expasy.org/prosite_license.html",
+        "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee", "class": CLASSES["prosite"], "accessed": ev.day("prosite_license.html"), "through": SOURCE_NAMES["uniparc"],
+        "holds": f"Nothing was downloaded from it but its statement of terms, and nothing of it is copied. Its lipoprotein profile is the origin of the matches that UniProt's archive records on these sequences: the mark lipid_anchor of {plural(kept, 'protein')} rests on those matches, {tally['outside']} of them placed outside and {anchored_in} in the membrane, as they were read in UniProt's archive.",
     }]
+    hamap = (checks["by_system"][("HAMAP", "side")], checks["by_system"][("HAMAP", "where")])
+    if any(hamap):
+        rests = listed([words for words in (f"the stated side of {plural(hamap[0], 'protein')}" if hamap[0] else "", f"the place at the membrane of {hamap[1]}" if hamap[1] else "") if words])
+        out.append({
+            "name": "HAMAP", "cite": "SIB Swiss Institute of Bioinformatics, HAMAP: its family rules, as UniProt applies them in reviewed entries.", "url": "https://hamap.expasy.org/hamap_about.html",
+            "licence": "CC BY 4.0", "class": PERMISSIVE, "accessed": ev.day("upstream_hamap_about.html"), "through": SOURCE_NAMES["uniprotkb"],
+            "holds": f"Nothing was downloaded from it but its statement of terms. Its family rules are what reviewed entries of other organisms give a place by: {rests} {'rest' if all(hamap) else 'rests'} on them, as read in UniProt's entries.",
+        })
+    return out
 
 
 def slug(text):
@@ -1725,10 +1662,11 @@ def check_shelf_sources(c):
     spanning = sorted(accession for accession, entry in c.places.items() if any(feature["type"] == "Transmembrane" for feature in entry.get("features", [])))
     if spanning:
         raise SystemExit(f"an entry with one of these sequences now gives a membrane-spanning stretch; read it and use it: {spanning}")
-    anchored = sorted(accession for accession, entry in c.places.items() if entry["entryType"].startswith("UniProtKB reviewed") and any(feature["type"] in ("Signal", "Lipidation") for feature in entry.get("features", [])))
-    if anchored:
-        raise SystemExit(f"a reviewed entry with one of these sequences now gives a signal or a lipid anchor; read what stands behind it before it is used: {anchored}")
-    check_rule()
+    anchored = sorted(accession for accession, entry in c.places.items() if any(feature["type"] in ("Signal", "Lipidation") for feature in entry.get("features", [])))
+    if any(c.places[accession]["entryType"].startswith("UniProtKB reviewed") for accession in anchored):
+        raise SystemExit(f"a reviewed entry with one of these sequences now gives a signal or a lipid anchor; read it and use it: {anchored}")
+    # Unreviewed entries that carry an automatic lipid-anchor mark: which of this organism's proteins they are.
+    c.anchored_elsewhere = {accession: next(protein.get("gene") or protein["locus_tag"] for protein in c.proteins if accession in protein["same"]) for accession in anchored}
 
 
 def build_shelves(c, rows):
@@ -1736,7 +1674,7 @@ def build_shelves(c, rows):
     cite = {key: shelf_citation(c, key) for key in SHELF_PAPERS}
     proteins, tally, basis_tally = [], Counter(), Counter()
     groups = {}
-    checks = {"controls": 0, "controls_read_as_spanning": [], "controls_hydrophobic": 0, "controls_anchor_only": 0, "permeases": 0, "permeases_read_as_spanning": 0, "stated": 0, "stated_agree": 0, "anchors": 0, "anchors_kept": 0, "anchors_set_aside": [], "copies_membrane": 0.0, "seen_membrane": 0, "stated_evidence": Counter(), "at_the_membrane": [], "by_system": Counter()}
+    checks = {"controls": 0, "controls_read_as_spanning": [], "controls_hydrophobic": 0, "permeases": 0, "permeases_read_as_spanning": 0, "stated": 0, "stated_agree": 0, "profile": 0, "profile_kept": 0, "profile_set_aside": [], "copies_membrane": 0.0, "seen_membrane": 0, "stated_evidence": Counter(), "at_the_membrane": [], "by_system": Counter()}
     for row, protein in zip(rows, c.proteins):
         locus = protein["locus_tag"]
         if row[0] != locus:
@@ -1745,7 +1683,7 @@ def build_shelves(c, rows):
         classes = (table["Primary functional class"], table["Secondary functional class"], table["Tertiary functional class"])
         no_doubt = any(classes[0] == first and classes[1] == second and third in (None, classes[2]) for first, second, third in INSIDE_BY_FUNCTION)
         stretches, hydrophobic, best = scan(protein["sequence"])
-        anchor = lipid_anchor(protein["sequence"])
+        anchor = lipid_anchor(protein, stretches)
         side_stated, said = stated_place(c, protein)
         marks = {"essential": row[7], "seen": row[8] == "yes"}
         measured = c.abundance.get(locus)
@@ -1759,18 +1697,15 @@ def build_shelves(c, rows):
         for name, pattern in COMPLEXES:
             if re.search(pattern, protein["protein"]):
                 marks["complex"] = name
-        if anchor:
-            # The rule reads an anchor. It is kept unless a reviewed entry states the place
-            # or the protein's class leaves no doubt that it works inside the cell.
-            checks["anchors"] += 1
-            if side_stated or no_doubt:
-                checks["anchors_set_aside"].append(protein.get("gene") or locus)
+        if protein["lipobox"]:
+            checks["profile"] += 1
+            if anchor:
+                checks["profile_kept"] += 1
             else:
-                checks["anchors_kept"] += 1
+                checks["profile_set_aside"].append(protein.get("gene") or locus)
         if no_doubt:
             checks["controls"] += 1
             checks["controls_hydrophobic"] += hydrophobic
-            checks["controls_anchor_only"] += bool(anchor) and not hydrophobic and not side_stated
             if stretches:
                 checks["controls_read_as_spanning"].append(protein.get("gene") or locus)
         if re.search(r"permease", protein["protein"], re.I):
@@ -1798,10 +1733,6 @@ def build_shelves(c, rows):
             else:
                 side, basis = "outside", "predicted"
             marks["lipid_anchor"] = True
-        elif anchor:
-            # The rule reads an anchor, and the protein's class leaves no doubt that it
-            # works inside the cell: its function decides, and the file says so.
-            side, basis = "inside", "by function"
         elif stretches:
             if no_doubt:
                 side, basis = "inside", "by function"
@@ -1839,7 +1770,7 @@ def build_shelves(c, rows):
             checks["seen_membrane"] += 1
         proteins.append([locus, protein["protein"], protein.get("gene", ""), "cell", side, basis, group, len(protein["sequence"]), None, marks])
 
-    if sum(tally.values()) != len(rows) or checks["anchors"] - checks["anchors_kept"] != len(checks["anchors_set_aside"]):
+    if sum(tally.values()) != len(rows) or checks["profile"] - checks["profile_kept"] != len(checks["profile_set_aside"]):
         raise SystemExit("the shelves do not hold every protein of the catalogue once")
     # What the text of the files says of the reading rests on these: if one moves, the words must be reread.
     if checks["stated_agree"] != checks["stated"] or checks["permeases_read_as_spanning"] != checks["permeases"]:
@@ -1848,20 +1779,17 @@ def build_shelves(c, rows):
     by_basis = {side: {basis: basis_tally[(side, basis)] for basis in BASES if basis_tally[(side, basis)]} for side in SIDES if tally[side]}
     kyte, chambaud, lhernault = cite["kyte1982"], cite["chambaud1999"], cite["lhernault1992"]
     paulet, review = open_paper(c, "paulet2011"), open_paper(c, "christodoulides2018")
-    desvaux, smithers, legood = open_paper(c, "desvaux2018"), open_paper(c, "smithers2021"), open_paper(c, "legood2020")
-    if (desvaux["who"], smithers["who"], legood["who"], legood["year"]) != ("Desvaux and others", "Smithers and others", "Legood and others", "2020"):
-        raise SystemExit("the two reviews the lipid-anchor rule is fixed from are not the ones the files name")
     ev = c.evidence
     breuer = citation(c, "breuer2019")
     thornburg = citation(c, "thornburg2022")
     anchored_in = sum(1 for row in proteins if row[4] == "in" and row[9].get("lipid_anchor"))
-    if checks["anchors_kept"] != tally["outside"] + anchored_in:
+    if checks["profile_kept"] != tally["outside"] + anchored_in:
         raise SystemExit("the lipid-anchored proteins are not all outside or in the membrane")
     checks_out = {
-        "inside_by_class": {"proteins": checks["controls"], "with_a_hydrophobic_stretch": checks["controls_hydrophobic"], "with_an_anchor_read_and_no_such_stretch": checks["controls_anchor_only"], "read_as_spanning": checks["controls_read_as_spanning"]},
+        "inside_by_class": {"proteins": checks["controls"], "with_a_hydrophobic_stretch": checks["controls_hydrophobic"], "read_as_spanning": checks["controls_read_as_spanning"]},
         "permeases": {"proteins": checks["permeases"], "read_as_spanning": checks["permeases_read_as_spanning"]},
         "stated": {"proteins": checks["stated"], "reading_agrees": checks["stated_agree"], "by_evidence": {name: checks["stated_evidence"][name] for name, _ in EVIDENCE if checks["stated_evidence"][name]}, "said_to_be_at_the_membrane": checks["at_the_membrane"], "by_rule_system": {system: {"sides": checks["by_system"][(system, "side")], "at_the_membrane": checks["by_system"][(system, "where")]} for system in sorted({system for system, _ in checks["by_system"]})}},
-        "lipid_anchor": {"read": checks["anchors"], "kept": checks["anchors_kept"], "placed_outside": tally["outside"], "placed_in": anchored_in, "set_aside": checks["anchors_set_aside"]},
+        "lipoprotein_profile": {"sequences": checks["profile"], "kept": checks["profile_kept"], "placed_outside": tally["outside"], "placed_in": anchored_in, "set_aside": checks["profile_set_aside"]},
         "membrane": {"in_or_on": tally["in"] + tally["outside"], "seen": checks["seen_membrane"], "estimated_copies": round(checks["copies_membrane"]), "all_estimated_copies": c.copies_total},
         "in_the_membrane": {"proteins": tally["in"], "one_stretch": sum(1 for row in proteins if row[4] == "in" and row[9]["segments"] == 1), "one_stretch_at_the_start": sum(1 for row in proteins if row[9].get("at_start_only"))},
     }
@@ -1876,8 +1804,8 @@ def build_shelves(c, rows):
         "proteins": proteins,
         "side_notes": {
             "stated": "Taken from a reviewed UniProtKB entry whose sequence is, letter for letter, this protein's. Each such entry is of another organism, named in the mark stated_in: it states the place of the same protein there, not in JCVI-syn3A." + ("" if checks["stated_evidence"]["experiment"] else " None of these statements rests on an experiment: each is made by a family rule or by similarity, as the mark evidence says."),
-            "predicted": f"This tool's own reading of the sequence, not the output of an established predictor: UniProt's archive holds family signatures on these sequences and no prediction of membrane-spanning stretches. A stretch of {WINDOW} residues is read as membrane-spanning where its mean hydropathy on Kyte and Doolittle's scale is {HYDROPHOBIC / 10} or more and it holds no charged residue, or {STRONG / 10} or more with at most one. The window of {WINDOW} and the level of {HYDROPHOBIC / 10} are the usual reading of that scale ({paulet['who']} {paulet['year']} state it); the conditions on charged residues are this tool's, set against this organism's own proteins. A protein with such a stretch is placed in the membrane. A protein with none and no lipid anchor is placed inside, which includes proteins attached to the membrane's inner face. {anchor_rule(desvaux, smithers)} Such a protein is placed outside, because the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface ({review['who']} {review['year']}, said of mycoplasmas in general and not measured in this strain).",
-            "by function": "The sequence has a hydrophobic stretch, or reads as carrying a lipid anchor, but the protein's class in the 2019 paper leaves no doubt that it works inside the cell: translation, transcription, the upkeep of DNA, sugar breakdown, the pentose phosphate pathway or nucleotide metabolism. Function is never used to place a transport protein.",
+            "predicted": f"This tool's own reading of the sequence, not the output of an established predictor: UniProt's archive holds family signatures on these sequences and no prediction of membrane-spanning stretches. A stretch of {WINDOW} residues is read as membrane-spanning where its mean hydropathy on Kyte and Doolittle's scale is {HYDROPHOBIC / 10} or more and it holds no charged residue, or {STRONG / 10} or more with at most one. The window of {WINDOW} and the level of {HYDROPHOBIC / 10} are the usual reading of that scale ({paulet['who']} {paulet['year']} state it); the conditions on charged residues are this tool's, set against this organism's own proteins. A protein with such a stretch is placed in the membrane. A protein with none and no lipid anchor is placed inside, which includes proteins attached to the membrane's inner face. A lipid anchor is read from the lipoprotein signature (PROSITE {LIPOPROTEIN_PROFILE}, as UniProt's archive gives it under UniProt's own terms; PROSITE is named among the sources with its own terms, which are non-commercial) where a hydrophobic stretch begins before its cysteine; such a protein is placed outside, because the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface ({review['who']} {review['year']}, said of mycoplasmas in general and not measured in this strain).",
+            "by function": "The sequence has a hydrophobic stretch, but the protein's class in the 2019 paper leaves no doubt that it works inside the cell: translation, transcription, the upkeep of DNA, sugar breakdown, the pentose phosphate pathway or nucleotide metabolism. Function is never used to place a transport protein.",
             "none": "The sequence has a hydrophobic stretch that holds charged residues, and the protein's function is not known: nothing settles its side, so it is not placed.",
         },
         "marks": {
@@ -1888,7 +1816,7 @@ def build_shelves(c, rows):
             "class": {"label": "Finer class", "values": "text", "measured": False, "note": "The 2019 paper's tertiary functional class, for laying out a district.", "source": SOURCE_NAMES["breuer2019"]},
             "complex": {"label": "Assembly", "values": [name for name, _ in COMPLEXES], "measured": False, "note": "Named outright by the genome record's product name: a ribosomal protein, a subunit of the ATP synthase or of RNA polymerase. Other assemblies are not marked.", "source": SOURCE_NAMES["genbank"]},
             "segments": {"label": "Membrane-spanning stretches read from the sequence", "values": "number", "measured": False, "note": "This tool's reading; a count of stretches, not a topology. It can fall short, since a stretch that holds charged residues is not read.", "source": SOURCE_NAMES["scale"]},
-            "lipid_anchor": {"label": "Lipid anchor read from the sequence", "values": [True], "measured": False, "note": f"This tool's reading, by a rule of its own: a lipobox within the first {ANCHOR_REACH} residues, with a hydrophobic stretch before its cysteine and a lysine or an arginine before that. Such a protein is placed outside, unless a membrane-spanning stretch follows the anchor: then it is placed in the membrane. No lipid was measured on any of these proteins. The rule is strict: lipoboxes of other forms have been reported ({legood['who']} {legood['year']}), and a lipoprotein with such a one is not called. It is then placed like any other protein, usually in the membrane by the hydrophobic stretch of its signal, with the mark that its one stretch is at its start.", "source": SOURCE_NAMES["desvaux2018"]},
+            "lipid_anchor": {"label": "Lipid anchor read from the sequence", "values": [True], "measured": False, "note": "The lipoprotein signature with a hydrophobic stretch before its cysteine. Such a protein is placed outside, unless a membrane-spanning stretch follows the anchor: then it is placed in the membrane. The signature is a profile of PROSITE, whose own terms are non-commercial (CC BY-NC-ND 4.0); where it matches was read in UniProt's archive, under UniProt's terms (CC BY 4.0), and nothing was downloaded from PROSITE. " + RULING + ".", "source": SOURCE_NAMES["uniparc"]},
             "at_start_only": {"label": "Its one stretch is at the protein's start", "values": [True], "measured": False, "note": "The only stretch read begins within the first 12 residues. It may be an export signal that is cut off, and the protein would then sit outside and not span the membrane. Nothing read here tells the two apart.", "source": SOURCE_NAMES["scale"]},
             "evidence": {"label": "What stands behind a stated side", "values": [name for name, _ in EVIDENCE], "measured": False, "note": "From the reviewed entry that states the place: an experiment, a curator's inference, similarity to another protein, or a family rule.", "source": SOURCE_NAMES["uniprotkb"]},
             "where": {"label": "Where within its side", "values": ["at the membrane"], "measured": False, "note": "A reviewed entry of another organism, with the same sequence, says the protein is at the cell membrane as a peripheral protein, without saying which face. Its side here is this tool's reading: inside, which includes the membrane's inner face.", "source": SOURCE_NAMES["uniprotkb"]},
@@ -1901,16 +1829,14 @@ def build_shelves(c, rows):
         "sources": [
             {"name": SOURCE_NAMES["genbank"], "cite": f"Glass J (2017) {c.record_title}. GenBank {RECORD}.", "url": f"https://www.ncbi.nlm.nih.gov/nuccore/{RECORD}", "licence": "NCBI places no restrictions on the use or distribution of GenBank data; this record states none", "class": PERMISSIVE, "accessed": ev.day(f"genbank_{RECORD}_cds_aa.fa"), "holds": "The proteins, their names and lengths. Their sequences were read and are not copied."},
             {"name": SOURCE_NAMES["breuer2019"], "cite": breuer["text"], "url": f"https://doi.org/{breuer['doi']}", "licence": "CC BY 4.0", "class": PERMISSIVE, "accessed": ev.day("elife_36842_supp3.xlsx"), "holds": "The functional classes that name the districts, essentiality, detection and estimated copies (supplementary files 3 and 5)."},
-            {"name": SOURCE_NAMES["uniparc"], "cite": f"UniProt Consortium, UniParc release {c.uniprot_release}: the archived protein sequences of taxon {TAXON}.", "url": f"https://www.uniprot.org/uniparc?query=taxonomy_id:{TAXON}", "licence": "CC BY 4.0", "class": PERMISSIVE, "accessed": ev.day(f"uniparc_{TAXON}.json"), "holds": "That its archive holds exactly these sequences, and which UniProtKB entries of other organisms have the same ones. No signature of another database is read from it for the shelves."},
+            {"name": SOURCE_NAMES["uniparc"], "cite": f"UniProt Consortium, UniParc release {c.uniprot_release}: the archived protein sequences of taxon {TAXON}.", "url": f"https://www.uniprot.org/uniparc?query=taxonomy_id:{TAXON}", "licence": "CC BY 4.0", "class": PERMISSIVE, "accessed": ev.day(f"uniparc_{TAXON}.json"), "holds": "The sequences, and where PROSITE's lipoprotein profile matches them, as UniProt's archive records the matches. The profile itself is PROSITE's: it was not downloaded and is not copied."},
             {"name": SOURCE_NAMES["uniprotkb"], "cite": f"UniProt Consortium, UniProtKB release {ev.record('uniprotkb_identical_places.json')['uniprot_release']}: reviewed entries of other organisms with the same sequences.", "url": "https://www.uniprot.org/", "licence": "CC BY 4.0", "class": PERMISSIVE, "accessed": ev.day("uniprotkb_identical_places.json"), "holds": "The place those entries state and what stands behind it, for the proteins whose side is stated or that are said to be at the membrane."},
             {"name": SOURCE_NAMES["scale"], "cite": "The Biopython contributors, Biopython release 1.85: the file Bio/SeqUtils/ProtParamData.py, which lists the scale and names Kyte and Doolittle's paper of 1982 as its origin.", "url": BIOPYTHON_PAGE, "licence": "Biopython License Agreement or BSD 3-Clause License", "class": PERMISSIVE, "accessed": ev.day("biopython_185_ProtParamData.py"), "holds": "The 20 values of Kyte and Doolittle's hydropathy scale that the sequences are read with, as this file lists them."},
             {"name": SOURCE_NAMES["paulet2011"], "cite": paulet["text"], "url": f"https://doi.org/{paulet['doi']}", "licence": OPEN_LICENCE["paulet2011"], "class": PERMISSIVE, "accessed": paulet["accessed"], "holds": f"The usual reading of the scale: a window of {WINDOW} residues, and a mean above {HYDROPHOBIC / 10} for a stretch that spans a membrane."},
             {"name": SOURCE_NAMES["christodoulides2018"], "cite": review["text"], "url": f"https://doi.org/{review['doi']}", "licence": OPEN_LICENCE["christodoulides2018"], "class": PERMISSIVE, "accessed": review["accessed"], "holds": "That the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface."},
-            # A rule system whose results were read in a database's entries: its own terms, and through which source it was read.
-            *upstream_sources(c, checks),
-            {"name": SOURCE_NAMES["desvaux2018"], "cite": desvaux["text"], "url": f"https://doi.org/{desvaux['doi']}", "licence": OPEN_LICENCE["desvaux2018"], "class": PERMISSIVE, "accessed": desvaux["accessed"], "holds": "The lipobox, as the review states it for bacteria with one membrane: the residues allowed at the three places before the cysteine that takes the lipid."},
-            {"name": SOURCE_NAMES["smithers2021"], "cite": smithers["text"], "url": f"https://doi.org/{smithers['doi']}", "licence": OPEN_LICENCE["smithers2021"], "class": PERMISSIVE, "accessed": smithers["accessed"], "holds": "The three parts of a lipoprotein's signal peptide (a positively charged beginning, a hydrophobic stretch, the lipobox) and its usual length."},
-            {"name": SOURCE_NAMES["legood2020"], "cite": legood["text"], "url": f"https://doi.org/{legood['doi']}", "licence": OPEN_LICENCE["legood2020"], "class": PERMISSIVE, "accessed": legood["accessed"], "holds": "That lipoboxes of other forms than the usual one have been reported: what the rule can miss."},
+            # The rule systems whose results were read in UniProt's records: each a source of its
+            # own, with its own terms, the source it was read through, and what rests on it.
+            *upstream_sources(c, checks, tally, anchored_in),
             # Pointers: named so that they can be read; nothing in this file rests on them.
             {"name": SOURCE_NAMES["kyte1982"], "cite": kyte["text"], "url": f"https://doi.org/{kyte['doi']}", "licence": "No open licence stated: the paper's record names none and does not count it as open access", "class": NO_TERMS, "accessed": ev.day("europepmc_shelves_citations.json"), "holds": "Nothing is taken from it: a pointer to the paper that defined the hydropathy scale. The scale's values were taken from Biopython's file, and only this paper's bibliographic record was read."},
             {"name": SOURCE_NAMES["lhernault1992"], "cite": lhernault["text"], "url": f"https://doi.org/{lhernault['doi']}", "licence": "CC BY-NC-SA 4.0", "class": NON_COMMERCIAL, "accessed": ev.day(LHERNAULT), "holds": "Nothing is taken from it: a pointer to a paper that uses the hydropathy scale to find the membrane-spanning stretches of a protein."},
@@ -1970,6 +1896,7 @@ def summary(species, atlas, rows, shelves, context):
         f"shelves: by side {shelves['counts']}; by basis {shelves['by_basis']}",
         f"shelves, checks: {shelves['checks']}",
         "shelves, districts: " + "; ".join(f"{group['label']} {group['sides']}" for group in shelves["groups"]),
+        f"shelves, unreviewed entries of other organisms with these sequences that carry an automatic signal or lipid mark: {context.anchored_elsewhere}",
     ]
     return "\n".join(lines)
 
