@@ -341,9 +341,17 @@ _EXECUTABLE_LIMIT = 4
 
 
 def compile_window(model, args, rows):
-    """(executable, compile seconds or 0.0 if reused, XLA memory analysis)."""
+    """(executable, compile seconds or 0.0 if reused, XLA memory analysis).
+
+    The key is the model's declared structure (`structure_key`: the inner model's, with the
+    composite's operators where it has one; None for models without one), its step and check
+    functions, the window's rows, and the arguments' tree, shapes, dtypes and placement. Values
+    are arguments, so worlds that differ only in parameter values reuse one executable
+    (docs/INNER_MODEL_V4_DESIGN.md §2.2, §7.4 (e) 4).
+    """
     leaves, tree = jax.tree.flatten(args)
     key = (
+        getattr(model, "structure_key", None),
         model.checked_step,
         model.device_checks,
         rows,

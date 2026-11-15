@@ -222,6 +222,12 @@ class InnerStructure:
     pump_laws: tuple[str, ...]
     fuel_kinds: tuple[str, ...]
     junction_heat_booking: str
+    # True where the definition's composition closes population slots mid-run (an operator
+    # with CLOSES): a closed slot carries code 0 and keeps its gate update, so the compiled
+    # kinetics also evaluate the code-0 law there, today's dynamics, as the host's declared
+    # fill does everywhere (docs/INNER_MODEL_V4_DESIGN.md §7.4 (b); temporary, until an
+    # explicit absent marker).
+    padding_fill: bool = False
 
     def __post_init__(self):
         unknown = [law for law in self.declared_channel_laws if law not in CHANNEL_LAWS]
