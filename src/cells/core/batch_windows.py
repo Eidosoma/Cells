@@ -50,7 +50,15 @@ class BatchWindowPlan:
 
 
 def plan_batch_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
+    """Admission of a windowed batch; its phases write start, completion and failure records
+    (core.phases.Recorder)."""
+    with phases.Recorder() as record:
+        return _plan_batch_windows(spec, policy, checkpoints, record)
+
+
+def _plan_batch_windows(spec, policy, checkpoints, record):
     planning = perf_counter()
+    record.start("plan")
     spec, bound = checkpoint_batch_limits(spec)
     if checkpoints is not None:
         _checkpoint_map(spec, checkpoints)
@@ -86,6 +94,7 @@ def plan_batch_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
         raise ConfigError("Estimated window aggregate arrays exceed batch max_working_bytes")
     # No control arrays or model-capacity allocation before aggregate refusal.
     for world, plan in zip(spec.worlds, plans, strict=True):
+        record.start("plan.world", world=world.world_id)
         world_started = perf_counter()
         try:
             _validate_window_plan(
@@ -93,8 +102,8 @@ def plan_batch_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
             )
         except (ConfigError, NumericalError) as exc:
             raise type(exc)(f"World {world.world_id}: {exc}") from exc
-        phases.mark("plan.world", world=world.world_id, seconds=perf_counter() - world_started)
-    phases.mark("plan", worlds=len(plans), seconds=perf_counter() - planning)
+        record.end("plan.world", world=world.world_id, seconds=perf_counter() - world_started)
+    record.end("plan", worlds=len(plans), seconds=perf_counter() - planning)
     return BatchWindowPlan(spec, plans[0].policy, tuple(plans), estimate, bound, fixed_width)
 
 
@@ -121,7 +130,15 @@ class BatchWindow:
 
 
 def _iter_batch_windows(plan, checkpoints):
+    """The rounds of a planned windowed batch; their phases write start, completion and failure
+    records (core.phases.Recorder)."""
+    with phases.Recorder() as record:
+        yield from _batch_window_rounds(plan, checkpoints, record)
+
+
+def _batch_window_rounds(plan, checkpoints, record):
     started = perf_counter()
+    record.start("binding", worlds=len(plan.spec.worlds))
     spec = plan.spec
     starts = _initial_checkpoints(plan, checkpoints)
     model = get_model(spec.worlds[0].simulation.model)
@@ -138,7 +155,7 @@ def _iter_batch_windows(plan, checkpoints):
     )
     jax.block_until_ready((state, parameters, active))
     preparation_seconds = perf_counter() - started
-    phases.mark("binding", worlds=len(ids), seconds=preparation_seconds)
+    record.end("binding", worlds=len(ids), seconds=preparation_seconds)
     grids = [p.grid.windows(p.start_step, plan.policy.window_steps) for p in plan.worlds]
     observation_indices = [
         bisect_left(p.spec.experiment.observation_times, starts[i].time)
@@ -181,24 +198,29 @@ def _iter_batch_windows(plan, checkpoints):
         jax.block_until_ready(inputs)
         prepared = perf_counter()
         compile_seconds = 0.0
+        name = "first_window" if round_index == 0 else "window"
         if width:
             if spec.worlds[0].simulation.execution.jit:
                 if width not in executables:
+                    record.start("compile", width=width)
                     executables[width] = _compiled_batch.lower(
                         inputs, rhs, domain, stepper
                     ).compile()
                     compile_seconds = perf_counter() - prepared
-                    phases.mark("compile", width=width, seconds=compile_seconds)
+                    record.end("compile", width=width, seconds=compile_seconds)
+                record.start(name, debug=round_index > 0, index=round_index)
                 execute_started = perf_counter()
                 final, history, valid = executables[width](inputs)
             else:
+                record.start(name, debug=round_index > 0, index=round_index)
                 execute_started = perf_counter()
                 with jax.disable_jit():
                     final, history, valid = _batch_rollout(inputs, rhs, domain, stepper)
             jax.block_until_ready((final, history, valid))
             execute_seconds = perf_counter() - execute_started
-            (phases.mark if round_index == 0 else phases.detail)(
-                "first_window" if round_index == 0 else "window",
+            record.end(
+                name,
+                debug=round_index > 0,
                 index=round_index,
                 execute_seconds=execute_seconds,
                 steps=int(counts.sum()),

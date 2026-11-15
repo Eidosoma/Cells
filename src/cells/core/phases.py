@@ -9,6 +9,18 @@ holds, adds no device synchronization and changes no result. With no handler att
 the records go nowhere (logging's last resort handler shows WARNING and above only);
 enable() attaches one, for a driver's run log.
 
+Start and failure records (D156; Recorder). Each run path also reports each of those
+phases as it starts ("<phase>.start", at the level of its completion record), and writes
+one failure record for any exception that leaves the path: "<phase>.failed" for the
+innermost phase still open (with "within" its enclosing phase), or "failed after=<phase>"
+when the exception is raised after the last phase's completion record (a refusal checked
+after a phase ends, or a host check between phases). A failure record gives the seconds
+since that phase started (or ended), the exception's type, and last its message on one
+line; the exception propagates unchanged. Failure records are INFO, so they too go nowhere
+without a handler. Like the completion records they read only host values and the host
+clock. Their extra fields are phase, event ("start" or "failed"; completion records carry
+none) and fields.
+
 Phases. phase_totals(timings) groups a result's (or a sum of windows') existing timing
 keys into preparation (planning, binding, per-window host preparation and compile),
 execution (the host blocked on the device), observation (transfers, host checks and
@@ -64,6 +76,79 @@ def detail(phase, **fields):
             phase,
             " ".join(f"{k}={_text(v)}" for k, v in fields.items()),
             extra={"phase": phase, "fields": fields},
+        )
+
+
+def _line(fields):
+    return " ".join(f"{k}={_text(v)}" for k, v in fields.items())
+
+
+def _message(error):
+    """The exception's message on one line."""
+    return " ".join(str(error).split())
+
+
+class Recorder:
+    """One run path's start, completion and failure records, host side only.
+
+    start(phase) opens a phase and writes its start record; end(phase) closes it with the
+    completion record mark or detail writes, unchanged. Used around a run path, ``with
+    Recorder() as record:``, it writes one failure record for any Exception leaving the
+    path (module docstring) and lets it propagate. GeneratorExit and the other
+    BaseExceptions are not failures: an abandoned window iterator writes nothing.
+    """
+
+    def __init__(self):
+        self._open = []  # (phase, started) of the open phases, innermost last.
+        self._last = None  # (phase, ended) of the last phase closed.
+        self._began = time.perf_counter()
+
+    def start(self, phase, *, debug=False, **fields):
+        self._open.append((phase, time.perf_counter()))
+        level = logging.DEBUG if debug else logging.INFO
+        if LOGGER.isEnabledFor(level):
+            text = f"{phase}.start" + (f" {_line(fields)}" if fields else "")
+            LOGGER.log(level, "%s", text, extra=dict(phase=phase, event="start", fields=fields))
+
+    def end(self, phase, *, debug=False, **fields):
+        for i in range(len(self._open) - 1, -1, -1):
+            if self._open[i][0] == phase:
+                del self._open[i:]  # Closing a phase closes any still open inside it.
+                break
+        self._last = (phase, time.perf_counter())
+        (detail if debug else mark)(phase, **fields)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, kind, error, traceback):
+        if isinstance(error, Exception):
+            self.failed(error)
+        return False
+
+    def failed(self, error):
+        """The failure record for error (__exit__ writes it; the caller re-raises)."""
+        if not LOGGER.isEnabledFor(logging.INFO):
+            return
+        now = time.perf_counter()
+        if self._open:
+            phase, since = self._open[-1]
+            name, fields = f"{phase}.failed", {}
+            if len(self._open) > 1:
+                fields["within"] = self._open[-2][0]
+        elif self._last is not None:
+            phase, since = self._last
+            name, fields = "failed", {"after": phase}
+        else:
+            phase, since, name, fields = None, self._began, "failed", {}
+        fields |= {"seconds": now - since, "error": type(error).__name__}
+        message = _message(error)
+        LOGGER.info(
+            "%s %s message=%s",
+            name,
+            _line(fields),
+            message,
+            extra=dict(phase=phase, event="failed", fields=dict(fields, message=message)),
         )
 
 

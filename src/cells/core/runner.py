@@ -320,16 +320,33 @@ def run(spec: SimulationSpec, checkpoint: Checkpoint | None = None) -> RunResult
     return _run_segment(spec, checkpoint, times, requested, started=started)
 
 
-def _compiled(seconds):
-    phases.mark("compile", seconds=seconds)
+def _compiled(record, seconds):
+    record.end("compile", seconds=seconds)
     return seconds
 
 
 def _run_segment(spec, checkpoint, times, requested, *, started=None, window_execution=None):
     """Shared numerical/observer path; callers validate the grid and checkpoint.
 
-    A segment only partitions accepted storage. It must never insert solver steps.
+    A segment only partitions accepted storage. It must never insert solver steps. Its
+    phases write start, completion and failure records (core.phases.Recorder).
     """
+    with phases.Recorder() as record:
+        return _segment(
+            spec,
+            checkpoint,
+            times,
+            requested,
+            record,
+            started=started,
+            window_execution=window_execution,
+        )
+
+
+def _segment(spec, checkpoint, times, requested, record, *, started=None, window_execution=None):
+    # A windowed run's later windows (its executable already compiled) report at DEBUG.
+    later = window_execution is not None and window_execution.compiled is not None
+    record.start("preparation", debug=later, steps=len(times) - 1)
     _refuse_projective(spec)
     started = perf_counter() if started is None else started
     model = get_model(spec.model)
@@ -359,25 +376,21 @@ def _run_segment(spec, checkpoint, times, requested, *, started=None, window_exe
     )
     jax.block_until_ready((state, steps, controls, parameters))
     prepared = perf_counter()
-    # A windowed run's later windows (its executable already compiled) report at DEBUG.
-    report = (
-        phases.mark
-        if window_execution is None or window_execution.compiled is None
-        else phases.detail
-    )
-    report("preparation", steps=len(times) - 1, seconds=prepared - started)
+    record.end("preparation", debug=later, steps=len(times) - 1, seconds=prepared - started)
     compile_seconds = 0.0
     if len(times) > 1:
         if window_execution is not None:
             args = (state, steps, controls, parameters, layout.active, enabled)
             if window_execution.compiled is None:
+                record.start("compile")
                 window_execution.compiled = _compiled_window_rollout.lower(
                     *args,
                     getattr(model, "rhs", None),
                     getattr(model, "domain_valid", None),
                     getattr(model, "checked_step", None),
                 ).compile()
-                compile_seconds = _compiled(perf_counter() - prepared)
+                compile_seconds = _compiled(record, perf_counter() - prepared)
+            record.start("execute", debug=later, steps=len(times) - 1)
             execute_started = perf_counter()
             final_state, history, valid = window_execution.compiled(*args)
             real_steps = len(times) - 1
@@ -393,11 +406,14 @@ def _run_segment(spec, checkpoint, times, requested, *, started=None, window_exe
         elif hasattr(model, "checked_step"):
             args = (state, steps, controls, parameters, layout.active)
             if spec.execution.jit:
+                record.start("compile")
                 compiled = _compiled_discrete_rollout.lower(*args, model.checked_step).compile()
-                compile_seconds = _compiled(perf_counter() - prepared)
+                compile_seconds = _compiled(record, perf_counter() - prepared)
+                record.start("execute", debug=later, steps=len(times) - 1)
                 execute_started = perf_counter()
                 final_state, history, valid = compiled(*args)
             else:
+                record.start("execute", debug=later, steps=len(times) - 1)
                 execute_started = perf_counter()
                 with jax.disable_jit():
                     final_state, history, valid = _discrete_rollout(*args, model.checked_step)
@@ -411,13 +427,16 @@ def _run_segment(spec, checkpoint, times, requested, *, started=None, window_exe
         elif hasattr(model, "domain_valid"):
             args = (state, steps, controls, parameters, layout.active)
             if spec.execution.jit:
+                record.start("compile")
                 compiled = _compiled_checked_rollout.lower(
                     *args, model.rhs, model.domain_valid
                 ).compile()
-                compile_seconds = _compiled(perf_counter() - prepared)
+                compile_seconds = _compiled(record, perf_counter() - prepared)
+                record.start("execute", debug=later, steps=len(times) - 1)
                 execute_started = perf_counter()
                 final_state, history, valid = compiled(*args)
             else:
+                record.start("execute", debug=later, steps=len(times) - 1)
                 execute_started = perf_counter()
                 final_state, history, valid = _checked_eager_rollout(
                     *args, model.rhs, model.domain_valid
@@ -430,20 +449,23 @@ def _run_segment(spec, checkpoint, times, requested, *, started=None, window_exe
                     "no invalid state accepted or repaired"
                 )
         elif spec.execution.jit:
+            record.start("compile")
             compiled = _compiled_rollout.lower(
                 state, steps, controls, parameters, layout.active, model.rhs
             ).compile()
-            compile_seconds = _compiled(perf_counter() - prepared)
+            compile_seconds = _compiled(record, perf_counter() - prepared)
+            record.start("execute", debug=later, steps=len(times) - 1)
             execute_started = perf_counter()
             final_state, history = compiled(state, steps, controls, parameters, layout.active)
         else:
+            record.start("execute", debug=later, steps=len(times) - 1)
             execute_started = perf_counter()
             final_state, history = _eager_rollout(
                 state, steps, controls, parameters, layout.active, model.rhs
             )
         jax.block_until_ready((final_state, history))
         execute_seconds = perf_counter() - execute_started
-        report("execute", steps=len(times) - 1, seconds=execute_seconds)
+        record.end("execute", debug=later, steps=len(times) - 1, seconds=execute_seconds)
         transfer_started = perf_counter()
         arrays = tuple(
             np.concatenate((np.asarray(start)[None, :], np.asarray(values)), axis=0)

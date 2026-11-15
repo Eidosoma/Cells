@@ -175,8 +175,14 @@ def plan_vector_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
     """Admission before any device allocation; one executable shape per run.
 
     Window plans and grid validation run once per distinct definition and start
-    time; every supplied checkpoint is validated against its own definition.
+    time; every supplied checkpoint is validated against its own definition. Its
+    phases write start, completion and failure records (core.phases.Recorder).
     """
+    with phases.Recorder() as record:
+        return _plan_vector_windows(spec, policy, checkpoints, record)
+
+
+def _plan_vector_windows(spec, policy, checkpoints, record):
     spec, bound = cohort_limits(spec)
     if checkpoints is not None:
         _checkpoint_map(spec, checkpoints)
@@ -186,9 +192,11 @@ def plan_vector_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
         raise ConfigError("Vectorized worlds require JIT execution")
     plans, shared, initial = [], {}, {}
     planning = perf_counter()
+    record.start("plan", worlds=len(spec.worlds))
     for world in spec.worlds:
         checkpoint = None if checkpoints is None else checkpoints[world.world_id]
         key = (id(world.simulation), None if checkpoint is None else checkpoint.time)
+        record.start("plan.world", world=world.world_id)
         world_started, planned = perf_counter(), key not in shared
         try:
             if key not in shared:
@@ -205,13 +213,13 @@ def plan_vector_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
         except (ConfigError, NumericalError) as exc:
             raise type(exc)(f"World {world.world_id}: {exc}") from exc
         plans.append(local)
-        phases.mark(
+        record.end(
             "plan.world",
             world=world.world_id,
             seconds=perf_counter() - world_started,
             shared_plan=not planned,
         )
-    phases.mark("plan", worlds=len(plans), seconds=perf_counter() - planning)
+    record.end("plan", worlds=len(plans), seconds=perf_counter() - planning)
     remaining = max(len(p.grid) - 1 - p.start_step for p in plans)
     width = max(1, min(plans[0].policy.window_steps, remaining))
     padded = len(plans) * width * max(1, -(-remaining // width))
@@ -571,7 +579,15 @@ def resident_inputs(plan, starts, model, device):
 
 
 def _iter_vector_windows(plan, checkpoints):
+    """The rounds of a planned vectorized run; their phases write start, completion and
+    failure records (core.phases.Recorder)."""
+    with phases.Recorder() as record:
+        yield from _vector_window_rounds(plan, checkpoints, record)
+
+
+def _vector_window_rounds(plan, checkpoints, record):
     started = perf_counter()
+    record.start("binding", worlds=len(plan.spec.worlds))
     spec = plan.spec
     starts = _initial_checkpoints(plan, checkpoints)
     model = get_model(spec.worlds[0].simulation.model)
@@ -579,7 +595,7 @@ def _iter_vector_windows(plan, checkpoints):
     device = execution_device(spec.worlds[0].simulation.execution.backend)
     state, params, active, constants, host_layouts = resident_inputs(plan, starts, model, device)
     static_seconds = perf_counter() - started
-    phases.mark("binding", worlds=len(ids), seconds=static_seconds)
+    record.end("binding", worlds=len(ids), seconds=static_seconds)
     grids = [
         plan.worlds[g[0]].grid.windows(plan.worlds[g[0]].start_step, plan.policy.window_steps)
         for g in plan.groups
@@ -596,8 +612,9 @@ def _iter_vector_windows(plan, checkpoints):
         args = (state, *jax.device_put(current.arrays, device), params, active, constants)
         compile_seconds, memory = 0.0, None
         if executable is None:
+            record.start("compile")
             executable, compile_seconds, memory = compile_window(model, args, plan.observation_rows)
-            phases.mark("compile", seconds=compile_seconds)
+            record.end("compile", seconds=compile_seconds)
             needed = memory and sum(
                 memory[k]
                 for k in ("argument_size_in_bytes", "output_size_in_bytes", "temp_size_in_bytes")
@@ -615,6 +632,8 @@ def _iter_vector_windows(plan, checkpoints):
     outputs, launched, compile_seconds, memory = launch(current)
     round_index = 0
     while current is not None:
+        name = "first_window" if round_index == 0 else "window"
+        record.start(name, debug=round_index > 0, index=round_index)
         final, first, bits, maxima, stored = outputs
         waiting = perf_counter()
         first, bits, maxima = jax.device_get((first, bits, maxima))
@@ -622,8 +641,9 @@ def _iter_vector_windows(plan, checkpoints):
         # The host's wait alone: window k + 1 runs while the host finishes window k, so
         # execute_seconds (launch to summary) also covers that host work.
         device_wait_seconds = perf_counter() - waiting
-        (phases.mark if round_index == 0 else phases.detail)(
-            "first_window" if round_index == 0 else "window",
+        record.end(
+            name,
+            debug=round_index > 0,
             index=round_index,
             execute_seconds=execute_seconds,
             steps=int(current.arrays[1].sum()),
