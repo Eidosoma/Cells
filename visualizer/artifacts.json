@@ -130,6 +130,19 @@
           "note": "First version: ten ideas in three tiers of readiness (works on today's saved runs; the engine computes it and runs must save it; needs new output from the engine), the design options for a quantity layer, what the engine would be asked for, and the choices put to the user. Looked at in light and dark, wide and phone, before publishing"
         }
       ]
+    },
+    "flux_and_look": {
+      "title": "Flux and Look",
+      "url": "https://claude.ai/artifact/SsFfRB9ZnitAWpNcUj5xYQ",
+      "page": "docs/ideas/flux-and-look.html",
+      "note": "Options to choose from, with four live 3D sketches from invented numbers, for a flux mode in the Cell view (off by default) and for a richer resting look. Nothing in it is built. The note beside it is docs/FLUX_AND_LOOK.md.",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-15",
+          "note": "First version: six ways to draw flux, the options for time, for switching it on and for the source of its numbers (first the engine's looping run of each species' cell), ten resting-look effects that switch on and off, what devices offer, and the choices put to the user. Its pictures were checked as stills drawn in software; the sketches were not watched moving and no frame rate was measured there"
+        }
+      ]
     }
   }
 }
