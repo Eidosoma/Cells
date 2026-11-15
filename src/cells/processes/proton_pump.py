@@ -40,6 +40,8 @@ class Parameters(NamedTuple):
     km_proton_mM: Any
     km_atp_mM: Any
     delta_g0_prime_J_mol: Any  # from the registry's transformed potentials
+    fuel_ph_ref: Any  # the fuel node's reference pH of its transformed potentials (§5.2)
+    fuel_ph_band: Any  # delta: the domain refuses |pH_in - fuel_ph_ref| > delta
 
 
 class Inputs(NamedTuple):
@@ -84,8 +86,13 @@ def _log_magnitude(inputs, parameters, availability, *, xp):
     return xp.log(safe_capacity) + xp.log(safe_availability) + log_saturation, enabled
 
 
-def kinetics(inputs, parameters, availability, *, xp=jnp):
-    """Signed cycles (fmol/s), positive forward, with the cycle's and the drive's free energies."""
+def kinetics(inputs, parameters, availability, reads=None, *, xp=jnp):
+    """Signed cycles (fmol/s), positive forward, with the cycle's and the drive's free energies.
+
+    §7.4 (g) 2's signature. The insertion point puts each read value into `inputs` (h_in and h_out
+    from the closures), so `reads` is accepted and not consulted again.
+    """
+    del reads
     energy = cycle_free_energy(inputs, parameters, xp=xp)
     a = energy / (R * inputs.temperature_K)
     log_magnitude, enabled = _log_magnitude(inputs, parameters, availability, xp=xp)
@@ -106,9 +113,29 @@ def work_pJ_s(rates):
     return -1e-3 * rates.cycles_fmol_s * rates.chemical_drive_J_mol
 
 
-def proton_transfer_fmol_s(rates, parameters):
-    """H+ moved from the inside node to the outside node (fmol/s); H_eq at buffered nodes."""
-    return parameters.protons_per_cycle * rates.cycles_fmol_s
+def proton_inward_fmol_s(rates, parameters):
+    """Inward-positive proton transfer across the patch (fmol/s), as `moves` and today's pumps
+    count it: -n per forward cycle (H_eq at buffered nodes). The inside node gains this; the
+    outside node gains its negative."""
+    return -parameters.protons_per_cycle * rates.cycles_fmol_s
+
+
+# §7.4 (g) 2: per-cycle stoichiometry by role, inward-positive. n is the population's declared
+# integer; its role binds at binding to the H row at the patch's inside and outside nodes.
+MOVES = (("proton", "-protons_per_cycle"),)
+READS = ("rapid_proton_buffer@1",)  # free h at both nodes
+DECLARATION = {
+    "law_id": LAW_ID,
+    "code": None,  # the core's registry assigns the next free code
+    "kind": "transporter",
+    "moves": MOVES,
+    "reads": READS,
+    "fuel": "maintained_held_rows@1",
+    "stage_term": "electrogenic_conductance_S",
+    "loop_term": "loop_rates_per_s",
+    "provenance": "cited",
+    "b8": {},  # D175's four fields: reserved, empty
+}
 
 
 def electrogenic_conductance_S(inputs, parameters, availability, *, xp=jnp):
@@ -121,18 +148,27 @@ def electrogenic_conductance_S(inputs, parameters, availability, *, xp=jnp):
     return xp.where(enabled, n * CHARGE_PER_FMOL * slope, 0.0)
 
 
-def loop_rate_per_s(inputs, parameters, availability, outside_free_per_total, outside_volume_pL,
-                    *, xp=jnp):
-    """The loop term (1/s): |d(n cycles)/dH_eq,out| through dh_out/dH_out, at the outside node.
+def loop_rates_per_s(inputs, parameters, availability, free_per_total_in, volume_in_pL,
+                     free_per_total_out, volume_out_pL, *, xp=jnp):
+    """The loop terms (1/s) at both nodes: |d(n cycles)/dH_eq| through each closure's dh/dH.
 
-    outside_free_per_total is the closure's dh/dH there (rapid_proton_buffer.free_per_total).
+    With cycles = M (1 - e^a): the outside proton enters through a only (da/dln h_out = n); the
+    inside one through a (da/dln h_in = -n) and the saturation M
+    (dln M/dln h_in = n s, s = (K_H/h_in)^n / (1 + (K_H/h_in)^n)). Returns (inside, outside).
     """
     energy = cycle_free_energy(inputs, parameters, xp=xp)
     a = energy / (R * inputs.temperature_K)
     log_magnitude, enabled = _log_magnitude(inputs, parameters, availability, xp=xp)
     n = parameters.protons_per_cycle
-    d_cycles_d_h = xp.exp(log_magnitude + a) * n / inputs.h_out_mM  # fmol/s per mM
-    return xp.where(enabled, n * d_cycles_d_h * outside_free_per_total / outside_volume_pL, 0.0)
+    m = xp.exp(log_magnitude)
+    e_a = xp.exp(a)
+    ratio = xp.exp(n * (xp.log(parameters.km_proton_mM) - xp.log(inputs.h_in_mM)))
+    s = ratio / (1.0 + ratio)
+    d_ln_out = -m * e_a * n  # d cycles / d ln h_out
+    d_ln_in = m * n * s * (1.0 - e_a) + m * e_a * n  # d cycles / d ln h_in
+    inside = xp.abs(n * d_ln_in / inputs.h_in_mM) * free_per_total_in / volume_in_pL
+    outside = xp.abs(n * d_ln_out / inputs.h_out_mM) * free_per_total_out / volume_out_pL
+    return xp.where(enabled, inside, 0.0), xp.where(enabled, outside, 0.0)
 
 
 def domain_valid(inputs, parameters, availability, *, xp=jnp):
@@ -154,6 +190,10 @@ def domain_valid(inputs, parameters, availability, *, xp=jnp):
     valid = valid & xp.isfinite(availability) & (availability >= 0) & (availability <= 1)
     t = i.temperature_K
     valid = valid & (t >= TEMPERATURE_DOMAIN_K[0]) & (t <= TEMPERATURE_DOMAIN_K[1])
+    # The fuel node's pH band (§5.2): transformed potentials hold only near their reference pH.
+    ph_in = -xp.log10(xp.where(valid, i.h_in_mM, 1.0) / STANDARD_STATE_mM)
+    valid = valid & xp.isfinite(p.fuel_ph_band) & (p.fuel_ph_band >= 0)
+    valid = valid & (xp.abs(ph_in - p.fuel_ph_ref) <= p.fuel_ph_band)
     safe = Inputs(
         *(xp.where(valid, v, 1.0) for v in i[:2]),
         xp.where(valid, i.voltage_V, 0.0),
@@ -166,6 +206,8 @@ def domain_valid(inputs, parameters, availability, *, xp=jnp):
         xp.where(valid, p.km_proton_mM, 1.0),
         xp.where(valid, p.km_atp_mM, 1.0),
         xp.where(valid, p.delta_g0_prime_J_mol, 0.0),
+        p.fuel_ph_ref,
+        p.fuel_ph_band,
     )
     a = cycle_free_energy(safe, safe_p, xp=xp) / (R * safe.temperature_K)
     return valid & (xp.abs(a) <= MAX_ABS_AFFINITY_OVER_RT)

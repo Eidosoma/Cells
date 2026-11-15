@@ -161,9 +161,14 @@ def declared_term_pJ(total_fmol, buffer_fmol, volume_pL, k_mM, mu_proton_RT, mu_
 
 
 def relaxation_rate(h, buffer_mM, k_mM, k_on_per_mM_s, *, xp=jnp):
-    """lambda = min_k k_on,k (h + b_k + K_k) (1/s): the slowest buffer's protonation relaxation."""
+    """lambda = min_k k_on,k (h + b_k + K_k) (1/s) over the buffers present at the node.
+
+    A buffer row with zero total is absent there and takes no part; a node with no buffer has
+    lambda = inf (nothing to relax).
+    """
     _, base = speciation(h, buffer_mM, k_mM, xp=xp)
-    return xp.min(k_on_per_mM_s * (h + base + k_mM), axis=0)
+    rates = xp.where(buffer_mM > 0, k_on_per_mM_s * (h + base + k_mM), xp.inf)
+    return xp.min(rates, axis=0)
 
 
 def drive_rate(total_rate_mM_s, h, buffer_mM, k_mM, *, xp=jnp):
@@ -206,3 +211,23 @@ def evaluate(structure, cell_amounts, outside_amounts, p, *, xp=jnp):
     buffer = xp.where(p.buffered, amounts[rows] / p.volume_pL, 0.0)
     h, valid = free_proton(total, buffer, xp.asarray(p.k_mM)[:, None], xp=xp)
     return {"h": h, "pH": -xp.log10(h / STANDARD_STATE_mM)}, valid
+
+
+class StageRead(NamedTuple):
+    """§7.4 (g) 1's declaration, in the published form. The core's own type replaces this record
+    when it lands; the fields and the evaluate signature are the published ones."""
+
+    read_id: str
+    structure: ReadStructure
+    evaluate: object  # evaluate(cell_amounts, outside_amounts, p, *, xp) -> (values, valid)
+    observation_columns: tuple
+    free_energy_term: object  # declared_term_pJ, evaluated on every node holding the H row
+
+
+def make_read(structure):
+    """The stage read for one structure: evaluate closes over the structure only (P5)."""
+
+    def bound(cell_amounts, outside_amounts, p, *, xp=jnp):
+        return evaluate(structure, cell_amounts, outside_amounts, p, xp=xp)
+
+    return StageRead(READ_ID, structure, bound, ("h", "pH"), declared_term_pJ)

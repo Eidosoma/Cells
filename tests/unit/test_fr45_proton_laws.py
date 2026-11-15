@@ -169,7 +169,8 @@ def pump_inputs(h_in=H_REST, h_out=H_REST, v=0.0):
 
 
 PUMP = pump.Parameters(capacity_fmol_s=8.3027e-3, protons_per_cycle=2.0, km_proton_mM=1e-4,
-                       km_atp_mM=0.1, delta_g0_prime_J_mol=-30500.0)
+                       km_atp_mM=0.1, delta_g0_prime_J_mol=-30500.0, fuel_ph_ref=7.2,
+                       fuel_ph_band=0.05)
 
 
 def test_the_held_fuel_drive_is_the_note_value():
@@ -280,3 +281,74 @@ def test_planted_sign_error_in_the_leak_heat_is_caught():
     h_in, h_out = ph_to_h(7.2), ph_to_h(5.0)
     j = leak.flux_fmol_s(h_in, h_out, 0.0, T, 7.854e-10, 6e-7, 1.0, xp=np)
     assert -leak.heat_pJ_s(j, h_in, h_out, 0.0, T, xp=np) < 0  # the planted error fails
+
+
+# --- review additions (the advisor, 15 November) ---------------------------------------------
+
+
+def test_envelope_ignores_a_buffer_row_absent_at_the_node():
+    # §13's layout: two buffer rows, B_c absent in the lumen. The inside case k_on = 1e5 must pass.
+    h = np.array([ph_to_h(7.2)])
+    b = np.array([[40.0], [0.0]])
+    k = np.array([[ph_to_h(6.0)], [ph_to_h(7.2)]])
+    rate = 0.1 * buf.buffer_capacity(h, b, k, xp=np) / LN10
+    assert buf.envelope_valid(h, b, k, np.array([[1e5], [1e5]]), rate, xp=np).all()
+    assert not buf.envelope_valid(h, b, k, np.array([[1e-3], [1e5]]), rate, xp=np).any()
+    unbuffered = buf.relaxation_rate(h, np.zeros((2, 1)), k, np.array([[1e5], [1e5]]), xp=np)
+    assert np.isinf(unbuffered).all()
+
+
+def test_pump_and_leak_signs_combine_at_the_lumen():
+    # Inward-positive throughout: the pump's inward transfer is -n cycles; the lumen (outside)
+    # gains minus every inward flux. An acid lumen leaks inward, so its gain is n c - J_leak.
+    i = pump_inputs(h_out=ph_to_h(5.5), v=-0.01)
+    rates = pump.kinetics(i, PUMP, 1.0, None, xp=np)
+    pumped_in = pump.proton_inward_fmol_s(rates, PUMP)
+    leak_in = leak.flux_fmol_s(i.h_in_mM, i.h_out_mM, i.voltage_V, T, 7.854e-10, 6e-7, 1.0, xp=np)
+    lumen_gain = -(pumped_in + leak_in)
+    assert rates.cycles_fmol_s > 0 and pumped_in < 0 and leak_in > 0
+    assert lumen_gain == pytest.approx(2 * rates.cycles_fmol_s - leak_in, rel=1e-14)
+    assert pump.MOVES == (("proton", "-protons_per_cycle"),)
+
+
+def test_loop_rates_match_finite_differences_at_both_nodes():
+    base = pump_inputs(h_in=ph_to_h(7.21), h_out=ph_to_h(6.0), v=-0.05)
+    q_in, v_in, q_out, v_out = 0.4, 4.18879, 0.2, 0.0654498
+    inside, outside = pump.loop_rates_per_s(base, PUMP, 1.0, q_in, v_in, q_out, v_out, xp=np)
+
+    def cycles(h_in, h_out):
+        return pump.kinetics(base._replace(h_in_mM=h_in, h_out_mM=h_out), PUMP, 1.0, xp=np)[0]
+
+    for which, got, h0, q, v in (("in", inside, base.h_in_mM, q_in, v_in),
+                                 ("out", outside, base.h_out_mM, q_out, v_out)):
+        dh = 1e-7 * h0
+        if which == "in":
+            d = (cycles(h0 + dh, base.h_out_mM) - cycles(h0 - dh, base.h_out_mM)) / (2 * dh)
+        else:
+            d = (cycles(base.h_in_mM, h0 + dh) - cycles(base.h_in_mM, h0 - dh)) / (2 * dh)
+        assert got == pytest.approx(abs(2 * d) * q / v, rel=1e-5), which
+
+
+def test_domain_refuses_the_fuel_node_outside_its_ph_band():
+    assert pump.domain_valid(pump_inputs(h_in=ph_to_h(7.24)), PUMP, 1.0, xp=np)
+    assert not pump.domain_valid(pump_inputs(h_in=ph_to_h(7.3)), PUMP, 1.0, xp=np)
+
+
+def test_the_read_closes_over_its_structure_and_takes_the_published_arguments():
+    read = buf.make_read(buf.ReadStructure(proton_row=0, buffer_rows=(1,)))
+    v = np.array([1.0, 0.5])
+    p = buf.ReadLayout(volume_pL=v, k_mM=np.array([ph_to_h(6.0)]),
+                       buffered=np.array([False, True]), temperature_K=T)
+    values, valid = read.evaluate(np.array([[2e-4], [0.0]]), np.array([[10.0], [20.0]]), p, xp=np)
+    assert read.read_id == "rapid_proton_buffer@1" and valid.all()
+    assert values["h"][0] == pytest.approx(2e-4, rel=1e-13)
+
+
+def test_declared_term_at_an_unbuffered_node_is_minus_rt_ln_c0_per_proton():
+    # mu°(H+) = 0 at c0 = 1000 mM, while the inner model's row term is referenced to 1 mM, so the
+    # declared term is -RT ln(1000) per proton, not zero: it must be evaluated on every H node.
+    n, v = 2e-5, 0.5
+    term, ok = buf.declared_term_pJ(np.array([n]), np.zeros((1, 1)), v, np.array([[1e-3]]), 0.0,
+                                    np.zeros((1, 1)), np.zeros((1, 1)), T, xp=np)
+    assert ok.all()
+    assert term[0] == pytest.approx(-1e-3 * R * T * n * math.log(1000.0), rel=1e-12)
