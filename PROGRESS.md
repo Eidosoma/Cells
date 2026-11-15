@@ -76,6 +76,35 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The results baseline tool, the protocol scan and the matched-arm export driver landed (15
+  November 2026).** Validation only.
+  - **Gate:** tier 1 at eb9ca828: 344 files. Two tree-scanning guards changed, both on the new tools.
+    - The export driver named a checkpoint's array file, which the continuity guard forbids. It
+      now lists the checkpoint's files.
+    - The baseline tool built free-offset worlds without D147's declaration. It is exempt, with its
+      reason: its worlds run as their protocols declare them (G2-Q1's Q7 tissue as its judge runs
+      it), and `--from` re-runs saved definitions verbatim.
+    - The guards and the new tests reran on the fixed tree at df61c3f0: 77 passed
+      ([log](/mnt/workspaces/Cells/d172-restructure-20261115-01/acceptance/land-guards-df61c3f0/guards.log)).
+  - **`validation/results_baseline.py`, D176's results gate:**
+    - It saves a defined world set's CPU outputs at a tag, and compares a later source's outputs
+      bitwise or at a declared tolerance. Refusals must match exactly.
+    - K1's padding exemption is opt-in, and off for D172's dispatch gate.
+    - The baseline at tag `d172-base-2026-11-15` holds 113 worlds, 112 of which run
+      ([baseline](/mnt/workspaces/Cells/d172-restructure-20261115-01/acceptance/baseline-44227075/)).
+  - **`validation/protocol_models.py`:** lists the engine models each protocol names, for G2's
+    scope.
+  - **`validation/tissue/matched_arm_export.py` (D177):** the coupling operator's A5 world in four
+    arms at four steps, with independent references, restarts and windows. It is a driver of the
+    established runners. It adds no physics and gives no verdict.
+  - **Packed GPU execution, a design point (proposed):** on the L4, 80–90% SM activity is reached at
+    128 or more worlds of one structure (89% at 128, 93% at 256).
+  - **15 self-tests** (10 and 5), tier 1.
+  - **Also landed:** the inner-model note's revisions.
+    - Finite fuel rows are the transporter's default, held rows the special case.
+    - §7.5's monotone booking is a proposal awaiting a probe and the lead's ruling.
+    - The plan is re-costed at about 14–18 days.
+
 - **FR-5's and the finite-fuel case's independent references landed, with D177 and the FR-4/FR-5
   note's revisions (15 November 2026).** The references are in `validation/compartment_ph/` and were
   written code-blind ([usage](validation/compartment_ph/REFERENCES_USAGE.md);
