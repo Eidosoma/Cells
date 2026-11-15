@@ -5,8 +5,8 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-15",
-  "generated_at": "2026-11-15T19:06:35Z",
-  "revision": "c156a47d",
+  "generated_at": "2026-11-15T21:15:57Z",
+  "revision": "2c00d08d",
   "revision_date": "2026-11-15",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
@@ -375,7 +375,7 @@
      "covers_all": true
     }
    },
-   "checked_at": "c156a47d"
+   "checked_at": "2c00d08d"
   },
   "counts": {
    "units": 48,
@@ -17448,14 +17448,14 @@
    "facts": [
     [
      "Files",
-     "422"
+     "423"
     ],
     [
      "Lines of Python",
-     "90,657"
+     "90,785"
     ]
    ],
-   "weight": 90657
+   "weight": 90785
   },
   {
    "id": "val.tiers",
@@ -17471,7 +17471,7 @@
     ],
     [
      "Lines of Python",
-     "236,179"
+     "236,215"
     ],
     [
      "Tier 1 test files",
@@ -17492,7 +17492,7 @@
      "where": "Milestones and provenance"
     }
    ],
-   "weight": 236179
+   "weight": 236215
   },
   {
    "id": "val.results_gate",

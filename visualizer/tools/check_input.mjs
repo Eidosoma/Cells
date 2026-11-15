@@ -558,15 +558,19 @@ try {
   check("label: that drag selects nothing", (await selected()) === null, String(await selected()));
 
   // The drag leaves the camera gliding; on a busy machine it glides for longer than a fixed
-  // wait. Read the label's place only once it has stopped moving, then click there.
+  // wait. With the rich look drawn in software one frame may take seconds, so two reads a
+  // moment apart can agree while the camera still moves: wait for drawn frames and a camera
+  // that holds still (settled), read the label's place, and click there only once it is the
+  // same after the next such wait.
   const place = () => evaluate(`(() => {
     const el = ${VIEWER}.shadowRoot.querySelector(".label-part:not(.is-off)");
     const box = el.getBoundingClientRect();
     return { id: el.dataset.label, x: box.left + box.width / 2, y: box.top + box.height / 2 };
   })()`);
+  await settled();
   let tap = await place();
   for (let tries = 0; tries < 40; tries++) {
-    await sleep(150);
+    await settled();
     const next = await place();
     const still = next.id === tap.id && Math.abs(next.x - tap.x) < 0.5 && Math.abs(next.y - tap.y) < 0.5;
     tap = next;
