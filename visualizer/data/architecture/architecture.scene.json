@@ -5,8 +5,8 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-15",
-  "generated_at": "2026-11-15T17:51:11Z",
-  "revision": "63a477d9",
+  "generated_at": "2026-11-15T18:38:24Z",
+  "revision": "d854e1e4",
   "revision_date": "2026-11-15",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
@@ -375,7 +375,7 @@
      "covers_all": true
     }
    },
-   "checked_at": "63a477d9"
+   "checked_at": "d854e1e4"
   },
   "counts": {
    "units": 48,
@@ -1061,6 +1061,88 @@
       "note": "Carries the family signature of calcium channel alpha-2/delta subunits, which go with a channel and make none by themselves. No protein of this organism carries the signature of a family that makes such a channel, so it is a candidate for no unit (U24 to U30 asked for it)."
      }
     ]
+   },
+   {
+    "id": "fruitfly",
+    "label": "Fruit fly",
+    "organism": "Drosophila melanogaster",
+    "taxon": 7227,
+    "plain": "The fruit fly of the laboratory, with 13,814 genes in UniProt's reference proteome. This is what the family signatures of Cells' machines find among the one protein shown for each gene.",
+    "made": "2026-11-15",
+    "method": [
+     "The fly's proteins are the 13,814 of UniProt's gene-by-gene set of the reference proteome UP000000803 (release 2026_04): one for each gene, 3,850 with a reviewed entry and 9,964 with an unreviewed one.",
+     "Licences were read before anything was copied; each is stated in sources.",
+     "Each unit's family was taken from its own human candidates, by the same InterPro signatures that the other species' atlases ask. The build checks that the candidates carry them.",
+     "Each signature was looked for among the InterPro entries UniProt gives each protein. A unit counts as found only where a protein carries the signature of a family that makes the machine itself; an accessory family alone does not make it found.",
+     "Where no protein carries the family the engine's law names and proteins carry another family asked for the same machine (innexins, for gap junctions), the finding is 'different family'.",
+     "A product with a reviewed entry is listed as a reviewed entry, one with an unreviewed entry as a family signature. Either is a candidate by family: several units of one family (the Kv1 channels) list the same proteins, and nothing here says which protein does which unit's work.",
+     "No similarity search was run, and nothing is called an ortholog.",
+     "The inventory has 49 units. One of them, an engineered protein cage, is left out of the picture for now: it is a designed protein, not a part of a cell. The 48 others are shown and counted here."
+    ],
+    "sources": [
+     {
+      "name": "UniProt",
+      "url": "https://www.uniprot.org/",
+      "release": "2026_04",
+      "accessed": "2026-11-15",
+      "licence": "CC BY 4.0",
+      "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
+      "holds": "the entries of the fly's proteins, reviewed and unreviewed, with the InterPro entries UniProt gives each; the signatures of the units' human candidates"
+     },
+     {
+      "name": "InterPro",
+      "url": "https://www.ebi.ac.uk/interpro/",
+      "release": "111.0",
+      "accessed": "2026-11-15",
+      "licence": "CC0 1.0",
+      "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456.",
+      "holds": "the identifiers and names of the family signatures"
+     }
+    ],
+    "not_copied": "No sequence is copied. FlyBase is linked to; nothing was downloaded from it, and the FlyBase genes used here are those UniProt gives its entries.",
+    "counts": {
+     "units": 48,
+     "with_products": 41,
+     "products": 54,
+     "candidates": 26
+    },
+    "findings": [
+     {
+      "id": "found",
+      "count": 38
+     },
+     {
+      "id": "different family",
+      "count": 3
+     },
+     {
+      "id": "none found",
+      "count": 2
+     },
+     {
+      "id": "nothing to look for",
+      "count": 5
+     }
+    ],
+    "evidence": [
+     {
+      "id": "reviewed entry",
+      "count": 28
+     },
+     {
+      "id": "named in a publication",
+      "count": 0
+     },
+     {
+      "id": "family signature",
+      "count": 26
+     },
+     {
+      "id": "similarity search",
+      "count": 0
+     }
+    ],
+    "extra": []
    },
    {
     "id": "mpneumoniae",
@@ -2055,6 +2137,164 @@
     ]
    },
    {
+    "id": "fruitfly",
+    "file": "proteins/fruitfly/shelves.json",
+    "bytes": 402650,
+    "made": "2026-11-15",
+    "from": "UniProtKB release 2026_04: the reference proteome UP000000803 of Drosophila melanogaster, 21,941 entries (3,885 reviewed, 18,056 unreviewed) for 13,814 genes. One protein is shown for each gene, the one that UniProt's own gene-by-gene set of the proteome gives: 13,814 proteins, 3,850 with a reviewed entry and 9,964 with an unreviewed one. The proteome's other 8,127 entries are further forms of the same genes; each protein counts its gene's entries in the mark 'entries'.",
+    "kind": "families",
+    "proteins": 13814,
+    "families": 1343,
+    "no_family": 4286,
+    "parts": 509,
+    "members": [
+     "members-00.json",
+     "members-01.json",
+     "members-02.json",
+     "members-03.json",
+     "members-04.json",
+     "members-05.json",
+     "members-06.json"
+    ],
+    "lone": 3404,
+    "lone_parts": 140,
+    "family_lines": 1960,
+    "counts": {
+     "outside": 2623,
+     "in": 2751,
+     "inside": 3041,
+     "not known": 5399
+    },
+    "shelves": [
+     {
+      "id": "cell",
+      "label": "Cell membrane",
+      "proteins": 2712,
+      "counts": {
+       "outside": 683,
+       "in": 601,
+       "inside": 1231,
+       "not known": 197
+      }
+     },
+     {
+      "id": "er",
+      "label": "Endoplasmic reticulum membrane",
+      "proteins": 358,
+      "counts": {
+       "outside": 5,
+       "in": 202,
+       "inside": 53,
+       "not known": 98
+      }
+     },
+     {
+      "id": "mito",
+      "label": "Mitochondrial inner membrane",
+      "proteins": 511,
+      "counts": {
+       "outside": 21,
+       "in": 120,
+       "inside": 83,
+       "not known": 287
+      }
+     },
+     {
+      "id": "nucleus",
+      "label": "Nuclear envelope",
+      "proteins": 1692,
+      "counts": {
+       "outside": 1,
+       "in": 18,
+       "inside": 1649,
+       "not known": 24
+      }
+     },
+     {
+      "id": "other",
+      "label": "Other membranes",
+      "proteins": 371,
+      "counts": {
+       "outside": 29,
+       "in": 169,
+       "inside": 22,
+       "not known": 151
+      }
+     },
+     {
+      "id": "membrane",
+      "label": "A membrane, not told which",
+      "proteins": 3577,
+      "counts": {
+       "outside": 1884,
+       "in": 1641,
+       "inside": 3,
+       "not known": 49
+      }
+     }
+    ],
+    "no_shelf": 4593,
+    "sources": [
+     {
+      "name": "UniProt",
+      "class": "permissive"
+     },
+     {
+      "name": "InterPro",
+      "class": "permissive"
+     },
+     {
+      "name": "Gene Ontology",
+      "class": "permissive"
+     },
+     {
+      "name": "PROSITE",
+      "class": "non-commercial",
+      "through": "UniProt"
+     },
+     {
+      "name": "HAMAP",
+      "class": "permissive",
+      "through": "UniProt"
+     },
+     {
+      "name": "TMHMM",
+      "class": "non-commercial",
+      "through": "UniProt"
+     },
+     {
+      "name": "Phobius",
+      "class": "non-commercial",
+      "through": "UniProt"
+     },
+     {
+      "name": "SignalP",
+      "class": "non-commercial",
+      "through": "UniProt"
+     },
+     {
+      "name": "TargetP",
+      "class": "non-commercial",
+      "through": "UniProt"
+     },
+     {
+      "name": "Memsat",
+      "class": "no stated terms",
+      "through": "UniProt"
+     },
+     {
+      "name": "Predotar",
+      "class": "no stated terms",
+      "through": "UniProt"
+     },
+     {
+      "name": "big-PI",
+      "class": "no stated terms",
+      "through": "UniProt"
+     }
+    ]
+   },
+   {
     "id": "human",
     "file": "proteins/human/shelves.json",
     "bytes": 759765,
@@ -2470,6 +2710,12 @@
     }
    ],
    "ecoli": [
+    {
+     "text": "UniProt {id}",
+     "url": "https://www.uniprot.org/uniprotkb/{id}/entry"
+    }
+   ],
+   "fruitfly": [
     {
      "text": "UniProt {id}",
      "url": "https://www.uniprot.org/uniprotkb/{id}/entry"
@@ -2891,6 +3137,169 @@
     "lu2025": {
      "text": "Lu J, Xu H, Wang D, Chen Y, Inoue T, Gao L, Lei K (2025) 3D reconstruction of neuronal allometry and neuromuscular projections in asexual planarians using expansion tiling light sheet microscopy. eLife 13:RP101103. The intact animals it used, of the clonal asexual strain CIW4 of Schmidtea mediterranea, were 1 to 14 mm long.",
      "doi": "10.7554/eLife.101103",
+     "licence": "CC BY 4.0",
+     "class": "permissive",
+     "accessed": "2026-11-15"
+    }
+   }
+  },
+  {
+   "id": "fruitfly",
+   "label": "Fruit fly",
+   "organism": "Drosophila melanogaster",
+   "taxon": 7227,
+   "plain": "The fruit fly of the laboratory: 13,814 genes in UniProt's reference proteome, with one protein shown for each. Many of the channels and pumps Cells has laws for have a counterpart of the same family in it.",
+   "group": "Animals",
+   "order": 25,
+   "made": "2026-11-15",
+   "modelled": {
+    "state": "generic",
+    "text": "Cells models a generic cell and a sheet of such cells, not this animal. The sheet is drawn on a wing for the scales only. The wings and the fly are placeholder outlines: nothing at those scales is simulated."
+   },
+   "default": false,
+   "levels": [
+    {
+     "id": "molecules"
+    },
+    {
+     "id": "cell",
+     "shape": {
+      "kind": "prism",
+      "sides": 6,
+      "radius_um": 10.6,
+      "height_um": 13,
+      "corner_um": 2.4,
+      "edge_um": 1.3
+     },
+     "note": "The cell drawn is a generic animal cell, as one of a layer; it is not a model of a cell type of the fly. Its shape and its sizes are the picture's choice: six flat sides where it meets its neighbours, about 20 µm across.",
+     "notes": [
+      {
+       "text": "A generic animal cell, as one of a layer"
+      },
+      {
+       "text": "Its flat-sided shape is the picture's choice",
+       "roomy": true
+      }
+     ],
+     "fade_out_um": [
+      120,
+      190
+     ]
+    },
+    {
+     "id": "tissue",
+     "shape": {
+      "kind": "cell sheet",
+      "rings": 6,
+      "beyond": [
+       [
+        8,
+        0.34
+       ],
+       [
+        10,
+        0.2
+       ],
+       [
+        11,
+        0.1
+       ]
+      ]
+     },
+     "note": "The sheet is the one Cells simulates: a single layer of coupled cells. It stands for no particular tissue of the fly.",
+     "notes": [
+      {
+       "text": "The sheet Cells simulates: a single layer of coupled cells",
+       "short": "The simulated sheet"
+      }
+     ],
+     "fade_in_um": [
+      100,
+      190
+     ]
+    },
+    {
+     "id": "organ",
+     "label": "Wing",
+     "shape": {
+      "kind": "outline",
+      "ref": "fruitfly",
+      "parts": [
+       "wings"
+      ],
+      "context": [
+       "body"
+      ]
+     },
+     "note": "The outline drawn is a fly's two wings, folded back over its body, as a placeholder. The wing is the picture's choice of organ: a visitor knows it, and the project's record names the Drosophila wing disc as a long-term target of its work on how a tissue takes its shape (the user's decisions of 9 November 2026 on the morphogenesis plan). No wing and no wing disc is modelled. The sheet of cells is drawn on a wing so that the scales follow one another; it is not the wing's tissue. Each wing is drawn 2 mm long: the picture's choice, since no measurement was read for this file.",
+     "sheet_mark": {
+      "band": 0.05,
+      "note": "The sheet, to scale: drawn on a wing for the scales only"
+     },
+     "notes": [
+      {
+       "text": "A fly's wings: a placeholder outline"
+      },
+      {
+       "text": "The wing's own cells are not modelled",
+       "lift": -22,
+       "roomy": true
+      }
+     ]
+    },
+    {
+     "id": "organism",
+     "label": "Whole fly",
+     "shape": {
+      "kind": "outline",
+      "ref": "fruitfly"
+     },
+     "note": "The outline drawn is a fruit fly with its wings folded back, 2.5 mm long, as a placeholder. The sheet of cells is drawn on a wing for the scales only. The fly's length, its width and its proportions are the picture's choice: no measurement was read for this file.",
+     "sheet_mark": {
+      "band": 0.05,
+      "note": "The sheet, to scale",
+      "roomy": true
+     },
+     "notes": [
+      {
+       "text": "A fruit fly: a placeholder outline"
+      }
+     ]
+    }
+   ],
+   "cell": {
+    "facts": [
+     {
+      "label": "Proteins",
+      "value": "13,814 genes in UniProt's reference proteome, with 21,941 entries: 3,885 reviewed by a curator and 18,056 annotated automatically. One protein is shown for each gene",
+      "sources": [
+       "uniprot"
+      ]
+     },
+     {
+      "label": "Cells' machines",
+      "value": "of the 49 units of the law inventory, 38 have proteins of the same family in the fly and 3 are built from another family; 2 were not found",
+      "sources": [
+       "uniprot"
+      ]
+     }
+    ],
+    "parts": {
+     "membranes": 1,
+     "wall": false,
+     "nucleus": true,
+     "organelles": [
+      "er",
+      "golgi",
+      "mitochondria"
+     ]
+    },
+    "capabilities": {}
+   },
+   "sources": {
+    "uniprot": {
+     "text": "UniProt Consortium, UniProt release 2026_04: the reference proteome UP000000803 (Drosophila melanogaster), its entries and its gene-by-gene set.",
+     "url": "https://www.uniprot.org/proteomes/UP000000803",
      "licence": "CC BY 4.0",
      "class": "permissive",
      "accessed": "2026-11-15"
@@ -3944,6 +4353,740 @@
   }
  ],
  "shapes": {
+  "fruitfly": {
+   "format": "cells.visualizer.outline@1",
+   "note": "A fruit fly with its wings folded back over its body, as placeholder outlines. The fly is drawn 2.5 mm long and each wing 2 mm long: these sizes, the widths and the proportions are the picture's choice, and no measurement was read for them. The numbers were written out by tools/build_fruitfly_atlas.py from three rounded humps for the head, the thorax and the abdomen, and one flat blade for each wing.",
+   "tissue_on": {
+    "at_um": [
+     1950,
+     468,
+     -320
+    ],
+    "clearance_um": 3,
+    "note": "On the left wing, about half-way along it."
+   },
+   "parts": [
+    {
+     "name": "body",
+     "kind": "loft",
+     "stations": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       50,
+       0,
+       0,
+       359,
+       318
+      ],
+      [
+       100,
+       0,
+       0,
+       513,
+       454
+      ],
+      [
+       150,
+       0,
+       0,
+       614,
+       544
+      ],
+      [
+       200,
+       0,
+       0,
+       675,
+       598
+      ],
+      [
+       250,
+       0,
+       0,
+       699,
+       619
+      ],
+      [
+       300,
+       0,
+       0,
+       689,
+       610
+      ],
+      [
+       350,
+       0,
+       0,
+       643,
+       569
+      ],
+      [
+       400,
+       0,
+       0,
+       558,
+       495
+      ],
+      [
+       450,
+       0,
+       0,
+       429,
+       380
+      ],
+      [
+       500,
+       0,
+       0,
+       383,
+       400
+      ],
+      [
+       550,
+       0,
+       0,
+       511,
+       534
+      ],
+      [
+       600,
+       0,
+       0,
+       610,
+       638
+      ],
+      [
+       650,
+       0,
+       0,
+       690,
+       721
+      ],
+      [
+       700,
+       0,
+       0,
+       754,
+       789
+      ],
+      [
+       750,
+       0,
+       0,
+       805,
+       841
+      ],
+      [
+       800,
+       0,
+       0,
+       842,
+       880
+      ],
+      [
+       850,
+       0,
+       0,
+       866,
+       906
+      ],
+      [
+       900,
+       0,
+       0,
+       878,
+       918
+      ],
+      [
+       950,
+       0,
+       0,
+       878,
+       918
+      ],
+      [
+       1000,
+       0,
+       0,
+       866,
+       906
+      ],
+      [
+       1050,
+       0,
+       0,
+       842,
+       880
+      ],
+      [
+       1100,
+       0,
+       0,
+       805,
+       841
+      ],
+      [
+       1150,
+       0,
+       0,
+       754,
+       789
+      ],
+      [
+       1200,
+       0,
+       0,
+       690,
+       721
+      ],
+      [
+       1250,
+       0,
+       0,
+       610,
+       638
+      ],
+      [
+       1300,
+       0,
+       0,
+       511,
+       534
+      ],
+      [
+       1350,
+       0,
+       0,
+       383,
+       400
+      ],
+      [
+       1400,
+       0,
+       0,
+       428,
+       371
+      ],
+      [
+       1450,
+       0,
+       0,
+       531,
+       460
+      ],
+      [
+       1500,
+       0,
+       0,
+       615,
+       533
+      ],
+      [
+       1550,
+       0,
+       0,
+       685,
+       594
+      ],
+      [
+       1600,
+       0,
+       0,
+       744,
+       645
+      ],
+      [
+       1650,
+       0,
+       0,
+       792,
+       687
+      ],
+      [
+       1700,
+       0,
+       0,
+       832,
+       721
+      ],
+      [
+       1750,
+       0,
+       0,
+       862,
+       747
+      ],
+      [
+       1800,
+       0,
+       0,
+       883,
+       765
+      ],
+      [
+       1850,
+       0,
+       0,
+       896,
+       776
+      ],
+      [
+       1900,
+       0,
+       0,
+       900,
+       780
+      ],
+      [
+       1950,
+       0,
+       0,
+       896,
+       776
+      ],
+      [
+       2000,
+       0,
+       0,
+       883,
+       765
+      ],
+      [
+       2050,
+       0,
+       0,
+       862,
+       747
+      ],
+      [
+       2100,
+       0,
+       0,
+       832,
+       721
+      ],
+      [
+       2150,
+       0,
+       0,
+       792,
+       687
+      ],
+      [
+       2200,
+       0,
+       0,
+       744,
+       645
+      ],
+      [
+       2250,
+       0,
+       0,
+       685,
+       594
+      ],
+      [
+       2300,
+       0,
+       0,
+       615,
+       533
+      ],
+      [
+       2350,
+       0,
+       0,
+       531,
+       460
+      ],
+      [
+       2400,
+       0,
+       0,
+       428,
+       371
+      ],
+      [
+       2450,
+       0,
+       0,
+       294,
+       255
+      ],
+      [
+       2500,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "rings": {
+      "from": 0.04,
+      "to": 0.97,
+      "step": 0.04,
+      "points": 28
+     },
+     "lines": [
+      0.25,
+      0.5,
+      0.75,
+      1.25,
+      1.5,
+      1.75
+     ],
+     "strength": 0.5,
+     "edge": 1,
+     "fill": 0.07,
+     "pick": 20,
+     "context": {
+      "edge": 0.4,
+      "fill": 0.06
+     }
+    },
+    {
+     "name": "left wing",
+     "group": "wings",
+     "kind": "loft",
+     "stations": [
+      [
+       950,
+       430,
+       -260,
+       0,
+       0
+      ],
+      [
+       1050,
+       433,
+       -266,
+       317,
+       14
+      ],
+      [
+       1150,
+       436,
+       -272,
+       461,
+       14
+      ],
+      [
+       1250,
+       439,
+       -278,
+       570,
+       14
+      ],
+      [
+       1350,
+       442,
+       -284,
+       657,
+       14
+      ],
+      [
+       1450,
+       445,
+       -290,
+       727,
+       14
+      ],
+      [
+       1550,
+       448,
+       -296,
+       783,
+       14
+      ],
+      [
+       1650,
+       451,
+       -302,
+       826,
+       14
+      ],
+      [
+       1750,
+       454,
+       -308,
+       856,
+       14
+      ],
+      [
+       1850,
+       457,
+       -314,
+       874,
+       14
+      ],
+      [
+       1950,
+       460,
+       -320,
+       880,
+       14
+      ],
+      [
+       2050,
+       463,
+       -326,
+       874,
+       14
+      ],
+      [
+       2150,
+       466,
+       -332,
+       856,
+       14
+      ],
+      [
+       2250,
+       469,
+       -338,
+       826,
+       14
+      ],
+      [
+       2350,
+       472,
+       -344,
+       783,
+       14
+      ],
+      [
+       2450,
+       475,
+       -350,
+       727,
+       14
+      ],
+      [
+       2550,
+       478,
+       -356,
+       657,
+       14
+      ],
+      [
+       2650,
+       481,
+       -362,
+       570,
+       14
+      ],
+      [
+       2750,
+       484,
+       -368,
+       461,
+       14
+      ],
+      [
+       2850,
+       487,
+       -374,
+       317,
+       14
+      ],
+      [
+       2950,
+       490,
+       -380,
+       0,
+       0
+      ]
+     ],
+     "rings": {
+      "every": 4,
+      "first": 2,
+      "points": 18
+     },
+     "lines": [
+      0.5,
+      1.5
+     ],
+     "strength": 0.8,
+     "alone": 0.95,
+     "edge": 0.8,
+     "pick": 10
+    },
+    {
+     "name": "right wing",
+     "group": "wings",
+     "kind": "loft",
+     "stations": [
+      [
+       950,
+       430,
+       260,
+       0,
+       0
+      ],
+      [
+       1050,
+       433,
+       266,
+       317,
+       14
+      ],
+      [
+       1150,
+       436,
+       272,
+       461,
+       14
+      ],
+      [
+       1250,
+       439,
+       278,
+       570,
+       14
+      ],
+      [
+       1350,
+       442,
+       284,
+       657,
+       14
+      ],
+      [
+       1450,
+       445,
+       290,
+       727,
+       14
+      ],
+      [
+       1550,
+       448,
+       296,
+       783,
+       14
+      ],
+      [
+       1650,
+       451,
+       302,
+       826,
+       14
+      ],
+      [
+       1750,
+       454,
+       308,
+       856,
+       14
+      ],
+      [
+       1850,
+       457,
+       314,
+       874,
+       14
+      ],
+      [
+       1950,
+       460,
+       320,
+       880,
+       14
+      ],
+      [
+       2050,
+       463,
+       326,
+       874,
+       14
+      ],
+      [
+       2150,
+       466,
+       332,
+       856,
+       14
+      ],
+      [
+       2250,
+       469,
+       338,
+       826,
+       14
+      ],
+      [
+       2350,
+       472,
+       344,
+       783,
+       14
+      ],
+      [
+       2450,
+       475,
+       350,
+       727,
+       14
+      ],
+      [
+       2550,
+       478,
+       356,
+       657,
+       14
+      ],
+      [
+       2650,
+       481,
+       362,
+       570,
+       14
+      ],
+      [
+       2750,
+       484,
+       368,
+       461,
+       14
+      ],
+      [
+       2850,
+       487,
+       374,
+       317,
+       14
+      ],
+      [
+       2950,
+       490,
+       380,
+       0,
+       0
+      ]
+     ],
+     "rings": {
+      "every": 4,
+      "first": 2,
+      "points": 18
+     },
+     "lines": [
+      0.5,
+      1.5
+     ],
+     "strength": 0.8,
+     "alone": 0.95,
+     "edge": 0.8,
+     "pick": 10
+    }
+   ]
+  },
   "human": {
    "format": "cells.visualizer.outline@1",
    "note": "A human body lying on its back, and its heart, as placeholder outlines. Sizes are indicative: the body is drawn 1.7 m long, within the range of adult mean heights that one study reports (about 1.4 to 1.8 m), and the heart about 12 cm long, 9 cm broad and 6 cm thick, as an anatomy textbook of 1918 gives for an adult (12 cm, 8 to 9 cm and 6 cm). Both sources were read and are named in the species file. The proportions of the body and the sizes of the vessels are the picture's choice.",
@@ -17636,6 +18779,45 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): NaCP60E and para. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "NaCP60E",
+       "detail": "Sodium channel protein 60E, voltage-gated sodium channel alpha subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,844 amino acids",
+        "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9W0Y8",
+         "url": "https://www.uniprot.org/uniprotkb/Q9W0Y8/entry"
+        }
+       ]
+      },
+      {
+       "label": "para",
+       "detail": "Sodium channel protein para, voltage-gated sodium channel alpha subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,131 amino acids",
+        "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P35500",
+         "url": "https://www.uniprot.org/uniprotkb/P35500/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "NaCP60E Sodium channel protein 60E Q9W0Y8 para Sodium channel protein para P35500"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -18002,6 +19184,45 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): NaCP60E and para. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "NaCP60E",
+       "detail": "Sodium channel protein 60E, voltage-gated sodium channel alpha subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,844 amino acids",
+        "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9W0Y8",
+         "url": "https://www.uniprot.org/uniprotkb/Q9W0Y8/entry"
+        }
+       ]
+      },
+      {
+       "label": "para",
+       "detail": "Sodium channel protein para, voltage-gated sodium channel alpha subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,131 amino acids",
+        "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P35500",
+         "url": "https://www.uniprot.org/uniprotkb/P35500/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "NaCP60E Sodium channel protein 60E Q9W0Y8 para Sodium channel protein para P35500"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -18389,6 +19610,45 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): NaCP60E and para. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "NaCP60E",
+       "detail": "Sodium channel protein 60E, voltage-gated sodium channel alpha subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,844 amino acids",
+        "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9W0Y8",
+         "url": "https://www.uniprot.org/uniprotkb/Q9W0Y8/entry"
+        }
+       ]
+      },
+      {
+       "label": "para",
+       "detail": "Sodium channel protein para, voltage-gated sodium channel alpha subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,131 amino acids",
+        "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P35500",
+         "url": "https://www.uniprot.org/uniprotkb/P35500/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "NaCP60E Sodium channel protein 60E Q9W0Y8 para Sodium channel protein para P35500"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -18848,6 +20108,45 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of voltage-gated sodium channel alpha subunits (IPR001696): NaCP60E and para. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "NaCP60E",
+       "detail": "Sodium channel protein 60E, voltage-gated sodium channel alpha subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,844 amino acids",
+        "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9W0Y8",
+         "url": "https://www.uniprot.org/uniprotkb/Q9W0Y8/entry"
+        }
+       ]
+      },
+      {
+       "label": "para",
+       "detail": "Sodium channel protein para, voltage-gated sodium channel alpha subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,131 amino acids",
+        "Its reviewed UniProtKB entry carries IPR001696 (Voltage gated sodium channel, alpha subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P35500",
+         "url": "https://www.uniprot.org/uniprotkb/P35500/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "NaCP60E Sodium channel protein 60E Q9W0Y8 para Sodium channel protein para P35500"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -19216,6 +20515,45 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983): Hk and Sh. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Sh",
+       "detail": "Potassium voltage-gated channel protein Shaker, Kv1-type potassium channels",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "655 amino acids",
+        "Its reviewed UniProtKB entry carries IPR003972 (Potassium channel, voltage dependent, Kv1). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P08510",
+         "url": "https://www.uniprot.org/uniprotkb/P08510/entry"
+        }
+       ]
+      },
+      {
+       "label": "Hk",
+       "detail": "Hyperkinetic, isoform M, Kv-beta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "887 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PHI0",
+         "url": "https://www.uniprot.org/uniprotkb/M9PHI0/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Sh Potassium voltage-gated channel protein Shaker P08510 Hk Hyperkinetic, isoform M M9PHI0"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -19738,6 +21076,45 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983): Hk and Sh. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Sh",
+       "detail": "Potassium voltage-gated channel protein Shaker, Kv1-type potassium channels",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "655 amino acids",
+        "Its reviewed UniProtKB entry carries IPR003972 (Potassium channel, voltage dependent, Kv1). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P08510",
+         "url": "https://www.uniprot.org/uniprotkb/P08510/entry"
+        }
+       ]
+      },
+      {
+       "label": "Hk",
+       "detail": "Hyperkinetic, isoform M, Kv-beta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "887 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PHI0",
+         "url": "https://www.uniprot.org/uniprotkb/M9PHI0/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Sh Potassium voltage-gated channel protein Shaker P08510 Hk Hyperkinetic, isoform M M9PHI0"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -20281,6 +21658,45 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983): Hk and Sh. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Sh",
+       "detail": "Potassium voltage-gated channel protein Shaker, Kv1-type potassium channels",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "655 amino acids",
+        "Its reviewed UniProtKB entry carries IPR003972 (Potassium channel, voltage dependent, Kv1). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P08510",
+         "url": "https://www.uniprot.org/uniprotkb/P08510/entry"
+        }
+       ]
+      },
+      {
+       "label": "Hk",
+       "detail": "Hyperkinetic, isoform M, Kv-beta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "887 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PHI0",
+         "url": "https://www.uniprot.org/uniprotkb/M9PHI0/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Sh Potassium voltage-gated channel protein Shaker P08510 Hk Hyperkinetic, isoform M M9PHI0"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -20798,6 +22214,45 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983): Hk and Sh. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Sh",
+       "detail": "Potassium voltage-gated channel protein Shaker, Kv1-type potassium channels",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "655 amino acids",
+        "Its reviewed UniProtKB entry carries IPR003972 (Potassium channel, voltage dependent, Kv1). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P08510",
+         "url": "https://www.uniprot.org/uniprotkb/P08510/entry"
+        }
+       ]
+      },
+      {
+       "label": "Hk",
+       "detail": "Hyperkinetic, isoform M, Kv-beta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "887 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PHI0",
+         "url": "https://www.uniprot.org/uniprotkb/M9PHI0/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Sh Potassium voltage-gated channel protein Shaker P08510 Hk Hyperkinetic, isoform M M9PHI0"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -21355,6 +22810,45 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983): Hk and Sh. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Sh",
+       "detail": "Potassium voltage-gated channel protein Shaker, Kv1-type potassium channels",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "655 amino acids",
+        "Its reviewed UniProtKB entry carries IPR003972 (Potassium channel, voltage dependent, Kv1). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P08510",
+         "url": "https://www.uniprot.org/uniprotkb/P08510/entry"
+        }
+       ]
+      },
+      {
+       "label": "Hk",
+       "detail": "Hyperkinetic, isoform M, Kv-beta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "887 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PHI0",
+         "url": "https://www.uniprot.org/uniprotkb/M9PHI0/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Sh Potassium voltage-gated channel protein Shaker P08510 Hk Hyperkinetic, isoform M M9PHI0"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -21877,6 +23371,45 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983): Hk and Sh. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Sh",
+       "detail": "Potassium voltage-gated channel protein Shaker, Kv1-type potassium channels",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "655 amino acids",
+        "Its reviewed UniProtKB entry carries IPR003972 (Potassium channel, voltage dependent, Kv1). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P08510",
+         "url": "https://www.uniprot.org/uniprotkb/P08510/entry"
+        }
+       ]
+      },
+      {
+       "label": "Hk",
+       "detail": "Hyperkinetic, isoform M, Kv-beta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "887 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PHI0",
+         "url": "https://www.uniprot.org/uniprotkb/M9PHI0/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Sh Potassium voltage-gated channel protein Shaker P08510 Hk Hyperkinetic, isoform M M9PHI0"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -22295,6 +23828,12 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "none found",
+     "note": "None of its 13,814 proteins carries the signature of Kv2-type potassium channels (IPR003973). The unit's human candidates carry it, so the search finds the family where it exists. The fly's Shab, a voltage-gated potassium channel by its entry's name (\"Potassium voltage-gated channel protein Shab\"), carries the signature of another family of such channels (IPR003971, Potassium channel, voltage dependent, Kv5/Kv9) and not this one, so a search by signature does not list it.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv2-type potassium channels (IPR003973). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -22470,6 +24009,12 @@
     "ecoli": {
      "finding": "none found",
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv2-type potassium channels (IPR003973). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "none found",
+     "note": "None of its 13,814 proteins carries the signature of Kv2-type potassium channels (IPR003973). The unit's human candidates carry it, so the search finds the family where it exists. The fly's Shab, a voltage-gated potassium channel by its entry's name (\"Potassium voltage-gated channel protein Shab\"), carries the signature of another family of such channels (IPR003971, Potassium channel, voltage dependent, Kv5/Kv9) and not this one, so a search by signature does not list it.",
      "items": [],
      "keywords": ""
     },
@@ -22675,6 +24220,45 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv3-type potassium channels (IPR003974). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of Kv3-type potassium channels (IPR003974): Shaw and Shawl. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Shaw",
+       "detail": "Potassium voltage-gated channel protein Shaw, Kv3-type potassium channels",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "498 amino acids",
+        "Its reviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P17972",
+         "url": "https://www.uniprot.org/uniprotkb/P17972/entry"
+        }
+       ]
+      },
+      {
+       "label": "Shawl",
+       "detail": "Shaw-like, isoform C, Kv3-type potassium channels",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "937 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A8DYR5",
+         "url": "https://www.uniprot.org/uniprotkb/A8DYR5/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Shaw Potassium voltage-gated channel protein Shaw P17972 Shawl Shaw-like, isoform C A8DYR5"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -23186,6 +24770,45 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of Kv3-type potassium channels (IPR003974): Shaw and Shawl. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Shaw",
+       "detail": "Potassium voltage-gated channel protein Shaw, Kv3-type potassium channels",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "498 amino acids",
+        "Its reviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P17972",
+         "url": "https://www.uniprot.org/uniprotkb/P17972/entry"
+        }
+       ]
+      },
+      {
+       "label": "Shawl",
+       "detail": "Shaw-like, isoform C, Kv3-type potassium channels",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "937 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A8DYR5",
+         "url": "https://www.uniprot.org/uniprotkb/A8DYR5/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Shaw Potassium voltage-gated channel protein Shaw P17972 Shawl Shaw-like, isoform C A8DYR5"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -23696,6 +25319,45 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of Kv3-type potassium channels (IPR003974): Shaw and Shawl. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Shaw",
+       "detail": "Potassium voltage-gated channel protein Shaw, Kv3-type potassium channels",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "498 amino acids",
+        "Its reviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P17972",
+         "url": "https://www.uniprot.org/uniprotkb/P17972/entry"
+        }
+       ]
+      },
+      {
+       "label": "Shawl",
+       "detail": "Shaw-like, isoform C, Kv3-type potassium channels",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "937 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A8DYR5",
+         "url": "https://www.uniprot.org/uniprotkb/A8DYR5/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Shaw Potassium voltage-gated channel protein Shaw P17972 Shawl Shaw-like, isoform C A8DYR5"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -24202,6 +25864,45 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of Kv3-type potassium channels (IPR003974). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of Kv3-type potassium channels (IPR003974): Shaw and Shawl. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Shaw",
+       "detail": "Potassium voltage-gated channel protein Shaw, Kv3-type potassium channels",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "498 amino acids",
+        "Its reviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P17972",
+         "url": "https://www.uniprot.org/uniprotkb/P17972/entry"
+        }
+       ]
+      },
+      {
+       "label": "Shawl",
+       "detail": "Shaw-like, isoform C, Kv3-type potassium channels",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "937 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR003974 (Potassium channel, voltage dependent, Kv3). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A8DYR5",
+         "url": "https://www.uniprot.org/uniprotkb/A8DYR5/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Shaw Potassium voltage-gated channel protein Shaw P17972 Shawl Shaw-like, isoform C A8DYR5"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -24741,6 +26442,29 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "1 protein of its 13,814 carries the signature of Kv4-type potassium channels (IPR003975): Shal. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Shal",
+       "detail": "Potassium voltage-gated channel protein Shal, Kv4-type potassium channels",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "571 amino acids",
+        "Its reviewed UniProtKB entry carries IPR003975 (Potassium channel, voltage dependent, Kv4). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P17971",
+         "url": "https://www.uniprot.org/uniprotkb/P17971/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Shal Potassium voltage-gated channel protein Shal P17971"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of Kv4-type potassium channels (IPR003975). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -24909,6 +26633,12 @@
     "ecoli": {
      "finding": "nothing to look for",
      "note": "The inventory gives this unit no gene product: it is a default shape of current, not a named channel. This organism has a protein with the potassium channel domain (kch), listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "nothing to look for",
+     "note": "The inventory gives this unit no gene product: it is a default shape of current, not a named channel.",
      "items": [],
      "keywords": ""
     },
@@ -25102,6 +26832,61 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "3 proteins of its 13,814 carry the signature of inward-rectifier potassium channels (IPR016449, IPR040445, IPR041647): Irk1, Irk2 and Irk3. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Irk1",
+       "detail": "Inwardly rectifying potassium channel 1, isoform F, inward-rectifier potassium channels",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "652 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR016449, IPR040445, IPR041647 (Potassium channel, inwardly rectifying, Kir; Potassium channel, inwardly rectifying, transmembrane domain; Inward rectifier potassium channel, C-terminal). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A0A0B4KH86",
+         "url": "https://www.uniprot.org/uniprotkb/A0A0B4KH86/entry"
+        }
+       ]
+      },
+      {
+       "label": "Irk2",
+       "detail": "Inwardly rectifying potassium channel 2, isoform D, inward-rectifier potassium channels",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "454 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR016449, IPR040445, IPR041647 (Potassium channel, inwardly rectifying, Kir; Potassium channel, inwardly rectifying, transmembrane domain; Inward rectifier potassium channel, C-terminal). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A0A0B4LHI9",
+         "url": "https://www.uniprot.org/uniprotkb/A0A0B4LHI9/entry"
+        }
+       ]
+      },
+      {
+       "label": "Irk3",
+       "detail": "Inwardly rectifying potassium channel 3, isoform D, inward-rectifier potassium channels",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "446 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR016449, IPR040445, IPR041647 (Potassium channel, inwardly rectifying, Kir; Potassium channel, inwardly rectifying, transmembrane domain; Inward rectifier potassium channel, C-terminal). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt B7YZX2",
+         "url": "https://www.uniprot.org/uniprotkb/B7YZX2/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Irk1 Inwardly rectifying potassium channel 1, isoform F A0A0B4KH86 Irk2 Inwardly rectifying potassium channel 2, isoform D A0A0B4LHI9 Irk3 Inwardly rectifying potassium channel 3, isoform D B7YZX2"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of inward-rectifier potassium channels (IPR016449, IPR040445, IPR041647). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -25271,6 +27056,29 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of HCN-type channels (IPR051413, IPR013621). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "1 protein of its 13,814 carries the signature of HCN-type channels (IPR051413, IPR013621): Ih. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Ih",
+       "detail": "I[[h]] channel, isoform E, HCN-type channels",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,327 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051413, IPR013621 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel; Ion transport N-terminal). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A1Z9N7",
+         "url": "https://www.uniprot.org/uniprotkb/A1Z9N7/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Ih I[[h]] channel, isoform E A1Z9N7"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -25588,6 +27396,29 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "1 protein of its 13,814 carries the signature of HCN-type channels (IPR051413, IPR013621): Ih. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Ih",
+       "detail": "I[[h]] channel, isoform E, HCN-type channels",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,327 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051413, IPR013621 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel; Ion transport N-terminal). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A1Z9N7",
+         "url": "https://www.uniprot.org/uniprotkb/A1Z9N7/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Ih I[[h]] channel, isoform E A1Z9N7"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -25904,6 +27735,29 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "1 protein of its 13,814 carries the signature of HCN-type channels (IPR051413, IPR013621): Ih. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Ih",
+       "detail": "I[[h]] channel, isoform E, HCN-type channels",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,327 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051413, IPR013621 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel; Ion transport N-terminal). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A1Z9N7",
+         "url": "https://www.uniprot.org/uniprotkb/A1Z9N7/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Ih I[[h]] channel, isoform E A1Z9N7"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -26154,6 +28008,29 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of HCN-type channels (IPR051413, IPR013621). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "1 protein of its 13,814 carries the signature of HCN-type channels (IPR051413, IPR013621): Ih. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Ih",
+       "detail": "I[[h]] channel, isoform E, HCN-type channels",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,327 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051413, IPR013621 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel; Ion transport N-terminal). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A1Z9N7",
+         "url": "https://www.uniprot.org/uniprotkb/A1Z9N7/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Ih I[[h]] channel, isoform E A1Z9N7"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -26703,6 +28580,109 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of L-type calcium channel alpha-1 subunits (IPR005446), the family that makes the machine itself. 1 protein (yfbK) carries that of calcium channel alpha-2/delta subunits (IPR051173), which go with the machine and make none by themselves: with nothing to go with, it is no candidate for the unit, and is listed under extra. Among the reviewed UniProtKB entries of all bacteria, 1 entry carries one of the signatures asked. The unit's human candidates carry them, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "6 proteins of its 13,814 carry the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680): Ca-alpha1D, Ca-beta, Ca-Ma2d, Q5BI42, stj and stol. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Ca-alpha1D",
+       "detail": "Voltage-dependent calcium channel type D subunit alpha-1, L-type calcium channel alpha-1 subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,669 amino acids",
+        "Its reviewed UniProtKB entry carries IPR005446 (Voltage-dependent calcium channel, L-type, alpha-1 subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q24270",
+         "url": "https://www.uniprot.org/uniprotkb/Q24270/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ca-beta",
+       "detail": "Ca2+-channel-protein-beta-subunit, isoform L, calcium channel beta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "844 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PD84",
+         "url": "https://www.uniprot.org/uniprotkb/M9PD84/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ca-Ma2d",
+       "detail": "Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,215 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q8IP22",
+         "url": "https://www.uniprot.org/uniprotkb/Q8IP22/entry"
+        }
+       ]
+      },
+      {
+       "label": "VWFA and cache domain-containing protein CG16868",
+       "detail": "calcium channel alpha-2/delta subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,449 amino acids",
+        "Its reviewed UniProtKB entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q5BI42",
+         "url": "https://www.uniprot.org/uniprotkb/Q5BI42/entry"
+        }
+       ]
+      },
+      {
+       "label": "stj",
+       "detail": "Straightjacket, isoform C, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,271 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A0A0B4K866",
+         "url": "https://www.uniprot.org/uniprotkb/A0A0B4K866/entry"
+        }
+       ]
+      },
+      {
+       "label": "stol",
+       "detail": "Stolid, isoform H, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,271 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt X2J9Z3",
+         "url": "https://www.uniprot.org/uniprotkb/X2J9Z3/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Ca-alpha1D Voltage-dependent calcium channel type D subunit alpha-1 Q24270 Ca-beta Ca2+-channel-protein-beta-subunit, isoform L M9PD84 Ca-Ma2d Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A Q8IP22 VWFA and cache domain-containing protein CG16868 Q5BI42 stj Straightjacket, isoform C A0A0B4K866 stol Stolid, isoform H X2J9Z3"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -27309,6 +29289,109 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of L-type calcium channel alpha-1 subunits (IPR005446), the family that makes the machine itself. 1 protein (yfbK) carries that of calcium channel alpha-2/delta subunits (IPR051173), which go with the machine and make none by themselves: with nothing to go with, it is no candidate for the unit, and is listed under extra. Among the reviewed UniProtKB entries of all bacteria, 1 entry carries one of the signatures asked. The unit's human candidates carry them, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "6 proteins of its 13,814 carry the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680): Ca-alpha1D, Ca-beta, Ca-Ma2d, Q5BI42, stj and stol. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Ca-alpha1D",
+       "detail": "Voltage-dependent calcium channel type D subunit alpha-1, L-type calcium channel alpha-1 subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,669 amino acids",
+        "Its reviewed UniProtKB entry carries IPR005446 (Voltage-dependent calcium channel, L-type, alpha-1 subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q24270",
+         "url": "https://www.uniprot.org/uniprotkb/Q24270/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ca-beta",
+       "detail": "Ca2+-channel-protein-beta-subunit, isoform L, calcium channel beta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "844 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PD84",
+         "url": "https://www.uniprot.org/uniprotkb/M9PD84/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ca-Ma2d",
+       "detail": "Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,215 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q8IP22",
+         "url": "https://www.uniprot.org/uniprotkb/Q8IP22/entry"
+        }
+       ]
+      },
+      {
+       "label": "VWFA and cache domain-containing protein CG16868",
+       "detail": "calcium channel alpha-2/delta subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,449 amino acids",
+        "Its reviewed UniProtKB entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q5BI42",
+         "url": "https://www.uniprot.org/uniprotkb/Q5BI42/entry"
+        }
+       ]
+      },
+      {
+       "label": "stj",
+       "detail": "Straightjacket, isoform C, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,271 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A0A0B4K866",
+         "url": "https://www.uniprot.org/uniprotkb/A0A0B4K866/entry"
+        }
+       ]
+      },
+      {
+       "label": "stol",
+       "detail": "Stolid, isoform H, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,271 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt X2J9Z3",
+         "url": "https://www.uniprot.org/uniprotkb/X2J9Z3/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Ca-alpha1D Voltage-dependent calcium channel type D subunit alpha-1 Q24270 Ca-beta Ca2+-channel-protein-beta-subunit, isoform L M9PD84 Ca-Ma2d Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A Q8IP22 VWFA and cache domain-containing protein CG16868 Q5BI42 stj Straightjacket, isoform C A0A0B4K866 stol Stolid, isoform H X2J9Z3"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -27925,6 +30008,109 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of L-type calcium channel alpha-1 subunits (IPR005446), the family that makes the machine itself. 1 protein (yfbK) carries that of calcium channel alpha-2/delta subunits (IPR051173), which go with the machine and make none by themselves: with nothing to go with, it is no candidate for the unit, and is listed under extra. Among the reviewed UniProtKB entries of all bacteria, 1 entry carries one of the signatures asked. The unit's human candidates carry them, so the search finds the family where it exists.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "6 proteins of its 13,814 carry the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680): Ca-alpha1D, Ca-beta, Ca-Ma2d, Q5BI42, stj and stol. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Ca-alpha1D",
+       "detail": "Voltage-dependent calcium channel type D subunit alpha-1, L-type calcium channel alpha-1 subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,669 amino acids",
+        "Its reviewed UniProtKB entry carries IPR005446 (Voltage-dependent calcium channel, L-type, alpha-1 subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q24270",
+         "url": "https://www.uniprot.org/uniprotkb/Q24270/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ca-beta",
+       "detail": "Ca2+-channel-protein-beta-subunit, isoform L, calcium channel beta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "844 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PD84",
+         "url": "https://www.uniprot.org/uniprotkb/M9PD84/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ca-Ma2d",
+       "detail": "Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,215 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q8IP22",
+         "url": "https://www.uniprot.org/uniprotkb/Q8IP22/entry"
+        }
+       ]
+      },
+      {
+       "label": "VWFA and cache domain-containing protein CG16868",
+       "detail": "calcium channel alpha-2/delta subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,449 amino acids",
+        "Its reviewed UniProtKB entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q5BI42",
+         "url": "https://www.uniprot.org/uniprotkb/Q5BI42/entry"
+        }
+       ]
+      },
+      {
+       "label": "stj",
+       "detail": "Straightjacket, isoform C, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,271 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A0A0B4K866",
+         "url": "https://www.uniprot.org/uniprotkb/A0A0B4K866/entry"
+        }
+       ]
+      },
+      {
+       "label": "stol",
+       "detail": "Stolid, isoform H, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,271 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt X2J9Z3",
+         "url": "https://www.uniprot.org/uniprotkb/X2J9Z3/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Ca-alpha1D Voltage-dependent calcium channel type D subunit alpha-1 Q24270 Ca-beta Ca2+-channel-protein-beta-subunit, isoform L M9PD84 Ca-Ma2d Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A Q8IP22 VWFA and cache domain-containing protein CG16868 Q5BI42 stj Straightjacket, isoform C A0A0B4K866 stol Stolid, isoform H X2J9Z3"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -28616,6 +30802,125 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "7 proteins of its 13,814 carry the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680): Ca-alpha1D, Ca-beta, Ca-Ma2d, cac, Q5BI42, stj and stol. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Ca-alpha1D",
+       "detail": "Voltage-dependent calcium channel type D subunit alpha-1, voltage-gated calcium channel alpha-1 subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,669 amino acids",
+        "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q24270",
+         "url": "https://www.uniprot.org/uniprotkb/Q24270/entry"
+        }
+       ]
+      },
+      {
+       "label": "cac",
+       "detail": "Voltage-dependent calcium channel type A subunit alpha-1, voltage-gated calcium channel alpha-1 subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,851 amino acids",
+        "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P91645",
+         "url": "https://www.uniprot.org/uniprotkb/P91645/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ca-beta",
+       "detail": "Ca2+-channel-protein-beta-subunit, isoform L, calcium channel beta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "844 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PD84",
+         "url": "https://www.uniprot.org/uniprotkb/M9PD84/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ca-Ma2d",
+       "detail": "Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,215 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q8IP22",
+         "url": "https://www.uniprot.org/uniprotkb/Q8IP22/entry"
+        }
+       ]
+      },
+      {
+       "label": "VWFA and cache domain-containing protein CG16868",
+       "detail": "calcium channel alpha-2/delta subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,449 amino acids",
+        "Its reviewed UniProtKB entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q5BI42",
+         "url": "https://www.uniprot.org/uniprotkb/Q5BI42/entry"
+        }
+       ]
+      },
+      {
+       "label": "stj",
+       "detail": "Straightjacket, isoform C, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,271 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A0A0B4K866",
+         "url": "https://www.uniprot.org/uniprotkb/A0A0B4K866/entry"
+        }
+       ]
+      },
+      {
+       "label": "stol",
+       "detail": "Stolid, isoform H, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,271 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt X2J9Z3",
+         "url": "https://www.uniprot.org/uniprotkb/X2J9Z3/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Ca-alpha1D Voltage-dependent calcium channel type D subunit alpha-1 Q24270 cac Voltage-dependent calcium channel type A subunit alpha-1 P91645 Ca-beta Ca2+-channel-protein-beta-subunit, isoform L M9PD84 Ca-Ma2d Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A Q8IP22 VWFA and cache domain-containing protein CG16868 Q5BI42 stj Straightjacket, isoform C A0A0B4K866 stol Stolid, isoform H X2J9Z3"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -29253,6 +31558,125 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "7 proteins of its 13,814 carry the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680): Ca-alpha1D, Ca-beta, Ca-Ma2d, cac, Q5BI42, stj and stol. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Ca-alpha1D",
+       "detail": "Voltage-dependent calcium channel type D subunit alpha-1, voltage-gated calcium channel alpha-1 subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,669 amino acids",
+        "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q24270",
+         "url": "https://www.uniprot.org/uniprotkb/Q24270/entry"
+        }
+       ]
+      },
+      {
+       "label": "cac",
+       "detail": "Voltage-dependent calcium channel type A subunit alpha-1, voltage-gated calcium channel alpha-1 subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,851 amino acids",
+        "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P91645",
+         "url": "https://www.uniprot.org/uniprotkb/P91645/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ca-beta",
+       "detail": "Ca2+-channel-protein-beta-subunit, isoform L, calcium channel beta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "844 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PD84",
+         "url": "https://www.uniprot.org/uniprotkb/M9PD84/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ca-Ma2d",
+       "detail": "Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,215 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q8IP22",
+         "url": "https://www.uniprot.org/uniprotkb/Q8IP22/entry"
+        }
+       ]
+      },
+      {
+       "label": "VWFA and cache domain-containing protein CG16868",
+       "detail": "calcium channel alpha-2/delta subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,449 amino acids",
+        "Its reviewed UniProtKB entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q5BI42",
+         "url": "https://www.uniprot.org/uniprotkb/Q5BI42/entry"
+        }
+       ]
+      },
+      {
+       "label": "stj",
+       "detail": "Straightjacket, isoform C, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,271 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A0A0B4K866",
+         "url": "https://www.uniprot.org/uniprotkb/A0A0B4K866/entry"
+        }
+       ]
+      },
+      {
+       "label": "stol",
+       "detail": "Stolid, isoform H, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,271 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt X2J9Z3",
+         "url": "https://www.uniprot.org/uniprotkb/X2J9Z3/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Ca-alpha1D Voltage-dependent calcium channel type D subunit alpha-1 Q24270 cac Voltage-dependent calcium channel type A subunit alpha-1 P91645 Ca-beta Ca2+-channel-protein-beta-subunit, isoform L M9PD84 Ca-Ma2d Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A Q8IP22 VWFA and cache domain-containing protein CG16868 Q5BI42 stj Straightjacket, isoform C A0A0B4K866 stol Stolid, isoform H X2J9Z3"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -29878,6 +32302,125 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "7 proteins of its 13,814 carry the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680): Ca-alpha1D, Ca-beta, Ca-Ma2d, cac, Q5BI42, stj and stol. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Ca-alpha1D",
+       "detail": "Voltage-dependent calcium channel type D subunit alpha-1, voltage-gated calcium channel alpha-1 subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,669 amino acids",
+        "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q24270",
+         "url": "https://www.uniprot.org/uniprotkb/Q24270/entry"
+        }
+       ]
+      },
+      {
+       "label": "cac",
+       "detail": "Voltage-dependent calcium channel type A subunit alpha-1, voltage-gated calcium channel alpha-1 subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,851 amino acids",
+        "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P91645",
+         "url": "https://www.uniprot.org/uniprotkb/P91645/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ca-beta",
+       "detail": "Ca2+-channel-protein-beta-subunit, isoform L, calcium channel beta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "844 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PD84",
+         "url": "https://www.uniprot.org/uniprotkb/M9PD84/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ca-Ma2d",
+       "detail": "Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,215 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q8IP22",
+         "url": "https://www.uniprot.org/uniprotkb/Q8IP22/entry"
+        }
+       ]
+      },
+      {
+       "label": "VWFA and cache domain-containing protein CG16868",
+       "detail": "calcium channel alpha-2/delta subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,449 amino acids",
+        "Its reviewed UniProtKB entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q5BI42",
+         "url": "https://www.uniprot.org/uniprotkb/Q5BI42/entry"
+        }
+       ]
+      },
+      {
+       "label": "stj",
+       "detail": "Straightjacket, isoform C, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,271 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A0A0B4K866",
+         "url": "https://www.uniprot.org/uniprotkb/A0A0B4K866/entry"
+        }
+       ]
+      },
+      {
+       "label": "stol",
+       "detail": "Stolid, isoform H, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,271 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt X2J9Z3",
+         "url": "https://www.uniprot.org/uniprotkb/X2J9Z3/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Ca-alpha1D Voltage-dependent calcium channel type D subunit alpha-1 Q24270 cac Voltage-dependent calcium channel type A subunit alpha-1 P91645 Ca-beta Ca2+-channel-protein-beta-subunit, isoform L M9PD84 Ca-Ma2d Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A Q8IP22 VWFA and cache domain-containing protein CG16868 Q5BI42 stj Straightjacket, isoform C A0A0B4K866 stol Stolid, isoform H X2J9Z3"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -30483,6 +33026,125 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "7 proteins of its 13,814 carry the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680): Ca-alpha1D, Ca-beta, Ca-Ma2d, cac, Q5BI42, stj and stol. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Ca-alpha1D",
+       "detail": "Voltage-dependent calcium channel type D subunit alpha-1, voltage-gated calcium channel alpha-1 subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,669 amino acids",
+        "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q24270",
+         "url": "https://www.uniprot.org/uniprotkb/Q24270/entry"
+        }
+       ]
+      },
+      {
+       "label": "cac",
+       "detail": "Voltage-dependent calcium channel type A subunit alpha-1, voltage-gated calcium channel alpha-1 subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,851 amino acids",
+        "Its reviewed UniProtKB entry carries IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P91645",
+         "url": "https://www.uniprot.org/uniprotkb/P91645/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ca-beta",
+       "detail": "Ca2+-channel-protein-beta-subunit, isoform L, calcium channel beta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "844 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PD84",
+         "url": "https://www.uniprot.org/uniprotkb/M9PD84/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ca-Ma2d",
+       "detail": "Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,215 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q8IP22",
+         "url": "https://www.uniprot.org/uniprotkb/Q8IP22/entry"
+        }
+       ]
+      },
+      {
+       "label": "VWFA and cache domain-containing protein CG16868",
+       "detail": "calcium channel alpha-2/delta subunits",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,449 amino acids",
+        "Its reviewed UniProtKB entry carries IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q5BI42",
+         "url": "https://www.uniprot.org/uniprotkb/Q5BI42/entry"
+        }
+       ]
+      },
+      {
+       "label": "stj",
+       "detail": "Straightjacket, isoform C, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,271 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A0A0B4K866",
+         "url": "https://www.uniprot.org/uniprotkb/A0A0B4K866/entry"
+        }
+       ]
+      },
+      {
+       "label": "stol",
+       "detail": "Stolid, isoform H, calcium channel alpha-2/delta subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,271 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR051173, IPR013680 (Voltage-dependent calcium channel subunit alpha-2/delta; Voltage-dependent calcium channel, alpha-2/delta subunit, conserved region). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt X2J9Z3",
+         "url": "https://www.uniprot.org/uniprotkb/X2J9Z3/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Ca-alpha1D Voltage-dependent calcium channel type D subunit alpha-1 Q24270 cac Voltage-dependent calcium channel type A subunit alpha-1 P91645 Ca-beta Ca2+-channel-protein-beta-subunit, isoform L M9PD84 Ca-Ma2d Ca[2+] channel Muscle-specific alpha2/delta subunit, isoform A Q8IP22 VWFA and cache domain-containing protein CG16868 Q5BI42 stj Straightjacket, isoform C A0A0B4K866 stol Stolid, isoform H X2J9Z3"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -30866,6 +33528,29 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "1 protein of its 13,814 carries the signature of T-type calcium channel alpha-1 subunits (IPR005445): Ca-alpha1T. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Ca-alpha1T",
+       "detail": "Ca[2+]-channel protein alpha[[1]] subunit T, isoform F, T-type calcium channel alpha-1 subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "3,218 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR005445 (Voltage-dependent calcium channel, T-type, alpha-1 subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PGH9",
+         "url": "https://www.uniprot.org/uniprotkb/M9PGH9/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Ca-alpha1T Ca[2+]-channel protein alpha[[1]] subunit T, isoform F M9PGH9"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
@@ -31068,6 +33753,29 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "1 protein of its 13,814 carries the signature of T-type calcium channel alpha-1 subunits (IPR005445): Ca-alpha1T. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Ca-alpha1T",
+       "detail": "Ca[2+]-channel protein alpha[[1]] subunit T, isoform F, T-type calcium channel alpha-1 subunits",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "3,218 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR005445 (Voltage-dependent calcium channel, T-type, alpha-1 subunit). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PGH9",
+         "url": "https://www.uniprot.org/uniprotkb/M9PGH9/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Ca-alpha1T Ca[2+]-channel protein alpha[[1]] subunit T, isoform F M9PGH9"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -31490,6 +34198,61 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of BK calcium-activated potassium channels, SK calcium-activated potassium channels and BK channel beta subunits (IPR047871, IPR015449, IPR003930). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Its own ion channels are of bacterial families that no unit of the inventory stands for: 15 proteins, listed under extra.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "3 proteins of its 13,814 carry the signature of BK calcium-activated potassium channels and SK calcium-activated potassium channels (IPR047871, IPR015449): SK, slo and SLO2. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "slo",
+       "detail": "Calcium-activated potassium channel slowpoke, BK calcium-activated potassium channels",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,200 amino acids",
+        "Its reviewed UniProtKB entry carries IPR047871 (Calcium-activated potassium channel slowpoke-like). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q03720",
+         "url": "https://www.uniprot.org/uniprotkb/Q03720/entry"
+        }
+       ]
+      },
+      {
+       "label": "SLO2",
+       "detail": "Slowpoke 2, isoform D, BK calcium-activated potassium channels",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,878 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR047871 (Calcium-activated potassium channel slowpoke-like). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A8DY93",
+         "url": "https://www.uniprot.org/uniprotkb/A8DY93/entry"
+        }
+       ]
+      },
+      {
+       "label": "SK",
+       "detail": "Small conductance calcium-activated potassium channel protein, SK calcium-activated potassium channels",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "927 amino acids",
+        "Its reviewed UniProtKB entry carries IPR015449 (Potassium channel, calcium-activated, SK). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q7KVW5",
+         "url": "https://www.uniprot.org/uniprotkb/Q7KVW5/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "slo Calcium-activated potassium channel slowpoke Q03720 SLO2 Slowpoke 2, isoform D A8DY93 SK Small conductance calcium-activated potassium channel protein Q7KVW5"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -32067,6 +34830,12 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "nothing to look for",
+     "note": "A background conductance that the inventory ties to no protein.",
+     "items": [],
+     "keywords": ""
+    },
     "mpneumoniae": {
      "finding": "nothing to look for",
      "note": "A background conductance that the inventory ties to no protein.",
@@ -32166,6 +34935,12 @@
    "keywords": "constant_field@1",
    "species": {
     "ecoli": {
+     "finding": "nothing to look for",
+     "note": "A lumped permeability of the whole membrane, not a population of proteins.",
+     "items": [],
+     "keywords": ""
+    },
+    "fruitfly": {
      "finding": "nothing to look for",
      "note": "A lumped permeability of the whole membrane, not a population of proteins.",
      "items": [],
@@ -32392,6 +35167,141 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "different family",
+     "note": "None of its 13,814 proteins carries the signature of connexins (IPR000500, IPR013092), the family the engine's law names. 8 proteins carry that of innexins (IPR000990), the other family this machine is asked for, as on the planarian's side of the atlas: Inx2, Inx3, Inx5, Inx6, Inx7, ogre, shakB and zpg.",
+     "items": [
+      {
+       "label": "Inx2",
+       "detail": "Innexin inx2, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "367 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9V427",
+         "url": "https://www.uniprot.org/uniprotkb/Q9V427/entry"
+        }
+       ]
+      },
+      {
+       "label": "Inx3",
+       "detail": "Innexin inx3, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "395 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VAS7",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VAS7/entry"
+        }
+       ]
+      },
+      {
+       "label": "Inx5",
+       "detail": "Innexin inx5, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "419 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VWL5",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VWL5/entry"
+        }
+       ]
+      },
+      {
+       "label": "Inx6",
+       "detail": "Innexin inx6, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "481 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VR82",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VR82/entry"
+        }
+       ]
+      },
+      {
+       "label": "Inx7",
+       "detail": "Innexin inx7, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "438 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9V3W6",
+         "url": "https://www.uniprot.org/uniprotkb/Q9V3W6/entry"
+        }
+       ]
+      },
+      {
+       "label": "ogre",
+       "detail": "Innexin inx1, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "362 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P27716",
+         "url": "https://www.uniprot.org/uniprotkb/P27716/entry"
+        }
+       ]
+      },
+      {
+       "label": "shakB",
+       "detail": "Innexin shaking-B, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "372 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P33085",
+         "url": "https://www.uniprot.org/uniprotkb/P33085/entry"
+        }
+       ]
+      },
+      {
+       "label": "zpg",
+       "detail": "Innexin inx4, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "367 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VRX6",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VRX6/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Inx2 Innexin inx2 Q9V427 Inx3 Innexin inx3 Q9VAS7 Inx5 Innexin inx5 Q9VWL5 Inx6 Innexin inx6 Q9VR82 Inx7 Innexin inx7 Q9V3W6 ogre Innexin inx1 P27716 shakB Innexin shaking-B P33085 zpg Innexin inx4 Q9VRX6"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -33655,6 +36565,141 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "different family",
+     "note": "None of its 13,814 proteins carries the signature of connexins (IPR000500, IPR013092), the family the engine's law names. 8 proteins carry that of innexins (IPR000990), the other family this machine is asked for, as on the planarian's side of the atlas: Inx2, Inx3, Inx5, Inx6, Inx7, ogre, shakB and zpg.",
+     "items": [
+      {
+       "label": "Inx2",
+       "detail": "Innexin inx2, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "367 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9V427",
+         "url": "https://www.uniprot.org/uniprotkb/Q9V427/entry"
+        }
+       ]
+      },
+      {
+       "label": "Inx3",
+       "detail": "Innexin inx3, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "395 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VAS7",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VAS7/entry"
+        }
+       ]
+      },
+      {
+       "label": "Inx5",
+       "detail": "Innexin inx5, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "419 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VWL5",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VWL5/entry"
+        }
+       ]
+      },
+      {
+       "label": "Inx6",
+       "detail": "Innexin inx6, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "481 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VR82",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VR82/entry"
+        }
+       ]
+      },
+      {
+       "label": "Inx7",
+       "detail": "Innexin inx7, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "438 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9V3W6",
+         "url": "https://www.uniprot.org/uniprotkb/Q9V3W6/entry"
+        }
+       ]
+      },
+      {
+       "label": "ogre",
+       "detail": "Innexin inx1, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "362 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P27716",
+         "url": "https://www.uniprot.org/uniprotkb/P27716/entry"
+        }
+       ]
+      },
+      {
+       "label": "shakB",
+       "detail": "Innexin shaking-B, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "372 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P33085",
+         "url": "https://www.uniprot.org/uniprotkb/P33085/entry"
+        }
+       ]
+      },
+      {
+       "label": "zpg",
+       "detail": "Innexin inx4, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "367 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VRX6",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VRX6/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Inx2 Innexin inx2 Q9V427 Inx3 Innexin inx3 Q9VAS7 Inx5 Innexin inx5 Q9VWL5 Inx6 Innexin inx6 Q9VR82 Inx7 Innexin inx7 Q9V3W6 ogre Innexin inx1 P27716 shakB Innexin shaking-B P33085 zpg Innexin inx4 Q9VRX6"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -34948,6 +37993,141 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No reviewed UniProtKB entry of any bacterium carries any of the signatures asked either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "different family",
+     "note": "None of its 13,814 proteins carries the signature of connexins (IPR000500, IPR013092), the family the engine's law names. 8 proteins carry that of innexins (IPR000990), the other family this machine is asked for, as on the planarian's side of the atlas: Inx2, Inx3, Inx5, Inx6, Inx7, ogre, shakB and zpg.",
+     "items": [
+      {
+       "label": "Inx2",
+       "detail": "Innexin inx2, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "367 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9V427",
+         "url": "https://www.uniprot.org/uniprotkb/Q9V427/entry"
+        }
+       ]
+      },
+      {
+       "label": "Inx3",
+       "detail": "Innexin inx3, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "395 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VAS7",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VAS7/entry"
+        }
+       ]
+      },
+      {
+       "label": "Inx5",
+       "detail": "Innexin inx5, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "419 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VWL5",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VWL5/entry"
+        }
+       ]
+      },
+      {
+       "label": "Inx6",
+       "detail": "Innexin inx6, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "481 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VR82",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VR82/entry"
+        }
+       ]
+      },
+      {
+       "label": "Inx7",
+       "detail": "Innexin inx7, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "438 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9V3W6",
+         "url": "https://www.uniprot.org/uniprotkb/Q9V3W6/entry"
+        }
+       ]
+      },
+      {
+       "label": "ogre",
+       "detail": "Innexin inx1, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "362 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P27716",
+         "url": "https://www.uniprot.org/uniprotkb/P27716/entry"
+        }
+       ]
+      },
+      {
+       "label": "shakB",
+       "detail": "Innexin shaking-B, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "372 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P33085",
+         "url": "https://www.uniprot.org/uniprotkb/P33085/entry"
+        }
+       ]
+      },
+      {
+       "label": "zpg",
+       "detail": "Innexin inx4, innexins",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "367 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000990 (Innexin). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VRX6",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VRX6/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Inx2 Innexin inx2 Q9V427 Inx3 Innexin inx3 Q9VAS7 Inx5 Innexin inx5 Q9VWL5 Inx6 Innexin inx6 Q9VR82 Inx7 Innexin inx7 Q9V3W6 ogre Innexin inx1 P27716 shakB Innexin shaking-B P33085 zpg Innexin inx4 Q9VRX6"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -36507,6 +39687,141 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "8 proteins of its 13,814 carry the signature of the sodium-potassium pump's alpha subunit and its beta subunit (IPR005775, IPR000402): Atpalpha, Dmel\\CG5250, Dmel\\CG33310, JYalpha, JYbeta2, nrv1, nrv2 and nrv3. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Atpalpha",
+       "detail": "Sodium/potassium-transporting ATPase subunit alpha, the sodium-potassium pump's alpha subunit",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,041 amino acids",
+        "Its reviewed UniProtKB entry carries IPR005775 (P-type ATPase subfamily IIC, subunit alpha). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P13607",
+         "url": "https://www.uniprot.org/uniprotkb/P13607/entry"
+        }
+       ]
+      },
+      {
+       "label": "JYalpha",
+       "detail": "Sodium/potassium-transporting ATPase subunit alpha, the sodium-potassium pump's alpha subunit",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,009 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR005775 (P-type ATPase subfamily IIC, subunit alpha). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A8QI34",
+         "url": "https://www.uniprot.org/uniprotkb/A8QI34/entry"
+        }
+       ]
+      },
+      {
+       "label": "Dmel\\CG5250",
+       "detail": "Uncharacterized protein, its beta subunit",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "311 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR000402 (Sodium/potassium-transporting ATPase subunit beta). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VDY7",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VDY7/entry"
+        }
+       ]
+      },
+      {
+       "label": "Dmel\\CG33310",
+       "detail": "Uncharacterized protein, its beta subunit",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "876 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR000402 (Sodium/potassium-transporting ATPase subunit beta). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q7KT77",
+         "url": "https://www.uniprot.org/uniprotkb/Q7KT77/entry"
+        }
+       ]
+      },
+      {
+       "label": "JYbeta2",
+       "detail": "Uncharacterized protein, its beta subunit",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "353 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR000402 (Sodium/potassium-transporting ATPase subunit beta). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9V3Q7",
+         "url": "https://www.uniprot.org/uniprotkb/Q9V3Q7/entry"
+        }
+       ]
+      },
+      {
+       "label": "nrv1",
+       "detail": "Sodium/potassium-transporting ATPase subunit beta-1, its beta subunit",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "309 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000402 (Sodium/potassium-transporting ATPase subunit beta). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q24046",
+         "url": "https://www.uniprot.org/uniprotkb/Q24046/entry"
+        }
+       ]
+      },
+      {
+       "label": "nrv2",
+       "detail": "Sodium/potassium-transporting ATPase subunit beta-2, its beta subunit",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "323 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000402 (Sodium/potassium-transporting ATPase subunit beta). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q24048",
+         "url": "https://www.uniprot.org/uniprotkb/Q24048/entry"
+        }
+       ]
+      },
+      {
+       "label": "nrv3",
+       "detail": "Nervana 3, isoform E, its beta subunit",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "313 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR000402 (Sodium/potassium-transporting ATPase subunit beta). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PDX8",
+         "url": "https://www.uniprot.org/uniprotkb/M9PDX8/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Atpalpha Sodium/potassium-transporting ATPase subunit alpha P13607 JYalpha A8QI34 Dmel\\CG5250 Uncharacterized protein Q9VDY7 Dmel\\CG33310 Q7KT77 JYbeta2 Q9V3Q7 nrv1 Sodium/potassium-transporting ATPase subunit beta-1 Q24046 nrv2 Sodium/potassium-transporting ATPase subunit beta-2 Q24048 nrv3 Nervana 3, isoform E M9PDX8"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of the sodium-potassium pump's alpha subunit, its beta subunit and its FXYD regulators (IPR005775, IPR000402, IPR000272). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. The wider family, the P-type ATPases, has one member here, annotated only as a cation-transporting ATPase (locus MPN_209, listed under extra). It does not carry the mark of the sodium-potassium pump.",
@@ -37140,6 +40455,29 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "1 protein of its 13,814 carries the signature of plasma-membrane calcium pumps (IPR006408): PMCA. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "PMCA",
+       "detail": "Calcium-transporting ATPase, plasma-membrane calcium pumps",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,255 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q59DP9",
+         "url": "https://www.uniprot.org/uniprotkb/Q59DP9/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "PMCA Calcium-transporting ATPase Q59DP9"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of plasma-membrane calcium pumps (IPR006408). UniProtKB holds 6 entries of mollicutes, the class of bacteria it belongs to, that carry it. The unit's human candidates carry it, so the search finds the family where it exists. The wider family, the P-type ATPases, has one member here, annotated only as a cation-transporting ATPase (locus MPN_209, listed under extra). Which cation it carries is not established in any source read here, and it does not carry this signature.",
@@ -37481,6 +40819,29 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "1 protein of its 13,814 carries the signature of SERCA-type calcium pumps (IPR005782): SERCA. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "SERCA",
+       "detail": "Calcium-transporting ATPase sarcoplasmic/endoplasmic reticulum type, SERCA-type calcium pumps",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "1,020 amino acids",
+        "Its reviewed UniProtKB entry carries IPR005782 (P-type ATPase, subfamily IIA, SERCA-type). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P22700",
+         "url": "https://www.uniprot.org/uniprotkb/P22700/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "SERCA Calcium-transporting ATPase sarcoplasmic/endoplasmic reticulum type P22700"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of SERCA-type calcium pumps (IPR005782). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It is a bacterium with a single membrane and no internal compartments, so it has no endoplasmic reticulum for this machine to sit in.",
@@ -37761,6 +41122,29 @@
      "note": "None of the 4,403 proteins of its reference proteome carries the signature of sodium-calcium exchangers (IPR004836). No reviewed UniProtKB entry of any bacterium carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Its own transporters are in its protein catalogue.",
      "items": [],
      "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "found",
+     "note": "1 protein of its 13,814 carries the signature of sodium-calcium exchangers (IPR004836): Calx. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Calx",
+       "detail": "Sodium/calcium exchanger Calx, sodium-calcium exchangers",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "950 amino acids",
+        "Its reviewed UniProtKB entry carries IPR004836 (Sodium/calcium exchanger protein). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VDG5",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VDG5/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Calx Sodium/calcium exchanger Calx Q9VDG5"
     },
     "mpneumoniae": {
      "finding": "none found",
@@ -38168,6 +41552,45 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "2 proteins of its 13,814 carry the signature of inositol trisphosphate receptors and ryanodine receptors (IPR000493, IPR013333): Itpr and RyR. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Itpr",
+       "detail": "Inositol 1,4,5-trisphosphate receptor, inositol trisphosphate receptors",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "2,837 amino acids",
+        "Its reviewed UniProtKB entry carries IPR000493 (Inositol 1,4,5-trisphosphate receptor). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt P29993",
+         "url": "https://www.uniprot.org/uniprotkb/P29993/entry"
+        }
+       ]
+      },
+      {
+       "label": "RyR",
+       "detail": "Ryanodine receptor, ryanodine receptors",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "5,127 amino acids",
+        "Its reviewed UniProtKB entry carries IPR013333 (Ryanodine receptor). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q24498",
+         "url": "https://www.uniprot.org/uniprotkb/Q24498/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Itpr Inositol 1,4,5-trisphosphate receptor P29993 RyR Ryanodine receptor Q24498"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of inositol trisphosphate receptors and ryanodine receptors (IPR000493, IPR013333). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It is a bacterium with a single membrane and no internal compartments, so it has no endoplasmic reticulum for this machine to sit in.",
@@ -38502,6 +41925,93 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "5 proteins of its 13,814 carry the signature of potassium-chloride cotransporters and the wider SLC12 transporter family (IPR000076, IPR004842): Dmel\\CG10413, EG:8D8.3, kcc, Ncc69 and NKCC. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "kcc",
+       "detail": "Kazachoc, isoform G, potassium-chloride cotransporters",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,077 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR000076 (K/Cl co-transporter). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A0A0B4LGD3",
+         "url": "https://www.uniprot.org/uniprotkb/A0A0B4LGD3/entry"
+        }
+       ]
+      },
+      {
+       "label": "Dmel\\CG10413",
+       "detail": "Solute carrier family 12 member 9, the wider SLC12 transporter family",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "941 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VJ75",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VJ75/entry"
+        }
+       ]
+      },
+      {
+       "label": "EG:8D8.3",
+       "detail": "Solute carrier family 12 member 8, the wider SLC12 transporter family",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "712 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt O46100",
+         "url": "https://www.uniprot.org/uniprotkb/O46100/entry"
+        }
+       ]
+      },
+      {
+       "label": "Ncc69",
+       "detail": "Sodium chloride cotransporter 69, isoform E, the wider SLC12 transporter family",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,207 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PI37",
+         "url": "https://www.uniprot.org/uniprotkb/M9PI37/entry"
+        }
+       ]
+      },
+      {
+       "label": "NKCC",
+       "detail": "Sodium potassium chloride cotransporter, isoform B, the wider SLC12 transporter family",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,068 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VNC7",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VNC7/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "kcc Kazachoc, isoform G A0A0B4LGD3 Dmel\\CG10413 Solute carrier family 12 member 9 Q9VJ75 EG:8D8.3 Solute carrier family 12 member 8 O46100 Ncc69 Sodium chloride cotransporter 69, isoform E M9PI37 NKCC Sodium potassium chloride cotransporter, isoform B Q9VNC7"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of potassium-chloride cotransporters and the wider SLC12 transporter family (IPR000076, IPR004842). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Its annotation names no chloride-coupled cotransporter.",
@@ -38720,6 +42230,93 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "5 proteins of its 13,814 carry the signature of sodium-potassium-chloride cotransporters and the wider SLC12 transporter family (IPR002443, IPR004842): Dmel\\CG10413, EG:8D8.3, kcc, Ncc69 and NKCC. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "Ncc69",
+       "detail": "Sodium chloride cotransporter 69, isoform E, sodium-potassium-chloride cotransporters",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,207 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR002443 (Solute carrier family 12 member 1/2). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9PI37",
+         "url": "https://www.uniprot.org/uniprotkb/M9PI37/entry"
+        }
+       ]
+      },
+      {
+       "label": "Dmel\\CG10413",
+       "detail": "Solute carrier family 12 member 9, the wider SLC12 transporter family",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "941 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VJ75",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VJ75/entry"
+        }
+       ]
+      },
+      {
+       "label": "EG:8D8.3",
+       "detail": "Solute carrier family 12 member 8, the wider SLC12 transporter family",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "712 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt O46100",
+         "url": "https://www.uniprot.org/uniprotkb/O46100/entry"
+        }
+       ]
+      },
+      {
+       "label": "kcc",
+       "detail": "Kazachoc, isoform G, the wider SLC12 transporter family",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,077 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A0A0B4LGD3",
+         "url": "https://www.uniprot.org/uniprotkb/A0A0B4LGD3/entry"
+        }
+       ]
+      },
+      {
+       "label": "NKCC",
+       "detail": "Sodium potassium chloride cotransporter, isoform B, the wider SLC12 transporter family",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "1,068 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VNC7",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VNC7/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "Ncc69 Sodium chloride cotransporter 69, isoform E M9PI37 Dmel\\CG10413 Solute carrier family 12 member 9 Q9VJ75 EG:8D8.3 Solute carrier family 12 member 8 O46100 kcc Kazachoc, isoform G A0A0B4LGD3 NKCC Sodium potassium chloride cotransporter, isoform B Q9VNC7"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of sodium-potassium-chloride cotransporters and the wider SLC12 transporter family (IPR002443, IPR004842). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Its annotation names no chloride-coupled cotransporter.",
@@ -38838,6 +42435,12 @@
     "ecoli": {
      "finding": "nothing to look for",
      "note": "A slot that each model configuration fills with a transporter of its own; it has no fixed protein in any species. This organism's own transporters are in its protein catalogue.",
+     "items": [],
+     "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "nothing to look for",
+     "note": "A slot that each model configuration fills with a transporter of its own; it has no fixed protein in any species.",
      "items": [],
      "keywords": ""
     },
@@ -39096,6 +42699,109 @@
      "items": [],
      "keywords": ""
     },
+    "fruitfly": {
+     "finding": "found",
+     "note": "6 proteins of its 13,814 carry the signature of the mitochondrial calcium uniporter, its regulator EMRE and its MICU regulators (IPR039055, IPR006769, IPR018782, IPR039800): Dmel\\CG4704, Dmel\\CG43321, EMRE, MCU, MICU1 and MICU3. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the fly.",
+     "items": [
+      {
+       "label": "MCU",
+       "detail": "Calcium uniporter protein, mitochondrial, the mitochondrial calcium uniporter",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "366 amino acids",
+        "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q8IQ70",
+         "url": "https://www.uniprot.org/uniprotkb/Q8IQ70/entry"
+        }
+       ]
+      },
+      {
+       "label": "Dmel\\CG43321",
+       "detail": "Essential MCU regulator, mitochondrial, its regulator EMRE",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "65 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR018782 (Essential MCU regulator, mitochondrial). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt M9NEV9",
+         "url": "https://www.uniprot.org/uniprotkb/M9NEV9/entry"
+        }
+       ]
+      },
+      {
+       "label": "EMRE",
+       "detail": "Essential MCU regulator, mitochondrial, its regulator EMRE",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "97 amino acids",
+        "Its reviewed UniProtKB entry carries IPR018782 (Essential MCU regulator, mitochondrial). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q7JX57",
+         "url": "https://www.uniprot.org/uniprotkb/Q7JX57/entry"
+        }
+       ]
+      },
+      {
+       "label": "Dmel\\CG4704",
+       "detail": "EF-hand domain-containing protein, its MICU regulators",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "354 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR039800 (Calcium uptake protein 1/2/3). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt Q9VCT5",
+         "url": "https://www.uniprot.org/uniprotkb/Q9VCT5/entry"
+        }
+       ]
+      },
+      {
+       "label": "MICU1",
+       "detail": "Calcium uptake protein 1 homolog, mitochondrial, its MICU regulators",
+       "tag": "Reviewed entry",
+       "tag_title": "A curated database entry for this species.",
+       "lines": [
+        "525 amino acids",
+        "Its reviewed UniProtKB entry carries IPR039800 (Calcium uptake protein 1/2/3). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A2VEI2",
+         "url": "https://www.uniprot.org/uniprotkb/A2VEI2/entry"
+        }
+       ]
+      },
+      {
+       "label": "MICU3",
+       "detail": "Mitochondrial calcium uptake 3, isoform D, its MICU regulators",
+       "tag": "Family signature",
+       "tag_title": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
+       "lines": [
+        "524 amino acids",
+        "Candidate, not an established counterpart: Its unreviewed UniProtKB entry carries IPR039800 (Calcium uptake protein 1/2/3). A signature says the family, not which member does the unit's work."
+       ],
+       "links": [
+        {
+         "text": "UniProt A0A0B4KHF1",
+         "url": "https://www.uniprot.org/uniprotkb/A0A0B4KHF1/entry"
+        }
+       ]
+      }
+     ],
+     "keywords": "MCU Calcium uniporter protein, mitochondrial Q8IQ70 Dmel\\CG43321 Essential MCU regulator, mitochondrial M9NEV9 EMRE Q7JX57 Dmel\\CG4704 EF-hand domain-containing protein Q9VCT5 MICU1 Calcium uptake protein 1 homolog, mitochondrial A2VEI2 MICU3 Mitochondrial calcium uptake 3, isoform D A0A0B4KHF1"
+    },
     "mpneumoniae": {
      "finding": "none found",
      "note": "None of the 688 protein products of its genome carries the signature of the mitochondrial calcium uniporter, its regulator EMRE and its MICU regulators (IPR039055, IPR006769, IPR018782, IPR039800). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It is a bacterium and has no mitochondria.",
@@ -39262,6 +42968,12 @@
     "ecoli": {
      "finding": "nothing to look for",
      "note": "A lumped water permeability of the membrane; water channels (aquaporins) are not part of it. 2 proteins of this organism carry the aquaporin family's signature (aqpZ and glpF), listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
+    "fruitfly": {
+     "finding": "nothing to look for",
+     "note": "A lumped water permeability of the membrane; water channels (aquaporins) are not part of it.",
      "items": [],
      "keywords": ""
     },
