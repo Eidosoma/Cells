@@ -1,0 +1,58 @@
+{
+ "kind": "synthetic.arm_outcome@0",
+ "arm": "synthetic-iso-s1.0",
+ "stop": "planned end",
+ "end_s": 60.0,
+ "planned_end_s": 60.0,
+ "refusal": null,
+ "residence_s": 60.0,
+ "turnovers_reached": [
+  true,
+  false
+ ],
+ "jaccard_after_turnover": [
+  0.5714285714285714,
+  null
+ ],
+ "jaccard_after_turnover_basis": [
+  "record",
+  "planned end"
+ ],
+ "all_h_s": null,
+ "d_inside_end": 4,
+ "max_d_outside": 0,
+ "newcomers": 3,
+ "osmotic": {
+  "max_excess": 0.01
+ },
+ "b1_jaccard_0p8_through_two_turnovers": false,
+ "series": {
+  "t_s": [
+   0.0,
+   10.0,
+   20.0,
+   30.0,
+   40.0,
+   50.0,
+   60.0
+  ],
+  "d_inside": [
+   7,
+   6,
+   6,
+   5,
+   5,
+   4,
+   4
+  ],
+  "d_outside": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ]
+ }
+}

@@ -1,0 +1,82 @@
+{
+  "note": "Artifacts published from this folder. Update an artifact at its URL; do not create a second one for the same page.",
+  "artifacts": {
+    "architecture": {
+      "title": "Cells Architecture Map",
+      "url": "https://claude.ai/artifact/Szv7SqgCkgtAZg4c27fwCb",
+      "previous": [
+        {
+          "url": "https://claude.ai/artifact/7Pnsy6G25c2kRqgwk5TuaB",
+          "until": "2026-11-14",
+          "note": "An earlier link to this page, holding an older copy: its version 11, the species atlases. It is no longer updated."
+        }
+      ],
+      "page": "out/cells-architecture.html",
+      "scene": "data/architecture/architecture.scene.json",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-14",
+          "engine_revision": "031ee42",
+          "note": "First version: the cell-and-scales lens and the engine lens"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "031ee42",
+          "note": "Input fixes after the real-input check; two capability claims reworded; second-provider conflicts drawn"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "031ee42",
+          "note": "Cell view redrawn after the README's biology map: flat cut, natural colours with status dots, labels on leader lines, schematic and to-scale size modes, scale bar"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "f7f0592",
+          "note": "Data refreshed after merging main (reactions operator registered, D156's status levels, new in-design items); to-scale mitochondria drawn as clear curved membranes with their inner folds"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "d1c0216",
+          "note": "Protein atlas added as the second of three views (Cell and scales, Protein atlas, Engine): the 49 functional units of the law inventory of 12 November 2026, linked to their engine parts and to the public atlases; secreted-species transport shown as numerically qualified in its stated scope"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "8d6fd0ee",
+          "note": "Experiments added as the third of four views, before Engine: three E07-v1 runs replayed (the inheritance route, fast k1 at s 1.0, seed 5, recorded as erosion; and the control at seed 1, s 0.6 recorded as neutral and s 1.0 as erosion), 0.45 to 0.75 MB each, published as files beside the page; the organism outline is a planarian and the organ its brain; the map gained the feature requests of 14 November as planned parts and five corrections from a review against main"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "e659ce49",
+          "note": "The scales are nested again (the user: the planarian was just hanging there): the sheet lies on the worm's head above its brain, with slanted views, so zooming out leads from tissue into organ into organism"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "2d2d9816",
+          "note": "An experiment selector with what each experiment found as two facts from the record; 59 runs of two experiments (all 38 of E07-v1 and the 21-arm turnover pre-screen; 34.5 MB, largest 0.87 MB); the sheet stands for skin-like tissue over the brain, with the cell among its neighbours; the atlas counts 25 gained identifiers with a dated review; three feature requests shown as designed"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "8497ff37",
+          "note": "The cell is drawn flat-sided, as a cell packed in the skin-like layer (the user: a bit more like a planarian skin cell): six sides with rounded corners, 13 µm tall like the sheet's cells, among six glass neighbours; what enters or leaves the cell sits at the corners. The map gained the operator species_regulated_availability@1 (milestone 1, development code) with its law and its references, the species cap at 16, excitable tissue accepted narrowly (D170) and the conduction probe's outcome. The atlas card says 28 identifiers gained, 25 of them reviewed. Built, checked (35 of 35) and exported from a clean checkout of the branch at 543bab87; the 59 run files are unchanged"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "8497ff37",
+          "note": "Species atlases: a Species switch on the protein atlas (Human, Planarian). The planarian atlas of Schmidtea mediterranea has an entry for all 49 units: products of the same family found for 38, a different family for 3 (gap junctions from innexins), nothing found for 2, nothing to look for in 6; 204 gene products, 200 of them candidates by family signature. A ring marks a unit where the species differs. The library of about 10,000 planarian proteins was found and not imported. Checked with 55 of 55 real-input checks and 93 tests (92 pass, 1 skipped) at 54850de6; the page is 1.14 MB, and the 59 run files are unchanged"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "8497ff37",
+          "note": "First version at the new link: the same page as the last version at the earlier link, with two corrections (the conduction probe shown as designed, since its driver has no test; the human atlas says its Xenopus entries are links only). The page and all 59 run files were published together (60 files, 35.7 MB). Tests and checks at 4ba6710c: 93 tests (92 pass, 1 skipped); the species and engine parts of the input check after the corrections, and all 55 checks before them"
+        },
+        {
+          "date": "2026-11-14",
+          "engine_revision": "6ae5b388",
+          "note": "The map at main 6ae5b388: the scheduled bath is a registered operator (FR-10's first milestone, development code); the coupling operator's first two milestones are in; MG0c's protocol is revised and still proposed; the conduction probe's text says what was compared blind. The page is otherwise unchanged, and the 59 run files were not sent again. Checked at 3ce44705: 55 of 55 real-input checks on a clean checkout (one label check had failed once under heavy machine load and was made to wait for the label to hold still); 95 tests (94 pass, 1 skipped)"
+        }
+      ],
+      "files": "out/cells-architecture.files.json lists the run files published beside the page (generated, not committed)"
+    }
+  }
+}

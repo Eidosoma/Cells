@@ -1,0 +1,707 @@
+// <cells-viewer>: the whole viewer as one custom element. Give it a scene (a JSON
+// script child, the `scene` property or a `src` URL) and it draws it, with a lens
+// switch, a legend, a list of parts and a detail panel.
+//
+//   <cells-viewer lens="cell"><script type="application/json">{...}</script></cells-viewer>
+//
+// Events: "cells-ready" once drawn; "cells-selected" with { id } when the selection changes.
+
+import { css } from "./styles.js";
+import { h, formatDate, svg } from "./dom.js";
+import "./legend.js";
+import "./index.js";
+import { item as listed } from "./panel.js";
+import "./timeline.js";
+import { SceneModel } from "../scene/model.js";
+import { Stage } from "../core/stage.js";
+import { LabelLayer } from "../core/labels.js";
+import { StackLens } from "../lenses/stack.js";
+import { CellLens } from "../lenses/cell.js";
+import { ProteinLens, defaultAtlas, inSpecies } from "../lenses/proteins.js";
+import { ReplayLens } from "../lenses/replay.js";
+import { Catalogue } from "../replay/catalogue.js";
+
+// The views, in the order of the switch. "short" is the name on a narrow screen.
+// "needs" says what the scene must hold for the view to be offered.
+const LENSES = [
+  { id: "cell", label: "Cell and scales", short: "Cell", make: (stage, model, labels) => new CellLens(stage, model, labels) },
+  { id: "proteins", label: "Protein atlas", short: "Proteins", needs: (scene) => scene.proteins, make: (stage, model, labels) => new ProteinLens(stage, model, labels) },
+  { id: "experiments", label: "Experiments", short: "Runs", needs: (scene) => scene.replays?.runs?.length, make: (stage, model, labels) => new ReplayLens(stage, model, labels) },
+  { id: "engine", label: "Engine", short: "Engine", make: (stage, model, labels) => new StackLens(stage, model, labels) },
+];
+
+class CellsViewer extends HTMLElement {
+  static get observedAttributes() {
+    return ["lens"];
+  }
+
+  constructor() {
+    super();
+    // "atlas" is the species whose atlas the protein view shows; it stays while the page is open.
+    this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false, atlas: null };
+    this.lenses = new Map();
+  }
+
+  connectedCallback() {
+    if (this.shadowRoot) return;
+    this.attachShadow({ mode: "open" });
+    this.buildChrome();
+    this.loadScene().then(
+      (scene) => this.start(scene),
+      (error) => this.fail(`The map's data could not be read (${error.message}).`)
+    );
+  }
+
+  disconnectedCallback() {
+    this.stage?.dispose();
+  }
+
+  attributeChangedCallback(name, _old, value) {
+    if (name === "lens" && this.model && value && value !== this.state.lens) this.setLens(value);
+  }
+
+  // ------------------------------------------------------------ loading
+
+  async loadScene() {
+    if (this.scene) return this.scene;
+    const inline = this.querySelector('script[type="application/json"]');
+    if (inline) return JSON.parse(inline.textContent);
+    const src = this.getAttribute("src");
+    if (src) {
+      const response = await fetch(src);
+      if (!response.ok) throw new Error(`${src}: ${response.status}`);
+      return response.json();
+    }
+    throw new Error("no scene given");
+  }
+
+  buildChrome() {
+    const root = this.shadowRoot;
+    this.canvas = h("canvas", { tabIndex: 0, role: "img", "aria-label": "3D map of the Cells simulator. The list of parts gives the same content as text." });
+    this.labelBox = h("div", { class: "labels" });
+    this.switchBox = h("div", { class: "switch", role: "group", "aria-label": "View" });
+    this.stamp = h("span", { class: "stamp" });
+    this.indexButton = h("button", { class: "pill-button", type: "button", "aria-pressed": "false", onclick: () => this.toggleIndex() }, "List");
+    this.legend = h("cells-legend", { class: "card" });
+    this.panel = h("cells-panel", { class: "card", hidden: true });
+    this.index = h("cells-index", { class: "card", hidden: true });
+    this.caveat = h("p", { class: "caveat", hidden: true });
+    this.rail = h("nav", { class: "rail card", hidden: true, "aria-label": "Scale" });
+    this.viewCard = h("div", { class: "view card", hidden: true });
+    this.scaleLine = h("span", { class: "scalebar-line" });
+    this.scaleText = h("span", { class: "scalebar-text" });
+    this.scaleBar = h("div", { class: "scalebar", hidden: true }, this.scaleLine, this.scaleText);
+    this.hint = h("p", { class: "hint" }, "Drag to turn · scroll to zoom · click a part");
+    this.timeline = h("cells-timeline", { class: "card", hidden: true });
+    this.fallback = h("p", { class: "fallback", hidden: true });
+    this.frame = h(
+      "div",
+      { class: "frame", style: "position:absolute;inset:0" },
+      h("div", { class: "stage" }, this.canvas, this.labelBox),
+      h("header", { class: "bar" }, h("div", { class: "brand" }, h("b", {}, "Cells"), h("span", {}, "Architecture map")), this.switchBox, h("div", { class: "bar-end" }, this.stamp, this.indexButton)),
+      this.hint,
+      this.caveat,
+      this.timeline,
+      this.rail,
+      this.viewCard,
+      this.scaleBar,
+      this.legend,
+      this.index,
+      this.panel,
+      this.fallback
+    );
+    root.append(h("style", {}, css), this.frame);
+    root.addEventListener("cells-select", (event) => this.select(event.detail.id, event.detail));
+    root.addEventListener("cells-isolate", (event) => this.setIsolate(event.detail));
+    root.addEventListener("cells-together", (event) => this.current?.setTogether?.(event.detail));
+    root.addEventListener("cells-finding", (event) => this.current?.setFinding?.(event.detail));
+    root.addEventListener("cells-legend-toggle", () => {
+      this.state.legendOpen = !this.state.legendOpen;
+      this.renderLegend();
+    });
+  }
+
+  start(scene) {
+    try {
+      this.model = new SceneModel(scene);
+    } catch (error) {
+      this.fail(error.message);
+      return;
+    }
+    const meta = this.model.meta;
+    this.mapStamp = [meta.as_of ? `As of ${formatDate(meta.as_of)}` : "", meta.revision ? `main ${meta.revision}` : ""].filter(Boolean).join(" · ");
+    // A view is offered only if the scene holds what it draws.
+    this.views = LENSES.filter((lens) => !lens.needs || lens.needs(this.model.raw));
+    // The runs that can be replayed, read without the 3D stage so the list works without it.
+    this.replays = new Catalogue(this.model.raw.replays);
+    // The protein atlas opens on the inventory's own species.
+    this.state.atlas = defaultAtlas(this.model.raw.proteins);
+    if (this.state.atlas) this.dataset.atlas = this.state.atlas;
+    for (const lens of this.views) {
+      this.switchBox.append(
+        h(
+          "button",
+          { type: "button", dataset: { lens: lens.id }, "aria-pressed": "false", "aria-label": lens.label, onclick: () => this.setLens(lens.id, true) },
+          h("span", { class: "long" }, lens.label),
+          h("span", { class: "short" }, lens.short)
+        )
+      );
+    }
+    try {
+      this.stage = new Stage({ canvas: this.canvas, host: this });
+    } catch (error) {
+      this.stage = null;
+    }
+    if (this.stage) {
+      this.labels = new LabelLayer(this.labelBox, this.stage, (id) => this.select(id, { fly: false }));
+      this.labels.blocked = () => this.blockedRects();
+      this.stage.afterRender.add(() => this.labels.layout());
+      this.stage.afterRender.add(() => this.updateScaleBar());
+      this.stage.onTick((dt, time) => this.current?.update(dt, time) || false);
+      this.stage.onPalette((palette) => {
+        for (const lens of this.lenses.values()) lens.applyPalette(palette);
+      });
+      this.listen();
+      new ResizeObserver(() => this.fitCard()).observe(this);
+      document.fonts?.ready.then(() => {
+        this.labels.measure();
+        this.stage.invalidate();
+      });
+    } else {
+      this.fallback.hidden = false;
+      this.fallback.textContent = "3D drawing is not available in this browser. The list below gives the same content as text.";
+      this.hint.hidden = true;
+      this.state.indexOpen = true;
+    }
+    const query = new URLSearchParams(location.search);
+    // "still" turns transitions off, so a screenshot shows the settled state.
+    if (query.get("still")) {
+      this.frame.classList.add("is-still");
+      if (this.stage) this.stage.rig.instant = true;
+    }
+    if (query.get("atlas")) this.setAtlas(query.get("atlas"));
+    const wanted = query.get("lens") || location.hash.slice(1) || this.getAttribute("lens") || this.views[0].id;
+    this.setLens(this.views.some((lens) => lens.id === wanted) ? wanted : this.views[0].id);
+    if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
+    if (query.get("colour")) this.current?.setColourBy?.(query.get("colour"));
+    if (query.get("scale")) this.current?.goToScale?.(query.get("scale"), true);
+    if (query.get("isolate")) this.setIsolate(query.get("isolate"));
+    if (query.get("together")) this.current?.setTogether?.(query.get("together"));
+    if (query.get("finding")) this.current?.setFinding?.(query.get("finding"));
+    // A replay: which run, where the playhead stands, which record colours the sheet.
+    if (query.get("time")) this.current?.seek?.(Number(query.get("time")));
+    const settle = () => {
+      if (query.get("record")) this.current?.setRecord?.(query.get("record"));
+      if (query.get("select")) this.select(query.get("select"), { fly: true });
+      // A stated camera angle or distance has the last word, also over the flight to a selected part.
+      if (this.stage && (query.get("azimuth") || query.get("polar") || query.get("distance"))) {
+        const view = {};
+        for (const name of ["azimuth", "polar", "distance"]) if (query.get(name)) view[name] = Number(query.get(name));
+        this.stage.rig.setView(view);
+      }
+    };
+    // A view that loads its data first (a run) is ready a moment later; the others are ready now.
+    const loading = query.get("run") ? this.current?.show?.(query.get("run")) : this.current?.ready;
+    if (loading?.then) loading.then(settle).then(() => query.get("play") && this.current?.player?.play());
+    else settle();
+    if (query.get("index")) this.toggleIndex(true);
+    window.addEventListener("hashchange", () => {
+      const name = location.hash.slice(1);
+      if (this.views.some((lens) => lens.id === name) && name !== this.state.lens) this.setLens(name);
+    });
+    this.dispatchEvent(new CustomEvent("cells-ready", { bubbles: true, composed: true }));
+  }
+
+  fail(message) {
+    this.fallback.hidden = false;
+    this.fallback.textContent = message;
+    this.hint.hidden = true;
+  }
+
+  // ------------------------------------------------------------ lenses
+
+  setLens(id, fromUser = false) {
+    const spec = this.views?.find((lens) => lens.id === id);
+    if (!spec || !this.model) return;
+    this.current?.deactivate();
+    this.state.lens = id;
+    this.state.isolate = null;
+    if (this.stage) {
+      if (!this.lenses.has(id)) {
+        const lens = spec.make(this.stage, this.model, this.labels);
+        lens.onChrome = () => {
+          if (this.current === lens) this.renderChrome();
+        };
+        // A view whose parts change under an open panel (another run is loaded) asks for it again.
+        lens.onPanel = () => {
+          if (this.current === lens) this.renderPanel();
+        };
+        this.lenses.set(id, lens);
+      }
+      this.current = this.lenses.get(id);
+      this.current.setAtlas?.(this.state.atlas);
+      this.current.activate();
+      this.current.setIsolate(null);
+      this.current.setSelection(this.current.has(this.state.selected) ? this.state.selected : null);
+    }
+    if (!this.shows(this.state.selected)) this.state.selected = null;
+    for (const button of this.switchBox.children) button.setAttribute("aria-pressed", String(button.dataset.lens === id));
+    if (fromUser && location.hash.slice(1) !== id) {
+      try {
+        history.replaceState(null, "", `#${id}`);
+      } catch {
+        location.hash = id;
+      }
+    }
+    this.renderChrome();
+    this.renderPanel();
+    this.stage?.invalidate();
+  }
+
+  /** The parts the current lens shows, with or without a stage. */
+  shownEntities() {
+    if (this.current) return this.current.entities();
+    if (this.state.lens === "experiments") return this.replays.entities();
+    return this.model.inLens(this.state.lens);
+  }
+
+  shows(id) {
+    if (!id) return false;
+    if (this.current) return this.current.has(id);
+    return this.shownEntities().some((entity) => entity.id === id);
+  }
+
+  /** A part by its id: one of the scene's, or one the current view makes itself (a run, a cell of a run). */
+  lookup(id) {
+    if (!id) return null;
+    const entity = this.model.get(id) || this.current?.describe?.(id) || (this.state.lens === "experiments" ? this.replays.describe(id) : null) || null;
+    // In the protein atlas a unit is shown as the chosen species' atlas has it.
+    return this.state.lens === "proteins" ? inSpecies(entity, this.model.raw.proteins, this.state.atlas) : entity;
+  }
+
+  sections() {
+    if (this.current) return this.current.sections();
+    if (this.state.lens === "experiments") return this.replays.sections();
+    const groups = new Map();
+    for (const part of this.shownEntities()) {
+      const entity = this.state.lens === "proteins" ? inSpecies(part, this.model.raw.proteins, this.state.atlas) : part;
+      const key = entity.eyebrow || (entity.group === "biology" ? entity.scale || entity.kind : entity.group);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(entity);
+    }
+    return [...groups].map(([key, entities]) => ({ label: this.model.groups.find((group) => group.id === key)?.label || key, entities }));
+  }
+
+  // ------------------------------------------------------------ state changes
+
+  select(id, { fly = false } = {}) {
+    if (id && !this.lookup(id)) return;
+    if (id && !this.shows(id)) {
+      if (!this.model.get(id)) return; // a part of a view that is not the one shown
+      // The part lives in another view: go there.
+      const home = this.model.lensOf(this.model.get(id));
+      if (home === this.state.lens || !this.views.some((lens) => lens.id === home)) return;
+      this.state.selected = id;
+      this.setLens(home, true);
+      if (!this.shows(id)) this.state.selected = null;
+    }
+    this.state.selected = id && this.shows(id) ? id : null;
+    this.current?.setSelection(this.state.selected);
+    if (fly && this.state.selected) this.current?.focus(this.state.selected);
+    if (this.state.selected && this.state.indexOpen && this.clientWidth < 760) this.toggleIndex(false);
+    this.renderPanel();
+    this.renderIndex();
+    this.dispatchEvent(new CustomEvent("cells-selected", { detail: { id: this.state.selected }, bubbles: true, composed: true }));
+  }
+
+  setIsolate(status) {
+    this.state.isolate = status || null;
+    this.current?.setIsolate(this.state.isolate);
+    this.renderLegend();
+  }
+
+  /** Show another species' atlas in the protein atlas. The choice is kept while the page is open, also across views. */
+  setAtlas(id) {
+    const atlas = (this.model?.raw.proteins?.atlases || []).find((item) => item.id === id);
+    if (!atlas || atlas.id === this.state.atlas) return;
+    this.state.atlas = atlas.id;
+    this.dataset.atlas = atlas.id;
+    this.lenses.get("proteins")?.setAtlas(atlas.id);
+    if (this.state.lens === "proteins") {
+      this.renderChrome();
+      this.renderPanel();
+      this.stage?.invalidate();
+    }
+    this.dispatchEvent(new CustomEvent("cells-atlas", { detail: { id: atlas.id }, bubbles: true, composed: true }));
+  }
+
+  toggleIndex(force) {
+    this.state.indexOpen = force ?? !this.state.indexOpen;
+    this.index.hidden = !this.state.indexOpen;
+    this.indexButton.setAttribute("aria-pressed", String(this.state.indexOpen));
+    this.renderIndex();
+    if (this.state.indexOpen) this.index.querySelector("input")?.focus({ preventScroll: true });
+  }
+
+  // ------------------------------------------------------------ rendering the interface
+
+  renderChrome() {
+    this.renderLegend();
+    this.renderIndex();
+    const chrome = this.current?.chrome?.() || {};
+    // A caveat on the picture, or what a view is doing (loading a run, or why it could not).
+    const words = chrome.caveat || chrome.status || "";
+    this.caveat.hidden = !words;
+    this.hint.hidden = Boolean(words) || Boolean(chrome.quiet) || !this.stage;
+    this.caveat.textContent = words;
+    this.caveat.classList.toggle("is-status", Boolean(chrome.status));
+    // A view whose data has its own date says so in place of the map's.
+    this.stamp.textContent = chrome.stamp || this.mapStamp;
+    this.viewCard.hidden = !chrome.view && !chrome.card && !chrome.run;
+    this.viewCard.classList.toggle("view-card", Boolean(chrome.card || chrome.run));
+    this.viewCard.classList.toggle("run-card", Boolean(chrome.run));
+    if (chrome.card) this.viewCard.replaceChildren(...this.card(chrome.card));
+    if (chrome.run) this.viewCard.replaceChildren(...this.runCard(chrome.run));
+    // A replay brings its playhead.
+    this.timeline.hidden = !chrome.timeline;
+    this.frame.classList.toggle("has-timeline", Boolean(chrome.timeline));
+    if (chrome.timeline) this.timeline.bind(chrome.timeline.player, chrome.timeline);
+    else this.timeline.unbind?.();
+    if (chrome.view) {
+      this.viewCard.replaceChildren(
+        this.segmented("Colour", [["biology", "Biology"], ["status", "Status"]], chrome.view.colour, (value) => this.current.setColourBy(value)),
+        this.segmented("Sizes", [["schematic", "Schematic"], ["real", "To scale"]], chrome.view.size, (value) => this.current.setSizeMode(value)),
+        h("p", { class: "view-note" }, chrome.view.size === "real" ? "Sizes and numbers nearer a real cell, about 20 µm across. Dots stand for what is too small to see; counts are indicative." : "Parts are enlarged and few, so each can be seen.")
+      );
+    }
+    this.rail.hidden = !chrome.rail;
+    if (chrome.rail) {
+      this.rail.replaceChildren(
+        h("span", { class: "rail-title" }, "Scale"),
+        ...chrome.rail.map((stop) =>
+          h("button", { type: "button", "aria-pressed": String(stop.id === chrome.railActive), title: stop.title || "", onclick: () => this.current.goToScale(stop.id) }, stop.label)
+        )
+      );
+    }
+    this.fitCard();
+  }
+
+  /** A view's own summary: headline numbers, what the data is, and where it came from. */
+  card({ heading, species, organism, stats, text, check, method, extra, sources, notCopied }) {
+    const outside = (url) => /^https:\/\//.test(url || "");
+    const read = (date) => (/^\d{4}-\d{2}-\d{2}$/.test(date) ? formatDate(date) : date);
+    // Pressing a species redraws the card, so the focus is put back on the button pressed.
+    const pick = (id) => {
+      this.setAtlas(id);
+      [...this.viewCard.querySelectorAll("[data-atlas]")].find((button) => button.dataset.atlas === id)?.focus({ preventScroll: true });
+    };
+    return [
+      h("p", { class: "card-title" }, heading),
+      // Which species' atlas is shown. It takes any number of species: the buttons wrap onto more rows.
+      species
+        ? h(
+            "div",
+            { class: "seg-row seg-species" },
+            h("span", { class: "seg-label" }, "Species"),
+            h(
+              "div",
+              { class: "seg seg-many", role: "group", "aria-label": "Species" },
+              species.options.map(([id, label, title]) => h("button", { type: "button", dataset: { atlas: id }, title: title || "", "aria-pressed": String(id === species.active), onclick: () => pick(id) }, label))
+            )
+          )
+        : null,
+      organism ? h("p", { class: "card-organism" }, organism) : null,
+      h("div", { class: "stats" }, stats.map(([value, label]) => h("div", { class: "stat" }, h("b", {}, String(value)), h("span", {}, label)))),
+      text ? h("p", { class: "card-text" }, text) : null,
+      check ? h("p", { class: "card-text" }, check) : null,
+      method?.length ? h("details", {}, h("summary", {}, "How it was made"), h("ul", {}, method.map((line) => h("li", {}, line)))) : null,
+      // Proteins of the species that bear on the picture but make none of the units drawn.
+      extra?.length
+        ? h(
+            "details",
+            {},
+            h("summary", {}, `${extra.length} more ${extra.length === 1 ? "protein" : "proteins"}, matched to no unit`),
+            h("ul", { class: "card-extra" }, extra.map(listed))
+          )
+        : null,
+      h(
+        "details",
+        {},
+        h("summary", {}, "Sources and licences"),
+        h(
+          "ul",
+          {},
+          sources.map((source) => {
+            const facts = [source.release ? `Release ${source.release}` : "", source.accessed ? `read ${read(source.accessed)}` : "", source.licence].filter(Boolean).join(", ");
+            return h(
+              "li",
+              {},
+              outside(source.url) ? h("a", { href: source.url, target: "_blank", rel: "noopener" }, source.name) : h("b", {}, source.name),
+              `: ${[source.holds, facts].filter(Boolean).join(". ")}.${source.cite ? ` Cite: ${source.cite}.` : ""}`
+            );
+          }),
+          notCopied ? h("li", {}, notCopied) : null
+        )
+      ),
+    ].filter(Boolean);
+  }
+
+  /** A replay's card: the experiment, its runs, and the class the experiment itself records for the run shown. */
+  runCard({ heading, text, outcome, experiments = [], runs, klass, ended, colour, details }) {
+    const lens = this.current;
+    // With a run's details open, the details follow the run picked.
+    const pick = (id) => (this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : lens.show(id));
+    const chooser = (id, label, options, active) => {
+      const select = h("select", { id, class: "run-select", "aria-label": label, onchange: () => pick(select.value) }, options.map(([value, text_]) => h("option", { value, selected: value === active }, text_)));
+      return select;
+    };
+    // A fact from the record is drawn as a mark with its words beside it, never as a colour alone.
+    // The signs are drawn, not typed, so they do not depend on a font having them.
+    const SIGNS = { yes: "M4 7.8l2.4 2.4L11 5.2", no: "M4.6 4.6l5.8 5.8M10.4 4.6l-5.8 5.8", mixed: "M7.5 3.4v5M5 5.9h5M5 11.2h5", none: "M4.6 7.5h5.8" };
+    const mark = (kind) => h("span", { class: `mark mark-${kind}`, "aria-hidden": "true" }, svg("svg", { viewBox: "0 0 15 15" }, svg("path", { d: SIGNS[kind] })));
+    const found = (item) =>
+      item
+        ? [
+            h("span", { class: "fact", title: item.status }, mark(item.judgedMark), item.judgedLabel),
+            item.answer ? h("span", { class: "fact" }, mark(item.answerMark), item.label) : null,
+          ]
+        : [];
+    return [
+      h("p", { class: "eyebrow" }, experiments.length > 1 ? "Experiments" : "Experiment"),
+      // Several experiments: a row each, with what the record says it found. Many: a list to choose from.
+      experiments.length > 6
+        ? chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}`]), experiments.find((item) => item.active)?.first)
+        : experiments.length > 1
+          ? h(
+              "div",
+              { class: "experiments", role: "group", "aria-label": "Experiments" },
+              experiments.map((item) =>
+                h(
+                  "button",
+                  { class: "exp-row", type: "button", "aria-pressed": String(item.active), "aria-label": `${item.label}. ${item.outcome?.spoken || ""}`, onclick: () => pick(item.first) },
+                  h("span", { class: "exp-name" }, item.label),
+                  h("span", { class: "exp-found" }, found(item.outcome))
+                )
+              )
+            )
+          : h("p", { class: "card-title" }, heading),
+      // The first sentence says what the experiment asks; the rest is a click away.
+      ...(() => {
+        const parts = /^(.*?[.?!])\s+(.+)$/s.exec(text || "");
+        if (!parts) return [h("p", { class: "card-text run-plain" }, text)];
+        return [h("p", { class: "card-text run-lead" }, parts[1]), h("details", { class: "run-plain" }, h("summary", {}, "How it is done"), h("p", { class: "card-text" }, parts[2]))];
+      })(),
+      // What the experiment found: whether it was judged, and what the answer was, in the record's words.
+      outcome
+        ? h(
+            "div",
+            { class: "found" },
+            h("span", { class: "seg-label" }, "What it found"),
+            h("p", { class: "found-facts" }, found(outcome)),
+            h("details", { class: "run-plain" }, h("summary", {}, outcome.status || "In the record's words"), h("p", { class: "card-text" }, outcome.text))
+          )
+        : null,
+      h(
+        "div",
+        { class: "runs", role: "group", "aria-label": "Runs" },
+        h("span", { class: "seg-label" }, runs.length === 1 ? "Run" : `Runs · ${runs.length}`),
+        // A few runs are rows to press; many are a list to choose from.
+        runs.length > 8
+          ? chooser("cells-run", "Run", runs.map((run) => [run.id, [[run.title, run.sub].filter(Boolean).join(", "), run.klass ? run.klass.toLowerCase() : "", run.early ? "stopped early" : ""].filter(Boolean).join(" · ")]), runs.find((run) => run.active)?.id)
+          : runs.map((run) =>
+              h(
+                "button",
+                { class: "run-row", type: "button", "aria-pressed": String(run.active), title: [run.title, run.sub].filter(Boolean).join(", "), onclick: () => pick(run.id) },
+                h("span", { class: "run-name" }, run.title),
+                h("span", { class: "run-sub" }, [run.sub, run.klass ? `recorded as ${run.klass.toLowerCase()}` : "", run.early ? "stopped early" : ""].filter(Boolean).join(" · "))
+              )
+            )
+      ),
+      klass
+        ? h(
+            "div",
+            { class: "run-class" },
+            h("p", { class: "run-class-line" }, h("span", { class: "seg-label" }, "Recorded class"), h("span", { class: "chip chip-strong", title: klass.description }, klass.label)),
+            // The rule and where the class comes from open on request, so the card stays short.
+            h("details", { class: "run-class-note" }, h("summary", {}, "What this class means"), h("p", { class: "card-text" }, [klass.description, klass.note].filter(Boolean).join(" ")))
+          )
+        : null,
+      // How this run ended, in the experiment's plain words, and any refusal the run records.
+      ended?.label ? h("p", { class: "card-text run-ended" }, mark(ended.refusal ? "no" : ended.early ? "mixed" : "yes"), ended.label, ended.refusal ? ` Refused: ${ended.refusal}` : "") : null,
+      colour ? this.segmented("Colour", colour.options.map(([value, label]) => [value, label.replace(/^Membrane /, "").replace(/^./, (letter) => letter.toUpperCase())]), colour.active, (value) => lens.setRecord(value)) : null,
+      h("div", { class: "run-actions" }, h("button", { class: "pill-button pill-small", type: "button", onclick: () => this.select(details) }, "Run details")),
+    ].filter(Boolean);
+  }
+
+  /** The view's card sits above the legend; it takes the room the legend leaves and scrolls beyond that. */
+  fitCard() {
+    const card = this.viewCard;
+    if (card.hidden || this.clientWidth < 760) {
+      card.style.maxHeight = "";
+      return;
+    }
+    const legend = this.legend.hidden ? 0 : this.legend.offsetHeight + 16;
+    card.style.maxHeight = `${Math.max(150, this.clientHeight - card.offsetTop - legend - 12)}px`;
+  }
+
+  segmented(label, options, active, onPick) {
+    return h(
+      "div",
+      { class: "seg-row" },
+      h("span", { class: "seg-label" }, label),
+      h(
+        "div",
+        { class: "seg", role: "group", "aria-label": label },
+        options.map(([value, text]) => h("button", { type: "button", "aria-pressed": String(value === active), onclick: () => onPick(value) }, text))
+      )
+    );
+  }
+
+  /** Panels that labels must not run under, in the viewer's own coordinates. */
+  blockedRects() {
+    const origin = this.getBoundingClientRect();
+    return [this.legend, this.viewCard, this.rail, this.panel, this.index, this.timeline]
+      .filter((element) => !element.hidden)
+      .map((element) => element.getBoundingClientRect())
+      .filter((rect) => rect.width && rect.height)
+      .map((rect) => ({ left: rect.left - origin.left, top: rect.top - origin.top, right: rect.right - origin.left, bottom: rect.bottom - origin.top }));
+  }
+
+  /** A bar of a round physical length at the distance the camera is looking at. */
+  updateScaleBar() {
+    const info = this.current?.scaleInfo?.();
+    let key = "none", width = 0, text = "";
+    if (info?.micronsPerUnit) {
+      const { camera, rig, height } = this.stage;
+      const pixelsPerMicron = height / (2 * rig.distance * Math.tan((camera.fov * Math.PI) / 360)) / info.micronsPerUnit;
+      const most = 150 / pixelsPerMicron; // the longest bar we would draw, in micrometres
+      const power = Math.pow(10, Math.floor(Math.log10(most)));
+      const length = [5, 2, 1].map((step) => step * power).find((value) => value <= most) ?? power;
+      width = Math.round(length * pixelsPerMicron);
+      const size = length >= 10000 ? `${length / 10000} cm` : length >= 1000 ? `${length / 1000} mm` : length >= 1 ? `${length} µm` : `${Math.round(length * 1000)} nm`;
+      text = info.note ? `${size} · ${info.note}` : size;
+      key = `${width}|${text}`;
+    } else if (info?.note) {
+      text = info.note;
+      key = text;
+    }
+    if (key === this.scaleKey) return;
+    this.scaleKey = key;
+    this.scaleBar.hidden = key === "none";
+    this.scaleLine.hidden = !width;
+    this.scaleLine.style.width = `${width}px`;
+    this.scaleText.textContent = text;
+  }
+
+  renderLegend() {
+    const chrome = this.current?.chrome?.() || {};
+    const base = { isolate: this.state.isolate, open: this.state.legendOpen };
+    // Without the 3D stage a replay draws nothing, so it has nothing to explain.
+    this.legend.hidden = this.state.lens === "experiments" && !chrome.legend;
+    if (this.legend.hidden) return;
+    const atlas = this.model.raw.proteins;
+    if (chrome.legend || (this.state.lens === "proteins" && atlas)) {
+      // The protein atlas: how sure each mapping is, in the inventory's own words.
+      const legend = chrome.legend || { title: "Mapping", items: atlas.mappings.map((item) => ({ ...item, swatch: `map-${item.id}` })) };
+      // A species' findings add a block. On all but a tall window the evidence block then starts closed, so the card keeps its room.
+      const filter = chrome.findings && chrome.filter && this.clientHeight < 1040 ? { ...chrome.filter, folded: true } : chrome.filter;
+      this.legend.render({ ...base, ...legend, filter, findings: chrome.findings, folded: this.clientHeight < 880 });
+      return;
+    }
+    const counts = new Map();
+    for (const entity of this.shownEntities()) if (entity.status) counts.set(entity.status, (counts.get(entity.status) || 0) + 1);
+    const items = this.model.raw.statuses.map((status) => ({ id: status.id, label: status.label, description: status.description, count: counts.get(status.id) || 0, swatch: status.id }));
+    // Which parts run together in one model today: the answer to "is this one whole cell yet?"
+    const filter = chrome.together?.length ? { title: "Runs together in", items: chrome.together, active: chrome.togetherActive } : null;
+    let note = null;
+    if (this.state.lens === "cell") {
+      const text =
+        chrome.view?.colour === "status"
+          ? "Colour and form show status. Clear glass shapes and grey lines are scenery."
+          : "Colour shows the kind of part. The dot beside each name is its status; planned parts are grey sketches. Clear glass shapes and grey outlines are scenery.";
+      note = { swatch: "illustration", text };
+    }
+    this.legend.render({ ...base, title: "Status", items, filter, note });
+  }
+
+  renderIndex() {
+    if (this.state.indexOpen) this.index.render({ sections: this.sections(), selected: this.state.selected });
+  }
+
+  renderPanel() {
+    this.panel.show({ model: this.model, entity: this.lookup(this.state.selected) });
+    this.frame.classList.toggle("has-panel", Boolean(this.state.selected));
+    if (this.stage) {
+      const open = Boolean(this.state.selected);
+      const narrow = this.clientWidth < 760;
+      this.stage.setInsets(open ? (narrow ? { bottom: this.panel.offsetHeight } : { right: this.panel.offsetWidth + 16 }) : {});
+    }
+  }
+
+  // ------------------------------------------------------------ pointer and keys
+
+  listen() {
+    const canvas = this.canvas;
+    let pending = null;
+    canvas.addEventListener("pointermove", (event) => {
+      if (event.buttons || event.pointerType === "touch") return;
+      pending = { x: event.clientX, y: event.clientY };
+      requestAnimationFrame(() => {
+        if (!pending) return;
+        const hit = this.stage.pick(pending.x, pending.y, this.current.pickRoots);
+        pending = null;
+        this.current.setHover(hit?.id || null);
+        canvas.style.cursor = hit ? "pointer" : "grab";
+      });
+    });
+    canvas.addEventListener("pointerleave", () => this.current?.setHover(null));
+    canvas.addEventListener("pointerdown", () => this.hint.classList.add("is-off"), { once: true });
+    canvas.addEventListener("wheel", () => this.hint.classList.add("is-off"), { once: true, passive: true });
+    canvas.addEventListener("pointerup", (event) => {
+      const label = this.pressedLabel;
+      this.pressedLabel = null;
+      if (this.stage.rig.dragged || event.button > 0) return;
+      if (label) {
+        this.select(label);
+        return;
+      }
+      const hit = this.stage.pick(event.clientX, event.clientY, this.current.pickRoots);
+      this.select(hit?.id || null);
+    });
+    // Labels lie over the canvas. A press on one is handed to the camera control, which
+    // captures the pointer on the canvas: a drag turns the view, a plain click selects the label.
+    const labels = this.labelBox;
+    labels.addEventListener("pointerdown", (event) => {
+      const button = event.target.closest("[data-label]");
+      if (!button || event.button > 0) return;
+      this.pressedLabel = button.dataset.label;
+      this.hint.classList.add("is-off");
+      this.stage.rig.down(event);
+      event.preventDefault();
+    });
+    labels.addEventListener("wheel", (event) => this.stage.rig.wheel(event), { passive: false });
+    labels.addEventListener("pointerover", (event) => {
+      const button = event.target.closest("[data-label]");
+      if (button && !event.buttons) this.current?.setHover(button.dataset.label);
+    });
+    labels.addEventListener("pointerout", (event) => {
+      if (event.target.closest("[data-label]") && !event.buttons) this.current?.setHover(null);
+    });
+    canvas.addEventListener("keydown", (event) => {
+      if (this.stage.rig.nudge(event.key)) event.preventDefault();
+      else if (event.key === " " && this.current?.player?.run) {
+        // In a replay, the space bar plays and pauses.
+        this.current.player.toggle();
+        event.preventDefault();
+      }
+    });
+    this.shadowRoot.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        if (this.state.selected) this.select(null);
+        else if (this.state.indexOpen) this.toggleIndex(false);
+      }
+    });
+  }
+}
+
+customElements.define("cells-viewer", CellsViewer);

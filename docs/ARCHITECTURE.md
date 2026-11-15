@@ -1,6 +1,8 @@
 # Architecture
 
-Implementation context reviewed: **2026-10-11**. Cells uses Python for definitions,
+Implementation context reviewed: **2026-10-11**. The [modular core](#the-modular-core-d172-d174)
+section, added on 15 November 2026 (D172, D174), takes precedence where older sections differ.
+Cells uses Python for definitions,
 orchestration and checks, and JAX array kernels for supported CPU/GPU execution.
 [Progress](../PROGRESS.md) owns the current qualification record; this document
 explains component responsibilities and target interfaces.
@@ -22,7 +24,217 @@ The contracts below describe both exercised interfaces and future extensions.
 [Historical implementation notes](#historical-implementation-notes) retain the
 original version-specific milestones without acting as a current task board.
 
+## The modular core (D172, D174)
+
+Added 15 November 2026. D172 settled the direction: one active inner model, made modular in place.
+An external architecture review then set the boundary and acceptance below, and the lead adopted
+it after reviewing it with the advisor (D174). Every statement carries a status:
+- **holds today**;
+- **target**, meaning D172's single restructure round;
+- **open**, meaning not yet decided.
+
+Where older sections of this document differ, this section applies.
+
+### Responsibilities
+
+| Part | Responsibility | Where it lives today |
+| --- | --- | --- |
+| Physical state and entities | The authoritative amounts, volumes, membrane properties, populations, contacts and identities | @3's state, plus fields owned by operators (`ENTITY_WRITES`) |
+| Mechanism declarations | Each law's inputs, the quantities it changes, its conservation and energy role, its domain of validity | The operator contract (`contract.py`). @3's own five channel laws are a closed table, not declarations |
+| Numerical plan | Evaluation order, explicit or implicit treatment, splitting, event boundaries, error checks | @3's IMEX and RK4 steps, the operators' split parts, `StepChecks`, schedules |
+| Biological definitions | Organism, strain, conditions, parameter values, evidence references | World builders and fixtures. No organism definition yet; the [Syn3A note](SYN3A_MINIMAL_CELL_TRACK.md) proposes one |
+| Execution and outputs | Binding, device windows, checkpoints, observations, the shared run view | The runner, batch and window paths; D153's checkpoints; D154's run view, still in design |
+
+- **Arrays in the loop.** The composite builder assembles these parts into one bound array program.
+  Python objects and modular interfaces belong to definition, validation and binding, and the
+  production time loop runs on arrays. **Holds today** for @3 and its operators.
+- **The test of reuse.** A second biological use case runs on the same laws and state through
+  configuration. A new organism or experiment adds engine physics only for a mechanism the engine
+  lacks (D144). **Target.**
+- **What D172 drops.** It drops old programs and checkpoints, not qualified results. Old evidence
+  stays reproducible from frozen snapshots. Qualified results are protected by the results gate
+  below.
+
+### GPU-native execution
+
+- **Three kinds of data are declared apart. Target.**
+  - Executable structure: law kinds, compatible topology and capacities, array schemas, the
+    numerical plan.
+  - Runtime device data: rates, abundances, controls, initial conditions, activity masks, evolving
+    state.
+  - Host work: parsing, admission checks, assembly, binding, window dispatch, requested output
+    processing.
+- **What the restructure must show:**
+  - **Undeclared mechanisms are absent from the traced program. Target.**
+    - Today @3 traces all three gated channel laws for every population, and the law table's length
+      is a literal in every program (the inner-model probe, 14 November).
+    - So per-law dispatch is required. If it moves results at rounding, the restructure round
+      re-runs every registered protocol.
+  - **Same-structure parameter sweeps reuse one compiled executable. Open,** until the constants
+    baked into programs are inventoried.
+  - **State, step checks and refusals stay inside device windows. Open,** until the host-side
+    per-row checks are inventoried.
+  - **Adding a mechanism adds no per-cell Python dispatch and no CPU solver to the production loop.
+    Target.**
+  - **Compile time, host and device memory, and end-to-end time are measured on representative
+    compositions. Target.**
+- **Methods may differ.** Mechanisms may use different qualified numerical methods. Stiff chemistry
+  and fast electrical propagation need not share an update method.
+- **Three capabilities are reported separately:** ensemble throughput, interacting-world size and
+  biological duration. One does not establish another. The L4 evidence stays scoped, with Q7's
+  nondeterminism open, and GH200 numbers come when available. **Holds today,** as a reporting rule.
+
+### Scoped composition (door S)
+
+- **Holds today: one provider per field.**
+  - The adapter's view (`pump_composite_adapter.view`) applies each provider by replacing the whole
+    field.
+  - A provider such as the bath schedule returns its own values on its slots and the bound values
+    elsewhere.
+  - So a nominal refusal in the composition matrix means the slots are disjoint. It does not mean
+    the pair is safe to admit under today's adapter.
+- **Target: what each mechanism declares.**
+  - The fields and entity slots it reads, and whether it reads reference values or the current
+    composed view.
+  - The slots it changes, and whether its contribution adds, multiplies or replaces.
+  - The stage at which it is evaluated.
+
+  The composite then applies scoped changes to the accumulated current view.
+- **Acceptance:**
+  - two independent providers on disjoint slots compose correctly in either declaration order;
+  - overlap is refused unless an explicit combination rule applies;
+  - readers see the merged values at their declared stage.
+
+  The integration case is the bath → uptake → compartment → reaction chain.
+- **Door S changes scope.** As accepted in D169 it covered admission only. It now includes the
+  runtime merge, and it joins D172's round (D174).
+
+### Ownership, geometry and solver invalidation
+
+- **Three things are kept separate. Target.**
+  - Owning a membrane population.
+  - Changing membrane geometry or capacitance.
+  - Invalidating a numerical operator or factorization, such as the field refresh.
+
+  An occupancy change has only the numerical effects its physics requires. FR-3's separate owner,
+  which avoids the field refresh and its 64-node cap, stays as accepted.
+- **Compartment identity is a host-side map. Target.**
+  - The map holds the compartment ID, owner, role, storage slot and oriented membrane endpoints. It
+    is independent of today's storage as an outside node.
+  - Sensing and transfer laws address a species in a named compartment, so one law serves
+    cytosolic, lysosomal and mitochondrial cases.
+  - Today FR-1's operator names each compartment's node, bounding patch and owner.
+- **Acceptance:**
+  - an occupancy-only world with fixed field inputs avoids the field refresh;
+  - a capacitance-changing world triggers it;
+  - two compartments in one cell stay distinct;
+  - ownership-changing operations update the declared resources or refuse.
+- **Not now:** runtime entity objects, or a general nested-compartment framework.
+
+### Material identity and fuel
+
+- **One authoritative account per physical quantity. Target.** Free and bound ligand may live in
+  different arrays, but they resolve to one species identity and one conserved total.
+- **Species identity and the background and trace policy are consolidated at the definition
+  boundary. Target.** New laws then add no pairwise identity checks between operators. Today
+  operators check each other's declarations, as FR-3's identity check does against D150's and
+  D152's.
+- **Fuel: the requirement is fixed, the representation is open.**
+  - **The requirement:** reactions can make and spend fuel; pumps draw from those same amounts;
+    each standard chemical potential has one authority; water and division get explicit interfaces
+    later.
+  - **The representation** (inner-model pool state, inventory rows or a hybrid) is **open.** It is
+    decided in the inner-model note against this requirement.
+  - **The first case. Target.** A fixed volume holds one stoichiometric regeneration reaction and
+    one pump, sharing finite ATP, ADP and Pi. It shows depletion, reduced pump activity and
+    recovery, with material and energy accounting checked independently. Water, division and full
+    metabolism are not prerequisites.
+- **Two boundaries to declare. Open.**
+  - **Transformed potentials against protons.** The finite-energy law uses transformed ATP, ADP and
+    Pi potentials under buffered pH and Mg. Composing it with explicit proton chemistry (FR-4) needs
+    a declared thermodynamic boundary. This is a prerequisite of FR-4's note.
+  - **Booked work is not fuel.** D152's booked external work is not a finite fuel-consumption law.
+    Finite fuel needs a declared donor, stoichiometry and affinity.
+
+### Transport laws by physical contract
+
+- **Holds today: exchange is a driven route.** `scheduled_species_exchange@1` books the free-energy
+  change of what it moves as signed supplied work, with no heat. A matching concentration trajectory
+  through paired routes does not make it passive permeation.
+- **What a passive permeation law must show,** in a fixed-volume case:
+  - zero net flux at equal chemical potential;
+  - reversal when the driving force reverses;
+  - conserved material;
+  - zero external work;
+  - dissipation equal to the free-energy decrease.
+
+  Then its composition with water is qualified. **Target.** A new generic passive law is expected in
+  D172's round, reusing the common inventory, geometry and numerical machinery.
+- **The reuse rule.** A law is reused only where its physical contract, its energy role included,
+  matches.
+
+### State roles and time
+
+- **Each field declares its role. Target.** The roles are:
+  - a continuous dynamical variable;
+  - an algebraic or conserved constraint;
+  - an accumulated physical history;
+  - discrete event state or an exact counter.
+- **Numerical plans carry time explicitly. Target, interfaces only.**
+  - They carry the interval and stage time and the next compulsory event boundary, so a future coarse
+    step respects doses, regulatory writes and timed events.
+  - Stiff chemistry may run as a qualified local implicit or substepped block, with explicit exchange
+    stages and residual checks. The physical law stays one law while its numerical treatment
+    evolves.
+- **FR-8's eventual acceptance. Open,** in FR-8's order.
+  - An intervention during a slow interval.
+  - Histories and integer state preserved.
+  - Crossing-time accuracy.
+  - Restart across the intervention.
+  - Convergence under different admissible macrosteps.
+
+  Fixed-step restrictions stay until then. The two-clock assay strategy stays within its scope.
+
+### Reuse cases and the results gate
+
+| Case | What it exercises | Status |
+| --- | --- | --- |
+| Inventory → regulation → electrical response | Shared amounts, control routing, temporal coupling | Holds today numerically (Track R's A4 and A5). Its judged protocol is PROPOSED |
+| Bath dose → uptake → compartment retention or reaction | Scoped views, compartment identity, material accounting | Target, needing door S |
+| Reaction → finite fuel → pump | Chemistry and electrics sharing one energy budget | Target, needing the fuel representation |
+| Neutral solute and water in a vesicle | Reuse across biological settings, changing concentration and volume | Target, needing the passive law. Syn3A's probe P0 checks capability |
+
+- **Organism data stays apart from engine mechanisms. Target.** The organism and evidence structure
+  lands with its first consuming milestone, with its observation model and calibrated nuisance
+  parameters.
+- **Biological claims keep their kinds apart. Rule.** A protein-free vesicle test, numerical
+  verification, calibration and a held-out living-cell prediction are different claims.
+  Continuum, lumped-population and individual-compartment interpretations are declared.
+- **The results gate for D172. Target.** It names the required scientific cases and checks that
+  they actually execute, plus the agreed planted-change test.
+  - **Holds today, with a gap:** the tier gate compares exit codes and failed and error counts only.
+  - A read-only check of the 14 November landing gates found no lost tests at count level.
+  - The tier record's counts are stale for about a dozen files that gained tests
+    ([comparison](/mnt/workspaces/Cells/external-review-20261114/gate-count-comparison.json)).
+- **The shared run view. Target.** It exposes the same entity identities, units, events, model
+  scope and representation, and the viewer consumes them without reconstructing meaning from driver
+  conventions. D154's note is under review.
+
+### Order
+
+- **The qualification boundaries stay as agreed** for MG0c, Track R and Track E. D172's interfaces
+  above are finalized during that work.
+- **Then the single restructure round** lands at a quiet point, with main tagged just before, frozen
+  evidence and the results gate.
+- **The accepted feature work continues in its order:** compartments, occupancy and delivery. Their
+  real interactions exercise these contracts. The minimal-cell track supplies consumers and
+  measured-data tests without displacing FR-4 and FR-5.
+- **The success criterion:** adding a biological capability is a bounded addition of declarations
+  and physical laws, with shared state, predictable GPU execution and reusable validation.
+
 ## System shape
+
+*Where this differs from [the modular core](#the-modular-core-d172-d174), that section applies.*
 
 Build one headless Python library. JAX executes numerical kernels on CPU and,
 for supported model families, GPU. Experiments, analysis, and a viewer use the same simulation
@@ -284,6 +496,8 @@ not universal requirements. Record proposals, accepted interventions, and actual
 state/material changes separately when a controller can refuse a write.
 
 ## Ensembles and the GPU path
+
+*Where this differs from [the modular core](#the-modular-core-d172-d174), that section applies.*
 
 The shared-runner foundations below retain their original model scope. The
 [GPU guide](GPU_ENSEMBLES.md) covers later persistent workers, stable random

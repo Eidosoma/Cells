@@ -28,11 +28,13 @@ class Run:
     side being smooth there; ``jac`` may be None (finite differences). Every point of
     ``points`` is a segment end, so the state at each is an integration end point."""
 
-    def __init__(self, segment, y0, points, *, rtol, atol, method="Radau", max_step=math.inf):
+    def __init__(self, segment, y0, points, *, rtol, atol, method="Radau", max_step=math.inf,
+                 jac_sparsity=None):
         points = sorted(set(float(p) for p in points))
         if len(points) < 2:
             raise ValueError("a run needs two distinct points")
         self.rtol, self.atol, self.method, self.max_step = rtol, atol, method, max_step
+        self.jac_sparsity = jac_sparsity  # Radau and BDF: a sparse finite-difference Jacobian
         self.segments = []  # (t0, t1, fun, jac, ts, ys)
         self.steps = 0
         y = np.asarray(y0, dtype=float)
@@ -49,6 +51,8 @@ class Run:
         options = dict(method=self.method, rtol=self.rtol, atol=self.atol)
         if self.method in ("Radau", "BDF", "LSODA") and jac is not None:
             options["jac"] = jac
+        elif self.method in ("Radau", "BDF") and self.jac_sparsity is not None:
+            options["jac_sparsity"] = self.jac_sparsity
         if math.isfinite(self.max_step):
             options["max_step"] = self.max_step
         sol = solve_ivp(fun, (t0, t1), y, **options)
@@ -70,6 +74,10 @@ class Run:
         if ts[j] == t:
             return ys[j].copy()
         return self._solve(fun, jac, ts[j], t, ys[j]).y[:, -1].copy()
+
+    def integrate(self, fun, jac, t0, t1, y):
+        """A fresh integration of one segment's right-hand side from (t0, y) to t1."""
+        return self._solve(fun, jac, t0, t1, y).y[:, -1].copy()
 
     def end_state(self):
         return self.segments[-1][5][-1].copy()
