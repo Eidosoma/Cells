@@ -26,6 +26,7 @@ from cells.core.state import initialise
 from cells.core.vector_windows import WorldCheckError, iter_vector_windows, run_vector_windowed
 from cells.core.windows import WindowPolicy, run_windowed
 from cells.models import surface_pump, surface_pump_v3
+from cells.models.registry import get_model
 from cells.numerics import surface_imex as imex
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
@@ -115,9 +116,10 @@ def test_batch_reproduces_independent_worlds_within_rounding(reference):
         assert vector.diagnostics["max_global_charge_bound_ratio"] < 0.1
 
 
-def corrupted_step(kind):
-    """@3's checked step, wrong in a world's rows once its channel 0 is at FAULTY."""
-    original = surface_pump_v3.checked_step
+def corrupted_step(kind, original):
+    """@3's checked step, wrong in a world's rows once its channel 0 is at FAULTY. original is
+    the implementation object's own checked step (get_model's, bound to its structure), which
+    the runners call: patching the module's function would not reach it."""
 
     def step(state, dt, control, p, active):
         updated, ok = original(state, dt, control, p, active)
@@ -181,13 +183,14 @@ def test_a_failing_world_refuses_its_window_on_both_paths(kind, monkeypatch):
         definition("clamped", scale=1.1),
     ]
     spec = cohort(specs)
-    step = corrupted_step(kind)
+    model = get_model(specs[1].model)  # The three worlds share one implementation object.
+    step = corrupted_step(kind, model.checked_step)
     grid = EventGrid(specs[1])
     row = grid.exact_index(change) + 1
     assert len(grid) == 13 and (kind != "gate" or row % POLICY.window_steps == 0)
     assert host_first_failure(specs[1], step) == (row, message)
     assert host_first_failure(specs[0], step) == (None, None)
-    monkeypatch.setattr(surface_pump_v3, "checked_step", step)
+    monkeypatch.setattr(model, "checked_step", step)
     accepted = []
     with pytest.raises(WorldCheckError) as caught:
         for window in iter_vector_windows(spec, POLICY):
