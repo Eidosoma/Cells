@@ -104,6 +104,11 @@
           "date": "2026-11-15",
           "engine_revision": "44227075",
           "note": "In the species' own proteins, what is inside the cell now stands in coloured glass like the membrane shelf, a little lighter; what is set apart keeps none. The map follows main through 44227075, and the atlas says that the catalogue's 34 added entries were reviewed (no channel, pump, transporter or junction law among them). Checked at aa4a3cbe: 55 of 55 real-input checks, 41 of 41 species checks, shelves checks 17 of 17 (Syn3A), 18 of 18 (planarian) and 6 of 6 (without the files); 211 tests (210 pass, 1 skipped). The 71 files beside the page were not sent again"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "f791294c",
+          "note": "The map gains the modular inner model (D172, D176: designed, in implementation on an integration branch, not on main) and levels of detail (D175), and says of the composite what the record says of the L4 (agreement within tolerance; the bitwise criterion open). Every 'qualified' label was checked against main's record at f791294c. Checked on a clean copy of 15549fd4: the scene built strictly with no warning; 211 tests (210 pass, 1 skipped); the engine's real-input checks, 4 of 4. Nothing else changed since Version 8, whose full checks stand; the 71 files beside the page were not sent again"
         }
       ],
       "files": "out/cells-architecture.files.json lists the files published beside the page: the runs and the species' own proteins (generated, not committed)"
