@@ -86,6 +86,23 @@ const open = async (query, still = true) => {
     if (await evaluate(`Boolean(${V} && ${V}.current && ${V}.stage)`).catch(() => false)) break;
   }
   await evaluate(`Promise.resolve(${V}.current.ready)`);
+  // The species' own proteins are fetched once the species is shown, which on a busy machine
+  // comes after the lens says it is ready: wait until the species asked for is the one shown
+  // and its file is in or could not be read, so that no check looks at the page before then.
+  const wanted = new URLSearchParams(query).get("species") || new URLSearchParams(query).get("atlas");
+  for (let tries = 0; tries < 120; tries++) {
+    const settled = await evaluate(`(() => {
+      const viewer = ${V}, lens = viewer.current;
+      if (${JSON.stringify(wanted)} && viewer.state?.species !== ${JSON.stringify(wanted)}) return false;
+      if (typeof lens?.ownState !== "function") return true;
+      if (${JSON.stringify(wanted)} && lens.page !== ${JSON.stringify(wanted)}) return false;
+      const state = lens.ownState(lens.page);
+      return !state || state.status !== "loading";
+    })()`).catch(() => false);
+    if (settled) break;
+    await sleep(250);
+  }
+  await evaluate(`Promise.resolve(${V}.current.ready)`);
   await sleep(700);
 };
 const mouse = (type, x, y, extra = {}) => page("Input.dispatchMouseEvent", { type, x, y, button: "left", buttons: 1, clickCount: 1, ...extra });
