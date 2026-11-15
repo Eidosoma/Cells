@@ -1019,8 +1019,9 @@ the insertion point is CORE's. Its conventions, fixed here:
     linear capacitor through the step's mean patch voltage (V̄ Δq), split in the same way. The
     implicit patch, the first charged consumer, fixes it in its own module (FR45's
     `patch_booking_pJ`);
-  - **sign (corrected 15 November, for the run view's question):** a route's share can be
-    negative while its row's total change is not, so the share is booked only when it is ≥ 0:
+  - **sign (a proposed correction, 15 November, for the lead's ruling; raised by the run view's
+    question):** a route's share can be negative while its row's total change is not, so the share
+    is booked only when it is ≥ 0:
     - **why it can be negative:** under ARS(2,2,2) the explicit weights (δ, 1 − δ), δ < 0, can
       reverse the applied transfer against stage rates of one sign; and at a charged row moved by
       several routes, the chemical divided difference (weighted by the rows' amounts) and the
@@ -1037,7 +1038,12 @@ the insertion point is CORE's. Its conventions, fixed here:
       family's dissipation check requires (every `*_dissipated_energy_pJ` field nonnegative and
       non-decreasing per element at each accepted row, within 1e-12 pJ, else the step is refused).
       The row closes exactly whenever every route moving it books its share, and otherwise within
-      the energy ledger's tolerance.
+      the energy ledger's tolerance;
+    - **its cost:** the trapezoid samples the start power, so at a trace start it overbooks that
+      step's heat, as D152's quadrature does (its known limit, 5.4–5.6 times at a 1e-12 mM trace
+      in probe 2g). It does so only in the steps where the share is refused, the same steps in
+      which the quadrature would have been used before; the passive law's trace start is exact
+      wherever its share stands.
 - **Static and declared.** Only a route law that declares the booking computes it. Today's routes
   (the membrane and junction constant-field routes, the channels, the faces) keep the tableau
   booking, so every existing program is unchanged. The booking needs the step's start amounts and
@@ -1894,7 +1900,7 @@ split. The core's queue, from day 1:
 | Core item | Effort (agent-days, **S**) | Elapsed days |
 | --- | --- | --- |
 | A1's first API commit: declarations and one implementation per structure (programs unchanged) | Done (034a60e on `core-d172`, from the tag) | About 1.2 |
-| The dispatch commits (channel laws; pumps and the junction law) and A4's two tests with the compile key. **Built** on `core-d172` (11176e3, 1386c13 and the compile-key commit), checked by K2; merging waits for the bitwise observations on the division worlds and a running law-steady replacement world (§7.4 (b)) | 2.5–3.5 | → 3.7–4.7 |
+| The dispatch commits (channel laws; pumps and the junction law) and A4's two tests with the compile key. **Built** on `core-d172` (11176e3, 1386c13, 43812f5); K2 and the acceptance owner's results baseline (K3) are running on 43812f5; merging waits for the bitwise observations on the division worlds and a running law-steady replacement world (§7.4 (b)) | 2.5–3.5 | → 3.7–4.7 |
 | FR-4's three insertion points: the per-structure schema (1), the stage-read slot (1–1.5), the transporter kind with its fuel rows, finite by default and held as the special case (2.5–3.5, §7.4 (h)), B7 with finding 3's term (1, host-only, one D148 record) | 5.5–7 | → 9.2–11.7 |
 | The passive law's insertion point, with the exact heat booking (§7.5); FR45's kernel | 1.5–2 | → 10.7–13.7 |
 | A7's sweep, last and alone (OPS's study done meanwhile) | 1–1.5 | → 11.7–15.2 |
