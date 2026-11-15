@@ -624,6 +624,15 @@ inside the measured regions.
 **Crossrev:** no existing set contains the operator, and contract.py and pump_composite.py are
 unchanged, so every set stays identical.
 
+**Results** (clean snapshots of the branch, CPU 2, 2G cap):
+- **At bd3a295:** `test_bath_schedule_steps.py` 29 passed, and milestone 1's smoke test 36 passed,
+  its salt and isosmotic steps included.
+- **At 8dde04c:**
+  - the composition matrix test passed;
+  - B3 and B5 passed;
+  - the steps test failed once, on its own edge assertion: an interior point moved 1% out is still
+    dominated. It now checks corners only.
+
 ## Appendix A. Equations for the independent references
 
 Units are @3's: fmol, pL, mM = fmol/pL, s, m and V. RT = 2.577 pJ/fmol at 310 K, F = 96485.33 C/mol.
