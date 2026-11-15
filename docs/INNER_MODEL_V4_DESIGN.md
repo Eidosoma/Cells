@@ -481,6 +481,339 @@ consumer comes after the fuel case.
 | Every explicit stage | `dt × membrane_rate ≤ 1` | Each declared law's stage term; loop terms; the face-free term where declared |
 | Domains | One channel domain; the junction gate's ±120 mV everywhere | Each law's own domains on its own populations; the gate law's domain on gated junctions only |
 
+### 7.4 The interface for D176's round (published 15 November 2026)
+
+The core owner's interface, for the operators stream (OPS), the integration owner (INT) and the
+FR-4/FR-5 physics owner (FR45) to build against (owners as in §15.6). It is design (**S**), checked
+against the code at the tag (44227075) and against check K1 (§17). Changes go through the lead and
+are recorded here.
+
+#### (a) Structure and values
+
+- **Structure** is a frozen, hashable, value-free record of what a definition declares,
+  `InnerStructure`, computed on the host from the parsed model block:
+  - `declared_channel_laws`: the channel law IDs its populations name, in registry-code order (not
+    the layout's per-slot `channel_laws`);
+  - `junction_laws`: `junction_voltage_relaxation@1` when it has junctions, else none;
+  - `pump_laws`: `nak_atp_mass_action_positive@1` when a patch declares a Na/K pump,
+    `ca_atp_mass_action_positive@1` when a patch declares a calcium pump, each with its fuel kind;
+  - `junction_heat_booking`;
+  - from later landings, each present only when declared: the passive law (A5), transporters (B5),
+    stage reads (B4), implicit route kinds, and B7's flag for a free face-free node with an ion
+    route.
+- **Values** are layout arrays, bound per world and passed as arguments: permeabilities,
+  abundances, capacities, initial gates, rates and schedules, **and each population's law code**
+  (`channel_laws`, int [channel_slot]), that is, which declared law a slot runs. P2's bitwise
+  result rests on this split: the declared set is structure, the per-slot assignment is data.
+- **Not structure in R:** the time integrator stays selected by the tableau's static shape, and the
+  field solver by the layout's type, as today. `get_model` receives the model block, not the
+  execution block, so moving them needs a later change of its signature.
+- **The rule (P5):** an implementation closes over structure only, never over a value, because a
+  captured value would be frozen into every later world with the same key.
+
+#### (b) The law declarations
+
+A new core module, `models/inner_laws.py`, holds one frozen declaration per law ID, with a fixed
+registry code.
+- **The kernels stay where they are,** unchanged: `voltage_gates.kinetics`,
+  `potassium_channels.kir2p1_kinetics`, `sodium_channels.nav1p2_kinetics`, `junction_gate`,
+  `kinetic_pump` and `calcium_atpase`. The shared dispatchers in `processes/`
+  (`sodium_channels.kinetics` and `opening`, and their potassium counterparts) stay too, since
+  older families import them. @3 stops calling them.
+- **A channel law declares:**
+
+| Field | Today's five laws |
+| --- | --- |
+| `law_id`, `code` | Kv1.5 0, Kir2.1 1, NaV1.2 2, K leak 3, Na leak 4: today's codes, fixed. A new law takes the next free code; no code is reused |
+| `gates` | ("m", "h") for the three gated laws; none for the leaks |
+| `kinetics(voltage, *, xp)` → (target, tau), each [..., gates, n] | The existing kernels |
+| `opening(gates, *, xp)` → [..., n] | Today's operation order, which P2's bitwise result needs: Kv1.5 m·h, Kir2.1 (m·h)·h, NaV1.2 m³·h. None for the leaks (open fraction 1) |
+| `permeant` | (species, valence, relative permeability): today's `LAW_PERMEABILITIES` with `SPECIES_VALENCE` |
+| `voltage_domain` | (−0.120, 0.060) V for all five |
+| `rk4_step_s` | 2.5e-6 for NaV1.2, 25e-6 for Kv1.5 and Kir2.1, none for the leaks (today's `RK4_*_STEP`) |
+| `stage_term` | `constant_field_slope`, today's `membrane_rate` term at the actual opening |
+| `reads`, `loop_term` | None for these five; (g) 1 below |
+| `provenance` | `parity` |
+| B8's four fields | Reserved, empty (D175) |
+
+- **A junction law** declares its ID, `gated` (true for `junction_voltage_relaxation@1`), its
+  kinetics, right-hand side and domain (`junction_gate`'s, ±0.120 V), and its definition-time bound
+  (`junction_gate_rate_bound`).
+- **A pump law** declares its ID, kernel and domain, the rows it moves per cycle by role, its fuel
+  kind and its definition-time bound. Both of today's pumps run on
+  `maintained_chemical_reservoirs@1` in today's parameter form (§10.2).
+- **The padding rule (check K1).** An inactive population slot carries code 0, as today
+  (`domain_valid`, the adapter's `close`). Its kinetics are target 0 and time constant 1, and its
+  opening is 1, whatever the declared laws: the dispatch selects a law's values only on active
+  slots of its code.
+  - Today a code-0 slot gets Kv1.5's kinetics at 0 V. So `channel_targets` and `channel_tau_s`
+    change at inactive slots, and nowhere else (K1 measured it in a world without Kv1.5).
+  - G1's comparator treats those two columns at inactive slots as padding (§3). ACC agrees the rule
+    before the dispatch commit runs.
+
+#### (c) Build-time selection: one implementation per structure
+
+- **The calls:**
+  - `surface_pump_v3.structure(model)` → `InnerStructure`;
+  - `surface_pump_v3.implementation(structure)`: one object per structure, cached, so equal
+    structures share one object, its functions and its executables;
+  - `surface_pump_v3.model_for(model)` = `implementation(structure(model))`.
+- **Who calls them:**
+  - `registry.get_model` returns `model_for(model)` for a plain @3 definition: one line in the @3
+    branch of `models/registry.py`, a file in no stream's list (the lead to confirm).
+  - INT keys the composite on the inner structure as well as the operator list, and its adapter
+    forwards the inner protocol from that object (§15.6, I2).
+- **The selection inside,** one kernel per declared law (P2's form):
+  - channel kinetics start from target 0 and time constant 1. For each declared gated law, in code
+    order, its kernel's values are selected where the slot is active and carries its code;
+  - openings start from 1, and each declared gated law's opening is selected where its code
+    matches;
+  - **the domain:** an active slot's code must be a declared code, so no literal comes from the
+    registry. Padding carries code 0. Each law's voltage domain applies on its own populations;
+  - **the pumps and the junction law:** each kernel is traced only when declared. An undeclared
+    pump's rates are exact zeros of today's shapes. They can differ from today's masked values only
+    in the sign of a zero, which is reported apart (§2.3).
+- **The surface.** It has every public name of today's module, with the same signatures:
+  - the adapter's re-export block, which is the de facto inner protocol;
+  - what the operators import (`STATE_TYPE`, `LAYOUT_TYPE`, `FLOOR_LAYOUT_TYPE`, `field_values`,
+    `MembraneProcess`, `EXPLICIT_STEP_BOUND`, `physical_amounts`).
+
+  Structure-free names (types, constants, `parameters`, `physical_amounts`, `projection`,
+  `rebind`) are the module's own objects and stay importable from it. Step, readout, domain, check
+  and observation functions are bound to the structure, and consumers take them from the object.
+  **New names:** `structure`; `declared_channel_laws` (the declared IDs, in code order);
+  `law_columns` ({law ID: column}); `gate_rows`; `channel_kinetics(voltage, codes, active, *,
+  xp)`; `channel_opening(gate, codes, *, xp)`; `junction_kinetics(voltage, p, *, xp)`;
+  `moved_rows(model)`.
+- **During the round,** the module's own structure-dependent names stay, bound to the full
+  catalogue (every registered law declared). That gives today's values bitwise (K1's five-law
+  world), so a caller not yet moved keeps working. They are removed before the landing, once every
+  caller takes the object, and a static test then refuses them.
+- **The batch signature gains the structure** (§2.3, rule 5): today's topology signature plus
+  `structure(model)`. Worlds with different law sets never share a batch program, so a batch of
+  today's that mixed law sets would be split. G1 shows whether any does.
+
+#### (d) What "absent" means in R
+
+| Level | Meaning | Delivered in R for | Commit |
+| --- | --- | --- | --- |
+| Kernel | No kernel of the law in the traced program | Every channel law, both pumps, the junction law | The dispatch commits, (e) 2–3 |
+| Schema | No state or layout field | New kinds only: the passive law's fields (A5), transporters' (B5), a stage read's, a third gate row | Each with its kind |
+
+- **Today's kinds keep their schema in R.**
+  - `channel_gate` stays [gate_rows, channel_slot], with gate_rows the larger of 2 and the largest
+    declared gate count: 2 in every world of R.
+  - The pump fields stay [membrane], zero where no pump is declared, and `junction_gate` stays.
+  - So every state field, observation column and checkpoint type is today's, and the baseline
+    compares field by field.
+- **Shrinking today's schema** (no pump fields, or no gate rows, when undeclared) is a later change,
+  with a comparator rule agreed before its run.
+- **One empty leaf goes:** `junction_heat_trapezoid` becomes structure, the booking, and no other
+  consumer reads it.
+
+#### (e) The commits, each checked against the baseline saved at the tag
+
+1. **Declarations and the implementation object,** with today's dispatch inside, so values are
+   unchanged, and programs too apart from the trapezoid leaf's removal. This is the first API
+   commit, which OPS and INT test against.
+2. **Per-law channel dispatch** and the declared-code domain: bitwise, except the padding columns
+   (K1's rule).
+3. **Pump and junction-law dispatch:** bitwise, up to signed zeros at exact zeros, reported apart.
+4. **The compile key and A4's two tests** (§2.2, §5.2):
+   - an undeclared law contributes no kernel and no state: a jaxpr check that a world without
+     NaV1.2 holds none of its kernel, and a world without the passive law none of its fields;
+   - a parameter-only change reuses the executable (`compile_window` reports 0 s), and gives the
+     result a fresh compile gives, bitwise.
+   - `compile_window`'s key gains the model's `structure_key`, which the object sets to its
+     structure (and the composite to its inner structure and operator list). The step and check
+     functions stay in the key.
+
+#### (f) Answers to the operators stream (its PLAN.md §4)
+
+1. **The code-to-column map and the gate count.**
+   - Codes stay the registry's (b).
+   - Per definition, `declared_channel_laws` lists the declared laws in code order, and
+     `law_columns` maps each to its column. A table keyed by declared laws has one column per
+     declared law, in that order. A per-slot column array for gathers is the operator's own layout
+     data, built at its bind from `law_columns`.
+   - The gate count is `gate_rows` (d): 2 in every world of R.
+2. **Kinetics in an event map.**
+   - The step's own selection is `channel_kinetics(voltage, codes, active, *, xp)` and
+     `channel_opening(gate, codes, *, xp)`. Calling these, rather than a law's kernel directly,
+     makes an event's gates the step's bit for bit.
+   - Junction gates: `junction_kinetics(voltage, p, *, xp)` returns today's
+     `junction_gate.kinetics` for the declared law. Its target at 0 V is law_open, and at the
+     post-event voltage law_steady.
+   - The post-event field solve is the object's `field_values(state, control, p, *, xp)`.
+3. **Ungated junctions carry no gate state in R, because none exist:** every junction runs
+   `junction_voltage_relaxation@1` and carries its gate, as today. When `junction_ungated@1`
+   lands (follow-on physics, D176):
+   - its slots hold `junction_gate` at exactly 1, the factor it multiplies, never advanced;
+   - its domain requires exactly 1 on its active slots, and closed contacts keep the adapter's 0;
+   - its first version is refused beside replacement@1 and @2, the partition and every closer
+     (§13.2), so no operator event meets one until a later version says how.
+4. **Water's coupled RK4:** the object's `rhs(state, control, p, active, *, xp)` (readouts'
+   derivative, NaN where invalid) and `readouts(state, control, p, *, xp, membrane_process=None)`,
+   as today.
+5. **The symport's in-step process** keeps today's hook unchanged: the `membrane_process` keyword
+   of the object's `imex_step` and `readouts`.
+   - The signature: `membrane_process(ci, co, volume, voltage, *, xp)` returns
+     `MembraneProcess(flux [species, membrane] outward fmol/s, heat [membrane] pJ/s, valid)`.
+   - One process per composition; `imex_step` then returns (state, valid, (transfer, heat)).
+   - It is not §13.5's stage hook, which (g) 1 opens for stage reads. `MOVES_IN_STEP` is a contract
+     addition, INT's.
+6. **Moved rows:** `moved_rows(model)` returns {species: ((mover kind, law ID, entity IDs), ...)}
+   for every in-step mover of the inner model:
+   - membrane and junction routes with nonzero permeability;
+   - each declared channel law's permeant ions on its populations' patches;
+   - the Na/K pump's Na and K, and the calcium pump's Ca;
+   - the faces, for outside nodes;
+   - later, each transporter's moved roles and each passive route.
+
+   Held fuel rows are read, never moved, so they are not movers ((g) 2). Today's pumps hold their
+   fuel as parameters, so they move no fuel rows. Under finite fuel (later) the pump's fuel rows
+   join.
+7. **The registry hook.**
+   - @3's parser (`surface_pump_v3_spec.parse`) calls `species_registry.parse_entries(raw_model)`
+     once, before it delegates to @2's parser, whose species parse is strict (`{"id",
+     "valence"}`). The call pops the registry's keys from each species entry of the deep copy and
+     returns the immutable registry.
+   - The model gains one field, `species_registry`, default None, omitted from `to_dict` when None,
+     so every existing definition keeps its fingerprint. `to_dict` writes the entries back through
+     `species_registry.to_entries`.
+
+#### (g) Answers to FR-4 and FR-5 (COMPARTMENT_PH_TRANSFER_DESIGN.md, branch `fr45-physics`)
+
+1. **A per-stage algebraic read: the stage hook opens (B4), with FR-4's rapid-buffer closure its
+   first member.**
+   - **The declaration**, a `StageRead`:
+     - `read_id`;
+     - the rows and nodes it reads, resolved at binding through FR-1's identity map;
+     - `evaluate(cell_amounts, outside_amounts, p, *, xp)` → (values, valid): pure, with values a
+       {name: [node] array} mapping (free h, pH);
+     - its bound parameters, as layout fields present only when it is declared;
+     - its declared free-energy term (the closure's ΔG_buf) and that term's rounding magnitude,
+       for the energy ledger;
+     - its observation columns.
+   - **Its place in the step:** the inner model evaluates every declared read once per stage, on
+     that stage's own state, before any law. A law that names the read in its `reads` receives the
+     values: `kinetics(inputs, parameters, availability, reads, *, xp)`.
+   - **Its stage semantics:**
+     - stage k's reads are evaluated at Y_k, the state at which stage k's explicit rates are
+       evaluated: the step start for the first stage, and each later stage's combined state after
+       its implicit solve;
+     - so a reading law is explicit at that stage like every other rate, with no iteration, and
+       ARS(2,2,2) keeps its order (§7.2);
+     - the end-of-step domain evaluates the reads at the end state (FR-4's pH band); observations
+       evaluate them at the accepted row;
+     - a failed read refuses the step: the closure's |g|/H̄_eq > 1e-13, or an inadmissible state.
+   - **The loop term:** a law whose flux moves a row its read depends on declares a loop term for
+     the stage rule, dt × rate ≤ 1. The law's owner supplies it: for the proton pump, |∂J/∂H_eq|
+     through dh/dH̄_eq.
+   - **Reads at a split** (FR-5's factors on the routing door) call the same pure `evaluate` on the
+     split's state. They are first order in dt there, as FR-4's note says.
+   - **Owners:** the slot is CORE's, in `surface_pump_v3`. The closure module
+     (`processes/rapid_proton_buffer.py`) and its declaration are FR45's.
+   - **On FR-4's open question 2:** the general slot, now. Three consumers in one stage read the
+     same h (the pump, the proton leak and the pH-band check), and one evaluation per stage keeps
+     them consistent.
+2. **The transporter insertion point and held rows (B5).**
+   - **The declaration:** a `transporters` list in the model block, absent unless declared. Each
+     population names its ID, patch, law, capacity (fmol cycles/s: N × the per-member value for a
+     lumped node), fuel and availability schedule (`transporter_controls`).
+   - **A transporter law declares:**
+     - `law_id` and `code`;
+     - `moves`: the per-cycle stoichiometry by role, inward-positive like today's pumps, each role
+       bound at binding to a species row at a node. `proton_atp_mass_action_positive@1` moves n H⁺
+       from the patch's inside to its outside, n a declared integer from 1 to 4;
+     - `reads`: the stage reads it needs (free h at both nodes);
+     - `kinetics(inputs, parameters, availability, reads, *, xp)` → `Rates(cycles,
+       cycle_free_energy, chemical_drive)`, in `kinetic_pump`'s form. The insertion point gathers
+       `inputs`: each role's concentration at its node (its read's value instead, for a role read
+       through a stage read, such as H at a buffered node) and electrochemical potential, the held
+       fuel rows' concentrations, the patch voltage and the temperature;
+     - `domain_valid(...)`: |ΔG_cyc/RT| ≤ 80, and the fuel node's pH band;
+     - `stage_term`, its electrogenic conductance for the stage rule, and `loop_term`;
+     - its definition-time bound term, `provenance` and B8's fields.
+   - **Held rows:** `maintained_held_rows@1` (name **S**).
+     - The population names its fuel node, the hydrolysing cell, and its fuel rows (ATP, ADP, Pi).
+       They are read at every stage as rows nothing moves, and never moved.
+     - The definition refuses a held row that any in-step mover or operator writes (OPS's
+       `moved_in_step`, and D152's one-writer rule).
+     - Δ_rG'° comes from the registry's potentials (B3, OPS's), never from the pump.
+     - The supplied work per cycle, −Δ_rG'_ATP, is booked as today's metabolic work. The
+       maintenance's material record (+1 ATP, −1 ADP, −1 Pi per cycle) is an accumulator of the
+       population.
+   - **The insertion point** (CORE, in `readouts` and `explicit_rates`, beside today's pumps):
+     - each declared transporter law's kernel runs on its own slots at every stage, with its reads;
+     - its transfers enter the membrane totals and the node rates;
+     - heat is −cycles × ΔG_cyc, and work −cycles × the chemical drive;
+     - its state fields exist only when declared: `transporter_cycles`,
+       `transporter_dissipated_energy_pJ` and `transporter_metabolic_work_pJ` [transporter_slot],
+       and `transporter_fuel_supplied_fmol` [fuel row, transporter_slot]. Each joins @3's material,
+       charge and energy ledgers and the device checks.
+   - Door S's stage is `inner`. Its rows are rows, not view fields (SCOPED_COMPOSITION_DESIGN.md
+     §6).
+3. **B7's slot.**
+   - **At the definition:** a new host function, `surface_pump.face_free_rate_bound(spec)`, beside
+     `explicit_rate_bound`. It takes the maximum over free face-free finite nodes (active, not a
+     held bath, not the gauge, not a fixed node, named by no face) of Σ_m G_m/C_node at the
+     declared state, with G_m the max-side constant-field slope of each ion route on the node's
+     patches. The step checks refuse dt × that rate > `FACE_FREE_STEP_BOUND`.
+   - **At run time:** `membrane_rate`'s companion at the actual openings, checked at every explicit
+     stage against the same constant. It is statically present only when the structure flags a free
+     face-free node with an ion route, so every other world's program is unchanged.
+   - **The split:** FR45 supplies the term's exact form and its constant (0.05 on the max-side G,
+     from the energy threshold), after its booking-versus-state check. CORE implements both halves,
+     with a D148 record for @1 and @2, which share `surface_pump`. Their registered worlds have no
+     such node (P3), so no value of theirs changes.
+4. **The implicit patch: yes, behind one slot,** the IMEX step's implicit set.
+   - **Today the set is face electromigration alone:**
+     - the stage operator (C + a_ii dt L_face) φ = q, with face weights frozen at the predicted
+       state;
+     - the drift flux at each stage's potentials (`implicit_rates`);
+     - the face heat J² RT/W from the applied flux.
+   - **CORE generalises it to a declared list of implicit route kinds,** with faces as the first
+     member, bitwise. Each kind provides:
+     - `weights(predicted state, p)` → W, frozen for the step;
+     - `laplacian(W)`, its node-space block, added to the operator before the one factorization;
+     - `implicit_flux(W, potential)`, per species and route, at each stage's potentials, into the
+       amounts on both sides (for a patch, the cell's and the node's) and its transfer ledger;
+     - `explicit_remainder(state, potential)`: the part of the law left among the explicit rates
+       (for the constant-field law, J(V) less its linear part in W), which `explicit_rates`
+       subtracts on the kind's routes;
+     - `heat(...)` ≥ 0, its own booking. For faces it is J² RT/W from the applied flux; a patch
+       kind's must close the energy ledger with the stored-energy change, since the charged-patch
+       test showed that ledger, not stability, binds the explicit route.
+   - **The bounding patch is the second member.**
+     - It couples one face-free node to its owner, four entries per compartment, so it rides in
+       the same dense factorization; no separate local solve is needed.
+     - The field-solver interface replaces that factorization later (FIELD_SOLVER_INTERFACE_DESIGN
+       §6).
+     - Each implicit set is a new solver ID (D147), for example
+       `imex_ars222_face_patch_electromigration@1` (name **S**).
+   - **Owners:** CORE builds the slot in `surface_pump_v3.imex_step`, with faces moved behind it
+     bitwise. FR45 codes the patch kind against it in a new module, and qualifies it, with REF's
+     reference.
+
+#### (h) What this adds to CORE's queue, and what the lead decides
+
+- **C6 (§15.6) is now about 3.5–5 agent-days (S):**
+  - the transporter insertion point, 1–1.5;
+  - the stage-read slot, 1–1.5;
+  - B7's two halves, 0.5;
+  - the implicit-route slot with faces behind it, 1–1.5.
+- **Its timing is the lead's call** (§15.6, option 3). After A7, FR-4's code can merge from about
+  day 12.5–18. Before A5, R lands 3.5–5 days later.
+- **Files in no stream's list:**
+  - `core/surface_pump_v3_spec.py` (the parser and `LAW_CODES`), taken as the core's unless the
+    lead says otherwise;
+  - the registry's @3 line;
+  - the thin families (`models/cell_replacement.py`, `surface_pump_water.py`,
+    `surface_pump_water_v2.py`). They import only structure-free names from @3, but
+    `cell_replacement.py` builds its composite at import from the inner model ID, which becomes
+    per structure (INT's change).
+
 ## 8. Scoped composition: door S's runtime merge (list (a))
 
 **The authority for door S is now [SCOPED_COMPOSITION_DESIGN.md](SCOPED_COMPOSITION_DESIGN.md)**
@@ -986,9 +1319,13 @@ guard.
 
 ### 13.5 The coupling note's stage hook
 
-- **Closed in version 1.** No consumer is named, and the coupling note's probe P3 comes first.
-- **Its shape:** a static keyword of the step that evaluates declared stage factors on each
-  stage's state, with a loop term.
+- **Opened in D176's round (15 November),** where this note had it closed in version 1: FR-4's
+  rapid-buffer closure is its first named consumer, as a per-stage algebraic read (free H⁺) that the
+  pump, the proton leak and the pH-band check share. Its signature and stage semantics are §7.4
+  (g) 1.
+- **Its shape:** declared reads evaluated once per stage on that stage's own state, before any law
+  that reads them, with a loop term per reading law. The coupling note's stage factors, when a
+  consumer names them, read through the same slot; its probe P3 still comes first for them.
 
 ### 13.6 The bound-term fixes (I0)
 
@@ -1034,7 +1371,7 @@ neutral species, and its rerun covers them):
 | Insertion@1 and @2, the lumens | Restructured spec types; changed field-input slots (§8, §9.1) | 0.5–1 |
 | Membrane state | Its slot declarations for door S (A6). Its changed-slot rule for the field refresh is B6, later | Within A6 |
 | D150's and D152's operators, the coupling operator, the bath schedule, injection | Read and changed slots (§8, A6: in R only the bath schedule's changes and D152's reads are narrowed); their identity checks consolidated into the species registry (A7, the operators stream). Compartment references (B2) come later; the registry's standard potentials (B3) land in R (§10.2) | Within A6 and A7 |
-| **FR-1's `cell_owned_compartments@1`** (on main since 15 November) | Generic in code (declaration only, no program), but @3-tied in its refusal 4, which names @3's route kinds. It is already the compartment map's writer (`identity_map`) and must refuse **every** declared route kind on a bounding patch, failing closed on kinds it does not know, the passive law's included | 0.5, in R (owner to be named: `compartments.py` is in no stream's list) |
+| **FR-1's `cell_owned_compartments@1`** (on main since 15 November) | Generic in code (declaration only, no program), but @3-tied in its refusal 4, which names @3's route kinds. It is already the compartment map's writer (`identity_map`) and must refuse **every** declared route kind on a bounding patch, failing closed on kinds it does not know, the passive law's included | 0.5, in R (FR45 claims `compartments.py` in its note's §11; the lead to confirm) |
 | **FR-3's `site_occupancy@1`** (on main since 15 November) | Its identity check moves to the registry (A7). Its integrator duplicates D152's numerical block, recorded as a consolidation item for R (SITE_OCCUPANCY_DESIGN.md §12); its own-ledger floor needs the hook to see the layout | 0.5–1 (owner to be named; the lead may defer the consolidation, which changes no result) |
 
 **Who needs what:**
@@ -1091,8 +1428,8 @@ code or in R's effort.**
 | B1. Evolution roles, counter kinds, the step context (§12) | The roles and the context's fields | FR-8's milestone (1–1.5 days, host-side) |
 | B2. The compartment identity map (§9.2) | The map's fields | **Partly holds (f791294):** FR-1's operator, on main, writes it (`compartments.identity_map`), and door S's integration world reuses it in R. Laws addressing "S in compartment C" come with FR-4 and FR-5 |
 | B3. Standard potentials at the definition boundary (§10.2); identity and trace policy are A7 | The field | **Lands in R (D176):** the operators stream's registry carries `standard_mu_RT`. Read first by FR-4's held-row fuel, then by the fuel case and D152's reading change |
-| B4. Laws' stage reads and loop terms (§7.2) | The law declaration's fields | FR-4's pump on held-row fuel (a `reference` read of rows nothing moves, no loop term); Track E's Ca-dependent inactivation; a pump on finite fuel |
-| B5. New kinds: transporters, finite fuel, implicit-route solvers, the stage hook | Their shapes only. Each kind brings its insertion point when it lands (§2.3) | FR-4; the fuel case; FR-4's patch and Track E's junctions; a named consumer of the hook |
+| B4. Laws' stage reads and loop terms (§7.2) | The law declaration's fields; **the slot, §7.4 (g) 1 (opened, D176's round)** | FR-4's rapid-buffer closure (free H⁺ per stage) and its pump's held-row fuel; Track E's Ca-dependent inactivation; a pump on finite fuel |
+| B5. New kinds: transporters, finite fuel, implicit-route solvers, the stage hook | Their shapes; **for FR-4, the transporter kind and the implicit-route slot are §7.4 (g) 2 and 4** | FR-4 (CORE's insertion points, C6 in §15.6); the fuel case; FR-4's patch and Track E's junctions; the coupling note's stage factors |
 | B6. Ownership separated from solver invalidation (§9.1) | The changed-slot rule | FR-2, or FR-3's later step (2–3 days with B2's share), unless the lead moves it into (a) |
 | B7. The face-free bound term (§13.6), after P1 (the charged-patch test CP, running since 15 November) | Its shape | FR-4, unless CP shows the implicit patch is needed instead |
 | B8. The four optional fields of a law that stands in for something (§7.1; D175) | Reserved in the law declaration's schema, unused | A reduced law after the fuel case |
@@ -1223,24 +1560,26 @@ apart, on the shared machine (8 cores, 31 GB).
 | --- | --- | --- | --- | --- | --- |
 | F1 | The charged-patch feasibility test CP: FR-1's probe P1, extended to FR-4's counterions and protons and FR-5's pores (D176: early) | FR45 | Owner to supply | The tag's snapshot | Running since 15 November |
 | F2 | FR-4's design note: §10.5's boundary; the counterion pathways; the pump law against §7.4's transporter shape; charged buffering's design and criterion; the patch treatment from F1 | FR45 | Owner to supply | F1; §7.4; SCOPED §6 | From day 1 |
-| F3 | **Charged buffering (D176):** D152's charged closed reactions, or a rapid-buffer law | **To be named by the lead:** D152's `species_reactions.py` is in no stream's list, and a new law version could sit with FR45 | Owner to supply | F2; O1's potentials | After F2 |
-| C6 | The transporter kind's insertion point (B5), and B7 or the implicit-patch hook, per F1 | CORE | 1.5–2.5 (**S**) | C2, F1, F2 | After C5: day 9–13 → 10.5–15.5, unless the lead moves it before C3 |
+| F3 | **Charged buffering (D176):** FR-4's note chooses a rapid-buffer closure, a per-stage algebraic read (its §4), in a new module `processes/rapid_proton_buffer.py`. D152's charged slow reactions are a separate route, off FR-4's critical path (its §11, item 4) | FR45 (the closure, as its note proposes; the lead to confirm), on CORE's stage-read slot (C6) | Owner to supply | F2; O1's potentials; C6's slot | After F2 |
+| C6 | FR-4's insertion points (§7.4 (g)): the transporter kind (B5), the stage-read slot (B4), B7's two halves and the implicit-route slot with faces behind it | CORE | 3.5–5 (**S**) | C2, F1, F2 | After C5: day 9–13 → 12.5–18, unless the lead moves it before C3 |
 | F4 | FR-4's first case on maintained, held-row fuel: the law module, the world, its references (REF) and its protocol | FR45, REF | Owner to supply | C6, I1, O1, F2, F3 | Develops on `integration-d172` once C2 and I1 merge; merges after I4 |
 
-**F3's acceptance criterion, proposed for FR-4's note to fix:**
-- **Admission:** only closed reactions with Σ_s z_s ν_sr = 0 in integers, conserving every
-  declared moiety. An unbalanced one is refused at the definition, as a negative control.
-- **Charge:** buffering changes no node's charge. In a world where only the buffer acts, every
-  node charge and the field stay bitwise unchanged.
-- **Material and energy:** material is conserved per moiety. Energy is booked as D152 books its
-  passive routes (H = −ΔG ≥ 0, with the registry's potentials), each ledger closing at rounding,
-  from a trace start (pH 5 to 7.4).
-- **Accuracy:** the relaxation and the equilibrium agree with REF's independent reference, within
-  a tolerance declared before the run.
-- **Stiffness:** either D152's stage condition refuses it at run time, and the step that admits a
-  physiological buffer capacity is reported, or a declared rapid-buffer route treats it, qualified
-  on its own.
-- **Planted control:** a wrong valence fails the charge check.
+**F3's acceptance criterion,** proposed here and matched to FR-4's note's closure (its §4, §13 and
+§14), for that note to fix:
+- **Admission:** buffer rows are inert (no route, no reaction), each with one declared pK and base
+  valence. One representation of a node's protonation is admitted (D175's key). No @3 route for H
+  at a buffered node.
+- **Charge:** buffering changes no node's charge. The stored rows' charge sum is exact as it stands
+  (that note's §3). In a world where only the closure acts, every node charge and the field stay
+  bitwise unchanged.
+- **Material and energy:** H_eq and every B_tot are conserved, except across routes. The closure's
+  declared free-energy term ΔG_buf closes the energy ledger at rounding, from a trace start
+  (pH 5 to 7.4).
+- **Convergence:** |g|/H̄_eq ≤ 1e-13 at every stage, else the step is refused.
+- **Accuracy:** against a kinetic-buffer reference (REF, Radau, k_on 1e10 M⁻¹ s⁻¹) within a budget
+  declared before the comparison. D175's envelope (k_on B̄ ≫ 1/dt, and ≫ every per-free-proton
+  transport rate) is checked as declared bounds, and one case outside it must fail.
+- **Planted control:** a wrong base valence fails the charge check.
 
 **D176's corrections: where each is entered, and whose it is.**
 
@@ -1248,7 +1587,7 @@ apart, on the shared machine (8 cores, 31 GB).
 | --- | --- | --- |
 | The dependency table refreshed | This section, §15.3–§15.5 | CORE |
 | Bath → uptake → owned compartment → reaction, a real acceptance world | §8, A6; SCOPED §5, T5 | INT |
-| Charged buffering, an FR-4 dependency with an owner and a criterion | §15.4; F3 above | To be named |
+| Charged buffering, an FR-4 dependency with an owner and a criterion | §15.4; F3 above | FR45 (the closure, as its note proposes; the lead to confirm), on CORE's stage-read slot |
 | The charged-patch test early | §15.4; F1 | FR45 (running) |
 | Order independence narrowed | §8; SCOPED §4 | INT |
 | Reference reads apart from field-unchanged assumptions | §8; SCOPED §2 (`reference` against `fixed`) | INT |
@@ -1269,7 +1608,7 @@ apart, on the shared machine (8 cores, 31 GB).
 | --- | --- | --- | --- |
 | OPS | §7.4, from day 1 | After C2's merge, day 5–7 | At the landing, day 11–15.5 |
 | INT (the adapter per structure) | §7.4, from day 1 | After C2's first API commit, about day 2–3 | At the landing |
-| FR45 (FR-4) | §7.4 and SCOPED §6, from day 1 | Development only, once C2 and I1 merge (day 5–7) | In its own milestone, after the landing |
+| FR45 (FR-4) | §7.4 (g) and SCOPED §6, from day 1 | Its laws (pump, closure, patch kind) once C6's slots merge: day 12.5–18 if C6 follows C5, about day 8.5–12 if it precedes C3 | In its own milestone, after the landing |
 | REF | The spec, about day 2 | Validation, onto main through the lead | With C3 |
 
 **Ways to shorten the core's path, each the lead's call:**
@@ -1277,10 +1616,10 @@ apart, on the shared machine (8 cores, 31 GB).
    and ACC is free then.
 2. **CORE writes A5's insertion point while FR45 writes the passive law's kernel and booking** as a
    new law module against §7.4. It saves 1–1.5 days, at the cost of one more hand-off.
-3. **FR-4's insertion points (C6) go before A5.** FR-4's code comes about 5 days earlier, and R
-   lands 1.5–2.5 days later.
+3. **FR-4's insertion points (C6) go before A5.** FR-4's laws can merge about 4 days earlier, and
+   R lands 3.5–5 days later, unless 1 and 2 absorb part of it.
 
-With 1 and 2, the path is about 9–13 days.
+With 1 and 2, the path is about 9–13 days; with 1, 2 and 3, about 12.5–18.
 
 ## 16. Open questions, with recommendations
 
@@ -1302,9 +1641,13 @@ their answers.
    - Ownership separation stays in (b), with a narrow later gate; moving it into (a) costs 1.5–2
      days and saves that gate.
    - **R's added law: the passive law (decided, D176).** `junction_ungated@1` is follow-on physics.
-7. **The stage hook:** closed until a named consumer and the coupling note's P3.
-8. **New (§15.6), for the lead:** an owner for charged buffering (F3), for FR-1's refusal 4 and for
-   FR-3's integrator consolidation (§14); and whether FR-4's insertion points go before A5.
+7. **The stage hook: opened** in D176's round for FR-4's closure (§7.4 (g) 1, §13.5). The coupling
+   note's stage factors still wait for a named consumer and its P3.
+8. **New (§7.4 (h), §15.6), for the lead:** the owners of charged buffering (F3: FR45's closure, as
+   its note proposes), of FR-1's refusal 4 (FR45 claims `compartments.py` in its §11), of FR-3's
+   integrator consolidation (§14), of the registry's @3 line and of `core/surface_pump_v3_spec.py`;
+   whether FR-4's insertion points (C6) go before A5; and whether today's pumps keep their
+   parameter form (§10.2).
 
 ## 17. The probes
 
