@@ -70,7 +70,9 @@
   "/mnt/workspaces/Cells/independent-references-20261114-01/land-measure-refsE/measured.json",
   "/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/land-measure-trM4/measured.json",
   "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-1ee9456/measured.json",
-  "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-b75ca7d/measured.json"
+  "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-b75ca7d/measured.json",
+  "/mnt/workspaces/Cells/closed-compartment-m1-20261114-01/land-measure-fr/measured.json",
+  "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-e3fb7ab/measured.json"
  ],
  "measured_provenance": [
   {
@@ -577,6 +579,20 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a4ff7607b6a2e4388",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-14T22:07:10+00:00"
+  },
+  {
+   "git_revision": "43d0749cecf1409e8a5cefef56aaab30dc7bc958",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261115-fr",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T03:49:25+00:00"
+  },
+  {
+   "git_revision": "e3fb7ab7e1719f3c2f059d6f5d26ab89f6bf0b6b",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a4ff7607b6a2e4388",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T00:48:18+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -907,6 +923,14 @@
     }
    },
    {
+    "file": "tests/unit/test_bath_schedule_steps.py",
+    "seconds": 5.48,
+    "exit_code": 0,
+    "counts": {
+     "passed": 29
+    }
+   },
+   {
     "file": "tests/unit/test_betse_charge_precision.py",
     "seconds": 3.38,
     "exit_code": 0,
@@ -1177,6 +1201,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_cell_owned_compartments.py",
+    "seconds": 3.73,
+    "exit_code": 0,
+    "counts": {
+     "passed": 121
+    }
+   },
+   {
+    "file": "tests/unit/test_cell_owned_compartments_identity.py",
+    "seconds": 13.15,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
     }
    },
    {
@@ -2206,6 +2246,14 @@
     }
    },
    {
+    "file": "tests/unit/test_phase_records.py",
+    "seconds": 8.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
+    }
+   },
+   {
     "file": "tests/unit/test_physical_ionic_graph.py",
     "seconds": 2.77,
     "exit_code": 1,
@@ -2529,6 +2577,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 36
+    }
+   },
+   {
+    "file": "tests/unit/test_site_occupancy.py",
+    "seconds": 8.67,
+    "exit_code": 0,
+    "counts": {
+     "passed": 52
     }
    },
    {
@@ -3561,6 +3617,54 @@
     }
    },
    {
+    "file": "tests/unit/test_cell_owned_compartments_batch.py",
+    "seconds": 40.86,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_cell_owned_compartments_identity_more.py",
+    "seconds": 40.33,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_cell_owned_compartments_silence.py",
+    "seconds": 46.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_cell_owned_compartments_silence_rk4.py",
+    "seconds": 80.53,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_cell_owned_compartments_vector.py",
+    "seconds": 71.3,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_cell_owned_compartments_windowed.py",
+    "seconds": 49.11,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
     "file": "tests/unit/test_channel_compensation_design.py",
     "seconds": 31.92,
     "exit_code": 0,
@@ -3773,8 +3877,16 @@
     }
    },
    {
+    "file": "tests/unit/test_phase_records_vector.py",
+    "seconds": 67.49,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
     "file": "tests/unit/test_phases.py",
-    "seconds": 43.57,
+    "seconds": 61.31,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -3815,6 +3927,30 @@
    {
     "file": "tests/unit/test_secreted_species_step_map.py",
     "seconds": 54.11,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_site_occupancy_controls.py",
+    "seconds": 42.55,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_site_occupancy_restart.py",
+    "seconds": 86.01,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_site_occupancy_runs.py",
+    "seconds": 76.4,
     "exit_code": 0,
     "counts": {
      "passed": 2
@@ -4457,6 +4593,12 @@
     "counts": {}
    },
    {
+    "file": "tests/unit/test_cell_owned_compartments_restart.py",
+    "seconds": 90.21,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
     "file": "tests/unit/test_cell_replacement.py",
     "seconds": 90.19,
     "exit_code": null,
@@ -4846,6 +4988,24 @@
    },
    {
     "file": "tests/unit/test_secreted_species_runs.py",
+    "seconds": 90.13,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_site_occupancy_idle.py",
+    "seconds": 90.12,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_site_occupancy_stage.py",
+    "seconds": 90.13,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_site_occupancy_vector.py",
     "seconds": 90.13,
     "exit_code": null,
     "counts": {}

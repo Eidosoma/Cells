@@ -27,7 +27,15 @@ Declarations (class attributes):
   inner model's opt-in hook (``PROCESS``). One law may contribute several parts
   (scheduled replacement: its event map restarts its formation law's state). A
   state owner has no part: it holds entity state that later operators write
-  (``ACCEPTS_WRITES``) and provides it through the view (membrane_entity_state).
+  (``ACCEPTS_WRITES``) and provides it through the view (membrane_entity_state);
+  a part-less owner may instead own only fields that are accepted writes. A
+  declaration (``DECLARATION_ONLY``, docs/CLOSED_COMPARTMENT_DESIGN.md §1.6) has
+  no part and contributes nothing to the step: it declares entities and their
+  refusals at the definition (``check_definition``, ``CONFLICTS_VIEW``,
+  ``REQUIRES``) and its summary, and defines nothing else of the contract
+  (``DECLARATION_MAY_DEFINE``, checked fail closed at registration): no field,
+  schedule, view, factor, closure, ledger, readout, energy role, step method,
+  schedule hook or definition-check hook of its own.
   ``RK4`` declares a split part's behaviour under an RK4 inner step: "coupled"
   (its rates join the coupled right-hand side, which RK4 integrates unsplit) or
   "split" (exact half-steps kept around the inner RK4 step).
@@ -140,6 +148,8 @@ class Operator:
     # Topology (module docstring).
     CLOSES = ()
     RETIRES = False
+    # A declaration with no part and no field (module docstring; check_declarations).
+    DECLARATION_ONLY = False
 
     @classmethod
     def observed_columns(cls):
@@ -324,21 +334,76 @@ class Operator:
         return {k: getattr(state, k) for k in self.STATE_AXES}
 
 
+# What a declaration (DECLARATION_ONLY) may define below Operator; everything else fails closed.
+DECLARATION_MAY_DEFINE = frozenset(
+    {
+        "LAW_ID",
+        "DECLARATION_ONLY",
+        "CONFLICTS_VIEW",
+        "REQUIRES",
+        "parse",
+        "to_dict",
+        "check_definition",
+        "initial_values",
+        "summary",
+    }
+)
+
+
+def _defined_below_operator(operator, name):
+    """True when a class between `operator` and Operator in its MRO defines `name`."""
+    for klass in operator.__mro__:
+        if klass is Operator:
+            return False
+        if name in vars(klass):
+            return True
+    return True  # Not an Operator subclass: nothing of it is Operator's.
+
+
+def declaration_errors(operator):
+    """Why a DECLARATION_ONLY operator class is not a declaration (empty: it is one).
+
+    Fails closed: no class below Operator may define a public attribute of Operator, data or
+    method, outside DECLARATION_MAY_DEFINE, even at its default value. So a declaration has no
+    part, field, schedule, view, factor, closure, view read, write, reset, ledger, readout,
+    replaced column, energy role, step method, schedule hook or definition-check hook of its own.
+    """
+    errors = []
+    for name in sorted(n for n in dir(Operator) if not n.startswith("_")):
+        if name not in DECLARATION_MAY_DEFINE and _defined_below_operator(operator, name):
+            kind = "overrides" if callable(getattr(Operator, name)) else "declares"
+            errors.append(f"{kind} {name}")
+    return errors
+
+
 def check_declarations(operator):
     """Refuse an operator class whose declarations break the contract."""
     name = operator.LAW_ID
     if not isinstance(name, str) or "@" not in name:
         raise ValueError(f"Operator {operator!r} needs a versioned law ID")
+    if operator.DECLARATION_ONLY:
+        errors = declaration_errors(operator)
+        if errors:
+            raise ValueError(
+                f"{name}: a declaration contributes nothing to the step, but it "
+                + "; ".join(errors)
+            )
     if operator.SPLIT and operator.RK4 not in RK4_MODES:
         raise ValueError(f"{name}: a split part declares its RK4 mode, one of {RK4_MODES}")
     if not operator.SPLIT and operator.RK4 is not None:
         raise ValueError(f"{name}: an RK4 mode needs a split part")
-    if not (operator.EVENT or operator.SPLIT or operator.PROCESS) and not (
-        operator.ACCEPTS_WRITES and operator.VIEW_FIELDS
+    if (
+        not operator.DECLARATION_ONLY
+        and not (operator.EVENT or operator.SPLIT or operator.PROCESS)
+        and not (
+            (operator.ACCEPTS_WRITES and operator.VIEW_FIELDS)
+            or (operator.STATE_AXES and set(operator.STATE_AXES) <= set(operator.ACCEPTS_WRITES))
+        )
     ):
         raise ValueError(
             f"{name}: an operator contributes at least one part, or is a state owner that "
-            "provides views of fields later operators write (ACCEPTS_WRITES)"
+            "provides views of fields later operators write (ACCEPTS_WRITES), or owns only "
+            "fields later operators write, or is a declaration (DECLARATION_ONLY)"
         )
     for field in operator.STATE_AXES:
         booked = field in operator.HEAT_FIELDS or field in operator.WORK_FIELDS

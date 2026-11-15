@@ -2,6 +2,8 @@
 
 **Accepted, 14 November 2026 (the lead, with the advisor; D169).** The silence claims S1–S5 are pending milestone 1, with their criteria fixed. This protocol is exchange's first judged acceptance.
 
+**Milestone 1 built, 14 November 2026 (§12).** The declaration, the contract's fail-closed marker and the composite's branch for declarations alone are built. S1–S3 hold on every row of every program in a live-owner world, and a planted control breaks them in each program family. S5 is identical in all four pairs, and crossrev is identical in all seven sets. S4 and P2 (on the heredity sheet) are reported. Integration grants no acceptance: C1–C13 and their references come next.
+
 **Status: proposed, 14 November 2026, for the lead's review with the advisor; revised the same day
 after that review.** No engine code was added or changed. One read-only probe ran on the engine as
 it is, as the lead directed: FR-10's probe 1, which also carried this note's D147 record and its
@@ -74,16 +76,18 @@ is an addition, not a change to existing behaviour.
      one widened, host-only admission, a strict superset of today's rule, which can also serve a
      part-less site owner for FR-3 (§1.6).
 3. **The transfer law is D150's exchange, unchanged** (§2).
-   - Loading is an export route, release an import route, and a passive permeation an
-     export–import pair.
+   - Loading is an export route, and release an import route. Both are driven routes (D174,
+     ARCHITECTURE.md's "Transport laws by physical contract"): each books the free-energy change of
+     what it moves as signed work, with no heat. An export–import pair can follow a permeation's
+     concentration trajectory without being a passive permeation.
    - Every move books the same amount on both sides, so retained and cytosolic material stay
      distinct and reconcile to rounding.
    - **Limits:**
      - the pair is Strang-split, so its equilibrium carries a bias of −a(a + 2b) dt²/96 (**S**);
      - its fall in free energy is booked as signed work, not heat;
      - saturable loading is refused.
-   - **Doors:** a passive exchange law with an exact two-way relaxation and heat (FR-5's neutral
-     leak), and saturable loading.
+   - **Doors:** a passive permeation law, door T1, with an exact two-way relaxation and heat
+     (FR-5's neutral leak; D174's target law); and saturable loading.
 4. **The electrical treatment: a free node of @3's capacitor network** (§3.1, §3.2).
    - The node's capacitor row gives C_b (φ_comp − φ_cell) = q_comp. So the bounding patch's voltage
      is V_b = φ_cell − φ_comp = −q_comp/C_b exactly (**S**), and the owner's plasma membrane sees
@@ -231,15 +235,20 @@ its own node.
 {
   "law": "cell_owned_compartments@1",
   "compartments": [
-    {"node": "lys_0", "patch": "lys_0_membrane", "owner": "cell_0",
-     "label": "lysosome pool", "reference": null}
+    {"id": "lys_0", "node": "ecs_lys_0", "patch": "lys_0_membrane", "owner": "cell_0",
+     "role": "lumen", "label": "lysosome pool", "reference": null}
   ]
 }
 ```
 
-- `node`: the compartment's @3 outside node, and its stable compartment id.
+- `id`: the compartment's own stable ID, a string unique among every ID of the world, its node's
+  included (the lead's ruling with D174, built in milestone 1: identity independent of storage).
+- `node`: the compartment's @3 outside node, its storage today.
 - `patch`: its bounding patch.
 - `owner`: the owner's cell id. In version 1 this is the founder carrier, which never changes (§1.5).
+- `role`: optional, a short string (1 to 40 characters), "lumen" by default when omitted; the
+  identity map and the summary record whether it was declared. **No physics depends on the role in
+  version 1:** it is metadata, carried to the map, the summary and later the run view.
 - `label`: free text. `reference`: null or an opaque ontology reference, for example a Gene Ontology
   cellular-component term. Both are metadata only: they reach the summary and the run view, never an
   array. S2's guard applies: changing either changes no binding, program or trajectory. Generic laws
@@ -376,7 +385,7 @@ owner, not as extracellular space.
 | --- | --- | --- | --- |
 | Loading, constant | export, `flux` | J (fmol/s) from the cytosol | moved = J h, refused if the pool would not stay positive |
 | Loading, constitutive | export, `first_order` | k_e n_cyt | moved = n_cyt (1 − e^{−k_e h}) |
-| Release, passive or constitutive | import, `first_order` | k_u A c_comp, k_u in m/s | moved = n_comp (1 − e^{−κh}), κ = 10¹⁵ k_u A / V_comp |
+| Release, constitutive (a driven route, booked as work) | import, `first_order` | k_u A c_comp, k_u in m/s | moved = n_comp (1 − e^{−κh}), κ = 10¹⁵ k_u A / V_comp |
 | Release, carrier-mediated | import, `saturable` | A V_max c_comp / (K_M + c_comp) | D150's implicit closed form, with its Newton steps and residual check |
 
 ### 2.2 Retention, distinguishability and reconciliation
@@ -403,9 +412,11 @@ A.2). With release, the retained fraction follows the two-node closed form.
 
 ### 2.3 Three limits and two doors
 
-1. **A passive permeation is a pair, and the pair is split.**
+1. **A pair can follow Fick's trajectory, but it stays driven, and it is split.**
    - Export at k_e = 10¹⁵ P A / V_cyt and import at k_u = P give the net flux
-     J = 10¹⁵ P A (c_cyt − c_comp) fmol/s, Fick's law across the patch (**S**).
+     J = 10¹⁵ P A (c_cyt − c_comp) fmol/s, the concentration trajectory of Fick's law across the
+     patch (**S**). That does not make the pair a passive permeation (D174): each route still books
+     its free-energy change as signed work, with no heat (item 2).
    - Exchange runs the pair as the palindrome E(h/2) I(h) E(h/2) (its stage order). With
      x = n_cyt / N, a = k_e and b = κ, the map's fixed point is x* = α(1 − β)/(1 − α²β), with
      α = e^{−ah/2} and β = e^{−bh}, against the equilibrium x_eq = b/(a + b). Then
@@ -414,14 +425,19 @@ A.2). With release, the retained fraction follows the two-node closed form.
    - The composite applies two halves of h = dt/2 per step, and both have that fixed point, so the
      bias is −a(a + 2b) dt²/96 (**S**). At a = b = 1 s⁻¹ and 1 ms it is 3 × 10⁻⁸: negligible at
      physiological rates, and measured by acceptance C4.
-   - Mismatched rates make a pump, with its work booked. That is legal, but not passive.
-2. **A passive fall in free energy is booked as work.** Exchange books every route's exact ΔG as
-   signed work, never heat (D150 §2.4). The ledger closes, but the dissipation check does not see a
-   passive leak's dissipation. It is a declared limit, as D150's laws' metabolic costs are.
+   - Mismatched rates pump against the gradient, with that work booked too.
+2. **Exchange is a driven route: a fall in free energy is booked as work, not heat.** Exchange
+   books every route's exact ΔG as signed work, never heat (D150 §2.4; D174). The ledger closes,
+   but the dissipation check sees no heat from it. A transfer that is physically a passive leak
+   therefore needs door T1; exchange does not model it as one. It is a declared limit, as D150's
+   laws' metabolic costs are.
 3. **Saturable loading is refused.** Exchange refuses a saturable export, so a transporter that
    concentrates cargo into the compartment from the cytosol is not expressible.
 
-**Door T1: a passive exchange law** (for FR-5's neutral leak, and for heat-correct passive transfer).
+**Door T1: a passive permeation law** (for FR-5's neutral leak, and for heat-correct passive
+transfer). It is the law D174 expects in D172's round. It must show, in a fixed-volume case: zero
+net flux at equal chemical potential, reversal when the driving force reverses, conserved material,
+zero external work, and dissipation equal to the free-energy decrease.
 - One route, both directions: J = 10¹⁵ P A (c_cyt − c_comp).
 - Exact over a half-step as a two-node relaxation: N = n_cyt + n_comp is conserved,
   n_cyt* = N V_cyt / (V_cyt + V_comp), and n_cyt(h) = n_cyt* + (n_cyt − n_cyt*) e^{−λh} with
@@ -804,7 +820,7 @@ snapshot.
 | Door | Needs | First consumer |
 | --- | --- | --- |
 | Charged (§3.4) | A face-free-node term in the explicit bound and the membrane rate (one D148 round with finding 3's), then an implicit treatment of the bounding patch (a new IMEX ID) | FR-4 |
-| T1, a passive exchange law (§2.3) | A new exchange version with an exact two-way law and a heat field | FR-5 |
+| T1, a passive permeation law (§2.3) | A new law with an exact two-way relaxation and a heat field, D174's target in D172's round | FR-5 |
 | T2, saturable loading (§2.3) | The saturable solve on the cell side | Granule loading |
 | V, volume (§5.3) | D150's and D152's version 1.1, and the lumen's accounting | FR-5's osmotic swelling; FR-2 |
 | R, replacement (§1.5) | The swap of an owner's compartments, and the occupant rule for node-keyed rates | Renewal worlds with compartments |
@@ -904,6 +920,139 @@ beside D150's, D152's and D156's work on disjoint files. FR-10's operator is dis
    kinds before any run.
 5. **Probes P1 to P3** (§9): which to run before the code. P1 sizes FR-4's door. P4's question is
    answered, for a first-order export in one world, by FR-10's probe 1, arms D1 and D2.
+
+## 12. Milestone 1 as built (14 November 2026)
+
+The engine agent built milestone 1 after D169, on its branch, with the lead's rulings of the same
+evening, and reworked it after the lead's review of the first hand-back. The evidence and log are in
+`/mnt/workspaces/Cells/closed-compartment-m1-20261114-01/` (HANDOFF.md). The D148 record, its stop
+rule and every world and control below were written there before their runs, and the silence
+criteria of §3.3 were copied there verbatim.
+
+**The contract's admission** (D169's rule, with the lead's option (b)):
+- **D169's clause.** A part-less operator is admitted when it has `ACCEPTS_WRITES` and
+  `VIEW_FIELDS`, as before, or when it owns fields and every one is an accepted write (FR-3's site
+  owner, §1.6).
+- **A declaration** carries `contract.Operator.DECLARATION_ONLY`. That clause alone would also have
+  admitted the contract test's `Nothing`, an operator with nothing at all, so the marker keeps
+  `Nothing` refused.
+- **The marker's check fails closed** (`contract.declaration_errors`, the lead's ruling). A marked
+  class may define only `DECLARATION_MAY_DEFINE`: `LAW_ID`, `DECLARATION_ONLY`, `CONFLICTS_VIEW`,
+  `REQUIRES`, `parse`, `to_dict`, `check_definition`, `initial_values` and `summary`.
+  - It refuses every other public name of `Operator` that any class below `Operator` defines,
+    whether data or method and even at its default value. That covers the parts, fields, step
+    methods, and the schedule and definition-check hooks (`inner_check_spec`, `check_steps`,
+    `control_values` and the rest).
+  - Every registered operator is admitted as before.
+- **`pump_composite.Composition.checked_step`** runs the inner step itself for a composition of
+  declarations alone, as it does for the empty composition (option (b) of S5's scope). No existing
+  composition contains a declaration, so each takes the branch it took before.
+
+**The declaration:** `models/operators/compartments.py`, `cell_owned_compartments@1`, registered
+with one import and one line.
+- Each compartment names its node, its bounding patch and its owner, with a label and a reference
+  as metadata.
+- §1.4's refusals 1 to 7 fire with their reasons: the node, the patch, one compartment per node, no
+  ion route on the bounding patch (`refuse_ion_routes`), a zero charge anchor
+  (`refuse_charge_anchor`), a held-bath topology, and §4's admitted list. The list fails closed,
+  and keeps replacement@1 away from owners, also as donors.
+- `CONFLICTS_VIEW` lists the volumes, the areas, the capacitances and the masks. Through the
+  composite's structure check it refuses water and what requires it, membrane state, insertion@1
+  and @2, the partition, the bridge and the lumens.
+- **Identity is a host-side map, independent of storage** (`compartments.identity_map`; D174's
+  "compartment identity is a host-side map"). Each entry holds:
+  - the compartment's declared ID;
+  - its owner (cell, slot, carrier);
+  - its declared role, with whether it was declared;
+  - its storage (`outside_node`, the node and its slot);
+  - its oriented bounding membrane: the patch and its slot, the inside endpoint the owner cell, the
+    outside endpoint the compartment (by its ID), and V_b = φ_owner − φ_compartment;
+  - the label and the reference.
+- **The ID and the role are declared** (the lead's ruling before landing).
+  - The ID is a string, unique among every ID of the world. A collision with the node, a cell, a
+    species or another compartment is refused.
+  - The role is a short string, "lumen" by default when omitted. The map and the summary
+    (`compartments_role_default`) record which.
+  - **No physics depends on the role in version 1.** Like the label, the ID, the role and the
+    reference change no binding (tested).
+  - The summary carries the map. Two compartments in one cell stay distinct (tested).
+- **Exchange is a driven route** (D174). §0, §2.1 and §2.3 now say so: it books signed work and no
+  heat, and a pair that follows Fick's trajectory is not a passive permeation. The passive law is
+  door T1, with D174's five requirements.
+
+**Fixtures:** `validation/tissue/compartment_fixtures.py`.
+- **W**, D150's face-free topology with exchange loading S into the compartment. W's ions are
+  quiescent, so every potential is 0 and silence cannot fail there; S5's traced pairs use it.
+- **W+**, the live-owner world (the lead's ruling):
+  - a cytosol at K 140, Na 10 and Cl 20 mM;
+  - a K leak of 5e-10 m/s on the owner's wall;
+  - an initial owner potential of −0.06 V through its charge anchor.
+  K leaves the cell and the owner's potential moves toward E_K, while the compartment must stay
+  silent.
+- **The planted controls:** (a) a K route of 1e-13 m/s on the bounding patch, and (b) a
+  compartment charge anchor of 1e-17 C. Tests reach them by bypassing refusals 4 and 5 through
+  monkeypatch, a test-only way.
+
+**The gates.** They ran from clean snapshots on CPU 2 with a 3G cap, every unit launched with
+`--oom-first` (and, from 01eb558, `--wait-headroom 2G`). The load averages were 8 to 18 on 8 CPUs,
+so the times are loaded; the lead measures tiers on clean CPUs at landing.
+
+| Gate | Result |
+| --- | --- |
+| The tier-1 smoke, `tests/unit/test_cell_owned_compartments.py` (NumPy) | At 09c83bf, 109 passed in 4.2 s. It covers the admission, the fail-closed marker check name by name, refusals 1 to 7, the identity block, the label's non-binding and the structure check. At 01eb558, 31 of its new cases failed: a data default restated at the same object passed the first, identity-based form of the check. Fixed in 09c83bf |
+| S5, `_identity.py` and `_identity_more.py` (tracing, no compile) | **Identical in all four pairs:** W under ARS and under RK4, W with clearance at the node beside exchange, and the declaration alone against no operators at all. At 2dc06ed, before the composite's branch change, the declaration alone differed, as the code reading foresaw |
+| S1 to S3 in W+, with a planted control in each program family | **They hold on every row, and every planted control breaks them** (01eb558). In each live check the owner's K row moves and \|φ_owner\| is at least 0.05 V. The programs: the scalar program, with (a) and (b); a restart from a checkpoint in process and through a snapshot, each bitwise, with (a) resumed; RK4 at 0.1 ms; the windowed program; the vector-window program, three live worlds with (a) as a fourth; and the batch program, likewise. All passed again at 09c83bf. Loaded times there: 41, 79, 75, 37, 54 and 37 s |
+| The contract's and composite's existing guards | `test_pump_composite_contract.py` 16 passed, its `Nothing` still refused; `test_membrane_state.py` 12 passed. `test_pump_composite_identity.py` 9 passed at c67e2cf: the empty composition still equals @3 bitwise, compiled, uncompiled, batched and restarted |
+| D148 criterion 1: crossrev, all seven sets against the baseline of record at da94f81 | **Identical at c67e2cf, at 01eb558 and at 38e8738** (the head's code with the fail-closed check and the identity map; after it, src changed only in the operator's docstring, ee498e5). Base: 36/36 jaxpr texts, 36/36 constants, 12/12 bindings. Qualification: 78/78, 78/78, 56/56. Injection and volume: 6/6, 6/6, 2/2 each. Division: 27/27, 27/27, 9/9, its check holding. Species and reactions: 24/24, 24/24, 8/8 each, their checks holding. |
+| D148 criteria 2 and 4 | The lead's landing gate (tier 1+2) and baseline renewal |
+| D148 criterion 3 | No ledger accumulator or diagnostic changes: the list of cases is empty |
+
+**Superseded, not deleted:** the five silence program files' passes in W at c67e2cf
+(`run-c67e2cf/tests/`), which could not fail, and S4 in W, identical only because nothing moved.
+
+**The reported claims** (no pass rule; `reported/s4_live_p2_sheet.py`, `run-01eb558/reported/`):
+- **S4 in W+**, with the export at 0, against the same world without the node, 21 rows:
+  - The node is silent and the owner live (\|φ\| up to 0.062 V).
+  - Every ionic field of the rest of the world is within 4 ulps of its scale (relative 7e-16).
+  - The exception is the energy-balance rate, a near-zero balance that differs at 2.6e-18 pJ/s.
+- **P2 on §9's heredity sheet** (`cell_replacement_fixtures.heredity_sheet(1, None)`): comp_0 on
+  cell_0, ARS at 1 ms for 0.1 s, 101 rows.
+  - comp_0 is silent on every row: S1 bitwise, S2 at 4.6e-6 of its bound, S3 at 2.1e-11. It floats
+    with its owner at up to 0.0797 V.
+  - The ionic fields differ from the sheet without it by at most 1.0e-12 relative (the electrode
+    current), 5.6e-13 (the amount increments) and 4.1e-13 (the membrane fluxes and bath supply).
+  - The capacitor residual and the energy balance differ by rounding around zero.
+- **P2 first ran on D150's heredity chain**, a deviation from §9 (`run-c67e2cf/reported/`):
+  - The chain's amounts are identical.
+  - Its largest relative changes are about 1.3e-8 in the electrode current and about 1e-9 in the
+    face fluxes and bath supply.
+  - Its extracellular potentials, about 3.5e-7 V, differ by 8.8e-17 V. On our reading (**S**), the
+    dense solve's rounding, relative to its largest potentials, falls on these small differences
+    through the chain's faces.
+  - comp_5 was silent there too, on 101 rows, with S2 at 9.3e-6 of its bound.
+- Both fit §3.3's expectation (**S**): equal in exact arithmetic, with the solve gaining a row that
+  rounds differently.
+
+**Not in milestone 1:**
+- the acceptance items C3 to C13 and their independent references (a separate agent, D169);
+- probes P1 and P3;
+- door S.
+
+**The composition matrix** (`validation/tissue/composition_matrix.py`; docs/PUMP_COMPOSITE.md, row
+and column 18). The declaration's twelve refusals all come from its `CONFLICTS_VIEW`.
+- **Eleven are real:** water's volumes (door V); membrane state's areas and capacitances (the
+  membrane-state wall); the lumens' volumes (not shown nominal); insertion@1's and @2's patch and
+  node masks (a bounding patch may be an onset patch, FR-2's door C); and the partition's cell mask
+  (door D).
+- **One is nominal, insertion@1's `face_active`:** no face names a compartment's node (refusal 1),
+  and insertion's face view differs from the declared only at faces naming its onset nodes. The
+  slots are disjoint, and the code is cited.
+- **Two rules at the definition:** the admitted list, law-level and failing closed, behind the
+  declarations' refusals; and replacement@1 kept off owners and donors, data-level.
+- The matrix test passes (6 passed), from a snapshot that includes docs/.
+- At 38e8738, the head with the matrix, every FR-1 file passed again.
+- At 7ffdeb4, with the declared ID and role and refusal 4's pump branch tested, every FR-1 file,
+  the matrix test and the contract tests passed (smoke 121 passed).
 
 ## Appendix A. Equations for the independent references
 

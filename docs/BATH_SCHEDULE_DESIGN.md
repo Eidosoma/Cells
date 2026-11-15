@@ -508,9 +508,130 @@ run, in HANDOFF. Evidence: `run-2a7e594/staircase/` (staircase.json, the probe i
     exceeds it at an event, every later row of the run is over it.
   - ARS's bound has a relative part, 2e-3 of the integrated flows, which grows after the event.
     Its refused rows end within 46 rows.
-- **Not built: a refusal at the definition of steps beyond the pinned ratio.** As D169 records
-  the limit, the host energy ledger refuses such a step in a species-only world, and a mixed world
-  runs it unseen. Making it a definition refusal is the lead's choice.
+- **Not built in milestone 1: a refusal at the definition of steps beyond the pinned ratio.** As
+  D169 records the limit, the host energy ledger refuses such a step in a species-only world, and a
+  mixed world runs it unseen. Milestone 2 builds the refusal (§8).
+
+**Milestone 2's probes** (the lead's ruling: run them first, with their criteria written first).
+Criteria and results are in HANDOFF, "FR-10 milestone 2"; the evidence is `m2-probes/run-3d16980/`.
+They ran from the clean snapshot of 3d16980, before the rule existed, as unit
+`cells-fr10-m2-probes-3d16980` (CPU 2, 2G cap, every arm in its own process; peak 0.90 GB, 911 s).
+An arm passes if the runner passes every host check on every row.
+- **Probe I, ion steps** (B2's world):
+  - One passive cell (1 pL) on a held bath at Na 145, K 5 and Cl 150 mM. Its cytosol is at Na 10,
+    K 140 and Cl 20 mM, with a K leak of 5e-10 m/s, and it starts at rest at E_K.
+  - At step 10, KCl replaces NaCl by x = 5(r − 1) mM, for r = 1.5, 3 and 10.
+  - **All six arms passed, under ARS at 1 ms and RK4 at 0.1 ms.**
+  - The K up points: (ratio, level) = (1.5, 7.5), (3, 15) and (10, 50 mM).
+  - The Na down points: (1.0175, 145), (1.0741, 145) and (1.45, 145 mM).
+  - The r = 3 arm is exactly milestone 1's tested salt step and isosmotic water step, K 5 to 15 mM
+    and Na 145 to 135 mM.
+- **Probe D, neutral steps down** (part R's world, κ/V = 10/s):
+  - From the resolved profile at c0 = 1e-2 and 1e-3 mM, the bath steps down by r = 10 and 100.
+  - **All eight arms passed, under both solvers.**
+  - The points: (10, 1e-3), (100, 1e-3), (10, 1e-2) and (100, 1e-2 mM).
+- A step down by 100 at 1e-2 mM passes ARS, while a step up by 100 to 0.1 mM does not. A step's
+  level is the larger of its two concentrations.
+
+## 8. Milestone 2: the step refusal and the species cap (15 November 2026)
+
+**The lead's rulings after milestone 1:**
+- a definition-time refusal of oversized dose steps, from the measured region, with ratio and
+  absolute size together;
+- `check_species_cap`, with a world above 7 species;
+- then, on this design point: run both probes first, and write the rule from measured regions only.
+  That means no blanket exemption for ions and no symmetric assumption for steps down, and
+  milestone 1's tested steps must lie inside what is measured (§7's milestone-2 probes).
+
+### 8.1 The rule: admit only what the measurements dominate
+
+For each scheduled bath and species, every change of the held content from c to c′ is a step. Both
+are positive, and they are compared in mM at the bath's volume.
+- **The step's terms:**
+  - its direction: up if c′ > c, else down;
+  - its ratio: r = max(c, c′)/min(c, c′);
+  - its level: L = max(c, c′).
+- **Its key:** neutral species (valence 0) share one key; each ion is keyed by its species ID. So
+  K's measured steps say nothing about Cl, and a step up says nothing about a step down.
+- **The step is admitted only if both hold:**
+  - a measured passing point (r_p, L_p) of its key and direction dominates it, with r ≤ r_p and
+    L ≤ L_p, to a relative 1e-9;
+  - the definition lies within the measured conditions: ARS(2,2,2) at dt ≤ 1 ms or RK4 at
+    dt ≤ 0.1 ms, and every face touching the bath relaxes its other node, for that species, at
+    κ/V ≤ 10/s, with κ = D A / L.
+- **Everything else is refused, fail closed.** The message names the bath, the species, the time,
+  the direction, r, L, and the measured points that would admit such a step. It points to dosing
+  through stairs inside the region.
+- **An idle schedule** (no event) has no step, so it is admitted at any solver and dt.
+
+**The measured points** (`bath_schedule.MEASURED_POINTS`; each passed under both solvers, §7):
+
+| Key, direction | Points (ratio, level mM) | From |
+| --- | --- | --- |
+| neutral, up | (100, 1e-3), (10, 1e-2), (3, 3e-3), (1.5, 1.5e-3) | the staircase probe |
+| neutral, down | (10, 1e-3), (100, 1e-3), (10, 1e-2), (100, 1e-2) | probe D |
+| K, up | (1.5, 7.5), (3, 15), (10, 50) | probe I |
+| Na, down | (1.0175, 145), (1.0741, 145), (1.45, 145) | probe I |
+
+- **Not measured, so refused:**
+  - any other ion or direction (Na up, K down, Cl, Ca, protons);
+  - faster faces;
+  - ARS above 1 ms, RK4 above 0.1 ms, and other solvers.
+  Each opens with its own measurement, added to the table.
+- **This is a guard, not a model.** The rule claims only that an admitted step lies inside what
+  was measured, in worlds of these classes.
+  - The host energy ledger remains the run-time check in species-only worlds.
+  - A mixed world's bound would not see a violation, which is why the refusal is at the
+    definition.
+  - The membrane rate beside the bath is not a dimension of the rule. Probe I's world had a K leak
+    of 5e-10 m/s, and faster membranes are unmeasured (**S**).
+- **The order of the checks in `check_definition`:** the species cap, then (beside water@1) the
+  isosmotic rule, then the step rule.
+
+### 8.2 The species cap
+
+`check_definition` calls `species_common.check_species_cap(spec, LAW_ID)`, as every species
+operator does (16 species, D165).
+
+### 8.3 Criteria, fixed before the tests ran
+
+**`tests/unit/test_bath_schedule_steps.py`** (NumPy, tier 1):
+- **Admitted:**
+  - the neutral corners;
+  - the staircase's smaller steps;
+  - neutral steps down at (100, 1e-2) and (10, 1e-3);
+  - K up at (10, 50), (3, 15) and (1.5, 7.5), with their Na steps down;
+  - RK4 at 0.1 ms;
+  - a slower face.
+- **Refused, each with its reason:**
+  - 1% past each neutral corner;
+  - the staircase's measured failures, (1e3, 1e-3), (100, 0.1) and (1e4, 10);
+  - the dose from nothing in one step;
+  - a step down past (100, 1e-2);
+  - K up past (10, 50);
+  - Na up and K down, never measured;
+  - a face of 11/s;
+  - ARS at 2 ms and RK4 at 0.2 ms.
+- **§7's admissible protocol is admitted whole** (six stairs of 100), and so is a washout by 100
+  at 1e-3 mM after it.
+- **An idle schedule** is admitted at 5 ms.
+- **Every measured point** is admitted by its region, and the same point 1% further out is not.
+- **The species cap:** 8 species admitted, 17 refused.
+
+**Milestone 1's tests stay as they are:** B3's step, the salt step and the isosmotic step lie
+inside the measured regions.
+
+**Crossrev:** no existing set contains the operator, and contract.py and pump_composite.py are
+unchanged, so every set stays identical.
+
+**Results** (clean snapshots of the branch, CPU 2, 2G cap):
+- **At bd3a295:** `test_bath_schedule_steps.py` 29 passed, and milestone 1's smoke test 36 passed,
+  its salt and isosmotic steps included.
+- **At 8dde04c:**
+  - the composition matrix test passed;
+  - B3 and B5 passed;
+  - the steps test failed once, on its own edge assertion: an interior point moved 1% out is still
+    dominated. It now checks corners only.
 
 ## Appendix A. Equations for the independent references
 

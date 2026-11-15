@@ -73,6 +73,49 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Phase start and failure records landed (item 3 of the architecture block, 15 November 2026).**
+  Tier 1 and 2 at the merge 85346c8: 440 files, no changed outcome
+  ([evidence](/mnt/workspaces/Cells/architecture-block-20261114-01/HANDOFF.md)).
+  - **What it records:** `core/phases.py` gains a `Recorder` per run path (runner, batch, windows,
+    vector windows).
+    - Each marked phase writes `<phase>.start`.
+    - Any exception leaving a path writes exactly one failure record (phase, type, seconds,
+      message), then propagates unchanged.
+    - Everything is at INFO, with no added device synchronisation.
+  - **Checks:**
+    - crossrev identical in all eight sets;
+    - the four run paths bitwise before and after the change (92 arrays);
+    - all seven run-path tier-3 files pass.
+  - **The run-view writer note** (`docs/RUN_VIEW_DESIGN.md`, D154) lands as proposed. It is under
+    the lead's review.
+
+- **FR-1 milestone 1, FR-10 milestone 2 and FR-3 milestone 1 landed (15 November 2026).** Tier 1
+  and 2 at the merge a917d72: 438 files, no changed outcome. The four files over the 90 s cap
+  passed when run on their own. This is development code; each qualification comes later.
+  - **FR-1, `cell_owned_compartments@1`** ([note](docs/CLOSED_COMPARTMENT_DESIGN.md) §12;
+    [evidence](/mnt/workspaces/Cells/closed-compartment-m1-20261114-01/HANDOFF.md)).
+    - **What it is:** a declared compartment with its own ID and role (no physics depends on the
+      role in version 1), carried as a host-side identity map.
+    - **How it enters:** a `DECLARATION_ONLY` marker in the contract that fails closed. A
+      composition of declarations alone takes the empty-composition path.
+    - **Silence:** S1–S3 hold on every row of the scalar, restart, RK4, windowed, vector-window and
+      batch programs. The world is a live owner, with planted controls that break silence. S4 and
+      S5 hold.
+    - **Crossrev:** identical in the seven da94f81 sets, under D148's record written first.
+  - **FR-10 milestone 2:** a dose step is admitted only where a measured passing point covers it in
+    ratio and level, with the solver and face conditions measured. The probes covered neutral
+    steps up and down, and K up and Na down for salt substitution. Everything else is refused, and
+    the species cap is checked.
+  - **FR-3, `site_occupancy@1`** ([note](docs/SITE_OCCUPANCY_DESIGN.md) §12;
+    [evidence](/mnt/workspaces/Cells/site-occupancy-m1-20261115-01/HANDOFF.md)).
+    - **What it does:** binding sites are owned by their own operator, with no field inputs, so an
+      occupancy-only world never refreshes the field.
+    - **Its integrator:** D152's SSPRK(3,3) with the per-route hybrid, reimplemented. It is
+      recorded as one shared block for D172's round.
+    - **Checks:** the face-free world at rounding, three negative controls, idle bitwise, restart
+      and batch, and the stage condition's refusal.
+  - **The composition matrix** now has 19 laws, with the new operators' refusals tagged.
+
 - **MG0c judged: the reactions operator `local_species_reactions@1` (D152 v1) is numerically
   qualified within MG0c's scope (15 November 2026).** The protocol `mg0c-turing-v1` was registered
   at 5ab4326 (tag `mg0c-v1-registered-2026-11-15`), and one judged run was made from a clean

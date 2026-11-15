@@ -2,8 +2,11 @@
 
 The markers are log records on "cells.phases": silent without a handler, and in order
 when one is attached (each world's plan, the plan, binding, compile, the first window;
-later windows at DEBUG). The windows' and the result's timing keys are unchanged, and
-phase_totals groups them into preparation, execution, observation and output.
+later windows at DEBUG). Each phase's start record comes before its completion record,
+which is unchanged (D156, item 3: the recorder's rules are tests/unit/test_phase_records.py;
+this path's refusal and its results are tests/unit/test_phase_records_vector.py). The windows'
+and the result's timing keys are unchanged, and phase_totals groups them into preparation,
+execution, observation and output.
 """
 
 import io
@@ -72,10 +75,26 @@ def test_markers_are_silent_without_a_handler(capsys):
 def test_markers_report_each_phase_as_it_ends(captured):
     windows = list(iter_vector_windows(cohort(), POLICY))
     names = [line.split()[2] for line in captured.getvalue().splitlines()]
+    ends = [name for name in names if not name.endswith(".start")]
     expected = ["plan.world", "plan.world", "plan", "binding", "compile", "first_window"]
-    assert names == expected + ["window"] * (len(windows) - 1)
+    assert ends == expected + ["window"] * (len(windows) - 1)
     first = next(line for line in captured.getvalue().splitlines() if " first_window " in line)
     assert "execute_seconds=" in first and "steps=" in first
+    # Each phase starts before it ends, plan.world inside plan.
+    world = ["plan.world.start", "plan.world"]
+    assert names == [
+        "plan.start",
+        *world,
+        *world,
+        "plan",
+        "binding.start",
+        "binding",
+        "compile.start",
+        "compile",
+        "first_window.start",
+        "first_window",
+        *["window.start", "window"] * (len(windows) - 1),
+    ]
 
 
 def test_the_timing_keys_are_unchanged():
