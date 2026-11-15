@@ -318,3 +318,17 @@ owner, answer to follow.
   its row's fall in free energy between the routes that move it; it cannot be measured
   apart, and the energy layer's legend says so wherever it shows routes and not elements.
   Elsewhere (pumped rows, tableau-booked routes) today's booking and checks are unchanged.
+
+### The first real feed (15 November 2026)
+
+- **Ready:** one development run of a secreted species, written through the engine's
+  shared output path from snapshot 5c2b04d6: one passive cell secretes a species into a
+  finite node that leaks to a held bath (`scheduled_species_turnover@1` and
+  `scheduled_species_exchange@1`; 4 s at a step of 1 ms; 21 records 0.2 s apart). It is
+  kept under `/mnt/workspaces/Cells/viewer-feed-20261115-01/secreted-species-dev-run/`
+  with a note that says "development run, no verdict". It is the first run the layers'
+  reader meets that the engine wrote by its own writer.
+- **Not yet:** the sheet with a written voltage pattern. Neither existing sheet builder
+  writes one through the shared writer unchanged, so it comes with the run view's writer
+  in the rework's round. Until then ion traffic and the energy glow on a sheet are shown
+  on examples with invented numbers, marked as such.
