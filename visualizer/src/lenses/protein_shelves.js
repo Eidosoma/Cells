@@ -24,13 +24,13 @@ export const BASES = ["stated", "predicted", "by function", "none"];
 
 // A family of this many proteins or more has a marker of its own; smaller ones are gathered,
 // by district and side, into one marker that opens to them. The same for the parts of
-// "no family", from this many.
+// "no family", from this many. Where a family stands on several shelves, it is the family's
+// members on every shelf and on none that count: every line of a family of five or more
+// stands on its own, however few it holds on its shelf, so that no such family is seen only
+// inside a gathering and a small shelf shows its families (settled on 15 November 2026, by
+// looking: the human's cell shelf is not swamped by it). The parts of "no family" likewise.
 export const OWN_FAMILY = 5;
 export const OWN_PART = 10;
-// Which lines of a family stand on their own, where it has several: one that holds that many
-// on its shelf ("line"); every line of a family that has that many in all ("family"); or,
-// besides the lines that hold that many, the largest line of such a family ("largest").
-export const STANDS = ["line", "family", "largest"];
 
 // The first letter in lower case, for a name within a sentence; an acronym keeps its capitals ("ER membrane").
 const lower = (text) => (/^[A-Z][A-Z]/.test(text) ? text : text.charAt(0).toLowerCase() + text.slice(1));
@@ -86,16 +86,22 @@ export const LICENCE_TAG = { permissive: "Permissive", "non-commercial": "Non-co
  * A file published beside the page: a species' shelves, or the members of its families. It
  * is looked for in the page first (<script type="application/json" data-file="path">), as a
  * page opened from disk carries it, then fetched from `path`, an address relative to the page.
+ * A request that gets no answer at all (a connection the server had just closed, a network
+ * that blinked) is made again after each of `waits` (milliseconds) before the page gives it
+ * up; an answer is taken at its word, "not there" included.
  */
-export async function loadBeside(path, { root = globalThis.document, fetcher = globalThis.fetch } = {}) {
+export async function loadBeside(path, { root = globalThis.document, fetcher = globalThis.fetch, waits = [400, 1500] } = {}) {
   const inline = root?.querySelector?.(`script[type="application/json"][data-file="${path}"]`);
   if (inline) return JSON.parse(inline.textContent);
   if (typeof fetcher !== "function") throw new Error("this page cannot fetch it");
-  let response;
-  try {
-    response = await fetcher(path);
-  } catch {
-    throw new Error(`${path} could not be fetched`);
+  let response = null;
+  for (let attempt = 0; !response; attempt++) {
+    try {
+      response = await fetcher(path);
+    } catch {
+      if (attempt >= waits.length) throw new Error(`${path} could not be fetched`);
+      await new Promise((resolve) => setTimeout(resolve, waits[attempt]));
+    }
   }
   if (!response.ok) throw new Error(`${path} answered ${response.status}`);
   return response.json();
@@ -222,7 +228,7 @@ function within(label) {
  *   byShelf   what stands on each shelf, and on none
  */
 export class Shelves {
-  constructor(data, { label = null, organism = null, links = null, units = null, stands = "line" } = {}) {
+  constructor(data, { label = null, organism = null, links = null, units = null } = {}) {
     const problems = validateShelves(data);
     if (problems.length) throw new Error(`the file of proteins does not follow its format: ${problems.slice(0, 3).join("; ")}`);
     this.data = data;
@@ -231,7 +237,6 @@ export class Shelves {
     this.organism = organism;
     this.links = links || {};
     this.units = units || new Map(); // inventory unit id -> the scene's part for it
-    this.stands = STANDS.includes(stands) ? stands : "line"; // which lines of a family stand on their own
     this.kind = Array.isArray(data.proteins) ? "proteins" : "families";
     this.shelves = data.shelves;
     this.shelf = data.shelves[0];
@@ -384,17 +389,16 @@ export class Shelves {
     for (const part of this.parts) part.district = this.noGroup.id;
     for (const item of this.families) item.district = item.group;
     for (const part of this.lone) part.district = part.group; // among the families of its district
-    // Which lines of a family stand on their own (`stands`): with one shelf the three ways are one.
+    // A line stands on its own if its family (or its part) has enough members on all its shelves
+    // together: the line says so itself (`total`), or its lines are added up. With one shelf that is its own count.
     const whole = (item) => (typeof item.total === "number" ? item.total : this.familyTotal(item));
-    const largest = (item) => (this.lines.get(`${item.type}:${item.id}`) || [item]).reduce((best, other) => (other.count > best.count ? other : best));
-    const standsAlone = (item, limit) => item.count >= limit || (this.stands === "family" && whole(item) >= limit) || (this.stands === "largest" && whole(item) >= limit && largest(item) === item);
     // The smaller ones, gathered: one marker for a district and a side (and, where there are
     // several shelves, for a shelf), which opens to them.
     const gather = (items, limit, type, words) => {
       const own = [], small = new Map();
       for (const item of items) {
         // A part that is not a superfamily (the proteins with a domain only, or no signature) stands alone.
-        if ((type === "m" ? standsAlone(item, limit) : item.count >= limit) || (type === "n" && item.kind && item.kind !== "superfamily")) own.push(item);
+        if (whole(item) >= limit || (type === "n" && item.kind && item.kind !== "superfamily")) own.push(item);
         else {
           const id = `${item.district}|${item.side}`, among = this.several ? `${item.shelf ?? ""}|${id}` : id;
           if (!small.has(among)) small.set(among, { type, key: this.keyFor(type, id, item.shelf), id, district: item.district, group: item.group, side: item.side, shelf: item.shelf, holds: [], count: 0, sides: {}, units: [], where: [] });
@@ -518,20 +522,6 @@ export class Shelves {
       "not known": this.several
         ? { short: "Side not known", long: `No source states its side of ${one.split(",")[0]} and nothing predicts it: set apart beside its shelf, not placed by guess`, swatch: "own-unknown" }
         : { short: "Side not known", long: "No source states the side and nothing predicts it: set apart, not placed by guess", swatch: "own-unknown" },
-    };
-  }
-
-  /**
-   * The names of the four sides where they are counted over every shelf together (the
-   * legend): with one shelf, that shelf's own; with several, words that hold for any shelf.
-   */
-  sideWordsOverall() {
-    if (!this.several) return this.sideWords();
-    return {
-      outside: { short: "Beyond its membrane", long: "Beyond the membrane of its shelf: outside the cell, or on the far side of an inner membrane", swatch: "own-outside" },
-      in: { short: "In a membrane", long: "Spans the membrane of its shelf", swatch: "own-in" },
-      inside: { short: "Within its membrane", long: "Enclosed by the membrane of its shelf: inside the cell, or within a compartment", swatch: "own-inside" },
-      "not known": { short: "Side or place not known", long: "No source states the side, or any place at all, and nothing predicts it: set apart, not placed by guess", swatch: "own-unknown" },
     };
   }
 
@@ -820,13 +810,25 @@ export class Shelves {
     return tally;
   }
 
+  /**
+   * What holds a candidate product of a machine Cells has a law for, in a catalogue that
+   * stands as families: the families that do (one with lines on several shelves counted
+   * once), the gatherings of families of one, the groups of "no family" (counted once
+   * likewise), and the markers at rest that are lit for any of them.
+   */
+  lawHolders() {
+    const held = (items = []) => items.filter((item) => item.units.length);
+    const once = (items) => new Set(held(items).map((item) => item.id)).size;
+    return { families: once(this.families), lone: held(this.lone).length, parts: once(this.parts), markers: held(this.kind === "families" ? this.markers : []).length };
+  }
+
   /** A row of the list for a marker or a protein. A member named only after its family is told apart by its identifier. */
   listed(item) {
     const label = item.type === "p" && item.under && item.label === item.under.label ? `${item.label} · ${item.id}` : item.type === "p" ? item.label : `${item.label} · ${item.count.toLocaleString("en-US")}`;
-    const row = { id: item.key, label, short: item.gene || null, keywords: [item.id, item.gene, item.under?.label].filter(Boolean).join(" "), swatch: item.units?.length ? "map-assigned" : item.type === "p" ? "own-plain" : "own-family" };
-    // With several shelves the same family is listed once for each: the row says which shelf, so the list can tell them apart.
-    if (this.several) row.shelf = item.shelf ?? null;
-    return row;
+    // With several shelves the same family is listed once for each shelf it stands on, each row
+    // with that line's own key. The row does not name the shelf: the list's headings do (a
+    // shelf's name among a row's words would make a search for "membrane" find every row).
+    return { id: item.key, label, short: item.gene || null, keywords: [item.id, item.gene, item.under?.label].filter(Boolean).join(" "), swatch: item.units?.length ? "map-assigned" : item.type === "p" ? "own-plain" : "own-family" };
   }
 }
 

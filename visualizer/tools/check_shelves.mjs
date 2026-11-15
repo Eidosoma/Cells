@@ -6,8 +6,13 @@
 //
 //   node tools/check_shelves.mjs [SCENARIO] [SCENE_FILE] [OUT_DIR]
 //
-// SCENARIO is syn3a (the default), planarian, nofiles, resize, units-small, shots or
-// pictures. The last three are aids: units-small gives three proteins a unit in the page's
+// SCENARIO is syn3a (the default), planarian, human, nofiles, resize, units-small, shots or
+// pictures. human checks a species with several shelves, on the human's file: the stack,
+// a shelf in focus, a family over its own shelf, the same family on another shelf, the
+// families of one, what is set apart, the list, the keyboard and a phone-sized window; with
+// OUT_DIR it also writes pictures of what it reaches (the whole stack and a shelf, wide and
+// phone-sized, in both themes), so that these need no further browser runs. The
+// last three are aids: units-small gives three proteins a unit in the page's
 // own copy of the data, shots writes pictures into OUT_DIR, and pictures writes there the
 // pictures that the JSON file named by PICTURES asks for, one by one: each
 // { name, query, size: [width, height], run, wait }, where `run` is a script for the page
@@ -129,6 +134,19 @@ const press = async (selector, wait = 400) => {
   const at = await middle(selector);
   if (!at) throw new Error(`nothing matches ${selector}`);
   await click(at.x, at.y, wait);
+};
+// The species switch. It is a dropdown since 15 November 2026 (one pill, and a list of the
+// species while it is open): press the pill, wait for the list, press the species' row and
+// wait for the list to close, as pickSpecies() of tools/check_input.mjs does. On a tree from
+// before the dropdown the species stand side by side as buttons, and one press does it.
+const pickSpecies = async (id, wait = 400) => {
+  if (!(await evaluate(`Boolean(${V}.shadowRoot.querySelector(".species-pick"))`))) return press(`[data-species="${id}"]`, wait);
+  const listOpen = () => evaluate(`(() => { const box = ${V}.shadowRoot.querySelector(".species-list"); return Boolean(box && !box.hidden); })()`);
+  if (!(await listOpen())) await press(".species-pick", 250);
+  for (let tries = 0; tries < 30 && !(await listOpen()); tries++) await sleep(100);
+  await press(`.species-list [data-atlas="${id}"]`, 250);
+  for (let tries = 0; tries < 30 && (await listOpen()); tries++) await sleep(100);
+  await sleep(wait);
 };
 const shot = async (name) => {
   if (!outDir) return; // pictures are written only when a folder is given
@@ -261,7 +279,7 @@ try {
     s = await state();
     check("and back to its own proteins", s.show === "own" && s.drawn?.markers === 455, JSON.stringify([s.show]));
     // The choice is kept for the next species; a species without proteins of its own shows the machines and says so.
-    await press('[data-species="human"]');
+    await pickSpecies("human");
     // Whether the scene names a catalogue for the human decides what is right here: with one, the
     // choice is kept and its own proteins are shown once they are in; without, the machines and one line.
     const humanHas = await evaluate(`Boolean(${L}.atlas.shelves?.some((item) => item.id === "human"))`);
@@ -270,7 +288,7 @@ try {
     s = await state();
     if (humanHas) check("Human: the choice is kept, and its own proteins are shown", s.show === "own" && s.heading === "Human proteins" && s.drawn?.markers > 0, JSON.stringify([s.show, s.heading, s.notice, s.drawn?.markers]));
     else check("Human: the machines, with one line that its own catalogue is not made", s.show === "units" && s.heading === "The proteins Cells models" && /not made yet/.test(s.notice || "") && s.modes === "", JSON.stringify([s.show, s.heading, s.notice, s.modes]));
-    await press('[data-species="mpneumoniae"]');
+    await pickSpecies("mpneumoniae");
     await sleep(600);
     s = await state();
     check("M. pneumoniae: its own 688 proteins", s.show === "own" && s.drawn?.markers === 688, JSON.stringify([s.show, s.drawn]));
@@ -395,6 +413,267 @@ try {
     s = await state();
     check("the legend shows the families holding a machine with a law alone", s.lit > 0 && s.lit < 60, `${s.lit} lit; ${s.legend}`);
     await shot("planarian-units-only");
+  }
+
+  if (scenario === "human") {
+    // A species with several shelves, on the human's file. The scene must name its catalogue.
+    const S = "own:human:s@"; // a shelf's key: this, its id, and ":shelf"
+    const stack = () =>
+      evaluate(`(() => {
+        const v = ${V}, lens = v.current, view = lens.mounted;
+        if (!view) return null;
+        const shown = (el) => !el.classList.contains("is-off") && !el.hidden && el.textContent;
+        const rig = v.stage.rig, frame = view.focusFrame();
+        return {
+          several: view.shelves.several, total: view.shelves.total, columns: view.arranged.columns, opens: view.opens,
+          frames: view.frames.map((item) => [item.id, item.proteins]),
+          focused: view.focused === undefined ? "stack" : view.focused,
+          names: [...v.shadowRoot.querySelectorAll('[data-label^="${S}"]')].filter(shown).map((el) => el.textContent),
+          districts: view.districts.filter((item) => item.tag && !item.tag.hidden).map((item) => item.frame.id),
+          distance: Math.round(rig.flight ? rig.flight.to.distance : rig.distance),
+          // Whether the shelf in focus lies within the picture: the middle of its membrane, and its two far corners.
+          within: frame ? [[(frame.bounds.minX + frame.bounds.maxX) / 2, frame.origin.y, (frame.bounds.minZ + frame.bounds.maxZ) / 2], [frame.bounds.minX, frame.origin.y, frame.bounds.minZ], [frame.bounds.maxX, frame.origin.y, frame.bounds.maxZ]].every((at) => { const point = new view.group.position.constructor(...at), out = point.clone(); v.stage.project(point, out); return out.x > 0 && out.x < v.stage.width && out.y > 0 && out.y < v.stage.height; }) : null,
+          dish: view.dish ? { above: Math.round(view.dish.to.y - view.nodeOf(view.dish.item.key).base), frame: view.nodeOf(view.dish.item.key).frame.id, members: view.dish.count } : null,
+          // The legend's own heading (its first block's, shown on a narrow window) and the headings of its further blocks.
+          legend: [v.shadowRoot.querySelector("cells-legend .legend-toggle span")?.textContent, ...[...v.shadowRoot.querySelectorAll("cells-legend .legend-title")].map((el) => el.textContent)].join(" | "),
+        };
+      })()`);
+    const opened = (key) => evaluate(`new Promise((resolve) => { const lens = ${L}, began = performance.now(); const wait = () => (lens.mounted?.opened?.key === ${JSON.stringify(key)} || performance.now() - began > 20000 ? resolve(lens.mounted?.opened?.key ?? null) : setTimeout(wait, 40)); wait(); })`);
+    // Names are laid out with the first frame drawn after they are made, which on a busy machine comes late: wait until one is shown.
+    const named = async (id = "") => {
+      for (let tries = 0; tries < 80; tries++) {
+        if (await evaluate(`[...${V}.shadowRoot.querySelectorAll('[data-label^="${S}${id}"]')].some((el) => !el.classList.contains("is-off"))`)) break;
+        await sleep(250);
+      }
+      await sleep(300);
+    };
+    const pick = (expression) => evaluate(`(() => { const v = ${V}, view = v.current.mounted, shelves = view.shelves; return (${expression}); })()`);
+    const button = async (pattern) => {
+      const at = await evaluate(`(() => { const found = [...${V}.shadowRoot.querySelectorAll("cells-panel .link-button")].find((el) => new RegExp(${JSON.stringify(pattern)}).test(el.textContent)); if (!found) return null; found.scrollIntoView({ block: "nearest" }); const r = found.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+      if (!at) throw new Error(`no link in the panel matches ${pattern}`);
+      await click(at.x, at.y, 500);
+    };
+    // With a folder for pictures: one of the state the scenario has reached, in the page's
+    // light theme and, switched in the page and back, in its dark one.
+    const both = async (name) => {
+      if (!outDir) return;
+      await still();
+      await shot(name);
+      await evaluate(`(document.documentElement.dataset.theme = "dark")`);
+      await sleep(1200);
+      await shot(`${name}-dark`);
+      await evaluate(`delete document.documentElement.dataset.theme`);
+      await sleep(900);
+    };
+
+    await open("lens=proteins&species=human");
+    let s = await state();
+    const has = await evaluate(`Boolean(${L}.atlas.shelves?.some((item) => item.id === "human"))`);
+    check("the scene names a catalogue for the human", has, "build the scene with data/proteins/human in place");
+    check("the human opens on Cells' machines, and the switch offers its own proteins", s.show === "units" && s.heading === "The proteins Cells models" && /units\*/.test(s.modes) && /own:Its [\d,]+ proteins/.test(s.modes), JSON.stringify([s.show, s.heading, s.modes]));
+    await press('.view-card [data-show="own"]');
+    for (let tries = 0; tries < 160 && !(await evaluate(`Boolean(${L}.mounted)`)); tries++) await sleep(250);
+    await still();
+    await named();
+    s = await state();
+    let k = await stack();
+    check("its own proteins stand on six shelves and apart from them, each named with what stands on it", k?.several && k.frames.length === 7 && k.frames.at(-1)[0] === null && k.names.length === 7 && k.names.every((name) => /· [\d,]+$/.test(name)) && k.frames.reduce((sum, item) => sum + item[1], 0) === k.total, JSON.stringify([k?.frames, k?.names]));
+    check("a wide window shows the whole stack, as two staircases side by side, with no district named", k.focused === "stack" && k.columns === 2 && k.opens === "stack" && k.districts.length === 0, JSON.stringify([k.focused, k.columns, k.opens, k.districts.length]));
+    check("the card counts the families that open beside the families in all, and the legend lists the shelves and no side", /families that open/.test(s.stats) && /families in all/.test(s.stats) && /^Shelves \|/.test(k.legend) && /The whole stack=[\d,]+\*/.test(s.legend) && /Nuclear envelope=[\d,]+(,|$)/.test(s.legend) && /No place known=[\d,]+/.test(s.legend) && !/In the cell membrane=/.test(s.legend), JSON.stringify([s.stats, k.legend, s.legend]));
+    note(`whole stack: ${JSON.stringify(await frame())}, ${s.drawn.markers} markers`);
+    await both("human-stack-wide");
+
+    // Pressing a shelf's name brings it near: its districts are named, the legend speaks of it, the panel describes it.
+    const far = k.distance;
+    await press(`[data-label="${S}nucleus:shelf"]`, 600);
+    await still();
+    s = await state();
+    k = await stack();
+    check("pressing a shelf's name frames that shelf and names its districts", k.focused === "nucleus" && k.within === true && k.distance < far && k.districts.length > 0 && k.districts.every((id) => id === "nucleus"), JSON.stringify([k.focused, k.within, k.distance, far, k.districts.length]));
+    check("the panel describes the shelf, and the legend counts its sides in its own words", s.panel?.title === "Nuclear envelope" && /one of 6 shelves/i.test(s.panel?.eyebrow || "") && /Nuclear envelope: sides/.test(k.legend) && /In the nucleus=[\d,]+/.test(s.legend) && /Nuclear envelope=[\d,]+\*/.test(s.legend), JSON.stringify([s.panel?.title, s.panel?.eyebrow, k.legend, s.legend]));
+    await shot("human-shelf-with-its-panel-wide");
+
+    // A family opens over its own shelf, a lower one, and closes back to that shelf.
+    const family = await pick(`(() => { const node = [...view.nodes.values()].filter((n) => n.frame.id === "mito" && n.item.type === "f").sort((a, b) => b.item.count - a.item.count)[0]; return { key: node.item.key, count: node.item.count, label: node.item.label }; })()`);
+    await evaluate(`${V}.select(${JSON.stringify(family.key)}, { fly: true })`);
+    await opened(family.key);
+    await still();
+    s = await state();
+    k = await stack();
+    check("a family opens over its own shelf", s.opened === family.key && k.dish?.frame === "mito" && k.dish.members === family.count && k.dish.above >= 20 && k.focused === "mito" && /Open/.test(s.open || ""), JSON.stringify([s.opened, k.dish, k.focused, s.open]));
+    await shot("human-family-open-wide");
+    if (outDir) {
+      // The same from a low angle and further back, where a veil that lay wrong would leave its own area bare and hang over the next.
+      await evaluate(`(() => { const rig = ${V}.stage.rig; rig.flight = null; window.wasAt = { polar: rig.polar, distance: rig.distance }; rig.polar = 1.2; rig.distance *= 1.6; rig.apply(); ${V}.stage.invalidate(); })()`);
+      await sleep(900);
+      await shot("human-family-open-low-angle-wide");
+      await evaluate(`(() => { const rig = ${V}.stage.rig; rig.polar = window.wasAt.polar; rig.distance = window.wasAt.distance; rig.apply(); ${V}.stage.invalidate(); })()`);
+      await sleep(600);
+    }
+    await evaluate(`${V}.canvas.focus()`);
+    await key("Escape", "Escape", 27); // letting go of the family that is open closes it
+    await still();
+    s = await state();
+    k = await stack();
+    check("Escape closes it, back to its shelf", s.selected === null && s.opened === null && s.open === null && k.focused === "mito" && k.within === true, JSON.stringify([s.selected, s.opened, s.open, k.focused, k.within]));
+
+    // The same family on another shelf: the panel's link goes to that shelf and selects the line there.
+    const split = await pick(`(() => { const line = shelves.families.find((item) => item.shelf === "cell" && !item.within && shelves.sameFamily(item).some((other) => other.shelf && !other.within)); const other = shelves.sameFamily(line).find((item) => item.shelf && !item.within); return { key: line.key, id: line.id, other: other.key, shelf: other.shelf, label: shelves.shelfOf(other).label, count: other.count }; })()`);
+    await evaluate(`${V}.select(${JSON.stringify(split.key)}, { fly: true })`);
+    await opened(split.key);
+    await still();
+    s = await state();
+    check("a family's panel lists its lines on the other shelves", /same family on other shelves/i.test(s.panel?.heads || ""), JSON.stringify(s.panel?.heads));
+    await button(`^${split.label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} · ${split.count}$`);
+    await opened(split.other);
+    await still();
+    s = await state();
+    k = await stack();
+    check("its link goes to that shelf and selects the family's line there", s.selected === split.other && s.opened === split.other && k.focused === split.shelf, JSON.stringify([s.selected, s.opened, k.focused, split]));
+    // A key that names the family and no shelf (an address, a link from elsewhere) lands on its line with the most members.
+    await evaluate(`${V}.select(null)`);
+    await evaluate(`${V}.current.back()`);
+    await still();
+    const largest = await pick(`(() => { const line = shelves.families.reduce((best, item) => (item.count > best.count ? item : best)); return { key: line.key, bare: "own:human:f:" + line.id, count: line.count, shelf: line.shelf }; })()`);
+    await evaluate(`${V}.select(${JSON.stringify(largest.bare)}, { fly: true })`);
+    await opened(largest.key);
+    await still();
+    s = await state();
+    k = await stack();
+    check("a key that names no shelf lands on the family's largest line", s.opened === largest.key && k.dish?.members === largest.count && k.focused === largest.shelf && Boolean(s.panel?.title), JSON.stringify([s.opened, k.dish, k.focused, s.panel?.title]));
+    note(`the largest line open (${largest.count} members): ${JSON.stringify(await frame())}`);
+    await evaluate(`${V}.select(null)`);
+    await evaluate(`${V}.current.back()`);
+    await still();
+
+    // Families of one: the part opens straight to its proteins, and each names its family.
+    const lone = await pick(`(() => { const node = [...view.nodes.values()].filter((n) => n.frame.id === "er" && n.item.type === "l").sort((a, b) => b.item.count - a.item.count)[0]; return { key: node.item.key, count: node.item.count }; })()`);
+    await evaluate(`${V}.select(${JSON.stringify(lone.key)}, { fly: true })`);
+    await opened(lone.key);
+    await still();
+    s = await state();
+    k = await stack();
+    check("a gathering of families of one opens to its proteins, and is not called a family", s.opened === lone.key && k.dish?.members === lone.count && k.dish.frame === "er" && /only one of its family/i.test(s.panel?.eyebrow || "") && /This is not a family/.test(s.panel?.plain || ""), JSON.stringify([s.opened, k.dish, s.panel?.eyebrow]));
+    const member = await at("(key) => true");
+    await click(member.x, member.y, 500);
+    s = await state();
+    const facts = await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel .facts dt")].map((dt) => dt.textContent + ": " + dt.nextElementSibling.textContent).join(" | ")`);
+    check("each of its proteins names its own family", s.selected === member.key && /Family: .+: its only member in this catalogue/.test(facts) && /Shelf: Endoplasmic reticulum membrane/.test(facts), facts);
+    await shot("human-families-of-one-open-wide");
+    await evaluate(`${V}.select(null)`);
+    await evaluate(`${V}.current.back()`);
+    await still();
+    // What a frame costs with the largest thing that opens to proteins: a gathering of families of one.
+    const most = await pick(`(() => { const item = shelves.markers.filter((one) => one.type !== "m" && one.type !== "n").reduce((best, one) => (one.count > best.count ? one : best)); return { key: item.key, count: item.count }; })()`);
+    await evaluate(`${V}.select(${JSON.stringify(most.key)}, { fly: true })`);
+    await opened(most.key);
+    await still();
+    k = await stack();
+    note(`the largest that opens to proteins (${most.count}, ${most.key}), ${k.dish?.members} drawn: ${JSON.stringify(await frame())}`);
+    await evaluate(`${V}.select(null)`);
+    await evaluate(`${V}.current.back()`);
+    await still();
+
+    // What is set apart: beside a shelf, the proteins of that shelf with no side known; in front of all, those with no place.
+    const apart = await pick(`(() => {
+      const frame = view.frames.find((item) => item.id === "mito"), area = frame.areas.find((item) => item.id === "apart");
+      const beside = area.blocks.flatMap((block) => block.places.map((place) => place.item));
+      const none = view.frames.find((item) => item.id === null), loose = none.areas[0].blocks.flatMap((block) => block.places.map((place) => place.item));
+      const entry = (id) => shelves.byShelf.find((item) => item.id === id);
+      return { beside: beside.length, besideSides: [...new Set(beside.map((item) => item.side))], besideShelves: [...new Set(beside.map((item) => item.shelf))], lower: area.centre.y < frame.origin.y, counted: entry("mito").counts["not known"],
+        none: loose.length, noneShelves: [...new Set(loose.map((item) => item.shelf))], noneProteins: none.proteins, noneCounted: entry(null).proteins, lowest: view.frames.every((item) => item.id === null || item.origin.y > none.origin.y), inFront: view.frames.every((item) => item.id === null || item.bounds.maxZ < none.bounds.minZ) };
+    })()`);
+    check("beside a shelf stand its proteins with no side known, lower than its membrane", apart.beside > 0 && apart.besideSides.join() === "not known" && apart.besideShelves.join() === "mito" && apart.lower && apart.counted > 0, JSON.stringify(apart));
+    check("what has no place stands apart from every shelf, in front of all and lowest", apart.none > 0 && apart.noneShelves.length === 1 && apart.noneShelves[0] === null && apart.noneProteins === apart.noneCounted && apart.lowest && apart.inFront, JSON.stringify(apart));
+    // Its name is pressed from the whole stack, where it is in the picture.
+    await evaluate(`${V}.current.setFinding("stack")`);
+    await still();
+    await named(":shelf");
+    await press(`[data-label="${S}:shelf"]`, 600);
+    await still();
+    s = await state();
+    k = await stack();
+    check("its name brings it near like a shelf's, and the panel says what it is", k.focused === null && k.within === true && s.panel?.title === "No place known" && /on no shelf/i.test(s.panel?.eyebrow || ""), JSON.stringify([k.focused, k.within, s.panel?.title, s.panel?.eyebrow]));
+    await evaluate(`${V}.select(null)`);
+
+    // The list: the shelves first, then each shelf's districts; a search finds a family on each shelf it stands on.
+    await evaluate(`${V}.toggleIndex(true)`);
+    await sleep(500);
+    const heads = await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-index h3")].map((h) => h.textContent)`);
+    check("the list has the shelves first and then each shelf's districts", /^Shelves/.test(heads[0] || "") && heads.some((head) => /^Cell membrane · /.test(head)) && heads.some((head) => /^Nuclear envelope · /.test(head)), JSON.stringify(heads.slice(0, 4)));
+    await shot("human-list-wide");
+    // A family with a line on more than one shelf, each on a shelf: one whose lines stand on
+    // their own, and a smaller one whose lines stand gathered. Each with the shelves it is on.
+    const twice = (gathered, long) =>
+      pick(`(() => { const all = (item) => [item, ...shelves.sameFamily(item)]; const line = shelves.families.find((item) => all(item).length > 1 && all(item).every((one) => one.shelf != null && Boolean(one.within) === ${gathered}) && item.label.length > ${long} && !/[^A-Za-z -]/.test(item.label)); return line ? { label: line.label, on: all(line).map((one) => shelves.shelfOf(one).label).sort() } : null; })()`);
+    // The rows a search for a name finds, each with the heading it stands under.
+    const found = async (label) => {
+      await evaluate(`(() => { const input = ${V}.shadowRoot.querySelector("cells-index input"); input.value = ${JSON.stringify(label.toLowerCase())}; input.dispatchEvent(new Event("input")); })()`);
+      await sleep(400);
+      return evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-index section")].flatMap((section) => [...section.querySelectorAll(".index-row")].map((row) => row.textContent.replace(/\\s+/g, " ").trim()).filter((row) => row.startsWith(${JSON.stringify(label + " ·")})).map((row) => [section.querySelector("h3").textContent, row]))`);
+    };
+    const under = (rows, on, tail) => rows.length === on.length && JSON.stringify(rows.map(([head]) => on.find((label) => (tail ? head === label + tail : head.startsWith(label + " · "))) || "").sort()) === JSON.stringify(on);
+    const small = await twice(true, 12);
+    const smallRows = small ? await found(small.label) : [];
+    check("a smaller family, which stands gathered, is found under each shelf it is gathered on", Boolean(small) && under(smallRows, small.on, " · Smaller families and groups"), JSON.stringify([small, smallRows]));
+    const term = await twice(false, 6);
+    const rows = term ? await found(term.label) : [];
+    check("a search finds a family on each shelf it stands on, under that shelf's heading", Boolean(term) && under(rows, term.on), JSON.stringify([term, rows]));
+    await shot("human-list-search-wide");
+    await evaluate(`${V}.shadowRoot.querySelector("cells-index .index-row").focus()`);
+    await key("Enter", "Enter", 13);
+    await still();
+    s = await state();
+    check("Enter on a row chooses it", Boolean(s.selected) && /^own:human:/.test(s.selected), String(s.selected));
+    await evaluate(`${V}.toggleIndex(false)`);
+    await evaluate(`${V}.select(null)`);
+    await evaluate(`${V}.current.back()`);
+    await evaluate(`${V}.current.back()`);
+    await still();
+
+    // The keyboard: Page Down and Page Up move between the shelves, Home shows the whole stack, Escape leaves a shelf.
+    await evaluate(`${V}.canvas.focus()`);
+    k = await stack();
+    const start = k.focused;
+    await key("PageDown", "PageDown", 34);
+    await still();
+    const first = (await stack()).focused;
+    await key("PageDown", "PageDown", 34);
+    await still();
+    const second = (await stack()).focused;
+    await key("PageUp", "PageUp", 33);
+    await still();
+    const back = (await stack()).focused;
+    await key("Home", "Home", 36);
+    await still();
+    const home = (await stack()).focused;
+    check("Page Down and Page Up move between the shelves, and Home shows the whole stack", start === "stack" && first === "cell" && second === "er" && back === "cell" && home === "stack", JSON.stringify([start, first, second, back, home]));
+    await key("PageDown", "PageDown", 34);
+    await still();
+    await both("human-shelf-wide");
+    await key("Escape", "Escape", 27);
+    await still();
+    k = await stack();
+    s = await state();
+    check("Escape leaves the shelf for the whole stack, and the legend follows", k.focused === "stack" && /The whole stack=[\d,]+\*/.test(s.legend), JSON.stringify([k.focused, s.legend]));
+
+    // A phone-sized window: one staircase, and the page opens on the first shelf.
+    await size(390, 844);
+    await open("lens=proteins&species=human&show=own");
+    for (let tries = 0; tries < 160 && !(await evaluate(`Boolean(${L}.mounted)`)); tries++) await sleep(250);
+    await still();
+    k = await stack();
+    check("a phone-sized window opens on the first shelf, of one staircase", k?.columns === 1 && k.opens === "shelf" && k.focused === "cell" && k.districts.length > 0 && k.districts.every((id) => id === "cell"), JSON.stringify([k?.columns, k?.opens, k?.focused, k?.districts.length]));
+    if (outDir) {
+      await named("cell");
+      await both("human-shelf-phone");
+      // The whole stack on the phone, as Home or the legend's row brings it.
+      await evaluate(`${L}.mounted.focusOn(undefined)`);
+      await still();
+      await sleep(600);
+      await both("human-stack-phone");
+    }
+    await size(WIDTH, HEIGHT);
   }
 
   if (scenario === "motion") {
@@ -544,7 +823,7 @@ try {
       const data = JSON.parse(JSON.stringify(old.data));
       const at = Object.fromEntries(data.columns.map((name, index) => [name, index]));
       const given = [];
-      for (const [side, unit] of [["in", "U01"], ["outside", "U39"], ["inside", "U48"]]) {
+      for (const [side, unit] of [["in", "U01"], ["outside", "U39"], ["inside", "U47"]]) {
         const line = data.proteins.find((row) => row[at.side] === side && !row[at.unit]);
         line[at.unit] = unit;
         given.push(line[at.id]);
@@ -581,10 +860,10 @@ try {
     await press('.view-card [data-show="own"]', 900);
     const again = await state();
     check("asking for them again asks the page again, and the atlas stays", again.show === "units" && /could not be loaded/.test(again.notice || ""), JSON.stringify([again.show, again.notice]));
-    await press('[data-species="planarian"]', 900);
+    await pickSpecies("planarian", 900);
     const worm = await state();
     check("the planarian's machines are drawn as before, with the same line", worm.show === "units" && worm.heading === "Planarian atlas" && /could not be loaded/.test(worm.notice || ""), JSON.stringify([worm.show, worm.heading, worm.notice]));
-    await press('[data-species="human"]', 600);
+    await pickSpecies("human", 600);
     for (let tries = 0; tries < 60 && (await evaluate(`${L}.ownState("human")?.status`)) === "loading"; tries++) await sleep(250);
     const human = await state();
     // With a catalogue named in the scene, the human is like the others here: its files are not beside the page.

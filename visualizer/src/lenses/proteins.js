@@ -25,18 +25,11 @@ import { soften } from "../core/materials.js";
 import { disposeTree } from "../core/stage.js";
 import { makeEnvironment } from "../core/environment.js";
 import { SHEET, UPPER, buildUnit, findingMark, membrane, outline } from "./protein_parts.js";
-import { BASES, LICENCE_NOTE, LICENCE_TAG, SIDES, STANDS, Shelves, licenceClass, loadBeside } from "./protein_shelves.js";
-import { ShelvesView, columnsFor, shapeFor } from "./shelves_view.js";
+import { BASES, LICENCE_NOTE, LICENCE_TAG, NO_SHELF, SIDES, Shelves, licenceClass, loadBeside, plural } from "./protein_shelves.js";
+import { ShelvesView, columnsFor, opensFor, shapeFor } from "./shelves_view.js";
 
-// Three choices of the drawing of several shelves are still to be settled by looking (stage B,
-// 15 November 2026). Until they are, each can be asked for in the page's address, so that it
-// can be shown: stands=line|family|largest (which lines of a family stand on their own),
-// arrange=one|two|three (how many staircases side by side), open=stack|shelf (what the page
-// opens on). Once chosen, the choice is written here and this goes.
-const trial = (name, values) => {
-  const said = new URLSearchParams(globalThis.location?.search || "").get(name);
-  return values.includes(said) ? said : null;
-};
+// The legend's row for the whole stack of a species with several shelves, beside its shelves' rows.
+const WHOLE = "stack";
 
 const PITCH = 11.5; // spacing of units within a district
 const GUTTER = 9; // between districts
@@ -401,12 +394,14 @@ export class ProteinLens {
     const state = this.own.get(this.page);
     if (state?.status !== "ready") return null;
     const shape = shapeFor(this.stage);
-    // Several shelves stand as one staircase on a narrow screen and as more, side by side, on a wide one.
-    const asked = { one: 1, two: 2, three: 3 }[trial("arrange", ["one", "two", "three"])];
-    const columns = state.shelves.several ? asked || columnsFor(this.stage) : 1;
-    const key = `${shape}:${columns}`;
+    // Several shelves stand as two staircases side by side on a wide screen, where the page opens
+    // on the whole stack as a map to pick a shelf from; and as one staircase on a narrow screen,
+    // where it opens on the first shelf (settled on 15 November 2026, by looking at both).
+    const columns = state.shelves.several ? columnsFor(this.stage) : 1;
+    const opens = state.shelves.several ? opensFor(this.stage) : "stack";
+    const key = `${shape}:${columns}:${opens}`;
     if (!state.views.has(key)) {
-      const view = new ShelvesView(this, state.shelves, { shape, columns, opens: trial("open", ["stack", "shelf"]) || "stack" });
+      const view = new ShelvesView(this, state.shelves, { shape, columns, opens });
       view.applyPalette(this.stage.palette);
       state.views.set(key, view);
     }
@@ -417,8 +412,17 @@ export class ProteinLens {
     return this.mounted ? this.mounted.bounds : this.board;
   }
 
+  /**
+   * The shelves' own key for a key as it was given, or null: a family named without its
+   * shelf (in an address, or by a page of another species, where it has the same id) is
+   * the family's line with the most members.
+   */
+  ownKey(id) {
+    return (id && this.ownData()?.resolve(id)) || null;
+  }
+
   has(id) {
-    return this.nodes.has(id) || Boolean(this.ownData()?.get(id));
+    return this.nodes.has(id) || Boolean(this.ownKey(id));
   }
 
   entities() {
@@ -433,7 +437,8 @@ export class ProteinLens {
 
   /** A part the shelves make themselves: one protein, a family, or a gathering of small ones. */
   describe(id) {
-    return this.ownData()?.describe(id) || null;
+    const key = this.ownKey(id);
+    return key ? this.ownData().describe(key) : null;
   }
 
   // ------------------------------------------------------------ the species' own proteins
@@ -453,7 +458,7 @@ export class ProteinLens {
       .then((data) => {
         if (data.species !== id) throw new Error(`${summary.file} holds the proteins of ${data.species}`);
         const units = new Map(this.model.inGroup("proteins").map((unit) => [unit.id.replace(/^unit\./, ""), unit.id]));
-        state.shelves = new Shelves(data, { label: named.label, organism: named.organism, links: this.atlas.shelf_links, units, stands: trial("stands", STANDS) || "line" });
+        state.shelves = new Shelves(data, { label: named.label, organism: named.organism, links: this.atlas.shelf_links, units });
         state.status = "ready";
       })
       .catch((error) => {
@@ -538,9 +543,28 @@ export class ProteinLens {
 
   /** Close the family that is open, if one is. Returns whether one was. */
   back() {
-    if (!this.mounted?.opened && !this.mounted?.wanted) return false;
-    this.mounted.close();
-    return true;
+    const view = this.mounted;
+    if (view?.opened || view?.wanted) {
+      view.close();
+      return true;
+    }
+    // Of several shelves: from the shelf in focus back to the whole stack.
+    return Boolean(view?.shelves.several && view.focused !== undefined && view.focusOn(undefined));
+  }
+
+  /**
+   * The keys that move between the shelves of a species with several, when the picture has
+   * the keyboard: Page Down to the next shelf, Page Up to the one before, Home to the whole
+   * stack. (Escape closes what is open, then leaves the shelf: see back().)
+   */
+  onKey(event) {
+    const view = this.mounted;
+    if (!this.active || !view?.shelves.several || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.key === "PageDown") view.stepShelf(1);
+    else if (event.key === "PageUp") view.stepShelf(-1);
+    else if (event.key === "Home") view.focusOn(undefined);
+    else return;
+    event.preventDefault();
   }
 
   /**
@@ -550,7 +574,7 @@ export class ProteinLens {
   letGo(held) {
     const view = this.mounted;
     if (!view?.opened) return;
-    const item = held ? view.shelves.get(held) : null;
+    const item = held ? view.shelves.get(view.shelves.resolve(held) || held) : null; // a key given without its shelf is the family's largest line
     if (!held || item === view.opened || item?.within === view.opened) view.close();
   }
 
@@ -616,22 +640,38 @@ export class ProteinLens {
   /** What the page says while the species' own proteins are shown: the card, the legend, the caveat. */
   ownChrome() {
     const view = this.mounted, shelves = view.shelves, data = shelves.data;
-    // The legend counts the sides over every shelf, so with several shelves its words are those that hold for any.
-    const words = shelves.sideWordsOverall(), families = shelves.kind === "families";
+    const families = shelves.kind === "families", several = shelves.several;
+    // Of several shelves the legend's first block counts the sides of the shelf in focus, in
+    // that shelf's own words. Of the whole stack it lists none: a side means something else on
+    // each shelf, and the legend then lists the shelves themselves (its third block).
+    const near = several && view.focused !== undefined ? shelves.byShelf.find((entry) => entry.id === view.focused) || null : null;
+    const words = shelves.sideWords(near ? near.id : undefined);
     const total = shelves.total, basis = shelves.byBasis();
+    // What holds a candidate product of a machine Cells has a law for. With one shelf, its
+    // families (or its proteins). With several: the families that do on any shelf, the
+    // gatherings of families of one and the groups of "no family" that do, and the markers
+    // that are lit for them (Shelves.lawHolders).
     const withUnit = (families ? shelves.families : shelves.proteins).filter((item) => item.units.length).length;
+    const holders = families && several ? shelves.lawHolders() : null;
+    const lawFamilies = holders ? holders.families : withUnit, lawLone = holders ? holders.lone : 0, lawParts = holders ? holders.parts : 0;
+    const lawMarkers = holders ? holders.markers : withUnit;
     const unknown = shelves.counts["not known"];
     const soft = basis.predicted + basis["by function"];
     const counted = !families || Boolean(data.by_basis); // a large catalogue counts its sides by basis in the file, or not at all
     const some = (count, all) => (count === all ? (all === 1 ? "its one" : `all ${number(all)}`) : `${number(count)} of the ${number(all)}`);
     // The legend: where a protein sits, how that is known, and one of its marks.
     const legend = {
-      title: "Side of the membrane",
-      items: SIDES.map((side) => ({ id: side, label: words[side].short, description: words[side].long, count: shelves.counts[side], swatch: words[side].swatch })),
+      title: !several ? "Side of the membrane" : near ? (near.id === null ? "No place known" : `${near.label}: sides`) : "Shelves",
+      // With one shelf, its four sides. Of several: the sides the shelf in focus has anything on (one that is isolated stays listed).
+      items: !several
+        ? SIDES.map((side) => ({ id: side, label: words[side].short, description: words[side].long, count: shelves.counts[side], swatch: words[side].swatch }))
+        : near
+          ? SIDES.filter((side) => near.counts[side] || view.isolate === side).map((side) => ({ id: side, label: words[side].short, description: words[side].long, count: near.counts[side], swatch: words[side].swatch }))
+          : [],
     };
     const filter = families
       ? withUnit
-        ? { title: "Cells' laws", unit: "families", items: [{ id: "units", label: "Holds parts of a machine with a law", title: "Families that hold candidate products of a unit of the law inventory. Cells has no law for any other.", count: withUnit }], active: view.units ? "units" : null }
+        ? { title: "Cells' laws", unit: several ? "markers" : "families", items: [{ id: "units", label: "Holds parts of a machine with a law", title: "Families that hold candidate products of a unit of the law inventory. Cells has no law for any other.", count: lawMarkers }], active: view.units ? "units" : null }
         : null
       : {
           title: "How the side is known",
@@ -641,6 +681,8 @@ export class ProteinLens {
         };
     const marks = shelves.filterable();
     const mark = this.markShown(shelves);
+    // The legend's third block: the values of one mark; or, of several shelves in families, the
+    // shelves themselves with what stands on each, and the whole stack. Pressing one brings it near.
     const findings = mark
       ? {
           title: mark.measured ? `${mark.label}, measured` : mark.label,
@@ -648,15 +690,28 @@ export class ProteinLens {
           items: mark.items.map((item) => ({ id: item.id, label: item.label, count: item.count, title: mark.note || "" })),
           active: view.mark?.name === mark.id ? view.mark.value : null,
         }
-      : null;
+      : several && families
+        ? {
+            title: "Shelves",
+            unit: "proteins",
+            items: [
+              { id: WHOLE, label: "The whole stack", count: total, title: "Every shelf at once, and what has no place: a map to pick a shelf from." },
+              ...shelves.byShelf.map((entry) => ({ id: entry.id ?? NO_SHELF, label: entry.label ?? "No place known", count: entry.proteins, title: entry.shelf ? `Bring the shelf near: ${shelves.membraneOf(entry.id)}.` : "What has no stated place and nothing predicted: apart from every shelf." })),
+            ],
+            active: view.focused === undefined ? WHOLE : view.focused ?? NO_SHELF,
+          }
+        : null;
     // The shelf's own name, as the file gives it, and what its sides cover where the file says more than their names.
-    const several = !shelves.several && shelves.shelf.outside !== words.outside.short;
-    const shelf = shelves.several
+    // Whether the one shelf says more of its sides than their names.
+    const fuller = !several && shelves.shelf.outside !== words.outside.short;
+    const shelf = several
       ? `The shelves, one for each membrane the data tells apart: ${shelves.shelves.map((item) => item.label).join("; ")}.`
-      : `The shelf: ${shelves.shelf.label}.` + (several ? ` ${shelves.shelf.outside}. ${shelves.shelf.inside}.` : "");
+      : `The shelf: ${shelves.shelf.label}.` + (fuller ? ` ${shelves.shelf.outside}. ${shelves.shelf.inside}.` : "");
     const law = withUnit
       ? families
-        ? `${number(withUnit)} families hold candidate products of machines Cells has laws for: they carry the machine's shape. Cells has no law for any other protein here.`
+        ? several
+          ? `${[plural(lawFamilies, "family", "families"), lawLone ? `${plural(lawLone, "gathering")} of families of one` : "", lawParts ? `${plural(lawParts, "group")} of proteins with no family` : ""].filter(Boolean).join(", ").replace(/, ([^,]*)$/, " and $1")} hold candidate products of machines Cells has laws for. Cells has no law for any other protein here.`
+          : `${number(withUnit)} families hold candidate products of machines Cells has laws for: they carry the machine's shape. Cells has no law for any other protein here.`
         : `${number(withUnit)} of them are drawn as the machine Cells has a law for. Every other is a plain marker: Cells has no law for it.`
       : "Cells has no law for any of these proteins: every one is a plain marker.";
     const sides =
@@ -676,6 +731,9 @@ export class ProteinLens {
       `Sides: ${sides}.${apart}`,
       data.from ? `The catalogue: ${data.from}` : null,
       ...notes,
+      // Of several shelves the card itself is kept short, beside the legend's list of shelves: what it leaves out is said here.
+      several && families ? `A family has a marker on each shelf that holds members of it, and stands there on the side where most of those members sit. Every line of a family of five or more opens on its own; smaller families are gathered by district and side. "${shelves.noFamily.label}" holds the ${number(shelves.noFamily.count)} proteins that have none, by what else they share.` : null,
+      several && families && shelves.loneAll.count ? `Families of one: ${number(shelves.loneAll.count)} families have a single member in this catalogue. Their proteins stand together, by shelf, district and side, in ringed markers that open straight to them; each names its family.` : null,
       data.family_from ? `Families: ${data.family_from}` : null,
       data.no_family?.parts_from ? `No family: ${data.no_family.parts_from}` : null,
       data.groups_from ? `Districts: ${data.groups_from}` : null,
@@ -685,8 +743,8 @@ export class ProteinLens {
       caveat: view.status
         ? null
         : families
-        ? `A round marker is a family of ${shelves.predicted ? "predicted proteins" : "proteins"}: press it to open it. ${shelves.predicted ? "Sides are predictions on predicted proteins." : counted ? `${soft >= total / 2 ? "Most sides" : `${number(soft)} sides`} are predicted or inferred, not measured.` : "Each protein's panel says how its side is known."} ${several ? `The shelf: ${lower(shelves.shelf.label)}. ` : ""}${withUnit ? "A drawn shape is a machine Cells has a law for; a plain marker has none." : "Cells has no law for any of them."}`
-        : `Each marker is one protein of ${shelves.label}, by its side of the membrane. ${soft >= total / 2 ? "Most sides" : `${number(soft)} sides`} are predicted or inferred, not measured. ${several ? `The shelf: ${lower(shelves.shelf.label)}. ` : ""}${withUnit ? "A drawn shape is a machine Cells has a law for; a plain marker has none." : "Cells has no law for any of them."}`,
+        ? `A round marker is a family of ${shelves.predicted ? "predicted proteins" : "proteins"}: press it to open it. ${shelves.predicted ? "Sides are predictions on predicted proteins." : counted ? `${soft >= total / 2 ? "Most sides" : `${number(soft)} sides`} are predicted or inferred, not measured.` : "Each protein's panel says how its side is known."} ${fuller ? `The shelf: ${lower(shelves.shelf.label)}. ` : ""}${withUnit ? "A drawn shape is a machine Cells has a law for; a plain marker has none." : "Cells has no law for any of them."}`
+        : `Each marker is one protein of ${shelves.label}, by its side of the membrane. ${soft >= total / 2 ? "Most sides" : `${number(soft)} sides`} are predicted or inferred, not measured. ${fuller ? `The shelf: ${lower(shelves.shelf.label)}. ` : ""}${withUnit ? "A drawn shape is a machine Cells has a law for; a plain marker has none." : "Cells has no law for any of them."}`,
       status: view.status || null,
       stamp: `${shelves.label} proteins${data.made ? ` of ${day(data.made)}` : ""} · ${number(total)}`,
       legend,
@@ -699,15 +757,22 @@ export class ProteinLens {
         ...this.ownChoice(),
         // A family that could not be opened is said on the card too; what is being fetched, under the picture only.
         notice: view.failed ? view.status : null,
+        // Of several shelves: the families that open (those with a line), beside the families in all, with those of one member.
         stats: families
-          ? [[number(total), shelves.predicted ? "proteins, all predicted" : "proteins"], [number(shelves.familyCount), "families that open"], [number(shelves.noFamily.count), "with no family"]]
-          : [[number(total), "proteins"], [number(shelves.counts.in + shelves.counts.outside), "in or on the membrane"], [number(withUnit), "with a law in Cells"]],
+          ? several
+            ? [[number(total), shelves.predicted ? "proteins, all predicted" : "proteins"], [number(shelves.familyCount), "families that open"], [number(shelves.familiesInAll), "families in all"]]
+            : [[number(total), shelves.predicted ? "proteins, all predicted" : "proteins"], [number(shelves.familyCount), "families that open"], [number(shelves.noFamily.count), "with no family"]]
+          : [[number(total), "proteins"], [number(shelves.counts.in + shelves.counts.outside), several ? "in a membrane or beyond one" : "in or on the membrane"], [number(withUnit), "with a law in Cells"]],
         open: opened ? { label: opened.label, count: `${number(opened.count)} ${opened.count === 1 ? "protein" : "proteins"}`, id: opened.key } : null,
         text: families
-          ? `Every protein of the catalogue is here, in families. A round marker is one family, sized by its members: press it and it opens to every one of them. A ringed marker gathers a district's smaller families. "${shelves.noFamily.label}" holds the ${number(shelves.noFamily.count)} that have none, by what else they share.`
+          ? several
+            ? `Every protein of the catalogue is here, on ${number(shelves.shelves.length)} shelves: a shelf is a membrane, and a protein stands outside it, in it or inside it. A round marker is a family on that shelf; a ringed one gathers smaller families, or families of one.`
+            : `Every protein of the catalogue is here, in families. A round marker is one family, sized by its members: press it and it opens to every one of them. A ringed marker gathers a district's smaller families. "${shelves.noFamily.label}" holds the ${number(shelves.noFamily.count)} that have none, by what else they share.`
           : "Every protein of the catalogue is one marker, in the district of its function: on the membrane if it is outside the cell, through it if it spans it, on the glass below if it is inside.",
         check: families
-          ? `${law} ${shelves.predicted ? "Every protein here is itself predicted, and so is its side: a prediction on a predicted protein, not a measurement." : soft ? `The side of ${some(soft, total)} is predicted or taken from what the protein does, not measured.` : ""} A family stands where most of its members sit.${apart}`
+          ? several
+            ? law
+            : `${law} ${shelves.predicted ? "Every protein here is itself predicted, and so is its side: a prediction on a predicted protein, not a measurement." : soft ? `The side of ${some(soft, total)} is predicted or taken from what the protein does, not measured.` : ""} A family stands where most of its members sit.${apart}`
           : `${law} ${soft ? `The side of ${some(soft, total)} is predicted or taken from what the protein does, not measured.` : ""}${apart}`,
         marks: marks.length > 1 ? { label: "Show by", options: marks.map((item) => [item.id, item.label]), active: mark.id } : null,
         method: made,
@@ -785,10 +850,14 @@ export class ProteinLens {
     stage.rig.setView(this.homeView());
     this.buildLabels();
     this.refresh();
+    // The picture's own keys, while this view is shown.
+    this.keys ??= (event) => this.onKey(event);
+    stage.renderer.domElement.addEventListener("keydown", this.keys);
   }
 
   deactivate() {
     this.active = false;
+    if (this.keys) this.stage.renderer.domElement.removeEventListener("keydown", this.keys);
     this.mounted?.reset(); // an open family closes with the view
     this.stage.scene.remove(this.mounted ? this.mounted.group : this.root);
     this.stage.scene.environment = null;
@@ -892,9 +961,10 @@ export class ProteinLens {
 
   /** What is in focus: a unit of the board, or a protein or a family of the shelves. Choosing either shows where it stands. */
   setSelection(id) {
-    if (id && !this.nodes.has(id) && this.ownData()?.get(id)) {
+    const own = id && !this.nodes.has(id) ? this.ownKey(id) : null;
+    if (own) {
       if (!this.mounted) this.enter("own");
-      this.mounted?.setSelection(id);
+      this.mounted?.setSelection(own);
       return;
     }
     if (id && this.nodes.has(id) && this.mounted) this.enter("units");
@@ -934,7 +1004,10 @@ export class ProteinLens {
   /** Show only the units for which the species' atlas found one thing (the legend's third block). */
   setFinding(finding) {
     const view = this.mounted;
-    if (view) {
+    if (view && view.shelves.several && view.shelves.kind === "families") {
+      // Of several shelves the block lists the shelves: one comes into focus, or the whole stack does.
+      view.focusOn(finding === null || finding === WHOLE ? undefined : finding === NO_SHELF ? null : finding);
+    } else if (view) {
       // On the shelves the block lists the values of one mark.
       const mark = this.markShown(view.shelves);
       view.mark = mark && finding !== null && mark.items.some((item) => item.id === String(finding)) ? { name: mark.id, value: String(finding) } : null;

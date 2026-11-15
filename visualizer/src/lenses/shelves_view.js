@@ -142,6 +142,11 @@ export function columnsFor(stage) {
   return stage.width >= 1100 && stage.width > stage.height * 1.25 ? 2 : 1;
 }
 
+/** What the page opens on, where a species has several shelves: the whole stack on a wide screen, as a map to pick a shelf from; the first shelf on a narrow one, where the whole stack does not read. */
+export function opensFor(stage) {
+  return stage.width < 760 ? "shelf" : "stack";
+}
+
 function circle(radius, steps = 96) {
   const points = Array.from({ length: steps + 1 }, (_, index) => new THREE.Vector3(Math.cos((index / steps) * Math.PI * 2) * radius, 0, Math.sin((index / steps) * Math.PI * 2) * radius));
   return new THREE.BufferGeometry().setFromPoints(points);
@@ -466,18 +471,20 @@ export class ShelvesView {
     this.bounds = { minX: Math.min(...this.frames.map((frame) => frame.bounds.minX)), maxX: Math.max(...this.frames.map((frame) => frame.bounds.maxX)), minZ: Math.min(...this.frames.map((frame) => frame.bounds.minZ)), maxZ: Math.max(...this.frames.map((frame) => frame.bounds.maxZ)), minY: Math.min(...this.frames.map((frame) => frame.bounds.minY)), maxY: Math.max(...this.frames.map((frame) => frame.bounds.maxY)) };
     // The veils: above what stands on the shelves, below an open family. One shelf has one
     // that reaches far past it, as it always had. Of several shelves each area has its own,
-    // close above what stands there and reaching a little to the front, towards the eye: so
-    // it covers its area from where the picture is seen, and none hangs over the area in
-    // front of it, which lies lower.
+    // close above what stands there and no larger than the area. Seen at a slant, a veil
+    // above an area would leave its near edge bare and hang over the area in front; so each
+    // is kept between the eye and its own area, moved as the camera moves (placeVeils).
     this.veils = [];
     const far = 3 * Math.max(this.bounds.maxX - this.bounds.minX, this.bounds.maxZ - this.bounds.minZ);
-    const veiled = (geometry, width, depth, x, y, z) => {
+    const veiled = (geometry, width, depth, x, y, z, above = 0) => {
       const veil = new THREE.Mesh(geometry, this.veilMaterial);
       veil.scale.set(width, 0.05, depth);
       veil.position.set(x, y, z);
       veil.renderOrder = 5;
       veil.visible = false;
       veil.userData.blocker = true;
+      veil.userData.at = new THREE.Vector3(x, y, z);
+      veil.userData.above = above; // how far above what stands on its area the veil lies
       this.group.add(veil);
       this.veils.push(veil);
     };
@@ -486,8 +493,9 @@ export class ShelvesView {
       veiled(G.disc, far, far, (box.minX + box.maxX) / 2, this.frames[0].origin.y + RISE - 5.2, (box.minZ + box.maxZ) / 2); // above what stands on the shelves, below an open family
     } else {
       for (const area of present) {
-        const above = area.id === "plate" ? RISE - 5.2 : 9, forward = above * 0.9;
-        veiled(G.slab, area.width + 12, area.depth + 3 + forward, area.centre.x, area.centre.y + above, area.centre.z + (forward - 3) / 2);
+        // Above the membrane's middle as one shelf's veil is; above the glass or the outline, clear of what stands on it.
+        const lift = area.id === "plate" ? RISE - 5.2 : 9, stands = area.id === "plate" ? HALF + 2.5 : 1.5;
+        veiled(G.slab, area.width + 10, area.depth + 8, area.centre.x, area.centre.y + lift, area.centre.z, lift - stands);
       }
     }
     // The names of the sides lie at the back of the areas they belong to, and the shelf's own on its membrane.
@@ -540,16 +548,24 @@ export class ShelvesView {
       const members = shelves.membersOf(this.opened) || [];
       out.push({ label: `Open: ${this.opened.label} · ${plural(members.length, "protein")}`, entities: members.map((item) => shelves.listed(item)), limit: 300 });
     }
-    for (const district of this.districts) {
-      // Each shelf has its own words for its sides; with several shelves a section says which shelf it is of.
-      const words = shelves.sideWords(several ? district.frame.id : undefined);
-      const side = district.area === "plate" ? `${words.in.short} or ${words.outside.short.toLowerCase()}` : district.area === "tray" ? words.inside.short : district.frame.id === null && several ? "No place known" : "Side not known";
-      out.push({ label: `${several && district.frame.shelf ? `${district.frame.shelf.label} · ` : ""}${district.path} · ${side}`, entities: district.places.map((place) => shelves.listed(place.item)), limit: 200 });
+    // Of several shelves, the shelves themselves come first: choosing one brings it near.
+    if (several) out.push({ label: "Shelves", entities: this.frames.filter((frame) => frame.item).map((frame) => shelves.listed(frame.item)) });
+    // The smaller families, which stand gathered: found by name only.
+    const small = shelves.kind === "families" ? [...shelves.families, ...shelves.parts].filter((item) => item.within) : [];
+    const gathered = (items, label) => out.push({ label, entities: items.map((item) => shelves.listed(item)), searchOnly: true, limit: 200 });
+    // Of several shelves the list goes shelf by shelf, as the picture does: a family that stands
+    // on more than one is found under each, and a section's heading says which shelf it is of.
+    for (const frame of several ? this.frames : [null]) {
+      for (const district of this.districts) {
+        if (frame && district.frame !== frame) continue;
+        // Each shelf has its own words for its sides.
+        const words = shelves.sideWords(several ? district.frame.id : undefined);
+        const side = district.area === "plate" ? `${words.in.short} or ${words.outside.short.toLowerCase()}` : district.area === "tray" ? words.inside.short : district.frame.id === null && several ? "No place known" : "Side not known";
+        out.push({ label: `${several && district.frame.shelf ? `${district.frame.shelf.label} · ` : ""}${district.path} · ${side}`, entities: district.places.map((place) => shelves.listed(place.item)), limit: 200 });
+      }
+      if (frame && small.length) gathered(small.filter((item) => (item.shelf ?? null) === frame.id), frame.shelf ? `${frame.shelf.label} · Smaller families and groups` : "Smaller families and groups · No place known");
     }
-    if (shelves.kind === "families") {
-      const small = [...shelves.families, ...shelves.parts].filter((item) => item.within);
-      out.push({ label: "Smaller families and groups", entities: small.map((item) => shelves.listed(item)), searchOnly: true, limit: 200 });
-    }
+    if (!several && shelves.kind === "families") gathered(small, "Smaller families and groups");
     return out;
   }
 
@@ -766,11 +782,25 @@ export class ShelvesView {
     this.stage.invalidate();
   }
 
+  /**
+   * Of several shelves: keep each area's veil between the eye and its own area. A veil lies
+   * above what it covers, so from a slant it is moved towards the camera by as much as a
+   * line of sight runs sideways over that height.
+   */
+  placeVeils() {
+    if (this.veils.length < 2) return;
+    const rig = this.stage.rig;
+    const lean = Math.tan(Math.min(1.3, Math.max(0, rig.polar)));
+    const x = Math.sin(rig.azimuth) * lean, z = Math.cos(rig.azimuth) * lean;
+    for (const veil of this.veils) veil.position.set(veil.userData.at.x + x * veil.userData.above, veil.userData.at.y, veil.userData.at.z + z * veil.userData.above);
+  }
+
   /** Place a dish along its way: 0 at its marker, small; 1 above the shelves, full size. */
   settleDish(dish, t) {
     const k = ease(t);
     dish.grown = k;
     for (const veil of this.veils) veil.visible = true;
+    this.placeVeils();
     this.veilMaterial.opacity = VEIL * k;
     dish.group.position.lerpVectors(dish.from, dish.to, k);
     dish.group.scale.setScalar(0.03 + 0.97 * k);
@@ -829,6 +859,8 @@ export class ShelvesView {
 
   update(dt) {
     let moving = false;
+    // While anything is open, the veils follow the camera.
+    if (this.dish || this.leaving) this.placeVeils();
     // A family just opened, or the window or the panel changed: the picture is framed again,
     // unless the camera was moved by hand since it was last framed.
     const framing = this.framing;
@@ -890,17 +922,46 @@ export class ShelvesView {
     this.selected = item ? key : null;
     // A shelf chosen (its name pressed) comes into focus; so does the shelf of whatever else is chosen.
     if (item && this.shelves.several) {
-      const shelf = item.type === "p" ? item.shelf : item.shelf ?? null;
+      const shelf = item.shelf ?? null;
       const moved = this.focused !== shelf;
       this.focused = shelf;
       if (item.type === "s") {
-        if (this.opened) this.close({ quiet: true });
+        if (this.opened || this.wanted) this.close({ quiet: true });
         this.stage.rig.flyTo(this.frame("shelf"), 900);
       } else if (moved) this.framing = null; // the opening family, or the fly to a protein, frames the picture
+      if (moved) this.lens.onChrome?.(); // the legend's words and its row for the shelf follow
     }
     const opens = this.selected ? this.opener(this.selected) : null;
     if (opens && opens !== this.opened) this.open(opens.key);
     this.paint();
+  }
+
+  /**
+   * Bring a shelf into focus (its id; null for what stands on no shelf), or the whole stack
+   * (undefined): what is open closes, the camera frames it, and its names are shown. The
+   * panel of a shelf that was chosen follows to the new one. Returns whether the focus changed.
+   */
+  focusOn(id) {
+    if (!this.shelves.several || (id !== undefined && !this.frames.some((frame) => frame.id === id))) return false;
+    const changed = id !== this.focused;
+    if (this.opened || this.wanted) this.close({ quiet: true });
+    this.focused = id;
+    this.stage.rig.flyTo(this.frame(id === undefined ? "home" : "shelf"), 900);
+    this.paint();
+    this.lens.onChrome?.();
+    // A shelf's own panel, if it is the one open, goes with the focus: to the new shelf, or away with the whole stack.
+    if (changed && this.selected && this.shelves.get(this.selected)?.type === "s") {
+      const next = id === undefined ? null : this.frames.find((frame) => frame.id === id)?.item?.key || null;
+      this.stage.renderer.domElement.dispatchEvent(new CustomEvent("cells-select", { detail: { id: next }, bubbles: true, composed: true }));
+    }
+    return changed;
+  }
+
+  /** From the shelf in focus to the next one (1) or the one before (-1), in the stack's order; past either end, the whole stack. */
+  stepShelf(direction) {
+    const order = [undefined, ...this.frames.map((frame) => frame.id)];
+    const at = order.indexOf(this.focused);
+    return this.focusOn(order[(at + direction + order.length) % order.length]);
   }
 
   /** Whether a frame's own names are shown: always with one shelf; of several, those of the shelf in focus. */
@@ -930,8 +991,9 @@ export class ShelvesView {
       // With many districts on a shelf, the larger ones are named first where names would collide.
       district.tag = labels.add({ text: district.label, anchor: district.anchor, priority: 500 + Math.min(190, Math.sqrt(district.count) * 6), kind: "layer label-district label-shelf", lift: -8 });
     }
-    // A shelf's own name is always there, and of several shelves it can be pressed; the names of its sides are its frame's.
-    this.notes = this.sides.map((side) => Object.assign(labels.add({ ...(side.id ? { id: side.id } : {}), text: side.text, anchor: side.anchor, priority: side.shelf ? 900 : 700, kind: "note", lift: 0 }), { side }));
+    // A shelf's own name is always there. Of several shelves it can be pressed, so it is a
+    // label of the kind that takes the pointer (a note does not); the names of its sides are notes of its frame.
+    this.notes = this.sides.map((side) => Object.assign(labels.add(side.id ? { id: side.id, text: side.text, anchor: side.anchor, priority: 900, kind: "part label-shelf", lift: 6 } : { text: side.text, anchor: side.anchor, priority: side.shelf ? 900 : 700, kind: "note", lift: 0 }), { side }));
     for (const node of this.nodes.values()) node.label = null;
     if (this.shelves.kind === "families") {
       // The largest families are named where they stand; the rest are named under the pointer.
