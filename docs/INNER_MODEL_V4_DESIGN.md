@@ -72,7 +72,8 @@
    declared once, where species are declared. Maintained fuel is held inventory rows, not pump
    parameters (ARCHITECTURE.md; §10.2 says what that means for today's pumps). FR-4's first case
    runs on maintained fuel; the finite-fuel case (a regeneration reaction and a pump sharing finite
-   ATP, ADP and Pi) stays separate.
+   ATP, ADP and Pi) stays separate, with its own acceptance world (D176 item 2, §7.4 (g) 2), and
+   finite rows are the transporter kind's default fuel.
 9. **The name** (§6). **Decided (D176): kept,** `resolved_pump_tissue@3`, with the snapshot, tag
    and results-gate provenance.
 10. **When** (§15.5, refreshed). MG0c and Track R are judged, and main is tagged
@@ -721,6 +722,18 @@ registry code.
    - The model gains one field, `species_registry`, default None, omitted from `to_dict` when None,
      so every existing definition keeps its fingerprint. `to_dict` writes the entries back through
      `species_registry.to_entries`.
+   - **Refreshed against the operators' registry (e66fea95, 15 November):**
+     - `parse_entries(raw_model)` also pops `standard_concentration_mM`, and returns None when
+       nothing is declared; the hook calls `species_registry.check_definition(spec)` ahead of @3's
+       own checks, so the registry's refusal, which names the background to declare, fires first;
+     - two-form rows carry `protonated_standard_mu_RT`; the stage read takes K at binding from
+       `dissociation_constant_mM(spec, base, proton)`, the closure's own formula a cross-check
+       test;
+     - `check_two_form_rows` refuses in-step movers of a two-form row. The inner model's movers come
+       from `moved_rows`, which gains each declared transporter's roles and finite fuel rows with
+       the transporter kind; the stage read moves nothing;
+     - the hook lands on `core-d172` after the registry is on `integration-d172` (merged in, never
+       rebased).
 
 #### (g) Answers to FR-4 and FR-5 (COMPARTMENT_PH_TRANSFER_DESIGN.md, branch `fr45-physics`)
 
@@ -795,15 +808,28 @@ registry code.
      - `domain_valid(...)`: |ΔG_cyc/RT| ≤ 80, and the fuel node's pH band;
      - `stage_term`, its electrogenic conductance for the stage rule, and `loop_term`;
      - its definition-time bound term, `provenance` and B8's fields.
-   - **Held rows:** `maintained_held_rows@1` (name **S**).
-     - The population names its fuel node, the hydrolysing cell, and its fuel rows (ATP, ADP, Pi).
-       They are read at every stage as rows nothing moves, and never moved.
-     - The definition refuses a held row that any in-step mover or operator writes (OPS's
-       `moved_in_step`, and D152's one-writer rule).
-     - Δ_rG'° comes from the registry's potentials (B3, OPS's), never from the pump.
-     - The supplied work per cycle, −Δ_rG'_ATP, is booked as today's metabolic work. The
-       maintenance's material record (+1 ATP, −1 ADP, −1 Pi per cycle) is an accumulator of the
-       population.
+   - **Fuel, two kinds, finite the default** (revised 15 November for D176 item 2's acceptance
+     world). The population names its fuel node (the hydrolysing cell) and its fuel rows (ATP,
+     ADP, Pi), and one kind:
+     - **`finite_fuel_rows@1` (name S), the default:** the pump moves its fuel rows in the step,
+       −1 ATP, +1 ADP and +1 Pi per forward cycle at the fuel node, inward-positive like its other
+       roles, booked in @3's material ledgers. Δ_rG'° comes from the registry's potentials at its
+       c0. The fuel rows' standard-potential term (Σ μ°' n) is stored free energy in the energy
+       ledger, as D152's operator-owned term, and no work is supplied. The fuel rows are in-step
+       movers: `moved_rows` lists them, so the operators' `moved_in_step` and
+       `check_two_form_rows` see them, and D150's writers and instantaneous reads refuse them;
+     - **`maintained_held_rows@1` (name S), the special case:** the rows are read at every stage
+       and never moved; the definition refuses a held row that any in-step mover or operator
+       writes (OPS's `moved_in_step`, and D152's one-writer rule). The maintenance's work per
+       cycle, −Δ_rG'_ATP, is booked as today's metabolic work, and its material record (+1 ATP,
+       −1 ADP, −1 Pi per cycle) is an accumulator of the population.
+     - Either way Δ_rG'° comes from the registry's potentials (B3, OPS's), never from the pump.
+   - **A moved role may be a neutral species** (valence 0), as the finite-fuel world's solute Y:
+     its transfer joins the material ledgers and carries no charge.
+   - **The finite-fuel acceptance world (D176 item 2):** an ATP-driven pump moving a neutral
+     solute Y in FR-4's §6 form, on finite ATP, ADP and Pi rows, with D152's
+     `ideal_detailed_balance_mass_action@1` regeneration on a schedule. Its independent reference
+     is built to that world. Today's Na/K and calcium pumps keep their parameter form in R.
    - **The insertion point** (CORE, in `readouts` and `explicit_rates`, beside today's pumps):
      - each declared transporter law's kernel runs on its own slots at every stage, with its reads;
      - its transfers enter the membrane totals and the node rates;
@@ -914,15 +940,18 @@ registry code.
     the passive law. It touches the adapter's view of the inner layout and control, so it is
     coordinated with INT;
   - **the stage-read slot** ((g) 1): 1–1.5;
-  - **the transporter kind with held rows** ((g) 2): 2–2.5. It includes the transporters' controls,
-    the held-row admission against `moved_rows`, the ledgers and device checks, and the refusal of
-    a parameter-form pump whose own ΔG° disagrees with the registry's fuel rows (§10.2);
+  - **the transporter kind with its fuel rows** ((g) 2): 2.5–3.5, revised from 2–2.5 for finite
+    fuel as the default (the fuel rows' in-step writes and their standard-potential term). It
+    includes the transporters' controls, the held-row admission against `moved_rows`, the ledgers
+    and device checks, and the refusal of a parameter-form pump whose own ΔG° disagrees with the
+    registry's fuel rows (§10.2);
   - **B7** ((g) 3), at the bound's ordinary constant, with finding 3's term: about 1, host-only,
     one commit with one D148 record and @1's and @2's cases (§13.6).
   - **The implicit slot** ((g) 4) follows once FR-4's first world runs: 1–1.5. It stays outside
     the round unless FR-5's first world needs it (the lead's ruling).
-  - **In all, 6–7.5 agent-days,** which supersedes the earlier 3.5–5: that estimate had no
-    per-structure schema and a smaller transporter.
+  - **In all, 6.5–8.5 agent-days with finite fuel as the default** (6–7.5 before it), of which
+    the implicit slot's 1–1.5 stays outside the round. This supersedes the earlier 3.5–5, which
+    had no per-structure schema and a smaller transporter.
 - **Off the core's path:** the passive law's kernel module goes to FR45 (the proton leak's
   sibling), and CORE writes its insertion point only, with the exact heat booking (§7.5); the
   summation study goes to OPS (§10.6).
@@ -1769,7 +1798,7 @@ apart, on the shared machine (8 cores, 31 GB).
 | F1 | The charged-patch feasibility test CP: FR-1's probe P1, extended to FR-4's counterions and protons and FR-5's pores (D176: early) | FR45 | Owner to supply | The tag's snapshot | Running since 15 November |
 | F2 | FR-4's design note: §10.5's boundary; the counterion pathways; the pump law against §7.4's transporter shape; charged buffering's design and criterion; the patch treatment from F1 | FR45 | Owner to supply | F1; §7.4; SCOPED §6 | From day 1 |
 | F3 | **Charged buffering (D176):** FR-4's note chooses a rapid-buffer closure, a per-stage algebraic read (its §4), in a new module `processes/rapid_proton_buffer.py`. D152's charged slow reactions are a separate route, off FR-4's critical path (its §11, item 4) | FR45 (the closure, as its note proposes; the lead to confirm), on CORE's stage-read slot (C6) | Owner to supply | F2; O1's potentials; C6's slot | After F2 |
-| C6 | FR-4's insertion points (§7.4 (g)): the transporter kind (B5), the stage-read slot (B4), B7's two halves and the implicit-route slot with faces behind it | CORE | 3.5–5 (**S**) | C2, F1, F2 | After C5: day 9–13 → 12.5–18, unless the lead moves it before C3 |
+| C6 | FR-4's insertion points (§7.4 (g)): the transporter kind (B5), the stage-read slot (B4), B7's two halves and the implicit-route slot with faces behind it | CORE | 3.5–5 (**S**); re-estimated after the rulings at 5.5–7 for the three that open in the round (§7.4 (h)) | C2, F1, F2 | After C5: day 9–13 → 12.5–18, unless the lead moves it before C3 |
 | F4 | FR-4's first case on maintained, held-row fuel: the law module, the world, its references (REF) and its protocol | FR45, REF | Owner to supply | C6, I1, O1, F2, F3 | Develops on `integration-d172` once C2 and I1 merge; merges after I4 |
 
 **F3's acceptance criterion,** proposed here and matched to FR-4's note's closure (its §4, §13 and
@@ -1849,17 +1878,19 @@ split. The core's queue, from day 1:
 | Core item | Effort (agent-days, **S**) | Elapsed days |
 | --- | --- | --- |
 | A1's first API commit: declarations and one implementation per structure (programs unchanged) | Done (034a60e on `core-d172`, from the tag) | About 1.2 |
-| The dispatch commits (channel laws; pumps and the junction law) and A4's two tests with the compile key. **Merging waits** for ACC's comparator rule and a running law-steady replacement world (§7.4 (b)) | 2.5–3.5 | → 3.7–4.7 |
-| FR-4's three insertion points: the per-structure schema (1), the stage-read slot (1–1.5), the transporter kind with held rows (2–2.5), B7 with finding 3's term (1, host-only, one D148 record) | 5–6 | → 8.7–10.7 |
-| The passive law's insertion point, with the exact heat booking (§7.5); FR45's kernel | 1.5–2 | → 10.2–12.7 |
-| A7's sweep, last and alone (OPS's study done meanwhile) | 1–1.5 | → 11.2–14.2 |
-| Then G1, G2 and the landing (Q3, Q4, I4) | 2–2.5 elapsed | → **13.2–16.7** |
+| The dispatch commits (channel laws; pumps and the junction law) and A4's two tests with the compile key. **Built** on `core-d172` (11176e3, 1386c13 and the compile-key commit), checked by K2; merging waits for the bitwise observations on the division worlds and a running law-steady replacement world (§7.4 (b)) | 2.5–3.5 | → 3.7–4.7 |
+| FR-4's three insertion points: the per-structure schema (1), the stage-read slot (1–1.5), the transporter kind with its fuel rows, finite by default and held as the special case (2.5–3.5, §7.4 (h)), B7 with finding 3's term (1, host-only, one D148 record) | 5.5–7 | → 9.2–11.7 |
+| The passive law's insertion point, with the exact heat booking (§7.5); FR45's kernel | 1.5–2 | → 10.7–13.7 |
+| A7's sweep, last and alone (OPS's study done meanwhile) | 1–1.5 | → 11.7–15.2 |
+| Then G1, G2 and the landing (Q3, Q4, I4) | 2–2.5 elapsed | → **13.7–17.7** |
 
 - **The implicit slot** (1–1.5) follows once FR-4's first world runs. **The lead's ruling (15
   November): it stays outside the round unless FR-5's first world needs it** (the lead asks FR45),
-  so the plan is 13–17 days; inside R it would move the landing to about 14–18.
+  so the plan was 13–17 days. Finite fuel as the transporter's default (the coordinator, 15
+  November; §7.4 (g) 2) adds 0.5–1 day, so about 14–18; inside R the implicit slot would move the
+  landing to about 15–19.
 - **FR-4's laws can merge onto `integration-d172`** once the three insertion points merge, about
-  day 9–11, and are accepted in FR-4's own milestone.
+  day 9–12, and are accepted in FR-4's own milestone.
 
 ## 16. Open questions, with recommendations
 
