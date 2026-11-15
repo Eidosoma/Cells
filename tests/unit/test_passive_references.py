@@ -49,7 +49,10 @@ def test_references_import_nothing_from_cells_or_the_engine_fixtures():
             assert name != "<dynamic import>" and not name.startswith("."), (path.name, name)
             assert name.split(".")[0] not in {"cells", "jax", "jaxlib"}, (path.name, name)
             if name.startswith("validation") and not name.startswith("validation.passive"):
-                assert name == "validation.coupling" and names == ("piecewise_ode",), name
+                allowed = {("validation.coupling", ("piecewise_ode",))}
+                if path.name == "passive_crosschecks.py":  # the evidence driver's cross-check
+                    allowed.add(("validation.division", ("cleft_tissue_reference",)))
+                assert (name, names) in allowed, (path.name, name, names)
 
 
 def test_references_load_no_cells_or_tissue_module_in_a_fresh_process():
