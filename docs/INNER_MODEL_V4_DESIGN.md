@@ -1145,6 +1145,63 @@ additions to its acceptance.**
 
 INT merges CORE's types first, then the adapter's forwarding.
 
+#### (k) The kind interface: one module per kind (the lead's ruling, 15 November; design before code, D142)
+
+**Why.** After schema A, each new kind is its own module under `models/inner_kinds/`: FR-4's
+stage read (B4), the transporter (B5) and the passive law ((i)). Core functions call the declared
+kinds generically at fixed seams, so two writers never edit one core function. A kind edits no
+core file, and a seam change goes through CORE.
+
+**A kind declares** a module-level object, registered by name, in the canonical kind order that
+schema A's types use:
+- `KIND_ID`, and its laws' declarations in its own module, as `inner_laws` holds the channels';
+- its fields: state axes, layout fields, control fields and observation columns, each with its
+  axes' names. Schema A appends them in canonical order;
+- `parse(raw_model, raw_experiment, base)` → its declaration; `to_dict(declaration)` → its raw
+  keys; `control_values(spec, times)` → its control fields;
+- `initial(spec, layout)` → its state and layout fields;
+- `structure_entry(declaration)` → its hashable part of the InnerStructure. That part enters the
+  compile key, the batch signature and the cached implementation.
+
+**The hooks the core calls.** Each is optional; a kind supplies the ones it needs:
+1. **`stage_read(amounts, layout, *, xp)` → amounts,** at the concentration entry of every stage:
+   `explicit_rates`, `implicit_rates`, `rhs` and `readouts` call it before any rate reads a
+   concentration. B4 uses it; reads compose in canonical order.
+2. **`rates(state, potentials, control, layout, *, xp)` → a kind's rates:** per-row material
+   changes (inward-positive at nodes) and its own state derivatives (cycles, say). They are added
+   after today's terms, in canonical order.
+3. **`book(applied, start, end, layout, *, xp)` → state increments** (heat, work, a standard
+   term), from the step's applied transfer in `imex_step` after the tableau's combination. §7.5's
+   exact booking is one. Under RK4 the kind's derivative fields integrate like any state.
+4. **`ledger_terms(state, layout)` → its material transfers, energy terms and magnitudes,**
+   added in `balances`, `device_balances` and the magnitudes, so every ledger closes with its
+   moves.
+5. **`domain(state, layout, *, xp)` → bool,** and-ed into `domain_valid`, on the host and the
+   device.
+6. **`readouts(…)` → its observation columns,** which `observe_history` writes.
+7. **`moved_rows(declaration)`** → the (species, node) rows it moves in the step, joined into
+   `moved_rows` (the registry's `moved_in_step` reads them).
+8. **`check_definition(spec)`:** its definition-time refusals (for example B5's held-row admission
+   and ΔG° against the registry). It runs after the registry's checks and before @3's.
+
+**Rules.**
+- **Hooks are pure.** They close over the kind's declaration (structure), never over values (P5),
+  so a value change reuses executables.
+- **No cross-kind reads.** No kind reads another kind's fields; a dependency between kinds is a
+  seam change, through CORE.
+- **An undeclared kind is absent:** no field, no kernel, no hook call. A4's criterion extends to
+  kinds.
+- **The planted kind of schema A's acceptance implements every hook** with trivial physics: a
+  neutral species exchanged at a constant rate between two nodes, with its own ledgers. So each
+  seam is exercised before any real kind lands.
+
+**Ownership.**
+- The seams in `surface_pump_v3.py`, `inner_laws.py` and `surface_pump_v3_spec.py` are CORE's.
+- Each kind module is its owner's:
+  - B5's transporter is FR45's, reviewed by CORE before INT merges it;
+  - B4's stage read is CORE's, with FR45's closure kernel;
+  - the passive law is CORE's insertion with FR45's kernel.
+
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 
 - **Why.** Today a route's heat is the tableau's quadrature of its dissipation rate (Σ J Δμ̃ at the
