@@ -637,6 +637,9 @@ class ScheduledReplacement(Operator):
         "amount_increment": ("replacement_removed_fmol", "replacement_supplied_fmol"),
     }
     READOUT_COLUMNS = REPLACEMENT_READOUTS
+    # Its event map and controls build @3's state, layout and control with today's fields
+    # (IONIC_FIELDS, ionic_layout, the family spec's controls): refused beside declared kinds.
+    FIXED_INNER_FIELDS = True
 
     # ------------------------------------------------------------ definition
 

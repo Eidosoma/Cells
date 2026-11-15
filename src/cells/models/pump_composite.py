@@ -52,8 +52,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from cells.core import kind_registry, species_registry
 from cells.core import pump_composite_spec as composite_spec
-from cells.core import species_registry
 from cells.core.errors import NumericalError
 from cells.core.pump_composite_spec import MODEL_ID, entries, identity, projection
 from cells.core.specs import ChannelChange, ConfigError
@@ -91,11 +91,21 @@ def _checked_above(row, p, active, *, xp):
     return xp.asarray(True)
 
 
-@cache
 def implementation(inner_model, laws, structure=None):
     """The composite for one inner identity, ordered operator law tuple and, from a definition,
     the inner model's declared structure (I2: the composite then takes the inner protocol from
-    that structure's implementation object; None keeps the module's own, the full catalogue)."""
+    that structure's implementation object; None keeps the module's own, the full catalogue).
+
+    Cached: equal arguments share one composition. A structure that declares kinds is also keyed
+    on the active kind registry, whose kinds its types are built from (schema A, §7.4 (j)), as
+    the inner implementation object is; one that declares none shares its composition across
+    registries, so a registered but undeclared kind changes nothing."""
+    kinds = structure is not None and bool(structure.kinds)
+    return _implementation(inner_model, laws, structure, kind_registry.active() if kinds else None)
+
+
+@cache
+def _implementation(inner_model, laws, structure, registry):
     from cells.models.operators import OPERATORS
 
     if inner_model not in INNERS:
@@ -210,8 +220,25 @@ class FamilyModel:
 
 @cache
 def family_model(module, laws, structure):
-    """A family's model for one declared inner structure (cached: equal structures share it)."""
+    """A family's model for one declared inner structure (cached: equal structures share it). A
+    structure that declares kinds is refused at binding (refuse_kinds)."""
+    refuse_kinds(module.MODEL_ID, structure)
     return FamilyModel(module, implementation(module.ionic.MODEL_ID, laws, structure))
+
+
+def refuse_kinds(model_id, declared):
+    """The families' refusal of declared kinds (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j), the lead's
+    ruling 2). Water@1, water@2 and replacement@1 bind @3's full-catalogue types and build its
+    states, layouts and controls with today's fields (the replacement operator's arrival field
+    solve among them), so a definition that declares a kind is refused, at its definition check
+    and at binding, until each family has per-structure internals. declared: a parsed model block
+    or an InnerStructure; each carries `kinds`, ((kind ID, ...), ...)."""
+    kinds = [kind_id for kind_id, _ in getattr(declared, "kinds", ())]
+    if kinds:
+        raise ConfigError(
+            f"{model_id} does not run declared kinds ({', '.join(kinds)}): it builds the inner "
+            "model's states, layouts and controls with today's fixed fields"
+        )
 
 
 def compact(spec):
@@ -464,6 +491,45 @@ def structure_errors(inner, operators):
         for law in op.REQUIRES:
             if law not in laws[:i]:
                 errors.append(f"{op.LAW_ID} requires {law} before it")
+    # Schema A (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j)): an operator that reads or writes a kind's
+    # fields declares the kind (REQUIRES_KINDS), refused where the definition does not declare it;
+    # its declared writes and resets of a kind's fields name the kind too. A factor of a kind's
+    # control is refused: observation holds only today's schedules (held_schedules). An operator
+    # that builds the inner types with today's fields (FIXED_INNER_FIELDS) is refused beside any
+    # declared kind, and so is one that opens, closes or retires slots (CLOSES, RETIRES, or an
+    # activity mask it provides): no closer resets a kind's per-slot fields (state on cell_slot,
+    # membrane_slot, ...), which would be left stale where a slot closes, retires or opens.
+    kinds = tuple(getattr(inner, "KINDS", ()))
+    declared, owners = set(kinds), getattr(inner, "KIND_FIELDS", {})
+    masks = set(getattr(inner, "MASK_FIELDS", ()))
+    for op in operators:
+        if kinds and op.FIXED_INNER_FIELDS:
+            errors.append(
+                f"{op.LAW_ID} builds the inner model's state, layout or control with today's "
+                f"fixed fields, so it does not run beside declared kinds ({', '.join(kinds)})"
+            )
+        if kinds and (op.CLOSES or op.RETIRES or masks & set(op.VIEW_FIELDS)):
+            errors.append(
+                f"{op.LAW_ID} opens, closes or retires slots, and no closer resets a kind's "
+                f"per-slot fields, so it does not run beside declared kinds ({', '.join(kinds)})"
+            )
+        required = {kind_registry.qualified(k) for k in op.REQUIRES_KINDS}
+        for kind_id in sorted(required - declared):
+            errors.append(
+                f"{op.LAW_ID} requires the kind {kind_id}, which the definition does not declare"
+            )
+        for name in dict.fromkeys((*op.ENTITY_WRITES, *op.STATE_RESETS)):
+            if owners.get(name, None) not in (None, *required):
+                errors.append(
+                    f"{op.LAW_ID} writes {name}, a field of the kind {owners[name]}, which it "
+                    "does not require (REQUIRES_KINDS)"
+                )
+        for name in op.CONTROL_FACTORS:
+            if name in owners:
+                errors.append(
+                    f"{op.LAW_ID} multiplies {name}, a control of the kind {owners[name]}; a "
+                    "kind's control is not factored (observation holds only today's schedules)"
+                )
     if sum(op.PROCESS for op in operators) > 1:
         errors.append(
             "at most one in-step membrane process (the inner hook books one combined transfer)"
@@ -984,7 +1050,16 @@ class Composition:
         The species registry's checks run first, on this definition: the inner parser's hook sees
         the inner definition only, so an operator's in-step mover of a two-form row, or an operator
         that names one, is refused here (core/species_registry.py; D176).
+
+        The definition's declared kinds must be the inner structure's (schema A): a composition
+        bound without the definition's structure (the full catalogue) would drop them.
         """
+        kinds = tuple(kind_id for kind_id, _ in getattr(spec.model, "kinds", ()))
+        if kinds != tuple(getattr(self.inner, "KINDS", ())):
+            raise ConfigError(
+                f"The definition declares the kinds {list(kinds)}, but the composition's inner "
+                f"structure declares {list(getattr(self.inner, 'KINDS', ()))}"
+            )
         species_registry.check_definition(spec)
         solver = spec.execution.solver
         if solver == "rk4" and self.coupled:
