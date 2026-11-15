@@ -718,20 +718,62 @@ radius 250 nm each, as one node.
 
 ### 13.2 FR-5: damage, leak, reseal and pH-conditioned transfer, on the same state
 
-- **The start:** FR-4's world at its steady state, a saved checkpoint and a declared start.
-- **Cargo X** (valence 0) at 1 mM in the lumen and 1e-4 mM in the cytosol. That is a resolved
-  start: the energy ledger refuses trace starts (SYN3A_MINIMAL_CELL_TRACK §5.2).
-- **Transfer:** P_X 1e-8 m/s, f with pH₅₀ 5.5 and m 4.
-- **Damage:**
-  - k_inj 1 s⁻¹ on during [100, 110] s, then k_res 0.05 s⁻¹ from 110 s;
-  - pore routes for H (P_pore 1e-6 m/s through the closure) and for X (1e-6 m/s).
-  - Ionic pores are refused in version 1 (§9).
+**Revised after the references' R-transfer runs** (`validation/compartment_ph/REFERENCES_USAGE.md`;
+evidence in `independent-references-20261115-01/compartment-transfer-crosschecks-01/`). The first
+version showed neither of its claims.
+- **No release burst.** X crossed while the lumen was still acidic (f ≈ 0.98, τ ≈ 8 s), so
+  little was left for the pore at 100 s.
+- **The condition never closed.** A 1e-6 m/s proton pore raised the proton permeability only
+  2.7-fold. The lumen's pH peaked at 5.24, below pH₅₀ = 5.5.
+- **Its controls had no X budget,** and its start time was undefined: FR-4 is 1.4e-3 pH from its
+  steady state at 900 s.
+
+So the world now has two arms (`parameters.ARM_T`, `ARM_R`). Each claim is shown by the arm that
+isolates it.
+
+**Common to both arms:**
+- **The start:** FR-4's engine checkpoint at t = 1800 s, its steady state (pH_L ≈ 5.0946 per the
+  references). The references receive it as `tr.Start`, and FR-5's t = 0 is that checkpoint.
+- **Cargo X** (valence 0) at 1 mM in the lumen and 1e-4 mM in the cytosol and bath. That is a
+  resolved start: the energy ledger refuses trace starts.
+- **The condition:** f with pH₅₀ 5.5 and m 4.
+- **Damage:** k_inj 1 s⁻¹ during the arm's window, then k_res 0.05 s⁻¹.
+- **The proton pore:** 1e-5 m/s through the closure.
+  - **S:** at full damage the lumen's steady pH rises to about 6.2, so f falls to about 1.6e-3.
+  - It stays explicit at 1 ms: max-side dt × G/C_b ≈ 0.029 at pH 5.1, within the world-declared
+    0.05.
+- **Horizon:** 400 s at 1 ms. Ionic pores are refused in version 1 (§9).
+
+**Arm T, the condition:**
+- **Parameters:** P_X = 1e-9 m/s (τ ≈ 83 s at f ≈ 1); a proton-only pore (P_pore,X = 0); damage
+  during [60, 120] s.
 - **What it shows:**
-  - X crosses while the lumen is acidic, and not when it is not;
-  - damage opens a proton leak that raises the lumen's pH and releases X;
-  - resealing lets the pump re-acidify;
-  - every book closes.
-- **Negative controls:** f ≡ 1 (no condition: X crosses at every pH); d ≡ 0 (no release burst).
+  - X crosses while the lumen is acidic;
+  - the damage raises the lumen's pH above pH₅₀, f closes, and the transfer stops while X remains
+    in the lumen;
+  - after resealing the pump re-acidifies, and the transfer resumes.
+- **Control:** f ≡ 1. X keeps crossing through the alkaline window.
+
+**Arm R, the release:**
+- **Parameters:** P_X = 1e-10 m/s (τ ≈ 830 s), which keeps most X in the lumen until damage, as the
+  references' grid showed; a cargo pore at 1e-6 m/s (τ ≈ 0.08 s at d ≈ 1) beside the proton
+  pore; damage during [100, 160] s.
+- **What it shows:**
+  - a release burst through the pore, with the lumen's X falling to near the cytosol's level;
+  - the pH rising during damage;
+  - re-acidification after resealing.
+- **Control:** d ≡ 0. No burst, and no pH rise.
+
+**X's budget, declared for G1 and G3:**
+- |X_L,engine − X_L,reference| ≤ 1e-3 of the lumen's initial X at every record. The same budget
+  applies to the conditioned route's cumulative transfer, in fmol: 1e-3 × X_L(0) × V_L.
+- Each control must differ from its arm by at least 10 times that budget, on the same quantities.
+
+**Every book closes:**
+- X's and H_eq's material across both nodes;
+- charge;
+- energy (stored change + heat = the maintenance's work);
+- the cytosol's pH band.
 
 ## 14. Qualification, and what waits on whom
 

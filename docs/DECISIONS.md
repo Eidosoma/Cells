@@ -5665,6 +5665,67 @@ The lead adopted it after reviewing it with the advisor. It is now in
 **Its first consumer** follows D174's fuel case and waits for the fuel representation. The
 guidance's text is kept outside the public repository.
 
+## D176: The modular rework proceeds, with FR-4 and FR-5 as its priority consumers
+
+2026-11-15. The user forwarded their external adviser's decisions on the inner-model note, and asked
+to review them with the advisor and proceed with six agents "in the most efficent way". The lead
+adopted them after reviewing them with the advisor. The note is
+[INNER_MODEL_V4_DESIGN.md](INNER_MODEL_V4_DESIGN.md).
+
+**The decisions.**
+1. **Fuel is F2.**
+   - ATP, ADP and Pi are shared inventory species, used by reactions and pumps.
+   - One authority for amounts and standard chemical potentials.
+   - The "moved by the step" admission fix is included.
+2. **FR-4's first case uses maintained fuel,** with its scope labelled. The finite-fuel acceptance
+   stays separate: reaction → shared ATP/ADP/Pi → pump, with depletion and recovery against an
+   independent reference.
+3. **Summation keeps a controlled deterministic policy.** Before it is frozen, one bounded
+   comparison is made between serial left folds and an explicitly ordered hierarchical
+   alternative at representative species counts. It reports compilation, checked-window runtime,
+   memory, accuracy and ledger residuals. Sensitive charge and energy quantities are evaluated
+   consistently.
+4. **Qualification:** the full affected registered protocols are re-run on the integrated
+   candidate, E07 included. Targeted development checks come first, and the expensive final gate is
+   not run repeatedly.
+5. **The name stays `resolved_pump_tissue@3`,** with the snapshot, tag and results-gate provenance.
+6. **Track E:** bounded slowing and arrangement work follows the required qualification, without
+   delaying FR-4 and FR-5. `junction_ungated@1` is follow-on physics: it removes a domain
+   restriction, and does not by itself produce block. Before a judged M3, loss of activation inside
+   the cluster is separated from failure of propagation beyond it.
+7. **Syn3A:** the licence policy stands. Numerical vesicle, pH and fuel qualification can proceed.
+   The Wodke-based Stage 4a stays a separate decision.
+8. **Lifecycle M2:** its first milestone is state-triggered timing on a predeclared daughter tree,
+   with fixed fractions and anchors. It is queued behind the core and the priority features unless
+   it can proceed independently.
+
+**Corrections to the design, now in force.**
+- **The dependency table** is refreshed against main.
+- **Bath → uptake → owned compartment → reaction** is a real scoped-composition acceptance case,
+  reusing the compartment identity map.
+- **Charged buffering** is an FR-4 dependency with an owner and an acceptance criterion, since
+  today's reactions parser refuses charged species.
+- **The charged-patch feasibility test runs early.**
+- **Scoped-composition order independence** is narrowed: disjoint provider writes are invariant
+  under reordering, while overlapping contributions have a fixed evaluation order, and the
+  numerical split order is preserved.
+- **Reference reads** of immutable anchors are told apart from assumptions that a physical field is
+  unchanged.
+- **G1 and G3 are aligned:** exact contract tests, plus scientific negative controls whose effects
+  exceed the declared budget.
+- **A7's gate manifest** is built from the import closure of the changed files, not from the new
+  identifiers.
+
+**The lead's implementation, with the advisor.**
+- **Branching:** main is tagged `d172-base-2026-11-15`. Until the single landing, `src/` lands only
+  on the local integration branch `integration-d172`, while main takes docs, validation and tests.
+- **Owners split by file.** One integration owner holds the contract, the composite, the adapter,
+  door S, every merge and the tier gates.
+- **Commit order:** declarations, dispatch, operator adaptation and door S are checked bitwise
+  against outputs saved at the tag. The summation change lands last, alone, at a declared
+  tolerance.
+- **Privacy:** acceptance worlds stay generic.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
