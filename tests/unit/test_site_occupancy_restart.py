@@ -1,4 +1,4 @@
-"""B4 of FR-3's milestone 1: restart and a vector-window batch.
+"""B4 of FR-3's milestone 1: restart (the vector-window batch is test_site_occupancy_vector.py).
 
 Criteria fixed before any code (/mnt/workspaces/Cells/site-occupancy-m1-20261115-01/HANDOFF.md):
 * restart from a checkpoint mid-run, in process and through a written snapshot: bitwise against the
@@ -11,11 +11,8 @@ The mixed face-free world under ARS(2,2,2) at 1 ms. A few compiles: not tier 1.
 import jax
 import numpy as np
 
-from cells.core.batch import BatchSpec, WorldSpec
 from cells.core.runner import run
 from cells.core.specs import parse_spec
-from cells.core.vector_windows import run_vector_windowed
-from cells.core.windows import WindowPolicy
 from validation.tissue import site_occupancy_fixtures as sfx
 
 jax.config.update("jax_enable_x64", True)
@@ -46,28 +43,3 @@ def test_restart_in_process_and_through_a_snapshot_is_bitwise(tmp_path):
     again = run(loaded.spec, loaded.checkpoint)
     for a, b in zip(again.history, result.history, strict=True):
         assert np.array_equal(np.asarray(a), np.asarray(b)[checkpoint.step_index :])
-
-
-def test_a_vector_batch_matches_scalar_runs_and_its_reverse():
-    specs = [world(k_on) for k_on in (1e3, 2e3, 5e2)]
-
-    def batch(order):
-        worlds = tuple(WorldSpec(i + 1, specs[j]) for i, j in enumerate(order))
-        return run_vector_windowed(
-            BatchSpec(worlds, len(worlds), 10**6, 2**31), WindowPolicy(4, "checkpoints")
-        )
-
-    forward, backward = batch([0, 1, 2]), batch([2, 1, 0])
-    for k, spec in enumerate(specs):
-        final = forward.worlds[k + 1].final.state
-        reverse = backward.worlds[3 - k].final.state
-        for name in type(final)._fields:
-            assert (
-                np.asarray(getattr(final, name)).tobytes()
-                == np.asarray(getattr(reverse, name)).tobytes()
-            ), (k, name)
-        single = run(spec).history
-        for name in type(final)._fields:
-            a, b = np.asarray(getattr(final, name)), np.asarray(getattr(single, name))[-1]
-            scale = np.max(np.abs(b), initial=0.0)
-            assert np.max(np.abs(a - b), initial=0.0) <= 1e-12 * scale + 1e-30, (k, name)
