@@ -117,6 +117,9 @@ says the engine models an organism unless the project's record says so.
   (`share`), each a number or a range of two with the keys of its sources; `wall_nm` gives
   a wall's thickness. Each is a fact of the card as well. `SPECIES_SHAPES.md` gives the
   list. A part the viewer does not know is a warning.
+- **`cell.loop`** (optional; nothing reads it yet): the id of the species' looping run
+  among the packaged replays. The Cell view shows flux from that run; a species
+  without one may show illustration (`schema/QUANTITY_LAYERS.md`, rules 7 and 11).
 - **Appendages are a general part** (the user, 15 November 2026: "lets draw flagella, pili
   as a general feature, and with the optoin later to soom into the motor").
   `cell.parts.appendages` is a list, and each entry describes one kind of thread or hair

@@ -328,6 +328,15 @@ Rules that tighten the run view above:
   "tools/make_run_fixture.py"}`. The run's numbers are invented (`schema/QUANTITY_LAYERS.md`,
   rule 6): no record then names a model as its owner, `run.engine_models` is empty, and
   the page keeps the words of `says` on the picture and in the legend.
+- **`view.loop`** (optional): `{"species": id, "cell": id, "closes": {"within": number,
+  "says": text}}`. The run is the looping run of one cell of that species
+  (`schema/QUANTITY_LAYERS.md`, rule 7). `species` is the species' id in `data/species/`;
+  `cell` is the cell's id in the run's set of cells; `closes.within` is the largest
+  relative difference of any level between the last record and the first, and
+  `closes.says` the sentence the page may show. The run's records run from the loop's
+  start to its closing record, one more record than intervals; its `run.engine_models`
+  and `run.revision` must be given. A run with `example` is never a loop. No packaged
+  run carries the field yet: the engine's side is to make such runs.
 - **`view.constants[]`** (optional) are named constants of the run's definition: values
   that a derivation of a quantity layer may read in place of a saved record
   (`schema/QUANTITY_LAYERS.md`, rule 1). `[{"id", "label", "unit", "set", "axes",

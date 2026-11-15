@@ -167,7 +167,14 @@ the viewer changes.
    view of a species it is drawn only from that species' own looping run, a run the
    engine made of that one cell and packaged to loop. The picture then names the run,
    says that it loops, and gives the loop's length in the cell's time and how much it is
-   slowed. A species with no such run shows no run-fed layer in its Cell view.
+   slowed. A species with no such run shows no run-fed layer in its Cell view. A
+   packaged replay says that it is such a loop in its view (`loop`,
+   `schema/RUN_VIEW.md`): the species whose cell it is, the cell, and the run's own word
+   that its last record meets its first. The viewer refuses a run that is an example,
+   that names no model of the engine or no revision, that is another species' cell, or
+   that does not say it closes. The loop is the run's records from the first to the
+   closing one; every rate is a mean between two records that both lie inside it, and
+   no difference is taken across the seam.
 8. **Colour by the job it does:** one hue for a level, two hues about a neutral middle
    for a signed quantity, each validated for colour-blind readers against the light and
    the dark surface. Each ion has one fixed colour everywhere, with its name beside it:
@@ -184,7 +191,13 @@ the viewer changes.
     values`, from a cited source and not from a run; or `direction only`, where the count
     of tokens stands for no number. It carries "Illustration: not a run" on the picture
     and in the legend for as long as it is shown, never shares a picture with a run-fed
-    layer, and is not offered for a part the species' file says it lacks.
+    layer, and is not offered for a part the species' file says it lacks. In its form
+    `direction only` every lane shows the same number of beads at the same pace, and the
+    picture says that the number of beads and their pace stand for no number. The words
+    "Illustration: not a run" stand in the panel of a chosen part as well, since a
+    narrow screen hides the legend behind a panel. The form `typical values` is declared
+    and holds no entries; it is not offered until an entry with a cited source stands
+    behind each number.
 12. **Decoration never moves with a direction.** Motion that is not a layer (a drifting
     crowd, a shimmering membrane) has no net direction, stops while any layer on the
     `motion` channel shows, and stops for a visitor who asks for reduced motion.
@@ -199,6 +212,46 @@ Flux switch shows all of it**; its numbers come first from the species' own loop
 and **illustration is allowed** where there is none (rule 11); and **all of it flows**:
 ions through channels and pumps, the exchange with neighbours, water, secreted signals
 and fuel, each where a rate stands behind it.
+
+**How it is switched.** The legend of the Cell view has a Flux switch, off as the page
+opens. A part's flux shows when the visitor chooses the part, alone, whatever the
+switch; the switch shows all of it. A part that the page's address names is chosen as
+the page opens and shows no flux until the visitor chooses a part or presses the
+switch: nothing flows as the page opens. A chosen part that draws nothing (see below)
+shows nothing, and its reason. While any flux shows, the bloom is on, the look's own
+motion is held still (rule 12), and the picture's own tokens of that part (the drops
+where water crosses, the signals that leave, the ions in the close-up's channel) give
+way to the beads. At rest those tokens stand still: they are the bodies of their parts
+and do not move.
+
+**One source at a time.** A species' cell shows flux from its own looping run (rule 7),
+or, where it has none, as illustration (rule 11). A species with a run shows no
+illustration, even for what its run lacks: that is named as not read from the run.
+
+**Every direction drawn has a declared basis, and the page says which.** For a looping
+run it is the run's own signs. For illustration it is a law of the engine, cited by its
+id, the file it was read in and the revision (`data/layers/flux.json`, format
+`cells.visualizer.flux@1`; the viewer keeps the words and does not read the engine, so
+the file is brought up to date by hand when a law changes). A law of the engine speaks
+for the engine's generic cell: it is drawn on a species only where the page shows that
+species as the generic cell, or as modelled, and the species' file has no words of its
+own on the part. Where no basis gives a direction, both ways are drawn side by side and
+the page says that neither is claimed to carry more; or nothing is drawn and the reason
+is given. No textbook direction is drawn.
+
+| What flows | Drawn as illustration | Basis |
+| --- | --- | --- |
+| Ions through channels | both ways, none claimed | none: it depends on the voltage and the concentrations, which only a run knows |
+| Ions through pumps | sodium out and potassium in; calcium out | `nak_atp_mass_action_positive@1` (3 out and 2 in for a forward cycle) and `ca_atp_mass_action_positive@1` (1 out); the lanes show as many beads as each other, and the three and the two stand in words. Not drawn for a species the law does not speak for |
+| Exchange with neighbours | both ways, none claimed | none: it depends on both cells |
+| Water | both ways, none claimed | none: it follows osmotic pressure |
+| Secreted signals | released out, taken up in | `scheduled_species_exchange@1` (an export route carries out of the cell, an import route into it); both ways with none claimed where the law does not speak for the species |
+| Fuel | nothing | no law of the engine says where fuel travels in the cell |
+
+**Where a lane runs is the picture's choice,** and the legend says so: the engine has no
+single channel or pump and no place for one. An illustration draws each lane at every
+place the picture has for its part; a run gives each of its streams one lane, so that as
+many beads pass as the run's rate says.
 
 ## Outside nodes on the picture
 

@@ -1051,7 +1051,7 @@ class CellsViewer extends HTMLElement {
           : "Colour shows the kind of part. The dot beside each name is its status; planned parts are grey sketches. Clear glass shapes and grey outlines are scenery.";
       note = { swatch: "illustration", text };
     }
-    this.legend.render({ ...base, title: "Status", items, filter, note });
+    this.legend.render({ ...base, title: "Status", items, filter, note, layers: chrome.flux || null });
   }
 
   renderIndex() {

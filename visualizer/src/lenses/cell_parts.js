@@ -951,6 +951,8 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   };
   // The outline, for the lens: a point of it, and how far inside it a point is.
   handles.shape = { point: outline.point, depth: (point) => outline.depth(point.x, point.z) };
+  // Where on the outline the parts stand that something flows through, for flux (layers/cellflux.js).
+  handles.spots = { ...SPOT, junction: junction ? SPOT.junction : null, gap: style.neighbourGap };
 
   // ---------------------------------------------------------------- scenery of the species' own
   // Threads and hairs that stand out from the cell, and a plant cell's vacuole and chloroplasts

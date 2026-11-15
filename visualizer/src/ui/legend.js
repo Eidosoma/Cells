@@ -24,7 +24,9 @@ class CellsLegend extends HTMLElement {
    *          the layers add to the scene (a key may list `chips`, [{ colour, label }]: each ion's colour beside its name),
    *          a hint on how to see a layer that waits for a cell to be chosen, and the id of the panel that says
    *          what stands behind them; `time` is the slow-down of a layer that moves (true speed, or slowed), and
-   *          `example` the words an example run keeps in the legend ("Example: invented numbers")
+   *          `example` the words an example run keeps in the legend ("Example: invented numbers"), or an illustration in the
+   *          Cell view ("Illustration: not a run"); `cannotSays` the line that many `cannot` entries fold under, where the
+   *          entries are not layers of a run (the Cell view's flux: what is not drawn, each with its reason)
    * folded   the keys and the note start closed (a short window)
    */
   render({ title, items = [], isolate, open, filter, findings, note, scale, keys, layers, folded = false }) {
@@ -130,7 +132,7 @@ CellsLegend.prototype.scale = function (scale) {
  * and which one holds it; how strongly the marks are drawn; the layers the run cannot
  * feed, each with the reason; and what stands behind the numbers of those that are on.
  */
-CellsLegend.prototype.layers = function ({ title, rows = [], cannot = [], strength, keys = [], hint = null, details = null, time = null, example = null }) {
+CellsLegend.prototype.layers = function ({ title, rows = [], cannot = [], cannotSays = null, strength, keys = [], hint = null, details = null, time = null, example = null }) {
   const short = (label) => label.replace(/^Membrane /, "").replace(/^./, (letter) => letter.toUpperCase());
   const segment = (options, press) =>
     h(
@@ -165,7 +167,7 @@ CellsLegend.prototype.layers = function ({ title, rows = [], cannot = [], streng
   const lacking = cannot.map((item) => h("p", { class: "layer-cannot", dataset: { layer: item.id } }, h("span", { class: "layer-cannot-name" }, short(item.label)), " ", item.why));
   // Many layers a run cannot feed fold away under one line that says how many; inside, each is named with its reason. Once opened they stay open.
   if (lacking.length > 2) {
-    const fold = h("details", { class: "legend-keys layer-cannots", open: this.cannotOpen === true, ontoggle: () => (this.cannotOpen = fold.open) }, h("summary", {}, `${lacking.length} layers this run cannot feed`), lacking);
+    const fold = h("details", { class: "legend-keys layer-cannots", open: this.cannotOpen === true, ontoggle: () => (this.cannotOpen = fold.open) }, h("summary", {}, cannotSays || `${lacking.length} layers this run cannot feed`), lacking);
     block.append(fold);
   } else block.append(...lacking);
   // The signs the layers add to the scene stay with the switch, each with what it stands for.

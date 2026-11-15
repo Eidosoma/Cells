@@ -25,6 +25,7 @@ import { R, CUT, buildCell, buildMolecules, buildTissue } from "./cell_parts.js"
 import { REF, cellAcross } from "./shapes.js";
 import { buildOutline } from "./outline_parts.js";
 import { middle, words } from "./cell_scenery.js";
+import { CellFlux, FLUX_SWITCH } from "../layers/cellflux.js";
 
 const smooth = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -270,6 +271,8 @@ export class CellLens {
     // The species the scene holds; the page shows one at a time (schema/SPECIES.md).
     this.list = model.raw.species || [];
     this.species = null;
+    // What flows in the cell: shown for a chosen part, or all of it with the Flux switch (layers/cellflux.js).
+    this.flux = new CellFlux(this);
     this.setSpecies(defaultSpecies(model.raw));
   }
 
@@ -332,6 +335,7 @@ export class CellLens {
 
   /** Takes down what was drawn for the species shown before. */
   clear() {
+    this.flux.clear();
     for (const zone of this.zones) {
       this.root.remove(zone.root);
       disposeTree(zone.root);
@@ -440,6 +444,7 @@ export class CellLens {
     if (species.no_further_levels && !tissue && !this.outlines.organ && !this.outlines.organism) this.zone("beyond");
     this.stops = Object.fromEntries(this.modes.map((mode) => [mode, this.makeStops(mode)]));
     this.setRanges();
+    this.flux.build();
   }
 
   bind(entity, zone, anchor, missing) {
@@ -550,7 +555,7 @@ export class CellLens {
 
   has(id) {
     if (this.species.id && id === `species:${this.species.id}`) return true;
-    if (this.sceneryItem(id)) return true;
+    if (this.sceneryItem(id) || this.flux.has(id)) return true;
     return this.model.get(id)?.group === "biology" && !this.absent.has(id);
   }
 
@@ -568,6 +573,7 @@ export class CellLens {
         .map((source) => ({ text: source.text, url: source.doi ? `https://doi.org/${source.doi}` : source.url }));
     const scenery = this.sceneryItem(id);
     if (scenery) return describeScenery(scenery, species, links);
+    if (this.flux.has(id)) return this.flux.describe(id);
     if (!species.id || id !== `species:${species.id}`) return null;
     const absent = [...this.absent].map(([part, why]) => ({ entity: this.model.get(part), why })).filter((item) => item.entity?.kind === "capability");
     const drawn = LEVELS.filter(({ id: level }) => this.levels[level]).map(({ id: level, entity }) => ({ level: this.levels[level], entity: this.model.get(entity) }));
@@ -607,7 +613,8 @@ export class CellLens {
       return { ...entity, label: level.label || entity.label, note: [entity.note, level.note].filter(Boolean).join(" ") };
     }
     const said = this.species.cell.capabilities?.[entity.id];
-    return said?.note ? { ...entity, note: [entity.note, `${this.species.label}: ${said.note}`].filter(Boolean).join(" ") } : entity;
+    // With what flows through the part, and on what basis it is drawn (layers/cellflux.js).
+    return this.flux.inPanel(said?.note ? { ...entity, note: [entity.note, `${this.species.label}: ${said.note}`].filter(Boolean).join(" ") } : entity);
   }
 
   sections() {
@@ -634,6 +641,7 @@ export class CellLens {
       railNote: LEVELS.every(({ id }) => this.levels[id]) ? null : species.no_further_levels || null,
       together: (this.model.raw.model_groups || []).map((group) => ({ id: group.id, label: group.label, title: group.description })),
       togetherActive: this.together,
+      flux: this.flux.legend(), // the Flux switch and what it shows, for the legend
       view: {
         colour: this.colourBy,
         size: this.sizeMode,
@@ -714,6 +722,16 @@ export class CellLens {
     return Math.min(reach * this.u, LOOK.reachOnScreen * this.stage.rig.distance);
   }
 
+  /** The legend's Flux switch (layers/cellflux.js): all that flows in the cell, or nothing but a chosen part's. */
+  setLayer(id, on) {
+    if (id === FLUX_SWITCH) this.flux.setOn(on);
+  }
+
+  /** How much a looping run is slowed: 1 is true speed. */
+  setSlow(slow) {
+    this.flux.setSlow(slow);
+  }
+
   /** "rich", "plain", or "full": rich, with every effect held on whatever the frame rate. */
   setLook(word) {
     if (!this.stage.look.choose(word)) return;
@@ -754,6 +772,7 @@ export class CellLens {
 
   deactivate() {
     this.active = false;
+    this.flux.shine(); // the bloom and the hold on the look's motion go with the view
     this.trial?.hide();
     this.stage.dress({ rich: false }); // the other views keep the look they had
     this.stage.scene.remove(this.root);
@@ -836,6 +855,7 @@ export class CellLens {
     }
     // Past the cell of a species with no further levels: its own sentence, where they would be.
     if (zoneOf("beyond")) note("beyond", { text: this.species.no_further_levels, anchor: new THREE.Vector3(0, 0, R * 1.9 * u), priority: 290 });
+    this.flux.label(labels); // what the picture says of the flux it shows
   }
 
   goToScale(id, immediate = false) {
@@ -920,6 +940,7 @@ export class CellLens {
       const hot = id === this.selected || id === this.hovered;
       for (const material of materials) material.emissive?.copy(material.color).multiplyScalar(hot ? 0.55 : 0);
     }
+    this.flux.refresh(); // a chosen part shows its flux
     this.stage.invalidate();
   }
 
@@ -999,8 +1020,9 @@ export class CellLens {
 
   update(dt) {
     const changed = this.fades();
+    const flowing = this.flux.frame(); // beads keep their own time
     const near = this.zones.some((zone) => zone.mode === this.sizeMode && zone.fade > 0.02);
-    if (!near) return changed;
+    if (!near) return changed || flowing;
     if (this.stage.reducedMotion) {
       this.animate(0.35);
       return changed;
@@ -1011,34 +1033,37 @@ export class CellLens {
   }
 
   /**
-   * Small motions that say what a part does: water crossing, signals leaving, ions through a channel.
-   * Each has a direction, and they run at rest as they did before the layers' contract
-   * (schema/QUANTITY_LAYERS.md, rule 12: at rest nothing flows, and a token that moves with a
-   * direction is data). Whoever builds flux takes them over, here and where cell_parts.js makes
-   * them (streams, signals, the close-up's ions): a moving token belongs to a layer, is drawn
-   * with a material that stays out of the look (toneMapped false, userData.noContact), may be
-   * marked to glow (stage.glow, stage.setBloom), and holds the look's own motion still while it
-   * shows (stage.decoration.pause). The look's motion is not here: the crowd's drift and the
-   * membrane's shimmer live in the materials (core/materials.js) and have no direction.
+   * The drops where water crosses, the signals that leave and the ions in the close-up's channel
+   * are the bodies of their parts. They once moved, each with a direction; at rest nothing flows
+   * (schema/QUANTITY_LAYERS.md, rule 12: a token that moves with a direction is data), so they
+   * stand where they stood for a visitor who asked for less motion. While the flux of their part
+   * shows they give way to its beads (layers/cellflux.js), which are a layer's: drawn out of the
+   * look, marked to glow, and holding the look's own motion still. Only the cages turn here, in
+   * place. The look's motion is not here: the crowd's drift and the membrane's shimmer live in
+   * the materials (core/materials.js) and have no direction.
    */
   animate(time) {
     const cell = this.cells[this.sizeMode];
+    const rest = 0.35, water = !this.flux.takes("water"), leaving = !this.flux.takes("secretion"), crossing = !this.flux.takes("channels");
     for (const stream of cell.streams) {
       stream.drops.forEach((drop, index) => {
-        const t = (time * 0.2 + index / stream.drops.length) % 1;
+        drop.visible = water;
+        const t = (rest * 0.2 + index / stream.drops.length) % 1;
         const offset = stream.inward ? stream.reach - t * stream.reach * 1.9 : -stream.reach * 0.9 + t * stream.reach * 1.9;
         drop.position.copy(stream.at(offset));
         drop.scale.setScalar(0.55 + 0.45 * Math.sin(Math.PI * t));
       });
     }
     cell.signals.forEach((bead, index) => {
-      const t = (time * 0.08 + index / cell.signals.length) % 1;
+      bead.visible = leaving;
+      const t = (rest * 0.08 + index / cell.signals.length) % 1;
       bead.position.copy(cell.signalPath(t));
       bead.scale.setScalar(0.5 + 0.7 * Math.sin(Math.PI * Math.min(1, t * 1.15)));
     });
     cell.cages.forEach((cage, index) => cage.rotation.set(time * 0.22 + index, time * 0.35 + index * 2, 0));
     cell.molecule.ions.forEach((ion, index) => {
-      const t = (time * 0.3 + index / cell.molecule.ions.length) % 1;
+      ion.visible = crossing;
+      const t = (rest * 0.3 + index / cell.molecule.ions.length) % 1;
       ion.position.copy(cell.molecule.ionPath(t));
     });
   }
@@ -1057,6 +1082,7 @@ export class CellLens {
   }
 
   dispose() {
+    this.flux.dispose();
     this.stopLook();
     this.trial?.dispose();
     disposeTree(this.root);
