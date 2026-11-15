@@ -25,8 +25,18 @@ import { soften } from "../core/materials.js";
 import { disposeTree } from "../core/stage.js";
 import { makeEnvironment } from "../core/environment.js";
 import { SHEET, UPPER, buildUnit, findingMark, membrane, outline } from "./protein_parts.js";
-import { BASES, LICENCE_NOTE, LICENCE_TAG, SIDES, Shelves, licenceClass, loadBeside } from "./protein_shelves.js";
-import { ShelvesView, shapeFor } from "./shelves_view.js";
+import { BASES, LICENCE_NOTE, LICENCE_TAG, SIDES, STANDS, Shelves, licenceClass, loadBeside } from "./protein_shelves.js";
+import { ShelvesView, columnsFor, shapeFor } from "./shelves_view.js";
+
+// Three choices of the drawing of several shelves are still to be settled by looking (stage B,
+// 15 November 2026). Until they are, each can be asked for in the page's address, so that it
+// can be shown: stands=line|family|largest (which lines of a family stand on their own),
+// arrange=one|two|three (how many staircases side by side), open=stack|shelf (what the page
+// opens on). Once chosen, the choice is written here and this goes.
+const trial = (name, values) => {
+  const said = new URLSearchParams(globalThis.location?.search || "").get(name);
+  return values.includes(said) ? said : null;
+};
 
 const PITCH = 11.5; // spacing of units within a district
 const GUTTER = 9; // between districts
@@ -391,12 +401,16 @@ export class ProteinLens {
     const state = this.own.get(this.page);
     if (state?.status !== "ready") return null;
     const shape = shapeFor(this.stage);
-    if (!state.views.has(shape)) {
-      const view = new ShelvesView(this, state.shelves, { shape });
+    // Several shelves stand as one staircase on a narrow screen and as more, side by side, on a wide one.
+    const asked = { one: 1, two: 2, three: 3 }[trial("arrange", ["one", "two", "three"])];
+    const columns = state.shelves.several ? asked || columnsFor(this.stage) : 1;
+    const key = `${shape}:${columns}`;
+    if (!state.views.has(key)) {
+      const view = new ShelvesView(this, state.shelves, { shape, columns, opens: trial("open", ["stack", "shelf"]) || "stack" });
       view.applyPalette(this.stage.palette);
-      state.views.set(shape, view);
+      state.views.set(key, view);
     }
-    return state.views.get(shape);
+    return state.views.get(key);
   }
 
   get bounds() {
@@ -439,7 +453,7 @@ export class ProteinLens {
       .then((data) => {
         if (data.species !== id) throw new Error(`${summary.file} holds the proteins of ${data.species}`);
         const units = new Map(this.model.inGroup("proteins").map((unit) => [unit.id.replace(/^unit\./, ""), unit.id]));
-        state.shelves = new Shelves(data, { label: named.label, organism: named.organism, links: this.atlas.shelf_links, units });
+        state.shelves = new Shelves(data, { label: named.label, organism: named.organism, links: this.atlas.shelf_links, units, stands: trial("stands", STANDS) || "line" });
         state.status = "ready";
       })
       .catch((error) => {
@@ -507,11 +521,19 @@ export class ProteinLens {
     if (this.active) {
       this.stage.scene.remove(before ? before.group : this.root);
       this.stage.scene.add(next ? next.group : this.root);
+      this.stage.rig.limits = this.rigLimits();
       this.stage.rig.setView(this.homeView());
       this.buildLabels();
       this.refresh();
     }
     this.onMode?.();
+  }
+
+  /** How near and how far the camera may go: far enough to see whatever is drawn whole (several shelves reach far). */
+  rigLimits() {
+    const bounds = this.bounds;
+    const reach = this.mounted?.shelves.several ? Math.max(bounds.maxX - bounds.minX, bounds.maxZ - bounds.minZ) : 0;
+    return { minDistance: 16, maxDistance: Math.max(900, reach * 4), minPolar: 0.12, maxPolar: 2.5 };
   }
 
   /** Close the family that is open, if one is. Returns whether one was. */
@@ -594,7 +616,8 @@ export class ProteinLens {
   /** What the page says while the species' own proteins are shown: the card, the legend, the caveat. */
   ownChrome() {
     const view = this.mounted, shelves = view.shelves, data = shelves.data;
-    const words = shelves.sideWords(), families = shelves.kind === "families";
+    // The legend counts the sides over every shelf, so with several shelves its words are those that hold for any.
+    const words = shelves.sideWordsOverall(), families = shelves.kind === "families";
     const total = shelves.total, basis = shelves.byBasis();
     const withUnit = (families ? shelves.families : shelves.proteins).filter((item) => item.units.length).length;
     const unknown = shelves.counts["not known"];
@@ -627,8 +650,10 @@ export class ProteinLens {
         }
       : null;
     // The shelf's own name, as the file gives it, and what its sides cover where the file says more than their names.
-    const several = shelves.shelf.outside !== words.outside.short;
-    const shelf = `The shelf: ${shelves.shelf.label}.` + (several ? ` ${shelves.shelf.outside}. ${shelves.shelf.inside}.` : "");
+    const several = !shelves.several && shelves.shelf.outside !== words.outside.short;
+    const shelf = shelves.several
+      ? `The shelves, one for each membrane the data tells apart: ${shelves.shelves.map((item) => item.label).join("; ")}.`
+      : `The shelf: ${shelves.shelf.label}.` + (several ? ` ${shelves.shelf.outside}. ${shelves.shelf.inside}.` : "");
     const law = withUnit
       ? families
         ? `${number(withUnit)} families hold candidate products of machines Cells has laws for: they carry the machine's shape. Cells has no law for any other protein here.`
@@ -675,7 +700,7 @@ export class ProteinLens {
         // A family that could not be opened is said on the card too; what is being fetched, under the picture only.
         notice: view.failed ? view.status : null,
         stats: families
-          ? [[number(total), shelves.predicted ? "proteins, all predicted" : "proteins"], [number(shelves.families.length), "families that open"], [number(shelves.noFamily.count), "with no family"]]
+          ? [[number(total), shelves.predicted ? "proteins, all predicted" : "proteins"], [number(shelves.familyCount), "families that open"], [number(shelves.noFamily.count), "with no family"]]
           : [[number(total), "proteins"], [number(shelves.counts.in + shelves.counts.outside), "in or on the membrane"], [number(withUnit), "with a law in Cells"]],
         open: opened ? { label: opened.label, count: `${number(opened.count)} ${opened.count === 1 ? "protein" : "proteins"}`, id: opened.key } : null,
         text: families
@@ -755,7 +780,7 @@ export class ProteinLens {
     stage.sun.castShadow = false;
     stage.sun.position.set(-60, 150, 110);
     stage.sun.target.position.set(0, 0, 0);
-    stage.rig.limits = { minDistance: 16, maxDistance: 900, minPolar: 0.12, maxPolar: 2.5 };
+    stage.rig.limits = this.rigLimits();
     this.light();
     stage.rig.setView(this.homeView());
     this.buildLabels();

@@ -614,7 +614,17 @@ def _shelves_summary(name, data, size, problems):
             problems.append("on several shelves the proteins with no family are given in parts, each on its shelf")
         files = []
         seen = set()
-        for line, where, what in [(line, at, "family") for line in grouped] + [(line, part_at, "part") for line in parts]:
+        # The proteins that are the only member of their family have no line among the families:
+        # they are listed under `lone`, in parts read as those of no_family are.
+        alone = data.get("lone") if isinstance(data.get("lone"), dict) else {}
+        lone_at = {key: index for index, key in enumerate(alone.get("part_columns") or [])}
+        lone_parts = alone.get("parts") or []
+        if lone_parts and any(key not in lone_at for key in ("id", "label", "side", "count", "sides", "file", "at", *(["shelf"] if several else []))):
+            problems.append("the parts of lone lack a column")
+            return None
+        if sum(line[lone_at["count"]] for line in lone_parts if isinstance(line, list)) != alone.get("count", 0):
+            problems.append("the parts of lone do not add up to its count")
+        for line, where, what in [(line, at, "family") for line in grouped] + [(line, lone_at, "part of lone") for line in lone_parts] + [(line, part_at, "part") for line in parts]:
             if not isinstance(line, list):
                 problems.append("a family's line is not a list")
                 break
@@ -650,6 +660,12 @@ def _shelves_summary(name, data, size, problems):
         if sum(line[part_at["count"]] for line in parts if isinstance(line, list)) != (none.get("count", 0) if parts else 0):
             problems.append("the parts of no_family do not add up to its count")
         summary.update(kind="families", proteins=sum(counts.values()), families=len(grouped), no_family=none.get("count", 0), parts=len(parts), members=sorted(files))
+        if lone_parts:
+            summary.update(lone=alone.get("count", 0), lone_parts=len(lone_parts))
+        # The families that have lines, and with those of one member: what the file says of them is what its lines give.
+        with_lines = len({line[at["id"]] for line in grouped if isinstance(line, list)})
+        if isinstance(data.get("families_in_all"), int) and data["families_in_all"] != with_lines + alone.get("count", 0):
+            problems.append(f"it says it has {data['families_in_all']} families in all; its lines and its lone proteins are of {with_lines + alone.get('count', 0)}")
         if several:
             # A family split over shelves is one family: the scene counts the families, and their lines apart.
             distinct = len({line[at["id"]] for line in grouped if isinstance(line, list)})

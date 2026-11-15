@@ -68,6 +68,7 @@ const NOTES = { syn3a: "docs/SYN3A.md", mpneumoniae: "docs/MPNEUMONIAE.md", plan
 const NAMED = {
   mpneumoniae: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt" },
   planarian: { TMHMM: "WormBase ParaSite and UniProt", SignalP: "WormBase ParaSite and UniProt", Phobius: "UniProt", PROSITE: "UniProt" },
+  human: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt", "big-PI": "UniProt" },
 };
 // Papers that only a note cites, and that are not permissive: its section names them too.
 const NOTE_ONLY = {

@@ -248,6 +248,27 @@ stacked in the page. Fixed on 15 November 2026, before the human data was made.
   is null and its side `not known`, and a family has one line with a null shelf for such
   members. It counts for no shelf and stands in the page's one set-apart area, in front
   of every shelf.
+- **A family of one has no line.** A family with a single member in the whole catalogue
+  does not open, and a line for each would make the file too large (the human's 5,164
+  families of one would bring it to 1.4 MB). Its protein is listed under `lone`, which
+  is shaped like `no_family` in parts: one part for each shelf, district and side
+  (`kind` `lone`), opening straight to its proteins, each of which names its family in
+  its mark `family`. A part of `lone` is never called a family. Counts are over the
+  families' lines, the parts of `lone` and the parts of `no_family` together.
+  `distinct_families` counts the families that have lines, and `families_in_all` those
+  of one as well. The members follow the families' lines, then the parts of `lone`, then
+  the parts of `no_family`.
+- **Each line of a family carries `total`,** its family's members on every shelf and on
+  none, so that the drawing can let a family of five or more stand on its own on a shelf
+  where it has fewer.
+- **Where the first stated place names no side,** a later statement of the same entry
+  that names a part of that place and its side settles it, as `stated`. Failing that, a
+  membrane segment in the entry, where one membrane is meant, or a signal peptide with
+  no segment, settles it as `predicted`. The file counts how many proteins each rule
+  places (`placed_by`).
+- **Marks of a curated proteome.** `seen` is there the database's level of evidence that
+  the protein exists, and its label says so; `where` is the database's own words for the
+  place; `family` names the family of a protein listed under `lone`.
 - **Counts on several shelves.** `counts` stays the four sides over the whole catalogue.
   `shelf_counts` gives the same four for each shelf, under the shelf's id, and under
   `no shelf` for the proteins on none. `distinct_families` gives the number of families,

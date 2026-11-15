@@ -12,6 +12,10 @@
 // one shelf or on none, and is identified by its id and its shelf together: a family has one
 // line for each shelf that holds members of it. A protein with a shelf and no known side is
 // set apart beside that shelf; one with no shelf at all stands apart from every shelf.
+//
+// A family with one member in the whole catalogue has no line: its protein is listed under
+// `lone`, in parts by shelf, district and side. A part of `lone` opens straight to its
+// proteins, each of which names its family; it is never called a family.
 
 export const SHELVES_FORMAT = "cells.visualizer.species_proteins@1";
 export const MEMBERS_FORMAT = "cells.visualizer.species_protein_members@1";
@@ -23,6 +27,10 @@ export const BASES = ["stated", "predicted", "by function", "none"];
 // "no family", from this many.
 export const OWN_FAMILY = 5;
 export const OWN_PART = 10;
+// Which lines of a family stand on their own, where it has several: one that holds that many
+// on its shelf ("line"); every line of a family that has that many in all ("family"); or,
+// besides the lines that hold that many, the largest line of such a family ("largest").
+export const STANDS = ["line", "family", "largest"];
 
 // The first letter in lower case, for a name within a sentence; an acronym keeps its capitals ("ER membrane").
 const lower = (text) => (/^[A-Z][A-Z]/.test(text) ? text : text.charAt(0).toLowerCase() + text.slice(1));
@@ -142,6 +150,12 @@ export function validateShelves(data) {
     const at = Object.fromEntries((data.family_columns || []).map((name, index) => [name, index]));
     for (const name of ["id", "label", "side", "group", "count", "file", "at", ...(several ? ["shelf", "sides"] : [])]) if (!(name in at)) problems.push(`its family columns lack ${name}`);
     if (!data.no_family) problems.push("it does not say where the proteins with no family are");
+    // The proteins that are the only member of their family: parts shaped like those of no_family.
+    const lone = data.lone && typeof data.lone === "object" ? data.lone : null;
+    const loneAt = Object.fromEntries((lone?.part_columns || []).map((name, index) => [name, index]));
+    const loneParts = lone?.parts || [];
+    for (const name of ["id", "side", "group", "count", "sides", "file", "at", ...(several ? ["shelf"] : [])]) if (loneParts.length && !(name in loneAt)) problems.push(`the columns of the parts of lone lack ${name}`);
+    if (lone && !problems.length && loneParts.reduce((sum, row) => sum + row[loneAt.count], 0) !== (lone.count ?? 0)) problems.push("the parts of lone do not add up to its count");
     if (several && !problems.length) {
       const none = data.no_family;
       const partAt = Object.fromEntries((none.part_columns || []).map((name, index) => [name, index]));
@@ -149,7 +163,7 @@ export function validateShelves(data) {
       if (!parts.length && none.count) problems.push("on several shelves the proteins with no family are given in parts, each on its shelf");
       for (const name of ["id", "shelf", "side", "count", "sides"]) if (parts.length && !(name in partAt)) problems.push(`the columns of its parts lack ${name}`);
       if (!problems.length) {
-        for (const [lines, where, what] of [[data.families, at, "family"], [parts, partAt, "part"]]) {
+        for (const [lines, where, what] of [[data.families, at, "family"], [loneParts, loneAt, "part of lone"], [parts, partAt, "part"]]) {
           const seen = new Set();
           for (const row of lines) {
             const shelf = row[where.shelf], sides = row[where.sides] || {}, name = `${row[where.id]}${shelf === null ? "" : ` on ${shelf}`}`;
@@ -164,8 +178,12 @@ export function validateShelves(data) {
           if (problems.length > 4) break;
         }
       }
+    }
+    // Families with lines, and with those of one member as well: what the file says of them is what its lines give.
+    if (!problems.length) {
       const distinct = new Set(data.families.map((row) => row[at.id])).size;
-      if (!problems.length && typeof data.distinct_families === "number" && data.distinct_families !== distinct) problems.push(`it says it has ${data.distinct_families} families; its lines are of ${distinct}`);
+      if (typeof data.distinct_families === "number" && data.distinct_families !== distinct) problems.push(`it says it has ${data.distinct_families} families; its lines are of ${distinct}`);
+      else if (typeof data.families_in_all === "number" && data.families_in_all !== distinct + (lone?.count ?? 0)) problems.push(`it says it has ${data.families_in_all} families in all; its lines and its lone proteins are of ${distinct + (lone?.count ?? 0)}`);
     }
   }
   // What the file says stands on each shelf is what its lines put there.
@@ -204,7 +222,7 @@ function within(label) {
  *   byShelf   what stands on each shelf, and on none
  */
 export class Shelves {
-  constructor(data, { label = null, organism = null, links = null, units = null } = {}) {
+  constructor(data, { label = null, organism = null, links = null, units = null, stands = "line" } = {}) {
     const problems = validateShelves(data);
     if (problems.length) throw new Error(`the file of proteins does not follow its format: ${problems.slice(0, 3).join("; ")}`);
     this.data = data;
@@ -213,6 +231,7 @@ export class Shelves {
     this.organism = organism;
     this.links = links || {};
     this.units = units || new Map(); // inventory unit id -> the scene's part for it
+    this.stands = STANDS.includes(stands) ? stands : "line"; // which lines of a family stand on their own
     this.kind = Array.isArray(data.proteins) ? "proteins" : "families";
     this.shelves = data.shelves;
     this.shelf = data.shelves[0];
@@ -237,6 +256,16 @@ export class Shelves {
     } else this.readFamilies();
     this.counts = Object.fromEntries(SIDES.map((side) => [side, typeof data.counts?.[side] === "number" ? data.counts[side] : this.tally(side)]));
     this.byShelf = this.countShelves();
+    // Where there are several shelves, each is itself a thing that can be chosen: the picture
+    // then frames it. So is what stands on no shelf. Their keys carry the shelf as a line's does.
+    this.shelfItems = new Map();
+    if (this.several) {
+      for (const entry of this.byShelf) {
+        const item = { type: "s", key: keyOf(this.id, "s", "shelf", entry.id), id: "shelf", shelf: entry.id, label: entry.label ?? "No place known", count: entry.proteins, sides: entry.counts, units: [], entry };
+        this.byKey.set(item.key, item);
+        this.shelfItems.set(entry.id, item);
+      }
+    }
   }
 
   /** The key of a line: on several shelves a family's, a part's or a gathering's carries its shelf; a protein's never does. */
@@ -257,20 +286,22 @@ export class Shelves {
 
   /**
    * What stands on each shelf, in the file's order, and last what stands on none (where
-   * anything does): { id, shelf, label, proteins, counts, lines, families }. `counts` are
-   * the four sides; `lines` the proteins of a small catalogue, or the lines of families and
-   * of parts of a large one; `families` the families among them. Counted from the lines.
+   * anything does): { id, shelf, label, proteins, counts, lines, families, lone }. `counts`
+   * are the four sides; `lines` the proteins of a small catalogue, or the lines of families
+   * and of parts of a large one; `families` the families' lines among them; `lone` the
+   * proteins that are the only member of their family. Counted from the lines.
    */
   countShelves() {
-    const blank = (shelf) => ({ id: shelf ? shelf.id : null, shelf, label: shelf ? shelf.label : null, proteins: 0, counts: Object.fromEntries(SIDES.map((side) => [side, 0])), lines: 0, families: 0 });
+    const blank = (shelf) => ({ id: shelf ? shelf.id : null, shelf, label: shelf ? shelf.label : null, proteins: 0, counts: Object.fromEntries(SIDES.map((side) => [side, 0])), lines: 0, families: 0, lone: 0 });
     const all = new Map(this.shelves.map((shelf) => [shelf.id, blank(shelf)]));
     const none = blank(null);
     const of = (item) => (this.several ? (item.shelf === null ? none : all.get(item.shelf)) : all.get(this.shelf.id));
-    for (const item of this.kind === "proteins" ? this.proteins : [...this.families, ...this.parts]) {
+    for (const item of this.kind === "proteins" ? this.proteins : [...this.families, ...this.lone, ...this.parts]) {
       const entry = of(item);
       if (!entry) continue;
       entry.lines += 1;
       if (item.type === "f") entry.families += 1;
+      if (item.type === "l") entry.lone += item.count;
       for (const [side, n] of this.kind === "proteins" ? [[item.side, 1]] : Object.entries(item.sides)) {
         entry.counts[side] += n;
         entry.proteins += n;
@@ -304,7 +335,7 @@ export class Shelves {
 
   tally(side) {
     if (this.kind === "proteins") return this.proteins.filter((protein) => protein.side === side).length;
-    return [...this.families, ...this.parts].reduce((sum, family) => sum + (family.sides?.[side] || 0), 0);
+    return [...this.families, ...this.lone, ...this.parts].reduce((sum, family) => sum + (family.sides?.[side] || 0), 0);
   }
 
   /** A protein of the catalogue, or a member of a family. */
@@ -324,9 +355,12 @@ export class Shelves {
       const shelf = this.several ? this.shelfIdOf(line) : line.shelf || this.shelf.id;
       const item = { ...line, type, key: this.keyFor(type, line.id, shelf), units: line.units || [], where: line.where || [], sides: line.sides || {}, shelf };
       this.byKey.set(item.key, item);
-      const lines = this.lines.get(`${type}:${line.id}`);
-      if (lines) lines.push(item);
-      else this.lines.set(`${type}:${line.id}`, [item]);
+      // A family's lines, and a part's, belong together across shelves. The parts of `lone` do not: each is of its own shelf.
+      if (type !== "l") {
+        const lines = this.lines.get(`${type}:${line.id}`);
+        if (lines) lines.push(item);
+        else this.lines.set(`${type}:${line.id}`, [item]);
+      }
       return item;
     };
     this.families = rows(data.family_columns, data.families).map((line) => family(line, "f"));
@@ -335,20 +369,32 @@ export class Shelves {
     // "No family" given whole, with no parts: it opens like one family.
     if (!this.parts.length && none.count) this.parts = [family({ id: "none", label: none.label || "No family assigned", side: majority(none.sides), group: null, count: none.count, sides: none.sides || {}, file: none.file, at: none.at, kind: "no family" }, "g")];
     this.noFamily = { label: none.label || "No family assigned", count: none.count ?? this.parts.reduce((sum, part) => sum + part.count, 0), from: none.parts_from || null };
-    this.total = this.families.reduce((sum, item) => sum + item.count, 0) + this.noFamily.count;
-    // A family split over several shelves is one family: how many there are, as well as how many lines.
+    // The proteins that are the only member of their family: no line among the families, but
+    // parts of their own, one for a shelf, a district and a side, which open straight to them.
+    const alone = data.lone || {};
+    this.lone = rows(alone.part_columns || [], alone.parts || []).map((line) => family(line, "l"));
+    this.loneAll = { label: alone.label || "The only member of its family", count: alone.count ?? this.lone.reduce((sum, part) => sum + part.count, 0), from: alone.parts_from || null };
+    this.total = this.families.reduce((sum, item) => sum + item.count, 0) + this.loneAll.count + this.noFamily.count;
+    // A family split over several shelves is one family: how many have lines, as well as how
+    // many lines; and how many there are in all, with those of one member.
     this.familyCount = new Set(this.families.map((item) => item.id)).size;
+    this.familiesInAll = this.familyCount + this.loneAll.count;
     // The parts of "no family" stand in a district of their own, after the others.
     this.noGroup = { id: "no-family", label: this.noFamily.label, from: this.noFamily.from };
     for (const part of this.parts) part.district = this.noGroup.id;
     for (const item of this.families) item.district = item.group;
+    for (const part of this.lone) part.district = part.group; // among the families of its district
+    // Which lines of a family stand on their own (`stands`): with one shelf the three ways are one.
+    const whole = (item) => (typeof item.total === "number" ? item.total : this.familyTotal(item));
+    const largest = (item) => (this.lines.get(`${item.type}:${item.id}`) || [item]).reduce((best, other) => (other.count > best.count ? other : best));
+    const standsAlone = (item, limit) => item.count >= limit || (this.stands === "family" && whole(item) >= limit) || (this.stands === "largest" && whole(item) >= limit && largest(item) === item);
     // The smaller ones, gathered: one marker for a district and a side (and, where there are
     // several shelves, for a shelf), which opens to them.
     const gather = (items, limit, type, words) => {
       const own = [], small = new Map();
       for (const item of items) {
         // A part that is not a superfamily (the proteins with a domain only, or no signature) stands alone.
-        if (item.count >= limit || (type === "n" && item.kind && item.kind !== "superfamily")) own.push(item);
+        if ((type === "m" ? standsAlone(item, limit) : item.count >= limit) || (type === "n" && item.kind && item.kind !== "superfamily")) own.push(item);
         else {
           const id = `${item.district}|${item.side}`, among = this.several ? `${item.shelf ?? ""}|${id}` : id;
           if (!small.has(among)) small.set(among, { type, key: this.keyFor(type, id, item.shelf), id, district: item.district, group: item.group, side: item.side, shelf: item.shelf, holds: [], count: 0, sides: {}, units: [], where: [] });
@@ -366,7 +412,7 @@ export class Shelves {
       }
       return [...own, ...small.values()];
     };
-    this.markers = [...gather(this.families, OWN_FAMILY, "m", ["family", "families"]), ...gather(this.parts, OWN_PART, "n", ["group", "groups"])];
+    this.markers = [...gather(this.families, OWN_FAMILY, "m", ["family", "families"]), ...this.lone, ...gather(this.parts, OWN_PART, "n", ["group", "groups"])];
   }
 
   get(key) {
@@ -392,7 +438,7 @@ export class Shelves {
 
   /** What holds the products of one inventory unit: its proteins in a small catalogue, its families in a large one; the largest first. */
   holdersOf(unit) {
-    const from = this.kind === "proteins" ? this.proteins : [...this.families, ...this.parts];
+    const from = this.kind === "proteins" ? this.proteins : [...this.families, ...this.lone, ...this.parts];
     return from.filter((item) => item.units.includes(unit)).sort((a, b) => b.count - a.count);
   }
 
@@ -470,8 +516,22 @@ export class Shelves {
       in: { short: `In ${one}`, long: `Spans ${one}`, swatch: "own-in" },
       inside: { short: short(shelf.inside), long: shelf.inside, swatch: "own-inside" },
       "not known": this.several
-        ? { short: "Side not known", long: `No source states its side of ${one} and nothing predicts it: set apart beside its shelf, not placed by guess`, swatch: "own-unknown" }
+        ? { short: "Side not known", long: `No source states its side of ${one.split(",")[0]} and nothing predicts it: set apart beside its shelf, not placed by guess`, swatch: "own-unknown" }
         : { short: "Side not known", long: "No source states the side and nothing predicts it: set apart, not placed by guess", swatch: "own-unknown" },
+    };
+  }
+
+  /**
+   * The names of the four sides where they are counted over every shelf together (the
+   * legend): with one shelf, that shelf's own; with several, words that hold for any shelf.
+   */
+  sideWordsOverall() {
+    if (!this.several) return this.sideWords();
+    return {
+      outside: { short: "Beyond its membrane", long: "Beyond the membrane of its shelf: outside the cell, or on the far side of an inner membrane", swatch: "own-outside" },
+      in: { short: "In a membrane", long: "Spans the membrane of its shelf", swatch: "own-in" },
+      inside: { short: "Within its membrane", long: "Enclosed by the membrane of its shelf: inside the cell, or within a compartment", swatch: "own-inside" },
+      "not known": { short: "Side or place not known", long: "No source states the side, or any place at all, and nothing predicts it: set apart, not placed by guess", swatch: "own-unknown" },
     };
   }
 
@@ -528,11 +588,11 @@ export class Shelves {
    * The marks a protein carries, as lines of facts, in the file's own labels (an estimate is
    * labelled so there). A mark the file declares as measured says so; no other is called measured.
    */
-  markFacts(item) {
+  markFacts(item, but = []) {
     const facts = [];
     for (const [name, value] of Object.entries(item.marks || {})) {
       const mark = this.marks[name];
-      if (!mark || value === null || value === undefined) continue;
+      if (!mark || value === null || value === undefined || but.includes(name)) continue;
       // "No" is said only of a mark that can be either; a mark that is only ever set is left out when it is not.
       if (value === false && !(Array.isArray(mark.values) && mark.values.includes(false))) continue;
       const said = value === true ? "yes" : value === false ? "no" : Array.isArray(value) ? value.join(", ") : typeof value === "number" ? value.toLocaleString("en-US") : String(value);
@@ -552,7 +612,7 @@ export class Shelves {
     const unplaced = !this.several
       ? `${this.predicted ? "A predicted protein. Its" : "Its"} side of the membrane is not known. ${basis.sentence}`
       : shelf
-        ? `${this.predicted ? "A predicted protein. Its" : "Its"} side of ${this.membraneOf(shelf)} is not known. No source states it and nothing predicts it, so it is set apart beside its shelf and not placed by guess.`
+        ? `${this.predicted ? "A predicted protein. Its" : "Its"} side of ${this.membraneOf(shelf).split(",")[0]} is not known. No source states it and nothing predicts it, so it is set apart beside its shelf and not placed by guess.`
         : `${this.predicted ? "A predicted protein. No" : "No"} place is known for it: no source states where it is and nothing predicts it, so it stands apart from every shelf and is not placed by guess.`;
     const chips = [
       modelled
@@ -565,12 +625,18 @@ export class Shelves {
     const facts = [["Identifier", protein.id]];
     if (protein.gene) facts.push(["Gene", protein.gene]);
     if (protein.length) facts.push(["Length", `${Number(protein.length).toLocaleString("en-US")} amino acids`]);
-    if (under) facts.push([under.type === "g" ? "Filed under" : "Family", `${under.label}${/^IPR\d/.test(under.id) ? ` (${under.id})` : ""}`]);
+    // One listed among the only members of their families names its own family in a mark: [accession, name].
+    const alone = under?.type === "l";
+    const family = alone ? [].concat(protein.marks?.family || []) : [];
+    if (under && !alone) facts.push([under.type === "g" ? "Filed under" : "Family", `${under.label}${/^IPR\d/.test(under.id) ? ` (${under.id})` : ""}`]);
+    if (family.length) facts.push(["Family", `${family[1] || family[0]}${family[1] && /^IPR\d/.test(family[0]) ? ` (${family[0]})` : ""}: its only member in this catalogue`]);
     if (protein.group || under) facts.push(["District", this.districtPath(under || protein)]);
     if (this.several) facts.push(["Shelf", shelf ? shelf.label : "None: no place is known"]);
-    facts.push(...this.markFacts(protein));
+    facts.push(...this.markFacts(protein, family.length ? ["family"] : []));
     const notes = Object.entries(protein.marks || {}).map(([name]) => this.marks[name]).filter((mark) => mark?.note).map((mark) => `${mark.label}: ${mark.note}${mark.source ? ` Source: ${mark.source}.` : ""}`);
     const links = this.linksFor(protein);
+    // Its own family is looked up where any family is.
+    if (/^IPR\d{6}$/.test(family[0] || "") && this.links.family) links.push({ text: this.links.family.text.replaceAll("{id}", family[0]), url: this.links.family.url.replaceAll("{id}", family[0]) });
     return {
       id: protein.key,
       kind: "protein",
@@ -589,8 +655,8 @@ export class Shelves {
         notes.length ? { title: "What its marks mean", lines: notes } : null,
       ].filter(Boolean),
       related: modelled ? [{ title: "Drawn in the atlas as", ids: protein.units.map((unit) => this.units.get(unit)).filter(Boolean) }] : [],
-      opens: under ? [{ title: under.type === "g" ? "Filed under" : "Its family", items: [{ id: under.within?.key && !under.members ? under.within.key : under.key, label: under.label, swatch: under.units.length ? "map-assigned" : "own-family" }] }] : [],
-      keywords: [protein.id, protein.gene, under?.label].filter(Boolean).join(" "),
+      opens: under ? [{ title: under.type === "g" ? "Filed under" : alone ? "Listed with" : "Its family", items: [{ id: under.within?.key && !under.members ? under.within.key : under.key, label: under.label, swatch: under.units.length ? "map-assigned" : "own-family" }] }] : [],
+      keywords: [protein.id, protein.gene, alone ? family.join(" ") : under?.label].filter(Boolean).join(" "),
       swatch: modelled ? "map-assigned" : "own-plain",
     };
   }
@@ -621,6 +687,7 @@ export class Shelves {
     const sides = this.sideWords(item.shelf);
     const gathered = Boolean(item.holds);
     const part = item.type === "g" || item.type === "n";
+    const lone = item.type === "l"; // the only members of their families: not a family, and it says so
     const shelf = this.shelfOf(item), loose = this.several && !shelf;
     const spread = SIDES.filter((side) => item.sides?.[side]).map((side) => `${count(item.sides[side], "protein")} ${side === "not known" ? (loose ? "with no place known" : "with no side known") : side === "in" ? lower(sides.in.long).replace(/^spans/, "spanning") : lower(sides[side].short)}`);
     const members = this.membersOf(item);
@@ -632,7 +699,11 @@ export class Shelves {
     const those = item.count === 1 ? "that one" : `those ${item.count.toLocaleString("en-US")}`;
     const what = gathered
       ? `${item.label} of ${this.districtLabel(item)}, gathered so that they do not swamp the shelf: ${count(item.count, "protein")} in all. Opening it shows every one of them.`
-      : part
+      : lone
+        ? item.count === 1
+          ? `The only member of its family: 1 protein of ${this.districtLabel(item)}, alone in its family in this catalogue. ${loose ? "No place is known for it, so it stands apart from every shelf" : "It stands here among the families of its district"}; opening this shows it, with the name of its family. This is not a family.`
+          : `The only member of its family: ${count(item.count, "protein")} of ${this.districtLabel(item)}, each alone in its family in this catalogue. ${loose ? "No place is known for any of them, so they stand together apart from every shelf" : "They stand together here so that they do not swamp the shelf"}; opening it shows every one of them, each with the name of its family. This is not a family.`
+        : part
         ? `${count(item.count, "protein")} with no family signature, filed here ${item.kind === "superfamily" ? "by the superfamily they share, a wider grouping than a family" : item.kind === "no signature" ? "because they carry no signature of any kind" : "because they carry only a domain, a repeat or a site signature"}. This is not a family.${others.length ? ` These are the ones ${here}; ${count(all - item.count, "more stands", "more stand")} elsewhere.` : ""}`
         : others.length
           ? `A family of ${count(all, "protein")}, ${item.count.toLocaleString("en-US")} of them ${here}. Opening it shows ${those}.`
@@ -656,7 +727,7 @@ export class Shelves {
       id: item.key,
       kind: "family",
       label: item.label,
-      eyebrow: gathered ? `${this.label} proteins` : part ? `${this.label} proteins with no family` : `${this.label} protein family`,
+      eyebrow: gathered ? `${this.label} proteins` : lone ? `${this.label} proteins, each the only one of its family` : part ? `${this.label} proteins with no family` : `${this.label} protein family`,
       chips: [
         modelled ? { label: "Holds parts of a machine Cells has a law for", swatch: "map-assigned", title: "Some of its members are candidate products of a unit of the law inventory. The law is the unit's: the engine does not model these proteins." } : { label: "No law in Cells", swatch: "own-family", title: "Cells has no law for these proteins." },
         { label: loose ? "No place known" : `Most ${lower(sides[item.side].short)}`, swatch: sides[item.side].swatch, title: "A family stands on the side where most of its members sit; each member keeps its own." },
@@ -682,10 +753,39 @@ export class Shelves {
     };
   }
 
+  /** What the panel says of one shelf, or of what stands on no shelf: what it is and what stands on it. */
+  describeShelf(item) {
+    const entry = item.entry, shelf = entry.shelf, words = this.sideWords(shelf ? shelf.id : null);
+    const spread = SIDES.filter((side) => entry.counts[side]).map((side) => `${count(entry.counts[side], "protein")} ${side === "not known" ? (shelf ? "with no side known, set apart beside it" : "with no place known") : side === "in" ? lower(words.in.long).replace(/^spans/, "spanning") : lower(words[side].short)}`);
+    const facts = [["Proteins", entry.proteins.toLocaleString("en-US")]];
+    if (spread.length) facts.push(["Where they sit", spread.join("; ")]);
+    if (this.kind === "families") {
+      facts.push(["Lines of families", entry.families.toLocaleString("en-US")]);
+      if (entry.lone) facts.push(["The only member of its family", entry.lone.toLocaleString("en-US")]);
+    }
+    return {
+      id: item.key,
+      kind: "family",
+      label: item.label,
+      eyebrow: shelf ? `${this.label} proteins: one of ${this.shelves.length} shelves` : `${this.label} proteins on no shelf`,
+      chips: [{ label: "No law in Cells for a shelf", swatch: "own-family", title: "A shelf is a membrane of the cell, drawn so that each protein can be placed against it. Cells has laws for machines, not for shelves." }],
+      plain: shelf
+        ? `A shelf is a membrane: ${count(entry.proteins, "protein")} stand against ${this.membraneOf(shelf)}, each outside it, in it or inside it, as far as the sources say.${shelf.note ? ` ${shelf.note}` : ""}`
+        : `${count(entry.proteins, "protein")} have no stated place and nothing predicts one. They stand apart from every shelf and are not placed by guess.`,
+      facts,
+      disclosures: [],
+      sections: [{ title: "Sources and licences", items: this.sourceItems() }],
+      related: [],
+      opens: [],
+      keywords: item.label,
+      swatch: "own-family",
+    };
+  }
+
   describe(key) {
     const item = this.get(key);
     if (!item) return null;
-    return item.type === "p" ? this.describeProtein(item) : this.describeFamily(item);
+    return item.type === "p" ? this.describeProtein(item) : item.type === "s" ? this.describeShelf(item) : this.describeFamily(item);
   }
 
   /**
@@ -1015,6 +1115,65 @@ export function layoutStack(shelves, { shape = 1.15, margin = 6, step = 12, betw
   // From its first shelf's back edge to the front edge of what stands last: the shelves, what is between them, and the set-apart area.
   const standing = [...out.shelves.map((shelf) => shelf.depth), ...(out.apart ? [out.apart.size.depth] : [])];
   out.depth = standing.reduce((sum, depth) => sum + depth, 0) + between * Math.max(0, standing.length - 1);
+  return out;
+}
+
+/**
+ * Where each shelf of a stack stands: one staircase in the file's order, each shelf lower
+ * than the one before it and further to the front; or, for a wide screen, the same shelves
+ * as several staircases side by side, so that the whole fills the screen instead of
+ * running many times deeper than wide. `stack` is what `layoutStack` gives.
+ *
+ *   columns   how many staircases (no more than there are shelves); consecutive shelves
+ *             share one, cut so that the deepest staircase is as shallow as can be
+ *   between   the room between two shelves of a staircase, from one's front to the next's back
+ *   gap       the room between two staircases
+ *   drop      how much lower each shelf of a staircase stands than the one before it
+ *
+ * Returns { columns, shelves: [{ id, column, row, x, y, z }], apart, width, depth, drop }:
+ * for each shelf where the origin of its own frame stands; `apart` likewise for the page's
+ * one set-apart area (its middle), in front of every shelf and lower than all; and the size
+ * of the whole on the ground. With one staircase the back of the first shelf's first area is
+ * where `layoutStack` has it, so a species with one shelf stands where it always has.
+ */
+export function arrangeStack(stack, { columns = 1, between = 24, gap = 30, drop = 28 } = {}) {
+  const shelves = stack.shelves;
+  const count = Math.max(1, Math.min(Math.floor(columns) || 1, shelves.length || 1));
+  const deep = (from, to) => shelves.slice(from, to).reduce((sum, shelf) => sum + shelf.depth, 0) + between * Math.max(0, to - from - 1);
+  // The cuts between staircases: every way of cutting is tried (there are few shelves), and the one whose deepest staircase is shallowest is kept.
+  let best = null;
+  const tryCuts = (cuts) => {
+    if (cuts.length === count - 1) {
+      const edges = [0, ...cuts, shelves.length];
+      const deepest = Math.max(...edges.slice(1).map((to, index) => deep(edges[index], to)));
+      if (!best || deepest < best.deepest - 1e-9) best = { edges, deepest };
+      return;
+    }
+    for (let cut = (cuts.at(-1) ?? 0) + 1; cut <= shelves.length - (count - 1 - cuts.length); cut++) tryCuts([...cuts, cut]);
+  };
+  tryCuts([]);
+  const edges = best ? best.edges : [0, shelves.length];
+  const pitch = stack.width + gap;
+  const back = shelves.length ? shelves[0].back : 0;
+  const out = { columns: count, shelves: [], apart: null, width: count * stack.width + (count - 1) * gap, depth: 0, drop };
+  let front = back, rows = 0;
+  for (let column = 0; column < count; column++) {
+    let edge = back;
+    shelves.slice(edges[column], edges[column + 1]).forEach((shelf, row) => {
+      const z = edge - shelf.back;
+      out.shelves.push({ id: shelf.id, column, row, x: (column - (count - 1) / 2) * pitch, y: row ? -row * drop : 0, z });
+      edge = z + shelf.front + between;
+      front = Math.max(front, z + shelf.front);
+      rows = Math.max(rows, row + 1);
+    });
+  }
+  if (stack.apart) {
+    const z = (shelves.length ? front + between : 0) + stack.apart.size.depth / 2;
+    out.apart = { x: 0, y: rows ? -rows * drop : 0, z };
+    out.width = Math.max(out.width, stack.apart.size.width);
+    front = z + stack.apart.size.depth / 2;
+  }
+  out.depth = front - (shelves.length ? back : -(stack.apart ? stack.apart.size.depth / 2 : 0));
   return out;
 }
 

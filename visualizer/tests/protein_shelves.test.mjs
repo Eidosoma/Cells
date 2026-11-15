@@ -27,7 +27,7 @@ import { createServer } from "../tools/serve.mjs";
 import { validate } from "../src/scene/model.js";
 import { css } from "../src/ui/styles.js";
 import { firstMode, shelvesOf } from "../src/lenses/proteins.js";
-import { freeOf, shapeFor } from "../src/lenses/shelves_view.js";
+import { columnsFor, freeOf, shapeFor } from "../src/lenses/shelves_view.js";
 import {
   BASES,
   MEMBERS_FORMAT,
@@ -38,6 +38,7 @@ import {
   SHELVES_FORMAT,
   SIDES,
   Shelves,
+  arrangeStack,
   familyRadius,
   keyOf,
   layoutDish,
@@ -729,8 +730,10 @@ const SIX = [
 /**
  * A made-up curated catalogue on six shelves, kept as tests/shelves-several/testcell: families that stand on two and three shelves,
  * lines on no shelf, proteins with a shelf and no known side, "no family" in parts that
- * have a shelf, and a few units of the inventory. 117 proteins in 27 lines; every name and
- * number is invented. Returns the shelves file and the two files of members.
+ * have a shelf, proteins that are the only member of their family (`lone`), and a few units
+ * of the inventory. 131 proteins: 18 lines of families, 5 parts of lone, 9 lines of parts of
+ * no family. Every name and number is invented. Returns the shelves file and the three
+ * files of members.
  */
 function madeUpSeveral({ change = () => {} } = {}) {
   // A family: id, label, district, then its lines: [its shelf or null, the sides of its members there, the units they would make]
@@ -756,9 +759,17 @@ function madeUpSeveral({ change = () => {} } = {}) {
   const total = (sides) => Object.values(sides).reduce((sum, n) => sum + n, 0);
   const most = (sides) => ["in", "outside", "inside", "not known"].reduce((best, side) => ((sides[side] || 0) > (sides[best] || 0) ? side : best), "in");
   const PLACES = { cell: "At the cell membrane", er: "Endoplasmic reticulum", mito: "Mitochondrion", nucleus: "Nuclear envelope", other: "Golgi apparatus", membrane: "At a membrane" };
-  const files = { "members-00.json": [], "members-01.json": [] };
+  // The only members of their families, in parts by shelf, district and side: id, shelf, side, district, how many, the units they would make
+  const lone = [
+    ["lone-channels-in", "cell", "in", "channels", 4, ["U03"]],
+    ["lone-signalling-inside", "cell", "inside", "signalling", 3, []],
+    ["lone-signalling-inside", "nucleus", "inside", "signalling", 2, []],
+    ["lone-enzymes-not-known", "mito", "not known", "enzymes", 2, []],
+    ["lone-enzymes-not-known", null, "not known", "enzymes", 3, []],
+  ];
+  const files = { "members-00.json": [], "members-01.json": [], "members-02.json": [] };
   let serial = 0;
-  const members = (file, label, shelf, sides, units = []) => {
+  const members = (file, label, shelf, sides, units = [], alone = false) => {
     const from = files[file].length;
     for (const [side, n] of Object.entries(sides)) {
       for (let index = 0; index < n; index++) {
@@ -770,14 +781,18 @@ function madeUpSeveral({ change = () => {} } = {}) {
         if (basis === "stated" || (unknown && shelf)) marks.evidence = ["experiment", "curator", "similarity"][serial % 3];
         if (shelf === "other") marks.where = ["Golgi apparatus", "Lysosome", "Peroxisome"][serial % 3];
         else if (unknown && shelf) marks.where = PLACES[shelf];
-        files[file].push([`TC${String(serial).padStart(5, "0")}`, serial % 4 ? `${label} ${serial}` : "", serial % 2 ? `MADE${serial}` : "", side, basis, 150 + 3 * serial, units.length && side === "in" ? units : null, marks]);
+        // One that is the only member of its family names that family: its accession and its name.
+        if (alone) marks.family = [`IPR92${String(serial).padStart(4, "0")}`, `Solo family ${serial}`];
+        files[file].push([`TC${String(serial).padStart(5, "0")}`, alone ? `Solo protein ${serial}` : serial % 4 ? `${label} ${serial}` : "", serial % 2 ? `MADE${serial}` : "", side, basis, 150 + 3 * serial, units.length && side === "in" ? units : null, marks]);
       }
     }
     return [from, files[file].length];
   };
-  const familyRows = families.flatMap(([id, label, group, lines]) => lines.map(([shelf, sides, units = []]) => [id, label, shelf, most(sides), group, total(sides), sides, "members-00.json", members("members-00.json", label, shelf, sides, units), units]));
-  const partRows = parts.flatMap(([id, label, kind, group, lines]) => lines.map(([shelf, sides]) => [id, label, kind, shelf, most(sides), group, total(sides), sides, "members-01.json", members("members-01.json", label, shelf, sides)]));
-  const lines = [...families.flatMap((item) => item[3]), ...parts.flatMap((item) => item[4])];
+  // A family's line carries, last, its family's members on every shelf and on none.
+  const familyRows = families.flatMap(([id, label, group, lines]) => lines.map(([shelf, sides, units = []]) => [id, label, shelf, most(sides), group, total(sides), sides, "members-00.json", members("members-00.json", label, shelf, sides, units), units, lines.reduce((sum, [, all]) => sum + total(all), 0)]));
+  const loneRows = lone.map(([id, shelf, side, group, n, units]) => [id, "The only member of its family", "lone", shelf, side, group, n, { [side]: n }, "members-01.json", members("members-01.json", "", shelf, { [side]: n }, units, true), units]);
+  const partRows = parts.flatMap(([id, label, kind, group, lines]) => lines.map(([shelf, sides]) => [id, label, kind, shelf, most(sides), group, total(sides), sides, "members-02.json", members("members-02.json", label, shelf, sides)]));
+  const lines = [...families.flatMap((item) => item[3]), ...lone.map(([, shelf, side, , n]) => [shelf, { [side]: n }]), ...parts.flatMap((item) => item[4])];
   const sidesOf = (some) => Object.fromEntries(SIDES.map((side) => [side, some.reduce((sum, [, sides]) => sum + (sides[side] || 0), 0)]));
   const found = {};
   for (const row of Object.values(files).flat()) (found[row[3]] ??= {})[row[4]] = (found[row[3]][row[4]] || 0) + 1;
@@ -795,9 +810,17 @@ function madeUpSeveral({ change = () => {} } = {}) {
       { id: "unclassed", label: "Not classed by function", from: "made up" },
     ],
     family_from: "A family is a made-up entry; a protein is filed under one, and a family has a line for each shelf that holds members of it.",
-    family_columns: ["id", "label", "shelf", "side", "group", "count", "sides", "file", "at", "units"],
+    family_columns: ["id", "label", "shelf", "side", "group", "count", "sides", "file", "at", "units", "total"],
     families: familyRows,
     distinct_families: families.length,
+    families_in_all: families.length + lone.reduce((sum, part) => sum + part[4], 0),
+    lone: {
+      label: "The only member of its family",
+      count: lone.reduce((sum, part) => sum + part[4], 0),
+      parts_from: "A made-up family with one member has no line: its protein is listed here, in parts by shelf, district and side, and names its family in its mark 'family'.",
+      part_columns: ["id", "label", "kind", "shelf", "side", "group", "count", "sides", "file", "at", "units"],
+      parts: loneRows,
+    },
     no_family: {
       label: "No family assigned",
       count: partRows.reduce((sum, row) => sum + row[6], 0),
@@ -807,7 +830,7 @@ function madeUpSeveral({ change = () => {} } = {}) {
       parts: partRows,
     },
     member_columns: ["id", "label", "gene", "side", "basis", "length", "unit", "marks"],
-    members_from: { format: MEMBERS_FORMAT, order: "The members follow the lines in order: every line of the families as listed, then every line of the parts.", files: "Two files, kept beside this one: the members of the families, then those of the parts." },
+    members_from: { format: MEMBERS_FORMAT, order: "The members follow the lines in order: every line of the families as listed, then every part of lone, then every line of the parts of no family.", files: "Three files, kept beside this one: the members of the families, the only members of their families, and those with no family." },
     side_notes: {
       stated: "As a made-up curated entry states it.",
       predicted: "A made-up predictor read a membrane segment in the sequence; no source names the membrane.",
@@ -817,6 +840,7 @@ function madeUpSeveral({ change = () => {} } = {}) {
       isoforms: { label: "Isoforms described", values: "number", measured: false, source: "Made-up catalogue" },
       evidence: { label: "What stands behind the stated place", values: ["experiment", "curator", "similarity"], measured: false, source: "Made-up catalogue" },
       where: { label: "Place named", values: "text", measured: false, source: "Made-up catalogue" },
+      family: { label: "Family, of which it is the only member here", values: "text", measured: false, source: "Made-up catalogue" },
     },
     counts: sidesOf(lines),
     shelf_counts: Object.fromEntries([...SIX.map((shelf) => [shelf.id, sidesOf(lines.filter(([at]) => at === shelf.id))]), [NO_SHELF, sidesOf(lines.filter(([at]) => at === null))]]),
@@ -835,9 +859,9 @@ function fixtureText(value) {
   return `${text.replace(/"@row(\d+)@"/g, (_, index) => kept[Number(index)])}\n`;
 }
 
-function several({ loaded = true, change } = {}) {
+function several({ loaded = true, change, stands } = {}) {
   const { data, memberFiles } = madeUpSeveral({ change });
-  const shelves = new Shelves(data, { label: "Test cell", links: LINKS, units: UNITS });
+  const shelves = new Shelves(data, { label: "Test cell", links: LINKS, units: UNITS, stands });
   if (loaded) for (const [name, file] of Object.entries(memberFiles)) shelves.addMembers(name, file);
   return shelves;
 }
@@ -853,7 +877,7 @@ test("the made-up species with several shelves is kept as a file, and the file i
   }
   assert.deepEqual(JSON.parse(await readFile(path.join(folder, "shelves.json"), "utf8")), data, "run with WRITE_SHELVES_FIXTURE=1 to write it again");
   for (const [name, file] of Object.entries(memberFiles)) assert.deepEqual(JSON.parse(await readFile(path.join(folder, name), "utf8")), file, name);
-  assert.deepEqual((await readdir(folder)).sort(), ["members-00.json", "members-01.json", "shelves.json"]);
+  assert.deepEqual((await readdir(folder)).sort(), ["members-00.json", "members-01.json", "members-02.json", "shelves.json"]);
   // It says of itself that it is made up, and holds no machine path.
   const written = await readFile(path.join(folder, "shelves.json"), "utf8");
   assert.equal(data.made_up, true);
@@ -868,18 +892,20 @@ test("several shelves: every line is on one shelf or on none, and each shelf is 
   assert.equal(small().several, false);
   assert.deepEqual(shelves.shelves.map((shelf) => shelf.id), ["cell", "er", "mito", "nucleus", "other", "membrane"], "in the file's order");
   assert.equal(shelves.kind, "families");
-  assert.equal(shelves.total, 117);
-  assert.deepEqual(shelves.counts, { outside: 6, in: 38, inside: 51, "not known": 22 });
+  assert.equal(shelves.total, 131, "the families' lines, the only members of their families and those with no family, together");
+  assert.deepEqual(shelves.counts, { outside: 6, in: 42, inside: 56, "not known": 27 });
   // A family split over shelves is one family: ten families in eighteen lines; four parts in nine.
   assert.equal(shelves.familyCount, 10);
   assert.equal(shelves.families.length, 18);
   assert.equal(shelves.parts.length, 9);
+  // A family of one has no line: its protein is under `lone`. Fourteen such, in five parts; twenty-four families in all.
+  assert.deepEqual([shelves.lone.length, shelves.loneAll.count, shelves.familiesInAll], [5, 14, 24]);
   // What stands on each shelf, and on none, as the lines have it and as the file says.
-  assert.deepEqual(shelves.byShelf.map((entry) => [entry.id, entry.proteins, entry.lines, entry.families]), [["cell", 41, 8, 4], ["er", 7, 3, 3], ["mito", 15, 3, 2], ["nucleus", 21, 4, 3], ["other", 8, 3, 2], ["membrane", 11, 3, 2], [null, 14, 3, 2]]);
+  assert.deepEqual(shelves.byShelf.map((entry) => [entry.id, entry.proteins, entry.lines, entry.families, entry.lone]), [["cell", 48, 10, 4, 7], ["er", 7, 3, 3, 0], ["mito", 17, 4, 2, 2], ["nucleus", 23, 5, 3, 2], ["other", 8, 3, 2, 0], ["membrane", 11, 3, 2, 0], [null, 17, 4, 2, 3]]);
   assert.deepEqual(shelves.byShelf.map((entry) => entry.label), [...SIX.map((shelf) => shelf.label), null]);
   for (const entry of shelves.byShelf) assert.deepEqual(entry.counts, shelves.data.shelf_counts[entry.id ?? NO_SHELF], `${entry.id}: the file's counts are those of its lines`);
   assert.equal(shelves.byShelf.reduce((sum, entry) => sum + entry.proteins, 0), shelves.total, "every protein is on one shelf or on none");
-  assert.deepEqual(shelves.byShelf.at(-1).counts, { outside: 0, in: 0, inside: 0, "not known": 14 }, "what is on no shelf has no known side");
+  assert.deepEqual(shelves.byShelf.at(-1).counts, { outside: 0, in: 0, inside: 0, "not known": 17 }, "what is on no shelf has no known side");
   // Each line knows its shelf; a line on no shelf has none.
   assert.equal(line(shelves, "f", "IPR900001", "mito").shelf, "mito");
   assert.equal(shelves.shelfOf(line(shelves, "f", "IPR900001", "mito")).label, "Mitochondrial inner membrane");
@@ -887,7 +913,7 @@ test("several shelves: every line is on one shelf or on none, and each shelf is 
   assert.equal(shelves.shelfOf(line(shelves, "f", "IPR900003", null)), null);
   // A species with one shelf counts everything on it.
   assert.deepEqual(small().byShelf.map((entry) => [entry.id, entry.proteins, entry.counts]), [["cell", 9, { outside: 1, in: 2, inside: 4, "not known": 2 }]]);
-  assert.deepEqual(large({ loaded: false }).byShelf.map((entry) => [entry.id, entry.proteins, entry.lines, entry.families]), [["cell", 50, 11, 7]]);
+  assert.deepEqual(large({ loaded: false }).byShelf.map((entry) => [entry.id, entry.proteins, entry.lines, entry.families, entry.lone]), [["cell", 50, 11, 7, 0]]);
 });
 
 test("several shelves: a line is identified by its id and its shelf together, and one shelf's keys stay as they were", () => {
@@ -943,7 +969,7 @@ test("several shelves: the smaller families are gathered by shelf, district and 
   assert.deepEqual(marker("n", "no-family|inside", "nucleus").holds.map((part) => part.id), ["IPR910001"]);
   assert.ok(marker("g", "no-signature", null) && marker("g", "no-signature", "cell") && marker("g", "other-signature", "other"));
   // Every protein is behind exactly one marker, and every marker is on one shelf or on none.
-  assert.equal(shelves.markers.reduce((sum, item) => sum + item.count, 0), 117);
+  assert.equal(shelves.markers.reduce((sum, item) => sum + item.count, 0), 131);
   for (const item of shelves.markers) assert.ok(item.shelf === null || shelves.shelfById.has(item.shelf), item.key);
   for (const entry of shelves.byShelf) assert.equal(shelves.markers.filter((item) => item.shelf === entry.id).reduce((sum, item) => sum + item.count, 0), entry.proteins, `${entry.id}: what stands on it is its count`);
   // Opening a line shows its members on that shelf alone, and each is a protein with a key of its own, without a shelf.
@@ -955,7 +981,7 @@ test("several shelves: the smaller families are gathered by shelf, district and 
   assert.deepEqual(parseKey(onCell[0].key), { species: "testcell", type: "p", id: onCell[0].id });
   assert.ok(shelves.membersOf(line(shelves, "f", "IPR900003", null)).every((member) => member.shelf === null && member.side === "not known" && member.basis === "none"));
   const seen = new Set(shelves.markers.flatMap((item) => shelves.membersOf(item).map((member) => member.id)));
-  assert.equal(seen.size, 117, "every protein is reached, once");
+  assert.equal(seen.size, 131, "every protein is reached, once");
   // A machine finds the lines that hold its products: on their shelves, the largest first.
   assert.deepEqual(shelves.holdersOf("U01").map((item) => item.key), ["own:testcell:f@cell:IPR900001"]);
   assert.deepEqual(shelves.holdersOf("U02").map((item) => [item.label, item.shelf]), [["Harbour pore", "nucleus"]]);
@@ -1002,6 +1028,7 @@ test("several shelves: each shelf has its own words for its sides, and they read
   assert.deepEqual(shelves.sideWords(SIX[3]), shelves.sideWords("nucleus"), "a shelf may be given itself");
   // A side that is not known: of a shelf, or with no shelf at all.
   assert.match(shelves.sideWords("mito")["not known"].long, /^No source states its side of the mitochondrial inner membrane and nothing predicts it: set apart beside its shelf, not placed by guess$/);
+  assert.match(shelves.sideWords("membrane")["not known"].long, /^No source states its side of a membrane and nothing predicts it: /, "the shelf's own afterthought is left out of the sentence");
   assert.deepEqual([shelves.sideWords(null)["not known"].short, shelves.sideWords(null)["not known"].swatch], ["No place known", "own-unknown"]);
   assert.match(shelves.sideWords(null)["not known"].long, /it stands apart from every shelf, not placed by guess$/);
   // The labels the contract names for the six shelves, and others a file may choose, as they read in a sentence.
@@ -1120,7 +1147,7 @@ test("several shelves: a family's panel speaks of its line on one shelf and lead
   assert.equal(shelves.listed(line(shelves, "f", "IPR900010", null)).shelf, null);
   assert.equal("shelf" in large().listed(large().get(keyOf("testworm", "f", "IPR000001"))), false);
   // How the sides are known: mostly stated here, so the page does not call them predictions.
-  assert.deepEqual(shelves.byBasis(), { stated: 85, predicted: 10, "by function": 0, none: 22 });
+  assert.deepEqual(shelves.byBasis(), { stated: 94, predicted: 10, "by function": 0, none: 27 });
   assert.match(large().describe(keyOf("testworm", "f", "IPR000001")).plain, /Each member's side is predicted from the sequence of a protein that is itself predicted; it was not measured\.$/, "a catalogue of predictions says so as before");
   // A file of several shelves that does not count its sides by how they are known: the page claims neither.
   const uncounted = several({ change: (data) => delete data.by_basis });
@@ -1129,6 +1156,81 @@ test("several shelves: a family's panel speaks of its line on one shelf and lead
   const words = JSON.stringify([...shelves.markers.map((item) => shelves.describe(item.key)), ...shelves.markers.flatMap((item) => shelves.membersOf(item).map((protein) => shelves.describe(protein.key)))]);
   assert.ok(!/(engine|Cells) (models|simulates|runs) (this|these|the|a) (protein|proteins|family)/i.test(words));
   assert.ok(!/undefined|\bNaN\b|\[object/.test(words), "no word is missing from any panel");
+});
+
+test("a family of one has no line: its protein stands with the other only members of their families, in a part that is never called a family", () => {
+  const shelves = several();
+  const part = line(shelves, "l", "lone-channels-in", "cell");
+  assert.deepEqual([part.key, part.type, part.count, part.shelf, part.side, part.district], ["own:testcell:l@cell:lone-channels-in", "l", 4, "cell", "in", "channels"]);
+  assert.deepEqual(parseKey(part.key), { species: "testcell", type: "l", id: "lone-channels-in", shelf: "cell" });
+  // A marker of its own, in its district among the families: never gathered with anything, however few it holds.
+  for (const one of shelves.lone) assert.ok(shelves.markers.includes(one) && !one.within && !one.holds, one.key);
+  assert.equal(shelves.districtLabel(part), "Channels");
+  assert.equal(line(shelves, "l", "lone-enzymes-not-known", null).key, "own:testcell:l@:lone-enzymes-not-known");
+  // The same id on another shelf is another part, and the two are not one grouping as a family's lines are.
+  const onCell = line(shelves, "l", "lone-signalling-inside", "cell"), inNucleus = line(shelves, "l", "lone-signalling-inside", "nucleus");
+  assert.deepEqual([onCell.count, inNucleus.count, shelves.sameFamily(onCell)], [3, 2, []]);
+  assert.equal(shelves.resolve("own:testcell:l:lone-signalling-inside"), null, "a part of lone is of its own shelf: a key with no shelf is no part's");
+  // Its panel says what it is, and never calls it a family.
+  const said = shelves.describe(part.key);
+  assert.equal(said.eyebrow, "Test cell proteins, each the only one of its family");
+  assert.equal(said.plain, "The only member of its family: 4 proteins of Channels, each alone in its family in this catalogue. They stand together here so that they do not swamp the shelf; opening it shows every one of them, each with the name of its family. This is not a family. Most members' sides are as curated entries state them; each member's card says how its own is known.");
+  assert.ok(!/A family of|protein family|same family/.test(JSON.stringify([said.plain, said.eyebrow, said.opens.map((group) => group.title)])));
+  const facts = Object.fromEntries(said.facts);
+  assert.deepEqual([facts.Proteins, facts.District, facts.Shelf, facts["Where its members sit"]], ["4", "Channels", "Cell membrane", "4 proteins spanning the cell membrane"]);
+  assert.deepEqual(said.opens.map((group) => [group.title, group.count]), [["Its proteins", 4]]);
+  assert.deepEqual(said.chips.map((chip) => chip.label), ["Holds parts of a machine Cells has a law for", "Most in the cell membrane"]);
+  assert.match(shelves.describe("own:testcell:l@:lone-enzymes-not-known").plain, /^The only member of its family: 3 proteins of Enzymes, each alone in its family in this catalogue\. No place is known for any of them, so they stand together apart from every shelf; opening it shows/);
+  assert.deepEqual(shelves.listed(part), { id: part.key, label: "The only member of its family · 4", short: null, keywords: "lone-channels-in", swatch: "map-assigned", shelf: "cell" });
+  // Each of its proteins names its own family, which is looked up where any family is; and leads back to the part it is listed with.
+  const members = shelves.membersOf(part);
+  assert.equal(members.length, 4);
+  assert.ok(members.every((member) => member.under === part && member.shelf === "cell" && member.side === "in"));
+  const one = shelves.describe(members[0].key), own = members[0].marks.family;
+  assert.match(own[0], /^IPR92\d{4}$/);
+  const about = Object.fromEntries(one.facts);
+  assert.equal(about.Family, `${own[1]} (${own[0]}): its only member in this catalogue`);
+  assert.equal(about["Family, of which it is the only member here"], undefined, "said once, not twice");
+  assert.equal(about["Filed under"], undefined);
+  assert.deepEqual(one.opens, [{ title: "Listed with", items: [{ id: part.key, label: "The only member of its family", swatch: "map-assigned" }] }]);
+  assert.ok(one.sections[0].items[0].links.some((link) => link.url === `https://www.ebi.ac.uk/interpro/entry/InterPro/${own[0]}/`));
+  assert.match(one.keywords, new RegExp(`${own[0]} ${own[1]}`), "found by its family's accession and name");
+  assert.match(one.plain, /^It spans the cell membrane\. A curated entry or a paper states it\.$/);
+  // One protein alone in such a part is said as one.
+  const single = several({ change: (data) => ((data.lone.parts[1][6] = 1), (data.lone.parts[1][7] = { inside: 1 }), (data.lone.parts[1][9] = [4, 5]), (data.lone.count = 12), delete data.shelf_counts, delete data.counts, delete data.families_in_all, delete data.by_basis) });
+  assert.match(single.describe("own:testcell:l@cell:lone-signalling-inside").plain, /^The only member of its family: 1 protein of Receptors and signalling, alone in its family in this catalogue\. It stands here among the families of its district; opening this shows it, with the name of its family\. This is not a family\./);
+  // A machine finds the part that holds one of its products.
+  assert.deepEqual(shelves.holdersOf("U03").map((item) => item.key), [part.key]);
+  assert.deepEqual(members[0].units, ["U03"]);
+  // A catalogue with no such part is read as before.
+  assert.deepEqual([large().lone, large().loneAll.count, large().familiesInAll], [[], 0, 7]);
+});
+
+test("which lines of a family stand on their own is a choice: five on the shelf, five in the family, or also the largest line of such a family", () => {
+  const own = (stands, change) => several({ loaded: false, stands, change }).markers.filter((item) => item.type === "f").map((item) => `${item.id.slice(-2)}@${item.shelf ?? ""}`).sort();
+  // Five on the shelf: nine lines. A family of seven with three and four (05) is seen only inside gatherings.
+  assert.deepEqual(own("line"), ["01@cell", "02@cell", "02@nucleus", "03@cell", "04@mito", "06@nucleus", "07@nucleus", "08@membrane", "10@"]);
+  assert.deepEqual(own(undefined), own("line"), "the rule when none is asked for");
+  assert.deepEqual(own("nonsense"), own("line"));
+  // Five in the family: every line of such a family stands, all but the family of one line and one member (09).
+  assert.deepEqual(own("family"), ["01@cell", "01@er", "01@mito", "02@cell", "02@nucleus", "03@", "03@cell", "03@membrane", "04@mito", "04@other", "05@er", "05@other", "06@nucleus", "07@nucleus", "08@membrane", "10@", "10@cell"]);
+  // The middle way: the lines that hold five, and the largest line of a family of five or more that has none such.
+  assert.deepEqual(own("largest"), [...own("line"), "05@other"].sort());
+  // A file whose lines do not carry their family's total: it is counted from the family's lines.
+  const bare = (data) => (data.family_columns.pop(), data.families.forEach((row) => row.pop()));
+  assert.deepEqual(own("family", bare), own("family"));
+  // What does not stand on its own is gathered, so every protein is behind one marker whichever way.
+  for (const stands of ["line", "family", "largest"]) {
+    const shelves = several({ loaded: false, stands });
+    assert.equal(shelves.stands, stands);
+    assert.equal(shelves.markers.reduce((sum, item) => sum + item.count, 0), 131, stands);
+    assert.equal(new Set(shelves.markers.map((item) => item.key)).size, shelves.markers.length);
+  }
+  assert.equal(several({ loaded: false, stands: "family" }).markers.find((item) => item.key === "own:testcell:m@er:channels|in"), undefined, "nothing is left to gather there");
+  // With one shelf a family has one line, and the three ways are one.
+  const one = (stands) => new Shelves(madeUpFamilies().data, { stands }).markers.map((item) => item.key);
+  assert.deepEqual(one("family"), one("line"));
+  assert.deepEqual(one("largest"), one("line"));
 });
 
 test("several shelves: what breaks their rules is said, and such a file is not read", () => {
@@ -1153,11 +1255,18 @@ test("several shelves: what breaks their rules is said, and such a file is not r
   assert.match(broken((data) => (data.shelves[1].id = NO_SHELF)), /its shelves do not each have an id of their own/);
   assert.match(broken((data) => (data.family_columns[at.shelf] = "place")), /its family columns lack shelf/);
   assert.match(broken((data) => (data.no_family.part_columns[partAt.shelf] = "place")), /the columns of its parts lack shelf/);
-  assert.match(broken((data) => ((data.no_family.parts = []), (data.no_family.file = "members-01.json"), (data.no_family.at = [0, 36]))), /on several shelves the proteins with no family are given in parts, each on its shelf/);
+  assert.match(broken((data) => ((data.no_family.parts = []), (data.no_family.file = "members-02.json"), (data.no_family.at = [0, 36]))), /on several shelves the proteins with no family are given in parts, each on its shelf/);
+  // The parts of lone are held to the same: their columns, their shelves, what they add up to, and the families in all.
+  const loneAt = Object.fromEntries(madeUpSeveral().data.lone.part_columns.map((name, index) => [name, index]));
+  assert.match(broken((data) => (data.lone.part_columns[loneAt.shelf] = "place")), /the columns of the parts of lone lack shelf/);
+  assert.match(broken((data) => (data.lone.count = 99)), /the parts of lone do not add up to its count/);
+  assert.match(broken((data) => (data.lone.parts[0][loneAt.shelf] = "vacuole")), /lone-channels-in on vacuole: its shelf "vacuole" is not one of the file's/);
+  assert.match(broken((data) => (data.lone.parts[2][loneAt.shelf] = "cell")), /lone-signalling-inside on cell: the part of lone has two lines on one shelf/);
+  assert.match(broken((data) => (data.families_in_all = 10)), /it says it has 10 families in all; its lines and its lone proteins are of 24/);
   assert.throws(() => new Shelves(madeUpSeveral({ change: (data) => (data.families[0][at.shelf] = "vacuole") }).data), /does not follow its format/);
   // A file that says nothing of its counts by shelf, or of the number of its families, is read: both are counted from the lines.
-  const quiet = new Shelves(madeUpSeveral({ change: (data) => (delete data.shelf_counts, delete data.distinct_families, delete data.counts) }).data, {});
-  assert.deepEqual([quiet.familyCount, quiet.byShelf.map((entry) => entry.proteins), quiet.counts], [10, [41, 7, 15, 21, 8, 11, 14], { outside: 6, in: 38, inside: 51, "not known": 22 }]);
+  const quiet = new Shelves(madeUpSeveral({ change: (data) => (delete data.shelf_counts, delete data.distinct_families, delete data.families_in_all, delete data.counts) }).data, {});
+  assert.deepEqual([quiet.familyCount, quiet.familiesInAll, quiet.byShelf.map((entry) => entry.proteins), quiet.counts], [10, 24, [48, 7, 17, 23, 8, 11, 17], { outside: 6, in: 42, inside: 56, "not known": 27 }]);
   // A small catalogue with several shelves is held to the same rules.
   const few = (change = () => {}) => madeUpSmall({ change: (data) => (data.shelves.push({ id: "inner", label: "Inner membrane", outside: "Between the two membranes", inside: "In the inner space" }), change(data)) });
   assert.deepEqual(validateShelves(few()), []);
@@ -1239,7 +1348,7 @@ test("several shelves: a stack of shelves of one width, each in its own frame, w
     assert.deepEqual([shelf.proteins, shelf.markers], [counted.proteins, shelves.markers.filter((item) => item.shelf === shelf.id).length], shelf.id);
     assert.equal(shelf.shelf, shelves.shelfById.get(shelf.id));
   }
-  assert.deepEqual([stack.apart.id, stack.apart.sides, stack.apart.proteins], ["apart", ["not known"], 14]);
+  assert.deepEqual([stack.apart.id, stack.apart.sides, stack.apart.proteins], ["apart", ["not known"], 17]);
   for (const block of stack.apart.blocks) for (const place of block.places) {
     assert.equal(place.item.shelf, null);
     placed.push(place.item.key);
@@ -1249,7 +1358,7 @@ test("several shelves: a stack of shelves of one width, each in its own frame, w
   // A protein with a shelf and no known side is set apart beside that shelf; one with no shelf, apart from them all.
   const nucleus = stack.shelves.find((shelf) => shelf.id === "nucleus");
   assert.deepEqual(nucleus.apart.blocks.flatMap((block) => block.places.map((place) => place.item.key)), ["own:testcell:f@nucleus:IPR900007"]);
-  assert.deepEqual(stack.apart.blocks.flatMap((block) => block.places.map((place) => place.item.key)).sort(), ["own:testcell:f@:IPR900010", "own:testcell:g@:no-signature", "own:testcell:m@:signalling|not known"]);
+  assert.deepEqual(stack.apart.blocks.flatMap((block) => block.places.map((place) => place.item.key)).sort(), ["own:testcell:f@:IPR900010", "own:testcell:g@:no-signature", "own:testcell:l@:lone-enzymes-not-known", "own:testcell:m@:signalling|not known"]);
   // One width: every membrane and every glass is as wide as the widest of them.
   const widest = Math.max(...stack.shelves.flatMap((shelf) => [shelf.plate, shelf.tray].filter((band) => band.blocks.length).map((band) => band.width)));
   assert.equal(stack.common, widest);
@@ -1296,7 +1405,9 @@ test("several shelves: a stack of shelves of one width, each in its own frame, w
     data.families = data.families.filter((row) => row[at] !== null && row[at] !== "other");
     data.no_family.parts = data.no_family.parts.filter((row) => row[partAt] !== null && row[partAt] !== "other");
     data.no_family.count = data.no_family.parts.reduce((sum, row) => sum + row[6], 0);
-    delete data.shelf_counts; delete data.distinct_families; delete data.counts;
+    data.lone.parts = data.lone.parts.filter((row) => row[3] !== null);
+    data.lone.count = data.lone.parts.reduce((sum, row) => sum + row[6], 0);
+    delete data.shelf_counts; delete data.distinct_families; delete data.families_in_all; delete data.counts;
   } }).data, {});
   const partial = layoutStack(fewer, { margin, step });
   assert.deepEqual(partial.shelves.map((shelf) => [shelf.id, shelf.index]), [["cell", 0], ["er", 1], ["mito", 2], ["nucleus", 3], ["membrane", 5]]);
@@ -1392,6 +1503,74 @@ test("several shelves: the stack is as wide as lets its largest shelf be framed 
   t.diagnostic(`${crowd.total} proteins, ${crowd.markers.length} markers, shape 0.65: limit ${wide.limit}; the largest shelf ${wide.shelves[0].width.toFixed(0)} by ${wide.shelves[0].depth.toFixed(0)}; the whole stack ${wide.width.toFixed(0)} by ${wide.depth.toFixed(0)}`);
 });
 
+test("several shelves: the stack stands as one staircase, or as several side by side for a wide screen", () => {
+  const shelves = several({ loaded: false });
+  const between = 30, gap = 34, drop = 28;
+  const stack = layoutStack(shelves, { margin: 6, step: 9, between });
+  const near = (a, b) => Math.abs(a - b) < 1e-9;
+  // One staircase, in the file's order: each shelf where the layout has it and lower than the one before; what is on no shelf last and lowest.
+  const one = arrangeStack(stack, { columns: 1, between, gap, drop });
+  assert.equal(one.columns, 1);
+  assert.deepEqual(one.shelves.map((at) => [at.id, at.column, at.row, at.x, at.y]), [["cell", 0, 0, 0, 0], ["er", 0, 1, 0, -28], ["mito", 0, 2, 0, -56], ["nucleus", 0, 3, 0, -84], ["other", 0, 4, 0, -112], ["membrane", 0, 5, 0, -140]]);
+  for (const [index, at] of one.shelves.entries()) assert.ok(near(at.z, stack.shelves[index].z), at.id);
+  assert.deepEqual([one.apart.x, one.apart.y], [0, -168]);
+  assert.ok(near(one.apart.z, stack.apart.z) && near(one.depth, stack.depth) && one.width === stack.width);
+  // Two staircases side by side: consecutive shelves share one, cut where the deeper of the two is shallowest.
+  const two = arrangeStack(stack, { columns: 2, between, gap, drop });
+  const deep = (from, to) => stack.shelves.slice(from, to).reduce((sum, shelf) => sum + shelf.depth, 0) + between * (to - from - 1);
+  const cut = [1, 2, 3, 4, 5].reduce((best, at) => (Math.max(deep(0, at), deep(at, 6)) < Math.max(deep(0, best), deep(best, 6)) - 1e-9 ? at : best));
+  assert.deepEqual(two.shelves.map((at) => at.column), stack.shelves.map((_, index) => (index < cut ? 0 : 1)));
+  assert.deepEqual(two.shelves.map((at) => at.row), stack.shelves.map((_, index) => (index < cut ? index : index - cut)));
+  for (const [index, at] of two.shelves.entries()) {
+    const shelf = stack.shelves[index];
+    assert.equal(at.x, (at.column - 0.5) * (stack.width + gap), "the staircases stand side by side");
+    assert.ok(near(at.y, -at.row * drop), "each staircase starts at the top and goes down");
+    if (at.row === 0) assert.ok(near(at.z + shelf.back, stack.shelves[0].back), "their first shelves share a back edge");
+    else assert.ok(near(at.z + shelf.back, two.shelves[index - 1].z + stack.shelves[index - 1].front + between), `${at.id} stands in front of the shelf before it`);
+  }
+  // What is on no shelf stands in front of both staircases, in the middle, lower than any shelf.
+  const fronts = two.shelves.map((at, index) => at.z + stack.shelves[index].front);
+  assert.ok(near(two.apart.z - stack.apart.size.depth / 2, Math.max(...fronts) + between));
+  assert.deepEqual([two.apart.x, two.apart.y], [0, -Math.max(cut, 6 - cut) * drop]);
+  assert.equal(two.width, 2 * stack.width + gap);
+  assert.ok(two.depth < one.depth * 0.75, `two staircases are ${two.depth.toFixed(0)} deep, one is ${one.depth.toFixed(0)}`);
+  assert.ok(near(two.depth, Math.max(...fronts) + between + stack.apart.size.depth - stack.shelves[0].back));
+  // No more staircases than shelves; and with one shelf, it stands where it always has.
+  const many = arrangeStack(stack, { columns: 9, between, gap, drop });
+  assert.equal(many.columns, 6);
+  assert.deepEqual(many.shelves.map((at) => [at.column, at.row, at.y]), [0, 1, 2, 3, 4, 5].map((column) => [column, 0, 0]));
+  // How many staircases suit a screen: two on a wide one, one on a narrow or a tall one.
+  assert.deepEqual([{ width: 1440, height: 900 }, { width: 1920, height: 1080 }, { width: 1024, height: 768 }, { width: 390, height: 844 }, { width: 1200, height: 1100 }].map(columnsFor), [2, 2, 1, 1, 1]);
+  const single = layoutStack(small(), { margin: 6, step: 9 });
+  assert.deepEqual(arrangeStack(single, { columns: 3, between, gap, drop }), { columns: 1, shelves: [{ id: "cell", column: 0, row: 0, x: 0, y: 0, z: 0 }], apart: null, width: single.width, depth: single.depth, drop });
+});
+
+test("several shelves: a shelf is itself a thing that can be chosen, and the legend's words hold for any shelf", () => {
+  const shelves = several();
+  const nucleus = shelves.get("own:testcell:s@nucleus:shelf"), none = shelves.get("own:testcell:s@:shelf");
+  assert.deepEqual([nucleus.type, nucleus.shelf, nucleus.label, nucleus.count], ["s", "nucleus", "Nuclear envelope", 23]);
+  assert.deepEqual([none.type, none.shelf, none.label, none.count], ["s", null, "No place known", 17]);
+  assert.deepEqual(parseKey(nucleus.key), { species: "testcell", type: "s", id: "shelf", shelf: "nucleus" });
+  assert.deepEqual([...shelves.shelfItems.keys()], ["cell", "er", "mito", "nucleus", "other", "membrane", null]);
+  const said = shelves.describe(nucleus.key);
+  assert.equal(said.eyebrow, "Test cell proteins: one of 6 shelves");
+  assert.equal(said.plain, "A shelf is a membrane: 23 proteins stand against the nuclear envelope, each outside it, in it or inside it, as far as the sources say.");
+  assert.deepEqual(Object.fromEntries(said.facts), { Proteins: "23", "Where they sit": "1 protein on the cytoplasmic face of the nuclear envelope; 5 proteins spanning the nuclear envelope; 13 proteins in the nucleus; 4 proteins with no side known, set apart beside it", "Lines of families": "3", "The only member of its family": "2" });
+  const apart = shelves.describe(none.key);
+  assert.equal(apart.eyebrow, "Test cell proteins on no shelf");
+  assert.equal(apart.plain, "17 proteins have no stated place and nothing predicts one. They stand apart from every shelf and are not placed by guess.");
+  assert.equal(Object.fromEntries(apart.facts)["Where they sit"], "17 proteins with no place known");
+  // A shelf is not a marker: it stands in no district and is behind no count.
+  assert.ok(!shelves.markers.some((item) => item.type === "s"));
+  // The legend counts the sides over every shelf: its words then hold for any of them.
+  const overall = shelves.sideWordsOverall();
+  assert.deepEqual([overall.outside.short, overall.in.short, overall.inside.short, overall["not known"].short], ["Beyond its membrane", "In a membrane", "Within its membrane", "Side or place not known"]);
+  // With one shelf there is nothing of the kind, and the legend's words are the shelf's own.
+  assert.equal(small().shelfItems.size, 0);
+  assert.equal(small().get("own:testbug:s:shelf"), null);
+  assert.deepEqual(small().sideWordsOverall(), small().sideWords());
+});
+
 // ---------------------------------------------------------------- several shelves, in the scene
 
 test("several shelves: the scene carries each shelf's id, label and counts, and nothing of a file that breaks their rules", async () => {
@@ -1400,20 +1579,21 @@ test("several shelves: the scene carries each shelf's id, label and counts, and 
   assert.deepEqual(warnings, []);
   assert.equal(summaries.length, 1);
   const [cell] = summaries;
-  assert.deepEqual([cell.id, cell.file, cell.kind, cell.proteins, cell.no_family, cell.parts], ["testcell", "proteins/testcell/shelves.json", "families", 117, 36, 9]);
+  assert.deepEqual([cell.id, cell.file, cell.kind, cell.proteins, cell.no_family, cell.parts], ["testcell", "proteins/testcell/shelves.json", "families", 131, 36, 9]);
   assert.deepEqual([cell.families, cell.family_lines], [10, 18], "a family split over shelves is one family: the families, and their lines apart");
-  assert.deepEqual(cell.counts, { outside: 6, in: 38, inside: 51, "not known": 22 });
+  assert.deepEqual([cell.lone, cell.lone_parts], [14, 5], "the proteins that are the only member of their family, and the parts they are listed in");
+  assert.deepEqual(cell.counts, { outside: 6, in: 42, inside: 56, "not known": 27 });
   assert.deepEqual(cell.shelves, [
-    { id: "cell", label: "Cell membrane", proteins: 41, counts: { outside: 2, in: 11, inside: 28, "not known": 0 } },
+    { id: "cell", label: "Cell membrane", proteins: 48, counts: { outside: 2, in: 15, inside: 31, "not known": 0 } },
     { id: "er", label: "Endoplasmic reticulum membrane", proteins: 7, counts: { outside: 0, in: 5, inside: 2, "not known": 0 } },
-    { id: "mito", label: "Mitochondrial inner membrane", proteins: 15, counts: { outside: 1, in: 4, inside: 8, "not known": 2 } },
-    { id: "nucleus", label: "Nuclear envelope", proteins: 21, counts: { outside: 1, in: 5, inside: 11, "not known": 4 } },
+    { id: "mito", label: "Mitochondrial inner membrane", proteins: 17, counts: { outside: 1, in: 4, inside: 8, "not known": 4 } },
+    { id: "nucleus", label: "Nuclear envelope", proteins: 23, counts: { outside: 1, in: 5, inside: 13, "not known": 4 } },
     { id: "other", label: "Other membranes", proteins: 8, counts: { outside: 0, in: 5, inside: 2, "not known": 1 } },
     { id: "membrane", label: "A membrane, not told which", proteins: 11, counts: { outside: 2, in: 8, inside: 0, "not known": 1 } },
   ]);
-  assert.equal(cell.no_shelf, 14);
-  assert.deepEqual(cell.members, ["members-00.json", "members-01.json"]);
-  assert.deepEqual(Object.keys(cell).sort(), ["bytes", "counts", "families", "family_lines", "file", "from", "id", "kind", "made", "members", "no_family", "no_shelf", "parts", "proteins", "shelves", "sources"], "names, counts and sources: no protein, no family");
+  assert.equal(cell.no_shelf, 17);
+  assert.deepEqual(cell.members, ["members-00.json", "members-01.json", "members-02.json"]);
+  assert.deepEqual(Object.keys(cell).sort(), ["bytes", "counts", "families", "family_lines", "file", "from", "id", "kind", "lone", "lone_parts", "made", "members", "no_family", "no_shelf", "parts", "proteins", "shelves", "sources"], "names, counts and sources: no protein, no family");
   // The page counts the same from the file.
   const shelves = several({ loaded: false });
   assert.deepEqual(cell.shelves.map((shelf) => [shelf.id, shelf.label, shelf.proteins, shelf.counts]), shelves.byShelf.filter((entry) => entry.id !== null).map((entry) => [entry.id, entry.label, entry.proteins, entry.counts]));
@@ -1436,7 +1616,11 @@ test("several shelves: the scene carries each shelf's id, label and counts, and 
   await bad("extra", (data) => (data.shelf_counts.vacuole = { in: 1 }));
   await bad("recount", (data) => (data.distinct_families = 18));
   await bad("sameid", (data) => (data.shelves[1].id = "cell"));
-  await bad("whole", (data) => ((data.no_family.parts = []), (data.no_family.file = "members-01.json"), (data.no_family.at = [0, 36])));
+  await bad("whole", (data) => ((data.no_family.parts = []), (data.no_family.file = "members-02.json"), (data.no_family.at = [0, 36])));
+  await bad("lonecolumns", (data) => (data.lone.part_columns[3] = "place"));
+  await bad("lonecount", (data) => (data.lone.count = 99));
+  await bad("loneshelf", (data) => (data.lone.parts[0][3] = "vacuole"));
+  await bad("inall", (data) => (data.families_in_all = 10));
   await bad("partcolumns", (data) => (data.no_family.part_columns[partAt.shelf] = "place"));
   // A small catalogue with two shelves: one marker for each protein, each on a shelf or on none.
   const few = (name, change = () => {}) => place(broken, name, madeUpSmall({ change: (data) => ((data.species = name), data.shelves.push({ id: "inner", label: "Inner membrane", outside: "Between the two membranes", inside: "In the inner space" }), change(data)) }));
@@ -1462,9 +1646,13 @@ test("several shelves: the scene carries each shelf's id, label and counts, and 
   assert.match(said("sameid"), /its shelves do not each have an id of their own/);
   assert.match(said("whole"), /on several shelves the proteins with no family are given in parts, each on its shelf/);
   assert.match(said("partcolumns"), /the parts of no_family lack a column/);
+  assert.match(said("lonecolumns"), /the parts of lone lack a column/);
+  assert.match(said("lonecount"), /the parts of lone do not add up to its count/);
+  assert.match(said("loneshelf"), /lone-channels-in: its shelf 'vacuole' is not one of the file's/);
+  assert.match(said("inall"), /it says it has 10 families in all; its lines and its lone proteins are of 24/);
   assert.match(said("outer"), /TB_001: its shelf 'outer' is not one of the file's/);
   assert.match(said("guessed"), /TB_002: it is on no shelf, yet a side of it is known/);
-  assert.equal(read.warnings.length, 14);
+  assert.equal(read.warnings.length, 18);
   assert.ok(read.warnings.every((warning) => warning.endsWith("left out")));
 
   // A species with one shelf is summarised as it always was: nothing by shelf.
@@ -1490,7 +1678,7 @@ test("several shelves: the scene carries each shelf's id, label and counts, and 
   for (const [name, file] of Object.entries(memberFiles)) await writeFile(path.join(membersDir, "testcell", name), JSON.stringify(file));
   const found = await proteinFiles({ proteins: { shelves: readShelves(proteinsDir).summaries } }, { proteinsDir, membersDir, make: false });
   assert.deepEqual(found.problems, []);
-  assert.deepEqual(found.files.map((file) => file.path), ["proteins/testcell/shelves.json", "proteins/testcell/members-00.json", "proteins/testcell/members-01.json"]);
+  assert.deepEqual(found.files.map((file) => file.path), ["proteins/testcell/shelves.json", "proteins/testcell/members-00.json", "proteins/testcell/members-01.json", "proteins/testcell/members-02.json"]);
 });
 
 // The whole build once more, with the made-up species of several shelves beside the inventory.
@@ -1518,9 +1706,9 @@ test("several shelves: the build puts the shelves' summary in the scene, and the
   assert.deepEqual(scene.meta.warnings.filter((warning) => warning.startsWith("species proteins")), []);
   assert.deepEqual(scene.proteins.shelves.map((item) => item.id), ["testcell"]);
   const [cell] = scene.proteins.shelves;
-  assert.deepEqual(cell.shelves.map((shelf) => [shelf.id, shelf.proteins]), [["cell", 41], ["er", 7], ["mito", 15], ["nucleus", 21], ["other", 8], ["membrane", 11]]);
-  assert.deepEqual([cell.no_shelf, cell.families, cell.family_lines], [14, 10, 18]);
-  assert.match(said, /species proteins testcell of 2026-11-15: 117 proteins \(6 outside, 38 in, 51 inside, 22 not known\); 10 families and 36 with none, in 2 files of members/);
+  assert.deepEqual(cell.shelves.map((shelf) => [shelf.id, shelf.proteins]), [["cell", 48], ["er", 7], ["mito", 17], ["nucleus", 23], ["other", 8], ["membrane", 11]]);
+  assert.deepEqual([cell.no_shelf, cell.families, cell.family_lines, cell.lone, cell.lone_parts], [17, 10, 18, 14, 5]);
+  assert.match(said, /species proteins testcell of 2026-11-15: 131 proteins \(6 outside, 42 in, 56 inside, 27 not known\); 10 families and 36 with none, in 3 files of members/);
   assert.ok(["own", "units"].includes(firstMode(scene.proteins, "testcell")));
 });
 
@@ -1573,7 +1761,7 @@ test("every shelves file of the repository holds to the contract, as the builder
     // Every source states its terms, and the page can say which kind they are.
     for (const source of data.sources) assert.ok(source.name && source.licence && ["permissive", "non-commercial", "no stated terms"].includes(licenceClass(source)), `${summary.id}: ${source.name}`);
     // Where a protein or a family is looked up: only the named databases, over https.
-    const allowed = ["www.uniprot.org", "parasite.wormbase.org", "www.ebi.ac.uk", "www.ncbi.nlm.nih.gov"];
+    const allowed = ["www.uniprot.org", "parasite.wormbase.org", "www.ebi.ac.uk", "www.ncbi.nlm.nih.gov", "www.proteinatlas.org"];
     const sample = shelves.kind === "proteins" ? shelves.proteins.slice(0, 40) : shelves.markers.filter((item) => !item.holds).slice(0, 40);
     let links = 0;
     for (const item of sample) {
@@ -1658,7 +1846,8 @@ test("the build puts each species' summary and the patterns of the addresses in 
   for (const [key, patterns] of Object.entries(scene.proteins.shelf_links)) {
     for (const pattern of [].concat(patterns)) {
       assert.equal(new URL(pattern.url.replaceAll("{id}", "X")).protocol, "https:", key);
-      assert.ok(pattern.text.includes("{id}") && pattern.url.includes("{id}"), key);
+      // The address is made from the identifier; the words may name the database alone.
+      assert.ok(pattern.text && pattern.url.includes("{id}"), key);
     }
   }
   // The page then finds, for each species, which of the two it opens on.

@@ -259,6 +259,18 @@
           "checked": "The pattern of links.uniprot above."
         }
       ],
+      "human": [
+        {
+          "text": "UniProt {id}",
+          "url": "https://www.uniprot.org/uniprotkb/{id}/entry",
+          "checked": "The pattern of links.uniprot above. The catalogue's identifiers are UniProtKB accessions of reviewed entries."
+        },
+        {
+          "text": "Human Protein Atlas",
+          "url": "https://www.proteinatlas.org/search/{id}",
+          "checked": "The pattern of links.hpa above; on 15 November 2026 the search for P04637 answered with the one gene. A link only: nothing is taken from the Human Protein Atlas."
+        }
+      ],
       "family": {
         "text": "InterPro {id}",
         "url": "https://www.ebi.ac.uk/interpro/entry/InterPro/{id}/",

@@ -5,6 +5,12 @@
 //   the plate   a stretch of membrane. What spans it stands in it; what is outside stands on it.
 //   the tray    coloured glass below and in front, of the membrane's own kind: what is inside the cell.
 //   apart       an outline with no glass, further to the front: what has no known side.
+// A species with several shelves (one for each membrane its data tells apart) has these three
+// for each shelf, the shelves standing as a staircase in the file's order, or as several
+// staircases side by side on a wide screen; in front of them all, lower than any, the page's
+// one set-apart area: what is on no shelf. Each shelf is built in its own frame, the membrane
+// at height 0, and moved to its place. Its name is always shown; the names of its districts
+// and of its sides only while it is the shelf in focus.
 // A protein that the atlas draws as a unit is drawn as that unit, small; every other protein
 // is a plain marker, for which Cells has no law. A large catalogue stands as families: one
 // round marker each, sized by its members. Pressing one opens it: a small set of shelves of
@@ -15,13 +21,17 @@ import * as THREE from "../three.js";
 import { soften } from "../core/materials.js";
 import { disposeTree } from "../core/stage.js";
 import { SHEET, membrane, outline } from "./protein_parts.js";
-import { PITCH, layoutShelves, layoutDish, plural } from "./protein_shelves.js";
+import { PITCH, arrangeStack, layoutDish, layoutStack, plural } from "./protein_shelves.js";
 
 const HALF = SHEET / 2;
 const MARGIN = 6; // from the outermost block to a shelf's edge
 const TRAY_DROP = 15; // how far below the membrane the tray lies
 const TRAY_THICK = 0.7;
-const STEP = 9; // between one shelf's front edge and the next shelf's back edge
+const STEP = 9; // between one area's front edge and the next area's back edge, within a shelf
+const BETWEEN = 30; // between two shelves of a staircase: wide enough that a shelf's veil does not hang over the next
+const GAP = 34; // between two staircases side by side
+const DROP = 28; // how much lower each shelf of a staircase stands than the one before: below that one's lowest area
+const LEVEL = { plate: 0, tray: -TRAY_DROP, apart: -TRAY_DROP - 7 }; // the areas of one shelf, against its membrane
 const BEAD = 1.02; // a protein marker's radius
 const GLASS = -HALF - 1.4; // the glass of an open family, against its piece of membrane
 const OPENING = 620, CLOSING = 320; // milliseconds
@@ -44,6 +54,7 @@ function shapes() {
     puck: lathe([[0, -0.5], [1, -0.5], [1, 0.28], [0.9, 0.5], [0, 0.5]]),
     ring: new THREE.TorusGeometry(1, 0.02, 8, 72),
     disc: new THREE.CylinderGeometry(1, 1, 1, 72),
+    slab: new THREE.BoxGeometry(1, 1, 1),
   };
   return cache;
 }
@@ -126,9 +137,44 @@ export function shapeFor(stage) {
   return SHAPES.reduce((best, shape) => (Math.abs(shape - wanted) < Math.abs(best - wanted) ? shape : best));
 }
 
+/** How many staircases side by side suit the screen, where a species has several shelves: one on a narrow or tall screen. */
+export function columnsFor(stage) {
+  return stage.width >= 1100 && stage.width > stage.height * 1.25 ? 2 : 1;
+}
+
 function circle(radius, steps = 96) {
   const points = Array.from({ length: steps + 1 }, (_, index) => new THREE.Vector3(Math.cos((index / steps) * Math.PI * 2) * radius, 0, Math.sin((index / steps) * Math.PI * 2) * radius));
   return new THREE.BufferGeometry().setFromPoints(points);
+}
+
+/**
+ * Many closed outlines drawn as one: each is given as the geometry of its points and where
+ * it lies. The distance along each outline is kept, so that dashes run round it as they do
+ * round an outline drawn alone. One draw for all of them, however many shelves there are.
+ */
+function loops(parts, material) {
+  const positions = [], distances = [];
+  const a = new THREE.Vector3(), b = new THREE.Vector3();
+  for (const { geometry, at } of parts) {
+    const points = geometry.attributes.position;
+    let along = 0;
+    for (let index = 0; index < points.count; index++) {
+      a.fromBufferAttribute(points, index).add(at);
+      b.fromBufferAttribute(points, (index + 1) % points.count).add(at);
+      const length = a.distanceTo(b);
+      if (length < 1e-9) continue;
+      positions.push(a.x, a.y, a.z, b.x, b.y, b.z);
+      distances.push(along, along + length);
+      along += length;
+    }
+    geometry.dispose();
+  }
+  const merged = new THREE.BufferGeometry();
+  merged.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  merged.setAttribute("lineDistance", new THREE.Float32BufferAttribute(distances, 1));
+  const lines = new THREE.LineSegments(merged, material);
+  lines.userData.unpickable = true;
+  return lines;
 }
 
 /** Many copies of one shape as one mesh; each place gives its position and scale, and learns its index. */
@@ -153,22 +199,27 @@ export class ShelvesView {
   /**
    * lens     the protein atlas lens: its stage, its tones and how it builds a unit's form
    * shelves  one species' proteins (protein_shelves.js)
-   * shape    how deep the stack may be for its width: about 1 on a wide screen, more on a tall one
+   * shape    how deep a shelf may be for its width: about 1 on a wide screen, more on a tall one
+   * columns  with several shelves, how many staircases stand side by side (one on a narrow screen)
+   * opens    with several shelves, what the page shows first: the whole "stack", or the first "shelf"
    */
-  constructor(lens, shelves, { shape = 1.15 } = {}) {
+  constructor(lens, shelves, { shape = 1.15, columns = 1, opens = "stack" } = {}) {
     this.lens = lens;
     this.stage = lens.stage;
     this.shelves = shelves;
     this.shape = shape;
+    this.columns = columns;
+    this.opens = opens === "shelf" ? "shelf" : "stack";
     this.group = new THREE.Group();
-    this.nodes = new Map(); // key -> { item, position, radius, top, ringAt, area, tone, mesh, index, form, pip, label }
+    this.nodes = new Map(); // key -> { item, position, radius, top, ringAt, area, frame, base, tone, mesh, index, form, pip, label }
     this.meshes = [];
-    this.areas = [];
+    this.frames = []; // one for each shelf that holds anything, and one for what is on no shelf
     this.districts = [];
     this.clusters = [];
     this.protos = new Map(); // a unit's form, made once and copied
     this.selected = null;
     this.hovered = null;
+    this.focused = undefined; // the shelf in focus: its id, null for what is on no shelf, undefined for the whole stack
     this.isolate = null; // a side
     this.basis = null; // how a side is known
     this.mark = null; // { name, value }
@@ -207,23 +258,33 @@ export class ShelvesView {
   build() {
     const { shelves } = this;
     const G = shapes();
-    const layout = layoutShelves(shelves, { shape: this.shape, margin: MARGIN, step: STEP });
+    const several = shelves.several;
+    const stack = layoutStack(shelves, { shape: this.shape, margin: MARGIN, step: STEP, between: BETWEEN });
+    const placed = arrangeStack(stack, { columns: several ? this.columns : 1, between: BETWEEN, gap: GAP, drop: DROP });
     const families = shelves.kind === "families";
-    // The stack: each shelf lies lower than the one before it and further to the front.
-    const present = ["plate", "tray", "apart"].map((id) => layout[id]).filter((area) => area.blocks.length);
-    const LEVEL = { plate: 0, tray: -TRAY_DROP, apart: -TRAY_DROP - 7 };
-    // The membrane and the glass are one width, so they read as shelves of one stack.
-    const shelf = Math.max(0, ...present.filter((area) => area.id !== "apart").map((area) => area.width));
-    let front = null;
-    for (const area of present) {
-      area.width = (area.id === "apart" ? area.width : Math.max(area.width, shelf)) + 2 * MARGIN;
-      area.depth += 2 * MARGIN;
-      area.centre = new THREE.Vector3(0, LEVEL[area.id], front === null ? 0 : front + STEP + area.depth / 2);
-      front = area.centre.z + area.depth / 2;
-      // The face of the shelf on which, or in which, its markers stand.
-      area.top = area.id === "plate" ? HALF : area.centre.y;
+    this.stack = stack;
+    this.arranged = placed;
+
+    // The frames: each shelf with its areas in its own frame (the membrane's middle at the
+    // origin, each next area a step in front and lower), and where that frame stands.
+    this.frames = stack.shelves.map((shelf, index) => {
+      const at = placed.shelves[index];
+      const origin = new THREE.Vector3(at.x, at.y, at.z);
+      const areas = shelf.areas.map((area) => ({ id: area.id, sides: shelf[area.id].sides, blocks: shelf[area.id].blocks, width: area.width, depth: area.depth, centre: new THREE.Vector3(origin.x, origin.y + LEVEL[area.id], origin.z + area.z), top: origin.y + (area.id === "plate" ? HALF : LEVEL[area.id]) }));
+      return { id: shelf.id, shelf: shelf.shelf, item: shelves.shelfItems.get(shelf.id) || null, origin, areas, proteins: shelf.proteins, column: at.column, row: at.row };
+    });
+    if (stack.apart) {
+      // What is on no shelf: the page's one set-apart area, in front of every shelf and lower than any.
+      const origin = new THREE.Vector3(placed.apart.x, placed.apart.y, placed.apart.z);
+      const area = { id: "apart", loose: true, sides: stack.apart.sides, blocks: stack.apart.blocks, width: stack.apart.size.width, depth: stack.apart.size.depth, centre: origin.clone(), top: origin.y };
+      this.frames.push({ id: null, shelf: null, item: shelves.shelfItems.get(null) || null, origin, areas: [area], proteins: stack.apart.proteins, column: null, row: null });
     }
-    this.areas = present;
+    for (const frame of this.frames) {
+      const first = frame.areas[0], last = frame.areas[frame.areas.length - 1];
+      const widest = Math.max(...frame.areas.map((area) => area.width));
+      frame.bounds = { minX: frame.origin.x - widest / 2, maxX: frame.origin.x + widest / 2, minZ: first.centre.z - first.depth / 2, maxZ: last.centre.z + last.depth / 2, minY: Math.min(...frame.areas.map((area) => area.centre.y)) - 2, maxY: frame.origin.y + HALF + 6 };
+    }
+    const present = this.frames.flatMap((frame) => frame.areas.map((area) => ((area.frame = frame), area)));
 
     this.lineMaterial = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.4, depthWrite: false });
     this.dashes = new THREE.LineDashedMaterial({ transparent: true, opacity: 0.85, dashSize: 1.1, gapSize: 0.8 });
@@ -268,40 +329,42 @@ export class ShelvesView {
       return sets.get(name).places;
     };
     this.forms = [];
+    const edges = [], rings = []; // the outlines of the districts, and the rings round what holds many: each kind drawn as one
     for (const area of present) {
+      const frame = area.frame;
+      // Heights within a frame are told from its membrane's middle: `base` is where that stands.
+      const base = frame.origin.y, membraneTop = base + HALF;
       for (const block of area.blocks) {
         const centre = new THREE.Vector3(area.centre.x + block.x, area.top, area.centre.z + block.z);
         // The district's outline lies on its shelf, and its name just in front of it.
-        const edge = new THREE.LineLoop(outline(block.width - 1.2, block.depth - 1.2, 3), this.lineMaterial);
-        edge.position.set(centre.x, area.top + 0.08, centre.z);
-        edge.userData.unpickable = true;
-        edge.renderOrder = 3;
-        this.group.add(edge);
-        this.districts.push({ id: `${area.id}:${block.district}`, area: area.id, district: block.district, label: block.label, path: shelves.districtPath(block.places[0].item), count: block.count, anchor: new THREE.Vector3(centre.x, area.top, centre.z + block.depth / 2 + 1.6), places: block.places });
+        edges.push({ geometry: outline(block.width - 1.2, block.depth - 1.2, 3), at: new THREE.Vector3(centre.x, area.top + 0.08, centre.z) });
+        this.districts.push({ id: `${several ? `${frame.id ?? ""}/` : ""}${area.id}:${block.district}`, frame, area: area.id, district: block.district, label: block.label, path: shelves.districtPath(block.places[0].item), count: block.count, anchor: new THREE.Vector3(centre.x, area.top, centre.z + block.depth / 2 + 1.6), places: block.places });
         for (const place of block.places) {
           const item = place.item;
           const x = centre.x + place.dx, z = centre.z + place.dz;
           const unknown = item.side === "not known";
-          const node = { item, area: area.id, radius: families ? place.radius : BEAD, tone: item.holds ? "more" : item.units.length ? "unit" : "plain" };
+          // A gathering of smaller families, and the only members of their families standing together, are many and not one.
+          const many = Boolean(item.holds) || item.type === "l";
+          const node = { item, area: area.id, frame, base, radius: families ? place.radius : BEAD, tone: many ? "more" : item.units.length ? "unit" : "plain", many };
           const entity = this.unitOf(item);
           if (families) {
             // A family stands as a round box: through the membrane, on a stalk above it, or on the glass.
             const high = item.side === "in" ? SHEET + 1.5 : 1.7;
-            const y = item.side === "in" ? 0 : item.side === "outside" ? HALF + 2.6 + high / 2 : area.top + high / 2;
+            const y = item.side === "in" ? base : item.side === "outside" ? membraneTop + 2.6 + high / 2 : area.top + high / 2;
             node.position = new THREE.Vector3(x, y, z);
             node.top = y + high / 2;
             node.scale = [place.radius, high, place.radius];
             set(unknown ? "puck-ghost" : "puck", G.puck, unknown ? ghost : solid).push(node);
-            if (item.side === "outside") set("stalk", G.stalk, this.materials.stalk).push({ stalk: true, position: new THREE.Vector3(x, HALF + 1.3, z), scale: [2.2, 2.6, 2.2] });
-            if (entity && !item.holds) {
+            if (item.side === "outside") set("stalk", G.stalk, this.materials.stalk).push({ stalk: true, position: new THREE.Vector3(x, membraneTop + 1.3, z), scale: [2.2, 2.6, 2.2] });
+            if (entity && !many) {
               // A family that holds a machine Cells has a law for carries that unit's form, small.
               const form = this.formFor(entity);
               const fit = Math.min(0.62, (place.radius * 0.92) / form.reach.radius);
               form.group.scale.setScalar(fit);
-              form.group.position.set(x, item.side === "in" ? 0.35 : node.top - form.reach.bottom * fit + 0.1, z);
+              form.group.position.set(x, item.side === "in" ? base + 0.35 : node.top - form.reach.bottom * fit + 0.1, z);
               node.top = Math.max(node.top, form.group.position.y + form.reach.top * fit);
               node.form = form;
-            } else if (item.holds && item.units.length) {
+            } else if (many && item.units.length) {
               // A gathering that holds such families among others carries a small sign of it.
               node.pip = { pip: true, position: new THREE.Vector3(x, node.top + 0.45, z), scale: [0.62, 0.62, 0.62] };
               set("pip", G.bead, solid).push(node.pip);
@@ -311,27 +374,27 @@ export class ShelvesView {
             // A protein that the atlas draws as a unit is drawn as that unit, small.
             const form = this.formFor(entity);
             const fit = Math.min(0.34, (PITCH * 0.47) / form.reach.radius);
-            const base = item.side === "in" || item.side === "outside" ? HALF : area.top;
+            const floor = item.side === "in" || item.side === "outside" ? membraneTop : area.top;
             form.group.scale.setScalar(fit);
             // So small, a form that spans the membrane would lie hidden within it: it stands sunk in it, its top out, as the plain markers do.
-            form.group.position.set(x, item.side === "in" ? HALF + 1.5 - form.reach.top * fit : base - form.reach.bottom * fit, z);
+            form.group.position.set(x, item.side === "in" ? membraneTop + 1.5 - form.reach.top * fit : floor - form.reach.bottom * fit, z);
             node.position = form.group.position.clone();
             node.top = form.group.position.y + form.reach.top * fit;
             node.radius = form.reach.radius * fit;
             node.form = form;
             // A clear form is hard to see when small: each stands on a base of the units' colour.
-            node.foot = { foot: true, item, position: new THREE.Vector3(x, base + 0.14, z), scale: [PITCH * 0.44, 0.28, PITCH * 0.44] };
+            node.foot = { foot: true, item, position: new THREE.Vector3(x, floor + 0.14, z), scale: [PITCH * 0.44, 0.28, PITCH * 0.44] };
             set("foot", G.puck, solid).push(node.foot);
           } else if (item.side === "in") {
-            node.position = new THREE.Vector3(x, 0.2, z);
-            node.top = HALF + 1.3;
+            node.position = new THREE.Vector3(x, base + 0.2, z);
+            node.top = membraneTop + 1.3;
             set("span", G.span, solid).push(node);
           } else if (item.side === "outside") {
-            node.position = new THREE.Vector3(x, HALF + 2.3, z);
-            node.top = HALF + 2.3 + BEAD;
+            node.position = new THREE.Vector3(x, membraneTop + 2.3, z);
+            node.top = membraneTop + 2.3 + BEAD;
             node.scale = [BEAD, BEAD, BEAD];
             set("bead", G.bead, solid).push(node);
-            set("stalk", G.stalk, this.materials.stalk).push({ stalk: true, position: new THREE.Vector3(x, HALF + 0.75, z), scale: [1, 1.5, 1] });
+            set("stalk", G.stalk, this.materials.stalk).push({ stalk: true, position: new THREE.Vector3(x, membraneTop + 0.75, z), scale: [1, 1.5, 1] });
           } else {
             node.position = new THREE.Vector3(x, area.top + BEAD, z);
             node.top = area.top + 2 * BEAD;
@@ -343,7 +406,7 @@ export class ShelvesView {
             this.forms.push(node.form);
             this.group.add(node.form.group);
           }
-          node.ringAt = new THREE.Vector3(x, item.side === "in" || item.side === "outside" ? HALF + 0.2 : area.top + 0.15, z);
+          node.ringAt = new THREE.Vector3(x, item.side === "in" || item.side === "outside" ? membraneTop + 0.2 : area.top + 0.15, z);
           this.nodes.set(item.key, node);
         }
       }
@@ -358,22 +421,22 @@ export class ShelvesView {
     }
     for (const node of this.nodes.values()) if (node.foot) node.mesh = null; // drawn as a form: the base is not its marker
 
-    // A gathering of smaller families is ringed with dashes, so it reads as many and not one.
+    // What holds many (a gathering of smaller families; the only members of their families)
+    // is ringed with dashes, so it reads as many and not one.
     for (const node of this.nodes.values()) {
-      if (!node.item.holds) continue;
-      const loop = new THREE.LineLoop(circle(node.radius + 0.5, 48), this.dashes);
-      loop.computeLineDistances();
-      loop.position.set(node.position.x, node.position.y + node.scale[1] / 2 + 0.05, node.position.z);
-      loop.userData.unpickable = true;
-      this.group.add(loop);
+      if (node.many) rings.push({ geometry: circle(node.radius + 0.5, 48), at: new THREE.Vector3(node.position.x, node.position.y + node.scale[1] / 2 + 0.05, node.position.z) });
     }
+    const outlines = loops(edges, this.lineMaterial);
+    outlines.renderOrder = 3;
+    this.group.add(outlines);
+    if (rings.length) this.group.add(loops(rings, this.dashes));
     // The members of one assembly, where the data names it, share a label.
     if (!families) {
       const groups = new Map();
       for (const node of this.nodes.values()) {
         const name = node.item.marks?.complex;
         if (!name) continue;
-        const id = `${node.area}:${node.item.group}:${name}`;
+        const id = `${node.frame.id ?? ""}/${node.area}:${node.item.group}:${name}`;
         if (!groups.has(id)) groups.set(id, { name, nodes: [] });
         groups.get(id).nodes.push(node);
       }
@@ -381,7 +444,7 @@ export class ShelvesView {
         if (cluster.nodes.length < 3) continue;
         const centre = cluster.nodes.reduce((sum, node) => sum.add(node.position), new THREE.Vector3()).multiplyScalar(1 / cluster.nodes.length);
         centre.y = Math.max(...cluster.nodes.map((node) => node.top));
-        this.clusters.push({ label: `${cluster.name.charAt(0).toUpperCase()}${cluster.name.slice(1)} · ${cluster.nodes.length}`, anchor: centre });
+        this.clusters.push({ label: `${cluster.name.charAt(0).toUpperCase()}${cluster.name.slice(1)} · ${cluster.nodes.length}`, anchor: centre, frame: cluster.nodes[0].frame });
       }
     }
 
@@ -399,29 +462,57 @@ export class ShelvesView {
     this.fill.position.set(-80, -30, 60);
     this.group.add(this.fill);
 
-    const first = present[0], last = present[present.length - 1];
-    const widest = Math.max(...present.map((area) => area.width));
-    this.bounds = { minX: -widest / 2, maxX: widest / 2, minZ: first.centre.z - first.depth / 2, maxZ: last.centre.z + last.depth / 2, minY: Math.min(...present.map((area) => area.centre.y)) - 2, maxY: HALF + 6 };
-    this.veil = new THREE.Mesh(G.disc, this.veilMaterial);
-    const far = 3 * Math.max(widest, this.bounds.maxZ - this.bounds.minZ);
-    this.veil.scale.set(far, 0.05, far);
-    this.veil.position.set(0, RISE - 5.2, (this.bounds.minZ + this.bounds.maxZ) / 2); // above what stands on the shelves, below an open family
-    this.veil.renderOrder = 5;
-    this.veil.visible = false;
-    this.veil.userData.blocker = true;
-    this.group.add(this.veil);
-    // The names of the sides lie at the back of the shelves they belong to.
-    const words = shelves.sideWords();
-    this.sides = [];
-    for (const area of present) {
-      const left = -area.width / 2 + 3, back = area.centre.z - area.depth / 2;
-      if (area.id === "plate") {
-        this.sides.push({ text: words.outside.short, anchor: new THREE.Vector3(left, HALF + 9, back + 2) });
-        // The membrane carries the shelf's own name, as the file gives it: it may stand for several membranes.
-        this.sides.push({ text: shelves.shelf.label, anchor: new THREE.Vector3(area.width * 0.2, HALF, back + 1), shelf: true });
-      } else if (area.id === "tray") this.sides.push({ text: words.inside.short, anchor: new THREE.Vector3(left, area.centre.y + 5, back + 1) });
-      else this.sides.push({ text: "Side not known: set apart", anchor: new THREE.Vector3(left, area.centre.y + 5, back + 1) });
+    // The whole: what the camera frames for the stack, and what the lens takes for its bounds.
+    this.bounds = { minX: Math.min(...this.frames.map((frame) => frame.bounds.minX)), maxX: Math.max(...this.frames.map((frame) => frame.bounds.maxX)), minZ: Math.min(...this.frames.map((frame) => frame.bounds.minZ)), maxZ: Math.max(...this.frames.map((frame) => frame.bounds.maxZ)), minY: Math.min(...this.frames.map((frame) => frame.bounds.minY)), maxY: Math.max(...this.frames.map((frame) => frame.bounds.maxY)) };
+    // The veils: above what stands on the shelves, below an open family. One shelf has one
+    // that reaches far past it, as it always had. Of several shelves each area has its own,
+    // close above what stands there and reaching a little to the front, towards the eye: so
+    // it covers its area from where the picture is seen, and none hangs over the area in
+    // front of it, which lies lower.
+    this.veils = [];
+    const far = 3 * Math.max(this.bounds.maxX - this.bounds.minX, this.bounds.maxZ - this.bounds.minZ);
+    const veiled = (geometry, width, depth, x, y, z) => {
+      const veil = new THREE.Mesh(geometry, this.veilMaterial);
+      veil.scale.set(width, 0.05, depth);
+      veil.position.set(x, y, z);
+      veil.renderOrder = 5;
+      veil.visible = false;
+      veil.userData.blocker = true;
+      this.group.add(veil);
+      this.veils.push(veil);
+    };
+    if (this.frames.length === 1) {
+      const box = this.bounds;
+      veiled(G.disc, far, far, (box.minX + box.maxX) / 2, this.frames[0].origin.y + RISE - 5.2, (box.minZ + box.maxZ) / 2); // above what stands on the shelves, below an open family
+    } else {
+      for (const area of present) {
+        const above = area.id === "plate" ? RISE - 5.2 : 9, forward = above * 0.9;
+        veiled(G.slab, area.width + 12, area.depth + 3 + forward, area.centre.x, area.centre.y + above, area.centre.z + (forward - 3) / 2);
+      }
     }
+    // The names of the sides lie at the back of the areas they belong to, and the shelf's own on its membrane.
+    this.sides = [];
+    for (const frame of this.frames) {
+      const words = shelves.sideWords(several ? frame.id : undefined);
+      for (const area of frame.areas) {
+        const left = area.centre.x - area.width / 2 + 3, back = area.centre.z - area.depth / 2, base = frame.origin.y;
+        if (area.id === "plate") {
+          this.sides.push({ frame, text: words.outside.short, anchor: new THREE.Vector3(left, base + HALF + 9, back + 2) });
+          // The membrane carries the shelf's own name, as the file gives it: it may stand for several membranes.
+          // Of several shelves each is named with what stands on it, and its name can be pressed to bring it into view.
+          this.sides.push({ frame, text: several ? `${frame.shelf.label} · ${frame.proteins.toLocaleString("en-US")}` : frame.shelf.label, anchor: new THREE.Vector3(area.centre.x + area.width * 0.2, base + HALF, back + 1), shelf: true, id: several ? frame.item?.key : null });
+        } else if (area.id === "tray") this.sides.push({ frame, text: words.inside.short, anchor: new THREE.Vector3(left, area.centre.y + 5, back + 1) });
+        else if (area.loose) this.sides.push({ frame, text: `No place known: set apart from every shelf · ${frame.proteins.toLocaleString("en-US")}`, anchor: new THREE.Vector3(left, area.centre.y + 5, back + 1), shelf: true, id: frame.item?.key });
+        else this.sides.push({ frame, text: several ? "Side not known: set apart beside its shelf" : "Side not known: set apart", anchor: new THREE.Vector3(left, area.centre.y + 5, back + 1) });
+      }
+      // A shelf with nothing in or on its membrane still carries its name, on its first area.
+      if (several && frame.shelf && !frame.areas.some((area) => area.id === "plate")) {
+        const area = frame.areas[0];
+        this.sides.push({ frame, text: `${frame.shelf.label} · ${frame.proteins.toLocaleString("en-US")}`, anchor: new THREE.Vector3(area.centre.x + area.width * 0.2, area.centre.y + 9, area.centre.z - area.depth / 2 + 1), shelf: true, id: frame.item?.key });
+      }
+    }
+    // With several shelves the page opens on the whole stack, or on its first shelf.
+    this.focused = several && this.opens === "shelf" ? this.frames[0].id : undefined;
   }
 
   // ------------------------------------------------------------ what the lens asks
@@ -443,15 +534,17 @@ export class ShelvesView {
    * which stand gathered, are found by name only.
    */
   sections() {
-    const shelves = this.shelves, words = shelves.sideWords();
+    const shelves = this.shelves, several = shelves.several;
     const out = [];
     if (this.opened) {
       const members = shelves.membersOf(this.opened) || [];
       out.push({ label: `Open: ${this.opened.label} · ${plural(members.length, "protein")}`, entities: members.map((item) => shelves.listed(item)), limit: 300 });
     }
     for (const district of this.districts) {
-      const side = district.area === "plate" ? `${words.in.short} or ${words.outside.short.toLowerCase()}` : district.area === "tray" ? words.inside.short : "Side not known";
-      out.push({ label: `${district.path} · ${side}`, entities: district.places.map((place) => shelves.listed(place.item)), limit: 200 });
+      // Each shelf has its own words for its sides; with several shelves a section says which shelf it is of.
+      const words = shelves.sideWords(several ? district.frame.id : undefined);
+      const side = district.area === "plate" ? `${words.in.short} or ${words.outside.short.toLowerCase()}` : district.area === "tray" ? words.inside.short : district.frame.id === null && several ? "No place known" : "Side not known";
+      out.push({ label: `${several && district.frame.shelf ? `${district.frame.shelf.label} · ` : ""}${district.path} · ${side}`, entities: district.places.map((place) => shelves.listed(place.item)), limit: 200 });
     }
     if (shelves.kind === "families") {
       const small = [...shelves.families, ...shelves.parts].filter((item) => item.within);
@@ -489,7 +582,7 @@ export class ShelvesView {
   /** What opens when a key is chosen: the family, the part or the gathering that holds it; null for a protein at rest. */
   opener(key) {
     const item = this.shelves.get(key);
-    if (!item || this.shelves.kind !== "families") return null;
+    if (!item || this.shelves.kind !== "families" || item.type === "s") return null; // a shelf comes into focus; it does not open
     if (item.type === "p") return item.under ? item.under.within || item.under : null;
     return item.within || item;
   }
@@ -649,9 +742,9 @@ export class ShelvesView {
       meshes.push(mesh);
     }
     for (const entry of nodes.values()) if (entry.foot) entry.mesh = null; // drawn as a form: the base is not its marker
-    // It rises from its marker to above the shelves, growing as it goes; a thread keeps it tied to its marker.
+    // It rises from its marker to above its own shelf, growing as it goes; a thread keeps it tied to its marker.
     const from = node ? new THREE.Vector3(node.position.x, node.top, node.position.z) : new THREE.Vector3();
-    const to = new THREE.Vector3(from.x, RISE + layout.reach * 0.22, from.z);
+    const to = new THREE.Vector3(from.x, (node ? node.base : 0) + RISE + layout.reach * 0.22, from.z);
     let high = HALF + 4;
     for (const entry of nodes.values()) {
       high = Math.max(high, entry.top + 1);
@@ -677,7 +770,7 @@ export class ShelvesView {
   settleDish(dish, t) {
     const k = ease(t);
     dish.grown = k;
-    this.veil.visible = true;
+    for (const veil of this.veils) veil.visible = true;
     this.veilMaterial.opacity = VEIL * k;
     dish.group.position.lerpVectors(dish.from, dish.to, k);
     dish.group.scale.setScalar(0.03 + 0.97 * k);
@@ -711,7 +804,8 @@ export class ShelvesView {
     this.paint();
     if (!quiet) {
       this.lens.onOpen?.();
-      this.stage.rig.flyTo(this.lens.homeView(), 800);
+      // Back to where it stood: the shelf in focus, or the whole.
+      this.stage.rig.flyTo(this.focused === undefined ? this.lens.homeView() : this.frame("shelf"), 800);
     }
     this.stage.invalidate();
   }
@@ -728,7 +822,7 @@ export class ShelvesView {
     }
     if (this.leaving === dish) this.leaving = null;
     if (!this.dish && !this.leaving) {
-      this.veil.visible = false;
+      for (const veil of this.veils) veil.visible = false;
       this.veilMaterial.opacity = 0;
     }
   }
@@ -780,6 +874,7 @@ export class ShelvesView {
     this.units = false;
     this.status = this.wanted = null;
     this.failed = false;
+    this.focused = this.shelves.several && this.opens === "shelf" ? this.frames[0].id : undefined;
     const dishes = [this.dish, this.leaving].filter(Boolean);
     this.dish = this.leaving = this.opened = null;
     for (const dish of dishes) this.drop(dish);
@@ -791,10 +886,26 @@ export class ShelvesView {
    * smaller family that stands gathered, or a protein whose family is not open.
    */
   setSelection(key) {
-    this.selected = key && this.shelves.get(key) ? key : null;
+    const item = key ? this.shelves.get(key) : null;
+    this.selected = item ? key : null;
+    // A shelf chosen (its name pressed) comes into focus; so does the shelf of whatever else is chosen.
+    if (item && this.shelves.several) {
+      const shelf = item.type === "p" ? item.shelf : item.shelf ?? null;
+      const moved = this.focused !== shelf;
+      this.focused = shelf;
+      if (item.type === "s") {
+        if (this.opened) this.close({ quiet: true });
+        this.stage.rig.flyTo(this.frame("shelf"), 900);
+      } else if (moved) this.framing = null; // the opening family, or the fly to a protein, frames the picture
+    }
     const opens = this.selected ? this.opener(this.selected) : null;
     if (opens && opens !== this.opened) this.open(opens.key);
     this.paint();
+  }
+
+  /** Whether a frame's own names are shown: always with one shelf; of several, those of the shelf in focus. */
+  inFocus(frame) {
+    return this.frames.length === 1 || !this.shelves.several || frame.id === this.focused;
   }
 
   setHover(key) {
@@ -819,14 +930,22 @@ export class ShelvesView {
       // With many districts on a shelf, the larger ones are named first where names would collide.
       district.tag = labels.add({ text: district.label, anchor: district.anchor, priority: 500 + Math.min(190, Math.sqrt(district.count) * 6), kind: "layer label-district label-shelf", lift: -8 });
     }
-    this.notes = this.sides.map((side) => labels.add({ text: side.text, anchor: side.anchor, priority: side.shelf ? 900 : 700, kind: "note", lift: 0 }));
+    // A shelf's own name is always there, and of several shelves it can be pressed; the names of its sides are its frame's.
+    this.notes = this.sides.map((side) => Object.assign(labels.add({ ...(side.id ? { id: side.id } : {}), text: side.text, anchor: side.anchor, priority: side.shelf ? 900 : 700, kind: "note", lift: 0 }), { side }));
     for (const node of this.nodes.values()) node.label = null;
     if (this.shelves.kind === "families") {
       // The largest families are named where they stand; the rest are named under the pointer.
-      const named = [...this.nodes.values()].sort((a, b) => b.item.count - a.item.count).slice(0, 64);
+      // Of several shelves, the largest of each, so that whichever is in focus has its names.
+      const all = [...this.nodes.values()].sort((a, b) => b.item.count - a.item.count);
+      // The greatest families of all are named even when the whole stack is shown: families, not what gathers many or has none.
+      const greatest = all.filter((entry) => entry.item.type === "f").slice(0, 36);
+      const named = this.frames.length === 1 ? all.slice(0, 64) : [...new Set([...this.frames.flatMap((frame) => all.filter((node) => node.frame === frame).slice(0, 40)), ...greatest])];
+      for (const [index, node] of greatest.entries()) node.great = index + 1;
       for (const node of named) {
         const held = node.item.units.length > 0;
-        node.label = labels.add({ id: node.item.key, text: node.item.label, anchor: new THREE.Vector3(node.position.x, node.top + 0.4, node.position.z), priority: 20 + Math.log2(node.item.count + 1) + (held ? 6 : 0), kind: "part label-unit", lift: 6, swatch: held ? "map-assigned" : null });
+        // The only members of their families, standing together: named as a gathering is, by how many they are.
+        const text = node.item.type === "l" ? plural(node.item.count, "family of one", "families of one") : node.item.label;
+        node.label = labels.add({ id: node.item.key, text, anchor: new THREE.Vector3(node.position.x, node.top + 0.4, node.position.z), priority: 20 + Math.log2(node.item.count + 1) + (held ? 6 : 0), kind: "part label-unit", lift: 6, swatch: held ? "map-assigned" : null });
       }
       // Every family that holds a machine Cells has a law for is named too.
       for (const node of this.nodes.values()) {
@@ -834,7 +953,7 @@ export class ShelvesView {
         node.label = labels.add({ id: node.item.key, text: node.item.label, anchor: new THREE.Vector3(node.position.x, node.top + 0.4, node.position.z), priority: 30, kind: "part label-unit", lift: 6, swatch: "map-assigned" });
       }
     } else {
-      for (const cluster of this.clusters) labels.add({ text: cluster.label, anchor: cluster.anchor, priority: 60, kind: "part label-unit", lift: 8 });
+      for (const cluster of this.clusters) cluster.tag = labels.add({ text: cluster.label, anchor: cluster.anchor, priority: 60, kind: "part label-unit", lift: 8 });
     }
     const hot = () => labels.add({ text: "", anchor: new THREE.Vector3(), priority: 5000, kind: "part label-unit label-hot", lift: 8 });
     this.hot = { selected: hot(), hovered: hot() };
@@ -860,12 +979,15 @@ export class ShelvesView {
       if (node.pip) node.pip.mesh.setColorAt(node.pip.index, show ? colours.unit : dim);
       if (node.foot) node.foot.mesh.setColorAt(node.foot.index, show ? colours.unit : dim);
       if (node.form) for (const mesh of node.form.meshes) mesh.material = tones.get(mesh.userData.tone)[show ? "lit" : "dim"];
-      if (node.label) node.label.hidden = rest || !lit;
+      // Of several shelves, the families of the shelf in focus are named, and the greatest of all whatever is shown.
+      if (node.label) node.label.hidden = rest || !lit || !(this.inFocus(node.frame) || node.great);
     }
     for (const mesh of this.meshes) if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    // The names on the shelves give way to the open family's.
-    for (const district of this.districts) if (district.tag) district.tag.hidden = rest;
-    for (const label of this.notes || []) label.hidden = rest;
+    // The names on the shelves give way to the open family's. Of several shelves, a shelf's
+    // own name stays whatever is in focus; the names of its districts and sides are shown with it.
+    for (const district of this.districts) if (district.tag) district.tag.hidden = rest || !this.inFocus(district.frame);
+    for (const cluster of this.clusters) if (cluster.tag) cluster.tag.hidden = rest || !this.inFocus(cluster.frame);
+    for (const label of this.notes || []) label.hidden = rest || !(label.side.shelf || this.inFocus(label.side.frame));
     const dish = this.dish;
     if (dish) {
       // A smaller family chosen within its gathering: its members alone are lit.
@@ -918,15 +1040,28 @@ export class ShelvesView {
     rig.flyTo({ target: node.position.clone(), distance: Math.min(rig.distance, this.dish ? Math.max(40, this.dish.reach * 2.2) : 70), polar: Math.min(rig.polar, 1.02) }, 900);
   }
 
-  /** The view that shows the whole stack from the front and above, clear of the page's card and notes. */
+  /**
+   * The view the page opens on, from the front and above, clear of the page's card and
+   * notes: the whole stack; or, of several shelves where the page opens on one, the first.
+   */
   home() {
-    return this.frame("home");
+    if (this.shelves.several) {
+      this.focused = this.opens === "shelf" ? this.frames[0].id : undefined;
+      this.paint();
+    }
+    return this.frame(this.focused === undefined ? "home" : "shelf");
+  }
+
+  /** The frame of the shelf in focus, or null while the whole stack is. */
+  focusFrame() {
+    return this.focused === undefined ? null : this.frames.find((frame) => frame.id === this.focused) || null;
   }
 
   /**
-   * The view that shows the whole stack ("home") or the open family ("dish") within the
-   * part of the screen that is free. It is remembered, so that the picture is framed again
-   * when the window or the panel changes while the camera still stands there.
+   * The view that shows the whole stack ("home"), the shelf in focus ("shelf") or the open
+   * family ("dish") within the part of the screen that is free. It is remembered, so that
+   * the picture is framed again when the window or the panel changes while the camera still
+   * stands there.
    */
   frame(of) {
     const stage = this.stage, narrow = stage.width < 760;
@@ -936,6 +1071,8 @@ export class ShelvesView {
       const { to, reach, high } = this.dish, r = reach + 2.5;
       view = fitView(stage, { minX: to.x - r, maxX: to.x + r, minY: to.y + GLASS - 1, maxY: to.y + high, minZ: to.z - r, maxZ: to.z + r }, { polar: narrow ? 0.62 : 0.74, azimuth: stage.rig.azimuth, free });
       view.distance = Math.max(view.distance, 56);
+    } else if (of === "shelf" && this.focusFrame()) {
+      view = fitView(stage, this.focusFrame().bounds, { polar: narrow ? 0.7 : 0.8, azimuth: narrow ? 0.1 : 0.16, free });
     } else {
       of = "home";
       view = fitView(stage, this.bounds, { polar: narrow ? 0.7 : 0.8, azimuth: narrow ? 0.1 : 0.16, free });

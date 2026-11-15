@@ -6,13 +6,16 @@
 //
 //   node tools/check_shelves.mjs [SCENARIO] [SCENE_FILE] [OUT_DIR]
 //
-// SCENARIO is syn3a (the default), planarian, nofiles, resize, units-small or shots. The
-// last two are aids: units-small gives three proteins a unit in the page's own copy of the
-// data, and shots writes pictures into OUT_DIR. One browser at a time: it takes the lock in
+// SCENARIO is syn3a (the default), planarian, nofiles, resize, units-small, shots or
+// pictures. The last three are aids: units-small gives three proteins a unit in the page's
+// own copy of the data, shots writes pictures into OUT_DIR, and pictures writes there the
+// pictures that the JSON file named by PICTURES asks for, one by one: each
+// { name, query, size: [width, height], run, wait }, where `run` is a script for the page
+// once it has settled (with `viewer` and `lens` at hand). One browser at a time: it takes the lock in
 // tools/lib/browser_lock.mjs, whose profile folder is on disk and removed afterwards.
 
 import { spawn } from "node:child_process";
-import { writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { createServer } from "./serve.mjs";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
@@ -133,6 +136,15 @@ const shot = async (name) => {
   await writeFile(path.join(outDir, `${name}.png`), Buffer.from(data, "base64"));
   note(`wrote ${path.join(outDir, `${name}.png`)}`);
 };
+// On a busy machine the camera, or a family on its way up or down, may still be moving when a
+// fixed wait is over: a place on the screen is read only once nothing moves any more.
+const still = async () => {
+  for (let tries = 0; tries < 120; tries++) {
+    if (await evaluate(`(() => { const v = ${V}, view = v.current.mounted; return !v.stage.rig.flight && !(view && (view.dish?.tween || view.leaving || view.opening)); })()`)) break;
+    await sleep(150);
+  }
+  await sleep(450);
+};
 // Where a marker of the shelves is on the screen, if a click there picks it and nothing lies over it.
 const atNow = (keyOrFn) =>
   evaluate(`(() => {
@@ -250,8 +262,14 @@ try {
     check("and back to its own proteins", s.show === "own" && s.drawn?.markers === 455, JSON.stringify([s.show]));
     // The choice is kept for the next species; a species without proteins of its own shows the machines and says so.
     await press('[data-species="human"]');
+    // Whether the scene names a catalogue for the human decides what is right here: with one, the
+    // choice is kept and its own proteins are shown once they are in; without, the machines and one line.
+    const humanHas = await evaluate(`Boolean(${L}.atlas.shelves?.some((item) => item.id === "human"))`);
+    for (let tries = 0; humanHas && tries < 120 && (await evaluate(`${L}.ownState("human")?.status`)) === "loading"; tries++) await sleep(250);
+    if (humanHas) await sleep(900);
     s = await state();
-    check("Human: the machines, with one line that its own catalogue is not made", s.show === "units" && s.heading === "The proteins Cells models" && /not made yet/.test(s.notice || "") && s.modes === "", JSON.stringify([s.show, s.heading, s.notice, s.modes]));
+    if (humanHas) check("Human: the choice is kept, and its own proteins are shown", s.show === "own" && s.heading === "Human proteins" && s.drawn?.markers > 0, JSON.stringify([s.show, s.heading, s.notice, s.drawn?.markers]));
+    else check("Human: the machines, with one line that its own catalogue is not made", s.show === "units" && s.heading === "The proteins Cells models" && /not made yet/.test(s.notice || "") && s.modes === "", JSON.stringify([s.show, s.heading, s.notice, s.modes]));
     await press('[data-species="mpneumoniae"]');
     await sleep(600);
     s = await state();
@@ -308,6 +326,7 @@ try {
     check("the panel describes the family", s.panel?.title === "Innexin" && /family/.test(s.panel?.eyebrow || "") && /Its proteins/.test(s.panel?.heads || ""), JSON.stringify(s.panel));
     note(`panel: ${JSON.stringify(s.panel)}`);
     await shot("planarian-innexin-open");
+    await still(); // the family is up and the camera has framed it
     const member = await at("(key) => true");
     await click(member.x, member.y);
     s = await state();
@@ -351,6 +370,7 @@ try {
     // a fixed wait (its members' file may still be on its way).
     await evaluate(`Promise.resolve(${V}.current.ready)`);
     await sleep(1300);
+    await still(); // the camera may still be on its way home after the last thing closed
     const gathered = await at("(key) => key.includes(':m:channels|in')");
     await click(gathered.x, gathered.y, 300);
     await evaluate(`new Promise((resolve) => { const lens = ${L}, began = performance.now(); const wait = () => (lens.mounted?.opened || performance.now() - began > 8000 ? resolve() : setTimeout(wait, 30)); wait(); })`);
@@ -409,6 +429,29 @@ try {
     note(JSON.stringify(await evaluate(`(() => { const view = ${V}.current.mounted; return { status: view?.status, wanted: view?.wanted?.key, opened: view?.opened?.key, selected: ${V}.state.selected, mode: ${V}.current.mode, own: [...${V}.current.own].map(([id, state]) => id + ":" + state.status + ":" + (state.error || "")) }; })()`)));
     note(JSON.stringify(await evaluate(`(() => { const v = ${V}, lens = v.current, view = lens.mounted, dish = view.dish; const chosen = view.shelves.get(view.selected); const out = { selected: view.selected, opened: view.opened?.key, within: chosen?.within === dish?.item, entries: 0, forms: [], underChosen: 0 }; for (const entry of dish.nodes.values()) { out.entries++; if (entry.item.under === chosen) out.underChosen++; if (entry.form) out.forms.push([entry.item.under.label.slice(0, 22), entry.item.under === chosen, entry.form.meshes.map((mesh) => mesh.userData.tone + ":" + mesh.material.opacity.toFixed(2) + (mesh.visible ? "" : " hidden")).join(","), entry.form.group.parent === dish.group, entry.form.group.position.toArray().map((n) => Math.round(n * 10) / 10).join(" "), entry.form.group.scale.x.toFixed(2)]); } return out; })()`)));
     await shot("held-probe");
+  }
+
+  if (scenario === "pictures") {
+    // Pictures asked for one by one, in real time, with what each shows and how long a frame of it takes to draw.
+    const list = JSON.parse(await readFile(process.env.PICTURES, "utf8"));
+    for (const item of list) {
+      await size(...(item.size || [WIDTH, HEIGHT]));
+      await open(item.query);
+      await sleep(600);
+      if (item.run) await evaluate(`(async () => { const viewer = ${V}, lens = viewer.current; ${item.run} })()`);
+      await sleep(item.wait ?? 1500);
+      const facts = await evaluate(`(() => {
+        const viewer = ${V}, lens = viewer.current, view = lens.mounted, stage = viewer.stage;
+        if (!view) return { mode: lens.mode, notice: viewer.shadowRoot.querySelector(".card-notice")?.textContent || null };
+        // How long a frame takes to draw: the scene drawn twenty times, as the stage draws it.
+        const began = performance.now();
+        for (let index = 0; index < 20; index++) stage.renderer.render(stage.scene, stage.camera);
+        const frame = (performance.now() - began) / 20;
+        return { species: view.shelves.id, stands: view.shelves.stands, columns: view.arranged?.columns, frames: view.frames?.length, focused: view.focused === undefined ? "the whole stack" : view.focused, ...view.drawn(), labels: viewer.shadowRoot.querySelectorAll(".label:not([hidden])").length, frame_ms: Number(frame.toFixed(1)), calls: stage.renderer.info.render.calls, opened: view.opened?.key || null, status: view.status || null };
+      })()`);
+      note(`${item.name}: ${JSON.stringify(facts)}`);
+      await shot(item.name);
+    }
   }
 
   if (scenario === "shots") {
@@ -542,8 +585,11 @@ try {
     const worm = await state();
     check("the planarian's machines are drawn as before, with the same line", worm.show === "units" && worm.heading === "Planarian atlas" && /could not be loaded/.test(worm.notice || ""), JSON.stringify([worm.show, worm.heading, worm.notice]));
     await press('[data-species="human"]', 600);
+    for (let tries = 0; tries < 60 && (await evaluate(`${L}.ownState("human")?.status`)) === "loading"; tries++) await sleep(250);
     const human = await state();
-    check("Human says its own catalogue is not made", /not made yet/.test(human.notice || ""), String(human.notice));
+    // With a catalogue named in the scene, the human is like the others here: its files are not beside the page.
+    if (await evaluate(`Boolean(${L}.atlas.shelves?.some((item) => item.id === "human"))`)) check("Human says its own proteins could not be loaded", /could not be loaded/.test(human.notice || ""), String(human.notice));
+    else check("Human says its own catalogue is not made", /not made yet/.test(human.notice || ""), String(human.notice));
   }
 } catch (error) {
   check("the run completed", false, error.stack || error.message);
