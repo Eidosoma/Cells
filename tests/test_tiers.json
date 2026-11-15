@@ -83,7 +83,8 @@
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-ph/measured.json",
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-transfer-02/measured.json",
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-transfer-03/measured.json",
-  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-fuel/measured.json"
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-compartment-fuel/measured.json",
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/acceptance/tiers-tools-20261115/measured.json"
  ],
  "measured_provenance": [
   {
@@ -682,6 +683,13 @@
    "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261115-refs3",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-15T13:43:18+00:00"
+  },
+  {
+   "git_revision": "e9a484d308b83b3b1582a60d994dc54f618c6fb7",
+   "dirty": false,
+   "root": "/tmp/claude-1000/-home-robert-Cells/e8c1a991-f020-4f35-bbc5-a26360201e8b/scratchpad/land-20261115-tools",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T14:23:52+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2099,6 +2107,14 @@
     }
    },
    {
+    "file": "tests/unit/test_matched_arm_export.py",
+    "seconds": 8.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
     "file": "tests/unit/test_membrane_insertion.py",
     "seconds": 3.94,
     "exit_code": 0,
@@ -2671,6 +2687,14 @@
    {
     "file": "tests/unit/test_restricted_lumen_v2.py",
     "seconds": 5.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_results_baseline.py",
+    "seconds": 1.09,
     "exit_code": 0,
     "counts": {
      "passed": 10
