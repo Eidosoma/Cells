@@ -1,0 +1,253 @@
+{
+  "format": "cells.visualizer.species_proteins@1",
+  "species": "testcell",
+  "made": "2026-11-15",
+  "made_up": true,
+  "from": "A made-up catalogue for the tests of several shelves: 117 invented proteins. Every name and number is made up; nothing here is real.",
+  "shelves": [
+    {
+      "id": "cell",
+      "label": "Cell membrane",
+      "outside": "Outside the cell",
+      "inside": "Inside the cell: in the cytoplasm"
+    },
+    {
+      "id": "er",
+      "label": "Endoplasmic reticulum membrane",
+      "outside": "On the cytoplasmic face of the endoplasmic reticulum",
+      "inside": "In the endoplasmic reticulum's lumen"
+    },
+    {
+      "id": "mito",
+      "label": "Mitochondrial inner membrane",
+      "outside": "Between the mitochondrion's two membranes",
+      "inside": "In the mitochondrial matrix"
+    },
+    {
+      "id": "nucleus",
+      "label": "Nuclear envelope",
+      "outside": "On the cytoplasmic face of the nuclear envelope",
+      "inside": "In the nucleus"
+    },
+    {
+      "id": "other",
+      "label": "Other membranes",
+      "outside": "On the cytoplasmic face of one of the other membranes",
+      "inside": "Within one of the other compartments"
+    },
+    {
+      "id": "membrane",
+      "label": "A membrane, not told which",
+      "outside": "Beyond a membrane: outside the cell, or within a compartment",
+      "inside": "On the cytoplasmic side of a membrane"
+    }
+  ],
+  "groups": [
+    {
+      "id": "channels",
+      "label": "Channels",
+      "from": "made up"
+    },
+    {
+      "id": "signalling",
+      "label": "Receptors and signalling",
+      "from": "made up"
+    },
+    {
+      "id": "enzymes",
+      "label": "Enzymes",
+      "from": "made up"
+    },
+    {
+      "id": "unclassed",
+      "label": "Not classed by function",
+      "from": "made up"
+    }
+  ],
+  "family_from": "A family is a made-up entry; a protein is filed under one, and a family has a line for each shelf that holds members of it.",
+  "family_columns": [
+    "id",
+    "label",
+    "shelf",
+    "side",
+    "group",
+    "count",
+    "sides",
+    "file",
+    "at",
+    "units"
+  ],
+  "families": [
+    ["IPR900001","Glimmer channel","cell","in","channels",7,{"in":6,"inside":1},"members-00.json",[0,7],["U01"]],
+    ["IPR900001","Glimmer channel","er","in","channels",3,{"in":3},"members-00.json",[7,10],[]],
+    ["IPR900001","Glimmer channel","mito","in","channels",3,{"in":2,"not known":1},"members-00.json",[10,13],[]],
+    ["IPR900002","Lantern kinase","cell","inside","signalling",8,{"inside":8},"members-00.json",[13,21],[]],
+    ["IPR900002","Lantern kinase","nucleus","inside","signalling",6,{"inside":5,"outside":1},"members-00.json",[21,27],[]],
+    ["IPR900003","Quill receptor","cell","in","signalling",5,{"in":4,"outside":1},"members-00.json",[27,32],["U37"]],
+    ["IPR900003","Quill receptor","membrane","in","signalling",2,{"in":2},"members-00.json",[32,34],[]],
+    ["IPR900003","Quill receptor",null,"not known","signalling",3,{"not known":3},"members-00.json",[34,37],[]],
+    ["IPR900004","Ember oxidase","mito","inside","enzymes",9,{"inside":6,"outside":1,"in":2},"members-00.json",[37,46],[]],
+    ["IPR900004","Ember oxidase","other","inside","enzymes",2,{"inside":2},"members-00.json",[46,48],[]],
+    ["IPR900005","Tally transferase","er","inside","enzymes",3,{"inside":2,"in":1},"members-00.json",[48,51],[]],
+    ["IPR900005","Tally transferase","other","in","enzymes",4,{"in":3,"not known":1},"members-00.json",[51,55],[]],
+    ["IPR900006","Harbour pore","nucleus","in","channels",5,{"in":5},"members-00.json",[55,60],["U02"]],
+    ["IPR900007","Drift factor","nucleus","not known","signalling",6,{"inside":2,"not known":4},"members-00.json",[60,66],[]],
+    ["IPR900008","Veil protein","membrane","in","signalling",7,{"in":5,"outside":1,"not known":1},"members-00.json",[66,73],[]],
+    ["IPR900009","Lone cap","er","in","enzymes",1,{"in":1},"members-00.json",[73,74],[]],
+    ["IPR900010","Mist binder","cell","inside","signalling",1,{"inside":1},"members-00.json",[74,75],[]],
+    ["IPR900010","Mist binder",null,"not known","signalling",6,{"not known":6},"members-00.json",[75,81],[]]
+  ],
+  "distinct_families": 10,
+  "no_family": {
+    "label": "No family assigned",
+    "count": 36,
+    "sides": {
+      "outside": 2,
+      "in": 4,
+      "inside": 24,
+      "not known": 6
+    },
+    "parts_from": "A protein with no family is filed under a made-up superfamily, under its other signatures, or under none; each part has a line for each shelf.",
+    "part_columns": [
+      "id",
+      "label",
+      "kind",
+      "shelf",
+      "side",
+      "group",
+      "count",
+      "sides",
+      "file",
+      "at"
+    ],
+    "parts": [
+      ["IPR910001","Wide fold superfamily","superfamily","cell","inside","signalling",12,{"inside":11,"in":1},"members-01.json",[0,12]],
+      ["IPR910001","Wide fold superfamily","superfamily","nucleus","inside","signalling",4,{"inside":4},"members-01.json",[12,16]],
+      ["IPR910002","Narrow fold superfamily","superfamily","cell","inside","enzymes",3,{"inside":3},"members-01.json",[16,19]],
+      ["IPR910002","Narrow fold superfamily","superfamily","mito","inside","enzymes",3,{"inside":2,"not known":1},"members-01.json",[19,22]],
+      ["other-signature","A domain, repeat or site signature, and no family","other signature","cell","inside","unclassed",3,{"inside":2,"outside":1},"members-01.json",[22,25]],
+      ["other-signature","A domain, repeat or site signature, and no family","other signature","other","in","unclassed",2,{"in":2},"members-01.json",[25,27]],
+      ["no-signature","No signature of any kind","no signature","cell","inside","unclassed",2,{"inside":2},"members-01.json",[27,29]],
+      ["no-signature","No signature of any kind","no signature","membrane","in","unclassed",2,{"in":1,"outside":1},"members-01.json",[29,31]],
+      ["no-signature","No signature of any kind","no signature",null,"not known","unclassed",5,{"not known":5},"members-01.json",[31,36]]
+    ]
+  },
+  "member_columns": [
+    "id",
+    "label",
+    "gene",
+    "side",
+    "basis",
+    "length",
+    "unit",
+    "marks"
+  ],
+  "members_from": {
+    "format": "cells.visualizer.species_protein_members@1",
+    "order": "The members follow the lines in order: every line of the families as listed, then every line of the parts.",
+    "files": "Two files, kept beside this one: the members of the families, then those of the parts."
+  },
+  "side_notes": {
+    "stated": "As a made-up curated entry states it.",
+    "predicted": "A made-up predictor read a membrane segment in the sequence; no source names the membrane.",
+    "none": "No entry states the side and nothing predicts it."
+  },
+  "marks": {
+    "isoforms": {
+      "label": "Isoforms described",
+      "values": "number",
+      "measured": false,
+      "source": "Made-up catalogue"
+    },
+    "evidence": {
+      "label": "What stands behind the stated place",
+      "values": [
+        "experiment",
+        "curator",
+        "similarity"
+      ],
+      "measured": false,
+      "source": "Made-up catalogue"
+    },
+    "where": {
+      "label": "Place named",
+      "values": "text",
+      "measured": false,
+      "source": "Made-up catalogue"
+    }
+  },
+  "counts": {
+    "outside": 6,
+    "in": 38,
+    "inside": 51,
+    "not known": 22
+  },
+  "shelf_counts": {
+    "cell": {
+      "outside": 2,
+      "in": 11,
+      "inside": 28,
+      "not known": 0
+    },
+    "er": {
+      "outside": 0,
+      "in": 5,
+      "inside": 2,
+      "not known": 0
+    },
+    "mito": {
+      "outside": 1,
+      "in": 4,
+      "inside": 8,
+      "not known": 2
+    },
+    "nucleus": {
+      "outside": 1,
+      "in": 5,
+      "inside": 11,
+      "not known": 4
+    },
+    "other": {
+      "outside": 0,
+      "in": 5,
+      "inside": 2,
+      "not known": 1
+    },
+    "membrane": {
+      "outside": 2,
+      "in": 8,
+      "inside": 0,
+      "not known": 1
+    },
+    "no shelf": {
+      "outside": 0,
+      "in": 0,
+      "inside": 0,
+      "not known": 14
+    }
+  },
+  "by_basis": {
+    "outside": {
+      "stated": 4,
+      "predicted": 2
+    },
+    "in": {
+      "stated": 30,
+      "predicted": 8
+    },
+    "inside": {
+      "stated": 51
+    },
+    "not known": {
+      "none": 22
+    }
+  },
+  "sources": [
+    {
+      "name": "Made-up catalogue",
+      "licence": "None needed: every name and number here is invented for the tests",
+      "class": "permissive",
+      "holds": "nothing real"
+    }
+  ]
+}

@@ -31,7 +31,7 @@ design (`docs/PROTEIN_CATALOGUE_PLAN.md`, stage 3) has not begun and belongs to 
   "method": ["One line per step of how the entries were found."],
   "sources": [
     {"name": "UniProt", "url": "https://www.uniprot.org/", "release": "2026_04",
-     "accessed": "2026-11-14", "licence": "CC BY 4.0", "cite": "…", "holds": "what was taken"}
+     "accessed": "2026-11-14", "licence": "CC BY 4.0", "class": "permissive", "cite": "…", "holds": "what was taken"}
   ],
   "not_copied": "What was read but not copied, and why.",
   "units": {
@@ -86,6 +86,15 @@ design (`docs/PROTEIN_CATALOGUE_PLAN.md`, stage 3) has not begun and belongs to 
 - **Licences.** Nothing is copied from a source whose terms forbid redistribution or
   commercial use; such a source may be named and linked. `sources` states each licence,
   and the file passes the same checks as the snapshot: no machine paths, no host names.
+- **Classes.** Every entry of `sources` and every `citation` carries a `class`:
+  `permissive` (CC BY, CC0, or a plain statement that no restriction is placed on use),
+  `non-commercial` (a CC BY-NC licence of any kind) or `no stated terms` (the project's
+  rule, D173, 15 November 2026). The atlas holds no value and no statement from a source
+  that is not permissive: every entry of `sources` is permissive. A paper of another
+  class may be cited for a name only. The product then carries `name_record`, the
+  permissive record in which the name stands too (`source`, the name of an entry in
+  `sources`, and `id`), and none of the paper's findings is repeated.
+  `tests/licence_classes.test.mjs` holds every atlas to it.
 - **No claim about the engine.** The engine's laws are the same for every species. A
   species atlas never says the engine models a species' protein.
 

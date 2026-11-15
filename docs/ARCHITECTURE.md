@@ -334,6 +334,79 @@ note.
 - **The success criterion:** adding a biological capability is a bounded addition of declarations
   and physical laws, with shared state, predictable GPU execution and reusable validation.
 
+## External modules (proposed)
+
+*Proposed on 15 November 2026 in [MODULE_SYSTEM_DESIGN.md](MODULE_SYSTEM_DESIGN.md), and not yet
+adopted. It uses the modular core's status words: holds today, target and open.*
+
+**The target.** Cells stays MIT and aims at broad adoption.
+- Independently maintained packages use, extend and compose Cells, and the project extends
+  itself through the same interfaces.
+- An external component meets the same validation, composition, execution and accounting
+  contracts as a built-in one.
+- Every component follows one path. It is registered explicitly into a registry scoped to one
+  model build, then resolved, validated, assembled, compiled and run.
+
+**Ownership boundaries.**
+- **Cells owns** shared physical state and its accounting, the seams where components attach,
+  admission, the numerical plan, compilation and its caches, checkpoints and run records.
+- **A module owns** its declarations, its pure kernels, its own accumulators and its evidence. The
+  declarations cover:
+  - the quantities it reads and changes, with their units;
+  - its own state, transfers, controls and stages;
+  - its domain of validity;
+  - the methods, backends and precision it supports.
+- **Shared state is reached only through declared interfaces.** A module never reads another
+  component's layout. Cells books the ledgers from the transfers actually applied.
+- **IDs are namespaced** (`example.law@1`), and bare IDs belong to `cells`.
+- **Registration is explicit,** never at import or by discovery. Registering an unused module
+  changes no other model's state layout, program or run record.
+- **Reference simulators stay out of process,** inside modules too (AGENTS.md).
+- **Interface validity is not scientific validity.** Interface, accounting, accuracy, validity
+  and performance are qualified apart.
+
+**Holds today.** Built-in contracts with closed lookup: the operator contract, the model registry
+and the definition parser are module-level tables. Any package can already ship definitions and
+builders that use built-in IDs.
+
+**Target, in D172's round** ([INNER_MODEL_V4_DESIGN.md](INNER_MODEL_V4_DESIGN.md) §7.4 (j)–(k)).
+- **The seams:**
+  - kinds register through a build-scoped registry, and built-in kinds use the same call;
+  - IDs are namespaced, and the canonical order is the sorted namespaced ID;
+  - a registered but undeclared kind changes nothing.
+- **Version 1 for kinds:**
+  - their ledger terms fold into today's ledgers by role;
+  - their state is observed;
+  - their material moves land in the shared inventory;
+  - their controls are availabilities unless declared otherwise.
+
+**Target, staged by consumers:**
+1. A separately installed package adds one law to an unchanged Cells installation, through normal
+   construction, execution, checkpoints and provenance.
+2. A stateful mechanism and a reusable composition, each instantiated twice.
+3. A reduced and detailed pair, on the first [levels-of-detail](#levels-of-detail) consumer.
+4. Other levels on demand: geometry, numerical methods, backends.
+
+**Each stage's acceptance.** Its components:
+- use the normal pipeline;
+- keep their accounting correct;
+- meet their CPU and GPU criteria;
+- reuse compilation across parameter changes;
+- survive checkpoint and restart.
+
+Duplicate, missing and incompatible components are refused clearly, and unused modules change
+nothing.
+
+**Open, for the user:**
+- provenance for out-of-tree modules;
+- D144, now that physics can live in modules;
+- qualification of outside modules, through a conformance kit shipped with Cells;
+- where the example package lives;
+- what a module PR looks like.
+
+**Not designed:** nested compositions beyond templates, external numerical methods and backends,
+and switching levels of detail at run time.
+
 ## System shape
 
 *Where this differs from [the modular core](#the-modular-core-d172-d174), that section applies.*

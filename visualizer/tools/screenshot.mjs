@@ -30,6 +30,8 @@ const flags = [
   "--headless=new", "--no-sandbox", "--hide-scrollbars", "--mute-audio",
   "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader",
   `--window-size=${width},${height}`, `--virtual-time-budget=${value("--wait", "6000")}`,
+  // Its profile on disk, removed with the lock: never Chrome's own folder under /tmp.
+  `--user-data-dir=${release.profile}`, "--disable-breakpad", "--no-first-run",
   `--screenshot=${out}`, url,
 ];
 const child = spawn(chrome, flags, { stdio: ["ignore", "ignore", "pipe"] });

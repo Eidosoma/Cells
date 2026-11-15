@@ -107,13 +107,17 @@ All against 50 digits, at t = 0.01/k to 3/k. Relative errors unless stated.
 | The per-step heat, 5,000 random steps from trace to large amounts | Within 1.24 ε × scale of 50 digits |
 | R-tissue's static entry point on the coordinator's world (two cells, a junction, X at z = 0 permeant only there, a trace in the bath, the full electrical world around it) | X within 5.2e-14 of the closed form up to 3/k |
 
-## Readings, and questions for the lead
+## Readings, answered by the core owner (its note's §7.4 (i))
 
-1. **PA for a junction** is P_s · A_e · gate · availability, as for @3's other junction routes.
-   Confirm the law's own form.
-2. **Where the engine books the heat,** a junction field or a membrane field, is the engine's
-   choice. The reference gives the total.
-3. **A trace is a start, never a zero.** The closed form and the integration refuse a zero amount.
+1. **PA for a junction** is P_s · A_e · gate · availability. The gate evolves, so a closed-pair
+   comparison starts the gate at its steady value or integrates it. On a membrane patch, PA is
+   P · A · availability.
+2. **The heat** goes to the law's own field, `passive_dissipated_energy_pJ`, never to the
+   membrane's or the junction's; transfers go to `passive_transferred`. The reference's total is
+   what that field is compared against.
+3. **A trace is a start, never a zero,** now engine-wide: a row that does not apply at a node is a
+   declared trace (registry `background`), and an exact zero is refused at the definition. The
+   closed form and the integration refuse a zero amount too.
 
 ## Not built
 

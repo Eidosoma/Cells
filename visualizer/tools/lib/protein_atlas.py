@@ -17,6 +17,10 @@ A unit has no species; which gene products would make it does. The inventory's c
 are human. Every other species comes from a file (schema/SPECIES_ATLAS.md) that is checked
 against its contract here, and each unit carries what each species' atlas says of it. The
 laws, the mappings and the shapes drawn are the engine's and the same for every species.
+
+A species' own proteins (schema/SPECIES_PROTEINS.md) are too many for the scene: each
+species' file is published beside the page. The scene carries, for each, the file's name,
+its counts and its sources, and the patterns of the addresses a protein is looked up at.
 """
 
 from __future__ import annotations
@@ -32,6 +36,11 @@ IDENTIFIER = re.compile(r"\b[A-Za-z][A-Za-z0-9_]*@\d+")
 PDB = re.compile(r"PDB (\d[A-Z0-9]{3})")
 GROUP = "proteins"
 SPECIES_FORMAT = "cells.visualizer.species_atlas@1"
+SHELVES_FORMAT = "cells.visualizer.species_proteins@1"
+SHELF_SIDES = ("outside", "in", "inside", "not known")
+SHELF_BASES = ("stated", "predicted", "by function", "none")
+SHELF_FILE = re.compile(r"members-\d+\.json$")
+SHELF_LIMIT = 1024 * 1024  # a species' file stays under 1 MB (the contract's rule on size)
 MACHINE = re.compile(r"/home/|/mnt/|/Users/|/tmp/|file://|\blocalhost\b")
 DAY = re.compile(r"\d{4}-\d{2}-\d{2}$")
 MOST_WARNINGS = 12  # for one species file; beyond that only their number is given
@@ -54,8 +63,9 @@ def _fill(template, value):
 
 
 class Atlas:
-    def __init__(self, build, snapshot, overlay, atlases=None):
+    def __init__(self, build, snapshot, overlay, atlases=None, shelves=None):
         self.build = build
+        self.shelves = shelves  # the folder that holds each species' own proteins, or None
         # The species atlases, read from a folder of files (none, if there is no folder).
         self.species = Species(snapshot, overlay, read_species_files(atlases)) if overlay.get("species") else None
         self.snapshot = snapshot
@@ -409,6 +419,12 @@ class Atlas:
                 "no_entry": words["no_entry"],
                 "remarks": self.species.remarks,  # for the build's report; not written to the scene
             }
+        # Each species' own proteins: published beside the page, summarised here.
+        own = {}
+        if self.shelves is not None and overlay.get("shelves"):
+            summaries, breaches = read_shelves(self.shelves)
+            self.build.warnings.extend(breaches)
+            own = {"shelves": summaries, "shelf_links": shelf_links(overlay["shelves"])}
         return {
             "title": overlay["title"],
             "summary": overlay["summary"],
@@ -442,7 +458,222 @@ class Atlas:
             "sources": snapshot["sources"],
             "not_copied": snapshot["not_copied"],
             **species,
+            **own,
         }
+
+
+# ---------------------------------------------------------------- a species' own proteins
+
+
+def shelf_links(words):
+    """The patterns of the addresses a protein or a family is looked up at, as the page takes them.
+
+    The overlay keeps, with each pattern, a note of when it was checked; the page needs the pattern only.
+    """
+    def plain(pattern):
+        return {key: value for key, value in pattern.items() if key != "checked"}
+
+    return {key: plain(value) if isinstance(value, dict) else [plain(item) for item in value] for key, value in words.get("links", {}).items()}
+
+
+# The name under which a file with several shelves counts the proteins that are on none.
+SHELF_NONE = "no shelf"
+
+
+def _off_shelf(ids, shelf, sides):
+    """What is wrong with the shelf of a line whose proteins sit on these sides, or None.
+
+    A line's shelf is one of the file's, or null. With one shelf, null is that shelf. With
+    several, null is no shelf at all, which only proteins with no known side may have.
+    """
+    if not ids:
+        return None  # the shelves themselves are not sound, which is said already
+    if shelf is None:
+        if len(ids) > 1 and any(count and side != "not known" for side, count in sides.items()):
+            return "it is on no shelf, yet a side of it is known"
+        return None
+    if shelf not in ids:
+        return f"its shelf {shelf!r} is not one of the file's"
+    return None
+
+
+def read_shelves(folder):
+    """What the scene says of each species' own proteins: (summaries, warnings).
+
+    Every `<species>/shelves.json` under the folder is held to its contract
+    (schema/SPECIES_PROTEINS.md). A file that breaks it is warned about and left out; it
+    never stops the build. The scene gets the file's name beside the page, its counts and
+    its sources, and for a large catalogue the names of the files of its families' members.
+    Where a species has several shelves, the scene also gets each shelf's id, label and
+    counts, and how many proteins are on no shelf.
+    """
+    summaries, warnings = [], []
+    folder = Path(folder) if folder else None
+    if folder is None or not folder.is_dir():
+        return summaries, warnings
+    for path in sorted(folder.glob("*/shelves.json")):
+        name = path.parent.name
+        problems = []
+        try:
+            text = path.read_text(encoding="utf-8")
+            data = json.loads(text)
+        except (OSError, ValueError) as error:
+            warnings.append(f"species proteins {name}: shelves.json could not be read as JSON ({type(error).__name__}); left out")
+            continue
+        summary = _shelves_summary(name, data, len(text.encode("utf-8")), problems)
+        if MACHINE.search(text):
+            problems.append("it holds a machine path")
+        if problems:
+            more = f" (and {len(problems) - 3} more)" if len(problems) > 3 else ""
+            warnings.append(f"species proteins {name}: {'; '.join(problems[:3])}{more}; left out")
+            continue
+        summaries.append(summary)
+    return summaries, warnings
+
+
+def _shelves_summary(name, data, size, problems):
+    """One species' summary for the scene; what breaks the contract is added to `problems`."""
+    if not isinstance(data, dict) or data.get("format") != SHELVES_FORMAT:
+        problems.append(f"its format is not {SHELVES_FORMAT}")
+        return None
+    if data.get("species") != name:
+        problems.append(f"it says it holds the proteins of {data.get('species')!r}")
+    if size >= SHELF_LIMIT:
+        problems.append(f"it is {size / 1024:.0f} KB; a species' file stays under 1 MB")
+    shelves = data.get("shelves")
+    if not isinstance(shelves, list) or not shelves or not all(isinstance(shelf, dict) and all(_text(shelf.get(key)) for key in ("id", "label", "outside", "inside")) for shelf in shelves):
+        problems.append("its shelves need an id, a label and the names of their two sides")
+        shelves = []
+    # Several shelves: every line is on one of them or on none, and each shelf is counted on its own.
+    shelf_ids = [shelf["id"] for shelf in shelves]
+    several = len(shelf_ids) > 1
+    if several and (len(set(shelf_ids)) != len(shelf_ids) or SHELF_NONE in shelf_ids):
+        problems.append("its shelves do not each have an id of their own")
+    on_shelf = {shelf: Counter() for shelf in [*shelf_ids, None]}
+    sources = data.get("sources")
+    if not isinstance(sources, list) or not sources or not all(isinstance(source, dict) and _text(source.get("name")) and _text(source.get("licence")) for source in sources):
+        problems.append("every source needs a name and its licence")
+        sources = []
+    listed, grouped = data.get("proteins"), data.get("families")
+    if isinstance(listed, list) == isinstance(grouped, list):
+        problems.append("it holds either proteins or families, one of the two")
+        return None
+    counts = Counter()
+    summary = {"id": name, "file": f"proteins/{name}/shelves.json", "bytes": size, "made": data.get("made") if DAY.match(str(data.get("made"))) else None, "from": _text(data.get("from"))}
+    if isinstance(listed, list):
+        columns = data.get("columns") or []
+        missing = [key for key in ("id", "label", "shelf", "side", "basis", "group", "unit", "marks") if key not in columns]
+        if missing:
+            problems.append(f"its columns lack {', '.join(missing)}")
+            return None
+        at = {key: index for index, key in enumerate(columns)}
+        groups = {group.get("id") for group in data.get("groups") or [] if isinstance(group, dict)}
+        marks = set(data.get("marks") or {})
+        ids = set()
+        for line in listed:
+            if not isinstance(line, list) or len(line) != len(columns):
+                problems.append("a protein's line does not have the columns' length")
+                break
+            if line[at["side"]] not in SHELF_SIDES or line[at["basis"]] not in SHELF_BASES:
+                problems.append(f"{line[at['id']]}: its side or its basis is not one of the contract's words")
+                break
+            if (line[at["side"]] == "not known") != (line[at["basis"]] == "none"):
+                problems.append(f"{line[at['id']]}: a side that is not known has the basis none, and no other has")
+                break
+            if line[at["group"]] not in groups:
+                problems.append(f"{line[at['id']]}: its group {line[at['group']]!r} is not declared")
+                break
+            if set(line[at["marks"]] or {}) - marks:
+                problems.append(f"{line[at['id']]}: it carries a mark that is not declared")
+                break
+            wrong = _off_shelf(shelf_ids, line[at["shelf"]], {line[at["side"]]: 1})
+            if wrong:
+                problems.append(f"{line[at['id']]}: {wrong}")
+                break
+            ids.add(line[at["id"]])
+            counts[line[at["side"]]] += 1
+            on_shelf[line[at["shelf"]] if several else None][line[at["side"]]] += 1
+        if len(ids) != len(listed):
+            problems.append("two proteins share an identifier")
+        summary.update(kind="proteins", proteins=len(listed))
+    else:
+        columns = data.get("family_columns") or []
+        missing = [key for key in ("id", "label", "shelf", "side", "group", "count", "sides", "file", "at") if key not in columns]
+        none = data.get("no_family")
+        if missing or not isinstance(none, dict):
+            problems.append(f"its family columns lack {', '.join(missing)}" if missing else "it does not say where the proteins with no family are")
+            return None
+        at = {key: index for index, key in enumerate(columns)}
+        part_columns = none.get("part_columns") or []
+        part_at = {key: index for index, key in enumerate(part_columns)}
+        parts = none.get("parts") or []
+        if parts and any(key not in part_at for key in ("id", "label", "side", "count", "sides", "file", "at", *(["shelf"] if several else []))):
+            problems.append("the parts of no_family lack a column")
+            return None
+        if several and not parts and none.get("count"):
+            problems.append("on several shelves the proteins with no family are given in parts, each on its shelf")
+        files = []
+        seen = set()
+        for line, where, what in [(line, at, "family") for line in grouped] + [(line, part_at, "part") for line in parts]:
+            if not isinstance(line, list):
+                problems.append("a family's line is not a list")
+                break
+            count, sides, file, span = line[where["count"]], line[where["sides"]], line[where["file"]], line[where["at"]]
+            if line[where["side"]] not in SHELF_SIDES or not isinstance(sides, dict) or set(sides) - set(SHELF_SIDES) or sum(sides.values()) != count:
+                problems.append(f"{line[where['id']]}: its sides do not add up to its {count} members")
+                break
+            if not isinstance(file, str) or not SHELF_FILE.match(file) or not isinstance(span, list) or len(span) != 2 or span[1] - span[0] != count:
+                problems.append(f"{line[where['id']]}: its file and its place in it do not hold its {count} members")
+                break
+            # Its shelf: one of the file's, or none; and a family has one line on a shelf, not two.
+            shelf = line[where["shelf"]] if "shelf" in where else None
+            wrong = _off_shelf(shelf_ids, shelf, sides)
+            if not wrong and several and shelf is None and line[where["side"]] != "not known":
+                wrong = "it is on no shelf, yet it stands on a side"
+            if not wrong and (what, line[where["id"]], shelf) in seen:
+                wrong = f"the {what} has two lines on one shelf"
+            if wrong:
+                problems.append(f"{line[where['id']]}: {wrong}")
+                break
+            seen.add((what, line[where["id"]], shelf))
+            if file not in files:
+                files.append(file)
+            counts.update(sides)
+            on_shelf[shelf if several else None].update(sides)
+        if not parts:
+            # No family, given whole: it opens like one family.
+            counts.update(none.get("sides") or {})
+            if none.get("count") and (not SHELF_FILE.match(str(none.get("file"))) or not isinstance(none.get("at"), list)):
+                problems.append("no_family has neither parts nor a file of its own")
+            elif none.get("count") and none["file"] not in files:
+                files.append(none["file"])
+        if sum(line[part_at["count"]] for line in parts if isinstance(line, list)) != (none.get("count", 0) if parts else 0):
+            problems.append("the parts of no_family do not add up to its count")
+        summary.update(kind="families", proteins=sum(counts.values()), families=len(grouped), no_family=none.get("count", 0), parts=len(parts), members=sorted(files))
+        if several:
+            # A family split over shelves is one family: the scene counts the families, and their lines apart.
+            distinct = len({line[at["id"]] for line in grouped if isinstance(line, list)})
+            summary.update(families=distinct, family_lines=len(grouped))
+            if isinstance(data.get("distinct_families"), int) and data["distinct_families"] != distinct:
+                problems.append(f"it says it has {data['distinct_families']} families; its lines are of {distinct}")
+    stated = data.get("counts")
+    if isinstance(stated, dict) and {side: stated.get(side, 0) for side in SHELF_SIDES} != {side: counts[side] for side in SHELF_SIDES}:
+        problems.append("its counts by side are not those of its lines")
+    summary["counts"] = {side: counts[side] for side in SHELF_SIDES}
+    if several:
+        said = data.get("shelf_counts")
+        if isinstance(said, dict):
+            if set(said) - set(shelf_ids) - {SHELF_NONE}:
+                problems.append("it counts a shelf that it does not have")
+            for shelf in [*shelf_ids, None]:
+                given = said.get(SHELF_NONE if shelf is None else shelf) or {}
+                if not isinstance(given, dict) or {side: given.get(side, 0) for side in SHELF_SIDES} != {side: on_shelf[shelf][side] for side in SHELF_SIDES}:
+                    problems.append(f"its counts for {'the proteins on no shelf' if shelf is None else 'the shelf ' + shelf} are not those of its lines")
+                    break
+        summary["shelves"] = [{"id": shelf["id"], "label": shelf["label"], "proteins": sum(on_shelf[shelf["id"]].values()), "counts": {side: on_shelf[shelf["id"]][side] for side in SHELF_SIDES}} for shelf in shelves]
+        summary["no_shelf"] = sum(on_shelf[None].values())
+    summary["sources"] = [{key: source[key] for key in ("name", "url", "release", "accessed", "licence", "class", "through", "holds", "cite") if _text(source.get(key))} for source in sources]
+    return summary
 
 
 # ---------------------------------------------------------------- species atlases

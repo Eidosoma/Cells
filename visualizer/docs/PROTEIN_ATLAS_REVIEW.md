@@ -130,6 +130,21 @@ still stands.
 - The feature-request log's row for FR-6 still reads "no code yet", while the progress
   record says the operator's milestone 1 landed with the channel target accepted.
 
+## Second addendum: main at `44227075`, 15 November 2026
+
+Six more identifiers since the first addendum, 34 in all since the inventory. None is a
+channel, pump, transporter, junction-channel or assembly law, so 49 still stands. One is a
+new case for the lead.
+
+| Identifier | What it does | Reading |
+| --- | --- | --- |
+| `scheduled_bath_composition@1` | An operator: a held bath whose composition changes on a schedule | Outside: a prescribed control |
+| `cell_owned_compartments@1` | An operator: declares a compartment a cell owns, with its identity and role | Outside: a declaration; no unit and no physics yet |
+| `site_occupancy@1` | An operator: binding sites that molecules occupy and leave | Outside as an operator; see its law below |
+| `langmuir_site_binding@1` | The law of that binding | **Unclear: for the lead.** A population of binding sites is a molecular population that a law acts on, though it names no protein: at most a generic unit, as the exchange routes are |
+| `site_conserving_internalisation@1` | Moves occupied and free sites from the membrane to the inside | Outside, by the redistribution exclusion: it acts on where a population is |
+| `ssprk33_unidirectional_stage_condition_site_bookings@1` | How the site operator advances | Outside: numerics |
+
 ## Also noticed, outside the atlas
 
 `docs/CURRENT_PLAN.md` lists the closed internal compartment (FR-1) in the execution
