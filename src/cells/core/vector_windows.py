@@ -340,24 +340,93 @@ _EXECUTABLES = {}
 _EXECUTABLE_LIMIT = 4
 
 
-def compile_window(model, args, rows):
-    """(executable, compile seconds or 0.0 if reused, XLA memory analysis).
+def _shape_dtype(value):
+    """(shape, dtype) of a host or device array, or of a jax.ShapeDtypeStruct."""
+    if hasattr(value, "shape") and hasattr(value, "dtype"):
+        return tuple(value.shape), np.dtype(value.dtype)
+    value = np.asarray(value)
+    return value.shape, value.dtype
 
-    The key is the model's declared structure (`structure_key`: the inner model's, with the
-    composite's operators where it has one; None for models without one), its step and check
-    functions, the window's rows, and the arguments' tree, shapes, dtypes and placement. Values
-    are arguments, so worlds that differ only in parameter values reuse one executable
-    (docs/INNER_MODEL_V4_DESIGN.md §2.2, §7.4 (e) 4).
+
+def world_key(model, state, params, active, constants):
+    """The part of compile_window's key that one world fixes (the packed planner's grouping key).
+
+    It is the model's declared structure (`structure_key`: the inner model's, with the
+    composite's operators where it has one; None for models without one), its checked step and
+    device-check functions, and the tree, shapes and dtypes of the world's own state, parameters,
+    activity mask and device-check constants, without the world axis. Values and placement are
+    not in it, so worlds that differ only in parameter values (value twins) share it. Takes one
+    world's trees: host arrays (core.state.initialise, model.parameters,
+    model.device_check_constants) or, as compile_window passes them, one world's slice of the
+    stacked arguments as jax.ShapeDtypeStruct leaves. The window's own part (observation rows,
+    window width, held control rows, world count, placement) is compile_window's.
     """
-    leaves, tree = jax.tree.flatten(args)
-    key = (
+    trees = (state, params, active, constants)
+    leaves, tree = jax.tree.flatten(trees)
+    return (
         getattr(model, "structure_key", None),
         model.checked_step,
         model.device_checks,
-        rows,
         tree,
-        tuple((v.shape, v.dtype, v.sharding) for v in leaves),
+        tuple(_shape_dtype(v) for v in leaves),
     )
+
+
+def spec_world_key(model, spec, start):
+    """world_key of one world from its definition and start checkpoint, on the host: its trees
+    built as resident_inputs builds them (the layout's arrays as NumPy, the model's parameters,
+    the activity mask and the device-check constants), so a planner's grouping key and
+    compile_window's agree."""
+    layout = type(start.layout)(*(np.asarray(v) for v in start.layout))
+    return world_key(
+        model,
+        start.state,
+        model.parameters(spec, layout),
+        layout.active,
+        model.device_check_constants(spec),
+    )
+
+
+def _one_world(tree):
+    """A stacked [world, ...] tree's per-world shapes and dtypes (jax.ShapeDtypeStruct leaves)."""
+    return jax.tree.map(lambda v: jax.ShapeDtypeStruct(tuple(v.shape[1:]), v.dtype), tree)
+
+
+def window_key(model, args, rows):
+    """compile_window's key: (world_key of one world's slice, the window's own part).
+
+    The window's part is the stored observation rows, the per-world shapes and dtypes of the
+    round arrays (step sizes, counts, held control table, control index, observation slots, first
+    step: the window width and held control rows), the world count and every leaf's placement.
+    Together with world_key this is the arguments' whole tree, shapes, dtypes and placement.
+    """
+    state, steps, counts, table, index, slots, first_step, params, active, constants = args
+    leaves = jax.tree.leaves(args)
+    worlds = {v.shape[0] for v in leaves}
+    if len(worlds) != 1:
+        raise ValueError("Vector-window arguments must share one leading world axis")
+    rounds = (steps, counts, table, index, slots, first_step)
+    round_leaves, round_tree = jax.tree.flatten(_one_world(rounds))
+    return (
+        world_key(model, *map(_one_world, (state, params, active, constants))),
+        rows,
+        round_tree,
+        tuple(_shape_dtype(v) for v in round_leaves),
+        worlds.pop(),
+        tuple(v.sharding for v in leaves),
+    )
+
+
+def compile_window(model, args, rows):
+    """(executable, compile seconds or 0.0 if reused, XLA memory analysis).
+
+    The key (window_key) is world_key, the part one world fixes: the model's declared structure,
+    its step and check functions, and the tree, shapes and dtypes of a world's state, parameters,
+    activity and check constants; then the window's rows and round arrays, the world count and
+    the placement. Values are arguments, so worlds that differ only in parameter values reuse one
+    executable (docs/INNER_MODEL_V4_DESIGN.md §2.2, §7.4 (e) 4).
+    """
+    key = window_key(model, args, rows)
     if key in _EXECUTABLES:
         compiled, memory = _EXECUTABLES[key]
         return compiled, 0.0, memory

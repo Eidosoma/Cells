@@ -97,6 +97,7 @@ class SurfacePumpWaterModel:
     water: Water
     junction_heat_booking: str = ionic.DEFAULT_JUNCTION_HEAT  # @3's option, parsed by @3.
     species_registry: object = None  # @3's registry (its parser's hook), carried for projection.
+    kinds: tuple = ()  # @3's declared kinds, carried for projection (the family refuses them).
 
 
 class Control(NamedTuple):

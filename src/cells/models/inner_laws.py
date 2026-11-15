@@ -228,8 +228,14 @@ class InnerStructure:
     # fill does everywhere (docs/INNER_MODEL_V4_DESIGN.md §7.4 (b); temporary, until an
     # explicit absent marker).
     padding_fill: bool = False
+    # The declared kinds (§7.4 (j), (k)): ((namespaced kind ID, the kind's structure entry), ...)
+    # in canonical (sorted ID) order; () for every definition of today's.
+    kinds: tuple = ()
 
     def __post_init__(self):
+        ids = [kind_id for kind_id, _ in self.kinds]
+        if ids != sorted(set(ids)):
+            raise ValueError("Declared kinds must be distinct and in canonical (sorted ID) order")
         unknown = [law for law in self.declared_channel_laws if law not in CHANNEL_LAWS]
         unknown += [law for law in self.junction_laws if law not in JUNCTION_LAWS]
         unknown += [law for law in self.pump_laws if law not in PUMP_LAWS]

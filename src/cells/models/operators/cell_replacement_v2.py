@@ -358,6 +358,8 @@ class ScheduledReplacementOverWater(replacement.ScheduledReplacement):
         "volume_increment_pL": ("replacement_volume_removed_pL", "replacement_volume_supplied_pL"),
     }
     REQUIRES = (water.LAW_ID,)
+    # @1's event map and controls (today's fixed fields): refused beside declared kinds.
+    FIXED_INNER_FIELDS = True
 
     # ------------------------------------------------------------ definition
 

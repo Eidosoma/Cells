@@ -210,6 +210,7 @@ def compact(spec):
 
 
 def check_definition(spec):
+    pump_composite.refuse_kinds(MODEL_ID, spec.model)  # Fixed-field internals (schema A).
     _model.check_definition(composite(spec))
 
 

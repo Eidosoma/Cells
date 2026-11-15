@@ -86,7 +86,7 @@ def test_the_registry_checks_run_in_the_hook():
 def test_the_registry_refuses_ahead_of_the_models_own_checks(monkeypatch):
     from cells.models import surface_pump_v3
 
-    def own(spec):
+    def own(spec, *, structure=None):
         raise ValueError("@3's own check")
 
     monkeypatch.setattr(surface_pump_v3, "check_definition", own)
