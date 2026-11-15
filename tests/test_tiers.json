@@ -78,7 +78,8 @@
   "/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/tiers/measure-landing/measured.json",
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-02/measured.json",
-  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-passive/measured.json"
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-passive/measured.json",
+  "/mnt/workspaces/Cells/independent-references-20261115-01/tiers/measure-passive-02/measured.json"
  ],
  "measured_provenance": [
   {
@@ -642,6 +643,13 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-15T11:45:18+00:00"
+  },
+  {
+   "git_revision": "46deb99191e629c101c7a19bd9275f23a4139218",
+   "dirty": false,
+   "root": "/home/robert/Cells/.claude/worktrees/agent-a87c1e316fa8cc5c6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T11:52:55+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2328,10 +2336,10 @@
    },
    {
     "file": "tests/unit/test_passive_references.py",
-    "seconds": 5.39,
+    "seconds": 13.65,
     "exit_code": 0,
     "counts": {
-     "passed": 9
+     "passed": 12
     }
    },
    {
