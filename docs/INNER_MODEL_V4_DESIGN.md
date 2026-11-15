@@ -1124,8 +1124,9 @@ Examples:
 
 **The lead's ruling (15 November, after the advisor's review and INT's comments): A, with three
 additions to its acceptance.**
-1. **Canonical kind order.** The appended kinds' fields follow the registry's canonical kind
-   order, never the definition's declaration order. Test: two worlds that declare the same kinds in
+1. **Canonical kind order.** The appended kinds' fields follow the canonical kind order, never the
+   definition's declaration order. It is the sorted namespaced kind ID, a total order independent
+   of registration and import order (the lead, 15 November, for external modules). Test: two worlds that declare the same kinds in
    different orders get the same class, compile key and snapshot layout.
 2. **The families' refusal must exist.**
    - Replacement@1 and both water families bind full-catalogue types at import and build states
@@ -1152,8 +1153,20 @@ stage read (B4), the transporter (B5) and the passive law ((i)). Core functions 
 kinds generically at fixed seams, so two writers never edit one core function. A kind edits no
 core file, and a seam change goes through CORE.
 
-**A kind declares** a module-level object, registered by name, in the canonical kind order that
-schema A's types use:
+**The registry and IDs** (constraints from the user's direction on external modules; the lead,
+15 November):
+- Core holds a registry of kind objects (register and lookup) and imports no kind module.
+- Built-in kinds register through the same call an external package would use, from their own
+  package (`models/inner_kinds`). Parse and build take the registry, defaulting to the built-in
+  one, so the lookup is scoped to the model build.
+- Kind IDs and new law IDs are namespaced (`cells.transporter@1`). A bare ID resolves in the
+  `cells` namespace: today's law IDs stay as written, since renaming them would change every
+  definition and fingerprint.
+- A registered but undeclared kind changes nothing. A second planted-kind test checks that a
+  world which does not declare it keeps today's classes, compile key and snapshot layout.
+
+**A kind declares** a module-level object, registered by its namespaced ID, appended in the
+canonical kind order (sorted ID) that schema A's types use:
 - `KIND_ID`, and its laws' declarations in its own module, as `inner_laws` holds the channels';
 - its fields: state axes, layout fields, control fields and observation columns, each with its
   axes' names. Schema A appends them in canonical order;
