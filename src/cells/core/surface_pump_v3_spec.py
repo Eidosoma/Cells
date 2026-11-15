@@ -32,6 +32,7 @@ from dataclasses import asdict, dataclass, replace
 
 import numpy as np
 
+from cells.core import species_registry as registry
 from cells.core import surface_kinetic_spec as kinetic
 from cells.core import surface_pump_spec as first
 from cells.core import surface_pump_v2_spec as second
@@ -78,6 +79,10 @@ class SurfacePumpChannelModel:
     gauge_reference: str | None
     channels: tuple[kinetic.ChannelPopulation, ...]
     junction_heat_booking: str = DEFAULT_JUNCTION_HEAT
+    # The species registry the model declares (core/species_registry.Declared), or None: then
+    # to_dict writes nothing, so every definition without one keeps its fingerprint
+    # (docs/INNER_MODEL_V4_DESIGN.md §7.4 (f) 7).
+    species_registry: object = None
 
 
 @dataclass(frozen=True)
@@ -164,6 +169,11 @@ def to_dict(spec):
     raw["model"]["channels"] = [channel_to_dict(p) for p in m.channels]
     if m.junction_heat_booking != DEFAULT_JUNCTION_HEAT:
         raw["model"]["junction_heat_booking"] = m.junction_heat_booking
+    if m.species_registry is not None:  # The registry's keys, back on their entries.
+        species, keys = registry.to_entries(m.species_registry)
+        for entry in raw["model"]["species"]:
+            entry.update(species.get(entry["id"], {}))
+        raw["model"].update(keys)
     raw["experiment"]["channel_controls"] = [
         dict(channel_id=p.id, schedule=[asdict(c) for c in g])
         for p, g in zip(m.channels, e.channels, strict=True)
@@ -193,6 +203,9 @@ def parse(data):
         raise ConfigError("A junction-heat booking option requires an IMEX solver")
     if type(channels) is not list:
         raise ConfigError("channels requires an explicit list")
+    # The registry hook (§7.4 (f) 7): the registry's keys leave this copy's species entries and
+    # model block before @2's strict species parse; None when the model declares none.
+    declared = registry.parse_entries(m)
     m["id"] = second.MODEL_ID
     base = second.parse(raw)
     ids, z = base.model.species_ids, base.model.valence
@@ -220,10 +233,11 @@ def parse(data):
         **{
             k: getattr(model, k)
             for k in SurfacePumpChannelModel.__dataclass_fields__
-            if k not in ("channels", "junction_heat_booking")
+            if k not in ("channels", "junction_heat_booking", "species_registry")
         },
         channels=parsed,
         junction_heat_booking=booking,
+        species_registry=declared,
     )
     experiment = Experiment(
         **{
@@ -240,6 +254,7 @@ def parse(data):
     spec = replace(base, model=model, experiment=experiment, execution=execution)
     from cells.models.surface_pump_v3 import check_definition
 
+    registry.check_definition(spec)  # Ahead of @3's own checks, so its refusals come first.
     try:
         check_definition(spec)
     except (ArithmeticError, ValueError) as error:
