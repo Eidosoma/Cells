@@ -99,7 +99,9 @@ Each refusal is tagged:
 - **nominal**: in no admissible definition can the other operator change a slot the reader reads
   or acts on. A finer declaration, such as slot-scoped provision (door S of the
   [bath-schedule design](BATH_SCHEDULE_DESIGN.md) §3.1), would admit the pair without new
-  physics. Each nominal tag cites the code that shows it.
+  physics. Each nominal tag cites the code that shows it. A nominal tag means the slots are
+  disjoint, not that the pair is safe to admit under today's adapter: the adapter's view replaces
+  whole fields per provider ([ARCHITECTURE](ARCHITECTURE.md#scoped-composition-door-s), D174).
 
 The bath-schedule design (§3.1) found D152's conflict with the bath schedule nominal, and the
 matrix records it so. It classes insertion@1's second provision and the closers' padding (the
