@@ -110,7 +110,10 @@ def test_a_stage_read_changes_concentrations_never_charge():
     impl, state, p, control = host_inputs(plain)
     base = impl.readouts(state, control, p, xp=np)
     kind = planted(
-        "alpha", "alpha_block", stage_read=halving, stage_rows=lambda declaration: (("K", "cell_0"),)
+        "alpha",
+        "alpha_block",
+        stage_read=halving,
+        stage_rows=lambda declaration: (("K", "cell_0"),),
     )
     with kind_registry.scope(registry(kind)):
         impl, state, p, control = host_inputs(parse_spec(declaring("alpha_block")))
@@ -128,7 +131,7 @@ def test_a_failed_stage_read_refuses_the_row_and_the_step():
         return state, xp.all(state.alpha_value < 0.5)
 
     def book(applied, start, end, p, dt, *, xp):
-        return {"alpha_value": end.alpha_value + 1.0}
+        return {"alpha_value": end.alpha_value + 1.0}, True
 
     rows = dict(stage_read=gated, stage_rows=lambda declaration: ())
     with kind_registry.scope(registry(planted("alpha", "alpha_block", book=book, **rows))):
@@ -148,9 +151,169 @@ def test_a_failed_stage_read_refuses_the_row_and_the_step():
             parse_spec(declaring("alpha_block"))
 
 
+def test_a_stage_check_sees_the_stages_total_rates_and_can_refuse():
+    seen = []
+
+    def watching(read, cell, outside, p, *, xp):
+        seen.append((np.shape(cell), np.shape(outside), read.amount_increment is not None))
+        return xp.all(xp.isfinite(cell))
+
+    with kind_registry.scope(registry(planted("alpha", "alpha_block", stage_check=watching))):
+        spec = parse_spec(declaring("alpha_block"))
+        impl, state, p, control = host_inputs(spec)
+        seen.clear()
+        assert impl.readouts(state, control, p, xp=np).valid
+        shapes = (state.amount_increment.shape, state.extracellular_amount_increment.shape)
+        assert seen == [(*shapes, True)]
+        new, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+        assert valid and len(seen) > 2  # Readouts at the start, then every explicit stage.
+
+    def refusing(read, cell, outside, p, *, xp):
+        return xp.asarray(False)
+
+    with kind_registry.scope(registry(planted("alpha", "alpha_block", stage_check=refusing))):
+        with pytest.raises(ConfigError, match="domain invalid"):
+            parse_spec(declaring("alpha_block"))
+
+
+def test_a_kinds_conductance_and_bound_term_join_the_step_rules():
+    """Gap 5 (B7 for kinds): a kind's stage conductance joins membrane_rate's per-stage refusal,
+    and its definition-time bound term joins the host step checks, each at the ordinary bound."""
+
+    def conducting(siemens):
+        def stage_term(read, potentials, control, p, *, xp):
+            patches = xp.where(p.membrane_active, siemens, 0.0)  # Each patch, at both ends.
+            return surface_pump_v3.patch_node_conductance(patches, p, xp=xp)
+
+        return planted("alpha", "alpha_block", stage_term=stage_term)
+
+    for siemens, accepted in ((1e-12, True), (1e-6, False)):  # C = 1.6e-11 F, dt = 1 ms.
+        with kind_registry.scope(registry(conducting(siemens))):
+            spec = parse_spec(declaring("alpha_block"))
+            impl, state, p, control = host_inputs(spec)
+            _, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+        assert bool(valid) == accepted, siemens
+
+    def reversing(threshold_V):
+        """A slope that appears only past a membrane voltage (a pump reversed past its head):
+        the stage's potentials reach stage_term (D: V_m about -21.5 mV)."""
+
+        def stage_term(read, potentials, control, p, *, xp):
+            n = p.active.size
+            voltage = potentials[p.membrane_cell] - potentials[n + p.membrane_outside]
+            past = xp.any(xp.abs(voltage) > threshold_V)
+            patches = xp.where(p.membrane_active & past, 1e-6, 0.0)
+            return surface_pump_v3.patch_node_conductance(patches, p, xp=xp)
+
+        return planted("alpha", "alpha_block", stage_term=stage_term)
+
+    for threshold, accepted in ((0.05, True), (0.01, False)):
+        with kind_registry.scope(registry(reversing(threshold))):
+            spec = parse_spec(declaring("alpha_block"))
+            impl, state, p, control = host_inputs(spec)
+            _, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+        assert bool(valid) == accepted, threshold
+
+    def bounded(rate):
+        return planted("alpha", "alpha_block", bound_rate=lambda spec, declaration: rate)
+
+    steps = np.asarray([1e-3])
+    with kind_registry.scope(registry(bounded(500.0))):
+        surface_pump_v3.check_steps(parse_spec(declaring("alpha_block")), steps, None)
+    with kind_registry.scope(registry(bounded(2000.0))):
+        with pytest.raises(ConfigError, match="a declared kind's explicit-rate bound"):
+            surface_pump_v3.check_steps(parse_spec(declaring("alpha_block")), steps, None)
+
+
+def test_stage_values_give_running_extrema_over_the_steps_stages():
+    """Gap 7: a kind's stage values, reduced over the step's explicit stages from the start's
+    value as its stage_extrema say; an undeclared reduction is refused."""
+    seen = []
+
+    def values(read, cell, outside, p, *, xp):
+        seen.append(len(seen))
+        return {"alpha_value": xp.where(p.active, 3.0 + len(seen), 0.0)}  # 4, 5, ... by stage.
+
+    for how, expected in (("max", 5.0), ("min", 0.0)):  # Two explicit stages (ARS(2,2,2)).
+        kind = planted(
+            "alpha", "alpha_block", stage_values=values, stage_extrema=(("alpha_value", how),)
+        )
+        with kind_registry.scope(registry(kind)):
+            spec = parse_spec(declaring("alpha_block"))
+            impl, state, p, control = host_inputs(spec)
+            seen.clear()
+            new, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+        assert valid and len(seen) == 2
+        assert float(new.alpha_value[0]) == expected, how
+    with kind_registry.scope(registry(planted("alpha", "alpha_block", stage_values=values))):
+        spec = parse_spec(declaring("alpha_block"))
+        impl, state, p, control = host_inputs(spec)
+        with pytest.raises(ValueError, match="declared extremum"):
+            impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+
+
+def test_a_face_free_compartments_free_node_is_held_to_the_stage_rule():
+    """Gap 5 per node: a charged slope on a face-free compartment's patch (FR-1's W: cell_0 with
+    1.1 pF of patches, its node ecs_0 with the contact patch's 0.1 pF only) is counted at both
+    ends. At 5e-10 S and dt = 1 ms the cell's row is 0.45, the free node's 5: refused, where
+    the cells-only sum would have passed it; 5e-11 S passes both."""
+    from validation.tissue import secreted_species_fixtures as fx
+
+    def face_free():
+        raw = fx.face_free(end=0.004)
+        m = raw["model"]
+        m["id"] = "resolved_pump_tissue@3"
+        m.pop("inner_model")
+        m.pop("operators")
+        m["alpha_block"] = {"rate": 1.0}
+        return raw
+
+    def on_contact(siemens):
+        def stage_term(read, potentials, control, p, *, xp):
+            contact = xp.arange(p.membrane_active.size) == 1  # contact_0 (wall_cell_0 first).
+            patches = xp.where(contact & p.membrane_active, siemens, 0.0)
+            return surface_pump_v3.patch_node_conductance(patches, p, xp=xp)
+
+        return planted("alpha", "alpha_block", stage_term=stage_term)
+
+    for siemens, accepted in ((5e-11, True), (5e-10, False)):
+        with kind_registry.scope(registry(on_contact(siemens))):
+            spec = parse_spec(face_free())
+            impl, state, p, control = host_inputs(spec)
+            assert bool(surface_pump_v3.free_outside_nodes(p, xp=np)[1])  # ecs_0 is free.
+            rate = impl.membrane_rate(state, control, p, xp=np, potentials=np.zeros(3))
+            _, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+        assert bool(valid) == accepted, (siemens, rate)
+        assert rate == pytest.approx(siemens / fx.CONTACT_C_F, rel=1e-9)  # The node's row.
+
+
+def test_a_held_row_has_one_writer():
+    """Gap 8: a row a kind holds is moved by nothing in the step: refused where a route or another
+    kind moves it, admitted where nothing does."""
+    from cells.core.inventory_species import add_inventory_species
+    from tests import kind_fixtures
+
+    def holding(species):
+        return planted("alpha", "alpha_block", held_rows=lambda d: ((species, "cell_0"),))
+
+    with kind_registry.scope(registry(holding("K"))):
+        with pytest.raises(ConfigError, match="holds K at cell_0, which .* moves in the step"):
+            parse_spec(declaring("alpha_block"))
+    raw = add_inventory_species(
+        declaring("alpha_block"), "B", trace_mM=1.0, diffusivity_m2_per_s=1e-10, floor_fmol=1e-12
+    )
+    with kind_registry.scope(registry(holding("B"))):
+        parse_spec(raw)  # Nothing moves B: admitted.
+    with kind_registry.scope(kind_fixtures.registry(holding("B"))):
+        with pytest.raises(ConfigError, match="which tests.exchange@1 moves"):
+            parse_spec(kind_fixtures.declare(raw))
+
+
 def test_a_kinds_stored_term_joins_the_energy_ledger():
     kind = planted(
-        "alpha", "alpha_block", ledger_terms=lambda state, p, *, xp: {"stored_pJ": state.alpha_value}
+        "alpha",
+        "alpha_block",
+        ledger_terms=lambda state, p, *, xp: {"stored_pJ": state.alpha_value},
     )
     with kind_registry.scope(registry(kind)):
         impl, state, p, _ = host_inputs(parse_spec(declaring("alpha_block")))
@@ -162,10 +325,10 @@ def test_a_kinds_stored_term_joins_the_energy_ledger():
 def test_bookings_see_one_end_state_and_write_only_their_own_fields():
     seen = {}
 
-    def probe(name):
+    def probe(name, ok=True):
         def book(applied, start, end, p, dt, *, xp):
             seen[name] = end
-            return {f"{name}_value": getattr(end, f"{name}_value") + dt}
+            return {f"{name}_value": getattr(end, f"{name}_value") + dt}, ok
 
         return planted(name, f"{name}_block", book=book)
 
@@ -177,8 +340,15 @@ def test_bookings_see_one_end_state_and_write_only_their_own_fields():
     assert seen["alpha"] is seen["beta"]  # One end state for every kind: bookings commute.
     assert float(new.alpha_value[0]) == float(new.beta_value[0]) == spec.execution.dt
 
+    with kind_registry.scope(registry(probe("alpha"), probe("beta", ok=False))):
+        spec = parse_spec(declaring("alpha_block", "beta_block"))
+        impl, state, p, control = host_inputs(spec)
+        new, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+    assert not valid  # A booking that refuses (a negative exact share) refuses the step.
+    assert float(new.alpha_value[0]) == 0.0
+
     def trespass(applied, start, end, p, dt, *, xp):
-        return {"amount_increment": end.amount_increment}
+        return {"amount_increment": end.amount_increment}, True
 
     with kind_registry.scope(registry(planted("alpha", "alpha_block", book=trespass))):
         spec = parse_spec(declaring("alpha_block"))

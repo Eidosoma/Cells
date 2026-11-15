@@ -366,13 +366,20 @@ def junction_gate_rhs(gate, junction_voltage, p, *, xp=jnp, structure=None):
 class KindRates(NamedTuple):
     """A kind's rates at one stage (§7.4 (k), the rates hook): cell [S, n] and outside [S, o]
     inward-positive node changes, which land in the shared inventory (rule (c)); its own state
-    fields' derivatives; its heat and work rates (pJ/s, joining the energy rate by role)."""
+    fields' derivatives; its heat and work rates (pJ/s, joining the energy rate by role).
+    membrane_flux: what it carries across membrane patches, outward [S, membrane] (fmol/s), or
+    None; it joins the patches' total flux and membrane current (observations, not ledgers: its
+    moves are already in cell and outside). valid: its own domain at the stage's read and
+    potentials (a charged law's V-dependent domain, such as |dG_cyc/RT| <= 80); false refuses the
+    row or the step."""
 
     cell: object
     outside: object
     derivatives: dict
     heat_pJ_s: object
     work_pJ_s: object
+    membrane_flux: object = None
+    valid: object = True
 
 
 def _kinds(structure):
@@ -416,6 +423,15 @@ def _field_values(state, read, control, p, *, xp):
     )
 
 
+def _stage_checks(kinds, read, cell, outside, p, *, xp):
+    """The kinds' stage checks at the stage's total node rates (§7.4 (k)); true without any."""
+    valid = True
+    for kind in kinds:
+        if kind.stage_check is not None:
+            valid = valid & kind.stage_check(read, cell, outside, p, xp=xp)
+    return valid
+
+
 def _kind_rates(kinds, state, potentials, control, p, *, xp):
     return [kind.rates(state, potentials, control, p, xp=xp) for kind in kinds if kind.rates]
 
@@ -429,18 +445,21 @@ def _with_kind_derivatives(base, rates, structure, state, *, xp):
     own = types.STATE_TYPE._fields[len(STATE_TYPE._fields) :]
     return types.STATE_TYPE(
         **base._asdict(),
-        **{f: derivatives[f] if f in derivatives else xp.zeros_like(getattr(state, f)) for f in own},
+        **{
+            f: derivatives[f] if f in derivatives else xp.zeros_like(getattr(state, f)) for f in own
+        },
     )
 
 
 def _kind_bookings(kinds, applied, start, end, p, dt, *, xp):
     """Every kind's book hook on the same end state (before any kind books), each writing only its
-    own state fields, so bookings commute and their order cannot matter (§7.4 (k))."""
-    booked = {}
+    own state fields, so bookings commute and their order cannot matter (§7.4 (k)). Returns
+    ({field: value}, valid): a booking may refuse the step (§7.5's negative exact share)."""
+    booked, valid = {}, True
     for kind in kinds:
         if kind.book is None:
             continue
-        values = kind.book(applied, start, end, p, dt, xp=xp)
+        values, ok = kind.book(applied, start, end, p, dt, xp=xp)
         foreign = set(values) - set(kind.state_fields)
         if foreign:
             raise ValueError(
@@ -448,7 +467,41 @@ def _kind_bookings(kinds, applied, start, end, p, dt, *, xp):
                 "its own state fields"
             )
         booked |= values
-    return booked
+        valid = valid & ok
+    return booked, valid
+
+
+def _stage_extrema(kinds, start, states, rates, p, *, xp):
+    """Gap 7: each kind's stage_values at every explicit stage (its read state and the stage's
+    total node rates, as stage_check sees them), reduced over the stages as its stage_extrema
+    say, from the step start's value: {own state field: running extremum}."""
+    out = {}
+    for kind in kinds:
+        if kind.stage_values is None:
+            continue
+        how = dict(kind.stage_extrema)
+        per_stage = [
+            kind.stage_values(
+                _stage_read(state, p, kinds, xp=xp)[0],
+                stage_rates.amount_increment,
+                stage_rates.extracellular_amount_increment,
+                p,
+                xp=xp,
+            )
+            for state, stage_rates in zip(states, rates, strict=True)
+        ]
+        for name in per_stage[0]:
+            if name not in kind.state_fields or how.get(name) not in ("max", "min"):
+                raise ValueError(
+                    f"Kind {kind.kind_id}'s stage value {name} is not one of its state fields "
+                    "with a declared extremum (max or min)"
+                )
+            reduce = xp.maximum if how[name] == "max" else xp.minimum
+            value = getattr(start, name)
+            for values in per_stage:
+                value = reduce(value, values[name])
+            out[name] = value
+    return out
 
 
 def _availabilities(control, kinds):
@@ -548,6 +601,9 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         outside = outside + xp.where(p.reservoir, 0.0, kr.outside)
         supplied = supplied - xp.where(p.reservoir, kr.outside, 0.0)
     total_flux = r.membrane_flux_fmol_s + extra
+    for kr in kind_rates:  # Gap 9: a kind's patch flux joins the patches' total and current.
+        if kr.membrane_flux is not None:
+            total_flux = total_flux + kr.membrane_flux
     total_membrane_d = (
         r.membrane_dissipation_pJ_s + pump_d + ca_d + channel_heat(channel_d, p, xp=xp)
     )
@@ -621,8 +677,10 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
     if process is not None:
         valid &= process.valid
-    if kinds:  # A failed stage read refuses the row (§7.4 (g) 1).
-        valid &= read_valid
+    if kinds:  # A failed stage read, a kind's domain or a stage check refuses the row.
+        valid &= read_valid & _stage_checks(kinds, read, cell, outside, p, xp=xp)
+        for kr in kind_rates:
+            valid &= kr.valid
     for value in _availabilities(control, kinds) if kinds else control:
         valid &= xp.all(xp.isfinite(value) & (value >= 0) & (value <= 1))
     for kind in kinds:
@@ -861,8 +919,11 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
     if kinds:
         rates = _with_kind_derivatives(rates, kind_rates, structure, state, xp=xp)
     valid = r.valid
-    if kinds:  # A failed stage read refuses the step (§7.4 (g) 1).
-        valid = valid & read_valid
+    if kinds:  # A failed stage read, a kind's domain or a stage check refuses the step.
+        outside_rate = xp.where(p.reservoir, 0.0, inflow)
+        valid = valid & read_valid & _stage_checks(kinds, read, cell_rate, outside_rate, p, xp=xp)
+        for kr in kind_rates:
+            valid = valid & kr.valid
     if args is not None:  # The Na/K pump's domain, where its law is declared.
         valid = valid & xp.all(pump.domain_valid(*args, xp=xp))
     if ca_args is not None:
@@ -965,11 +1026,12 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     rates, ok, *process = explicit_rates(state, start, control, p, xp=xp, **hook)
     processes += process
     explicit, implicit, valid = [rates], [None], valid & ok
+    explicit_states = [state]  # Each explicit stage's state (gap 7's per-stage values).
     # Channel currents are explicit: refuse the step where their actual
     # conductance at an explicit stage exceeds the family's stability bound.
-    valid &= dt * membrane_rate(state, control, p, xp=xp, structure=structure) <= (
-        EXPLICIT_STEP_BOUND
-    )
+    valid &= dt * membrane_rate(
+        state, control, p, xp=xp, structure=structure, potentials=start
+    ) <= (EXPLICIT_STEP_BOUND)
     # The start kinetics are the law's own (readouts at the start potentials).
     start_kinetics = (first_values.channel_targets, first_values.channel_tau_s)
     potential, stage = start, state
@@ -1002,8 +1064,10 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
             rates, ok, *process = explicit_rates(stage, potential, control, p, xp=xp, **hook)
             processes += process
             explicit.append(rates)
+            explicit_states.append(stage)
             valid &= ok & (
-                dt * membrane_rate(stage, control, p, xp=xp, structure=structure)
+                dt
+                * membrane_rate(stage, control, p, xp=xp, structure=structure, potentials=potential)
                 <= EXPLICIT_STEP_BOUND
             )
     last = stages - 1
@@ -1043,8 +1107,12 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
             junction_dissipated_energy_pJ=state.junction_dissipated_energy_pJ
             + 0.5 * dt * (explicit[0].junction_dissipated_energy_pJ + end_power)
         )
+    if kinds:  # Gap 7: the kinds' per-stage values, their running extrema over the stages.
+        extrema = _stage_extrema(kinds, state, explicit_states, explicit, p, xp=xp)
+        stage = stage._replace(**extrema)
     if kinds:  # §7.4 (k), book: a kind's bookings from the step's applied rates.
-        stage = stage._replace(**_kind_bookings(kinds, applied, state, stage, p, dt, xp=xp))
+        booked, ok = _kind_bookings(kinds, applied, state, stage, p, dt, xp=xp)
+        stage, valid = stage._replace(**booked), valid & ok
     valid &= domain_valid(stage, p, p.active, xp=xp, structure=structure)
     for value in stage:
         valid &= xp.all(xp.isfinite(value))
@@ -1134,6 +1202,7 @@ def check_definition(spec, *, structure=None):
         if kind.check_definition is not None:
             kind.check_definition(spec)
     _check_stage_rows(spec, kinds)
+    _check_held_rows(spec, kinds)
     state, p = initial_values(compact, structure=structure)
     controls = control_values(compact, [c.time for c in compact.experiment.changes])
     control_type = kind_types(structure).Control if structure is not None else Control
@@ -1142,7 +1211,12 @@ def check_definition(spec, *, structure=None):
     with np.errstate(all="ignore"):
         for i in range(len(controls.membrane)):
             if not control_domain_valid(
-                state, control_type(*(v[i] for v in controls)), p, p.active, xp=np, structure=structure
+                state,
+                control_type(*(v[i] for v in controls)),
+                p,
+                p.active,
+                xp=np,
+                structure=structure,
             ):
                 raise ConfigError("Initial resolved channel/junction/pump domain invalid")
 
@@ -1165,6 +1239,46 @@ def _check_stage_rows(spec, kinds):
                 raise ConfigError(
                     f"Kinds {other} and {kind.kind_id} both read row {tuple(row)} at each stage; "
                     "stage reads on a shared row do not commute and are refused"
+                )
+
+
+def moved_nodes(model):
+    """{(species, node ID): (mover, ...)} of every in-step mover of the inner model, from
+    moved_rows: each route's two end nodes (a channel's or a pump's, its patch's), and a kind's
+    named nodes. A mover is named "<mover kind> <entity>" (a kind's: its kind ID)."""
+    ends = {m.id: (m.inside, m.outside) for m in model.membranes}
+    ends |= {j.id: (j.sender, j.receiver) for j in model.junctions}
+    ends |= {f.id: (f.sender, f.receiver) for f in model.faces}
+    ends |= {c.id: ends[c.membrane_id] for c in model.channels}
+    out = {}
+    for species, movers in moved_rows(model).items():
+        for mover, _, entities in movers:
+            for entity in entities:
+                nodes = ends.get(entity, (entity,)) if mover in INNER_MOVERS else (entity,)
+                name = f"{mover} {entity}" if mover in INNER_MOVERS else mover
+                for node in nodes:
+                    out.setdefault((species, node), []).append(name)
+    return {key: tuple(value) for key, value in out.items()}
+
+
+INNER_MOVERS = ("membrane", "junction", "face", "channel", "pump")
+
+
+def _check_held_rows(spec, kinds):
+    """Gap 8, one writer: a row a kind holds (read at every stage, never moved, such as held fuel)
+    is moved by nothing in the inner step, neither a route nor another kind. Operators' writers
+    are the composite's admission (species_registry.moved_in_step)."""
+    held = [kind for kind in kinds if kind.held_rows is not None]
+    if not held:
+        return
+    declarations, movers = dict(spec.model.kinds), moved_nodes(spec.model)
+    for kind in held:
+        for species, node in kind.held_rows(declarations[kind.kind_id]):
+            writers = movers.get((species, node), ())
+            if writers:
+                raise ConfigError(
+                    f"Kind {kind.kind_id} holds {species} at {node}, which {writers[0]} moves in "
+                    "the step; a held row is moved by nothing in the step (one writer)"
                 )
 
 
@@ -1191,7 +1305,8 @@ def _check_device_hooks(kinds, state, p, control):
             refuse(kind, hook, f"must return one boolean, not {value.shape} {value.dtype}")
 
     shapes = dict(
-        cell=np.shape(state.amount_increment), outside=np.shape(state.extracellular_amount_increment)
+        cell=np.shape(state.amount_increment),
+        outside=np.shape(state.extracellular_amount_increment),
     )
     tree = jax.tree.structure(state)
     for kind in kinds:
@@ -1200,6 +1315,10 @@ def _check_device_hooks(kinds, state, p, control):
             if jax.tree.structure(read) != tree:
                 refuse(kind, "stage_read", "must return a state of the structure's state type")
             boolean(kind, "stage_read", ok)
+        if kind.stage_check is not None:  # On the step path; traced here for an early refusal.
+            rates = (state.amount_increment, state.extracellular_amount_increment)
+            check = traced(kind, "stage_check", partial(kind.stage_check, xp=jnp), state, *rates, p)
+            boolean(kind, "stage_check", check)
         if kind.domain is not None:
             domain = traced(kind, "domain", partial(kind.domain, xp=jnp), state, p)
             boolean(kind, "domain", domain)
@@ -1216,7 +1335,7 @@ def _check_device_hooks(kinds, state, p, control):
                     refuse(kind, "ledger_terms", f"returns {key} of shape {terms[key].shape}")
 
 
-def membrane_rate(state, control, p, *, xp=jnp, structure=None):
+def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None):
     """Gershgorin rate (1/s) of membrane charge relaxation at a stage's actual openings.
 
     @1's membrane term, max_i sum_m G_m / C_i, with each population's open
@@ -1245,7 +1364,50 @@ def membrane_rate(state, control, p, *, xp=jnp, structure=None):
     membrane += scatter(channel * p.membrane_area[patch], membrane, (patch,), xp=xp)
     total = slope * scatter(membrane, xp.zeros(n), (p.membrane_cell,), xp=xp)
     capacitance = scatter(p.membrane_capacitance, xp.zeros(n), (p.membrane_cell,), xp=xp)
-    return xp.max(xp.where(p.active, total / xp.where(p.active, capacitance, 1.0), 0.0))
+    kinds = _kinds(structure)
+    if not kinds:  # Today's rate: the cells' rows.
+        return xp.max(xp.where(p.active, total / xp.where(p.active, capacitance, 1.0), 0.0))
+    # Gap 5 with kinds: each kind's conductance at the stage, per node (cells, then outside
+    # nodes), at the read amounts and the stage's potentials; and the free outside nodes' rows
+    # too (a face-free compartment's small capacitance), with @3's own patch terms there.
+    read, _ = _stage_read(state, p, kinds, xp=xp)
+    nodes = xp.zeros(n + p.outside_active.size)
+    for kind in kinds:
+        if kind.stage_term is not None:
+            nodes = nodes + kind.stage_term(read, potentials, control, p, xp=xp)
+    total = total + nodes[:n]
+    cells = xp.max(xp.where(p.active, total / xp.where(p.active, capacitance, 1.0), 0.0))
+    o = p.outside_active.size
+    node_total = slope * scatter(membrane, xp.zeros(o), (p.membrane_outside,), xp=xp) + nodes[n:]
+    patches = xp.where(p.membrane_active, p.membrane_capacitance, 0.0)
+    node_capacitance = scatter(patches, xp.zeros(o), (p.membrane_outside,), xp=xp)
+    free = free_outside_nodes(p, xp=xp) & (node_capacitance > 0)
+    outside = xp.max(xp.where(free, node_total / xp.where(free, node_capacitance, 1.0), 0.0))
+    return xp.maximum(cells, outside)
+
+
+def free_outside_nodes(p, *, xp=jnp):
+    """[outside] the free outside nodes: active, not a held bath, not the gauge, not a fixed node
+    and named by no active face (B7's face-free nodes, surface_pump.face_free_node_rate), whose
+    charge their patches relax explicitly."""
+    o, n = p.outside_active.size, p.active.size
+    zero = xp.zeros(o)
+    faced = xp.where(p.face_active, 1.0, 0.0)
+    named = scatter(faced, zero, (p.face_sender,), xp=xp) + scatter(
+        faced, zero, (p.face_receiver,), xp=xp
+    )
+    fixed = p.field_fixed[n:] if hasattr(p, "field_fixed") else xp.zeros(o, dtype=bool)
+    return p.outside_active & ~p.reservoir & (named == 0) & ~p.field_gauge_mask & ~fixed
+
+
+def patch_node_conductance(slope, p, *, xp=jnp):
+    """[cells, then outside nodes] a per-patch conductance [membrane] (S) at both of each active
+    patch's ends: the form a kind's stage_term returns (gap 5)."""
+    n, o = p.active.size, p.outside_active.size
+    slope = xp.where(p.membrane_active, slope, 0.0)
+    zero = xp.zeros(n + o)
+    inside = scatter(slope, zero, (p.membrane_cell,), xp=xp)
+    return inside + scatter(slope, zero, (n + p.membrane_outside,), xp=xp)
 
 
 def check_steps(spec, steps, controls):
@@ -1293,6 +1455,17 @@ class StepChecks(first.StepChecks):
     def gated_laws(self):
         return {c.kinetic_law for c in self.spec.model.channels if c.initial_gate}
 
+    @cached_property
+    def kind_rate(self):
+        """Gap 5: the declared kinds' definition-time bound terms (1/s; the passive law's
+        dt L <= 1, say), each its own rule: the largest."""
+        registry, rates = kind_registry.active(), [0.0]
+        for kind_id, declaration in getattr(self.spec.model, "kinds", ()):
+            kind = registry.lookup(kind_id)
+            if kind.bound_rate is not None:
+                rates.append(float(kind.bound_rate(self.spec, declaration)))
+        return max(rates)
+
     def __call__(self, steps):
         spec, step = self.spec, np.max(steps, initial=0)
         if spec.execution.solver == "rk4":
@@ -1308,6 +1481,8 @@ class StepChecks(first.StepChecks):
                 raise ConfigError("IMEX step exceeds the explicit-rate stability bound")
             if step * self.calcium_rate > EXPLICIT_STEP_BOUND:
                 raise ConfigError("IMEX step exceeds the explicit calcium pump rate bound")
+            if step * self.kind_rate > EXPLICIT_STEP_BOUND:
+                raise ConfigError("IMEX step exceeds a declared kind's explicit-rate bound")
         if step * self.junction_rate > first.GATE_STEP_BOUND:
             raise ConfigError("Resolved junction step exceeds conservative kinetic bound")
 
@@ -1388,7 +1563,9 @@ def check_values(state, spec, steps=None, *, structure=None):
         p,
         domain=domain_valid if structure is None else _bound_checks(structure).domain_valid,
         balances=partial(balances, structure=structure) if kinds else balances,
-        magnitudes=partial(channel_magnitudes, structure=structure) if kinds else channel_magnitudes,
+        magnitudes=partial(channel_magnitudes, structure=structure)
+        if kinds
+        else channel_magnitudes,
         dissipation=dissipation_fields(structure),
         steps=steps,
     )
@@ -1443,7 +1620,9 @@ def device_checks(previous, row, p, constants, steps, *, structure=None):
         domain_valid=domain_valid if structure is None else _bound_checks(structure).domain_valid,
         balances=partial(device_balances, structure=structure) if kinds else device_balances,
         limits=first.ledger_limits,
-        magnitudes=partial(channel_magnitudes, structure=structure) if kinds else channel_magnitudes,
+        magnitudes=partial(channel_magnitudes, structure=structure)
+        if kinds
+        else channel_magnitudes,
         dissipation=dissipation_fields(structure),
     )
 
@@ -1474,6 +1653,7 @@ def observe_history(times, history, layout, requested, spec, *, structure=None):
         if not w.valid:
             raise NumericalError("Resolved kinetic observation domain invalid")
         v, n, r = w.field, p.active.size, w.field.rates
+        read = _stage_read(state, p, kinds, xp=np)[0] if kinds else state  # Kinds' readouts.
         records.append(
             (
                 np.asarray(t),
@@ -1512,7 +1692,7 @@ def observe_history(times, history, layout, requested, spec, *, structure=None):
                     column
                     for kind in kinds
                     if kind.readouts is not None
-                    for column in kind.readouts(state, control, p, xp=np)
+                    for column in kind.readouts(state, read, v.potential_V, control, p, xp=np)
                 ),
             )
         )
@@ -1691,7 +1871,13 @@ class KindTypes(NamedTuple):
 
 
 TODAYS_TYPES = KindTypes(
-    STATE_AXES, STATE_TYPE, LAYOUT_TYPE, FLOOR_LAYOUT_TYPE, Control, OBSERVATION_FIELDS, Observations
+    STATE_AXES,
+    STATE_TYPE,
+    LAYOUT_TYPE,
+    FLOOR_LAYOUT_TYPE,
+    Control,
+    OBSERVATION_FIELDS,
+    Observations,
 )
 
 
@@ -1703,12 +1889,12 @@ def _kind_types(kind_ids, registry):
     label = "".join("_" + re.sub(r"\W", "_", kind_id) for kind_id in kind_ids)  # Deterministic.
     axes = dict(STATE_AXES)
     for kind in kinds:
-        for field, field_axes in kind.state_axes:
-            if field in axes:
-                raise ValueError(f"Kind {kind.kind_id}'s state field {field} is already declared")
-            axes[field] = list(field_axes)
+        for name, name_axes in kind.state_axes:  # Not `field`: the field-solver module's name.
+            if name in axes:
+                raise ValueError(f"Kind {kind.kind_id}'s state field {name} is already declared")
+            axes[name] = list(name_axes)
     state = NamedTuple("SurfacePumpChannelState" + label, [(k, object) for k in axes])
-    layout_extra = [field for kind in kinds for field in kind.layout_fields]
+    layout_extra = [name for kind in kinds for name in kind.layout_fields]
     layout = NamedTuple(
         "SurfacePumpChannelLayout" + label,
         [(k, object) for k in (*LAYOUT_TYPE._fields, *layout_extra)],
@@ -1719,7 +1905,10 @@ def _kind_types(kind_ids, registry):
     )
     control = NamedTuple(
         "SurfacePumpChannelControl" + label,
-        [(k, object) for k in (*Control._fields, *(f for kind in kinds for f in kind.control_fields))],
+        [
+            (k, object)
+            for k in (*Control._fields, *(f for kind in kinds for f in kind.control_fields))
+        ],
     )
     # Rule (b): a kind's state fields are observation columns right after today's state fields
     # (the windowed runner rebuilds states from observations by name); its readouts follow

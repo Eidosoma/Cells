@@ -1,0 +1,45 @@
+"""proton_constant_field_leak@1: passive proton permeation through free H+ (FR-4, FR-5).
+
+docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §7.1 and §9; the passive law's sibling
+(processes/passive_permeation.py). At a buffered node the proton row holds proton equivalents, not
+free H+, so @3's constant-field law must not read it; this law reads free h at both sides through
+their closures (rapid_proton_buffer@1, a stage read) and moves proton equivalents:
+
+    J = A P m [h_out B(x) - h_in B(-x)] / 1e-15   (fmol/s, positive inward),   x = F V / (R T),
+
+the constant-field flux at valence +1 with B the Bernoulli function (electrochemistry.ghk_leak).
+m is the route's availability, or the routing door's factor for FR-5's damage leak.
+
+Booking: the passive contract. Over a step the heat is the exact decrease of free energy of what
+moved, from each node's divided-difference potentials (the closure's G* at buffered nodes) plus
+the electrical term V-bar times the charge moved, when the core's declared booking exists. Until
+then the instantaneous rate heat_pJ_s = J (mu_out - mu_in) applies, which is nonnegative.
+"""
+
+import jax.numpy as jnp
+
+from cells.processes.electrochemistry import F, R, electrochemical_potential, ghk_leak
+
+LAW_ID = "proton_constant_field_leak@1"
+VALENCE = 1
+
+
+def flux_fmol_s(h_in_mM, h_out_mM, voltage_V, temperature_K, area_m2, permeability_m_s,
+                availability, *, xp=jnp):
+    """Inward proton flux (fmol/s) from free h at both sides; V = phi_in - phi_out."""
+    return ghk_leak(h_in_mM, h_out_mM, voltage_V, VALENCE, temperature_K, area_m2,
+                    permeability_m_s, availability, xp=xp)
+
+
+def heat_pJ_s(flux_in_fmol_s, h_in_mM, h_out_mM, voltage_V, temperature_K, *, xp=jnp):
+    """Instantaneous dissipation (pJ/s): J_in (mu-tilde_out - mu-tilde_in) >= 0 for this flux."""
+    inward = electrochemical_potential(h_in_mM, h_out_mM, voltage_V, VALENCE, temperature_K, xp=xp)
+    return -1e-3 * flux_in_fmol_s * inward
+
+
+def conductance_S(h_in_mM, h_out_mM, voltage_V, temperature_K, area_m2, permeability_m_s,
+                  availability, *, xp=jnp):
+    """Max-side slope conductance F^2/RT P A m max(h) (S): the patch term for B7 and stage rules."""
+    return F * F / (R * temperature_K) * permeability_m_s * area_m2 * availability * xp.maximum(
+        h_in_mM, h_out_mM
+    )

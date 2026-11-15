@@ -5813,6 +5813,25 @@ execution and accounting contracts as a built-in one.
 - **The design's §6 decisions are the user's:** provenance for modules, D144 with modules,
   qualifying outside modules, where the example lives, and what a module PR is.
 
+## D181: The round's end game: E07-v1's re-run held, and the L4 block run under the deterministic flag
+
+2026-11-15. Both decisions concern D172's end game, after the summation change (A7) lands.
+- **The user put E07-v1's re-run on hold.** E07-v1 is judged, and its successor E07-v2 is still a
+  proposal.
+  - Its worlds are covered by the results gate instead: the baseline's protocol-e07 set, compared
+    bitwise at the integrated candidate and at A7's declared tolerance after it.
+  - It is re-run only if that comparison shows physical state moving beyond the tolerance, or if a
+    later experiment needs the runs.
+  - This changes D176's rule that A7 re-runs every affected registered protocol, for E07-v1 only.
+- **The lead ruled, with the advisor, that the 13-run L4 block runs under the deterministic flag**
+  (`--xla_gpu_deterministic_ops=true`), as a declared measurement mode.
+  - The backend term is remeasured under the flag, and the run-to-run term is exactly 0.
+  - One confirming repeat per structure must be bitwise; a repeat that is not stops the block.
+  - Tolerances are unchanged.
+  - Q7's plain-against-flagged difference, about 1.8e-11 relative, bridges to the registered
+    unflagged mode.
+  - The amendment is registered before the block's first run.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
