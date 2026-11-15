@@ -538,8 +538,16 @@ DISCLOSURE = (
     "'registration' (MG0c's form), and judged_parts names the generator's parts")
 
 
+CHARGE_CHECK = (
+    "pre-run correction, 15 November 2026, the lead's ruling on the charge check: it reads the "
+    "engine's charge residual and its capacitor tolerance from the records (ledgers."
+    "charge_residual_C and charge_tolerance_C); Q5's record-computed allowance (the judge's, from "
+    "the amounts) covers material only, since computing charge from the records would need the "
+    "node charges and capacitances in them"
+)
 CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
     "fr4": [
+        CHARGE_CHECK,
         "pre-run correction, 15 November 2026, the lead's rulings on refusal semantics and K2: "
         "B4's envelope check refuses the step at the first stage beyond the budget, so J5 judges "
         "zero envelope refusals in a completed part and the engine's reported running maximum of "
@@ -554,6 +562,7 @@ CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
         "verdict",
     ],
     "fr5": [
+        CHARGE_CHECK,
         "pre-run correction, 15 November 2026, the lead's ruling on refusal semantics: B4's "
         "envelope check refuses the step at the first stage beyond the budget, so J5 judges zero "
         "envelope refusals in a completed part and the engine's reported running maximum of the "
