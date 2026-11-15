@@ -463,9 +463,12 @@ The visualizer session publishes its own artifacts (the user, 14 November 2026).
 2. Publish `out/cells-architecture.html` to the URL in `artifacts.json`, with the files
    listed in `out/cells-architecture.files.json` beside it: the runs (`runs/<run id>.json`)
    and the species' own proteins (`proteins/<species>/shelves.json` and the planarian's
-   `members-NN.json`). On 15 November 2026 that is 71 files: 59 runs and 12 files of
-   proteins (3.4 MB). A page published without the proteins' files draws the atlas as
-   before and says that the species' own proteins could not be loaded.
+   `members-NN.json`). On 15 November 2026 that is 331 files (109 MB): 295 files of the 59
+   runs and 36 files of proteins. A publish takes at most 255 files and 64 MB, so a full
+   set goes up in several publishes to the same URL; a later publish keeps the files it
+   does not send, so only what changed needs sending. A page published without the
+   proteins' files draws the atlas as before and says that the species' own proteins could
+   not be loaded.
 
 Published pages load three.js from cdnjs, the preferred host of the artifact frame's
 allowlist; everything else is inside the page.
@@ -474,7 +477,7 @@ allowlist; everything else is inside the page.
 
 Everything that makes the page is in this folder on the branch `visualizer`, except two
 things that are remade: `node_modules/`, and the replay files under `out/runs/`, which
-stay out of git (59 runs, 34 MB).
+stay out of git (59 runs in 295 files, 96 MB).
 
 1. `npm install`
 2. `npm run adapt:runs -- --evidence /mnt/workspaces/Cells` remakes `out/runs/` from the
@@ -482,7 +485,9 @@ stay out of git (59 runs, 34 MB).
    `out/runs/` is still on disk.
 3. `npm run extract -- --strict && npm test`. The extractor reads the main checkout, so
    the map states the revision main is at.
-4. `npm run check:input` (real input in headless Chrome; several minutes)
+4. The real-click checks in headless Chrome, one at a time: `npm run check:input`,
+   `check:species`, `check:shelves` (each scenario), `check:layers` (each scenario) and
+   `check:look`. About an hour in all on one processor with the browser to themselves.
 5. `npm run export`
 6. Publish `out/cells-architecture.html` with every file listed in
    `out/cells-architecture.files.json` beside it, under the same relative paths
