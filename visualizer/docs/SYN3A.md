@@ -12,18 +12,20 @@ note's claims were checked, and how sure each part is. Numbers are as built on
 | The species file | `data/species/syn3a.json`, in the form `schema/SPECIES.md` fixes (10 KB) |
 | Its side of the protein atlas | `data/proteins/atlases/syn3a.json`, in the form `schema/SPECIES_ATLAS.md` fixes (38 KB) |
 | The start of its protein catalogue | `data/proteins/syn3a/proteins.tsv` (455 proteins, 110 KB) and its `README.md` |
+| Where each of those proteins sits | `data/proteins/syn3a/shelves.json`, in the form `schema/SPECIES_PROTEINS.md` fixes (105 KB), added on 15 November 2026 |
 | The tool | `tools/build_syn3a_atlas.py`: `fetch` uses the network, `build` does not |
 | The check | `node --test tests/syn3a_atlas.test.mjs` |
-| The downloads | `/mnt/datasets/Cells/syn3a/`, one folder per source with a `MANIFEST.json`. Six folders are this tool's (78 files, 3.5 MB); three are the lead's evidence audit's and are only read |
-| The analysis | `/mnt/workspaces/Cells/visualizer-syn3a-proteins-20261114-01`: the log of 83 requests, the record of the files a build read with their hashes, and built copies |
+| The downloads | `/mnt/datasets/Cells/syn3a/`, one folder per source with a `MANIFEST.json`. Seven folders are this tool's (83 files, 3.7 MB); three are the lead's evidence audit's and are only read |
+| The analysis | `/mnt/workspaces/Cells/visualizer-syn3a-proteins-20261114-01`: the log of 88 requests, the record of the files a build read with their hashes, and built copies |
 
 ## Answer
 
 **The viewer's data on Syn3A is made, and nothing in it claims a model.** The species
 file gives the organism two levels, molecules and one cell, so the multi-cell levels are
 off for it. Its state is `proposed`: it is the project's minimal-cell track (D173), and
-nothing of it is in the engine. The project's record holds an evidence audit and a
-proposal, in which no engine model ran.
+nothing of it is in the engine. The project's record holds an evidence audit, capability
+probes of the engine as it stands, and a proposed first milestone, with no engine code
+written for it and nothing accepted.
 
 **"452 against 455" is settled: both are right.** The genome record GenBank CP016816.2
 holds 455 protein products. 452 were kept from *Mycoplasma mycoides*; 3 were added for
@@ -189,8 +191,128 @@ to its locus tags, so every column can be tied to one gene.
 The proteomics table uses the protein identifiers of the record's first version
 (CP016816.1). They were tied to today's locus tags by identical sequence; all 428 tied.
 
-Not in it: sequences, simulated counts from any model, structures, where a protein sits,
-and the 3 pseudogenes and 38 RNA genes.
+Not in it: sequences, simulated counts from any model, structures, and the 3 pseudogenes
+and 38 RNA genes. Where a protein sits is in `shelves.json`, described next.
+
+## The shelves: where each protein sits
+
+Shown that none of the atlas's 49 units exists in this organism, the user asked for its
+own proteins on shelves: "yes, let's have all the shelfs simmilar format inside outside
+for syn3a and all of them". `data/proteins/syn3a/shelves.json` is the data for that, in
+the form `schema/SPECIES_PROTEINS.md` fixes. For each of the 455 proteins it gives the side
+of the cell membrane it sits on, how that is known, and its district. The drawing is not
+made yet. `unit` is empty throughout: the atlas found none of its units here.
+
+| Side | Proteins | Stated | Predicted | By function |
+| --- | --- | --- | --- | --- |
+| Outside, anchored to the membrane's outer face | 13 | 0 | 13 | 0 |
+| In the membrane, spanning it | 86 | 0 | 86 | 0 |
+| Inside, free or attached to the inner face | 352 | 6 | 326 | 20 |
+| Not known: nothing settles it | 4 | | | |
+
+**No established prediction exists for these sequences, so the reading is the tool's
+own.** UniProt's archive holds family signatures on them and no membrane-spanning
+stretches. No UniProtKB entry of any organism with one of these exact sequences gives one
+either. The file says so with every predicted side.
+
+- **In the membrane:** a stretch of 19 residues whose mean hydropathy on Kyte and
+  Doolittle's scale is 1.6 or more and which holds no charged residue, or 2.2 or more with
+  at most one.
+  - The window of 19 and the 1.6 are the usual reading of that scale; L'Hernault and
+    Arduengo (1992) state it, citing Kyte and Doolittle.
+  - The conditions on charged residues are this tool's. They were set against this
+    organism's own proteins, so the checks below are not independent of them.
+- **Outside:** PROSITE's lipoprotein signature (PS51257, as UniProt's archive gives it)
+  from the first residue to a cysteine, with a hydrophobic stretch before the cysteine.
+  The lipoproteins of mycoplasmas are anchored on the outer face of the membrane
+  (Chambaud and others 1999). That is said of mycoplasmas in general and was not measured
+  in this strain.
+- **Inside:** no such stretch and no lipid anchor. This includes proteins attached to the
+  membrane's inner face, such as the ATP-binding parts of transporters and the outer part
+  of the ATP synthase.
+- **Stated (6):** elongation factors Tu and P, initiation factors 1 and 3, guanylate
+  kinase and the acyl-carrier-protein synthase. A reviewed UniProtKB entry of *Mycoplasma
+  capricolum* or *Mycoplasma mycoides* SC with exactly the same sequence says "Cytoplasm".
+  - That is a statement about the other organism, and the file names the entry.
+  - None rests on an experiment: five are made by a family rule and one by similarity.
+  - Such an entry also says that the spermidine importer's ATP-binding protein (potA) is
+    at the cell membrane as a peripheral protein, without saying which face. The reading
+    places it inside, and it is marked as at the membrane.
+- **By function (20):** the sequence has a hydrophobic stretch, but the 2019 paper's class
+  leaves no doubt that the protein works inside the cell: translation, transcription, the
+  upkeep of DNA, sugar breakdown, the pentose phosphate pathway or nucleotide metabolism.
+  Function is never used to place a transport protein.
+
+**How the reading fares against what is known.**
+
+- **Proteins that work inside the cell:** of 224 in the classes just named, 20 have a
+  stretch at 1.6 or more, which the usual reading alone would call membrane-spanning. With
+  the condition on charged residues the tool reads 1 of them so, lactate dehydrogenase.
+- **Proteins named as membrane-spanning:** all 13 that the annotation calls a permease are
+  read as membrane-spanning.
+- **Stated places:** the reading agrees with all 6.
+- **The lipoprotein signature** matches 15 sequences, and 14 are kept.
+  - 13 are placed outside. One (locus 0338) also has a stretch at its far end and is
+    placed in the membrane.
+  - The fifteenth is ribosomal protein L32, which has no hydrophobic stretch before the
+    cysteine. UniProt's automatic annotation makes the same mark on the same protein in
+    another mycoplasma (unreviewed entry A0AAQ3DPT5); it is set aside here.
+- **Known shortfalls:** a stretch that holds charged residues is not read, so the count of
+  stretches falls short for some proteins. The lipoprotein signal peptidase and the ATP
+  synthase's c subunit are each read with one. The translocon's SecE is caught only by
+  the second condition.
+
+**Against the literature.** The 2022 whole-cell model has "93 membrane proteins making up
+roughly 9,000 of the 77,000 proteins in the proteomics" and does not say how they were
+told. Here 86 proteins span the membrane and 13 are anchored on it, 99 together; 89 of
+them were seen in the proteomics, with an estimated 7,685 of the 77,028 copies. The two
+counts are close but need not be of the same proteins: no list of the model's was copied
+or compared.
+
+**Districts** are the 2019 paper's secondary functional class, in its own words: 14 of
+them. Its tertiary class is kept with each protein for laying a district out.
+
+| District | Proteins | Outside | In | Inside | Not known |
+| --- | --- | --- | --- | --- | --- |
+| Translation | 134 | 0 | 0 | 134 | 0 |
+| No Kegg ortholog (function unclear) | 83 | 10 | 32 | 38 | 3 |
+| Membrane Transport | 57 | 3 | 34 | 20 | 0 |
+| Central Carbon Metabolism | 48 | 0 | 0 | 47 | 1 |
+| DNA Maintenance | 38 | 0 | 0 | 38 | 0 |
+| Biosynthesis | 32 | 0 | 8 | 24 | 0 |
+| Folding, Sorting and Degradation | 25 | 0 | 8 | 17 | 0 |
+| Transcription | 15 | 0 | 0 | 15 | 0 |
+| Kegg ortholog defined (function unclear) | 8 | 0 | 2 | 6 | 0 |
+| Cell Growth, Energy Metabolism, Other Enzymes | 4 each | 0 | 1, 0, 1 | 3, 4, 3 | 0 |
+| Defense | 2 | 0 | 0 | 2 | 0 |
+| Drug resistance (the added tetM) | 1 | 0 | 0 | 1 | 0 |
+
+**Marks** kept with each protein: essentiality and whether it was seen in the proteomics
+(both measured); the estimated copies; the three proteins added for manipulation; the
+finer class; the number of stretches read; the lipid anchor; what stands behind a stated
+side; and an assembly where the
+record's product name gives it outright: 52 ribosomal proteins, the 8 subunits of the ATP
+synthase and 5 of RNA polymerase. No other assembly is marked, because no source read
+names its members without inference.
+
+**What is not known.**
+
+- **Four proteins are not placed:** loci 0286, 0326 and 0373, of unknown function, and
+  the uncharacterized kinase 0495. Each has a hydrophobic stretch that holds charged
+  residues, and nothing settles its side.
+- **Six of the 86 membrane calls rest on one stretch at the very start of the protein.**
+  That may be an export signal that is cut off, and the protein would then sit outside.
+  They are marked.
+- **No topology:** not which end of a membrane protein faces out, and not which face a
+  protein inside is attached to.
+
+**Terms.** Everything copied into the file comes from a source with open terms: GenBank
+(NCBI states no restriction), the 2019 paper (CC BY 4.0), UniProt (CC BY 4.0), and
+Biopython 1.85 for the scale's 20 values (Biopython License Agreement or BSD 3-Clause).
+PROSITE's profile itself is not copied, only where UniProt reports that it matches. Three
+papers were read for one sentence or one number each, with no table taken: Chambaud and
+others 1999 (abstract), L'Hernault and Arduengo 1992 (CC BY-NC-SA) and the 2022
+whole-cell paper (CC BY-NC-ND). Nothing is from the 4D model's repository or archive.
 
 ## What could not be determined
 
@@ -253,9 +375,10 @@ have to switch off multi-cell".
 - **In the engine** the work is the lead's. Decision D173 makes Syn3A the minimal-cell
   track beside the current work, with its first milestone fixed after a capability probe;
   D171 gives it an agent under the lead, and D172 notes that its metabolism needs reactions that can make and
-  spend fuel. On main, the lead's proposal is `docs/SYN3A_MINIMAL_CELL_TRACK.md`, which the
-  progress record calls "an assessment only; no engine model ran"; its review of the 2026
-  whole-cell paper is
+  spend fuel. On main, the lead's track note is `docs/SYN3A_MINIMAL_CELL_TRACK.md`. As
+  revised on 15 November 2026 it says that capability probes ran the engine from a frozen
+  snapshot "as a capability check only", that "No engine code was written" and that
+  "Nothing here is an acceptance". Its review of the 2026 whole-cell paper is
   `docs/PAPER_REVIEW_WHOLE_CELL_MINIMAL_CELL.md`, and its evidence audit is in
   `/mnt/workspaces/Cells/syn3a-20261114-01`.
 - **What this data adds for that agent:**

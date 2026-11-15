@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the viewer's data on the minimal cell JCVI-syn3A, and the start of its protein catalogue.
 
-Three things are written, each from saved responses of public databases and open papers:
+Four things are written, each from saved responses of public databases and open papers:
 
     data/species/syn3a.json            the species file (schema/SPECIES.md): its levels, the
                                        cell's shape and parts, and which of Cells' capabilities
@@ -9,7 +9,10 @@ Three things are written, each from saved responses of public databases and open
     data/proteins/atlases/syn3a.json   its side of the protein atlas (schema/SPECIES_ATLAS.md):
                                        an entry for every unit of the law inventory
     data/proteins/syn3a/               proteins.tsv, one line per protein product of one frozen
-                                       genome annotation, and the README that explains it
+                                       genome annotation; shelves.json, where each of those
+                                       proteins sits against the cell membrane and how that is
+                                       known (schema/SPECIES_PROTEINS.md); and the README that
+                                       explains both
 
 Two steps, kept apart, and two folders: DATA holds the downloads, one folder per source
 with a MANIFEST.json that gives each file's address, time and SHA-256; DIR holds the
@@ -74,6 +77,16 @@ UNIPROT = "https://rest.uniprot.org"
 EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest"
 ELIFE = "https://cdn.elifesciences.org/articles/36842"
 HUMAN_FIELDS = "accession,gene_primary,protein_name,length,xref_interpro"
+
+SHELVES_FILE = "shelves.json"
+SHELVES_FORMAT = "cells.visualizer.species_proteins@1"
+SHELVES_MADE = "2026-11-15"
+# The hydropathy scale's values are read from a source with an open licence: Biopython.
+BIOPYTHON = "https://raw.githubusercontent.com/biopython/biopython/biopython-185"
+BIOPYTHON_PAGE = "https://github.com/biopython/biopython/blob/biopython-185/Bio/SeqUtils/ProtParamData.py"
+# The papers cited for where proteins sit: the hydropathy scale, and where the lipoproteins
+# of mycoplasmas are anchored.
+SHELF_PAPERS = {"kyte1982": "7108955", "chambaud1999": "10603485", "lhernault1992": "1527173"}
 
 PAPERS = {
     "breuer2019": "30657448", "gilbert2021": "34368224", "thornburg2022": "35063075",
@@ -273,6 +286,13 @@ def requests(snapshot, datasets=None):
     add("europepmc_citations.json", f"{EPMC}/search?query={q('src:med AND ext_id:(' + ' OR '.join(sorted(PAPERS.values(), key=int)) + ')')}&format=json&resultType=core&pageSize=100", "the records of the papers cited, with their abstracts")
     add("proteomexchange_PXD008159.xml", "https://proteomecentral.proteomexchange.org/cgi/GetDataset?ID=PXD008159&outputMode=XML", "the public deposit of the 2019 proteomics")
 
+    # For the shelves: the hydropathy scale's values from an openly licensed source, with
+    # that licence, and the papers cited for where proteins sit.
+    add("biopython_185_ProtParamData.py", f"{BIOPYTHON}/Bio/SeqUtils/ProtParamData.py", "the values of Kyte and Doolittle's hydropathy scale, as Biopython 1.85 lists them under an open licence; read as text, never run")
+    add("biopython_185_LICENSE.rst", f"{BIOPYTHON}/LICENSE.rst", "Biopython's licence")
+    add("europepmc_shelves_citations.json", f"{EPMC}/search?query={q('src:med AND ext_id:(' + ' OR '.join(sorted(SHELF_PAPERS.values(), key=int)) + ')')}&format=json&resultType=core&pageSize=100", "the records of the papers cited for where proteins sit, with their abstracts")
+    add("europepmc_fulltext_PMC2289639.xml", f"{EPMC}/PMC2289639/fullTextXML", "L'Hernault and Arduengo 1992, the open text: read for one sentence, on how the hydropathy scale is used to find membrane-spanning stretches")
+
     # Terms of each source, read before anything was copied.
     add("terms_ncbi_genbank.html", "https://www.ncbi.nlm.nih.gov/genbank/", "GenBank's statement on the use of its data")
     add("terms_insdc_policy.html", "https://www.insdc.org/policy/", "the policy of the nucleotide sequence databases")
@@ -290,6 +310,7 @@ def requests(snapshot, datasets=None):
         same = sorted({a for record in archived["results"] for a in record.get("uniProtKBAccessions", []) if "." not in a})
         if same:
             add("uniprotkb_identical.json", f"{UNIPROT}/uniprotkb/accessions?accessions={','.join(same)}&format=json&fields=accession,reviewed,organism_name,organism_id,protein_name", "the UniProtKB entries of other organisms with exactly the sequence of one of this organism's proteins")
+            add("uniprotkb_identical_places.json", f"{UNIPROT}/uniprotkb/accessions?accessions={','.join(same)}&format=json&fields=accession,reviewed,organism_name,cc_subcellular_location,ft_transmem,ft_signal,ft_lipid,keyword", "what those entries state of where the protein sits in the cell")
     return out
 
 
@@ -313,6 +334,7 @@ OWN = {
     "europepmc-syn3a-papers": {"licence": "Breuer and others 2019 and Gilbert and others 2021 are CC BY 4.0; the records are bibliographic facts", "what": "Europe PMC: the open full texts (JATS XML) of Breuer and others 2019 (PMC6609329) and Gilbert and others 2021 (PMC8339304), and the records of the papers cited, with their abstracts"},
     "ncbi-pmc-PMC9985924": {"pmcid": "PMC9985924", "doi": "10.1016/j.cell.2021.12.025", "licence": "CC BY-NC-ND 4.0", "what": "Thornburg and others 2022, the author manuscript (JATS XML), read for numbers and one short quotation"},
     "terms-syn3a-sources": {"what": "Terms of use as read before anything was copied: GenBank's data usage statement, the policy of the nucleotide sequence databases, InterPro's licence and EMBL-EBI's terms"},
+    "biopython-185-protparam": {"licence": "Biopython License Agreement or BSD 3-Clause License", "what": "Biopython 1.85: the file that lists Kyte and Doolittle's hydropathy scale (Bio/SeqUtils/ProtParamData.py) and the licence file, saved as text; the 20 values the Syn3A shelves are computed with are checked against it"},
 }
 # Where the audit's folders are absent (another machine), the fetch step makes them itself.
 ELSEWHERE = {
@@ -324,6 +346,7 @@ PLACES = [
     ("genbank_CP014940", "ncbi-CP014940.1"), ("genbank_", "ncbi-CP016816-proteins"), ("link_check_ncbi_protein", "ncbi-CP016816-proteins"),
     ("terms_uniprot", "uniprot-syn3a"), ("uniprot", "uniprot-syn3a"), ("uniparc", "uniprot-syn3a"), ("control_uniprotkb", "uniprot-syn3a"),
     ("europepmc", "europepmc-syn3a-papers"), ("ncbi_pmc", "ncbi-pmc-PMC9985924"), ("terms_", "terms-syn3a-sources"),
+    ("biopython_185", "biopython-185-protparam"),
 ]
 HEADERS = [("X-Total-Results", "total_results"), ("X-UniProt-Release", "uniprot_release"), ("X-UniProt-Release-Date", "uniprot_release_date")]
 
@@ -637,6 +660,9 @@ class Context:
             item["uniparc"] = record["uniParcId"]
             item["interpro"] = sorted({feature["interproGroup"]["id"] for feature in record.get("sequenceFeatures", []) if feature.get("interproGroup")})
             item["same"] = sorted(a for a in record.get("uniProtKBAccessions", []) if "." not in a)
+            # The lipoprotein signature, where it starts at the first residue: the residue it ends on.
+            ends = [location["end"] for feature in record.get("sequenceFeatures", []) if feature["database"] == "PROSITE" and feature["databaseId"] == LIPOPROTEIN_PROFILE for location in feature["locations"] if location["start"] == 1]
+            item["lipobox"] = ends[0] if ends else None
         self.signature_names = {feature["interproGroup"]["id"]: feature["interproGroup"]["name"] for record in archive for feature in record.get("sequenceFeatures", []) if feature.get("interproGroup")}
         self.by_locus = {item["locus_tag"]: item for item in self.proteins}
         self.kb_entries = ev.json(f"uniprot_taxonomy_{TAXON}.json").get("statistics", {})
@@ -645,6 +671,9 @@ class Context:
         if ev.json(f"uniprot_taxonomy_{PARENT_SPECIES}.json")["scientificName"] != "Mycoplasma mycoides":
             raise SystemExit("the taxon of the parent species is not Mycoplasma mycoides")
         self.identical = {entry["primaryAccession"]: entry for entry in ev.json("uniprotkb_identical.json")["results"]} if any(item["same"] for item in self.proteins) else {}
+        self.places = {entry["primaryAccession"]: entry for entry in ev.json("uniprotkb_identical_places.json")["results"]} if self.identical else {}
+        if set(self.places) != set(self.identical):
+            raise SystemExit("the two answers on the entries with identical sequences do not list the same entries")
 
         # The units' human candidates: the signatures they carry.
         self.human = {entry["primaryAccession"]: {x["id"] for x in entry.get("uniProtKBCrossReferences", []) if x["database"] == "InterPro"} for entry in ev.json("uniprotkb_human_candidates.json")["results"]}
@@ -688,6 +717,7 @@ class Context:
 # ---------------------------------------------------------------------------------------
 
 BREUER, GILBERT, THORNBURG = "europepmc_fulltext_PMC6609329.xml", "europepmc_fulltext_PMC8339304.xml", "ncbi_pmc_9985924.xml"
+LHERNAULT = "europepmc_fulltext_PMC2289639.xml"
 SAID = [
     (BREUER, r"consistently forms spherical cells of approximately 400 nm in diameter"),
     (BREUER, r"543 kbp genome containing 493 genes of which 452 code for proteins and 38 for RNAs"),
@@ -713,6 +743,13 @@ SAID = [
     (THORNBURG, r"In Mycoplasmas, the ATP synthase typically breaks down ATP and pumps out protons"),
     (THORNBURG, r"has retained few regulatory proteins or small RNAs"),
     (THORNBURG, r"CC BY-NC-ND license"),
+    (THORNBURG, r"The 93 membrane proteins making up roughly 9,000 of the 77,000 proteins in the proteomics"),
+    ("biopython_185_ProtParamData.py", r'governed by your\s+#\s+choice of the "Biopython License Agreement" or the "BSD 3-Clause License"'),
+    ("biopython_185_ProtParamData.py", r"# Kyte & Doolittle index of hydrophobicity\s+# J\. Mol\. Biol\. 157:105-132\(1982\)\."),
+    ("biopython_185_LICENSE.rst", r"Permission to use, copy, modify, and distribute this software and its\s+documentation with or without modifications and for any purpose and\s+without fee is hereby granted"),
+    (LHERNAULT, r"We have used this algorithm at a window of 19 residues"),
+    (LHERNAULT, r"creativecommons\.org/licenses/by-nc-sa/4\.0"),
+    (LHERNAULT, r"If the average hydropathy of a region is greater than 1\.6, this region proba-? ?bly spans a membrane \(Kyte and Doolittle, 1982\)"),
     ("terms_ncbi_genbank.html", r"NCBI places no restrictions on the use or distribution of the GenBank data"),
     ("terms_insdc_policy.html", r"no use restrictions or licensing requirements will be included in any sequence data records"),
     ("terms_uniprot_license.json", r"Creative Commons Attribution 4\.0 International \(CC BY 4\.0\) License"),
@@ -875,7 +912,7 @@ def build_species(c):
         "made": MADE,
         "modelled": {
             "state": "proposed",
-            "text": "JCVI-syn3A is the project's minimal-cell track (decision D173, 14 November 2026), taken up from a note that proposes it as the first whole-cell validation organism for Cells. Nothing of it is in the engine yet: the project's record holds an evidence audit and a proposal, in which no engine model ran.",
+            "text": "JCVI-syn3A is the project's minimal-cell track (decision D173, 14 November 2026), taken up from a note that proposes it as the first whole-cell validation organism for Cells. Nothing of it is in the engine yet: the project's record holds an evidence audit, capability probes of the engine as it stands, and a proposed first milestone, with no engine code written for it and nothing accepted.",
         },
         "levels": [
             {"id": "molecules"},
@@ -1042,7 +1079,118 @@ def table(rows):
     return "\n".join("\t".join(row) for row in [CATALOGUE_COLUMNS, *rows]) + "\n"
 
 
-def build_readme(c, rows):
+def shelves_section(c, shelves):
+    """What the README says of shelves.json: the counts, how a side is known, how the reading fares."""
+    counts, by_basis, checks = shelves["counts"], shelves["by_basis"], shelves["checks"]
+    total = sum(counts.values())
+    words = {"stated": "stated", "predicted": "predicted", "by function": "by function", "none": "nothing settles it"}
+    how = lambda side: ", ".join(f"{n} {words[basis]}" for basis, n in by_basis.get(side, {}).items()) or "none"
+    basis_total = Counter()
+    for side in by_basis.values():
+        basis_total.update(side)
+    inside, permeases, stated, profile, membrane = checks["inside_by_class"], checks["permeases"], checks["stated"], checks["lipoprotein_profile"], checks["membrane"]
+    set_aside = listed(profile["set_aside"]) if profile["set_aside"] else "none"
+    false_alarms = listed(inside["read_as_spanning"]) if inside["read_as_spanning"] else "none"
+    elsewhere = c.anchored_elsewhere
+    names, genes = listed(sorted(elsewhere)), listed(sorted(set(elsewhere.values())))
+    elsewhere_words = "" if not elsewhere else "\n  " + (f"One unreviewed entry of another organism ({names}), with the sequence of {genes}, carries" if len(elsewhere) == 1 else f"{len(elsewhere)} unreviewed entries of other organisms ({names}), with the sequences of {genes}, carry") + "\n  an automatic lipid-anchor mark from the PROSITE profile used below; it is set aside there."
+    districts = "\n".join(f"| {group['label']} | {group['within']} | {group['count']} | " + " | ".join(str(group["sides"].get(side, 0)) for side in SIDES) + " |" for group in shelves["groups"])
+    lhernault, chambaud = shelf_citation(c, "lhernault1992"), shelf_citation(c, "chambaud1999")
+    unplaced = [row for row in shelves["proteins"] if row[4] == "not known"]
+    spanning = checks["in_the_membrane"]
+    behind = {"experiment": "an experiment", "curator": "a curator's inference", "similarity": "similarity to another protein", "rule": "a family rule"}
+    stated_words = listed([f"{behind[name]} for {n}" for name, n in stated["by_evidence"].items()]) + ("" if "experiment" in stated["by_evidence"] else "; none rests on an experiment")
+    at_membrane = stated["said_to_be_at_the_membrane"]
+    at_membrane_words = "" if not at_membrane else f"\n  Such an entry also says that {listed(at_membrane)} {'is' if len(at_membrane) == 1 else 'are'} at the cell membrane as a peripheral protein, without saying\n  which face. The reading places {'it' if len(at_membrane) == 1 else 'them'} inside, and {'it is' if len(at_membrane) == 1 else 'they are'} marked as at the membrane."
+    complexes = Counter(row[9]["complex"] for row in shelves["proteins"] if "complex" in row[9])
+    return f"""## `{SHELVES_FILE}`: where each protein sits
+
+For the shelves of the protein atlas (`schema/SPECIES_PROTEINS.md`): one line for each of
+the {total} proteins, in this table's order, saying which side of the cell membrane it sits
+on, how that is known, and the district it stands in. The organism has one membrane, so
+there is one shelf.
+
+| Side | Proteins | How it is known |
+| --- | --- | --- |
+| Outside the cell, anchored to the membrane's outer face | {counts['outside']} | {how('outside')} |
+| In the membrane, spanning it | {counts['in']} | {how('in')} |
+| Inside the cell, free or attached to the membrane's inner face | {counts['inside']} | {how('inside')} |
+| Not known | {counts['not known']} | {how('not known')} |
+
+**How a side is known.**
+
+- **Stated ({basis_total['stated']}).** A reviewed UniProtKB entry with exactly this protein's
+  sequence states the place. Every such entry is of another organism, so it states where
+  the same protein sits there; the entry is named with the protein. What stands behind
+  the statements: {stated_words}.{at_membrane_words}
+- **Predicted ({basis_total['predicted']}).** This tool's own reading of the sequence. It is
+  not the output of an established predictor: UniProt's archive holds family signatures on
+  these sequences and no prediction of membrane-spanning stretches, and no UniProtKB entry
+  of any organism with one of these sequences gives one.{elsewhere_words}
+  - *In the membrane:* a stretch of {WINDOW} residues whose mean hydropathy on Kyte and
+    Doolittle's scale is {HYDROPHOBIC / 10} or more and which holds no charged residue, or
+    {STRONG / 10} or more with at most one. The window and the {HYDROPHOBIC / 10} are the usual
+    reading of that scale ({lhernault['who']} {lhernault['year']} state it). The conditions on
+    charged residues are this tool's, set against the checks below.
+  - *Outside:* the lipoprotein signature (PROSITE {LIPOPROTEIN_PROFILE}, as UniProt's archive
+    gives it) from the first residue to a cysteine, with a hydrophobic stretch before the
+    cysteine. The lipoproteins of mycoplasmas are anchored on the outer face of the
+    membrane ({chambaud['who']} {chambaud['year']}); that is said of mycoplasmas in general and
+    was not measured in this strain.
+  - *Inside:* no such stretch and no lipid anchor. This includes proteins attached to the
+    membrane's inner face, such as the ATP-binding parts of transporters.
+- **By function ({basis_total['by function']}).** The sequence has a hydrophobic stretch, but the
+  protein's class in the 2019 paper leaves no doubt that it works inside the cell:
+  translation, transcription, the upkeep of DNA, sugar breakdown, the pentose phosphate
+  pathway or nucleotide metabolism. Function is never used to place a transport protein.
+- **Not known ({counts['not known']}).** A hydrophobic stretch that holds charged residues, in a
+  protein of unknown function: {", ".join(row[0] for row in unplaced) or "none"}. They are not placed.
+
+**How the reading fares against what is known.**
+
+- **Proteins that work inside the cell.** Of the {inside['proteins']} proteins in the classes named under
+  "By function", {inside['with_a_hydrophobic_stretch']} have a stretch at {HYDROPHOBIC / 10} or more, which the usual reading alone would call
+  membrane-spanning. With the condition on charged residues the tool reads {len(inside['read_as_spanning'])} of them so
+  ({false_alarms}); it too is placed inside, by its function.
+- **Proteins named as membrane-spanning.** All {permeases['proteins']} proteins that the annotation calls a
+  permease are read as membrane-spanning.
+- **Stated places.** The reading agrees with all {stated['proteins']}.
+- **The lipoprotein signature** matches {profile['sequences']} sequences. {profile['kept']} are kept: {profile['placed_outside']} are placed outside, and
+  {profile['placed_in']}, with a membrane-spanning stretch after the anchor, in the membrane. Set aside, for
+  want of a hydrophobic stretch before the cysteine: {set_aside}.
+- **Against the literature.** The 2022 whole-cell model has "{LITERATURE_MEMBRANE} membrane proteins making
+  up roughly 9,000 of the 77,000 proteins in the proteomics", and does not say how they
+  were told. Here {counts['in']} proteins span the membrane and {counts['outside']} are anchored on it, {membrane['in_or_on']}
+  together. {membrane['seen']} of them were seen in the proteomics, with an estimated {membrane['estimated_copies']:,} of
+  the {membrane['all_estimated_copies']:,} copies. The two counts need not be of the same proteins: no list
+  of the model's was copied or compared.
+
+**Districts.** The 2019 paper's secondary functional class, in its own words; the tertiary
+class is kept with each protein for laying a district out.
+
+| District | Within | Proteins | Outside | In | Inside | Not known |
+| --- | --- | --- | --- | --- | --- | --- |
+{districts}
+
+**Marks** kept with each protein: essentiality and whether it was seen (both measured),
+the estimated copies (`amount`), the three proteins added for manipulation, the finer
+class, the number of membrane-spanning stretches read, the lipid anchor, what stands
+behind a stated side, and its assembly where the record's product name gives it outright
+({", ".join(f"{name} {n}" for name, n in sorted(complexes.items()))}).
+
+**What it does not say.** It gives no topology: not which end of a membrane protein faces
+out, and not which face a protein inside is attached to. The count of stretches can fall
+short, since a stretch that holds charged residues is not read. Of the {spanning['proteins']} proteins placed
+in the membrane, {spanning['one_stretch']} have one stretch only, and for {spanning['one_stretch_at_the_start']} of those it is at the very start
+of the protein: that may be an export signal that is cut off, and the protein would then
+sit outside. They are marked. It marks no assembly beyond the three named. `unit` is
+empty throughout, because the atlas found none of the law inventory's units in this
+organism.
+
+"""
+
+
+def build_readme(c, rows, shelves):
     ev = c.evidence
     count = len(rows)
     native = sum(row[5] == "minimal genome" for row in rows)
@@ -1059,6 +1207,8 @@ def build_readme(c, rows):
         ("Its protein products", f"genbank_{RECORD}_cds_aa.fa"), ("The protein products of its first version", f"genbank_{FIRST_RECORD}_cds_aa.fa"),
         ("The 2019 paper's supplementary file 3", "elife_36842_supp3.xlsx"), ("The 2019 paper's supplementary file 5", "elife_36842_supp5.xlsx"),
         ("UniProt's archived sequences and signatures", f"uniparc_{TAXON}.json"), ("Other organisms' entries with the same sequences", "uniprotkb_identical.json"),
+        ("What those entries state of where the protein sits", "uniprotkb_identical_places.json"), ("The hydropathy scale's values", "biopython_185_ProtParamData.py"),
+        ("The records of the papers cited for the shelves", "europepmc_shelves_citations.json"),
     ]
     inputs = "\n".join(f"| {what} | `{ev.read[name]['source']}` | `{ev.read[name]['file']}` | `{ev.read[name]['sha256']}` |" for what, name in built_from)
     day_record, day_paper, day_archive = ev.day(f"genbank_{RECORD}_cds_aa.fa"), ev.day("elife_36842_supp3.xlsx"), ev.day(f"uniparc_{TAXON}.json")
@@ -1068,6 +1218,9 @@ def build_readme(c, rows):
 minimal cell {ORGANISM}, one per line, with what open sources say of each: what it is
 named, how long it is, what it is for, whether the cell can do without it, and how many
 copies were estimated in a cell.
+
+`{SHELVES_FILE}` says, for the same {count} proteins, where each sits against the cell
+membrane and how that is known. It is described in its own section below.
 
 Generated by `tools/build_syn3a_atlas.py`; do not edit. This is reference data for the
 viewer. It is not the engine's protein catalogue, and nothing in the engine reads it.
@@ -1127,19 +1280,31 @@ Counts, as built:
 - **No signature at all:** {unsigned} of the {count}.
 
 What is not here: sequences (they stay with the downloads), simulated counts from
-any model, structures, and anything about where a protein sits in the cell. Strain
+any model, and structures. Where a protein sits is not in this table either: it is in
+`{SHELVES_FILE}`, described below. Strain
 identity matters: every value is for {ORGANISM} itself. Nothing is carried over from
 JCVI-syn3.0, JCVI-syn3B or *Mycoplasma mycoides*, except that `uniprotkb_identical` names
 other organisms' entries and says so.
 
-## Sources and terms
+{shelves_section(c, shelves)}## Sources and terms
 
 | Source | What is taken | Terms |
 | --- | --- | --- |
 | [GenBank {RECORD}](https://www.ncbi.nlm.nih.gov/nuccore/{RECORD}), read {day_record} | Locus tags, gene names, products, protein identifiers, lengths | "NCBI places no restrictions on the use or distribution of the GenBank data"; submitters may claim rights in what they submitted, and this record states none |
 | [Breuer and others 2019](https://doi.org/{breuer['doi']}), supplementary files 3 and 5, read {day_paper} | Origin, functional class, essentiality, detection and estimated copies | CC BY 4.0 |
-| [UniProt](https://www.uniprot.org/), release {c.uniprot_release}, read {day_archive} | Archive identifiers, signatures, and other organisms' entries with the same sequence | CC BY 4.0 |
+| [UniProt](https://www.uniprot.org/), release {c.uniprot_release}, read {day_archive} | Archive identifiers, signatures, where the lipoprotein signature matches, and other organisms' entries with the same sequence and the place they state | CC BY 4.0 |
 | [InterPro](https://www.ebi.ac.uk/interpro/) | The signatures' identifiers | CC0 1.0 |
+| [Biopython 1.85]({BIOPYTHON_PAGE}), read {ev.day("biopython_185_ProtParamData.py")} | The 20 values of Kyte and Doolittle's hydropathy scale, for `{SHELVES_FILE}` | Biopython License Agreement or BSD 3-Clause License |
+
+Read for one sentence or one number each, for `{SHELVES_FILE}`, with no table copied:
+
+- the abstract of {shelf_citation(c, "chambaud1999")["text"]}
+  Where the lipoproteins of mycoplasmas are anchored.
+- {shelf_citation(c, "lhernault1992")["text"]}
+  CC BY-NC-SA. The usual reading of the hydropathy scale.
+- the 2022 whole-cell paper (CC BY-NC-ND): its count of membrane proteins.
+
+The scale itself is from {shelf_citation(c, "kyte1982")["text"]}
 
 Cite:
 
@@ -1147,7 +1312,7 @@ Cite:
 - {breuer['text']} doi:{breuer['doi']}
 - The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)
 
-## The files it was built from
+## The files they were built from
 
 Each is in the dataset folder of its source, outside the repository, and the build checks
 it against the SHA-256 that the folder's MANIFEST gives before reading it.
@@ -1164,34 +1329,364 @@ python3 tools/build_syn3a_atlas.py build --evidence DIR --datasets DATA   # offl
 ```
 
 `DATA` holds the downloads, one folder per source with a MANIFEST.json; `DIR` holds the
-log of what this tool asked. Both are kept outside the repository. The build also writes
-`data/species/syn3a.json` and `data/proteins/atlases/syn3a.json`. `docs/SYN3A.md`
-describes the method and its limits.
+log of what this tool asked. Both are kept outside the repository. The build writes this
+folder's three files, `data/species/syn3a.json` and `data/proteins/atlases/syn3a.json`.
+`docs/SYN3A.md` describes the method and its limits.
 """
+
+
+# ---------------------------------------------------------------------------------------
+# The shelves: where each protein sits against the cell membrane (schema/SPECIES_PROTEINS.md)
+# ---------------------------------------------------------------------------------------
+
+# Kyte and Doolittle's hydropathy scale (1982), in tenths so that sums are whole numbers:
+# the values as Biopython 1.85 lists them (Bio/SeqUtils/ProtParamData.py, under the
+# Biopython License Agreement or the BSD 3-Clause License). The saved copy of that file
+# is checked against these values before they are used.
+HYDROPATHY = {"A": 18, "R": -45, "N": -35, "D": -35, "C": 25, "Q": -35, "E": -35, "G": -4, "H": -32, "I": 45, "L": 38, "K": -39, "M": 19, "F": 28, "P": -16, "S": -8, "T": -7, "W": -9, "Y": -13, "V": 42}
+WINDOW = 19               # residues in a stretch long enough to span the membrane
+HYDROPHOBIC = 16          # mean hydropathy, in tenths, at which a stretch counts as hydrophobic (1.6)
+STRONG = 22               # mean hydropathy, in tenths, at which one charged residue is allowed in it (2.2)
+CHARGED = "DEKR"
+LIPOPROTEIN_PROFILE = "PS51257"  # PROSITE's profile of the lipid attachment site of bacterial lipoproteins
+SIGNAL_START = 12         # the hydrophobic stretch of an export signal begins within these residues
+LITERATURE_MEMBRANE = 93  # the 2022 whole-cell paper's count of membrane proteins, cited for comparison
+# The 2019 paper's classes that leave no doubt that a protein works inside the cell. Used
+# only where the sequence has a hydrophobic stretch, and never for a transport protein.
+INSIDE_BY_FUNCTION = [
+    ("Genetic Information Processing", "Translation", None),
+    ("Genetic Information Processing", "Transcription", None),
+    ("Genetic Information Processing", "DNA Maintenance", None),
+    ("Metabolism", "Central Carbon Metabolism", "Glycolysis"),
+    ("Metabolism", "Central Carbon Metabolism", "Pentose phosphate metabolism"),
+    ("Metabolism", "Central Carbon Metabolism", "Nucleotide metabolism"),
+]
+# Assemblies whose members the annotation names outright.
+COMPLEXES = [("ribosome", r"^(30S|50S) ribosomal protein "), ("ATP synthase", r"^F0F1 ATP synthase subunit "), ("RNA polymerase", r"RNA polymerase subunit ")]
+SIDES = ["outside", "in", "inside", "not known"]
+SOURCE_NAMES = {
+    "genbank": "GenBank", "breuer2019": "Breuer and others 2019", "uniparc": "UniParc", "uniprotkb": "UniProtKB", "scale": "Kyte and Doolittle 1982",
+    "lhernault1992": "L'Hernault and Arduengo 1992", "chambaud1999": "Chambaud and others 1999", "thornburg2022": "Thornburg and others 2022",
+}
+BASES = ["stated", "predicted", "by function", "none"]
+SHELF_COLUMNS = ["id", "label", "gene", "shelf", "side", "basis", "group", "length", "unit", "marks"]
+
+
+def scale_in_file(text):
+    """The scale's values as the saved file lists them, in tenths. The file is read as text."""
+    listed = re.search(r"^kd = \{(.*?)\}", text, re.S | re.M)
+    return {letter: round(float(value) * 10) for letter, value in re.findall(r'"([A-Z])": (-?\d+\.\d+)', listed.group(1))} if listed else {}
+
+
+def scan(sequence):
+    """Read a sequence for stretches that could span the membrane.
+
+    Returns the first residue of each stretch that is read as membrane-spanning, whether any
+    stretch is hydrophobic at all, and the highest mean hydropathy of a stretch. A stretch of
+    WINDOW residues is read as membrane-spanning where its mean hydropathy is HYDROPHOBIC or
+    more and it holds no charged residue, or STRONG or more with at most one. Stretches are
+    taken strongest first and may not overlap."""
+    if len(sequence) < WINDOW:
+        return [], False, None
+    values = [HYDROPATHY[letter] for letter in sequence]
+    charged = [letter in CHARGED for letter in sequence]
+    total, charges = sum(values[:WINDOW]), sum(charged[:WINDOW])
+    windows = []
+    for start in range(len(sequence) - WINDOW + 1):
+        if start:
+            total += values[start + WINDOW - 1] - values[start - 1]
+            charges += charged[start + WINDOW - 1] - charged[start - 1]
+        windows.append((total, start, charges))
+    best = max(total for total, _, _ in windows)
+    read = sorted(((total, start) for total, start, c in windows if (total >= HYDROPHOBIC * WINDOW and c == 0) or (total >= STRONG * WINDOW and c <= 1)), key=lambda item: (-item[0], item[1]))
+    kept = []
+    for total, start in read:
+        if all(abs(start - other) >= WINDOW for other in kept):
+            kept.append(start)
+    return sorted(start + 1 for start in kept), best >= HYDROPHOBIC * WINDOW, best / (10 * WINDOW)
+
+
+def lipid_anchor(protein, stretches):
+    """The cysteine a lipid is attached to, if the lipoprotein signature holds up: PROSITE's
+    profile from the first residue to a cysteine, with a hydrophobic stretch that begins
+    before it, as an export signal has."""
+    end = protein["lipobox"]
+    if not end or protein["sequence"][end - 1] != "C":
+        return None
+    if not any(start <= SIGNAL_START and start < end for start in stretches):
+        return None
+    return end
+
+
+# What stands behind a statement in a reviewed entry, by its evidence code, strongest first.
+EVIDENCE = [("experiment", {"ECO:0000269"}), ("curator", {"ECO:0000305", "ECO:0000303", "ECO:0000304"}), ("similarity", {"ECO:0000250"}), ("rule", {"ECO:0000255", "ECO:0000256", "ECO:0000259"})]
+
+
+def stated_place(c, protein):
+    """What reviewed UniProtKB entries with exactly this sequence state of where the protein
+    sits: the side it comes to (or None), and each statement with what stands behind it."""
+    said = []
+    for accession in protein["same"]:
+        entry = c.places[accession]
+        if not entry["entryType"].startswith("UniProtKB reviewed"):
+            continue
+        for comment in entry.get("comments", []):
+            if comment["commentType"] != "SUBCELLULAR LOCATION":
+                continue
+            for item in comment.get("subcellularLocations", []):
+                place, topology = item["location"]["value"], item.get("topology", {}).get("value", "")
+                side = "inside" if place == "Cytoplasm" and not topology else "in" if topology.startswith(("Multi-pass", "Single-pass")) else "outside" if place == "Secreted" else None
+                codes = {evidence["evidenceCode"] for evidence in item["location"].get("evidences", [])}
+                behind = next((name for name, known in EVIDENCE if codes & known), None)
+                if behind is None:
+                    raise SystemExit(f"{accession} states a place on evidence this tool has no word for: {sorted(codes)}")
+                said.append({"side": side, "entry": accession, "organism": entry["organism"]["scientificName"], "words": "; ".join(part for part in (place, topology) if part), "evidence": behind, "peripheral": place == "Cell membrane" and topology.startswith("Peripheral")})
+    sides = {item["side"] for item in said}
+    if len(sides) > 1 and None not in sides:
+        raise SystemExit(f"reviewed entries with the sequence of {protein['locus_tag']} state different places: {said}")
+    return (said[0]["side"] if len(sides) == 1 else None), said
+
+
+def slug(text):
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+
+
+def shelf_citation(c, key):
+    record = next(r for r in c.evidence.json("europepmc_shelves_citations.json")["resultList"]["result"] if r["pmid"] == SHELF_PAPERS[key])
+    authors = [name.rsplit(" ", 1)[0] for name in record["authorString"].rstrip(".").split(", ")]
+    who = authors[0] if len(authors) == 1 else f"{authors[0]} and {authors[1]}" if len(authors) == 2 else f"{authors[0]} and others"
+    journal = record["journalInfo"]["journal"]
+    where = journal["title"] if " " not in journal["title"] else (journal.get("isoabbreviation") or journal["title"])
+    return {"who": who, "year": record["pubYear"], "text": f"{who} ({record['pubYear']}) {record['title'].rstrip('.')}. {where} {record['journalInfo']['volume']}:{record['pageInfo']}.", "doi": record["doi"], "pmid": record["pmid"]}
+
+
+def check_shelf_sources(c):
+    ev = c.evidence
+    if scale_in_file(ev.text("biopython_185_ProtParamData.py")) != HYDROPATHY:
+        raise SystemExit("the saved file of the hydropathy scale does not give the values this tool uses")
+    papers = {record["pmid"]: record for record in ev.json("europepmc_shelves_citations.json")["resultList"]["result"]}
+    if set(SHELF_PAPERS.values()) - set(papers):
+        raise SystemExit("a paper cited for the shelves was not returned")
+    if "lipoproteins anchored on the outer face of the plasma membrane" not in papers[SHELF_PAPERS["chambaud1999"]].get("abstractText", ""):
+        raise SystemExit("the abstract cited for where lipoproteins sit no longer says so")
+    if papers[SHELF_PAPERS["kyte1982"]]["title"].rstrip(".") != "A simple method for displaying the hydropathic character of a protein":
+        raise SystemExit("the record of the hydropathy scale's paper is not the one cited")
+    if set("".join(protein["sequence"] for protein in c.proteins)) - set(HYDROPATHY):
+        raise SystemExit("a protein holds a residue the hydropathy scale has no value for")
+    # No entry of this organism or of another states a membrane-spanning segment for one of
+    # these exact sequences: the tool's own reading is the only one there is.
+    spanning = sorted(accession for accession, entry in c.places.items() if any(feature["type"] == "Transmembrane" for feature in entry.get("features", [])))
+    if spanning:
+        raise SystemExit(f"an entry with one of these sequences now gives a membrane-spanning stretch; read it and use it: {spanning}")
+    anchored = sorted(accession for accession, entry in c.places.items() if any(feature["type"] in ("Signal", "Lipidation") for feature in entry.get("features", [])))
+    if any(c.places[accession]["entryType"].startswith("UniProtKB reviewed") for accession in anchored):
+        raise SystemExit(f"a reviewed entry with one of these sequences now gives a signal or a lipid anchor; read it and use it: {anchored}")
+    # Unreviewed entries that carry an automatic lipid-anchor mark: which of this organism's proteins they are.
+    c.anchored_elsewhere = {accession: next(protein.get("gene") or protein["locus_tag"] for protein in c.proteins if accession in protein["same"]) for accession in anchored}
+
+
+def build_shelves(c, rows):
+    """Where each protein of the catalogue sits against the cell membrane, and how that is known."""
+    cite = {key: shelf_citation(c, key) for key in SHELF_PAPERS}
+    proteins, tally, basis_tally = [], Counter(), Counter()
+    groups = {}
+    checks = {"controls": 0, "controls_read_as_spanning": [], "controls_hydrophobic": 0, "permeases": 0, "permeases_read_as_spanning": 0, "stated": 0, "stated_agree": 0, "profile": 0, "profile_kept": 0, "profile_set_aside": [], "copies_membrane": 0.0, "seen_membrane": 0, "stated_evidence": Counter(), "at_the_membrane": []}
+    for row, protein in zip(rows, c.proteins):
+        locus = protein["locus_tag"]
+        if row[0] != locus:
+            raise SystemExit("the catalogue and the proteins are not in the same order")
+        table = c.classes[locus]
+        classes = (table["Primary functional class"], table["Secondary functional class"], table["Tertiary functional class"])
+        no_doubt = any(classes[0] == first and classes[1] == second and third in (None, classes[2]) for first, second, third in INSIDE_BY_FUNCTION)
+        stretches, hydrophobic, best = scan(protein["sequence"])
+        anchor = lipid_anchor(protein, stretches)
+        side_stated, said = stated_place(c, protein)
+        marks = {"essential": row[7], "seen": row[8] == "yes"}
+        measured = c.abundance.get(locus)
+        if measured:
+            copies = float(f"{measured['copies']:.3g}")
+            marks["amount"] = int(copies) if copies == int(copies) else copies
+        if row[5] != "minimal genome":
+            marks["added"] = True
+        if classes[2]:
+            marks["class"] = classes[2]
+        for name, pattern in COMPLEXES:
+            if re.search(pattern, protein["protein"]):
+                marks["complex"] = name
+        if protein["lipobox"]:
+            checks["profile"] += 1
+            if anchor:
+                checks["profile_kept"] += 1
+            else:
+                checks["profile_set_aside"].append(protein.get("gene") or locus)
+        if no_doubt:
+            checks["controls"] += 1
+            checks["controls_hydrophobic"] += hydrophobic
+            if stretches:
+                checks["controls_read_as_spanning"].append(protein.get("gene") or locus)
+        if re.search(r"permease", protein["protein"], re.I):
+            checks["permeases"] += 1
+            checks["permeases_read_as_spanning"] += bool(stretches)
+        if side_stated:
+            checks["stated"] += 1
+            checks["stated_agree"] += (side_stated == "inside" and not stretches) or (side_stated == "in" and bool(stretches))
+
+        if side_stated:
+            if side_stated == "inside" and stretches:
+                raise SystemExit(f"{locus}: a reviewed entry says cytoplasm and the sequence reads as membrane-spanning; read both and decide")
+            side, basis = side_stated, "stated"
+            entry = next(item for item in said if item["side"] == side_stated)
+            marks["stated_in"] = f"{entry['entry']}, {entry['organism']}: {entry['words']}"
+            marks["evidence"] = entry["evidence"]
+            checks["stated_evidence"][entry["evidence"]] += 1
+        elif anchor and not no_doubt:
+            beyond = [start for start in stretches if start > anchor]
+            if beyond:
+                side, basis = "in", "predicted"
+                marks["segments"] = len(beyond)
+            else:
+                side, basis = "outside", "predicted"
+            marks["lipid_anchor"] = True
+        elif stretches:
+            if no_doubt:
+                side, basis = "inside", "by function"
+            else:
+                side, basis = "in", "predicted"
+                marks["segments"] = len(stretches)
+                if len(stretches) == 1 and stretches[0] <= SIGNAL_START:
+                    marks["at_start_only"] = True
+        elif hydrophobic:
+            side, basis = ("inside", "by function") if no_doubt else ("not known", "none")
+        else:
+            side, basis = "inside", "predicted"
+
+        # A reviewed entry may place the protein at the membrane without saying which face.
+        at_membrane = next((item for item in said if item["peripheral"]), None)
+        if at_membrane and basis != "stated":
+            if side != "inside":
+                raise SystemExit(f"{locus}: a reviewed entry says it is at the membrane as a peripheral protein, and the reading places it {side}; read both and decide")
+            marks["where"] = "at the membrane"
+            marks["stated_in"] = f"{at_membrane['entry']}, {at_membrane['organism']}: {at_membrane['words']} (by {at_membrane['evidence']})"
+            checks["at_the_membrane"].append(protein.get("gene") or locus)
+
+        group = slug(classes[1])
+        entry = groups.setdefault(group, {"id": group, "label": classes[1], "within": classes[0], "from": "Breuer and others 2019, supplementary file 3: the secondary functional class", "count": 0, "sides": Counter()})
+        if (entry["label"], entry["within"]) != (classes[1], classes[0]):
+            raise SystemExit(f"two classes of the 2019 table would share the district {group!r}")
+        entry["count"] += 1
+        entry["sides"][side] += 1
+        tally[side] += 1
+        basis_tally[(side, basis)] += 1
+        if side in ("in", "outside") and measured:
+            checks["copies_membrane"] += measured["copies"]
+            checks["seen_membrane"] += 1
+        proteins.append([locus, protein["protein"], protein.get("gene", ""), "cell", side, basis, group, len(protein["sequence"]), None, marks])
+
+    if sum(tally.values()) != len(rows) or checks["profile"] - checks["profile_kept"] != len(checks["profile_set_aside"]):
+        raise SystemExit("the shelves do not hold every protein of the catalogue once")
+    # What the text of the files says of the reading rests on these: if one moves, the words must be reread.
+    if checks["stated_agree"] != checks["stated"] or checks["permeases_read_as_spanning"] != checks["permeases"]:
+        raise SystemExit(f"the reading of the sequences no longer agrees with the stated cases or misses a permease: {checks}")
+    group_list = [{**entry, "sides": {side: entry["sides"][side] for side in SIDES if entry["sides"][side]}} for entry in sorted(groups.values(), key=lambda item: (item["within"], item["label"]))]
+    by_basis = {side: {basis: basis_tally[(side, basis)] for basis in BASES if basis_tally[(side, basis)]} for side in SIDES if tally[side]}
+    kyte, chambaud, lhernault = cite["kyte1982"], cite["chambaud1999"], cite["lhernault1992"]
+    ev = c.evidence
+    breuer = citation(c, "breuer2019")
+    thornburg = citation(c, "thornburg2022")
+    anchored_in = sum(1 for row in proteins if row[4] == "in" and row[9].get("lipid_anchor"))
+    if checks["profile_kept"] != tally["outside"] + anchored_in:
+        raise SystemExit("the lipid-anchored proteins are not all outside or in the membrane")
+    checks_out = {
+        "inside_by_class": {"proteins": checks["controls"], "with_a_hydrophobic_stretch": checks["controls_hydrophobic"], "read_as_spanning": checks["controls_read_as_spanning"]},
+        "permeases": {"proteins": checks["permeases"], "read_as_spanning": checks["permeases_read_as_spanning"]},
+        "stated": {"proteins": checks["stated"], "reading_agrees": checks["stated_agree"], "by_evidence": {name: checks["stated_evidence"][name] for name, _ in EVIDENCE if checks["stated_evidence"][name]}, "said_to_be_at_the_membrane": checks["at_the_membrane"]},
+        "lipoprotein_profile": {"sequences": checks["profile"], "kept": checks["profile_kept"], "placed_outside": tally["outside"], "placed_in": anchored_in, "set_aside": checks["profile_set_aside"]},
+        "membrane": {"in_or_on": tally["in"] + tally["outside"], "seen": checks["seen_membrane"], "estimated_copies": round(checks["copies_membrane"]), "all_estimated_copies": c.copies_total, "in_the_2022_model": LITERATURE_MEMBRANE},
+        "in_the_membrane": {"proteins": tally["in"], "one_stretch": sum(1 for row in proteins if row[4] == "in" and row[9]["segments"] == 1), "one_stretch_at_the_start": sum(1 for row in proteins if row[9].get("at_start_only"))},
+    }
+    return {
+        "format": SHELVES_FORMAT,
+        "species": SPECIES_ID,
+        "made": SHELVES_MADE,
+        "from": f"GenBank {RECORD}: {len(rows)} protein products",
+        "shelves": [{"id": "cell", "label": "Cell membrane", "outside": "Outside the cell", "inside": "Inside the cell"}],
+        "groups": group_list,
+        "columns": SHELF_COLUMNS,
+        "proteins": proteins,
+        "side_notes": {
+            "stated": "Taken from a reviewed UniProtKB entry whose sequence is, letter for letter, this protein's. Each such entry is of another organism, named in the mark stated_in: it states the place of the same protein there, not in JCVI-syn3A." + ("" if checks["stated_evidence"]["experiment"] else " None of these statements rests on an experiment: each is made by a family rule or by similarity, as the mark evidence says."),
+            "predicted": f"This tool's own reading of the sequence, not the output of an established predictor: UniProt's archive holds family signatures on these sequences and no prediction of membrane-spanning stretches. A stretch of {WINDOW} residues is read as membrane-spanning where its mean hydropathy on Kyte and Doolittle's scale is {HYDROPHOBIC / 10} or more and it holds no charged residue, or {STRONG / 10} or more with at most one. The window of {WINDOW} and the level of {HYDROPHOBIC / 10} are the usual reading of that scale ({lhernault['who']} {lhernault['year']} state it); the conditions on charged residues are this tool's, set against this organism's own proteins. A protein with such a stretch is placed in the membrane. A protein with none and no lipid anchor is placed inside, which includes proteins attached to the membrane's inner face. A lipid anchor is read from the lipoprotein signature (PROSITE {LIPOPROTEIN_PROFILE}, as UniProt's archive gives it) where a hydrophobic stretch begins before its cysteine; such a protein is placed outside, because the lipoproteins of mycoplasmas are anchored on the outer face of the membrane ({chambaud['who']} {chambaud['year']}, said of mycoplasmas in general and not measured in this strain).",
+            "by function": "The sequence has a hydrophobic stretch, but the protein's class in the 2019 paper leaves no doubt that it works inside the cell: translation, transcription, the upkeep of DNA, sugar breakdown, the pentose phosphate pathway or nucleotide metabolism. Function is never used to place a transport protein.",
+            "none": "The sequence has a hydrophobic stretch that holds charged residues, and the protein's function is not known: nothing settles its side, so it is not placed.",
+        },
+        "marks": {
+            "essential": {"label": "Essentiality", "values": ["essential", "quasi-essential", "non-essential"], "measured": True, "note": "Measured by transposon mutagenesis in this strain, then classified by the paper's model.", "source": SOURCE_NAMES["breuer2019"]},
+            "seen": {"label": "Seen in the proteomics", "values": [True, False], "measured": True, "source": SOURCE_NAMES["breuer2019"]},
+            "amount": {"label": "Estimated copies in a cell", "values": "number", "measured": False, "note": f"An estimate: the measured share of the protein signal, scaled to the paper's estimate of {c.copies_total:,} protein molecules in a cell. Given only for proteins that were seen.", "source": SOURCE_NAMES["breuer2019"]},
+            "added": {"label": "Added for genetic manipulation", "values": [True], "measured": False, "note": "tetM and the yeast genes HIS3 and MET14: not part of the minimal genome.", "source": SOURCE_NAMES["breuer2019"]},
+            "class": {"label": "Finer class", "values": "text", "measured": False, "note": "The 2019 paper's tertiary functional class, for laying out a district.", "source": SOURCE_NAMES["breuer2019"]},
+            "complex": {"label": "Assembly", "values": [name for name, _ in COMPLEXES], "measured": False, "note": "Named outright by the genome record's product name: a ribosomal protein, a subunit of the ATP synthase or of RNA polymerase. Other assemblies are not marked.", "source": SOURCE_NAMES["genbank"]},
+            "segments": {"label": "Membrane-spanning stretches read from the sequence", "values": "number", "measured": False, "note": "This tool's reading; a count of stretches, not a topology. It can fall short, since a stretch that holds charged residues is not read.", "source": SOURCE_NAMES["scale"]},
+            "lipid_anchor": {"label": "Lipid anchor read from the sequence", "values": [True], "measured": False, "note": "The lipoprotein signature with a hydrophobic stretch before its cysteine. Such a protein is placed outside, unless a membrane-spanning stretch follows the anchor: then it is placed in the membrane.", "source": SOURCE_NAMES["uniparc"]},
+            "at_start_only": {"label": "Its one stretch is at the protein's start", "values": [True], "measured": False, "note": "The only stretch read begins within the first 12 residues. It may be an export signal that is cut off, and the protein would then sit outside and not span the membrane. Nothing read here tells the two apart.", "source": SOURCE_NAMES["scale"]},
+            "evidence": {"label": "What stands behind a stated side", "values": [name for name, _ in EVIDENCE], "measured": False, "note": "From the reviewed entry that states the place: an experiment, a curator's inference, similarity to another protein, or a family rule.", "source": SOURCE_NAMES["uniprotkb"]},
+            "where": {"label": "Where within its side", "values": ["at the membrane"], "measured": False, "note": "A reviewed entry of another organism, with the same sequence, says the protein is at the cell membrane as a peripheral protein, without saying which face. Its side here is this tool's reading: inside, which includes the membrane's inner face.", "source": SOURCE_NAMES["uniprotkb"]},
+            "stated_in": {"label": "Stated in", "values": "text", "measured": False, "note": "The reviewed entry of another organism, with the same sequence, that states the place, with its words.", "source": SOURCE_NAMES["uniprotkb"]},
+        },
+        "counts": {side: tally[side] for side in SIDES},
+        "by_basis": by_basis,
+        "unit_note": "No protein has a unit: the atlas found none of the law inventory's units in this organism (data/proteins/atlases/syn3a.json).",
+        "checks": checks_out,
+        "sources": [
+            {"name": SOURCE_NAMES["genbank"], "cite": f"Glass J (2017) {c.record_title}. GenBank {RECORD}.", "url": f"https://www.ncbi.nlm.nih.gov/nuccore/{RECORD}", "licence": "NCBI places no restrictions on the use or distribution of GenBank data; this record states none", "accessed": ev.day(f"genbank_{RECORD}_cds_aa.fa"), "holds": "The proteins, their names and lengths. Their sequences were read and are not copied."},
+            {"name": SOURCE_NAMES["breuer2019"], "cite": breuer["text"], "url": f"https://doi.org/{breuer['doi']}", "licence": "CC BY 4.0", "accessed": ev.day("elife_36842_supp3.xlsx"), "holds": "The functional classes that name the districts, essentiality, detection and estimated copies (supplementary files 3 and 5)."},
+            {"name": SOURCE_NAMES["uniparc"], "cite": f"UniProt Consortium, UniParc release {c.uniprot_release}: the archived protein sequences of taxon {TAXON}.", "url": f"https://www.uniprot.org/uniparc?query=taxonomy_id:{TAXON}", "licence": "CC BY 4.0", "accessed": ev.day(f"uniparc_{TAXON}.json"), "holds": "The sequences, and where PROSITE's lipoprotein profile matches them. The profile itself is not copied."},
+            {"name": SOURCE_NAMES["uniprotkb"], "cite": f"UniProt Consortium, UniProtKB release {ev.record('uniprotkb_identical_places.json')['uniprot_release']}: reviewed entries of other organisms with the same sequences.", "url": "https://www.uniprot.org/", "licence": "CC BY 4.0", "accessed": ev.day("uniprotkb_identical_places.json"), "holds": "The place those entries state and what stands behind it, for the proteins whose side is stated or that are said to be at the membrane."},
+            {"name": SOURCE_NAMES["scale"], "cite": kyte["text"], "url": BIOPYTHON_PAGE, "licence": "The scale's 20 values are taken as Biopython 1.85 lists them (Bio/SeqUtils/ProtParamData.py), under the Biopython License Agreement or the BSD 3-Clause License", "accessed": ev.day("biopython_185_ProtParamData.py"), "holds": "The hydropathy scale the sequences are read with."},
+            {"name": SOURCE_NAMES["lhernault1992"], "cite": lhernault["text"], "url": f"https://doi.org/{lhernault['doi']}", "licence": "CC BY-NC-SA; read for one sentence", "accessed": ev.day(LHERNAULT), "holds": f"The usual reading of the scale: a window of {WINDOW} residues, and a mean above {HYDROPHOBIC / 10} for a stretch that probably spans a membrane."},
+            {"name": SOURCE_NAMES["chambaud1999"], "cite": chambaud["text"] + " Abstract only.", "url": f"https://doi.org/{chambaud['doi']}", "licence": "Read for one sentence of its abstract", "accessed": ev.day("europepmc_shelves_citations.json"), "holds": "That mycoplasmas' lipoproteins are anchored on the outer face of the membrane."},
+            {"name": SOURCE_NAMES["thornburg2022"], "cite": thornburg["text"], "url": f"https://doi.org/{thornburg['doi']}", "licence": "CC BY-NC-ND 4.0; read for one number", "accessed": ev.day(THORNBURG), "holds": f"The count of {LITERATURE_MEMBRANE} membrane proteins in its model, for comparison. No table of it is copied."},
+        ],
+    }
+
+
+def dump_shelves(shelves):
+    """The shelves as text: one protein to a line, so that a change shows as the lines it touches."""
+    head = json.dumps({**shelves, "proteins": "@proteins@"}, indent=1, ensure_ascii=False)
+    lines = ",\n".join("  " + json.dumps(row, ensure_ascii=False, separators=(",", ":")) for row in shelves["proteins"])
+    if head.count('"@proteins@"') != 1:
+        raise SystemExit("the shelves cannot be written one protein to a line")
+    return head.replace('"@proteins@"', "[\n" + lines + "\n ]") + "\n"
 
 
 def build(evidence_folder, datasets_folder, snapshot):
     evidence = Evidence(evidence_folder, datasets_folder)
     context = Context(evidence, snapshot)
     check_sources(context)
+    check_shelf_sources(context)
     species = build_species(context)
     atlas = build_atlas(context)
     rows = build_catalogue(context)
+    shelves = build_shelves(context, rows)
     files = {
         "species": json.dumps(species, indent=1, ensure_ascii=False) + "\n",
         "atlas": json.dumps(atlas, indent=1, ensure_ascii=False) + "\n",
         "catalogue": table(rows),
-        "readme": build_readme(context, rows),
+        "shelves": dump_shelves(shelves),
+        "readme": build_readme(context, rows, shelves),
     }
     for name, text in files.items():
         if PATHS.search(text):
             raise SystemExit(f"the {name} would hold a machine path")
-    if len(files["catalogue"].encode("utf-8")) > 1_000_000:
-        raise SystemExit("the catalogue has grown past 1 MB")
-    return files, species, atlas, rows, context
+    for name in ("catalogue", "shelves"):
+        if len(files[name].encode("utf-8")) > 1_000_000:
+            raise SystemExit(f"the {name} has grown past 1 MB")
+    if json.loads(files["shelves"]) != json.loads(json.dumps(shelves)):
+        raise SystemExit("the shelves were not written as they were built")
+    return files, species, atlas, rows, shelves, context
 
 
-def summary(species, atlas, rows, context):
+def summary(species, atlas, rows, shelves, context):
     findings = Counter(unit["finding"] for unit in atlas["units"].values())
     places = Counter(item["place"] for item in species["cell"]["capabilities"].values())
     lines = [
@@ -1202,6 +1697,10 @@ def summary(species, atlas, rows, context):
         "mollicute entries carrying a searched signature: " + (", ".join(f"{s} {context.mollicutes(s)}" for s in sorted({*rule_signatures(), *BACTERIAL_CHANNELS, PROTEASOME}) if context.mollicutes(s)) or "none"),
         "entries of the parent species carrying a bacterial channel signature: " + ", ".join(f"{s} {context.parent(s)}" for s in sorted(BACTERIAL_CHANNELS)),
         "essentiality of the kept genes: " + str(dict(Counter(row[7] for row in rows if row[5] == "minimal genome"))) + "; of the added: " + str(dict(Counter(row[7] for row in rows if row[5] != "minimal genome"))),
+        f"shelves: by side {shelves['counts']}; by basis {shelves['by_basis']}",
+        f"shelves, checks: {shelves['checks']}",
+        "shelves, districts: " + "; ".join(f"{group['label']} {group['sides']}" for group in shelves["groups"]),
+        f"shelves, unreviewed entries of other organisms with these sequences that carry an automatic signal or lipid mark: {context.anchored_elsewhere}",
     ]
     return "\n".join(lines)
 
@@ -1215,18 +1714,18 @@ def main():
     parser.add_argument("--refresh", action="store_true", help="fetch: ask again even where an answer is saved")
     parser.add_argument("--out-species", default=str(SPECIES_FILE))
     parser.add_argument("--out-atlas", default=str(ATLAS))
-    parser.add_argument("--out-catalogue", default=str(CATALOGUE_DIR), help="the folder for proteins.tsv and its README.md")
+    parser.add_argument("--out-catalogue", default=str(CATALOGUE_DIR), help="the folder for proteins.tsv, shelves.json and their README.md")
     args = parser.parse_args()
     snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
     if args.step == "fetch":
         sys.exit(1 if fetch(Path(args.evidence), Path(args.datasets), snapshot, refresh=args.refresh) else 0)
-    files, species, atlas, rows, context = build(Path(args.evidence), Path(args.datasets), snapshot)
-    targets = {"species": Path(args.out_species), "atlas": Path(args.out_atlas), "catalogue": Path(args.out_catalogue) / CATALOGUE_FILE, "readme": Path(args.out_catalogue) / "README.md"}
+    files, species, atlas, rows, shelves, context = build(Path(args.evidence), Path(args.datasets), snapshot)
+    targets = {"species": Path(args.out_species), "atlas": Path(args.out_atlas), "catalogue": Path(args.out_catalogue) / CATALOGUE_FILE, "shelves": Path(args.out_catalogue) / SHELVES_FILE, "readme": Path(args.out_catalogue) / "README.md"}
     for name, target in targets.items():
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(files[name], encoding="utf-8")
         print(f"wrote {target} ({len(files[name].encode('utf-8')):,} bytes)")
-    print(summary(species, atlas, rows, context))
+    print(summary(species, atlas, rows, shelves, context))
     if args.inputs_record:
         read = context.evidence.files_read()
         Path(args.inputs_record).write_text(json.dumps({"note": "Every file this run read, with the SHA-256 that the MANIFEST of its dataset folder gives; each was checked against it before it was read.", "files": read}, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")

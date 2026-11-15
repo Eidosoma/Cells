@@ -1,6 +1,7 @@
 // The viewer's data on the minimal cell JCVI-syn3A is held to its contracts and to what it
 // may and may not claim: the species file (schema/SPECIES.md), its side of the protein atlas
-// (schema/SPECIES_ATLAS.md) and the start of its protein catalogue (data/proteins/syn3a/).
+// (schema/SPECIES_ATLAS.md), the start of its protein catalogue (data/proteins/syn3a/) and
+// where each of its proteins sits against the cell membrane (schema/SPECIES_PROTEINS.md).
 // Where the downloads and the request log are on this machine, the build tool must
 // reproduce the files from them, byte for byte; where either is absent that one check is
 // skipped.
@@ -21,13 +22,14 @@ const SPECIES = path.join(ROOT, "data", "species", "syn3a.json");
 const ATLAS = path.join(ROOT, "data", "proteins", "atlases", "syn3a.json");
 const FOLDER = path.join(ROOT, "data", "proteins", "syn3a");
 const TABLE = path.join(FOLDER, "proteins.tsv");
+const SHELVES = path.join(FOLDER, "shelves.json");
 const README = path.join(FOLDER, "README.md");
 const TOOL = path.join(ROOT, "tools", "build_syn3a_atlas.py");
 // The analysis folder (the log of what was asked) and the folder of downloads (one folder
 // per source, each with its MANIFEST.json).
 const EVIDENCE = process.env.SYN3A_EVIDENCE || "/mnt/workspaces/Cells/visualizer-syn3a-proteins-20261114-01";
 const DATASETS = process.env.SYN3A_DATASETS || "/mnt/datasets/Cells/syn3a";
-const SOURCES_READ = ["ncbi-CP016816.2", "breuer2019-elife", "ncbi-CP016816-proteins", "uniprot-syn3a"];
+const SOURCES_READ = ["ncbi-CP016816.2", "breuer2019-elife", "ncbi-CP016816-proteins", "uniprot-syn3a", "biopython-185-protparam"];
 const absent = !existsSync(path.join(EVIDENCE, "requests.json"))
   ? "the request log is not on this machine (set SYN3A_EVIDENCE)"
   : SOURCES_READ.some((source) => !existsSync(path.join(DATASETS, source, "MANIFEST.json")))
@@ -50,6 +52,11 @@ const atlasText = await readFile(ATLAS, "utf8");
 const atlas = JSON.parse(atlasText);
 const table = await readFile(TABLE, "utf8");
 const readme = await readFile(README, "utf8");
+const shelvesText = await readFile(SHELVES, "utf8");
+const shelves = JSON.parse(shelvesText);
+const SIDES = ["outside", "in", "inside", "not known"];
+const BASES = ["stated", "predicted", "by function", "none"];
+const SHELF_COLUMNS = ["id", "label", "gene", "shelf", "side", "basis", "group", "length", "unit", "marks"];
 const said = readme.replace(/\s+/g, " ");
 const snapshot = JSON.parse(await readFile(path.join(ROOT, "data", "proteins", "inventory.snapshot.json"), "utf8"));
 const map = JSON.parse(await readFile(path.join(ROOT, "data", "architecture", "overlay.json"), "utf8"));
@@ -94,7 +101,7 @@ test("what Cells models of it is said plainly: the minimal-cell track by the rec
   assert.equal(species.modelled.state, "proposed");
   assert.match(species.modelled.text, /minimal-cell track \(decision D173, 14 November 2026\)/);
   assert.match(species.modelled.text, /a note that proposes it as the first whole-cell validation organism/);
-  assert.match(species.modelled.text, /Nothing of it is in the engine yet: the project's record holds an evidence audit and a proposal, in which no engine model ran/);
+  assert.match(species.modelled.text, /Nothing of it is in the engine yet: the project's record holds an evidence audit, capability probes of the engine as it stands, and a proposed first milestone, with no engine code written for it and nothing accepted/);
   // The note that proposes it is not in the repository, so no file of it is cited.
   assert.ok(!/SOTA_SYN3A|docs\//.test(speciesText), "the species file cites a path of the repository");
 });
@@ -306,11 +313,198 @@ test("the catalogue stays small and holds no sequence", () => {
 
 test("the README names each file the catalogue was built from, with its SHA-256", () => {
   const lines = readme.split("\n").filter((line) => /^\| .+ \| `[^`]+` \| `[^`]+` \| `[0-9a-f]{64}` \|$/.test(line));
-  assert.equal(lines.length, 8, "eight files, each with its dataset folder, its name and its hash");
+  assert.equal(lines.length, 11, "eleven files, each with its dataset folder, its name and its hash");
   for (const source of SOURCES_READ) assert.ok(lines.some((line) => line.includes(`\`${source}\``)), `${source} is not named`);
 });
 
-test("the build tool reproduces the species file, the atlas, the catalogue and its README from the downloads", { skip: absent }, async () => {
+// ---------------------------------------------------------------- the shelves: where each protein sits
+
+test("the shelves keep their contract: one line for each protein of the catalogue, in its order", () => {
+  assert.equal(shelves.format, "cells.visualizer.species_proteins@1");
+  assert.equal(shelves.species, "syn3a");
+  assert.match(shelves.made, /^\d{4}-\d{2}-\d{2}$/);
+  assert.equal(shelves.from, `GenBank CP016816.2: ${rows.length} protein products`);
+  assert.deepEqual(shelves.columns, SHELF_COLUMNS);
+  assert.deepEqual(shelves.shelves.map((shelf) => shelf.id), ["cell"], "one membrane, so one shelf");
+  for (const field of ["label", "outside", "inside"]) assert.ok(shelves.shelves[0][field]?.trim(), `the shelf's ${field}`);
+  assert.deepEqual(shelves.proteins.map((row) => row[0]), rows.map((row) => row[0]), "the catalogue's proteins, in the catalogue's order");
+  const groups = new Set(shelves.groups.map((group) => group.id));
+  assert.equal(groups.size, shelves.groups.length, "a district is declared twice");
+  for (const [index, row] of shelves.proteins.entries()) {
+    assert.equal(row.length, SHELF_COLUMNS.length, row[0]);
+    const [id, label, gene, shelf, side, basis, group, length, unit, marks] = row;
+    const line = rows[index];
+    assert.equal(label, line[2], `${id}: its name`);
+    assert.equal(gene, line[1], `${id}: its gene`);
+    assert.equal(length, Number(line[3]), `${id}: its length`);
+    assert.equal(shelf, "cell");
+    assert.ok(SIDES.includes(side), `${id}: ${side}`);
+    assert.ok(BASES.includes(basis), `${id}: ${basis}`);
+    assert.equal(side === "not known", basis === "none", `${id}: a protein is not placed exactly when nothing settles its side`);
+    assert.ok(groups.has(group), `${id}: the district ${group} is not declared`);
+    assert.equal(unit, null, `${id}: the atlas found none of its units in this organism`);
+    for (const mark of Object.keys(marks)) assert.ok(shelves.marks[mark], `${id}: the mark ${mark} is not declared`);
+  }
+  assert.match(shelves.unit_note, /none of the law inventory's units/);
+});
+
+test("the shelves' counts add up, by side, by basis and by district, and the districts are the paper's classes", () => {
+  const count = (test) => shelves.proteins.filter(test).length;
+  assert.deepEqual(shelves.counts, Object.fromEntries(SIDES.map((side) => [side, count((row) => row[4] === side)])));
+  assert.equal(Object.values(shelves.counts).reduce((sum, n) => sum + n, 0), rows.length);
+  for (const side of SIDES) {
+    for (const basis of BASES) assert.equal(shelves.by_basis[side]?.[basis] ?? 0, count((row) => row[4] === side && row[5] === basis), `${side}, ${basis}`);
+  }
+  const classOf = new Map(rows.map((row) => [row[0], row[6].split(" > ")]));
+  for (const group of shelves.groups) {
+    for (const field of ["label", "within", "from"]) assert.ok(group[field]?.trim(), `${group.id}: ${field}`);
+    const members = shelves.proteins.filter((row) => row[6] === group.id);
+    assert.equal(group.count, members.length, group.id);
+    assert.ok(members.length > 0, `${group.id} is empty`);
+    for (const side of SIDES) assert.equal(group.sides[side] ?? 0, members.filter((row) => row[4] === side).length, `${group.id}, ${side}`);
+    // A district is the 2019 paper's secondary class, in its own words, under its primary class.
+    for (const row of members) assert.deepEqual(classOf.get(row[0]).slice(0, 2), [group.within, group.label], row[0]);
+  }
+  assert.ok(shelves.groups.length >= 8 && shelves.groups.length <= 20, "a readable number of districts");
+});
+
+test("each mark is declared once, with its values, whether it is measured and its source, and agrees with the catalogue", () => {
+  // A mark names its source by the name of an entry in sources, as the contract says.
+  const sources = new Set(shelves.sources.map((source) => source.name));
+  for (const [name, mark] of Object.entries(shelves.marks)) {
+    assert.ok(mark.label?.trim(), `${name}: label`);
+    assert.ok(Array.isArray(mark.values) || ["number", "text"].includes(mark.values), `${name}: values`);
+    assert.equal(typeof mark.measured, "boolean", `${name}: measured`);
+    assert.ok(sources.has(mark.source), `${name}: its source ${mark.source} is not among the sources`);
+  }
+  // The marks with a fixed meaning in the contract carry its names.
+  for (const name of ["essential", "seen", "amount", "evidence", "where", "complex"]) assert.ok(shelves.marks[name], `the mark ${name}`);
+  assert.deepEqual(shelves.marks.evidence.values, ["experiment", "curator", "similarity", "rule"]);
+  // Measured, estimated and read from the sequence are told apart.
+  assert.equal(shelves.marks.essential.measured, true);
+  assert.equal(shelves.marks.seen.measured, true);
+  assert.equal(shelves.marks.amount.measured, false);
+  assert.match(shelves.marks.amount.note, /^An estimate/);
+  assert.equal(shelves.marks.segments.measured, false);
+  assert.match(shelves.marks.segments.note, /This tool's reading/);
+  for (const [index, row] of shelves.proteins.entries()) {
+    const line = rows[index];
+    const [id, , , , side, basis, , , , marks] = row;
+    assert.equal(marks.essential, line[7], `${id}: essentiality`);
+    assert.equal(marks.seen, line[8] === "yes", `${id}: seen`);
+    assert.equal("amount" in marks, line[8] === "yes", `${id}: an amount only where it was seen`);
+    if ("amount" in marks) assert.equal(marks.amount, Number(line[9]), `${id}: its estimated copies`);
+    assert.equal(marks.added === true, line[5] === "added for manipulation", `${id}: added`);
+    if (marks.class) assert.equal(marks.class, line[6].split(" > ")[2], `${id}: finer class`);
+    assert.equal("segments" in marks, side === "in", `${id}: stretches are counted for a protein in the membrane, and for no other`);
+    if (side === "outside") assert.equal(marks.lipid_anchor, true, `${id}: outside by its lipid anchor`);
+    assert.equal("stated_in" in marks, basis === "stated" || marks.where === "at the membrane", `${id}: what a reviewed entry states names the entry`);
+    assert.equal("evidence" in marks, basis === "stated", `${id}: a stated side says what stands behind it`);
+    if (marks.where) assert.ok(side === "inside" && basis === "predicted" && / \(by (experiment|curator|similarity|rule)\)$/.test(marks.stated_in), `${id}: at the membrane, by a reviewed entry's word, with its side read by the tool`);
+    if (marks.at_start_only) assert.ok(side === "in" && marks.segments === 1, `${id}: only a single stretch at the start is marked so`);
+    for (const [name, value] of Object.entries(marks)) {
+      const declared = shelves.marks[name].values;
+      if (Array.isArray(declared)) assert.ok(declared.includes(value), `${id}: ${name} is ${value}`);
+      else assert.equal(typeof value, declared === "number" ? "number" : "string", `${id}: ${name}`);
+    }
+  }
+  // An assembly is marked only where the record's product name gives it outright.
+  for (const row of shelves.proteins) {
+    const named = /^(30S|50S) ribosomal protein /.test(row[1]) ? "ribosome" : /^F0F1 ATP synthase subunit /.test(row[1]) ? "ATP synthase" : /RNA polymerase subunit /.test(row[1]) ? "RNA polymerase" : undefined;
+    assert.equal(row[9].complex, named, `${row[0]}: ${row[1]}`);
+  }
+});
+
+test("a side that is predicted or taken from function says so; a stated one names the other organism; nothing is placed by guess", () => {
+  for (const basis of BASES) assert.ok(shelves.side_notes[basis]?.trim(), `no note for ${basis}`);
+  assert.match(shelves.side_notes.predicted, /This tool's own reading of the sequence, not the output of an established predictor/);
+  assert.match(shelves.side_notes.predicted, /said of mycoplasmas in general and not measured in this strain/);
+  assert.match(shelves.side_notes.stated, /of another organism/);
+  // A stated side that rests on no experiment says so.
+  const experiments = shelves.proteins.filter((row) => row[9].evidence === "experiment").length;
+  assert.equal(/None of these statements rests on an experiment/.test(shelves.side_notes.stated), experiments === 0);
+  assert.match(shelves.side_notes["by function"], /never used to place a transport protein/);
+  assert.match(shelves.side_notes.none, /it is not placed/);
+  for (const row of shelves.proteins) {
+    const [id, label, , , side, basis, group, , , marks] = row;
+    // Function places a protein inside only, and never a transport protein.
+    if (basis === "by function") {
+      assert.equal(side, "inside", id);
+      assert.notEqual(group, "membrane-transport", `${id}: function was used to place a transport protein`);
+    }
+    if ("stated_in" in marks) assert.match(marks.stated_in, /^[A-Z0-9]{6,10}, \S.+: \S/, id);
+    // What the annotation names plainly comes out where it should.
+    if (/^(30S|50S) ribosomal protein /.test(label)) assert.equal(side, "inside", `${id}: a ribosomal protein`);
+    if (/permease/i.test(label)) assert.equal(side, "in", `${id}: a permease`);
+    if (/ATP-binding protein/.test(label)) assert.equal(side, "inside", `${id}: an ATP-binding part of a transporter`);
+  }
+  assert.ok(shelves.counts["not known"] > 0, "the count of proteins that are not placed is a result");
+  // No word that the engine models any of it.
+  assert.ok(!/engine (models|runs|uses|reads)|modelled in the engine/i.test(JSON.stringify([shelves.side_notes, shelves.marks, shelves.unit_note])));
+});
+
+test("the reading of the sequences fares against what is known as the files say", () => {
+  const { inside_by_class: inside, permeases, stated, lipoprotein_profile: profile, membrane } = shelves.checks;
+  assert.equal(stated.reading_agrees, stated.proteins, "a stated place the reading disagrees with");
+  assert.equal(stated.proteins, shelves.proteins.filter((row) => row[5] === "stated").length);
+  assert.equal(Object.values(stated.by_evidence).reduce((sum, n) => sum + n, 0), stated.proteins);
+  assert.equal(stated.said_to_be_at_the_membrane.length, shelves.proteins.filter((row) => row[9].where === "at the membrane").length);
+  assert.equal(permeases.read_as_spanning, permeases.proteins, "a permease the reading misses");
+  assert.equal(permeases.proteins, shelves.proteins.filter((row) => /permease/i.test(row[1])).length);
+  assert.ok(inside.proteins > 150, "the proteins whose class places them inside are many");
+  assert.ok(inside.read_as_spanning.length <= 2, "more than two of the proteins that work inside the cell are read as membrane-spanning");
+  assert.ok(inside.with_a_hydrophobic_stretch > inside.read_as_spanning.length, "the condition on charged residues does its work");
+  assert.equal(inside.with_a_hydrophobic_stretch, shelves.proteins.filter((row) => row[5] === "by function").length, "each of them is placed by its function");
+  assert.equal(profile.sequences, profile.kept + profile.set_aside.length);
+  assert.equal(profile.kept, profile.placed_outside + profile.placed_in);
+  assert.equal(profile.placed_outside, shelves.counts.outside);
+  assert.equal(profile.kept, shelves.proteins.filter((row) => row[9].lipid_anchor).length);
+  assert.equal(membrane.in_or_on, shelves.counts.in + shelves.counts.outside);
+  assert.equal(membrane.in_the_2022_model, 93);
+  assert.ok(membrane.estimated_copies < membrane.all_estimated_copies);
+  const spanning = shelves.checks.in_the_membrane;
+  assert.equal(spanning.proteins, shelves.counts.in);
+  assert.equal(spanning.one_stretch, shelves.proteins.filter((row) => row[4] === "in" && row[9].segments === 1).length);
+  assert.equal(spanning.one_stretch_at_the_start, shelves.proteins.filter((row) => row[9].at_start_only).length);
+  assert.ok(said.includes(`${spanning.one_stretch} have one stretch only, and for ${spanning.one_stretch_at_the_start} of those it is at the very start`), "the README does not say how many membrane calls rest on one stretch at the start");
+  const copies = shelves.proteins.filter((row) => row[4] === "in" || row[4] === "outside").reduce((sum, row) => sum + (row[9].amount ?? 0), 0);
+  assert.ok(Math.abs(copies - membrane.estimated_copies) / membrane.estimated_copies < 0.01, `the membrane proteins' copies sum to ${copies}, the file says ${membrane.estimated_copies}`);
+  // The README gives the same numbers.
+  for (const [words, n] of [["Outside the cell, anchored to the membrane's outer face", shelves.counts.outside], ["In the membrane, spanning it", shelves.counts.in], ["Inside the cell, free or attached to the membrane's inner face", shelves.counts.inside], ["Not known", shelves.counts["not known"]]]) {
+    assert.ok(said.includes(`| ${words} | ${n} |`), `the README does not give ${n} for: ${words}`);
+  }
+  assert.ok(said.includes(`Here ${shelves.counts.in} proteins span the membrane and ${shelves.counts.outside} are anchored on it, ${membrane.in_or_on} together.`));
+  assert.ok(said.includes(`All ${permeases.proteins} proteins that the annotation calls a permease are read as membrane-spanning`));
+  assert.match(said, /no list of the model's was copied or compared/);
+  assert.match(said, /It gives no topology/);
+});
+
+test("the shelves name their sources with their terms, copy from none that forbids it, hold no machine path and stay small", () => {
+  for (const source of shelves.sources) {
+    for (const field of ["name", "cite", "url", "licence", "accessed", "holds"]) assert.ok(source[field]?.trim(), `${source.name}: ${field}`);
+    assert.ok(source.url.startsWith("https://"), `${source.name}: ${source.url}`);
+    assert.match(source.accessed, /^\d{4}-\d{2}-\d{2}$/);
+  }
+  assert.equal(new Set(shelves.sources.map((source) => source.name)).size, shelves.sources.length);
+  // What is copied comes from sources with open terms. A paper under a non-commercial
+  // licence, or with none stated, is read for a sentence or a number and says so.
+  for (const source of shelves.sources) {
+    const open = /CC BY 4\.0|BSD 3-Clause|no restrictions on the use or distribution/.test(source.licence);
+    assert.ok(open || /^(CC BY-NC|Read for one sentence)/.test(source.licence) && /read for one (sentence|number)|Read for one sentence/.test(source.licence), `${source.name}: ${source.licence}`);
+  }
+  for (const mark of Object.values(shelves.marks)) {
+    const source = shelves.sources.find((item) => item.name === mark.source);
+    assert.ok(/CC BY 4\.0|BSD 3-Clause|no restrictions on the use or distribution/.test(source.licence), `a mark rests on ${source.name}, whose terms do not allow a copy`);
+  }
+  assert.ok(!MACHINE.test(shelvesText), "machine path in the shelves");
+  assert.ok(!shelvesText.includes(os.hostname()) && !/localhost/.test(shelvesText), "host name in the shelves");
+  assert.ok(shelvesText.length < 1_000_000, "the shelves have grown past 1 MB");
+  assert.ok(!/[ACDEFGHIKLMNPQRSTVWY]{40,}/.test(shelvesText), "the shelves hold a protein sequence");
+  // One protein to a line, so that a change shows as the lines it touches.
+  assert.equal(shelvesText.split("\n").filter((line) => line.startsWith('  ["JCVISYN3A_')).length, rows.length);
+});
+
+test("the build tool reproduces the species file, the atlas, the catalogue, the shelves and the README from the downloads", { skip: absent }, async () => {
   const out = await mkdtemp(path.join(os.tmpdir(), "syn3a-atlas-"));
   try {
     const run = spawnSync("python3", [TOOL, "build", "--evidence", EVIDENCE, "--datasets", DATASETS, "--out-species", path.join(out, "syn3a.species.json"), "--out-atlas", path.join(out, "syn3a.json"), "--out-catalogue", path.join(out, "syn3a")], { encoding: "utf8", timeout: 600000 });
@@ -318,6 +512,7 @@ test("the build tool reproduces the species file, the atlas, the catalogue and i
     assert.equal(await readFile(path.join(out, "syn3a.species.json"), "utf8"), speciesText, "the species file differs from what the tool builds");
     assert.equal(await readFile(path.join(out, "syn3a.json"), "utf8"), atlasText, "the atlas differs from what the tool builds");
     assert.equal(await readFile(path.join(out, "syn3a", "proteins.tsv"), "utf8"), table, "the catalogue differs from what the tool builds");
+    assert.equal(await readFile(path.join(out, "syn3a", "shelves.json"), "utf8"), shelvesText, "the shelves differ from what the tool builds");
     assert.equal(await readFile(path.join(out, "syn3a", "README.md"), "utf8"), readme, "the README differs from what the tool builds");
   } finally {
     await rm(out, { recursive: true, force: true });
