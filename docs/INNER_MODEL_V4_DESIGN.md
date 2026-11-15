@@ -1282,10 +1282,15 @@ undeclared built-in changes nothing:
    such as |ΔG_cyc/RT| ≤ 80), and-ed into the stage's validity. `KindRates.membrane_flux` (outward
    [species, membrane], optional) joins the patches' total flux and membrane current
    (observations; gap 9, 669f8ed6).
-   - **Step size (B7 for kinds; gap 5, 669f8ed6):** `stage_term(read, control, p, *, xp)` →
-     [cell] conductance (S) at the stage, added to `membrane_rate`'s per-stage refusal;
-     `bound_rate(spec, declaration)` → 1/s, a definition-time term the host step checks hold to
-     the same bound (the passive law's dt·L ≤ 1).
+   - **Step size (B7 for kinds; gap 5, 669f8ed6; 5b1b931e; 2c780f9f):** `stage_term(read,
+     potentials, control, p, *, xp)` → [cells, then outside nodes] conductance (S) at the stage's
+     read and node potentials, a patch's slope at both of its ends (`patch_node_conductance`), so
+     a pump driven past its static head into reverse counts its e^a. With kinds declared,
+     `membrane_rate`'s per-stage refusal holds every cell and every free outside node
+     (`free_outside_nodes`: B7's face-free nodes, a face-free compartment's included) to
+     dt·ΣG/C ≤ 1; without kinds it is today's cells-only rate. `bound_rate(spec, declaration)` →
+     1/s, a definition-time term the host step checks hold to the same bound (the passive law's
+     dt·L ≤ 1).
    - **One writer (gap 8, 669f8ed6):** `held_rows(declaration)` → ((species, node ID), ...), rows
      the kind reads and never moves; binding refuses any inner route or other kind that moves
      one. The operators' writers are the composite's admission.
