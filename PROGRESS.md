@@ -73,6 +73,12 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The crossrev baseline of record is renewed at df5826f** (D148 criterion 4 for FR-1's contract
+  change; it also covers item 3). All eight sets are identical to their records: base,
+  qualification, injection, volume and division against baseline-da94f81; species and reactions
+  against their da94f81 records; and coupling against its first record at f2ada38
+  ([records](/mnt/workspaces/Cells/architecture-block-20261114-01/baseline-df5826f/)).
+
 - **Phase start and failure records landed (item 3 of the architecture block, 15 November 2026).**
   Tier 1 and 2 at the merge 85346c8: 440 files, no changed outcome
   ([evidence](/mnt/workspaces/Cells/architecture-block-20261114-01/HANDOFF.md)).
