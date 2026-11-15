@@ -17,9 +17,10 @@
 
 import * as THREE from "../three.js";
 import { statusToken } from "../core/theme.js";
-import { glyphSprite, soften } from "../core/materials.js";
+import { glyphSprite, soften, enrich, jostle } from "../core/materials.js";
 import { disposeTree } from "../core/stage.js";
-import { makeEnvironment } from "../core/environment.js";
+import { makeEnvironment, makeStudio } from "../core/environment.js";
+import { LookTrial } from "../core/look_trial.js";
 import { R, CUT, buildCell, buildMolecules, buildTissue } from "./cell_parts.js";
 import { REF, cellAcross } from "./shapes.js";
 import { buildOutline } from "./outline_parts.js";
@@ -44,6 +45,15 @@ const GENERIC = {
   levels: [{ id: "molecules" }, { id: "cell", shape: { kind: "prism", sides: 6, radius_um: REF.radius, height_um: 13, corner_um: 2.4, edge_um: 1.3 } }, { id: "tissue", shape: { kind: "cell sheet", rings: 6 } }],
   cell: { facts: [], parts: { nucleus: true }, capabilities: {} },
 };
+// The resting look (core/look.js), as this view asks for it. Contact shade: how far one part
+// shades another, in micrometres of a cell twenty across and as a share of the camera's
+// distance (the smaller counts), and how much of the shade is laid over the picture. At
+// twice this reach the sheets of the endoplasmic reticulum went dark all over, which reads
+// as density; at this one a shade shows only where parts meet. Drawn to scale the parts are
+// several times smaller and stand closer, so the reach is shorter there, or stacks of sheets
+// and shelves go dark between. Filmic light: how much light it lets in, a little over 1,
+// which makes up for the curve's dark foot in the middle tones.
+export const LOOK = { reach: 0.7, reachToScale: 0.3, reachOnScreen: 0.016, shade: 0.65, exposure: 1.08 };
 // The camera's half view on a wide screen, for working out where one level gives way to the next.
 const HALF_VIEW = Math.tan((34 * Math.PI) / 360);
 const nominal = (size) => Math.max(size[1] / (2 * HALF_VIEW), size[0] / (2 * HALF_VIEW * 1.5));
@@ -98,8 +108,13 @@ class Part {
    * A material for this part. hue names its biology colour (used with "Colour: Biology");
    * shade lightens (+) or darkens (-). A planned part is a sketch whatever is asked for:
    * thin outlines (line) or a wire mesh (wire). rim and alphaRim give solid parts a soft lit edge.
+   * For the resting look (core/look.js): thin is how much light the part lets through,
+   * texture a surface texture ("grain", "folds" with its long way as axis, "pores"),
+   * shimmer marks a membrane, and drift is how far a crowd of copies jostles about.
+   * contact: false keeps a solid part out of contact shade (a shell cut open, whose inside
+   * would otherwise go dark like a pit).
    */
-  material({ hue = null, opacity = 1, wire = false, line = false, shade = 0, emissive = 0, roughness = 0.42, flat = false, side = THREE.FrontSide, clip = false, depthWrite, rim = 0.3, alphaRim = 0 } = {}) {
+  material({ hue = null, opacity = 1, wire = false, line = false, shade = 0, emissive = 0, roughness = 0.42, flat = false, side = THREE.FrontSide, clip = false, depthWrite, rim = 0.3, alphaRim = 0, thin = 0, texture = null, axis = null, shimmer = false, drift = 0, contact = true } = {}) {
     const sketch = wire || line || this.status === "planned";
     let material;
     if (sketch) {
@@ -108,15 +123,20 @@ class Part {
     } else {
       if (this.status === "designed") opacity *= 0.45;
       material = new THREE.MeshStandardMaterial({ roughness, metalness: 0, flatShading: flat, side, transparent: opacity < 1, opacity, depthWrite: depthWrite ?? opacity === 1 });
-      soften(material, { rim, alphaRim });
+      const numbers = this.lens.stage.numbers;
+      if (thin || texture || shimmer) enrich(material, numbers, { rim, alphaRim, thin, texture, axis, shimmer, unit: this.zone.root.scale.x });
+      else soften(material, { rim, alphaRim });
+      if (drift) jostle(material, numbers, { reach: drift });
+      if (!contact) material.userData.noContact = true;
     }
     if (clip) material.clippingPlanes = this.zone.cutPlanes;
     return this.register(material, { base: opacity, hue, shade, emissive, sketch });
   }
 
   /** Dots, for what is too small to draw as shapes. size is in screen pixels. */
-  points({ hue = null, shade = 0, size = 1.6, opacity = 0.9 } = {}) {
+  points({ hue = null, shade = 0, size = 1.6, opacity = 0.9, drift = 0 } = {}) {
     const material = new THREE.PointsMaterial({ size, sizeAttenuation: false, map: dotTexture(), alphaTest: 0.35, transparent: true, opacity, depthWrite: false });
+    if (drift) jostle(material, this.lens.stage.numbers, { reach: drift });
     return this.register(material, { base: opacity, hue, shade, emissive: 0, sketch: this.status === "planned", dust: true });
   }
 
@@ -133,6 +153,10 @@ class Part {
 
   register(material, data) {
     material.userData = { ...material.userData, ...data, solidDepth: material.depthWrite };
+    // Filmic light is for the natural colours of lit parts. A sketch's grey says "planned": it
+    // stays as the legend shows it. And what gives off light of its own (the fuel's sparks, ions)
+    // keeps the colour it has: rolled off, the fuel's yellow turned to the mitochondria's orange.
+    material.toneMapped = !data.sketch && !(data.emissive > 0);
     this.materials.push(material);
     return material;
   }
@@ -189,6 +213,16 @@ export class CellLens {
     // they have no capability in the scene, and are not drawn as scenery either.
     this.leftOut = new Set((model.raw?.left_out || []).map((item) => item.part).filter(Boolean));
     this.environment = makeEnvironment(stage.renderer);
+    this.studio = null; // the studio the rich look reflects, made when first asked for
+    this.reach = 0; // how far contact shade reaches now, in micrometres
+    this.near = true; // whether anything solid is near enough for contact shade to show
+    this.trial = null; // the readout a visitor asks for with "fps" in the address
+    // The look may change while the lens is shown: the visitor chooses, or the device gives part of it up.
+    this.stopLook = stage.look.onChange(() => {
+      if (!this.active) return;
+      this.light();
+      this.onChrome?.();
+    });
     this.fill = new THREE.DirectionalLight(0xffffff, 0.7);
     this.fill.position.set(-70, 25, -40);
     this.root.add(this.fill);
@@ -288,12 +322,15 @@ export class CellLens {
       neutral: (options = {}) => {
         const material = new THREE.MeshStandardMaterial({ roughness: 0.6, metalness: 0, transparent: true, side: options.side ?? THREE.FrontSide, depthWrite: options.depthWrite ?? false });
         if (options.glass) soften(material, { rim: 0.2, alphaRim: options.glass });
+        if (options.drift) jostle(material, this.stage.numbers, { reach: options.drift });
+        if (options.contact === false) material.userData.noContact = true; // solid scenery that stays out of contact shade
         if (options.clip) material.clippingPlanes = zone.cutPlanes;
         return this.neutral(zone, material, options);
       },
-      neutralPoints: ({ size = 1.4, opacity = 0.6 } = {}) => {
+      neutralPoints: ({ size = 1.4, opacity = 0.6, drift = 0 } = {}) => {
         const material = new THREE.PointsMaterial({ size, sizeAttenuation: false, map: dotTexture(), alphaTest: 0.35, transparent: true, depthWrite: false });
         material.userData = { dust: true };
+        if (drift) jostle(material, this.stage.numbers, { reach: drift });
         return this.neutral(zone, material, { opacity });
       },
       neutralLine: (options = {}) =>
@@ -306,6 +343,7 @@ export class CellLens {
         const sprite = glyphSprite(text, "#ffffff", size);
         sprite.position.copy(position);
         sprite.userData.unpickable = true;
+        sprite.material.toneMapped = false; // a mark, in the page's own ink
         this.neutral(part.zone, sprite.material, { opacity: 0.85, colour: "fg" });
         part.add(sprite);
       },
@@ -365,6 +403,8 @@ export class CellLens {
 
   neutral(zone, material, { opacity = 0.5, colour = "ghost" } = {}) {
     material.userData = { ...material.userData, base: opacity, colour };
+    // Scenery in the page's own ink (outlines, marks) stays out of filmic light; glass takes it with the parts.
+    material.toneMapped = material.isMeshStandardMaterial === true;
     material.opacity = opacity;
     zone.neutrals.push(material);
     return material;
@@ -535,6 +575,7 @@ export class CellLens {
         colour: this.colourBy,
         size: this.sizeMode,
         sizes: this.modes,
+        look: this.lookChrome(),
         across: cellAcross(this.levels.cell.shape),
         species: species.id
           ? {
@@ -584,9 +625,58 @@ export class CellLens {
     stage.sun.castShadow = false;
     stage.sun.position.set(55, 100, 80);
     stage.sun.target.position.set(0, 0, 0);
+    this.dress();
     this.light();
     this.enter();
     this.refresh();
+    if (stage.look.trial) (this.trial ??= new LookTrial(stage)).show();
+  }
+
+  // ------------------------------------------------------------ the look at rest
+
+  /**
+   * Asks the stage for the rich look (core/look.js), as far as it fits what is shown now.
+   * Filmic light is for natural colours: with "Colour: Status" every colour says a status,
+   * so it stays as the legend shows it. Contact shade reaches under a micrometre in a cell
+   * of twenty, and less when the camera is close (never more than about a fortieth of the
+   * picture's height), so that it stays a shade where parts meet and never a haze.
+   */
+  dress() {
+    this.reach = this.reachNow();
+    this.stage.dress({ rich: true, filmic: this.colourBy === "biology", exposure: LOOK.exposure, contact: this.near, reach: this.reach, shade: LOOK.shade });
+  }
+
+  reachNow() {
+    const reach = this.sizeMode === "real" ? LOOK.reachToScale : LOOK.reach;
+    return Math.min(reach * this.u, LOOK.reachOnScreen * this.stage.rig.distance);
+  }
+
+  /** "rich", "plain", or "full": rich, with every effect held on whatever the frame rate. */
+  setLook(word) {
+    if (!this.stage.look.choose(word)) return;
+    this.stage.invalidate();
+    this.onChrome?.();
+  }
+
+  /**
+   * What the page shows of the look beside its switch: the choice, and a few plain lines.
+   * First, in the legend's own word, that what the look adds to surfaces and what it moves
+   * is scenery; then what a device that could not keep up has given up; then that motion
+   * is held still for a visitor who asks for less of it.
+   */
+  lookChrome() {
+    const look = this.stage.look, still = this.stage.decoration.still;
+    const notes = [];
+    if (look.rich) {
+      const scenery = [look.on("texture") ? "surface texture" : null, look.on("drift") && !still ? "the crowd's slow jostling" : null, look.on("shimmer") && !still ? "the membrane's shimmer" : null].filter(Boolean);
+      if (scenery.length) {
+        const list = scenery.length > 1 ? `${scenery.slice(0, -1).join(", ")} and ${scenery.at(-1)}` : scenery[0];
+        notes.push(`${list[0].toUpperCase()}${list.slice(1)} ${scenery.length > 1 ? "are" : "is"} scenery.`);
+      }
+      if (look.says()) notes.push(look.says());
+      if (still && (look.on("drift") || look.on("shimmer"))) notes.push("The crowd and the membrane are held still: this device asks for less motion.");
+    }
+    return { active: look.choice, notes };
   }
 
   /** Puts the camera at the stop the lens stands on, for the species shown, and writes its labels. */
@@ -601,6 +691,8 @@ export class CellLens {
 
   deactivate() {
     this.active = false;
+    this.trial?.hide();
+    this.stage.dress({ rich: false }); // the other views keep the look they had
     this.stage.scene.remove(this.root);
     this.stage.scene.environment = null;
     this.stage.applyPalette(); // back to the stage's own lighting
@@ -611,9 +703,11 @@ export class CellLens {
   /** This lens's lighting: reflections from its environment, and a little less direct light. */
   light() {
     const { stage } = this;
-    const dark = stage.palette.dark;
-    stage.scene.environment = this.environment;
-    stage.scene.environmentIntensity = dark ? 0.5 : 0.62;
+    const dark = stage.palette.dark, look = stage.look;
+    // Studio reflections: large soft lights to catch, in place of the pale dome.
+    const studio = look.on("reflections") ? (this.studio ??= makeStudio(stage.renderer)) : null;
+    stage.scene.environment = studio || this.environment;
+    stage.scene.environmentIntensity = studio ? (dark ? 0.66 : 0.8) : dark ? 0.5 : 0.62;
     stage.sky.intensity = dark ? 0.95 : 1.2;
     stage.sun.intensity = dark ? 1.45 : 1.2;
     this.fill.intensity = dark ? 0.9 : 0.6;
@@ -717,6 +811,7 @@ export class CellLens {
   /** "biology": each kind of part has its own colour. "status": colour shows status, as in the engine lens. */
   setColourBy(mode) {
     this.colourBy = mode === "status" ? "status" : "biology";
+    if (this.active) this.dress(); // filmic light is for natural colours only
     this.applyPalette(this.stage.palette);
     this.onChrome?.();
   }
@@ -818,6 +913,16 @@ export class CellLens {
       this.activeStop = nearest;
       this.onChrome?.();
     }
+    // Contact shade is worked out only while something solid is near enough to show it, and its
+    // reach follows the camera when it comes close.
+    if (this.active) {
+      const near = this.zones.some((zone) => zone.name !== "organ" && zone.name !== "organism" && zone.name !== "beyond" && zone.fade > 0.02);
+      const reach = this.reachNow();
+      if (near !== this.near || Math.abs(reach - this.reach) > 0.04 * this.reach) {
+        this.near = near;
+        this.dress();
+      }
+    }
     // The camera may come close at the cut edge, but looking at the middle of the cell it stays outside.
     const atEdge = 1 - smooth(0.3, 2.8, this.cells[this.sizeMode].shape.depth({ x: rig.target.x / u, z: rig.target.z / u }));
     rig.limits.minDistance = (R + 6 + (0.03 - R - 6) * atEdge) * u;
@@ -837,7 +942,17 @@ export class CellLens {
     return true;
   }
 
-  /** Small motions that say what a part does: water crossing, signals leaving, ions through a channel. */
+  /**
+   * Small motions that say what a part does: water crossing, signals leaving, ions through a channel.
+   * Each has a direction, and they run at rest as they did before the layers' contract
+   * (schema/QUANTITY_LAYERS.md, rule 12: at rest nothing flows, and a token that moves with a
+   * direction is data). Whoever builds flux takes them over, here and where cell_parts.js makes
+   * them (streams, signals, the close-up's ions): a moving token belongs to a layer, is drawn
+   * with a material that stays out of the look (toneMapped false, userData.noContact), may be
+   * marked to glow (stage.glow, stage.setBloom), and holds the look's own motion still while it
+   * shows (stage.decoration.pause). The look's motion is not here: the crowd's drift and the
+   * membrane's shimmer live in the materials (core/materials.js) and have no direction.
+   */
   animate(time) {
     const cell = this.cells[this.sizeMode];
     for (const stream of cell.streams) {
@@ -874,7 +989,10 @@ export class CellLens {
   }
 
   dispose() {
+    this.stopLook();
+    this.trial?.dispose();
     disposeTree(this.root);
     this.environment?.dispose();
+    this.studio?.dispose();
   }
 }

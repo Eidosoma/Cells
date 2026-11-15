@@ -173,6 +173,12 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .scalebar-line { height: 5px; border: 1.5px solid var(--fg); border-top: 0; }
 .scalebar-text { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--fg); background: color-mix(in srgb, var(--bg) 78%, transparent); padding: 1px 6px; border-radius: 5px; }
 .has-panel .scalebar { right: calc(max(16px, env(safe-area-inset-right, 0px)) + 376px); bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
+/* The resting look's switch and its few words, over the scale bar: there they take no room from the labels' column.
+   Like the scale bar they let the pointer through to the picture; the switch alone takes it. */
+.look-box { display: grid; justify-items: end; gap: 4px; margin-bottom: 6px; }
+.look-switch { padding: 3px 3px 3px 10px; pointer-events: auto; }
+.look-switch .seg-row { grid-template-columns: auto 124px; }
+.look-note { max-width: 250px; font-size: 11.5px; line-height: 1.4; text-align: right; color: var(--muted); background: color-mix(in srgb, var(--bg) 78%, transparent); padding: 1px 6px; border-radius: 5px; }
 .fallback { position: absolute; inset: 64px 0 0 0; padding-block: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); color: var(--muted); }
 
 /* ---------------------------------------------------------------- replay: the run's card */
@@ -458,7 +464,6 @@ cells-trace { display: grid; gap: 4px; }
   cells-index { top: 56px; }
   .view { top: 54px; width: 208px; padding: 6px 8px; gap: 4px; }
   .view-note { display: none; }
-  .view-note.look-says { display: block; }
   .seg-row { grid-template-columns: 46px 1fr; }
   .has-panel .scalebar, .has-panel .view { display: none; }
   .scalebar { bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }

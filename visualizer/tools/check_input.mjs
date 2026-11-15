@@ -5,7 +5,10 @@
 //
 //   node tools/check_input.mjs            (CHECK_ONLY=engine|atlas|species|experiments|cell|zoom runs one part;
 //                                          CHECK_RUNS=DIR serves replays from another folder;
-//                                          CHECK_SCENE=FILE draws another scene file)
+//                                          CHECK_SCENE=FILE draws another scene file;
+//                                          CHECK_LOOK=plain draws the Cell view with the look as it was, which
+//                                          a server that draws in software does much faster: the cell and zoom
+//                                          parts test clicks, not the look (tools/check_look.mjs tests that))
 //
 // Only one browser runs at a time (tools/lib/browser_lock.mjs), so a call may wait its turn.
 
@@ -449,8 +452,35 @@ try {
   }
 
   // ---------------------------------------------------------------- cell lens
+  // The Cell view's look (src/core/look.js) is rich unless CHECK_LOOK names another: "plain", or "full" for every effect held on.
+  const cellView = `lens=cell${process.env.CHECK_LOOK ? `&look=${process.env.CHECK_LOOK}` : ""}`;
+  // On a busy machine, or with the rich look drawn in software, one frame may take seconds. The
+  // cell and zoom parts therefore wait for what they are about to read or click, never for a fixed time.
+  const until = async (expression, seconds = 180) => {
+    for (let tries = 0; tries < seconds * 4; tries++) {
+      if (await evaluate(expression).catch(() => false)) return true;
+      await sleep(250);
+    }
+    return false;
+  };
+  // Two more frames have been drawn (or one, where the view then stands still) and the camera holds still: what is on the screen is what a click meets.
+  const settled = async () => {
+    await evaluate(`(() => { const stage = ${VIEWER}.stage; if (window.__drawn === undefined) { window.__drawn = 0; stage.afterRender.add(() => { window.__drawn += 1; }); } window.__from = window.__drawn; stage.invalidate(); })()`);
+    await until(`window.__drawn >= window.__from + 2 || (window.__drawn > window.__from && !${VIEWER}.stage.running)`);
+    let last = null;
+    for (let tries = 0, same = 0; tries < 240 && same < 2; tries++) {
+      const now = await evaluate(`JSON.stringify([${VIEWER}.stage.camera.position.toArray(), ${VIEWER}.stage.camera.quaternion.toArray()].flat().map((n) => Math.round(n * 1000) / 1000))`);
+      same = now === last ? same + 1 : 0;
+      last = now;
+      await sleep(250);
+    }
+  };
+  // How long a part took, in the look it was drawn with: the rich look costs a server that draws in software several times more a frame.
+  const took = (part, from) => console.log(`note  the ${part} part took ${Math.round((Date.now() - from) / 1000)} s, drawn with ${process.env.CHECK_LOOK ? `look=${process.env.CHECK_LOOK}` : "the rich look"}`);
   if (wants("cell")) {
-  await open("lens=cell");
+  const cellFrom = Date.now();
+  await open(cellView);
+  await settled();
   const nucleus = await screen(probe("nucleus"));
   await click(nucleus.x, nucleus.y); // through the sketched gene-network cage around it
   check("cell: clicking the nucleus selects regulatory circuits", (await selected()) === "cap.circuits", String(await selected()));
@@ -483,6 +513,8 @@ try {
   check("switch: Colour to Status recolours the cell", (await evaluate(`${VIEWER}.current.colourBy`)) === "status");
   await press("Biology");
   await press("To scale");
+  await until(`(() => { const lens = ${VIEWER}.current; return lens.sizeMode === "real" && lens.zones.some((zone) => zone.root.visible && zone.name === "cell" && zone.mode === "real"); })()`, 120);
+  await settled();
   const real = await evaluate(`(() => { const lens = ${VIEWER}.current; return { mode: lens.sizeMode, shown: lens.zones.filter((zone) => zone.root.visible).map((zone) => zone.name + ":" + zone.mode).join(" ") }; })()`);
   check("switch: Sizes to To scale shows the to-scale cell and hides the schematic one", real.mode === "real" && real.shown.includes("cell:real") && !real.shown.includes("cell:schematic"), real.shown);
   const nucleusToScale = await screen(probe("nucleus"));
@@ -495,6 +527,7 @@ try {
     if (await evaluate(`Boolean(${VIEWER}.shadowRoot.querySelector(".label-part:not(.is-off)"))`)) break;
     await sleep(250);
   }
+  await settled();
 
   // ---------------------------------------------------------------- input that starts on a label
   const label = await evaluate(`(() => {
@@ -506,7 +539,7 @@ try {
   const before = await evaluate(`({ distance: ${VIEWER}.stage.rig.distance, azimuth: ${VIEWER}.stage.rig.azimuth })`);
   await mouse("mouseMoved", label.x, label.y, { button: "none", buttons: 0 });
   await wheel(label.x, label.y, 200);
-  await sleep(300);
+  await until(`${VIEWER}.stage.rig.distance > ${before.distance * 1.05}`, 120);
   const afterWheel = await evaluate(`${VIEWER}.stage.rig.distance`);
   check("label: a wheel over a label zooms the camera", afterWheel > before.distance * 1.05, `${before.distance.toFixed(1)} -> ${afterWheel.toFixed(1)}`);
 
@@ -519,7 +552,7 @@ try {
   await mouse("mousePressed", spot.x, spot.y);
   for (let step = 1; step <= 6; step++) await mouse("mouseMoved", spot.x + step * 20, spot.y);
   await mouse("mouseReleased", spot.x + 120, spot.y, { buttons: 0 });
-  await sleep(300);
+  await until(`Math.abs(${VIEWER}.stage.rig.azimuth - ${before.azimuth}) > 0.2`, 120);
   const afterDrag = await evaluate(`${VIEWER}.stage.rig.azimuth`);
   check("label: a drag that starts on a label turns the camera", Math.abs(afterDrag - before.azimuth) > 0.2, `${before.azimuth.toFixed(2)} -> ${afterDrag.toFixed(2)}`);
   check("label: that drag selects nothing", (await selected()) === null, String(await selected()));
@@ -542,23 +575,28 @@ try {
   await click(tap.x, tap.y);
   check("label: a plain click on a label selects its part", (await selected()) === tap.id, `${tap.id} -> ${await selected()}`);
   await clear();
+  took("cell", cellFrom);
 
   }
 
   // ---------------------------------------------------------------- zoom across scales
   if (wants("zoom")) {
-  await open("lens=cell");
+  const zoomFrom = Date.now();
+  await open(cellView);
+  await settled();
   for (let step = 0; step < 6; step++) {
     await wheel(640, 420, 240);
     await sleep(60);
   }
-  await sleep(700);
+  await until(`(() => { const lens = ${VIEWER}.current; const fade = (name) => lens.zones.find((zone) => zone.name === name && lens.shows(zone)).fade; return fade("tissue") > 0.9 && fade("cell") < 0.1 && lens.activeStop === "tissue"; })()`, 300);
+  await settled();
   const zoomed = await evaluate(`(() => { const lens = ${VIEWER}.current; const fade = (name) => lens.zones.find((zone) => zone.name === name && lens.shows(zone)).fade; return { distance: lens.stage.rig.distance, cell: fade("cell"), tissue: fade("tissue"), stop: lens.activeStop }; })()`);
   check("zoom: wheeling out from the cell fades in the sheet", zoomed.tissue > 0.9 && zoomed.cell < 0.1, JSON.stringify(zoomed));
   check("zoom: the scale rail follows", zoomed.stop === "tissue", zoomed.stop);
   const cellOfSheet = await screen(`${VIEWER}.current.probes.sheetCell.clone()`);
   await click(cellOfSheet.x, cellOfSheet.y);
   check("zoom: at the sheet, a click selects the sheet and not the faded cell", (await selected()) === "cap.sheet", String(await selected()));
+  took("zoom", zoomFrom);
   }
 } catch (error) {
   check("the run completed", false, error.message);

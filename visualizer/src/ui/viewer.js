@@ -96,7 +96,9 @@ class CellsViewer extends HTMLElement {
     this.viewCard = h("div", { class: "view card", hidden: true });
     this.scaleLine = h("span", { class: "scalebar-line" });
     this.scaleText = h("span", { class: "scalebar-text" });
-    this.scaleBar = h("div", { class: "scalebar", hidden: true }, this.scaleLine, this.scaleText);
+    // The resting look's switch and its few words stand over the scale bar: there they take no room from the labels' column.
+    this.lookBox = h("div", { class: "look-box", hidden: true });
+    this.scaleBar = h("div", { class: "scalebar", hidden: true }, this.lookBox, this.scaleLine, this.scaleText);
     this.hint = h("p", { class: "hint" }, "Drag to turn · scroll to zoom · click a part");
     this.timeline = h("cells-timeline", { class: "card", hidden: true });
     this.fallback = h("p", { class: "fallback", hidden: true });
@@ -198,6 +200,10 @@ class CellsViewer extends HTMLElement {
       if (this.stage) this.stage.rig.instant = true;
     }
     if (query.get("species") || query.get("atlas")) this.setSpecies(query.get("species") || query.get("atlas"));
+    // The resting look (core/look.js): "look=plain" is the look as it was, "look=full" holds every
+    // effect on; "fps=1" shows the frame rate with a switch for each effect, for judging on a device.
+    if (this.stage && query.get("look")) this.stage.look.choose(query.get("look"));
+    if (this.stage && query.get("fps")) this.stage.look.trial = true;
     const wanted = query.get("lens") || location.hash.slice(1) || this.getAttribute("lens") || this.views[0].id;
     this.setLens(this.views.some((lens) => lens.id === wanted) ? wanted : this.views[0].id);
     if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
@@ -455,6 +461,15 @@ class CellsViewer extends HTMLElement {
           sizes.length > 1 ? this.segmented("Sizes", [["schematic", "Schematic"], ["real", "To scale"]], view.size, (value) => this.current.setSizeMode(value)) : null,
           h("p", { class: "view-note" }, sized),
         ].filter(Boolean)
+      );
+    }
+    // The resting look (core/look.js), where the view shown has one: its switch, and what the page says of it.
+    const look = chrome.view?.look;
+    this.lookBox.hidden = !look;
+    if (look) {
+      this.lookBox.replaceChildren(
+        h("div", { class: "look-switch card" }, this.segmented("Look", [["rich", "Rich"], ["plain", "Plain"]], look.active, (value) => this.current.setLook(value))),
+        ...look.notes.map((note) => h("p", { class: "look-note" }, note))
       );
     }
     this.rail.hidden = !chrome.rail;

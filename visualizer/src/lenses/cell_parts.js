@@ -2,6 +2,18 @@
 // from the scene file (through ctx.part) or is neutral illustration (ctx.neutral).
 // Nothing is drawn that looks like a capability without being one.
 //
+// Some materials ask for part of the resting look (core/look.js): `thin` lets a little light
+// through a part's thin edges, `texture` gives a surface its grain, folds or pores, `shimmer`
+// marks the membrane, and `drift` lets a crowd jostle about its places. All four are
+// scenery: no data stands behind a fold, a pore or a jostle, and none is drawn where the
+// look is plain.
+//
+// A new kind of scenery (an appendage, say) is built here as the wall and the vesicles are:
+// with ctx.neutral(...) where no capability stands behind it, with ctx.part(name) and its
+// material(...) where one does. A solid shape (opaque, or nearly) takes part in contact shade
+// by itself; `contact: false` keeps it out, which suits what is thin or cut open. A crowd of
+// copies may ask for `drift`. What moves with a direction is not scenery: see animate() in cell.js.
+//
 // Nothing here belongs to one species. A cell's shape, what it holds and which
 // capabilities have a place in it come from the species shown (schema/SPECIES.md,
 // schema/SPECIES_SHAPES.md). The cell is built in a frame of its own (shapes.js), in which
@@ -245,7 +257,7 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   const membrane = ctx.part("membrane", outline.point(4.42, 0.9, CUT + 0.3));
   const shell = new THREE.Mesh(
     prism,
-    membrane.material({ hue: "bioMembrane", opacity: style.shellOpacity, side: THREE.DoubleSide, clip: true, roughness: 0.25, depthWrite: false, rim: 0.5, alphaRim: 0.5 })
+    membrane.material({ hue: "bioMembrane", opacity: style.shellOpacity, side: THREE.DoubleSide, clip: true, roughness: 0.25, depthWrite: false, rim: 0.5, alphaRim: 0.5, shimmer: true })
   );
   shell.userData.pickFilter = (hit) => !inCut(hit.point);
   shell.renderOrder = 6; // after what is inside it, so it tints them like glass
@@ -296,10 +308,10 @@ export function buildCell(ctx, studsCtx, mode, cell) {
       for (const angle of SPOT.channels) {
         for (const offset of [-0.25, 0.25]) walls.push({ position: outline.walk(angle, offset, -0.1, CUT + 0.07), turn: turnY(-outline.facing(angle, offset)) });
       }
-      channels.add(instanced(wall, channels.material({ hue: "bioProtein", roughness: 0.35 }), walls));
+      channels.add(instanced(wall, channels.material({ hue: "bioProtein", roughness: 0.35, thin: 0.3 }), walls));
     }
     if (pumps) {
-      const lobes = pumps.material({ hue: "bioPump", roughness: 0.35 });
+      const lobes = pumps.material({ hue: "bioPump", roughness: 0.35, thin: 0.35 });
       for (const angle of SPOT.pumps) {
         const outer = new THREE.Mesh(new THREE.SphereGeometry(0.46, 18, 14), lobes);
         outer.position.copy(outline.point(angle, -0.05, CUT + 0.08));
@@ -319,7 +331,7 @@ export function buildCell(ctx, studsCtx, mode, cell) {
     if (pumps) {
       const exteriorPumps = studsCtx.part("pumps");
       exteriorPumps.add(
-        instanced(new THREE.SphereGeometry(0.44, 16, 12).scale(1, 0.6, 1), exteriorPumps.material({ hue: "bioPump", roughness: 0.4 }), onSkin(12, 4))
+        instanced(new THREE.SphereGeometry(0.44, 16, 12).scale(1, 0.6, 1), exteriorPumps.material({ hue: "bioPump", roughness: 0.4, thin: 0.35 }), onSkin(12, 4))
       );
     }
   } else {
@@ -434,13 +446,13 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   gel.renderOrder = 3;
   chemistry.add(gel);
   if (!real) {
-    const specks = instanced(new THREE.SphereGeometry(0.09, 8, 6), chemistry.material({ hue: "bioCyto", shade: -0.3 }), scatter(190).map((position) => ({ position, scale: 0.6 + random() * 0.9 })));
+    const specks = instanced(new THREE.SphereGeometry(0.09, 8, 6), chemistry.material({ hue: "bioCyto", shade: -0.3, drift: 0.09 }), scatter(190).map((position) => ({ position, scale: 0.6 + random() * 0.9 })));
     const tone = new THREE.Color();
     for (let index = 0; index < specks.count; index++) specks.setColorAt(index, tone.setHSL(random(), 0.5, 0.72));
     specks.instanceColor.needsUpdate = true;
     chemistry.add(specks);
   } else {
-    chemistry.add(dots(scatter(7000), chemistry.points({ hue: "bioCyto", shade: -0.35, size: 1.3, opacity: 0.5 })));
+    chemistry.add(dots(scatter(7000), chemistry.points({ hue: "bioCyto", shade: -0.35, size: 1.3, opacity: 0.5, drift: 0.1 })));
   }
   // Vesicles: scenery, so neutral glass. They belong to a cell with inner membranes.
   if (parts.nucleus) {
@@ -459,10 +471,10 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   const coreReach = coreRadius + Math.max(0, frame.long / 2 - frame.equator.apothem) * 0.8;
   if (parts.nucleus) {
   const nucleus = ctx.part("nucleus", NUCLEUS.clone().add(new THREE.Vector3(0, style.nucleusRadius + 0.1, 0)));
-  const envelope = new THREE.Mesh(new THREE.SphereGeometry(style.nucleusRadius, 56, 40), nucleus.material({ hue: "bioNucleus", opacity: 0.78, roughness: 0.3, rim: 0.55, depthWrite: true }));
+  const envelope = new THREE.Mesh(new THREE.SphereGeometry(style.nucleusRadius, 56, 40), nucleus.material({ hue: "bioNucleus", opacity: 0.78, roughness: 0.3, rim: 0.55, depthWrite: true, thin: 0.9, texture: "pores" }));
   envelope.position.copy(NUCLEUS);
   envelope.renderOrder = 2;
-  const nucleolus = new THREE.Mesh(new THREE.SphereGeometry(style.nucleolus, 28, 20), nucleus.material({ hue: "bioNucleus", shade: -0.38, roughness: 0.5 }));
+  const nucleolus = new THREE.Mesh(new THREE.SphereGeometry(style.nucleolus, 28, 20), nucleus.material({ hue: "bioNucleus", shade: -0.38, roughness: 0.5, thin: 0.5 }));
   nucleolus.position.copy(NUCLEUS).add(new THREE.Vector3(0.55, 1.15, 0.85));
   nucleus.add(nucleolus, envelope);
   const pores = [];
@@ -500,7 +512,7 @@ export function buildCell(ctx, studsCtx, mode, cell) {
       at = next;
     }
     const thread = new THREE.CatmullRomCurve3(knots, true, "catmullrom", 0.5);
-    const strand = new THREE.Mesh(new THREE.TubeGeometry(thread, turns * 5, 0.075, 5, true), chromosome.material({ hue: "bioNucleus", roughness: 0.35, clip: true }));
+    const strand = new THREE.Mesh(new THREE.TubeGeometry(thread, turns * 5, 0.075, 5, true), chromosome.material({ hue: "bioNucleus", roughness: 0.35, clip: true, thin: 0.5 }));
     strand.renderOrder = 2;
     chromosome.add(strand);
     const reach = new THREE.Mesh(new THREE.SphereGeometry(coreRadius * 0.92, 20, 14), chromosome.proxyMaterial());
@@ -535,13 +547,13 @@ export function buildCell(ctx, studsCtx, mode, cell) {
     const size = Math.min(0.46, Math.max(0.085, 0.01 / frame.u));
     // Only those below the cut are drawn: the cut takes the rest away with the top of the cell.
     const free = scatter(Math.round(parts.ribosomes * 0.6), (point) => inside(point) > size + 0.25 && point.y < CUT - size * 0.4);
-    ctx.illustrate(instanced(new THREE.SphereGeometry(size, 10, 8), ctx.neutral({ opacity: 0.5, glass: 0.35, depthWrite: false }), free.map((position) => ({ position, scale: 0.85 + random() * 0.3 }))));
+    ctx.illustrate(instanced(new THREE.SphereGeometry(size, 10, 8), ctx.neutral({ opacity: 0.5, glass: 0.35, depthWrite: false, drift: 0.1 }), free.map((position) => ({ position, scale: 0.85 + random() * 0.3 }))));
   }
 
   // ---------------------------------------------------------------- endoplasmic reticulum, the calcium store
   if (organelle("er")) {
   const er = ctx.part("er", NUCLEUS.clone().addScaledVector(radial(ER_FACING), style.er.first + style.er.gap * 1.5).setY(CUT + style.er.height * 0.45));
-  const sheet = er.material({ hue: "bioEr", roughness: 0.4, side: THREE.DoubleSide });
+  const sheet = er.material({ hue: "bioEr", roughness: 0.4, side: THREE.DoubleSide, thin: 0.8, texture: "grain" });
   const studs = [];
   for (let layer = 0; layer < style.er.layers; layer++) {
     const radius = style.er.first + layer * style.er.gap;
@@ -576,7 +588,7 @@ export function buildCell(ctx, studsCtx, mode, cell) {
     const web = new THREE.BufferGeometry();
     web.setAttribute("position", new THREE.Float32BufferAttribute(tubes, 3));
     er.add(new THREE.LineSegments(web, er.lineMaterial({ hue: "bioEr", opacity: 0.55 })));
-    ctx.illustrate(dots(scatter(6000), ctx.neutralPoints({ size: 1.1, opacity: 0.35 })));
+    ctx.illustrate(dots(scatter(6000), ctx.neutralPoints({ size: 1.1, opacity: 0.35, drift: 0.1 })));
   } else {
     ctx.illustrate(instanced(new THREE.SphereGeometry(0.085, 8, 6), ctx.neutral({ opacity: 0.8, depthWrite: true }), studs.map((position) => ({ position }))));
   }
@@ -621,7 +633,10 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   const mitochondria = ctx.part("mitochondria", lying[1].at.clone().setY(CUT + 0.75));
   const fuel = ctx.part("atp", new THREE.Vector3(-0.9, CUT + 0.55, 7.4));
   if (!real) {
-    const outer = mitochondria.material({ hue: "bioMito", clip: true, side: THREE.DoubleSide, roughness: 0.35 });
+    // The shell of one cut open stays out of contact shade: the gap between its wall and the
+    // floor laid in it would go dark like a pit, where the approved picture has a bright rim.
+    // The folds drawn on the ones left whole are shown here as the shelves themselves.
+    const outer = mitochondria.material({ hue: "bioMito", clip: true, side: THREE.DoubleSide, roughness: 0.35, thin: 0.7, contact: false });
     const matrix = mitochondria.material({ hue: "bioMito", shade: 0.5, roughness: 0.5 });
     const crista = mitochondria.material({ hue: "bioMito", shade: -0.05, roughness: 0.45 });
     const stadium = new THREE.Shape();
@@ -642,7 +657,7 @@ export function buildCell(ctx, studsCtx, mode, cell) {
       one.rotation.y = turn;
       mitochondria.add(one);
     }
-    const whole = mitochondria.material({ hue: "bioMito", roughness: 0.4 });
+    const whole = mitochondria.material({ hue: "bioMito", roughness: 0.4, thin: 0.7, texture: "folds", axis: UP });
     const deep = [[-6.0, -3.0, 0.6], [0.6, -4.5, -3.4], [5.0, -3.75, 3.0], [-2.6, -4.9, 4.0], [-3.4, -2.1, -6.4], [6.4, -2.0, -4.6]];
     // Lying roughly level, like the ones at the surface.
     const level = () => radial(random() * Math.PI * 2).setY((random() - 0.5) * 0.5);
@@ -674,7 +689,9 @@ export function buildCell(ctx, studsCtx, mode, cell) {
       return geometry;
     };
     const outer = mitochondria.material({ hue: "bioMito", shade: 0.1, opacity: 0.3, alphaRim: 0.55, rim: 0.45, clip: true, side: THREE.DoubleSide, roughness: 0.3, depthWrite: false });
-    const fold = mitochondria.material({ hue: "bioMito", shade: -0.06, clip: true, roughness: 0.5 });
+    // The shelves are thin and soft: a little light comes through them. The clear outer membrane stays glass.
+    // They stand so close that contact shade between them turned each stack brown: they stay out of it.
+    const fold = mitochondria.material({ hue: "bioMito", shade: -0.06, clip: true, roughness: 0.5, thin: 0.5, contact: false });
     const placed = shapes.map(() => []);
     for (const position of many) {
       const which = Math.floor(random() * shapes.length), scale = 0.85 + random() * 0.35;
