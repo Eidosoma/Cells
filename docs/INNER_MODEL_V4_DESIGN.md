@@ -38,8 +38,10 @@
      over the whole catalogue would still compile the absent ones.
    - A probe measured whether separating them moves any result: **it does not.** In seven worlds,
      every value at every step was bit-for-bit the same, with smaller programs (§4).
-   - Had results moved, even at rounding, R would re-run every registered protocol in full. On
-     this evidence the gate runs bitwise.
+   - **Two other parts of R are not yet probed:** summing species in one fixed order (A7) and door
+     S's merge (A6). The first is the likeliest to move results at rounding. If anything moves,
+     R re-runs every registered protocol in full. A small probe of the fixed order can run after
+     05:00 UTC.
 4. **R is accepted by results, not by identical programs** (§3).
    - A named list of required scientific results must actually execute and match.
    - Every existing world gives the same CPU results.
@@ -80,7 +82,7 @@
 
     Every item kept out of (a) is time not added before FR-4 and FR-5, which are blocking, and
     Track E's M3.
-12. **Effort** (§15): list (a) is **about 17.5–25 agent-days**, landing together under one tag and
+12. **Effort** (§15): list (a) is **about 17–24.5 agent-days**, landing together under one tag and
     one gate, plus CPU hours for the re-runs and an L4 gap.
 
 **What this note gathers.**
@@ -302,9 +304,11 @@ world gave compile and execution times.
   - **Every second run compiled nothing** (XLA's compile log). Within one process, the window path
     reuses its executable.
 - **The consequence:**
-  - G1 runs bitwise, and the rounding contingency of §3 does not apply on this evidence.
-  - Status carries forward on CPU through the full gate, and G2 re-runs the registered protocols as
-    a confirmation.
+  - The dispatch change is bitwise, so it alone would let G1 run bitwise.
+  - **The rest of R is unprobed.** A7 rewrites every sum over species, on host and device, and is the
+    likeliest source of rounding movement. A6 changes how providers merge.
+  - If either moves results, §3's rounding contingency applies and G2 runs in full. A P2-style
+    prototype of A7's fold settles the first; it is offered for after 05:00 UTC.
   - Judges that differentiate the step still re-run in full (§3), since P2's Jacobians cover two
     worlds, not W1's and W2's.
   - P2 tests the dispatch change alone. The rest of R (A2–A7) is tested by the results gate.
@@ -361,7 +365,10 @@ dissipation).
   - 140.0 is the junction-gate law's coefficient;
   - 12.0 and 0.12 appear as kernel literals, while `km_na_mM` and the symport's steepness are
     layout arrays (`pump_km_na`, `symport_steepness`);
-  - 1e-10 is the execution's material tolerance (`device_check_constants`);
+  - 1e-10 is the definition's `execution.material_balance_atol_fmol`. Crossrev's trace closes
+    over it in the device-check program, but in production the vector-window path passes the
+    device-check constants per world as arguments (`vector_windows.resident_inputs`). So it is a
+    tracing artefact, not a value frozen into a production executable;
   - 0.001 and 1e-15 are law and floor literals;
   - 5.684e-14 is 2⁻⁴⁴.
 - **So no definition-derived value is frozen into the step's programs today.** Same-structure
@@ -553,7 +560,8 @@ FR-3's separate owner stays as accepted.
 
 **Not now:** runtime entity objects; nested compartments.
 
-**Effort** (**S**): 2–3 agent-days for §9.1 and §9.2.
+**Effort** (**S**): 2–3 agent-days for §9.1 and §9.2, when they land with their consumers (B6, B2).
+Not in R's total.
 
 ## 10. Material identity and fuel (the representation is open)
 
@@ -578,7 +586,8 @@ FR-3's separate owner stays as accepted.
   - The finite-fuel kind therefore takes ΔG° from the species' declared potentials and has no
     `delta_g0` of its own.
   - The maintained kind keeps its own: its reservoir is external, not the shared amounts.
-- **Effort** (**S**): 1.5–2 agent-days, including moving D152's block to read it.
+- **Effort** (**S**): identity and trace policy are part of A7 (in R). The standard potentials and
+  D152's move to read them, about 1 agent-day, come with the fuel case (B3).
 
 ### 10.3 The representation: options against the requirement
 
@@ -695,7 +704,7 @@ under a 2G cap. It times the inner model's compiled checked step alone, without 
 | | 320 | 3.50 | 4.76 | 22.4 | 132.2 |
 | 825-node world (225 cells, 600 outside nodes, 1,151 faces) | 8 | 0.76 | 20.9 | 32.1 | 107 |
 | | 64 | 5.08 | 25.0 | 57.7 | 604 |
-| | 160 | — | — | — | Killed at the 2G cap (one out-of-memory kill); to rerun after 05:00 UTC if wanted |
+| | 160 | — | — | — | Killed by a machine-wide out-of-memory event at 01:42 UTC, as the designated victim (`--oom-first`), at 1.42 GB resident, below its 2G cap. To rerun after 05:00 UTC |
 
 Every compile took 55–90 s, whatever the species count. Every step was accepted.
 
@@ -703,7 +712,7 @@ Every compile took 55–90 s, whatever the species count. Every step was accepte
 - **The sheet:** about 11 KB of state, 10 KB of layout, 64 KB of XLA temporaries, and 0.3–0.5 ms
   of step time.
 - **The 825-node world:** about 77 KB of state, 72 KB of layout, 0.46 MB of temporaries, and
-  **about 9 ms of step time.** Its 1,151 faces and 600 outside nodes carry every species, so the
+  **5.6–8.9 ms of step time** (from the minimum and the median; two points on a loaded core). Its 1,151 faces and 600 outside nodes carry every species, so the
   species work overtakes the dense field solves somewhere between 8 and 64 species.
 
 **Extrapolated to the lead's three sizes** (**S**). Memory is per world; times are one CPU core,
@@ -713,7 +722,7 @@ for the checked step alone:
 | --- | --- | --- |
 | 50 | about 8 MB / 25–30 ms (3× today) | about 80 MB / about 0.5 s (4–5× today) |
 | 150 | about 16 MB / 65–80 ms (8–10×) | about 140 MB / about 1.4 s (13×) |
-| 600 | about 54 MB / about 0.2 s (25×) | about 0.4 GB / about 5 s (50×) |
+| 600 | about 54 MB / about 0.2 s (25×) | about 0.4 GB / about 3.5–5 s (35–50×), a two-point extrapolation |
 
 **On the L4 (not measured here; a stated extrapolation, S).**
 - **Memory bounds the batch.**
@@ -818,7 +827,8 @@ the fourth reuse case.
 - **A local implicit or substepped block** for stiff chemistry is allowed by the interface, with
   explicit exchange stages and residual checks. One law keeps one ID while its treatment evolves.
 - **FR-8's acceptance is a target of FR-8's own milestone** (list (c)).
-- **Effort** (**S**): 1–1.5 agent-days for the declarations, the context and the checks; no
+- **Effort** (**S**), when FR-8's milestone lands (B1), not in R: 1–1.5 agent-days for the
+  declarations, the context and the checks; no
   algorithm. They are host-side, so they change no program.
 
 ## 13. The gathered items
@@ -919,8 +929,8 @@ neutral species, and its rerun covers them):
 | The partition and the bridge | Resets over declared gate rows; gated junctions only; closer slots (§8) | 1–1.5 |
 | Water@1 and the symport | Imports through the restructured module; volume slots (§8) | 0.5–1 |
 | Insertion@1 and @2, the lumens | Restructured spec types; changed field-input slots (§8, §9.1) | 0.5–1 |
-| Membrane state | Changed-slot declarations, so an abundance-only owner is no field-input world (§9.1) | 0.5 |
-| D150's and D152's operators, the coupling operator, the bath schedule, injection | Read and changed slots (§8); compartment references (§9.2); D152 reads the one set of standard potentials (§10.2) | Within §8 and §10.2 |
+| Membrane state | Its slot declarations for door S (A6). Its changed-slot rule for the field refresh is B6, later | Within A6 |
+| D150's and D152's operators, the coupling operator, the bath schedule, injection | Read and changed slots (§8, A6); their identity checks consolidated (A7). Compartment references (B2) and the shared standard potentials (B3) come later | Within A6 and A7 |
 | **FR-1's `cell_owned_compartments@1`** (in flight) | Generic in code (declaration only, no program), but @3-tied in its refusal 4, which names @3's route kinds. It becomes the compartment map's writer (§9.2) and must refuse **every** declared route kind on a bounding patch, failing closed on kinds it does not know | 0.5, at its re-gate |
 
 **Who needs what:**
@@ -938,18 +948,24 @@ qualification into R.
 
 ### 15.1 List (a): what R needs to land
 
-The test: R's own acceptance cannot be shown without the item.
+Two tests decide membership:
+- **A1–A4 meet the lead's strict test:** R's own acceptance cannot be shown without them.
+- **A5 meets it only as the chosen working case.** Showing that an added law changes nothing
+  needs one added law, and any law would do. The passive law is chosen because D174 expects it in
+  R and its kernel exists.
+- **A6 and A7 are in (a) under a second test:** they change shared traced code in every program,
+  so landing them later would need a second G1 and G2.
 
 | Item | Why R needs it | Effort (agent-days, **S**) |
 | --- | --- | --- |
 | A1. Today's structures as declarations, with build-time selection (§2, §7) | It is the restructure | 4–6 |
-| A2. The operators tied to today's tables (§14) | They import @3's tables and gate shapes, so R breaks them | 4–6 |
+| A2. The operators tied to today's tables (§14) | They import @3's tables and gate shapes, so R breaks them | 3.5–5.5 |
 | A3. The results gate (§3): the required-results list, G1, G2, the planted tests G3, the measurements G4 | R is accepted by it | 1.5–2 |
 | A4. The GPU audit's tests (§5): a world without NaV1.2 traces no NaV1.2 kernel; a parameter-only change reuses `compile_window`'s executable; the host-per-row exceptions listed for the production path | ARCHITECTURE.md's targets for R cannot be claimed without them | 1 |
 | A5. One added law, the passive permeation law (§11), with finding 3's term (§13.6) and its closed two-compartment test | The working case of §2.3: adding a law leaves every existing program crossrev-identical and passes the idle guard. D174 expects the law in R, and its kernel exists | 2–3 |
 | A6. Door S's runtime merge (§8), with slot declarations for today's providers and readers and its own acceptance (disjoint providers in either order, overlap refused, merged values at each reader's stage) | It changes every composition's view, so landing it later would need a second G1 and G2. FR-4's pH step with buffering inside a compartment needs it (BATH_SCHEDULE_DESIGN §3.1) | 3–4 |
 | A7. Species identity and trace policy consolidated at the definition boundary (§10.2), with every sum over species in one explicit order on host and device (§10.6) | Every sum over species is in every program, so changing their order later would need a second G1 and G2. D165, amended, ties it to identity consolidation in this round, so that a later raise of the species cap needs only a guard world and a cost measurement | 2–3 |
-| **(a) in total** | | **about 17.5–25**, plus CPU hours (G1 about an hour; G2 the protocols' own costs, E07-v1 about 50 core-hours in full) and an L4 gap (§5.3) |
+| **(a) in total** | | **about 17–24.5**, plus CPU hours (G1 about an hour; G2 the protocols' own costs, E07-v1 about 50 core-hours in full) and an L4 gap (§5.3) |
 
 **What is deliberately not in (a):**
 - **Ownership separated from solver invalidation** (§9.1). It changes only the programs of
@@ -961,17 +977,17 @@ The test: R's own acceptance cannot be shown without the item.
 
 ### 15.2 List (b): interfaces R reserves
 
-Named and declared in R where they cost nothing at run time; their working cases come with their
-consumers.
+Specified in this note; implemented when their first consumer lands. **None of list (b) is in R's
+code or in R's effort.**
 
-| Interface | In R | Its consumer |
+| Interface | Specified here | Its consumer, which implements it |
 | --- | --- | --- |
-| B1. Evolution roles, counter kinds, the step context (§12) | Declared for every field (host-side) | FR-8's milestone |
-| B2. The compartment identity map (§9.2) | The declaration at the definition boundary | FR-1's operator becomes its writer at its re-gate; FR-3, FR-5 |
-| B3. Standard potentials at the definition boundary (§10.2); identity and trace policy are in (a), A7 | The declaration's field | D152's next version reads it; the fuel case |
-| B4. Laws' stage reads and loop terms (§7.2) | The fields in the law declaration | Track E's Ca-dependent inactivation; a pump on finite fuel |
+| B1. Evolution roles, counter kinds, the step context (§12) | The roles and the context's fields | FR-8's milestone (1–1.5 days, host-side) |
+| B2. The compartment identity map (§9.2) | The map's fields | FR-1's re-gate after R, where its operator becomes the map's writer; then FR-3, FR-5 |
+| B3. Standard potentials at the definition boundary (§10.2); identity and trace policy are A7 | The field | The fuel case, with D152's next version reading it |
+| B4. Laws' stage reads and loop terms (§7.2) | The law declaration's fields | Track E's Ca-dependent inactivation; a pump on finite fuel |
 | B5. New kinds: transporters, finite fuel, implicit-route solvers, the stage hook | Their shapes only. Each kind brings its insertion point when it lands (§2.3) | FR-4; the fuel case; FR-4's patch and Track E's junctions; a named consumer of the hook |
-| B6. Ownership separated from solver invalidation (§9.1) | Unless the lead moves it into (a) | FR-2; FR-3's later step |
+| B6. Ownership separated from solver invalidation (§9.1) | The changed-slot rule | FR-2, or FR-3's later step (2–3 days with B2's share), unless the lead moves it into (a) |
 | B7. The face-free bound term (§13.6), after P1 | Its shape | FR-4 |
 | B8. The four optional fields of a law that stands in for something (§7.1; D175) | Reserved in the law declaration's schema, unused | A reduced law after the fuel case |
 
@@ -1025,8 +1041,9 @@ A larger R delays the work labelled blocking, so each wait is stated:
 1. **The fuel representation** (§10), possibly the user's. Recommended: **F2**, inventory rows with
    one authority per standard potential (§10.2). F1 and F3 contradict D174's requirement.
 2. **The name** (§6). Recommended: keep `resolved_pump_tissue@3`, with D147 amended as written.
-3. **Rounding in G1** (§3, §4). P2 found per-law dispatch bitwise, so G1 runs bitwise. The
-   rounding contingency stays written, for the rest of R. Recommended: as written.
+3. **Rounding in G1** (§3, §4). P2 found per-law dispatch bitwise. A7's species-sum order and A6's
+   merge are unprobed. Recommended: a P2-style probe of A7's fold after 05:00 UTC, before R's
+   gate is planned. The rounding contingency stays.
 4. **I0** (§13.6). P3 refused nothing, so finding 3's term rides in R with the passive law and
    needs no run-time half. The face-free term waits for P1 and FR-4 (B7).
 5. **The cost-savers** (§3): sample E07-v1 only if G1 is bitwise; derivative-program judges always
@@ -1061,7 +1078,7 @@ runs.
 
 **P5, the constants inventory.** All nine worlds share one executable with their parameter twins; the value-search hits are coincidences checked in code (§5.2).
 
-**P6, memory and step cost against the species count.** Seven of eight rows were measured. The 825-node world at 160 species was killed at the 2G cap and waits for after 05:00 UTC. Per species: 0.3–0.5 ms per step on the sheet and about 9 ms on the 825-node world, on one CPU core (§10.6).
+**P6, memory and step cost against the species count.** Seven of eight rows were measured. The 825-node world at 160 species was killed by a machine-wide out-of-memory event during the night's judged runs, as the designated victim, below its cap. It waits for after 05:00 UTC. Per species: 0.3–0.5 ms per step on the sheet and about 9 ms on the 825-node world, on one CPU core (§10.6).
 
 (P4, the cost of per-law dispatch, was folded into P2 as its amendment 2.)
 
