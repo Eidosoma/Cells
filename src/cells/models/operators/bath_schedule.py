@@ -75,7 +75,7 @@ from cells.core.specs import ConfigError, _fields
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump as first
 from cells.models.operators import species_common as common
-from cells.models.operators.contract import Operator
+from cells.models.operators.contract import Change, Operator
 from cells.numerics import osmotic_water as water_law
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
 
@@ -539,6 +539,8 @@ class ScheduledBathComposition(Operator):
     CONTROL_FIELDS = CONTROL_FIELDS
     EXPERIMENT_KEYS = (EVENTS_KEY,)
     VIEW_FIELDS = ("extracellular_amount_reference",)
+    # Door S (docs/SCOPED_COMPOSITION_DESIGN.md §5): it replaces the anchors at its held baths only.
+    VIEW_CHANGES = {"extracellular_amount_reference": Change("replace", "event", scoped=True)}
     LEDGERS = LEDGERS
     LEDGER_DIAGNOSTICS = LEDGER_DIAGNOSTICS
     LEDGER_MESSAGE = LEDGER_MESSAGE
@@ -637,6 +639,14 @@ class ScheduledBathComposition(Operator):
 
     def view(self, state, p, q, *, xp):
         return dict(extracellular_amount_reference=held_view(state, p, xp=xp))
+
+    def changed_slots(self, spec, declaration):
+        outside = [c.id for c in spec.model.extracellular]
+        baths = tuple(outside.index(b) for b in declaration.baths)
+        return {"extracellular_amount_reference": baths}
+
+    def view_slots(self, p, *, xp):
+        return {"extracellular_amount_reference": p.bath_scheduled}
 
     def event(self, state, control, p, *, xp):
         return apply_events(state, control, p, xp=xp)

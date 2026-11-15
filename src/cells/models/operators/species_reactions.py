@@ -108,7 +108,7 @@ from cells.core.multispecies_spec import identifier
 from cells.core.specs import ConfigError, _fields
 from cells.models import pump_composite_adapter as adapter
 from cells.models.operators import species_common as common
-from cells.models.operators.contract import Operator
+from cells.models.operators.contract import Operator, Read
 from cells.models.operators.species_turnover import row_sum, set_rows
 from cells.processes.electrochemistry import R
 from cells.processes.mass_action import reversible_flux
@@ -1250,6 +1250,13 @@ class LocalSpeciesReactions(Operator):
         "outside_active",
         "extracellular_amount_reference",
     )
+    # Door S (docs/SCOPED_COMPOSITION_DESIGN.md §5): its outside reads are at finite nodes only
+    # (node_amounts and reactions_domain_valid mask held baths), so a change at a held bath, such
+    # as a bath dose, does not meet them.
+    SCOPED_READS = {
+        name: Read("fixed", "split", scoped=True)
+        for name in ("extracellular_volume", "outside_active", "extracellular_amount_reference")
+    }
     READOUT_COLUMNS = READOUT_COLUMNS
     ENTITY_WRITES = {
         "amount_increment": ("reaction_produced_fmol", "reaction_consumed_fmol"),
@@ -1303,6 +1310,15 @@ class LocalSpeciesReactions(Operator):
         common.check_identities(spec, LAW_ID, tuple(s.identity for s in declaration.species))
         check_turnover_rows(spec, declaration)
         check_replaced_slots(spec, declaration)
+
+    def read_slots(self, spec, declaration):
+        """Door S: every finite outside node (its domain reads them all; held baths are masked)."""
+        finite = tuple(i for i, c in enumerate(spec.model.extracellular) if not c.reservoir)
+        return dict.fromkeys(self.SCOPED_READS, finite)
+
+    def species_identities(self, declaration):
+        """The species identities it declares (core/species_registry.py, D176)."""
+        return tuple(s.identity for s in declaration.species)
 
     def batch_signature(self, declaration):
         """The static network: species, stoichiometry, laws, catalysts, factor kinds and species,

@@ -31,6 +31,9 @@ layout. This adapter is the only place that knows @3's names:
   change at fixed free-node charges: potentials, image charge and heat).
 """
 
+import sys
+from functools import cache
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -71,6 +74,27 @@ VIEW_FIELDS = (
     "junction_active",
     "face_active",
     "extracellular_amount_reference",
+)
+# Door S (docs/SCOPED_COMPOSITION_DESIGN.md §2): each view field's entity axis, its last axis,
+# named by the definition's entity list (spec.model.<name>) its slots index.
+VIEW_FIELD_ENTITIES = dict(
+    volume="cells",
+    extracellular_volume="extracellular",
+    membrane_area="membranes",
+    membrane_capacitance="membranes",
+    initial_cell_charge_C="cells",
+    channel_abundance="channels",
+    channel_permeability="channels",
+    membrane_permeability="membranes",
+    pump_capacity="membranes",
+    calcium_pump_capacity="membranes",
+    active="cells",
+    outside_active="extracellular",
+    membrane_active="membranes",
+    channel_active="channels",
+    junction_active="junctions",
+    face_active="faces",
+    extracellular_amount_reference="extracellular",
 )
 # Inputs of the derived field arrays: providing one makes the view refresh them.
 FIELD_INPUTS = ("membrane_capacitance", "active", "outside_active", "membrane_active")
@@ -157,6 +181,59 @@ device_check_constants = ionic.device_check_constants
 device_failure_message = ionic.device_failure_message
 rebind = first.rebind
 
+# I2 (docs/INNER_MODEL_V4_DESIGN.md §7.4 (c)): the inner protocol taken from one implementation
+# object per declared structure. These names are the object's; every other name is this module's
+# own (the types, the view and its merge, the field arrays, the energy terms), and a name neither
+# defines is the object's (channel_kinetics, junction_kinetics, field_values, structure, ...).
+FORWARDED = (
+    "initial_values",
+    "checked_step",
+    "imex_step",
+    "readouts",
+    "domain_valid",
+    "control_domain_valid",
+    "balances",
+    "device_balances",
+    "check_steps",
+    "bind_step_checks",
+    "batch_signature",
+    "working_size",
+    "observe_history",
+    "summarize",
+    "device_check_constants",
+    "device_failure_message",
+)
+inner_structure = ionic.structure  # The InnerStructure of a parsed @3 or composite model block.
+
+
+class InnerAdapter:
+    """This module with the inner protocol of one implementation object (I2): a composite's
+    `inner`, and what an operator that declares USES_INNER receives as `inner=`."""
+
+    def __init__(self, implementation):
+        self.implementation = implementation
+        self.structure_key = implementation.structure_key
+        for name in FORWARDED:
+            setattr(self, name, getattr(implementation, name))
+        self.magnitudes = implementation.channel_magnitudes
+
+    def __getattr__(self, name):
+        # Only reached for names not set above: this module's own, else the object's.
+        if name.startswith("__"):
+            raise AttributeError(name)
+        if hasattr(_MODULE, name):
+            return getattr(_MODULE, name)
+        return getattr(self.implementation, name)
+
+    def __repr__(self):
+        return f"<{MODEL_ID} adapter for {self.implementation!r}>"
+
+
+@cache
+def for_structure(structure):
+    """The adapter of one declared inner structure (cached: equal structures share it)."""
+    return InnerAdapter(ionic.implementation(structure))
+
 
 def inner_state(state):
     return STATE_TYPE(*(getattr(state, k) for k in STATE_FIELDS))
@@ -177,18 +254,34 @@ def inner_control(control):
 
 
 def view(p, state, providers, closers=(), *, xp=jnp):
-    """@3's layout at the composite state: declared fields, replaced by the providers'.
+    """@3's layout at the composite state: the declared fields, merged with the providers'.
 
-    providers: operators with VIEW_FIELDS, in declared order (one provider per
-    field, checked when the composite is built). Without providers this is the
-    declared layout itself. closers: operators that close activity masks (CLOSES), each
-    not statically idle; with none the call is exactly the one without closers.
+    providers: operators with VIEW_FIELDS, in declared order. Each provider's values are merged
+    onto the accumulated view (door S, docs/SCOPED_COMPOSITION_DESIGN.md §4): on every slot, a
+    replacing provider's values are the field itself, as before door S; a scoped change is taken
+    only on its masked slots (merge). Overlaps are admitted only as the composite's structure and
+    scope checks allow. Without providers this is the declared layout itself. closers: operators
+    that close activity masks (CLOSES), each not statically idle; with none the call is exactly
+    the one without closers.
     """
     q = inner_layout(p)
     provided = set()
     for operator in providers:
         values = operator.view(state, p, q, xp=xp)
-        q = q._replace(**values)
+        changes = {k: operator.view_change(k) for k in values}
+        masks = operator.view_slots(p, xp=xp) if any(c.scoped for c in changes.values()) else {}
+        q = q._replace(
+            **{
+                k: merge(
+                    getattr(q, k),
+                    v,
+                    changes[k].contribution,
+                    masks[k] if changes[k].scoped else None,
+                    xp=xp,
+                )
+                for k, v in values.items()
+            }
+        )
         provided |= set(values)
     if closers:
         q = close(q, state, p, closers, xp=xp)
@@ -196,6 +289,25 @@ def view(p, state, providers, closers=(), *, xp=jnp):
     if provided & set(FIELD_INPUTS):
         q = refresh_field(q, inner_layout(p), xp=xp)
     return q
+
+
+_MODULE = sys.modules[__name__]
+
+
+def merge(current, value, contribution, mask=None, *, xp):
+    """Door S's merge of one change onto the accumulated field (docs/SCOPED_COMPOSITION_DESIGN.md
+    §4). Without a mask the change covers every slot (a replacement is the value itself); with
+    one (a bool array over the field's last axis) it is taken on the masked slots only, and every
+    other slot is selected from `current`, never offset by a computed zero."""
+    if contribution == "replace":
+        combined = value
+    elif contribution == "add":
+        combined = current + value
+    elif contribution == "multiply":
+        combined = current * value
+    else:
+        raise ValueError(f"Unknown view contribution {contribution!r}")
+    return combined if mask is None else xp.where(mask, combined, current)
 
 
 def close(q, state, p, closers, *, xp):

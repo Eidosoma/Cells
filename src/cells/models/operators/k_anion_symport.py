@@ -166,6 +166,15 @@ def route_rate(spec, model):
 class KAnionSymport(Operator):
     LAW_ID = LAW_ID
     PROCESS = True
+
+    def moves_in_step(self, spec, declaration):
+        """The rows its in-step process moves (core/species_registry.moved_in_step; D176): both
+        roles' cell and outside rows, when it declares a route."""
+        if not declaration.routes:
+            return ()
+        roles = (declaration.potassium, declaration.anion)
+        return tuple((s, kind) for s in roles for kind in ("cell", "outside"))
+
     STATE_AXES = SYMPORT_STATE_AXES
     HEAT_FIELDS = ("symport_dissipated_energy_pJ",)
     LAYOUT_FIELDS = SYMPORT_LAYOUT_FIELDS

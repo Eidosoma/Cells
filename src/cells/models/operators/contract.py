@@ -87,6 +87,29 @@ Declarations (class attributes):
     read on the actual row, at the view);
   - ``BOOKS_AT_VIEW`` on an event map: the composite passes ``view``, a function of state
     giving its view, when a field input is provided.
+* Scoped composition, door S (docs/SCOPED_COMPOSITION_DESIGN.md), refining the view
+  declarations per field:
+  - ``VIEW_CHANGES`` ({field: Change}): what its contribution to a field it provides
+    (``VIEW_FIELDS``) or closes (``CLOSES``) does: ``replace``, ``add`` or ``multiply`` (a
+    closer's is ``and``), at stage ``event`` or ``split``. A scoped change is taken only on
+    the slots ``changed_slots`` names (host) and ``view_slots`` masks (device); otherwise on
+    every slot. Defaults (``view_change``): ``replace`` (``and`` for a closer) on every slot;
+  - ``SCOPED_READS`` ({field: Read}): the mode of a read, ``current`` (the merged view at its
+    stage: a ``VIEW_READS`` field), ``fixed`` (the declared value taken as the physical one:
+    a ``CONFLICTS_VIEW`` field) or ``reference`` (the bound value as data, an anchor), and
+    its stage. A scoped read covers only the slots ``read_slots`` names. Defaults
+    (``scoped_read``): ``current`` for each ``VIEW_READS`` field, ``fixed`` for each
+    ``CONFLICTS_VIEW`` field, on every slot.
+  Two changes or a change and a read of one field meet only on the slots both name; the
+  composite admits a pair per slot (pump_composite.structure_errors and scope_errors) and
+  merges each change onto the accumulated view on its slots (pump_composite_adapter.view).
+* Species identity and the step (core/species_registry.py, D176): ``IDENTITY_ROLE``
+  ("author" for an operator that declares the species it writes, "user" for one that refers to
+  species others declare) and ``species_identities``; ``moves_in_step``, the rows an in-step
+  process moves inside the inner step, which an operator with ``PROCESS`` declares.
+* The run view (docs/RUN_VIEW_DESIGN.md §3): ``VIEW_LAYERS`` (its layers, each
+  {"id", "label", "representation"}; None: undeclared, which the run-view writer refuses) and
+  ``view_events`` (its events with their entities by id).
 
 Methods take the composite's full state, control and layout NamedTuples, whose
 fields are the inner model's followed by each operator's in declared order.
@@ -94,10 +117,42 @@ Defaults below are the idle answers: no parts, no terms, no columns.
 """
 
 from types import MappingProxyType
+from typing import NamedTuple
 
 HEAT_SUFFIX = "_dissipated_energy_pJ"
 WORK_SUFFIX = "_work_pJ"
 RK4_MODES = ("coupled", "split")
+IDENTITY_ROLES = ("author", "user")
+REPRESENTATIONS = ("simulated", "modelled", "prescribed")
+LAYER_KEYS = frozenset({"id", "label", "representation"})
+# Door S (docs/SCOPED_COMPOSITION_DESIGN.md §2).
+CONTRIBUTIONS = ("replace", "add", "multiply")  # Of a provided field; a closer's is "and".
+COMMUTING = ("add", "multiply", "and")  # Overlaps admitted, applied in declared order.
+CHANGE_STAGES = ("event", "split")
+READ_MODES = ("reference", "current", "fixed")
+READ_STAGES = ("event", "split", "inner", "end", "observe")
+
+
+class Change(NamedTuple):
+    """Door S: an operator's contribution to one view field (docs/SCOPED_COMPOSITION_DESIGN.md).
+
+    scoped: taken only on the slots changed_slots names and view_slots masks; otherwise on
+    every slot of the field's entity axis (its last axis)."""
+
+    contribution: str = "replace"
+    stage: str = "event"
+    scoped: bool = False
+
+
+class Read(NamedTuple):
+    """Door S: an operator's read of one view field (docs/SCOPED_COMPOSITION_DESIGN.md).
+
+    mode: "current", "fixed" or "reference"; stage: the point whose view it consumes; scoped:
+    only the slots read_slots names, otherwise every slot."""
+
+    mode: str
+    stage: str
+    scoped: bool = False
 
 
 class Operator:
@@ -148,6 +203,21 @@ class Operator:
     # Topology (module docstring).
     CLOSES = ()
     RETIRES = False
+    # Its parts call the inner model's structure-bound functions (an event map's kinetics, the
+    # field solve): the composite passes the inner implementation object as `inner=` to its
+    # event, half_step and rates calls and to initial_values (static), and host methods reach
+    # it as model.inner (D176; docs/INNER_MODEL_V4_DESIGN.md §7.4). Every other call is unchanged.
+    USES_INNER = False
+    # Door S (module docstring): refinements of the view declarations, per field.
+    VIEW_CHANGES = MappingProxyType({})
+    SCOPED_READS = MappingProxyType({})
+    # Species identity (core/species_registry.py, D176): "author" for an operator that declares
+    # the species it writes, "user" for one that refers to species others declare.
+    IDENTITY_ROLE = "author"
+    # Its layers in the run view (docs/RUN_VIEW_DESIGN.md §3): ({"id", "label",
+    # "representation"}, ...), representation one of REPRESENTATIONS. None: undeclared, which the
+    # run-view writer refuses.
+    VIEW_LAYERS = None
     # A declaration with no part and no field (module docstring; check_declarations).
     DECLARATION_ONLY = False
 
@@ -155,6 +225,29 @@ class Operator:
     def observed_columns(cls):
         """Its own observation columns: its state fields, then READOUT_COLUMNS."""
         return (*cls.STATE_AXES, *cls.READOUT_COLUMNS)
+
+    @classmethod
+    def view_change(cls, field):
+        """Door S: the Change of a field it provides or closes (VIEW_CHANGES, else the default:
+        replace, or and for a closer, on every slot; stage split with a split part or none,
+        else event)."""
+        if field in cls.VIEW_CHANGES:
+            return cls.VIEW_CHANGES[field]
+        stage = "split" if cls.SPLIT or not (cls.EVENT or cls.PROCESS) else "event"
+        return Change("and" if field in cls.CLOSES else "replace", stage)
+
+    @classmethod
+    def scoped_read(cls, field):
+        """Door S: the Read of a field it reads (SCOPED_READS, else current for VIEW_READS and
+        fixed for CONFLICTS_VIEW, on every slot), or None."""
+        if field in cls.SCOPED_READS:
+            return cls.SCOPED_READS[field]
+        stage = "split" if cls.SPLIT else "event"
+        if field in cls.VIEW_READS:
+            return Read("current", stage)
+        if field in cls.CONFLICTS_VIEW:
+            return Read("fixed", stage)
+        return None
 
     # ------------------------------------------------------------ definition
 
@@ -214,6 +307,48 @@ class Operator:
         as above)."""
         return {}
 
+    def changed_slots(self, spec, declaration):
+        """Door S, host: {field: entity indices} for each field its scoped Change covers (the union
+        over the run: later doses, onsets and closures included)."""
+        return {}
+
+    def read_slots(self, spec, declaration):
+        """Door S, host: {field: entity indices} for each field its scoped Read covers."""
+        return {}
+
+    def moves_in_step(self, spec, declaration):
+        """The rows its in-step process (PROCESS) moves inside the inner step, as
+        ((species id, "cell" | "outside"), ...); read by core/species_registry.moved_in_step,
+        which the coupling operator's instantaneous admission uses (D176, "moved by the step").
+        An operator without an in-step process moves nothing in the step: ()."""
+        return ()
+
+    def species_identities(self, declaration):
+        """The species identities it declares: items with id, catalogue and evidence; ()."""
+        return ()
+
+    def view_events(self, spec, declaration, schedule):
+        """Its events in the run view: ({"time", "kind", "layer", "at", "from", "label"}, ...),
+        entities by id ({"set": id}), "from" optional. The default gives the births and
+        retirements of living_intervals, with their cells' ids; an operator with an event map or
+        a schedule overrides it, so that no event reaches the view without its entities."""
+        layer = self.VIEW_LAYERS[0]["id"] if self.VIEW_LAYERS else None
+        events = []
+        lives = self.living_intervals(spec, declaration, schedule)
+        for cell, (birth, retirement) in sorted(lives.items()):
+            for time, kind in ((birth, "birth"), (retirement, "retirement")):
+                if time is not None:
+                    events.append(
+                        dict(
+                            time=float(time),
+                            kind=kind,
+                            layer=layer,
+                            at=({"cells": cell},),
+                            label=f"{cell} {'born' if kind == 'birth' else 'retired'}",
+                        )
+                    )
+        return tuple(sorted(events, key=lambda e: (e["time"], e["kind"], e["label"])))
+
     def batch_signature(self, declaration):
         return (self.LAW_ID,)
 
@@ -233,6 +368,12 @@ class Operator:
 
     def view(self, state, p, q, *, xp):
         """{inner layout field: value} for VIEW_FIELDS, from state (q: the running view)."""
+        return {}
+
+    def view_slots(self, p, *, xp):
+        """Door S, device: {field: bool mask over the field's entity axis} for each field its
+        scoped Change covers: the slots its contribution is taken on (changed_slots' slots, bound
+        as layout data, checked when the composition binds)."""
         return {}
 
     def control_factors(self, state, p, *, xp):
@@ -346,6 +487,8 @@ DECLARATION_MAY_DEFINE = frozenset(
         "check_definition",
         "initial_values",
         "summary",
+        "VIEW_LAYERS",
+        "view_events",
     }
 )
 
@@ -454,4 +597,72 @@ def check_declarations(operator):
                 f"{name}: an event replaces {field} as an entity write, booked in owned "
                 "removed and supplied accumulators"
             )
+    _check_scopes(operator)
+    if operator.PROCESS and not _defined_below_operator(operator, "moves_in_step"):
+        raise ValueError(f"{name}: an in-step process declares the rows it moves (moves_in_step)")
+    if operator.IDENTITY_ROLE not in IDENTITY_ROLES:
+        raise ValueError(f"{name}: IDENTITY_ROLE is one of {IDENTITY_ROLES}")
+    _check_layers(operator)
     return operator
+
+
+def _check_layers(operator):
+    """VIEW_LAYERS, when declared (docs/RUN_VIEW_DESIGN.md §3)."""
+    layers = operator.VIEW_LAYERS
+    if layers is None:
+        return
+    name = operator.LAW_ID
+    if not isinstance(layers, tuple) or not layers:
+        raise ValueError(f"{name}: VIEW_LAYERS is a non-empty tuple of layers")
+    for layer in layers:
+        if not isinstance(layer, dict) or set(layer) != LAYER_KEYS:
+            raise ValueError(f"{name}: a view layer is a dict of {sorted(LAYER_KEYS)}")
+        if not all(isinstance(layer[k], str) and layer[k] for k in ("id", "label")):
+            raise ValueError(f"{name}: a view layer's id and label are non-empty strings")
+        if layer["representation"] not in REPRESENTATIONS:
+            raise ValueError(f"{name}: a view layer's representation is one of {REPRESENTATIONS}")
+
+
+def _check_scopes(operator):
+    """Door S's declarations (docs/SCOPED_COMPOSITION_DESIGN.md §2)."""
+    name = operator.LAW_ID
+    for field, change in operator.VIEW_CHANGES.items():
+        if not isinstance(change, Change):
+            raise ValueError(f"{name}: VIEW_CHANGES maps {field} to a Change")
+        if field in operator.CLOSES:
+            if change.contribution != "and":
+                raise ValueError(f"{name}: a closer's change of {field} is 'and'")
+            if change.scoped:
+                raise ValueError(
+                    f"{name}: closers change whole masks in R (docs/SCOPED_COMPOSITION_DESIGN.md "
+                    f"§3, rule 6), so {field} is not scoped"
+                )
+        elif field not in operator.VIEW_FIELDS:
+            raise ValueError(
+                f"{name}: VIEW_CHANGES refines a field it provides or closes, not {field}"
+            )
+        elif change.contribution not in CONTRIBUTIONS:
+            raise ValueError(f"{name}: the change of {field} is one of {CONTRIBUTIONS}")
+        if change.stage not in CHANGE_STAGES:
+            raise ValueError(f"{name}: the change of {field} is at a stage of {CHANGE_STAGES}")
+    for field, read in operator.SCOPED_READS.items():
+        if not isinstance(read, Read):
+            raise ValueError(f"{name}: SCOPED_READS maps {field} to a Read")
+        if read.mode not in READ_MODES or read.stage not in READ_STAGES:
+            raise ValueError(
+                f"{name}: the read of {field} has a mode of {READ_MODES} and a stage of "
+                f"{READ_STAGES}"
+            )
+        listed = dict(current=operator.VIEW_READS, fixed=operator.CONFLICTS_VIEW).get(read.mode)
+        if listed is not None and field not in listed:
+            kind = "VIEW_READS" if read.mode == "current" else "CONFLICTS_VIEW"
+            raise ValueError(f"{name}: a {read.mode} read of {field} needs it in {kind}")
+        if read.mode == "reference" and field in (
+            *operator.VIEW_READS,
+            *operator.CONFLICTS_VIEW,
+            *operator.VIEW_FIELDS,
+        ):
+            raise ValueError(
+                f"{name}: a reference read of {field} is not also read, held as declared or "
+                "provided"
+            )

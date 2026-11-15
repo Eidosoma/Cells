@@ -67,7 +67,6 @@ TRACE_LIMIT = 1e-6  # A ligand's trace at most 1e-6 K_d of every population bind
 TRACE_RTOL = 1e-12  # A node declared at its trace, to representation (amount / volume).
 DESTINATIONS = ("cell",)  # Version 1: the patch's own cell (§2.4).
 FACES, SIDES = ("outside", "inside"), ("first", "second")
-REACTIONS_LAW = "local_species_reactions@1"
 COMPARTMENTS_LAW = "cell_owned_compartments@1"
 CELL, OUTSIDE = 0, 1  # A facing node's kind.
 
@@ -464,23 +463,9 @@ def route_tables(declaration, schedule):
 
 
 def check_identities(spec, declaration):
-    """A ligand that D150's or D152's operators declare with another identity is refused, whichever
-    comes first (§1.6; the coupling operator's pattern)."""
-    mine = {ligand.identity.id: ligand.identity for ligand in declaration.species}
-    for op, other, _ in composite_spec.entries(spec):
-        if op.LAW_ID in common.SPECIES_LAWS:
-            theirs = other.species
-        elif op.LAW_ID == REACTIONS_LAW:
-            theirs = tuple(s.identity for s in other.species)
-        else:
-            continue
-        for item in theirs:
-            own = mine.get(item.id)
-            if own is not None and (own.catalogue, own.evidence) != (item.catalogue, item.evidence):
-                raise ConfigError(
-                    f"{LAW_ID} declares species {item.id!r} with another identity than "
-                    f"{op.LAW_ID} (catalogue reference and kind of evidence must agree)"
-                )
+    """A ligand declared with another identity than its one authority is refused (the species
+    registry: D150's and D152's operators come first, as authors, in either order; §1.6, D176)."""
+    common.check_identities(spec, LAW_ID, tuple(ligand.identity for ligand in declaration.species))
 
 
 def check_slots(spec, declaration):
@@ -1188,6 +1173,11 @@ def stage_report(state, control, p, dt):
 
 class SiteOccupancy(Operator):
     LAW_ID = LAW_ID
+    IDENTITY_ROLE = "user"  # Species registry (D176): its ligands are species others declare.
+
+    def species_identities(self, declaration):
+        return tuple(ligand.identity for ligand in declaration.species)
+
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"  # Declared; RK4 is refused at the definition (§4.6).

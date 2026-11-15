@@ -450,6 +450,7 @@ def key_of(route):
 
 class ScheduledSpeciesExchange(Operator):
     LAW_ID = LAW_ID
+    IDENTITY_ROLE = "author"  # Species registry (D176): it declares its species.
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"
@@ -496,6 +497,9 @@ class ScheduledSpeciesExchange(Operator):
         )
         values = common.control_arrays(tables, times, 2)
         return values[..., 0], values[..., 1]
+
+    def species_identities(self, declaration):
+        return declaration.species
 
     def check_definition(self, spec, declaration, schedule, model):
         common.check_species_cap(spec, LAW_ID)

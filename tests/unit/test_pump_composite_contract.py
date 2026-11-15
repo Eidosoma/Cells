@@ -76,7 +76,9 @@ def test_frozen_definitions_rewrite_with_the_frozen_fields(kind):
     assert cs.operator_laws(spec.model) == laws
     assert parse_spec(spec.to_dict()) == spec
     model = get_model(spec.model)
-    assert model is pump_composite.implementation("resolved_pump_tissue@3", laws)
+    structure = pump3.inner_structure(spec.model)  # I2: one composition per inner structure.
+    assert model is pump_composite.implementation("resolved_pump_tissue@3", laws, structure)
+    assert model.inner is pump3.for_structure(structure)
     assert model.STATE_TYPE._fields == frozen.STATE_TYPE._fields
     state, layout = model.initial_values(spec)
     frozen_spec = parse_spec(raw)
