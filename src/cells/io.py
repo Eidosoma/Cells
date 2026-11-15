@@ -18,6 +18,7 @@ import numpy as np
 
 import cells
 from cells import continuity as _continuity
+from cells import run_view
 from cells.core.devices import execution_device
 from cells.core.runner import RunResult, validate_checkpoint
 from cells.core.specs import ConfigError, SimulationSpec, digest, parse_spec, read_json
@@ -213,9 +214,13 @@ def write_run(
     *,
     checkpoint_times: tuple[float, ...] = (),
     provenance: dict | None = None,
+    view: run_view.Request | None = None,
 ) -> dict:
     # Check requested boundaries before creating any output.
     checkpoints = [(time, result.checkpoint_at(time)) for time in sorted(set(checkpoint_times))]
+    # The run view, when requested (cells/run_view.py): refused here, before any output.
+    plan = None if view is None else run_view.prepare(result.spec, view, layout=result.final.layout)
+    keep = None if plan is None else plan.keeper()
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=False)
     started = perf_counter()
@@ -234,6 +239,8 @@ def write_run(
             for name, value in vars(obs).items()
         }
     )
+    if keep is not None:  # The view's recording subset.
+        arrays = keep(arrays)
     np.savez(
         directory / "trajectory.npz",
         accepted_times=result.times,
@@ -262,6 +269,9 @@ def write_run(
     if summary["active_cells"] == 1:
         summary["cell_id"] = summary["cell_ids"][0]  # Original single-cell summary compatibility.
     _write_json(directory / "summary.json", summary)
+    if plan is not None:  # Before the checksums, which then cover it.
+        bases = run_view.single_file_bases(result.times, arrays["observation_times"])
+        plan.write(directory, bases, "write_run")
     checksums = {
         str(path.relative_to(directory)): _sha256(path)
         for path in sorted(directory.rglob("*"))
