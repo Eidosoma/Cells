@@ -636,9 +636,11 @@ def part_selfcheck(args):
         arm="sodium_free", strength=0.25, dt=args.dt, width_s=width_s, m_s=m_s,
     )  # fmt: skip
     junctions = {k: 0.25 for k, (a, b) in enumerate(geo["edges"]) if a in held or b in held}
+    # The run covers the whole stimulus: every control must lie within the horizon (attempt 1 of
+    # PLAN amendment 1 stopped here when the horizon ended inside the stimulus).
     raw2, on, stim_end = sheet_definition(
         args, geo, stim=stim, cell_nav={i: 0.0 for i in disc}, junctions=junctions, dt=args.dt,
-        width_s=width_s, m_s=m_s, end=STIM_ON_S + 0.2e-3,
+        width_s=width_s, m_s=m_s, end=STIM_ON_S + width_s + 1e-4,
     )  # fmt: skip
     r2 = execute_sheet(raw2)
     t2, im2 = r2["times"], r2["im"]
