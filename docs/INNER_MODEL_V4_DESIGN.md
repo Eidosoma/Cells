@@ -573,13 +573,17 @@ registry code.
     each row's view, with the closures, so those slots carry code 0 on their closed rows. Per-law
     dispatch would change both columns there, at slots that are active on other rows, which the
     whole-run mask rightly does not cover. S3's cleft egg has no population.
-  - **So the padding rule is revised: the host keeps today's padding values.** The observer
+  - **Proposed, for the lead to confirm: the host keeps today's padding values.** The observer
     evaluates readouts in NumPy, and nothing compiled reads a padded slot's kinetics (the gate
-    update, the gate rate, the flux and the domain all mask them). So the host readouts give a
-    code-0 slot the code-0 law's kinetics, as today, when the code-0 law is not declared (every
+    update, the gate rate, the flux and the domain all mask them). So the host readouts would give
+    a code-0 slot the code-0 law's kinetics, as today, when the code-0 law is not declared (every
     code-0 slot is then padding), while compiled programs keep P2's form and carry no undeclared
-    kernel. Both columns then stay bitwise in every world, and the dispatch commit needs no
-    comparator exception for them; the lead's whole-run rule stays as the comparator's safeguard.
+    kernel. Both columns would then stay bitwise in every world.
+    - **Not yet measured.** The dispatch commit must show it on a division world with closed slots,
+      bitwise in every observation column.
+    - **Ruling 8's two merge conditions stay the lead's to lift:** the comparator's whole-run
+      padding mask with its planted active-slot control, and a law-steady replacement world that
+      runs at the tag.
 
 #### (c) Build-time selection: one implementation per structure
 
@@ -648,7 +652,8 @@ registry code.
    programs are unchanged: checked by crossrev identity as well as against the baseline. This is
    the first API commit, which OPS and INT test against.
 2. **Per-law channel dispatch,** the declared-code domain and the trapezoid leaf's removal:
-   bitwise, except the padding columns (K1's rule).
+   bitwise, with the host keeping today's padding values if the lead confirms (b)'s proposal,
+   shown on a division world with closed slots; otherwise bitwise except the two padding columns.
 3. **Pump and junction-law dispatch:** bitwise, up to signed zeros at exact zeros, reported apart.
 4. **The compile key and A4's two tests** (§2.2, §5.2):
    - an undeclared law contributes no kernel and no state: a jaxpr check that a world without
@@ -795,21 +800,23 @@ registry code.
        charge and energy ledgers and the device checks.
    - Door S's stage is `inner`. Its rows are rows, not view fields (SCOPED_COMPOSITION_DESIGN.md
      §6).
-3. **B7's slot.**
-   - **At the definition:** a new host function, `surface_pump.face_free_rate_bound(spec)`, beside
-     `explicit_rate_bound`. It takes the maximum over free face-free finite nodes (active, not a
-     held bath, not the gauge, not a fixed node, named by no face) of Σ_m G_m/C_node at the
-     declared state, with G_m the max-side constant-field slope of each ion route on the node's
-     patches. The step checks refuse dt × that rate > `FACE_FREE_STEP_BOUND`.
-   - **At run time:** `membrane_rate`'s companion at the actual openings, checked at every explicit
-     stage against the same constant. It is statically present only when the structure flags a free
-     face-free node with an ion route, so every other world's program is unchanged.
-   - **The split:** FR45 supplies the term's exact form and its constant (0.05 on the max-side G,
-     from the energy threshold), after its booking-versus-state check. CORE implements both halves,
-     with a D148 record for @1 and @2, which share `surface_pump`. P3 swept @3's family only; for
-     @1 and @2, FR-1's static sweep of 99 model blocks found no free face-free node with an ion
-     route in their worlds (CLOSED_COMPARTMENT_DESIGN.md §3.4), and the D148 record confirms it on
-     their registered worlds before the change.
+3. **B7's slot (as the lead ruled on 15 November; §13.6).**
+   - **At the definition, host-only:** a new term beside `explicit_rate_bound`'s, the maximum over
+     free face-free finite nodes (active, not a held bath, not the gauge, not a fixed node, named by
+     no face) of Σ_m G_m/C_node at the declared state, with G_m the max-side constant-field slope of
+     each ion route on the node's patches. The step checks refuse dt × that rate above the bound's
+     **ordinary constant**, `EXPLICIT_STEP_BOUND`, as for every other term.
+   - **One commit with finding 3's term,** with one D148 record and @1's and @2's cases, since they
+     share `surface_pump`. P3 swept @3's family only; for @1 and @2, FR-1's static sweep of 99
+     model blocks found no free face-free node with an ion route in their worlds
+     (CLOSED_COMPARTMENT_DESIGN.md §3.4), and the D148 record confirms it on their registered worlds
+     before the change.
+   - **No run-time half in this commit,** and no 0.05 constant. FR-4 declares its own step, 0.025
+     on the max-side G, confirmed by its own dt study. A tighter constant, and a run-time half if one
+     is needed, belong with the exact heat booking (§7.5), which removes the energy-ledger limit the
+     charged-patch test measured.
+   - **FR45 supplies the term's exact form** after its booking-versus-state check; CORE implements
+     it.
 4. **The implicit patch: yes, behind one slot,** the IMEX step's implicit set. *The first design
    below put the patch into the global operator beside the faces. The decision at the end of this
    item runs it instead as a local stage solve, FR45's Newton form, and leaves the faces as they
@@ -845,11 +852,12 @@ registry code.
        `imex_step` already holds the start derivative for both.
      - Each implicit set is a new solver ID (D147), for example
        `imex_ars222_face_patch_electromigration@1` (name **S**).
-   - **Owners, reconciled with §13.4:** CORE builds the slot in `surface_pump_v3.imex_step`, with
-     faces moved behind it bitwise. FR45 codes the patch kind against it in a new module, and
+   - **Owners, reconciled with §13.4** (the first design; see the decision below): CORE builds the
+     slot in `surface_pump_v3.imex_step`; FR45 codes the patch kind against it in a new module, and
      qualifies it, with REF's reference. The field-solver interface keeps the factorization and the
      solve (FIELD_SOLVER_INTERFACE_DESIGN §6), which the slot calls unchanged; a later sparse or
-     condensed solver replaces them behind the same calls.
+     condensed solver replaces them behind the same calls. Under the decision below the faces stay
+     where they are, and CORE's slot is the local stage solve.
    - **Which form the slot runs (decided 15 November, after reading the module).** FR45's module
      (`processes/patch_electrodiffusion.py`, `fr45-physics` 4f267ef4) gives two forms: the global
      pieces above (frozen weights with a non-negative conductance; the patch's block, symmetric,
@@ -870,6 +878,11 @@ registry code.
          the patch's solve is present only where a patch kind is declared;
        - **its routes leave the explicit rates** and the explicit-stage rule, and B7's face-free
          term counts only explicit routes.
+     - **Its admission:** the solve is self-contained only on a face-free node with exactly one
+       bounding patch, so a patch kind is refused anywhere else.
+     - **To settle with FR45 before it is wired:** what `x_hat` carries at ARS's last stage, and how
+       the owner cell receives the moved amount within the stage (CORE reads `stage_solve` itself
+       first; the module's head and commit message were read for this note).
      - **Its qualification** (FR45, with REF) shows second order under ARS(2,2,2). The owner cell's
        concentrations enter each stage's solve at that stage's known state, an O(h)-relative
        approximation scaled by V_comp/V_cell, which the order study measures.
@@ -893,6 +906,8 @@ registry code.
   - **B7** ((g) 3), at the bound's ordinary constant, with finding 3's term: about 1, host-only,
     one commit with one D148 record and @1's and @2's cases (§13.6).
   - **The implicit slot** ((g) 4) follows once FR-4's first world runs: 1–1.5.
+  - **In all, 6–7.5 agent-days,** which supersedes the earlier 3.5–5: that estimate had no
+    per-structure schema and a smaller transporter.
 - **Off the core's path:** the passive law's kernel module goes to FR45 (the proton leak's
   sibling), and CORE writes its insertion point only, with the exact heat booking (§7.5); the
   summation study goes to OPS (§10.6).
@@ -918,7 +933,8 @@ the insertion point is CORE's. Its conventions, fixed here:
 - **The effective PA:**
   - **on a junction, P·A·gate·availability:** the junction's area, its gate state
     (`junction_gate`, the junction law's) and its availability control, the same opening the
-    junction's ions see;
+    junction's ions see. The gate is evolving state, not 1 at 0 V, so the closed-pair world starts
+    it at its steady value, or the reference integrates it;
   - **on a membrane patch, P·A·availability:** the patch's area and its availability control.
 - **The flux** is the kernel's constant-field route at valence 0 (Fick's law), at every explicit
   stage, inward-positive, into the node amounts on both sides.
@@ -1891,8 +1907,10 @@ run; host only, from the tag's snapshot, 2.5 s).
   declared), P2's per-law functions change `channel_targets` and `channel_tau_s` at the two
   inactive slots only (Kv1.5 at 0 V before; 0 and 1 after). The other 65 readouts are bitwise. In
   the five-law release world, all 67 are bitwise.
-- **So:** §7.4 fixes the padding rule, and G1's comparator treats those two columns at inactive
-  slots as padding (§3).
+- **So:** §7.4 (b) first made those two columns a comparator exception. The later activity check
+  found closed slots that are active on other rows (the division worlds), so §7.4 (b) now proposes
+  that the host keep today's padding values; the lead's whole-run comparator rule stays as the
+  safeguard (§3).
 
 ## Sources
 
