@@ -80,8 +80,14 @@ def test_a_division_through_the_windowed_path(declared, tmp_path):
         (pf.EVENT, "retirement", {"cell": "cell_0"}, "division"),
     ]
     records = {r["id"]: r for r in view["records"]}
-    for name in ("membrane_dissipated_energy_pJ", "observed_membrane_transferred"):
+    # The ledgers the partition writes restart on a retired slot (the parent's membrane heat
+    # falls to 0 at the division); the heat it does not write keeps its monotone claim, which
+    # the reader's check above confirmed on the saved arrays.
+    for name in ("membrane_dissipated_energy_pJ", "channel_dissipated_energy_pJ"):
         assert records[name]["resets"]["by"] == [PARTITION] and "monotone" not in records[name]
+    assert records["observed_membrane_transferred"]["resets"]["by"] == [PARTITION]
+    for name in ("pump_dissipated_energy_pJ", "face_dissipated_energy_pJ"):
+        assert records[name]["monotone"] == "non-decreasing" and "resets" not in records[name]
     assert "resets" not in records["observed_amount"]  # Not a cumulative ledger.
     unstated = {(u["id"], u["what"]) for u in view["unstated"]}
     assert ("partition_retired_membrane_heat_pJ", "kind") in unstated

@@ -235,6 +235,21 @@ def test_a_model_outside_version_1_is_refused():
         run_view.prepare(spec, run_view.Request(), layout=None)
 
 
+def test_a_time_base_without_rows_is_left_out(tmp_path):
+    assert run_view.single_file_bases([0.0, 0.1], []) == {"accepted": [("trajectory.npz", 2)]}
+    (tmp_path / "windows.jsonl").write_text(
+        json.dumps(
+            dict(kind="window", path="chunks/w0.npz", accepted_records=0, observation_records=2)
+        )
+        + "\n"
+        + json.dumps(dict(kind="window", path=None, accepted_records=0, observation_records=0))
+        + "\n"
+    )
+    assert run_view.window_bases(tmp_path / "windows.jsonl") == {
+        "observation": [("chunks/w0.npz", 2)]
+    }
+
+
 def test_a_batch_request_names_every_world_once():
     request = run_view.Request()
     assert run_view.requests_for(None, [10, 11]) == {}

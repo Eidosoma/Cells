@@ -37,8 +37,9 @@ Declarations read, and their interim stand-ins
   unstated.
 * Retirement: where an operator RETIRES slots, a retired slot's inner history moves into that
   operator's own record at its retirement (the composite's checks add it back), so the inner
-  ledgers restart at zero there on the saved arrays. Their records then say so (``resets``) and
-  claim no monotonicity; elsewhere every ``*_dissipated_energy_pJ`` record is ``monotone``.
+  ledgers it writes (the field map's writers) restart at zero there on the saved arrays. Their
+  records say so (``resets``) and claim no monotonicity; every other ``*_dissipated_energy_pJ``
+  record is ``monotone`` (on S5's division the fallen heat ledgers were exactly those).
 * Owners: the composition's field map (state owners, observation owner chains: the last).
 * Laws (requirement 4): each channel population's, junction's and pump's law from the structure
   record's law declarations (models/inner_laws.py), with its provenance; membranes and faces carry
@@ -106,10 +107,11 @@ TOP_KEYS = frozenset(
 )
 HEAT_SUFFIX = "_dissipated_energy_pJ"
 RESETS_NOTE = (
-    "These operators retire slots: at a slot's retirement its history in this ledger moves into "
-    "the retiring operator's own record (the composite's checks add it back), and this record "
-    "restarts at zero there. A difference across a retirement is not a flow, and a heat total "
-    "only grows with that record added back."
+    "Written at the events of these operators, which retire slots: a retired slot's history in "
+    "this ledger moves into the retiring operator's own record (the composite's checks add it "
+    "back), so on that slot it restarts at zero. A difference across such an event is the "
+    "operator's booking, not this ledger's flow; a heat total only grows with that record added "
+    "back."
 )
 HEAT_NOTE = (
     "A total per element: zero or more and never falling, checked at every accepted row (the "
@@ -1243,12 +1245,10 @@ class Plan:
                     record["kind"] = info.kind
                 if info.sign is not None:
                     record["sign"] = info.sign
-                resets = self.retiring and info.owner == self.inner_id and info.kind == "cumulative"
+                by = [law for law in info.writers if law in self.retiring]
+                resets = bool(by) and info.owner == self.inner_id and info.kind == "cumulative"
                 if resets:  # A retired slot's history moves out at its retirement.
-                    record["resets"] = {
-                        "by": list(self.retiring),
-                        "says": RESETS_NOTE,
-                    }
+                    record["resets"] = {"by": by, "says": RESETS_NOTE}
                 elif name.endswith(HEAT_SUFFIX):
                     record["monotone"] = "non-decreasing"
                     record["note"] = HEAT_NOTE
@@ -1353,8 +1353,9 @@ def dumps(value):
 
 
 def single_file_bases(times, observation_times, *, file="trajectory.npz"):
-    """io.write_run's time bases: one file holds both."""
-    return {"accepted": [(file, len(times))], "observation": [(file, len(observation_times))]}
+    """io.write_run's time bases: one file holds both (a base with no rows is left out)."""
+    counts = {"accepted": len(times), "observation": len(observation_times)}
+    return {base: [(file, count)] for base, count in counts.items() if count}
 
 
 def window_bases(index, *, world_id=None, prefix=""):
