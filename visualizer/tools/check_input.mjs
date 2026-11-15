@@ -228,7 +228,14 @@ try {
   if (wants("species")) {
     await open("lens=proteins");
     let s = await speciesState();
-    const other = s.species.find((item) => !item.pressed);
+    // The species to switch to: one with a unit built from another family, where there is one, so
+    // that the checks on such a unit run; otherwise the first that is not shown.
+    const rich = await evaluate(`(() => {
+      const nodes = [...${VIEWER}.current.nodes.values()];
+      const shown = ${JSON.stringify(s.species.filter((item) => !item.pressed).map((item) => item.id))};
+      return shown.find((id) => nodes.some((node) => node.entity.species?.[id]?.finding === "different family")) ?? null;
+    })()`);
+    const other = s.species.find((item) => item.id === rich) || s.species.find((item) => !item.pressed);
     if (!other) {
       check("species: a scene with one atlas shows no switch, and no rings", s.species.length === 0 && s.marks === 0, JSON.stringify(s.species));
     } else {
