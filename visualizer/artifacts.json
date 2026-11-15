@@ -109,6 +109,11 @@
           "date": "2026-11-15",
           "engine_revision": "f791294c",
           "note": "The map gains the modular inner model (D172, D176: designed, in implementation on an integration branch, not on main) and levels of detail (D175), and says of the composite what the record says of the L4 (agreement within tolerance; the bitwise criterion open). Every 'qualified' label was checked against main's record at f791294c. Checked on a clean copy of 15549fd4: the scene built strictly with no warning; 211 tests (210 pass, 1 skipped); the engine's real-input checks, 4 of 4. Nothing else changed since Version 8, whose full checks stand; the 71 files beside the page were not sent again"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "1bd1cfbd",
+          "note": "The engine map level with main 1bd1cfbd after a pass over every entry: the modular rework of the inner model is a hub that delivers eleven designed parts, each saying what holds today and that it is not on main, and the Cell view says part by part what runs today and what the rework brings (designed 10 to 24, qualified 39 to 40). In the species' own proteins every tool behind a predicted placement is named with its own terms and counts, and Syn3A's lipid anchors come from a sequence rule of the tool's own (5 proteins outside where 13 were), pending the user's decision on values a restricted tool computed. Checked on a clean copy: 55 of 55 real-input checks and 41 of 41 species checks at e6396b3a, shelves checks 17 of 17 (Syn3A), 18 of 18 (planarian) and 6 of 6 (without the files) at b210a54a, where only the check itself differs; 226 tests (225 pass, 1 skipped). Sent with the page: the three species' shelves files; the other 68 files beside it are unchanged"
         }
       ],
       "files": "out/cells-architecture.files.json lists the files published beside the page: the runs and the species' own proteins (generated, not committed)"
