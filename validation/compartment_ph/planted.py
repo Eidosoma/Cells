@@ -88,17 +88,16 @@ def _ledger_terms(state, p, *, xp):
 
 
 def _stage_term(read, potentials, control, p, *, xp):
-    """The kernel's slope at the stage, the transporter's own form with the two sides exchanged:
-    at the stage's patch voltage, negated into the law's frame (the true slope, past its static
-    head included), or at the reversed law's static head when membrane_rate passes no
-    potentials."""
+    """The kernel's slope at the stage, the transporter's own form with the two sides exchanged,
+    at both of the patch's ends (cells, then outside nodes): at the stage's patch voltage, negated
+    into the law's frame (the true slope, past its static head included), or at the reversed
+    law's static head when membrane_rate passes no potentials."""
     from cells.models.inner_kinds import transporter as t
-    from cells.numerics.extracellular_field import scatter
+    from cells.models.surface_pump_v3 import patch_node_conductance
     from cells.processes import proton_pump as proton
 
-    n = p.active.size
     if not p.transporter_proton.shape[-1]:
-        return xp.zeros(n)
+        return xp.zeros(p.active.size + p.outside_active.size)
     c_in, c_out, fuel = t.gather(read, p, xp=xp)
     i, q = t.proton_law(c_out, c_in, xp.zeros_like(c_in), fuel, p, xp=xp)
     if potentials is None:  # Structure, not a value: the caller passes no potentials.
@@ -109,7 +108,7 @@ def _stage_term(read, potentials, control, p, *, xp):
         i._replace(voltage_V=voltage), q, control.transporter_availability, xp=xp
     )
     slope = xp.where(p.transporter_proton & p.membrane_active, slope, 0.0)
-    return scatter(slope, xp.zeros(n), (p.membrane_cell,), xp=xp)
+    return patch_node_conductance(slope, p, xp=xp)  # Both ends: cells, then outside nodes.
 
 
 def _readouts(state, read, potentials, control, p, *, xp):

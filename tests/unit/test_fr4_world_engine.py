@@ -169,11 +169,14 @@ def test_k2s_planted_slope_follows_the_patch_voltage_in_its_exchanged_frame():
         read, ok = proton_buffer.stage_read(state, p, xp=np)
     assert bool(ok)
     b = [m.id for m in spec.model.membranes].index(defs.BOUNDING)
-    cell = int(p.membrane_cell[b])
+    n = p.active.size  # stage_term is per node: cells, then outside nodes.
+    cell, lumen = int(p.membrane_cell[b]), n + int(p.membrane_outside[b])
     c_in, c_out, fuel = transporter.gather(read, p, xp=np)
     i, q = transporter.proton_law(c_out, c_in, np.zeros_like(c_in), fuel, p, xp=np)
     head = -float(transporter.static_head_V(i, q, xp=np)[b])  # The patch's frame.
-    bare = float(kind.stage_term(read, None, control, p, xp=np)[cell])
+    bare_nodes = kind.stage_term(read, None, control, p, xp=np)
+    bare = float(bare_nodes[:n][cell])
+    assert float(bare_nodes[lumen]) == bare  # The patch's both ends.
 
     def potentials(voltage):  # The bounding patch's cell at V; the lumen and the bath at 0.
         out = np.zeros(p.active.size + p.outside_active.size)
@@ -182,6 +185,77 @@ def test_k2s_planted_slope_follows_the_patch_voltage_in_its_exchanged_frame():
 
     a_unit = 2 * F / (R * spec.model.temperature_K)
     for shift in (-0.05, 0.0, 0.02, 0.05):
-        term = float(kind.stage_term(read, potentials(head + shift), control, p, xp=np)[cell])
+        term = float(kind.stage_term(read, potentials(head + shift), control, p, xp=np)[:n][cell])
         assert term == pytest.approx(bare * math.exp(a_unit * shift), rel=1e-9), shift
     assert 0.25 < head < 0.3  # FR-4's drive near -51 kJ/mol, n = 2, h_c = h_L at the start.
+
+
+def test_a_pump_past_its_head_is_refused_at_the_face_free_lumens_row():
+    """Item 7 per node (core-d172 2c780f9f): the pump's slope goes to both of its patch's ends, so
+    B7's per-stage refusal holds FR-4's face-free lumen, whose node carries the bounding patch's
+    capacitance alone, as well as the cell, which carries the plasma patch's too. Driven past its
+    static head until dt G / C_b = 1.5 at the declared 1 ms, the stage is refused at the lumen's
+    row, where the cell's row alone (the same slope counted at the cell only) passes. No run:
+    membrane_rate at the development world's start, at potentials past the head."""
+    import dataclasses
+    import math
+
+    import numpy as np
+
+    from cells.core import kind_registry
+    from cells.core.surface_pump_v3_spec import control_values
+    from cells.models import surface_pump_v3
+    from cells.models.inner_kinds import proton_buffer, transporter
+    from cells.processes.electrochemistry import F, R
+    from validation.compartment_ph import planted
+
+    spec = parse_spec(defs.development_world(defs.fr4_world()))
+    structure = surface_pump_v3.structure(spec.model)
+    state, p = surface_pump_v3.initial_values(spec, structure=structure)
+    controls = control_values(spec, [0.0])
+    control = type(controls)(*(v[0] for v in controls))
+    read, ok = proton_buffer.stage_read(state, p, xp=np)
+    assert bool(ok)
+    dt, bound = spec.execution.dt, surface_pump_v3.EXPLICIT_STEP_BOUND
+    patches = [m.id for m in spec.model.membranes]
+    b = patches.index(defs.BOUNDING)
+    n, j = p.active.size, int(p.membrane_outside[b])
+    cell, lumen = int(p.membrane_cell[b]), n + j
+    assert bool(surface_pump_v3.free_outside_nodes(p, xp=np)[j])  # The lumen is face-free.
+    c_b = spec.model.membranes[b].capacitance_F
+    c_cell = sum(m.capacitance_F for m in spec.model.membranes if m.inside == defs.CELL)
+    assert c_cell > 2 * c_b  # The plasma patch's capacitance is the cell's too.
+
+    c_in, c_out, fuel = transporter.gather(read, p, xp=np)
+    i, q = transporter.proton_law(c_in, c_out, np.zeros_like(c_in), fuel, p, xp=np)
+    head = float(transporter.static_head_V(i, q, xp=np)[b])
+    bare = float(transporter.stage_term(read, None, control, p, xp=np)[:n][cell])
+    target = 1.5 * bound * c_b / dt  # The pump's slope that the lumen's row cannot hold.
+    voltage = head - math.log(target / bare) * R * spec.model.temperature_K / (2 * F)
+    potentials = np.zeros(n + p.outside_active.size)
+    potentials[cell] = voltage  # The bounding patch at V, past the head; the lumen at 0.
+    nodes = transporter.stage_term(read, potentials, control, p, xp=np)
+    assert float(nodes[:n][cell]) == pytest.approx(target, rel=1e-9)
+    assert float(nodes[lumen]) == float(nodes[:n][cell])
+
+    def rate():
+        return float(
+            surface_pump_v3.membrane_rate(
+                state, control, p, xp=np, structure=structure, potentials=potentials
+            )
+        )
+
+    per_node = rate()
+    assert dt * per_node > bound  # Refused, at the lumen's row:
+    assert dt * per_node == pytest.approx(1.5, abs=0.05)  # target / C_b, with the K+ route's.
+
+    def cells_only(read, potentials, control, p, *, xp):  # The same slope at the cell alone.
+        nodes = transporter.stage_term(read, potentials, control, p, xp=xp)
+        return xp.where(xp.arange(nodes.shape[0]) < p.active.size, nodes, 0.0)
+
+    with kind_registry.scope(
+        planted.registry(dataclasses.replace(transporter.TRANSPORTER, stage_term=cells_only))
+    ):
+        cell_row = rate()
+    assert dt * cell_row <= bound  # The cell's row alone would pass.
+    assert dt * cell_row == pytest.approx(1.5 * c_b / c_cell, abs=0.05)

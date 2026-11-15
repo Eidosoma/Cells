@@ -51,12 +51,13 @@ What the hooks do:
 - **membrane_flux** (gap 9): the role's outward flux across each patch joins the patches' total
   flux and, for a charged role, the membrane current.
 - **stage_term** (gap 5, B7 for kinds): each charged population's electrogenic slope, n e M e^a
-  nF/RT with a = ΔG_cyc/RT, at the stage's read and patch voltage, to its patch's cell: the true
-  slope in every regime, so a pump driven past its static head (the voltage where ΔG_cyc = 0)
-  into reverse (a > 0) counts its e^a. Called without potentials it takes the static head, the
-  forward regime's maximum (a <= 0 while the pump runs forward or stalls). **bound_rate:** B7's
-  definition-time term, the slope bounded with the role's saturation and e^a at 1, over each free
-  node's capacitance.
+  nF/RT with a = ΔG_cyc/RT, at the stage's read and patch voltage, at both of its patch's ends
+  (cells, then outside nodes: surface_pump_v3.patch_node_conductance): the true slope in every
+  regime, so a pump driven past its static head (the voltage where ΔG_cyc = 0) into reverse
+  (a > 0) counts its e^a, at a face-free compartment's node as at the cell. Called without
+  potentials it takes the static head, the forward regime's maximum (a <= 0 while the pump runs
+  forward or stalls). **bound_rate:** B7's definition-time term, the slope bounded with the role's
+  saturation and e^a at 1, over each free node's capacitance.
 - **held_rows** (gap 8): held fuel's rows at its node, which binding refuses any other writer of.
 - **ledger_terms:** the role's cumulative transfers (n x cycles at its two nodes), the heat and
   the held fuel's work, folded into @3's ledgers by role (rule (a)).
@@ -587,14 +588,17 @@ def readouts(state, read, potentials, control, p, *, xp):
 
 
 def stage_term(read, potentials, control, p, *, xp):
-    """[cell] conductance (S) of the charged populations at the stage (gap 5): each proton pump's
-    electrogenic slope n F |d cycles/dV|, the kernel's own conductance, at the stage's read and
-    patch voltage, so a pump driven past its static head into reverse counts its e^a (module
-    docstring). Without potentials (membrane_rate called bare) the slope is taken at the static
-    head, the forward regime's maximum."""
+    """[cells, then outside nodes] conductance (S) of the charged populations at the stage (gap
+    5): each proton pump's electrogenic slope n F |d cycles/dV|, the kernel's own conductance, at
+    the stage's read and patch voltage, at both of its patch's ends, so a pump driven past its
+    static head into reverse counts its e^a at the cell and at a face-free compartment's node
+    (module docstring). Without potentials (membrane_rate called bare) the slope is taken at the
+    static head, the forward regime's maximum."""
+    from cells.models.surface_pump_v3 import patch_node_conductance
+
     n = p.active.size
     if not p.transporter_proton.shape[-1]:  # Static: no charged law is declared.
-        return xp.zeros(n)
+        return xp.zeros(n + p.outside_active.size)
     c_in, c_out, fuel = gather(read, p, xp=xp)
     i, q = proton_law(c_in, c_out, xp.zeros_like(c_in), fuel, p, xp=xp)
     if potentials is None:  # Structure, not a value: the caller passes no potentials.
@@ -605,7 +609,7 @@ def stage_term(read, potentials, control, p, *, xp):
         i._replace(voltage_V=voltage), q, control.transporter_availability, xp=xp
     )
     slope = xp.where(p.transporter_proton & p.membrane_active, slope, 0.0)
-    return scatter(slope, xp.zeros(n), (p.membrane_cell,), xp=xp)
+    return patch_node_conductance(slope, p, xp=xp)
 
 
 # ---------------------------------------------------------------------------- the checks
