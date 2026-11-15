@@ -8,23 +8,36 @@ form schema/SPECIES_ATLAS.md fixes. The answers are drawn from the planarian's U
 entries and from the gene models of one genome annotation, which the tool also writes
 out as a table.
 
-Two steps, kept apart:
+Three steps, kept apart:
 
-    python3 tools/build_planarian_atlas.py fetch --evidence DIR
-        asks public databases and saves every response in DIR/responses, with what was
-        asked and when in DIR/requests.json. The only step that uses the network.
+    python3 tools/build_planarian_atlas.py fetch --evidence DIR --datasets DATA
+        asks public databases and saves every response: those of the atlas and the
+        catalogue in DIR/responses, with what was asked and when in DIR/requests.json;
+        those the shelves added in DATA, one folder for each source with a MANIFEST.json
+        that gives every file's address, time and SHA-256. The only step that uses the
+        network.
 
-    python3 tools/build_planarian_atlas.py build --evidence DIR
-        reads only DIR and the inventory snapshot, and writes
+    python3 tools/build_planarian_atlas.py build --evidence DIR --datasets DATA
+        reads only DIR, DATA and the inventory snapshot, and writes
         data/proteins/atlases/planarian.json and, in data/proteins/planarian/,
-        predicted_proteins.tsv, reference_proteins.tsv and README.md: the same bytes
-        every time.
+        predicted_proteins.tsv, reference_proteins.tsv, shelves.json, shelf_members.tsv
+        and README.md: the same bytes every time.
 
-The mass-spectrometry library of about 10,000 planarian proteins (Ying and others 2025)
-is not imported: its list of proteins could not be reached under terms that allow a copy.
+    python3 tools/build_planarian_atlas.py members --out OUT
+        cuts the shelves' member files, which the page publishes beside it, from the
+        tables in data/proteins/planarian/. It reads nothing else.
+
+The mass-spectrometry library of planarian proteins (Ying and others 2025) is not
+imported: its list of proteins could not be reached under terms that allow a copy. The
+paper reserves all rights, so nothing of it, its count of proteins included, is repeated.
 The README the build writes says what was found and what is missing. In the meantime the
 open set is written out whole (predicted_proteins.tsv): every gene model with a predicted
 protein and every UniProtKB entry of the species. It is predicted, not measured.
+
+The shelves (schema/SPECIES_PROTEINS.md) lay that open set out for the atlas: every
+protein is given one family, a side of a membrane and how that side is known, and the
+families open to show their members. Everything in them is a prediction on a predicted
+protein.
 
 This is the viewer's reference data. It is not the engine's protein catalogue and it
 makes no claim about the engine: the laws are the same for every species.
@@ -36,6 +49,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import hashlib
 import json
 import re
 import sys
@@ -143,8 +157,8 @@ def requests(snapshot):
     add("terms_europepmc_s3_genome_paper_fulltext.xml", f"{EPMC}/PMC11410931/fullTextXML", "the genome paper's own licence and data availability statement")
     add("terms_iprox_data_licence.html", "https://www.iprox.org/page/iproxDataLisence.html", "iProX's data licence")
     add("terms_insdc_policy.html", "https://www.insdc.org/policy/", "the policy of the nucleotide sequence databases, which covers the sequence records read")
-    # The catalogue of about 10,000 proteins: read, and not copied.
-    add("spectral_library_europepmc.json", f"{EPMC}/search?query={q('ext_id:40961932 AND src:med')}&format=json&resultType=core", "the paper that reports a spectral library of about 10,000 planarian proteins")
+    # The mass-spectrometry library: read, and not copied.
+    add("spectral_library_europepmc.json", f"{EPMC}/search?query={q('ext_id:40961932 AND src:med')}&format=json&resultType=core", "the paper that reports a spectral library of planarian proteins")
     add("spectral_library_crossref.json", "https://api.crossref.org/works/10.1016/j.devcel.2025.08.015", "that paper's licence and copyright statement")
     add("spectral_library_publisher_page.html", "https://www.cell.com/developmental-cell/fulltext/S1534-5807(25)00536-2", "the paper's own page, where its supplementary tables are listed", refusal_expected=True)
     add("spectral_library_PXD042308.xml", "https://proteomecentral.proteomexchange.org/cgi/GetDataset?ID=PXD042308&outputMode=XML", "what the paper's public deposit holds")
@@ -211,6 +225,200 @@ def fetch(evidence, snapshot, refresh=False, pause=0.5, tries=5):
         (evidence / "requests.json").write_text(json.dumps(manifest, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
         time.sleep(pause)
     print(f"asked {asked} request(s), {failed} failed; {len(done)} on record in {evidence / 'requests.json'}")
+    return failed
+
+
+# ---------------------------------------------------------------------------------------
+# Fetch for the shelves: later downloads, kept as datasets
+# ---------------------------------------------------------------------------------------
+#
+# What the shelves need beyond the responses above is saved the way the project keeps
+# downloads: one folder per source under a datasets folder, each with a MANIFEST.json that
+# gives every file's address, time and SHA-256. The build reads a file only through its
+# MANIFEST and checks it against the SHA-256 there.
+
+BIOMART = "https://parasite.wormbase.org/biomart/martservice"
+BIOMART_GENOME = "smedh1prjna885486"  # the genome annotation's name in WormBase ParaSite's BioMart
+INTERPRO_FILES = "https://ftp.ebi.ac.uk/pub/databases/interpro/current_release"
+SHELF_MINE = "the visualizer's planarian shelves agent"
+TOPOLOGY_FIELDS = "accession,fragment,ft_non_ter,ft_signal,ft_transmem,ft_intramem,ft_topo_dom,cc_subcellular_location"
+SHELF_SOURCES = {
+    "wbps-biomart-smedh1prjna885486": {
+        "what": "WormBase ParaSite BioMart (release 19), genome smedh1prjna885486: the membrane-spanning helices (TMHMM) and signal-peptide cleavage sites (SignalP) it holds for each predicted protein, the gene count, and the list of attributes that names them",
+        "licence": "WormBase ParaSite's disclaimer: \"Ensembl imposes no restrictions on access to, or use of, the data provided\"; it asks that the genome's paper and the database be cited",
+    },
+    "interpro-hierarchy-and-go": {
+        "what": "InterPro release files: the tree of parent and child entries, the mapping of entries to Gene Ontology terms, and the release notes",
+        "licence": "CC0 1.0",
+    },
+    "geneontology-go-basic": {
+        "what": "The Gene Ontology (go-basic.obo), read for the is_a and part_of links between terms, with the consortium's page on citing and licence",
+        "licence": "CC BY 4.0",
+    },
+    "uniprot-smed-topology": {
+        "what": "UniProtKB entries of Schmidtea mediterranea (taxon 79327): whether each is a fragment; the signal peptides, membrane-spanning segments and subcellular location UniProt gives, with the evidence for each; and the Gene Ontology terms UniProt gives each entry",
+        "licence": "CC BY 4.0",
+    },
+    "terms-upstream-tools": {
+        "what": "The terms of the tools and rule systems whose results WormBase ParaSite and UniProt give out and the planarian shelves rest on, each as its own page states them (TMHMM, SignalP, Phobius, PROSITE, HAMAP), and UniProt's own account of how it applies them. Added on 15 November 2026. Only the page of terms was asked of each tool: no program was downloaded and no form was sent",
+        "licence": "Each page states the terms of its own tool; UniProt's help pages are CC BY 4.0",
+    },
+}
+DTU = "https://services.healthtech.dtu.dk/cgi-bin/sw_request"
+UPSTREAM = "terms-upstream-tools"
+
+
+def biomart(attributes, flags=(), unique=False, count=False):
+    """The address of one BioMart query on the genome annotation: its attributes, one row
+    for each feature (or each distinct row), closed by a stamp that says the answer is whole."""
+    filters = f'<Filter name="species_id_1010" value="{BIOMART_GENOME}"/>' + "".join(f'<Filter name="{flag}" excluded="0"/>' for flag in flags)
+    wanted = "".join(f'<Attribute name="{name}"/>' for name in attributes)
+    query = (
+        '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE Query>'
+        f'<Query virtualSchemaName="parasite_mart" formatter="TSV" header="1" uniqueRows="{int(unique)}" count="{1 if count else ""}" datasetConfigVersion="0.6" completionStamp="{0 if count else 1}">'
+        f'<Dataset name="wbps_gene" interface="default">{filters}{wanted}</Dataset></Query>'
+    )
+    return f"{BIOMART}?query={q(query)}"
+
+
+def shelf_requests():
+    """Every request of the fetch step that the shelves added: the dataset folder, the file
+    there, the address and what it is for. "whole" is what the body must end with."""
+    out = []
+
+    def add(source, file, url, purpose, **more):
+        out.append({"source": source, "file": file, "url": url, "purpose": purpose, **more})
+
+    mart = "wbps-biomart-smedh1prjna885486"
+    add(mart, "biomart_attributes.tsv", f"{BIOMART}?type=attributes&dataset=wbps_gene", "the attributes BioMart offers, read for what the two predictions are called", contains="transmembrane_domain")
+    add(mart, "biomart_gene_count.txt", biomart(["wbps_gene_id"], unique=True, count=True), "how many genes BioMart holds for the genome annotation, to check that it is the one the catalogue uses")
+    add(mart, "biomart_tmhmm.tsv", biomart(["wbps_gene_id", "wbps_transcript_id", "transmembrane_domain"], flags=["with_tmhmm"]), "each membrane-spanning helix TMHMM predicts, one row for each, by predicted protein", whole="[success]")
+    add(mart, "biomart_signalp.tsv", biomart(["wbps_gene_id", "wbps_transcript_id", "signal_domain"], flags=["with_signalp"]), "each signal-peptide cleavage site SignalP predicts, by predicted protein", whole="[success]")
+    interpro = "interpro-hierarchy-and-go"
+    add(interpro, "ParentChildTreeFile.txt", f"{INTERPRO_FILES}/ParentChildTreeFile.txt", "which InterPro entry is a narrower kind of which")
+    add(interpro, "interpro2go", f"{INTERPRO_FILES}/interpro2go", "the Gene Ontology terms InterPro gives each of its entries")
+    add(interpro, "release_notes.txt", f"{INTERPRO_FILES}/release_notes.txt", "the InterPro release these two files belong to")
+    ontology = "geneontology-go-basic"
+    add(ontology, "go-basic.obo", "https://current.geneontology.org/ontology/go-basic.obo", "the Gene Ontology's terms and the links between them")
+    add(ontology, "go_citation_policy.html", "https://geneontology.org/docs/go-citation-policy/", "the Gene Ontology's licence")
+    add("uniprot-smed-topology", f"uniprotkb_{TAXON}_topology.json", f"{UNIPROT}/uniprotkb/stream?query={q(f'taxonomy_id:{TAXON}')}&format=json&fields={TOPOLOGY_FIELDS}", "where UniProt places each of the species' entries, and on what evidence")
+    add("uniprot-smed-topology", f"uniprotkb_{TAXON}_go.tsv", f"{UNIPROT}/uniprotkb/stream?query={q(f'taxonomy_id:{TAXON}')}&format=tsv&fields=accession,go_id", "the Gene Ontology terms UniProt gives each of the species' entries", contains="Gene Ontology IDs")
+    # The terms of the tools and rule systems whose results the two databases give out, each
+    # at its own page; and UniProt's account of how it applies them. Only pages of terms are
+    # asked for: no program, and the forms on the download pages are not sent.
+    add(UPSTREAM, "tmhmm_licence.html", f"{DTU}?software=tmhmm&version=2.0c&packageversion=2.0c&platform=Linux", "the licence under which DTU Health Tech gives TMHMM out, as its download page shows it", contains="ACADEMIC SOFTWARE LICENSE AGREEMENT")
+    add(UPSTREAM, "signalp_licence.html", f"{DTU}?software=signalp&version=5.0&packageversion=5.0b&platform=Linux", "the licence under which DTU Health Tech gives SignalP out, as its download page shows it", contains="ACADEMIC SOFTWARE LICENSE AGREEMENT")
+    add(UPSTREAM, "phobius_download.html", "https://phobius.sbc.su.se/download", "the terms under which Phobius is given out, as its download page states them", contains="academic")
+    add(UPSTREAM, "prosite_license.html", "https://prosite.expasy.org/prosite_license.html", "PROSITE's licence conditions", contains="PROSITE")
+    add(UPSTREAM, "hamap_about.html", "https://hamap.expasy.org/hamap_about.html", "HAMAP's statement of its licence", contains="HAMAP")
+    add(UPSTREAM, "uniprot_help_sam.json", f"{UNIPROT}/help/sam", "UniProt's account of the sequence analysis methods it applies to unreviewed entries", contains="Phobius")
+    add(UPSTREAM, "uniprot_help_unirule.json", f"{UNIPROT}/help/unirule", "UniProt's account of its rule systems", contains="RuleBase")
+    add(UPSTREAM, "uniprot_help_arba.json", f"{UNIPROT}/help/arba", "UniProt's account of its association-rule annotator", contains="ARBA")
+    add(UPSTREAM, "uniprot_help_license.json", f"{UNIPROT}/help/license", "UniProt's licence and disclaimer", contains="License")
+    return out
+
+
+def utc_now():
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def digest(path):
+    sha, md5 = hashlib.sha256(), hashlib.md5()
+    with open(path, "rb") as handle:
+        for block in iter(lambda: handle.read(1 << 20), b""):
+            sha.update(block)
+            md5.update(block)
+    return sha.hexdigest(), md5.hexdigest()
+
+
+def read_manifest(folder):
+    path = Path(folder) / "MANIFEST.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
+def is_ours(manifest):
+    return manifest is not None and SHELF_MINE in manifest.get("note", "")
+
+
+def fetch_datasets(datasets, refresh=False, pause=2.0, tries=6):
+    """Ask every shelf request whose file is not yet in its dataset folder; save the body as
+    it came and describe it in the folder's MANIFEST. A folder another agent made is read
+    and never written."""
+    datasets = Path(datasets)
+    asked = failed = 0
+    for request in shelf_requests():
+        folder = datasets / request["source"]
+        manifest = read_manifest(folder)
+        held = (folder / request["file"]).exists() and any(item["name"] == request["file"] for item in (manifest or {}).get("files", []))
+        if held and not (refresh and is_ours(manifest)):
+            continue
+        if folder.exists() and not is_ours(manifest):
+            print(f"missing  {request['source']}/{request['file']}: the folder was made by another agent, so nothing is written there", flush=True)
+            failed += 1
+            continue
+        record, body = {}, None
+        call = urllib.request.Request(request["url"], headers={"User-Agent": CLIENT, "Accept-Encoding": "identity"})
+        for attempt in range(tries):
+            record, body = {"asked": utc_now()}, None
+            try:
+                with urllib.request.urlopen(call, timeout=900) as answer:
+                    body = answer.read()
+                    record["status"] = answer.status
+                    for header, key in [("X-Total-Results", "total_results"), ("X-UniProt-Release", "uniprot_release"), ("X-UniProt-Release-Date", "uniprot_release_date"), ("Last-Modified", "last_modified"), ("Content-Type", "content_type")]:
+                        if answer.headers.get(header):
+                            record[key] = answer.headers[header]
+                # A table that was cut short, or an error page sent as an answer, is not kept.
+                text = body[-200:].decode("utf-8", "replace").rstrip()
+                if request.get("whole") and not text.endswith(request["whole"]):
+                    record["status"], body = 0, None
+                    record["error"] = "the answer does not end with its completion stamp"
+                elif request.get("contains") and request["contains"].encode() not in body:
+                    record["status"], body = 0, None
+                    record["error"] = "the answer is not the listing asked for"
+                else:
+                    break
+            except urllib.error.HTTPError as error:
+                record["status"] = error.code
+                if error.code < 500 and error.code != 429:
+                    break
+            except (urllib.error.URLError, TimeoutError, OSError) as error:
+                record["status"] = 0
+                record["error"] = str(getattr(error, "reason", error))[:200]
+            # A busy service: wait and ask again.
+            if attempt + 1 < tries:
+                time.sleep(20)
+        asked += 1
+        if record.get("status") != 200 or body is None:
+            failed += 1
+            print(f"{record.get('status')}  {request['source']}/{request['file']}  {record.get('error', '')}", flush=True)
+            continue
+        # The folder is made only if it is not there at this moment; one that another agent
+        # has just made is left alone.
+        folder.mkdir(parents=True, exist_ok=True)
+        manifest = read_manifest(folder)
+        if manifest is not None and not is_ours(manifest):
+            print(f"skipped  {request['source']}/{request['file']}: the folder was just made by another agent", flush=True)
+            failed += not (folder / request["file"]).exists()
+            continue
+        (folder / request["file"]).write_bytes(body)
+        sha, md5 = digest(folder / request["file"])
+        entry = {
+            "name": request["file"], "url": request["url"], "role": request["purpose"], "retrieved_utc": record["asked"], "http_status": record["status"],
+            "content_type": record.get("content_type"), "size_bytes": len(body), "sha256": sha, "md5": md5,
+            "expected_size": None, "expected_md5": None, "ok": True, "error": None,
+        }
+        for key in ("total_results", "uniprot_release", "uniprot_release_date", "last_modified"):
+            if record.get(key) is not None:
+                entry["x_" + key] = record[key]
+        manifest = manifest or {"source_id": request["source"], "files": []}
+        manifest["record"] = SHELF_SOURCES[request["source"]]
+        manifest["files"] = sorted([item for item in manifest["files"] if item["name"] != entry["name"]] + [entry], key=lambda item: item["name"])
+        manifest["manifest_written_utc"] = utc_now()
+        manifest["note"] = f"Added by {SHELF_MINE}: downloaded as untrusted data by tools/build_planarian_atlas.py of the Cells checkout. Nothing here was executed."
+        (folder / "MANIFEST.json").write_text(json.dumps(manifest, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"200  {request['source']}/{request['file']}  {len(body)}", flush=True)
+        time.sleep(pause)
+    print(f"asked {asked} dataset request(s), {failed} failed or missing, under {datasets}")
     return failed
 
 
@@ -341,10 +549,10 @@ EXTRA = [
     {"accession": "M4LUP7", "family": "nka_alpha", "gene": "ATP12A", "role": "alpha", "pmid": "23250205", "words": "H(+),K(+)-ATPase", "text": "abstract",
      "record": {"embl": "JX174182", "words": "non-gastric H+,K+-ATPase alpha subunit (ATP12A)"},
      "name": "Non-gastric proton-potassium pump (H+/K+-ATPase) alpha subunit",
-     "why": "A proton-potassium pump of the planarian membrane: the paper that reports it found that knocking it down changes membrane voltage and the size of the regrown head. It carries the same signature as the sodium-potassium pump's alpha subunit but was described as a different pump, so it is kept out of that unit."},
+     "why": "A proton-potassium pump of the planarian, by the name its sequence record gives it. The paper that reports it is on bioelectric signalling and the size of the head and organs in regeneration; it states no open licence, so its findings are not repeated here. The protein carries the same signature as the sodium-potassium pump's alpha subunit, but its record names it as a different pump, so it is kept out of that unit."},
     {"accession": "A0A291IA19", "gene": "TRPA1", "role": None, "pmid": "29184198", "words": "TRPA1", "text": "abstract", "title_match": True,
      "name": "TRPA1 cation channel",
-     "why": "A sensory cation channel of the planarian, shown to be needed for its escape from heat and irritants; the atlas draws no unit of this family."},
+     "why": "A cation channel of the TRP family in the planarian, by the name of its UniProtKB entry. The paper that reports it is on its activation by reactive oxygen species and on pain sensing; it states no open licence, so its findings are not repeated here. The atlas draws no unit of this family."},
     {"accession": "A0A0A1CVW0", "family": "k2p", "gene": "kcnka", "role": None,
      "why": "A two-pore-domain potassium channel, the kind of protein that usually carries a potassium leak; the atlas's leak units name no protein. {k2p} planarian gene models carry this signature; the reference table lists them."},
     {"family": "aquaporin", "models": True, "role": None,
@@ -559,6 +767,23 @@ def read_links(evidence):
     }
 
 
+# How each source may be used (the project's rule of 15 November 2026, decision D173):
+#   permissive        CC BY, CC0, or a plain statement that no restriction is placed: its
+#                     values may enter the files, with attribution;
+#   non-commercial    a CC BY-NC licence of any kind: analysis only, so nothing of it enters;
+#   no stated terms   no open licence is stated: nothing of it enters.
+# A paper of the last two classes is a pointer. Where it is cited for a gene's name, the
+# name must stand in a permissive record as well (a sequence record, or the UniProtKB entry).
+PERMISSIVE, NON_COMMERCIAL, NO_TERMS = "permissive", "non-commercial", "no stated terms"
+
+
+def licence_class(licence):
+    """The class of a paper, from the licence its bibliographic record names."""
+    if licence in ("cc by", "cc0"):
+        return PERMISSIVE
+    return NON_COMMERCIAL if (licence or "").startswith("cc by-nc") else NO_TERMS
+
+
 def read_papers(evidence):
     """The cited papers: a citation each, and the texts in which names are looked up."""
     papers = {}
@@ -575,12 +800,15 @@ def read_papers(evidence):
         year = item.get("pubYear", "")
         papers[item["pmid"]] = {
             "authors": (item.get("authorString") or "").rstrip("."),
-            "citation": {"text": f"{who} ({year}) {title}. {where} {place}".strip() + ".", "doi": item.get("doi"), "pmid": item["pmid"]},
+            "citation": {"text": f"{who} ({year}) {title}. {where} {place}".strip() + ".", "doi": item.get("doi"), "pmid": item["pmid"], "class": licence_class(item.get("license"))},
             "short": f"{who} {year}",
             "title": title,
             "abstract": plain(item.get("abstractText") or ""),
             "licence": item.get("license"),
+            "class": licence_class(item.get("license")),
         }
+        if item.get("license") is None and item.get("isOpenAccess") == "Y" and item["pmid"] != "29184198":
+            raise SystemExit(f"the record of PubMed {item['pmid']} calls it open and names no licence; read its terms and class it")
     missing = sorted(cited_pmids() - set(papers), key=int)
     if missing:
         raise SystemExit(f"the saved paper records lack PubMed ids {missing}")
@@ -775,12 +1003,19 @@ class Context:
                 # The entry does not carry the paper's name; its sequence record does.
                 spelt = "" if claim["record"]["words"] == claim["gene"] else f", which spells it {claim['record']['words']}"
                 tail = f"; the name is tied to this entry by its sequence record {claim['record']['embl']}{spelt}" + tail
+                held = {"source": "European Nucleotide Archive", "id": claim["record"]["embl"]}
             elif claim["gene"].lower() not in [name.lower() for name in entry["genes"]]:
                 raise SystemExit(f"{accession} does not carry the name {claim['gene']}, and no sequence record ties it to the name")
-            out.append({
+            else:
+                held = {"source": "UniProt", "id": accession}
+            product = {
                 "name": entry["name"], "gene": claim["gene"], "role": role, "ids": [{"db": "uniprot", "id": accession}] + ids, "length": entry["length"],
                 "evidence": "named in a publication", "evidence_note": f"Named {claim['gene']} in {paper['short']}{tail}.", "citation": paper["citation"],
-            })
+            }
+            if paper["class"] != PERMISSIVE:
+                # The paper's terms do not allow a copy: the name stands in a permissive record, which is named.
+                product["name_record"] = held
+            out.append(product)
         listed = self.listed(key)
         for accession in sorted(listed):
             if NAMED.get(accession, {}).get("family") == key:
@@ -900,21 +1135,22 @@ def note_hcn(spec, c, closing=None):
 
 
 def note_gap(spec, c, named):
+    # Two papers are named as places to read; neither states an open licence, so nothing
+    # is said from them: the note rests on the search of signatures alone.
     families, planarian = c.papers[PAPERS["gap_families"]], c.papers[PAPERS["gap_planarian"]]
-    for paper, words in ((families, "connexins are exclusive of chordates"), (planarian, "innexin gap junction channel gene")):
-        if words not in paper["abstract"]:
-            raise SystemExit(f"the saved abstract of {paper['short']} does not contain {words!r}")
+    if PERMISSIVE in (families["class"], planarian["class"]):
+        raise SystemExit("a paper of the gap-junction note now has open terms; read it and say what it says")
     controls = c.absent("connexin")
     first = controls[FAMILIES["connexin"]["signatures"][0]]
     if first["flatworms"]:
         raise SystemExit("a flatworm entry carries the connexin signature; rewrite the gap-junction notes")
     basis = (
-        f"Connexins are known only from chordates ({families['short']}), and a planarian innexin gap-junction gene, smedinx-11, has been described ({planarian['short']}). "
-        f"{c.carry('innexin')} the innexin signature and none the connexin one; no UniProtKB entry of any flatworm carries the connexin signature either, while {first['human']} reviewed human entries do."
+        f"{c.carry('innexin')} the innexin signature and none the connexin one; no UniProtKB entry of any flatworm carries the connexin signature either, while {first['human']} reviewed human entries do. "
+        f"One planarian innexin has a sequence record of its own, smedinx-11. More is to be read in {families['short']}, on which animals have each family, and in {planarian['short']}, on that innexin; neither states an open licence, so nothing is taken from them."
     )
     if named:
-        return f"There is no {spec['as']} to find in a planarian: its gap junctions are built from innexins, a different protein family. {basis} Nothing says which innexins, if any, would form a channel like this one."
-    return f"Planarians build gap junctions from innexins, not connexins. {basis} Which innexins a general gap-junction law would stand for is not known."
+        return f"There is no {spec['as']} to find in a planarian: by its signatures it has innexins, another family of gap-junction proteins, and no connexins. {basis} Nothing says which innexins, if any, would form a channel like this one."
+    return f"By their signatures, planarians have innexins and no connexins. {basis} Which innexins a general gap-junction law would stand for is not known."
 
 
 def note_nka(spec, c):
@@ -1042,6 +1278,11 @@ def extra_products(c):
             note = f"Reported in {paper['short']}"
             if item.get("record"):
                 note += f"; its sequence record {item['record']['embl']} calls it the {item['record']['words']}"
+                held = {"source": "European Nucleotide Archive", "id": item["record"]["embl"]}
+            elif item["gene"].lower() in [name.lower() for name in entry["genes"]]:
+                held = {"source": "UniProt", "id": accession}
+            else:
+                raise SystemExit(f"{accession} does not carry the name {item['gene']}, and no sequence record ties it to the name")
             if item.get("family"):
                 signature = FAMILIES[item["family"]]["signatures"][0]
                 if signature not in entry["interpro"]:
@@ -1053,11 +1294,15 @@ def extra_products(c):
             note = f"{signature} ({c.signature_name(signature)}) on its UniProtKB entry"
             if entry["pmids"] and entry["pmids"][0] in c.papers:
                 note += f"; its sequence was reported with {c.papers[entry['pmids'][0]]['short']}"
-        out.append({
+        product = {
             "name": item.get("name") or entry["name"], "gene": item["gene"], "role": item["role"], "ids": [{"db": "uniprot", "id": accession}] + ids, "length": entry["length"],
             "evidence": evidence, "evidence_note": note + tail + ".", "citation": citation,
-            "why": item["why"].format(k2p=c.count("k2p")),
-        })
+        }
+        if citation and citation["class"] != PERMISSIVE:
+            # The paper's terms do not allow a copy: the name stands in a permissive record, which is named.
+            product["name_record"] = held
+        product["why"] = item["why"].format(k2p=c.count("k2p"))
+        out.append(product)
     return out
 
 
@@ -1069,6 +1314,7 @@ TERMS = [
     # (saved page, words it must contain): the terms the files state, as they were read.
     ("terms_uniprot_license.json", "Creative Commons Attribution 4.0 International (CC BY 4.0) License"),
     ("terms_wbps_disclaimer.html", "Ensembl imposes no restrictions on access to, or use of, the data provided"),
+    ("terms_wbps_disclaimer.html", "Some of the data and software included in the distribution may be subject to third-party constraints. Users of the data and software are solely responsible for establishing the nature of and complying with any such restrictions."),
     ("terms_wbps_datausage.html", "Please cite the original paper for the genome publication"),
     ("terms_interpro_license.html", "CC0 1.0 Universal"),
     ("terms_embl_ebi.html", "EMBL-EBI imposes no additional restriction on the use of the contributed data than those provided by the data owner"),
@@ -1077,7 +1323,7 @@ TERMS = [
     ("terms_insdc_policy.html", "no use restrictions or licensing requirements will be included in any sequence data records"),
     ("terms_iprox_data_licence.html", "Creative Commons Public Domain (CC0) license apply to all iProX datasets submitted since March 23rd, 2023"),
     ("terms_iprox_data_licence.html", "for use solely by you for your own personal use and not for republication"),
-    ("spectral_library_europepmc.json", "10,000 proteins"),
+    ("spectral_library_europepmc.json", "establishing a spectral library"),
 ]
 
 
@@ -1141,35 +1387,49 @@ def origin(facts):
     )
 
 
+def cited_in_atlas(c):
+    """The PubMed ids of the papers that the atlas's products and notes name."""
+    return {item["pmid"] for item in [*NAMED.values(), *CALLED.values(), *EXTRA] if item.get("pmid")} | {PAPERS[name] for name in ("gap_families", "gap_planarian", "inx13", "inx1")}
+
+
+def listed_papers(c, kind):
+    """The papers the atlas names that are of one class, in words."""
+    names = sorted((c.papers[pmid]["short"] for pmid in cited_in_atlas(c) if c.papers[pmid]["class"] == kind), key=lambda name: (name.rsplit(" ", 1)[1], name))
+    return ", ".join(names[:-1]) + " and " + names[-1] if len(names) > 1 else "".join(names)
+
+
 def sources(c, facts):
     ev = c.evidence
     genome = c.papers[PAPERS["genome"]]["citation"]
     return [
         {
-            "name": "UniProt", "db": "uniprot", "url": "https://www.uniprot.org/", "release": facts["uniprot"], "accessed": ev.day(f"uniprotkb_{TAXON}.json"), "licence": "CC BY 4.0",
+            "name": "UniProt", "db": "uniprot", "url": "https://www.uniprot.org/", "release": facts["uniprot"], "accessed": ev.day(f"uniprotkb_{TAXON}.json"), "licence": "CC BY 4.0", "class": PERMISSIVE,
             "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
             "holds": "the planarian's UniProtKB entries (accessions, names, gene names, lengths, signatures and the papers they cite); which archived planarian sequences (UniParc) carry each family signature; the signatures of the units' human candidates; the counts used as controls",
         },
         {
             "name": "WormBase ParaSite", "db": "wormbase_parasite", "url": "https://parasite.wormbase.org/", "release": WBPS_RELEASE, "accessed": ev.day("wbps_s3h1_protein.fa.gz"),
             "licence": "No restriction on use is stated: the database's disclaimer says \"Ensembl imposes no restrictions on access to, or use of, the data provided\". It asks that a genome's paper and the database be cited, asks users of an unpublished genome to tell its owners before a large-scale analysis, and warns that third-party constraints may apply. The paper taken to describe this genome is CC BY 4.0.",
+            "class": PERMISSIVE,
             "cite": f"{c.papers[PAPERS['wbps']]['citation']['text']} Genome: {genome['text']} {origin(facts)}",
             "holds": f"the gene models of one genome annotation (assembly {facts['assembly']}, annotation version {facts['annotation']}): each model's identifier, the identifier and length of its longest predicted protein, and the InterPro signatures on its predicted proteins",
         },
         {
-            "name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "release": facts["interpro"], "accessed": ev.day("interpro_entry_list.tsv"), "licence": "CC0 1.0",
+            "name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "release": facts["interpro"], "accessed": ev.day("interpro_entry_list.tsv"), "licence": "CC0 1.0", "class": PERMISSIVE,
             "cite": c.papers[PAPERS["interpro"]]["citation"]["text"],
             "holds": "the name and type of each signature entry",
         },
         {
             "name": "European Nucleotide Archive", "url": "https://www.ebi.ac.uk/ena/", "accessed": ev.day("uniprotkb_record_links.json"),
             "licence": "Free and unrestricted: the policy of the nucleotide sequence databases is that \"no use restrictions or licensing requirements will be included in any sequence data records\".",
+            "class": PERMISSIVE,
             "cite": "each record is named where it is used",
             "holds": "the accession and the title of two sequence records, read to tie a UniProtKB entry to the name its paper uses",
         },
         {
             "name": "Europe PMC", "url": "https://europepmc.org/", "accessed": ev.day("europepmc_citations.json"),
             "licence": "Bibliographic facts only (authors, title, journal, year, identifiers). EMBL-EBI's terms of use add no restriction to those of the data owners. Abstracts and article texts were read to check names and are not copied.",
+            "class": PERMISSIVE,
             "cite": "each paper is cited where it is used",
             "holds": "the records of the cited papers",
         },
@@ -1207,9 +1467,10 @@ def build_atlas(c, facts):
         ],
         "sources": sources(c, facts),
         "not_copied": (
-            f"The catalogue of about 10,000 planarian proteins detected by mass spectrometry ({spectral['short']}, doi:{spectral['citation']['doi']}) was not copied: the paper and its supplementary tables reserve all rights, "
+            f"The catalogue of planarian proteins detected by mass spectrometry ({spectral['short']}, doi:{spectral['citation']['doi']}) was not copied: the paper and its supplementary tables reserve all rights, "
             "and its public deposit (ProteomeXchange PXD042308, which iProX's data licence puts under CC0) holds instrument files and sample sheets, not the list of proteins. "
-            "PlanMine was read and nothing taken from it, because its front page states no licence or terms of use, only how to cite it. Abstracts and article texts were read to check names and are not copied."
+            "PlanMine was read and nothing taken from it, because its front page states no licence or terms of use, only how to cite it. Abstracts and article texts were read to check names and are not copied. "
+            f"Of the papers that name the proteins listed here, {listed_papers(c, NO_TERMS)} state no open licence: each is cited for a name, which a sequence record or a UniProtKB entry carries too, and none of their findings is repeated."
         ),
         "units": units,
         "extra": extra_products(c),
@@ -1263,7 +1524,9 @@ def library_facts(c):
     """What the saved records say of the mass-spectrometry library that was not imported."""
     ev = c.evidence
     paper = c.papers[PAPERS["spectral_library"]]
-    said = re.search(r"establishing a spectral library covering \S*10,000 proteins", paper["abstract"])
+    said = re.search(r"establishing a spectral library", paper["abstract"])
+    if not said or paper["class"] == PERMISSIVE:
+        raise SystemExit("the library's paper no longer reads as it did, or now has open terms; read it again")
     crossref = ev.json("spectral_library_crossref.json")["message"]
     rights = next(item["value"] for item in crossref["assertion"] if item["name"] == "copyright")
     first, second = ev.text("spectral_library_PXD042308.xml"), ev.text("spectral_library_PXD059861.xml")
@@ -1281,7 +1544,7 @@ def library_facts(c):
     facts = {
         "citation": paper["citation"], "authors": paper["authors"], "title": paper["title"],
         "year": paper["short"].rsplit(" ", 1)[1], "journal": paper["citation"]["text"].split(paper["title"] + ". ", 1)[1],
-        "says": said.group(0) if said else None, "rights": rights,
+        "rights": rights,
         "raw": kinds["Associated raw file URI"], "other": kinds["Search engine output file URI"],
         "announced": re.search(r'<DatasetSummary announceDate="([\d-]+)"', first).group(1),
         "raw_second": len(re.findall(r'name="Associated raw file URI"', second)),
@@ -1295,7 +1558,1020 @@ def library_facts(c):
     return facts
 
 
-def build_readme(c, facts, atlas, listed, named, everything):
+# ---------------------------------------------------------------------------------------
+# The shelves: every protein given one family, a side and a district
+# ---------------------------------------------------------------------------------------
+#
+# schema/SPECIES_PROTEINS.md fixes the form. The catalogue is too large for one marker
+# each, so it is given as families that open: shelves.json holds the families, and
+# shelf_members.tsv holds, for every protein, what it is filed under, its side and how
+# that side is known. The page builder cuts the members into files from the two tables.
+
+SHELF_FORMAT = "cells.visualizer.species_proteins@1"
+MEMBERS_FORMAT = "cells.visualizer.species_protein_members@1"
+SHELVES_FILE = "shelves.json"
+MEMBERS_FILE = "shelf_members.tsv"
+MEMBERS_COLUMNS = ["id", "under", "side", "basis", "helices", "signal", "units"]
+SIDES = ["outside", "in", "inside", "not known"]
+SIDE_TIE = ["in", "outside", "inside", "not known"]  # where a family's members are split evenly
+MEMBERS_PER_FILE = 2000
+SHELF = {
+    "id": "cell",
+    "label": "The cell's membranes, not told apart",
+    "outside": "Beyond a membrane: outside the cell, or within one of its compartments",
+    "inside": "Inside the cell: in the cytoplasm or the nucleus, or carried into an organelle",
+}
+# This tool's own reading of a sequence, used only where the two predictors leave a doubt
+# (see side_of_model). It takes no published scale: a stretch is hydrophobic when most of
+# its residues are among the plainly hydrophobic ones.
+HYDROPHOBIC = frozenset("AILMFVW")
+HYDROPHOBIC_WINDOW = 19   # residues, about the span of a membrane
+HYDROPHOBIC_LEAST = 12    # how many of them must be hydrophobic for a membrane-spanning stretch
+SIGNAL_REACH = 35         # a stretch that starts before this residue can be the signal peptide itself
+
+# The districts, in order. A protein's Gene Ontology terms are those InterPro maps to any
+# of its signatures, and those UniProt gives a UniProtKB entry (a gene model takes also
+# the terms of the entries joined to it). The protein falls in the first district one of
+# whose terms it carries, and a family stands where most of its classed members fall.
+# The choice of terms and their order is the viewer's; each term's name is checked
+# against the ontology.
+DISTRICTS = [
+    ("channels", "Channels", [("GO:0015267", "channel activity")]),
+    ("transport", "Transporters and pumps", [("GO:0005215", "transporter activity"), ("GO:0055085", "transmembrane transport"), ("GO:0006811", "monoatomic ion transport")]),
+    ("signalling", "Receptors and signalling", [("GO:0038023", "signaling receptor activity"), ("GO:0060089", "molecular transducer activity"), ("GO:0007165", "signal transduction"), ("GO:0005102", "signaling receptor binding")]),
+    ("genes", "DNA, RNA and making proteins", [("GO:0010467", "gene expression"), ("GO:0006259", "DNA metabolic process"), ("GO:0003677", "DNA binding"), ("GO:0003723", "RNA binding"), ("GO:0140110", "transcription regulator activity"), ("GO:0006355", "regulation of DNA-templated transcription"), ("GO:0006325", "chromatin organization"), ("GO:0005840", "ribosome"), ("GO:0140640", "catalytic activity, acting on a nucleic acid")]),
+    ("proteins", "Protein folding, change, sorting and breakdown", [("GO:0006457", "protein folding"), ("GO:0006508", "proteolysis"), ("GO:0036211", "protein modification process"), ("GO:0015031", "protein transport"), ("GO:0016192", "vesicle-mediated transport"), ("GO:0140096", "catalytic activity, acting on a protein")]),
+    ("structure", "Cytoskeleton, movement and adhesion", [("GO:0005856", "cytoskeleton"), ("GO:0007010", "cytoskeleton organization"), ("GO:0003774", "cytoskeletal motor activity"), ("GO:0007018", "microtubule-based movement"), ("GO:0007155", "cell adhesion"), ("GO:0031012", "extracellular matrix"), ("GO:0005929", "cilium"), ("GO:0005198", "structural molecule activity")]),
+    ("metabolism", "Enzymes and metabolism", [("GO:0003824", "catalytic activity"), ("GO:0008152", "metabolic process")]),
+]
+OTHER_DISTRICT = ("other", "Other functions")
+NO_DISTRICT = ("unclassed", "Not classed by function")
+# Where in the cell the same terms place a protein: an annotation carried by its
+# signatures, kept as a hint beside the predicted side. It is not a prediction for the
+# protein itself.
+WHERE = [
+    ("nucleus", "GO:0005634", "nucleus"), ("mitochondrion", "GO:0005739", "mitochondrion"), ("endoplasmic reticulum", "GO:0005783", "endoplasmic reticulum"),
+    ("Golgi apparatus", "GO:0005794", "Golgi apparatus"), ("lysosome", "GO:0005764", "lysosome"), ("peroxisome", "GO:0005777", "peroxisome"),
+    ("cilium", "GO:0005929", "cilium"), ("cytoskeleton", "GO:0005856", "cytoskeleton"), ("ribosome", "GO:0005840", "ribosome"),
+    ("cytosol", "GO:0005829", "cytosol"), ("plasma membrane", "GO:0005886", "plasma membrane"), ("extracellular", "GO:0005576", "extracellular region"),
+]
+INSIDE_WHERE = {"nucleus", "mitochondrion", "cilium", "cytoskeleton", "ribosome", "cytosol"}
+# The roles of a unit's products that span a membrane: their families must come out "in".
+SPANNING_ROLES = {"alpha", "alpha1", "innexin", "alpha (BK)", "alpha (SK)", "beta (BK)", "catalytic", "exchanger", "IP3R", "RyR", "KCC", "MCU"}
+
+
+class Datasets:
+    """The shelves' downloads, each read through its folder's MANIFEST and checked against it."""
+
+    def __init__(self, folder):
+        self.folder = Path(folder)
+        self.read = {}
+
+    def entry(self, source, file):
+        if (source, file) not in self.read:
+            manifest = read_manifest(self.folder / source)
+            if manifest is None:
+                raise SystemExit(f"no dataset folder {source!r} with a MANIFEST; run the fetch step first")
+            entry = next((item for item in manifest["files"] if item["name"] == file), None)
+            if entry is None or not (self.folder / source / file).exists():
+                raise SystemExit(f"the dataset folder {source} does not hold {file!r}; run the fetch step first")
+            if digest(self.folder / source / file)[0] != entry["sha256"]:
+                raise SystemExit(f"{source}/{file} is not the file its MANIFEST describes")
+            self.read[source, file] = entry
+        return self.read[source, file]
+
+    def path(self, source, file):
+        self.entry(source, file)
+        return self.folder / source / file
+
+    def text(self, source, file):
+        return self.path(source, file).read_text(encoding="utf-8", errors="replace")
+
+    def day(self, source, file):
+        return self.entry(source, file)["retrieved_utc"][:10]
+
+    def last_day(self):
+        return max(entry["retrieved_utc"][:10] for entry in self.read.values())
+
+
+def read_hierarchy(d):
+    """InterPro's tree: each entry's parent, the broader entry it is a kind of."""
+    parent, stack = {}, []
+    for line in d.text("interpro-hierarchy-and-go", "ParentChildTreeFile.txt").splitlines():
+        if not line.strip():
+            continue
+        depth = (len(line) - len(line.lstrip("-"))) // 2
+        accession = line.lstrip("-").split("::")[0]
+        stack = stack[:depth]
+        if depth:
+            parent[accession] = stack[-1]
+        stack.append(accession)
+    return parent
+
+
+def read_family_terms(d):
+    """InterPro's mapping of its entries to Gene Ontology terms."""
+    terms = defaultdict(list)
+    for line in d.text("interpro-hierarchy-and-go", "interpro2go").splitlines():
+        found = re.match(r"InterPro:(IPR\d+) .* ; (GO:\d+)$", line)
+        if found and found.group(2) not in terms[found.group(1)]:
+            terms[found.group(1)].append(found.group(2))
+    return dict(terms)
+
+
+def read_ontology(d):
+    """The Gene Ontology: each term's name and the broader terms it is a kind or a part of."""
+    terms, current = {}, None
+    for line in d.text("geneontology-go-basic", "go-basic.obo").splitlines():
+        if line == "[Term]":
+            current = {"up": [], "alt": []}
+            continue
+        if line.startswith("["):
+            current = None
+            continue
+        if current is None or ": " not in line:
+            continue
+        key, value = line.split(": ", 1)
+        if key == "id":
+            terms[value] = current
+        elif key == "name":
+            current["name"] = value
+        elif key == "is_a":
+            current["up"].append(value.split(" ! ")[0])
+        elif key == "relationship" and value.startswith("part_of "):
+            current["up"].append(value.split()[1])
+        elif key == "alt_id":
+            current["alt"].append(value)
+        elif key == "is_obsolete":
+            current["obsolete"] = True
+        elif key == "replaced_by":
+            current["replaced_by"] = value
+    for term in list(terms):
+        for other in terms[term]["alt"]:
+            terms.setdefault(other, {"same_as": term})
+    version = re.search(r"^data-version: (\S+)", d.text("geneontology-go-basic", "go-basic.obo")[:400], re.M)
+    for _, _, wanted in DISTRICTS:
+        for term, name in wanted:
+            if terms.get(term, {}).get("name") != name:
+                raise SystemExit(f"the ontology no longer calls {term} {name!r}; choose the districts' terms again")
+    for _, term, name in WHERE:
+        if terms.get(term, {}).get("name") != name:
+            raise SystemExit(f"the ontology no longer calls {term} {name!r}; choose the places again")
+    return terms, version.group(1)
+
+
+def broader_terms(terms):
+    """For a term, itself and every broader term, by the kind-of and part-of links."""
+    memo = {}
+
+    def up(term):
+        if term not in memo:
+            out = {term}
+            for other in terms[term]["up"]:
+                if other in terms:
+                    out |= up(other)
+            memo[term] = out
+        return memo[term]
+
+    def usable(term):
+        entry = terms.get(term)
+        if entry is None:
+            return None
+        if "same_as" in entry:
+            return entry["same_as"]
+        if entry.get("obsolete"):
+            return usable(entry["replaced_by"]) if entry.get("replaced_by") else None
+        return term
+
+    return up, usable
+
+
+def read_predictions(d, c):
+    """TMHMM's helices and SignalP's signal peptides, as WormBase ParaSite holds them for
+    the gene models' predicted proteins: how many helices each has, and which have a signal."""
+    mart = "wbps-biomart-smedh1prjna885486"
+    called = {}
+    for line in d.text(mart, "biomart_attributes.tsv").splitlines():
+        columns = line.split("\t")
+        if len(columns) > 1:
+            called.setdefault(columns[0], columns[1])
+    if called.get("transmembrane_domain") != "Transmembrane (TMHMM) domain" or called.get("signal_domain") != "Cleavage site (SignalP)":
+        raise SystemExit("BioMart no longer names the two predictions as TMHMM's and SignalP's; read its listing again")
+    if int(d.text(mart, "biomart_gene_count.txt").strip()) != sum(c.biotypes.values()):
+        raise SystemExit("BioMart's genome is not the annotation the catalogue uses: the gene counts differ")
+    helices, signals = Counter(), {}
+    for file, values in (("biomart_tmhmm.tsv", {"TMhelix"}), ("biomart_signalp.tsv", {"SignalP-noTM", "SignalP-TM"})):
+        lines = d.text(mart, file).splitlines()
+        if lines[-1] != "[success]" or not lines[0].startswith("Gene stable ID\tTranscript stable ID\t"):
+            raise SystemExit(f"{file} is not a whole BioMart answer")
+        for line in lines[1:-1]:
+            gene, protein, value = line.split("\t")
+            if c.proteins.get(protein, {}).get("gene") != gene or value not in values:
+                raise SystemExit(f"{file} holds a line the annotation file does not explain: {line!r}")
+            if file == "biomart_tmhmm.tsv":
+                helices[protein] += 1
+            else:
+                signals[protein] = value
+    return helices, signals
+
+
+# Whose tool or rule a statement of a UniProtKB entry is by, as its evidence names it. The
+# first two are programs that UniProt's sequence analysis runs (its own account says how);
+# PROSITE and HAMAP are rule systems of the SIB with terms of their own; the others are
+# UniProt's own rule systems, or its curators.
+SYSTEMS = {
+    ("SAM", "Phobius"): "TMHMM and Phobius", ("SAM", "SignalP"): "SignalP", ("PROSITE-ProRule", None): "PROSITE", ("HAMAP-Rule", None): "HAMAP",
+    ("RuleBase", None): "UniProt's rules", ("ARBA", None): "UniProt's rules", ("PIRNR", None): "UniProt's rules", ("PIRSR", None): "UniProt's rules",
+    (None, None): "UniProt's curators, by sequence analysis", ("UniProtKB", None): "likeness",
+}
+
+
+def systems_named(evidences):
+    out = set()
+    for evidence in evidences:
+        source = evidence.get("source")
+        key = (source, evidence.get("id") if source == "SAM" else None)
+        if evidence.get("evidenceCode") == "ECO:0000250":
+            key = ("UniProtKB", None)
+        if key not in SYSTEMS:
+            raise SystemExit(f"a UniProtKB entry gives a statement by {key}; read what that is, and its terms, before the statement is used")
+        out.add(SYSTEMS[key])
+    return frozenset(out)
+
+
+def read_topology(d, c):
+    """What UniProt gives for each of the species' entries: membrane-spanning segments,
+    a signal peptide, whether the start of the sequence is missing, and where it places it."""
+    out = {}
+    for item in json.loads(d.text("uniprot-smed-topology", f"uniprotkb_{TAXON}_topology.json"))["results"]:
+        features = item.get("features", [])
+        places = []
+        for comment in item.get("comments", []):
+            if comment.get("commentType") == "SUBCELLULAR LOCATION":
+                for place in comment.get("subcellularLocations", []):
+                    given = [evidence for part in ("location", "topology", "orientation") if place.get(part) for evidence in place[part].get("evidences", [])]
+                    places.append((place["location"]["value"], (place.get("topology") or {}).get("value") or "", systems_named(given)))
+        by = lambda kind: tuple(sorted(set().union(*(systems_named(feature.get("evidences", [])) for feature in features if feature["type"] == kind)))) if any(feature["type"] == kind for feature in features) else ()
+        out[item["primaryAccession"]] = {
+            "helices": sum(feature["type"] == "Transmembrane" for feature in features),
+            "signal": any(feature["type"] == "Signal" for feature in features),
+            "helices_by": by("Transmembrane"),
+            "signal_by": by("Signal"),
+            "start_missing": any(feature["type"] == "Non-terminal residue" and feature["location"]["start"]["value"] == 1 for feature in features),
+            "places": places,
+            "reviewed": item["entryType"].startswith("UniProtKB reviewed"),
+        }
+    if set(out) != set(c.entries):
+        raise SystemExit("UniProt's entries of the species are not the ones the catalogue was made from; fetch both again")
+    return out
+
+
+def ontology_citation(d):
+    """The two papers the Gene Ontology asks to be cited, in its own page's words."""
+    page = plain(d.text("geneontology-go-basic", "go_citation_policy.html"))
+    first = re.search(r"(Ashburner et al\. Gene ontology: tool for the unification of biology\. [^\[]*?DOI: \S+)", page)
+    latest = re.search(r"(The Gene Ontology Consortium\. The Gene Ontology knowledgebase in \d{4}\. [^\[]*?DOI: \S+)", page)
+    if not first or not latest:
+        raise SystemExit("the Gene Ontology's saved page no longer names the two papers to cite; read it again")
+    return f"{first.group(1)}; {latest.group(1)}"
+
+
+def read_entry_terms(d, c):
+    """The Gene Ontology terms UniProt gives each of the species' entries."""
+    lines = d.text("uniprot-smed-topology", f"uniprotkb_{TAXON}_go.tsv").splitlines()
+    if lines[0].split("\t") != ["Entry", "Gene Ontology IDs"]:
+        raise SystemExit("UniProt's table of the entries' terms is not the one asked for")
+    out = {}
+    for line in lines[1:]:
+        accession, _, found = line.partition("\t")
+        out[accession] = [term.strip() for term in found.split(";") if term.strip()]
+    if set(out) != set(c.entries):
+        raise SystemExit("UniProt's entries of the species are not the ones the catalogue was made from; fetch both again")
+    return out
+
+
+def hydrophobic_stretches(sequence):
+    """Where at least 12 of a window of 19 residues are hydrophobic: [start, end) of each
+    stretch, counted from 0."""
+    values = [residue in HYDROPHOBIC for residue in sequence]
+    out, run = [], None
+    if len(values) < HYDROPHOBIC_WINDOW:
+        return out
+    total = sum(values[:HYDROPHOBIC_WINDOW])
+    for start in range(len(values) - HYDROPHOBIC_WINDOW + 1):
+        if start:
+            total += values[start + HYDROPHOBIC_WINDOW - 1] - values[start - 1]
+        if total >= HYDROPHOBIC_LEAST:
+            if run is None:
+                run = [start, start + HYDROPHOBIC_WINDOW]
+            else:
+                run[1] = start + HYDROPHOBIC_WINDOW
+        elif run is not None:
+            out.append(tuple(run))
+            run = None
+    if run is not None:
+        out.append(tuple(run))
+    return out
+
+
+def side_of_place(value, spans):
+    """The side a location in UniProt's words stands for, or None where it does not say."""
+    if value.startswith("Secreted"):
+        return "outside"
+    if "membrane" in value.lower() or value.startswith("Endomembrane system"):
+        return "in" if spans.startswith(("Multi-pass", "Single-pass")) else None
+    if value.startswith(("Nucleus", "Chromosome", "Cytoplasm", "Mitochondrion", "Cell projection")):
+        return "inside"
+    return None
+
+
+def side_from_where(where):
+    """The side a family's annotated places leave no real doubt of, or None."""
+    if where and set(where) <= INSIDE_WHERE:
+        return "inside"
+    if where == ["extracellular"]:
+        return "outside"
+    return None
+
+
+class Shelves:
+    """Everything the shelves are made from, and each protein's family, side and district."""
+
+    def __init__(self, c, d, rows, atlas):
+        self.c, self.d, self.rows, self.atlas = c, d, rows, atlas
+        if len({row[1] for row in rows}) != len(rows):
+            raise SystemExit("two proteins of the catalogue share an identifier; the members' table needs both columns")
+        self.release = re.search(r"Release ([\d.]+),", d.text("interpro-hierarchy-and-go", "release_notes.txt")).group(1)
+        if self.release != re.search(r"Release ([\d.]+),", c.evidence.text("interpro_release_notes.txt")).group(1):
+            raise SystemExit("the InterPro tree and the InterPro names are of different releases; fetch both again")
+        if "licensed under the Creative Commons Attribution 4.0 Unported License" not in plain(d.text("geneontology-go-basic", "go_citation_policy.html")):
+            raise SystemExit("the Gene Ontology's saved page no longer states its licence as read; read the terms again before building")
+        self.parent = read_hierarchy(d)
+        self.signature_terms = read_family_terms(d)
+        self.entry_terms = read_entry_terms(d, c)
+        self.terms, self.ontology = read_ontology(d)
+        self.up, self.usable = broader_terms(self.terms)
+        self.helices, self.signals = read_predictions(d, c)
+        self.topology = read_topology(d, c)
+        self.kind = lambda accession: c.entry_names.get(accession, {}).get("type")
+        self.units = defaultdict(set)   # protein -> the units the atlas lists it under
+        self.roles = defaultdict(set)   # protein -> the roles it has there
+        for unit_id, unit in atlas["units"].items():
+            for product in unit["products"]:
+                for item in product["ids"]:
+                    self.units[item["id"]].add(unit_id)
+                    self.roles[item["id"]].add(product["role"])
+        self.file_proteins()
+        self.class_proteins()
+        self.place_proteins()
+
+    # --- one family for each protein ----------------------------------------------------
+
+    def depth(self, accession):
+        depth = 0
+        while accession in self.parent:
+            accession, depth = self.parent[accession], depth + 1
+        return depth
+
+    def broader(self, accession):
+        out = []
+        while accession in self.parent:
+            accession = self.parent[accession]
+            out.append(accession)
+        return out
+
+    def file_proteins(self):
+        """under[id] is the family the protein is filed under, or the part of "no family"."""
+        signatures = {row[1]: [s for s in row[6].split(";") if s] for row in self.rows}
+        narrowest, carried = {}, Counter()
+        for protein, found in signatures.items():
+            families = [s for s in found if self.kind(s) == "Family"]
+            covered = {b for family in families for b in self.broader(family)}
+            narrowest[protein] = [family for family in families if family not in covered]
+            carried.update(set(found))
+        held = Counter(family for families in narrowest.values() for family in families)
+        self.family, self.part, self.several = {}, {}, 0
+        for protein, families in narrowest.items():
+            if families:
+                # The narrowest family; of several unrelated ones, the deepest in InterPro's
+                # tree, then the one fewest proteins of this catalogue are in, then the first.
+                self.several += len(families) > 1
+                self.family[protein] = min(families, key=lambda f: (-self.depth(f), held[f], f))
+                continue
+            wider = [s for s in signatures[protein] if self.kind(s) == "Homologous_superfamily"]
+            if wider:
+                self.part[protein] = min(wider, key=lambda s: (carried[s], s))
+            else:
+                self.part[protein] = "other-signature" if signatures[protein] else "no-signature"
+        self.signatures = signatures
+
+    # --- what a protein's signatures say it does, and where -------------------------------
+
+    def class_proteins(self):
+        """classed[id] is the district the protein's own terms put it in; places[id] the
+        places in the cell they name."""
+        joined = defaultdict(list)
+        for accession, match in self.c.matches.items():
+            joined[match["gene"]].append(accession)
+        self.classed, self.places, self.dropped = {}, {}, set()
+        for row in self.rows:
+            direct = [term for signature in self.signatures[row[1]] for term in self.signature_terms.get(signature, [])]
+            for accession in ([row[1]] if row[0] == "uniprot" else sorted(joined.get(row[1], []))):
+                direct += self.entry_terms[accession]
+            terms = set()
+            for term in direct:
+                usable = self.usable(term)
+                if usable:
+                    terms |= self.up(usable)
+                else:
+                    self.dropped.add(term)
+            self.places[row[1]] = [key for key, term, _ in WHERE if term in terms]
+            self.classed[row[1]] = next((key for key, _, wanted in DISTRICTS if any(term in terms for term, _ in wanted)), OTHER_DISTRICT[0] if terms else NO_DISTRICT[0])
+
+    def district(self, proteins, loose=False):
+        """A family's members are one kind of protein, so the district most of its classed
+        members fall in speaks for it; of equal counts, the first district. A part of
+        "no family" is a looser grouping (loose): it stands in a district only if more
+        than half of all its members fall there."""
+        found = Counter(self.classed[protein] for protein in proteins)
+        order = [key for key, _, _ in DISTRICTS]
+        best = max(order, key=lambda key: (found.get(key, 0), -order.index(key)))
+        if loose:
+            best = max([*order, OTHER_DISTRICT[0]], key=lambda key: found.get(key, 0))
+            return best if 2 * found.get(best, 0) > len(proteins) else NO_DISTRICT[0]
+        if found.get(best):
+            return best
+        return OTHER_DISTRICT[0] if found.get(OTHER_DISTRICT[0]) else NO_DISTRICT[0]
+
+    def where(self, proteins):
+        """The places at least half of the proteins that are given any place are given."""
+        placed = [self.places[protein] for protein in proteins if self.places[protein]]
+        return [key for key, _, _ in WHERE if 2 * sum(key in found for found in placed) >= len(placed) > 0]
+
+    # --- the side of each protein -------------------------------------------------------
+
+    def side_of_model(self, row):
+        """A gene model: by TMHMM and SignalP on its longest predicted protein."""
+        protein = row[8].split()[0]
+        helices, signal = self.helices.get(protein, 0), protein in self.signals
+        sequence = self.c.proteins[protein]["sequence"]
+        # What a predicted side rests on: what the two programs found, or did not find, as
+        # WormBase ParaSite ran them.
+        ran = lambda on: ("gene model", on, frozenset())
+        if helices >= 2 or (helices == 1 and not signal):
+            return "in", "predicted", helices, signal, ran("helices")
+        if helices == 1:
+            # One helix and a signal peptide: TMHMM may have taken the signal peptide for a
+            # helix. Where the hydrophobic stretch lies decides, by this tool's own reading.
+            stretches = hydrophobic_stretches(sequence)
+            if any(start >= SIGNAL_REACH for start, _ in stretches):
+                return "in", "predicted", helices, signal, ran("a helix and a signal peptide")
+            if stretches:
+                return "outside", "predicted", helices, signal, ran("a helix and a signal peptide")
+            return "not known", "none", helices, signal, None
+        if signal:
+            return "outside", "predicted", helices, signal, ran("a signal peptide")
+        if sequence.startswith("M"):
+            return "inside", "predicted", helices, signal, ran("nothing found")
+        # The model does not begin with a start codon's methionine, so a signal peptide may
+        # be missing with its beginning: nothing was predicted, and nothing can be said
+        # from that, unless what its family is annotated to be leaves no real doubt.
+        side = side_from_where(self.places[row[1]])
+        return (side, "by function", helices, signal, None) if side else ("not known", "none", helices, signal, None)
+
+    def side_of_entry(self, row):
+        """A UniProtKB entry: by what the entry states or what UniProt predicts on it."""
+        known = self.topology[row[1]]
+        helices, signal = known["helices"], known["signal"]
+        sides = {side_of_place(value, spans) for value, spans, _ in known["places"]} - {None}
+        # What the side rests on: the tools and rule systems named on the features, or on
+        # the stated places that give the side.
+        said = lambda side: frozenset().union(*(by for value, spans, by in known["places"] if side_of_place(value, spans) == side))
+        if known["reviewed"] and len(sides) == 1:
+            side = sides.pop()
+            return side, "stated", helices, signal, ("entry", "a stated place", said(side))
+        if helices:
+            return "in", "predicted", helices, signal, ("entry", "segments", frozenset(known["helices_by"]))
+        if signal:
+            return "outside", "predicted", helices, signal, ("entry", "a signal peptide", frozenset(known["signal_by"]))
+        if len(sides) == 1:
+            side = sides.pop()
+            return side, "by function", helices, signal, ("entry", "a stated place", said(side))
+        if not known["start_missing"]:
+            return "inside", "predicted", helices, signal, ("entry", "nothing found", frozenset())
+        side = side_from_where(self.places[row[1]])
+        return (side, "by function", helices, signal, None) if side else ("not known", "none", helices, signal, None)
+
+    def place_proteins(self):
+        self.placed, self.rests = {}, {}
+        for row in self.rows:
+            *placed, rest = self.side_of_model(row) if row[0] == "wormbase_parasite" else self.side_of_entry(row)
+            self.placed[row[1]], self.rests[row[1]] = tuple(placed), rest
+
+    # --- how the predictions fare ---------------------------------------------------------
+
+    def agreement(self):
+        """Each UniProtKB entry that is whole, against the gene model it is joined to: two
+        sets of predictors on copies of one sequence. Returns all such pairs, and those
+        whose gene model has one helix and a signal peptide (settled by this tool)."""
+        by_id = {row[1]: row for row in self.rows}
+        out, settled = Counter(), Counter()
+        for accession, match in sorted(self.c.matches.items()):
+            model = by_id[match["gene"]]
+            if self.topology[accession]["start_missing"] or self.c.entries[accession]["length"] < 0.9 * int(model[2]):
+                continue
+            pair = (self.placed[model[1]][0], self.placed[accession][0])
+            out[pair] += 1
+            protein = model[8].split()[0]
+            if self.helices.get(protein, 0) == 1 and protein in self.signals:
+                settled[pair] += 1
+        return out, settled
+
+
+TOOLS_OF_SAM = "TMHMM and Phobius"   # what UniProt's sequence analysis keeps a segment on
+OWN_RULES = "UniProt's rules"
+
+
+def rests_on(s, rows):
+    """What the sides rest on beyond the two databases themselves: counted from each
+    protein's placement, as side_of_model and side_of_entry say it."""
+    found = Counter()
+    for row in rows:
+        side, basis, _, _ = s.placed[row[1]]
+        rest = s.rests[row[1]]
+        if rest:
+            found[(rest[0], rest[1], tuple(sorted(rest[2])), side, basis)] += 1
+    count = lambda want: sum(n for key, n in found.items() if want(*key))
+    models = {
+        "predicted": count(lambda kind, on, by, side, basis: kind == "gene model"),
+        "in a membrane, by helices": count(lambda kind, on, by, side, basis: kind == "gene model" and on == "helices"),
+        "one helix and a signal peptide, settled by this tool": count(lambda kind, on, by, side, basis: kind == "gene model" and on == "a helix and a signal peptide"),
+        "outside, by a signal peptide": count(lambda kind, on, by, side, basis: kind == "gene model" and on == "a signal peptide"),
+        "inside, nothing found": count(lambda kind, on, by, side, basis: kind == "gene model" and on == "nothing found"),
+    }
+    entry = lambda want: count(lambda kind, on, by, side, basis: kind == "entry" and want(on, by, side, basis))
+    entries = {
+        "predicted": entry(lambda on, by, side, basis: basis == "predicted"),
+        "in a membrane, by segments of the sequence analysis": entry(lambda on, by, side, basis: on == "segments" and by == (TOOLS_OF_SAM,)),
+        "in a membrane, by segments that carry a PROSITE rule": entry(lambda on, by, side, basis: on == "segments" and "PROSITE" in by),
+        "in a membrane, by segments of UniProt's own rules": entry(lambda on, by, side, basis: on == "segments" and by == (OWN_RULES,)),
+        "outside, by a signal peptide of the sequence analysis": entry(lambda on, by, side, basis: on == "a signal peptide" and by == ("SignalP",)),
+        "outside, by a signal peptide of UniProt's own rules": entry(lambda on, by, side, basis: on == "a signal peptide" and by == (OWN_RULES,)),
+        "inside, nothing found": entry(lambda on, by, side, basis: on == "nothing found"),
+        "by function": entry(lambda on, by, side, basis: basis == "by function"),
+        "by function, on a place that names a PROSITE rule": entry(lambda on, by, side, basis: basis == "by function" and "PROSITE" in by),
+        "of which on no other rule": entry(lambda on, by, side, basis: basis == "by function" and by == ("PROSITE",)),
+        "by function, on a place that names a HAMAP rule": entry(lambda on, by, side, basis: basis == "by function" and "HAMAP" in by),
+        "by function, on a place of UniProt's own rules alone": entry(lambda on, by, side, basis: basis == "by function" and by == (OWN_RULES,)),
+        "stated, by likeness": entry(lambda on, by, side, basis: basis == "stated"),
+    }
+    # The words of the files are written for these kinds, and for no other.
+    if models["predicted"] != sum(n for key, n in models.items() if key != "predicted"):
+        raise SystemExit("a gene model's predicted side rests on something the files have no word for")
+    if entries["predicted"] != sum(entries[key] for key in list(entries)[1:7]):
+        raise SystemExit("an entry's predicted side rests on something the files have no word for")
+    if entries["by function"] != entries["by function, on a place that names a PROSITE rule"] + entries["by function, on a place that names a HAMAP rule"] + entries["by function, on a place of UniProt's own rules alone"]:
+        raise SystemExit("an entry is placed by function on a place whose rule system the files have no word for")
+    if entry(lambda on, by, side, basis: basis == "stated" and by != ("likeness",)):
+        raise SystemExit("a reviewed entry states a place on evidence the files have no word for")
+    return {"gene models": models, "entries": entries}
+
+
+def help_text(d, file):
+    """One of UniProt's help pages as running text, without its markup."""
+    content = json.loads(d.text(UPSTREAM, file))["content"]
+    return re.sub(r"\s+", " ", re.sub(r"[#*`]", " ", re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", content)))
+
+
+DTU_LICENCE = "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it"
+PHOBIUS_TERMS = "For academic users only: the program may be used for private study, education or nonprofit research, and other users are asked to write to its author. The terms are of the program: they do not speak of predictions made with it"
+UPSTREAM_SAID = [
+    # (saved page, words it must contain): the terms of each tool as the files state them.
+    *[(f"{tool}_licence.html", words) for tool in ("tmhmm", "signalp") for words in (
+        f"ACADEMIC SOFTWARE LICENSE AGREEMENT FOR END-USERS AT PUBLICLY FUNDED ACADEMIC, EDUCATION OR RESEARCH INSTITUTIONS FOR THE USE OF {tool}",
+        "If you are not a member of a publicly funded Academic and/or Education and/or Research Institution you must obtain a commercial license",
+        "free non-exclusive license to use the Software for internal research purposes only",
+        "Any use of the software which results in any form of commercialization is not allowed under this license",
+    )],
+    ("phobius_download.html", "Phobius is intended for academic users only"),
+    ("phobius_download.html", "By downloading you agree to use the software only for private study, education or nonprofit research"),
+    ("prosite_license.html", "distributed under the Creative Commons Attribution-NonCommercial-NoDerivatives (CC BY-NC-ND 4.0) License"),
+    ("prosite_license.html", "Commercial users are asked to pay a yearly license fee"),
+    ("prosite_license.html", "commercial users need their company to pay a license fee irrespective of the method by which they access the database"),
+    ("hamap_about.html", "HAMAP is copyrighted by the SIB Swiss Institute of Bioinformatics and distributed under the Creative Commons Attribution (CC BY 4.0) License"),
+    ("uniprot_help_sam.json", "TMHMM and Phobius predictors are used to infer transmembrane regions. If there is an overlap of at least 10 amino acids between TMHMM and Phobius results, the transmembrane region is annotated using the sequence ranges predicted by Phobius"),
+    ("uniprot_help_sam.json", "TMHMM, SignalP and Phobius predictors are used to infer signal peptides"),
+    ("uniprot_help_sam.json", "we annotate the sequence region predicted by SignalP"),
+    ("uniprot_help_sam.json", "These methods are applied to UniProtKB sequences by InterPro to predict sequence features"),
+    ("uniprot_help_unirule.json", "UniRule has been developed by merging existing manual rule-based systems (HAMAP, PIR name and site rules, NCBIfam rules and RuleBase rules) into one system"),
+    ("uniprot_help_arba.json", "The Association-Rule-Based Annotator (ARBA) is one of the contributors to this pipeline"),
+    ("uniprot_help_license.json", "We cannot provide unrestricted permission regarding the use of the data, as some data may be covered by patents or other rights"),
+]
+
+
+def check_upstream_terms(d):
+    for file, words in UPSTREAM_SAID:
+        page = help_text(d, file) if file.endswith(".json") else plain(d.text(UPSTREAM, file))
+        if words not in page:
+            raise SystemExit(f"{UPSTREAM}/{file} no longer says: {words}")
+    if not re.search(r"contains \d+ documentation entries, \d+ patterns, \d+ profiles and \d+ ProRule", plain(d.text(UPSTREAM, "prosite_license.html"))):
+        raise SystemExit("PROSITE's page no longer counts its rules among what it holds")
+    # The two licences of DTU Health Tech are of the program: beyond the clauses on
+    # commercialization and on benchmark tests, none speaks of results, output or predictions.
+    for tool in ("tmhmm", "signalp"):
+        page = plain(d.text(UPSTREAM, f"{tool}_licence.html"))
+        agreement = page[page.index("ACADEMIC SOFTWARE LICENSE AGREEMENT"):]
+        spoken = re.findall(r"(?i)[^.;]*\b(?:results?|outputs?|predictions?)\b[^.;]*", agreement)
+        if len(spoken) != 2 or "commercialization" not in spoken[0] or "benchmark tests" not in spoken[1]:
+            raise SystemExit(f"the licence of {tool} now speaks of results or output beyond the two clauses the files name; read it again")
+
+
+def upstream_sources(d, rests):
+    """The tools and rule systems whose results the two databases give out, each as a source
+    of its own: its terms as its own page states them, the sources its results were read
+    through, and what rests on it."""
+    check_upstream_terms(d)
+    models, entries = rests["gene models"], rests["entries"]
+    nothing = "Nothing was downloaded from it but its statement of terms, and the program was not run here."
+    day = lambda file: d.day(UPSTREAM, file)
+    prosite = entries["in a membrane, by segments that carry a PROSITE rule"], entries["by function, on a place that names a PROSITE rule"], entries["of which on no other rule"]
+    out = [
+        {"name": "TMHMM", "url": "https://services.healthtech.dtu.dk/services/TMHMM-2.0/", "accessed": day("tmhmm_licence.html"), "licence": DTU_LICENCE, "class": NON_COMMERCIAL, "through": "WormBase ParaSite and UniProt",
+         "holds": f"{nothing} WormBase ParaSite ran it and SignalP on the gene models' proteins: {models['predicted']:,} predicted sides rest on what the two found or did not find ({models['in a membrane, by helices']:,} in a membrane by helices, {models['one helix and a signal peptide, settled by this tool']:,} with one helix and a signal peptide, {models['outside, by a signal peptide']:,} outside by a signal peptide, {models['inside, nothing found']:,} inside because neither found anything). UniProt's sequence analysis keeps a segment where TMHMM and Phobius overlap: {entries['in a membrane, by segments of the sequence analysis']:,} entries are placed in a membrane by such segments, and {entries['inside, nothing found']:,} inside because nothing was found."},
+        {"name": "SignalP", "url": "https://services.healthtech.dtu.dk/services/SignalP-5.0/", "accessed": day("signalp_licence.html"), "licence": DTU_LICENCE, "class": NON_COMMERCIAL, "through": "WormBase ParaSite and UniProt",
+         "holds": f"{nothing} The gene models' sides are those counted under TMHMM. UniProt's sequence analysis gives the signal peptide SignalP predicts where TMHMM or Phobius bears it out: {entries['outside, by a signal peptide of the sequence analysis']:,} entries are placed outside by one."},
+        {"name": "Phobius", "url": "https://phobius.sbc.su.se/download", "accessed": day("phobius_download.html"), "licence": PHOBIUS_TERMS, "class": NON_COMMERCIAL, "through": "UniProt",
+         "holds": f"{nothing} The entries' segments and signal peptides are those counted under TMHMM and SignalP."},
+        {"name": "PROSITE", "url": "https://prosite.expasy.org/prosite_license.html", "accessed": day("prosite_license.html"), "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee", "class": NON_COMMERCIAL, "through": "UniProt",
+         "holds": f"Nothing was downloaded from it but its statement of terms, and nothing of it is copied. Its rules are named in UniProt's entries as what stands behind a statement: {prosite[0]:,} entries are placed in a membrane by segments that carry one, and {prosite[1]:,} are placed by function on a stated place that names one, {prosite[2]:,} of them on no other rule."},
+    ]
+    hamap = entries["by function, on a place that names a HAMAP rule"]
+    if hamap:
+        out.append({"name": "HAMAP", "url": "https://hamap.expasy.org/hamap_about.html", "accessed": day("hamap_about.html"), "licence": "CC BY 4.0", "class": PERMISSIVE, "through": "UniProt",
+                    "holds": f"Nothing was downloaded from it but its statement of terms. {hamap:,} {'entry is' if hamap == 1 else 'entries are'} placed by function on a place that one of its family rules states."})
+    return out
+
+
+def majority(sides):
+    """The side most members sit on; of equals, the first in SIDE_TIE."""
+    return max(SIDE_TIE, key=lambda side: (sides.get(side, 0), -SIDE_TIE.index(side)))
+
+
+def ordered_sides(counts):
+    return {side: counts[side] for side in SIDES if counts.get(side)}
+
+
+def build_shelves(c, d, rows, atlas, facts):
+    """shelves.json and shelf_members.tsv, with what the README and the summary say of them."""
+    s = Shelves(c, d, rows, atlas)
+    order = {row[1]: index for index, row in enumerate(rows)}
+    names = c.entry_names
+
+    members = defaultdict(list)
+    for protein in sorted(s.family, key=order.get):
+        members[s.family[protein]].append(protein)
+    parts = defaultdict(list)
+    for protein in sorted(s.part, key=order.get):
+        parts[s.part[protein]].append(protein)
+
+    district_order = [key for key, _, _ in DISTRICTS] + [OTHER_DISTRICT[0], NO_DISTRICT[0]]
+    district = {family: s.district(found) for family, found in members.items()}
+    families = sorted(members, key=lambda f: (district_order.index(district[f]), -len(members[f]), f))
+    part_kind = lambda part: "superfamily" if part.startswith("IPR") else "other signature" if part == "other-signature" else "no signature"
+    part_label = {"other-signature": "A domain, repeat or site signature, and no family or superfamily", "no-signature": "No signature of any kind"}
+    part_rank = {"superfamily": 0, "other signature": 1, "no signature": 2}
+    listed_parts = sorted(parts, key=lambda p: (part_rank[part_kind(p)], -len(parts[p]), p))
+
+    # The members' files: families in their order, a new file where the next family would
+    # take the file past its size; a family or a part larger than a file has one of its own.
+    file_index, used, plan, sequence = 0, 0, {}, []
+    for key in [*families, *listed_parts]:
+        count = len(members[key]) if key in members else len(parts[key])
+        if used and used + count > MEMBERS_PER_FILE:
+            file_index, used = file_index + 1, 0
+        plan[key] = (f"members-{file_index:02d}.json", [used, used + count])
+        used += count
+        sequence += members[key] if key in members else parts[key]
+    if len(sequence) != len(rows) or len(set(sequence)) != len(rows):
+        raise SystemExit("a protein is filed twice or not at all")
+
+    family_rows, unit_families = [], defaultdict(list)
+    for family in families:
+        sides = Counter(s.placed[protein][0] for protein in members[family])
+        units = sorted({unit for protein in members[family] for unit in s.units.get(protein, ())}, key=natural)
+        spanning = any(s.roles.get(protein, set()) & SPANNING_ROLES for protein in members[family])
+        side = majority(sides)
+        if spanning and side != "in":
+            raise SystemExit(f"{family} holds a unit's membrane-spanning products and does not come out in a membrane; read the predictions again")
+        for unit in units:
+            unit_families[unit].append(family)
+        file, at = plan[family]
+        family_rows.append([family, names[family]["name"], SHELF["id"], side, district[family], len(members[family]), ordered_sides(sides), file, at, units, s.where(members[family])])
+    part_rows = []
+    for part in listed_parts:
+        sides = Counter(s.placed[protein][0] for protein in parts[part])
+        file, at = plan[part]
+        part_rows.append([part, names[part]["name"] if part.startswith("IPR") else part_label[part], part_kind(part), majority(sides), s.district(parts[part], loose=True), len(parts[part]), ordered_sides(sides), file, at])
+
+    all_sides = Counter(side for side, _, _, _ in s.placed.values())
+    bases = Counter((side, basis) for side, basis, _, _ in s.placed.values())
+    no_family_sides = Counter(s.placed[protein][0] for protein in s.part)
+    groups = []
+    tally = lambda key: {"families": sum(1 for f in families if district[f] == key), "proteins": sum(len(members[f]) for f in families if district[f] == key)}
+    for key, label, wanted in DISTRICTS:
+        groups.append({"id": key, "label": label, "from": "Gene Ontology terms: " + ", ".join(f"{name} ({term})" for term, name in wanted), **tally(key)})
+    groups.append({"id": OTHER_DISTRICT[0], "label": OTHER_DISTRICT[1], "from": "The family's proteins carry Gene Ontology terms, and none of the districts' terms", **tally(OTHER_DISTRICT[0])})
+    groups.append({"id": NO_DISTRICT[0], "label": NO_DISTRICT[1], "from": "The family's proteins carry no Gene Ontology term", **tally(NO_DISTRICT[0])})
+
+    models, entries = len(c.genes), len(c.entries)
+    mart = "wbps-biomart-smedh1prjna885486"
+    cite = {source["name"]: source["cite"] for source in atlas["sources"]}
+    ambiguous = sum(1 for row in rows if row[0] == "wormbase_parasite" and s.helices.get(row[8].split()[0], 0) == 1 and row[8].split()[0] in s.signals)
+    rests = rests_on(s, rows)
+    upstream = upstream_sources(d, rests)
+    # The predicted sides that rest on the three programs: every gene model's, and every
+    # entry's but those whose segment or signal peptide a rule gives.
+    all_predicted = rests["gene models"]["predicted"] + rests["entries"]["predicted"]
+    by_programs = rests["gene models"]["predicted"] + sum(rests["entries"][key] for key in ("in a membrane, by segments of the sequence analysis", "outside, by a signal peptide of the sequence analysis", "inside, nothing found"))
+    if all_predicted != sum(count for (_, basis), count in bases.items() if basis == "predicted"):
+        raise SystemExit("the predicted sides are not all accounted for by what they rest on")
+    header = {
+        "format": SHELF_FORMAT,
+        "species": "planarian",
+        "made": d.last_day(),
+        "from": f"{FULL_FILE}: {len(rows):,} proteins of {ORGANISM}, {models:,} gene models of one genome annotation and {entries:,} UniProtKB entries. Every one is predicted, from the genome or from transcripts; none was measured.",
+        "predicted": True,
+        "shelves": [SHELF],
+        "groups": groups,
+        "groups_from": (
+            "A protein's Gene Ontology terms are those InterPro maps to any of its signatures and, for a UniProtKB entry, those UniProt gives the entry; a gene model takes also the terms of the entries joined to it. "
+            "With every broader term (by the ontology's kind-of and part-of links), the protein falls in the first district, in the order listed, one of whose terms it carries. "
+            "A family's members are one kind of protein, so it stands in the district most of its classed members fall in; of equal counts, the first listed. A part of no_family is a looser grouping: it stands in a district only if more than half of all its members fall there. The choice of the districts' terms and their order is the viewer's."
+        ),
+        "family_from": (
+            f"A family is an InterPro entry of the type Family (InterPro {s.release}). A protein is filed under the narrowest family among its signatures: one that is not a broader kind of another it carries, by InterPro's tree of entries. "
+            f"Where several unrelated families remain ({s.several:,} proteins), it is the deepest in that tree, then the one fewest proteins of this catalogue are in, then the first by accession. "
+            "A gene model's signatures are those on any of its predicted proteins, as the catalogue lists them."
+        ),
+        "family_columns": ["id", "label", "shelf", "side", "group", "count", "sides", "file", "at", "units", "where"],
+        "family_notes": {
+            "side": "The side most of the family's members sit on; of equal counts, a membrane first.",
+            "units": "The inventory units whose candidate products, in the planarian atlas, are members of this family.",
+            "where": "The places in the cell that the same Gene Ontology terms name for at least half of the family's members that are given any: an annotation carried by signatures, not a prediction for these proteins. " + "; ".join(f"{key}: {name} ({term})" for key, term, name in WHERE) + ".",
+        },
+    }
+    no_family = {
+        "label": "No family assigned",
+        "count": len(s.part),
+        "sides": ordered_sides(no_family_sides),
+        "parts_from": (
+            "A protein with no family is filed under one part. If it carries an InterPro entry of the type Homologous superfamily, the part is that superfamily: a wider grouping than a family, by shared structure. "
+            "Of several superfamilies it is the one fewest proteins of this catalogue carry, then the first by accession. The other two parts hold the proteins with only a domain, repeat or site signature, and those with no signature at all."
+        ),
+        "part_columns": ["id", "label", "kind", "side", "group", "count", "sides", "file", "at"],
+    }
+    tail = {
+        "member_columns": ["id", "label", "gene", "side", "basis", "length", "unit", "marks"],
+        "members_from": {
+            "table": f"data/proteins/planarian/{MEMBERS_FILE}",
+            "format": MEMBERS_FORMAT,
+            "order": "The table's lines are the members in order: the families as listed here, then the parts of no_family as listed; within each, the catalogue's order. A family's members are the lines whose 'under' is its id.",
+            "files": f"A file holds the members of consecutive families: a new file begins where the next family or part would take it past {MEMBERS_PER_FILE:,} members, so a family or a part is never split, and one larger than that has a file of its own. 'file' names the file and 'at' the first and one past the last of its members there.",
+            "label": f"A member's label is its name in {FULL_FILE}; where that is empty, the label of the part it is filed under.",
+            "step": "python3 tools/build_planarian_atlas.py members --out DIR writes the files from the two tables.",
+        },
+        "side_notes": {
+            "predicted": (
+                f"Gene models: TMHMM (membrane-spanning helices) and SignalP (signal peptides) as WormBase ParaSite ran them on each model's predicted proteins and gives them in its BioMart (release {WBPS_RELEASE[4:]}); the gene's longest predicted protein is read. "
+                "One helix or more without a signal peptide, or two or more with one: in a membrane. A signal peptide and no helix: outside. Neither, on a model that begins with methionine: inside. "
+                f"A signal peptide with exactly one helix ({ambiguous:,} models) is settled by this tool's own reading of the sequence, because TMHMM can take a signal peptide for a helix: "
+f"a stretch of {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or more are hydrophobic ({', '.join(sorted(HYDROPHOBIC))}) that starts at residue {SIGNAL_REACH + 1} or later puts it in a membrane; such a stretch only before that puts it outside. "
+                "UniProtKB entries: the membrane-spanning segments and signal peptides that UniProt's automatic annotation gives the entry; its sequence analysis keeps a segment where TMHMM and Phobius overlap, and gives the signal peptide SignalP predicts where TMHMM or Phobius bears it out. "
+                "Which membrane a protein spans is not predicted: the shelf stands for the cell's membranes together. "
+                f"So {by_programs:,} of the {all_predicted:,} predicted sides rest on what TMHMM, SignalP and Phobius found or did not find. "
+                "The three programs are given out for academic use; neither database's terms speak for them, and WormBase ParaSite says that third-party constraints may apply to what it gives out. Each is named among the sources, with its own terms and what rests on it."
+            ),
+            "by function": f"Taken from an annotation: for a UniProtKB entry with nothing predicted, the subcellular location UniProt's rules give it; for a protein whose beginning is missing and on which nothing was predicted, the place its Gene Ontology terms name, where that leaves no real doubt. Of the {rests['entries']['by function']:,} entries placed by a rule's location, {rests['entries']['by function, on a place that names a PROSITE rule']:,} rest on a statement that names a PROSITE rule; the others rest on UniProt's own rule systems or, for {rests['entries']['by function, on a place that names a HAMAP rule']:,}, on HAMAP's.",
+            "stated": "A reviewed UniProtKB entry states the location, by similarity to another species' protein.",
+            "not known": "Nothing was predicted and the protein's beginning is missing, so a signal peptide could be missing with it; or the two predictors cannot be told apart.",
+        },
+        "marks": {
+            "helices": {"label": "Membrane-spanning segments predicted", "measured": False, "source": "WormBase ParaSite (TMHMM) for a gene model; UniProt for an entry"},
+            "signal": {"label": "A signal peptide is predicted", "values": [True, False], "measured": False, "source": "WormBase ParaSite (SignalP) for a gene model; UniProt for an entry"},
+            "kind": {"label": "What the line is", "values": ["gene model", "unreviewed entry", "reviewed entry"], "measured": False, "source": FULL_FILE},
+            "same": {"label": "The other line of the same sequence: a gene model's UniProtKB entries, or an entry's gene model", "measured": False, "source": FULL_FILE},
+        },
+        "counts": {side: all_sides.get(side, 0) for side in SIDES},
+        "by_basis": {side: {basis: bases[side, basis] for basis in ("stated", "predicted", "by function", "none") if bases.get((side, basis))} for side in SIDES},
+        "rests_on": rests,
+        "sources": [
+            {
+                "name": "WormBase ParaSite", "url": "https://parasite.wormbase.org/", "release": WBPS_RELEASE, "accessed": d.day(mart, "biomart_tmhmm.tsv"),
+                "class": PERMISSIVE,
+                "licence": "The database's disclaimer: \"Ensembl imposes no restrictions on access to, or use of, the data provided and the software used to analyse and present it. Ensembl data generated by members of the project are available without restriction.\" It goes on: \"Some of the data and software included in the distribution may be subject to third-party constraints. Users of the data and software are solely responsible for establishing the nature of and complying with any such restrictions.\" It asks that the genome's paper and the database be cited.",
+                "cite": cite["WormBase ParaSite"],
+                "holds": "the gene models; and, from its BioMart, the helices TMHMM predicts and the signal peptides SignalP predicts on each predicted protein",
+            },
+            {
+                "name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "release": s.release, "accessed": d.day("interpro-hierarchy-and-go", "ParentChildTreeFile.txt"), "licence": "CC0 1.0", "class": PERMISSIVE,
+                "cite": cite["InterPro"],
+                "holds": "the type and name of each entry, the tree of broader and narrower entries, and the mapping of entries to Gene Ontology terms",
+            },
+            {
+                "name": "Gene Ontology", "url": "https://geneontology.org/", "release": s.ontology, "accessed": d.day("geneontology-go-basic", "go-basic.obo"), "licence": "CC BY 4.0", "class": PERMISSIVE,
+                "cite": ontology_citation(d),
+                "holds": "the names of terms and which term is a kind or a part of which; no term's text is copied beyond the names of the districts' and the places' terms",
+            },
+            {
+                "name": "UniProt", "url": "https://www.uniprot.org/", "release": d.entry("uniprot-smed-topology", f"uniprotkb_{TAXON}_topology.json").get("x_uniprot_release") or facts["uniprot"], "accessed": d.day("uniprot-smed-topology", f"uniprotkb_{TAXON}_topology.json"), "licence": "CC BY 4.0", "class": PERMISSIVE,
+                "cite": cite["UniProt"],
+                "holds": "for each of the species' entries: the membrane-spanning segments, the signal peptide and the subcellular location it gives, whether the sequence's beginning is missing, and its Gene Ontology terms",
+            },
+            # The tools and rule systems whose results the two databases give out: each with
+            # its own terms, the sources it was read through, and what rests on it.
+            *upstream,
+        ],
+    }
+    compact = lambda value: json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+    lines = lambda items: "[\n" + ",\n".join("  " + compact(item) for item in items) + "\n ]"
+    body = json.dumps(header, indent=1, ensure_ascii=False)[:-2]
+    body += ',\n "families": ' + lines(family_rows)
+    body += ',\n "no_family": ' + json.dumps(no_family, indent=1, ensure_ascii=False).replace("\n", "\n ")[:-3] + ',\n  "parts": ' + lines(part_rows).replace("\n", "\n ") + "\n }"
+    body += "," + json.dumps(tail, indent=1, ensure_ascii=False)[1:] + "\n"
+    json.loads(body)
+
+    under = {**s.family, **s.part}
+    table_rows = [[protein, under[protein], s.placed[protein][0], s.placed[protein][1], str(s.placed[protein][2]), "1" if s.placed[protein][3] else "0", ";".join(sorted(s.units.get(protein, ()), key=natural))] for protein in sequence]
+    members_table = "\n".join("\t".join(row) for row in [MEMBERS_COLUMNS, *table_rows]) + "\n"
+
+    sizes = sorted((len(found) for found in members.values()), reverse=True)
+    report = {
+        "shelves": s, "families": len(families), "in_families": len(s.family), "no_family": len(s.part), "several": s.several,
+        "sizes": sizes, "largest": [(names[f]["name"], len(members[f])) for f in sorted(members, key=lambda f: (-len(members[f]), f))[:12]],
+        "parts": Counter(part_kind(part) for part in parts), "part_proteins": Counter({kind: sum(len(parts[p]) for p in parts if part_kind(p) == kind) for kind in part_rank}),
+        "largest_parts": [(names[p]["name"], len(parts[p])) for p in listed_parts[:8] if p.startswith("IPR")],
+        "sides": all_sides, "bases": bases, "groups": groups, "files": file_index + 1, "ambiguous": ambiguous,
+        "truncated": sum(1 for row in rows if row[0] == "wormbase_parasite" and not c.proteins[row[8].split()[0]]["sequence"].startswith("M")),
+        "start_missing": sum(1 for known in s.topology.values() if known["start_missing"]),
+        "agreement": s.agreement()[0], "settled": s.agreement()[1], "unit_families": {unit: found for unit, found in sorted(unit_families.items(), key=lambda item: natural(item[0]))},
+        "with_terms": sum(1 for f in families if district[f] != NO_DISTRICT[0]), "with_where": sum(1 for row in family_rows if row[10]),
+        "classed": Counter(s.classed.values()), "dropped": len(s.dropped),
+        "by_kind": Counter((row[3] if row[0] == "uniprot" else "gene model", s.placed[row[1]][0], s.placed[row[1]][1]) for row in rows),
+        "release": s.release, "ontology": s.ontology, "shelves_bytes": len(body.encode("utf-8")), "members_bytes": len(members_table.encode("utf-8")),
+        "member_files": sorted({plan[key][0] for key in plan}), "largest_file": max(Counter(plan[key][0] for key in plan for _ in range(plan[key][1][1] - plan[key][1][0])).values()),
+        "retired": len({sig for found in s.signatures.values() for sig in found if sig not in names}),
+        "family_rows": family_rows, "part_rows": part_rows,
+    }
+    report["text"] = body
+    return body, members_table, report
+
+
+def cut_members(folder):
+    """The members' files the page publishes beside it, cut from the two tables as
+    shelves.json says: {file name: text}. Reads only the repository's files."""
+    folder = Path(folder)
+    shelves = json.loads((folder / SHELVES_FILE).read_text(encoding="utf-8"))
+    catalogue = {}
+    with open(folder / FULL_FILE, encoding="utf-8") as handle:
+        header = handle.readline().rstrip("\n").split("\t")
+        for line in handle:
+            row = dict(zip(header, line.rstrip("\n").split("\t")))
+            catalogue[row["id"]] = row
+    placed = defaultdict(list)
+    with open(folder / MEMBERS_FILE, encoding="utf-8") as handle:
+        header = handle.readline().rstrip("\n").split("\t")
+        for line in handle:
+            row = dict(zip(header, line.rstrip("\n").split("\t")))
+            placed[row["under"]].append(row)
+    columns = shelves["member_columns"]
+    family_at = {name: index for index, name in enumerate(shelves["family_columns"])}
+    part_at = {name: index for index, name in enumerate(shelves["no_family"]["part_columns"])}
+    files = defaultdict(list)
+    groups = [(row[family_at["id"]], None, row[family_at["file"]], row[family_at["at"]]) for row in shelves["families"]]
+    groups += [(row[part_at["id"]], row[part_at["label"]], row[part_at["file"]], row[part_at["at"]]) for row in shelves["no_family"]["parts"]]
+    for key, fallback, file, at in groups:
+        if len(files[file]) != at[0] or len(placed[key]) != at[1] - at[0]:
+            raise SystemExit(f"the members of {key} are not where {SHELVES_FILE} says they are")
+        for row in placed[key]:
+            entry = catalogue[row["id"]]
+            marks = {"helices": int(row["helices"]), "signal": row["signal"] == "1", "kind": entry["kind"]}
+            if entry["match"]:
+                marks["same"] = entry["match"].split(";")
+            unit = row["units"].split(";") if row["units"] else None
+            files[file].append([row["id"], entry["name"] or fallback or "", entry["gene"], row["side"], row["basis"], int(entry["length"]), unit, marks])
+    compact = lambda value: json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+    out = {}
+    for file in sorted(files):
+        head = {"format": MEMBERS_FORMAT, "species": shelves["species"], "file": file, "columns": columns}
+        out[file] = json.dumps(head, indent=1, ensure_ascii=False)[:-2] + ',\n "members": [\n' + ",\n".join("  " + compact(member) for member in files[file]) + "\n ]\n}\n"
+        json.loads(out[file])
+    return out
+
+
+def shelves_section(report, c, d, everything):
+    """What the README says of the shelves' two files, from what the build counted."""
+    sizes, sides, bases, kinds = report["sizes"], report["sides"], report["bases"], report["by_kind"]
+    ones = sum(1 for size in sizes if size == 1)
+    at_least = lambda n: (sum(1 for size in sizes if size >= n), sum(size for size in sizes if size >= n))
+    parts, part_proteins = report["parts"], report["part_proteins"]
+    agreement, settled = report["agreement"], report["settled"]
+    both = sum(count for (model, entry), count in agreement.items() if model != "not known")
+    same = sum(count for (model, entry), count in agreement.items() if model == entry)
+    settled_same = sum(count for (model, entry), count in settled.items() if model == entry)
+    unplaced_models = sum(count for (kind, side, _), count in kinds.items() if kind == "gene model" and side == "not known")
+    unplaced_entries = sides["not known"] - unplaced_models
+    districts = "\n".join(f"| {group['label']} | {group['families']:,} | {group['proteins']:,} | {group['from']} |" for group in report["groups"])
+    largest = report["largest"]
+    return f"""## `{SHELVES_FILE}` and `{MEMBERS_FILE}`: the proteins laid out for the atlas's shelves
+
+The atlas shows every one of the {len(everything):,} proteins, grouped into families that open; the
+form is fixed in `schema/SPECIES_PROTEINS.md`. `{SHELVES_FILE}` holds the families.
+`{MEMBERS_FILE}` holds, for every protein, what it is filed under, its side of a membrane
+and how that side is known.
+
+**Everything here is a prediction on a predicted protein.** Nothing says that the animal
+makes a protein, where it was seen, or which membrane it is in.
+
+- **Families.** A family is an InterPro entry of the type Family (InterPro {report['release']}). {report['families']:,}
+  families hold {report['in_families']:,} proteins. A protein is filed under the narrowest family among
+  its signatures; for {report['several']:,} proteins several unrelated families remained and a rule
+  chose one (the deepest in InterPro's tree, then the smallest here, then the first).
+  {ones:,} families have one member and {at_least(10)[0]:,} have ten or more; the largest are
+  {largest[0][0]} ({largest[0][1]:,}), {largest[1][0]} ({largest[1][1]:,}) and {largest[2][0]} ({largest[2][1]:,}).
+- **No family.** {report['no_family']:,} proteins carry no family signature. None is dropped: they
+  are listed under "No family assigned", in parts. {parts['superfamily']:,} parts are InterPro
+  superfamilies, a wider grouping by shared structure, and hold {part_proteins['superfamily']:,}; {part_proteins['other signature']:,}
+  proteins carry only a domain, repeat or site signature; {part_proteins['no signature']:,} carry no signature
+  of any kind.
+- **Sides.** {sides['in']:,} span a membrane, {sides['outside']:,} are beyond one, {sides['inside']:,} are inside the cell
+  and {sides['not known']:,} are not placed. By how it is known: {sum(count for (_, basis), count in bases.items() if basis == 'predicted'):,} predicted,
+  {sum(count for (_, basis), count in bases.items() if basis == 'by function'):,} by function, {sum(count for (_, basis), count in bases.items() if basis == 'stated'):,} stated.
+- **How a side is predicted.** For a gene model: the helices TMHMM predicts and the signal
+  peptide SignalP predicts on its longest predicted protein, as WormBase ParaSite holds
+  them. For a UniProtKB entry: the membrane-spanning segments and the signal peptide
+  UniProt's automatic annotation gives. `{SHELVES_FILE}` gives the rule in full
+  (`side_notes`).
+- **This tool's own reading, in one case.** {report['ambiguous']:,} gene models have one helix and a signal
+  peptide, and TMHMM can take a signal peptide for a helix. Where the hydrophobic stretch
+  lies in the sequence decides: {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or more are hydrophobic
+  ({', '.join(sorted(HYDROPHOBIC))}). At residue {SIGNAL_REACH + 1} or later it is taken for a membrane-spanning
+  stretch, only before that for the signal peptide. The rule uses no published scale.
+- **Not placed.** {unplaced_models:,} gene models and {unplaced_entries:,} entries. Their sequence lacks its
+  beginning and nothing was predicted on the rest, so a signal peptide may be missing
+  with it; {report['truncated']:,} gene models do not begin with methionine. A few have one helix and a
+  signal peptide that could not be told apart.
+- **How the predictions fare.** {sum(agreement.values()):,} UniProtKB entries are whole copies of a gene model's
+  protein, and UniProt places them with other predictors (Phobius and SignalP). Where
+  both are placed, the two agree on {same:,} of {both:,}. Of the {sum(settled.values())} pairs this tool's own
+  reading settled, {settled_same} agree; the rule's two numbers were set while looking at
+  those pairs, so that is not an independent test.
+- **Which membrane is not predicted.** The one shelf stands for the cell's membranes
+  together: a predicted helix says that a protein spans a membrane, not which. "Beyond a
+  membrane" likewise covers the outside of the cell and the inside of its compartments.
+  Where the Gene Ontology terms of a family's members name a place in the cell, the
+  family carries it as a hint (`where`).
+- **Tied to the atlas.** {len(report['unit_families'])} of the inventory's units have candidate products
+  here; their families carry the units' ids, and every family that holds a
+  membrane-spanning product comes out in a membrane.
+
+A family, and a part of "No family assigned", stands in a district:
+
+| District | Families | Their proteins | From |
+| --- | ---: | ---: | --- |
+{districts}
+
+A protein's Gene Ontology terms are those InterPro maps to any of its signatures and
+those UniProt gives a UniProtKB entry; a gene model takes also the terms of the entries
+joined to it. The protein falls in the first district, in the order of the table, one of
+whose terms it carries, and a family stands where most of its classed members fall. The
+choice of the terms and their order is the viewer's.
+
+### `{MEMBERS_FILE}`
+
+{len(everything):,} lines under a header, tab-separated, in the order the shelves read them: the
+families as `{SHELVES_FILE}` lists them, then the parts of "No family assigned"; within
+each, the order of `{FULL_FILE}`.
+
+| Column | Meaning |
+| --- | --- |
+| `id` | The protein's `id` in `{FULL_FILE}` |
+| `under` | The InterPro family it is filed under; for a protein with no family, the part: a superfamily's accession, `other-signature` or `no-signature` |
+| `side` | `in`, `outside`, `inside` or `not known` |
+| `basis` | `predicted`, `by function`, `stated` or `none` |
+| `helices` | How many membrane-spanning segments are predicted |
+| `signal` | `1` if a signal peptide is predicted |
+| `units` | The inventory units that list the protein as a candidate product in the planarian atlas |
+
+**How a family's members are read.** A family's members are the lines whose `under` is
+its id, in the table's order. For the page they are cut into {len(report['member_files'])} files of at most
+{MEMBERS_PER_FILE:,} members where families allow (the largest holds {report['largest_file']:,}, one part alone): a
+file holds consecutive families and a family is never split. `{SHELVES_FILE}` gives each
+family's file and its place there (`file`, `at`). `python3
+tools/build_planarian_atlas.py members --out DIR` writes the files; they are published
+beside the page and are not kept in the repository."""
+
+
+def build_readme(c, facts, atlas, listed, named, everything, report, d):
     models, entries = len(c.genes), len(c.entries)
     existence = Counter(row[8] for row in everything if row[0] == "uniprot")
     known = ["evidence at transcript level", "inferred from homology", "predicted", "evidence at protein level"]
@@ -1307,11 +2583,30 @@ def build_readme(c, facts, atlas, listed, named, everything):
     rows = "\n".join(f"| [{s['name']}]({s['url']})" + (f", release {s['release']}" if s.get("release") else "") + f", read {s['accessed']} | {s['holds'][0].upper() + s['holds'][1:]} | {s['licence']} |" for s in table_sources)
     cites = "\n".join(f"- {s['name']}: {s['cite']}" for s in table_sources)
     more = len(listed) - named
+    shelf_sources = json.loads(report["text"])["sources"]
+    why_named = {
+        PAPERS["gap_planarian"]: "It names the innexin smedinx-11, whose sequence record carries the name",
+        PAPERS["gap_families"]: "Which animals have connexins and which have innexins is to be read there",
+        PAPERS["hk"]: "It reports the proton-potassium pump, whose sequence record names it",
+        PAPERS["trpa1"]: "It reports TRPA1, whose UniProtKB entry carries the name",
+        PAPERS["inx13"]: "UniProtKB entries of innexins cite it as where their sequences were reported",
+        PAPERS["inx1"]: "A UniProtKB entry of an innexin cites it as where its sequence was reported",
+    }
+    pointers = sorted((pmid for pmid in cited_in_atlas(c) if c.papers[pmid]["class"] != PERMISSIVE), key=lambda pmid: (c.papers[pmid]["short"].rsplit(" ", 1)[1], c.papers[pmid]["short"]))
+    if set(pointers) != set(why_named):
+        raise SystemExit(f"the papers that are pointers are not the ones the README explains: {sorted(c.papers[pmid]['short'] for pmid in pointers)}")
+    if c.papers[PAPERS["wbps"]]["licence"] != "cc by-nc-nd" or c.papers[PAPERS["planmine"]]["licence"] != "cc by-nc":
+        raise SystemExit("the papers cited for WormBase ParaSite and PlanMine no longer have the licences the README states")
+    pointer_rows = "\n".join(f"| {c.papers[pmid]['citation']['text']} | {c.papers[pmid]['class']} | {why_named[pmid]} |" for pmid in pointers)
+    shelf_rows = "\n".join(f"| [{s['name']}]({s['url']}), release {s['release']}, read {s['accessed']} | {s['holds'][0].upper() + s['holds'][1:]} | {s['licence']} |" for s in shelf_sources if not s.get("through"))
+    upstream_rows = "\n".join(f"| {s['name']} | {s['through']} | {s['licence']} | {s['class']} | {s['holds'].split('. ', 1)[1]} |" for s in shelf_sources if s.get("through"))
+    rests = json.loads(report["text"])["rests_on"]
+    shelf_files = "\n".join(f"| `{source}` | `{file}` | {entry['retrieved_utc'][:10]} | `{entry['sha256']}` |" for (source, file), entry in sorted(d.read.items()))
     return f"""# Planarian proteins
 
 Three things are recorded here for the planarian *{ORGANISM}*.
 
-1. **The mass-spectrometry library of about 10,000 proteins was not imported.** It was
+1. **The mass-spectrometry library of planarian proteins was not imported.** It was
    found, its terms were read, and its list of proteins could not be reached under terms
    that allow a copy. What was found and what is missing is set out below.
 2. **`{FULL_FILE}` is the open set, brought in whole in the meantime** (the user's
@@ -1321,17 +2616,21 @@ Three things are recorded here for the planarian *{ORGANISM}*.
    does not stand in for it.
 3. **`{REFERENCE_FILE}` holds the {len(listed)} of those lines that the planarian protein atlas
    draws on:** the {named} proteins it names and {more} more that are joined to them.
+4. **`{SHELVES_FILE}` and `{MEMBERS_FILE}` lay the same {len(everything):,} proteins out for the
+   atlas's shelves:** each is given one family, a side of a membrane and how that side is
+   known, and the families open to show their members. Every one of these is a
+   prediction on a predicted protein.
 
 Generated by `tools/build_planarian_atlas.py`; do not edit. This is reference data for
 the viewer's protein atlas. It is not the engine's protein catalogue, and nothing in the
 engine reads it.
 
-## The library of about 10,000 proteins: found, not imported
+## The mass-spectrometry library: found, not imported
 
 | | |
 | --- | --- |
 | The study | {library['authors']} ({library['year']}) {library['title']}. {library['journal']} doi:{library['citation']['doi']}, PubMed {library['citation']['pmid']} |
-| What it reports | In its abstract: "{library['says']}" of *{ORGANISM}* |
+| What it reports | A spectral library of the proteins of *{ORGANISM}* detected by mass spectrometry. How many proteins it covers is in its abstract; the paper reserves all rights, so the number is not repeated here |
 | Its public deposits | ProteomeXchange PXD042308 (iProX IPX0006394000, announced {library['announced']}): {library['raw']} instrument files and {library['other']} other files. ProteomeXchange PXD059861 (iProX IPX0010799000): {library['raw_second']} instrument files. GEO GSE232894: the study's RNA sequencing |
 | Terms of the paper | "{library['rights']}" |
 | Terms of the deposits | iProX's data licence puts datasets submitted since 23 March 2023 under CC0, and elsewhere limits what is taken from its site to personal use; both clauses are on record |
@@ -1396,6 +2695,8 @@ words occur in the model's predicted protein and no other gene reaches half of t
 share; {len(c.matches):,} of the {entries:,} entries join a gene model this way. A join says the two are
 copies of one sequence, not that either is confirmed in the animal.
 
+{shelves_section(report, c, d, everything)}
+
 ## Where the proteins came from, and under what terms
 
 | Source | What is taken | Terms |
@@ -1406,21 +2707,88 @@ Cite:
 
 {cites}
 
+For the shelves, more was taken from the same sources, and the Gene Ontology was added:
+
+| Source | What the shelves take | Terms |
+| --- | --- | --- |
+{shelf_rows}
+
+Every source in the two tables is permissive: its terms allow what is taken, with
+attribution.
+
+**What the two databases give out that a tool or a rule system computed.** The sides
+are predictions, and the programs and rules that made them have terms of their own.
+WormBase ParaSite's disclaimer says, after the sentence quoted above: "Some of the data
+and software included in the distribution may be subject to third-party constraints.
+Users of the data and software are solely responsible for establishing the nature of and
+complying with any such restrictions." UniProt's licence page says: "We cannot provide
+unrestricted permission regarding the use of the data, as some data may be covered by
+patents or other rights." Each tool and rule system is listed here with its own terms,
+read at its own page, and with what rests on it in `{SHELVES_FILE}`. Nothing was
+downloaded from any of them but its page of terms, and no program was run.
+
+| Tool or rule system | Read through | Its own terms | Class | What rests on it |
+| --- | --- | --- | --- | --- |
+{upstream_rows}
+
+UniProt's help pages describe RuleBase, ARBA and the PIR rules as parts of its own
+annotation pipeline. No terms were read for them apart from UniProt's, so they are not
+classed separately: {rests['entries']["in a membrane, by segments of UniProt's own rules"] + rests['entries']["outside, by a signal peptide of UniProt's own rules"]:,} entries are placed by a segment or a signal peptide they give, and
+{rests['entries']["by function, on a place of UniProt's own rules alone"]:,} by function on a place they state.
+
+**Two kinds of terms.** The licences of TMHMM and SignalP and the terms of Phobius are of
+the programs: they say who may run them and say nothing of predictions made with them,
+and it was WormBase ParaSite and UniProt that ran them. PROSITE's terms are of the
+database itself, of which its rules are part, and its page says that commercial users pay
+a licence fee "irrespective of the method by which they access the database". Whether
+sides that rest on the academic programs, or on PROSITE's rules, may stay in a commercial
+project is the project's to decide and is not settled here. Until it is, every such side
+is counted above and is said to be predicted wherever it is shown.
+
+**Papers named, with nothing taken beyond a name.** The atlas names planarian genes by
+the papers that reported them. A paper under CC BY may stand behind a name. A paper
+whose terms do not allow a copy is a pointer: the name it is cited for stands in a
+sequence record or a UniProtKB entry as well, and none of its findings is repeated.
+
+| Paper | Class | Why it is named |
+| --- | --- | --- |
+{pointer_rows}
+
+Two more papers are cited because their databases ask for it, and nothing is taken from
+the papers themselves: {c.papers[PAPERS['wbps']]['short']} for WormBase ParaSite (the
+paper is under CC BY-NC-ND) and {c.papers[PAPERS['planmine']]['short']} for PlanMine (under CC BY-NC).
+The paper of the mass-spectrometry library reserves all rights; it is set out above.
+
+The Gene Ontology asks for two papers to be cited, in its own words: {ontology_citation(d)}.
+Its release here is {report['ontology']}. WormBase ParaSite's BioMart names TMHMM and
+SignalP and no version of either; the licence read for each is the one DTU Health Tech
+shows on its download page today.
+
+The files read for the shelves, each in its dataset folder outside the repository and
+checked against the SHA-256 its folder's MANIFEST gives:
+
+| Folder | File | Retrieved | SHA-256 |
+| --- | --- | --- | --- |
+{shelf_files}
+
 ## How to rebuild
 
 ```bash
-python3 tools/build_planarian_atlas.py fetch --evidence DIR   # network; saves every response
-python3 tools/build_planarian_atlas.py build --evidence DIR   # offline; the same bytes every time
+python3 tools/build_planarian_atlas.py fetch --evidence DIR --datasets DATA   # network; saves what is not yet there
+python3 tools/build_planarian_atlas.py build --evidence DIR --datasets DATA   # offline; the same bytes every time
+python3 tools/build_planarian_atlas.py members --out OUT                      # the shelves' member files, cut from the tables here
 ```
 
-`DIR` holds the saved responses and `requests.json`, the record of what was asked and
-when; it is kept outside the repository. The build also writes
+`DIR` holds the saved responses of the catalogue and the atlas, with `requests.json`, the
+record of what was asked and when. `DATA` holds the shelves' downloads, one folder for
+each source with a `MANIFEST.json` that gives every file's address, time and SHA-256.
+Both are kept outside the repository. The build also writes
 `data/proteins/atlases/planarian.json`. `docs/PLANARIAN_ATLAS.md` describes the method
 and its limits.
 """
 
 
-def build(evidence_folder, snapshot):
+def build(evidence_folder, datasets_folder, snapshot):
     evidence = Evidence(evidence_folder)
     check_terms(evidence)
     context = Context(evidence, snapshot)
@@ -1431,16 +2799,25 @@ def build(evidence_folder, snapshot):
     listed = [row for row in rows if (row[0], row[1]) in kept]
     if not used <= {(row[0], row[1]) for row in listed}:
         raise SystemExit("the atlas names an identifier that the reference proteins do not hold")
+    datasets = Datasets(datasets_folder)
+    shelves, members, report = build_shelves(context, datasets, rows, atlas, facts)
     files = {
         "atlas": json.dumps(atlas, indent=1, ensure_ascii=False) + "\n",
         "reference": table(listed),
-        "readme": build_readme(context, facts, atlas, listed, len(used), rows),
+        "readme": build_readme(context, facts, atlas, listed, len(used), rows, report, datasets),
         "full": table(rows),
+        "shelves": shelves,
+        "members": members,
     }
     for name, text in files.items():
         if PATHS.search(text):
             raise SystemExit(f"the {name} would hold a machine path")
-    return files, atlas, context
+    # The limits the repository keeps: the families under 1 MB, no file over 3 MB, and what
+    # the shelves add under about 1.5 MB.
+    size = {name: len(text.encode("utf-8")) for name, text in files.items()}
+    if size["shelves"] >= 1_000_000 or max(size.values()) >= 3_000_000 or size["shelves"] + size["members"] >= 1_600_000:
+        raise SystemExit(f"the shelves' files have outgrown their limits: {size}")
+    return files, atlas, context, report
 
 
 def summary(atlas, context):
@@ -1459,24 +2836,62 @@ def summary(atlas, context):
     return "\n".join(lines)
 
 
+def shelves_summary(report):
+    sizes, s = report["sizes"], report["shelves"]
+    at_least = lambda n: (sum(1 for size in sizes if size >= n), sum(size for size in sizes if size >= n))
+    lines = [
+        f"families: {report['families']:,} holding {report['in_families']:,} proteins; no family: {report['no_family']:,}; filed by a tie-break among unrelated families: {report['several']:,}",
+        "  sizes: " + "; ".join(f">={n}: {at_least(n)[0]:,} families, {at_least(n)[1]:,} proteins" for n in (1, 2, 3, 5, 10, 20, 50)),
+        f"  one-member families: {sum(1 for size in sizes if size == 1):,}; largest: {report['largest'][:6]}",
+        f"no family, by part: {dict(report['parts'])} holding {dict(report['part_proteins'])}; largest superfamilies: {report['largest_parts'][:5]}",
+        f"sides: {dict(report['sides'])}",
+        f"side and basis: {dict(sorted(report['bases'].items()))}",
+        f"gene models with one helix and a signal peptide: {report['ambiguous']:,}; models not beginning with M: {report['truncated']:,}; entries whose beginning is missing: {report['start_missing']:,}",
+        "districts: " + "; ".join(f"{group['id']} {group['families']:,} families, {group['proteins']:,} proteins" for group in report["groups"]),
+        f"families whose proteins carry a Gene Ontology term: {report['with_terms']:,}; with a place in the cell: {report['with_where']:,}; signatures no longer in InterPro: {report['retired']}; terms no longer usable: {report['dropped']}",
+        f"proteins by the district their own terms give: {dict(report['classed'])}",
+        f"member files: {report['files']}",
+        "a whole UniProtKB entry against the gene model it is joined to (model side, entry side): " + str(dict(sorted(report["agreement"].items()))),
+        "  of those, the models with one helix and a signal peptide: " + str(dict(sorted(report["settled"].items()))),
+        "families that hold the atlas's products, by unit: " + "; ".join(f"{unit}: {', '.join(found)}" for unit, found in report["unit_families"].items()),
+    ]
+    return "\n".join(lines)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("step", choices=["fetch", "build"], help="fetch asks the databases and saves the answers; build reads only what was saved")
-    parser.add_argument("--evidence", required=True, help="the folder of saved responses (kept outside the repository)")
+    parser.add_argument("step", choices=["fetch", "build", "members"], help="fetch asks the databases and saves the answers; build reads only what was saved; members cuts the shelves' member files from the repository's tables")
+    parser.add_argument("--evidence", help="fetch, build: the folder of saved responses (kept outside the repository)")
+    parser.add_argument("--datasets", help="fetch, build: the folder of the shelves' downloads, one folder per source with a MANIFEST.json (kept outside the repository)")
     parser.add_argument("--refresh", action="store_true", help="fetch: ask again even where an answer is saved")
     parser.add_argument("--out-atlas", default=str(ATLAS))
-    parser.add_argument("--out-reference", default=str(REFERENCE_DIR), help="the folder for predicted_proteins.tsv, reference_proteins.tsv and their README.md")
+    parser.add_argument("--out-reference", default=str(REFERENCE_DIR), help="the folder for the tables, shelves.json and their README.md")
+    parser.add_argument("--out", help="members: the folder to write the member files into")
     args = parser.parse_args()
+    if args.step == "members":
+        if not args.out:
+            parser.error("members needs --out")
+        Path(args.out).mkdir(parents=True, exist_ok=True)
+        for name, text in cut_members(args.out_reference).items():
+            (Path(args.out) / name).write_text(text, encoding="utf-8")
+            print(f"wrote {Path(args.out) / name} ({len(text.encode('utf-8')):,} bytes)")
+        return
+    if not args.evidence or not args.datasets:
+        parser.error(f"{args.step} needs --evidence and --datasets")
     snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
     if args.step == "fetch":
-        sys.exit(1 if fetch(Path(args.evidence), snapshot, refresh=args.refresh) else 0)
-    files, atlas, context = build(Path(args.evidence), snapshot)
-    targets = {"atlas": Path(args.out_atlas), "full": Path(args.out_reference) / FULL_FILE, "reference": Path(args.out_reference) / REFERENCE_FILE, "readme": Path(args.out_reference) / "README.md"}
+        failed = fetch(Path(args.evidence), snapshot, refresh=args.refresh)
+        failed += fetch_datasets(Path(args.datasets), refresh=args.refresh)
+        sys.exit(1 if failed else 0)
+    files, atlas, context, report = build(Path(args.evidence), Path(args.datasets), snapshot)
+    folder = Path(args.out_reference)
+    targets = {"atlas": Path(args.out_atlas), "full": folder / FULL_FILE, "reference": folder / REFERENCE_FILE, "shelves": folder / SHELVES_FILE, "members": folder / MEMBERS_FILE, "readme": folder / "README.md"}
     for name, target in targets.items():
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(files[name], encoding="utf-8")
         print(f"wrote {target} ({len(files[name].encode('utf-8')):,} bytes)")
     print(summary(atlas, context))
+    print(shelves_summary(report))
 
 
 if __name__ == "__main__":

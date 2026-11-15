@@ -5665,6 +5665,173 @@ The lead adopted it after reviewing it with the advisor. It is now in
 **Its first consumer** follows D174's fuel case and waits for the fuel representation. The
 guidance's text is kept outside the public repository.
 
+## D176: The modular rework proceeds, with FR-4 and FR-5 as its priority consumers
+
+2026-11-15. The user forwarded their external adviser's decisions on the inner-model note, and asked
+to review them with the advisor and proceed with six agents "in the most efficent way". The lead
+adopted them after reviewing them with the advisor. The note is
+[INNER_MODEL_V4_DESIGN.md](INNER_MODEL_V4_DESIGN.md).
+
+**The decisions.**
+1. **Fuel is F2.**
+   - ATP, ADP and Pi are shared inventory species, used by reactions and pumps.
+   - One authority for amounts and standard chemical potentials.
+   - The "moved by the step" admission fix is included.
+2. **FR-4's first case uses maintained fuel,** with its scope labelled. The finite-fuel acceptance
+   stays separate: reaction → shared ATP/ADP/Pi → pump, with depletion and recovery against an
+   independent reference.
+3. **Summation keeps a controlled deterministic policy.** Before it is frozen, one bounded
+   comparison is made between serial left folds and an explicitly ordered hierarchical
+   alternative at representative species counts. It reports compilation, checked-window runtime,
+   memory, accuracy and ledger residuals. Sensitive charge and energy quantities are evaluated
+   consistently.
+4. **Qualification:** the full affected registered protocols are re-run on the integrated
+   candidate, E07 included. Targeted development checks come first, and the expensive final gate is
+   not run repeatedly.
+5. **The name stays `resolved_pump_tissue@3`,** with the snapshot, tag and results-gate provenance.
+6. **Track E:** bounded slowing and arrangement work follows the required qualification, without
+   delaying FR-4 and FR-5. `junction_ungated@1` is follow-on physics: it removes a domain
+   restriction, and does not by itself produce block. Before a judged M3, loss of activation inside
+   the cluster is separated from failure of propagation beyond it.
+7. **Syn3A:** the licence policy stands. Numerical vesicle, pH and fuel qualification can proceed.
+   The Wodke-based Stage 4a stays a separate decision.
+8. **Lifecycle M2:** its first milestone is state-triggered timing on a predeclared daughter tree,
+   with fixed fractions and anchors. It is queued behind the core and the priority features unless
+   it can proceed independently.
+
+**Corrections to the design, now in force.**
+- **The dependency table** is refreshed against main.
+- **Bath → uptake → owned compartment → reaction** is a real scoped-composition acceptance case,
+  reusing the compartment identity map.
+- **Charged buffering** is an FR-4 dependency with an owner and an acceptance criterion, since
+  today's reactions parser refuses charged species.
+- **The charged-patch feasibility test runs early.**
+- **Scoped-composition order independence** is narrowed: disjoint provider writes are invariant
+  under reordering, while overlapping contributions have a fixed evaluation order, and the
+  numerical split order is preserved.
+- **Reference reads** of immutable anchors are told apart from assumptions that a physical field is
+  unchanged.
+- **G1 and G3 are aligned:** exact contract tests, plus scientific negative controls whose effects
+  exceed the declared budget.
+- **A7's gate manifest** is built from the import closure of the changed files, not from the new
+  identifiers.
+
+**The lead's implementation, with the advisor.**
+- **Branching:** main is tagged `d172-base-2026-11-15`. Until the single landing, `src/` lands only
+  on the local integration branch `integration-d172`, while main takes docs, validation and tests.
+- **Owners split by file.** One integration owner holds the contract, the composite, the adapter,
+  door S, every merge and the tier gates.
+- **Commit order:** declarations, dispatch, operator adaptation and door S are checked bitwise
+  against outputs saved at the tag. The summation change lands last, alone, at a declared
+  tolerance.
+- **Privacy:** acceptance worlds stay generic.
+
+## D177: A downstream user's requests: a matched-arm export, retained states as species, the dose world's controls after the round, FR-7 registered
+
+2026-11-15. A downstream user of Cells sent four requests. A review covered them (read-only, its
+report kept in the lead's private workspace), and the user decided:
+- **The coupling operator's matched-arm export is approved as a planned follow-up.**
+  - A dedicated agent writes a neutrally named validation driver on main. It runs the four
+    matched arms, 16 definitions, from a clean snapshot of main: the definitions, traces, the
+    independent references' traces, restarts and windows, and duration probes at 0.125 ms.
+  - It runs `resolved_pump_composite@1`, `resolved_pump_tissue@3`,
+    `scheduled_species_turnover@1` and `species_regulated_availability@1`.
+  - **What it is not:** an engine change, or a registered or judged protocol. Its provenance is
+    the Git revision and the frozen snapshot, with no attestation layer.
+- **A retained processing state is modelled as distinct species, with D152 reactions at the
+  retained node.** No new engine state is added. A per-compartment content state (a declared
+  multi-state cargo) waits for a second consumer (D144).
+- **The dose world's release route, production stage and zero-rate controls come after D172's
+  integrated landing,** not in the round.
+- **FR-7 is registered as a consumer of the coupling operator's routing and abundance-source
+  doors,** with removal and surface insertion under FR-2. Its design note follows the round, and the
+  choice of the closed loop's unit stays the user's.
+
+## D178: Membrane-placement predictions read from UniProt and WormBase ParaSite may stay
+
+2026-11-15. The visualizer's protein records include membrane-placement predictions (which side of
+the membrane each protein sits on) for about 17,500 planarian proteins and some *M. pneumoniae*
+ones. They were read from UniProt and WormBase ParaSite. Those databases computed them with programs
+licensed for academic use: TMHMM, SignalP and Phobius, plus PROSITE's rules for about 200
+placements. The visualizer classed these values as non-commercial under D173.
+- **The user's ruling, asked before the visualizer's second merge into main:** these values may
+  stay. The databases' published terms are treated as governing.
+- **The visualizer reclassifies them,** keeps its notes on where each value came from, and its
+  licence test still lists every dependence by species.
+- **Scope, widened the same day by the user:**
+  - **Every species:** human, planarian, Syn3A, *M. pneumoniae* and *E. coli*.
+  - **The terms:** a placement value stands on the terms of the database it was read from, and the
+    record names and counts the tool behind it.
+  - **Where the user said so:** to the visualizer, as one rule for every species with the numbers
+    for each; and to the lead, for *E. coli* ("Yes, extend D178").
+  - Anything else, a source with no stated terms included, stays under D173's rule: nothing from
+    non-commercially licensed or unlicensed data is committed or redistributed.
+
+## D179: The FEP track's decisions: on hold, E. coli as data only, approvals delegated for this track
+
+2026-11-15. The user answered the decisions listed in [the FEP proposal](FEP_TRACK_PROPOSAL.md).
+Items 3 and 4 the user left to the lead and the advisor ("You and adviser decide").
+- **The track stays on hold until more of the inner model exists.** D145's gene-regulation hold also
+  stays.
+- **E. coli is added as a data-only organism,** for the track's Stage 1a (chemotaxis in a
+  well-mixed cell). There is no engine organism definition and no run.
+  - The visualizer adds it as a species.
+  - Whether D178's ruling extends to its tool-derived placements is the user's to decide. Those
+    values are held until then.
+- **Published reference models (D138), for this track only:** the per-paper approvals are delegated
+  to the lead with the advisor.
+  - None is approved now.
+  - Each paper is approved when Stage 1a opens, after a full-text read and a licence check, and its
+    model runs out of process.
+  - Other D138 approvals stay the user's.
+- **The comparison harness is approved in principle as tooling.** It is built only with Stage 1a's
+  first engine arm, and its planted tests and its pair with identical dynamics come first.
+- **The temporal comparison over about 4 s is accepted as analysis only,** because no permissively
+  licensed data covers it.
+
+## D180: External modules are a first-class architectural requirement; Cells stays MIT
+
+2026-11-15. The user directed that Cells stays MIT, aiming at broad adoption. People should be able
+to use, extend and compose Cells from independently maintained packages, and the project extends
+itself through the same interfaces. An external component meets the same validation, composition,
+execution and accounting contracts as a built-in one.
+- **The design is proposed** in [MODULE_SYSTEM_DESIGN.md](MODULE_SYSTEM_DESIGN.md), with a
+  proposed ARCHITECTURE section, "External modules". It was reviewed with the advisor.
+  - **The path:** components are registered explicitly into a registry scoped to one model build,
+    then resolved, validated, assembled, compiled and run.
+  - **Stages, staged by real consumers:**
+    1. one external law in a separately installed package;
+    2. a stateful mechanism and a reusable composition, each used twice;
+    3. a reduced and detailed pair.
+- **D172's round takes only four seam constraints,** which the core owner confirmed cost nothing
+  extra:
+  - kinds reach core through a build-scoped lookup;
+  - new IDs are namespaced;
+  - the canonical order is the sorted namespaced ID;
+  - a registered but undeclared kind changes nothing.
+- **Stage 1 starts after the integrated landing.**
+- **The design's §6 decisions are the user's:** provenance for modules, D144 with modules,
+  qualifying outside modules, where the example lives, and what a module PR is.
+
+## D181: The round's end game: E07-v1's re-run held, and the L4 block run under the deterministic flag
+
+2026-11-15. Both decisions concern D172's end game, after the summation change (A7) lands.
+- **The user put E07-v1's re-run on hold.** E07-v1 is judged, and its successor E07-v2 is still a
+  proposal.
+  - Its worlds are covered by the results gate instead: the baseline's protocol-e07 set, compared
+    bitwise at the integrated candidate and at A7's declared tolerance after it.
+  - It is re-run only if that comparison shows physical state moving beyond the tolerance, or if a
+    later experiment needs the runs.
+  - This changes D176's rule that A7 re-runs every affected registered protocol, for E07-v1 only.
+- **The lead ruled, with the advisor, that the 13-run L4 block runs under the deterministic flag**
+  (`--xla_gpu_deterministic_ops=true`), as a declared measurement mode.
+  - The backend term is remeasured under the flag, and the run-to-run term is exactly 0.
+  - One confirming repeat per structure must be bitwise; a repeat that is not stops the block.
+  - Tolerances are unchanged.
+  - Q7's plain-against-flagged difference, about 1.8e-11 relative, bridges to the registered
+    unflagged mode.
+  - The amendment is registered before the block's first run.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
