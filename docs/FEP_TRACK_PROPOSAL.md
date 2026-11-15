@@ -5,8 +5,13 @@ the user's request: "spec out a future, not now, FEP track, but let's see if the
 engine issues". FEP is the free-energy principle; AIF is active inference.
 - **Scope:** a specification and a gap analysis. Nothing was built, run or downloaded. Every stage is
   deferred (D151), with its prerequisite and gate in §6.
-- **Not authorised:** any engine change or run; a new organism; reproducing a paper's model (D138);
-  lifting D145's hold on gene regulation.
+- **Not authorised:** any engine change or run; an engine organism definition (E. coli is a
+  data-only organism, D179); reproducing a paper's model (D138); lifting D145's hold on gene
+  regulation.
+- **The user's decisions (D179):** the track stays on hold until more of the inner model exists;
+  E. coli is data only; paper approvals for this track are delegated to the lead and the advisor
+  and made when Stage 1a opens; the harness is approved in principle with Stage 1a's first engine
+  arm; the temporal comparison over about 4 s is analysis only.
 - **Engine models the stages would run** (AGENTS.md's milestone rule):
   - **Stage 1a:** `resolved_pump_composite@1` over `resolved_pump_tissue@3` with
     `scheduled_bath_composition@1`, `site_occupancy@1`, `local_species_reactions@1` and

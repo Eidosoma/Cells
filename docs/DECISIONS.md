@@ -5762,6 +5762,28 @@ placements. The visualizer classed these values as non-commercial under D173.
   included, stays under D173's rule: nothing from non-commercially licensed or unlicensed data is
   committed or redistributed.
 
+## D179: The FEP track's decisions: on hold, E. coli as data only, approvals delegated for this track
+
+2026-11-15. The user answered the decisions listed in [the FEP proposal](FEP_TRACK_PROPOSAL.md).
+Items 3 and 4 the user left to the lead and the advisor ("You and adviser decide").
+- **The track stays on hold until more of the inner model exists.** D145's gene-regulation hold also
+  stays.
+- **E. coli is added as a data-only organism,** for the track's Stage 1a (chemotaxis in a
+  well-mixed cell). There is no engine organism definition and no run.
+  - The visualizer adds it as a species.
+  - Whether D178's ruling extends to its tool-derived placements is the user's to decide. Those
+    values are held until then.
+- **Published reference models (D138), for this track only:** the per-paper approvals are delegated
+  to the lead with the advisor.
+  - None is approved now.
+  - Each paper is approved when Stage 1a opens, after a full-text read and a licence check, and its
+    model runs out of process.
+  - Other D138 approvals stay the user's.
+- **The comparison harness is approved in principle as tooling.** It is built only with Stage 1a's
+  first engine arm, and its planted tests and its pair with identical dynamics come first.
+- **The temporal comparison over about 4 s is accepted as analysis only,** because no permissively
+  licensed data covers it.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
