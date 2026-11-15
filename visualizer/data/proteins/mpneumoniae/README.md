@@ -28,12 +28,17 @@ record has 688.
 
 | Count | Whose | What it counts |
 | --- | --- | --- |
-| 677 | Himmelreich and others 1996 | the reading frames predicted when the genome was sequenced |
-| 688 | Dandekar and others 2000; this record | the re-annotation: 12 added and one dismissed |
-| 689 | Wodke and others 2013 | "encoding 689 proteins", citing the two papers above; which gene makes the difference was not traced here |
+| 688 | this record | the genome as its submitters re-annotated it in 2000 |
+| 687 | Parrott and others 2016, a review | "687 genes", said of the genome as it was first sequenced |
 | 694 | Lluch-Senar and others 2015 | their re-annotation, 32 of them reading frames under 100 residues; their table lists 49 lettered additions (MPN037a and the like) beside the 688 numbered genes |
 | 686 | UniProt, release 2026_04 | reviewed entries of the strain: MPN_304 and MPN_305, two fragments of one gene, share an entry, and MPN_441 has none |
 | 724 | NCBI RefSeq NC_000912.1 | the coding sequences that NCBI's own annotation pipeline finds in the same genome today |
+
+The paper that sequenced the genome (Himmelreich and others 1996), the re-annotation
+(Dandekar and others 2000) and a model of the organism's metabolism (Wodke and others
+2013) give counts of their own. The first two state no open licence and the third is
+under a non-commercial one, so their numbers are not repeated here: they are to be read
+there.
 
 ## Columns
 
@@ -106,9 +111,11 @@ Other counts, as built:
 
 **What is not here, and why.** Measured amounts of each protein exist for this organism,
 in Maier and others 2011, and many more data sets in Chen and others 2016. Both papers are
-under non-commercial licences, so their tables are not copied; the species file cites a
-few of their numbers. Sequences stay with the downloads. Nothing is taken from a
-whole-cell or genome-scale model. Strain identity matters: every value is for strain M129.
+under non-commercial licences, so nothing is taken from them: no table, and no number.
+The species file gives the total of protein molecules in a cell and the copies of the
+ribosomal proteins from an open paper instead (Weber and others 2023, CC BY 4.0), and no
+amount of any one protein. Sequences stay with the downloads. Strain identity matters:
+every value in this folder is for strain M129.
 
 ## `shelves.json`: where each protein sits
 
@@ -128,14 +135,14 @@ for each of the 688 proteins, in the catalogue's order.
   and name the predictors.
 - **Lipoproteins and adhesins.** A protein with a lipoprotein signal is put outside: it is
   exported and then held by a lipid at the outer face of the membrane. That reading is
-  this file's; UniProt records the signal, by the PROSITE rule PRU00303. The adhesins
-  that span the membrane are `in`.
+  this file's; UniProt records the signal, by the PROSITE rule PRU00303, for 49 of
+  the proteins. The adhesins that span the membrane are `in`.
 - **The attachment organelle** is not a shelf of its own. The 15 proteins whose entry
   states that location carry the mark `where: attachment organelle`.
 - **Districts** are the 2015 paper's classes, the letters above.
 - **Marks:** essentiality (measured, from the 2015 paper), whether UniProt records evidence
   at protein level, how the side is known, and whether another side is stated as well.
-  No amount is given: the measured amounts are under non-commercial terms.
+  No amount is given: the measured amounts of each protein are under non-commercial terms.
 - **`unit`** is empty on every line: the atlas found none of the law inventory's machines
   in this organism.
 
@@ -148,6 +155,16 @@ for each of the 688 proteins, in the catalogue's order.
 | [Lluch-Senar and others 2015](https://doi.org/10.15252/msb.20145558), Supplementary Table S2 and supplementary text, read 2026-11-15 | Each gene's class and essentiality | CC BY 4.0 |
 | [InterPro](https://www.ebi.ac.uk/interpro/) | The signatures' identifiers | CC0 1.0 |
 
+Every source above is permissive: its terms allow what is taken, with attribution.
+
+**A dependence on a non-commercial source.** UniProt's curated entries record the
+lipoprotein signal of 49 proteins by a rule of
+[PROSITE](https://prosite.expasy.org/prosite_license.html), which is distributed under
+CC BY-NC-ND 4.0 and asks commercial users for a licence fee. Nothing was downloaded from
+PROSITE and nothing of it is copied: the signals were read in UniProt's entries, under
+UniProt's terms (CC BY 4.0), and where those proteins are placed rests on them. Whether
+that use is within PROSITE's terms for this project is not settled here.
+
 Cite:
 
 - GenBank: Himmelreich R, Hilbert H, Li B-C; Suyama M, Dandekar T, Herrmann R (1996, 2000) Mycoplasma pneumoniae M129, complete genome. GenBank U00089.2.
@@ -157,7 +174,8 @@ Cite:
 ## The files it was built from
 
 Each is in the dataset folder of its source, outside the repository, and the build checks
-it against the SHA-256 that the folder's MANIFEST gives before reading it.
+it against the SHA-256 that the folder's MANIFEST gives before reading it. The last four
+are open papers that the species file's facts rest on.
 
 | What | Dataset folder | File | SHA-256 |
 | --- | --- | --- | --- |
@@ -169,6 +187,10 @@ it against the SHA-256 that the folder's MANIFEST gives before reading it.
 | UniProt's archived sequences and signatures | `uniprot-mpneumoniae` | `uniparc_272634.json` | `13f4f5502aaf845fdcde0e3f3edf791e63c54c1e0be3fb28e03871a1f6f41374` |
 | The 2015 paper's Supplementary Table S2 | `lluchsenar2015-msb` | `lluchsenar2015_table_s2.xlsx` | `a65cbd4e8c8a27cc85a2a58e630881706a0072ef51682281197dbf7c05f8e9bc` |
 | The 2015 paper's supplementary text | `lluchsenar2015-msb` | `lluchsenar2015_supplementary_information.docx` | `f527cd69726fd4a955566a06a90db74b741fffe6542e91cb590effe6390978b1` |
+| For the species file: protein amounts and the ribosomal proteins' copies | `pmc-open-mpneumoniae-licence-pass` | `open_PMC10568206.xml` | `11c27782c8d7af9bf8267f00ac804d3998b4601118926078dfed14c227e73ab6` |
+| For the species file: an open model of the metabolism, and growth in a defined medium | `pmc-open-mpneumoniae-licence-pass` | `open_PMC7584665.xml` | `17fe3855d133d7408e3c689937b7fe0905be20140165a4ecc6ee645b33ba8b99` |
+| For the species file: where the cell's energy comes from | `pmc-open-mpneumoniae-licence-pass` | `open_PMC7952918.xml` | `fff14ff4c3711e906e194f16a5ae0ede7521c4bc7b15391f74dc66e7a8e9e7b9` |
+| For the species file: what mycoplasmas lack | `pmc-open-mpneumoniae-licence-pass` | `open_PMC7881084.xml` | `d0ca853a46e970a01e00104ff3f8081d6e1d3ad2cb18cccfd2aaaa74554a2c33` |
 
 ## How to rebuild
 

@@ -1,7 +1,8 @@
 // The inventory of public wet-lab evidence on planarian bioelectric proteins
 // (data/evidence/planarian_bioelectric.json) keeps its shape and its fixed words, every
 // record has a species, a category and a source, every catalogue id it names exists in
-// the planarian catalogue, and it holds pointers and cited facts only.
+// the planarian catalogue, and it holds pointers and cited facts only. Every paper has
+// a class, and a value is given only from a paper whose terms are permissive.
 //
 //   node --test tests/planarian_evidence.test.mjs
 
@@ -22,10 +23,16 @@ const note = await readFile(NOTE, "utf8");
 const catalogue = new Set((await readFile(TABLE, "utf8")).trimEnd().split("\n").slice(1).map((line) => line.split("\t").slice(0, 2).join(":")));
 const papers = new Map(inventory.papers.map((paper) => [paper.id, paper]));
 const DEPOSIT = ["verified", "stated", "none found", "not determined"];
+// How a source may be used (the project's rule of 15 November 2026).
+const CLASSES = ["permissive", "non-commercial", "no stated terms"];
+const classOf = (licence) => (/^CC BY-NC/.test(licence) ? "non-commercial" : /^(CC BY|CC0)/.test(licence) ? "permissive" : "no stated terms");
+// A quantity: a number with a unit, a span of residues, or a number in words before a unit of time.
+const QUANTITY = /\d+(?:\.\d+)?\s*(?:±\s*\d+(?:\.\d+)?\s*)?-?(?:nM|µM|mM|mV|µV|kHz|Hz|ms|min\b|minutes?|hours?|days?|weeks?|months?|%|µm|mm\b|cm\b|nm\b|°C|residues|fold|V\b|M\b|s\b|h\b)|residues \d+|\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|forty|fifty|sixty|ninety|hundred|thousand)[- ](?:seconds?|minutes?|hours?|days?|weeks?|months?|fold|percent|per cent)\b/i;
 
 test("the inventory says what it is, and its fixed words are declared", () => {
   assert.equal(inventory.format, "cells.visualizer.planarian_bioelectric_evidence@1");
-  assert.deepEqual(Object.keys(inventory), ["format", "made", "question", "target", "evidence_categories", "read_levels", "kinds", "families", "how_it_was_made", "papers", "records", "family_summary", "claims_checked", "context", "leads_not_audited", "not_determined"]);
+  assert.deepEqual(Object.keys(inventory), ["format", "made", "question", "target", "evidence_categories", "read_levels", "licence_classes", "kinds", "families", "how_it_was_made", "papers", "records", "family_summary", "claims_checked", "context", "leads_not_audited", "not_determined"]);
+  assert.deepEqual(Object.keys(inventory.licence_classes), CLASSES);
   assert.match(inventory.made, /^\d{4}-\d{2}-\d{2}$/);
   assert.equal(inventory.target.organism, "Schmidtea mediterranea");
   // The lead's five categories, and the two added for protocols and for records that name no species.
@@ -40,7 +47,7 @@ test("every record has a species, a category, a kind, a family and a source, in 
   for (const record of inventory.records) {
     assert.ok(!ids.has(record.id), `${record.id} twice`);
     ids.add(record.id);
-    assert.deepEqual(Object.keys(record).filter((key) => key !== "note"), ["id", "papers", "species", "families", "kinds", "measured", "how", "values", "evidence_category", "read", "deposit", "sequences", "genes", "could_test"], record.id);
+    assert.deepEqual(Object.keys(record).filter((key) => key !== "note"), ["id", "papers", "species", "families", "kinds", "measured", "how", "values", "values_from", "evidence_category", "read", "deposit", "sequences", "genes", "could_test"], record.id);
     assert.ok(record.species.length > 0 && record.species.every((species) => species.name?.trim()), `${record.id}: species`);
     assert.ok(record.evidence_category in inventory.evidence_categories, `${record.id}: ${record.evidence_category}`);
     assert.ok(record.read in inventory.read_levels, `${record.id}: ${record.read}`);
@@ -66,10 +73,37 @@ test("every paper states its licence, or that it states none, and how far it was
     assert.ok(paper.licence?.trim(), `${paper.id}: no word on its licence`);
     assert.match(paper.licence, /^(CC BY|CC0|no licence stated|no open licence)/, `${paper.id}: ${paper.licence}`);
     assert.ok(paper.read in inventory.read_levels, `${paper.id}: ${paper.read}`);
+    // Its class is the one its licence gives: CC BY and CC0 are permissive, CC BY-NC of any kind is not.
+    assert.ok(CLASSES.includes(paper.class), `${paper.id}: ${paper.class}`);
+    assert.equal(paper.class, classOf(paper.licence), `${paper.id}: ${paper.licence}`);
   }
   // A record is read no further than the least-read of its papers.
   const depth = Object.keys(inventory.read_levels);
   for (const record of inventory.records) assert.equal(record.read, depth[Math.max(...record.papers.map((id) => depth.indexOf(papers.get(id).read)))], record.id);
+});
+
+test("a value is given only from a paper whose terms are permissive; any other record is a pointer in words", () => {
+  let pointers = 0;
+  for (const record of inventory.records) {
+    const kinds = record.papers.map((id) => papers.get(id).class);
+    const permissive = record.papers.filter((id) => papers.get(id).class === "permissive");
+    // The papers a record's values may come from are its permissive ones, and no others.
+    assert.deepEqual(record.values_from, permissive, `${record.id}: values_from`);
+    if (permissive.length) continue;
+    pointers += 1;
+    // What was measured, how and where the data is stay, in words; no quantity does.
+    assert.match(record.values, /\. The values are in the papers?, [^.]*: none is given here\.$/, `${record.id}: the record does not say where its values are`);
+    assert.ok(new RegExp(kinds.every((kind) => kind === "non-commercial") ? "non-commercial licence" : kinds.every((kind) => kind === "no stated terms") ? "no open licence" : "none states terms that allow a copy").test(record.values), `${record.id}: ${record.values}`);
+    const words = [record.measured, record.how, record.values, record.could_test, record.note || "", record.deposit.note || "", ...record.genes.map((gene) => gene.note || "")];
+    for (const text of words) assert.ok(!QUANTITY.test(text), `${record.id} gives a quantity from a paper whose terms do not allow it: ${QUANTITY.exec(text)?.[0]} in "${text}"`);
+    // No words are quoted from such a paper either.
+    for (const text of [record.measured, record.how, record.values]) assert.ok(!/'[^']{12,}'|"[^"]{12,}"|‘[^’]{12,}’|“[^”]{12,}”/.test(text), `${record.id} quotes its paper: ${text}`);
+  }
+  assert.ok(pointers > 20 && pointers < inventory.records.length, "some records are pointers, and some give values");
+  // The summaries beside the records give no quantity of their own.
+  for (const entry of inventory.family_summary) for (const [field, text] of Object.entries(entry)) assert.ok(!QUANTITY.test(text), `family_summary.${entry.family}.${field}: ${text}`);
+  for (const entry of [...inventory.claims_checked, ...inventory.leads_not_audited]) for (const text of Object.values(entry)) assert.ok(typeof text !== "string" || !QUANTITY.test(text), JSON.stringify(entry).slice(0, 120));
+  assert.match(inventory.how_it_was_made.rule, /A value is given only from a paper whose terms are permissive/);
 });
 
 test("every deposit says whether it was seen, and under what licence", () => {
@@ -79,10 +113,12 @@ test("every deposit says whether it was seen, and under what licence", () => {
     if (deposit.state === "verified" || deposit.state === "stated") {
       assert.ok(deposit.where?.trim() && deposit.id?.trim(), `${record.id}: where the data is`);
       assert.ok(deposit.licence?.trim(), `${record.id}: the deposit's licence, or that none is stated`);
+      assert.ok(CLASSES.includes(deposit.class), `${record.id}: the deposit's class`);
+      assert.equal(deposit.class === "permissive", /places no restriction on use|^CC BY|^CC0/.test(deposit.licence), `${record.id}: ${deposit.licence}`);
     } else {
       assert.ok(deposit.note?.trim(), `${record.id}: why no deposit is given`);
     }
-    for (const sequence of record.sequences) assert.ok(sequence.accession && sequence.what && sequence.licence, `${record.id}: a sequence record`);
+    for (const sequence of record.sequences) assert.ok(sequence.accession && sequence.what && sequence.licence && sequence.class === "permissive", `${record.id}: a sequence record`);
   }
 });
 

@@ -29,10 +29,12 @@ const TOOL = path.join(ROOT, "tools", "build_syn3a_atlas.py");
 // per source, each with its MANIFEST.json).
 const EVIDENCE = process.env.SYN3A_EVIDENCE || "/mnt/workspaces/Cells/visualizer-syn3a-proteins-20261114-01";
 const DATASETS = process.env.SYN3A_DATASETS || "/mnt/datasets/Cells/syn3a";
-const SOURCES_READ = ["ncbi-CP016816.2", "breuer2019-elife", "ncbi-CP016816-proteins", "uniprot-syn3a", "biopython-185-protparam"];
+const SOURCES_READ = ["ncbi-CP016816.2", "breuer2019-elife", "ncbi-CP016816-proteins", "uniprot-syn3a", "biopython-185-protparam", "pmc-open-syn3a-licence-pass"];
+// Read for their terms alone; the README's table of files does not list them.
+const TERMS_READ = ["terms-prosite"];
 const absent = !existsSync(path.join(EVIDENCE, "requests.json"))
   ? "the request log is not on this machine (set SYN3A_EVIDENCE)"
-  : SOURCES_READ.some((source) => !existsSync(path.join(DATASETS, source, "MANIFEST.json")))
+  : [...SOURCES_READ, ...TERMS_READ].some((source) => !existsSync(path.join(DATASETS, source, "MANIFEST.json")))
     ? "the downloads are not on this machine (set SYN3A_DATASETS)"
     : false;
 
@@ -44,6 +46,9 @@ const FINDINGS = ["found", "different family", "none found", "nothing to look fo
 const EVIDENCE_WORDS = ["reviewed entry", "named in a publication", "family signature", "similarity search"];
 const COLUMNS = ["locus_tag", "gene", "product", "length", "protein_id", "origin", "functional_class", "essentiality", "detected", "copies_per_cell", "proteomics_id", "uniparc", "uniprotkb_identical", "interpro"];
 const MACHINE = /\/home\/|\/mnt\/|\/Users\/|\/tmp\//;
+// How a source may be used (the project's rule of 15 November 2026): only a permissive one
+// may stand behind a value or a statement; the others are pointers.
+const CLASSES = ["permissive", "non-commercial", "no stated terms"];
 const key = (text) => String(text).toLowerCase().replace(/[^a-z0-9]/g, "");
 
 const speciesText = await readFile(SPECIES, "utf8");
@@ -67,7 +72,7 @@ const rows = table.trimEnd().split("\n").slice(1).map((line) => line.split("\t")
 
 test("the species file says what it is, as the contract sets out", () => {
   assert.equal(species.format, "cells.visualizer.species@1");
-  assert.deepEqual(Object.keys(species), ["format", "id", "label", "organism", "taxon", "plain", "order", "default", "made", "modelled", "levels", "no_further_levels", "cell", "sources"]);
+  assert.deepEqual(Object.keys(species), ["format", "id", "label", "organism", "taxon", "plain", "order", "default", "made", "modelled", "levels", "no_further_levels", "cell", "capability_sources", "sources"]);
   assert.equal(species.id, "syn3a");
   assert.equal(path.basename(SPECIES), `${species.id}.json`);
   assert.equal(species.label, "Syn3A");
@@ -110,10 +115,12 @@ test("every fact has a source, and every number drawn has a fact or is called th
   const facts = species.cell.facts;
   assert.ok(facts.length >= 8);
   for (const fact of facts) {
-    assert.deepEqual(Object.keys(fact), ["label", "value", "sources"]);
+    // A fact rests on its sources, all permissive; "see" names where more is to be read.
+    assert.deepEqual(Object.keys(fact).filter((name) => name !== "see"), ["label", "value", "sources"]);
     assert.ok(fact.label.trim() && fact.value.trim());
     assert.ok(fact.sources.length, `${fact.label} has no source`);
-    for (const source of fact.sources) assert.ok(species.sources[source], `${fact.label} cites ${source}, which is not a source`);
+    for (const source of fact.sources) assert.equal(species.sources[source]?.class, "permissive", `${fact.label} rests on ${source}`);
+    for (const source of fact.see || []) assert.ok(species.sources[source], `${fact.label} points to ${source}, which is not a source`);
   }
   const fact = (label) => facts.find((item) => item.label === label)?.value || "";
   const cell = species.levels[1];
@@ -153,18 +160,46 @@ test("each of the map's capabilities has a place or is said to be absent, with w
   // A place is not a model: no line says that Cells models, simulates or has this organism.
   const words = JSON.stringify(stated);
   assert.ok(!/Cells (models|simulates|has a model)|the engine (models|simulates)/i.test(words.replace(/that Cells models is not one of its proteins/g, "")), "a capability speaks of a model of this organism");
+  // What a capability's words rest on is named, and is permissive.
+  for (const [id, sources] of Object.entries(species.capability_sources)) {
+    assert.ok(id in stated, `${id} has sources and no entry`);
+    assert.ok(sources.length, id);
+    for (const source of sources) assert.equal(species.sources[source]?.class, "permissive", `${id} rests on ${source}`);
+  }
+  // Nothing is said from the whole-cell model or the division paper: what is said of
+  // energy, of the proton pump and of division is said from the 2019 paper and a review.
+  assert.match(stated["cap.energy"].note, /in the 2019 reconstruction of its metabolism, central metabolism is the only source of ATP/);
+  assert.match(stated["cap.membrane"].note, /that is a model's reading, and no source read for this file measured the voltage of this strain/);
+  assert.match(stated["cap.division"].note, /a review reports that seven of the 19 are needed together for normal division/);
+  // A capability's words carry no number of their own: each number in them is a number of
+  // a fact, or stands in the citation of a permissive source (the year of a paper).
+  const backed = [...species.cell.facts.map((fact) => fact.value), ...Object.values(species.sources).filter((source) => source.class === "permissive").map((source) => source.text)].join(" ").replace(/,/g, "");
+  for (const [id, item] of Object.entries(stated)) {
+    for (const found of (item.why || item.note).replace(/,/g, "").replace(/JCVI-syn3\.0/g, "").match(/\d+(\.\d+)?/g) || []) assert.ok(new RegExp(`(^|[^\\d.])${found.replace(".", "\\.")}([^\\d]|$)`).test(backed), `${id} gives ${found}, which no fact and no permissive source's citation holds`);
+  }
 });
 
-test("sources are keyed, each with its text, where to find it and the day it was read", () => {
-  const used = new Set([...species.cell.facts.flatMap((fact) => fact.sources), ...species.levels.flatMap((level) => level.sources || [])]);
+test("sources are keyed, each with its text, its licence, its class, where to find it and the day it was read", () => {
+  const basis = new Set([...species.cell.facts.flatMap((fact) => fact.sources), ...species.levels.flatMap((level) => level.sources || []), ...Object.values(species.capability_sources).flat()]);
+  const pointed = new Set(species.cell.facts.flatMap((fact) => fact.see || []));
   for (const [name, source] of Object.entries(species.sources)) {
     assert.ok(source.text.trim(), name);
     assert.ok(source.doi || source.url, `${name} has neither a doi nor a url`);
     if (source.url) assert.ok(source.url.startsWith("https://"), `${name}: ${source.url}`);
     assert.match(source.accessed, /^\d{4}-\d{2}-\d{2}$/);
-    assert.ok(used.has(name), `${name} is a source that nothing cites`);
+    assert.ok(source.licence?.trim(), `${name} states no licence, and does not say that none is stated`);
+    assert.ok(CLASSES.includes(source.class), `${name}: ${source.class}`);
+    assert.ok(basis.has(name) || pointed.has(name), `${name} is a source that nothing cites`);
+    // A source whose terms do not allow a copy is a pointer and nothing else.
+    if (source.class !== "permissive") {
+      assert.ok(!basis.has(name), `${name} is ${source.class} and something rests on it`);
+      assert.match(source.licence, /nothing is taken from it/, name);
+    }
   }
-  assert.match(species.sources.thornburg2022.licence, /NC-ND/, "the terms that allow numbers only are stated");
+  assert.equal(species.sources.thornburg2022.class, "non-commercial");
+  assert.match(species.sources.thornburg2022.licence, /NC-ND/);
+  assert.equal(species.sources.pelletier2021.class, "no stated terms");
+  assert.equal(species.sources.zhang2023.class, "permissive");
 });
 
 // ---------------------------------------------------------------- its side of the protein atlas
@@ -189,7 +224,10 @@ test("every source of the atlas states its terms, and nothing forbidden is among
     for (const field of ["name", "licence", "holds", "accessed", "cite"]) assert.ok(source[field]?.trim(), `${source.name}: ${field}`);
     assert.ok(source.url.startsWith("https://"), `${source.name}: ${source.url}`);
     assert.ok(!/non-?commercial|research (and|or) education only|\bNC\b/i.test(source.licence), `${source.name}: ${source.licence}`);
+    assert.equal(source.class, "permissive", `${source.name}: the atlas takes something from a source that is ${source.class}`);
   }
+  // The two papers whose terms do not allow a copy are named as places to read, and nothing more.
+  assert.match(atlas.not_copied, /Nothing is taken from the 2022 whole-cell paper, which is under a non-commercial licence \(CC BY-NC-ND\), or from the 2021 paper on the genes needed for division, which states no open licence/);
   assert.equal(atlas.sources.find((source) => source.name === "UniProt").licence, "CC BY 4.0");
   assert.match(atlas.sources.find((source) => source.name === "GenBank").licence, /NCBI places no restrictions/);
 });
@@ -236,6 +274,7 @@ test("the extra proteins are few, each says why it is there, names a known datab
     assert.ok(product.evidence_note?.trim(), `${product.name}: no evidence note`);
     if (product.evidence === "named in a publication") {
       assert.ok(product.citation?.text?.trim() && product.citation.doi, `${product.name}: no citation`);
+      assert.equal(product.citation.class, "permissive", `${product.name}: named by a paper whose terms do not allow it`);
     } else {
       assert.equal(product.citation, null, `${product.name}: a citation without a paper's naming`);
     }
@@ -313,7 +352,7 @@ test("the catalogue stays small and holds no sequence", () => {
 
 test("the README names each file the catalogue was built from, with its SHA-256", () => {
   const lines = readme.split("\n").filter((line) => /^\| .+ \| `[^`]+` \| `[^`]+` \| `[0-9a-f]{64}` \|$/.test(line));
-  assert.equal(lines.length, 11, "eleven files, each with its dataset folder, its name and its hash");
+  assert.equal(lines.length, 14, "fourteen files, each with its dataset folder, its name and its hash");
   for (const source of SOURCES_READ) assert.ok(lines.some((line) => line.includes(`\`${source}\``)), `${source} is not named`);
 });
 
@@ -460,7 +499,9 @@ test("the reading of the sequences fares against what is known as the files say"
   assert.equal(profile.placed_outside, shelves.counts.outside);
   assert.equal(profile.kept, shelves.proteins.filter((row) => row[9].lipid_anchor).length);
   assert.equal(membrane.in_or_on, shelves.counts.in + shelves.counts.outside);
-  assert.equal(membrane.in_the_2022_model, 93);
+  // The whole-cell model's own count is under a non-commercial licence: it is pointed to, not repeated.
+  assert.deepEqual(Object.keys(membrane), ["in_or_on", "seen", "estimated_copies", "all_estimated_copies"]);
+  assert.match(said, /That paper is under a non-commercial licence, so its numbers are not repeated here/);
   assert.ok(membrane.estimated_copies < membrane.all_estimated_copies);
   const spanning = shelves.checks.in_the_membrane;
   assert.equal(spanning.proteins, shelves.counts.in);
@@ -486,16 +527,33 @@ test("the shelves name their sources with their terms, copy from none that forbi
     assert.match(source.accessed, /^\d{4}-\d{2}-\d{2}$/);
   }
   assert.equal(new Set(shelves.sources.map((source) => source.name)).size, shelves.sources.length);
-  // What is copied comes from sources with open terms. A paper under a non-commercial
-  // licence, or with none stated, is read for a sentence or a number and says so.
+  // What the file holds comes from permissive sources. A paper under a non-commercial
+  // licence, or with no stated terms, is a pointer: it says that nothing is taken from it.
+  // One source is neither: PROSITE, whose profile's matches were read in UniProt's
+  // archive. It says so, and names the permissive source they were read through.
   for (const source of shelves.sources) {
-    const open = /CC BY 4\.0|BSD 3-Clause|no restrictions on the use or distribution/.test(source.licence);
-    assert.ok(open || /^(CC BY-NC|Read for one sentence)/.test(source.licence) && /read for one (sentence|number)|Read for one sentence/.test(source.licence), `${source.name}: ${source.licence}`);
+    assert.ok(CLASSES.includes(source.class), `${source.name}: ${source.class}`);
+    const open = /^CC BY [24]\.0$|BSD 3-Clause|no restrictions on the use or distribution/.test(source.licence);
+    if (source.class === "permissive") assert.ok(open && !source.through, `${source.name}: ${source.licence}`);
+    else {
+      assert.ok(!open && /^(CC BY-NC|No open licence stated)/.test(source.licence), `${source.name}: ${source.licence}`);
+      if (source.through) {
+        assert.equal(shelves.sources.find((item) => item.name === source.through)?.class, "permissive", `${source.name} is read through ${source.through}`);
+        assert.match(source.holds, /^Nothing was downloaded from it and nothing of it is copied\./, source.name);
+      } else assert.match(source.holds, /^Nothing is taken from it: a pointer to /, source.name);
+    }
   }
+  assert.deepEqual(shelves.sources.filter((source) => source.class !== "permissive").map((source) => source.name), ["PROSITE", "Kyte and Doolittle 1982", "L'Hernault and Arduengo 1992", "Chambaud and others 1999", "Thornburg and others 2022"]);
+  assert.deepEqual(shelves.sources.filter((source) => source.through).map((source) => [source.name, source.through]), [["PROSITE", "UniParc"]]);
+  assert.match(shelves.marks.lipid_anchor.note, /a profile of PROSITE, whose own terms are non-commercial \(CC BY-NC-ND 4\.0\)/);
+  assert.match(said, /Whether that use is within PROSITE's terms for this project is not settled here/);
   for (const mark of Object.values(shelves.marks)) {
     const source = shelves.sources.find((item) => item.name === mark.source);
-    assert.ok(/CC BY 4\.0|BSD 3-Clause|no restrictions on the use or distribution/.test(source.licence), `a mark rests on ${source.name}, whose terms do not allow a copy`);
+    assert.equal(source.class, "permissive", `a mark rests on ${source.name}, whose terms do not allow a copy`);
   }
+  // The window and the level of the reading, and where lipoproteins sit, are said from open papers.
+  assert.match(shelves.side_notes.predicted, /\(Paulet and others 2011 state it\)/);
+  assert.match(shelves.side_notes.predicted, /\(Christodoulides and others 2018, said of mycoplasmas in general and not measured in this strain\)/);
   assert.ok(!MACHINE.test(shelvesText), "machine path in the shelves");
   assert.ok(!shelvesText.includes(os.hostname()) && !/localhost/.test(shelvesText), "host name in the shelves");
   assert.ok(shelvesText.length < 1_000_000, "the shelves have grown past 1 MB");

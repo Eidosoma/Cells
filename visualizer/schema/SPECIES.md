@@ -55,7 +55,7 @@ says the engine models an organism unless the project's record says so.
     }
   },
   "sources": {
-    "key": {"text": "Authors (year) Title. Journal.", "doi": "10.0000/example", "licence": "CC BY 4.0", "accessed": "2026-11-14"}
+    "key": {"text": "Authors (year) Title. Journal.", "doi": "10.0000/example", "licence": "CC BY 4.0", "class": "permissive", "accessed": "2026-11-14"}
   }
 }
 ```
@@ -103,8 +103,18 @@ says the engine models an organism unless the project's record says so.
 - **`cell.facts`** are what the species' card lists: a label, a value with its unit, and
   the keys of its sources.
 - **`sources`** are keyed. Each has `text` and a `doi` or a `url`, and the day it was
-  read. Numbers and short quotations may be taken from any source that is read; anything
-  more is copied only from a source whose terms allow it, and `licence` then states them.
+  read. What may be taken from a source is set by its class, in the next rule.
+- **Every source has a `class`, and the file holds no value from a source that is not
+  permissive** (the project's rule, D173, 15 November 2026). `class` is one of
+  `permissive` (CC BY, CC0, or a plain statement that no restriction is placed on use),
+  `non-commercial` (a CC BY-NC licence of any kind) and `no stated terms`; `licence`
+  states the terms the class rests on, or that none is stated. Only a permissive source
+  may stand behind a number, a fact, a level or a capability's words: a fact's and a
+  level's `sources` name permissive sources alone, and `capability_sources`, keyed by
+  capability, names the permissive sources of a capability's text. A source of another
+  class is a pointer: a fact names it in `see`, its `text` says what is to be read there
+  and gives no value, and nothing is taken from it. This narrows the allowance above for
+  numbers and short quotations. `tests/licence_classes.test.mjs` holds every record to it.
 - The file holds no machine path and no host name.
 
 ## In the scene

@@ -7,7 +7,7 @@
   "taxon": 2144189,
   "plain": "A bacterium with a designed, minimised genome of 452 protein-coding genes, proposed as the first whole-cell validation organism for Cells; the units of the law inventory are machines of animal cells, and it has none of them."
  },
- "made": "2026-11-14",
+ "made": "2026-11-15",
  "method": [
   "The organism's proteins are the 455 protein products of one frozen genome annotation, GenBank CP016816.2 (annotation of 12 April 2018): 452 kept from Mycoplasma mycoides and 3 added for genetic manipulation. UniProtKB holds no entry of the organism; UniProt's archive (UniParc) holds exactly these 455 sequences, with the family signatures on each.",
   "Licences were read before anything was copied; each is stated in sources, and what was read but not copied is in not_copied.",
@@ -25,6 +25,7 @@
    "release": "CP016816.2, annotation of 12 April 2018",
    "accessed": "2026-11-14",
    "licence": "No restriction: \"NCBI places no restrictions on the use or distribution of the GenBank data\". Submitters may claim rights in what they submitted; this record states none.",
+   "class": "permissive",
    "cite": "Glass J (2017) Synthetic bacterium JCVI-Syn3A, complete genome. GenBank CP016816.2.",
    "holds": "the locus tags, gene names, products, protein identifiers and lengths of the organism's proteins"
   },
@@ -34,6 +35,7 @@
    "release": "2026_04",
    "accessed": "2026-11-14",
    "licence": "CC BY 4.0",
+   "class": "permissive",
    "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
    "holds": "which archived sequences of the organism carry each family signature; the signatures of the units' human candidates; the control counts"
   },
@@ -42,6 +44,7 @@
    "url": "https://www.ebi.ac.uk/interpro/",
    "accessed": "2026-11-14",
    "licence": "CC0 1.0",
+   "class": "permissive",
    "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456.",
    "holds": "the identifiers and names of the family signatures, as UniProt gives them"
   },
@@ -50,19 +53,21 @@
    "url": "https://doi.org/10.7554/elife.36842",
    "accessed": "2026-11-14",
    "licence": "CC BY 4.0",
+   "class": "permissive",
    "cite": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
-   "holds": "the names the paper gives five of the organism's transport proteins"
+   "holds": "the names the paper gives five of the organism's transport proteins, and what its reconstruction of the cell's metabolism says of the ATP synthase and of where the cell's ATP comes from"
   },
   {
    "name": "Europe PMC",
    "url": "https://europepmc.org/",
    "accessed": "2026-11-14",
-   "licence": "Bibliographic facts only (authors, title, journal, year, identifiers). Open texts were read to check names and are not copied.",
+   "licence": "Bibliographic facts only (authors, title, journal, year, identifiers). EMBL-EBI places no restriction of its own on the use of what its services give, beyond those of the data's owners. Open texts were read to check names and are not copied.",
+   "class": "permissive",
    "cite": "Europe PMC Consortium, Europe PMC, https://europepmc.org/.",
    "holds": "the record of the paper cited"
   }
  ],
- "not_copied": "No sequence is copied: they stay with the downloads, outside the repository. The 2022 whole-cell paper (CC BY-NC-ND) was read for numbers and one short quotation, and the 2021 division paper for its abstract; nothing else was taken from them. The 2026 whole-cell paper and the archive of its model were not read for this file, and the instrument files of the 2019 proteomics (PXD008159) were not downloaded.",
+ "not_copied": "No sequence is copied: they stay with the downloads, outside the repository. Nothing is taken from the 2022 whole-cell paper, which is under a non-commercial licence (CC BY-NC-ND), or from the 2021 paper on the genes needed for division, which states no open licence: the species file names both as places to read, and what it says of energy and of division rests on the 2019 paper and on an open review. The 2026 whole-cell paper and the archive of its model were not read for this file, and the instrument files of the 2019 proteomics (PXD008159) were not downloaded.",
  "units": {
   "U01": {
    "finding": "none found",
@@ -325,7 +330,7 @@
    "evidence": "family signature",
    "evidence_note": "Locus JCVISYN3A_0792, product \"F0F1 ATP synthase subunit alpha\" in the genome record. Its sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
    "citation": null,
-   "why": "Part of the cell's F-type ATP synthase, which sits in its one membrane; four of its eight subunits are listed here. In mycoplasmas this machine typically runs backwards, spending ATP to pump protons out, which was measured in related species and not in this strain. The law inventory has no F-type ATPase."
+   "why": "Part of the cell's F-type ATP synthase, which sits in its one membrane; four of its eight subunits are listed here. The 2019 reconstruction of the cell's metabolism has this machine push protons out of the cell; that is a model's reading, not a measurement in this strain. The law inventory has no F-type ATPase."
   },
   {
    "name": "ATP synthase, F1 beta subunit",
@@ -391,7 +396,8 @@
    "citation": {
     "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
     "doi": "10.7554/elife.36842",
-    "pmid": "30657448"
+    "pmid": "30657448",
+    "class": "permissive"
    },
    "why": "A pump of the same superfamily as the sodium-potassium and calcium pumps of animal cells, of another branch: its annotation calls it magnesium-translocating."
   },
@@ -411,7 +417,8 @@
    "citation": {
     "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
     "doi": "10.7554/elife.36842",
-    "pmid": "30657448"
+    "pmid": "30657448",
+    "class": "permissive"
    },
    "why": "Its annotation calls it a magnesium transporter and names it corA, but its signatures are those of a cation-transporting P-type ATPase and not of the CorA channel family. It is the nearest thing this organism has to a calcium pump."
   },
@@ -431,7 +438,8 @@
    "citation": {
     "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
     "doi": "10.7554/elife.36842",
-    "pmid": "30657448"
+    "pmid": "30657448",
+    "class": "permissive"
    },
    "why": "The membrane part of the cell's potassium uptake system. This is how the organism takes up potassium without a sodium-potassium pump or a potassium channel. Its annotation calls it a sodium transporter (natA)."
   },
@@ -451,7 +459,8 @@
    "citation": {
     "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
     "doi": "10.7554/elife.36842",
-    "pmid": "30657448"
+    "pmid": "30657448",
+    "class": "permissive"
    },
    "why": "The cytoplasmic partner of the potassium uptake system, annotated trkA."
   },
@@ -471,9 +480,10 @@
    "citation": {
     "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
     "doi": "10.7554/elife.36842",
-    "pmid": "30657448"
+    "pmid": "30657448",
+    "class": "permissive"
    },
-   "why": "The membrane part of the system that brings in glucose, the cell's fuel. All of its ATP comes from breaking that sugar down."
+   "why": "The membrane part of the system that brings in glucose, the cell's fuel. Its ATP comes from fermenting that sugar."
   }
  ]
 }

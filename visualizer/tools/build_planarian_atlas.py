@@ -27,8 +27,9 @@ Three steps, kept apart:
         cuts the shelves' member files, which the page publishes beside it, from the
         tables in data/proteins/planarian/. It reads nothing else.
 
-The mass-spectrometry library of about 10,000 planarian proteins (Ying and others 2025)
-is not imported: its list of proteins could not be reached under terms that allow a copy.
+The mass-spectrometry library of planarian proteins (Ying and others 2025) is not
+imported: its list of proteins could not be reached under terms that allow a copy. The
+paper reserves all rights, so nothing of it, its count of proteins included, is repeated.
 The README the build writes says what was found and what is missing. In the meantime the
 open set is written out whole (predicted_proteins.tsv): every gene model with a predicted
 protein and every UniProtKB entry of the species. It is predicted, not measured.
@@ -156,8 +157,8 @@ def requests(snapshot):
     add("terms_europepmc_s3_genome_paper_fulltext.xml", f"{EPMC}/PMC11410931/fullTextXML", "the genome paper's own licence and data availability statement")
     add("terms_iprox_data_licence.html", "https://www.iprox.org/page/iproxDataLisence.html", "iProX's data licence")
     add("terms_insdc_policy.html", "https://www.insdc.org/policy/", "the policy of the nucleotide sequence databases, which covers the sequence records read")
-    # The catalogue of about 10,000 proteins: read, and not copied.
-    add("spectral_library_europepmc.json", f"{EPMC}/search?query={q('ext_id:40961932 AND src:med')}&format=json&resultType=core", "the paper that reports a spectral library of about 10,000 planarian proteins")
+    # The mass-spectrometry library: read, and not copied.
+    add("spectral_library_europepmc.json", f"{EPMC}/search?query={q('ext_id:40961932 AND src:med')}&format=json&resultType=core", "the paper that reports a spectral library of planarian proteins")
     add("spectral_library_crossref.json", "https://api.crossref.org/works/10.1016/j.devcel.2025.08.015", "that paper's licence and copyright statement")
     add("spectral_library_publisher_page.html", "https://www.cell.com/developmental-cell/fulltext/S1534-5807(25)00536-2", "the paper's own page, where its supplementary tables are listed", refusal_expected=True)
     add("spectral_library_PXD042308.xml", "https://proteomecentral.proteomexchange.org/cgi/GetDataset?ID=PXD042308&outputMode=XML", "what the paper's public deposit holds")
@@ -530,10 +531,10 @@ EXTRA = [
     {"accession": "M4LUP7", "family": "nka_alpha", "gene": "ATP12A", "role": "alpha", "pmid": "23250205", "words": "H(+),K(+)-ATPase", "text": "abstract",
      "record": {"embl": "JX174182", "words": "non-gastric H+,K+-ATPase alpha subunit (ATP12A)"},
      "name": "Non-gastric proton-potassium pump (H+/K+-ATPase) alpha subunit",
-     "why": "A proton-potassium pump of the planarian membrane: the paper that reports it found that knocking it down changes membrane voltage and the size of the regrown head. It carries the same signature as the sodium-potassium pump's alpha subunit but was described as a different pump, so it is kept out of that unit."},
+     "why": "A proton-potassium pump of the planarian, by the name its sequence record gives it. The paper that reports it is on bioelectric signalling and the size of the head and organs in regeneration; it states no open licence, so its findings are not repeated here. The protein carries the same signature as the sodium-potassium pump's alpha subunit, but its record names it as a different pump, so it is kept out of that unit."},
     {"accession": "A0A291IA19", "gene": "TRPA1", "role": None, "pmid": "29184198", "words": "TRPA1", "text": "abstract", "title_match": True,
      "name": "TRPA1 cation channel",
-     "why": "A sensory cation channel of the planarian, shown to be needed for its escape from heat and irritants; the atlas draws no unit of this family."},
+     "why": "A cation channel of the TRP family in the planarian, by the name of its UniProtKB entry. The paper that reports it is on its activation by reactive oxygen species and on pain sensing; it states no open licence, so its findings are not repeated here. The atlas draws no unit of this family."},
     {"accession": "A0A0A1CVW0", "family": "k2p", "gene": "kcnka", "role": None,
      "why": "A two-pore-domain potassium channel, the kind of protein that usually carries a potassium leak; the atlas's leak units name no protein. {k2p} planarian gene models carry this signature; the reference table lists them."},
     {"family": "aquaporin", "models": True, "role": None,
@@ -748,6 +749,23 @@ def read_links(evidence):
     }
 
 
+# How each source may be used (the project's rule of 15 November 2026, decision D173):
+#   permissive        CC BY, CC0, or a plain statement that no restriction is placed: its
+#                     values may enter the files, with attribution;
+#   non-commercial    a CC BY-NC licence of any kind: analysis only, so nothing of it enters;
+#   no stated terms   no open licence is stated: nothing of it enters.
+# A paper of the last two classes is a pointer. Where it is cited for a gene's name, the
+# name must stand in a permissive record as well (a sequence record, or the UniProtKB entry).
+PERMISSIVE, NON_COMMERCIAL, NO_TERMS = "permissive", "non-commercial", "no stated terms"
+
+
+def licence_class(licence):
+    """The class of a paper, from the licence its bibliographic record names."""
+    if licence in ("cc by", "cc0"):
+        return PERMISSIVE
+    return NON_COMMERCIAL if (licence or "").startswith("cc by-nc") else NO_TERMS
+
+
 def read_papers(evidence):
     """The cited papers: a citation each, and the texts in which names are looked up."""
     papers = {}
@@ -764,12 +782,15 @@ def read_papers(evidence):
         year = item.get("pubYear", "")
         papers[item["pmid"]] = {
             "authors": (item.get("authorString") or "").rstrip("."),
-            "citation": {"text": f"{who} ({year}) {title}. {where} {place}".strip() + ".", "doi": item.get("doi"), "pmid": item["pmid"]},
+            "citation": {"text": f"{who} ({year}) {title}. {where} {place}".strip() + ".", "doi": item.get("doi"), "pmid": item["pmid"], "class": licence_class(item.get("license"))},
             "short": f"{who} {year}",
             "title": title,
             "abstract": plain(item.get("abstractText") or ""),
             "licence": item.get("license"),
+            "class": licence_class(item.get("license")),
         }
+        if item.get("license") is None and item.get("isOpenAccess") == "Y" and item["pmid"] != "29184198":
+            raise SystemExit(f"the record of PubMed {item['pmid']} calls it open and names no licence; read its terms and class it")
     missing = sorted(cited_pmids() - set(papers), key=int)
     if missing:
         raise SystemExit(f"the saved paper records lack PubMed ids {missing}")
@@ -964,12 +985,19 @@ class Context:
                 # The entry does not carry the paper's name; its sequence record does.
                 spelt = "" if claim["record"]["words"] == claim["gene"] else f", which spells it {claim['record']['words']}"
                 tail = f"; the name is tied to this entry by its sequence record {claim['record']['embl']}{spelt}" + tail
+                held = {"source": "European Nucleotide Archive", "id": claim["record"]["embl"]}
             elif claim["gene"].lower() not in [name.lower() for name in entry["genes"]]:
                 raise SystemExit(f"{accession} does not carry the name {claim['gene']}, and no sequence record ties it to the name")
-            out.append({
+            else:
+                held = {"source": "UniProt", "id": accession}
+            product = {
                 "name": entry["name"], "gene": claim["gene"], "role": role, "ids": [{"db": "uniprot", "id": accession}] + ids, "length": entry["length"],
                 "evidence": "named in a publication", "evidence_note": f"Named {claim['gene']} in {paper['short']}{tail}.", "citation": paper["citation"],
-            })
+            }
+            if paper["class"] != PERMISSIVE:
+                # The paper's terms do not allow a copy: the name stands in a permissive record, which is named.
+                product["name_record"] = held
+            out.append(product)
         listed = self.listed(key)
         for accession in sorted(listed):
             if NAMED.get(accession, {}).get("family") == key:
@@ -1089,21 +1117,22 @@ def note_hcn(spec, c, closing=None):
 
 
 def note_gap(spec, c, named):
+    # Two papers are named as places to read; neither states an open licence, so nothing
+    # is said from them: the note rests on the search of signatures alone.
     families, planarian = c.papers[PAPERS["gap_families"]], c.papers[PAPERS["gap_planarian"]]
-    for paper, words in ((families, "connexins are exclusive of chordates"), (planarian, "innexin gap junction channel gene")):
-        if words not in paper["abstract"]:
-            raise SystemExit(f"the saved abstract of {paper['short']} does not contain {words!r}")
+    if PERMISSIVE in (families["class"], planarian["class"]):
+        raise SystemExit("a paper of the gap-junction note now has open terms; read it and say what it says")
     controls = c.absent("connexin")
     first = controls[FAMILIES["connexin"]["signatures"][0]]
     if first["flatworms"]:
         raise SystemExit("a flatworm entry carries the connexin signature; rewrite the gap-junction notes")
     basis = (
-        f"Connexins are known only from chordates ({families['short']}), and a planarian innexin gap-junction gene, smedinx-11, has been described ({planarian['short']}). "
-        f"{c.carry('innexin')} the innexin signature and none the connexin one; no UniProtKB entry of any flatworm carries the connexin signature either, while {first['human']} reviewed human entries do."
+        f"{c.carry('innexin')} the innexin signature and none the connexin one; no UniProtKB entry of any flatworm carries the connexin signature either, while {first['human']} reviewed human entries do. "
+        f"One planarian innexin has a sequence record of its own, smedinx-11. More is to be read in {families['short']}, on which animals have each family, and in {planarian['short']}, on that innexin; neither states an open licence, so nothing is taken from them."
     )
     if named:
-        return f"There is no {spec['as']} to find in a planarian: its gap junctions are built from innexins, a different protein family. {basis} Nothing says which innexins, if any, would form a channel like this one."
-    return f"Planarians build gap junctions from innexins, not connexins. {basis} Which innexins a general gap-junction law would stand for is not known."
+        return f"There is no {spec['as']} to find in a planarian: by its signatures it has innexins, another family of gap-junction proteins, and no connexins. {basis} Nothing says which innexins, if any, would form a channel like this one."
+    return f"By their signatures, planarians have innexins and no connexins. {basis} Which innexins a general gap-junction law would stand for is not known."
 
 
 def note_nka(spec, c):
@@ -1231,6 +1260,11 @@ def extra_products(c):
             note = f"Reported in {paper['short']}"
             if item.get("record"):
                 note += f"; its sequence record {item['record']['embl']} calls it the {item['record']['words']}"
+                held = {"source": "European Nucleotide Archive", "id": item["record"]["embl"]}
+            elif item["gene"].lower() in [name.lower() for name in entry["genes"]]:
+                held = {"source": "UniProt", "id": accession}
+            else:
+                raise SystemExit(f"{accession} does not carry the name {item['gene']}, and no sequence record ties it to the name")
             if item.get("family"):
                 signature = FAMILIES[item["family"]]["signatures"][0]
                 if signature not in entry["interpro"]:
@@ -1242,11 +1276,15 @@ def extra_products(c):
             note = f"{signature} ({c.signature_name(signature)}) on its UniProtKB entry"
             if entry["pmids"] and entry["pmids"][0] in c.papers:
                 note += f"; its sequence was reported with {c.papers[entry['pmids'][0]]['short']}"
-        out.append({
+        product = {
             "name": item.get("name") or entry["name"], "gene": item["gene"], "role": item["role"], "ids": [{"db": "uniprot", "id": accession}] + ids, "length": entry["length"],
             "evidence": evidence, "evidence_note": note + tail + ".", "citation": citation,
-            "why": item["why"].format(k2p=c.count("k2p")),
-        })
+        }
+        if citation and citation["class"] != PERMISSIVE:
+            # The paper's terms do not allow a copy: the name stands in a permissive record, which is named.
+            product["name_record"] = held
+        product["why"] = item["why"].format(k2p=c.count("k2p"))
+        out.append(product)
     return out
 
 
@@ -1266,7 +1304,7 @@ TERMS = [
     ("terms_insdc_policy.html", "no use restrictions or licensing requirements will be included in any sequence data records"),
     ("terms_iprox_data_licence.html", "Creative Commons Public Domain (CC0) license apply to all iProX datasets submitted since March 23rd, 2023"),
     ("terms_iprox_data_licence.html", "for use solely by you for your own personal use and not for republication"),
-    ("spectral_library_europepmc.json", "10,000 proteins"),
+    ("spectral_library_europepmc.json", "establishing a spectral library"),
 ]
 
 
@@ -1330,35 +1368,49 @@ def origin(facts):
     )
 
 
+def cited_in_atlas(c):
+    """The PubMed ids of the papers that the atlas's products and notes name."""
+    return {item["pmid"] for item in [*NAMED.values(), *CALLED.values(), *EXTRA] if item.get("pmid")} | {PAPERS[name] for name in ("gap_families", "gap_planarian", "inx13", "inx1")}
+
+
+def listed_papers(c, kind):
+    """The papers the atlas names that are of one class, in words."""
+    names = sorted((c.papers[pmid]["short"] for pmid in cited_in_atlas(c) if c.papers[pmid]["class"] == kind), key=lambda name: (name.rsplit(" ", 1)[1], name))
+    return ", ".join(names[:-1]) + " and " + names[-1] if len(names) > 1 else "".join(names)
+
+
 def sources(c, facts):
     ev = c.evidence
     genome = c.papers[PAPERS["genome"]]["citation"]
     return [
         {
-            "name": "UniProt", "db": "uniprot", "url": "https://www.uniprot.org/", "release": facts["uniprot"], "accessed": ev.day(f"uniprotkb_{TAXON}.json"), "licence": "CC BY 4.0",
+            "name": "UniProt", "db": "uniprot", "url": "https://www.uniprot.org/", "release": facts["uniprot"], "accessed": ev.day(f"uniprotkb_{TAXON}.json"), "licence": "CC BY 4.0", "class": PERMISSIVE,
             "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
             "holds": "the planarian's UniProtKB entries (accessions, names, gene names, lengths, signatures and the papers they cite); which archived planarian sequences (UniParc) carry each family signature; the signatures of the units' human candidates; the counts used as controls",
         },
         {
             "name": "WormBase ParaSite", "db": "wormbase_parasite", "url": "https://parasite.wormbase.org/", "release": WBPS_RELEASE, "accessed": ev.day("wbps_s3h1_protein.fa.gz"),
             "licence": "No restriction on use is stated: the database's disclaimer says \"Ensembl imposes no restrictions on access to, or use of, the data provided\". It asks that a genome's paper and the database be cited, asks users of an unpublished genome to tell its owners before a large-scale analysis, and warns that third-party constraints may apply. The paper taken to describe this genome is CC BY 4.0.",
+            "class": PERMISSIVE,
             "cite": f"{c.papers[PAPERS['wbps']]['citation']['text']} Genome: {genome['text']} {origin(facts)}",
             "holds": f"the gene models of one genome annotation (assembly {facts['assembly']}, annotation version {facts['annotation']}): each model's identifier, the identifier and length of its longest predicted protein, and the InterPro signatures on its predicted proteins",
         },
         {
-            "name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "release": facts["interpro"], "accessed": ev.day("interpro_entry_list.tsv"), "licence": "CC0 1.0",
+            "name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "release": facts["interpro"], "accessed": ev.day("interpro_entry_list.tsv"), "licence": "CC0 1.0", "class": PERMISSIVE,
             "cite": c.papers[PAPERS["interpro"]]["citation"]["text"],
             "holds": "the name and type of each signature entry",
         },
         {
             "name": "European Nucleotide Archive", "url": "https://www.ebi.ac.uk/ena/", "accessed": ev.day("uniprotkb_record_links.json"),
             "licence": "Free and unrestricted: the policy of the nucleotide sequence databases is that \"no use restrictions or licensing requirements will be included in any sequence data records\".",
+            "class": PERMISSIVE,
             "cite": "each record is named where it is used",
             "holds": "the accession and the title of two sequence records, read to tie a UniProtKB entry to the name its paper uses",
         },
         {
             "name": "Europe PMC", "url": "https://europepmc.org/", "accessed": ev.day("europepmc_citations.json"),
             "licence": "Bibliographic facts only (authors, title, journal, year, identifiers). EMBL-EBI's terms of use add no restriction to those of the data owners. Abstracts and article texts were read to check names and are not copied.",
+            "class": PERMISSIVE,
             "cite": "each paper is cited where it is used",
             "holds": "the records of the cited papers",
         },
@@ -1396,9 +1448,10 @@ def build_atlas(c, facts):
         ],
         "sources": sources(c, facts),
         "not_copied": (
-            f"The catalogue of about 10,000 planarian proteins detected by mass spectrometry ({spectral['short']}, doi:{spectral['citation']['doi']}) was not copied: the paper and its supplementary tables reserve all rights, "
+            f"The catalogue of planarian proteins detected by mass spectrometry ({spectral['short']}, doi:{spectral['citation']['doi']}) was not copied: the paper and its supplementary tables reserve all rights, "
             "and its public deposit (ProteomeXchange PXD042308, which iProX's data licence puts under CC0) holds instrument files and sample sheets, not the list of proteins. "
-            "PlanMine was read and nothing taken from it, because its front page states no licence or terms of use, only how to cite it. Abstracts and article texts were read to check names and are not copied."
+            "PlanMine was read and nothing taken from it, because its front page states no licence or terms of use, only how to cite it. Abstracts and article texts were read to check names and are not copied. "
+            f"Of the papers that name the proteins listed here, {listed_papers(c, NO_TERMS)} state no open licence: each is cited for a name, which a sequence record or a UniProtKB entry carries too, and none of their findings is repeated."
         ),
         "units": units,
         "extra": extra_products(c),
@@ -1452,7 +1505,9 @@ def library_facts(c):
     """What the saved records say of the mass-spectrometry library that was not imported."""
     ev = c.evidence
     paper = c.papers[PAPERS["spectral_library"]]
-    said = re.search(r"establishing a spectral library covering \S*10,000 proteins", paper["abstract"])
+    said = re.search(r"establishing a spectral library", paper["abstract"])
+    if not said or paper["class"] == PERMISSIVE:
+        raise SystemExit("the library's paper no longer reads as it did, or now has open terms; read it again")
     crossref = ev.json("spectral_library_crossref.json")["message"]
     rights = next(item["value"] for item in crossref["assertion"] if item["name"] == "copyright")
     first, second = ev.text("spectral_library_PXD042308.xml"), ev.text("spectral_library_PXD059861.xml")
@@ -1470,7 +1525,7 @@ def library_facts(c):
     facts = {
         "citation": paper["citation"], "authors": paper["authors"], "title": paper["title"],
         "year": paper["short"].rsplit(" ", 1)[1], "journal": paper["citation"]["text"].split(paper["title"] + ". ", 1)[1],
-        "says": said.group(0) if said else None, "rights": rights,
+        "rights": rights,
         "raw": kinds["Associated raw file URI"], "other": kinds["Search engine output file URI"],
         "announced": re.search(r'<DatasetSummary announceDate="([\d-]+)"', first).group(1),
         "raw_second": len(re.findall(r'name="Associated raw file URI"', second)),
@@ -2120,22 +2175,23 @@ f"a stretch of {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or mor
         "sources": [
             {
                 "name": "WormBase ParaSite", "url": "https://parasite.wormbase.org/", "release": WBPS_RELEASE, "accessed": d.day(mart, "biomart_tmhmm.tsv"),
+                "class": PERMISSIVE,
                 "licence": "The database's disclaimer: \"Ensembl imposes no restrictions on access to, or use of, the data provided and the software used to analyse and present it. Ensembl data generated by members of the project are available without restriction.\" It asks that the genome's paper and the database be cited.",
                 "cite": cite["WormBase ParaSite"],
                 "holds": "the gene models; and, from its BioMart, the helices TMHMM predicts and the signal peptides SignalP predicts on each predicted protein",
             },
             {
-                "name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "release": s.release, "accessed": d.day("interpro-hierarchy-and-go", "ParentChildTreeFile.txt"), "licence": "CC0 1.0",
+                "name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "release": s.release, "accessed": d.day("interpro-hierarchy-and-go", "ParentChildTreeFile.txt"), "licence": "CC0 1.0", "class": PERMISSIVE,
                 "cite": cite["InterPro"],
                 "holds": "the type and name of each entry, the tree of broader and narrower entries, and the mapping of entries to Gene Ontology terms",
             },
             {
-                "name": "Gene Ontology", "url": "https://geneontology.org/", "release": s.ontology, "accessed": d.day("geneontology-go-basic", "go-basic.obo"), "licence": "CC BY 4.0",
+                "name": "Gene Ontology", "url": "https://geneontology.org/", "release": s.ontology, "accessed": d.day("geneontology-go-basic", "go-basic.obo"), "licence": "CC BY 4.0", "class": PERMISSIVE,
                 "cite": ontology_citation(d),
                 "holds": "the names of terms and which term is a kind or a part of which; no term's text is copied beyond the names of the districts' and the places' terms",
             },
             {
-                "name": "UniProt", "url": "https://www.uniprot.org/", "release": d.entry("uniprot-smed-topology", f"uniprotkb_{TAXON}_topology.json").get("x_uniprot_release") or facts["uniprot"], "accessed": d.day("uniprot-smed-topology", f"uniprotkb_{TAXON}_topology.json"), "licence": "CC BY 4.0",
+                "name": "UniProt", "url": "https://www.uniprot.org/", "release": d.entry("uniprot-smed-topology", f"uniprotkb_{TAXON}_topology.json").get("x_uniprot_release") or facts["uniprot"], "accessed": d.day("uniprot-smed-topology", f"uniprotkb_{TAXON}_topology.json"), "licence": "CC BY 4.0", "class": PERMISSIVE,
                 "cite": cite["UniProt"],
                 "holds": "for each of the species' entries: the membrane-spanning segments, the signal peptide and the subcellular location it gives, whether the sequence's beginning is missing, and its Gene Ontology terms",
             },
@@ -2333,13 +2389,27 @@ def build_readme(c, facts, atlas, listed, named, everything, report, d):
     cites = "\n".join(f"- {s['name']}: {s['cite']}" for s in table_sources)
     more = len(listed) - named
     shelf_sources = json.loads(report["text"])["sources"]
+    why_named = {
+        PAPERS["gap_planarian"]: "It names the innexin smedinx-11, whose sequence record carries the name",
+        PAPERS["gap_families"]: "Which animals have connexins and which have innexins is to be read there",
+        PAPERS["hk"]: "It reports the proton-potassium pump, whose sequence record names it",
+        PAPERS["trpa1"]: "It reports TRPA1, whose UniProtKB entry carries the name",
+        PAPERS["inx13"]: "UniProtKB entries of innexins cite it as where their sequences were reported",
+        PAPERS["inx1"]: "A UniProtKB entry of an innexin cites it as where its sequence was reported",
+    }
+    pointers = sorted((pmid for pmid in cited_in_atlas(c) if c.papers[pmid]["class"] != PERMISSIVE), key=lambda pmid: (c.papers[pmid]["short"].rsplit(" ", 1)[1], c.papers[pmid]["short"]))
+    if set(pointers) != set(why_named):
+        raise SystemExit(f"the papers that are pointers are not the ones the README explains: {sorted(c.papers[pmid]['short'] for pmid in pointers)}")
+    if c.papers[PAPERS["wbps"]]["licence"] != "cc by-nc-nd" or c.papers[PAPERS["planmine"]]["licence"] != "cc by-nc":
+        raise SystemExit("the papers cited for WormBase ParaSite and PlanMine no longer have the licences the README states")
+    pointer_rows = "\n".join(f"| {c.papers[pmid]['citation']['text']} | {c.papers[pmid]['class']} | {why_named[pmid]} |" for pmid in pointers)
     shelf_rows = "\n".join(f"| [{s['name']}]({s['url']}), release {s['release']}, read {s['accessed']} | {s['holds'][0].upper() + s['holds'][1:]} | {s['licence']} |" for s in shelf_sources)
     shelf_files = "\n".join(f"| `{source}` | `{file}` | {entry['retrieved_utc'][:10]} | `{entry['sha256']}` |" for (source, file), entry in sorted(d.read.items()))
     return f"""# Planarian proteins
 
 Three things are recorded here for the planarian *{ORGANISM}*.
 
-1. **The mass-spectrometry library of about 10,000 proteins was not imported.** It was
+1. **The mass-spectrometry library of planarian proteins was not imported.** It was
    found, its terms were read, and its list of proteins could not be reached under terms
    that allow a copy. What was found and what is missing is set out below.
 2. **`{FULL_FILE}` is the open set, brought in whole in the meantime** (the user's
@@ -2358,12 +2428,12 @@ Generated by `tools/build_planarian_atlas.py`; do not edit. This is reference da
 the viewer's protein atlas. It is not the engine's protein catalogue, and nothing in the
 engine reads it.
 
-## The library of about 10,000 proteins: found, not imported
+## The mass-spectrometry library: found, not imported
 
 | | |
 | --- | --- |
 | The study | {library['authors']} ({library['year']}) {library['title']}. {library['journal']} doi:{library['citation']['doi']}, PubMed {library['citation']['pmid']} |
-| What it reports | In its abstract: "{library['says']}" of *{ORGANISM}* |
+| What it reports | A spectral library of the proteins of *{ORGANISM}* detected by mass spectrometry. How many proteins it covers is in its abstract; the paper reserves all rights, so the number is not repeated here |
 | Its public deposits | ProteomeXchange PXD042308 (iProX IPX0006394000, announced {library['announced']}): {library['raw']} instrument files and {library['other']} other files. ProteomeXchange PXD059861 (iProX IPX0010799000): {library['raw_second']} instrument files. GEO GSE232894: the study's RNA sequencing |
 | Terms of the paper | "{library['rights']}" |
 | Terms of the deposits | iProX's data licence puts datasets submitted since 23 March 2023 under CC0, and elsewhere limits what is taken from its site to personal use; both clauses are on record |
@@ -2445,6 +2515,23 @@ For the shelves, more was taken from the same sources, and the Gene Ontology was
 | Source | What the shelves take | Terms |
 | --- | --- | --- |
 {shelf_rows}
+
+Every source in the two tables is permissive: its terms allow what is taken, with
+attribution.
+
+**Papers named, with nothing taken beyond a name.** The atlas names planarian genes by
+the papers that reported them. A paper under CC BY may stand behind a name. A paper
+whose terms do not allow a copy is a pointer: the name it is cited for stands in a
+sequence record or a UniProtKB entry as well, and none of its findings is repeated.
+
+| Paper | Class | Why it is named |
+| --- | --- | --- |
+{pointer_rows}
+
+Two more papers are cited because their databases ask for it, and nothing is taken from
+the papers themselves: {c.papers[PAPERS['wbps']]['short']} for WormBase ParaSite (the
+paper is under CC BY-NC-ND) and {c.papers[PAPERS['planmine']]['short']} for PlanMine (under CC BY-NC).
+The paper of the mass-spectrometry library reserves all rights; it is set out above.
 
 The Gene Ontology asks for two papers to be cited, in its own words: {ontology_citation(d)}.
 Its release here is {report['ontology']}. The helices and signal peptides were predicted

@@ -635,7 +635,7 @@
  ],
  "side_notes": {
   "stated": "Taken from a reviewed UniProtKB entry whose sequence is, letter for letter, this protein's. Each such entry is of another organism, named in the mark stated_in: it states the place of the same protein there, not in JCVI-syn3A. None of these statements rests on an experiment: each is made by a family rule or by similarity, as the mark evidence says.",
-  "predicted": "This tool's own reading of the sequence, not the output of an established predictor: UniProt's archive holds family signatures on these sequences and no prediction of membrane-spanning stretches. A stretch of 19 residues is read as membrane-spanning where its mean hydropathy on Kyte and Doolittle's scale is 1.6 or more and it holds no charged residue, or 2.2 or more with at most one. The window of 19 and the level of 1.6 are the usual reading of that scale (L'Hernault and Arduengo 1992 state it); the conditions on charged residues are this tool's, set against this organism's own proteins. A protein with such a stretch is placed in the membrane. A protein with none and no lipid anchor is placed inside, which includes proteins attached to the membrane's inner face. A lipid anchor is read from the lipoprotein signature (PROSITE PS51257, as UniProt's archive gives it) where a hydrophobic stretch begins before its cysteine; such a protein is placed outside, because the lipoproteins of mycoplasmas are anchored on the outer face of the membrane (Chambaud and others 1999, said of mycoplasmas in general and not measured in this strain).",
+  "predicted": "This tool's own reading of the sequence, not the output of an established predictor: UniProt's archive holds family signatures on these sequences and no prediction of membrane-spanning stretches. A stretch of 19 residues is read as membrane-spanning where its mean hydropathy on Kyte and Doolittle's scale is 1.6 or more and it holds no charged residue, or 2.2 or more with at most one. The window of 19 and the level of 1.6 are the usual reading of that scale (Paulet and others 2011 state it); the conditions on charged residues are this tool's, set against this organism's own proteins. A protein with such a stretch is placed in the membrane. A protein with none and no lipid anchor is placed inside, which includes proteins attached to the membrane's inner face. A lipid anchor is read from the lipoprotein signature (PROSITE PS51257, as UniProt's archive gives it; PROSITE's own terms are non-commercial, so its dependence is said here) where a hydrophobic stretch begins before its cysteine; such a protein is placed outside, because the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface (Christodoulides and others 2018, said of mycoplasmas in general and not measured in this strain).",
   "by function": "The sequence has a hydrophobic stretch, but the protein's class in the 2019 paper leaves no doubt that it works inside the cell: translation, transcription, the upkeep of DNA, sugar breakdown, the pentose phosphate pathway or nucleotide metabolism. Function is never used to place a transport protein.",
   "none": "The sequence has a hydrophobic stretch that holds charged residues, and the protein's function is not known: nothing settles its side, so it is not placed."
  },
@@ -699,7 +699,7 @@
    "values": "number",
    "measured": false,
    "note": "This tool's reading; a count of stretches, not a topology. It can fall short, since a stretch that holds charged residues is not read.",
-   "source": "Kyte and Doolittle 1982"
+   "source": "Biopython 1.85"
   },
   "lipid_anchor": {
    "label": "Lipid anchor read from the sequence",
@@ -707,7 +707,7 @@
     true
    ],
    "measured": false,
-   "note": "The lipoprotein signature with a hydrophobic stretch before its cysteine. Such a protein is placed outside, unless a membrane-spanning stretch follows the anchor: then it is placed in the membrane.",
+   "note": "The lipoprotein signature with a hydrophobic stretch before its cysteine. Such a protein is placed outside, unless a membrane-spanning stretch follows the anchor: then it is placed in the membrane. The signature is a profile of PROSITE, whose own terms are non-commercial (CC BY-NC-ND 4.0); where it matches was read in UniProt's archive, under UniProt's terms (CC BY 4.0), and nothing was downloaded from PROSITE.",
    "source": "UniParc"
   },
   "at_start_only": {
@@ -717,7 +717,7 @@
    ],
    "measured": false,
    "note": "The only stretch read begins within the first 12 residues. It may be an export signal that is cut off, and the protein would then sit outside and not span the membrane. Nothing read here tells the two apart.",
-   "source": "Kyte and Doolittle 1982"
+   "source": "Biopython 1.85"
   },
   "evidence": {
    "label": "What stands behind a stated side",
@@ -807,8 +807,7 @@
    "in_or_on": 99,
    "seen": 89,
    "estimated_copies": 7685,
-   "all_estimated_copies": 77028,
-   "in_the_2022_model": 93
+   "all_estimated_copies": 77028
   },
   "in_the_membrane": {
    "proteins": 86,
@@ -822,6 +821,7 @@
    "cite": "Glass J (2017) Synthetic bacterium JCVI-Syn3A, complete genome. GenBank CP016816.2.",
    "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2",
    "licence": "NCBI places no restrictions on the use or distribution of GenBank data; this record states none",
+   "class": "permissive",
    "accessed": "2026-11-14",
    "holds": "The proteins, their names and lengths. Their sequences were read and are not copied."
   },
@@ -830,6 +830,7 @@
    "cite": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
    "url": "https://doi.org/10.7554/elife.36842",
    "licence": "CC BY 4.0",
+   "class": "permissive",
    "accessed": "2026-11-14",
    "holds": "The functional classes that name the districts, essentiality, detection and estimated copies (supplementary files 3 and 5)."
   },
@@ -838,48 +839,91 @@
    "cite": "UniProt Consortium, UniParc release 2026_04: the archived protein sequences of taxon 2144189.",
    "url": "https://www.uniprot.org/uniparc?query=taxonomy_id:2144189",
    "licence": "CC BY 4.0",
+   "class": "permissive",
    "accessed": "2026-11-14",
-   "holds": "The sequences, and where PROSITE's lipoprotein profile matches them. The profile itself is not copied."
+   "holds": "The sequences, and where PROSITE's lipoprotein profile matches them, as UniProt's archive records the matches. The profile itself is PROSITE's: it was not downloaded and is not copied."
   },
   {
    "name": "UniProtKB",
    "cite": "UniProt Consortium, UniProtKB release 2026_04: reviewed entries of other organisms with the same sequences.",
    "url": "https://www.uniprot.org/",
    "licence": "CC BY 4.0",
+   "class": "permissive",
    "accessed": "2026-11-15",
    "holds": "The place those entries state and what stands behind it, for the proteins whose side is stated or that are said to be at the membrane."
   },
   {
+   "name": "Biopython 1.85",
+   "cite": "The Biopython contributors, Biopython release 1.85: the file Bio/SeqUtils/ProtParamData.py, which lists the scale and names Kyte and Doolittle's paper of 1982 as its origin.",
+   "url": "https://github.com/biopython/biopython/blob/biopython-185/Bio/SeqUtils/ProtParamData.py",
+   "licence": "Biopython License Agreement or BSD 3-Clause License",
+   "class": "permissive",
+   "accessed": "2026-11-15",
+   "holds": "The 20 values of Kyte and Doolittle's hydropathy scale that the sequences are read with, as this file lists them."
+  },
+  {
+   "name": "Paulet and others 2011",
+   "cite": "Paulet and others (2011) Hydrophobic pulses predict transmembrane helix irregularities and channel transmembrane units. BMC Bioinformatics 12:135.",
+   "url": "https://doi.org/10.1186/1471-2105-12-135",
+   "licence": "CC BY 2.0",
+   "class": "permissive",
+   "accessed": "2026-11-15",
+   "holds": "The usual reading of the scale: a window of 19 residues, and a mean above 1.6 for a stretch that spans a membrane."
+  },
+  {
+   "name": "Christodoulides and others 2018",
+   "cite": "Christodoulides and others (2018) The Role of Lipoproteins in Mycoplasma-Mediated Immunomodulation. Front Microbiol 9:1682.",
+   "url": "https://doi.org/10.3389/fmicb.2018.01682",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-15",
+   "holds": "That the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface."
+  },
+  {
+   "name": "PROSITE",
+   "cite": "SIB Swiss Institute of Bioinformatics, PROSITE: its profile PS51257.",
+   "url": "https://prosite.expasy.org/prosite_license.html",
+   "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee",
+   "class": "non-commercial",
+   "accessed": "2026-11-15",
+   "through": "UniParc",
+   "holds": "Nothing was downloaded from it and nothing of it is copied. Its lipoprotein profile is the origin of the matches that UniProt's archive records on these sequences: the mark lipid_anchor and the proteins placed outside rest on those matches, as they were read in UniProt's archive."
+  },
+  {
    "name": "Kyte and Doolittle 1982",
    "cite": "Kyte and Doolittle (1982) A simple method for displaying the hydropathic character of a protein. J Mol Biol 157:105-132.",
-   "url": "https://github.com/biopython/biopython/blob/biopython-185/Bio/SeqUtils/ProtParamData.py",
-   "licence": "The scale's 20 values are taken as Biopython 1.85 lists them (Bio/SeqUtils/ProtParamData.py), under the Biopython License Agreement or the BSD 3-Clause License",
+   "url": "https://doi.org/10.1016/0022-2836(82)90515-0",
+   "licence": "No open licence stated: the paper's record names none and does not count it as open access",
+   "class": "no stated terms",
    "accessed": "2026-11-15",
-   "holds": "The hydropathy scale the sequences are read with."
+   "holds": "Nothing is taken from it: a pointer to the paper that defined the hydropathy scale. The scale's values were taken from Biopython's file, and only this paper's bibliographic record was read."
   },
   {
    "name": "L'Hernault and Arduengo 1992",
    "cite": "L'Hernault and Arduengo (1992) Mutation of a putative sperm membrane protein in Caenorhabditis elegans prevents sperm differentiation but not its associated meiotic divisions. J Cell Biol 119:55-68.",
    "url": "https://doi.org/10.1083/jcb.119.1.55",
-   "licence": "CC BY-NC-SA; read for one sentence",
+   "licence": "CC BY-NC-SA 4.0",
+   "class": "non-commercial",
    "accessed": "2026-11-15",
-   "holds": "The usual reading of the scale: a window of 19 residues, and a mean above 1.6 for a stretch that probably spans a membrane."
+   "holds": "Nothing is taken from it: a pointer to a paper that uses the hydropathy scale to find the membrane-spanning stretches of a protein."
   },
   {
    "name": "Chambaud and others 1999",
-   "cite": "Chambaud and others (1999) Interactions between mycoplasma lipoproteins and the host immune system. Trends Microbiol 7:493-499. Abstract only.",
+   "cite": "Chambaud and others (1999) Interactions between mycoplasma lipoproteins and the host immune system. Trends Microbiol 7:493-499.",
    "url": "https://doi.org/10.1016/s0966-842x(99)01641-8",
-   "licence": "Read for one sentence of its abstract",
+   "licence": "No open licence stated: the paper's record names none and does not count it as open access",
+   "class": "no stated terms",
    "accessed": "2026-11-15",
-   "holds": "That mycoplasmas' lipoproteins are anchored on the outer face of the membrane."
+   "holds": "Nothing is taken from it: a pointer to a review of where the lipoproteins of mycoplasmas are anchored. Only its bibliographic record was read."
   },
   {
    "name": "Thornburg and others 2022",
    "cite": "Thornburg and others (2022) Fundamental behaviors emerge from simulations of a living minimal cell. Cell 185:345-360.e28.",
    "url": "https://doi.org/10.1016/j.cell.2021.12.025",
-   "licence": "CC BY-NC-ND 4.0; read for one number",
+   "licence": "CC BY-NC-ND 4.0",
+   "class": "non-commercial",
    "accessed": "2026-11-14",
-   "holds": "The count of 93 membrane proteins in its model, for comparison. No table of it is copied."
+   "holds": "Nothing is taken from it: a pointer to the whole-cell model's own count of membrane proteins and of their copies, for comparison with this file's."
   }
  ]
 }

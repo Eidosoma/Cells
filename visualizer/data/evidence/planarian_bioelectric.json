@@ -21,6 +21,11 @@
   "abstract only": "Only the abstract in the bibliographic record was read; the full text was not open to this audit",
   "record only": "The bibliographic record has no abstract: only its title and details were read"
  },
+ "licence_classes": {
+  "permissive": "CC BY, CC0, or a plain statement that no restriction is placed on use: values may be given from it, with attribution",
+  "non-commercial": "A CC BY-NC licence of any kind: named so that it can be read; no value is taken from it",
+  "no stated terms": "No open licence is stated: named so that it can be read; no value is taken from it"
+ },
  "kinds": [
   "knockdown outcome",
   "drug outcome",
@@ -67,7 +72,7 @@
   "requests": 161,
   "requests_answered": 153,
   "sources": "Europe PMC (searches, records, open full texts, text-mined organisms), PubMed and PMC through NCBI E-utilities, GenBank, GEO and BioProject summaries, Crossref, one GitHub repository record",
-  "rule": "A statement is in a record only if it was read in the paper's abstract, its open text or a data record. No table, trace or figure is copied. No author was contacted"
+  "rule": "A statement is in a record only if it was read in the paper's abstract, its open text or a data record. No table, trace or figure is copied. A value is given only from a paper whose terms are permissive (values_from names it); a record of any other paper says what was measured and how, in words, and points to the paper for its values. No author was contacted"
  },
  "papers": [
   {
@@ -81,6 +86,7 @@
    "pmid": "28774726",
    "pmcid": "PMC5750089",
    "licence": "CC BY-NC-ND",
+   "class": "non-commercial",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -95,6 +101,7 @@
    "pmid": null,
    "pmcid": null,
    "licence": "no licence stated (thesis record)",
+   "class": "no stated terms",
    "record": "EThOS thesis record 606483, through Europe PMC",
    "read": "abstract only"
   },
@@ -109,6 +116,7 @@
    "pmid": "19063945",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -123,6 +131,7 @@
    "pmid": "29184198",
    "pmcid": "PMC5856474",
    "licence": "no open licence; the PMC manuscript may be viewed and data-mined for academic research under the publisher's terms",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -137,6 +146,7 @@
    "pmid": "21276941",
    "pmcid": "PMC3278711",
    "licence": "no licence stated; the author manuscript in PMC may be used for text mining and under fair use",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -151,6 +161,7 @@
    "pmid": "23250205",
    "pmcid": "PMC3597208",
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -165,6 +176,7 @@
    "pmid": "31206034",
    "pmcid": "PMC6541873",
    "licence": "CC BY-NC",
+   "class": "non-commercial",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -179,6 +191,7 @@
    "pmid": "38979914",
    "pmcid": "PMC11391828",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -193,6 +206,7 @@
    "pmid": "28495872",
    "pmcid": "PMC5536891",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -205,6 +219,7 @@
    "pmid": null,
    "pmcid": null,
    "licence": "no open licence: the publisher's user licence (Crossref record)",
+   "class": "no stated terms",
    "record": "Crossref",
    "read": "abstract only",
    "id": "blair1993",
@@ -219,6 +234,7 @@
    "pmid": null,
    "pmcid": null,
    "licence": "no open licence: the publisher's terms (Crossref record)",
+   "class": "no stated terms",
    "record": "Crossref",
    "read": "abstract only",
    "id": "blair1994",
@@ -235,6 +251,7 @@
    "pmid": null,
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -249,6 +266,7 @@
    "pmid": "29912145",
    "pmcid": "PMC6027234",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -263,6 +281,7 @@
    "pmid": "31821903",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -277,6 +296,7 @@
    "pmid": "36403806",
    "pmcid": null,
    "licence": "CC BY-NC-ND",
+   "class": "non-commercial",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -291,6 +311,7 @@
    "pmid": "39528615",
    "pmcid": "PMC11554804",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -305,6 +326,7 @@
    "pmid": "24586156",
    "pmcid": "PMC3930560",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -319,6 +341,7 @@
    "pmid": "27909700",
    "pmcid": "PMC5124351",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -333,6 +356,7 @@
    "pmid": "27771293",
    "pmcid": "PMC5397384",
    "licence": "no licence stated; the author manuscript in PMC may be used for text mining and under fair use",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -347,6 +371,7 @@
    "pmid": "12600668",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -361,6 +386,7 @@
    "pmid": "42671587",
    "pmcid": "PMC13529881",
    "licence": "CC BY-NC-ND",
+   "class": "non-commercial",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -375,6 +401,7 @@
    "pmid": "25356635",
    "pmcid": "PMC4214590",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -389,6 +416,7 @@
    "pmid": "40298872",
    "pmcid": "PMC12421698",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -403,6 +431,7 @@
    "pmid": "34476379",
    "pmcid": "PMC8370485",
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -417,6 +446,7 @@
    "pmid": "35322853",
    "pmcid": "PMC9264365",
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -431,6 +461,7 @@
    "pmid": "10811283",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -445,6 +476,7 @@
    "pmid": "12981131",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "record only"
   },
@@ -459,6 +491,7 @@
    "pmid": "28538159",
    "pmcid": "PMC5443973",
    "licence": "CC BY-NC-ND",
+   "class": "non-commercial",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -473,6 +506,7 @@
    "pmid": "30799071",
    "pmcid": "PMC6401388",
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -487,6 +521,7 @@
    "pmid": "26610482",
    "pmcid": "PMC4661923",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -501,6 +536,7 @@
    "pmid": "31765995",
    "pmcid": "PMC6881696",
    "licence": "CC BY-NC-ND",
+   "class": "non-commercial",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -515,6 +551,7 @@
    "pmid": "30485697",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -529,6 +566,7 @@
    "pmid": "29674431",
    "pmcid": "PMC6563842",
    "licence": "no licence stated; the author manuscript in PMC may be used for text mining and under fair use",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -543,6 +581,7 @@
    "pmid": "37138236",
    "pmcid": "PMC10157967",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -557,6 +596,7 @@
    "pmid": "39372228",
    "pmcid": "PMC11450330",
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -571,6 +611,7 @@
    "pmid": "25411498",
    "pmcid": "PMC6608440",
    "licence": "CC BY-NC-SA",
+   "class": "non-commercial",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -585,6 +626,7 @@
    "pmid": "9300466",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -599,6 +641,7 @@
    "pmid": null,
    "pmcid": null,
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -613,6 +656,7 @@
    "pmid": "41252438",
    "pmcid": "PMC12654950",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -627,6 +671,7 @@
    "pmid": "680426",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -641,6 +686,7 @@
    "pmid": "14946235",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "record only"
   },
@@ -655,6 +701,7 @@
    "pmid": "36821351",
    "pmcid": "PMC9949801",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -669,6 +716,7 @@
    "pmid": null,
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -683,6 +731,7 @@
    "pmid": "39549829",
    "pmcid": null,
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -697,6 +746,7 @@
    "pmid": "16028337",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -711,6 +761,7 @@
    "pmid": "19554083",
    "pmcid": "PMC2694594",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -725,6 +776,7 @@
    "pmid": "16243308",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -739,6 +791,7 @@
    "pmid": "21356693",
    "pmcid": "PMC10468776",
    "licence": "no licence stated; the author manuscript in PMC may be used for text mining and under fair use",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -753,6 +806,7 @@
    "pmid": "20026026",
    "pmcid": "PMC2823934",
    "licence": "no licence stated; the author manuscript in PMC may be used for text mining and under fair use",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -767,6 +821,7 @@
    "pmid": "17670787",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -781,6 +836,7 @@
    "pmid": "33550952",
    "pmcid": "PMC7935058",
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -795,6 +851,7 @@
    "pmid": "27458581",
    "pmcid": "PMC4933718",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -809,6 +866,7 @@
    "pmid": "28954851",
    "pmcid": "PMC5636277",
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -823,6 +881,7 @@
    "pmid": "30990801",
    "pmcid": "PMC6485777",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -837,6 +896,7 @@
    "pmid": "29674432",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -851,6 +911,7 @@
    "pmid": "27612384",
    "pmcid": "PMC5055394",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -865,6 +926,7 @@
    "pmid": "39364443",
    "pmcid": "PMC11448475",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -879,6 +941,7 @@
    "pmid": "31805147",
    "pmcid": "PMC6894859",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -893,6 +956,7 @@
    "pmid": "35924486",
    "pmcid": "PMC9482365",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -907,6 +971,7 @@
    "pmid": "26057828",
    "pmcid": "PMC4500094",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -921,6 +986,7 @@
    "pmid": "22660782",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -935,6 +1001,7 @@
    "pmid": "25600302",
    "pmcid": "PMC4304616",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "full text searched"
   },
@@ -949,6 +1016,7 @@
    "pmid": "22049441",
    "pmcid": "PMC3380623",
    "licence": "CC BY-NC-SA",
+   "class": "non-commercial",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -963,6 +1031,7 @@
    "pmid": "23481272",
    "pmcid": "PMC3665645",
    "licence": "no licence stated; the author manuscript in PMC may be used for text mining and under fair use",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "full text searched"
   }
@@ -989,8 +1058,9 @@
     "voltage-dye imaging"
    ],
    "measured": "Which end regenerates a head when the proton-potassium pump is blocked with SCH-28080, or when voltage is shifted with ivermectin; relative membrane voltage of fragments",
-   "how": "Drug exposure of cut fragments; marker genes; the dye DiBAC4(3) imaged on 24-hour fragments",
-   "values": "Counts of outcomes; dye fluorescence as relative voltage, not millivolts",
+   "how": "Drug exposure of cut fragments; marker genes; the dye DiBAC4(3) imaged on cut fragments",
+   "values": "Counts of outcomes; dye fluorescence as relative voltage, not millivolts. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "full text searched",
    "deposit": {
@@ -1033,7 +1103,8 @@
    ],
    "measured": "Head size and organ proportions after RNAi of the proton-potassium pump; the abstract reports membrane hyperpolarisation and missing apoptosis",
    "how": "RNAi; how voltage was read is not in the abstract",
-   "values": "Outcome counts and sizes; the voltage change is reported as a direction",
+   "values": "Outcome counts and sizes; the voltage change is reported as a direction. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "measured_exact",
    "read": "abstract only",
    "deposit": {
@@ -1048,7 +1119,8 @@
      "accession": "JX174182",
      "what": "Schmidtea mediterranea non-gastric H+,K+-ATPase alpha subunit (ATP12A) mRNA",
      "verified": "GenBank record seen",
-     "licence": "no licence on the record; the sequence databases' policy places no restriction on use"
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
     }
    ],
    "genes": [
@@ -1094,7 +1166,8 @@
    ],
    "measured": "Left-right bias of eye defects when H+/K+-ATPase activity is inhibited; a non-gastric H+/K+-ATPase alpha transcript seen in the head blastema",
    "how": "Inhibitor exposure; in situ hybridisation",
-   "values": "Outcome counts; an expression pattern",
+   "values": "Outcome counts; an expression pattern. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "abstract only",
    "deposit": {
@@ -1126,8 +1199,9 @@
     "voltage-dye imaging"
    ],
    "measured": "A protocol for imaging membrane potential in live planarians with DiBAC4(3)",
-   "how": "The abstract: the images 'qualitatively reveal variations in time-averaged membrane potential', and standard electrophysiology 'cannot be used' on a whole worm 'due to small cell size and large cell number'",
-   "values": "Relative fluorescence, not millivolts",
+   "how": "By the abstract, the images show variations in time-averaged membrane potential qualitatively, and standard electrophysiology cannot be used on a whole worm, whose cells are small and many",
+   "values": "Relative fluorescence, not millivolts. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "method",
    "read": "full text searched",
    "deposit": {
@@ -1160,7 +1234,8 @@
    ],
    "measured": "A protocol for imaging intracellular pH gradients in living planarians with the ratiometric dye SNARF-5F-AM",
    "how": "Ratiometric dye imaging of intact and regenerating worms",
-   "values": "Ratio images",
+   "values": "Ratio images. The values are in the paper, which is under a non-commercial licence: none is given here.",
+   "values_from": [],
    "evidence_category": "method",
    "read": "full text searched",
    "deposit": {
@@ -1195,7 +1270,8 @@
    ],
    "measured": "The share of trunk fragments that regenerate two heads after brief exposure to the gap-junction blocker octanol, in that round and in later cuts in plain water; relative voltage patterns",
    "how": "Octanol exposure; DiBAC4(3) imaging, with the dye's response rechecked against a valinomycin and potassium depolarising solution",
-   "values": "Outcome ratios; dye fluorescence as relative voltage, not millivolts",
+   "values": "Outcome ratios; dye fluorescence as relative voltage, not millivolts. The values are in the paper, which is under a non-commercial licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "full text searched",
    "deposit": {
@@ -1226,9 +1302,10 @@
    "kinds": [
     "drug outcome"
    ],
-   "measured": "Double-headed regeneration and altered gene expression at 6 hours after depolarising the wound with ionophores during the first 3 hours",
+   "measured": "Double-headed regeneration and altered gene expression after the wound is depolarised with ionophores early in regeneration",
    "how": "Ionophore exposure and washout; gene expression",
-   "values": "Outcome counts; expression changes",
+   "values": "Outcome counts; expression changes. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "abstract only",
    "deposit": {
@@ -1266,6 +1343,9 @@
    "measured": "Head shapes regenerated after octanol, some resembling other species; relative voltage patterns; an agent-based model",
    "how": "Octanol exposure; morphometrics; DiBAC imaging",
    "values": "Shape measures; relative voltage",
+   "values_from": [
+    "emmonsbell2015"
+   ],
    "evidence_category": "related_strain",
    "read": "full text searched",
    "deposit": {
@@ -1303,7 +1383,8 @@
    ],
    "measured": "Head degeneration in barium chloride and regeneration of barium-insensitive heads; transcript changes; effects of chloride-channel, calcium-channel and TRPM blockers",
    "how": "Drug exposure; RNA sequencing of heads",
-   "values": "Outcome counts; transcript fold changes",
+   "values": "Outcome counts; transcript fold changes. The values are in the paper, which is under a non-commercial licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "full text searched",
    "deposit": {
@@ -1311,7 +1392,7 @@
     "where": null,
     "id": null,
     "licence": null,
-    "note": "No accession for the RNA-seq data is given in the text; it says assays 'are not yet available in planaria to directly observe the physiological effects of all of the reagents used'"
+    "note": "No accession for the RNA-seq data is given in the text; it says that no assay is yet available in planaria to observe directly what all the reagents used do"
    },
    "sequences": [],
    "genes": [],
@@ -1338,6 +1419,9 @@
    "measured": "Transcript profiles of individual worms adapting to barium chloride",
    "how": "RNA sequencing of single animals",
    "values": "Transcript changes",
+   "values_from": [
+    "kapsetaki2026"
+   ],
    "evidence_category": "related_strain",
    "read": "abstract only",
    "deposit": {
@@ -1369,9 +1453,10 @@
    "kinds": [
     "drug outcome"
    ],
-   "measured": "Peripheral disintegration within thirty minutes in 1 mM barium chloride, unlike the slow head loss reported in Dugesia japonica",
+   "measured": "Rapid peripheral disintegration in barium chloride, unlike the slow head loss reported in Dugesia japonica",
    "how": "Drug exposure",
-   "values": "Outcome and time",
+   "values": "Outcome and time. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "abstract only",
    "deposit": {
@@ -1405,9 +1490,10 @@
     "expression map",
     "drug outcome"
    ],
-   "measured": "The innexin gene family cloned, its expression during regeneration in three groups, and polarity changes after a gap-junction blocker",
+   "measured": "The innexin gene family cloned, its expression during regeneration, which falls into groups, and polarity changes after a gap-junction blocker",
    "how": "Cloning; in situ hybridisation; blocker exposure",
-   "values": "Sequences; expression patterns; outcome counts",
+   "values": "Sequences; expression patterns; outcome counts. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "abstract only",
    "deposit": {
@@ -1422,13 +1508,15 @@
      "accession": "AB189253",
      "what": "Dugesia japonica inx3 mRNA",
      "verified": "GenBank record seen",
-     "licence": "no licence on the record; the sequence databases' policy places no restriction on use"
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
     },
     {
      "accession": "AB189256",
      "what": "Dugesia japonica inx7 mRNA",
      "verified": "GenBank record seen",
-     "licence": "no licence on the record; the sequence databases' policy places no restriction on use"
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
     }
    ],
    "genes": [
@@ -1471,7 +1559,8 @@
    ],
    "measured": "Loss of regeneration and of stem cells after RNAi of the innexin smedinx-11, which is expressed in stem cells",
    "how": "RNAi; in situ hybridisation; irradiation",
-   "values": "Outcomes; expression patterns",
+   "values": "Outcomes; expression patterns. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "measured_exact",
    "read": "abstract only",
    "deposit": {
@@ -1486,7 +1575,8 @@
      "accession": "DQ851133",
      "what": "Schmidtea mediterranea strain CIW4 smedxin-11 mRNA",
      "verified": "GenBank record seen",
-     "licence": "no licence on the record; the sequence databases' policy places no restriction on use"
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
     }
    ],
    "genes": [
@@ -1529,9 +1619,10 @@
     "drug outcome",
     "knockdown outcome"
    ],
-   "measured": "Ectopic anterior blastemas after octanol (127 µM) or after RNAi of three innexins together; octanol taken up by the tissue",
+   "measured": "Ectopic anterior blastemas after octanol or after RNAi of several innexins together; octanol taken up by the tissue",
    "how": "Octanol exposure; injection of double-stranded RNA for Dj-Inx-5, -13 and -12; gas chromatography and mass spectrometry of tissue octanol",
-   "values": "Outcome counts; tissue octanol level",
+   "values": "Outcome counts; tissue octanol level. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "full text searched",
    "deposit": {
@@ -1588,6 +1679,9 @@
    "measured": "An innexin, Dr-siri, needed to end the asexual state when sexual development is induced",
    "how": "RNAi; expression",
    "values": "Outcomes",
+   "values_from": [
+    "kumagai2025"
+   ],
    "evidence_category": "related_strain",
    "read": "full text searched",
    "deposit": {
@@ -1631,6 +1725,9 @@
    "measured": "Two-headed regeneration caused by praziquantel, removed by RNAi of calcium-channel beta subunits and not by RNAi of an alpha subunit",
    "how": "Drug exposure; RNAi; cloning of the beta subunits",
    "values": "Outcome counts",
+   "values_from": [
+    "nogi2009"
+   ],
    "evidence_category": "related_strain",
    "read": "full text searched",
    "deposit": {
@@ -1645,13 +1742,15 @@
      "accession": "FJ483940",
      "what": "Dugesia japonica voltage-operated calcium channel subunit beta-1 mRNA",
      "verified": "GenBank record seen",
-     "licence": "no licence on the record; the sequence databases' policy places no restriction on use"
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
     },
     {
      "accession": "FJ483939",
      "what": "Dugesia japonica voltage-operated calcium channel subunit beta-2 mRNA",
      "verified": "GenBank record seen",
-     "licence": "no licence on the record; the sequence databases' policy places no restriction on use"
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
     }
    ],
    "genes": [
@@ -1694,7 +1793,8 @@
    ],
    "measured": "The family of calcium-channel alpha subunits; praziquantel's two-headed outcome and calcium entry prevented by RNAi of Cav1A; opposing roles of Cav1A and Cav1B",
    "how": "RNAi of single subunits; drug exposure; how calcium entry was measured is not in the abstract",
-   "values": "Outcome counts; calcium entry as reported",
+   "values": "Outcome counts; calcium entry as reported. The values are in the paper, which is under a non-commercial licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "abstract only",
    "deposit": {
@@ -1709,31 +1809,36 @@
      "accession": "HQ724315",
      "what": "Dugesia japonica voltage operated calcium channel Cav1A mRNA",
      "verified": "GenBank record seen",
-     "licence": "no licence on the record; the sequence databases' policy places no restriction on use"
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
     },
     {
      "accession": "HQ724316",
      "what": "Dugesia japonica voltage operated calcium channel Cav1B mRNA",
      "verified": "GenBank record seen",
-     "licence": "no licence on the record; the sequence databases' policy places no restriction on use"
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
     },
     {
      "accession": "HQ724317",
      "what": "Dugesia japonica voltage operated calcium channel Cav2A mRNA",
      "verified": "GenBank record seen",
-     "licence": "no licence on the record; the sequence databases' policy places no restriction on use"
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
     },
     {
      "accession": "HQ724318",
      "what": "Dugesia japonica voltage operated calcium channel Cav2B mRNA",
      "verified": "GenBank record seen",
-     "licence": "no licence on the record; the sequence databases' policy places no restriction on use"
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
     },
     {
      "accession": "HQ724319",
      "what": "Dugesia japonica voltage operated calcium channel Cav3 mRNA",
      "verified": "GenBank record seen",
-     "licence": "no licence on the record; the sequence databases' policy places no restriction on use"
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
     }
    ],
    "genes": [
@@ -1797,6 +1902,9 @@
    "measured": "Compounds that copy or block praziquantel's two-headed outcome, used to predict agents against schistosomes",
    "how": "Drug screens on regenerating fragments; RNAi",
    "values": "Outcome counts",
+   "values_from": [
+    "chan2014"
+   ],
    "evidence_category": "related_strain",
    "read": "full text searched",
    "deposit": {
@@ -1838,6 +1946,9 @@
    "measured": "A de novo transcriptome and its voltage-gated-like channel genes; the outcome of knocking down each calcium channel, with Cav1B knockdown impairing muscle function",
    "how": "RNA sequencing and assembly; curation of channel sequences; RNAi; in situ probes",
    "values": "Sequences; a table of channel genes; outcome counts",
+   "values_from": [
+    "chan2016"
+   ],
    "evidence_category": "related_strain",
    "read": "full text searched",
    "deposit": {
@@ -1845,6 +1956,7 @@
     "where": "Files with the Data in Brief article: the assemblies as FASTA and a table of the channels",
     "id": "doi:10.1016/j.dib.2016.11.022",
     "licence": "CC BY (the article)",
+    "class": "permissive",
     "note": "The article says so; the files were not fetched"
    },
    "sequences": [],
@@ -1871,9 +1983,10 @@
     "expression map",
     "knockdown outcome"
    ],
-   "measured": "The IP3 receptor cloned; an expressed fragment (residues 223 to 585) binds IP3 with an affinity of 0.9 ± 0.1 nM, lost with one point mutation; expression; fewer eggs laid after RNAi",
+   "measured": "The IP3 receptor cloned; an expressed fragment of the receptor binds IP3 with high affinity, lost with a point mutation; expression; fewer eggs laid after RNAi",
    "how": "Expression of the binding region and radioligand binding; in situ hybridisation; RNAi",
-   "values": "A binding affinity in nM; expression patterns; outcome counts",
+   "values": "A binding affinity; expression patterns; outcome counts. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "reconstituted",
    "read": "full text searched",
    "deposit": {
@@ -1888,7 +2001,8 @@
      "accession": "KC249981",
      "what": "Dugesia japonica inositol 1,4,5-trisphosphate receptor mRNA",
      "verified": "GenBank record seen",
-     "licence": "no licence on the record; the sequence databases' policy places no restriction on use"
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
     }
    ],
    "genes": [
@@ -1924,7 +2038,8 @@
    ],
    "measured": "A voltage-gated inward current in single muscle fibres, larger with barium, independent of sodium, blocked by cobalt and not by tetrodotoxin; an outward potassium current; contraction on depolarisation",
    "how": "Whole-cell recording from freshly dispersed muscle fibres; contraction in raised potassium",
-   "values": "Currents under voltage clamp; the abstract gives no conductance",
+   "values": "Currents under voltage clamp; the abstract gives no conductance. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "abstract only",
    "deposit": {
@@ -1960,9 +2075,10 @@
    "kinds": [
     "contraction of isolated cells"
    ],
-   "measured": "Caffeine contracts single muscle fibres (half-maximal at 3.2 mM in Dugesia tigrina and 4.6 mM in Procerodes littoralis), blocked by ryanodine",
+   "measured": "Caffeine contracts single muscle fibres of both species, an effect that ryanodine blocks",
    "how": "Drugs applied to dispersed muscle fibres",
-   "values": "Concentrations for half-maximal contraction",
+   "values": "Concentrations for half-maximal contraction. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "abstract only",
    "deposit": {
@@ -1998,7 +2114,8 @@
    ],
    "measured": "Brain cells in culture carry a fast transient sodium current that tetrodotoxin blocks, a calcium current and several potassium currents",
    "how": "Whole-cell voltage clamp of cultured cells from the brain",
-   "values": "Currents under voltage clamp; the abstract gives no numbers",
+   "values": "Currents under voltage clamp; the abstract gives no numbers. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "abstract only",
    "deposit": {
@@ -2032,9 +2149,10 @@
     "current recording, isolated cells",
     "contraction of isolated cells"
    ],
-   "measured": "Isolated muscle fibres carry an inward calcium current and three potassium currents, and contract in response to transmitters and praziquantel",
+   "measured": "Isolated muscle fibres carry an inward calcium current and several potassium currents, and contract in response to transmitters and praziquantel",
    "how": "Voltage clamp of dissociated muscle fibres; contraction",
-   "values": "Currents under voltage clamp; the abstract gives no numbers",
+   "values": "Currents under voltage clamp; the abstract gives no numbers. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "abstract only",
    "deposit": {
@@ -2067,7 +2185,8 @@
    ],
    "measured": "A cDNA, BdNa1, encoding a protein like the main subunit of voltage-gated sodium channels",
    "how": "Cloning and sequence comparison",
-   "values": "A sequence",
+   "values": "A sequence. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "abstract only",
    "deposit": {
@@ -2109,7 +2228,8 @@
    ],
    "measured": "Escape from noxious heat and irritant chemicals is lost after RNAi of TRPA1",
    "how": "RNAi; behavioural assays",
-   "values": "Behaviour scores",
+   "values": "Behaviour scores. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "measured_exact",
    "read": "full text searched",
    "deposit": {
@@ -2124,7 +2244,8 @@
      "accession": "MF818036",
      "what": "Schmidtea mediterranea strain CIW4 transient receptor potential cation channel subfamily A member 1 mRNA",
      "verified": "GenBank record seen",
-     "licence": "no licence on the record; the sequence databases' policy places no restriction on use"
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
     }
    ],
    "genes": [
@@ -2168,7 +2289,8 @@
    ],
    "measured": "The planarian TRPA1 channel, expressed in Drosophila S2 cells, is activated by the irritant AITC and by hydrogen peroxide and not by heat",
    "how": "Whole-cell patch clamp of S2 cells expressing Smed-TRPA1",
-   "values": "Currents under whole-cell clamp; which numbers are given was not read",
+   "values": "Currents under whole-cell clamp; which numbers are given was not read. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "reconstituted",
    "read": "full text searched",
    "deposit": {
@@ -2223,6 +2345,9 @@
    "measured": "Avoidance of near-ultraviolet light by eyeless worms is lost after RNAi of Smed-TrpA",
    "how": "RNAi; behavioural assays",
    "values": "Behaviour scores",
+   "values_from": [
+    "birkholz2017"
+   ],
    "evidence_category": "measured_exact",
    "read": "full text searched",
    "deposit": {
@@ -2270,6 +2395,9 @@
    "measured": "Agonists of TRPA1 and TRPV induce the scrunching gait; RNAi of TRPA1 removes the response to AITC in both species",
    "how": "Drug exposure; RNAi; gait analysis",
    "values": "Behaviour scores",
+   "values_from": [
+    "sabry2019"
+   ],
    "evidence_category": "measured_exact",
    "read": "full text searched",
    "deposit": {
@@ -2277,6 +2405,7 @@
     "where": "Within the article and its supporting files",
     "id": "doi:10.1371/journal.pone.0226104",
     "licence": "CC BY (the article)",
+    "class": "permissive",
     "note": "The article's data statement; the files were not fetched"
    },
    "sequences": [],
@@ -2305,7 +2434,8 @@
    ],
    "measured": "Thermotaxis needs neurons that express the TRPM homolog DjTRPMa",
    "how": "RNAi; in situ hybridisation; a thermotaxis assay",
-   "values": "Behaviour scores; expression patterns",
+   "values": "Behaviour scores; expression patterns. The values are in the paper, which is under a non-commercial licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "abstract only",
    "deposit": {
@@ -2349,6 +2479,9 @@
    "measured": "Twenty-one candidate TRPM genes; where each is expressed; RNAi of the two expressed in testis",
    "how": "Sequence search of transcriptomes; in situ hybridisation; RNAi",
    "values": "Sequences; expression patterns; outcomes",
+   "values_from": [
+    "curry2025"
+   ],
    "evidence_category": "measured_exact",
    "read": "full text searched",
    "deposit": {
@@ -2363,7 +2496,8 @@
      "accession": "PQ273721",
      "what": "Schmidtea mediterranea transient receptor potential channel melastatin subfamily C mRNA",
      "verified": "GenBank record seen",
-     "licence": "no licence on the record; the sequence databases' policy places no restriction on use"
+     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+     "class": "permissive"
     }
    ],
    "genes": [
@@ -2398,6 +2532,9 @@
    "measured": "Expression and function of all the pkd genes of the genome",
    "how": "In situ hybridisation; RNAi; behavioural tests",
    "values": "Expression patterns; outcomes",
+   "values_from": [
+    "ross2024"
+   ],
    "evidence_category": "measured_exact",
    "read": "full text searched",
    "deposit": {
@@ -2405,6 +2542,7 @@
     "where": "In the article and its supplementary material",
     "id": "doi:10.1093/iob/obae035",
     "licence": "CC BY (the article)",
+    "class": "permissive",
     "note": "The article's data statement; the files were not fetched"
    },
    "sequences": [],
@@ -2434,6 +2572,9 @@
    "measured": "Cinnamaldehyde evokes a nociceptive behaviour that RNAi of Gd-TRPA1 suppresses",
    "how": "Drug exposure; RNAi; open-field analysis",
    "values": "Behaviour scores",
+   "values_from": [
+    "morana2025"
+   ],
    "evidence_category": "related_strain",
    "read": "abstract only",
    "deposit": {
@@ -2475,6 +2616,9 @@
    "measured": "No candidate acid-sensing ion channel was found in Schmidtea mediterranea",
    "how": "A search of sequence data across bilaterians",
    "values": "An absence in the data searched",
+   "values_from": [
+    "martisolans2023"
+   ],
    "evidence_category": "inferred_fitted",
    "read": "full text searched",
    "deposit": {
@@ -2482,6 +2626,7 @@
     "where": "The alignment is a supplementary file of the article",
     "id": "doi:10.7554/elife.81613",
     "licence": "CC BY (the article)",
+    "class": "permissive",
     "note": "Not fetched"
    },
    "sequences": [],
@@ -2512,6 +2657,9 @@
    "measured": "Genes that fall after RNAi of the transcription factor coe, many of them ion channels; RNAi of those genes, where a sodium-channel alpha subunit, scna-2, is needed for regeneration of the nervous system",
    "how": "RNA sequencing of control and RNAi animals; RNAi of the validated targets",
    "values": "Transcript changes; outcome counts",
+   "values_from": [
+    "cowles2014"
+   ],
    "evidence_category": "measured_exact",
    "read": "full text searched",
    "deposit": {
@@ -2519,6 +2667,7 @@
     "where": "NCBI Sequence Read Archive",
     "id": "PRJNA235907",
     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+    "class": "permissive",
     "note": "The BioProject record exists: Schmidtea mediterranea strain CIW4"
    },
    "sequences": [],
@@ -2639,6 +2788,9 @@
    "measured": "A screen of genes expressed in the regenerating brain; CNG1, a cyclic-nucleotide-gated channel, is expressed at the edge of the head",
    "how": "RNA sequencing; in situ hybridisation; RNAi",
    "values": "Expression patterns; outcome counts",
+   "values_from": [
+    "rg2016"
+   ],
    "evidence_category": "measured_exact",
    "read": "full text searched",
    "deposit": {
@@ -2646,6 +2798,7 @@
     "where": "NCBI Sequence Read Archive",
     "id": "PRJNA319973",
     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+    "class": "permissive",
     "note": "The BioProject record exists: Schmidtea mediterranea isolate CIW4"
    },
    "sequences": [],
@@ -2695,6 +2848,9 @@
    "measured": "318 solute-carrier genes found in the genome and the expression of all of them mapped, among them sodium-proton and anion exchangers in the excretory tubules; cysts after RNAi of kidney-disease gene homologs",
    "how": "Sequence search; in situ hybridisation of every gene; RNAi",
    "values": "Sequences; expression patterns; outcomes",
+   "values_from": [
+    "vu2015"
+   ],
    "evidence_category": "measured_exact",
    "read": "full text searched",
    "deposit": {
@@ -2702,6 +2858,7 @@
     "where": "UniProtKB entries that cite the paper, which the catalogue holds",
     "id": "PubMed 26057828",
     "licence": "CC BY 4.0 (UniProt); CC BY (the article)",
+    "class": "permissive",
     "note": "53 of its entries are ion exchangers, cation-chloride cotransporters, sodium-calcium exchangers or PKD channels"
    },
    "sequences": [],
@@ -3654,7 +3811,8 @@
    ],
    "measured": "Ammonia excretion depends on acidifying the body surface; inhibitors implicate the V-type proton pump and carbonic anhydrase, and possibly the sodium-potassium pump and sodium-proton exchangers; transcript levels of the pump subunits and an Rh protein change with the water's pH and ammonia",
    "how": "Excretion rates in buffered water; inhibitors; transcript levels; in situ hybridisation",
-   "values": "Excretion rates; fold changes of transcripts",
+   "values": "Excretion rates; fold changes of transcripts. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "measured_exact",
    "read": "abstract only",
    "deposit": {
@@ -3693,7 +3851,8 @@
    ],
    "measured": "A voltage gradient in the tissue spaces, with the head more negative than the tail, kept in regenerating fragments; techniques for transepithelial potential, epithelial ion transport and applied fields",
    "how": "Techniques developed for the thesis to measure transepithelial potential and epithelial ion transport; applied electric fields",
-   "values": "Voltages; the record's abstract is cut short and gives no numbers",
+   "values": "Voltages; the record's abstract is cut short and gives no numbers. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "measured_exact",
    "read": "abstract only",
    "deposit": {
@@ -3728,7 +3887,8 @@
    ],
    "measured": "Two papers on the electrical control of regeneration in Dugesia tigrina: axial polarity against field strength, and potential gradient against current density",
    "how": "Applied electric fields, by the titles",
-   "values": "Not read",
+   "values": "Not read. The values are in the papers, which state no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "record only",
    "deposit": {
@@ -3761,7 +3921,8 @@
    ],
    "measured": "A substance that inhibits brain formation runs as a negatively charged molecule in electrophoresis; the authors propose that a bioelectric field moves it tailward",
    "how": "Electrophoresis of the substance; a proposed model",
-   "values": "A proposal",
+   "values": "A proposal. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "inferred_fitted",
    "read": "abstract only",
    "deposit": {
@@ -3797,8 +3958,9 @@
     "calcium entry"
    ],
    "measured": "Direct current applied to whole worms changes where cells divide, and restores stem-cell activity in irradiated tissue through calcium entry by L-type channels and release from stores",
-   "how": "Current through pulled glass microelectrodes for up to six hours; how calcium was measured is not in the abstracts",
-   "values": "Cell counts; calcium changes as reported",
+   "how": "Current through pulled glass microelectrodes, applied for hours; how calcium was measured is not in the abstracts",
+   "values": "Cell counts; calcium changes as reported. The values are in the papers, which state no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "measured_exact",
    "read": "abstract only",
    "deposit": {
@@ -3833,6 +3995,9 @@
    "measured": "Worms move to the cathode at 2 V and respond to voltage, not current; decapitation restores the response in head fragments",
    "how": "An automated electrotaxis setup",
    "values": "Positions over time",
+   "values_from": [
+    "sabry2022"
+   ],
    "evidence_category": "related_strain",
    "read": "full text searched",
    "deposit": {
@@ -3840,6 +4005,7 @@
     "where": "GitHub, Collinslab-swat/Planarian-electrotaxis",
     "id": "https://github.com/Collinslab-swat/Planarian-electrotaxis",
     "licence": "no licence stated",
+    "class": "no stated terms",
     "note": "The repository exists; its record names no licence"
    },
    "sequences": [],
@@ -3863,9 +4029,10 @@
    "kinds": [
     "extracellular recording"
    ],
-   "measured": "A continuous brain signal at sub-microvolt amplitude, 0.1 to 5 Hz",
+   "measured": "A continuous brain signal of very small amplitude and low frequency",
    "how": "A single electrode inserted in the head on a cold stage",
-   "values": "Amplitude and spectrum",
+   "values": "Amplitude and spectrum. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "not assigned",
    "read": "abstract only",
    "deposit": {
@@ -3899,6 +4066,9 @@
    "measured": "Continuous electrical activity recorded without piercing the animal, under different lighting",
    "how": "Surface wire electrodes on living worms",
    "values": "Power spectra",
+   "values_from": [
+    "freiberg2023"
+   ],
    "evidence_category": "measured_exact",
    "read": "full text searched",
    "deposit": {
@@ -3932,6 +4102,9 @@
    "measured": "Multi-unit activity of the brain, its change along the head, and responses to stimuli, also in worms with two heads",
    "how": "Extracellular recording from a semi-intact, pinned preparation",
    "values": "Spike rates",
+   "values_from": [
+    "benita2024"
+   ],
    "evidence_category": "related_strain",
    "read": "full text searched",
    "deposit": {
@@ -3964,7 +4137,8 @@
    ],
    "measured": "Transcriptomes of essentially every cell type of the animal, so the cell types that express any channel gene can be read off",
    "how": "Single-cell RNA sequencing",
-   "values": "Counts per cell and gene",
+   "values": "Counts per cell and gene. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "measured_exact",
    "read": "full text searched",
    "deposit": {
@@ -3972,6 +4146,7 @@
     "where": "NCBI Gene Expression Omnibus",
     "id": "GSE111764",
     "licence": "no licence stated on the record",
+    "class": "no stated terms",
     "note": "The GEO record exists under the paper's title"
    },
    "sequences": [],
@@ -3998,7 +4173,8 @@
    ],
    "measured": "A cell type atlas and lineage tree of the whole animal",
    "how": "Single-cell RNA sequencing",
-   "values": "Counts per cell and gene",
+   "values": "Counts per cell and gene. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "measured_exact",
    "read": "abstract only",
    "deposit": {
@@ -4006,6 +4182,7 @@
     "where": "NCBI Gene Expression Omnibus",
     "id": "GSE103633",
     "licence": "no licence stated on the record",
+    "class": "no stated terms",
     "note": "Found at GEO under the paper's title; the paper's own data statement was not read"
    },
    "sequences": [],
@@ -4033,6 +4210,9 @@
    "measured": "A transcriptome of Girardia tigrina and drug screens on three targets",
    "how": "RNA sequencing; inhibitors on worms",
    "values": "Sequences; motility",
+   "values_from": [
+    "wheeler2015"
+   ],
    "evidence_category": "related_strain",
    "read": "full text searched",
    "deposit": {
@@ -4040,6 +4220,7 @@
     "where": "Assemblies and annotations behind a shortened web link in the article",
     "id": "doi:10.1186/s13071-014-0622-3",
     "licence": "CC BY (the article); its data under a CC0 waiver",
+    "class": "permissive",
     "note": "The link was not followed"
    },
    "sequences": [],
@@ -4066,7 +4247,8 @@
    ],
    "measured": "A transcriptome of Girardia dorotocephala, checked by characterising its nicotinic acetylcholine receptor subunits",
    "how": "RNA sequencing; sequence analysis",
-   "values": "Sequences",
+   "values": "Sequences. The values are in the paper, which is under a non-commercial licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "full text searched",
    "deposit": {
@@ -4074,6 +4256,7 @@
     "where": "NCBI Sequence Read Archive",
     "id": "PRJNA317859",
     "licence": "no licence on the record; the sequence databases' policy places no restriction on use",
+    "class": "permissive",
     "note": "The BioProject record exists: Girardia dorotocephala"
    },
    "sequences": [],
@@ -4103,6 +4286,9 @@
    "measured": "Lanthanum's toxicity changes with agonists and antagonists of calcium, potassium, sodium, magnesium and chloride channels",
    "how": "Drug combinations on whole worms",
    "values": "Toxicity scores",
+   "values_from": [
+    "briner2018"
+   ],
    "evidence_category": "related_strain",
    "read": "full text searched",
    "deposit": {
@@ -4135,7 +4321,8 @@
    ],
    "measured": "Regeneration under ivermectin, a chloride-channel opener",
    "how": "Drug exposure of regenerating worms",
-   "values": "Outcomes",
+   "values": "Outcomes. The values are in the paper, which states no open licence: none is given here.",
+   "values_from": [],
    "evidence_category": "related_strain",
    "read": "abstract only",
    "deposit": {
@@ -4171,6 +4358,10 @@
    "measured": "The BETSE simulator, its extension to gene and reaction networks, and a model of body-axis control that predicts the share of two-headed regenerates",
    "how": "Finite-volume simulation of ion flows and gap junctions; a network model",
    "values": "Predictions",
+   "values_from": [
+    "pietak2016",
+    "pietak2019"
+   ],
    "evidence_category": "other_simulator",
    "read": "abstract only",
    "deposit": {
@@ -4206,6 +4397,9 @@
    "measured": "Bioelectrical models of head-tail patterning from channels and gap junctions, of grafts between fragments, and of adaptation to a channel blocker",
    "how": "Mean-field and multicellular models",
    "values": "Predictions",
+   "values_from": [
+    "cervera2024"
+   ],
    "evidence_category": "other_simulator",
    "read": "abstract only",
    "deposit": {
@@ -4241,7 +4435,8 @@
    ],
    "measured": "Models of two-outcome pattern memory, of bioelectric networks, a hybrid framework for morphogenesis, and a geometric model of bioelectric memory",
    "how": "Mathematical and computational models",
-   "values": "Predictions",
+   "values": "Predictions. The values are in the papers, of which none states terms that allow a copy: none is given here.",
+   "values_from": [],
    "evidence_category": "other_simulator",
    "read": "abstract only",
    "deposit": {
@@ -4259,7 +4454,7 @@
  "family_summary": [
   {
    "family": "innexin",
-   "named_genes": "Dugesia japonica: the family cloned (2005), three members knocked down together. Schmidtea mediterranea: smedinx-11 and two more entries in UniProt. Dugesia ryukyuensis: one.",
+   "named_genes": "Dugesia japonica: the family cloned (2005), several members knocked down together. Schmidtea mediterranea: smedinx-11 and two more entries in UniProt. Dugesia ryukyuensis: one.",
    "expression": "In situ maps of the family in Dugesia japonica; smedinx-11 in stem cells",
    "knockdown": "Yes, in three species",
    "pharmacology": "Octanol and heptanol, in four species",
@@ -4345,7 +4540,7 @@
    "knockdown": "Yes",
    "pharmacology": "Caffeine and ryanodine on muscle fibres",
    "imaging": "None",
-   "direct_measurement": "A binding affinity for IP3 of an expressed fragment (0.9 nM); functional ryanodine receptors shown by contraction"
+   "direct_measurement": "A binding affinity for IP3 of an expressed fragment, to be read in its paper; functional ryanodine receptors shown by contraction"
   },
   {
    "family": "trp",
@@ -4429,7 +4624,7 @@
   {
    "claim": "Voltage-dye images show body-wide patterns of membrane voltage, relative and not in millivolts",
    "verdict": "confirmed",
-   "evidence": "The protocol's own abstract says the images 'qualitatively reveal variations in time-averaged membrane potential'; the papers speak of relative depolarisation"
+   "evidence": "By the protocol's own abstract the images show variations in time-averaged membrane potential qualitatively; the papers speak of relative depolarisation"
   },
   {
    "claim": "Expression maps show where channel genes are switched on",
@@ -4464,6 +4659,7 @@
    "pmid": "25749155",
    "pmcid": "PMC4561208",
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -4478,6 +4674,7 @@
    "pmid": "27499881",
    "pmcid": "PMC4895326",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -4492,6 +4689,7 @@
    "pmid": "22450236",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -4506,6 +4704,7 @@
    "pmid": "31308144",
    "pmcid": "PMC6824241",
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -4520,6 +4719,7 @@
    "pmid": "23246536",
    "pmcid": "PMC3610807",
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -4534,6 +4734,7 @@
    "pmid": "16545816",
    "pmcid": "PMC3788357",
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -4546,6 +4747,7 @@
    "pmid": null,
    "pmcid": null,
    "licence": "no open licence: the publisher's terms (Crossref record)",
+   "class": "no stated terms",
    "record": "Crossref",
    "read": "abstract only",
    "id": "blair1996",
@@ -4562,6 +4764,7 @@
    "pmid": "35959107",
    "pmcid": "PMC9362985",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "abstract only"
   },
@@ -4576,6 +4779,7 @@
    "pmid": "29635019",
    "pmcid": "PMC6234102",
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only"
   }
@@ -4592,9 +4796,10 @@
    "pmid": null,
    "pmcid": null,
    "licence": "CC BY-NC-ND",
+   "class": "non-commercial",
    "record": "Europe PMC",
    "read": "abstract only",
-   "why": "A preprint: two innexin genes needed for stem-cell function; its abstract names no species"
+   "why": "A preprint: innexin genes needed for stem-cell function; its abstract names no species"
   },
   {
    "id": "scimone2011",
@@ -4607,6 +4812,7 @@
    "pmid": "21937596",
    "pmcid": "PMC3177309",
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only",
    "why": "Excretory cells express homologs of reabsorption proteins; not audited"
@@ -4622,6 +4828,7 @@
    "pmid": "11315178",
    "pmcid": null,
    "licence": "no licence stated",
+   "class": "no stated terms",
    "record": "Europe PMC",
    "read": "abstract only",
    "why": "Transmitters and peptides contract dispersed muscle fibres of Procerodes littoralis; not audited"
@@ -4637,6 +4844,7 @@
    "pmid": "38751713",
    "pmcid": "PMC11094297",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "abstract only",
    "why": "Nociceptive tests and drugs in Girardia dorotocephala; not audited"
@@ -4652,6 +4860,7 @@
    "pmid": "41252183",
    "pmcid": "PMC12626421",
    "licence": "CC BY",
+   "class": "permissive",
    "record": "Europe PMC",
    "read": "abstract only",
    "why": "A transcription factor of mechanosensory neurons in Schmidtea mediterranea; its channel genes were not audited"

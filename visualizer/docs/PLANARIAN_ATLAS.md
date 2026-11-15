@@ -192,11 +192,14 @@ Each line is what a reader outside the field needs, then what it rests on.
 
 - **Gap junctions are built from innexins, not connexins.** The channel between two
   cells does the same job, but its protein is of another family, so there is no planarian
-  connexin 45 or connexin 40 to name. Source: "connexins are exclusive of chordates"
-  (Abascal and Zardoya 2013, doi:10.1016/j.bbamem.2012.02.007); a planarian innexin
-  gap-junction gene, smedinx-11 (Oviedo and Levin 2007, doi:10.1242/dev.006635). In
-  support: 68 gene models carry the innexin signature and none the connexin one; no
-  flatworm entry in UniProtKB carries the connexin signature, and 21 human ones do.
+  connexin 45 or connexin 40 to name. Source: 68 gene models carry the innexin signature
+  and none the connexin one; no flatworm entry in UniProtKB carries the connexin
+  signature, and 21 human ones do. One planarian innexin has a sequence record of its
+  own, smedinx-11. Two papers say more and are named as places to read: Abascal and
+  Zardoya 2013 (doi:10.1016/j.bbamem.2012.02.007), on which animals have each family, and
+  Oviedo and Levin 2007 (doi:10.1242/dev.006635), on that innexin. Neither states an
+  open licence, so the atlas says nothing from them; until 15 November 2026 its note
+  rested on their abstracts.
 - **No inward-rectifier potassium channel was found.** Nothing in the planarian carries
   the signature of the family Kir2.1 belongs to. Source: three signatures of the family
   find no planarian sequence, and find 21 entries of other flatworms and 16 human ones.
@@ -207,7 +210,9 @@ Each line is what a reader outside the field needs, then what it rests on.
   flatworm entry carries the FXYD signature.
 - **One pump was described as a proton-potassium pump.** It shares its signature with the
   sodium-potassium pump's alpha subunit, so it is kept out of that unit and listed under
-  `extra`. Source: Beane and others (2013), doi:10.1242/dev.086900.
+  `extra`. Source: its sequence record JX174182, which names it. The paper that reports
+  it (Beane and others 2013, doi:10.1242/dev.086900) states no open licence: it is cited
+  for the name, and its findings are not repeated in the atlas.
 - **A channel with the HCN signature was published as a cyclic-nucleotide-gated channel.**
   The two are related kinds of channel; the signature says one and the name the other.
   Source: Roberts-Galbraith and others (2016), doi:10.7554/elife.17002, who call it CNG1.
@@ -277,6 +282,46 @@ Each line is what a reader outside the field needs, then what it rests on.
 Read and not copied: the paper and tables of the library of about 10,000 proteins (all
 rights reserved); PlanMine, whose front page states no licence or terms of use, only how
 to cite it. Xenbase is not used at all.
+
+## What rests on non-commercial or unlicensed sources
+
+The project's rule (D173, 15 November 2026) sorts every source into three classes.
+**Permissive** (CC BY, CC0, or a plain statement that no restriction is placed): values
+and derived data may enter the repository, with attribution. **Non-commercial** (any
+CC BY-NC licence): analysis only. **No stated terms**: nothing enters. A data file here
+holds no value and no statement from a source of the last two classes; such a source is
+named as a pointer. A note may cite a single value from one, with its class beside it.
+
+**The tables, the atlas and the shelves are built from permissive sources alone:** UniProt
+(CC BY 4.0), WormBase ParaSite (no restriction stated), InterPro (CC0), the Gene Ontology
+(CC BY 4.0), the nucleotide archive's records, and three papers under CC BY that name
+genes (Cowles and others 2014, Vu and others 2015, Roberts-Galbraith and others 2016).
+Each source carries its `class` in the files.
+
+**Papers whose terms do not allow a copy are named, and nothing of their findings is
+said.** Each has its class on its citation in the atlas:
+
+| Paper | Class | How the atlas names it | What changed on 15 November 2026 |
+| --- | --- | --- | --- |
+| Oviedo and Levin 2007 | no stated terms | For the name smedinx-11, which the sequence record DQ851133 carries; and as a place to read, in the gap-junction notes | The notes no longer say from its abstract that the gene has been described as a gap-junction gene |
+| Abascal and Zardoya 2013 | no stated terms | As a place to read, in the gap-junction notes | The notes no longer say from its abstract that connexins are known only from chordates; they rest on the signatures |
+| Beane and others 2013 | no stated terms | For the proton-potassium pump, which the sequence record JX174182 names | Its findings on voltage and head size were taken out of the pump's entry |
+| Arenas and others 2017 | no stated terms (an author manuscript, free to read, with no open licence) | For TRPA1, a name the UniProtKB entry carries | Its findings on heat and irritants were taken out of the channel's entry |
+| Wagner and others 2012 | no stated terms | UniProtKB entries of innexins cite it; the atlas repeats that | Nothing |
+| Wenemoser and others 2012 | no stated terms | A UniProtKB entry of an innexin cites it; the atlas repeats that | Nothing |
+| Ying and others 2025 | no stated terms (all rights reserved) | As the library that was not imported | The size of its library is no longer in the atlas or the README. It is said in this note, where the paper's terms are said beside it |
+| Howe and others 2017 | non-commercial (CC BY-NC-ND) | The citation that WormBase ParaSite asks for | Nothing: the data are the database's, under its own terms, and nothing is taken from the paper |
+| Rozanski and others 2019 | non-commercial (CC BY-NC) | The citation of PlanMine, in the README | Nothing: PlanMine was read and nothing was taken |
+
+**Values cited in this note only:** that the library covers about 10,000 proteins (Ying
+and others 2025, all rights reserved).
+
+**Not settled: predictors run by others.** The shelves take membrane-spanning helices and
+signal peptides as WormBase ParaSite and UniProt give them out, under those databases'
+terms. The databases ran third-party predictors to make them (TMHMM and SignalP at
+WormBase ParaSite; Phobius, SignalP and others at UniProt). The predictors' own licences
+were not read for this note. If a predictor's terms reach its output, these placements
+depend on them; that is for the coordinator and the user to settle.
 
 ## What a whole-proteome catalogue would take
 

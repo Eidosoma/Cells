@@ -60,7 +60,7 @@ SPECIES_FORMAT = "cells.visualizer.species@1"
 ATLAS_FORMAT = "cells.visualizer.species_atlas@1"
 CLIENT = "atlas-builder/1.0"
 PATHS = re.compile(r"/(?:home|mnt|Users|tmp)/")
-MADE = "2026-11-14"
+MADE = "2026-11-15"  # revised by the licence pass; first made on 14 November 2026
 
 SPECIES_ID = "syn3a"
 LABEL = "Syn3A"
@@ -84,8 +84,8 @@ SHELVES_MADE = "2026-11-15"
 # The hydropathy scale's values are read from a source with an open licence: Biopython.
 BIOPYTHON = "https://raw.githubusercontent.com/biopython/biopython/biopython-185"
 BIOPYTHON_PAGE = "https://github.com/biopython/biopython/blob/biopython-185/Bio/SeqUtils/ProtParamData.py"
-# The papers cited for where proteins sit: the hydropathy scale, and where the lipoproteins
-# of mycoplasmas are anchored.
+# The papers whose records are kept for where proteins sit: the hydropathy scale, and two
+# papers that are pointers only (see CLASSES).
 SHELF_PAPERS = {"kyte1982": "7108955", "chambaud1999": "10603485", "lhernault1992": "1527173"}
 
 PAPERS = {
@@ -93,6 +93,27 @@ PAPERS = {
     "pelletier2021": "33784496", "hutchison2016": "27013737", "thornburg2026": "41806832",
 }
 LICENCES = {"breuer2019": "CC BY 4.0", "gilbert2021": "CC BY 4.0", "thornburg2022": "CC BY-NC-ND 4.0"}
+
+# How each source may be used (the project's rule of 15 November 2026, decision D173):
+#   permissive        CC BY, CC0, or a plain statement that no restriction is placed: its
+#                     values may enter the files, with attribution;
+#   non-commercial    a CC BY-NC licence of any kind: analysis only, so nothing of it enters;
+#   no stated terms   no open licence is stated: nothing of it enters.
+# A source of the last two classes is a pointer: the files name it and say what is to be
+# read there, and take no value and no statement from it.
+PERMISSIVE, NON_COMMERCIAL, NO_TERMS = "permissive", "non-commercial", "no stated terms"
+CLASSES = {
+    "prosite": NON_COMMERCIAL,
+    "breuer2019": PERMISSIVE, "gilbert2021": PERMISSIVE, "zhang2023": PERMISSIVE, "paulet2011": PERMISSIVE, "christodoulides2018": PERMISSIVE,
+    "thornburg2022": NON_COMMERCIAL, "lhernault1992": NON_COMMERCIAL,
+    "pelletier2021": NO_TERMS, "chambaud1999": NO_TERMS, "kyte1982": NO_TERMS,
+}
+# Open articles read in full from PubMed Central's open-data store, each with the licence
+# that store records for it: all CC BY. They replace what was once read in papers under
+# non-commercial terms or with no stated terms.
+OPEN = "https://pmc-oa-opendata.s3.amazonaws.com"
+OPEN_TEXTS = {"zhang2023": "PMC9952402", "paulet2011": "PMC3110554", "christodoulides2018": "PMC6080569"}
+OPEN_LICENCE = {"zhang2023": "CC BY 4.0", "paulet2011": "CC BY 2.0", "christodoulides2018": "CC BY 4.0"}
 
 
 # ---------------------------------------------------------------------------------------
@@ -204,7 +225,7 @@ UNITS = {
 # "signature" must be on the protein in UniProt's archive for "family signature".
 EXTRA = [
     {"locus": "JCVISYN3A_0792", "name": "ATP synthase, F1 alpha subunit", "role": "catalytic head", "signature": "IPR000194",
-     "why": "Part of the cell's F-type ATP synthase, which sits in its one membrane; four of its eight subunits are listed here. In mycoplasmas this machine typically runs backwards, spending ATP to pump protons out, which was measured in related species and not in this strain. The law inventory has no F-type ATPase."},
+     "why": "Part of the cell's F-type ATP synthase, which sits in its one membrane; four of its eight subunits are listed here. The 2019 reconstruction of the cell's metabolism has this machine push protons out of the cell; that is a model's reading, not a measurement in this strain. The law inventory has no F-type ATPase."},
     {"locus": "JCVISYN3A_0790", "name": "ATP synthase, F1 beta subunit", "role": "catalytic head", "signature": "IPR000194",
      "why": "The other subunit of the ATP synthase's catalytic head. The 2019 paper found the genes of this machine essential."},
     {"locus": "JCVISYN3A_0795", "name": "ATP synthase, F0 c subunit", "role": "proton-carrying ring", "signature": "IPR000454",
@@ -220,7 +241,7 @@ EXTRA = [
     {"locus": "JCVISYN3A_0686", "name": "Potassium uptake protein KtrA-like", "role": "regulatory part of KtrAB", "words": r"KtrAB \( ?natA/ ?0685 and trkA/ ?0686 ?\)", "says": "with locus 0685, the KtrAB potassium import system",
      "why": "The cytoplasmic partner of the potassium uptake system, annotated trkA."},
     {"locus": "JCVISYN3A_0779", "name": "Glucose transporter PtsG", "role": "sugar uptake", "words": r"PtsG \( ?ptsG/ ?0779 ?\)", "says": "part of the glucose phosphotransferase system, the only annotated sugar importer",
-     "why": "The membrane part of the system that brings in glucose, the cell's fuel. All of its ATP comes from breaking that sugar down."},
+     "why": "The membrane part of the system that brings in glucose, the cell's fuel. Its ATP comes from fermenting that sugar."},
 ]
 
 
@@ -293,6 +314,16 @@ def requests(snapshot, datasets=None):
     add("europepmc_shelves_citations.json", f"{EPMC}/search?query={q('src:med AND ext_id:(' + ' OR '.join(sorted(SHELF_PAPERS.values(), key=int)) + ')')}&format=json&resultType=core&pageSize=100", "the records of the papers cited for where proteins sit, with their abstracts")
     add("europepmc_fulltext_PMC2289639.xml", f"{EPMC}/PMC2289639/fullTextXML", "L'Hernault and Arduengo 1992, the open text: read for one sentence, on how the hydropathy scale is used to find membrane-spanning stretches")
 
+    # Open articles under CC BY, from PubMed Central's open-data store, each with the
+    # licence the store records: what the files say of division, of the usual reading of
+    # the hydropathy scale and of where mycoplasmas' lipoproteins sit rests on these.
+    for key, pmc in sorted(OPEN_TEXTS.items()):
+        add(f"open_{pmc}.xml", f"{OPEN}/{pmc}.1/{pmc}.1.xml", f"the open text of the paper cited as {key}")
+        add(f"open_{pmc}.json", f"{OPEN}/{pmc}.1/{pmc}.1.json", f"the licence PubMed Central records for the paper cited as {key}")
+    # PROSITE's own terms. Nothing else is asked of PROSITE: where its lipoprotein profile
+    # matches is read in UniProt's archive.
+    add("prosite_license.html", "https://prosite.expasy.org/prosite_license.html", "PROSITE's licence conditions, read because UniProt's archive records the matches of a PROSITE profile")
+
     # Terms of each source, read before anything was copied.
     add("terms_ncbi_genbank.html", "https://www.ncbi.nlm.nih.gov/genbank/", "GenBank's statement on the use of its data")
     add("terms_insdc_policy.html", "https://www.insdc.org/policy/", "the policy of the nucleotide sequence databases")
@@ -332,8 +363,10 @@ OWN = {
     "ncbi-CP014940.1": {"accession": "CP014940.1", "licence": "INSDC public data", "what": "JCVI-syn3.0 genome record: its feature table, read only to check that strain's gene counts"},
     "uniprot-syn3a": {"licence": "CC BY 4.0", "what": "UniProt: the archived protein sequences of taxon 2144189 with the family signatures on them, the UniProtKB entries of other organisms with the same sequences, the signatures of the law inventory's human candidates, control counts in mollicutes and in Mycoplasma mycoides, and UniProt's licence"},
     "europepmc-syn3a-papers": {"licence": "Breuer and others 2019 and Gilbert and others 2021 are CC BY 4.0; the records are bibliographic facts", "what": "Europe PMC: the open full texts (JATS XML) of Breuer and others 2019 (PMC6609329) and Gilbert and others 2021 (PMC8339304), and the records of the papers cited, with their abstracts"},
-    "ncbi-pmc-PMC9985924": {"pmcid": "PMC9985924", "doi": "10.1016/j.cell.2021.12.025", "licence": "CC BY-NC-ND 4.0", "what": "Thornburg and others 2022, the author manuscript (JATS XML), read for numbers and one short quotation"},
+    "ncbi-pmc-PMC9985924": {"pmcid": "PMC9985924", "doi": "10.1016/j.cell.2021.12.025", "licence": "CC BY-NC-ND 4.0", "what": "Thornburg and others 2022, the author manuscript (JATS XML). Since 15 November 2026 the build reads it only for the licence it states: nothing of it enters the files"},
+    "pmc-open-syn3a-licence-pass": {"licence": "Each article's own, all CC BY: Zhang and others 2023 (CC BY 4.0), Paulet and others 2011 (CC BY 2.0), Christodoulides and others 2018 (CC BY 4.0). The JSON beside each article records it", "what": "Open articles from PubMed Central's open-data store (JATS XML), added by the licence pass of 15 November 2026 so that what the Syn3A files state rests on sources whose terms allow it: a review that reports the genes needed for division, a paper that states the usual reading of the hydropathy scale, and a review on the lipoproteins of mycoplasmas"},
     "terms-syn3a-sources": {"what": "Terms of use as read before anything was copied: GenBank's data usage statement, the policy of the nucleotide sequence databases, InterPro's licence and EMBL-EBI's terms"},
+    "terms-prosite": {"licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee", "what": "PROSITE's licence conditions as its own page states them, saved by the licence pass of 15 November 2026. No PROSITE file was downloaded: the page is kept because the Syn3A shelves read, in UniProt's archive, where a PROSITE profile matches"},
     "biopython-185-protparam": {"licence": "Biopython License Agreement or BSD 3-Clause License", "what": "Biopython 1.85: the file that lists Kyte and Doolittle's hydropathy scale (Bio/SeqUtils/ProtParamData.py) and the licence file, saved as text; the 20 values the Syn3A shelves are computed with are checked against it"},
 }
 # Where the audit's folders are absent (another machine), the fetch step makes them itself.
@@ -346,7 +379,7 @@ PLACES = [
     ("genbank_CP014940", "ncbi-CP014940.1"), ("genbank_", "ncbi-CP016816-proteins"), ("link_check_ncbi_protein", "ncbi-CP016816-proteins"),
     ("terms_uniprot", "uniprot-syn3a"), ("uniprot", "uniprot-syn3a"), ("uniparc", "uniprot-syn3a"), ("control_uniprotkb", "uniprot-syn3a"),
     ("europepmc", "europepmc-syn3a-papers"), ("ncbi_pmc", "ncbi-pmc-PMC9985924"), ("terms_", "terms-syn3a-sources"),
-    ("biopython_185", "biopython-185-protparam"),
+    ("biopython_185", "biopython-185-protparam"), ("open_", "pmc-open-syn3a-licence-pass"), ("prosite_", "terms-prosite"),
 ]
 HEADERS = [("X-Total-Results", "total_results"), ("X-UniProt-Release", "uniprot_release"), ("X-UniProt-Release-Date", "uniprot_release_date")]
 
@@ -718,6 +751,10 @@ class Context:
 
 BREUER, GILBERT, THORNBURG = "europepmc_fulltext_PMC6609329.xml", "europepmc_fulltext_PMC8339304.xml", "ncbi_pmc_9985924.xml"
 LHERNAULT = "europepmc_fulltext_PMC2289639.xml"
+ZHANG, PAULET, CHRISTODOULIDES = (f"open_{OPEN_TEXTS[key]}.xml" for key in ("zhang2023", "paulet2011", "christodoulides2018"))
+# Every statement the files make from a paper is checked here against the saved text of a
+# permissive source. The two texts under non-commercial terms are read for their licence
+# statement alone.
 SAID = [
     (BREUER, r"consistently forms spherical cells of approximately 400 nm in diameter"),
     (BREUER, r"543 kbp genome containing 493 genes of which 452 code for proteins and 38 for RNAs"),
@@ -733,27 +770,38 @@ SAID = [
     (BREUER, r"The only annotated sugar importer in the JCVI-syn3A genome is the glucose PTS system"),
     (BREUER, r"all other ATPase subunits \( ?atpD/ ?0790 through atpB/ ?0796 ?\) were essential"),
     (BREUER, r"Total 100\. 428 100\. 452 271 113 68"),
+    (BREUER, r"JCVI-syn3A still has a smaller genome than any natural autonomously replicating cell"),
+    (BREUER, r"reliance on fermentative ATP production"),
+    (BREUER, r"Central metabolism as the only source of ATP"),
+    (BREUER, r"a passive H \+ influx reaction is used, which is counteracted by the proton-extruding ATPase"),
+    (BREUER, r"the small number of identified regulatory proteins left in the genome of JCVI-syn3A"),
+    (BREUER, r"restore consistent morphologic features and increase the growth rate"),
+    (BREUER, r"19 additional genes from JCVI-syn1\.0 segment six that were not present in JCVI-syn3\.0, including those encoding the cell partitioning proteins FtsZ and SepF"),
     (BREUER, r"Creative Commons Attribution License"),
+    (ZHANG, r"Nineteen genes were added into JCVI-syn3\.0 to generate JCVI-syn3A"),
+    (ZHANG, r"Seven genes of the nineteen genes were necessarily together for normal cell division, including two known cell division genes, ftsZ and sepF"),
+    (ZHANG, r"Creative Commons Attribution \(CC BY\) license \( ?https://creativecommons\.org/licenses/by/4\.0/ ?\)"),
+    (PAULET, r"based on a sliding window of 19 amino acids: if a position has an average value of hydrophobicity higher than the threshold of 1\.6, it corresponds to a TMS"),
+    (PAULET, r"Creative Commons Attribution License \( ?http://creativecommons\.org/licenses/by/2\.0 ?\)"),
+    (CHRISTODOULIDES, r"mycoplasmas usually induce an inflammatory and a humoral response preferentially directed against their membrane-bound, surface-exposed lipoproteins"),
+    (CHRISTODOULIDES, r"Creative Commons Attribution License \(CC BY\)"),
     (GILBERT, r"small cell of radius 201\.26 nm with 503 ribosomes and large cell of radius 247\.42 nm with 820 ribosomes"),
     (GILBERT, r"small cell of radius 203\.52 nm with 684 ribosomes and large cell of radius 241\.20 nm with 1,095 ribosomes"),
     (GILBERT, r"the synthetic cells lack a cell wall"),
     (GILBERT, r"ribosomes appear to be nearly randomly distributed throughout the cell"),
     (GILBERT, r"Creative Commons Attribution License \(CC BY\)"),
-    (THORNBURG, r"Syn3A does not have the proteins to perform oxidative phosphorylation, so all ATP in Syn3A is generated by the central metabolism"),
-    (THORNBURG, r"In Mycoplasmas, the ATP synthase typically breaks down ATP and pumps out protons"),
-    (THORNBURG, r"has retained few regulatory proteins or small RNAs"),
     (THORNBURG, r"CC BY-NC-ND license"),
-    (THORNBURG, r"The 93 membrane proteins making up roughly 9,000 of the 77,000 proteins in the proteomics"),
     ("biopython_185_ProtParamData.py", r'governed by your\s+#\s+choice of the "Biopython License Agreement" or the "BSD 3-Clause License"'),
     ("biopython_185_ProtParamData.py", r"# Kyte & Doolittle index of hydrophobicity\s+# J\. Mol\. Biol\. 157:105-132\(1982\)\."),
     ("biopython_185_LICENSE.rst", r"Permission to use, copy, modify, and distribute this software and its\s+documentation with or without modifications and for any purpose and\s+without fee is hereby granted"),
-    (LHERNAULT, r"We have used this algorithm at a window of 19 residues"),
     (LHERNAULT, r"creativecommons\.org/licenses/by-nc-sa/4\.0"),
-    (LHERNAULT, r"If the average hydropathy of a region is greater than 1\.6, this region proba-? ?bly spans a membrane \(Kyte and Doolittle, 1982\)"),
     ("terms_ncbi_genbank.html", r"NCBI places no restrictions on the use or distribution of the GenBank data"),
     ("terms_insdc_policy.html", r"no use restrictions or licensing requirements will be included in any sequence data records"),
     ("terms_uniprot_license.json", r"Creative Commons Attribution 4\.0 International \(CC BY 4\.0\) License"),
     ("terms_interpro_license.html", r"CC0"),
+    ("prosite_license.html", r"distributed under the Creative Commons Attribution-NonCommercial-NoDerivatives \(CC BY-NC-ND 4\.0\) License"),
+    ("prosite_license.html", r"Commercial users are asked to pay a yearly license fee"),
+    ("terms_embl_ebi.html", r"EMBL-EBI itself places no additional restrictions on the use or redistribution of the data available via its Data Resources and Tools other than those provided by the original data owners"),
     ("proteomexchange_PXD008159.xml", r'title="JCVI_Syn3A"'),
 ]
 
@@ -766,10 +814,20 @@ def check_sources(c):
     papers = {record["pmid"]: record for record in ev.json("europepmc_citations.json")["resultList"]["result"]}
     if set(PAPERS.values()) - set(papers):
         raise SystemExit("a cited paper's record was not returned")
-    if "two known cell division genes, ftsZ and sepF" not in papers[PAPERS["pelletier2021"]].get("abstractText", ""):
-        raise SystemExit("the division paper's abstract no longer names ftsZ and sepF")
-    if "473 genes" not in papers[PAPERS["hutchison2016"]].get("abstractText", ""):
-        raise SystemExit("the 2016 abstract no longer gives JCVI-syn3.0's gene count")
+    # The class each source is given rests on a saved record of its licence: PubMed
+    # Central's own record of an open article, or the paper's bibliographic record, which
+    # either names a licence or names none and says the paper is not open.
+    for key, pmc in OPEN_TEXTS.items():
+        recorded = ev.json(f"open_{pmc}.json")
+        if recorded["license_code"] != "CC BY" or recorded["pmcid"] != pmc or recorded["is_retracted"]:
+            raise SystemExit(f"PubMed Central no longer records {pmc}, the paper cited as {key}, as an open article under CC BY")
+    shelf_papers = {record["pmid"]: record for record in ev.json("europepmc_shelves_citations.json")["resultList"]["result"]}
+    recorded_as = {"breuer2019": "cc by", "gilbert2021": "cc by", "thornburg2022": "cc by-nc-nd", "pelletier2021": None, "lhernault1992": "cc by-nc-sa", "chambaud1999": None, "kyte1982": None}
+    for key, licence in recorded_as.items():
+        record = papers[PAPERS[key]] if key in PAPERS else shelf_papers[SHELF_PAPERS[key]]
+        expected = PERMISSIVE if licence == "cc by" else NON_COMMERCIAL if licence else NO_TERMS
+        if record.get("license") != licence or (licence is None and record.get("isOpenAccess") != "N") or CLASSES[key] != expected:
+            raise SystemExit(f"the record of the paper cited as {key} no longer states the licence its class rests on")
     # The counts the files state, from the record and the paper's own table.
     expected = {"CDS": 458, "tRNA": 29, "rRNA": 6, "ncRNA": 2, "tmRNA": 1, "misc_binding": 2}
     if dict(c.kinds) != expected or len(c.genes) != 496 or len(c.proteins) != 455 or len(c.pseudo) != 3 or c.length != 543379:
@@ -834,24 +892,54 @@ def citation(c, key):
     return {"text": f"{first} and others ({record['pubYear']}) {record['title'].rstrip('.')}. {where}{tail}", "doi": record["doi"], "pmid": record["pmid"]}
 
 
+def open_paper(c, key):
+    """An open article read from PubMed Central's open-data store: who wrote it, its citation,
+    and the day it was read. The authors are read from the article's own front matter."""
+    pmc = OPEN_TEXTS[key]
+    recorded = c.evidence.json(f"open_{pmc}.json")
+    front = c.evidence.text(f"open_{pmc}.xml").split("</article-meta>")[0]
+    authors = re.findall(r'<contrib[^>]*contrib-type="author"[^>]*>.*?<surname>([^<]+)</surname>', front, re.S)
+    where = re.fullmatch(r"(?P<journal>.+?)\. (?P<year>\d{4})[^;]*;(?P<place>[^.]+)\. doi: \S+", recorded["citation"])
+    if not authors or not where:
+        raise SystemExit(f"the saved record of {pmc} cannot be read as a citation")
+    who = authors[0] if len(authors) == 1 else f"{authors[0]} and {authors[1]}" if len(authors) == 2 else f"{authors[0]} and others"
+    return {"who": who, "year": where["year"], "text": f"{who} ({where['year']}) {recorded['title'].rstrip('.')}. {where['journal']} {where['place']}.", "doi": recorded["doi"], "pmid": str(recorded["pmid"]), "accessed": c.evidence.day(f"open_{pmc}.xml")}
+
+
+POINTER = "It is named so that it can be read, and nothing is taken from it."
+
+
 def sources_of_species(c):
     ev = c.evidence
     out = {}
-    for key, name in [("breuer2019", BREUER), ("gilbert2021", GILBERT), ("thornburg2022", THORNBURG)]:
+    for key, name in [("breuer2019", BREUER), ("gilbert2021", GILBERT)]:
         cite = citation(c, key)
-        out[key] = {"text": cite["text"], "doi": cite["doi"], "licence": LICENCES[key] + (", read for numbers and one short quotation" if key == "thornburg2022" else ""), "accessed": ev.day(name)}
+        out[key] = {"text": cite["text"], "doi": cite["doi"], "licence": LICENCES[key], "class": CLASSES[key], "accessed": ev.day(name)}
+    review = open_paper(c, "zhang2023")
+    out["zhang2023"] = {"text": review["text"] + " A review.", "doi": review["doi"], "licence": OPEN_LICENCE["zhang2023"], "class": CLASSES["zhang2023"], "accessed": review["accessed"]}
+    # Pointers: where to read what these files do not take.
+    cite = citation(c, "thornburg2022")
+    out["thornburg2022"] = {
+        "text": cite["text"] + " A whole-cell model of this organism: its own account of the cell's energy, its membrane proteins and its regulation is there.",
+        "doi": cite["doi"], "licence": LICENCES["thornburg2022"] + ", a non-commercial licence. " + POINTER, "class": CLASSES["thornburg2022"], "accessed": ev.day(THORNBURG),
+    }
     cite = citation(c, "pelletier2021")
-    out["pelletier2021"] = {"text": cite["text"] + " Abstract only.", "doi": cite["doi"], "accessed": ev.day("europepmc_citations.json")}
+    out["pelletier2021"] = {
+        "text": cite["text"] + " The experiments on which genes this organism needs to divide. Only its bibliographic record was read.",
+        "doi": cite["doi"], "licence": "No open licence stated: the paper's record names none and does not count it as open access. " + POINTER, "class": CLASSES["pelletier2021"], "accessed": ev.day("europepmc_citations.json"),
+    }
     out["genbank"] = {
         "text": f"Glass J (2017) {c.record_title}. GenBank {RECORD}, annotation of 12 April 2018.",
         "url": f"https://www.ncbi.nlm.nih.gov/nuccore/{RECORD}",
         "licence": "NCBI places no restrictions on the use or distribution of GenBank data; submitters may claim rights in what they submitted, and this record states none",
+        "class": PERMISSIVE,
         "accessed": ev.day(f"genbank_{RECORD}_features.ft"),
     }
     out["uniparc"] = {
         "text": f"UniProt Consortium, UniParc release {c.uniprot_release}: the archived protein sequences of taxon {TAXON} and the family signatures on them.",
         "url": f"https://www.uniprot.org/uniparc?query=taxonomy_id:{TAXON}",
         "licence": "CC BY 4.0",
+        "class": PERMISSIVE,
         "accessed": ev.day(f"uniparc_{TAXON}.json"),
     }
     return out
@@ -864,23 +952,23 @@ def build_species(c):
     if seen_added != ["tetM"]:
         raise SystemExit(f"the added genes seen in the proteomics are no longer tetM alone: {seen_added}")
     capabilities = {
-        "cap.membrane": {"place": "present", "note": "Its one membrane holds the cell's ion and proton gradients. In mycoplasmas the ATP synthase typically runs backwards and pumps protons out; that was measured in related species, not in this strain."},
+        "cap.membrane": {"place": "present", "note": "Its one membrane holds the cell's ion and proton gradients. In the 2019 reconstruction of its metabolism the ATP synthase pushes protons out, against a passive leak of protons inwards; that is a model's reading, and no source read for this file measured the voltage of this strain."},
         "cap.channels": {"place": "absent", "why": f"No ion channel was found among its {count} proteins: none carries the signature of a channel family in Cells' catalogue, or of the bacterial channels for potassium, chloride, magnesium, water or membrane stretch, which the same search does find in other mollicutes. Its ions cross the membrane through transporters and pumps."},
         "cap.pumps": {"place": "present", "note": "Not the pumps of animal cells: it has no sodium-potassium pump. By its annotation, its ATP-driven ion movers are the ATP synthase, two P-type ATPases named as magnesium transporters, and a potassium uptake system."},
         "cap.junctions": {"place": "absent", "why": "It lives as single cells and has no gap junctions: none of its proteins carries the signature of connexins or innexins."},
         "cap.extracellular": {"place": "present", "note": "Here it is the growth medium around the single cell, which the cell depends on. By the 2019 reconstruction of its metabolism it takes up glucose, amino acids, fatty acids and cholesterol from a rich medium."},
         "cap.water": {"place": "present", "note": "It has no cell wall: nothing but the membrane bounds its volume."},
         "cap.calcium": {"place": "absent", "why": "It has no endoplasmic reticulum: it is a bacterium with a single membrane and no internal compartments, and none of its proteins carries the signature of the store's calcium pump or of its release channels."},
-        "cap.energy": {"place": "present", "note": "All of its ATP comes from breaking down sugar in the cytoplasm; it has no proteins for oxidative phosphorylation."},
+        "cap.energy": {"place": "present", "note": "Its ATP comes from fermenting sugar in the cytoplasm: in the 2019 reconstruction of its metabolism, central metabolism is the only source of ATP."},
         "cap.mitochondria": {"place": "absent", "why": "It is a bacterium and has no mitochondria. Its ATP synthase sits in the cell membrane."},
-        "cap.circuits": {"place": "present", "note": "At the chromosome, which lies in the cytoplasm: there is no nucleus. The minimised genome kept few regulatory proteins."},
+        "cap.circuits": {"place": "present", "note": "At the chromosome, which lies in the cytoplasm: there is no nucleus. The 2019 paper notes how few regulatory proteins the minimised genome has left."},
         "cap.grn": {"place": "absent", "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."},
         "cap.trafficking": {"place": "absent", "why": "It has no endoplasmic reticulum and no Golgi. By its annotation, new membrane proteins are put straight into the cell membrane by the Sec translocon and the YidC insertase."},
         "cap.assembly": {"place": "present", "note": "Its assemblies are its ribosomes, RNA polymerase and the ATP synthase. The designed protein cage that Cells models is not one of its proteins."},
         "cap.machines": {"place": "present", "note": "About 500 ribosomes, with RNA polymerase, the ATP synthase and the protein translocon. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."},
         "cap.secretion": {"place": "present", "note": "By the 2019 reconstruction of its metabolism it releases the end products of sugar breakdown, lactate and acetate, into the medium and takes nutrients up. Signalling between its cells was not looked for."},
         "cap.repair": {"place": "present", "note": "The place would be its bare membrane. No source read for this file describes a membrane injury or its resealing in this organism."},
-        "cap.division": {"place": "present", "note": "It grows and divides as a single cell. Seven genes that the smaller strain JCVI-syn3.0 lacks, the division genes ftsZ and sepF among them, are needed together for its regular shape and division."},
+        "cap.division": {"place": "present", "note": "It grows and divides as a single cell. The division genes ftsZ and sepF are among 19 genes that were added to the smaller strain JCVI-syn3.0 to make it, which gave it back a regular shape; a review reports that seven of the 19 are needed together for normal division."},
         "cap.replacement": {"place": "absent", "why": "It forms no tissue, so there is no neighbour for a new cell to replace."},
         "cap.mechanics": {"place": "absent", "why": "It forms no sheet: its cells share no edges to pull on."},
         "cap.sheet": {"place": "absent", "why": "It lives as single cells and forms no sheet of coupled cells."},
@@ -894,12 +982,25 @@ def build_species(c):
         {"label": "Ribosomes", "value": "about 500 in a small cell: 503 or 684 counted in the cell 403 nm across, by two ways of counting, and 820 or 1,095 in the one 495 nm across", "sources": ["gilbert2021"]},
         {"label": "Proteins", "value": f"about 77,000 molecules in an average cell, an estimate from proteomics; {seen_kept} of the 452 kinds were detected, and the added marker tetM", "sources": ["breuer2019"]},
         {"label": "Doubling time", "value": "about 105 minutes in rich medium", "sources": ["breuer2019"]},
-        {"label": "Energy", "value": "ATP from sugar breakdown alone; no oxidative phosphorylation", "sources": ["thornburg2022"]},
+        {"label": "Energy", "value": "ATP from fermenting sugar; in the 2019 reconstruction of its metabolism, central metabolism is the only source of ATP", "sources": ["breuer2019"], "see": ["thornburg2022"]},
         {"label": "Food", "value": "glucose, amino acids, fatty acids and cholesterol, taken up from a rich medium that is not fully defined", "sources": ["breuer2019"]},
         {"label": "Ion channels", "value": f"none found among its {count} proteins", "sources": ["uniparc"]},
-        {"label": "Division", "value": "ftsZ and sepF are among seven genes needed together for regular shape and division", "sources": ["pelletier2021"]},
+        {"label": "Division", "value": "the division genes ftsZ and sepF are among 19 genes added to the smaller strain JCVI-syn3.0 to make this one, which gave it back a regular shape; a review reports that seven of the 19 are needed together for normal division", "sources": ["breuer2019", "zhang2023"], "see": ["pelletier2021"]},
         {"label": "Origin", "value": "a genome designed and synthesised from that of Mycoplasma mycoides subspecies capri, strain GM12, and cut down to a minimum", "sources": ["genbank", "breuer2019"]},
     ]
+    # What each capability's words rest on: permissive sources only. A capability that is
+    # left out rests on the others by reasoning, or says that nothing was read.
+    capability_sources = {
+        "cap.membrane": ["breuer2019"], "cap.channels": ["uniparc"], "cap.pumps": ["genbank", "uniparc"], "cap.junctions": ["uniparc"],
+        "cap.extracellular": ["breuer2019"], "cap.water": ["breuer2019", "gilbert2021"], "cap.calcium": ["breuer2019", "uniparc"],
+        "cap.energy": ["breuer2019"], "cap.mitochondria": ["breuer2019"], "cap.circuits": ["breuer2019", "gilbert2021"],
+        "cap.trafficking": ["genbank"], "cap.assembly": ["genbank"], "cap.machines": ["gilbert2021", "genbank", "uniparc"],
+        "cap.secretion": ["breuer2019"], "cap.division": ["breuer2019", "zhang2023"],
+    }
+    sources = sources_of_species(c)
+    for where, keys in [*capability_sources.items(), *((fact["label"], fact["sources"]) for fact in facts)]:
+        if not keys or any(sources[key]["class"] != PERMISSIVE for key in keys):
+            raise SystemExit(f"{where} would rest on a source whose terms do not allow it")
     return {
         "format": SPECIES_FORMAT,
         "id": SPECIES_ID,
@@ -930,7 +1031,8 @@ def build_species(c):
             "parts": {"membranes": 1, "wall": False, "nucleus": False, "chromosome_kbp": round(c.length / 1000), "ribosomes": 500},
             "capabilities": capabilities,
         },
-        "sources": sources_of_species(c),
+        "capability_sources": capability_sources,
+        "sources": sources,
     }
 
 
@@ -954,7 +1056,7 @@ def unit_note(c, spec):
 
 
 def extra_products(c):
-    cite = citation(c, "breuer2019")
+    cite = {**citation(c, "breuer2019"), "class": CLASSES["breuer2019"]}
     out = []
     for item in EXTRA:
         protein = c.by_locus[item["locus"]]
@@ -1014,32 +1116,34 @@ def build_atlas(c):
             {
                 "name": "GenBank", "url": f"https://www.ncbi.nlm.nih.gov/nuccore/{RECORD}", "release": f"{RECORD}, annotation of 12 April 2018", "accessed": ev.day(f"genbank_{RECORD}_cds_aa.fa"),
                 "licence": "No restriction: \"NCBI places no restrictions on the use or distribution of the GenBank data\". Submitters may claim rights in what they submitted; this record states none.",
+                "class": PERMISSIVE,
                 "cite": f"Glass J (2017) {c.record_title}. GenBank {RECORD}.",
                 "holds": "the locus tags, gene names, products, protein identifiers and lengths of the organism's proteins",
             },
             {
-                "name": "UniProt", "url": "https://www.uniprot.org/", "release": c.uniprot_release, "accessed": ev.day(f"uniparc_{TAXON}.json"), "licence": "CC BY 4.0",
+                "name": "UniProt", "url": "https://www.uniprot.org/", "release": c.uniprot_release, "accessed": ev.day(f"uniparc_{TAXON}.json"), "licence": "CC BY 4.0", "class": PERMISSIVE,
                 "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
                 "holds": "which archived sequences of the organism carry each family signature; the signatures of the units' human candidates; the control counts",
             },
             {
-                "name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "accessed": ev.day("terms_interpro_license.html"), "licence": "CC0 1.0",
+                "name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "accessed": ev.day("terms_interpro_license.html"), "licence": "CC0 1.0", "class": PERMISSIVE,
                 "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456.",
                 "holds": "the identifiers and names of the family signatures, as UniProt gives them",
             },
             {
-                "name": "Breuer and others 2019", "url": f"https://doi.org/{breuer['doi']}", "accessed": ev.day(BREUER), "licence": "CC BY 4.0",
+                "name": "Breuer and others 2019", "url": f"https://doi.org/{breuer['doi']}", "accessed": ev.day(BREUER), "licence": "CC BY 4.0", "class": PERMISSIVE,
                 "cite": breuer["text"],
-                "holds": "the names the paper gives five of the organism's transport proteins",
+                "holds": "the names the paper gives five of the organism's transport proteins, and what its reconstruction of the cell's metabolism says of the ATP synthase and of where the cell's ATP comes from",
             },
             {
                 "name": "Europe PMC", "url": "https://europepmc.org/", "accessed": ev.day("europepmc_citations.json"),
-                "licence": "Bibliographic facts only (authors, title, journal, year, identifiers). Open texts were read to check names and are not copied.",
+                "licence": "Bibliographic facts only (authors, title, journal, year, identifiers). EMBL-EBI places no restriction of its own on the use of what its services give, beyond those of the data's owners. Open texts were read to check names and are not copied.",
+                "class": PERMISSIVE,
                 "cite": "Europe PMC Consortium, Europe PMC, https://europepmc.org/.",
                 "holds": "the record of the paper cited",
             },
         ],
-        "not_copied": "No sequence is copied: they stay with the downloads, outside the repository. The 2022 whole-cell paper (CC BY-NC-ND) was read for numbers and one short quotation, and the 2021 division paper for its abstract; nothing else was taken from them. The 2026 whole-cell paper and the archive of its model were not read for this file, and the instrument files of the 2019 proteomics (PXD008159) were not downloaded.",
+        "not_copied": "No sequence is copied: they stay with the downloads, outside the repository. Nothing is taken from the 2022 whole-cell paper, which is under a non-commercial licence (CC BY-NC-ND), or from the 2021 paper on the genes needed for division, which states no open licence: the species file names both as places to read, and what it says of energy and of division rests on the 2019 paper and on an open review. The 2026 whole-cell paper and the archive of its model were not read for this file, and the instrument files of the 2019 proteomics (PXD008159) were not downloaded.",
         "units": units,
         "extra": extra_products(c),
     }
@@ -1095,7 +1199,7 @@ def shelves_section(c, shelves):
     names, genes = listed(sorted(elsewhere)), listed(sorted(set(elsewhere.values())))
     elsewhere_words = "" if not elsewhere else "\n  " + (f"One unreviewed entry of another organism ({names}), with the sequence of {genes}, carries" if len(elsewhere) == 1 else f"{len(elsewhere)} unreviewed entries of other organisms ({names}), with the sequences of {genes}, carry") + "\n  an automatic lipid-anchor mark from the PROSITE profile used below; it is set aside there."
     districts = "\n".join(f"| {group['label']} | {group['within']} | {group['count']} | " + " | ".join(str(group["sides"].get(side, 0)) for side in SIDES) + " |" for group in shelves["groups"])
-    lhernault, chambaud = shelf_citation(c, "lhernault1992"), shelf_citation(c, "chambaud1999")
+    paulet, review = open_paper(c, "paulet2011"), open_paper(c, "christodoulides2018")
     unplaced = [row for row in shelves["proteins"] if row[4] == "not known"]
     spanning = checks["in_the_membrane"]
     behind = {"experiment": "an experiment", "curator": "a curator's inference", "similarity": "similarity to another protein", "rule": "a family rule"}
@@ -1130,13 +1234,13 @@ there is one shelf.
   - *In the membrane:* a stretch of {WINDOW} residues whose mean hydropathy on Kyte and
     Doolittle's scale is {HYDROPHOBIC / 10} or more and which holds no charged residue, or
     {STRONG / 10} or more with at most one. The window and the {HYDROPHOBIC / 10} are the usual
-    reading of that scale ({lhernault['who']} {lhernault['year']} state it). The conditions on
+    reading of that scale ({paulet['who']} {paulet['year']} state it). The conditions on
     charged residues are this tool's, set against the checks below.
   - *Outside:* the lipoprotein signature (PROSITE {LIPOPROTEIN_PROFILE}, as UniProt's archive
     gives it) from the first residue to a cysteine, with a hydrophobic stretch before the
-    cysteine. The lipoproteins of mycoplasmas are anchored on the outer face of the
-    membrane ({chambaud['who']} {chambaud['year']}); that is said of mycoplasmas in general and
-    was not measured in this strain.
+    cysteine. The lipoproteins of mycoplasmas are bound to the membrane and exposed on the
+    cell's surface ({review['who']} {review['year']}); that is said of mycoplasmas in general
+    and was not measured in this strain.
   - *Inside:* no such stretch and no lipid anchor. This includes proteins attached to the
     membrane's inner face, such as the ATP-binding parts of transporters.
 - **By function ({basis_total['by function']}).** The sequence has a hydrophobic stretch, but the
@@ -1158,12 +1262,12 @@ there is one shelf.
 - **The lipoprotein signature** matches {profile['sequences']} sequences. {profile['kept']} are kept: {profile['placed_outside']} are placed outside, and
   {profile['placed_in']}, with a membrane-spanning stretch after the anchor, in the membrane. Set aside, for
   want of a hydrophobic stretch before the cysteine: {set_aside}.
-- **Against the literature.** The 2022 whole-cell model has "{LITERATURE_MEMBRANE} membrane proteins making
-  up roughly 9,000 of the 77,000 proteins in the proteomics", and does not say how they
-  were told. Here {counts['in']} proteins span the membrane and {counts['outside']} are anchored on it, {membrane['in_or_on']}
-  together. {membrane['seen']} of them were seen in the proteomics, with an estimated {membrane['estimated_copies']:,} of
-  the {membrane['all_estimated_copies']:,} copies. The two counts need not be of the same proteins: no list
-  of the model's was copied or compared.
+- **Against the literature.** Here {counts['in']} proteins span the membrane and {counts['outside']} are anchored on it,
+  {membrane['in_or_on']} together. {membrane['seen']} of them were seen in the proteomics, with an estimated {membrane['estimated_copies']:,} of
+  the {membrane['all_estimated_copies']:,} copies. The 2022 whole-cell model gives its own count of membrane
+  proteins and of their copies. That paper is under a non-commercial licence, so its
+  numbers are not repeated here and no list of the model's was copied or compared: the
+  comparison is to be read there.
 
 **Districts.** The 2019 paper's secondary functional class, in its own words; the tertiary
 class is kept with each protein for laying a district out.
@@ -1209,6 +1313,8 @@ def build_readme(c, rows, shelves):
         ("UniProt's archived sequences and signatures", f"uniparc_{TAXON}.json"), ("Other organisms' entries with the same sequences", "uniprotkb_identical.json"),
         ("What those entries state of where the protein sits", "uniprotkb_identical_places.json"), ("The hydropathy scale's values", "biopython_185_ProtParamData.py"),
         ("The records of the papers cited for the shelves", "europepmc_shelves_citations.json"),
+        ("The open review cited for division", ZHANG), ("The open paper cited for the usual reading of the scale", PAULET),
+        ("The open review cited for where lipoproteins sit", CHRISTODOULIDES),
     ]
     inputs = "\n".join(f"| {what} | `{ev.read[name]['source']}` | `{ev.read[name]['file']}` | `{ev.read[name]['sha256']}` |" for what, name in built_from)
     day_record, day_paper, day_archive = ev.day(f"genbank_{RECORD}_cds_aa.fa"), ev.day("elife_36842_supp3.xlsx"), ev.day(f"uniparc_{TAXON}.json")
@@ -1295,22 +1401,36 @@ other organisms' entries and says so.
 | [UniProt](https://www.uniprot.org/), release {c.uniprot_release}, read {day_archive} | Archive identifiers, signatures, where the lipoprotein signature matches, and other organisms' entries with the same sequence and the place they state | CC BY 4.0 |
 | [InterPro](https://www.ebi.ac.uk/interpro/) | The signatures' identifiers | CC0 1.0 |
 | [Biopython 1.85]({BIOPYTHON_PAGE}), read {ev.day("biopython_185_ProtParamData.py")} | The 20 values of Kyte and Doolittle's hydropathy scale, for `{SHELVES_FILE}` | Biopython License Agreement or BSD 3-Clause License |
+| [{open_paper(c, "paulet2011")["who"]} 2011](https://doi.org/{open_paper(c, "paulet2011")["doi"]}), read {open_paper(c, "paulet2011")["accessed"]} | The usual reading of the hydropathy scale: a window of {WINDOW} residues and a mean above {HYDROPHOBIC / 10} | {OPEN_LICENCE["paulet2011"]} |
+| [{open_paper(c, "christodoulides2018")["who"]} 2018](https://doi.org/{open_paper(c, "christodoulides2018")["doi"]}), read {open_paper(c, "christodoulides2018")["accessed"]} | That the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface | {OPEN_LICENCE["christodoulides2018"]} |
 
-Read for one sentence or one number each, for `{SHELVES_FILE}`, with no table copied:
+Every source above is permissive: its terms allow what is taken, with attribution.
 
-- the abstract of {shelf_citation(c, "chambaud1999")["text"]}
-  Where the lipoproteins of mycoplasmas are anchored.
-- {shelf_citation(c, "lhernault1992")["text"]}
-  CC BY-NC-SA. The usual reading of the hydropathy scale.
-- the 2022 whole-cell paper (CC BY-NC-ND): its count of membrane proteins.
+**A dependence on a non-commercial source.** The lipoprotein signature is a profile of
+[PROSITE](https://prosite.expasy.org/prosite_license.html), which is distributed under CC BY-NC-ND 4.0
+and asks commercial users for a licence fee. Nothing was downloaded from PROSITE and
+nothing of it is copied: where the profile matches was read in UniProt's archive, under
+UniProt's terms (CC BY 4.0). The {shelves['checks']['lipoprotein_profile']['kept']} proteins with the mark `lipid_anchor`, {shelves['checks']['lipoprotein_profile']['placed_outside']} of them
+placed outside, rest on those matches. Whether that use is within PROSITE's terms for
+this project is not settled here.
 
-The scale itself is from {shelf_citation(c, "kyte1982")["text"]}
+**Named, with nothing taken.** These are pointers: each says what is to be read there.
+Nothing in this folder rests on them.
+
+| Source | Class | What is to be read there |
+| --- | --- | --- |
+| {citation(c, "thornburg2022")["text"]} | non-commercial (CC BY-NC-ND 4.0) | The whole-cell model's own count of membrane proteins and of their copies |
+| {shelf_citation(c, "lhernault1992")["text"]} | non-commercial (CC BY-NC-SA 4.0) | A use of the hydropathy scale to find the membrane-spanning stretches of a protein |
+| {shelf_citation(c, "chambaud1999")["text"]} | no stated terms (not open) | A review of where the lipoproteins of mycoplasmas are anchored |
+| {shelf_citation(c, "kyte1982")["text"]} | no stated terms (not open) | The paper that defined the hydropathy scale. Its values were taken from Biopython's file, not from the paper |
 
 Cite:
 
 - GenBank: Glass J (2017) {c.record_title}. GenBank {RECORD}.
 - {breuer['text']} doi:{breuer['doi']}
 - The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)
+- {open_paper(c, "paulet2011")["text"]} doi:{open_paper(c, "paulet2011")["doi"]}
+- {open_paper(c, "christodoulides2018")["text"]} doi:{open_paper(c, "christodoulides2018")["doi"]}
 
 ## The files they were built from
 
@@ -1350,7 +1470,6 @@ STRONG = 22               # mean hydropathy, in tenths, at which one charged res
 CHARGED = "DEKR"
 LIPOPROTEIN_PROFILE = "PS51257"  # PROSITE's profile of the lipid attachment site of bacterial lipoproteins
 SIGNAL_START = 12         # the hydrophobic stretch of an export signal begins within these residues
-LITERATURE_MEMBRANE = 93  # the 2022 whole-cell paper's count of membrane proteins, cited for comparison
 # The 2019 paper's classes that leave no doubt that a protein works inside the cell. Used
 # only where the sequence has a hydrophobic stretch, and never for a transport protein.
 INSIDE_BY_FUNCTION = [
@@ -1365,8 +1484,9 @@ INSIDE_BY_FUNCTION = [
 COMPLEXES = [("ribosome", r"^(30S|50S) ribosomal protein "), ("ATP synthase", r"^F0F1 ATP synthase subunit "), ("RNA polymerase", r"RNA polymerase subunit ")]
 SIDES = ["outside", "in", "inside", "not known"]
 SOURCE_NAMES = {
-    "genbank": "GenBank", "breuer2019": "Breuer and others 2019", "uniparc": "UniParc", "uniprotkb": "UniProtKB", "scale": "Kyte and Doolittle 1982",
-    "lhernault1992": "L'Hernault and Arduengo 1992", "chambaud1999": "Chambaud and others 1999", "thornburg2022": "Thornburg and others 2022",
+    "genbank": "GenBank", "breuer2019": "Breuer and others 2019", "uniparc": "UniParc", "uniprotkb": "UniProtKB", "scale": "Biopython 1.85",
+    "paulet2011": "Paulet and others 2011", "christodoulides2018": "Christodoulides and others 2018",
+    "prosite": "PROSITE", "kyte1982": "Kyte and Doolittle 1982", "lhernault1992": "L'Hernault and Arduengo 1992", "chambaud1999": "Chambaud and others 1999", "thornburg2022": "Thornburg and others 2022",
 }
 BASES = ["stated", "predicted", "by function", "none"]
 SHELF_COLUMNS = ["id", "label", "gene", "shelf", "side", "basis", "group", "length", "unit", "marks"]
@@ -1467,8 +1587,6 @@ def check_shelf_sources(c):
     papers = {record["pmid"]: record for record in ev.json("europepmc_shelves_citations.json")["resultList"]["result"]}
     if set(SHELF_PAPERS.values()) - set(papers):
         raise SystemExit("a paper cited for the shelves was not returned")
-    if "lipoproteins anchored on the outer face of the plasma membrane" not in papers[SHELF_PAPERS["chambaud1999"]].get("abstractText", ""):
-        raise SystemExit("the abstract cited for where lipoproteins sit no longer says so")
     if papers[SHELF_PAPERS["kyte1982"]]["title"].rstrip(".") != "A simple method for displaying the hydropathic character of a protein":
         raise SystemExit("the record of the hydropathy scale's paper is not the one cited")
     if set("".join(protein["sequence"] for protein in c.proteins)) - set(HYDROPATHY):
@@ -1590,6 +1708,7 @@ def build_shelves(c, rows):
     group_list = [{**entry, "sides": {side: entry["sides"][side] for side in SIDES if entry["sides"][side]}} for entry in sorted(groups.values(), key=lambda item: (item["within"], item["label"]))]
     by_basis = {side: {basis: basis_tally[(side, basis)] for basis in BASES if basis_tally[(side, basis)]} for side in SIDES if tally[side]}
     kyte, chambaud, lhernault = cite["kyte1982"], cite["chambaud1999"], cite["lhernault1992"]
+    paulet, review = open_paper(c, "paulet2011"), open_paper(c, "christodoulides2018")
     ev = c.evidence
     breuer = citation(c, "breuer2019")
     thornburg = citation(c, "thornburg2022")
@@ -1601,7 +1720,7 @@ def build_shelves(c, rows):
         "permeases": {"proteins": checks["permeases"], "read_as_spanning": checks["permeases_read_as_spanning"]},
         "stated": {"proteins": checks["stated"], "reading_agrees": checks["stated_agree"], "by_evidence": {name: checks["stated_evidence"][name] for name, _ in EVIDENCE if checks["stated_evidence"][name]}, "said_to_be_at_the_membrane": checks["at_the_membrane"]},
         "lipoprotein_profile": {"sequences": checks["profile"], "kept": checks["profile_kept"], "placed_outside": tally["outside"], "placed_in": anchored_in, "set_aside": checks["profile_set_aside"]},
-        "membrane": {"in_or_on": tally["in"] + tally["outside"], "seen": checks["seen_membrane"], "estimated_copies": round(checks["copies_membrane"]), "all_estimated_copies": c.copies_total, "in_the_2022_model": LITERATURE_MEMBRANE},
+        "membrane": {"in_or_on": tally["in"] + tally["outside"], "seen": checks["seen_membrane"], "estimated_copies": round(checks["copies_membrane"]), "all_estimated_copies": c.copies_total},
         "in_the_membrane": {"proteins": tally["in"], "one_stretch": sum(1 for row in proteins if row[4] == "in" and row[9]["segments"] == 1), "one_stretch_at_the_start": sum(1 for row in proteins if row[9].get("at_start_only"))},
     }
     return {
@@ -1615,7 +1734,7 @@ def build_shelves(c, rows):
         "proteins": proteins,
         "side_notes": {
             "stated": "Taken from a reviewed UniProtKB entry whose sequence is, letter for letter, this protein's. Each such entry is of another organism, named in the mark stated_in: it states the place of the same protein there, not in JCVI-syn3A." + ("" if checks["stated_evidence"]["experiment"] else " None of these statements rests on an experiment: each is made by a family rule or by similarity, as the mark evidence says."),
-            "predicted": f"This tool's own reading of the sequence, not the output of an established predictor: UniProt's archive holds family signatures on these sequences and no prediction of membrane-spanning stretches. A stretch of {WINDOW} residues is read as membrane-spanning where its mean hydropathy on Kyte and Doolittle's scale is {HYDROPHOBIC / 10} or more and it holds no charged residue, or {STRONG / 10} or more with at most one. The window of {WINDOW} and the level of {HYDROPHOBIC / 10} are the usual reading of that scale ({lhernault['who']} {lhernault['year']} state it); the conditions on charged residues are this tool's, set against this organism's own proteins. A protein with such a stretch is placed in the membrane. A protein with none and no lipid anchor is placed inside, which includes proteins attached to the membrane's inner face. A lipid anchor is read from the lipoprotein signature (PROSITE {LIPOPROTEIN_PROFILE}, as UniProt's archive gives it) where a hydrophobic stretch begins before its cysteine; such a protein is placed outside, because the lipoproteins of mycoplasmas are anchored on the outer face of the membrane ({chambaud['who']} {chambaud['year']}, said of mycoplasmas in general and not measured in this strain).",
+            "predicted": f"This tool's own reading of the sequence, not the output of an established predictor: UniProt's archive holds family signatures on these sequences and no prediction of membrane-spanning stretches. A stretch of {WINDOW} residues is read as membrane-spanning where its mean hydropathy on Kyte and Doolittle's scale is {HYDROPHOBIC / 10} or more and it holds no charged residue, or {STRONG / 10} or more with at most one. The window of {WINDOW} and the level of {HYDROPHOBIC / 10} are the usual reading of that scale ({paulet['who']} {paulet['year']} state it); the conditions on charged residues are this tool's, set against this organism's own proteins. A protein with such a stretch is placed in the membrane. A protein with none and no lipid anchor is placed inside, which includes proteins attached to the membrane's inner face. A lipid anchor is read from the lipoprotein signature (PROSITE {LIPOPROTEIN_PROFILE}, as UniProt's archive gives it; PROSITE's own terms are non-commercial, so its dependence is said here) where a hydrophobic stretch begins before its cysteine; such a protein is placed outside, because the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface ({review['who']} {review['year']}, said of mycoplasmas in general and not measured in this strain).",
             "by function": "The sequence has a hydrophobic stretch, but the protein's class in the 2019 paper leaves no doubt that it works inside the cell: translation, transcription, the upkeep of DNA, sugar breakdown, the pentose phosphate pathway or nucleotide metabolism. Function is never used to place a transport protein.",
             "none": "The sequence has a hydrophobic stretch that holds charged residues, and the protein's function is not known: nothing settles its side, so it is not placed.",
         },
@@ -1627,7 +1746,7 @@ def build_shelves(c, rows):
             "class": {"label": "Finer class", "values": "text", "measured": False, "note": "The 2019 paper's tertiary functional class, for laying out a district.", "source": SOURCE_NAMES["breuer2019"]},
             "complex": {"label": "Assembly", "values": [name for name, _ in COMPLEXES], "measured": False, "note": "Named outright by the genome record's product name: a ribosomal protein, a subunit of the ATP synthase or of RNA polymerase. Other assemblies are not marked.", "source": SOURCE_NAMES["genbank"]},
             "segments": {"label": "Membrane-spanning stretches read from the sequence", "values": "number", "measured": False, "note": "This tool's reading; a count of stretches, not a topology. It can fall short, since a stretch that holds charged residues is not read.", "source": SOURCE_NAMES["scale"]},
-            "lipid_anchor": {"label": "Lipid anchor read from the sequence", "values": [True], "measured": False, "note": "The lipoprotein signature with a hydrophobic stretch before its cysteine. Such a protein is placed outside, unless a membrane-spanning stretch follows the anchor: then it is placed in the membrane.", "source": SOURCE_NAMES["uniparc"]},
+            "lipid_anchor": {"label": "Lipid anchor read from the sequence", "values": [True], "measured": False, "note": "The lipoprotein signature with a hydrophobic stretch before its cysteine. Such a protein is placed outside, unless a membrane-spanning stretch follows the anchor: then it is placed in the membrane. The signature is a profile of PROSITE, whose own terms are non-commercial (CC BY-NC-ND 4.0); where it matches was read in UniProt's archive, under UniProt's terms (CC BY 4.0), and nothing was downloaded from PROSITE.", "source": SOURCE_NAMES["uniparc"]},
             "at_start_only": {"label": "Its one stretch is at the protein's start", "values": [True], "measured": False, "note": "The only stretch read begins within the first 12 residues. It may be an export signal that is cut off, and the protein would then sit outside and not span the membrane. Nothing read here tells the two apart.", "source": SOURCE_NAMES["scale"]},
             "evidence": {"label": "What stands behind a stated side", "values": [name for name, _ in EVIDENCE], "measured": False, "note": "From the reviewed entry that states the place: an experiment, a curator's inference, similarity to another protein, or a family rule.", "source": SOURCE_NAMES["uniprotkb"]},
             "where": {"label": "Where within its side", "values": ["at the membrane"], "measured": False, "note": "A reviewed entry of another organism, with the same sequence, says the protein is at the cell membrane as a peripheral protein, without saying which face. Its side here is this tool's reading: inside, which includes the membrane's inner face.", "source": SOURCE_NAMES["uniprotkb"]},
@@ -1638,14 +1757,20 @@ def build_shelves(c, rows):
         "unit_note": "No protein has a unit: the atlas found none of the law inventory's units in this organism (data/proteins/atlases/syn3a.json).",
         "checks": checks_out,
         "sources": [
-            {"name": SOURCE_NAMES["genbank"], "cite": f"Glass J (2017) {c.record_title}. GenBank {RECORD}.", "url": f"https://www.ncbi.nlm.nih.gov/nuccore/{RECORD}", "licence": "NCBI places no restrictions on the use or distribution of GenBank data; this record states none", "accessed": ev.day(f"genbank_{RECORD}_cds_aa.fa"), "holds": "The proteins, their names and lengths. Their sequences were read and are not copied."},
-            {"name": SOURCE_NAMES["breuer2019"], "cite": breuer["text"], "url": f"https://doi.org/{breuer['doi']}", "licence": "CC BY 4.0", "accessed": ev.day("elife_36842_supp3.xlsx"), "holds": "The functional classes that name the districts, essentiality, detection and estimated copies (supplementary files 3 and 5)."},
-            {"name": SOURCE_NAMES["uniparc"], "cite": f"UniProt Consortium, UniParc release {c.uniprot_release}: the archived protein sequences of taxon {TAXON}.", "url": f"https://www.uniprot.org/uniparc?query=taxonomy_id:{TAXON}", "licence": "CC BY 4.0", "accessed": ev.day(f"uniparc_{TAXON}.json"), "holds": "The sequences, and where PROSITE's lipoprotein profile matches them. The profile itself is not copied."},
-            {"name": SOURCE_NAMES["uniprotkb"], "cite": f"UniProt Consortium, UniProtKB release {ev.record('uniprotkb_identical_places.json')['uniprot_release']}: reviewed entries of other organisms with the same sequences.", "url": "https://www.uniprot.org/", "licence": "CC BY 4.0", "accessed": ev.day("uniprotkb_identical_places.json"), "holds": "The place those entries state and what stands behind it, for the proteins whose side is stated or that are said to be at the membrane."},
-            {"name": SOURCE_NAMES["scale"], "cite": kyte["text"], "url": BIOPYTHON_PAGE, "licence": "The scale's 20 values are taken as Biopython 1.85 lists them (Bio/SeqUtils/ProtParamData.py), under the Biopython License Agreement or the BSD 3-Clause License", "accessed": ev.day("biopython_185_ProtParamData.py"), "holds": "The hydropathy scale the sequences are read with."},
-            {"name": SOURCE_NAMES["lhernault1992"], "cite": lhernault["text"], "url": f"https://doi.org/{lhernault['doi']}", "licence": "CC BY-NC-SA; read for one sentence", "accessed": ev.day(LHERNAULT), "holds": f"The usual reading of the scale: a window of {WINDOW} residues, and a mean above {HYDROPHOBIC / 10} for a stretch that probably spans a membrane."},
-            {"name": SOURCE_NAMES["chambaud1999"], "cite": chambaud["text"] + " Abstract only.", "url": f"https://doi.org/{chambaud['doi']}", "licence": "Read for one sentence of its abstract", "accessed": ev.day("europepmc_shelves_citations.json"), "holds": "That mycoplasmas' lipoproteins are anchored on the outer face of the membrane."},
-            {"name": SOURCE_NAMES["thornburg2022"], "cite": thornburg["text"], "url": f"https://doi.org/{thornburg['doi']}", "licence": "CC BY-NC-ND 4.0; read for one number", "accessed": ev.day(THORNBURG), "holds": f"The count of {LITERATURE_MEMBRANE} membrane proteins in its model, for comparison. No table of it is copied."},
+            {"name": SOURCE_NAMES["genbank"], "cite": f"Glass J (2017) {c.record_title}. GenBank {RECORD}.", "url": f"https://www.ncbi.nlm.nih.gov/nuccore/{RECORD}", "licence": "NCBI places no restrictions on the use or distribution of GenBank data; this record states none", "class": PERMISSIVE, "accessed": ev.day(f"genbank_{RECORD}_cds_aa.fa"), "holds": "The proteins, their names and lengths. Their sequences were read and are not copied."},
+            {"name": SOURCE_NAMES["breuer2019"], "cite": breuer["text"], "url": f"https://doi.org/{breuer['doi']}", "licence": "CC BY 4.0", "class": PERMISSIVE, "accessed": ev.day("elife_36842_supp3.xlsx"), "holds": "The functional classes that name the districts, essentiality, detection and estimated copies (supplementary files 3 and 5)."},
+            {"name": SOURCE_NAMES["uniparc"], "cite": f"UniProt Consortium, UniParc release {c.uniprot_release}: the archived protein sequences of taxon {TAXON}.", "url": f"https://www.uniprot.org/uniparc?query=taxonomy_id:{TAXON}", "licence": "CC BY 4.0", "class": PERMISSIVE, "accessed": ev.day(f"uniparc_{TAXON}.json"), "holds": "The sequences, and where PROSITE's lipoprotein profile matches them, as UniProt's archive records the matches. The profile itself is PROSITE's: it was not downloaded and is not copied."},
+            {"name": SOURCE_NAMES["uniprotkb"], "cite": f"UniProt Consortium, UniProtKB release {ev.record('uniprotkb_identical_places.json')['uniprot_release']}: reviewed entries of other organisms with the same sequences.", "url": "https://www.uniprot.org/", "licence": "CC BY 4.0", "class": PERMISSIVE, "accessed": ev.day("uniprotkb_identical_places.json"), "holds": "The place those entries state and what stands behind it, for the proteins whose side is stated or that are said to be at the membrane."},
+            {"name": SOURCE_NAMES["scale"], "cite": "The Biopython contributors, Biopython release 1.85: the file Bio/SeqUtils/ProtParamData.py, which lists the scale and names Kyte and Doolittle's paper of 1982 as its origin.", "url": BIOPYTHON_PAGE, "licence": "Biopython License Agreement or BSD 3-Clause License", "class": PERMISSIVE, "accessed": ev.day("biopython_185_ProtParamData.py"), "holds": "The 20 values of Kyte and Doolittle's hydropathy scale that the sequences are read with, as this file lists them."},
+            {"name": SOURCE_NAMES["paulet2011"], "cite": paulet["text"], "url": f"https://doi.org/{paulet['doi']}", "licence": OPEN_LICENCE["paulet2011"], "class": PERMISSIVE, "accessed": paulet["accessed"], "holds": f"The usual reading of the scale: a window of {WINDOW} residues, and a mean above {HYDROPHOBIC / 10} for a stretch that spans a membrane."},
+            {"name": SOURCE_NAMES["christodoulides2018"], "cite": review["text"], "url": f"https://doi.org/{review['doi']}", "licence": OPEN_LICENCE["christodoulides2018"], "class": PERMISSIVE, "accessed": review["accessed"], "holds": "That the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface."},
+            # The origin of matches that were read in a permissive source: said plainly, since its own terms are not.
+            {"name": SOURCE_NAMES["prosite"], "cite": f"SIB Swiss Institute of Bioinformatics, PROSITE: its profile {LIPOPROTEIN_PROFILE}.", "url": "https://prosite.expasy.org/prosite_license.html", "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee", "class": CLASSES["prosite"], "accessed": ev.day("prosite_license.html"), "through": SOURCE_NAMES["uniparc"], "holds": "Nothing was downloaded from it and nothing of it is copied. Its lipoprotein profile is the origin of the matches that UniProt's archive records on these sequences: the mark lipid_anchor and the proteins placed outside rest on those matches, as they were read in UniProt's archive."},
+            # Pointers: named so that they can be read; nothing in this file rests on them.
+            {"name": SOURCE_NAMES["kyte1982"], "cite": kyte["text"], "url": f"https://doi.org/{kyte['doi']}", "licence": "No open licence stated: the paper's record names none and does not count it as open access", "class": NO_TERMS, "accessed": ev.day("europepmc_shelves_citations.json"), "holds": "Nothing is taken from it: a pointer to the paper that defined the hydropathy scale. The scale's values were taken from Biopython's file, and only this paper's bibliographic record was read."},
+            {"name": SOURCE_NAMES["lhernault1992"], "cite": lhernault["text"], "url": f"https://doi.org/{lhernault['doi']}", "licence": "CC BY-NC-SA 4.0", "class": NON_COMMERCIAL, "accessed": ev.day(LHERNAULT), "holds": "Nothing is taken from it: a pointer to a paper that uses the hydropathy scale to find the membrane-spanning stretches of a protein."},
+            {"name": SOURCE_NAMES["chambaud1999"], "cite": chambaud["text"], "url": f"https://doi.org/{chambaud['doi']}", "licence": "No open licence stated: the paper's record names none and does not count it as open access", "class": NO_TERMS, "accessed": ev.day("europepmc_shelves_citations.json"), "holds": "Nothing is taken from it: a pointer to a review of where the lipoproteins of mycoplasmas are anchored. Only its bibliographic record was read."},
+            {"name": SOURCE_NAMES["thornburg2022"], "cite": thornburg["text"], "url": f"https://doi.org/{thornburg['doi']}", "licence": "CC BY-NC-ND 4.0", "class": NON_COMMERCIAL, "accessed": ev.day(THORNBURG), "holds": "Nothing is taken from it: a pointer to the whole-cell model's own count of membrane proteins and of their copies, for comparison with this file's."},
         ],
     }
 

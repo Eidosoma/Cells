@@ -92,9 +92,36 @@ OPEN_TEXTS = {
 }
 LICENCES = {
     "parrott2016": "CC BY 4.0", "nakane2015": "CC BY 4.0", "nakane2021": "CC BY 4.0", "lluchsenar2015": "CC BY 4.0",
-    "maier2011": "CC BY-NC-SA 3.0, read for numbers and short quotations; its tables are not copied",
-    "wodke2013": "CC BY-NC-SA 3.0, read for numbers and short quotations; its tables are not copied",
+    "maier2011": "CC BY-NC-SA 3.0", "wodke2013": "CC BY-NC-SA 3.0", "chen2016": "CC BY-NC 4.0",
+    "weber2023": "CC BY 4.0", "gaspari2020": "CC BY 4.0", "awadh2021": "CC BY 4.0", "li2021": "CC BY 4.0",
 }
+
+# How each source may be used (the project's rule of 15 November 2026, decision D173):
+#   permissive        CC BY, CC0, or a plain statement that no restriction is placed: its
+#                     values may enter the files, with attribution;
+#   non-commercial    a CC BY-NC licence of any kind: analysis only, so nothing of it enters;
+#   no stated terms   no open licence is stated: nothing of it enters.
+# A source of the last two classes is a pointer: the files name it and say what is to be
+# read there, and take no value and no statement from it.
+PERMISSIVE, NON_COMMERCIAL, NO_TERMS = "permissive", "non-commercial", "no stated terms"
+LICENCE_CLASS = {
+    "parrott2016": PERMISSIVE, "nakane2015": PERMISSIVE, "nakane2021": PERMISSIVE, "lluchsenar2015": PERMISSIVE,
+    "weber2023": PERMISSIVE, "gaspari2020": PERMISSIVE, "awadh2021": PERMISSIVE, "li2021": PERMISSIVE,
+    "maier2011": NON_COMMERCIAL, "wodke2013": NON_COMMERCIAL, "chen2016": NON_COMMERCIAL, "prosite": NON_COMMERCIAL,
+    "himmelreich1996": NO_TERMS, "dandekar2000": NO_TERMS, "kuhner2009": NO_TERMS, "yus2009": NO_TERMS, "hasselbring2006": NO_TERMS,
+}
+# Open articles under CC BY that the licence pass of 15 November 2026 added, read in full
+# from PubMed Central's open-data store with the licence it records. What the files say of
+# ribosomes, protein amounts, energy and food rests on these, in place of papers under
+# non-commercial terms or with no stated terms.
+NEW_TEXTS = {"weber2023": "PMC10568206", "gaspari2020": "PMC7584665", "awadh2021": "PMC7952918", "li2021": "PMC7881084"}
+# The papers that are pointers only, with the licence Europe PMC's record of each names:
+# none for the papers with no stated terms, which the record also says are not open.
+POINTERS = {
+    "himmelreich1996": None, "dandekar2000": None, "kuhner2009": None, "yus2009": None, "hasselbring2006": None,
+    "maier2011": "cc by-nc-sa", "wodke2013": "cc by-nc-sa", "chen2016": "cc by-nc",
+}
+EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest"
 
 
 # ---------------------------------------------------------------------------------------
@@ -208,7 +235,7 @@ UNITS = {
 # sequence in UniProt's archive.
 EXTRA = [
     {"locus": "MPN_600", "name": "ATP synthase, F1 alpha subunit", "role": "catalytic head", "signature": "IPR000194",
-     "why": "Part of the cell's F-type ATP synthase, which sits in its one membrane; four of its subunits are listed here. A 2013 model of the cell's metabolism has this machine run backwards, spending ATP to pump protons out; that is the model's estimate, not a measurement. The law inventory has no F-type ATPase."},
+     "why": "Part of the cell's F-type ATP synthase, which sits in its one membrane; four of its subunits are listed here. A model of the cell's metabolism published in 2020 has this machine run in reverse, spending ATP to pump protons out; that is the model's result, not a measurement. The law inventory has no F-type ATPase."},
     {"locus": "MPN_598", "name": "ATP synthase, F1 beta subunit", "role": "catalytic head", "signature": "IPR000194",
      "why": "The other subunit of the ATP synthase's catalytic head."},
     {"locus": "MPN_603", "name": "ATP synthase, F0 c subunit", "role": "proton-carrying ring", "signature": "IPR000454",
@@ -317,6 +344,14 @@ def requests(snapshot):
             add(f"pmc_{pmc}.xml", f"{OPEN}/{pmc}.1/{pmc}.1.xml", f"the open text of the paper cited as {key}")
             add(f"pmc_{pmc}.json", f"{OPEN}/{pmc}.1/{pmc}.1.json", f"the licence PubMed Central records for the paper cited as {key}")
     add("pubmed_abstracts.xml", f"{EUTILS}/efetch.fcgi?db=pubmed&id={','.join(sorted(PAPERS.values(), key=int))}&retmode=xml&tool=atlas-builder", "the records of the papers cited, with their abstracts")
+    # The open articles under CC BY that the licence pass added, each with its recorded licence.
+    for key, pmc in sorted(NEW_TEXTS.items()):
+        add(f"open_{pmc}.xml", f"{OPEN}/{pmc}.1/{pmc}.1.xml", f"the open text of the paper cited as {key}")
+        add(f"open_{pmc}.json", f"{OPEN}/{pmc}.1/{pmc}.1.json", f"the licence PubMed Central records for the paper cited as {key}")
+    add("open_europepmc_pointer_records.json", f"{EPMC}/search?query={q('src:med AND ext_id:(' + ' OR '.join(sorted((PAPERS[key] for key in POINTERS), key=int)) + ')')}&format=json&resultType=core&pageSize=100", "the bibliographic records of the papers that are named and not used, for the licence each record names or the lack of one")
+    # PROSITE's own terms. Nothing else is asked of PROSITE: its rule on lipoproteins is
+    # read as UniProt's curated entries apply it.
+    add("prosite_license.html", "https://prosite.expasy.org/prosite_license.html", "PROSITE's licence conditions, read because UniProt's entries place lipoproteins by a PROSITE rule")
     add("emdb_EMD-53631.json", "https://www.ebi.ac.uk/emdb/api/entry/EMD-53631", "the EMDB entry that the user's note names, to check what it is")
 
     # Terms of each source, read before anything was copied.
@@ -339,6 +374,8 @@ OWN = {
     "pmc-open-mpneumoniae-papers": {"licence": "Each article's own: CC BY for Parrott 2016, Nakane 2015 and Nakane 2021; CC BY-NC-SA for Maier 2011 and Wodke 2013; CC BY-NC for Chen 2016. The JSON beside each article records it", "what": "Open articles on Mycoplasma pneumoniae from PubMed Central's open-data store (JATS XML), read for numbers and short quotations"},
     "pubmed-mpneumoniae-papers": {"licence": "Bibliographic records and abstracts, cited as facts", "what": "PubMed records of the papers cited, with their abstracts"},
     "emdb-EMD-53631": {"accession": "EMD-53631", "licence": "CC0 1.0 (EMDB metadata)", "what": "The EMDB entry's record, read for its title and release date"},
+    "pmc-open-mpneumoniae-licence-pass": {"licence": "Each article's own, all CC BY 4.0: Weber and others 2023, Gaspari and others 2020, Awadh and others 2021, Li and others 2021. The JSON beside each article records it", "what": "Open articles from PubMed Central's open-data store (JATS XML), added by the licence pass of 15 November 2026 so that what the M. pneumoniae files state rests on sources whose terms allow it: measured protein amounts and the ribosomal proteins' copies, a model of the organism's metabolism and its growth in a defined medium, and two papers that state how mycoplasmas get their energy and what they cannot make"},
+    "terms-prosite": {"licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee", "what": "PROSITE's licence conditions as its own page states them, saved by the licence pass of 15 November 2026. No PROSITE file was downloaded: the page is kept because UniProt's curated entries place lipoproteins by a PROSITE rule"},
     "terms-mpneumoniae-sources": {"what": "Terms of use as read before anything was copied: GenBank's data usage statement, the policy of the nucleotide sequence databases and InterPro's licence"},
 }
 PLACES = [
@@ -346,6 +383,7 @@ PLACES = [
     ("terms_uniprot", "uniprot-mpneumoniae"), ("uniprot", "uniprot-mpneumoniae"), ("uniparc", "uniprot-mpneumoniae"), ("control_uniprotkb", "uniprot-mpneumoniae"),
     ("lluchsenar2015_", "lluchsenar2015-msb"), ("pmc_", "pmc-open-mpneumoniae-papers"), ("pubmed_", "pubmed-mpneumoniae-papers"),
     ("emdb_", "emdb-EMD-53631"), ("terms_", "terms-mpneumoniae-sources"),
+    ("open_", "pmc-open-mpneumoniae-licence-pass"), ("prosite_", "terms-prosite"),
 ]
 HEADERS = [("X-Total-Results", "total_results"), ("X-UniProt-Release", "uniprot_release"), ("X-UniProt-Release-Date", "uniprot_release_date")]
 
@@ -734,55 +772,72 @@ class Context:
 # ---------------------------------------------------------------------------------------
 
 def text_of(key):
+    if key in NEW_TEXTS:
+        return f"open_{NEW_TEXTS[key]}.xml"
     return "lluchsenar2015_article.xml" if key == "lluchsenar2015" else f"pmc_{OPEN_TEXTS[key][0]}.xml"
 
 
 SAID = [
+    # Every statement the files make from a paper is checked here against the saved text of
+    # a permissive source. The three texts under non-commercial terms are read for their
+    # licence statement alone.
     ("parrott2016", "just 1–2 μm long and 0.1–0.2 μm wide"),
+    ("parrott2016", "the genome of M. pneumoniae was shown to consist of only 816,394 bp and 687 genes"),
+    ("parrott2016", "pleomorphic"),
     ("parrott2016", "unable to synthesize rigid peptidoglycan cell walls"),
     ("parrott2016", "sterols provide the structural support in the triple-layer cell membrane"),
     ("parrott2016", "reproduces via binary fission"),
     ("parrott2016", "Preceding binary cell fission, the attachment organelle"),
     ("parrott2016", "Creative Commons Attribution License"),
     ("nakane2015", "This tiny bacterium, about 2 μm long"),
+    ("nakane2015", "a membrane protrusion formed at one pole and can be called an attachment organelle, which is composed of a naplike surface structure and an internal core"),
+    ("nakane2015", "The naplike structure corresponds to the complex of P1 adhesin"),
+    ("nakane2015", "gliding motility in the direction of the protrusion"),
     ("nakane2015", "at a maximum speed of 1 μm, one-half its cell length, per second"),
     ("nakane2015", "lack a peptidoglycan layer"),
     ("nakane2015", "Creative Commons Attribution License"),
     ("nakane2021", "a membrane protrusion with a precise length of 250–300 nm"),
+    ("nakane2021", "forms a polar extension called an attachment organelle, which mediates cell division, cytadherence, and cell movement"),
     ("nakane2021", "Creative Commons Attribution License"),
-    ("maier2011", "the 140 ribosomes per cell previously determined for M. pneumoniae by electron tomography"),
-    ("maier2011", "150 ribosomes per cell"),
-    ("maier2011", "(0.22 and 0.05 μm 3 , respectively)"),
-    ("maier2011", "with an average abundance of 167 copies per cell"),
-    ("maier2011", "from about 2300 copies (Ef-Tu) to two copies"),
     ("maier2011", "Creative Commons Attribution Noncommercial Share Alike 3.0 Unported License"),
-    ("wodke2013", "relies on simple organic acid fermentation, due to the absence of TCA cycle and a functional respiratory chain"),
-    ("wodke2013", "a single, small chromosome of only 816 394 base pairs, encoding 689 proteins"),
-    ("wodke2013", "it metabolizes glucose as major carbon and energy source"),
-    ("wodke2013", "lactate and acetate secretion"),
-    ("wodke2013", "the ATPase uses about 57–80% (growth stage depending) of the total generated energy"),
     ("wodke2013", "Creative Commons Attribution Noncommercial Share Alike 3.0 Unported License"),
-    ("chen2016", "comprising 1748 consistently generated"),
     ("chen2016", "creativecommons.org/licenses/by-nc/4.0"),
+    ("weber2023", "Mycoplasma pneumoniae M129 Richard Herrmann lab"),
+    ("weber2023", "the abundances of the ribosomal proteins determined by our absolute quantification based on label‐free mass spectrometry (median 300 copies per cell)"),
+    ("weber2023", "quantify the abundances of 528 proteins (75% of the proteome)"),
+    ("weber2023", "with an average over all samples of 1.207 × 10 5 copies per cell"),
+    ("weber2023", "Due to its small volume (0.075 μm 3"),
+    ("weber2023", "in Mpn for a doubling time of 8 h"),
+    ("weber2023", "This is an open access article under the terms of the http://creativecommons.org/licenses/by/4.0/ License"),
+    ("gaspari2020", "With its highly reduced genome (816 kb), it is among the smallest self-replicating living organisms"),
+    ("gaspari2020", "absence of vitamins and lipids synthesis"),
+    ("gaspari2020", "M. pneumoniae primarily ferments glucose"),
+    ("gaspari2020", "In iEG158_mpn simulations, the ATPase is observed to run in reverse to allow efflux of protons for cytosol de-acidification"),
+    ("gaspari2020", "MCMyco was used to grow M. pneumoniae strain M129, resulting in a doubling time of 17.6 h after three culture passages, compared to the doubling time of about 8 h obtained in rich media"),
+    ("gaspari2020", "Creative Commons Attribution 4.0 International License"),
+    ("awadh2021", "metabolism to the end-products lactate and acetate is required in order to generate the ATP necessary for growth and cellular functions"),
+    ("awadh2021", "Mycoplasma pneumoniae lacks almost all anabolic pathways, including those for amino acid synthesis and metabolism"),
+    ("awadh2021", "M. pneumoniae is dependent on the import of large amounts of amino acids"),
+    ("awadh2021", "Creative Commons Attribution 4.0 International License"),
+    ("li2021", "M. pneumoniae , a small prokaryotic bacterium"),
+    ("li2021", "They also lack TCA cycle pathway"),
+    ("li2021", "Creative Commons Attribution 4.0 International License"),
     ("lluchsenar2015", "The current annotation of the M. pneumoniae genome contains 694 ORFs (32 of which are smORFs)"),
     ("lluchsenar2015", "essential (E; 342 ORFs), non-essential (NE; 259 ORFs) and fitness (F; 93 ORFs)"),
     ("lluchsenar2015", "mapped to the M. pneumoniae reference genome ( NC_000912 , NCBI)"),
     ("lluchsenar2015", "Creative Commons Attribution 4.0 License"),
 ]
-ABSTRACTS = [
-    ("himmelreich1996", "It has a size of 816,394 base pairs"),
-    ("himmelreich1996", "We predict 677 open reading frames (ORFs)"),
-    ("himmelreich1996", "no amino acid synthesis"),
-    ("dandekar2000", "has been increased from 677 to 688"),
-    ("kuhner2009", "62 homomultimeric and 116 heteromultimeric soluble protein complexes"),
-    ("kuhner2009", "is among the smallest found in self-replicating organisms"),
-    ("yus2009", "a defined, minimal medium with 19 essential nutrients"),
-    ("hasselbring2006", "Mycoplasmas are cell wall-less bacteria considered among the smallest and simplest prokaryotes known"),
-    ("hasselbring2006", "a membrane-bound cell extension distinguished by an electron-dense core"),
-    ("hasselbring2006", "which is also the leading end in gliding motility"),
-    ("hasselbring2006", "Duplication of the terminal organelle is thought to precede cell division"),
-    ("hasselbring2006", "indicating a requirement for gliding in normal cell division"),
-    ("visual2026", "to resolve 140 maps"),
+# The titles of the papers that are pointers only: each is named for what is to be read
+# there, and the build checks that the saved record is of that paper. Nothing is taken
+# from their abstracts.
+TITLES = [
+    ("himmelreich1996", "Complete sequence analysis of the genome of the bacterium Mycoplasma pneumoniae"),
+    ("dandekar2000", "Re-annotating the Mycoplasma pneumoniae genome sequence: adding value, function and reading frames"),
+    ("kuhner2009", "Proteome organization in a genome-reduced bacterium"),
+    ("yus2009", "Impact of genome reduction on bacterial metabolism and its regulation"),
+    ("hasselbring2006", "Terminal organelle development in the cell wall-less bacterium Mycoplasma pneumoniae"),
+    ("maier2011", "Quantification of mRNA and protein and integration with protein turnover in a bacterium"),
+    ("wodke2013", "Dissecting the energy metabolism in Mycoplasma pneumoniae through genome-scale metabolic modeling"),
 ]
 SUPPLEMENT = [
     "NE*, non-essential containing repetitive regions",
@@ -800,6 +855,8 @@ TERMS = [
     ("terms_insdc_policy.html", r"no use restrictions or licensing requirements will be included in any sequence data records"),
     ("terms_uniprot_license.json", r"Creative Commons Attribution 4\.0 International \(CC BY 4\.0\) License"),
     ("terms_interpro_license.html", r"CC0"),
+    ("prosite_license.html", r"distributed under the Creative Commons Attribution-NonCommercial-NoDerivatives \(CC BY-NC-ND 4\.0\) License"),
+    ("prosite_license.html", r"Commercial users are asked to pay a yearly license fee"),
     ("uniprot_help_transmem.json", r"TMHMM, Memsat, Phobius and the hydrophobic moment plot method of Eisenberg"),
     ("uniprot_help_transmem.json", r"at least two methods must return a positive prediction"),
     ("uniprot_help_signal.json", r"Phobius, Predotar, SignalP and TargetP"),
@@ -813,15 +870,35 @@ def check_sources(c):
     for key, words in SAID:
         if words not in ev.plain(text_of(key)):
             raise SystemExit(f"the paper cited as {key} no longer says: {words}")
+    # The class each source is given rests on a saved record of its licence: PubMed
+    # Central's own record of an open article names it.
     for key, (pmc, licence) in OPEN_TEXTS.items():
         recorded = ev.json("lluchsenar2015_article.json" if key == "lluchsenar2015" else f"pmc_{pmc}.json")
         if recorded["license_code"] != licence or str(recorded["pmid"]) != PAPERS[key]:
             raise SystemExit(f"PubMed Central no longer records {pmc} as {licence}, or as the paper cited as {key}")
+        if LICENCE_CLASS[key] != (PERMISSIVE if licence == "CC BY" else NON_COMMERCIAL):
+            raise SystemExit(f"the class of the paper cited as {key} is not the one its recorded licence gives")
+    for key, pmc in NEW_TEXTS.items():
+        recorded = ev.json(f"open_{pmc}.json")
+        if recorded["license_code"] != "CC BY" or recorded["pmcid"] != pmc or recorded["is_retracted"] or LICENCE_CLASS[key] != PERMISSIVE:
+            raise SystemExit(f"PubMed Central no longer records {pmc}, the paper cited as {key}, as an open article under CC BY")
     if set(PAPERS.values()) - set(c.papers):
         raise SystemExit("a cited paper's record was not returned")
-    for key, words in ABSTRACTS:
-        if words not in c.papers[PAPERS[key]]["abstract"]:
-            raise SystemExit(f"the abstract of the paper cited as {key} no longer says: {words}")
+    for key, words in TITLES:
+        if c.papers[PAPERS[key]]["title"].rstrip(".") != words:
+            raise SystemExit(f"the record of the paper cited as {key} is no longer titled: {words}")
+    # The papers that are pointers: the record of each either names a non-commercial
+    # licence, or names none and says the paper is not open.
+    records = {record["pmid"]: record for record in ev.json("open_europepmc_pointer_records.json")["resultList"]["result"]}
+    for key, licence in POINTERS.items():
+        record = records.get(PAPERS[key])
+        if record is None or record.get("license") != licence or (licence is None and record.get("isOpenAccess") != "N") or LICENCE_CLASS[key] != (NON_COMMERCIAL if licence else NO_TERMS):
+            raise SystemExit(f"the record of the paper cited as {key} no longer states the licence its class rests on")
+    # The one membrane that is drawn: the curated entries name the cell membrane, and none
+    # names an outer membrane or a periplasm.
+    places = {stated["location"]["value"] for entry in c.entries for comment in entry.get("comments", []) if comment["commentType"] == "SUBCELLULAR LOCATION" for stated in comment.get("subcellularLocations", [])}
+    if "Cell membrane" not in places or any(re.search(r"outer membrane|periplasm", place, re.I) for place in places):
+        raise SystemExit(f"UniProt's entries no longer name the cell membrane alone: {sorted(places)}")
     supplement = ev.document("lluchsenar2015_supplementary_information.docx")
     for words in SUPPLEMENT:
         if words not in supplement:
@@ -965,78 +1042,140 @@ def citation(c, key):
     return {"text": f"{record['authors'][0]} and others ({record['year']}) {record['title'].rstrip('.')}. {record['journal']}{tail}", "doi": record["doi"], "pmid": record["pmid"]}
 
 
+def open_paper(c, key):
+    """An open article that the licence pass added: its citation, read from the article's own
+    front matter and from PubMed Central's record of it, and the day it was read."""
+    pmc = NEW_TEXTS[key]
+    recorded = c.evidence.json(f"open_{pmc}.json")
+    front = c.evidence.text(f"open_{pmc}.xml").split("</article-meta>")[0]
+    authors = re.findall(r'<contrib[^>]*contrib-type="author"[^>]*>.*?<surname>([^<]+)</surname>', front, re.S)
+    where = re.fullmatch(r"(?P<journal>.+?)\. (?P<year>\d{4})[^;]*;(?P<place>[^.]+)\. doi: \S+", recorded["citation"])
+    if not authors or not where:
+        raise SystemExit(f"the saved record of {pmc} cannot be read as a citation")
+    return {"text": f"{authors[0]} and others ({where['year']}) {recorded['title'].rstrip('.')}. {where['journal']} {where['place']}.", "doi": recorded["doi"], "pmid": str(recorded["pmid"]), "accessed": c.evidence.day(f"open_{pmc}.xml")}
+
+
+# What kind of source each added paper is, said with its citation.
+ADDED = {
+    "weber2023": "Measured in strain M129.",
+    "gaspari2020": "A model of the organism's metabolism, and its growth in a defined medium; strain M129.",
+    "awadh2021": "Clinical strains; what is taken is what it says of the species in general.",
+    "li2021": "Clinical strains; what is taken is what it says of the species and of mycoplasmas in general.",
+}
+# What is to be read in each paper that is a pointer. No value and no finding is given.
+TO_READ = {
+    "maier2011": "Measured copies of the organism's proteins and messenger RNAs in a cell, and counts of its ribosomes.",
+    "wodke2013": "A genome-scale model of the organism's energy metabolism: which routes it has, and how its energy is spent.",
+    "himmelreich1996": "The paper that sequenced the genome, with its own count of reading frames.",
+    "dandekar2000": "The re-annotation of the genome, which the frozen record holds: what it added.",
+    "kuhner2009": "A screen of the organism's protein complexes, with electron tomograms of its cells.",
+    "yus2009": "The organism's metabolism, and a defined medium for it: which nutrients it needs.",
+    "hasselbring2006": "How the attachment organelle forms and is duplicated before division, and what gliding has to do with division.",
+}
+POINTER = "It is named so that it can be read, and nothing is taken from it."
+
+
 def sources_of_species(c):
     ev = c.evidence
     out = {}
-    for key in ("parrott2016", "nakane2015", "nakane2021", "lluchsenar2015", "maier2011", "wodke2013"):
+    for key in ("parrott2016", "nakane2015", "nakane2021", "lluchsenar2015"):
         cite = citation(c, key)
-        out[key] = {"text": cite["text"], "doi": cite["doi"], "licence": LICENCES[key], "accessed": ev.day(text_of(key))}
-    for key in ("hasselbring2006", "himmelreich1996", "dandekar2000", "kuhner2009", "yus2009"):
+        out[key] = {"text": cite["text"], "doi": cite["doi"], "licence": LICENCES[key], "class": LICENCE_CLASS[key], "accessed": ev.day(text_of(key))}
+    for key, what in ADDED.items():
+        paper = open_paper(c, key)
+        out[key] = {"text": f"{paper['text']} {what}", "doi": paper["doi"], "licence": LICENCES[key], "class": LICENCE_CLASS[key], "accessed": paper["accessed"]}
+    # Pointers: where to read what these files do not take.
+    for key, what in TO_READ.items():
         cite = citation(c, key)
-        out[key] = {"text": cite["text"] + " Abstract only.", "doi": cite["doi"], "accessed": ev.day("pubmed_abstracts.xml")}
+        terms = f"{LICENCES[key]}, a non-commercial licence. " if LICENCE_CLASS[key] == NON_COMMERCIAL else "No open licence stated: the paper's record names none and does not count it as open access. "
+        out[key] = {"text": f"{cite['text']} {what}", "doi": cite["doi"], "licence": terms + POINTER, "class": LICENCE_CLASS[key], "accessed": ev.day("open_europepmc_pointer_records.json")}
     out["genbank"] = {
         "text": f"Himmelreich R, Hilbert H, Li B-C; Suyama M, Dandekar T, Herrmann R (1996, 2000) {c.record_title}. GenBank {RECORD}.",
         "url": f"https://www.ncbi.nlm.nih.gov/nuccore/{RECORD}",
         "licence": "NCBI places no restrictions on the use or distribution of GenBank data; submitters may claim rights in what they submitted, and this record states none",
+        "class": PERMISSIVE,
         "accessed": ev.day(f"genbank_{RECORD}_features.ft"),
     }
     out["uniprot"] = {
         "text": f"UniProt Consortium, UniProt release {c.uniprot_release}: the curated entries of taxon {TAXON}, and the archived sequences of the taxon with the family signatures on them.",
         "url": f"https://www.uniprot.org/uniprotkb?query=taxonomy_id:{TAXON}",
         "licence": "CC BY 4.0",
+        "class": PERMISSIVE,
         "accessed": ev.day(f"uniprotkb_{TAXON}.json"),
     }
     return out
 
 
+RIBOSOMES = 300  # drawn: the median copies of the ribosomal proteins in a cell (Weber and others 2023)
+
+
 def build_species(c):
     count = len(c.proteins)
     capabilities = {
-        "cap.membrane": {"place": "present", "note": "Its one membrane holds the cell's ion and proton gradients. A 2013 model of its metabolism has the ATP synthase spend more than half of the cell's energy keeping the proton gradient up; that is the model's estimate, and no source read for this file measured the voltage."},
+        "cap.membrane": {"place": "present", "note": "Its one membrane holds the cell's ion and proton gradients. In a model of its metabolism published in 2020 the ATP synthase runs in reverse and pumps protons out of the cell; that is the model's result, and no source read for this file measured the voltage."},
         "cap.channels": {"place": "absent", "why": f"No ion channel was found among its {count} proteins: none carries the signature of a channel family in Cells' catalogue, or of the bacterial channels for potassium, chloride, magnesium or membrane stretch, which the same search does find in other mollicutes. One protein, the glycerol facilitator GlpF, carries the signature of the family of water and glycerol channels; it is not an ion channel."},
         "cap.pumps": {"place": "present", "note": "Not the pumps of animal cells: it has no sodium-potassium pump. By its annotation, its ATP-driven ion movers are the ATP synthase, one P-type ATPase whose ion is not known, and a potassium uptake system."},
         "cap.junctions": {"place": "absent", "why": "It lives as single cells and has no gap junctions: none of its proteins carries the signature of connexins or innexins."},
-        "cap.extracellular": {"place": "present", "note": "Here it is what surrounds the single cell: the surface of the airway cells it lives on, or a growth medium. The cell depends on it: it makes no amino acids of its own, and a defined medium needs 19 nutrients."},
+        "cap.extracellular": {"place": "present", "note": "Here it is what surrounds the single cell: the surface of the airway cells it lives on, or a growth medium. The cell depends on it: it makes no amino acids, vitamins or lipids of its own and takes them up."},
         "cap.water": {"place": "present", "note": "It has no cell wall: nothing but the membrane bounds its volume. One of its proteins, GlpF, belongs to the family of water and glycerol channels."},
         "cap.calcium": {"place": "absent", "why": "It has no endoplasmic reticulum: it is a bacterium with a single membrane and no internal compartments, and none of its proteins carries the signature of the store's calcium pump or of its release channels."},
-        "cap.energy": {"place": "present", "note": "Its ATP comes from fermenting sugar in the cytoplasm to lactate and acetate; it has no citric acid cycle and no working respiratory chain."},
+        "cap.energy": {"place": "present", "note": "Its ATP comes from fermenting sugar in the cytoplasm, with lactate and acetate as end products; mycoplasmas lack the citric acid cycle."},
         "cap.mitochondria": {"place": "absent", "why": "It is a bacterium and has no mitochondria. Its ATP synthase sits in the cell membrane."},
         "cap.circuits": {"place": "present", "note": "At the chromosome, which lies in the cytoplasm: there is no nucleus."},
         "cap.grn": {"place": "absent", "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."},
         "cap.trafficking": {"place": "absent", "why": "It has no endoplasmic reticulum and no Golgi. By its annotation, new membrane proteins are put straight into the cell membrane by the Sec translocon and the YidC insertase."},
-        "cap.assembly": {"place": "present", "note": "Its assemblies are its ribosomes, RNA polymerase, the ATP synthase and the dense core of its attachment organelle; a screen of 2009 found 62 complexes of one kind of protein and 116 of several. The designed protein cage that Cells models is not one of its proteins."},
-        "cap.machines": {"place": "present", "note": "About 150 ribosomes, with RNA polymerase, the ATP synthase, the protein translocon and the machinery in its attachment organelle that lets it glide. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."},
+        "cap.assembly": {"place": "present", "note": "Its assemblies are its ribosomes, RNA polymerase, the ATP synthase and the internal core of its attachment organelle. The designed protein cage that Cells models is not one of its proteins."},
+        "cap.machines": {"place": "present", "note": f"About {RIBOSOMES} ribosomes, with RNA polymerase, the ATP synthase, the protein translocon and the machinery in its attachment organelle that lets it glide. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."},
         "cap.secretion": {"place": "present", "note": "It releases lactate and acetate, the end products of its fermentation, and takes its nutrients up. Signalling between its own cells was not looked for."},
         "cap.repair": {"place": "present", "note": "The place would be its bare membrane. No source read for this file describes a membrane injury or its resealing in this organism."},
-        "cap.division": {"place": "present", "note": "It divides in two as a single cell. Its attachment organelle is duplicated first, and gliding is needed for the two to part normally; the division gene ftsZ is in its genome."},
+        "cap.division": {"place": "present", "note": "It divides in two as a single cell. Its attachment organelle is duplicated first and takes part in the division; the division gene ftsZ is in its genome."},
         "cap.replacement": {"place": "absent", "why": "It forms no tissue, so there is no neighbour for a new cell to replace."},
         "cap.mechanics": {"place": "absent", "why": "It forms no sheet: its cells share no edges to pull on. Its own movement, gliding on a surface, is not what this capability models."},
         "cap.sheet": {"place": "absent", "why": "It lives as single cells and forms no sheet of coupled cells."},
     }
+    # What each capability's words rest on: permissive sources only. A capability that is
+    # left out rests on the others by reasoning, or says that nothing was read.
+    capability_sources = {
+        "cap.membrane": ["gaspari2020"], "cap.channels": ["uniprot"], "cap.pumps": ["uniprot", "genbank"], "cap.junctions": ["uniprot"],
+        "cap.extracellular": ["parrott2016", "gaspari2020", "awadh2021"], "cap.water": ["parrott2016", "uniprot"], "cap.calcium": ["li2021", "uniprot"],
+        "cap.energy": ["gaspari2020", "awadh2021", "li2021"], "cap.mitochondria": ["li2021", "uniprot"], "cap.circuits": ["li2021", "uniprot"],
+        "cap.trafficking": ["genbank", "uniprot"], "cap.assembly": ["nakane2015", "uniprot"], "cap.machines": ["weber2023", "genbank", "uniprot"],
+        "cap.secretion": ["awadh2021"], "cap.division": ["parrott2016", "nakane2021", "genbank"],
+    }
+    # A fact rests on its sources, all of them permissive. "see" names papers whose terms do
+    # not allow a copy, as places to read more: nothing in the fact is taken from them.
     facts = [
-        {"label": "Shape and size", "value": "a thin cell 1 to 2 µm long and 0.1 to 0.2 µm wide, of changeable shape, drawn out at one end into its attachment organelle; one paper gives its volume as 0.05 µm³", "sources": ["parrott2016", "nakane2015", "maier2011"]},
-        {"label": "Attachment organelle", "value": "a membrane-bound extension at one pole, 250 to 300 nm long, with a dense core; it carries the adhesins and leads the cell when it glides", "sources": ["nakane2021", "hasselbring2006"]},
-        {"label": "Envelope", "value": "one membrane, stiffened by sterols; no cell wall", "sources": ["parrott2016", "nakane2015", "hasselbring2006"]},
-        {"label": "Inside", "value": "a prokaryote, among the smallest and simplest known: no nucleus and no internal compartments", "sources": ["hasselbring2006"]},
-        {"label": "Chromosome", "value": f"one circle of {c.length:,} base pairs", "sources": ["genbank", "himmelreich1996"]},
-        {"label": "Genes", "value": f"{count} protein products in the genome record frozen here, the re-annotation of 2000; papers count 677, 688, 689 or 694 by annotation, and UniProt has {len(c.entries)} entries", "sources": ["genbank", "himmelreich1996", "dandekar2000", "wodke2013", "lluchsenar2015", "uniprot"]},
-        {"label": "Ribosomes", "value": "about 140 to 150 in a cell, counts from electron tomograms of 2009 as a paper of 2011 reports them; the 2009 papers were not open to read", "sources": ["maier2011"]},
-        {"label": "Proteins", "value": "167 copies of a protein on average among those measured, from about 2 to about 2,300 (the elongation factor Tu), by mass spectrometry", "sources": ["maier2011"]},
+        {"label": "Shape and size", "value": "a thin cell 1 to 2 µm long and 0.1 to 0.2 µm wide, of changeable shape, drawn out at one end into its attachment organelle; one paper gives its volume as 0.075 µm³", "sources": ["parrott2016", "nakane2015", "weber2023"]},
+        {"label": "Attachment organelle", "value": "a membrane protrusion at one pole, 250 to 300 nm long, with an internal core; it carries the adhesins and leads the cell when it glides", "sources": ["nakane2021", "nakane2015"], "see": ["hasselbring2006"]},
+        {"label": "Envelope", "value": "a cell membrane stiffened by sterols, and no cell wall; UniProt's curated entries of its proteins name one membrane, the cell membrane, and no outer one", "sources": ["parrott2016", "nakane2015", "uniprot"]},
+        {"label": "Inside", "value": "a small prokaryote, among the smallest organisms that copy themselves: a bacterium, with no nucleus", "sources": ["li2021", "gaspari2020", "genbank"]},
+        {"label": "Chromosome", "value": f"one circle of {c.length:,} base pairs", "sources": ["genbank"], "see": ["himmelreich1996"]},
+        {"label": "Genes", "value": f"{count} protein products in the genome record frozen here, the re-annotation of 2000; a review counts 687 genes, a re-annotation of 2015 has 694 reading frames, and UniProt has {len(c.entries)} entries", "sources": ["genbank", "parrott2016", "lluchsenar2015", "uniprot"], "see": ["himmelreich1996", "dandekar2000", "wodke2013"]},
+        {"label": "Ribosomes", "value": f"about {RIBOSOMES} in a cell: the proteins of the ribosome were measured at a median of 300 copies in a cell, by mass spectrometry", "sources": ["weber2023"], "see": ["maier2011", "kuhner2009"]},
+        {"label": "Proteins", "value": "about 120,000 protein molecules in a cell, the sum over 528 kinds of protein measured by mass spectrometry, three quarters of all its kinds", "sources": ["weber2023"], "see": ["maier2011"]},
+        {"label": "Doubling time", "value": "about 8 hours in rich medium; 17.6 hours were measured in a serum-free medium", "sources": ["weber2023", "gaspari2020"]},
         {"label": "Essential genes", "value": "342 of 694 genes essential, 93 needed for normal growth and 259 dispensable, by transposon mutagenesis", "sources": ["lluchsenar2015"]},
-        {"label": "Energy", "value": "ATP from fermenting sugar to lactate and acetate; no citric acid cycle and no working respiratory chain", "sources": ["wodke2013"]},
-        {"label": "Food", "value": "glucose as its main source of carbon and energy; no amino acid synthesis; a defined medium with 19 essential nutrients", "sources": ["wodke2013", "himmelreich1996", "yus2009"]},
+        {"label": "Energy", "value": "ATP from fermenting glucose, with lactate and acetate as end products; mycoplasmas lack the citric acid cycle", "sources": ["gaspari2020", "awadh2021", "li2021"], "see": ["wodke2013"]},
+        {"label": "Food", "value": "glucose as its main fuel; it makes almost none of its own building blocks, no amino acids, vitamins or lipids among them, and takes them up", "sources": ["gaspari2020", "awadh2021"], "see": ["yus2009", "wodke2013"]},
         {"label": "Ion channels", "value": f"none found among its {count} proteins; one glycerol facilitator of the aquaporin family", "sources": ["uniprot"]},
-        {"label": "Division", "value": "in two; the attachment organelle is duplicated first, and gliding is needed for normal division", "sources": ["parrott2016", "hasselbring2006"]},
-        {"label": "Movement", "value": "glides on surfaces, attachment organelle first, at up to 1 µm a second", "sources": ["nakane2015", "hasselbring2006"]},
+        {"label": "Division", "value": "in two, by binary fission; the attachment organelle is duplicated first and takes part in the division", "sources": ["parrott2016", "nakane2021"], "see": ["hasselbring2006"]},
+        {"label": "Movement", "value": "glides on surfaces, attachment organelle first, at up to 1 µm a second", "sources": ["nakane2015"]},
         {"label": "Name", "value": f"databases now list it as {c.uniprot_name.split(' (')[0]}; the papers cited call it Mycoplasma pneumoniae", "sources": ["genbank", "uniprot"]},
     ]
+    sources = sources_of_species(c)
+    for where, keys in [*capability_sources.items(), *((fact["label"], fact["sources"]) for fact in facts)]:
+        if not keys or any(sources[key]["class"] != PERMISSIVE for key in keys):
+            raise SystemExit(f"{where} would rest on a source whose terms do not allow it")
+    pointed = {key for fact in facts for key in fact.get("see", [])}
+    if pointed != {key for key, source in sources.items() if source["class"] != PERMISSIVE}:
+        raise SystemExit("the pointers of the facts are not exactly the sources whose terms do not allow a copy")
     return {
         "format": SPECIES_FORMAT,
         "id": SPECIES_ID,
         "label": LABEL,
         "organism": ORGANISM,
         "taxon": TAXON,
-        "plain": f"A small bacterium of the human airways, with a genome among the smallest of any organism that copies itself: {count} proteins in the genome record frozen here, in a thin cell about 2 µm long with one membrane, no wall and an attachment organelle at one end.",
+        "plain": f"A small bacterium of the human airways, among the smallest organisms that copy themselves: {count} proteins in the genome record frozen here, in a thin cell about 2 µm long with one membrane, no wall and an attachment organelle at one end.",
         "order": 40,
         "default": False,
         "made": MADE,
@@ -1050,17 +1189,18 @@ def build_species(c):
                 "id": "cell",
                 "label": "One cell",
                 "shape": {"kind": "capsule", "length_um": 2, "across_um": 0.2},
-                "note": "Drawn as a rod 2 µm long and 0.2 µm across, the upper ends of the ranges given for the cell, with 150 ribosomes. The real cell is not a plain rod: it changes shape, and one end narrows into the attachment organelle, about 0.3 µm long, which this shape cannot show.",
-                "sources": ["parrott2016", "nakane2015", "nakane2021", "maier2011"],
+                "note": f"Drawn as a rod 2 µm long and 0.2 µm across, the upper ends of the ranges given for the cell, with {RIBOSOMES} ribosomes. The real cell is not a plain rod: it changes shape, and one end narrows into the attachment organelle, about 0.3 µm long, which this shape cannot show.",
+                "sources": ["parrott2016", "nakane2015", "nakane2021", "weber2023"],
             },
         ],
         "no_further_levels": "A single-celled organism: each cell lives on its own, on the cells of its host, so it has no tissue, organ or body of its own.",
         "cell": {
             "facts": facts,
-            "parts": {"membranes": 1, "wall": False, "nucleus": False, "chromosome_kbp": round(c.length / 1000), "ribosomes": 150},
+            "parts": {"membranes": 1, "wall": False, "nucleus": False, "chromosome_kbp": round(c.length / 1000), "ribosomes": RIBOSOMES},
             "capabilities": capabilities,
         },
-        "sources": sources_of_species(c),
+        "capability_sources": capability_sources,
+        "sources": sources,
     }
 
 
@@ -1147,21 +1287,27 @@ def build_atlas(c):
             {
                 "name": "GenBank", "url": f"https://www.ncbi.nlm.nih.gov/nuccore/{RECORD}", "release": f"{RECORD}, the re-annotation of 2000", "accessed": ev.day(f"genbank_{RECORD}_cds_aa.fa"),
                 "licence": "No restriction: \"NCBI places no restrictions on the use or distribution of the GenBank data\". Submitters may claim rights in what they submitted; this record states none.",
+                "class": PERMISSIVE,
                 "cite": f"Himmelreich R, Hilbert H, Li B-C; Suyama M, Dandekar T, Herrmann R (1996, 2000) {c.record_title}. GenBank {RECORD}.",
                 "holds": "the locus tags, gene names, products and lengths of the organism's proteins",
             },
             {
-                "name": "UniProt", "url": "https://www.uniprot.org/", "release": c.uniprot_release, "accessed": ev.day(f"uniparc_{TAXON}.json"), "licence": "CC BY 4.0",
+                "name": "UniProt", "url": "https://www.uniprot.org/", "release": c.uniprot_release, "accessed": ev.day(f"uniparc_{TAXON}.json"), "licence": "CC BY 4.0", "class": PERMISSIVE,
                 "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
                 "holds": "the reviewed entries of the organism's proteins; which archived sequences carry each family signature; the signatures of the units' human candidates; the control counts",
             },
             {
-                "name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "accessed": ev.day("terms_interpro_license.html"), "licence": "CC0 1.0",
+                "name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "accessed": ev.day("terms_interpro_license.html"), "licence": "CC0 1.0", "class": PERMISSIVE,
                 "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456.",
                 "holds": "the identifiers and names of the family signatures, as UniProt gives them",
             },
+            {
+                "name": "Gaspari and others 2020", "url": f"https://doi.org/{open_paper(c, 'gaspari2020')['doi']}", "accessed": open_paper(c, "gaspari2020")["accessed"], "licence": LICENCES["gaspari2020"], "class": PERMISSIVE,
+                "cite": open_paper(c, "gaspari2020")["text"],
+                "holds": "what its model of the cell's metabolism has the ATP synthase do, and that the cell ferments glucose",
+            },
         ],
-        "not_copied": "No sequence is copied: they stay with the downloads, outside the repository. The papers with measured protein amounts and other tables of this organism (Maier and others 2011, Wodke and others 2013, Chen and others 2016) are under non-commercial licences: numbers from them are cited in the species file and their tables are not copied. No whole-cell or genome-scale model of the organism was read for its files.",
+        "not_copied": "No sequence is copied: they stay with the downloads, outside the repository. The papers with measured protein amounts and other tables of this organism (Maier and others 2011, Wodke and others 2013, Chen and others 2016) are under non-commercial licences: nothing is taken from them, and the species file names the first two as places to read. What the files say of amounts, energy and food rests on open papers instead. Of the genome-scale models of the organism, only the open one of 2020 was read, for two statements.",
         "units": units,
         "extra": extra_products(c),
     }
@@ -1218,6 +1364,8 @@ def build_shelves(c):
         proteins.append([locus, label, (entry_gene(entry) if entry else "") or protein.get("gene") or None, "cell", placed["side"], placed["basis"], class_of(c, locus), len(protein["sequence"]), None, marks])
     used = [letter for letter in [*CLASSES, NO_CLASS] if any(row[6] == letter for row in proteins)]
     lluch = citation(c, "lluchsenar2015")
+    # The proteins whose signal or lipid anchor UniProt records by PROSITE's lipoprotein rule.
+    lipo_rule = sum(1 for entry in c.entries if any(evidence.get("source") == "PROSITE-ProRule" and evidence.get("id") == "PRU00303" for feature in entry.get("features", []) for evidence in feature.get("evidences", [])))
     by_side = Counter(row[4] for row in proteins)
     return {
         "format": SHELVES_FORMAT,
@@ -1230,7 +1378,7 @@ def build_shelves(c):
         "proteins": proteins,
         "side_notes": {
             "stated": "The protein's reviewed UniProtKB entry states where it is, on a curator's own word or on an experiment that the entry cites. The mark 'evidence' says which.",
-            "predicted": "Read from the sequence, as UniProt's reviewed entry for this exact protein records it. Membrane-spanning segments are those UniProt predicts with TMHMM, Memsat, Phobius and a hydrophobic moment plot, keeping a segment only where at least two agree; signal peptides are predicted with Phobius, Predotar, SignalP and TargetP. A lipoprotein signal (the PROSITE rule PRU00303) means the protein is exported and then held by a lipid at the outer face of the membrane, which in a cell with one membrane is the cell's surface: that reading is this file's. A location that UniProt gives a whole protein family by rule (HAMAP), or by likeness to a protein of another organism, is counted as predicted too.",
+            "predicted": "Read from the sequence, as UniProt's reviewed entry for this exact protein records it. Membrane-spanning segments are those UniProt predicts with TMHMM, Memsat, Phobius and a hydrophobic moment plot, keeping a segment only where at least two agree; signal peptides are predicted with Phobius, Predotar, SignalP and TargetP. A lipoprotein signal (the PROSITE rule PRU00303, as UniProt's entries apply it; PROSITE's own terms are non-commercial, so its dependence is said here) means the protein is exported and then held by a lipid at the outer face of the membrane, which in a cell with one membrane is the cell's surface: that reading is this file's. A location that UniProt gives a whole protein family by rule (HAMAP), or by likeness to a protein of another organism, is counted as predicted too.",
             "by function": "Taken from what the protein does, only where that leaves no real doubt. A protein with no stated location is put inside if its UniProt keywords say it works on the ribosome, on transfer or ribosomal RNA, in transcription or on the chromosome (" + ", ".join(INSIDE_BY_FUNCTION) + "). A protein that its entry places at the membrane without saying on which face is put inside if it binds ATP or GTP, makes ATP or binds DNA, all of which are inside the cell.",
             "none": "No statement, no prediction and no function that settles it. These proteins are not placed.",
         },
@@ -1242,10 +1390,13 @@ def build_shelves(c):
             "also": {"label": "Also stated on another side", "values": ["outside", "inside"], "measured": False, "source": "UniProt"},
         },
         "counts": {side: by_side[side] for side in SIDES},
+        "checks": {"lipoprotein_rule": lipo_rule},
         "sources": [
-            {"name": "GenBank", "url": f"https://www.ncbi.nlm.nih.gov/nuccore/{RECORD}", "licence": "NCBI places no restrictions on the use or distribution of GenBank data; this record states none", "accessed": ev.day(f"genbank_{RECORD}_cds_aa.fa"), "holds": "the locus tags and lengths of the proteins, and the names of those without a UniProtKB entry"},
-            {"name": "UniProt", "url": "https://www.uniprot.org/", "licence": "CC BY 4.0", "accessed": ev.day(f"uniprotkb_{TAXON}.json"), "holds": f"release {c.uniprot_release}: each protein's name and gene, its stated location with the evidence for it, its membrane-spanning segments, signal and lipid anchor, its keywords and its level of evidence"},
-            {"name": "Lluch-Senar and others 2015", "url": f"https://doi.org/{lluch['doi']}", "licence": "CC BY 4.0", "accessed": ev.day("lluchsenar2015_table_s2.xlsx"), "holds": "each gene's class and its essentiality, from Supplementary Table S2"},
+            {"name": "GenBank", "url": f"https://www.ncbi.nlm.nih.gov/nuccore/{RECORD}", "licence": "NCBI places no restrictions on the use or distribution of GenBank data; this record states none", "class": PERMISSIVE, "accessed": ev.day(f"genbank_{RECORD}_cds_aa.fa"), "holds": "the locus tags and lengths of the proteins, and the names of those without a UniProtKB entry"},
+            {"name": "UniProt", "url": "https://www.uniprot.org/", "licence": "CC BY 4.0", "class": PERMISSIVE, "accessed": ev.day(f"uniprotkb_{TAXON}.json"), "holds": f"release {c.uniprot_release}: each protein's name and gene, its stated location with the evidence for it, its membrane-spanning segments, signal and lipid anchor, its keywords and its level of evidence"},
+            {"name": "Lluch-Senar and others 2015", "url": f"https://doi.org/{lluch['doi']}", "licence": "CC BY 4.0", "class": PERMISSIVE, "accessed": ev.day("lluchsenar2015_table_s2.xlsx"), "holds": "each gene's class and its essentiality, from Supplementary Table S2"},
+            # The origin of a rule that was read as a permissive source applies it: said plainly, since its own terms are not.
+            {"name": "PROSITE", "url": "https://prosite.expasy.org/prosite_license.html", "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee", "class": LICENCE_CLASS["prosite"], "accessed": ev.day("prosite_license.html"), "through": "UniProt", "holds": f"Nothing was downloaded from it and nothing of it is copied. Its rule PRU00303 is the origin of the lipoprotein signals and lipid anchors that UniProt's curated entries record for {lipo_rule} of these proteins: where those proteins are placed rests on them, as they were read in UniProt's entries."},
         ],
     }
 
@@ -1264,11 +1415,14 @@ def build_readme(c, rows, shelves):
     sides = shelves["counts"]
     bases = Counter(row[5] for row in shelves["proteins"])
     at_tip = sum(1 for row in shelves["proteins"] if row[9].get("where") == "attachment organelle")
+    lipo_rule = shelves["checks"]["lipoprotein_rule"]
     built_from = [
         ("The genome record's summary", f"genbank_{RECORD}_summary.json"), ("Its features: genes, coding sequences, RNA genes", f"genbank_{RECORD}_features.ft"),
         ("Its protein products", f"genbank_{RECORD}_cds_aa.fa"), ("The same genome as NCBI's pipeline annotates it", f"refseq_{REFSEQ}_features.ft"),
         ("UniProt's curated entries of the strain", f"uniprotkb_{TAXON}.json"), ("UniProt's archived sequences and signatures", f"uniparc_{TAXON}.json"),
         ("The 2015 paper's Supplementary Table S2", "lluchsenar2015_table_s2.xlsx"), ("The 2015 paper's supplementary text", "lluchsenar2015_supplementary_information.docx"),
+        ("For the species file: protein amounts and the ribosomal proteins' copies", text_of("weber2023")), ("For the species file: an open model of the metabolism, and growth in a defined medium", text_of("gaspari2020")),
+        ("For the species file: where the cell's energy comes from", text_of("awadh2021")), ("For the species file: what mycoplasmas lack", text_of("li2021")),
     ]
     inputs = "\n".join(f"| {what} | `{ev.read[name]['source']}` | `{ev.read[name]['file']}` | `{ev.read[name]['sha256']}` |" for what, name in built_from)
     day_record, day_paper, day_uniprot = ev.day(f"genbank_{RECORD}_cds_aa.fa"), ev.day("lluchsenar2015_table_s2.xlsx"), ev.day(f"uniprotkb_{TAXON}.json")
@@ -1304,12 +1458,17 @@ record has {count}.
 
 | Count | Whose | What it counts |
 | --- | --- | --- |
-| 677 | Himmelreich and others 1996 | the reading frames predicted when the genome was sequenced |
-| 688 | Dandekar and others 2000; this record | the re-annotation: 12 added and one dismissed |
-| 689 | Wodke and others 2013 | "encoding 689 proteins", citing the two papers above; which gene makes the difference was not traced here |
+| {count} | this record | the genome as its submitters re-annotated it in 2000 |
+| 687 | Parrott and others 2016, a review | "687 genes", said of the genome as it was first sequenced |
 | 694 | Lluch-Senar and others 2015 | their re-annotation, 32 of them reading frames under 100 residues; their table lists 49 lettered additions (MPN037a and the like) beside the {count} numbered genes |
 | {len(c.entries)} | UniProt, release {c.uniprot_release} | reviewed entries of the strain: MPN_304 and MPN_305, two fragments of one gene, share an entry, and MPN_441 has none |
 | {c.refseq_kinds['CDS']} | NCBI RefSeq {REFSEQ} | the coding sequences that NCBI's own annotation pipeline finds in the same genome today |
+
+The paper that sequenced the genome (Himmelreich and others 1996), the re-annotation
+(Dandekar and others 2000) and a model of the organism's metabolism (Wodke and others
+2013) give counts of their own. The first two state no open licence and the third is
+under a non-commercial one, so their numbers are not repeated here: they are to be read
+there.
 
 ## Columns
 
@@ -1363,9 +1522,11 @@ Other counts, as built:
 
 **What is not here, and why.** Measured amounts of each protein exist for this organism,
 in Maier and others 2011, and many more data sets in Chen and others 2016. Both papers are
-under non-commercial licences, so their tables are not copied; the species file cites a
-few of their numbers. Sequences stay with the downloads. Nothing is taken from a
-whole-cell or genome-scale model. Strain identity matters: every value is for strain M129.
+under non-commercial licences, so nothing is taken from them: no table, and no number.
+The species file gives the total of protein molecules in a cell and the copies of the
+ribosomal proteins from an open paper instead (Weber and others 2023, CC BY 4.0), and no
+amount of any one protein. Sequences stay with the downloads. Strain identity matters:
+every value in this folder is for strain M129.
 
 ## `{SHELVES_FILE}`: where each protein sits
 
@@ -1385,14 +1546,14 @@ for each of the {count} proteins, in the catalogue's order.
   and name the predictors.
 - **Lipoproteins and adhesins.** A protein with a lipoprotein signal is put outside: it is
   exported and then held by a lipid at the outer face of the membrane. That reading is
-  this file's; UniProt records the signal, by the PROSITE rule PRU00303. The adhesins
-  that span the membrane are `in`.
+  this file's; UniProt records the signal, by the PROSITE rule PRU00303, for {lipo_rule} of
+  the proteins. The adhesins that span the membrane are `in`.
 - **The attachment organelle** is not a shelf of its own. The {at_tip} proteins whose entry
   states that location carry the mark `where: attachment organelle`.
 - **Districts** are the 2015 paper's classes, the letters above.
 - **Marks:** essentiality (measured, from the 2015 paper), whether UniProt records evidence
   at protein level, how the side is known, and whether another side is stated as well.
-  No amount is given: the measured amounts are under non-commercial terms.
+  No amount is given: the measured amounts of each protein are under non-commercial terms.
 - **`unit`** is empty on every line: the atlas found none of the law inventory's machines
   in this organism.
 
@@ -1405,6 +1566,16 @@ for each of the {count} proteins, in the catalogue's order.
 | [Lluch-Senar and others 2015](https://doi.org/{lluch['doi']}), Supplementary Table S2 and supplementary text, read {day_paper} | Each gene's class and essentiality | CC BY 4.0 |
 | [InterPro](https://www.ebi.ac.uk/interpro/) | The signatures' identifiers | CC0 1.0 |
 
+Every source above is permissive: its terms allow what is taken, with attribution.
+
+**A dependence on a non-commercial source.** UniProt's curated entries record the
+lipoprotein signal of {lipo_rule} proteins by a rule of
+[PROSITE](https://prosite.expasy.org/prosite_license.html), which is distributed under
+CC BY-NC-ND 4.0 and asks commercial users for a licence fee. Nothing was downloaded from
+PROSITE and nothing of it is copied: the signals were read in UniProt's entries, under
+UniProt's terms (CC BY 4.0), and where those proteins are placed rests on them. Whether
+that use is within PROSITE's terms for this project is not settled here.
+
 Cite:
 
 - GenBank: Himmelreich R, Hilbert H, Li B-C; Suyama M, Dandekar T, Herrmann R (1996, 2000) {c.record_title}. GenBank {RECORD}.
@@ -1414,7 +1585,8 @@ Cite:
 ## The files it was built from
 
 Each is in the dataset folder of its source, outside the repository, and the build checks
-it against the SHA-256 that the folder's MANIFEST gives before reading it.
+it against the SHA-256 that the folder's MANIFEST gives before reading it. The last four
+are open papers that the species file's facts rest on.
 
 | What | Dataset folder | File | SHA-256 |
 | --- | --- | --- | --- |

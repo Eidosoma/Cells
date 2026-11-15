@@ -4,7 +4,7 @@
  "label": "M. pneumoniae",
  "organism": "Mycoplasma pneumoniae M129",
  "taxon": 272634,
- "plain": "A small bacterium of the human airways, with a genome among the smallest of any organism that copies itself: 688 proteins in the genome record frozen here, in a thin cell about 2 µm long with one membrane, no wall and an attachment organelle at one end.",
+ "plain": "A small bacterium of the human airways, among the smallest organisms that copy themselves: 688 proteins in the genome record frozen here, in a thin cell about 2 µm long with one membrane, no wall and an attachment organelle at one end.",
  "order": 40,
  "default": false,
  "made": "2026-11-15",
@@ -24,12 +24,12 @@
     "length_um": 2,
     "across_um": 0.2
    },
-   "note": "Drawn as a rod 2 µm long and 0.2 µm across, the upper ends of the ranges given for the cell, with 150 ribosomes. The real cell is not a plain rod: it changes shape, and one end narrows into the attachment organelle, about 0.3 µm long, which this shape cannot show.",
+   "note": "Drawn as a rod 2 µm long and 0.2 µm across, the upper ends of the ranges given for the cell, with 300 ribosomes. The real cell is not a plain rod: it changes shape, and one end narrows into the attachment organelle, about 0.3 µm long, which this shape cannot show.",
    "sources": [
     "parrott2016",
     "nakane2015",
     "nakane2021",
-    "maier2011"
+    "weber2023"
    ]
   }
  ],
@@ -38,69 +38,94 @@
   "facts": [
    {
     "label": "Shape and size",
-    "value": "a thin cell 1 to 2 µm long and 0.1 to 0.2 µm wide, of changeable shape, drawn out at one end into its attachment organelle; one paper gives its volume as 0.05 µm³",
+    "value": "a thin cell 1 to 2 µm long and 0.1 to 0.2 µm wide, of changeable shape, drawn out at one end into its attachment organelle; one paper gives its volume as 0.075 µm³",
     "sources": [
      "parrott2016",
      "nakane2015",
-     "maier2011"
+     "weber2023"
     ]
    },
    {
     "label": "Attachment organelle",
-    "value": "a membrane-bound extension at one pole, 250 to 300 nm long, with a dense core; it carries the adhesins and leads the cell when it glides",
+    "value": "a membrane protrusion at one pole, 250 to 300 nm long, with an internal core; it carries the adhesins and leads the cell when it glides",
     "sources": [
      "nakane2021",
+     "nakane2015"
+    ],
+    "see": [
      "hasselbring2006"
     ]
    },
    {
     "label": "Envelope",
-    "value": "one membrane, stiffened by sterols; no cell wall",
+    "value": "a cell membrane stiffened by sterols, and no cell wall; UniProt's curated entries of its proteins name one membrane, the cell membrane, and no outer one",
     "sources": [
      "parrott2016",
      "nakane2015",
-     "hasselbring2006"
+     "uniprot"
     ]
    },
    {
     "label": "Inside",
-    "value": "a prokaryote, among the smallest and simplest known: no nucleus and no internal compartments",
+    "value": "a small prokaryote, among the smallest organisms that copy themselves: a bacterium, with no nucleus",
     "sources": [
-     "hasselbring2006"
+     "li2021",
+     "gaspari2020",
+     "genbank"
     ]
    },
    {
     "label": "Chromosome",
     "value": "one circle of 816,394 base pairs",
     "sources": [
-     "genbank",
+     "genbank"
+    ],
+    "see": [
      "himmelreich1996"
     ]
    },
    {
     "label": "Genes",
-    "value": "688 protein products in the genome record frozen here, the re-annotation of 2000; papers count 677, 688, 689 or 694 by annotation, and UniProt has 686 entries",
+    "value": "688 protein products in the genome record frozen here, the re-annotation of 2000; a review counts 687 genes, a re-annotation of 2015 has 694 reading frames, and UniProt has 686 entries",
     "sources": [
      "genbank",
-     "himmelreich1996",
-     "dandekar2000",
-     "wodke2013",
+     "parrott2016",
      "lluchsenar2015",
      "uniprot"
+    ],
+    "see": [
+     "himmelreich1996",
+     "dandekar2000",
+     "wodke2013"
     ]
    },
    {
     "label": "Ribosomes",
-    "value": "about 140 to 150 in a cell, counts from electron tomograms of 2009 as a paper of 2011 reports them; the 2009 papers were not open to read",
+    "value": "about 300 in a cell: the proteins of the ribosome were measured at a median of 300 copies in a cell, by mass spectrometry",
     "sources": [
-     "maier2011"
+     "weber2023"
+    ],
+    "see": [
+     "maier2011",
+     "kuhner2009"
     ]
    },
    {
     "label": "Proteins",
-    "value": "167 copies of a protein on average among those measured, from about 2 to about 2,300 (the elongation factor Tu), by mass spectrometry",
+    "value": "about 120,000 protein molecules in a cell, the sum over 528 kinds of protein measured by mass spectrometry, three quarters of all its kinds",
     "sources": [
+     "weber2023"
+    ],
+    "see": [
      "maier2011"
+    ]
+   },
+   {
+    "label": "Doubling time",
+    "value": "about 8 hours in rich medium; 17.6 hours were measured in a serum-free medium",
+    "sources": [
+     "weber2023",
+     "gaspari2020"
     ]
    },
    {
@@ -112,18 +137,26 @@
    },
    {
     "label": "Energy",
-    "value": "ATP from fermenting sugar to lactate and acetate; no citric acid cycle and no working respiratory chain",
+    "value": "ATP from fermenting glucose, with lactate and acetate as end products; mycoplasmas lack the citric acid cycle",
     "sources": [
+     "gaspari2020",
+     "awadh2021",
+     "li2021"
+    ],
+    "see": [
      "wodke2013"
     ]
    },
    {
     "label": "Food",
-    "value": "glucose as its main source of carbon and energy; no amino acid synthesis; a defined medium with 19 essential nutrients",
+    "value": "glucose as its main fuel; it makes almost none of its own building blocks, no amino acids, vitamins or lipids among them, and takes them up",
     "sources": [
-     "wodke2013",
-     "himmelreich1996",
-     "yus2009"
+     "gaspari2020",
+     "awadh2021"
+    ],
+    "see": [
+     "yus2009",
+     "wodke2013"
     ]
    },
    {
@@ -135,9 +168,12 @@
    },
    {
     "label": "Division",
-    "value": "in two; the attachment organelle is duplicated first, and gliding is needed for normal division",
+    "value": "in two, by binary fission; the attachment organelle is duplicated first and takes part in the division",
     "sources": [
      "parrott2016",
+     "nakane2021"
+    ],
+    "see": [
      "hasselbring2006"
     ]
    },
@@ -145,8 +181,7 @@
     "label": "Movement",
     "value": "glides on surfaces, attachment organelle first, at up to 1 µm a second",
     "sources": [
-     "nakane2015",
-     "hasselbring2006"
+     "nakane2015"
     ]
    },
    {
@@ -163,12 +198,12 @@
    "wall": false,
    "nucleus": false,
    "chromosome_kbp": 816,
-   "ribosomes": 150
+   "ribosomes": 300
   },
   "capabilities": {
    "cap.membrane": {
     "place": "present",
-    "note": "Its one membrane holds the cell's ion and proton gradients. A 2013 model of its metabolism has the ATP synthase spend more than half of the cell's energy keeping the proton gradient up; that is the model's estimate, and no source read for this file measured the voltage."
+    "note": "Its one membrane holds the cell's ion and proton gradients. In a model of its metabolism published in 2020 the ATP synthase runs in reverse and pumps protons out of the cell; that is the model's result, and no source read for this file measured the voltage."
    },
    "cap.channels": {
     "place": "absent",
@@ -184,7 +219,7 @@
    },
    "cap.extracellular": {
     "place": "present",
-    "note": "Here it is what surrounds the single cell: the surface of the airway cells it lives on, or a growth medium. The cell depends on it: it makes no amino acids of its own, and a defined medium needs 19 nutrients."
+    "note": "Here it is what surrounds the single cell: the surface of the airway cells it lives on, or a growth medium. The cell depends on it: it makes no amino acids, vitamins or lipids of its own and takes them up."
    },
    "cap.water": {
     "place": "present",
@@ -196,7 +231,7 @@
    },
    "cap.energy": {
     "place": "present",
-    "note": "Its ATP comes from fermenting sugar in the cytoplasm to lactate and acetate; it has no citric acid cycle and no working respiratory chain."
+    "note": "Its ATP comes from fermenting sugar in the cytoplasm, with lactate and acetate as end products; mycoplasmas lack the citric acid cycle."
    },
    "cap.mitochondria": {
     "place": "absent",
@@ -216,11 +251,11 @@
    },
    "cap.assembly": {
     "place": "present",
-    "note": "Its assemblies are its ribosomes, RNA polymerase, the ATP synthase and the dense core of its attachment organelle; a screen of 2009 found 62 complexes of one kind of protein and 116 of several. The designed protein cage that Cells models is not one of its proteins."
+    "note": "Its assemblies are its ribosomes, RNA polymerase, the ATP synthase and the internal core of its attachment organelle. The designed protein cage that Cells models is not one of its proteins."
    },
    "cap.machines": {
     "place": "present",
-    "note": "About 150 ribosomes, with RNA polymerase, the ATP synthase, the protein translocon and the machinery in its attachment organelle that lets it glide. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."
+    "note": "About 300 ribosomes, with RNA polymerase, the ATP synthase, the protein translocon and the machinery in its attachment organelle that lets it glide. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."
    },
    "cap.secretion": {
     "place": "present",
@@ -232,7 +267,7 @@
    },
    "cap.division": {
     "place": "present",
-    "note": "It divides in two as a single cell. Its attachment organelle is duplicated first, and gliding is needed for the two to part normally; the division gene ftsZ is in its genome."
+    "note": "It divides in two as a single cell. Its attachment organelle is duplicated first and takes part in the division; the division gene ftsZ is in its genome."
    },
    "cap.replacement": {
     "place": "absent",
@@ -248,78 +283,186 @@
    }
   }
  },
+ "capability_sources": {
+  "cap.membrane": [
+   "gaspari2020"
+  ],
+  "cap.channels": [
+   "uniprot"
+  ],
+  "cap.pumps": [
+   "uniprot",
+   "genbank"
+  ],
+  "cap.junctions": [
+   "uniprot"
+  ],
+  "cap.extracellular": [
+   "parrott2016",
+   "gaspari2020",
+   "awadh2021"
+  ],
+  "cap.water": [
+   "parrott2016",
+   "uniprot"
+  ],
+  "cap.calcium": [
+   "li2021",
+   "uniprot"
+  ],
+  "cap.energy": [
+   "gaspari2020",
+   "awadh2021",
+   "li2021"
+  ],
+  "cap.mitochondria": [
+   "li2021",
+   "uniprot"
+  ],
+  "cap.circuits": [
+   "li2021",
+   "uniprot"
+  ],
+  "cap.trafficking": [
+   "genbank",
+   "uniprot"
+  ],
+  "cap.assembly": [
+   "nakane2015",
+   "uniprot"
+  ],
+  "cap.machines": [
+   "weber2023",
+   "genbank",
+   "uniprot"
+  ],
+  "cap.secretion": [
+   "awadh2021"
+  ],
+  "cap.division": [
+   "parrott2016",
+   "nakane2021",
+   "genbank"
+  ]
+ },
  "sources": {
   "parrott2016": {
    "text": "Parrott and others (2016) A Compendium for Mycoplasma pneumoniae. Front Microbiol 7:513.",
    "doi": "10.3389/fmicb.2016.00513",
    "licence": "CC BY 4.0",
+   "class": "permissive",
    "accessed": "2026-11-15"
   },
   "nakane2015": {
    "text": "Nakane and others (2015) Systematic Structural Analyses of Attachment Organelle in Mycoplasma pneumoniae. PLoS Pathog 11:e1005299.",
    "doi": "10.1371/journal.ppat.1005299",
    "licence": "CC BY 4.0",
+   "class": "permissive",
    "accessed": "2026-11-15"
   },
   "nakane2021": {
    "text": "Nakane and others (2021) Molecular ruler of the attachment organelle in Mycoplasma pneumoniae. PLoS Pathog 17:e1009621.",
    "doi": "10.1371/journal.ppat.1009621",
    "licence": "CC BY 4.0",
+   "class": "permissive",
    "accessed": "2026-11-15"
   },
   "lluchsenar2015": {
    "text": "Lluch-Senar and others (2015) Defining a minimal cell: essentiality of small ORFs and ncRNAs in a genome-reduced bacterium. Mol Syst Biol 11:780.",
    "doi": "10.15252/msb.20145558",
    "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
+  "weber2023": {
+   "text": "Weber and others (2023) Comprehensive quantitative modeling of translation efficiency in a genome‐reduced bacterium. Mol Syst Biol 19(10):e11301. Measured in strain M129.",
+   "doi": "10.15252/msb.202211301",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
+  "gaspari2020": {
+   "text": "Gaspari and others (2020) Model-driven design allows growth of Mycoplasma pneumoniae on serum-free media. NPJ Syst Biol Appl 6:33. A model of the organism's metabolism, and its growth in a defined medium; strain M129.",
+   "doi": "10.1038/s41540-020-00153-7",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
+  "awadh2021": {
+   "text": "Awadh and others (2021) Determination of metabolic activity in planktonic and biofilm cells of Mycoplasma fermentans and Mycoplasma pneumoniae by nuclear magnetic resonance. Sci Rep 11:5650. Clinical strains; what is taken is what it says of the species in general.",
+   "doi": "10.1038/s41598-021-84326-2",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
+  "li2021": {
+   "text": "Li and others (2021) Quantitative proteomics analysis of Mycoplasma pneumoniae identifies potential macrolide resistance determinants. AMB Express 11:26. Clinical strains; what is taken is what it says of the species and of mycoplasmas in general.",
+   "doi": "10.1186/s13568-021-01187-8",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
    "accessed": "2026-11-15"
   },
   "maier2011": {
-   "text": "Maier and others (2011) Quantification of mRNA and protein and integration with protein turnover in a bacterium. Mol Syst Biol 7:511.",
+   "text": "Maier and others (2011) Quantification of mRNA and protein and integration with protein turnover in a bacterium. Mol Syst Biol 7:511. Measured copies of the organism's proteins and messenger RNAs in a cell, and counts of its ribosomes.",
    "doi": "10.1038/msb.2011.38",
-   "licence": "CC BY-NC-SA 3.0, read for numbers and short quotations; its tables are not copied",
+   "licence": "CC BY-NC-SA 3.0, a non-commercial licence. It is named so that it can be read, and nothing is taken from it.",
+   "class": "non-commercial",
    "accessed": "2026-11-15"
   },
   "wodke2013": {
-   "text": "Wodke and others (2013) Dissecting the energy metabolism in Mycoplasma pneumoniae through genome-scale metabolic modeling. Mol Syst Biol 9:653.",
+   "text": "Wodke and others (2013) Dissecting the energy metabolism in Mycoplasma pneumoniae through genome-scale metabolic modeling. Mol Syst Biol 9:653. A genome-scale model of the organism's energy metabolism: which routes it has, and how its energy is spent.",
    "doi": "10.1038/msb.2013.6",
-   "licence": "CC BY-NC-SA 3.0, read for numbers and short quotations; its tables are not copied",
-   "accessed": "2026-11-15"
-  },
-  "hasselbring2006": {
-   "text": "Hasselbring and others (2006) Terminal organelle development in the cell wall-less bacterium Mycoplasma pneumoniae. Proc Natl Acad Sci U S A 103:16478-83. Abstract only.",
-   "doi": "10.1073/pnas.0608051103",
+   "licence": "CC BY-NC-SA 3.0, a non-commercial licence. It is named so that it can be read, and nothing is taken from it.",
+   "class": "non-commercial",
    "accessed": "2026-11-15"
   },
   "himmelreich1996": {
-   "text": "Himmelreich and others (1996) Complete sequence analysis of the genome of the bacterium Mycoplasma pneumoniae. Nucleic Acids Res 24:4420-49. Abstract only.",
+   "text": "Himmelreich and others (1996) Complete sequence analysis of the genome of the bacterium Mycoplasma pneumoniae. Nucleic Acids Res 24:4420-49. The paper that sequenced the genome, with its own count of reading frames.",
    "doi": "10.1093/nar/24.22.4420",
+   "licence": "No open licence stated: the paper's record names none and does not count it as open access. It is named so that it can be read, and nothing is taken from it.",
+   "class": "no stated terms",
    "accessed": "2026-11-15"
   },
   "dandekar2000": {
-   "text": "Dandekar and others (2000) Re-annotating the Mycoplasma pneumoniae genome sequence: adding value, function and reading frames. Nucleic Acids Res 28:3278-88. Abstract only.",
+   "text": "Dandekar and others (2000) Re-annotating the Mycoplasma pneumoniae genome sequence: adding value, function and reading frames. Nucleic Acids Res 28:3278-88. The re-annotation of the genome, which the frozen record holds: what it added.",
    "doi": "10.1093/nar/28.17.3278",
+   "licence": "No open licence stated: the paper's record names none and does not count it as open access. It is named so that it can be read, and nothing is taken from it.",
+   "class": "no stated terms",
    "accessed": "2026-11-15"
   },
   "kuhner2009": {
-   "text": "Kühner and others (2009) Proteome organization in a genome-reduced bacterium. Science 326:1235-40. Abstract only.",
+   "text": "Kühner and others (2009) Proteome organization in a genome-reduced bacterium. Science 326:1235-40. A screen of the organism's protein complexes, with electron tomograms of its cells.",
    "doi": "10.1126/science.1176343",
+   "licence": "No open licence stated: the paper's record names none and does not count it as open access. It is named so that it can be read, and nothing is taken from it.",
+   "class": "no stated terms",
    "accessed": "2026-11-15"
   },
   "yus2009": {
-   "text": "Yus and others (2009) Impact of genome reduction on bacterial metabolism and its regulation. Science 326:1263-8. Abstract only.",
+   "text": "Yus and others (2009) Impact of genome reduction on bacterial metabolism and its regulation. Science 326:1263-8. The organism's metabolism, and a defined medium for it: which nutrients it needs.",
    "doi": "10.1126/science.1177263",
+   "licence": "No open licence stated: the paper's record names none and does not count it as open access. It is named so that it can be read, and nothing is taken from it.",
+   "class": "no stated terms",
+   "accessed": "2026-11-15"
+  },
+  "hasselbring2006": {
+   "text": "Hasselbring and others (2006) Terminal organelle development in the cell wall-less bacterium Mycoplasma pneumoniae. Proc Natl Acad Sci U S A 103:16478-83. How the attachment organelle forms and is duplicated before division, and what gliding has to do with division.",
+   "doi": "10.1073/pnas.0608051103",
+   "licence": "No open licence stated: the paper's record names none and does not count it as open access. It is named so that it can be read, and nothing is taken from it.",
+   "class": "no stated terms",
    "accessed": "2026-11-15"
   },
   "genbank": {
    "text": "Himmelreich R, Hilbert H, Li B-C; Suyama M, Dandekar T, Herrmann R (1996, 2000) Mycoplasma pneumoniae M129, complete genome. GenBank U00089.2.",
    "url": "https://www.ncbi.nlm.nih.gov/nuccore/U00089.2",
    "licence": "NCBI places no restrictions on the use or distribution of GenBank data; submitters may claim rights in what they submitted, and this record states none",
+   "class": "permissive",
    "accessed": "2026-11-15"
   },
   "uniprot": {
    "text": "UniProt Consortium, UniProt release 2026_04: the curated entries of taxon 272634, and the archived sequences of the taxon with the family signatures on them.",
    "url": "https://www.uniprot.org/uniprotkb?query=taxonomy_id:272634",
    "licence": "CC BY 4.0",
+   "class": "permissive",
    "accessed": "2026-11-15"
   }
  }

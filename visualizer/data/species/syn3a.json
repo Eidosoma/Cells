@@ -7,7 +7,7 @@
  "plain": "A bacterium with a designed, minimised genome: 452 protein-coding genes kept from Mycoplasma mycoides, in a cell about 400 nm across with one membrane and no wall. It grows on its own in a rich medium, and its genome is smaller than that of any natural cell that does.",
  "order": 30,
  "default": false,
- "made": "2026-11-14",
+ "made": "2026-11-15",
  "modelled": {
   "state": "proposed",
   "text": "JCVI-syn3A is the project's minimal-cell track (decision D173, 14 November 2026), taken up from a note that proposes it as the first whole-cell validation organism for Cells. Nothing of it is in the engine yet: the project's record holds an evidence audit, capability probes of the engine as it stands, and a proposed first milestone, with no engine code written for it and nothing accepted."
@@ -94,8 +94,11 @@
    },
    {
     "label": "Energy",
-    "value": "ATP from sugar breakdown alone; no oxidative phosphorylation",
+    "value": "ATP from fermenting sugar; in the 2019 reconstruction of its metabolism, central metabolism is the only source of ATP",
     "sources": [
+     "breuer2019"
+    ],
+    "see": [
      "thornburg2022"
     ]
    },
@@ -115,8 +118,12 @@
    },
    {
     "label": "Division",
-    "value": "ftsZ and sepF are among seven genes needed together for regular shape and division",
+    "value": "the division genes ftsZ and sepF are among 19 genes added to the smaller strain JCVI-syn3.0 to make this one, which gave it back a regular shape; a review reports that seven of the 19 are needed together for normal division",
     "sources": [
+     "breuer2019",
+     "zhang2023"
+    ],
+    "see": [
      "pelletier2021"
     ]
    },
@@ -139,7 +146,7 @@
   "capabilities": {
    "cap.membrane": {
     "place": "present",
-    "note": "Its one membrane holds the cell's ion and proton gradients. In mycoplasmas the ATP synthase typically runs backwards and pumps protons out; that was measured in related species, not in this strain."
+    "note": "Its one membrane holds the cell's ion and proton gradients. In the 2019 reconstruction of its metabolism the ATP synthase pushes protons out, against a passive leak of protons inwards; that is a model's reading, and no source read for this file measured the voltage of this strain."
    },
    "cap.channels": {
     "place": "absent",
@@ -167,7 +174,7 @@
    },
    "cap.energy": {
     "place": "present",
-    "note": "All of its ATP comes from breaking down sugar in the cytoplasm; it has no proteins for oxidative phosphorylation."
+    "note": "Its ATP comes from fermenting sugar in the cytoplasm: in the 2019 reconstruction of its metabolism, central metabolism is the only source of ATP."
    },
    "cap.mitochondria": {
     "place": "absent",
@@ -175,7 +182,7 @@
    },
    "cap.circuits": {
     "place": "present",
-    "note": "At the chromosome, which lies in the cytoplasm: there is no nucleus. The minimised genome kept few regulatory proteins."
+    "note": "At the chromosome, which lies in the cytoplasm: there is no nucleus. The 2019 paper notes how few regulatory proteins the minimised genome has left."
    },
    "cap.grn": {
     "place": "absent",
@@ -203,7 +210,7 @@
    },
    "cap.division": {
     "place": "present",
-    "note": "It grows and divides as a single cell. Seven genes that the smaller strain JCVI-syn3.0 lacks, the division genes ftsZ and sepF among them, are needed together for its regular shape and division."
+    "note": "It grows and divides as a single cell. The division genes ftsZ and sepF are among 19 genes that were added to the smaller strain JCVI-syn3.0 to make it, which gave it back a regular shape; a review reports that seven of the 19 are needed together for normal division."
    },
    "cap.replacement": {
     "place": "absent",
@@ -219,40 +226,108 @@
    }
   }
  },
+ "capability_sources": {
+  "cap.membrane": [
+   "breuer2019"
+  ],
+  "cap.channels": [
+   "uniparc"
+  ],
+  "cap.pumps": [
+   "genbank",
+   "uniparc"
+  ],
+  "cap.junctions": [
+   "uniparc"
+  ],
+  "cap.extracellular": [
+   "breuer2019"
+  ],
+  "cap.water": [
+   "breuer2019",
+   "gilbert2021"
+  ],
+  "cap.calcium": [
+   "breuer2019",
+   "uniparc"
+  ],
+  "cap.energy": [
+   "breuer2019"
+  ],
+  "cap.mitochondria": [
+   "breuer2019"
+  ],
+  "cap.circuits": [
+   "breuer2019",
+   "gilbert2021"
+  ],
+  "cap.trafficking": [
+   "genbank"
+  ],
+  "cap.assembly": [
+   "genbank"
+  ],
+  "cap.machines": [
+   "gilbert2021",
+   "genbank",
+   "uniparc"
+  ],
+  "cap.secretion": [
+   "breuer2019"
+  ],
+  "cap.division": [
+   "breuer2019",
+   "zhang2023"
+  ]
+ },
  "sources": {
   "breuer2019": {
    "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
    "doi": "10.7554/elife.36842",
    "licence": "CC BY 4.0",
+   "class": "permissive",
    "accessed": "2026-11-14"
   },
   "gilbert2021": {
    "text": "Gilbert and others (2021) Generating Chromosome Geometries in a Minimal Cell From Cryo-Electron Tomograms and Chromosome Conformation Capture Maps. Front Mol Biosci 8:644133.",
    "doi": "10.3389/fmolb.2021.644133",
    "licence": "CC BY 4.0",
+   "class": "permissive",
    "accessed": "2026-11-14"
   },
+  "zhang2023": {
+   "text": "Zhang and others (2023) Investigation of Genome Biology by Synthetic Genome Engineering. Bioengineering (Basel) 10(2):271. A review.",
+   "doi": "10.3390/bioengineering10020271",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
   "thornburg2022": {
-   "text": "Thornburg and others (2022) Fundamental behaviors emerge from simulations of a living minimal cell. Cell 185:345-360.e28.",
+   "text": "Thornburg and others (2022) Fundamental behaviors emerge from simulations of a living minimal cell. Cell 185:345-360.e28. A whole-cell model of this organism: its own account of the cell's energy, its membrane proteins and its regulation is there.",
    "doi": "10.1016/j.cell.2021.12.025",
-   "licence": "CC BY-NC-ND 4.0, read for numbers and one short quotation",
+   "licence": "CC BY-NC-ND 4.0, a non-commercial licence. It is named so that it can be read, and nothing is taken from it.",
+   "class": "non-commercial",
    "accessed": "2026-11-14"
   },
   "pelletier2021": {
-   "text": "Pelletier and others (2021) Genetic requirements for cell division in a genomically minimal cell. Cell 184:2430-2440.e16. Abstract only.",
+   "text": "Pelletier and others (2021) Genetic requirements for cell division in a genomically minimal cell. Cell 184:2430-2440.e16. The experiments on which genes this organism needs to divide. Only its bibliographic record was read.",
    "doi": "10.1016/j.cell.2021.03.008",
+   "licence": "No open licence stated: the paper's record names none and does not count it as open access. It is named so that it can be read, and nothing is taken from it.",
+   "class": "no stated terms",
    "accessed": "2026-11-14"
   },
   "genbank": {
    "text": "Glass J (2017) Synthetic bacterium JCVI-Syn3A, complete genome. GenBank CP016816.2, annotation of 12 April 2018.",
    "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2",
    "licence": "NCBI places no restrictions on the use or distribution of GenBank data; submitters may claim rights in what they submitted, and this record states none",
+   "class": "permissive",
    "accessed": "2026-11-14"
   },
   "uniparc": {
    "text": "UniProt Consortium, UniParc release 2026_04: the archived protein sequences of taxon 2144189 and the family signatures on them.",
    "url": "https://www.uniprot.org/uniparc?query=taxonomy_id:2144189",
    "licence": "CC BY 4.0",
+   "class": "permissive",
    "accessed": "2026-11-14"
   }
  }

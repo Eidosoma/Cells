@@ -25,6 +25,7 @@
    "release": "U00089.2, the re-annotation of 2000",
    "accessed": "2026-11-15",
    "licence": "No restriction: \"NCBI places no restrictions on the use or distribution of the GenBank data\". Submitters may claim rights in what they submitted; this record states none.",
+   "class": "permissive",
    "cite": "Himmelreich R, Hilbert H, Li B-C; Suyama M, Dandekar T, Herrmann R (1996, 2000) Mycoplasma pneumoniae M129, complete genome. GenBank U00089.2.",
    "holds": "the locus tags, gene names, products and lengths of the organism's proteins"
   },
@@ -34,6 +35,7 @@
    "release": "2026_04",
    "accessed": "2026-11-15",
    "licence": "CC BY 4.0",
+   "class": "permissive",
    "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
    "holds": "the reviewed entries of the organism's proteins; which archived sequences carry each family signature; the signatures of the units' human candidates; the control counts"
   },
@@ -42,11 +44,21 @@
    "url": "https://www.ebi.ac.uk/interpro/",
    "accessed": "2026-11-15",
    "licence": "CC0 1.0",
+   "class": "permissive",
    "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456.",
    "holds": "the identifiers and names of the family signatures, as UniProt gives them"
+  },
+  {
+   "name": "Gaspari and others 2020",
+   "url": "https://doi.org/10.1038/s41540-020-00153-7",
+   "accessed": "2026-11-15",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "cite": "Gaspari and others (2020) Model-driven design allows growth of Mycoplasma pneumoniae on serum-free media. NPJ Syst Biol Appl 6:33.",
+   "holds": "what its model of the cell's metabolism has the ATP synthase do, and that the cell ferments glucose"
   }
  ],
- "not_copied": "No sequence is copied: they stay with the downloads, outside the repository. The papers with measured protein amounts and other tables of this organism (Maier and others 2011, Wodke and others 2013, Chen and others 2016) are under non-commercial licences: numbers from them are cited in the species file and their tables are not copied. No whole-cell or genome-scale model of the organism was read for its files.",
+ "not_copied": "No sequence is copied: they stay with the downloads, outside the repository. The papers with measured protein amounts and other tables of this organism (Maier and others 2011, Wodke and others 2013, Chen and others 2016) are under non-commercial licences: nothing is taken from them, and the species file names the first two as places to read. What the files say of amounts, energy and food rests on open papers instead. Of the genome-scale models of the organism, only the open one of 2020 was read, for two statements.",
  "units": {
   "U01": {
    "finding": "none found",
@@ -309,7 +321,7 @@
    "evidence": "reviewed entry",
    "evidence_note": "Locus MPN_600, product \"ATP synthase alpha chain\" in the genome record. Its reviewed UniProtKB entry names it \"ATP synthase subunit alpha\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain).",
    "citation": null,
-   "why": "Part of the cell's F-type ATP synthase, which sits in its one membrane; four of its subunits are listed here. A 2013 model of the cell's metabolism has this machine run backwards, spending ATP to pump protons out; that is the model's estimate, not a measurement. The law inventory has no F-type ATPase."
+   "why": "Part of the cell's F-type ATP synthase, which sits in its one membrane; four of its subunits are listed here. A model of the cell's metabolism published in 2020 has this machine run in reverse, spending ATP to pump protons out; that is the model's result, not a measurement. The law inventory has no F-type ATPase."
   },
   {
    "name": "ATP synthase, F1 beta subunit",

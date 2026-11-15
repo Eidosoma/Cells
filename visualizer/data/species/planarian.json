@@ -7,7 +7,7 @@
  "plain": "A freshwater flatworm that regrows its whole body from a fragment. Its protein atlas is of Schmidtea mediterranea; the outlines drawn are of a planarian in general, with indicative sizes.",
  "order": 20,
  "default": true,
- "made": "2026-11-14",
+ "made": "2026-11-15",
  "modelled": {
   "state": "generic",
   "text": "Cells models a generic cell and a sheet of such cells, not this animal. The sheet stands for skin-like tissue and is drawn on the worm for the scales only. The brain and the worm are placeholder outlines: nothing at those scales is simulated."
@@ -89,7 +89,7 @@
      "body"
     ]
    },
-   "note": "The outline drawn is a planarian flatworm's brain with its two nerve cords, as a placeholder. The sheet of cells stands for skin-like tissue lying over the brain, drawn on the worm's head so that the scales follow one another; it is not the worm's tissue. The brain's own cells are neurons and glia, which Cells does not model. The sizes are indicative.",
+   "note": "The outline drawn is a planarian flatworm's brain with its two nerve cords, as a placeholder. The sheet of cells stands for skin-like tissue lying over the brain, drawn on the worm's head so that the scales follow one another; it is not the worm's tissue. The brain's own cells are neurons and glia, which Cells does not model. The size of the brain is the picture's choice: no measurement of it was read.",
    "centre_um": [
     790,
     -30,
@@ -157,7 +157,10 @@
     "kind": "outline",
     "ref": "planarian"
    },
-   "note": "The outline drawn is a planarian flatworm, about 10 mm long, as a placeholder. The sheet of cells stands for skin-like tissue and is drawn on the worm's head for the scales only. The sizes are indicative.",
+   "note": "The outline drawn is a planarian flatworm, about 10 mm long, as a placeholder. The sheet of cells stands for skin-like tissue and is drawn on the worm's head for the scales only. Its length is the picture's choice, within the 1 to 14 mm of the animals that one study of Schmidtea mediterranea used; its width and its proportions are the picture's choice, and no measurement of them was read.",
+   "sources": [
+    "lu2025"
+   ],
    "centre_um": [
     5000,
     0,
@@ -221,5 +224,13 @@
   },
   "capabilities": {}
  },
- "sources": {}
+ "sources": {
+  "lu2025": {
+   "text": "Lu J, Xu H, Wang D, Chen Y, Inoue T, Gao L, Lei K (2025) 3D reconstruction of neuronal allometry and neuromuscular projections in asexual planarians using expansion tiling light sheet microscopy. eLife 13:RP101103. The intact animals it used, of the clonal asexual strain CIW4 of Schmidtea mediterranea, were 1 to 14 mm long.",
+   "doi": "10.7554/eLife.101103",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  }
+ }
 }

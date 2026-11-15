@@ -51,16 +51,16 @@ claim; this table covers what the viewer's data uses, and says where it adds to 
 | --- | --- | --- |
 | 452 protein-coding genes, 493 genes, about 543,000 base pairs | **Confirmed.** The record is 543,379 base pairs with 496 genes: 455 protein products, 3 pseudogenes, 38 RNA genes. The paper reaches 493 from the record's 498 features by leaving out 3 pseudogenes and 2 yeast genes; however the 493 is made up, 452 is the count of kept protein-coding genes | Breuer and others 2019; GenBank CP016816.2 |
 | "Some newer modeling papers use 455 proteins" | **Explained:** 455 is 452 kept plus 3 added, as above | The 2019 paper's supplementary file 3 |
-| JCVI-syn3.0 has 438 protein types | **Confirmed:** its record has 438 coding sequences and 473 genes | GenBank CP014940.1; Hutchison and others 2016, abstract |
+| JCVI-syn3.0 has 438 protein types | **Confirmed:** its record has 438 coding sequences and 473 genes | GenBank CP014940.1. The paper that made the strain (Hutchison and others 2016) states no open licence and is not used |
 | *M. genitalium* about 480; *M. pneumoniae* about 700; *E. coli* over 4,000 | **Confirmed second-hand:** the 2019 paper gives 482, 688 and 4,637 coding genes | Breuer and others 2019 |
 | The 2019 proteomics detected 428 of the 452, about 95% | **Corrected.** The table holds 428 proteins. Tied to locus tags, 427 are among the 452 (94%) and one is the added marker tetM, which the table itself names "tetracycline resistance ribosomal protection protein Tet(M)". The lead's audit and note count the 428 and call the claim confirmed; this adds which they are | Supplementary file 5, joined to the record by identical sequence |
 | A single membrane and no cell wall | **Confirmed** | Breuer and others 2019; Gilbert and others 2021 |
 | It depends on nutrients and lipids from the medium | **Confirmed:** a rich, not fully defined medium; the reconstruction needs four lipid components imported, cholesterol among them | Breuer and others 2019 |
-| Seven genes, with ftsZ and sepF, restore regular division | **Confirmed** from the abstract; the paper is not open | Pelletier and others 2021, abstract |
+| Seven genes, with ftsZ and sepF, restore regular division | **Confirmed from open sources.** The 2019 paper says that 19 genes were added to JCVI-syn3.0 to make this strain, ftsZ and sepF among them, which restored a consistent shape; an open review reports that seven of the 19 are needed together for normal division. The paper that found it (Pelletier and others 2021) states no open licence: it is named as the place to read, and nothing is taken from it | Breuer and others 2019; Zhang and others 2023, a review (both CC BY 4.0) |
 | Proteomics deposit PXD008159 / MSV000081687 | **Confirmed:** the record is titled JCVI_Syn3A, hosted by MassIVE | ProteomeXchange record |
 | Tomograms EMPIAR-10685 and 10686; contact maps at 10.4121/14333618 | **Confirmed** in the paper's data statement; the deposits are in the lead's audit | Gilbert and others 2021 |
-| The 2022 model set promoter strengths from protein abundances | **Confirmed** | Thornburg and others 2022 |
-| The 2026 model: a cell cycle of about 100 minutes | **Confirmed** from the abstract | Thornburg and others 2026, abstract |
+| The 2022 model set promoter strengths from protein abundances | **Confirmed** in the paper, which is under a non-commercial licence: said here, and in no data file | Thornburg and others 2022 (CC BY-NC-ND 4.0) |
+| The 2026 model: a cell cycle of about 100 minutes | **Confirmed** from the abstract; the paper itself was not read | Thornburg and others 2026, abstract (its bibliographic record names CC BY) |
 | The 2026 model: 50 cells, about 15,000 GPU-hours, no kinetic model of FtsZ | **Not re-read here.** The lead's review confirms them against the preprint | `docs/PAPER_REVIEW_WHOLE_CELL_MINIMAL_CELL.md` on main |
 | The lipid-diet paper (2024), the membrane paper (2026), the adaptation paper (2023), the division study's data deposit | **Not checked here.** The lead's audit covers them, with corrections | The audit's inventory |
 | The smallest known genomes (*Vidania*), and everything on *M. pneumoniae* as a companion | **Not checked:** outside this task | |
@@ -87,16 +87,17 @@ Each fact is in `cell.facts` of the species file with its source.
 | Ribosomes | About 500 in a small cell | Counted two ways in the tomograms: 503 or 684 in the smaller cell, 820 or 1,095 in the larger. The counts differ by a third |
 | Proteins | About 77,000 molecules in an average cell | An estimate: measured shares of the protein signal, scaled by dry mass (Breuer and others 2019) |
 | Doubling time | About 105 minutes in rich medium | Breuer and others 2019, a growth curve |
-| Energy | ATP from sugar breakdown alone; no oxidative phosphorylation | Thornburg and others 2022 |
-| Division | ftsZ and sepF are among seven genes needed for regular shape and division | Pelletier and others 2021, abstract |
+| Energy | ATP from fermenting sugar; in the 2019 reconstruction of its metabolism, central metabolism is the only source of ATP | Breuer and others 2019. Thornburg and others 2022 is named as a place to read more |
+| Division | ftsZ and sepF are among 19 genes added to JCVI-syn3.0 to make this strain, which gave it back a regular shape; seven of the 19 are needed together for normal division | Breuer and others 2019; Zhang and others 2023, a review that reports the seven. Pelletier and others 2021 is named as the place to read the experiments |
 
 The drawing's numbers are a sphere 0.4 µm across, one membrane, no wall, no nucleus, a
 chromosome of 543 thousand base pairs and 500 ribosomes. The width and the ribosome count
 are round numbers for the smaller measured cell, and the level's note says so.
 
-**Two more numbers the drawing may want,** both from the 2022 paper and not in the species
-file: 93 kinds of membrane protein make up roughly 9,000 of the 77,000 protein molecules,
-and the model takes 187 RNA polymerases.
+**Two more numbers, cited here only.** The 2022 paper has 93 kinds of membrane protein
+making up roughly 9,000 of the 77,000 protein molecules, and its model takes 187 RNA
+polymerases. The paper is under a non-commercial licence (CC BY-NC-ND 4.0): these
+numbers are in no data file and may not be drawn from.
 
 ## Which capabilities have a place in it
 
@@ -120,9 +121,9 @@ What each absence rests on:
 
 Three placements are judgement and are said to be:
 
-- **Membrane voltage is "present".** The papers cite measurements of a proton gradient in
-  other mycoplasmas, where the ATP synthase runs backwards and pumps protons out. No
-  source read here measured it in this strain. The lead's review notes that the 2026
+- **Membrane voltage is "present".** The 2019 reconstruction of the cell's metabolism has
+  the ATP synthase push protons out, against a passive leak of protons inwards; that is
+  a model's reading. No source read here measured the voltage of this strain. The lead's review notes that the 2026
   model has no membrane potential; that is about the model, and this is about the cell.
 - **Injury and repair is "present"** only because the place would be its membrane. No
   source read here describes it.
@@ -218,15 +219,15 @@ either. The file says so with every predicted side.
 - **In the membrane:** a stretch of 19 residues whose mean hydropathy on Kyte and
   Doolittle's scale is 1.6 or more and which holds no charged residue, or 2.2 or more with
   at most one.
-  - The window of 19 and the 1.6 are the usual reading of that scale; L'Hernault and
-    Arduengo (1992) state it, citing Kyte and Doolittle.
+  - The window of 19 and the 1.6 are the usual reading of that scale; Paulet and others
+    (2011, CC BY 2.0) state it.
   - The conditions on charged residues are this tool's. They were set against this
     organism's own proteins, so the checks below are not independent of them.
 - **Outside:** PROSITE's lipoprotein signature (PS51257, as UniProt's archive gives it)
   from the first residue to a cysteine, with a hydrophobic stretch before the cysteine.
-  The lipoproteins of mycoplasmas are anchored on the outer face of the membrane
-  (Chambaud and others 1999). That is said of mycoplasmas in general and was not measured
-  in this strain.
+  The lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's
+  surface (Christodoulides and others 2018, a review under CC BY 4.0). That is said of
+  mycoplasmas in general and was not measured in this strain.
 - **Inside:** no such stretch and no lipid anchor. This includes proteins attached to the
   membrane's inner face, such as the ATP-binding parts of transporters and the outer part
   of the ATP synthase.
@@ -262,10 +263,11 @@ either. The file says so with every predicted side.
   synthase's c subunit are each read with one. The translocon's SecE is caught only by
   the second condition.
 
-**Against the literature.** The 2022 whole-cell model has "93 membrane proteins making up
-roughly 9,000 of the 77,000 proteins in the proteomics" and does not say how they were
-told. Here 86 proteins span the membrane and 13 are anchored on it, 99 together; 89 of
-them were seen in the proteomics, with an estimated 7,685 of the 77,028 copies. The two
+**Against the literature.** Here 86 proteins span the membrane and 13 are anchored on it,
+99 together; 89 of them were seen in the proteomics, with an estimated 7,685 of the
+77,028 copies. The 2022 whole-cell model has 93 membrane proteins making up roughly 9,000
+of the 77,000, and does not say how they were told; that paper is under a non-commercial
+licence, so its numbers are said in this note only and are in no data file. The two
 counts are close but need not be of the same proteins: no list of the model's was copied
 or compared.
 
@@ -309,10 +311,14 @@ names its members without inference.
 **Terms.** Everything copied into the file comes from a source with open terms: GenBank
 (NCBI states no restriction), the 2019 paper (CC BY 4.0), UniProt (CC BY 4.0), and
 Biopython 1.85 for the scale's 20 values (Biopython License Agreement or BSD 3-Clause).
-PROSITE's profile itself is not copied, only where UniProt reports that it matches. Three
-papers were read for one sentence or one number each, with no table taken: Chambaud and
-others 1999 (abstract), L'Hernault and Arduengo 1992 (CC BY-NC-SA) and the 2022
-whole-cell paper (CC BY-NC-ND). Nothing is from the 4D model's repository or archive.
+Two open papers stand behind two statements: Paulet and others 2011 (CC BY 2.0) for the
+usual reading of the scale, and Christodoulides and others 2018 (CC BY 4.0) for where the
+lipoproteins of mycoplasmas sit. PROSITE's profile itself is not copied, only where
+UniProt reports that it matches; PROSITE's own terms are non-commercial, and the file
+says so. Four papers are named as places to read and nothing is taken from them: Kyte
+and Doolittle 1982 and Chambaud and others 1999 (no stated terms), L'Hernault and
+Arduengo 1992 (CC BY-NC-SA) and the 2022 whole-cell paper (CC BY-NC-ND). Nothing is from
+the 4D model's repository or archive.
 
 ## What could not be determined
 
@@ -340,11 +346,16 @@ whole-cell paper (CC BY-NC-ND). Nothing is from the 4D model's repository or arc
 | UniProt, release 2026_04 (UniParc and UniProtKB) | Signatures on the sequences; entries with the same sequence; control counts | CC BY 4.0 |
 | InterPro | The signatures' identifiers and names | CC0 1.0 |
 | Gilbert and others 2021, *Front Mol Biosci* 8:644133 | Cell radii and ribosome counts | CC BY 4.0 |
-| Thornburg and others 2022, *Cell* 185:345 | Numbers and one short quotation | CC BY-NC-ND 4.0: read, nothing more copied |
-| Pelletier and others 2021, *Cell* 184:2430 | The abstract's statement on the seven genes | Abstract only; the paper is not open |
+| Zhang and others 2023, *Bioengineering (Basel)* 10:271, a review | That seven of the 19 added genes are needed together for normal division | CC BY 4.0 |
+| Paulet and others 2011, *BMC Bioinformatics* 12:135 | The usual reading of the hydropathy scale | CC BY 2.0 |
+| Christodoulides and others 2018, *Front Microbiol* 9:1682, a review | That mycoplasmas' lipoproteins are bound to the membrane and exposed on the surface | CC BY 4.0 |
+| Biopython 1.85 | The 20 values of the hydropathy scale | Biopython License Agreement or BSD 3-Clause |
 | Europe PMC | Bibliographic records | Facts only |
 
-Read and not copied: the 2022 paper beyond its numbers; the 2026 paper and the archive of
+Each of these is permissive. The sources that are not, and what stands where they once
+stood, are in the section "What rests on non-commercial or unlicensed sources".
+
+Read and not copied: the 2022 paper; the 2026 paper and the archive of
 its model, which are a reference simulator's and from which nothing is taken; the
 proteomics instrument files. The lead's audit downloaded the genome record, the 2019
 paper's files and the proteomics record first; this tool reads those copies and holds no
@@ -367,27 +378,46 @@ units' notes are tables in the tool; the counts in them are read from the downlo
 
 ## What rests on non-commercial or unlicensed sources
 
-The user's rule (D173, 15 November 2026): data under non-commercial licences are used for
-analysis only, nothing from them is committed or redistributed, and every dependence on
-them is flagged. The same holds here for sources that state no open licence.
+The project's rule (D173, 15 November 2026) sorts every source into three classes.
+**Permissive** (CC BY, CC0, or a plain statement that no restriction is placed): values
+and derived data may enter the repository, with attribution. **Non-commercial** (any
+CC BY-NC licence): analysis only. **No stated terms**: nothing enters. A data file here
+holds no value and no statement from a source of the last two classes; such a source is
+named as a pointer, with what is to be read there. A note may cite a single value from
+one, with its class beside it.
 
-- **No table, trace or plot** from such a source is in the repository. The catalogue and
-  the shelves are built from GenBank, the 2019 eLife paper (CC BY 4.0), UniProt (CC BY
-  4.0) and InterPro (CC0).
-- **Two facts of the species file are cited from such sources,** one sentence each:
-  - "Energy: ATP from sugar breakdown alone; no oxidative phosphorylation", from
-    Thornburg and others 2022 (CC BY-NC-ND 4.0);
-  - "Division: ftsZ and sepF are among seven genes needed together for regular shape and
-    division", from the abstract of Pelletier and others 2021 (no open licence).
-- **Two more are used only for comparison,** in this note and the README: the 2022 model's
-  count of 93 membrane proteins (Thornburg and others 2022), and the usual reading of a
-  membrane-spanning stretch as L'Hernault and Arduengo 1992 state it (CC BY-NC-SA), read
-  for one sentence. The scale's values are taken from Biopython (BSD).
-- **One dependence is indirect.** The 14 lipid-anchor marks come from matches to PROSITE's
-  lipoprotein profile, as UniProt's archive reports them under CC BY 4.0. PROSITE's own
-  database is CC BY-NC-ND, and its profile is not copied. A rule on the sequence alone
-  finds the same 14 and three false extras; it can take the profile's place if this
-  dependence is unwanted.
+**Nothing in the data files rests on such a source, with one exception that is said
+below.** On 15 November 2026 every source was classed, in the files themselves (`class`),
+and what had rested on a source that is not permissive was moved or taken out:
+
+| Source | Class | What it once gave | What stands there now |
+| --- | --- | --- | --- |
+| Thornburg and others 2022 | non-commercial (CC BY-NC-ND 4.0) | The species file's fact on energy, three capability notes and the atlas's note on the ATP synthase; the shelves' comparison with its count of membrane proteins | The energy fact and the notes rest on Breuer and others 2019 (CC BY 4.0): its reliance on fermentation, central metabolism as the only source of ATP, and the proton-pushing ATP synthase of its reconstruction. The count is no longer in a file. The paper is a pointer in the species file and the shelves |
+| Pelletier and others 2021 | no stated terms (not open; its record names no licence) | The fact on division, from its abstract | Breuer and others 2019 for the 19 added genes with ftsZ and sepF, and Zhang and others 2023 (a review, CC BY 4.0) for the seven needed together. The review relays the 2021 paper's finding. The paper is a pointer in the species file |
+| L'Hernault and Arduengo 1992 | non-commercial (CC BY-NC-SA 4.0) | The window of 19 residues and the level of 1.6 | Paulet and others 2011 (CC BY 2.0), which states both. The paper is a pointer in the shelves |
+| Chambaud and others 1999 | no stated terms (not open) | That mycoplasmas' lipoproteins sit on the membrane's outer face, from its abstract | Christodoulides and others 2018 (a review, CC BY 4.0): bound to the membrane and exposed on the surface. The paper is a pointer in the shelves |
+| Kyte and Doolittle 1982 | no stated terms (not open) | Named as the source of the hydropathy scale | The scale's 20 values were always taken from Biopython 1.85 (BSD); the shelves now name Biopython as the source and the paper as a pointer |
+| Hutchison and others 2016 | no stated terms (not open) | Its abstract's gene count of JCVI-syn3.0, checked by the tool | The count is read from GenBank CP014940.1 alone. The paper is named in this note only |
+
+**One dependence remains, and is said in the files.** The 14 lipid-anchor marks of the
+shelves, and the 13 proteins placed outside by them, come from matches to a profile of
+**PROSITE** (PS51257), as UniProt's archive records them under CC BY 4.0. PROSITE's own
+database is distributed under CC BY-NC-ND 4.0 and asks commercial users for a licence fee
+(its licence page was read and saved on 15 November 2026). Nothing was downloaded from
+PROSITE and its profile is not copied, but the placements rest on its matches. The
+shelves name PROSITE among their sources as non-commercial, read through UniParc, and the
+mark says so. A rule on the sequence alone finds the same 14 and three false extras; it
+can take the profile's place if this dependence is unwanted. That is the coordinator's
+and the user's decision.
+
+**Values cited in this note only,** each from a source that is not permissive, with its
+class: the 2022 model's 93 membrane proteins, roughly 9,000 of 77,000 molecules, and its
+187 RNA polymerases (Thornburg and others 2022, non-commercial).
+
+**Relayed values.** Two statements in the files are made by a CC BY source that relays
+another paper: the seven genes (Zhang and others 2023, from Pelletier and others 2021)
+and the exposure of lipoproteins on the surface (Christodoulides and others 2018, a
+review). Each is worded as its open source words it.
 
 ## A Syn3A switch in the simulator
 

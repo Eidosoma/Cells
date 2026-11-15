@@ -166,6 +166,12 @@ must bve configurable as well based on our different species as we add them".
   (`schema/SPECIES_PROTEINS.md`, `data/proteins/<species>/shelves.json`): 455 for Syn3A,
   688 for M. pneumoniae, and the planarian's 18,882 as families that open. The data is
   made; the drawing is not yet.
+- **Licence classes.** Every source in a data file states its licence and its class:
+  permissive, non-commercial, or no stated terms. A data file holds no value from a source
+  that is not permissive (the user's rule, D173); such a source is a pointer in words.
+  `tests/licence_classes.test.mjs` holds every file under `data/` to this. One dependence
+  is named and allowed: the lipid-anchor signal that UniProt reports from PROSITE's rule,
+  whose own database is non-commercial.
 - **Rough edges:** the human heart and body are quick placeholders; M. pneumoniae is drawn
   as a plain rod, since the shape list cannot yet narrow one end for its attachment
   organelle; a cell under 2 µm across has one size mode.
@@ -419,9 +425,10 @@ Ideas kept for after the basics (the user, 14 November 2026):
 ## Known limits
 
 - The molecular scale is one membrane patch with one channel and one pump.
-- The planarian and its brain are sketches with indicative sizes. One search gave about
-  20 mm by 2 mm for a planarian, from an unreviewed preprint, and no measurement of the
-  brain, so the outlines are of a planarian in general and the page labels both as placeholders. The
+- The planarian and its brain are sketches with indicative sizes. An open paper gives intact
+  animals of the laboratory strain as 1 to 14 mm long (Lu and others 2025, CC BY 4.0); the
+  width, the thickness and the brain's size are the picture's choice, so the outlines are
+  of a planarian in general and the page labels both as placeholders. The
   protein atlas does name one, *Schmidtea mediterranea*, because its entries come from
   that species' database records.
 - A species atlas repeats a family's candidates on every unit of that family (68 innexin

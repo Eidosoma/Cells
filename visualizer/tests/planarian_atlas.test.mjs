@@ -35,6 +35,9 @@ const BASES = ["stated", "predicted", "by function", "none"];
 const FINDINGS = ["found", "different family", "none found", "nothing to look for"];
 const EVIDENCE_WORDS = ["reviewed entry", "named in a publication", "family signature", "similarity search"];
 const MACHINE = /\/home\/|\/mnt\/|\/Users\/|\/tmp\//;
+// How a source may be used (the project's rule of 15 November 2026): only a permissive one
+// may stand behind a value or a statement; the others are pointers.
+const CLASSES = ["permissive", "non-commercial", "no stated terms"];
 const key = (text) => String(text).toLowerCase().replace(/[^a-z0-9]/g, "");
 
 const text = await readFile(ATLAS, "utf8");
@@ -78,6 +81,7 @@ test("every source states its licence, and nothing forbidden is among them", () 
     for (const field of ["name", "licence", "holds", "accessed", "cite"]) assert.ok(source[field]?.trim(), `${source.name}: ${field}`);
     assert.ok(source.url.startsWith("https://"), `${source.name}: ${source.url}`);
     assert.ok(!/non-?commercial|research (and|or) education only|\bNC\b/i.test(source.licence), `${source.name}: ${source.licence}`);
+    assert.equal(source.class, "permissive", `${source.name}: the atlas takes something from a source that is ${source.class}`);
   }
   assert.equal(atlas.sources.find((source) => source.name === "UniProt").licence, "CC BY 4.0");
   assert.ok(!/xenbase/i.test(text), "Xenbase is not a source of this file");
@@ -132,17 +136,33 @@ test("a product named in a publication carries its citation, and no other produc
     } else {
       assert.equal(product.citation, null, `${where}: ${product.name}`);
     }
-    if (product.citation) assert.deepEqual(Object.keys(product.citation), ["text", "doi", "pmid"]);
+    if (product.citation) {
+      assert.deepEqual(Object.keys(product.citation), ["text", "doi", "pmid", "class"]);
+      assert.ok(CLASSES.includes(product.citation.class), `${where}: ${product.name}: ${product.citation.class}`);
+    }
+    // A paper whose terms do not allow a copy may be cited for a name only where a
+    // permissive record carries the name too, and the product says which.
+    const pointer = Boolean(product.citation) && product.citation.class !== "permissive";
+    assert.equal("name_record" in product, pointer, `${where}: ${product.name}`);
+    if (pointer) {
+      assert.equal(atlas.sources.find((source) => source.name === product.name_record.source)?.class, "permissive", `${where}: ${product.name}`);
+      assert.ok(product.name_record.id?.trim(), `${where}: ${product.name}`);
+      assert.ok(product.evidence_note.includes(product.name_record.id) || product.ids.some((id) => id.id === product.name_record.id), `${where}: ${product.name} does not show the record that carries its name`);
+    }
   }
 });
 
-test("a different family is named with the one it replaces, on the word of a paper", () => {
+test("a different family is named with the one it replaces, on the search of signatures; the papers are pointers", () => {
   const other = units.filter(([, unit]) => unit.finding === "different family");
   assert.deepEqual(other.map(([id]) => id), ["U36", "U37", "U38"]);
   for (const [id, unit] of other) {
     assert.match(unit.note, /innexin/i, id);
     assert.match(unit.note, /connexin/i, id);
-    assert.match(unit.note, /\(\D+ \d{4}\)/, `${id}: the note cites no paper`);
+    // What the note says rests on the signatures. The two papers state no open licence:
+    // they are named as places to read, and nothing is said from them.
+    assert.match(unit.note, /[Bb]y (its|their) signatures/, id);
+    assert.match(unit.note, /gene models carry the innexin signature and none the connexin one/, id);
+    assert.match(unit.note, /More is to be read in \D+ \d{4}, on which animals have each family, and in \D+ \d{4}, on that innexin; neither states an open licence, so nothing is taken from them\./, id);
     assert.ok(unit.products.some((product) => product.evidence === "named in a publication"), id);
   }
 });
@@ -242,12 +262,15 @@ test("the open set is said to be predicted and not measured, and not to stand in
   assert.ok(said.includes(`the ${lines.toLocaleString("en-US")} proteins on open record for the species`), "the opening count is not the table's");
 });
 
-test("the README says plainly that the library of about 10,000 proteins was not imported", () => {
+test("the README says plainly that the mass-spectrometry library was not imported, and repeats nothing of its paper", () => {
   const said = readme.replace(/\s+/g, " ");
-  assert.match(said, /library of about 10,000 proteins was not imported/);
+  assert.match(said, /The mass-spectrometry library of planarian proteins was not imported/);
   assert.match(said, /It is not the library and does not stand in for it/);
   assert.match(readme, /doi:10\.1016\/j\.devcel\.2025\.08\.015/);
-  assert.match(atlas.not_copied, /10,000/);
+  // The paper reserves all rights: how many proteins its library covers is to be read there.
+  assert.match(said, /How many proteins it covers is in its abstract; the paper reserves all rights, so the number is not repeated here/);
+  assert.match(atlas.not_copied, /The catalogue of planarian proteins detected by mass spectrometry \(Ying and others 2025, doi:10\.1016\/j\.devcel\.2025\.08\.015\) was not copied/);
+  assert.match(atlas.not_copied, /state no open licence: each is cited for a name, which a sequence record or a UniProtKB entry carries too, and none of their findings is repeated/);
   assert.ok(!/engine (uses|reads) (it|this)/i.test(readme.replace(/nothing in the\s+engine reads it/g, "")));
 });
 
@@ -283,6 +306,7 @@ test("the shelves file keeps its contract: format, one shelf, declared districts
     for (const field of ["name", "licence", "holds", "accessed", "cite"]) assert.ok(source[field]?.trim(), `${source.name}: ${field}`);
     assert.ok(source.url.startsWith("https://"), source.name);
     assert.ok(!/non-?commercial|\bNC\b/i.test(source.licence), `${source.name}: ${source.licence}`);
+    assert.equal(source.class, "permissive", `${source.name}: the shelves take something from a source that is ${source.class}`);
   }
   // A source with no plain licence must have stated that it places no restriction.
   assert.match(shelves.sources.find((source) => source.name === "WormBase ParaSite").licence, /Ensembl imposes no restrictions on access to, or use of, the data provided/);

@@ -23,7 +23,7 @@ again.
 **The catalogue has 688 proteins, and that is the count to freeze.** It is the genome
 record GenBank U00089.2 of strain M129, as its authors re-annotated it in 2000. Its locus
 tags, MPN_001 to MPN_688, are the numbers that the papers on this organism use. "About
-700" is right as a round number, and the sources give six different counts, from 677 to
+700" is right as a round number, and the sources give seven different counts, from 677 to
 724; the table below says what each one counts.
 
 **It is far better annotated than Syn3A.** UniProt holds a reviewed, curated entry for 687
@@ -32,8 +32,9 @@ measured essentiality. So the catalogue carries curated names, a level of eviden
 essentiality for every line.
 
 **Its measured protein amounts are not in the catalogue.** They exist (Maier and others
-2011), under a non-commercial licence, so the table is cited and not copied. A few of its
-numbers are in the species file.
+2011), under a non-commercial licence, so nothing of them is in any data file. The
+species file gives the total of protein molecules in a cell and the copies of the
+ribosomal proteins from an open paper instead (Weber and others 2023, CC BY 4.0).
 
 **It has none of the machines the protein atlas draws.** None of the 43 units with named
 candidates was found among its 688 proteins, and no ion channel of any family searched.
@@ -55,50 +56,61 @@ no findings to read when this was made.
 | Claim | Status | Source read |
 | --- | --- | --- |
 | About 700 encoded protein types | **Roughly right; six counts exist.** The frozen record has 688 | See "The counts" below |
-| "Foundational studies use approximately 689–690" | **689 confirmed:** "a single, small chromosome of only 816 394 base pairs, encoding 689 proteins". 690 was not seen | Wodke and others 2013 |
+| "Foundational studies use approximately 689–690" | **689 confirmed:** "a single, small chromosome of only 816 394 base pairs, encoding 689 proteins". 690 was not seen | Wodke and others 2013 (non-commercial: said in this note only) |
 | A 2016 study assembled 1,748 consistently generated multiomics datasets | **Confirmed:** "1748 consistently generated '-omics' data sets", 1,680 of them published before and 68 new. It is under a non-commercial licence | Chen and others 2016 |
 | The 2011 paper measures RNA abundance, protein abundance and protein turnover under different conditions | **Confirmed** from its abstract and text. It is under a non-commercial licence | Maier and others 2011 |
-| The 2013 paper combines measured growth, glucose use, products and responses to pH | **Confirmed:** it fits "experimentally measured glucose consumption, protein production, as well as ... lactate and acetate secretion", and analyses growth at different pH | Wodke and others 2013 |
-| Its figures for ATP spent on maintenance or proton pumping are the model's, not measurements | **Confirmed:** the share of 57 to 80% for the ATP synthase rests on the model, a measured copy number and rates from other organisms | Wodke and others 2013 |
-| A September 2026 *Cell* paper reports 140 structural maps from native and antibiotic-treated cells | **Confirmed** from the abstract: "to resolve 140 maps". Published 25 September 2026, doi:10.1016/j.cell.2026.08.054. The paper is not open | Dobbs and others 2026, abstract |
+| The 2013 paper combines measured growth, glucose use, products and responses to pH | **Confirmed:** it fits "experimentally measured glucose consumption, protein production, as well as ... lactate and acetate secretion", and analyses growth at different pH | Wodke and others 2013 (non-commercial) |
+| Its figures for ATP spent on maintenance or proton pumping are the model's, not measurements | **Confirmed:** the share of 57 to 80% for the ATP synthase rests on the model, a measured copy number and rates from other organisms | Wodke and others 2013 (non-commercial: the share is said in this note only) |
+| A September 2026 *Cell* paper reports 140 structural maps from native and antibiotic-treated cells | **Confirmed** from the abstract: "to resolve 140 maps". Published 25 September 2026, doi:10.1016/j.cell.2026.08.054. The paper is not open | Dobbs and others 2026, abstract (no stated terms: said in this note only) |
 | EMD-53631 is a map of a large ribosomal subunit during its making, in native cells | **Confirmed:** "Map of M. pneumoniae 50S mid biogenesis in native cells", released 23 September 2026 | The EMDB entry |
-| Rich measurements of interactions and cellular structures | **Confirmed in part:** a 2009 screen found 62 complexes of one protein and 116 of several | Kühner and others 2009, abstract |
+| Rich measurements of interactions and cellular structures | **Confirmed in part:** a 2009 screen found 62 complexes of one protein and 116 of several | Kühner and others 2009, abstract (no stated terms: said in this note only) |
 | *M. genitalium*'s 86 gene-disruption strains; *E. coli*'s proteomics | **Not checked:** other organisms | |
 
 ## The counts
 
 | Count | Whose | What it counts |
 | --- | --- | --- |
-| 677 | Himmelreich and others 1996 | the reading frames predicted when the genome was sequenced |
-| 688 | Dandekar and others 2000; GenBank U00089.2 | the re-annotation: 12 added and one dismissed. **Frozen here** |
-| 689 | Wodke and others 2013 | "encoding 689 proteins", citing the two papers above; which gene makes the difference was not traced |
+| 677 | Himmelreich and others 1996 (no stated terms: in this note only) | the reading frames predicted when the genome was sequenced |
+| 688 | GenBank U00089.2; Dandekar and others 2000 (no stated terms) | the re-annotation, which by the paper's abstract added 12 and dismissed one. **Frozen here**, from the record |
+| 687 | Parrott and others 2016, a review (CC BY) | "687 genes", said of the genome as it was first sequenced |
+| 689 | Wodke and others 2013 (non-commercial: in this note only) | "encoding 689 proteins", citing the two papers above; which gene makes the difference was not traced |
 | 694 | Lluch-Senar and others 2015 | their re-annotation, 32 of them reading frames under 100 residues. Their table lists 49 lettered additions beside the 688 numbered genes |
 | 686 | UniProt, release 2026_04 | reviewed entries: two fragments of one gene (MPN_304, MPN_305) share an entry, and MPN_441 has none |
 | 724 | NCBI RefSeq NC_000912.1 | the coding sequences that NCBI's own pipeline finds in the same genome today |
 
-The record was frozen because the literature is keyed to it. The lettered additions of
+The data files give four of these counts, each from a permissive source: 688, 687, 694
+and 686, with RefSeq's 724 in the README. The counts of 1996 and 2013 are in this note
+only. The record was frozen because the literature is keyed to it. The lettered additions of
 the 2015 paper are not in the catalogue: the record has no such genes, and they have no
 protein identifiers to tie to.
 
 ## The organism as the viewer will draw it
 
-| Fact | Value | Source |
+| Fact | Value | Source, all permissive |
 | --- | --- | --- |
-| Shape and size | A thin cell 1 to 2 µm long and 0.1 to 0.2 µm wide, of changeable shape; "about 2 µm long"; a volume of 0.05 µm³ | Parrott and others 2016 (a review, citing a review of 2004); Nakane and others 2015; Maier and others 2011 |
-| Attachment organelle | A membrane-bound extension at one pole, 250 to 300 nm long, with a dense core. It carries the adhesins and leads the cell when it glides | Nakane and others 2021; Hasselbring and others 2006, abstract |
-| Envelope | One membrane, stiffened by sterols; no cell wall | Parrott and others 2016; Nakane and others 2015 |
-| Chromosome | One circle of 816,394 base pairs | GenBank; Himmelreich and others 1996, abstract |
-| Ribosomes | About 140 to 150 in a cell | Maier and others 2011, reporting tomograms of 2009. The 2009 papers were not open to read |
-| Proteins | 167 copies on average among those measured, from about 2 to about 2,300 | Maier and others 2011 |
-| Energy | ATP from fermenting sugar to lactate and acetate; no citric acid cycle and no working respiratory chain | Wodke and others 2013 |
-| Food | Glucose as the main source of carbon and energy; no amino acid synthesis; a defined medium with 19 nutrients | Wodke and others 2013; Himmelreich and others 1996 and Yus and others 2009, abstracts |
-| Division | In two. The attachment organelle is duplicated first, and gliding is needed for normal division | Parrott and others 2016; Hasselbring and others 2006, abstract |
+| Shape and size | A thin cell 1 to 2 µm long and 0.1 to 0.2 µm wide, of changeable shape; "about 2 µm long"; a volume of 0.075 µm³ | Parrott and others 2016 (a review, citing a review of 2004); Nakane and others 2015; Weber and others 2023 |
+| Attachment organelle | A membrane protrusion at one pole, 250 to 300 nm long, with an internal core. It carries the adhesins and leads the cell when it glides | Nakane and others 2021; Nakane and others 2015 |
+| Envelope | A cell membrane stiffened by sterols; no cell wall; one membrane, by UniProt's entries, which name the cell membrane and no outer one | Parrott and others 2016; Nakane and others 2015; UniProt |
+| Inside | A small prokaryote, among the smallest organisms that copy themselves; no nucleus | Li and others 2021; Gaspari and others 2020; the genome record's lineage |
+| Chromosome | One circle of 816,394 base pairs | GenBank |
+| Ribosomes | About 300 in a cell: the ribosomal proteins at a median of 300 copies, by mass spectrometry | Weber and others 2023, measured in strain M129 |
+| Proteins | About 120,000 molecules in a cell, the sum over 528 kinds measured, three quarters of all | Weber and others 2023 |
+| Doubling time | About 8 hours in rich medium; 17.6 hours measured in a serum-free medium | Weber and others 2023; Gaspari and others 2020 |
+| Energy | ATP from fermenting glucose, with lactate and acetate as end products; mycoplasmas lack the citric acid cycle | Gaspari and others 2020; Awadh and others 2021; Li and others 2021 |
+| Food | Glucose as the main fuel; no amino acids, vitamins or lipids of its own making | Gaspari and others 2020; Awadh and others 2021 |
+| Division | In two, by binary fission. The attachment organelle is duplicated first and takes part in the division | Parrott and others 2016; Nakane and others 2021 |
 | Movement | Glides on surfaces, attachment organelle first, at up to 1 µm a second | Nakane and others 2015 |
 
+Every fact rests on permissive sources alone, as of 15 November 2026. The papers that
+once stood behind some of them, and are now only named as places to read, are in the
+section "What rests on non-commercial or unlicensed sources".
+
 **The drawing.** `{"kind": "capsule", "length_um": 2, "across_um": 0.2}`, with one
-membrane, no wall, no nucleus, a chromosome of 816 thousand base pairs and 150 ribosomes.
+membrane, no wall, no nucleus, a chromosome of 816 thousand base pairs and 300 ribosomes.
 The length and width are the upper ends of the ranges. A rod of that size holds 0.06 µm³,
-close to the one volume a paper gives.
+near the one volume a paper gives. **The ribosome count was 150 until 15 November 2026,**
+from a paper under a non-commercial licence; it is now the 300 that an open paper
+measured, which doubles the ribosomes the picture shows.
 
 **What the shape list lacks.** No kind can show a cell that narrows at one end. The
 attachment organelle is what marks this organism, and its proteins have a mark of their
@@ -214,10 +226,16 @@ how the side is known, where in the cell, and a second stated side. No amount is
   55 have a plain name, mostly enzymes, with no place stated in their entry. Those enzymes
   are very likely inside. They were not placed by function, because UniProt records two
   of this organism's enzymes on its surface as well as inside.
-- **The doubling time.** No open text read here states it. A reference site lists 20 hours
-  and 6 hours from two sources that were not read, so the species file gives none.
-- **The cell's width and its ribosome count at first hand.** The width is from a review;
-  the ribosome counts are a 2011 paper's report of tomograms of 2009.
+- **The doubling time at first hand.** Two open papers state about 8 hours in rich medium
+  (Weber and others 2023; Gaspari and others 2020, which cites a paper of 2009), and the
+  second measured 17.6 hours in a serum-free medium. No growth curve was read.
+- **The cell's width and a count of ribosomes at first hand.** The width is from a review.
+  The species file's 300 is the median copy number of the ribosomal proteins, measured by
+  mass spectrometry; the same paper sets it beside counts of 300 to 500 ribosomes in
+  electron tomograms of other papers, whose terms do not allow a copy.
+- **Whether it has a respiratory chain.** No permissive source read here says. The
+  species file therefore says only that mycoplasmas lack the citric acid cycle; the paper
+  that says more is under a non-commercial licence and is named as a place to read.
 - **Which ion the P-type ATPase moves.** Its sequence carries the superfamily's signature
   and none of its branches'.
 - **Whether the potassium uptake system works as the record names it.** UniProt's curators
@@ -236,14 +254,16 @@ how the side is known, where in the cell, and a second stated side. No amount is
 | InterPro | The signatures' identifiers and names | CC0 1.0 |
 | Lluch-Senar and others 2015, *Mol Syst Biol* 11:780, Supplementary Table S2 and text | Each gene's class and essentiality | CC BY 4.0 |
 | Parrott and others 2016; Nakane and others 2015 and 2021 | Numbers and short quotations | CC BY |
-| Maier and others 2011; Wodke and others 2013 | Numbers and short quotations | CC BY-NC-SA 3.0: tables not copied |
-| Chen and others 2016 | One number, for the note's claim | CC BY-NC 4.0: nothing else taken |
-| Five papers by their abstracts (Himmelreich 1996, Dandekar 2000, Kühner 2009, Yus 2009, Hasselbring 2006), and Dobbs 2026 | Numbers and facts from the abstracts | Not open; abstracts only |
+| Weber and others 2023, *Mol Syst Biol* 19:e11301 | The copies of the ribosomal proteins, the total of protein molecules, the cell's volume, the doubling time | CC BY 4.0 |
+| Gaspari and others 2020, *NPJ Syst Biol Appl* 6:33 | What the cell cannot make, that it ferments glucose, what its model has the ATP synthase do, the doubling times | CC BY 4.0 |
+| Awadh and others 2021, *Sci Rep* 11:5650 | The end products of fermentation; that the cell imports its amino acids | CC BY 4.0 |
+| Li and others 2021, *AMB Express* 11:26 | That it is a small prokaryote; that mycoplasmas lack the citric acid cycle | CC BY 4.0 |
 | EMDB entry EMD-53631 | Its title and release date | CC0 1.0 |
 
-No table, trace or plot from a non-commercial or unlicensed source is in any repository
-file. No whole-cell or genome-scale model was read for its files, and no author was
-contacted.
+Each of these is permissive. The sources that are not are named in the section "What
+rests on non-commercial or unlicensed sources": the data files take nothing from them.
+No table, trace or plot from such a source is in any repository file. Of the genome-scale
+models of the organism, only the open one of 2020 was read, and no author was contacted.
 
 ## How to rebuild
 
@@ -261,29 +281,56 @@ bytes every time; the test rebuilds and compares.
 
 ## What rests on non-commercial or unlicensed sources
 
-The user's rule (D173, 15 November 2026): data under non-commercial licences are used for
-analysis only, nothing from them is committed or redistributed, and every dependence on
-them is flagged. The same holds here for sources that state no open licence.
+The project's rule (D173, 15 November 2026) sorts every source into three classes.
+**Permissive** (CC BY, CC0, or a plain statement that no restriction is placed): values
+and derived data may enter the repository, with attribution. **Non-commercial** (any
+CC BY-NC licence): analysis only. **No stated terms**: nothing enters. A data file here
+holds no value and no statement from a source of the last two classes; such a source is
+named as a pointer, with what is to be read there. A note may cite a single value from
+one, with its class beside it.
 
-- **No table, trace or plot** from such a source is in the repository. The measured
-  protein amounts (Maier and others 2011) are not copied. The catalogue and the shelves
-  rest on GenBank, UniProt (CC BY 4.0), InterPro (CC0) and the 2015 essentiality paper
-  (CC BY 4.0) alone.
-- **Facts of the species file cited from non-commercial papers** (CC BY-NC-SA 3.0), with
-  no open source beside them:
-  - the ribosome count, about 140 to 150, from Maier and others 2011, which reports
-    tomograms of 2009 at second hand. **The picture draws 150 ribosomes from it;**
-  - the copies of a protein per cell, from Maier and others 2011;
-  - the energy and food facts, from Wodke and others 2013.
-- **A fact with open sources beside a non-commercial one:** the cell's size (Maier and
-  others 2011, with two CC BY papers).
-- **Facts cited from the abstracts of papers with no open licence:** the attachment
-  organelle, the envelope, division and movement (Hasselbring and others 2006, each with
-  a CC BY paper beside it except "no nucleus and no internal compartments"); the
-  chromosome's length and the gene counts (Himmelreich and others 1996, Dandekar and
-  others 2000, with the genome record beside them); and two papers of 2009 named for the
-  tomograms and the defined medium.
-- The count of 1,748 data sets (Chen and others 2016, CC BY-NC) is in this note only.
+**Nothing in the data files rests on such a source, with one exception that is said
+below.** On 15 November 2026 every source was classed, in the files themselves (`class`),
+and what had rested on a source that is not permissive was moved or taken out:
+
+| Source | Class | What it once gave the data files | What stands there now |
+| --- | --- | --- | --- |
+| Maier and others 2011 | non-commercial (CC BY-NC-SA 3.0) | The ribosome count that was drawn, the copies of a protein, the cell's volume | Weber and others 2023 (CC BY 4.0): the ribosomal proteins' median copies, the total of protein molecules, and a volume. The picture draws 300 ribosomes, not 150 |
+| Wodke and others 2013 | non-commercial (CC BY-NC-SA 3.0) | The energy and food facts, a gene count, and the share of energy its model gives the ATP synthase | Gaspari and others 2020, Awadh and others 2021 and Li and others 2021 (all CC BY 4.0) for fermentation, its end products, what the cell cannot make and the citric acid cycle. The gene count, the share of energy and the statement on a respiratory chain are gone from the files |
+| Chen and others 2016 | non-commercial (CC BY-NC 4.0) | Nothing in a data file | Named in the atlas's `not_copied` and the README, as not used |
+| Himmelreich and others 1996 | no stated terms (free to read, no open licence) | The chromosome's length, a gene count and "no amino acid synthesis", from its abstract | GenBank for the length; Awadh and others 2021 for amino acids. Its gene count is gone from the files |
+| Dandekar and others 2000 | no stated terms (free to read, no open licence) | A gene count, from its abstract | The frozen record itself |
+| Kühner and others 2009 | no stated terms (not open) | A count of protein complexes, and "among the smallest", from its abstract | Gaspari and others 2020 for "among the smallest". The count of complexes is gone from the files |
+| Yus and others 2009 | no stated terms (not open) | The number of nutrients in a defined medium, from its abstract | Gone from the files |
+| Hasselbring and others 2006 | no stated terms (free to read, no open licence) | The attachment organelle's core and its lead in gliding, the envelope, "no nucleus", division and gliding, from its abstract | Nakane and others 2015 and 2021, Parrott and others 2016 and Li and others 2021. That gliding is needed for normal division is gone from the files; they say that the attachment organelle takes part in division |
+
+The eight papers stay in the species file as pointers: each says what is to be read
+there, and gives no value.
+
+**One dependence remains, and is said in the files.** UniProt's curated entries record a
+lipoprotein signal or a lipid anchor for 49 proteins by a rule of **PROSITE** (PRU00303),
+and the shelves place those proteins by it. The entries are UniProt's, under CC BY 4.0.
+PROSITE's own database is distributed under CC BY-NC-ND 4.0 and asks commercial users for
+a licence fee (its licence page was read and saved on 15 November 2026). Nothing was
+downloaded from PROSITE and nothing of it is copied. The shelves name PROSITE among their
+sources as non-commercial, read through UniProt. Whether that use is within PROSITE's
+terms for the project is the coordinator's and the user's decision.
+
+**Values cited in this note only,** each from a source that is not permissive, with its
+class beside it where it stands: the gene counts 677 (Himmelreich and others 1996, no
+stated terms) and 689 (Wodke and others 2013, non-commercial); the 12 added and one
+dismissed (Dandekar and others 2000, no stated terms); the share of 57 to 80% of energy
+that the 2013 model gives the ATP synthase (Wodke and others 2013); the 62 and 116
+complexes (Kühner and others 2009, no stated terms); the 1,748 data sets (Chen and others
+2016, non-commercial); the 140 maps (Dobbs and others 2026, no stated terms).
+
+**Relayed values.** Some statements in the files are made by a CC BY paper that relays
+another: a doubling time of about 8 hours (Gaspari and others 2020, citing Yus and others
+2009; Weber and others 2023 states it too); that the cell ferments glucose, lacks amino
+acid synthesis and lacks the citric acid cycle (Gaspari, Awadh and Li, each citing
+earlier work). Each is worded as its open source words it. The three statements on
+metabolism come from papers on clinical strains or on mycoplasmas in general, not on
+strain M129 alone, and the species file says so with each source.
 
 ## For the lead's agent
 
@@ -294,9 +341,10 @@ viewer's. What it adds:
 
 - **One frozen annotation and a 688-line catalogue keyed to it,** with the six counts of
   the literature set side by side.
-- **Licences read for seven papers.** The essentiality data are open (CC BY 4.0). The
-  protein amounts, the energy paper's tables and the multi-omics resource are
-  non-commercial, so by D173 their tables stay outside the repository.
+- **Licences read for the papers, and a class for each.** The essentiality data are open
+  (CC BY 4.0). The protein amounts, the energy paper and the multi-omics resource are
+  non-commercial, so by D173 nothing of them is in the repository; four open papers
+  stand in their place for what the species file says.
 - **Which of the map's capabilities have a place in it,** and the finding that it has no
   recognisable ion channel and one glycerol channel.
 - **A side of the membrane for 398 proteins,** with the basis of each.

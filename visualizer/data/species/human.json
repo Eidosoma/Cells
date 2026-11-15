@@ -7,7 +7,7 @@
  "plain": "The law inventory names its candidate proteins by their human genes, so the human side of the protein atlas is the inventory's own.",
  "order": 10,
  "default": false,
- "made": "2026-11-14",
+ "made": "2026-11-15",
  "modelled": {
   "state": "generic",
   "text": "Cells models a generic cell and a sheet of such cells, with laws whose candidate proteins are named by their human genes. No human cell type, organ or body is modelled: the heart and the body are placeholder outlines."
@@ -86,7 +86,7 @@
      "trunk"
     ]
    },
-   "note": "The outline drawn is a human heart with its great vessels, as a placeholder. The heart is the picture's choice of organ: a paper on the injured heart is the user's high priority among the published models to reproduce (14 November 2026). No heart is modelled. The sheet of cells is drawn on the chest over the heart so that the scales follow one another; it is not heart tissue, and the heart's own cells are not modelled. The sizes are indicative.",
+   "note": "The outline drawn is a human heart with its great vessels, as a placeholder. The heart is the picture's choice of organ: a paper on the injured heart is the user's high priority among the published models to reproduce (14 November 2026). No heart is modelled. The sheet of cells is drawn on the chest over the heart so that the scales follow one another; it is not heart tissue, and the heart's own cells are not modelled. The heart is drawn about 12 cm long, 9 cm broad and 6 cm thick, the size that an anatomy textbook of 1918 gives for an adult's heart; the sizes of the vessels are the picture's choice.",
    "sheet_mark": {
     "band": 0.22,
     "note": "Here lies the sheet, 0.24 mm across: too small to see, so its ring is not to scale"
@@ -121,7 +121,7 @@
     "kind": "outline",
     "ref": "human"
    },
-   "note": "The outline drawn is a human body lying on its back, 1.7 m long, as a placeholder. The sheet of cells is drawn on the chest for the scales only. The sizes are indicative, and the body's proportions are the picture's choice.",
+   "note": "The outline drawn is a human body lying on its back, 1.7 m long, as a placeholder. The sheet of cells is drawn on the chest for the scales only. Its length is the picture's choice, within the range of mean adult heights that one study gives, about 1.4 to 1.8 m; the body's proportions are the picture's choice too.",
    "sheet_mark": {
     "band": 0.22,
     "note": "Here lies the sheet: too small to see, so its ring is not to scale",
@@ -162,14 +162,18 @@
  },
  "sources": {
   "gray1918": {
-   "text": "Gray H (1918) Anatomy of the Human Body, 20th edition. The adult heart: about 12 cm long, 8 to 9 cm broad and 6 cm thick. Taken from a search digest of online copies of the text; the book itself was not opened.",
-   "url": "https://embryology.med.unsw.edu.au/embryology/index.php/Anatomy_of_the_Human_Body_by_Henry_Gray",
-   "accessed": "2026-11-14"
+   "text": "Gray H, Lewis WH (1918) Anatomy of the Human Body, 20th edition. Lea and Febiger, Philadelphia. It gives the adult heart as about 12 cm long, 8 to 9 cm broad at its broadest part and 6 cm thick. Read in the text of the Internet Archive's scan of the book.",
+   "url": "https://archive.org/details/anatomyofhumanbo00grayrich",
+   "licence": "Public domain: published in the United States in 1918. The Internet Archive's record of the scan gives its copyright status as not in copyright.",
+   "class": "permissive",
+   "accessed": "2026-11-15"
   },
   "ncdrisc2016": {
-   "text": "NCD Risk Factor Collaboration (2016) A century of trends in adult human height. eLife 5:e13410. Mean adult heights from about 1.4 m to above 1.8 m, across countries and birth years. Taken from a search digest; the paper itself was not opened.",
+   "text": "NCD Risk Factor Collaboration (2016) A century of trends in adult human height. eLife 5:e13410. Mean adult heights by country and year of birth: the shortest were women born in Guatemala in 1896, 140.3 cm, and the tallest Dutch men born late in the twentieth century, above 182.5 cm.",
    "doi": "10.7554/eLife.13410",
-   "accessed": "2026-11-14"
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-15"
   }
  }
 }

@@ -44,7 +44,7 @@ catalogue table, the same bytes every time.
   "side_notes": {"predicted": "How a side was predicted, in one or two sentences, naming the predictor and its source."},
   "marks": {"essential": {"label": "Essentiality", "values": ["essential", "quasi-essential", "non-essential"], "measured": true, "source": "the name of an entry in sources"}},
   "counts": {"outside": 0, "in": 0, "inside": 0, "not known": 0},
-  "sources": [{"name": "…", "url": "https://…", "licence": "…", "accessed": "2026-11-15", "holds": "what was taken"}]
+  "sources": [{"name": "…", "url": "https://…", "licence": "…", "class": "permissive", "accessed": "2026-11-15", "holds": "what was taken"}]
 }
 ```
 
@@ -91,10 +91,23 @@ catalogue table, the same bytes every time.
   free.
 - **A group may carry `within`,** the wider class it belongs to, for a district whose own
   name does not read alone, and its `count` and `sides`.
-- **Dependence on non-commercial sources is flagged** (the user's rule, D173): every
-  source states its licence, and a side or a mark that rests on a source under a
-  non-commercial licence, or on one that states no open licence, says so in its note.
-  No table, trace or plot from such a source is in a file.
+- **A dependence that cannot be avoided is named.** Where a side or a mark rests on
+  another source's reading that an open database gives out (the lipid-anchor signal, which
+  UniProt reports from PROSITE's rule), the source says so in `through`, and the note
+  beside the file lists it. The test of the licence classes allows such a case by name
+  only.
+- **Every source has a `class`, and a file holds no value from a source that is not
+  permissive** (D173, 15 November 2026). `class` is one of `permissive` (CC BY, CC0, or
+  a plain statement that no restriction is placed on use), `non-commercial` (a CC BY-NC
+  licence of any kind) and `no stated terms`. A side, a group and a mark rest on
+  permissive sources alone, and a mark's `source` names one. A source of another class
+  is listed in one of two ways only: as a pointer, whose `holds` says that nothing is
+  taken from it and what is to be read there; or, where a permissive source gives out
+  results that originate in it (a database's record of another database's signature),
+  with `through`, the name of that permissive source, and a `holds` that says nothing
+  was downloaded from it and what rests on it. This narrows the bullet above: such a
+  dependence is no longer only flagged. `tests/licence_classes.test.mjs` holds every file
+  to it.
 - A file may carry further keys of its own, such as the checks its tool ran. The drawing
   ignores what it does not know.
 - **Size.** A species' file stays under 1 MB. A catalogue too large for that, or for one

@@ -103,13 +103,13 @@ there is one shelf.
   - *In the membrane:* a stretch of 19 residues whose mean hydropathy on Kyte and
     Doolittle's scale is 1.6 or more and which holds no charged residue, or
     2.2 or more with at most one. The window and the 1.6 are the usual
-    reading of that scale (L'Hernault and Arduengo 1992 state it). The conditions on
+    reading of that scale (Paulet and others 2011 state it). The conditions on
     charged residues are this tool's, set against the checks below.
   - *Outside:* the lipoprotein signature (PROSITE PS51257, as UniProt's archive
     gives it) from the first residue to a cysteine, with a hydrophobic stretch before the
-    cysteine. The lipoproteins of mycoplasmas are anchored on the outer face of the
-    membrane (Chambaud and others 1999); that is said of mycoplasmas in general and
-    was not measured in this strain.
+    cysteine. The lipoproteins of mycoplasmas are bound to the membrane and exposed on the
+    cell's surface (Christodoulides and others 2018); that is said of mycoplasmas in general
+    and was not measured in this strain.
   - *Inside:* no such stretch and no lipid anchor. This includes proteins attached to the
     membrane's inner face, such as the ATP-binding parts of transporters.
 - **By function (20).** The sequence has a hydrophobic stretch, but the
@@ -131,12 +131,12 @@ there is one shelf.
 - **The lipoprotein signature** matches 15 sequences. 14 are kept: 13 are placed outside, and
   1, with a membrane-spanning stretch after the anchor, in the membrane. Set aside, for
   want of a hydrophobic stretch before the cysteine: rpmF.
-- **Against the literature.** The 2022 whole-cell model has "93 membrane proteins making
-  up roughly 9,000 of the 77,000 proteins in the proteomics", and does not say how they
-  were told. Here 86 proteins span the membrane and 13 are anchored on it, 99
-  together. 89 of them were seen in the proteomics, with an estimated 7,685 of
-  the 77,028 copies. The two counts need not be of the same proteins: no list
-  of the model's was copied or compared.
+- **Against the literature.** Here 86 proteins span the membrane and 13 are anchored on it,
+  99 together. 89 of them were seen in the proteomics, with an estimated 7,685 of
+  the 77,028 copies. The 2022 whole-cell model gives its own count of membrane
+  proteins and of their copies. That paper is under a non-commercial licence, so its
+  numbers are not repeated here and no list of the model's was copied or compared: the
+  comparison is to be read there.
 
 **Districts.** The 2019 paper's secondary functional class, in its own words; the tertiary
 class is kept with each protein for laying a district out.
@@ -182,22 +182,36 @@ organism.
 | [UniProt](https://www.uniprot.org/), release 2026_04, read 2026-11-14 | Archive identifiers, signatures, where the lipoprotein signature matches, and other organisms' entries with the same sequence and the place they state | CC BY 4.0 |
 | [InterPro](https://www.ebi.ac.uk/interpro/) | The signatures' identifiers | CC0 1.0 |
 | [Biopython 1.85](https://github.com/biopython/biopython/blob/biopython-185/Bio/SeqUtils/ProtParamData.py), read 2026-11-15 | The 20 values of Kyte and Doolittle's hydropathy scale, for `shelves.json` | Biopython License Agreement or BSD 3-Clause License |
+| [Paulet and others 2011](https://doi.org/10.1186/1471-2105-12-135), read 2026-11-15 | The usual reading of the hydropathy scale: a window of 19 residues and a mean above 1.6 | CC BY 2.0 |
+| [Christodoulides and others 2018](https://doi.org/10.3389/fmicb.2018.01682), read 2026-11-15 | That the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface | CC BY 4.0 |
 
-Read for one sentence or one number each, for `shelves.json`, with no table copied:
+Every source above is permissive: its terms allow what is taken, with attribution.
 
-- the abstract of Chambaud and others (1999) Interactions between mycoplasma lipoproteins and the host immune system. Trends Microbiol 7:493-499.
-  Where the lipoproteins of mycoplasmas are anchored.
-- L'Hernault and Arduengo (1992) Mutation of a putative sperm membrane protein in Caenorhabditis elegans prevents sperm differentiation but not its associated meiotic divisions. J Cell Biol 119:55-68.
-  CC BY-NC-SA. The usual reading of the hydropathy scale.
-- the 2022 whole-cell paper (CC BY-NC-ND): its count of membrane proteins.
+**A dependence on a non-commercial source.** The lipoprotein signature is a profile of
+[PROSITE](https://prosite.expasy.org/prosite_license.html), which is distributed under CC BY-NC-ND 4.0
+and asks commercial users for a licence fee. Nothing was downloaded from PROSITE and
+nothing of it is copied: where the profile matches was read in UniProt's archive, under
+UniProt's terms (CC BY 4.0). The 14 proteins with the mark `lipid_anchor`, 13 of them
+placed outside, rest on those matches. Whether that use is within PROSITE's terms for
+this project is not settled here.
 
-The scale itself is from Kyte and Doolittle (1982) A simple method for displaying the hydropathic character of a protein. J Mol Biol 157:105-132.
+**Named, with nothing taken.** These are pointers: each says what is to be read there.
+Nothing in this folder rests on them.
+
+| Source | Class | What is to be read there |
+| --- | --- | --- |
+| Thornburg and others (2022) Fundamental behaviors emerge from simulations of a living minimal cell. Cell 185:345-360.e28. | non-commercial (CC BY-NC-ND 4.0) | The whole-cell model's own count of membrane proteins and of their copies |
+| L'Hernault and Arduengo (1992) Mutation of a putative sperm membrane protein in Caenorhabditis elegans prevents sperm differentiation but not its associated meiotic divisions. J Cell Biol 119:55-68. | non-commercial (CC BY-NC-SA 4.0) | A use of the hydropathy scale to find the membrane-spanning stretches of a protein |
+| Chambaud and others (1999) Interactions between mycoplasma lipoproteins and the host immune system. Trends Microbiol 7:493-499. | no stated terms (not open) | A review of where the lipoproteins of mycoplasmas are anchored |
+| Kyte and Doolittle (1982) A simple method for displaying the hydropathic character of a protein. J Mol Biol 157:105-132. | no stated terms (not open) | The paper that defined the hydropathy scale. Its values were taken from Biopython's file, not from the paper |
 
 Cite:
 
 - GenBank: Glass J (2017) Synthetic bacterium JCVI-Syn3A, complete genome. GenBank CP016816.2.
 - Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842. doi:10.7554/elife.36842
 - The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)
+- Paulet and others (2011) Hydrophobic pulses predict transmembrane helix irregularities and channel transmembrane units. BMC Bioinformatics 12:135. doi:10.1186/1471-2105-12-135
+- Christodoulides and others (2018) The Role of Lipoproteins in Mycoplasma-Mediated Immunomodulation. Front Microbiol 9:1682. doi:10.3389/fmicb.2018.01682
 
 ## The files they were built from
 
@@ -217,6 +231,9 @@ it against the SHA-256 that the folder's MANIFEST gives before reading it.
 | What those entries state of where the protein sits | `uniprot-syn3a` | `uniprotkb_identical_places.json` | `87b5cb452bc9ec2e0ee41c4f3eb14b176959c50ff5527db663148fd773ba7235` |
 | The hydropathy scale's values | `biopython-185-protparam` | `biopython_185_ProtParamData.py` | `488a4c336556c5e6aa41e9208cd4a9390d7a29d3d83e2c8be1f0cb518c718947` |
 | The records of the papers cited for the shelves | `europepmc-syn3a-papers` | `europepmc_shelves_citations.json` | `2f103715f1d428a72e3c85a5f4b312dfec33220cd5acee752d8293a073aa3e21` |
+| The open review cited for division | `pmc-open-syn3a-licence-pass` | `open_PMC9952402.xml` | `53ce5cad8c00bd3b0a1aac29e9ba85c8974850cf7b3d9ef6e73d4a95b3305e54` |
+| The open paper cited for the usual reading of the scale | `pmc-open-syn3a-licence-pass` | `open_PMC3110554.xml` | `692663dcc4ee3cb90d692dd535895679f31a1fdc795144a3c9dcf2a53759d971` |
+| The open review cited for where lipoproteins sit | `pmc-open-syn3a-licence-pass` | `open_PMC6080569.xml` | `1982e2a292e34cbf878fbce656ff7a7493522beac3d2614d0e7174624b58d906` |
 
 ## How to rebuild
 
