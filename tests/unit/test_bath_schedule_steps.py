@@ -5,7 +5,7 @@ ratio and level, and only within the measured conditions: ARS(2,2,2) at dt <= 1 
 dt <= 0.1 ms, beside faces at kappa/V <= 10/s. Neutral species are keyed by class, ions by species
 ID. The measured points come from §7's staircase probe and milestone 2's probes I (ion steps) and
 D (neutral steps down). Here, at the definition:
-* every measured point is admitted as a step, and the region's corners admit;
+* every measured point is admitted, and the region ends 1% past each corner;
 * just outside each corner refuses, and the staircase probe's measured failures refuse;
 * unmeasured kinds refuse: an ion or direction never measured (Na up, K down, Cl), a face faster
   than measured, ARS at 2 ms, RK4 at 0.2 ms, and another solver;
@@ -119,11 +119,17 @@ def test_an_idle_schedule_is_admitted_whatever_the_solver():
     parse_spec(bfx.with_bath_schedule(raw, ["bath"], bfx.CARGO, []))
 
 
-def test_every_measured_point_is_admitted_by_its_own_region():
+def test_every_measured_point_is_admitted_and_the_region_ends_at_its_corners():
+    """Every point is admitted; 1% further out than a corner (a point no other point of its key
+    dominates) is not."""
     for (key, direction), points in bs.MEASURED_POINTS.items():
         for ratio, level in points:
             assert bs.admitted(key, direction, ratio, level), (key, direction, ratio, level)
-            assert not bs.admitted(key, direction, ratio * 1.01, level * 1.01)
+            dominated = any(
+                (r, c) != (ratio, level) and ratio <= r and level <= c for r, c in points
+            )
+            if not dominated:
+                assert not bs.admitted(key, direction, ratio * 1.01, level * 1.01)
 
 
 def with_neutral_species(raw, count):
