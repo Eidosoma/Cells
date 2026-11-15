@@ -16,7 +16,7 @@ from cells.processes import atp_transporter as neutral
 from cells.processes import proton_pump as proton
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
 
-KIND_ID = "transporter@1"
+KIND_ID = "cells.transporter@1"  # namespaced (§7.4 (k))
 LAWS = {
     proton.LAW_ID: "charged H+ role, held fuel",
     neutral.LAW_ID: "neutral role, finite or held fuel",
@@ -66,7 +66,7 @@ class Transporter:
     ph_band: float | None
 
 
-def parse(raw_list, patches, valence, registry, dynamic_proton_nodes=frozenset()):
+def parse_entries(raw_list, patches, valence, registry, dynamic_proton_nodes=frozenset()):
     """Parse and check a model block's `transporters` (check_definition's refusals)."""
     out = []
     for raw in raw_list or ():
@@ -154,12 +154,12 @@ def to_dict(t):
     )
 
 
-def structure_entry(transporters):
+def structure_entry(declaration):
     """The kind's part of InnerStructure: declared law IDs and fuel kinds (value-free)."""
     return (
         KIND_ID,
-        tuple(sorted({t.law for t in transporters})),
-        tuple(sorted({t.fuel_kind for t in transporters})),
+        tuple(sorted({t.law for t in declaration})),
+        tuple(sorted({t.fuel_kind for t in declaration})),
     )
 
 
@@ -175,11 +175,11 @@ def control_values(schedule, times):
     return values
 
 
-def moved_rows(transporters):
+def moved_rows(declaration):
     """(species, node ID) pairs every population moves in the step: the role at both nodes, and
     finite fuel rows at the fuel node. Held fuel rows are read, never moved."""
     pairs = set()
-    for t in transporters:
+    for t in declaration:
         pairs |= {(t.role, t.inside), (t.role, t.outside)}
         if t.fuel_kind == "finite":
             pairs |= {(row, t.fuel_node) for row in t.fuel_rows}
@@ -200,17 +200,70 @@ def neutral_rates(inputs, parameters, availability, *, xp=jnp):
     return neutral.role_inward_fmol_s(r, parameters), fuel, r
 
 
-def book(rates, held, *, xp=jnp):
+def book_rates(rates, held, *, xp=jnp):
     """(cycles, heat pJ/s, work pJ/s): heat -cycles dG_cyc; work only for held fuel."""
     heat = -1e-3 * rates.cycles_fmol_s * rates.cycle_free_energy_J_mol
     work = xp.where(held, -1e-3 * rates.cycles_fmol_s * rates.chemical_drive_J_mol, 0.0)
     return rates.cycles_fmol_s, heat, work
 
 
-def ledger_terms(heat_pJ, work_pJ, *, xp=jnp):
+def ledger_sums(heat_pJ, work_pJ, *, xp=jnp):
     return xp.sum(heat_pJ), xp.sum(work_pJ)
 
 
-def domain(law_id, inputs, parameters, availability, *, xp=jnp):
-    mod = proton if law_id == proton.LAW_ID else neutral
+def law_domain(law_id, inputs, parameters, availability, *, xp=jnp):
+    mod = proton if resolve_law(law_id) == resolve_law(proton.LAW_ID) else neutral
     return mod.domain_valid(inputs, parameters, availability, xp=xp)
+
+
+# --- §7.4 (k)'s published signatures ------------------------------------------------------------
+# Law IDs are namespaced; a bare ID resolves to "cells.". No global law code: a population's law
+# index is bound per definition, in the order of the declaration's sorted law IDs.
+
+
+def resolve_law(law_id):
+    return law_id if "." in law_id.split("@")[0] else "cells." + law_id
+
+
+def law_index(declaration):
+    """Per-definition law indices (no global codes): {namespaced law ID: index}."""
+    return {law: k for k, law in enumerate(sorted({resolve_law(t.law) for t in declaration}))}
+
+
+def parse(raw_model, raw_experiment, base):
+    """§7.4 (k): the declaration from the model block. `base` gives patches {id: (inside, outside)},
+    valence, registry and dynamic_proton_nodes (the core's parsed model; a stand-in in tests)."""
+    del raw_experiment
+    return parse_entries(
+        raw_model.get("transporters"),
+        base.patches,
+        base.valence,
+        base.registry,
+        base.dynamic_proton_nodes,
+    )
+
+
+def check_definition(spec):
+    """§7.4 (k): definition-time refusals; parse_entries raises them (TransporterError)."""
+    return spec
+
+
+def initial(spec, layout):
+    """§7.4 (k): the kind's state fields start at zero, one slot per population."""
+    del layout
+    return {name: [0.0] * len(spec) for name in STATE_FIELDS}
+
+
+_PENDING = "needs schema A's layout gather (the core's seam); the law helpers above are complete"
+
+
+def rates(state, potentials, control, layout, *, xp=jnp):
+    raise NotImplementedError("transporter rates " + _PENDING)
+
+
+def ledger_terms(state, layout):
+    raise NotImplementedError("transporter ledger_terms " + _PENDING)
+
+
+def readouts(*args, **kwargs):
+    raise NotImplementedError("transporter readouts " + _PENDING)

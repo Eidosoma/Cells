@@ -49,14 +49,14 @@ def neutral_pump(**over):
 
 
 def test_parse_round_trips_and_gives_a_value_free_structure_entry():
-    ts = tk.parse([pump(), neutral_pump()], PATCHES, VALENCE, REGISTRY)
+    ts = tk.parse_entries([pump(), neutral_pump()], PATCHES, VALENCE, REGISTRY)
     assert [tk.to_dict(t) for t in ts] == [pump(), neutral_pump()]
     assert tk.structure_entry(ts) == (
         tk.KIND_ID,
         tuple(sorted([proton.LAW_ID, neutral.LAW_ID])),
         ("finite", "held"),
     )
-    assert tk.parse([], PATCHES, VALENCE, REGISTRY) == ()  # undeclared: absent
+    assert tk.parse_entries([], PATCHES, VALENCE, REGISTRY) == ()  # undeclared: absent
 
 
 @pytest.mark.parametrize(
@@ -82,20 +82,22 @@ def test_parse_round_trips_and_gives_a_value_free_structure_entry():
 )
 def test_proton_pump_refusals(over, reason):
     with pytest.raises(tk.TransporterError, match=reason):
-        tk.parse([pump(**over)], PATCHES, VALENCE, REGISTRY)
+        tk.parse_entries([pump(**over)], PATCHES, VALENCE, REGISTRY)
 
 
 def test_neutral_refusals_and_the_proton_boundary():
     with pytest.raises(tk.TransporterError, match="valence-0"):
-        tk.parse([neutral_pump(role="K")], PATCHES, VALENCE, REGISTRY)
+        tk.parse_entries([neutral_pump(role="K")], PATCHES, VALENCE, REGISTRY)
     with pytest.raises(tk.TransporterError, match="dynamic proton row"):
-        tk.parse([neutral_pump()], PATCHES, VALENCE, REGISTRY, dynamic_proton_nodes={"cell_0"})
+        tk.parse_entries(
+            [neutral_pump()], PATCHES, VALENCE, REGISTRY, dynamic_proton_nodes={"cell_0"}
+        )
     with pytest.raises(tk.TransporterError, match="registry potential"):
-        tk.parse([neutral_pump()], PATCHES, VALENCE, {"ATP": {}, "ADP": {}, "Pi": {}})
+        tk.parse_entries([neutral_pump()], PATCHES, VALENCE, {"ATP": {}, "ADP": {}, "Pi": {}})
 
 
 def test_moved_rows_are_species_node_pairs_and_held_fuel_is_not_moved():
-    ts = tk.parse([pump(), neutral_pump()], PATCHES, VALENCE, REGISTRY)
+    ts = tk.parse_entries([pump(), neutral_pump()], PATCHES, VALENCE, REGISTRY)
     pairs = tk.moved_rows(ts)
     assert ("H", "cell_0") in pairs and ("H", "lumen_0") in pairs
     assert ("Y", "store") in pairs and ("ATP", "cell_0") in pairs  # finite fuel moved
@@ -109,7 +111,7 @@ def test_proton_hook_moves_charge_outward_and_books_heat_and_held_work():
     inward, current, rates = tk.proton_rates(i, p, 1.0, xp=np)
     assert rates.cycles_fmol_s > 0 and inward == pytest.approx(-2 * rates.cycles_fmol_s)
     assert current < 0  # positive charge leaves the inside
-    cycles, heat, work = tk.book(rates, True, xp=np)
+    cycles, heat, work = tk.book_rates(rates, True, xp=np)
     assert heat >= 0 and work > heat
 
 
@@ -120,7 +122,7 @@ def test_neutral_hook_moves_finite_fuel_by_stoichiometry():
     assert fuel["ATP"] == pytest.approx(-rates.cycles_fmol_s)
     assert fuel["ADP"] == pytest.approx(rates.cycles_fmol_s)
     assert fuel["Pi"] == pytest.approx(rates.cycles_fmol_s)
-    assert tk.book(rates, False, xp=np)[2] == 0.0  # finite fuel: no external work
+    assert tk.book_rates(rates, False, xp=np)[2] == 0.0  # finite fuel: no external work
 
 
 def test_check_path_hooks_trace_under_jnp():
@@ -130,6 +132,24 @@ def test_check_path_hooks_trace_under_jnp():
     p = proton.Parameters(
         *(jnp.asarray(v) for v in (8.3027e-3, 2.0, 1e-4, 0.1, -30500.0, 7.2, 0.05))
     )
-    ok = jax.jit(lambda a, b: tk.domain(proton.LAW_ID, a, b, 1.0, xp=jnp))(i, p)
+    ok = jax.jit(lambda a, b: tk.law_domain(proton.LAW_ID, a, b, 1.0, xp=jnp))(i, p)
     assert bool(ok)
     assert tk.control_values([(0.0, 1.0), (5.0, 0.0)], [0.0, 4.9, 5.0, 9.0]) == [1.0, 1.0, 0.0, 0.0]
+
+
+def test_section_7_4_k_names_namespaces_and_per_definition_law_indices():
+    from types import SimpleNamespace
+
+    assert tk.KIND_ID == "cells.transporter@1"
+    base = SimpleNamespace(
+        patches=PATCHES, valence=VALENCE, registry=REGISTRY, dynamic_proton_nodes=frozenset()
+    )
+    decl = tk.parse(dict(transporters=[pump(), neutral_pump()]), {}, base)
+    assert tk.check_definition(decl) is decl
+    idx = tk.law_index(decl)
+    assert set(idx) == {"cells." + proton.LAW_ID, "cells." + neutral.LAW_ID}
+    assert sorted(idx.values()) == [0, 1]
+    assert tk.law_index(decl[:1]) == {"cells." + proton.LAW_ID: 0}  # bound per definition
+    assert tk.initial(decl, None)["transporter_cycles"] == [0.0, 0.0]
+    with pytest.raises(NotImplementedError, match="schema A"):
+        tk.rates(None, None, None, None)
