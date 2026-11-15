@@ -3,7 +3,7 @@
  "id": "fr4-acidification-v1",
  "title": "FR-4's first acceptance: buffered acidification of an owned compartment against its gradient, with an explicit K+ counterion, maintained fuel and a rapid-buffer closure",
  "status": "PROPOSED (drafted 15 November 2026 by the FR-4/FR-5 physics owner on branch fr45-physics). It stays PROPOSED until the integrated candidate runs; registration is the lead's",
- "registration": {
+ "registration_plan": {
   "status": "not registered",
   "no_judged_run_yet": "No run of this world exists: the core's insertion points (stage reads, transporters, held rows, the face-free term) and this branch's laws are not yet wired",
   "basis": [
@@ -26,13 +26,23 @@
   "cell_owned_compartments@1 (the compartment's identity; its refusal 4 lifted for K+-class routes under B7)"
  ],
  "scope": "Maintained fuel only (no depletion or recovery: that is the finite-fuel case's acceptance, D176 item 2). The K+ counterion only, at 5e-10 m/s (Cl- at lysosomal values and every ionic pore wait for the implicit patch). A lumped population of N = 1000 identical compartments as one node, declared; the single-compartment form is reported, not judged, in version 1 (a later version may judge it once species-scaled energy floors exist). Fixed volume (no water). The cytosol's pH within its fuel band (7.2 ± 0.05). Explicit ARS(2,2,2) at the world's declared dt; no implicit patch in this rung",
- "driver": "validation/compartment_ph/dt_study.py (--run once wired), with validation/compartment_ph/definitions.py fr4_world and parameters.World",
- "judged_parts": [
+ "driver": "validation/tissue/compartment_ph_qualification.py (the generator) and validation/tissue/compartment_ph_judge.py (the judge), on validation/compartment_ph/definitions.py's worlds",
+ "judged_groups": [
   "dt_study",
   "reference",
   "envelope",
   "ledgers",
   "controls"
+ ],
+ "judged_parts": [
+  "rung_2ms",
+  "rung_1ms",
+  "rung_0p5ms",
+  "rung_0p25ms",
+  "control_k1",
+  "control_k2",
+  "control_k3",
+  "reference"
  ],
  "theory_sources": {
   "closure": "the rapid-buffer approximation; organelle-pH models carry a buffer capacity (Grabe and Oster 2001; Ishida et al. 2013; quoted in CLOSED_COMPARTMENT_DESIGN §3.2)",
@@ -131,9 +141,16 @@
   "The buffers' pK values, k_on and the pump's constants are generic declarations, not fits; no run of this world has been made",
   "The dt ladder (2, 1, 0.5, 0.25 ms) was chosen with the 0.05 threshold in view, so that the coarsest rung sits at it",
   "The envelope check was revised before any run of this world, after the FR-4 references' run 02 found that the fixed ratio admitted k_on = 1e3 with a 1.26e-2 pH lag; the revised check is the state-dependent lag estimate, with that case kept as a planted test",
-  "Absent rows: the world declares a 1e-9 mM trace (background 1e-9 mM, floor 1e-18 fmol) wherever a row does not apply, since absent rows are refused; the independent references use an exact 0 for the absent buffer. This is a declared difference: the closure's mask keys on the declared (node, row) pairs, so the traces are never live buffers, and their effect on the compared quantities is reported"
+  "Absent rows: the world declares a 1e-9 mM trace (background 1e-9 mM, floor 1e-18 fmol) wherever a row does not apply, since absent rows are refused; the independent references use an exact 0 for the absent buffer. This is a declared difference: the closure's mask keys on the declared (node, row) pairs, so the traces are never live buffers, and their effect on the compared quantities is reported",
+  "The machine criteria (judge.criteria), the judge's arithmetic (judge.derivation and validation/tissue/compartment_ph_judge.py's docstring) and the units were written on 15 November 2026 from this protocol's prose criteria, rules and controls, before any run of this world (no engine run exists). The registration plan moved from 'registration' to 'registration_plan' so that the registration path adds the lead's record under 'registration' (MG0c's form), and judged_parts names the generator's parts"
  ],
- "questions_for_the_lead": [],
+ "questions_for_the_lead": [
+  "1. K2: 'J4 must fail by more than its budget' is read as |pH - pH_reference| >= 2e-3 (the excess over the budget at least the budget). Confirm, or give the reading",
+  "2. J6's 'falls at second order down the ladder' has no band: the smallest resolved order of the energy residual over flows is judged >= 1.8 (the band's lower edge; falling faster is no defect). Confirm",
+  "3. Cost: with the ladder and the controls inside the judged run, the upper bound is 6.75 CPU-h for the rungs plus 2.7 for K1-K3 (the runbook's 0.9 was one rung); as parallel units the 0.25 ms rung bounds the wall time at about 3.6 h, for the development dt study, the rehearsal and the judged run each",
+  "4. K3's engine part reruns the 1 ms world only for the envelope at the lowered k_on (the trajectory is rung_1ms's, since k_on enters only the check): keep it as its own 0.9 CPU-h unit, as 'at run time' says?",
+  "5. J6's material check uses the engine's own per-species tolerance, the declared floor plus its rounding allowance, which the seam must report: the cytosol holds about 105 fmol of H_eq (one ulp is 1.4e-14 fmol), so the declared H floor of 1e-16 fmol cannot hold alone"
+ ],
  "development_runs": {
   "runs": [
    {
@@ -162,5 +179,385 @@
   "Keep the closure's envelope (a validity check of a reduced representation, J5) apart from the energy and heat closure (a ledger, J6)",
   "Keep maintained fuel apart from depletion and recovery: this world's held fuel claims neither",
   "The lumped compartment is a deterministic continuum model, not a stochastic mean: no claim about individual compartments or their variance"
- ]
+ ],
+ "judge": {
+  "written": "15 November 2026, by the FR-4/FR-5 physics owner, before any run of this world (no engine run exists: the core's seams are not wired into this lane), from this protocol's prose criteria, rules and controls",
+  "generator": "validation/tissue/compartment_ph_qualification.py (records only)",
+  "judge": "validation/tissue/compartment_ph_judge.py (reads records, never runs)",
+  "references": "validation/tissue/compartment_ph_reference_stage.py (the references through their usage note's API)",
+  "derivation": {
+   "ladder_parts": [
+    "rung_2ms",
+    "rung_1ms",
+    "rung_0p5ms",
+    "rung_0p25ms"
+   ],
+   "declared_part": "rung_1ms",
+   "half_part": "rung_0p5ms",
+   "control_parts": [
+    "control_k1",
+    "control_k2",
+    "control_k3"
+   ],
+   "order_observables": [
+    "pH_L",
+    "V_b",
+    "K_L",
+    "cycles"
+   ],
+   "reference_observables": [
+    "pH_L",
+    "V_b",
+    "K_L",
+    "cycles"
+   ],
+   "cytosol_pH": 7.2,
+   "arithmetic": "validation/tissue/compartment_ph_judge.py's docstring: max-norm differences on shared integer-second records; a difference resolved at N eps max|q| (N the finer rung's steps); orders on the three finest rungs; the Richardson error (4/3) D(dt, dt/2) at the nominal p = 2; crossings and mean rates by linear interpolation between records; ledgers over the engine's own tolerances; undefined values None"
+  },
+  "criteria": [
+   {
+    "id": "J1_admission",
+    "metrics": [
+     "derived.admission.all_admitted"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "every rung, control and the reference admitted and run to its end",
+    "judged": true
+   },
+   {
+    "id": "J2_order_pH_L",
+    "metrics": [
+     "derived.orders.pH_L.order_finest"
+    ],
+    "comparison": "within",
+    "threshold": [
+     1.8,
+     2.2
+    ],
+    "basis": "the observed order of pH_L on the three finest rungs (1, 0.5, 0.25 ms) lies in [1.8, 2.2]; an unresolved difference gives None, which fails",
+    "judged": true
+   },
+   {
+    "id": "J2_order_V_b",
+    "metrics": [
+     "derived.orders.V_b.order_finest"
+    ],
+    "comparison": "within",
+    "threshold": [
+     1.8,
+     2.2
+    ],
+    "basis": "the observed order of V_b on the three finest rungs (1, 0.5, 0.25 ms) lies in [1.8, 2.2]; an unresolved difference gives None, which fails",
+    "judged": true
+   },
+   {
+    "id": "J2_order_K_L",
+    "metrics": [
+     "derived.orders.K_L.order_finest"
+    ],
+    "comparison": "within",
+    "threshold": [
+     1.8,
+     2.2
+    ],
+    "basis": "the observed order of K_L on the three finest rungs (1, 0.5, 0.25 ms) lies in [1.8, 2.2]; an unresolved difference gives None, which fails",
+    "judged": true
+   },
+   {
+    "id": "J2_order_cycles",
+    "metrics": [
+     "derived.orders.cycles.order_finest"
+    ],
+    "comparison": "within",
+    "threshold": [
+     1.8,
+     2.2
+    ],
+    "basis": "the observed order of cycles on the three finest rungs (1, 0.5, 0.25 ms) lies in [1.8, 2.2]; an unresolved difference gives None, which fails",
+    "judged": true
+   },
+   {
+    "id": "J3_state_error_pH_L",
+    "metrics": [
+     "derived.state_error.pH_L"
+    ],
+    "comparison": "le",
+    "threshold": 0.001,
+    "basis": "at 1 ms the Richardson-estimated error of the lumen's pH (4/3 D(1, 0.5 ms))",
+    "judged": true
+   },
+   {
+    "id": "J3_state_error_V_b",
+    "metrics": [
+     "derived.state_error.V_b_over_range"
+    ],
+    "comparison": "le",
+    "threshold": 0.001,
+    "basis": "at 1 ms the Richardson-estimated error of V_b over its range at 1 ms",
+    "judged": true
+   },
+   {
+    "id": "J4_reference_pH_L",
+    "metrics": [
+     "derived.reference.pH_L_max_abs"
+    ],
+    "comparison": "le",
+    "threshold": 0.001,
+    "basis": "|pH_engine - pH_reference| at every record at 1 ms (R-closure on the declared world)",
+    "judged": true
+   },
+   {
+    "id": "J4_start",
+    "metrics": [
+     "derived.reference.start_pH_L",
+     "derived.reference.start_V_b"
+    ],
+    "comparison": "le",
+    "threshold": 1e-11,
+    "basis": "row 0 is the reference's start at rounding (both from the declared pH 7.2 state)",
+    "judged": true
+   },
+   {
+    "id": "J4_reported",
+    "metrics": [
+     "derived.reference.V_b_max_abs",
+     "derived.reference.K_L_max_abs",
+     "derived.reference.cycles_max_abs",
+     "derived.reference.floor_pH_L"
+    ],
+    "comparison": "ge",
+    "threshold": 0,
+    "basis": "reported beside J4: V_b, lumen K and the pump's cycles against the reference; the reference's floor (rtol 1e-11 against 1e-12)",
+    "judged": false
+   },
+   {
+    "id": "J5_envelope_lag",
+    "metrics": [
+     "derived.envelope.max_lag_ph"
+    ],
+    "comparison": "le",
+    "threshold": 0.001,
+    "basis": "the closure's state-dependent lag estimate at every stage of every buffered node, on every rung",
+    "judged": true
+   },
+   {
+    "id": "J5_envelope_count",
+    "metrics": [
+     "derived.envelope.stages_beyond"
+    ],
+    "comparison": "le",
+    "threshold": 0,
+    "basis": "no stage beyond the budget (counted and reported; any failure fails)",
+    "judged": true
+   },
+   {
+    "id": "J6_material",
+    "metrics": [
+     "derived.ledgers.material_over_tolerance"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "material per species within its declared floor, by the engine's own check, at every record of every rung",
+    "judged": true
+   },
+   {
+    "id": "J6_charge",
+    "metrics": [
+     "derived.ledgers.charge_over_tolerance"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "charge within the capacitor tolerance on every rung",
+    "judged": true
+   },
+   {
+    "id": "J6_energy",
+    "metrics": [
+     "derived.ledgers.energy_over_flows_at_declared"
+    ],
+    "comparison": "le",
+    "threshold": 0.002,
+    "basis": "the energy residual over the integrated flows at every record at 1 ms",
+    "judged": true
+   },
+   {
+    "id": "J6_energy_falls",
+    "metrics": [
+     "derived.ledgers.energy.smallest_order"
+    ],
+    "comparison": "ge",
+    "threshold": 1.8,
+    "basis": "the energy residual falls at second order down the ladder: its smallest resolved order at least the band's lower edge (the protocol gives no band; put to the lead)",
+    "judged": true
+   },
+   {
+    "id": "J6_bands",
+    "metrics": [
+     "derived.bands.cytosol_pH_max_deviation"
+    ],
+    "comparison": "le",
+    "threshold": 0.05,
+    "basis": "the cytosol's pH within 7.2 +- 0.05 at every stage of every rung",
+    "judged": true
+   },
+   {
+    "id": "J7_K1_control_stalls",
+    "metrics": [
+     "derived.controls.k1.control_drop_ph"
+    ],
+    "comparison": "le",
+    "threshold": 0.1,
+    "basis": "K1: with P_K = 0 the lumen's pH falls by less than 0.1 in 900 s",
+    "judged": true
+   },
+   {
+    "id": "J7_K1_route_drops",
+    "metrics": [
+     "derived.controls.k1.declared_drop_ph"
+    ],
+    "comparison": "ge",
+    "threshold": 1.0,
+    "basis": "K1: with the route it falls by more than 1 unit",
+    "judged": true
+   },
+   {
+    "id": "J7_K1_reference",
+    "metrics": [
+     "derived.controls.k1.reference_control_drop_ph"
+    ],
+    "comparison": "ge",
+    "threshold": 0,
+    "basis": "K1's reference side, reported",
+    "judged": false
+   },
+   {
+    "id": "J7_K2_planted_sign",
+    "metrics": [
+     "derived.controls.k2.pH_L_max_abs_vs_reference"
+    ],
+    "comparison": "ge",
+    "threshold": 0.002,
+    "basis": "K2: the pump's moves flipped fail J4 by more than its budget (read as |pH - pH_reference| >= 2 x 1e-3; put to the lead)",
+    "judged": true
+   },
+   {
+    "id": "J7_K3_envelope_flags",
+    "metrics": [
+     "derived.controls.k3.engine_stages_beyond"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "K3: with the lumen's k_on at 1e-3 /mM/s on the closure's declaration, the engine's envelope check flags stages at run time",
+    "judged": true
+   },
+   {
+    "id": "J7_K3_kinetic_departs",
+    "metrics": [
+     "derived.controls.k3.kinetic_departure_ph"
+    ],
+    "comparison": "ge",
+    "threshold": 0.001,
+    "basis": "K3: R-kinetic at that k_on departs from the closure beyond 1e-3 pH",
+    "judged": true
+   }
+  ],
+  "units": {
+   "rung_2ms": {
+    "steps": 450000,
+    "cpu_hours_upper": 0.45
+   },
+   "rung_1ms": {
+    "steps": 900000,
+    "cpu_hours_upper": 0.9
+   },
+   "rung_0p5ms": {
+    "steps": 1800000,
+    "cpu_hours_upper": 1.8
+   },
+   "rung_0p25ms": {
+    "steps": 3600000,
+    "cpu_hours_upper": 3.6
+   },
+   "control_k1": {
+    "steps": 900000,
+    "cpu_hours_upper": 0.9
+   },
+   "control_k2": {
+    "steps": 900000,
+    "cpu_hours_upper": 0.9
+   },
+   "control_k3": {
+    "steps": 900000,
+    "cpu_hours_upper": 0.9
+   },
+   "reference": {
+    "steps": null,
+    "cpu_hours_upper": null,
+    "note": "the references: minutes"
+   }
+  },
+  "resources": {
+   "status": "a template until the rehearsal measures each unit: CPU, RUNTIME_MAX_S and the caps are placeholders, filled by the lead at the final check",
+   "environment": "from the snapshot's root, PYTHONPATH=SNAPSHOT/src:SNAPSHOT, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu, CUDA_VISIBLE_DEVICES= (empty), PYTHONDONTWRITEBYTECODE=1, CPU backend only, float64",
+   "unit": "scripts/run_detached.sh fr4-PART CAP --cpus CPU --oom-first --runtime-max RUNTIME_MAX_S --dir SNAPSHOT --env PYTHONPATH=SNAPSHOT/src:SNAPSHOT --env JAX_ENABLE_X64=1 --env JAX_PLATFORMS=cpu --env CUDA_VISIBLE_DEVICES= --env PYTHONDONTWRITEBYTECODE=1 -- /mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.compartment_ph_qualification judged SNAPSHOT/validation/compartment_ph/protocols/fr4_acidification_v1.json OUT/PART PART",
+   "judge": "/mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.compartment_ph_judge judged SNAPSHOT/validation/compartment_ph/protocols/fr4_acidification_v1.json OUT/verdict OUT/*/results.json (in its own unit: 1G, 600 s; it runs nothing)",
+   "runtime_max_rule": "3 x the rehearsal's wall time of the unit plus 600 s, rounded up to the minute (D150's rule)",
+   "caps": "2G per unit (the runbook) until the rehearsal measures the peaks",
+   "no_wait_headroom": "judged units run without --wait-headroom: the wait would run inside the unit and count against its runtime limit; the lead checks the slice's room before each launch",
+   "attempts": "an infrastructure ending (a runtime or memory kill, a signal, an incomplete results.json) is rerun once from the same snapshot into a new OUT/PART; a refusal by the engine is a verdict",
+   "enforced_by": "the launcher alone (run_detached.sh's MemoryMax, CPUAffinity and RuntimeMaxSec): no code reads these fields"
+  },
+  "engine_readouts": {
+   "series": {
+    "pH_L": "the lumen's pH from the closure's read (the stored H_eq row, never a state of pH)",
+    "pH_c": "the cytosol's pH, the same read",
+    "V_b": "the bounding patch's voltage, phi_c - phi_L (V)",
+    "Heq_L": "the lumen's H row (proton equivalents, fmol)",
+    "Heq_c": "the cytosol's H row",
+    "K_L": "the lumen's K row (fmol)",
+    "K_c": "the cytosol's K row",
+    "X_L": "FR-5: the lumen's X row (fmol)",
+    "X_c": "FR-5: the cytosol's X row",
+    "cycles": "the pump's cumulative cycles (fmol; transporter_cycles)",
+    "work_pJ": "the maintenance's cumulative supplied work (transporter_metabolic_work_pJ)",
+    "heat_pJ": "the cumulative heat of every law",
+    "stored_change_pJ": "the stored free energy's change since the start",
+    "energy_residual_pJ": "stored change + heat - work",
+    "energy_flows_pJ": "the integrated energy flows the engine's ledger allowance uses",
+    "d": "FR-5: the damage state",
+    "f": "FR-5: the condition's factor f(pH_L) on the transfer",
+    "moved_H_pump": "the pump's cumulative proton transfer, c to L (fmol)",
+    "moved_H_leak": "the proton leak's",
+    "moved_H_pore": "FR-5: the proton pore's",
+    "moved_X_transfer": "FR-5: the conditioned route's cumulative X transfer, c to L (fmol)",
+    "moved_X_pore": "FR-5, arm R: the cargo pore's",
+    "heat_pump_pJ": "each route's cumulative heat (pump)",
+    "heat_proton_leak_0_pJ": "each route's cumulative heat (proton_leak_0)",
+    "heat_proton_pore_0_pJ": "each route's cumulative heat (proton_pore_0)",
+    "heat_bounding_0_K_pJ": "each route's cumulative heat (bounding_0_K)",
+    "heat_cargo_transfer_0_pJ": "each route's cumulative heat (cargo_transfer_0)",
+    "heat_cargo_pore_0_pJ": "each route's cumulative heat (cargo_pore_0)"
+   },
+   "stage": {
+    "envelope_max_lag_ph": "the largest rapid_proton_buffer.lag_estimate_ph over every stage of every buffered node",
+    "envelope_stages_beyond": "the count of stages where it exceeds the budget (1e-3 pH)",
+    "cytosol_pH_min": "the cytosol's smallest pH over every stage",
+    "cytosol_pH_max": "its largest"
+   },
+   "ledgers": {
+    "material_residual_fmol": "per species, the largest residual of the engine's material check over the records",
+    "material_tolerance_fmol": "per species, the tolerance that check uses (the declared floor plus the engine's rounding allowance)",
+    "charge_residual_C": "the largest charge residual",
+    "charge_tolerance_C": "its tolerance"
+   },
+   "part": {
+    "admitted": "parsed and admitted",
+    "completed": "ran to its end without a refusal",
+    "refusal": "the engine's refusal message (a refusal is a verdict, not an ending)",
+    "steps": "the steps taken",
+    "definition_sha256": "the definition's identity"
+   }
+  }
+ }
 }

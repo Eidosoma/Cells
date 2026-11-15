@@ -3,7 +3,7 @@
  "id": "fr5-transfer-v1",
  "title": "FR-5's first acceptance: pH-conditioned transfer, damage, leak and reseal on an owned compartment, in two arms on FR-4's steady state",
  "status": "PROPOSED (drafted 15 November 2026 by the FR-4/FR-5 physics owner on branch fr45-physics). It stays PROPOSED until the integrated candidate runs; registration is the lead's, after the dt study and a rehearsal. The arm values and restated claims are confirmed by the references' readout (branch 931fb38a; compartment-transfer-arms-01-readout.* beside /mnt/workspaces/Cells/independent-references-20261115-01/compartment-transfer-arms-01/), which reran the record's own worlds and reproduced it exactly",
- "registration": {
+ "registration_plan": {
   "status": "not registered",
   "no_judged_run_yet": "No run of either arm exists: the core's insertion points and this branch's laws are not yet wired",
   "path": "The lead registers it from a clean snapshot of the integrated candidate, after this protocol's dt study and a rehearsal (the D150/MG0c path); it travels with fr45-physics's merge into integration-d172",
@@ -20,7 +20,7 @@
   "the coupling operator's routing door (the factors' multiply), and cell_owned_compartments@1"
  ],
  "scope": "FR-4's scope (maintained fuel, the K+ counterion, a lumped population of 1000 as declared, fixed volume, explicit ARS(2,2,2)), plus FR-5's damage, a proton pore and a neutral cargo pore. Ionic pores are refused in version 1 (they wait for the implicit patch). The single-compartment form is reported, not judged",
- "driver": "validation/compartment_ph/definitions.py fr5_world(parameters.ARM_T or ARM_R), run by the dt-study harness once wired",
+ "driver": "validation/tissue/compartment_ph_qualification.py (the generator) and validation/tissue/compartment_ph_judge.py (the judge), on validation/compartment_ph/definitions.py's worlds",
  "start": {
   "declared": "FR-4's engine checkpoint at t = 1800 s of fr4_world(World()), its steady state (pH_L about 5.0946 per the references); FR-5's t = 0 is that checkpoint, with X added at its declared start amounts",
   "reference": "REQUIRED for X's budget: the reference starts from the engine's own 1800 s checkpoint (tr.Start), not a recomputed steady state. X_L along the run moves by about 0.06 B per 1e-3 pH of start offset (the references' readout)"
@@ -125,12 +125,839 @@
   "The world declares 1e-9 mM traces where a row does not apply; the references use exact zeros for the absent buffer. A declared difference: the closure's mask keys on declared (node, row) pairs, so the traces are never live buffers",
   "The start (FR-4's checkpoint at 1800 s) was fixed after the references found FR-4's 900 s state 1.4e-3 pH from steady state, beyond the 1e-3 budget",
   "After the references' rerun of both arms (references branch 071ef983; /mnt/workspaces/Cells/independent-references-20261115-01/compartment-transfer-arms-01/): arm T's original claim, that the transfer stops, did not hold. The route slows about 14-fold while pH_L > pH50 but does not stop, since most of the transfer happens while f passes through its half-open range, and longer windows do not change that. So the claim is restated numerically (at least 10-fold), not sharpened by parameters. The re-acidification claim is restated as a return below pH50 before 400 s, with no longer horizon. The step bound was declared on the patch total after the rerun measured 0.048 at 1 ms, so FR-5's step became 0.5 ms",
-  "The restated claims and the arm values were confirmed by the references' readout (branch 931fb38a; compartment-transfer-arms-01-readout.* beside /mnt/workspaces/Cells/independent-references-20261115-01/compartment-transfer-arms-01/), which reran the record's own worlds and reproduced it exactly, before registration and before any engine run"
+  "The restated claims and the arm values were confirmed by the references' readout (branch 931fb38a; compartment-transfer-arms-01-readout.* beside /mnt/workspaces/Cells/independent-references-20261115-01/compartment-transfer-arms-01/), which reran the record's own worlds and reproduced it exactly, before registration and before any engine run",
+  "The machine criteria (judge.criteria), the judge's arithmetic (judge.derivation and validation/tissue/compartment_ph_judge.py's docstring) and the units were written on 15 November 2026 from this protocol's prose criteria, rules and controls, before any run of this world (no engine run exists). The registration plan moved from 'registration' to 'registration_plan' so that the registration path adds the lead's record under 'registration' (MG0c's form), and judged_parts names the generator's parts"
  ],
  "development_runs": {
   "runs": [],
   "note": "no run of either arm; the charged-patch test's runs (fr45/charged_patch/) are development evidence for the explicit limit only"
  },
  "outcome_rules": "PASS when J1-J10 hold for both arms; otherwise the failing criteria are reported with their values, without repair or retuning after the judged run",
- "step_bound": "The world's 0.05 (max-side dt x G/C_b) applies to the patch total, the sum over every route on the bounding patch, since those routes share one charge mode (V_b). The rerun measured the patch total at 0.048 at 1 ms at the stiffest state (the proton pore 0.029, the leak, K+). So FR-5 declares dt = 0.5 ms (patch total about 0.024, FR-4's factor-of-two margin). Price: 400 s is 8e5 steps per run instead of 4e5, about 0.8 CPU-hours per run at the charged-patch test's upper-bound cost."
+ "step_bound": "The world's 0.05 (max-side dt x G/C_b) applies to the patch total, the sum over every route on the bounding patch, since those routes share one charge mode (V_b). The rerun measured the patch total at 0.048 at 1 ms at the stiffest state (the proton pore 0.029, the leak, K+). So FR-5 declares dt = 0.5 ms (patch total about 0.024, FR-4's factor-of-two margin). Price: 400 s is 8e5 steps per run instead of 4e5, about 0.8 CPU-hours per run at the charged-patch test's upper-bound cost.",
+ "judged_parts": [
+  "start",
+  "T_rung_1ms",
+  "T_rung_0p5ms",
+  "T_rung_0p25ms",
+  "T_rung_0p125ms",
+  "T_control",
+  "R_rung_1ms",
+  "R_rung_0p5ms",
+  "R_rung_0p25ms",
+  "R_rung_0p125ms",
+  "R_control",
+  "reference"
+ ],
+ "judge": {
+  "written": "15 November 2026, by the FR-4/FR-5 physics owner, before any run of this world (no engine run exists: the core's seams are not wired into this lane), from this protocol's prose criteria, rules and controls",
+  "generator": "validation/tissue/compartment_ph_qualification.py (records only)",
+  "judge": "validation/tissue/compartment_ph_judge.py (reads records, never runs)",
+  "references": "validation/tissue/compartment_ph_reference_stage.py (the references through their usage note's API)",
+  "derivation": {
+   "arms": {
+    "T": {
+     "ladder_parts": [
+      "T_rung_1ms",
+      "T_rung_0p5ms",
+      "T_rung_0p25ms",
+      "T_rung_0p125ms"
+     ],
+     "declared_part": "T_rung_0p5ms",
+     "half_part": "T_rung_0p25ms",
+     "control_part": "T_control",
+     "control": "f_equals_1",
+     "ph50": 5.5,
+     "injury_window_s": [
+      60.0,
+      120.0
+     ],
+     "conditioned_transfer": "moved_X_transfer",
+     "pore_transfer": null,
+     "cargo_transfers": [
+      "moved_X_transfer"
+     ],
+     "passive_routes": [
+      "proton_leak_0",
+      "proton_pore_0",
+      "bounding_0_K",
+      "cargo_transfer_0"
+     ]
+    },
+    "R": {
+     "ladder_parts": [
+      "R_rung_1ms",
+      "R_rung_0p5ms",
+      "R_rung_0p25ms",
+      "R_rung_0p125ms"
+     ],
+     "declared_part": "R_rung_0p5ms",
+     "half_part": "R_rung_0p25ms",
+     "control_part": "R_control",
+     "control": "d_equals_0",
+     "ph50": 5.5,
+     "injury_window_s": [
+      100.0,
+      160.0
+     ],
+     "conditioned_transfer": "moved_X_transfer",
+     "pore_transfer": "moved_X_pore",
+     "cargo_transfers": [
+      "moved_X_transfer",
+      "moved_X_pore"
+     ],
+     "passive_routes": [
+      "proton_leak_0",
+      "proton_pore_0",
+      "bounding_0_K",
+      "cargo_transfer_0",
+      "cargo_pore_0"
+     ]
+    }
+   },
+   "order_observables": [
+    "X_L",
+    "pH_L",
+    "V_b",
+    "d"
+   ],
+   "x_budget_fraction": 0.001,
+   "cytosol_pH": 7.2,
+   "proton_transfers": [
+    "moved_H_pump",
+    "moved_H_leak",
+    "moved_H_pore"
+   ],
+   "arithmetic": "validation/tissue/compartment_ph_judge.py's docstring: max-norm differences on shared integer-second records; a difference resolved at N eps max|q| (N the finer rung's steps); orders on the three finest rungs; the Richardson error (4/3) D(dt, dt/2) at the nominal p = 2; crossings and mean rates by linear interpolation between records; ledgers over the engine's own tolerances; undefined values None"
+  },
+  "criteria": [
+   {
+    "id": "J1_T_admission",
+    "metrics": [
+     "derived.T.admission.all_admitted"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "arm T: every rung, its control, the start and the reference admitted and run to their ends",
+    "judged": true
+   },
+   {
+    "id": "J2_T_order_X_L",
+    "metrics": [
+     "derived.T.orders.X_L.order_finest"
+    ],
+    "comparison": "within",
+    "threshold": [
+     1.8,
+     2.2
+    ],
+    "basis": "arm T: the observed order of X_L on the three finest rungs (0.5, 0.25, 0.125 ms) in [1.8, 2.2]",
+    "judged": true
+   },
+   {
+    "id": "J2_T_order_pH_L",
+    "metrics": [
+     "derived.T.orders.pH_L.order_finest"
+    ],
+    "comparison": "within",
+    "threshold": [
+     1.8,
+     2.2
+    ],
+    "basis": "arm T: the observed order of pH_L on the three finest rungs (0.5, 0.25, 0.125 ms) in [1.8, 2.2]",
+    "judged": true
+   },
+   {
+    "id": "J2_T_order_V_b",
+    "metrics": [
+     "derived.T.orders.V_b.order_finest"
+    ],
+    "comparison": "within",
+    "threshold": [
+     1.8,
+     2.2
+    ],
+    "basis": "arm T: the observed order of V_b on the three finest rungs (0.5, 0.25, 0.125 ms) in [1.8, 2.2]",
+    "judged": true
+   },
+   {
+    "id": "J2_T_order_d",
+    "metrics": [
+     "derived.T.orders.d.order_finest"
+    ],
+    "comparison": "within",
+    "threshold": [
+     1.8,
+     2.2
+    ],
+    "basis": "arm T: the observed order of d on the three finest rungs (0.5, 0.25, 0.125 ms) in [1.8, 2.2]",
+    "judged": true
+   },
+   {
+    "id": "J3_T_X_L",
+    "metrics": [
+     "derived.T.state_error.X_L_over_budget"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "at the declared 0.5 ms the Richardson-estimated error of the lumen's X, in X's budget B = 1e-3 X_L(0)",
+    "judged": true
+   },
+   {
+    "id": "J3_T_pH_L",
+    "metrics": [
+     "derived.T.state_error.pH_L"
+    ],
+    "comparison": "le",
+    "threshold": 0.001,
+    "basis": "at 0.5 ms the Richardson-estimated error of the lumen's pH",
+    "judged": true
+   },
+   {
+    "id": "J4_T_X_L",
+    "metrics": [
+     "derived.T.reference.X_L_over_budget"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "|X_L,engine - X_L,reference| <= B at every record (the reference from tr.Start)",
+    "judged": true
+   },
+   {
+    "id": "J4_T_transfer",
+    "metrics": [
+     "derived.T.reference.transfer_over_budget"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "the conditioned route's cumulative transfer within B at every record",
+    "judged": true
+   },
+   {
+    "id": "J4_T_pH_L",
+    "metrics": [
+     "derived.T.reference.pH_L_max_abs"
+    ],
+    "comparison": "le",
+    "threshold": 0.001,
+    "basis": "|pH_L,engine - pH_L,reference| <= 1e-3 at every record",
+    "judged": true
+   },
+   {
+    "id": "J4_T_start",
+    "metrics": [
+     "derived.T.start.pH_L",
+     "derived.T.start.V_b"
+    ],
+    "comparison": "le",
+    "threshold": 1e-11,
+    "basis": "every rung's and the control's row 0 is the reference's start at rounding (one extract for both)",
+    "judged": true
+   },
+   {
+    "id": "J4_T_start_X_L",
+    "metrics": [
+     "derived.T.start.X_L_over_budget"
+    ],
+    "comparison": "le",
+    "threshold": 1e-09,
+    "basis": "X_L's row 0 is the reference's (the same products)",
+    "judged": true
+   },
+   {
+    "id": "J4_T_reported",
+    "metrics": [
+     "derived.T.reference.floor_X_L_over_budget",
+     "derived.T.reference.floor_pH_L"
+    ],
+    "comparison": "ge",
+    "threshold": 0,
+    "basis": "the reference's floor, reported",
+    "judged": false
+   },
+   {
+    "id": "J5_T_envelope_lag",
+    "metrics": [
+     "derived.T.envelope.max_lag_ph"
+    ],
+    "comparison": "le",
+    "threshold": 0.001,
+    "basis": "the closure's envelope at every stage of every buffered node, through the damage window, on every rung and the control",
+    "judged": true
+   },
+   {
+    "id": "J5_T_envelope_count",
+    "metrics": [
+     "derived.T.envelope.stages_beyond"
+    ],
+    "comparison": "le",
+    "threshold": 0,
+    "basis": "no stage beyond the budget",
+    "judged": true
+   },
+   {
+    "id": "J6_T_protons",
+    "metrics": [
+     "derived.T.protons.max_over_tolerance"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "H_eq at each node changes only by its routes' proton transfers (pump, leak, proton pore), to the engine's H tolerance, at every record (0.5 ms)",
+    "judged": true
+   },
+   {
+    "id": "J7_T_energy",
+    "metrics": [
+     "derived.T.energy.over_flows_at_declared"
+    ],
+    "comparison": "le",
+    "threshold": 0.002,
+    "basis": "the energy identity at every record within FR-4's ledger tolerance",
+    "judged": true
+   },
+   {
+    "id": "J7_T_route_heat",
+    "metrics": [
+     "derived.T.energy.smallest_route_heat_increment_pJ"
+    ],
+    "comparison": "ge",
+    "threshold": -1e-12,
+    "basis": "each passive route's cumulative heat never falls between records (the booking probe's -1e-12 pJ rounding allowance)",
+    "judged": true
+   },
+   {
+    "id": "J7_T_energy_ladder",
+    "metrics": [
+     "derived.T.energy.ladder.smallest_order"
+    ],
+    "comparison": "ge",
+    "threshold": 0,
+    "basis": "the energy residual down the ladder, reported",
+    "judged": false
+   },
+   {
+    "id": "J8_T_cargo",
+    "metrics": [
+     "derived.T.cargo.material_over_tolerance",
+     "derived.T.cargo.lumen_over_tolerance",
+     "derived.T.cargo.cytosol_over_tolerance"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "X conserved to its tolerance; what leaves the lumen arrives in the cytosol on the same routes",
+    "judged": true
+   },
+   {
+    "id": "J9_T_cytosol_band",
+    "metrics": [
+     "derived.T.bands.cytosol_pH_max_deviation"
+    ],
+    "comparison": "le",
+    "threshold": 0.05,
+    "basis": "the cytosol's pH within 7.2 +- 0.05 at every stage",
+    "judged": true
+   },
+   {
+    "id": "J9_T_factors",
+    "metrics": [
+     "derived.T.bands.d_min",
+     "derived.T.bands.d_max",
+     "derived.T.bands.f_min",
+     "derived.T.bands.f_max"
+    ],
+    "comparison": "within",
+    "threshold": [
+     0.0,
+     1.0
+    ],
+    "basis": "d and f within [0, 1] at every record",
+    "judged": true
+   },
+   {
+    "id": "J10_T_control_X_L",
+    "metrics": [
+     "derived.T.control.X_L_over_budget"
+    ],
+    "comparison": "ge",
+    "threshold": 10,
+    "basis": "the control (f_equals_1) differs from the arm in X_L by at least 10 B",
+    "judged": true
+   },
+   {
+    "id": "J10_T_control_transfer",
+    "metrics": [
+     "derived.T.control.transfer_over_budget"
+    ],
+    "comparison": "ge",
+    "threshold": 10,
+    "basis": "f = 1: the conditioned transfer differs by at least 10 B",
+    "judged": true
+   },
+   {
+    "id": "J11_T_rate",
+    "metrics": [
+     "derived.T.claims.engine.above_over_pre"
+    ],
+    "comparison": "le",
+    "threshold": 0.1,
+    "basis": "while pH_L > pH50 the conditioned route's mean rate is at most 1/10 of its pre-damage mean rate (over [0, 60] s), on its cumulative transfer",
+    "judged": true
+   },
+   {
+    "id": "J11_T_returns",
+    "metrics": [
+     "derived.T.claims.engine.returns_before_end"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "pH_L back below pH50 before 400 s",
+    "judged": true
+   },
+   {
+    "id": "J11_T_crossing",
+    "metrics": [
+     "derived.T.claims.down_crossing_difference_s"
+    ],
+    "comparison": "le",
+    "threshold": 5.0,
+    "basis": "that crossing within 5 s of the reference's (the same arithmetic)",
+    "judged": true
+   },
+   {
+    "id": "J11_T_reported",
+    "metrics": [
+     "derived.T.claims.up_crossing_difference_s"
+    ],
+    "comparison": "ge",
+    "threshold": 0,
+    "basis": "the up-crossing's difference, reported",
+    "judged": false
+   },
+   {
+    "id": "J1_R_admission",
+    "metrics": [
+     "derived.R.admission.all_admitted"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "arm R: every rung, its control, the start and the reference admitted and run to their ends",
+    "judged": true
+   },
+   {
+    "id": "J2_R_order_X_L",
+    "metrics": [
+     "derived.R.orders.X_L.order_finest"
+    ],
+    "comparison": "within",
+    "threshold": [
+     1.8,
+     2.2
+    ],
+    "basis": "arm R: the observed order of X_L on the three finest rungs (0.5, 0.25, 0.125 ms) in [1.8, 2.2]",
+    "judged": true
+   },
+   {
+    "id": "J2_R_order_pH_L",
+    "metrics": [
+     "derived.R.orders.pH_L.order_finest"
+    ],
+    "comparison": "within",
+    "threshold": [
+     1.8,
+     2.2
+    ],
+    "basis": "arm R: the observed order of pH_L on the three finest rungs (0.5, 0.25, 0.125 ms) in [1.8, 2.2]",
+    "judged": true
+   },
+   {
+    "id": "J2_R_order_V_b",
+    "metrics": [
+     "derived.R.orders.V_b.order_finest"
+    ],
+    "comparison": "within",
+    "threshold": [
+     1.8,
+     2.2
+    ],
+    "basis": "arm R: the observed order of V_b on the three finest rungs (0.5, 0.25, 0.125 ms) in [1.8, 2.2]",
+    "judged": true
+   },
+   {
+    "id": "J2_R_order_d",
+    "metrics": [
+     "derived.R.orders.d.order_finest"
+    ],
+    "comparison": "within",
+    "threshold": [
+     1.8,
+     2.2
+    ],
+    "basis": "arm R: the observed order of d on the three finest rungs (0.5, 0.25, 0.125 ms) in [1.8, 2.2]",
+    "judged": true
+   },
+   {
+    "id": "J3_R_X_L",
+    "metrics": [
+     "derived.R.state_error.X_L_over_budget"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "at the declared 0.5 ms the Richardson-estimated error of the lumen's X, in X's budget B = 1e-3 X_L(0)",
+    "judged": true
+   },
+   {
+    "id": "J3_R_pH_L",
+    "metrics": [
+     "derived.R.state_error.pH_L"
+    ],
+    "comparison": "le",
+    "threshold": 0.001,
+    "basis": "at 0.5 ms the Richardson-estimated error of the lumen's pH",
+    "judged": true
+   },
+   {
+    "id": "J4_R_X_L",
+    "metrics": [
+     "derived.R.reference.X_L_over_budget"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "|X_L,engine - X_L,reference| <= B at every record (the reference from tr.Start)",
+    "judged": true
+   },
+   {
+    "id": "J4_R_transfer",
+    "metrics": [
+     "derived.R.reference.transfer_over_budget"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "the conditioned route's cumulative transfer within B at every record",
+    "judged": true
+   },
+   {
+    "id": "J4_R_pH_L",
+    "metrics": [
+     "derived.R.reference.pH_L_max_abs"
+    ],
+    "comparison": "le",
+    "threshold": 0.001,
+    "basis": "|pH_L,engine - pH_L,reference| <= 1e-3 at every record",
+    "judged": true
+   },
+   {
+    "id": "J4_R_start",
+    "metrics": [
+     "derived.R.start.pH_L",
+     "derived.R.start.V_b"
+    ],
+    "comparison": "le",
+    "threshold": 1e-11,
+    "basis": "every rung's and the control's row 0 is the reference's start at rounding (one extract for both)",
+    "judged": true
+   },
+   {
+    "id": "J4_R_start_X_L",
+    "metrics": [
+     "derived.R.start.X_L_over_budget"
+    ],
+    "comparison": "le",
+    "threshold": 1e-09,
+    "basis": "X_L's row 0 is the reference's (the same products)",
+    "judged": true
+   },
+   {
+    "id": "J4_R_reported",
+    "metrics": [
+     "derived.R.reference.floor_X_L_over_budget",
+     "derived.R.reference.floor_pH_L"
+    ],
+    "comparison": "ge",
+    "threshold": 0,
+    "basis": "the reference's floor, reported",
+    "judged": false
+   },
+   {
+    "id": "J5_R_envelope_lag",
+    "metrics": [
+     "derived.R.envelope.max_lag_ph"
+    ],
+    "comparison": "le",
+    "threshold": 0.001,
+    "basis": "the closure's envelope at every stage of every buffered node, through the damage window, on every rung and the control",
+    "judged": true
+   },
+   {
+    "id": "J5_R_envelope_count",
+    "metrics": [
+     "derived.R.envelope.stages_beyond"
+    ],
+    "comparison": "le",
+    "threshold": 0,
+    "basis": "no stage beyond the budget",
+    "judged": true
+   },
+   {
+    "id": "J6_R_protons",
+    "metrics": [
+     "derived.R.protons.max_over_tolerance"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "H_eq at each node changes only by its routes' proton transfers (pump, leak, proton pore), to the engine's H tolerance, at every record (0.5 ms)",
+    "judged": true
+   },
+   {
+    "id": "J7_R_energy",
+    "metrics": [
+     "derived.R.energy.over_flows_at_declared"
+    ],
+    "comparison": "le",
+    "threshold": 0.002,
+    "basis": "the energy identity at every record within FR-4's ledger tolerance",
+    "judged": true
+   },
+   {
+    "id": "J7_R_route_heat",
+    "metrics": [
+     "derived.R.energy.smallest_route_heat_increment_pJ"
+    ],
+    "comparison": "ge",
+    "threshold": -1e-12,
+    "basis": "each passive route's cumulative heat never falls between records (the booking probe's -1e-12 pJ rounding allowance)",
+    "judged": true
+   },
+   {
+    "id": "J7_R_energy_ladder",
+    "metrics": [
+     "derived.R.energy.ladder.smallest_order"
+    ],
+    "comparison": "ge",
+    "threshold": 0,
+    "basis": "the energy residual down the ladder, reported",
+    "judged": false
+   },
+   {
+    "id": "J8_R_cargo",
+    "metrics": [
+     "derived.R.cargo.material_over_tolerance",
+     "derived.R.cargo.lumen_over_tolerance",
+     "derived.R.cargo.cytosol_over_tolerance"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "X conserved to its tolerance; what leaves the lumen arrives in the cytosol on the same routes",
+    "judged": true
+   },
+   {
+    "id": "J9_R_cytosol_band",
+    "metrics": [
+     "derived.R.bands.cytosol_pH_max_deviation"
+    ],
+    "comparison": "le",
+    "threshold": 0.05,
+    "basis": "the cytosol's pH within 7.2 +- 0.05 at every stage",
+    "judged": true
+   },
+   {
+    "id": "J9_R_factors",
+    "metrics": [
+     "derived.R.bands.d_min",
+     "derived.R.bands.d_max",
+     "derived.R.bands.f_min",
+     "derived.R.bands.f_max"
+    ],
+    "comparison": "within",
+    "threshold": [
+     0.0,
+     1.0
+    ],
+    "basis": "d and f within [0, 1] at every record",
+    "judged": true
+   },
+   {
+    "id": "J10_R_control_X_L",
+    "metrics": [
+     "derived.R.control.X_L_over_budget"
+    ],
+    "comparison": "ge",
+    "threshold": 10,
+    "basis": "the control (d_equals_0) differs from the arm in X_L by at least 10 B",
+    "judged": true
+   },
+   {
+    "id": "J10_R_reported",
+    "metrics": [
+     "derived.R.control.transfer_over_budget",
+     "derived.R.control.pH_L_max_abs"
+    ],
+    "comparison": "ge",
+    "threshold": 0,
+    "basis": "d = 0: the transfer's and the pH's distance, reported",
+    "judged": false
+   },
+   {
+    "id": "J11_R_release",
+    "metrics": [
+     "derived.R.claims.engine.released_in_window"
+    ],
+    "comparison": "ge",
+    "threshold": 0.8,
+    "basis": "at least 0.8 of X_L(0) released through the pore inside the window",
+    "judged": true
+   },
+   {
+    "id": "J11_R_returns",
+    "metrics": [
+     "derived.R.claims.engine.returns_before_end"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "pH_L back below pH50 before 400 s",
+    "judged": true
+   },
+   {
+    "id": "J11_R_crossing",
+    "metrics": [
+     "derived.R.claims.down_crossing_difference_s"
+    ],
+    "comparison": "le",
+    "threshold": 5.0,
+    "basis": "that crossing within 5 s of the reference's (the same arithmetic)",
+    "judged": true
+   },
+   {
+    "id": "J11_R_reported",
+    "metrics": [
+     "derived.R.claims.up_crossing_difference_s"
+    ],
+    "comparison": "ge",
+    "threshold": 0,
+    "basis": "the up-crossing's difference, reported",
+    "judged": false
+   }
+  ],
+  "units": {
+   "start": {
+    "steps": 1800000,
+    "cpu_hours_upper": 1.8
+   },
+   "T_rung_1ms": {
+    "steps": 400000,
+    "cpu_hours_upper": 0.4
+   },
+   "T_rung_0p5ms": {
+    "steps": 800000,
+    "cpu_hours_upper": 0.8
+   },
+   "T_rung_0p25ms": {
+    "steps": 1600000,
+    "cpu_hours_upper": 1.6
+   },
+   "T_rung_0p125ms": {
+    "steps": 3200000,
+    "cpu_hours_upper": 3.2
+   },
+   "T_control": {
+    "steps": 800000,
+    "cpu_hours_upper": 0.8
+   },
+   "R_rung_1ms": {
+    "steps": 400000,
+    "cpu_hours_upper": 0.4
+   },
+   "R_rung_0p5ms": {
+    "steps": 800000,
+    "cpu_hours_upper": 0.8
+   },
+   "R_rung_0p25ms": {
+    "steps": 1600000,
+    "cpu_hours_upper": 1.6
+   },
+   "R_rung_0p125ms": {
+    "steps": 3200000,
+    "cpu_hours_upper": 3.2
+   },
+   "R_control": {
+    "steps": 800000,
+    "cpu_hours_upper": 0.8
+   },
+   "reference": {
+    "steps": null,
+    "cpu_hours_upper": null,
+    "note": "the references: minutes"
+   }
+  },
+  "resources": {
+   "status": "a template until the rehearsal measures each unit: CPU, RUNTIME_MAX_S and the caps are placeholders, filled by the lead at the final check",
+   "environment": "from the snapshot's root, PYTHONPATH=SNAPSHOT/src:SNAPSHOT, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu, CUDA_VISIBLE_DEVICES= (empty), PYTHONDONTWRITEBYTECODE=1, CPU backend only, float64",
+   "unit": "scripts/run_detached.sh fr5-PART CAP --cpus CPU --oom-first --runtime-max RUNTIME_MAX_S --dir SNAPSHOT --env PYTHONPATH=SNAPSHOT/src:SNAPSHOT --env JAX_ENABLE_X64=1 --env JAX_PLATFORMS=cpu --env CUDA_VISIBLE_DEVICES= --env PYTHONDONTWRITEBYTECODE=1 -- /mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.compartment_ph_qualification judged SNAPSHOT/validation/compartment_ph/protocols/fr5_transfer_v1.json OUT/PART PART",
+   "judge": "/mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.compartment_ph_judge judged SNAPSHOT/validation/compartment_ph/protocols/fr5_transfer_v1.json OUT/verdict OUT/*/results.json (in its own unit: 1G, 600 s; it runs nothing)",
+   "runtime_max_rule": "3 x the rehearsal's wall time of the unit plus 600 s, rounded up to the minute (D150's rule)",
+   "caps": "2G per unit (the runbook) until the rehearsal measures the peaks",
+   "no_wait_headroom": "judged units run without --wait-headroom: the wait would run inside the unit and count against its runtime limit; the lead checks the slice's room before each launch",
+   "attempts": "an infrastructure ending (a runtime or memory kill, a signal, an incomplete results.json) is rerun once from the same snapshot into a new OUT/PART; a refusal by the engine is a verdict",
+   "enforced_by": "the launcher alone (run_detached.sh's MemoryMax, CPUAffinity and RuntimeMaxSec): no code reads these fields",
+   "order": "the start unit first; when it has written OUT/start/start.json, every other unit with --start OUT/start/start.json appended (the references take minutes); the judge last"
+  },
+  "engine_readouts": {
+   "series": {
+    "pH_L": "the lumen's pH from the closure's read (the stored H_eq row, never a state of pH)",
+    "pH_c": "the cytosol's pH, the same read",
+    "V_b": "the bounding patch's voltage, phi_c - phi_L (V)",
+    "Heq_L": "the lumen's H row (proton equivalents, fmol)",
+    "Heq_c": "the cytosol's H row",
+    "K_L": "the lumen's K row (fmol)",
+    "K_c": "the cytosol's K row",
+    "X_L": "FR-5: the lumen's X row (fmol)",
+    "X_c": "FR-5: the cytosol's X row",
+    "cycles": "the pump's cumulative cycles (fmol; transporter_cycles)",
+    "work_pJ": "the maintenance's cumulative supplied work (transporter_metabolic_work_pJ)",
+    "heat_pJ": "the cumulative heat of every law",
+    "stored_change_pJ": "the stored free energy's change since the start",
+    "energy_residual_pJ": "stored change + heat - work",
+    "energy_flows_pJ": "the integrated energy flows the engine's ledger allowance uses",
+    "d": "FR-5: the damage state",
+    "f": "FR-5: the condition's factor f(pH_L) on the transfer",
+    "moved_H_pump": "the pump's cumulative proton transfer, c to L (fmol)",
+    "moved_H_leak": "the proton leak's",
+    "moved_H_pore": "FR-5: the proton pore's",
+    "moved_X_transfer": "FR-5: the conditioned route's cumulative X transfer, c to L (fmol)",
+    "moved_X_pore": "FR-5, arm R: the cargo pore's",
+    "heat_pump_pJ": "each route's cumulative heat (pump)",
+    "heat_proton_leak_0_pJ": "each route's cumulative heat (proton_leak_0)",
+    "heat_proton_pore_0_pJ": "each route's cumulative heat (proton_pore_0)",
+    "heat_bounding_0_K_pJ": "each route's cumulative heat (bounding_0_K)",
+    "heat_cargo_transfer_0_pJ": "each route's cumulative heat (cargo_transfer_0)",
+    "heat_cargo_pore_0_pJ": "each route's cumulative heat (cargo_pore_0)"
+   },
+   "stage": {
+    "envelope_max_lag_ph": "the largest rapid_proton_buffer.lag_estimate_ph over every stage of every buffered node",
+    "envelope_stages_beyond": "the count of stages where it exceeds the budget (1e-3 pH)",
+    "cytosol_pH_min": "the cytosol's smallest pH over every stage",
+    "cytosol_pH_max": "its largest"
+   },
+   "ledgers": {
+    "material_residual_fmol": "per species, the largest residual of the engine's material check over the records",
+    "material_tolerance_fmol": "per species, the tolerance that check uses (the declared floor plus the engine's rounding allowance)",
+    "charge_residual_C": "the largest charge residual",
+    "charge_tolerance_C": "its tolerance"
+   },
+   "part": {
+    "admitted": "parsed and admitted",
+    "completed": "ran to its end without a refusal",
+    "refusal": "the engine's refusal message (a refusal is a verdict, not an ending)",
+    "steps": "the steps taken",
+    "definition_sha256": "the definition's identity"
+   }
+  }
+ },
+ "questions_for_the_lead": [
+  "1. dt_study_criteria_written_first still says 'state error at 1 ms as J3' and 'the declared 1 ms stands', from before the step moved to 0.5 ms (the ruling, and J3's own text). The dt study's criteria (validation/compartment_ph/dt_study.FR5_CRITERIA) follow J3 at 0.5 ms. Correct the block's text?",
+  "2. outcome_rules says 'PASS when J1-J10 hold', but J11 exists and is judged here. Include it?",
+  "3. J2 lists the damage d, whose step is exact (bounding_patch_damage@1 on piecewise-constant schedules whose breakpoints lie on every rung's grid), so its rung differences are rounding: its order is None and J2 fails for d by construction. Proposed: d's item becomes 'exact at rounding on every rung' (max |d(dt) - d(dt/2)| <= N eps), or d leaves J2",
+  "4. The controls run at the declared 0.5 ms only, while J1 reads 'both arms and their controls ... at every rung': controls on every rung would add about 5.2 CPU-h per arm",
+  "5. J6's 'to the material floor': as FR-4's question 5 (the engine's own H tolerance)",
+  "6. J7's 'each passive route's heat >= 0' is judged on the increments of each route's cumulative heat between records, at >= -1e-12 pJ (the booking probe's allowance)",
+  "7. Cost: the start 1.8 CPU-h, then per arm 6.0 for the ladder and 0.8 for the control: 15.4 CPU-h upper bound; as parallel units about 2 h for the start, then 3.2 h for the 0.125 ms rungs"
+ ]
 }

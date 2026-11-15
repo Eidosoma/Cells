@@ -12,6 +12,7 @@ from dataclasses import dataclass, field, replace
 F = 6.02214076e23 * 1.602176634e-19  # as cells.processes.electrochemistry
 R = 6.02214076e23 * 1.380649e-23
 N_A = 6.02214076e23
+CHARGE_PER_FMOL = F * 1e-15  # C per fmol of unit charge (as electrochemistry.CHARGE_PER_FMOL)
 C0_mM = 1000.0
 LN10 = math.log(10.0)
 
