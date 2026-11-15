@@ -543,6 +543,24 @@ def shelf_links(words):
 SHELF_NONE = "no shelf"
 
 
+def _licence_class(source):
+    """How a source may be used, as the page reads it (licenceClass in src/lenses/protein_shelves.js):
+    what the source says of itself (`class`) is taken at its word, else it is read from its licence."""
+    said = str(source.get("class") or "").lower()
+    if re.search(r"non-?commercial", said):
+        return "non-commercial"
+    if re.search(r"no stated|unlicen|no licence", said):
+        return "no stated terms"
+    if "permissive" in said:
+        return "permissive"
+    text = str(source.get("licence") or "").lower()
+    if re.search(r"by-nc|(^|[^a-z])nc([^a-z]|$)|non-?commercial", text):
+        return "non-commercial"
+    if re.search(r"cc0|cc by|creative commons attribution|bsd|mit licen|public domain|no restriction|unrestricted|biopython licen", text):
+        return "permissive"
+    return "no stated terms"
+
+
 def _off_shelf(ids, shelf, sides):
     """What is wrong with the shelf of a line whose proteins sit on these sides, or None.
 
@@ -751,7 +769,10 @@ def _shelves_summary(name, data, size, problems):
                     break
         summary["shelves"] = [{"id": shelf["id"], "label": shelf["label"], "proteins": sum(on_shelf[shelf["id"]].values()), "counts": {side: on_shelf[shelf["id"]][side] for side in SHELF_SIDES}} for shelf in shelves]
         summary["no_shelf"] = sum(on_shelf[None].values())
-    summary["sources"] = [{key: source[key] for key in ("name", "url", "release", "accessed", "licence", "class", "through", "holds", "cite") if _text(source.get(key))} for source in sources]
+    # Of each source the scene keeps its name, how it may be used and what it came through: what a page can
+    # say before the species' file is in. Its licence in full, what it holds, its address and how it is cited
+    # stay in that file, which the page fetches when the species is shown (most of a summary was these).
+    summary["sources"] = [{"name": source["name"], "class": _licence_class(source), **({"through": source["through"]} if _text(source.get("through")) else {})} for source in sources]
     return summary
 
 

@@ -438,7 +438,16 @@ export class ProteinLens {
   /** A part the shelves make themselves: one protein, a family, or a gathering of small ones. */
   describe(id) {
     const key = this.ownKey(id);
-    return key ? this.ownData().describe(key) : null;
+    const said = key ? this.ownData().describe(key) : null;
+    // While a set is picked out, a family, a part or a gathering says how many of the set it holds, and which.
+    const view = this.mounted, set = view?.mark, shelves = view?.shelves;
+    const held = said && set && shelves.kind === "families" && shelves.get(key).type !== "p" ? shelves.highlightOf(shelves.get(key), set.name, set.value) : [];
+    if (held.length) {
+      const mark = shelves.marks[set.name] || {}, total = shelves.highlight.get(set.name).get(set.value).total;
+      const names = held.map((protein) => protein.gene || protein.id);
+      said.facts = [...(said.facts || []), [set.value === "true" ? mark.label || set.name : `${mark.label || set.name}: ${set.value}`, `${number(held.length)} of the ${number(total)} proteins: ${names.slice(0, 12).join(", ")}${names.length > 12 ? `, and ${number(names.length - 12)} more` : ""}`]];
+    }
+    return said;
   }
 
   // ------------------------------------------------------------ the species' own proteins
@@ -581,12 +590,17 @@ export class ProteinLens {
   /** The mark whose values the legend's last block lists. */
   markShown(shelves) {
     const marks = shelves.filterable();
+    // A catalogue in families picks out a set only once it is asked for ("show by"): until then the legend's last block is the shelves', or none.
+    if (shelves.kind === "families") return marks.find((mark) => mark.id === this.markName) || null;
     return marks.find((mark) => mark.id === this.markName) || marks.find((mark) => mark.id === "essential") || marks[0] || null;
   }
 
   setMark(name) {
     this.markName = name;
     if (this.mounted) this.mounted.mark = null;
+    // A set with one value (the proteins of chemotaxis) is picked out as soon as it is chosen.
+    const chosen = this.mounted ? this.markShown(this.mounted.shelves) : null;
+    if (chosen?.set && chosen.items.length === 1) this.mounted.mark = { name: chosen.id, value: chosen.items[0].id };
     this.refresh();
     this.onChrome?.();
   }
@@ -774,7 +788,14 @@ export class ProteinLens {
             ? law
             : `${law} ${shelves.predicted ? "Every protein here is itself predicted, and so is its side: a prediction on a predicted protein, not a measurement." : soft ? `The side of ${some(soft, total)} is predicted or taken from what the protein does, not measured.` : ""} A family stands where most of its members sit.${apart}`
           : `${law} ${soft ? `The side of ${some(soft, total)} is predicted or taken from what the protein does, not measured.` : ""}${apart}`,
-        marks: marks.length > 1 ? { label: "Show by", options: marks.map((item) => [item.id, item.label]), active: mark.id } : null,
+        // In families the first choice is the plain view (the shelves, or the families); each other picks out a set.
+        marks: families
+          ? marks.length
+            ? { label: "Show by", options: [["", several ? "Shelves" : "Families"], ...marks.map((item) => [item.id, item.label])], active: mark ? mark.id : "" }
+            : null
+          : marks.length > 1
+            ? { label: "Show by", options: marks.map((item) => [item.id, item.label]), active: mark.id }
+            : null,
         method: made,
         sources: shelves.sources.map((source) => {
           const kind = licenceClass(source);
@@ -1003,13 +1024,12 @@ export class ProteinLens {
 
   /** Show only the units for which the species' atlas found one thing (the legend's third block). */
   setFinding(finding) {
-    const view = this.mounted;
-    if (view && view.shelves.several && view.shelves.kind === "families") {
+    const view = this.mounted, mark = view ? this.markShown(view.shelves) : null;
+    if (view && !mark && view.shelves.several && view.shelves.kind === "families") {
       // Of several shelves the block lists the shelves: one comes into focus, or the whole stack does.
       view.focusOn(finding === null || finding === WHOLE ? undefined : finding === NO_SHELF ? null : finding);
     } else if (view) {
       // On the shelves the block lists the values of one mark.
-      const mark = this.markShown(view.shelves);
       view.mark = mark && finding !== null && mark.items.some((item) => item.id === String(finding)) ? { name: mark.id, value: String(finding) } : null;
     } else this.finding = this.species && (this.atlas.findings || []).some((word) => word.id === finding) ? finding : null;
     this.refresh();

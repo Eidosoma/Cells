@@ -191,6 +191,25 @@ export function validateShelves(data) {
       if (typeof data.distinct_families === "number" && data.distinct_families !== distinct) problems.push(`it says it has ${data.distinct_families} families; its lines are of ${distinct}`);
       else if (typeof data.families_in_all === "number" && data.families_in_all !== distinct + (lone?.count ?? 0)) problems.push(`it says it has ${data.families_in_all} families in all; its lines and its lone proteins are of ${distinct + (lone?.count ?? 0)}`);
     }
+    // The proteins picked out as sets (`highlights`): each names a mark the file declares and a line the file has.
+    const picked = data.highlights;
+    if (picked && !problems.length) {
+      const where = Object.fromEntries((picked.columns || []).map((name, index) => [name, index]));
+      const missing = ["mark", "value", "id", "kind", "under", "shelf", "side"].filter((name) => !(name in where));
+      if (missing.length || !Array.isArray(picked.rows)) problems.push(`its highlights lack ${missing.join(", ") || "their rows"}`);
+      else {
+        const partAt = Object.fromEntries((data.no_family?.part_columns || []).map((name, index) => [name, index]));
+        const lines = (list, columns) => new Set(list.map((row) => `${several ? row[columns.shelf] ?? null : ""}|${row[columns.id]}`));
+        const has = { family: lines(data.families, at), lone: lines(loneParts, loneAt), part: lines(data.no_family?.parts || [], partAt) };
+        for (const row of picked.rows) {
+          const known = has[row[where.kind]];
+          const wrong = !data.marks?.[row[where.mark]] ? `the mark ${row[where.mark]} is not declared` : !known ? `the kind ${row[where.kind]}` : !known.has(`${several ? row[where.shelf] ?? null : ""}|${row[where.under]}`) ? `no line ${row[where.under]}${several && row[where.shelf] !== null ? ` on ${row[where.shelf]}` : ""}` : null;
+          if (!wrong) continue;
+          problems.push(`highlights, ${row[where.id]}: ${wrong}`);
+          break;
+        }
+      }
+    }
   }
   // What the file says stands on each shelf is what its lines put there.
   if (several && !problems.length && data.shelf_counts && typeof data.shelf_counts === "object") {
@@ -254,6 +273,7 @@ export class Shelves {
     this.byKey = new Map();
     this.lines = new Map(); // "<type>:<id>" -> a family's lines, or a part's, one for each shelf it is on
     this.loaded = new Map(); // member file -> its members, once fetched
+    this.highlight = new Map(); // a mark picked out as a set -> its values -> { total, lines: line key -> its proteins, ids }
     if (this.kind === "proteins") {
       this.proteins = rows(data.columns, data.proteins).map((protein) => this.protein(protein, null));
       this.total = this.proteins.length;
@@ -417,6 +437,34 @@ export class Shelves {
       return [...own, ...small.values()];
     };
     this.markers = [...gather(this.families, OWN_FAMILY, "m", ["family", "families"]), ...this.lone, ...gather(this.parts, OWN_PART, "n", ["group", "groups"])];
+    // The proteins that carry a mark the page may pick out as a set (`highlights`), by the line
+    // each stands on: so the markers that hold them are known before any member is fetched.
+    const picked = this.data.highlights, at = Object.fromEntries((picked?.columns || []).map((name, index) => [name, index]));
+    for (const row of picked?.rows || []) {
+      const type = { family: "f", lone: "l", part: "g" }[row[at.kind]], key = type ? this.keyFor(type, row[at.under], row[at.shelf]) : null;
+      if (!this.marks[row[at.mark]] || !this.byKey.has(key)) continue;
+      if (!this.highlight.has(row[at.mark])) this.highlight.set(row[at.mark], new Map());
+      const values = this.highlight.get(row[at.mark]), value = String(row[at.value]);
+      if (!values.has(value)) values.set(value, { total: 0, lines: new Map(), ids: new Set() });
+      const set = values.get(value);
+      set.total += 1;
+      set.ids.add(row[at.id]);
+      if (!set.lines.has(key)) set.lines.set(key, []);
+      set.lines.get(key).push({ id: row[at.id], gene: row[at.gene] || null });
+    }
+  }
+
+  /**
+   * The proteins of one set (a mark of `highlights` and one of its values) that an item
+   * holds: those on a line; those on the lines a gathering holds; for a protein, itself if
+   * it is one of them. Each { id, gene }.
+   */
+  highlightOf(item, name, value) {
+    const set = this.highlight.get(name)?.get(String(value));
+    if (!set || !item) return [];
+    if (item.type === "p") return set.ids.has(item.id) ? [{ id: item.id, gene: item.gene || null }] : [];
+    if (item.holds) return item.holds.flatMap((line) => set.lines.get(line.key) || []);
+    return set.lines.get(item.key) || [];
   }
 
   get(key) {
@@ -781,10 +829,18 @@ export class Shelves {
   /**
    * The marks the legend can show alone: those with a short list of values, each value with
    * how many proteins carry it. A mark that is only ever set counts those without it as "no".
-   * Only a catalogue with one marker for each protein has them at rest.
+   * A catalogue with one marker for each protein has them at rest. One in families has those
+   * its file lists the proteins of (`highlights`): each is a set (`set: true`), counted from
+   * that list, and a marker is lit for the proteins of the set it holds (highlightOf).
    */
   filterable() {
-    if (this.kind !== "proteins") return [];
+    if (this.kind !== "proteins") {
+      return [...this.highlight].map(([name, values]) => {
+        const mark = this.marks[name];
+        const order = Array.isArray(mark.values) ? mark.values.map(String).filter((value) => values.has(value)) : [...values.keys()];
+        return { id: name, label: mark.label || name, measured: Boolean(mark.measured), note: mark.note || null, source: mark.source || null, set: true, items: order.map((value) => ({ id: value, label: value === "true" ? "Yes" : upper(value), count: values.get(value).total })) };
+      });
+    }
     const out = [];
     for (const [name, mark] of Object.entries(this.marks)) {
       if (!Array.isArray(mark.values) || mark.values.length > 8) continue;

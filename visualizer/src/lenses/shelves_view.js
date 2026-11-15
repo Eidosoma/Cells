@@ -588,9 +588,31 @@ export class ShelvesView {
     if (this.units && !item.units.length) return false;
     if (item.type === "p") {
       if (this.basis && item.basis !== this.basis) return false;
-      if (this.mark && String(item.marks?.[this.mark.name] ?? false) !== this.mark.value) return false;
+      if (this.mark && this.shelves.kind === "proteins" && String(item.marks?.[this.mark.name] ?? false) !== this.mark.value) return false;
     }
+    // In families a mark picks out a set: a marker is lit for the proteins of the set it holds, a member if it is one of them.
+    if (this.mark && this.shelves.kind === "families" && !this.shelves.highlightOf(item, this.mark.name, this.mark.value).length) return false;
     return true;
+  }
+
+  /**
+   * While a set is picked out in a catalogue in families, each marker that holds proteins of
+   * it says how many, of how many in all, with its own name; the names of the families give
+   * way to these. They stand back, as every name does, while a family is open.
+   */
+  tagSet(rest) {
+    const set = this.shelves.kind === "families" ? this.mark : null, now = set ? `${set.name}=${set.value}` : "";
+    if (this.labelLayer && now !== this.tagged) {
+      for (const tag of this.setTags || []) this.labelLayer.remove(tag);
+      this.setTags = [];
+      this.tagged = now;
+      const total = set ? this.shelves.highlight.get(set.name)?.get(set.value)?.total || 0 : 0;
+      for (const node of set ? this.nodes.values() : []) {
+        const held = this.shelves.highlightOf(node.item, set.name, set.value).length;
+        if (held) this.setTags.push(this.labelLayer.add({ id: node.item.key, text: `${held} of the ${total} · ${node.item.type === "l" ? "families of one" : node.item.label}`, anchor: new THREE.Vector3(node.position.x, node.top + 0.4, node.position.z), priority: 3000 + held, kind: "part label-unit", lift: 6 }));
+      }
+    }
+    for (const tag of this.setTags || []) tag.hidden = rest;
   }
 
   // ------------------------------------------------------------ opening a family
@@ -987,6 +1009,8 @@ export class ShelvesView {
 
   buildLabels(labels) {
     this.labelLayer = labels;
+    this.setTags = []; // the names of a set that is picked out are made again with the rest (tagSet)
+    this.tagged = "";
     for (const district of this.districts) {
       // With many districts on a shelf, the larger ones are named first where names would collide.
       district.tag = labels.add({ text: district.label, anchor: district.anchor, priority: 500 + Math.min(190, Math.sqrt(district.count) * 6), kind: "layer label-district label-shelf", lift: -8 });
@@ -1031,6 +1055,7 @@ export class ShelvesView {
     if (!colours.plain) return;
     const tones = this.lens.tones;
     const rest = Boolean(this.opened); // while a family is open, the shelves stand back
+    this.tagSet(rest);
     for (const node of this.nodes.values()) {
       const lit = this.lit(node.item);
       const hot = node.item.key === this.selected || node.item.key === this.hovered || node.item === this.opened;
@@ -1042,7 +1067,7 @@ export class ShelvesView {
       if (node.foot) node.foot.mesh.setColorAt(node.foot.index, show ? colours.unit : dim);
       if (node.form) for (const mesh of node.form.meshes) mesh.material = tones.get(mesh.userData.tone)[show ? "lit" : "dim"];
       // Of several shelves, the families of the shelf in focus are named, and the greatest of all whatever is shown.
-      if (node.label) node.label.hidden = rest || !lit || !(this.inFocus(node.frame) || node.great);
+      if (node.label) node.label.hidden = rest || !lit || Boolean(this.tagged) || !(this.inFocus(node.frame) || node.great);
     }
     for (const mesh of this.meshes) if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     // The names on the shelves give way to the open family's. Of several shelves, a shelf's

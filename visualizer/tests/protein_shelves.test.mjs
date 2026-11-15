@@ -622,7 +622,9 @@ test("the scene carries, for each species, the file's name, its counts and its s
   const [bug, worm] = summaries;
   assert.deepEqual([bug.file, bug.kind, bug.proteins, bug.made, bug.from], ["proteins/testbug/shelves.json", "proteins", 9, "2026-11-15", "A made-up record: every protein product"]);
   assert.deepEqual(bug.counts, { outside: 1, in: 2, inside: 4, "not known": 2 });
-  assert.deepEqual(bug.sources.map((source) => [source.name, source.licence]), SOURCES.map((source) => [source.name, source.licence]));
+  // Of a source the scene keeps its name and how it may be used, as the page reads it; its licence in full stays in the species' file.
+  assert.deepEqual(bug.sources, SOURCES.map((source) => ({ name: source.name, class: licenceClass(source) })));
+  assert.deepEqual(bug.sources.map((source) => source.class), ["permissive", "non-commercial", "no stated terms"]);
   assert.equal(bug.members, undefined);
   assert.deepEqual([worm.kind, worm.proteins, worm.families, worm.no_family, worm.parts], ["families", 50, 7, 25, 4]);
   assert.deepEqual(worm.members, ["members-00.json", "members-01.json"], "the files of members the page will ask for");
@@ -1207,6 +1209,53 @@ test("what holds a machine's candidate products: a family, or a group of no fami
   // One shelf: each family has one line, so the count is that of its families; a catalogue that stands as proteins has none of these.
   assert.equal(large().lawHolders().families, large().families.filter((item) => item.units.length).length);
   assert.deepEqual(small().lawHolders(), { families: 0, lone: 0, parts: 0, markers: 0 });
+});
+
+test("a catalogue in families offers the sets its file lists the proteins of, and knows which markers hold them", () => {
+  // Without `highlights` there is nothing to show by, as before.
+  assert.deepEqual([several().filterable(), large().filterable()], [[], []]);
+  const swim = (more = () => {}) => (data) => {
+    data.marks.swim = { label: "Swimming", values: [true], measured: false, note: "Made up.", source: "Made-up catalogue" };
+    data.marks.rig = { label: "Rig it is part of", values: ["motor", "rudder", "keel"], measured: false, source: "Made-up catalogue" };
+    data.highlights = {
+      columns: ["mark", "value", "id", "gene", "kind", "under", "shelf", "side"],
+      rows: [
+        ["swim", true, "TC00001", "swmA", "family", "IPR900001", "cell", "in"],
+        ["swim", true, "TC00002", "swmB", "family", "IPR900001", "cell", "in"],
+        ["swim", true, "X1", "swmC", "family", "IPR900009", "er", "in"], // a small family, which stands gathered
+        ["swim", true, "X2", "swmD", "lone", "lone-channels-in", "cell", "in"],
+        ["swim", true, "X3", null, "part", "no-signature", null, "not known"],
+        ["rig", "motor", "TC00001", "swmA", "family", "IPR900001", "cell", "in"],
+        ["rig", "rudder", "X2", "swmD", "lone", "lone-channels-in", "cell", "in"],
+      ],
+    };
+    more(data);
+  };
+  const { data } = madeUpSeveral({ change: swim() });
+  assert.deepEqual(validateShelves(data), []);
+  const shelves = several({ change: swim() });
+  // Each mark is a set, with the values that have proteins, counted from the list.
+  assert.deepEqual(shelves.filterable().map((mark) => [mark.id, mark.label, mark.set, mark.items.map((item) => [item.id, item.label, item.count])]), [
+    ["swim", "Swimming", true, [["true", "Yes", 5]]],
+    ["rig", "Rig it is part of", true, [["motor", "Motor", 1], ["rudder", "Rudder", 1]]],
+  ]);
+  // A line holds its own; a gathering, those of the lines it holds; four markers hold the five.
+  const holds = (item) => shelves.highlightOf(item, "swim", "true").map((protein) => protein.gene || protein.id);
+  assert.deepEqual(holds(line(shelves, "f", "IPR900001", "cell")), ["swmA", "swmB"]);
+  assert.deepEqual(holds(line(shelves, "f", "IPR900001", "er")), [], "the same family on another shelf holds none");
+  assert.deepEqual(holds(line(shelves, "f", "IPR900009", "er").within), ["swmC"]);
+  assert.deepEqual([holds(line(shelves, "l", "lone-channels-in", "cell")), holds(line(shelves, "g", "no-signature", null))], [["swmD"], ["X3"]]);
+  assert.deepEqual(shelves.markers.filter((item) => holds(item).length).map((item) => item.key).sort(), ["own:testcell:f@cell:IPR900001", "own:testcell:g@:no-signature", "own:testcell:l@cell:lone-channels-in", line(shelves, "f", "IPR900009", "er").within.key].sort());
+  // A member is of the set if the list names it; another value is another set.
+  const members = shelves.membersOf(line(shelves, "f", "IPR900001", "cell"));
+  assert.deepEqual(members.filter((member) => holds(member).length).map((member) => member.id), ["TC00001", "TC00002"]);
+  assert.deepEqual(shelves.highlightOf(line(shelves, "f", "IPR900001", "cell"), "rig", "motor").map((protein) => protein.gene), ["swmA"]);
+  assert.deepEqual(shelves.highlightOf(line(shelves, "f", "IPR900001", "cell"), "rig", "keel"), []);
+  // What breaks the rule: a line the file does not have, a mark it does not declare, a column missing.
+  const broken = (more) => validateShelves(madeUpSeveral({ change: swim(more) }).data).join("; ");
+  assert.match(broken((file) => (file.highlights.rows[0][5] = "IPR999999")), /highlights, TC00001: no line IPR999999 on cell/);
+  assert.match(broken((file) => delete file.marks.swim), /highlights, TC00001: the mark swim is not declared/);
+  assert.match(broken((file) => file.highlights.columns.pop()), /its highlights lack side/);
 });
 
 test("a family of one has no line: its protein stands with the other only members of their families, in a part that is never called a family", () => {
@@ -1884,9 +1933,10 @@ test("the build puts each species' summary and the patterns of the addresses in 
   for (const item of scene.proteins.shelves) {
     assert.match(said, new RegExp(`species proteins ${item.id} of \\d{4}-\\d{2}-\\d{2}: [\\d,]+ proteins`));
     assert.equal(item.file, `proteins/${item.id}/shelves.json`);
-    assert.ok(item.sources.length > 0 && item.sources.every((source) => source.name && source.licence));
+    // Of a source: its name, its class and what it came through. Its licence in full, what it holds and how it is cited are in the species' file.
+    assert.ok(item.sources.length > 0 && item.sources.every((source) => source.name && source.class && Object.keys(source).every((key) => ["name", "class", "through"].includes(key))), item.id);
+    assert.ok(JSON.stringify(item).length < 3000, `${item.id}: a species' summary stays under 3,000 characters (names and counts: the proteins and the sources in full are beside the page)`);
   }
-  assert.ok(JSON.stringify(scene.proteins.shelves).length < 40000, "names, counts and sources only: the proteins are beside the page");
   assert.ok(!MACHINE.test(JSON.stringify([scene.proteins.shelves, scene.proteins.shelf_links])), "a machine path leaked into the scene");
   assert.ok(!JSON.stringify(scene.proteins.shelf_links).includes("checked"));
   for (const [key, patterns] of Object.entries(scene.proteins.shelf_links)) {

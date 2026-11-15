@@ -261,9 +261,9 @@ test("the scene names each species' own proteins by file, with counts and source
   for (const item of shelves) {
     assert.match(item.file, /^proteins\/[a-z0-9_-]+\/shelves\.json$/);
     assert.equal(Object.values(item.counts).reduce((sum, n) => sum + n, 0), item.proteins, item.id);
-    assert.ok(item.sources.length > 0 && item.sources.every((source) => source.name && source.licence), item.id);
+    assert.ok(item.sources.length > 0 && item.sources.every((source) => source.name && source.class), item.id);
+    assert.ok(JSON.stringify(item).length < 3000, `${item.id}: a species' summary stays under 3,000 characters: its proteins and its sources in full are beside the page, not in the scene`);
   }
-  assert.ok(JSON.stringify(shelves).length < 40000, "the proteins themselves are beside the page, not in the scene");
 });
 
 test("every part belongs to a view", () => {

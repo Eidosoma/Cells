@@ -6,7 +6,7 @@
 //
 //   node tools/check_shelves.mjs [SCENARIO] [SCENE_FILE] [OUT_DIR]
 //
-// SCENARIO is syn3a (the default), planarian, human, nofiles, resize, units-small, shots or
+// SCENARIO is syn3a (the default), planarian, human, ecoli, nofiles, resize, units-small, shots or
 // pictures. human checks a species with several shelves, on the human's file: the stack,
 // a shelf in focus, a family over its own shelf, the same family on another shelf, the
 // families of one, what is set apart, the list, the keyboard and a phone-sized window; with
@@ -137,10 +137,8 @@ const press = async (selector, wait = 400) => {
 };
 // The species switch. It is a dropdown since 15 November 2026 (one pill, and a list of the
 // species while it is open): press the pill, wait for the list, press the species' row and
-// wait for the list to close, as pickSpecies() of tools/check_input.mjs does. On a tree from
-// before the dropdown the species stand side by side as buttons, and one press does it.
+// wait for the list to close, as pickSpecies() of tools/check_input.mjs does.
 const pickSpecies = async (id, wait = 400) => {
-  if (!(await evaluate(`Boolean(${V}.shadowRoot.querySelector(".species-pick"))`))) return press(`[data-species="${id}"]`, wait);
   const listOpen = () => evaluate(`(() => { const box = ${V}.shadowRoot.querySelector(".species-list"); return Boolean(box && !box.hidden); })()`);
   if (!(await listOpen())) await press(".species-pick", 250);
   for (let tries = 0; tries < 30 && !(await listOpen()); tries++) await sleep(100);
@@ -674,6 +672,41 @@ try {
       await both("human-stack-phone");
     }
     await size(WIDTH, HEIGHT);
+  }
+
+  if (scenario === "ecoli") {
+    // A catalogue in families whose file lists sets to pick out (`highlights`): "show by" offers
+    // them, the markers that hold the set are lit and say how many, and an open one shows which
+    // of its members they are.
+    await open("lens=proteins&species=ecoli&show=own");
+    for (let tries = 0; tries < 160 && !(await evaluate(`Boolean(${L}.mounted)`)); tries++) await sleep(250);
+    await still();
+    const options = await evaluate(`[...${V}.shadowRoot.querySelectorAll("#cells-mark option")].map((option) => option.value + "=" + option.textContent + (option.selected ? "*" : ""))`);
+    check("show by offers the shelves first, then the sets the file lists", options[0] === "=Shelves*" && options.includes("chemotaxis=Chemotaxis") && options.some((option) => option.startsWith("complex=")), JSON.stringify(options));
+    await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector("#cells-mark"); select.value = "chemotaxis"; select.dispatchEvent(new Event("change")); })()`);
+    await sleep(800);
+    await still();
+    let s = await state();
+    const set = await evaluate(`(() => { const view = ${L}.mounted, shelves = view.shelves, lit = [...view.nodes.values()].filter((node) => view.lit(node.item)); return { mark: view.mark, lit: lit.length, holding: lit.reduce((sum, node) => sum + shelves.highlightOf(node.item, "chemotaxis", "true").length, 0), tags: (view.setTags || []).length, shown: [...${V}.shadowRoot.querySelectorAll(".label-unit")].filter((el) => !el.classList.contains("is-off") && !el.hidden && / of the 22 · /.test(el.textContent)).length }; })()`);
+    check("a set of one value is picked out when chosen: the markers that hold it are lit, and each says how many of the 22", set.mark?.name === "chemotaxis" && set.lit === 14 && set.holding === 22 && set.tags === 14 && set.shown > 0 && /Yes=22\*/.test(s.legend), JSON.stringify([set, s.legend]));
+    await shot("ecoli-chemotaxis");
+    // The marker, not a gathering, that holds the most of the set: opened, it shows which members they are.
+    const most = await evaluate(`(() => { const view = ${L}.mounted, shelves = view.shelves, held = (node) => shelves.highlightOf(node.item, "chemotaxis", "true").length; const node = [...view.nodes.values()].filter((entry) => !entry.item.holds && held(entry)).sort((a, b) => held(b) - held(a))[0]; return { key: node.item.key, held: held(node), count: node.item.count }; })()`);
+    await evaluate(`${V}.select(${JSON.stringify(most.key)}, { fly: true })`);
+    await evaluate(`new Promise((resolve) => { const lens = ${L}, began = performance.now(); const wait = () => (lens.mounted?.opened?.key === ${JSON.stringify(most.key)} || performance.now() - began > 20000 ? resolve() : setTimeout(wait, 40)); wait(); })`);
+    await still();
+    const shown = await evaluate(`(() => { const view = ${L}.mounted; return { opened: view.opened?.key ?? null, members: view.dish?.count ?? null, lit: view.dish ? [...view.dish.nodes.values()].filter((entry) => view.lit(entry.item)).length : null, facts: [...${V}.shadowRoot.querySelectorAll("cells-panel .facts dt")].map((dt) => dt.textContent + ": " + dt.nextElementSibling.textContent).join(" | ") }; })()`);
+    check("opened, it lights the members that are of the set, and its panel says how many and which", shown.opened === most.key && shown.members === most.count && shown.lit === most.held && new RegExp(`Chemotaxis: ${most.held} of the 22 proteins: `).test(shown.facts), JSON.stringify([most, shown]));
+    await shot("ecoli-chemotaxis-open");
+    await evaluate(`${V}.select(null)`);
+    await evaluate(`${V}.current.back()`);
+    await still();
+    // Back to the plain view: nothing is picked out, and the legend lists the shelves again.
+    await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector("#cells-mark"); select.value = ""; select.dispatchEvent(new Event("change")); })()`);
+    await sleep(600);
+    s = await state();
+    const plain = await evaluate(`(() => { const view = ${L}.mounted; return { mark: view.mark, lit: [...view.nodes.values()].filter((node) => view.lit(node.item)).length, markers: view.nodes.size, tags: (view.setTags || []).length }; })()`);
+    check("show by the shelves again: every marker is lit, and the legend lists the shelves", plain.mark === null && plain.lit === plain.markers && plain.tags === 0 && /The whole stack=[\d,]+\*/.test(s.legend), JSON.stringify([plain, s.legend]));
   }
 
   if (scenario === "motion") {
