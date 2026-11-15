@@ -36,7 +36,7 @@ def test_dt_L_above_one_is_refused_at_run_time_and_the_step_returns_its_start():
     with pytest.raises(NumericalError):
         run(spec)
     model = get_model(spec.model)
-    state, p = model.initial_values(spec)
+    state, p = jax.tree.map(jnp.asarray, model.initial_values(spec))
     controls = cs.control_values(spec, [0.0])
     control = type(controls)(*(jnp.asarray(v[0]) for v in controls))
     step = jax.jit(lambda x, c: model.checked_step(x, jnp.asarray(DT), c, p, p.active))
@@ -52,7 +52,7 @@ def test_dt_L_above_one_is_refused_at_run_time_and_the_step_returns_its_start():
     )
     assert report["max_hL"] > so.THETA and not report["admitted"]
     slow = world(2e3)
-    s_state, s_p = get_model(slow.model).initial_values(slow)
+    s_state, s_p = jax.tree.map(jnp.asarray, get_model(slow.model).initial_values(slow))
     slow_step = jax.jit(
         lambda x, c: get_model(slow.model).checked_step(x, jnp.asarray(DT), c, s_p, s_p.active)
     )

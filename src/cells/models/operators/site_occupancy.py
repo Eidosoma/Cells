@@ -777,10 +777,12 @@ def pool_amounts(state, p, *, xp):
     rows, nodes = p.site_pool_row, p.site_pool_node
     cell_node = xp.where(is_cell, nodes, 0)
     outside_node = xp.where(is_cell, 0, nodes)
-    cells = p.amount_reference[rows, cell_node] + state.amount_increment[rows, cell_node]
+    reference = xp.asarray(p.amount_reference)  # A layout bound as NumPy under jnp, too.
+    outside_reference = xp.asarray(p.extracellular_amount_reference)
+    cells = reference[rows, cell_node] + xp.asarray(state.amount_increment)[rows, cell_node]
     outside = (
-        p.extracellular_amount_reference[rows, outside_node]
-        + state.extracellular_amount_increment[rows, outside_node]
+        outside_reference[rows, outside_node]
+        + xp.asarray(state.extracellular_amount_increment)[rows, outside_node]
     )
     return xp.where(is_cell, cells, outside)
 
@@ -790,8 +792,8 @@ def pool_volumes(p, *, xp):
     nodes = p.site_pool_node
     return xp.where(
         is_cell,
-        p.volume[xp.where(is_cell, nodes, 0)],
-        p.extracellular_volume[xp.where(is_cell, 0, nodes)],
+        xp.asarray(p.volume)[xp.where(is_cell, nodes, 0)],
+        xp.asarray(p.extracellular_volume)[xp.where(is_cell, 0, nodes)],
     )
 
 
