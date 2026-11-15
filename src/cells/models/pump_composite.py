@@ -57,6 +57,7 @@ from cells.core.errors import NumericalError
 from cells.core.pump_composite_spec import MODEL_ID, entries, identity, projection
 from cells.core.specs import ChannelChange, ConfigError
 from cells.models import pump_composite_adapter as pump3
+from cells.models.operators.contract import COMMUTING
 from cells.models.surface_pump import DOMAIN_MESSAGE
 from cells.models.surface_pump_checks import row_checks
 from cells.numerics.fixed_step import rk4_checked_step
@@ -142,6 +143,118 @@ def held_schedules(base, control, names):
     return replace(base, experiment=replace(e, **held))
 
 
+def _both_scoped(changer, other, name):
+    """Door S: whether a change of `name` by `changer` and other's change or read of it are both
+    scoped, so they meet only on the slots both name (decided at the definition, scope_errors)."""
+    if not changer.view_change(name).scoped:
+        return False
+    if name in other.VIEW_FIELDS and other is not changer:
+        return other.view_change(name).scoped
+    read = other.scoped_read(name)
+    return read is not None and read.scoped
+
+
+def _whole_field_overlap(earlier, later, name):
+    """The refusal of two changes of `name` that meet on every slot (None: admitted or decided per
+    slot at the definition): commuting contributions apply in declared order, others overlap."""
+    if _both_scoped(earlier, later, name):
+        return None
+    a, b = earlier.view_change(name).contribution, later.view_change(name).contribution
+    if a == b and a in COMMUTING:
+        return None
+    if a == b == "replace":
+        return f"two providers of the view field {name}"
+    return (
+        f"{earlier.LAW_ID} and {later.LAW_ID} both change the view field {name} ({a} and {b}), "
+        "which only commuting changes in declared order may"
+    )
+
+
+def scope_errors(inner, entries, spec):
+    """Door S's admission per slot (docs/SCOPED_COMPOSITION_DESIGN.md §3), for the pairs whose
+    changes and reads are both scoped (the structure check decides every other pair).
+
+    entries: (operator, its declaration) in declared order. Every refusal names the field, both
+    laws and the slots they share, by entity ID."""
+    errors = []
+    ids = {}
+
+    def entity(name):
+        kind = inner.VIEW_FIELD_ENTITIES[name]
+        if kind not in ids:
+            ids[kind] = [e.id for e in getattr(spec.model, kind)]
+        return ids[kind]
+
+    def declared(op, declaration, name, slots_of):
+        given = slots_of(spec, declaration)
+        if name not in given:
+            errors.append(f"{op.LAW_ID} scopes {name} but names no slots for it")
+            return frozenset()
+        n = len(entity(name))
+        slots = frozenset(int(k) for k in given[name])
+        if any(not 0 <= k < n for k in slots):
+            errors.append(f"{op.LAW_ID} names a slot of {name} outside its {n} entities")
+        return slots
+
+    def shared(a, b, name):
+        return ", ".join(entity(name)[k] for k in sorted(a & b))
+
+    changes, reads = {}, {}
+    for i, (op, declaration) in enumerate(entries):
+        for name in op.VIEW_FIELDS:
+            if op.view_change(name).scoped:
+                slots = declared(op, declaration, name, op.changed_slots)
+                changes.setdefault(name, []).append((i, op, slots))
+        for name in dict.fromkeys((*op.VIEW_READS, *op.CONFLICTS_VIEW, *op.SCOPED_READS)):
+            read = op.scoped_read(name)
+            if read is not None and read.scoped and read.mode != "reference":
+                slots = declared(op, declaration, name, op.read_slots)
+                reads.setdefault(name, []).append((i, op, read, slots))
+    for name, listed in changes.items():
+        for k, (_, a, slots_a) in enumerate(listed):
+            for _, b, slots_b in listed[k + 1 :]:
+                both = (a.view_change(name).contribution, b.view_change(name).contribution)
+                if slots_a & slots_b and not (both[0] == both[1] and both[0] in COMMUTING):
+                    errors.append(
+                        f"{a.LAW_ID} and {b.LAW_ID} both change {name} ({both[0]} and {both[1]}) "
+                        f"at {shared(slots_a, slots_b, name)}"
+                    )
+        for j, reader, read, slots_r in reads.get(name, ()):
+            for i, changer, slots_c in listed:
+                if changer is reader or not slots_r & slots_c:
+                    continue
+                if read.mode == "fixed":
+                    errors.append(
+                        f"{reader.LAW_ID} reads {name} as declared at "
+                        f"{shared(slots_r, slots_c, name)}, which {changer.LAW_ID} changes"
+                    )
+                elif i > j:
+                    errors.append(
+                        f"{reader.LAW_ID} reads the view {name} at "
+                        f"{shared(slots_r, slots_c, name)} before {changer.LAW_ID} changes it"
+                    )
+    return errors
+
+
+def slot_mask_errors(entries, spec, p):
+    """Door S: each scoped change's device mask (view_slots, from the bound layout) marks exactly
+    the slots its changed_slots names (empty: consistent)."""
+    errors = []
+    for op, declaration in entries:
+        scoped = [k for k in op.VIEW_FIELDS if op.view_change(k).scoped]
+        if not scoped:
+            continue
+        given, masks = op.changed_slots(spec, declaration), op.view_slots(p, xp=np)
+        for name in scoped:
+            mask = np.asarray(masks.get(name, ()))
+            if mask.dtype != bool or mask.ndim != 1:
+                errors.append(f"{op.LAW_ID} gives no bool slot mask for {name}")
+                continue
+            if set(np.flatnonzero(mask).tolist()) != {int(k) for k in given.get(name, ())}:
+                errors.append(f"{op.LAW_ID}'s slot mask for {name} differs from its slots")
+    return errors
+
+
 def structure_errors(inner, operators):
     """Contract violations of an ordered operator list on an inner model (empty: none)."""
     errors = []
@@ -158,13 +271,19 @@ def structure_errors(inner, operators):
             names += list(getattr(op, attribute))
         if len(set(names)) != len(names):
             errors.append(f"two owners of one {kind} field")
-    providers = {}
+    # Door S (docs/SCOPED_COMPOSITION_DESIGN.md §3): two changes, or a change and a read, of one
+    # field meet on every slot unless both are scoped; a pair of scoped ones is admitted per slot
+    # at the definition (scope_errors).
+    providers, changers = {}, {}
     for op in operators:
         for name in op.VIEW_FIELDS:
             if name not in inner.VIEW_FIELDS:
                 errors.append(f"{op.LAW_ID} provides {name}, which is not an inner view field")
-            if name in providers:
-                errors.append(f"two providers of the view field {name}")
+            for earlier in changers.get(name, ()):
+                overlap = _whole_field_overlap(earlier, op, name)
+                if overlap:
+                    errors.append(overlap)
+            changers.setdefault(name, []).append(op)
             providers[name] = op.LAW_ID
         for name in op.CONTROL_FACTORS:
             if name not in inner.CONTROL_FIELDS:
@@ -188,7 +307,7 @@ def structure_errors(inner, operators):
                 f"{name} has closers or a provider, never both ({providers[name]} provides it)"
             )
     accepted, provided, columns = {}, set(), {k: ["inner"] for k in inner.OBSERVATION_FIELDS}
-    for op in operators:
+    for i, op in enumerate(operators):
         # Writers follow owners: an entity write targets inner state or a field an
         # earlier operator accepts.
         for name in op.ENTITY_WRITES:
@@ -201,6 +320,17 @@ def structure_errors(inner, operators):
         for name in op.VIEW_READS:
             if name not in provided:
                 errors.append(f"{op.LAW_ID} reads the view {name}; no earlier operator provides it")
+            # A current read follows every changer of what it reads. A later replacement on every
+            # slot is already refused (two providers, or a provider beside a closer), so this
+            # names a later scoped or commuting change, which door S admits beside an earlier one.
+            for changer in operators[i + 1 :]:
+                if name not in changer.VIEW_FIELDS or _both_scoped(changer, op, name):
+                    continue
+                change = changer.view_change(name)
+                if change.scoped or change.contribution != "replace":
+                    errors.append(
+                        f"{op.LAW_ID} reads the view {name} before {changer.LAW_ID} changes it"
+                    )
         provided.update(op.VIEW_FIELDS)
         provided.update(op.CLOSES)
         # One owner per observation column; replacement is a declared chain in order.
@@ -216,10 +346,11 @@ def structure_errors(inner, operators):
                 errors.append(f"{op.LAW_ID} replaces {name}, which no earlier owner observes")
     for op in operators:
         for name in op.CONFLICTS_VIEW:
-            if providers.get(name, op.LAW_ID) != op.LAW_ID:
-                errors.append(
-                    f"{op.LAW_ID} reads {name} as declared, but {providers[name]} provides it"
-                )
+            for changer in changers.get(name, ()):
+                if changer is not op and not _both_scoped(changer, op, name):
+                    errors.append(
+                        f"{op.LAW_ID} reads {name} as declared, but {changer.LAW_ID} provides it"
+                    )
             if closed.get(name, op.LAW_ID) != op.LAW_ID:
                 errors.append(f"{op.LAW_ID} reads {name} as declared, but {closed[name]} closes it")
     for i, op in enumerate(operators):  # A mask's reader follows every closer of it.
@@ -264,6 +395,16 @@ def field_map(inner, operators):
         for op in operators
         for k in op.VIEW_FIELDS
     }
+    # Door S: a field several operators change records each change in declared order, the order
+    # it is merged in (docs/SCOPED_COMPOSITION_DESIGN.md §3). Only then, so every other map, and so
+    # its manifests, are unchanged.
+    for k, view in views.items():
+        changers = [op for op in operators if k in op.VIEW_FIELDS]
+        if len(changers) > 1:
+            view["changes"] = [
+                [op.LAW_ID, op.view_change(k).contribution, op.view_change(k).scoped]
+                for op in changers
+            ]
     for k in dict.fromkeys(k for op in operators for k in op.CLOSES):  # Only with closers.
         views[k] = {
             "closers": [op.LAW_ID for op in operators if k in op.CLOSES],
@@ -330,6 +471,22 @@ class Composition:
         )
         self.field_inputs = any(
             set((*op.VIEW_FIELDS, *op.CLOSES)) & set(inner.FIELD_INPUTS) for op in operators
+        )
+        # Door S (docs/SCOPED_COMPOSITION_DESIGN.md §2, §4): operators with scoped changes (their
+        # bound slot masks are checked at binding), and the parts that declare a current read at
+        # stage event or split of a field some operator changes, which receive the merged view
+        # (static: by declarations; BOOKS_AT_VIEW keeps its own condition).
+        self.scoped_changers = tuple(
+            op for op in operators if any(op.view_change(k).scoped for k in op.VIEW_FIELDS)
+        )
+        changed = {k for op in operators for k in (*op.VIEW_FIELDS, *op.CLOSES)}
+        self.view_readers = tuple(
+            op
+            for op in operators
+            if any(
+                r.mode == "current" and r.stage in ("event", "split") and k in changed
+                for k, r in op.SCOPED_READS.items()
+            )
         )
         # Topology (S5 design §2, §3.5). With a closer the composite owns the capacitor-energy
         # correction at the view, referenced to the view of the initial state through two
@@ -452,7 +609,12 @@ class Composition:
         if self.owns_view_energy:
             values = self._closed_initial_state(self.STATE_TYPE(**values), kind, layout)
             layout.update(self._view_references(self.STATE_TYPE(**values), kind, layout))
-        return self.STATE_TYPE(**values), kind(**layout)
+        p = kind(**layout)
+        if self.scoped_changers:  # Door S: each bound slot mask marks its declared slots.
+            masks = slot_mask_errors([(op, d) for op, d, _ in entries(spec)], spec, p)
+            if masks:
+                raise ConfigError("Invalid operator composition: " + "; ".join(masks))
+        return self.STATE_TYPE(**values), p
 
     def _closed_initial_state(self, state, kind, layout):
         """The bound state with closed contacts' gates at @3's padded 0 (S5 design §2).
@@ -540,7 +702,7 @@ class Composition:
         valid, current = None, state
         for op in self.events:
             if op in active:
-                if op.BOOKS_AT_VIEW and self.field_inputs:  # Static: S5's partition.
+                if self._passes_view(op):  # Static: S5's partition; door S's current readers.
                     current, ok = op.event(
                         current, control, p, xp=xp, view=lambda s: self.view(p, s, xp=xp)
                     )
@@ -596,10 +758,16 @@ class Composition:
 
     imex_step = split_step
 
+    def _passes_view(self, op):
+        """Whether op's event or half-step receives the merged view (static): one that books at
+        the view when a field input is provided, or a door S current reader (view_readers)."""
+        return (op.BOOKS_AT_VIEW and self.field_inputs) or op in self.view_readers
+
     def _half_step(self, op, state, h, control, p, *, xp):
         """op's half-step; one that books at the view gets the current view when a field
-        input is provided (static: otherwise the call is unchanged)."""
-        if op.BOOKS_AT_VIEW and self.field_inputs:
+        input is provided, and a door S current reader gets the merged view (static: otherwise
+        the call is unchanged)."""
+        if self._passes_view(op):
             return op.half_step(state, h, control, p, xp=xp, view=self.view(p, state, xp=xp))
         return op.half_step(state, h, control, p, xp=xp)
 
@@ -710,6 +878,9 @@ class Composition:
                     "An RK4 composition with a coupled operator cannot hold event maps, "
                     "split-only parts or integer state"
                 )
+        scoped = scope_errors(self.inner, [(op, d) for op, d, _ in entries(spec)], spec)
+        if scoped:
+            raise ConfigError("Invalid operator composition: " + "; ".join(scoped))
         dt, end = spec.execution.dt, spec.experiment.end_time
         for op, _, schedule in entries(spec):
             if op.EVENT and any(

@@ -7,9 +7,10 @@ In NumPy (no compile), on the species-only dose leg (validation/tissue/bath_sche
   step that leaves a species non-positive, and an anisosmotic step beside water@1 (an isosmotic one
   is admitted);
 * the composite's structure check: insertion@1 (a second provider of the field), the closers
-  insertion@2 and the partition (the field is padded beside them), the lumens over either, and D152
-  (reading it as declared, nominally) refused in either order; what version 1 composes with
-  admitted;
+  insertion@2 and the partition (the field is padded beside them) and the lumens over either
+  refused in either order; what version 1 composes with admitted, and D152 too, by door S (its
+  outside reads at finite nodes, the schedule's change at its held baths:
+  docs/SCOPED_COMPOSITION_DESIGN.md, D176);
 * before a bath's first event its control is its declared content bit for bit, so the event map
   selects the start state;
 * an event sets the held content to the target bit for bit and books the dose, its free-energy
@@ -238,9 +239,10 @@ def test_definition_refusals(change, message):
         parse_spec(definition(**change))
 
 
-def test_a_dose_beside_reactions_is_refused_by_the_composites_structure_check():
-    """D152 reads the field as declared (a nominal conflict, the design's door S): the composite's
-    own rule refuses a provider of a field that another operator reads as declared."""
+def test_a_dose_beside_reactions_is_admitted_by_door_s():
+    """D152 reads the field as declared at finite nodes, the schedule changes it at its held baths:
+    the slots are disjoint, so door S admits the pair (it was a nominal refusal before door S;
+    docs/SCOPED_COMPOSITION_DESIGN.md §5, D176)."""
     from validation.tissue import species_reactions_fixtures as rfx
 
     raw = rfx.with_reactions(
@@ -249,8 +251,7 @@ def test_a_dose_beside_reactions_is_refused_by_the_composites_structure_check():
         [rfx.mass_action("decay", {"outside": ["ecs_0"]}, {fx.SPECIES: 1}, {}, 0.1)],
         rfx.always(["decay"]),
     )
-    with pytest.raises(ConfigError, match="reads extracellular_amount_reference as declared"):
-        parse_spec(raw)
+    parse_spec(raw)
 
 
 STATE = "membrane_entity_state@1"
@@ -275,10 +276,6 @@ STRUCTURE_REFUSED = {
         (STATE, "scheduled_membrane_insertion@2", "restricted_cleft_lumen@2"),
         "extracellular_amount_reference has closers or a provider, never both",
     ),
-    "D152, reading it as declared (nominal)": (
-        ("local_species_reactions@1",),
-        "local_species_reactions@1 reads extracellular_amount_reference as declared",
-    ),
 }
 STRUCTURE_ADMITTED = (
     ("electrode_current_injection@1",),
@@ -288,6 +285,7 @@ STRUCTURE_ADMITTED = (
     ("scheduled_species_exchange@1",),
     ("scheduled_species_turnover@1", "scheduled_species_exchange@1"),
     ("ideal_osmosis_linear_compliance_water@1",),  # Isosmotic steps only, at the definition.
+    ("local_species_reactions@1",),  # Door S: disjoint slots (D176).
 )
 
 

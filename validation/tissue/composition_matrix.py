@@ -362,20 +362,8 @@ def _tags():
         )
     tags[("reads-closed", COUPLING, PARTITION, "active")] = (REAL, CELL_MASK[COUPLING], ())
     anchor = "extracellular_amount_reference"
-    tags[("reads", REACTIONS, BATH, anchor)] = (
-        NOMINAL,
-        "D152 reads the anchors only at finite nodes (node_amounts and reactions_domain_valid mask "
-        "held baths) and refuses held-bath sites (_sites); the bath schedule provides the declared "
-        "array off its baths and schedules held baths only (held_view, parse_declaration). The "
-        "bath-schedule design §3.1",
-        (
-            OPS + "species_reactions.py::node_amounts",
-            OPS + "species_reactions.py::reactions_domain_valid",
-            OPS + "species_reactions.py::_sites",
-            OPS + "bath_schedule.py::held_view",
-            OPS + "bath_schedule.py::parse_declaration",
-        ),
-    )
+    # D152 beside the bath schedule was nominal (disjoint slots); door S admits it (D176,
+    # docs/SCOPED_COMPOSITION_DESIGN.md §5): the schedule's change and D152's reads are scoped.
     lumen_read = (
         "a lumen, which requires it, fills from its source bath at the declared composition and "
         "does not declare that read"

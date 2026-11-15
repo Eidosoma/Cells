@@ -87,6 +87,22 @@ Declarations (class attributes):
     read on the actual row, at the view);
   - ``BOOKS_AT_VIEW`` on an event map: the composite passes ``view``, a function of state
     giving its view, when a field input is provided.
+* Scoped composition, door S (docs/SCOPED_COMPOSITION_DESIGN.md), refining the view
+  declarations per field:
+  - ``VIEW_CHANGES`` ({field: Change}): what its contribution to a field it provides
+    (``VIEW_FIELDS``) or closes (``CLOSES``) does: ``replace``, ``add`` or ``multiply`` (a
+    closer's is ``and``), at stage ``event`` or ``split``. A scoped change is taken only on
+    the slots ``changed_slots`` names (host) and ``view_slots`` masks (device); otherwise on
+    every slot. Defaults (``view_change``): ``replace`` (``and`` for a closer) on every slot;
+  - ``SCOPED_READS`` ({field: Read}): the mode of a read, ``current`` (the merged view at its
+    stage: a ``VIEW_READS`` field), ``fixed`` (the declared value taken as the physical one:
+    a ``CONFLICTS_VIEW`` field) or ``reference`` (the bound value as data, an anchor), and
+    its stage. A scoped read covers only the slots ``read_slots`` names. Defaults
+    (``scoped_read``): ``current`` for each ``VIEW_READS`` field, ``fixed`` for each
+    ``CONFLICTS_VIEW`` field, on every slot.
+  Two changes or a change and a read of one field meet only on the slots both name; the
+  composite admits a pair per slot (pump_composite.structure_errors and scope_errors) and
+  merges each change onto the accumulated view on its slots (pump_composite_adapter.view).
 
 Methods take the composite's full state, control and layout NamedTuples, whose
 fields are the inner model's followed by each operator's in declared order.
@@ -94,10 +110,39 @@ Defaults below are the idle answers: no parts, no terms, no columns.
 """
 
 from types import MappingProxyType
+from typing import NamedTuple
 
 HEAT_SUFFIX = "_dissipated_energy_pJ"
 WORK_SUFFIX = "_work_pJ"
 RK4_MODES = ("coupled", "split")
+# Door S (docs/SCOPED_COMPOSITION_DESIGN.md §2).
+CONTRIBUTIONS = ("replace", "add", "multiply")  # Of a provided field; a closer's is "and".
+COMMUTING = ("add", "multiply", "and")  # Overlaps admitted, applied in declared order.
+CHANGE_STAGES = ("event", "split")
+READ_MODES = ("reference", "current", "fixed")
+READ_STAGES = ("event", "split", "inner", "end", "observe")
+
+
+class Change(NamedTuple):
+    """Door S: an operator's contribution to one view field (docs/SCOPED_COMPOSITION_DESIGN.md).
+
+    scoped: taken only on the slots changed_slots names and view_slots masks; otherwise on
+    every slot of the field's entity axis (its last axis)."""
+
+    contribution: str = "replace"
+    stage: str = "event"
+    scoped: bool = False
+
+
+class Read(NamedTuple):
+    """Door S: an operator's read of one view field (docs/SCOPED_COMPOSITION_DESIGN.md).
+
+    mode: "current", "fixed" or "reference"; stage: the point whose view it consumes; scoped:
+    only the slots read_slots names, otherwise every slot."""
+
+    mode: str
+    stage: str
+    scoped: bool = False
 
 
 class Operator:
@@ -148,6 +193,9 @@ class Operator:
     # Topology (module docstring).
     CLOSES = ()
     RETIRES = False
+    # Door S (module docstring): refinements of the view declarations, per field.
+    VIEW_CHANGES = MappingProxyType({})
+    SCOPED_READS = MappingProxyType({})
     # A declaration with no part and no field (module docstring; check_declarations).
     DECLARATION_ONLY = False
 
@@ -155,6 +203,29 @@ class Operator:
     def observed_columns(cls):
         """Its own observation columns: its state fields, then READOUT_COLUMNS."""
         return (*cls.STATE_AXES, *cls.READOUT_COLUMNS)
+
+    @classmethod
+    def view_change(cls, field):
+        """Door S: the Change of a field it provides or closes (VIEW_CHANGES, else the default:
+        replace, or and for a closer, on every slot; stage split with a split part or none,
+        else event)."""
+        if field in cls.VIEW_CHANGES:
+            return cls.VIEW_CHANGES[field]
+        stage = "split" if cls.SPLIT or not (cls.EVENT or cls.PROCESS) else "event"
+        return Change("and" if field in cls.CLOSES else "replace", stage)
+
+    @classmethod
+    def scoped_read(cls, field):
+        """Door S: the Read of a field it reads (SCOPED_READS, else current for VIEW_READS and
+        fixed for CONFLICTS_VIEW, on every slot), or None."""
+        if field in cls.SCOPED_READS:
+            return cls.SCOPED_READS[field]
+        stage = "split" if cls.SPLIT else "event"
+        if field in cls.VIEW_READS:
+            return Read("current", stage)
+        if field in cls.CONFLICTS_VIEW:
+            return Read("fixed", stage)
+        return None
 
     # ------------------------------------------------------------ definition
 
@@ -214,6 +285,15 @@ class Operator:
         as above)."""
         return {}
 
+    def changed_slots(self, spec, declaration):
+        """Door S, host: {field: entity indices} for each field its scoped Change covers (the union
+        over the run: later doses, onsets and closures included)."""
+        return {}
+
+    def read_slots(self, spec, declaration):
+        """Door S, host: {field: entity indices} for each field its scoped Read covers."""
+        return {}
+
     def batch_signature(self, declaration):
         return (self.LAW_ID,)
 
@@ -233,6 +313,12 @@ class Operator:
 
     def view(self, state, p, q, *, xp):
         """{inner layout field: value} for VIEW_FIELDS, from state (q: the running view)."""
+        return {}
+
+    def view_slots(self, p, *, xp):
+        """Door S, device: {field: bool mask over the field's entity axis} for each field its
+        scoped Change covers: the slots its contribution is taken on (changed_slots' slots, bound
+        as layout data, checked when the composition binds)."""
         return {}
 
     def control_factors(self, state, p, *, xp):
@@ -454,4 +540,50 @@ def check_declarations(operator):
                 f"{name}: an event replaces {field} as an entity write, booked in owned "
                 "removed and supplied accumulators"
             )
+    _check_scopes(operator)
     return operator
+
+
+def _check_scopes(operator):
+    """Door S's declarations (docs/SCOPED_COMPOSITION_DESIGN.md §2)."""
+    name = operator.LAW_ID
+    for field, change in operator.VIEW_CHANGES.items():
+        if not isinstance(change, Change):
+            raise ValueError(f"{name}: VIEW_CHANGES maps {field} to a Change")
+        if field in operator.CLOSES:
+            if change.contribution != "and":
+                raise ValueError(f"{name}: a closer's change of {field} is 'and'")
+            if change.scoped:
+                raise ValueError(
+                    f"{name}: closers change whole masks in R (docs/SCOPED_COMPOSITION_DESIGN.md "
+                    f"§3, rule 6), so {field} is not scoped"
+                )
+        elif field not in operator.VIEW_FIELDS:
+            raise ValueError(
+                f"{name}: VIEW_CHANGES refines a field it provides or closes, not {field}"
+            )
+        elif change.contribution not in CONTRIBUTIONS:
+            raise ValueError(f"{name}: the change of {field} is one of {CONTRIBUTIONS}")
+        if change.stage not in CHANGE_STAGES:
+            raise ValueError(f"{name}: the change of {field} is at a stage of {CHANGE_STAGES}")
+    for field, read in operator.SCOPED_READS.items():
+        if not isinstance(read, Read):
+            raise ValueError(f"{name}: SCOPED_READS maps {field} to a Read")
+        if read.mode not in READ_MODES or read.stage not in READ_STAGES:
+            raise ValueError(
+                f"{name}: the read of {field} has a mode of {READ_MODES} and a stage of "
+                f"{READ_STAGES}"
+            )
+        listed = dict(current=operator.VIEW_READS, fixed=operator.CONFLICTS_VIEW).get(read.mode)
+        if listed is not None and field not in listed:
+            kind = "VIEW_READS" if read.mode == "current" else "CONFLICTS_VIEW"
+            raise ValueError(f"{name}: a {read.mode} read of {field} needs it in {kind}")
+        if read.mode == "reference" and field in (
+            *operator.VIEW_READS,
+            *operator.CONFLICTS_VIEW,
+            *operator.VIEW_FIELDS,
+        ):
+            raise ValueError(
+                f"{name}: a reference read of {field} is not also read, held as declared or "
+                "provided"
+            )
