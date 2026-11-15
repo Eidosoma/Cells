@@ -53,6 +53,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from cells.core import pump_composite_spec as composite_spec
+from cells.core import species_registry
 from cells.core.errors import NumericalError
 from cells.core.pump_composite_spec import MODEL_ID, entries, identity, projection
 from cells.core.specs import ChannelChange, ConfigError
@@ -979,7 +980,12 @@ class Composition:
         The inner definition was checked by its own parser. Each change of the
         schedule union is checked on the compact initial state (the domain and a
         valid field), then each operator's own checks run.
+
+        The species registry's checks run first, on this definition: the inner parser's hook sees
+        the inner definition only, so an operator's in-step mover of a two-form row, or an operator
+        that names one, is refused here (core/species_registry.py; D176).
         """
+        species_registry.check_definition(spec)
         solver = spec.execution.solver
         if solver == "rk4" and self.coupled:
             if (
