@@ -75,7 +75,8 @@
   "/mnt/workspaces/Cells/architecture-block-20261114-01/tiers/measure-e3fb7ab/measured.json",
   "/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/land-measure-q7prov/measured.json",
   "/mnt/workspaces/Cells/test-split-20261115-01/run-534cd37/tiers/measured.json",
-  "/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/tiers/measure-landing/measured.json"
+  "/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/tiers/measure-landing/measured.json",
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/head/tiers-45e0c186/measured.json"
  ],
  "measured_provenance": [
   {
@@ -618,6 +619,14 @@
    "root": "/home/robert/Cells/.claude/worktrees/agent-a76bfeaf3e7eececa",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-15T07:52:42+00:00"
+  },
+  {
+   "git_revision": "45e0c186e8a52e3cdc2eaebd0ca9f047bc7131b8",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/head/snapshot-45e0c186",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-15T15:10:25+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1408,6 +1417,14 @@
     }
    },
    {
+    "file": "tests/unit/test_contract_additions.py",
+    "seconds": 10.13,
+    "exit_code": 0,
+    "counts": {
+     "passed": 13
+    }
+   },
+   {
     "file": "tests/unit/test_cotransport.py",
     "seconds": 5.98,
     "exit_code": 0,
@@ -1485,6 +1502,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 11
+    }
+   },
+   {
+    "file": "tests/unit/test_door_s.py",
+    "seconds": 15.58,
+    "exit_code": 0,
+    "counts": {
+     "passed": 26
     }
    },
    {
@@ -2963,6 +2988,22 @@
     }
    },
    {
+    "file": "tests/unit/test_species_registry.py",
+    "seconds": 19.4,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_species_registry_forms.py",
+    "seconds": 15.0,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
     "file": "tests/unit/test_species_regulated_availability.py",
     "seconds": 16.59,
     "exit_code": 0,
@@ -3834,6 +3875,14 @@
     "counts": {
      "failed": 4,
      "passed": 271
+    }
+   },
+   {
+    "file": "tests/unit/test_inner_laws.py",
+    "seconds": 21.3,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
     }
    },
    {
@@ -4750,6 +4799,18 @@
    {
     "file": "tests/unit/test_default_world_adapter.py",
     "seconds": 90.13,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_delivery_world.py",
+    "seconds": 90.84,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_delivery_world_order.py",
+    "seconds": 90.42,
     "exit_code": null,
     "counts": {}
    },
