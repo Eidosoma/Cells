@@ -165,6 +165,52 @@ def test_one_pair_is_refused():
         agreement.variant("w2", agreement.registered("w2")[1], old)
 
 
+# ---------------------------------------------------------------- the flagged block (amendment)
+
+
+def test_flagged_terms_take_the_backend_under_the_flag_and_a_zero_run_to_run():
+    """X and its bitwise confirming repeat Y: backend |reference - X|, run-to-run 0, and the
+    tolerances by the registered rule (unchanged)."""
+    protocol = agreement.registered("w2")[1]
+    x = w2_run(voltage=-0.08 + 3e-7)
+    terms = agreement.measured("w2", w2_run(), x, copy.deepcopy(x), mode="flagged")
+    entry = "red_cell_15-kaji_s0.12/0"
+    assert terms["mode"] == "flagged" and terms["repeat_bitwise"] and not terms["stop"]
+    assert terms["backend"][entry]["voltage_V"] == pytest.approx(3e-7)
+    assert terms["run_to_run"][entry]["voltage_V"] == 0.0
+    out = agreement.variant("w2", protocol, terms)
+    (row,) = [r for r in out["backend_variant"]["rows"] if r["item"] == "voltage_V"]
+    expected = max(protocol["stationary"]["voltage_V"], agreement.up1(3 * (3e-7 + 0.0)))
+    assert row["tolerance"] == expected and row["run_to_run"] == 0.0
+    block = out["backend_variant"]
+    assert block["mode"] == "flagged" and block["repeats"]["labels"] == ["X", "Y"]
+    assert agreement.FLAG in block["rule"]
+
+
+def test_a_non_bitwise_flagged_repeat_stops_the_block(tmp_path):
+    x = w2_run(voltage=-0.08 + 3e-7)
+    y = w2_run(voltage=-0.08 + 3e-7 + 1e-15)  # A rounding-level difference: not bitwise.
+    terms = agreement.measured("w2", w2_run(), x, y, mode="flagged")
+    assert terms["stop"] and not terms["repeat_bitwise"]
+    with pytest.raises(ValueError, match="not bitwise: the block stops"):
+        agreement.variant("w2", agreement.registered("w2")[1], terms)
+    # The command line: terms writes the record with stop and exits 2.
+    reference = saved(tmp_path, "cpu.json", "w2", w2_run(), backend="cpu")
+    files = [saved(tmp_path, f"{k}.json", "w2", r) for k, r in (("x", x), ("y", y))]
+    out = tmp_path / "terms.json"
+    argv = ["--reference", str(reference), "--runs", *map(str, files), "--output", str(out)]
+    assert agreement.main(["terms", "--mode", "flagged", "--part", "w2", *argv]) == 2
+    assert json.loads(out.read_text())["stop"] is True
+
+
+def test_the_flagged_mode_takes_two_runs_and_the_unflagged_path_is_unchanged():
+    with pytest.raises(ValueError, match="X and its confirming repeat Y"):
+        agreement.measured("w2", w2_run(), w2_run(), mode="flagged")
+    unflagged = agreement.measured("w2", w2_run(), w2_run(), w2_run(), w2_run())
+    assert unflagged["mode"] == "repeats" and "stop" not in unflagged
+    assert sorted(unflagged["backend_each"]) == ["A", "B", "D"]
+
+
 RUNS = dict(w1=w1_run(), w2=w2_run(), g2=g2_run())
 
 
