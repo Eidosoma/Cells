@@ -91,8 +91,10 @@ def _checked_above(row, p, active, *, xp):
 
 
 @cache
-def implementation(inner_model, laws):
-    """The composite for one inner identity and ordered operator law tuple."""
+def implementation(inner_model, laws, structure=None):
+    """The composite for one inner identity, ordered operator law tuple and, from a definition,
+    the inner model's declared structure (I2: the composite then takes the inner protocol from
+    that structure's implementation object; None keeps the module's own, the full catalogue)."""
     from cells.models.operators import OPERATORS
 
     if inner_model not in INNERS:
@@ -100,11 +102,18 @@ def implementation(inner_model, laws):
     unknown = [law for law in laws if law not in OPERATORS]
     if unknown:
         raise ConfigError("Unregistered operator laws: " + ", ".join(unknown))
-    return Composition(INNERS[inner_model], tuple(OPERATORS[law] for law in laws))
+    inner = INNERS[inner_model]
+    if structure is not None:
+        inner = inner.for_structure(structure)
+    return Composition(inner, tuple(OPERATORS[law] for law in laws))
 
 
 def model_for(spec_model):
-    return implementation(spec_model.inner_model, composite_spec.operator_laws(spec_model))
+    inner = INNERS[spec_model.inner_model] if spec_model.inner_model in INNERS else None
+    structure = None if inner is None else inner.inner_structure(spec_model)
+    return implementation(
+        spec_model.inner_model, composite_spec.operator_laws(spec_model), structure
+    )
 
 
 def check_definition(spec):
@@ -448,6 +457,8 @@ class Composition:
         self.writers_of = accepted_writers(operators)
         self.observed_keys = {op.LAW_ID: {*op.observed_columns(), *op.REPLACES} for op in operators}
         self.laws = tuple(op.LAW_ID for op in operators)
+        # The executable's structure (I2): the inner structure's key and the operator list.
+        self.structure_key = (MODEL_ID, getattr(inner, "structure_key", None), self.laws)
         # Declarations contribute nothing to the step (contract.DECLARATION_ONLY): a composition
         # of declarations alone steps as the empty composition does (FR-1 design §1.6, S5).
         self.stepping = tuple(op for op in operators if not op.DECLARATION_ONLY)

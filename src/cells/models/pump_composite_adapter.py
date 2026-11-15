@@ -31,6 +31,9 @@ layout. This adapter is the only place that knows @3's names:
   change at fixed free-node charges: potentials, image charge and heat).
 """
 
+import sys
+from functools import cache
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -178,6 +181,59 @@ device_check_constants = ionic.device_check_constants
 device_failure_message = ionic.device_failure_message
 rebind = first.rebind
 
+# I2 (docs/INNER_MODEL_V4_DESIGN.md §7.4 (c)): the inner protocol taken from one implementation
+# object per declared structure. These names are the object's; every other name is this module's
+# own (the types, the view and its merge, the field arrays, the energy terms), and a name neither
+# defines is the object's (channel_kinetics, junction_kinetics, field_values, structure, ...).
+FORWARDED = (
+    "initial_values",
+    "checked_step",
+    "imex_step",
+    "readouts",
+    "domain_valid",
+    "control_domain_valid",
+    "balances",
+    "device_balances",
+    "check_steps",
+    "bind_step_checks",
+    "batch_signature",
+    "working_size",
+    "observe_history",
+    "summarize",
+    "device_check_constants",
+    "device_failure_message",
+)
+inner_structure = ionic.structure  # The InnerStructure of a parsed @3 or composite model block.
+
+
+class InnerAdapter:
+    """This module with the inner protocol of one implementation object (I2): a composite's
+    `inner`, and what an operator that declares USES_INNER receives as `inner=`."""
+
+    def __init__(self, implementation):
+        self.implementation = implementation
+        self.structure_key = implementation.structure_key
+        for name in FORWARDED:
+            setattr(self, name, getattr(implementation, name))
+        self.magnitudes = implementation.channel_magnitudes
+
+    def __getattr__(self, name):
+        # Only reached for names not set above: this module's own, else the object's.
+        if name.startswith("__"):
+            raise AttributeError(name)
+        if hasattr(_MODULE, name):
+            return getattr(_MODULE, name)
+        return getattr(self.implementation, name)
+
+    def __repr__(self):
+        return f"<{MODEL_ID} adapter for {self.implementation!r}>"
+
+
+@cache
+def for_structure(structure):
+    """The adapter of one declared inner structure (cached: equal structures share it)."""
+    return InnerAdapter(ionic.implementation(structure))
+
 
 def inner_state(state):
     return STATE_TYPE(*(getattr(state, k) for k in STATE_FIELDS))
@@ -233,6 +289,9 @@ def view(p, state, providers, closers=(), *, xp=jnp):
     if provided & set(FIELD_INPUTS):
         q = refresh_field(q, inner_layout(p), xp=xp)
     return q
+
+
+_MODULE = sys.modules[__name__]
 
 
 def merge(current, value, contribution, mask=None, *, xp):
