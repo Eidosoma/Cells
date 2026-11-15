@@ -89,7 +89,7 @@ def test_the_catalogue_parser_moved_unchanged():
 
 def test_the_model_entries_parse_with_their_refusals():
     background = dict(trace_mM=1e-5, floor_fmol=1e-20)
-    declared = registry.parse_entries(
+    declared = registry.build(
         [dict(id="S", identity=TAG, standard_mu_RT=-2.5, background=background), dict(id="P")],
         standard_concentration_mM=1.0,
     )
@@ -109,7 +109,7 @@ def test_the_model_entries_parse_with_their_refusals():
     }
     for message, raw in refusals.items():
         with pytest.raises(ConfigError, match=message):
-            registry.parse_entries(raw)
+            registry.build(raw)
 
 
 def test_without_entries_authors_come_before_users_in_either_order():
@@ -127,7 +127,7 @@ def test_without_entries_authors_come_before_users_in_either_order():
 
 def test_with_entries_the_model_is_the_authority():
     spec = parse_spec(coupled())
-    tagged = _Spec(spec, registry.parse_entries([dict(id="R", identity=TAG)]))
+    tagged = _Spec(spec, registry.build([dict(id="R", identity=TAG)]))
     assert registry.identities(tagged)["R"] == (
         registry.MODEL_SOURCE,
         registry.Identity(("uniprot", "P00001"), "model"),
@@ -140,7 +140,7 @@ def test_with_entries_the_model_is_the_authority():
 
 def test_a_declared_background_and_potential_are_checked_and_read():
     spec = parse_spec(coupled())
-    good = registry.parse_entries(
+    good = registry.build(
         [dict(id="R", background=dict(trace_mM=rf.REGULATOR_mM, floor_fmol=rf.FLOOR_FMOL),
               standard_mu_RT=-1.0)],
         standard_concentration_mM=1.0,
@@ -148,12 +148,12 @@ def test_a_declared_background_and_potential_are_checked_and_read():
     registry.check_background(_Spec(spec, good))
     assert registry.standard_potential(_Spec(spec, good), "R") == (-1.0, 1.0)
     assert registry.standard_potential(_Spec(spec, good), "Na") is None
-    high = registry.parse_entries(
+    high = registry.build(
         [dict(id="R", background=dict(trace_mM=2 * rf.REGULATOR_mM, floor_fmol=rf.FLOOR_FMOL))]
     )
     with pytest.raises(ConfigError, match="below its declared trace"):
         registry.check_background(_Spec(spec, high))
-    floor = registry.parse_entries(
+    floor = registry.build(
         [dict(id="R", background=dict(trace_mM=rf.REGULATOR_mM, floor_fmol=1e-19))]
     )
     with pytest.raises(ConfigError, match="is not its material_balance_atol_fmol"):

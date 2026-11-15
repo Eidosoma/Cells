@@ -9,13 +9,25 @@ traced program.
 The registry
 ------------
 Declared on the inner model's species entries, read by the inner model's parser through
-parse_entries (the core's hook; a definition declares none until it lands). Each entry may give:
+parse_entries (the core's hook, docs/INNER_MODEL_V4_DESIGN.md §7.4 (f) 7: it pops these keys
+from the parser's copy of the model and the model's standard_concentration_mM; to_entries writes
+them back). Each entry may give:
 * ``identity``: ``{catalogue: {catalogue, entry} | null, evidence}``, D150's form (parse_identity);
 * ``standard_mu_RT``: mu°/RT, dimensionless, at the model's one ``standard_concentration_mM``
   (c0, mM; D152's convention, moved to the world). A pump that books fuel in J/mol at a 1 M
   standard state converts with dG° = RT (sum nu mu°/RT + (sum nu) ln(c0 / 1000 mM));
+* ``protonated_standard_mu_RT``: for a row with two forms (a buffer: the row holds its total), the
+  mu°/RT of the form with one more proton, at valence z + 1 (the row's ``standard_mu_RT`` is the
+  base form's, at the row's valence z, so scalar readers are unaffected). With the proton row's
+  potential it gives the dissociation constant HB <-> B + H at c0 (dissociation_constant_mM, pK).
+  A route or reaction that names a two-form row is refused (check_two_form_rows): the row is
+  inert until a law declares how it moves the forms (the lead, 15 November 2026);
 * ``background``: ``{trace_mM, floor_fmol}``, the trace the species is declared at where it is
-  absent and its ledger floor (check_background).
+  absent and its ledger floor (check_background). With a registry declared, a row is never an
+  exact zero at a node: an absent row is a declared trace (operators/PLAN.md §2.4, accepted).
+
+check_definition runs the definition-time checks (background and absent rows, two-form rows); the
+core's hook calls it ahead of the inner model's own checks, so its messages come first.
 
 Resolution of identities (identities)
 -------------------------------------
@@ -70,8 +82,9 @@ class Background:
 class Entry:
     id: str
     identity: Identity | None
-    standard_mu_RT: float | None
+    standard_mu_RT: float | None  # The base form's, at the row's valence z.
     background: Background | None
+    protonated_standard_mu_RT: float | None = None  # The form at z + 1, for a two-form row.
 
 
 @dataclass(frozen=True)
@@ -120,17 +133,21 @@ def _positive(value, what):
     return result
 
 
-REGISTRY_KEYS = ("identity", "standard_mu_RT", "background")
+REGISTRY_KEYS = ("identity", "standard_mu_RT", "protonated_standard_mu_RT", "background")
+MODEL_KEY = "standard_concentration_mM"
 
 
-def parse_entries(raw_species, standard_concentration_mM=None):
-    """The registry of the inner model's species entries (the core parser's hook).
+def _potential(value, what):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+        raise ConfigError(f"{what} must be a finite number")
+    return float(value)
 
-    raw_species: the model's species entries, each with its id and any of REGISTRY_KEYS (the
-    parser has checked the rest). standard_concentration_mM: the model's c0, required when an
-    entry declares standard_mu_RT."""
+
+def build(raw_entries, standard_concentration_mM=None):
+    """The registry of entries {id, any of REGISTRY_KEYS}, in the model's species order, at c0
+    (mM; required when an entry declares a potential)."""
     entries = []
-    for raw in raw_species:
+    for raw in raw_entries:
         name = raw["id"]
         identity = raw.get("identity")
         if identity is not None:
@@ -140,9 +157,15 @@ def parse_entries(raw_species, standard_concentration_mM=None):
             )
         mu = raw.get("standard_mu_RT")
         if mu is not None:
-            if isinstance(mu, bool) or not isinstance(mu, (int, float)) or not math.isfinite(mu):
-                raise ConfigError(f"species {name}'s standard_mu_RT must be a finite number")
-            mu = float(mu)
+            mu = _potential(mu, f"species {name}'s standard_mu_RT")
+        protonated = raw.get("protonated_standard_mu_RT")
+        if protonated is not None:
+            protonated = _potential(protonated, f"species {name}'s protonated_standard_mu_RT")
+            if mu is None:
+                raise ConfigError(
+                    f"species {name} declares a protonated form's potential without its base "
+                    "form's: give standard_mu_RT (the base form, at the row's valence) too"
+                )
         background = raw.get("background")
         if background is not None:
             _fields(background, {"trace_mM", "floor_fmol"}, f"species {name}'s background")
@@ -150,19 +173,60 @@ def parse_entries(raw_species, standard_concentration_mM=None):
                 _positive(background["trace_mM"], f"species {name}'s trace_mM"),
                 _positive(background["floor_fmol"], f"species {name}'s floor_fmol"),
             )
-        entries.append(Entry(name, identity, mu, background))
+        entries.append(Entry(name, identity, mu, background, protonated))
     if any(e.standard_mu_RT is not None for e in entries):
         if standard_concentration_mM is None:
             raise ConfigError(
                 "A species standard_mu_RT is declared at the model's standard_concentration_mM, "
                 "which the model does not declare"
             )
-        standard_concentration_mM = _positive(
-            standard_concentration_mM, "standard_concentration_mM"
-        )
+    if standard_concentration_mM is not None:
+        standard_concentration_mM = _positive(standard_concentration_mM, MODEL_KEY)
     if len({e.id for e in entries}) != len(entries):
         raise ConfigError("The model lists a species twice")
     return Declared(tuple(entries), standard_concentration_mM)
+
+
+def parse_entries(raw_model):
+    """The core parser's hook (docs/INNER_MODEL_V4_DESIGN.md §7.4 (f) 7): pops REGISTRY_KEYS from
+    each species entry of raw_model, the parser's deep copy, and the model's
+    standard_concentration_mM, so the strict species parse that follows sees only id and valence.
+    Returns the registry, or None when the model declares none (its fingerprint is unchanged)."""
+    popped = []
+    for raw in raw_model.get("species") or ():
+        keys = {k: raw.pop(k) for k in REGISTRY_KEYS if k in raw} if isinstance(raw, dict) else {}
+        popped.append((raw, keys))
+    c0 = raw_model.pop(MODEL_KEY, None)
+    if c0 is None and not any(keys for _, keys in popped):
+        return None
+    return build(
+        [dict(id=raw.get("id") if isinstance(raw, dict) else None, **keys) for raw, keys in popped],
+        c0,
+    )
+
+
+def to_entries(declared_registry):
+    """parse_entries' inverse, for the model's to_dict: ({species id: its registry keys}, {model
+    keys}), each key present only when declared."""
+    species = {}
+    for e in declared_registry.entries:
+        keys = {}
+        if e.identity is not None:
+            catalogue = e.identity.catalogue
+            ref = None if catalogue is None else dict(catalogue=catalogue[0], entry=catalogue[1])
+            keys["identity"] = dict(catalogue=ref, evidence=e.identity.evidence)
+        if e.standard_mu_RT is not None:
+            keys["standard_mu_RT"] = e.standard_mu_RT
+        if e.protonated_standard_mu_RT is not None:
+            keys["protonated_standard_mu_RT"] = e.protonated_standard_mu_RT
+        if e.background is not None:
+            keys["background"] = dict(
+                trace_mM=e.background.trace_mM, floor_fmol=e.background.floor_fmol
+            )
+        if keys:
+            species[e.id] = keys
+    c0 = declared_registry.standard_concentration_mM
+    return species, ({} if c0 is None else {MODEL_KEY: c0})
 
 
 # ------------------------------------------------------------------ resolution
@@ -235,32 +299,116 @@ def standard_potential(spec, species):
     return entry.standard_mu_RT, model.standard_concentration_mM
 
 
+def protonated_potential(spec, species):
+    """(mu°/RT of a two-form row's protonated form, at valence z + 1, c0 in mM), or None."""
+    model = declared(spec)
+    entry = None if model is None else model.entry(species)
+    if entry is None or entry.protonated_standard_mu_RT is None:
+        return None
+    return entry.protonated_standard_mu_RT, model.standard_concentration_mM
+
+
+def dissociation_constant_mM(spec, species, proton):
+    """K of HB <-> B + H, in mM, from the registry: c0 exp(mu°_HB - mu°_B - mu°_H) at the model's
+    standard_concentration_mM c0. The reaction has sum nu = +1, so c0 does not cancel: K is the
+    same from potentials declared at any c0 and converted consistently (mu°/RT at c0' is mu°/RT
+    at c0 plus ln(c0'/c0) for every species). proton names the proton row (valence +1)."""
+    model = declared(spec)
+    if model is None:
+        raise ConfigError(f"species {species}: no registry is declared")
+    base, acid = model.entry(species), model.entry(proton)
+    if base is None or base.protonated_standard_mu_RT is None:
+        raise ConfigError(f"species {species} declares no protonated_standard_mu_RT")
+    if acid is None or acid.standard_mu_RT is None:
+        raise ConfigError(f"the proton row {proton} declares no standard_mu_RT")
+    if acid.protonated_standard_mu_RT is not None:
+        raise ConfigError(f"the proton row {proton} cannot have two forms")
+    m = _inner_model(spec)
+    if m.valence[m.species_ids.index(proton)] != 1:
+        raise ConfigError(f"the proton row {proton} must have valence +1")
+    exponent = base.protonated_standard_mu_RT - base.standard_mu_RT - acid.standard_mu_RT
+    return model.standard_concentration_mM * math.exp(exponent)
+
+
+def pK(spec, species, proton):
+    """-log10 of dissociation_constant_mM in mol/L."""
+    return -math.log10(dissociation_constant_mM(spec, species, proton) / 1000.0)
+
+
 def check_background(spec, *, rtol=1e-12):
-    """Each declared background against the definition: every cell and outside node holds at least
-    the trace (amount >= trace_mM x volume), and the species' ledger floor is its
-    material_balance_atol_fmol."""
+    """With a registry declared: no row is an exact zero (or below zero, or not finite) at a cell
+    or outside node, since an absent row is a declared trace (operators/PLAN.md §2.4); each declared
+    background holds (amount >= trace_mM x volume at every node), and the species' ledger floor is
+    its material_balance_atol_fmol. Legacy definitions (no registry) keep the inner model's own
+    refusal."""
     model = declared(spec)
     if model is None:
         return
     m = spec.model
     tolerances = tuple(spec.execution.material_balance_atol_fmol)
-    for entry in model.entries:
-        if entry.background is None:
-            continue
-        b, row = entry.background, m.species_ids.index(entry.id)
+    for row, species in enumerate(m.species_ids):
+        entry = model.entry(species)
+        b = None if entry is None else entry.background
         for node in (*m.cells, *m.extracellular):
             amount = node.initial_amount_fmol[row]
-            if amount < b.trace_mM * node.volume_pL * (1.0 - rtol):
+            if b is None and not (math.isfinite(amount) and amount > 0):
                 raise ConfigError(
-                    f"species {entry.id}: {node.id} holds {amount:g} fmol, below its declared "
+                    f"species {species}: {node.id} holds {amount:g} fmol. A row absent from a "
+                    "node is a declared trace, never zero: declare the species' background "
+                    f"(trace_mM, floor_fmol) and give {node.id} at least trace_mM x its volume, "
+                    "with that charge in its fixed-charge anchor"
+                )
+            if b is not None and not amount >= b.trace_mM * node.volume_pL * (1.0 - rtol):
+                raise ConfigError(
+                    f"species {species}: {node.id} holds {amount:g} fmol, below its declared "
                     f"trace {b.trace_mM:g} mM"
                 )
+        if b is None:
+            continue
         floor = tolerances[row] if row < len(tolerances) else None
         if floor != b.floor_fmol:
             raise ConfigError(
-                f"species {entry.id}: its declared floor {b.floor_fmol:g} fmol is not its "
+                f"species {species}: its declared floor {b.floor_fmol:g} fmol is not its "
                 f"material_balance_atol_fmol ({floor!r})"
             )
+
+
+def check_two_form_rows(spec):
+    """Refuse a route or a reaction that names a two-form row: an in-step mover of it (inner
+    routes, pumps, an operator's in-step process; moved_in_step), or an operator that declares it
+    among its species (D150's routes, D152's reactions, FR-3's sites, the coupling's reads). The
+    row stays inert until a law declares how it moves the forms. Operators that act on every row
+    alike and name none (a replacement template, a division, a lumen's fill) are not refused
+    here."""
+    model = declared(spec)
+    if model is None:
+        return
+    two = [e.id for e in model.entries if e.protonated_standard_mu_RT is not None]
+    if not two:
+        return
+    reason = "no law declares how it moves the forms, so the row stays inert"
+    moved = moved_in_step(spec)
+    for species in two:
+        for kind in ("cell", "outside"):
+            for mover in moved.get(species, {}).get(kind, ()):
+                raise ConfigError(
+                    f"species {species} has two forms (protonated_standard_mu_RT): {mover} moves "
+                    f"its {kind} rows, and {reason}"
+                )
+    for op, declaration in _entries(spec):
+        for item in operator_identities(op, declaration):
+            if item.id in two:
+                raise ConfigError(
+                    f"species {item.id} has two forms (protonated_standard_mu_RT): {op.LAW_ID} "
+                    f"names it, and {reason}"
+                )
+
+
+def check_definition(spec):
+    """The registry's definition-time checks, for the core's hook to call ahead of the inner
+    model's own: absent rows and backgrounds, then two-form rows."""
+    check_background(spec)
+    check_two_form_rows(spec)
 
 
 # ------------------------------------------------------------------ moved by the step
