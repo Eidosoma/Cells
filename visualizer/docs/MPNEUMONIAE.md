@@ -259,6 +259,32 @@ folder another agent made. `build` checks every file against the SHA-256 its MAN
 gives, stops if a saved source no longer says what the files state, and writes the same
 bytes every time; the test rebuilds and compares.
 
+## What rests on non-commercial or unlicensed sources
+
+The user's rule (D173, 15 November 2026): data under non-commercial licences are used for
+analysis only, nothing from them is committed or redistributed, and every dependence on
+them is flagged. The same holds here for sources that state no open licence.
+
+- **No table, trace or plot** from such a source is in the repository. The measured
+  protein amounts (Maier and others 2011) are not copied. The catalogue and the shelves
+  rest on GenBank, UniProt (CC BY 4.0), InterPro (CC0) and the 2015 essentiality paper
+  (CC BY 4.0) alone.
+- **Facts of the species file cited from non-commercial papers** (CC BY-NC-SA 3.0), with
+  no open source beside them:
+  - the ribosome count, about 140 to 150, from Maier and others 2011, which reports
+    tomograms of 2009 at second hand. **The picture draws 150 ribosomes from it;**
+  - the copies of a protein per cell, from Maier and others 2011;
+  - the energy and food facts, from Wodke and others 2013.
+- **A fact with open sources beside a non-commercial one:** the cell's size (Maier and
+  others 2011, with two CC BY papers).
+- **Facts cited from the abstracts of papers with no open licence:** the attachment
+  organelle, the envelope, division and movement (Hasselbring and others 2006, each with
+  a CC BY paper beside it except "no nucleus and no internal compartments"); the
+  chromosome's length and the gene counts (Himmelreich and others 1996, Dandekar and
+  others 2000, with the genome record beside them); and two papers of 2009 named for the
+  tomograms and the defined medium.
+- The count of 1,748 data sets (Chen and others 2016, CC BY-NC) is in this note only.
+
 ## For the lead's agent
 
 The lead's agent has audited this organism's public measurements (D173; section 9 of

@@ -80,12 +80,23 @@ catalogue table, the same bytes every time.
     stands behind it;
   - `where`: a named place within the side, such as an organelle of the cell, or "at the
     membrane" for a protein known to be at the membrane with its face not stated (its
-    side is then `not known`);
+    side is then `not known`, unless another basis places it);
   - `also`: another side that a source states for the same protein. `side` is then the
     one stated first;
   - `complex`: the assembly the protein is a member of.
-- **`side_notes`** has an entry for each basis the file uses, saying in one or two
-  sentences how that basis was applied.
+- **`side_notes`** has an entry for each basis the file uses, under the basis's own word
+  (`stated`, `predicted`, `by function`, `none`), saying in one or two sentences how it
+  was applied.
+- A mark's `values` is the list of its values, or `"number"` or `"text"` where they are
+  free.
+- **A group may carry `within`,** the wider class it belongs to, for a district whose own
+  name does not read alone, and its `count` and `sides`.
+- **Dependence on non-commercial sources is flagged** (the user's rule, D173): every
+  source states its licence, and a side or a mark that rests on a source under a
+  non-commercial licence, or on one that states no open licence, says so in its note.
+  No table, trace or plot from such a source is in a file.
+- A file may carry further keys of its own, such as the checks its tool ran. The drawing
+  ignores what it does not know.
 - **Size.** A species' file stays under 1 MB. A catalogue too large for that, or for one
   marker each to be read, is never cut down: it is shown whole, as families that open
   (below). Human is the last to be done.

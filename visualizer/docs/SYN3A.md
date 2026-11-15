@@ -365,6 +365,30 @@ gives, stops if a saved source no longer says what the files state, and writes t
 bytes every time; the test rebuilds and compares. The facts, the capability table and the
 units' notes are tables in the tool; the counts in them are read from the downloads.
 
+## What rests on non-commercial or unlicensed sources
+
+The user's rule (D173, 15 November 2026): data under non-commercial licences are used for
+analysis only, nothing from them is committed or redistributed, and every dependence on
+them is flagged. The same holds here for sources that state no open licence.
+
+- **No table, trace or plot** from such a source is in the repository. The catalogue and
+  the shelves are built from GenBank, the 2019 eLife paper (CC BY 4.0), UniProt (CC BY
+  4.0) and InterPro (CC0).
+- **Two facts of the species file are cited from such sources,** one sentence each:
+  - "Energy: ATP from sugar breakdown alone; no oxidative phosphorylation", from
+    Thornburg and others 2022 (CC BY-NC-ND 4.0);
+  - "Division: ftsZ and sepF are among seven genes needed together for regular shape and
+    division", from the abstract of Pelletier and others 2021 (no open licence).
+- **Two more are used only for comparison,** in this note and the README: the 2022 model's
+  count of 93 membrane proteins (Thornburg and others 2022), and the usual reading of a
+  membrane-spanning stretch as L'Hernault and Arduengo 1992 state it (CC BY-NC-SA), read
+  for one sentence. The scale's values are taken from Biopython (BSD).
+- **One dependence is indirect.** The 14 lipid-anchor marks come from matches to PROSITE's
+  lipoprotein profile, as UniProt's archive reports them under CC BY 4.0. PROSITE's own
+  database is CC BY-NC-ND, and its profile is not copied. A rule on the sequence alone
+  finds the same 14 and three false extras; it can take the profile's place if this
+  dependence is unwanted.
+
 ## A Syn3A switch in the simulator
 
 The user: "we want a switch for syn3a as well, in our simulator, then of course we will
