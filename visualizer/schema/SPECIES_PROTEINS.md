@@ -164,6 +164,45 @@ its members, each a protein of the catalogue.
 - **The members' file** written beside the page has the format
   `cells.visualizer.species_protein_members@1` and holds `columns` and `members`.
 
+## A curated proteome: several shelves, places as stated
+
+Where curators state where a protein is (the human proteome, from UniProt's reviewed
+entries), the species has several shelves, one for each membrane the data tells apart,
+stacked in the page. Fixed on 15 November 2026, before the human data was made.
+
+- **The shelves** are, at least: `cell` (the cell membrane), `er` (the endoplasmic
+  reticulum's membrane), `mito` (the mitochondrion's inner membrane), `nucleus` (the
+  nuclear envelope), and `other`, one shelf for the cell's remaining membranes together
+  (Golgi, endosomes, lysosomes, peroxisomes, vesicles, the mitochondrion's outer
+  membrane), each protein there naming its compartment in the mark `where`. A further
+  shelf of its own is given only to a membrane that holds enough proteins to be read as
+  one; the file's note says which and why.
+- **A protein's shelf and side come from its stated location:**
+  - in a membrane (a protein that spans it): that membrane's shelf, side `in`;
+  - within a compartment (the ER's lumen, the mitochondrial matrix, the nucleus): that
+    compartment's shelf, side `inside`;
+  - in the cytoplasm or the cytosol, free or on the cytoplasmic face of the cell membrane:
+    shelf `cell`, side `inside`;
+  - secreted, in the extracellular space or matrix, or anchored to the cell membrane's
+    outer face: shelf `cell`, side `outside`;
+  - between the mitochondrion's two membranes: shelf `mito`, side `outside`;
+  - on the cytoplasmic face of an internal membrane: that membrane's shelf, side
+    `outside`, since the cytoplasm lies beyond it.
+- **Several stated locations:** the first one stated decides the shelf and the side; the
+  others go in the mark `also`, in the same words.
+- **`basis`** is `stated`, and the mark `evidence` says what stands behind the statement:
+  an experiment, a curator's inference or similarity, or an automatic rule.
+- **No stated location:** `predicted` where the entry carries a predicted membrane
+  segment or export signal, with the predictor named in the source's `through`;
+  otherwise `not known`, set apart.
+- **`unit`** is set by exact accession: the inventory's own candidate products name their
+  human entries.
+- **One marker stands for one canonical protein.** Its isoforms are a count in the mark
+  `isoforms`; unreviewed entries are not listed, and the file's `from` says how many of
+  each there are.
+- **Families** are InterPro's, by the rule the planarian's file uses, so that a family has
+  the same id in every species.
+
 ## In the page
 
 The shelves are large, so they are not part of the scene. Each species' file is published
