@@ -41,10 +41,10 @@
     }
   },
   "gained_review": {
-    "date": "2026-11-14",
-    "count": 28,
-    "at": "8497ff37",
-    "text": "Reviews on 14 November 2026 found no channel, pump, transporter or junction law among them. One case, secretion and uptake, is the lead's to classify.",
+    "date": "2026-11-15",
+    "count": 34,
+    "at": "44227075",
+    "text": "Reviews on 14 and 15 November 2026 found no channel, pump, transporter or junction law among them. Two cases are the lead's to classify: secretion and uptake across a membrane, and the binding of molecules to sites.",
     "doc": "visualizer/docs/PROTEIN_ATLAS_REVIEW.md"
   },
   "mappings": [
@@ -156,6 +156,13 @@
           "url": "https://parasite.wormbase.org/Schmidtea_mediterranea_s2f19h1prjna885486/Gene/Summary?g={id}",
           "checked": "2026-11-14: asked for gene model h1SMcG0020152, the site answered with that gene's page. The address holds the genome annotation the planarian atlas uses (WBPS19, schMedS3 haplotype 1)."
         }
+      },
+      "syn3a": {
+        "genbank": {
+          "text": "GenBank {id}",
+          "url": "https://www.ncbi.nlm.nih.gov/protein/{id}",
+          "checked": "2026-11-14: NCBI's E-utilities return the protein record for AVX54569.1 (Chromosomal replication initiator protein, synthetic bacterium JCVI-Syn3A). The page itself answered the tool with a browser check, so it was not seen."
+        }
       }
     },
     "findings": [
@@ -213,6 +220,51 @@
         "candidate": true
       }
     ]
+  },
+  "shelves": {
+    "contract": "visualizer/schema/SPECIES_PROTEINS.md",
+    "note": "Where a protein or a family of a species' own catalogue is looked up. A species is named by its id; a pattern with a kind applies to the proteins whose mark 'kind' has that value; 'family' is for a family or a group that is an InterPro entry. Each pattern says when it was checked and what answered.",
+    "links": {
+      "syn3a": [
+        {
+          "text": "NCBI Protein: {id}",
+          "url": "https://www.ncbi.nlm.nih.gov/protein/?term={id}",
+          "checked": "2026-11-15: NCBI's E-utilities find exactly one protein record for the locus tag JCVISYN3A_0001, and the search page answers. A search by locus tag, because the catalogue's identifiers are locus tags."
+        }
+      ],
+      "mpneumoniae": [
+        {
+          "text": "UniProt: {id}",
+          "url": "https://www.uniprot.org/uniprotkb?query=gene%3A{id}%20AND%20organism_id%3A272634",
+          "checked": "2026-11-15: UniProt's search returns one entry for the locus tag MPN_001 in organism 272634 (Q50313, dnaN) and one for MPN_142 (Q50341). A search, because the catalogue's identifiers are locus tags; a protein with no UniProtKB entry finds nothing there."
+        }
+      ],
+      "planarian": [
+        {
+          "kind": "gene model",
+          "text": "WormBase ParaSite {id}",
+          "url": "https://parasite.wormbase.org/Schmidtea_mediterranea_s2f19h1prjna885486/Gene/Summary?g={id}",
+          "checked": "As species.entries.planarian.wormbaseparasite above (2026-11-14)."
+        },
+        {
+          "kind": "unreviewed entry",
+          "text": "UniProt {id}",
+          "url": "https://www.uniprot.org/uniprotkb/{id}/entry",
+          "checked": "The pattern of links.uniprot above."
+        },
+        {
+          "kind": "reviewed entry",
+          "text": "UniProt {id}",
+          "url": "https://www.uniprot.org/uniprotkb/{id}/entry",
+          "checked": "The pattern of links.uniprot above."
+        }
+      ],
+      "family": {
+        "text": "InterPro {id}",
+        "url": "https://www.ebi.ac.uk/interpro/entry/InterPro/{id}/",
+        "checked": "2026-11-15: InterPro's own interface returns the entry for IPR000990 (a family, Innexin) and for IPR011009 (a homologous superfamily), and the page address answers."
+      }
+    }
   },
   "districts": [
     {

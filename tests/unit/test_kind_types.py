@@ -1,9 +1,10 @@
 """Schema A's per-structure types and the kind registry (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j), (k)).
 
 - Today's structures keep the module's own classes, by identity.
-- A registered kind that a definition does not declare changes nothing.
+- A registered kind that a definition does not declare changes nothing: the same classes,
+  compile key (the world's part of compile_window's key) and snapshot layout.
 - Declared kinds append their fields in canonical order (the sorted namespaced ID), whatever the
-  declaration order: the same classes either way.
+  declaration order: the same classes, compile key and snapshot layout either way.
 - A kind's state fields are observation columns right after today's state fields, and its
   readouts follow today's (rule (b)).
 - The spec round-trips a declared kind through its model key.
@@ -16,6 +17,9 @@ import pytest
 
 from cells.core import kind_registry
 from cells.core.specs import parse_spec
+from cells.core.state import initialise
+from cells.core.vector_windows import spec_world_key
+from cells.io import write_snapshot
 from cells.models import surface_pump_v3
 from cells.models.registry import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
@@ -74,9 +78,23 @@ def test_todays_structures_keep_todays_classes():
         assert getattr(impl, name) is getattr(surface_pump_v3, name), name
 
 
-def test_a_registered_but_undeclared_kind_changes_nothing():
+def snapshot_keys(path, spec):
+    """The npz keys, in order, of a snapshot of the definition's initial checkpoint."""
+    with np.load(write_snapshot(path, spec, initialise(spec)) / "state.npz") as archive:
+        return list(archive.files)
+
+
+def compile_key(model, spec):
+    """The world's part of vector_windows.compile_window's key (the packed planner's)."""
+    return spec_world_key(model, spec, initialise(spec))
+
+
+def test_a_registered_but_undeclared_kind_changes_nothing(tmp_path):
     spec = parse_spec(heredity())
     impl = get_model(spec.model)
+    today = snapshot_keys(tmp_path / "today", spec)
+    assert today == [*surface_pump_v3.STATE_TYPE._fields, *surface_pump_v3.LAYOUT_TYPE._fields]
+    key = compile_key(impl, spec)
     with kind_registry.scope(registry(planted("alpha", "alpha_block"))):
         again = parse_spec(heredity())
         built = surface_pump_v3.model_for(again.model)
@@ -85,9 +103,11 @@ def test_a_registered_but_undeclared_kind_changes_nothing():
         assert built is impl  # The same object: the same bound functions, so the compile key.
         for name in TYPE_NAMES:
             assert getattr(built, name) is getattr(surface_pump_v3, name), name
+        assert compile_key(built, again) == key
+        assert snapshot_keys(tmp_path / "registered", again) == today
 
 
-def test_kinds_append_in_canonical_order_whatever_the_declaration_order():
+def test_kinds_append_in_canonical_order_whatever_the_declaration_order(tmp_path):
     kinds = registry(planted("beta", "beta_block"), planted("alpha", "alpha_block"))
     with kind_registry.scope(kinds):
         one = parse_spec(declaring(heredity(), "beta_block", "alpha_block"))
@@ -98,6 +118,10 @@ def test_kinds_append_in_canonical_order_whatever_the_declaration_order():
         assert a.structure_key == b.structure_key
         for name in ("STATE_TYPE", "LAYOUT_TYPE", "FLOOR_LAYOUT_TYPE", "Control", "Observations"):
             assert getattr(a, name) is getattr(b, name), name
+        assert compile_key(a, one) == compile_key(b, two)  # One executable for both.
+        layout = snapshot_keys(tmp_path / "one", one)
+        assert layout == snapshot_keys(tmp_path / "two", two)  # One snapshot layout.
+        assert layout == [*a.STATE_TYPE._fields, *a.LAYOUT_TYPE._fields]
         today = surface_pump_v3
         assert a.STATE_TYPE._fields == (*today.STATE_TYPE._fields, "alpha_moved_fmol", "beta_moved_fmol")
         assert a.LAYOUT_TYPE._fields == (*today.LAYOUT_TYPE._fields, "alpha_rate_fmol_s", "beta_rate_fmol_s")

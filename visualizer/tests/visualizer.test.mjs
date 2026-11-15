@@ -130,7 +130,7 @@ test("the protein atlas links out only to the named public resources, and copies
 test("a species atlas links out only to its named sources, over https", () => {
   // The hosts a species' side of the atlas may link to: the databases its ids name, the
   // papers it cites, and the home pages of the sources it states.
-  const allowed = ["www.uniprot.org", "www.rcsb.org", "parasite.wormbase.org", "www.ebi.ac.uk", "europepmc.org", "pubmed.ncbi.nlm.nih.gov", "doi.org"];
+  const allowed = ["www.uniprot.org", "www.rcsb.org", "parasite.wormbase.org", "www.ebi.ac.uk", "europepmc.org", "pubmed.ncbi.nlm.nih.gov", "www.ncbi.nlm.nih.gov", "doi.org"];
   const links = [];
   const collect = (node, where) => {
     if (Array.isArray(node)) return node.forEach((item) => collect(item, where));
@@ -153,6 +153,29 @@ test("a species atlas links out only to its named sources, over https", () => {
     for (const source of atlas.sources) assert.ok(source.name && source.licence, `${atlas.id}: a source without a name or its terms`);
     assert.ok(!/xenbase|XB-GENE/i.test(JSON.stringify(atlas)), `Xenbase content in the ${atlas.id} atlas`);
   }
+});
+
+test("the scene carries the species the page can show, each with its shapes", () => {
+  const species = scene.species || [];
+  assert.ok(species.length > 0, "the scene names no species: rebuild it");
+  assert.equal(species.filter((item) => item.default).length, 1, "exactly one species is the one the page opens on");
+  for (const item of species) {
+    // No species is said to be modelled: the record names no registered model of an organism.
+    assert.ok(["generic", "proposed"].includes(item.modelled.state), `${item.id} is said to be modelled`);
+    assert.ok(item.modelled.text?.trim(), `${item.id} does not say what Cells models of it`);
+    for (const level of item.levels) if (level.shape?.ref) assert.ok(scene.shapes?.[level.shape.ref], `${item.id}: no shape ${level.shape.ref}`);
+  }
+});
+
+test("the scene names each species' own proteins by file, with counts and sources, and holds none of them", () => {
+  const shelves = scene.proteins.shelves || [];
+  assert.ok(shelves.length > 0, "the scene names no species' proteins: rebuild it");
+  for (const item of shelves) {
+    assert.match(item.file, /^proteins\/[a-z0-9_-]+\/shelves\.json$/);
+    assert.equal(Object.values(item.counts).reduce((sum, n) => sum + n, 0), item.proteins, item.id);
+    assert.ok(item.sources.length > 0 && item.sources.every((source) => source.name && source.licence), item.id);
+  }
+  assert.ok(JSON.stringify(shelves).length < 40000, "the proteins themselves are beside the page, not in the scene");
 });
 
 test("every part belongs to a view", () => {

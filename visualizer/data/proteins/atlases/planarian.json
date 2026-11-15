@@ -28,6 +28,7 @@
    "release": "2026_04",
    "accessed": "2026-11-14",
    "licence": "CC BY 4.0",
+   "class": "permissive",
    "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
    "holds": "the planarian's UniProtKB entries (accessions, names, gene names, lengths, signatures and the papers they cite); which archived planarian sequences (UniParc) carry each family signature; the signatures of the units' human candidates; the counts used as controls"
   },
@@ -38,6 +39,7 @@
    "release": "WBPS19",
    "accessed": "2026-11-14",
    "licence": "No restriction on use is stated: the database's disclaimer says \"Ensembl imposes no restrictions on access to, or use of, the data provided\". It asks that a genome's paper and the database be cited, asks users of an unpublished genome to tell its owners before a large-scale analysis, and warns that third-party constraints may apply. The paper taken to describe this genome is CC BY 4.0.",
+   "class": "permissive",
    "cite": "Howe and others (2017) WormBase ParaSite - a comprehensive resource for helminth genomics. Mol Biochem Parasitol 215:2-10. Genome: Ivanković and others (2024) A comparative analysis of planarian genomes reveals regulatory conservation in the face of rapid structural divergence. Nat Commun 15:8215. The database's page of this annotation names no paper. That it is the annotation this paper describes is inferred, not stated by either: the assembly has the paper's name (schMedS3 haplotype 1), the count of coding genes in the second haplotype is the same in both (21,310), and in the first it is 21,392 here against the paper's 21,401.",
    "holds": "the gene models of one genome annotation (assembly schMedS3_haplotype1, annotation version 2022-10): each model's identifier, the identifier and length of its longest predicted protein, and the InterPro signatures on its predicted proteins"
   },
@@ -47,6 +49,7 @@
    "release": "111.0",
    "accessed": "2026-11-14",
    "licence": "CC0 1.0",
+   "class": "permissive",
    "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456.",
    "holds": "the name and type of each signature entry"
   },
@@ -55,6 +58,7 @@
    "url": "https://www.ebi.ac.uk/ena/",
    "accessed": "2026-11-14",
    "licence": "Free and unrestricted: the policy of the nucleotide sequence databases is that \"no use restrictions or licensing requirements will be included in any sequence data records\".",
+   "class": "permissive",
    "cite": "each record is named where it is used",
    "holds": "the accession and the title of two sequence records, read to tie a UniProtKB entry to the name its paper uses"
   },
@@ -63,11 +67,12 @@
    "url": "https://europepmc.org/",
    "accessed": "2026-11-14",
    "licence": "Bibliographic facts only (authors, title, journal, year, identifiers). EMBL-EBI's terms of use add no restriction to those of the data owners. Abstracts and article texts were read to check names and are not copied.",
+   "class": "permissive",
    "cite": "each paper is cited where it is used",
    "holds": "the records of the cited papers"
   }
  ],
- "not_copied": "The catalogue of about 10,000 planarian proteins detected by mass spectrometry (Ying and others 2025, doi:10.1016/j.devcel.2025.08.015) was not copied: the paper and its supplementary tables reserve all rights, and its public deposit (ProteomeXchange PXD042308, which iProX's data licence puts under CC0) holds instrument files and sample sheets, not the list of proteins. PlanMine was read and nothing taken from it, because its front page states no licence or terms of use, only how to cite it. Abstracts and article texts were read to check names and are not copied.",
+ "not_copied": "The catalogue of planarian proteins detected by mass spectrometry (Ying and others 2025, doi:10.1016/j.devcel.2025.08.015) was not copied: the paper and its supplementary tables reserve all rights, and its public deposit (ProteomeXchange PXD042308, which iProX's data licence puts under CC0) holds instrument files and sample sheets, not the list of proteins. PlanMine was read and nothing taken from it, because its front page states no licence or terms of use, only how to cite it. Abstracts and article texts were read to check names and are not copied. Of the papers that name the proteins listed here, Oviedo and Levin 2007, Wagner and others 2012, Wenemoser and others 2012, Abascal and Zardoya 2013, Beane and others 2013 and Arenas and others 2017 state no open licence: each is cited for a name, which a sequence record or a UniProtKB entry carries too, and none of their findings is repeated.",
  "units": {
   "U01": {
    "finding": "found",
@@ -93,7 +98,8 @@
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
       "doi": "10.1371/journal.pgen.1004746",
-      "pmid": "25356635"
+      "pmid": "25356635",
+      "class": "permissive"
      }
     },
     {
@@ -116,7 +122,8 @@
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
       "doi": "10.1371/journal.pgen.1004746",
-      "pmid": "25356635"
+      "pmid": "25356635",
+      "class": "permissive"
      }
     },
     {
@@ -139,7 +146,8 @@
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
       "doi": "10.1371/journal.pgen.1004746",
-      "pmid": "25356635"
+      "pmid": "25356635",
+      "class": "permissive"
      }
     },
     {
@@ -183,7 +191,8 @@
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
       "doi": "10.1371/journal.pgen.1004746",
-      "pmid": "25356635"
+      "pmid": "25356635",
+      "class": "permissive"
      }
     },
     {
@@ -206,7 +215,8 @@
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
       "doi": "10.1371/journal.pgen.1004746",
-      "pmid": "25356635"
+      "pmid": "25356635",
+      "class": "permissive"
      }
     },
     {
@@ -229,7 +239,8 @@
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
       "doi": "10.1371/journal.pgen.1004746",
-      "pmid": "25356635"
+      "pmid": "25356635",
+      "class": "permissive"
      }
     },
     {
@@ -273,7 +284,8 @@
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
       "doi": "10.1371/journal.pgen.1004746",
-      "pmid": "25356635"
+      "pmid": "25356635",
+      "class": "permissive"
      }
     },
     {
@@ -296,7 +308,8 @@
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
       "doi": "10.1371/journal.pgen.1004746",
-      "pmid": "25356635"
+      "pmid": "25356635",
+      "class": "permissive"
      }
     },
     {
@@ -319,7 +332,8 @@
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
       "doi": "10.1371/journal.pgen.1004746",
-      "pmid": "25356635"
+      "pmid": "25356635",
+      "class": "permissive"
      }
     },
     {
@@ -363,7 +377,8 @@
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
       "doi": "10.1371/journal.pgen.1004746",
-      "pmid": "25356635"
+      "pmid": "25356635",
+      "class": "permissive"
      }
     },
     {
@@ -386,7 +401,8 @@
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
       "doi": "10.1371/journal.pgen.1004746",
-      "pmid": "25356635"
+      "pmid": "25356635",
+      "class": "permissive"
      }
     },
     {
@@ -409,7 +425,8 @@
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
       "doi": "10.1371/journal.pgen.1004746",
-      "pmid": "25356635"
+      "pmid": "25356635",
+      "class": "permissive"
      }
     },
     {
@@ -5617,7 +5634,7 @@
   },
   "U36": {
    "finding": "different family",
-   "note": "Planarians build gap junctions from innexins, not connexins. Connexins are known only from chordates (Abascal and Zardoya 2013), and a planarian innexin gap-junction gene, smedinx-11, has been described (Oviedo and Levin 2007). 68 planarian gene models carry the innexin signature and none the connexin one; no UniProtKB entry of any flatworm carries the connexin signature either, while 21 reviewed human entries do. Which innexins a general gap-junction law would stand for is not known.",
+   "note": "By their signatures, planarians have innexins and no connexins. 68 planarian gene models carry the innexin signature and none the connexin one; no UniProtKB entry of any flatworm carries the connexin signature either, while 21 reviewed human entries do. One planarian innexin has a sequence record of its own, smedinx-11. More is to be read in Abascal and Zardoya 2013, on which animals have each family, and in Oviedo and Levin 2007, on that innexin; neither states an open licence, so nothing is taken from them. Which innexins a general gap-junction law would stand for is not known.",
    "products": [
     {
      "name": "Innexin",
@@ -5639,7 +5656,12 @@
      "citation": {
       "text": "Oviedo and Levin (2007) smedinx-11 is a planarian stem cell gap junction gene required for regeneration and homeostasis. Development 134:3121-3131.",
       "doi": "10.1242/dev.006635",
-      "pmid": "17670787"
+      "pmid": "17670787",
+      "class": "no stated terms"
+     },
+     "name_record": {
+      "source": "European Nucleotide Archive",
+      "id": "DQ851133"
      }
     },
     {
@@ -6659,7 +6681,7 @@
   },
   "U37": {
    "finding": "different family",
-   "note": "There is no connexin 45 to find in a planarian: its gap junctions are built from innexins, a different protein family. Connexins are known only from chordates (Abascal and Zardoya 2013), and a planarian innexin gap-junction gene, smedinx-11, has been described (Oviedo and Levin 2007). 68 planarian gene models carry the innexin signature and none the connexin one; no UniProtKB entry of any flatworm carries the connexin signature either, while 21 reviewed human entries do. Nothing says which innexins, if any, would form a channel like this one.",
+   "note": "There is no connexin 45 to find in a planarian: by its signatures it has innexins, another family of gap-junction proteins, and no connexins. 68 planarian gene models carry the innexin signature and none the connexin one; no UniProtKB entry of any flatworm carries the connexin signature either, while 21 reviewed human entries do. One planarian innexin has a sequence record of its own, smedinx-11. More is to be read in Abascal and Zardoya 2013, on which animals have each family, and in Oviedo and Levin 2007, on that innexin; neither states an open licence, so nothing is taken from them. Nothing says which innexins, if any, would form a channel like this one.",
    "products": [
     {
      "name": "Innexin",
@@ -6681,7 +6703,12 @@
      "citation": {
       "text": "Oviedo and Levin (2007) smedinx-11 is a planarian stem cell gap junction gene required for regeneration and homeostasis. Development 134:3121-3131.",
       "doi": "10.1242/dev.006635",
-      "pmid": "17670787"
+      "pmid": "17670787",
+      "class": "no stated terms"
+     },
+     "name_record": {
+      "source": "European Nucleotide Archive",
+      "id": "DQ851133"
      }
     },
     {
@@ -7701,7 +7728,7 @@
   },
   "U38": {
    "finding": "different family",
-   "note": "There is no connexin 40 or connexin 37 to find in a planarian: its gap junctions are built from innexins, a different protein family. Connexins are known only from chordates (Abascal and Zardoya 2013), and a planarian innexin gap-junction gene, smedinx-11, has been described (Oviedo and Levin 2007). 68 planarian gene models carry the innexin signature and none the connexin one; no UniProtKB entry of any flatworm carries the connexin signature either, while 21 reviewed human entries do. Nothing says which innexins, if any, would form a channel like this one.",
+   "note": "There is no connexin 40 or connexin 37 to find in a planarian: by its signatures it has innexins, another family of gap-junction proteins, and no connexins. 68 planarian gene models carry the innexin signature and none the connexin one; no UniProtKB entry of any flatworm carries the connexin signature either, while 21 reviewed human entries do. One planarian innexin has a sequence record of its own, smedinx-11. More is to be read in Abascal and Zardoya 2013, on which animals have each family, and in Oviedo and Levin 2007, on that innexin; neither states an open licence, so nothing is taken from them. Nothing says which innexins, if any, would form a channel like this one.",
    "products": [
     {
      "name": "Innexin",
@@ -7723,7 +7750,12 @@
      "citation": {
       "text": "Oviedo and Levin (2007) smedinx-11 is a planarian stem cell gap junction gene required for regeneration and homeostasis. Development 134:3121-3131.",
       "doi": "10.1242/dev.006635",
-      "pmid": "17670787"
+      "pmid": "17670787",
+      "class": "no stated terms"
+     },
+     "name_record": {
+      "source": "European Nucleotide Archive",
+      "id": "DQ851133"
      }
     },
     {
@@ -9449,9 +9481,14 @@
    "citation": {
     "text": "Beane and others (2013) Bioelectric signaling regulates head and organ size during planarian regeneration. Development 140:313-322.",
     "doi": "10.1242/dev.086900",
-    "pmid": "23250205"
+    "pmid": "23250205",
+    "class": "no stated terms"
    },
-   "why": "A proton-potassium pump of the planarian membrane: the paper that reports it found that knocking it down changes membrane voltage and the size of the regrown head. It carries the same signature as the sodium-potassium pump's alpha subunit but was described as a different pump, so it is kept out of that unit."
+   "name_record": {
+    "source": "European Nucleotide Archive",
+    "id": "JX174182"
+   },
+   "why": "A proton-potassium pump of the planarian, by the name its sequence record gives it. The paper that reports it is on bioelectric signalling and the size of the head and organs in regeneration; it states no open licence, so its findings are not repeated here. The protein carries the same signature as the sodium-potassium pump's alpha subunit, but its record names it as a different pump, so it is kept out of that unit."
   },
   {
    "name": "TRPA1 cation channel",
@@ -9473,9 +9510,14 @@
    "citation": {
     "text": "Arenas and others (2017) Activation of planarian TRPA1 by reactive oxygen species reveals a conserved mechanism for animal nociception. Nat Neurosci 20:1686-1693.",
     "doi": "10.1038/s41593-017-0005-0",
-    "pmid": "29184198"
+    "pmid": "29184198",
+    "class": "no stated terms"
    },
-   "why": "A sensory cation channel of the planarian, shown to be needed for its escape from heat and irritants; the atlas draws no unit of this family."
+   "name_record": {
+    "source": "UniProt",
+    "id": "A0A291IA19"
+   },
+   "why": "A cation channel of the TRP family in the planarian, by the name of its UniProtKB entry. The paper that reports it is on its activation by reactive oxygen species and on pain sensing; it states no open licence, so its findings are not repeated here. The atlas draws no unit of this family."
   },
   {
    "name": "Kcnka",

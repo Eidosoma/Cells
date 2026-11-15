@@ -384,11 +384,45 @@ def _kinds(structure):
 
 
 def _stage_read(state, p, kinds, *, xp):
-    """The kinds' stage reads, composed in hook order: the state whose amounts the rates read."""
+    """The kinds' stage reads, composed in hook order: (the state whose amounts the rates read,
+    valid). A failed read refuses the step (§7.4 (g) 1)."""
+    valid = True
     for kind in kinds:
         if kind.stage_read is not None:
-            state = kind.stage_read(state, p, xp=xp)
-    return state
+            state, ok = kind.stage_read(state, p, xp=xp)
+            valid = valid & ok
+    return state, valid
+
+
+def _field_values(state, read, control, p, *, xp):
+    """tissue.field_values with the stage read's concentrations and the stored rows' charges: a
+    read changes the concentrations the rates see, never a node's charge (§7.4 (k); FR-4's H_eq
+    and buffer totals carry the charge). Today's call, unchanged, when nothing is read."""
+    if read is state:
+        return tissue.field_values(state, control, p, xp=xp)
+    ci, co = physical_amounts(read, p)
+    q = tissue.charge_increment(state, p, xp=xp)
+    n = p.active.size
+    return field.solve(
+        xp.where(p.active, ci / p.volume, 1.0),
+        xp.where(p.outside_active, co / p.extracellular_volume, 1.0),
+        p.initial_cell_charge_C + q[:n],
+        p.initial_outside_charge_C + q[n:],
+        control.membrane,
+        control.junction,
+        p.boundary_V,
+        tissue.field_layout(p),
+        xp=xp,
+    )
+
+
+def _stage_checks(kinds, read, cell, outside, p, *, xp):
+    """The kinds' stage checks at the stage's total node rates (§7.4 (k)); true without any."""
+    valid = True
+    for kind in kinds:
+        if kind.stage_check is not None:
+            valid = valid & kind.stage_check(read, cell, outside, p, xp=xp)
+    return valid
 
 
 def _kind_rates(kinds, state, potentials, control, p, *, xp):
@@ -406,6 +440,26 @@ def _with_kind_derivatives(base, rates, structure, state, *, xp):
         **base._asdict(),
         **{f: derivatives[f] if f in derivatives else xp.zeros_like(getattr(state, f)) for f in own},
     )
+
+
+def _kind_bookings(kinds, applied, start, end, p, dt, *, xp):
+    """Every kind's book hook on the same end state (before any kind books), each writing only its
+    own state fields, so bookings commute and their order cannot matter (§7.4 (k)). Returns
+    ({field: value}, valid): a booking may refuse the step (§7.5's negative exact share)."""
+    booked, valid = {}, True
+    for kind in kinds:
+        if kind.book is None:
+            continue
+        values, ok = kind.book(applied, start, end, p, dt, xp=xp)
+        foreign = set(values) - set(kind.state_fields)
+        if foreign:
+            raise ValueError(
+                f"Kind {kind.kind_id}'s book writes {sorted(foreign)}; a booking writes only "
+                "its own state fields"
+            )
+        booked |= values
+        valid = valid & ok
+    return booked, valid
 
 
 def _availabilities(control, kinds):
@@ -427,9 +481,13 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     from cells.core.schedule import SurfaceControl
 
     kinds = _kinds(structure)
-    read = _stage_read(state, p, kinds, xp=xp) if kinds else state  # §7.4 (k), stage_read.
-    v = tissue.field_values(
-        read, SurfaceControl(control.membrane, control.junction * state.junction_gate), p, xp=xp
+    read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
+    v = _field_values(  # §7.4 (k): the rates read `read`; the field solve the stored charges.
+        state,
+        read,
+        SurfaceControl(control.membrane, control.junction * state.junction_gate),
+        p,
+        xp=xp,
     )
     r, n = v.rates, p.active.size
     ci, co = physical_amounts(read, p)
@@ -574,6 +632,8 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
     if process is not None:
         valid &= process.valid
+    if kinds:  # A failed stage read or stage check refuses the row (§7.4 (g) 1).
+        valid &= read_valid & _stage_checks(kinds, read, cell, outside, p, xp=xp)
     for value in _availabilities(control, kinds) if kinds else control:
         valid &= xp.all(xp.isfinite(value) & (value >= 0) & (value <= 1))
     for kind in kinds:
@@ -666,9 +726,10 @@ def domain_valid(state, p, active, *, xp=jnp, structure=None):
     valid &= xp.all(xp.where(p.pump_capacity > 0, True, state.pump_cycles == 0))
     valid &= xp.all(xp.where(p.calcium_pump_capacity > 0, True, state.calcium_pump_cycles == 0))
     if structure is not None and structure.kinds:  # Each declared kind's own domain (§7.4 (k)).
-        registry = kind_registry.active()
-        for kind_id in hook_order(structure):
-            kind = registry.lookup(kind_id)
+        kinds = _kinds(structure)
+        _, read_valid = _stage_read(state, p, kinds, xp=xp)  # The reads hold at this state too.
+        valid &= read_valid
+        for kind in kinds:
             if kind.domain is not None:
                 valid &= kind.domain(state, p, xp=xp)
     return valid
@@ -708,7 +769,7 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
     """
     s, n = tissue.field_layout(p).surface, p.active.size
     kinds = _kinds(structure)
-    read = _stage_read(state, p, kinds, xp=xp) if kinds else state  # §7.4 (k), stage_read.
+    read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
     ci, co = physical_amounts(read, p)
     ci = xp.where(p.active, ci / p.volume, 1.0)
     co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
@@ -811,6 +872,9 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
     if kinds:
         rates = _with_kind_derivatives(rates, kind_rates, structure, state, xp=xp)
     valid = r.valid
+    if kinds:  # A failed stage read or stage check refuses the step (§7.4 (g) 1).
+        outside_rate = xp.where(p.reservoir, 0.0, inflow)
+        valid = valid & read_valid & _stage_checks(kinds, read, cell_rate, outside_rate, p, xp=xp)
     if args is not None:  # The Na/K pump's domain, where its law is declared.
         valid = valid & xp.all(pump.domain_valid(*args, xp=xp))
     if ca_args is not None:
@@ -894,7 +958,11 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     first_values = readouts(state, control, p, xp=xp, structure=structure)
     start = first_values.field.potential_V
     valid = first_values.valid
-    read = _stage_read(state, p, kinds, xp=xp) if kinds else state  # The face weights' amounts.
+    if kinds:  # The face weights' amounts are the read's (§7.4 (k)).
+        read, read_valid = _stage_read(state, p, kinds, xp=xp)
+        valid &= read_valid
+    else:
+        read = state
     amount = p.extracellular_amount_reference + read.extracellular_amount_increment
     predicted = (
         amount + p.imex_operator_time * dt * first_values.derivative.extracellular_amount_increment
@@ -987,9 +1055,9 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
             junction_dissipated_energy_pJ=state.junction_dissipated_energy_pJ
             + 0.5 * dt * (explicit[0].junction_dissipated_energy_pJ + end_power)
         )
-    for kind in kinds:  # §7.4 (k), book: a kind's bookings from the step's applied rates.
-        if kind.book is not None:
-            stage = stage._replace(**kind.book(applied, state, stage, p, dt, xp=xp))
+    if kinds:  # §7.4 (k), book: a kind's bookings from the step's applied rates.
+        booked, ok = _kind_bookings(kinds, applied, state, stage, p, dt, xp=xp)
+        stage, valid = stage._replace(**booked), valid & ok
     valid &= domain_valid(stage, p, p.active, xp=xp, structure=structure)
     for value in stage:
         valid &= xp.all(xp.isfinite(value))
@@ -1074,18 +1142,95 @@ def check_definition(spec, *, structure=None):
             channel_capacity=len(m.channels),
         ),
     )
-    for kind in _kinds(structure):  # §7.4 (k): a kind's definition checks, ahead of @3's.
+    kinds = _kinds(structure)
+    for kind in kinds:  # §7.4 (k): a kind's definition checks, ahead of @3's.
         if kind.check_definition is not None:
             kind.check_definition(spec)
+    _check_stage_rows(spec, kinds)
     state, p = initial_values(compact, structure=structure)
     controls = control_values(compact, [c.time for c in compact.experiment.changes])
     control_type = kind_types(structure).Control if structure is not None else Control
+    if kinds:
+        _check_device_hooks(kinds, state, p, control_type(*(v[0] for v in controls)))
     with np.errstate(all="ignore"):
         for i in range(len(controls.membrane)):
             if not control_domain_valid(
                 state, control_type(*(v[i] for v in controls)), p, p.active, xp=np, structure=structure
             ):
                 raise ConfigError("Initial resolved channel/junction/pump domain invalid")
+
+
+def _check_stage_rows(spec, kinds):
+    """§7.4 (k): stage reads compose in hook order, so two that share a row would compose by ID,
+    not physically. A kind's stage read declares the rows it reads or rewrites, and two kinds'
+    reads on a shared row are refused at binding (until a dependency order exists)."""
+    if not kinds:
+        return
+    declarations, claimed = dict(spec.model.kinds), {}
+    for kind in kinds:
+        if kind.stage_read is None:
+            continue
+        if kind.stage_rows is None:
+            raise ConfigError(f"Kind {kind.kind_id} has a stage read but declares no stage rows")
+        for row in kind.stage_rows(declarations[kind.kind_id]):
+            other = claimed.setdefault(tuple(row), kind.kind_id)
+            if other != kind.kind_id:
+                raise ConfigError(
+                    f"Kinds {other} and {kind.kind_id} both read row {tuple(row)} at each stage; "
+                    "stage reads on a shared row do not commute and are refused"
+                )
+
+
+LEDGER_TERM_KEYS = ("cell", "outside", "heat_pJ", "work_pJ", "stored_pJ")
+
+
+def _check_device_hooks(kinds, state, p, control):
+    """§7.4 (k): the check-path hooks (stage_read, which domain_valid evaluates, domain,
+    control_domain, ledger_terms) trace under jax.numpy with no value branch, so the device's row
+    checks include the kinds as the host's do. Each is traced once here, on the definition's
+    initial state, and its result's form is checked."""
+
+    def refuse(kind, hook, reason):
+        raise ConfigError(f"Kind {kind.kind_id}'s {hook} hook {reason}")
+
+    def traced(kind, hook, function, *args):
+        try:
+            return jax.eval_shape(function, *args)
+        except jax.errors.JAXTypeError as error:
+            refuse(kind, hook, f"does not trace on the device (a value branch?): {error}")
+
+    def boolean(kind, hook, value):
+        if value.shape != () or value.dtype != np.bool_:
+            refuse(kind, hook, f"must return one boolean, not {value.shape} {value.dtype}")
+
+    shapes = dict(
+        cell=np.shape(state.amount_increment), outside=np.shape(state.extracellular_amount_increment)
+    )
+    tree = jax.tree.structure(state)
+    for kind in kinds:
+        if kind.stage_read is not None:  # On the check path too: domain_valid evaluates reads.
+            read, ok = traced(kind, "stage_read", partial(kind.stage_read, xp=jnp), state, p)
+            if jax.tree.structure(read) != tree:
+                refuse(kind, "stage_read", "must return a state of the structure's state type")
+            boolean(kind, "stage_read", ok)
+        if kind.stage_check is not None:  # On the step path; traced here for an early refusal.
+            rates = (state.amount_increment, state.extracellular_amount_increment)
+            check = traced(kind, "stage_check", partial(kind.stage_check, xp=jnp), state, *rates, p)
+            boolean(kind, "stage_check", check)
+        if kind.domain is not None:
+            domain = traced(kind, "domain", partial(kind.domain, xp=jnp), state, p)
+            boolean(kind, "domain", domain)
+        if kind.control_domain is not None:
+            hook = partial(kind.control_domain, xp=jnp)
+            boolean(kind, "control_domain", traced(kind, "control_domain", hook, control, p))
+        if kind.ledger_terms is not None:
+            terms = traced(kind, "ledger_terms", partial(kind.ledger_terms, xp=jnp), state, p)
+            unknown = set(terms) - set(LEDGER_TERM_KEYS)
+            if unknown:
+                refuse(kind, "ledger_terms", f"returns unknown terms {sorted(unknown)}")
+            for key, shape in shapes.items():
+                if key in terms and tuple(terms[key].shape) != shape:
+                    refuse(kind, "ledger_terms", f"returns {key} of shape {terms[key].shape}")
 
 
 def membrane_rate(state, control, p, *, xp=jnp, structure=None):
@@ -1196,7 +1341,9 @@ def balances(state, p, *, structure=None):
 def _fold_kind_ledgers(result, state, p, kinds, *, xp):
     """Rule (a): each kind's ledger terms fold into today's ledgers by role. Its cumulative
     inward-positive node transfers close the material ledgers (they are in the amounts, rule
-    (c)); its heat and work accumulators join the energy ledger as dissipation and work."""
+    (c)); its heat and work accumulators join the energy ledger as dissipation and work; its
+    stored term (free energy it holds beyond the stored rows' own terms, since the start: FR-4's
+    buffer term, finite fuel's standard term) joins the stored energy."""
     for kind in kinds:
         if kind.ledger_terms is None:
             continue
@@ -1209,6 +1356,8 @@ def _fold_kind_ledgers(result, state, p, kinds, *, xp):
             result["energy"] = result["energy"] + xp.sum(terms["heat_pJ"])
         if "work_pJ" in terms:
             result["energy"] = result["energy"] - xp.sum(terms["work_pJ"])
+        if "stored_pJ" in terms:
+            result["energy"] = result["energy"] + xp.sum(terms["stored_pJ"])
 
 
 def channel_magnitudes(row, p, *, xp=np, structure=None):

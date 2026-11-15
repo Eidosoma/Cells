@@ -16,8 +16,8 @@ One data file, the scene, drawn through four lenses, in this order:
 
 | Lens | What you see |
 | --- | --- |
-| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar |
-| **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER, mitochondrial and cage units inside. Each links to its engine part and out to the public atlases. A Species switch shows, for another species, the gene products that would make each machine: Human and Planarian today |
+| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar. **The Species switch sets the levels, the shapes and what the cell holds:** Human, Planarian, Syn3A and M. pneumoniae today. A single-celled species ends at its cell; the human's heart and body, like the planarian's brain and worm, are placeholder outlines |
+| **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER, mitochondrial and cage units inside. Each links to its engine part and out to the public atlases. A Species switch shows, for another species, the gene products that would make each machine: Human and Planarian today For Syn3A, M. pneumoniae and the planarian it also shows the species' own proteins on shelves: every protein by its side of a membrane, as families that open where there are thousands |
 | **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Shown only when replays have been made |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
 
@@ -91,9 +91,12 @@ laws, their mapping and their shapes are the engine's and stay the same whicheve
 is shown. What changes is the gene products that would make each machine in that species,
 and how sure that is. Nothing here says the engine models a species' protein.
 
-- **The switch** is the Species control on the atlas's card. The human atlas is the
-  inventory's own candidates. `atlas=planarian` in the address sets the species, and
-  `finding=` sets the legend's species filter.
+- **The switch** is the page's one Species control: in the bar on a wide window, in the
+  view's card on a narrow one or when the bar is full. The page opens on the species
+  whose file says `default` (the planarian). `species=<id>` in the address sets it,
+  `atlas=` is another name for it, and `finding=` sets the legend's species filter. An
+  atlas that found nothing for more than a quarter of the units is drawn quietly: those
+  units faint, with no rings.
 - **One file per species:** `data/proteins/atlases/<species>.json`, in the form
   `schema/SPECIES_ATLAS.md` fixes. The extractor reads every file there (`--atlases DIR`
   for another folder) and checks it against the contract; a strict build fails on a
@@ -139,6 +142,49 @@ record for the species, 17,294 gene models of one genome annotation and 1,588 Un
 entries, in 2.2 MB without sequences. They are predicted from the genome and from
 transcripts, not measured, and the table is not the library. The viewer does not read it.
 Joining any catalogue to the engine's protein catalogue is for the user and the lead.
+
+## Species
+
+The user, 14 November 2026: "for the visualization we must be able to switch species that
+will change the different levels", "we want a switch for syn3a as well ... then of course
+we will have to switch off multi-cell", and "the cell chapes, organ shape and body shape
+must bve configurable as well based on our different species as we add them".
+
+- **One species for the whole page.** It sets the levels of the Cell and scales view, the
+  shape drawn at each, which capabilities have a place in the cell, and the species' side
+  of the protein atlas. The Engine and Experiments views do not depend on it.
+- **A species is added with files alone:** `data/species/<id>.json` (`schema/SPECIES.md`),
+  with outlines for an organ or a body under `data/species/shapes/`
+  (`schema/SPECIES_SHAPES.md`). The viewer holds no drawing of any species; a test checks
+  that no module names one.
+- **What Cells models of a species is said on the page.** Human and Planarian are
+  `generic`: Cells models a generic cell and sheet, and the species lends names or
+  outlines. JCVI-syn3A and Mycoplasma pneumoniae are `proposed`: nothing of them is in the
+  engine, and the picture shows where Cells' capabilities would have a place in them.
+  This is the viewer's switch; the engine has no organism switch.
+- **Each species' own proteins** stand on shelves in the protein atlas
+  (`schema/SPECIES_PROTEINS.md`, `data/proteins/<species>/shelves.json`), in one format for
+  every species (the user, 15 November 2026: "let's have all the shelfs simmilar format
+  inside outside for syn3a and all of them"): a shelf is a membrane, with what is outside
+  standing on it, what spans it standing in it, and what is inside on glass below; what
+  has no known side is set apart, never placed by guess. Syn3A (455) and M. pneumoniae
+  (688) have one marker for each protein. The planarian's 18,882 stand as families that
+  open (the user: "we should show them all but maybe cool expandable protein families"):
+  a family of five or more has its own marker, the smaller ones of a district and side are
+  gathered in one ringed marker, and "No family assigned" stands in parts in the same way.
+  A protein with a `unit` is drawn as that unit; every other is a plain marker, and the
+  page says Cells has no law for it. The card's switch moves between "Cells' 49 machines"
+  and "Its N proteins": Syn3A and M. pneumoniae open on their own proteins, the planarian
+  on the machines. Human has no catalogue yet, and its card says so.
+- **Licence classes.** Every source in a data file states its licence and its class:
+  permissive, non-commercial, or no stated terms. A data file holds no value from a source
+  that is not permissive (the user's rule, D173); such a source is a pointer in words.
+  `tests/licence_classes.test.mjs` holds every file under `data/` to this. One dependence
+  is named and allowed: the lipid-anchor signal that UniProt reports from PROSITE's rule,
+  whose own database is non-commercial.
+- **Rough edges:** the human heart and body are quick placeholders; M. pneumoniae is drawn
+  as a plain rod, since the shape list cannot yet narrow one end for its attachment
+  organelle; a cell under 2 µm across has one size mode.
 
 ## Experiment replays
 
@@ -224,7 +270,10 @@ npm run extract             # read the main checkout, write data/architecture/ar
 npm run import:proteins -- --inventory PATH/law_inventory_v2.json   # only when the inventory changes
 npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load three.js locally)
 npm test                    # scene, sources, page and allowed hosts; no browser needed
-npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas, its species switch and its links)
+npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas, its species sides and its links)
+npm run check:species       # real clicks on the species switch: each species' levels, cell and wording, in every view
+npm run check:shelves       # real clicks on a species' own proteins: a marker, a family opening, closing, the legend and the list (syn3a by default; planarian, nofiles)
+npm run serve -- --no-proteins   # the page as it is when the species' own proteins are not published beside it
 npm run shot -- --out /tmp/shot.png --query "lens=engine&select=num.imex" --theme dark
 npm run adapt:runs -- --evidence PATH   # make the replays under out/runs/ (not committed); PATH holds the evidence folders
 npm run export              # out/cells-architecture.html, the page as an artifact wants it, and the list of run files to publish beside it
@@ -297,8 +346,12 @@ The visualizer session publishes its own artifacts (the user, 14 November 2026).
 `artifacts.json` records each one's URL so that updates go to the same link.
 
 1. `npm run extract && npm test && npm run export`
-2. Publish `out/cells-architecture.html` to the URL in `artifacts.json`, with the run files
-   listed in `out/cells-architecture.files.json` beside it.
+2. Publish `out/cells-architecture.html` to the URL in `artifacts.json`, with the files
+   listed in `out/cells-architecture.files.json` beside it: the runs (`runs/<run id>.json`)
+   and the species' own proteins (`proteins/<species>/shelves.json` and the planarian's
+   `members-NN.json`). On 15 November 2026 that is 71 files: 59 runs and 12 files of
+   proteins (3.4 MB). A page published without the proteins' files draws the atlas as
+   before and says that the species' own proteins could not be loaded.
 
 Published pages load three.js from cdnjs, the preferred host of the artifact frame's
 allowlist; everything else is inside the page.
@@ -350,9 +403,11 @@ The user merges the branch when they choose.
    conduction probe needs a chain layout; the held sphere needs radial shells.
 
 For the species atlases, what remains is the measured library of about 10,000 proteins.
-It needs its list from the authors or the publisher, and their permission before it can
-enter this public repository; or a reanalysis of the study's open instrument files. A
-table placed under `/mnt/workspaces/Cells/visualizer-planarian-library/` can be imported.
+The project does not contact authors (D173), so its list has to appear in a public source
+under terms that allow a copy; the other route is a reanalysis of the study's open
+instrument files. A table the user already holds can be read from
+`/mnt/workspaces/Cells/visualizer-planarian-library/`, and stays outside this public
+repository under the paper's present terms.
 `docs/PLANARIAN_ATLAS.md` says what each would take.
 
 For the protein atlas, each of these needs the user's approval first, because the plan
@@ -385,10 +440,16 @@ Ideas kept for after the basics (the user, 14 November 2026):
 
 ## Known limits
 
+- The species' own proteins need the 3D stage: the no-WebGL list has the machines only.
+- A protein of a large catalogue is in the list once its family is open. Before that the
+  list finds families by name, also the gathered ones, but not a member by its identifier.
+- A mark that is a number (Syn3A's estimated copies in a cell) is a fact in the panel; it
+  is not drawn.
 - The molecular scale is one membrane patch with one channel and one pump.
-- The planarian and its brain are sketches with indicative sizes. One search gave about
-  20 mm by 2 mm for a planarian, from an unreviewed preprint, and no measurement of the
-  brain, so the outlines name no species and the page labels both as placeholders. The
+- The planarian and its brain are sketches with indicative sizes. An open paper gives intact
+  animals of the laboratory strain as 1 to 14 mm long (Lu and others 2025, CC BY 4.0); the
+  width, the thickness and the brain's size are the picture's choice, so the outlines are
+  of a planarian in general and the page labels both as placeholders. The
   protein atlas does name one, *Schmidtea mediterranea*, because its entries come from
   that species' database records.
 - A species atlas repeats a family's candidates on every unit of that family (68 innexin

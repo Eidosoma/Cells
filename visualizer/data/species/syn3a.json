@@ -1,0 +1,334 @@
+{
+ "format": "cells.visualizer.species@1",
+ "id": "syn3a",
+ "label": "Syn3A",
+ "organism": "JCVI-syn3A",
+ "taxon": 2144189,
+ "plain": "A bacterium with a designed, minimised genome: 452 protein-coding genes kept from Mycoplasma mycoides, in a cell about 400 nm across with one membrane and no wall. It grows on its own in a rich medium, and its genome is smaller than that of any natural cell that does.",
+ "order": 30,
+ "default": false,
+ "made": "2026-11-15",
+ "modelled": {
+  "state": "proposed",
+  "text": "JCVI-syn3A is the project's minimal-cell track (decision D173, 14 November 2026), taken up from a note that proposes it as the first whole-cell validation organism for Cells. Nothing of it is in the engine yet: the project's record holds an evidence audit, capability probes of the engine as it stands, and a proposed first milestone, with no engine code written for it and nothing accepted."
+ },
+ "levels": [
+  {
+   "id": "molecules"
+  },
+  {
+   "id": "cell",
+   "label": "One cell",
+   "shape": {
+    "kind": "sphere",
+    "across_um": 0.4
+   },
+   "note": "Drawn as a sphere 0.4 µm across with 500 ribosomes: round numbers for the smaller of the two cells that were measured. The larger one was about 0.5 µm across.",
+   "sources": [
+    "breuer2019",
+    "gilbert2021"
+   ]
+  }
+ ],
+ "no_further_levels": "A single-celled organism: each cell lives on its own, so there is no tissue, organ or body.",
+ "cell": {
+  "facts": [
+   {
+    "label": "Shape and size",
+    "value": "a sphere about 400 nm across; two cells measured in electron tomograms were 403 nm and 495 nm across",
+    "sources": [
+     "breuer2019",
+     "gilbert2021"
+    ]
+   },
+   {
+    "label": "Envelope",
+    "value": "one membrane; no cell wall and no periplasm",
+    "sources": [
+     "breuer2019",
+     "gilbert2021"
+    ]
+   },
+   {
+    "label": "Inside",
+    "value": "no nucleus: in electron tomograms the ribosomes are spread through the whole cell, with the chromosome among them",
+    "sources": [
+     "gilbert2021"
+    ]
+   },
+   {
+    "label": "Chromosome",
+    "value": "one circle of 543,379 base pairs",
+    "sources": [
+     "genbank"
+    ]
+   },
+   {
+    "label": "Genes",
+    "value": "493, of which 452 code for proteins; the genome record lists 455 protein products, 3 of them added for genetic manipulation",
+    "sources": [
+     "breuer2019",
+     "genbank"
+    ]
+   },
+   {
+    "label": "Ribosomes",
+    "value": "about 500 in a small cell: 503 or 684 counted in the cell 403 nm across, by two ways of counting, and 820 or 1,095 in the one 495 nm across",
+    "sources": [
+     "gilbert2021"
+    ]
+   },
+   {
+    "label": "Proteins",
+    "value": "about 77,000 molecules in an average cell, an estimate from proteomics; 427 of the 452 kinds were detected, and the added marker tetM",
+    "sources": [
+     "breuer2019"
+    ]
+   },
+   {
+    "label": "Doubling time",
+    "value": "about 105 minutes in rich medium",
+    "sources": [
+     "breuer2019"
+    ]
+   },
+   {
+    "label": "Energy",
+    "value": "ATP from fermenting sugar; in the 2019 reconstruction of its metabolism, central metabolism is the only source of ATP",
+    "sources": [
+     "breuer2019"
+    ],
+    "see": [
+     "thornburg2022"
+    ]
+   },
+   {
+    "label": "Food",
+    "value": "glucose, amino acids, fatty acids and cholesterol, taken up from a rich medium that is not fully defined",
+    "sources": [
+     "breuer2019"
+    ]
+   },
+   {
+    "label": "Ion channels",
+    "value": "none found among its 455 proteins",
+    "sources": [
+     "uniparc"
+    ]
+   },
+   {
+    "label": "Division",
+    "value": "the division genes ftsZ and sepF are among 19 genes added to the smaller strain JCVI-syn3.0 to make this one, which gave it back a regular shape; a review reports that seven of the 19 are needed together for normal division",
+    "sources": [
+     "breuer2019",
+     "zhang2023"
+    ],
+    "see": [
+     "pelletier2021"
+    ]
+   },
+   {
+    "label": "Origin",
+    "value": "a genome designed and synthesised from that of Mycoplasma mycoides subspecies capri, strain GM12, and cut down to a minimum",
+    "sources": [
+     "genbank",
+     "breuer2019"
+    ]
+   }
+  ],
+  "parts": {
+   "membranes": 1,
+   "wall": false,
+   "nucleus": false,
+   "chromosome_kbp": 543,
+   "ribosomes": 500
+  },
+  "capabilities": {
+   "cap.membrane": {
+    "place": "present",
+    "note": "Its one membrane holds the cell's ion and proton gradients. In the 2019 reconstruction of its metabolism the ATP synthase pushes protons out, against a passive leak of protons inwards; that is a model's reading, and no source read for this file measured the voltage of this strain."
+   },
+   "cap.channels": {
+    "place": "absent",
+    "why": "No ion channel was found among its 455 proteins: none carries the signature of a channel family in Cells' catalogue, or of the bacterial channels for potassium, chloride, magnesium, water or membrane stretch, which the same search does find in other mollicutes. Its ions cross the membrane through transporters and pumps."
+   },
+   "cap.pumps": {
+    "place": "present",
+    "note": "Not the pumps of animal cells: it has no sodium-potassium pump. By its annotation, its ATP-driven ion movers are the ATP synthase, two P-type ATPases named as magnesium transporters, and a potassium uptake system."
+   },
+   "cap.junctions": {
+    "place": "absent",
+    "why": "It lives as single cells and has no gap junctions: none of its proteins carries the signature of connexins or innexins."
+   },
+   "cap.extracellular": {
+    "place": "present",
+    "note": "Here it is the growth medium around the single cell, which the cell depends on. By the 2019 reconstruction of its metabolism it takes up glucose, amino acids, fatty acids and cholesterol from a rich medium."
+   },
+   "cap.water": {
+    "place": "present",
+    "note": "It has no cell wall: nothing but the membrane bounds its volume."
+   },
+   "cap.calcium": {
+    "place": "absent",
+    "why": "It has no endoplasmic reticulum: it is a bacterium with a single membrane and no internal compartments, and none of its proteins carries the signature of the store's calcium pump or of its release channels."
+   },
+   "cap.energy": {
+    "place": "present",
+    "note": "Its ATP comes from fermenting sugar in the cytoplasm: in the 2019 reconstruction of its metabolism, central metabolism is the only source of ATP."
+   },
+   "cap.mitochondria": {
+    "place": "absent",
+    "why": "It is a bacterium and has no mitochondria. Its ATP synthase sits in the cell membrane."
+   },
+   "cap.circuits": {
+    "place": "present",
+    "note": "At the chromosome, which lies in the cytoplasm: there is no nucleus. The 2019 paper notes how few regulatory proteins the minimised genome has left."
+   },
+   "cap.grn": {
+    "place": "absent",
+    "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."
+   },
+   "cap.trafficking": {
+    "place": "absent",
+    "why": "It has no endoplasmic reticulum and no Golgi. By its annotation, new membrane proteins are put straight into the cell membrane by the Sec translocon and the YidC insertase."
+   },
+   "cap.assembly": {
+    "place": "present",
+    "note": "Its assemblies are its ribosomes, RNA polymerase and the ATP synthase. The designed protein cage that Cells models is not one of its proteins."
+   },
+   "cap.machines": {
+    "place": "present",
+    "note": "About 500 ribosomes, with RNA polymerase, the ATP synthase and the protein translocon. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."
+   },
+   "cap.secretion": {
+    "place": "present",
+    "note": "By the 2019 reconstruction of its metabolism it releases the end products of sugar breakdown, lactate and acetate, into the medium and takes nutrients up. Signalling between its cells was not looked for."
+   },
+   "cap.repair": {
+    "place": "present",
+    "note": "The place would be its bare membrane. No source read for this file describes a membrane injury or its resealing in this organism."
+   },
+   "cap.division": {
+    "place": "present",
+    "note": "It grows and divides as a single cell. The division genes ftsZ and sepF are among 19 genes that were added to the smaller strain JCVI-syn3.0 to make it, which gave it back a regular shape; a review reports that seven of the 19 are needed together for normal division."
+   },
+   "cap.replacement": {
+    "place": "absent",
+    "why": "It forms no tissue, so there is no neighbour for a new cell to replace."
+   },
+   "cap.mechanics": {
+    "place": "absent",
+    "why": "It forms no sheet: its cells share no edges to pull on."
+   },
+   "cap.sheet": {
+    "place": "absent",
+    "why": "It lives as single cells and forms no sheet of coupled cells."
+   }
+  }
+ },
+ "capability_sources": {
+  "cap.membrane": [
+   "breuer2019"
+  ],
+  "cap.channels": [
+   "uniparc"
+  ],
+  "cap.pumps": [
+   "genbank",
+   "uniparc"
+  ],
+  "cap.junctions": [
+   "uniparc"
+  ],
+  "cap.extracellular": [
+   "breuer2019"
+  ],
+  "cap.water": [
+   "breuer2019",
+   "gilbert2021"
+  ],
+  "cap.calcium": [
+   "breuer2019",
+   "uniparc"
+  ],
+  "cap.energy": [
+   "breuer2019"
+  ],
+  "cap.mitochondria": [
+   "breuer2019"
+  ],
+  "cap.circuits": [
+   "breuer2019",
+   "gilbert2021"
+  ],
+  "cap.trafficking": [
+   "genbank"
+  ],
+  "cap.assembly": [
+   "genbank"
+  ],
+  "cap.machines": [
+   "gilbert2021",
+   "genbank",
+   "uniparc"
+  ],
+  "cap.secretion": [
+   "breuer2019"
+  ],
+  "cap.division": [
+   "breuer2019",
+   "zhang2023"
+  ]
+ },
+ "sources": {
+  "breuer2019": {
+   "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
+   "doi": "10.7554/elife.36842",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-14"
+  },
+  "gilbert2021": {
+   "text": "Gilbert and others (2021) Generating Chromosome Geometries in a Minimal Cell From Cryo-Electron Tomograms and Chromosome Conformation Capture Maps. Front Mol Biosci 8:644133.",
+   "doi": "10.3389/fmolb.2021.644133",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-14"
+  },
+  "zhang2023": {
+   "text": "Zhang and others (2023) Investigation of Genome Biology by Synthetic Genome Engineering. Bioengineering (Basel) 10(2):271. A review.",
+   "doi": "10.3390/bioengineering10020271",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
+  "thornburg2022": {
+   "text": "Thornburg and others (2022) Fundamental behaviors emerge from simulations of a living minimal cell. Cell 185:345-360.e28. A whole-cell model of this organism: its own account of the cell's energy, its membrane proteins and its regulation is there.",
+   "doi": "10.1016/j.cell.2021.12.025",
+   "licence": "CC BY-NC-ND 4.0, a non-commercial licence. It is named so that it can be read, and nothing is taken from it.",
+   "class": "non-commercial",
+   "accessed": "2026-11-14"
+  },
+  "pelletier2021": {
+   "text": "Pelletier and others (2021) Genetic requirements for cell division in a genomically minimal cell. Cell 184:2430-2440.e16. The experiments on which genes this organism needs to divide. Only its bibliographic record was read.",
+   "doi": "10.1016/j.cell.2021.03.008",
+   "licence": "No open licence stated: the paper's record names none and does not count it as open access. It is named so that it can be read, and nothing is taken from it.",
+   "class": "no stated terms",
+   "accessed": "2026-11-14"
+  },
+  "genbank": {
+   "text": "Glass J (2017) Synthetic bacterium JCVI-Syn3A, complete genome. GenBank CP016816.2, annotation of 12 April 2018.",
+   "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2",
+   "licence": "NCBI places no restrictions on the use or distribution of GenBank data; submitters may claim rights in what they submitted, and this record states none",
+   "class": "permissive",
+   "accessed": "2026-11-14"
+  },
+  "uniparc": {
+   "text": "UniProt Consortium, UniParc release 2026_04: the archived protein sequences of taxon 2144189 and the family signatures on them.",
+   "url": "https://www.uniprot.org/uniparc?query=taxonomy_id:2144189",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-14"
+  }
+ }
+}
