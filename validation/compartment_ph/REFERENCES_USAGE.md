@@ -334,14 +334,53 @@ every 10 s).
   route. The reference supports f·d (`CargoRoute(conditioned=True, damaged=True)`), and its
   self-test checks it.
 
-# Finite fuel (item 4): the reference's specification, proposed before it is built
+# Finite fuel (item 4): R-fuel
 
-No engine note specifies the finite-fuel case yet, so this section declares what its reference
-will compute. It is a proposal for the lead to confirm, from:
+The lead chose option (a) on 15 November 2026: a neutral solute Y moved by an ATP-driven pump in
+§6's form, with D152's passive regeneration on a schedule m(t). No engine note specifies this case
+yet, so the sections below are the reference's own specification, from:
 - ARCHITECTURE.md's "Material identity and fuel" (F2, and "the first case");
 - D176, decisions 1 and 2;
 - D152's §2.2 (the passive reaction law);
 - this note's §5 and §6.
+
+| Module | What it gives |
+| --- | --- |
+| `validation/compartment_ph/fuel_reference.py` (`fr`) | R-fuel: the world, both laws, the leak, held fuel, the energy identity and the moieties |
+| `validation/compartment_ph/fuel_crosschecks.py` | The driver behind the numbers below (`--out DIR`; about 20 s) |
+
+**Self-tests:** `tests/unit/test_compartment_fuel_references.py`, 5 tests. The folder's
+independence tests cover this module too.
+
+```python
+from validation.compartment_ph import fuel_reference as fr
+
+run = fr.integrate(fr.acceptance_world(), 900.0, record=ts)               # finite fuel
+held = fr.integrate(fr.acceptance_world(held=True), 900.0, record=ts)     # held fuel
+ctl = fr.integrate(fr.acceptance_world(off_windows=()), 900.0, record=ts)  # m = 1
+```
+
+`run.at[t]` holds:
+- `c` {ATP, ADP, Pi, D, P, Y_c, Y_s} (mM);
+- `J_cyc`, `J_Y` (from s to c) and `v` (fmol/s), and `m`;
+- `dG_ATP`, `dG_cyc` and `dG_reg` (J/mol);
+- `cycles` and `regenerated` (fmol);
+- `heat_pJ` {pump, leak, reg}, `Q_pJ`, `W_pJ`, `stored_change_pJ` and `energy_residual_pJ`;
+- `moieties` {adenine, phosphate, donor, Y} (fmol).
+
+## Units and the standard state
+
+- **Units:** fmol, pL, mM (= fmol/pL), s, m and m/s. Potentials are in J/mol, and energies in pJ
+  (1e-3 × fmol × J/mol).
+- **The standard state** is c° = 1000 mM (`FuelWorld.standard_mM`). Every activity is a = c/c°,
+  as in D152's law and §5.2's Δ_rG'.
+- **The registry's potentials:** each row's μ°'/RT (`FuelWorld.mu0_RT`) at the world's
+  temperature. Every ΔG° is formed from them, and none is a parameter of a law.
+  - Δ_rG'°_hyd = RT [μ°'(ADP) + μ°'(Pi) − μ°'(ATP)] = −30.5 kJ/mol;
+  - Δ_rG'°_reg = RT [μ°'(P) + μ°'(ATP) − μ°'(D) − μ°'(ADP) − μ°'(Pi)] = −29.5 kJ/mol;
+  - the proposal's values are μ°'(ATP) = 30.5 kJ/mol, μ°'(D) = 60 kJ/mol, and 0 for ADP, Pi, P
+    and Y (only differences enter).
+  - RT = R × 310 K = 2577.48 J/mol.
 
 ## The world: one fixed volume, closed
 
@@ -397,7 +436,7 @@ will compute. It is a proposal for the lead to confirm, from:
 protons would need explicit booking. The first case therefore moves a neutral solute. When §5.2's
 boundary is designed, the same reference extends to the proton pump with the cell's H row.
 
-## Generic numbers, to be confirmed
+## The calibrated first case
 
 | Quantity | Value |
 | --- | --- |
@@ -409,18 +448,35 @@ boundary is designed, the same reference extends to the proton pump with the cel
 | The reaction | k_f 1e4 s⁻¹ (about 1.1 fmol/s forward at the start, well above the pump's demand) |
 | The depletion window | m = 0 on [100, 300) s; the run lasts 900 s |
 
-**Calibrated by a scratch integration (not the reference).**
-- **With these numbers:**
-  - over the window, ATP falls from 3.27 to 0.0002 mM;
-  - J_cyc falls from 8.7e-2 to 1.6e-4 fmol/s, while held fuel keeps it at 8.6e-2;
-  - Y in the store falls from 101 to 76 mM;
-  - within 100 s after the window, ATP is back at 3.26 mM and J_cyc at 8.7e-2.
-- **A smaller pump hardly depletes:**
-  - at k = 0.05 fmol/s, J_cyc falls only 5% (ATP 1.1 mM at the window's end);
-  - at k = 0.07, it falls 15%.
-- **Near zero ATP,** the law is evaluated as k S_Y (c_ATP − r)/(K_ATP + c_ATP), with
-  r = c_ADP c_Pi e^(Δ_rG'°_hyd/RT) (c_Y,s/c_Y,c)^n / c°.
-  - This is identical to §6's form for c_ATP > 0, and it stays finite at the integrator's trial
-    states.
-  - By estimate, |ΔG_cyc/RT| stays between about 5 (depleted) and 20 (fed), inside §6's domain
-    of 80.
+**The law near zero ATP.** It is evaluated as the identical rational form
+k a [c_Y,c^n c_ATP − c_ADP c_Pi e^(Δ_rG'°_hyd/RT) c_Y,s^n/c°] / [(K_Y^n + c_Y,c^n)(K_ATP + c_ATP)].
+- It is §6's S (1 − e^(ΔG_cyc/RT)) for every positive state, and it stays finite at the
+  integrator's trial states.
+- m(t) is held at its value inside each segment, so no evaluation at a window's edge sees the
+  next segment's value.
+
+## Measured (`compartment-fuel-crosschecks-01`, from snapshot `compartment-fuel-snapshot-01`)
+
+900 s, 132 records: every 10 s, and every second on [95, 105] and [295, 330] s.
+
+| | Finite fuel | Held fuel | Control, m ≡ 1 |
+| --- | --- | --- | --- |
+| J_cyc at 99 s; at 299 s (fmol/s) | 8.713e-2; **1.552e-4** | 8.690e-2; 8.642e-2 | 8.713e-2; 8.664e-2 |
+| ATP at 99 s; at 299 s (mM) | 3.270; **1.74e-4** | 3 (held) | 3.270; 3.263 |
+| ADP, Pi at 299 s (mM) | 3.300, 6.000 | 0.3, 3 | 0.037, 2.737 |
+| Δ_rG'_ATP at 99 s; at 299 s (kJ/mol) | −57.8; **−18.3** | −51.4 | −57.8; −57.2 |
+| Y in the store at 99 s; 299 s; 900 s (mM) | 86.9; 75.9; 118.5 | 86.7; 115.7; 118.3 | 86.9; 115.9; 118.5 |
+| Recovery of J_cyc after the window | Within 1% by 302 s, within 0.1% by 303 s | – | – |
+| Cycles; regenerated (fmol) | 74.46; 75.37 | 77.88; 0 | 78.07; 78.95 |
+| Heat: pump, leak, regeneration (pJ) | 3567.1, 440.8, 558.2 | 3498.3, 472.7, 0 | 3915.9, 474.3, 386.9 |
+| W; ΔG_stored (pJ) | 0; −4566.2 | 4003.6; 32.7 | 0; −4777.1 |
+| Largest energy residual (pJ) | 2.5e-11 | 3.6e-12 | 9.6e-12 |
+| Moiety drift (relative) | ≤ 4.5e-15 | ≤ 1.0e-15 | ≤ 1.8e-15 |
+| Largest \|ΔG_cyc/RT\| | 21.7 | 19.1 | 21.7 |
+
+- **Finite fuel against held fuel:** J_cyc at 299 s is 0.0018 of held fuel's. The window costs
+  3.42 fmol of cycles, and the store holds 39.8 mM less Y at 299 s.
+- **Floor** (rtol 1e-11 against 1e-12): ATP within 6.3e-14 mM, J_cyc within 4.3e-16 fmol/s and Q
+  within 3.0e-11 pJ.
+- **Fed, the cell's fuel sits near the regeneration's equilibrium.** ADP is low and Δ_rG'_ATP is
+  −57.8 kJ/mol, below held fuel's −51.4.
