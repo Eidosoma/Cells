@@ -29,9 +29,11 @@ const TOOL = path.join(ROOT, "tools", "build_syn3a_atlas.py");
 // per source, each with its MANIFEST.json).
 const EVIDENCE = process.env.SYN3A_EVIDENCE || "/mnt/workspaces/Cells/visualizer-syn3a-proteins-20261114-01";
 const DATASETS = process.env.SYN3A_DATASETS || "/mnt/datasets/Cells/syn3a";
-const SOURCES_READ = ["ncbi-CP016816.2", "breuer2019-elife", "ncbi-CP016816-proteins", "uniprot-syn3a", "biopython-185-protparam", "pmc-open-syn3a-licence-pass"];
+// The last two were added on 15 November 2026: the open reviews the lipid-anchor rule is
+// fixed from, and the terms of a rule system whose results UniProt gives out (HAMAP).
+const SOURCES_READ = ["ncbi-CP016816.2", "breuer2019-elife", "ncbi-CP016816-proteins", "uniprot-syn3a", "biopython-185-protparam", "pmc-open-syn3a-licence-pass", "pmc-open-lipoprotein-signal", "terms-upstream-tools"];
 // Read for their terms alone; the README's table of files does not list them.
-const TERMS_READ = ["terms-prosite"];
+const TERMS_READ = [];
 const absent = !existsSync(path.join(EVIDENCE, "requests.json"))
   ? "the request log is not on this machine (set SYN3A_EVIDENCE)"
   : [...SOURCES_READ, ...TERMS_READ].some((source) => !existsSync(path.join(DATASETS, source, "MANIFEST.json")))
@@ -352,7 +354,7 @@ test("the catalogue stays small and holds no sequence", () => {
 
 test("the README names each file the catalogue was built from, with its SHA-256", () => {
   const lines = readme.split("\n").filter((line) => /^\| .+ \| `[^`]+` \| `[^`]+` \| `[0-9a-f]{64}` \|$/.test(line));
-  assert.equal(lines.length, 14, "fourteen files, each with its dataset folder, its name and its hash");
+  assert.equal(lines.length, 18, "eighteen files, each with its dataset folder, its name and its hash");
   for (const source of SOURCES_READ) assert.ok(lines.some((line) => line.includes(`\`${source}\``)), `${source} is not named`);
 });
 
@@ -483,7 +485,7 @@ test("a side that is predicted or taken from function says so; a stated one name
 });
 
 test("the reading of the sequences fares against what is known as the files say", () => {
-  const { inside_by_class: inside, permeases, stated, lipoprotein_profile: profile, membrane } = shelves.checks;
+  const { inside_by_class: inside, permeases, stated, lipid_anchor: anchors, membrane } = shelves.checks;
   assert.equal(stated.reading_agrees, stated.proteins, "a stated place the reading disagrees with");
   assert.equal(stated.proteins, shelves.proteins.filter((row) => row[5] === "stated").length);
   assert.equal(Object.values(stated.by_evidence).reduce((sum, n) => sum + n, 0), stated.proteins);
@@ -493,11 +495,26 @@ test("the reading of the sequences fares against what is known as the files say"
   assert.ok(inside.proteins > 150, "the proteins whose class places them inside are many");
   assert.ok(inside.read_as_spanning.length <= 2, "more than two of the proteins that work inside the cell are read as membrane-spanning");
   assert.ok(inside.with_a_hydrophobic_stretch > inside.read_as_spanning.length, "the condition on charged residues does its work");
-  assert.equal(inside.with_a_hydrophobic_stretch, shelves.proteins.filter((row) => row[5] === "by function").length, "each of them is placed by its function");
-  assert.equal(profile.sequences, profile.kept + profile.set_aside.length);
-  assert.equal(profile.kept, profile.placed_outside + profile.placed_in);
-  assert.equal(profile.placed_outside, shelves.counts.outside);
-  assert.equal(profile.kept, shelves.proteins.filter((row) => row[9].lipid_anchor).length);
+  assert.equal(inside.with_a_hydrophobic_stretch + inside.with_an_anchor_read_and_no_such_stretch, shelves.proteins.filter((row) => row[5] === "by function").length, "each of them is placed by its function");
+  // The lipid anchors are the tool's own rule's: every one it reads is kept or set aside, and
+  // one is set aside only where a reviewed entry states the place or the class leaves no doubt.
+  assert.equal(anchors.read, anchors.kept + anchors.set_aside.length);
+  assert.equal(anchors.kept, anchors.placed_outside + anchors.placed_in);
+  assert.equal(anchors.placed_outside, shelves.counts.outside);
+  assert.equal(anchors.kept, shelves.proteins.filter((row) => row[9].lipid_anchor).length);
+  for (const name of anchors.set_aside) {
+    const row = shelves.proteins.find((line) => (line[2] || line[0]) === name);
+    assert.ok(row && ["stated", "by function"].includes(row[5]) && !row[9].lipid_anchor, `${name} is set aside and is not placed by a statement or by its function`);
+  }
+  assert.ok(said.includes(`The rule reads an anchor on ${anchors.read} proteins. ${anchors.kept} are kept: ${anchors.placed_outside} are placed outside`), "the README does not give the rule's counts");
+  assert.match(said, /\*\*The rule is strict and misses lipoproteins\.\*\*/);
+  // Whose rules stand behind the stated places: counted, and each system is a source of the file.
+  const systems = stated.by_rule_system;
+  assert.equal(Object.values(systems).reduce((sum, item) => sum + item.sides, 0), shelves.proteins.filter((row) => row[5] === "stated" && row[9].evidence === "rule").length, "a stated side by a rule names no rule system");
+  for (const [system, item] of Object.entries(systems)) {
+    const source = shelves.sources.find((entry) => entry.name === system);
+    assert.ok(source?.through, `${system} stands behind ${item.sides} stated sides and is not a source read through another`);
+  }
   assert.equal(membrane.in_or_on, shelves.counts.in + shelves.counts.outside);
   // The whole-cell model's own count is under a non-commercial licence: it is pointed to, not repeated.
   assert.deepEqual(Object.keys(membrane), ["in_or_on", "seen", "estimated_copies", "all_estimated_copies"]);
@@ -529,24 +546,36 @@ test("the shelves name their sources with their terms, copy from none that forbi
   assert.equal(new Set(shelves.sources.map((source) => source.name)).size, shelves.sources.length);
   // What the file holds comes from permissive sources. A paper under a non-commercial
   // licence, or with no stated terms, is a pointer: it says that nothing is taken from it.
-  // One source is neither: PROSITE, whose profile's matches were read in UniProt's
-  // archive. It says so, and names the permissive source they were read through.
+  // A tool or rule system whose results were read in a database's entries is a source of
+  // its own, with its own terms, and `through` names the source they were read in. Here
+  // the only one is HAMAP, which is permissive: this file rests on no source of another class.
   for (const source of shelves.sources) {
     assert.ok(CLASSES.includes(source.class), `${source.name}: ${source.class}`);
     const open = /^CC BY [24]\.0$|BSD 3-Clause|no restrictions on the use or distribution/.test(source.licence);
-    if (source.class === "permissive") assert.ok(open && !source.through, `${source.name}: ${source.licence}`);
+    if (source.class === "permissive") assert.ok(open, `${source.name}: ${source.licence}`);
     else {
       assert.ok(!open && /^(CC BY-NC|No open licence stated)/.test(source.licence), `${source.name}: ${source.licence}`);
-      if (source.through) {
-        assert.equal(shelves.sources.find((item) => item.name === source.through)?.class, "permissive", `${source.name} is read through ${source.through}`);
-        assert.match(source.holds, /^Nothing was downloaded from it and nothing of it is copied\./, source.name);
-      } else assert.match(source.holds, /^Nothing is taken from it: a pointer to /, source.name);
+      assert.ok(!source.through, `${source.name} is ${source.class} and something was read of it through ${source.through}`);
+      assert.match(source.holds, /^Nothing is taken from it: a pointer to /, source.name);
+    }
+    if (source.through) {
+      assert.equal(shelves.sources.find((item) => item.name === source.through)?.class, "permissive", `${source.name} is read through ${source.through}`);
+      assert.match(source.holds, /^Nothing was downloaded from it/, source.name);
     }
   }
-  assert.deepEqual(shelves.sources.filter((source) => source.class !== "permissive").map((source) => source.name), ["PROSITE", "Kyte and Doolittle 1982", "L'Hernault and Arduengo 1992", "Chambaud and others 1999", "Thornburg and others 2022"]);
-  assert.deepEqual(shelves.sources.filter((source) => source.through).map((source) => [source.name, source.through]), [["PROSITE", "UniParc"]]);
-  assert.match(shelves.marks.lipid_anchor.note, /a profile of PROSITE, whose own terms are non-commercial \(CC BY-NC-ND 4\.0\)/);
-  assert.match(said, /Whether that use is within PROSITE's terms for this project is not settled here/);
+  assert.deepEqual(shelves.sources.filter((source) => source.class !== "permissive").map((source) => source.name), ["Kyte and Doolittle 1982", "L'Hernault and Arduengo 1992", "Chambaud and others 1999", "Thornburg and others 2022"]);
+  assert.deepEqual(shelves.sources.filter((source) => source.through).map((source) => [source.name, source.class, source.through]), [["HAMAP", "permissive", "UniProtKB"]]);
+  // The lipid anchor is the tool's own rule, fixed from open reviews; the signature it
+  // replaced is named nowhere in the files, and the archive's signatures are not read for it.
+  assert.match(shelves.marks.lipid_anchor.note, /^This tool's reading, by a rule of its own: a lipobox within the first 40 residues/);
+  assert.match(shelves.marks.lipid_anchor.note, /The rule is strict: lipoboxes of other forms have been reported \(Legood and others 2020\)/);
+  assert.equal(shelves.marks.lipid_anchor.source, "Desvaux and others 2018");
+  assert.match(shelves.side_notes.predicted, /\[LVI\]-\[ASTVI\]-\[GAS\], the form Desvaux and others 2018 state for bacteria with one membrane/);
+  assert.match(shelves.side_notes.predicted, /on average 16 to 26 residues long \(Smithers and others 2021\)/);
+  assert.match(shelves.side_notes.predicted, /The reach of 40 residues and the stretch of 10 are this tool's own choice: no source read states a limit\./);
+  assert.match(shelves.side_notes.predicted, /fixed from open descriptions before it was run and not adjusted to any protein/);
+  for (const [name, text] of [["the shelves", shelvesText], ["the README", readme]]) assert.ok(!/PROSITE|PS\d{5}|PRU\d{5}/.test(text), `${name} name PROSITE or one of its signatures`);
+  assert.match(said, /Nothing in this folder rests on a source of another class\./);
   for (const mark of Object.values(shelves.marks)) {
     const source = shelves.sources.find((item) => item.name === mark.source);
     assert.equal(source.class, "permissive", `a mark rests on ${source.name}, whose terms do not allow a copy`);

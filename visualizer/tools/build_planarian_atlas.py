@@ -259,7 +259,13 @@ SHELF_SOURCES = {
         "what": "UniProtKB entries of Schmidtea mediterranea (taxon 79327): whether each is a fragment; the signal peptides, membrane-spanning segments and subcellular location UniProt gives, with the evidence for each; and the Gene Ontology terms UniProt gives each entry",
         "licence": "CC BY 4.0",
     },
+    "terms-upstream-tools": {
+        "what": "The terms of the tools and rule systems whose results WormBase ParaSite and UniProt give out and the planarian shelves rest on, each as its own page states them (TMHMM, SignalP, Phobius, PROSITE, HAMAP), and UniProt's own account of how it applies them. Added on 15 November 2026. Only the page of terms was asked of each tool: no program was downloaded and no form was sent",
+        "licence": "Each page states the terms of its own tool; UniProt's help pages are CC BY 4.0",
+    },
 }
+DTU = "https://services.healthtech.dtu.dk/cgi-bin/sw_request"
+UPSTREAM = "terms-upstream-tools"
 
 
 def biomart(attributes, flags=(), unique=False, count=False):
@@ -297,6 +303,18 @@ def shelf_requests():
     add(ontology, "go_citation_policy.html", "https://geneontology.org/docs/go-citation-policy/", "the Gene Ontology's licence")
     add("uniprot-smed-topology", f"uniprotkb_{TAXON}_topology.json", f"{UNIPROT}/uniprotkb/stream?query={q(f'taxonomy_id:{TAXON}')}&format=json&fields={TOPOLOGY_FIELDS}", "where UniProt places each of the species' entries, and on what evidence")
     add("uniprot-smed-topology", f"uniprotkb_{TAXON}_go.tsv", f"{UNIPROT}/uniprotkb/stream?query={q(f'taxonomy_id:{TAXON}')}&format=tsv&fields=accession,go_id", "the Gene Ontology terms UniProt gives each of the species' entries", contains="Gene Ontology IDs")
+    # The terms of the tools and rule systems whose results the two databases give out, each
+    # at its own page; and UniProt's account of how it applies them. Only pages of terms are
+    # asked for: no program, and the forms on the download pages are not sent.
+    add(UPSTREAM, "tmhmm_licence.html", f"{DTU}?software=tmhmm&version=2.0c&packageversion=2.0c&platform=Linux", "the licence under which DTU Health Tech gives TMHMM out, as its download page shows it", contains="ACADEMIC SOFTWARE LICENSE AGREEMENT")
+    add(UPSTREAM, "signalp_licence.html", f"{DTU}?software=signalp&version=5.0&packageversion=5.0b&platform=Linux", "the licence under which DTU Health Tech gives SignalP out, as its download page shows it", contains="ACADEMIC SOFTWARE LICENSE AGREEMENT")
+    add(UPSTREAM, "phobius_download.html", "https://phobius.sbc.su.se/download", "the terms under which Phobius is given out, as its download page states them", contains="academic")
+    add(UPSTREAM, "prosite_license.html", "https://prosite.expasy.org/prosite_license.html", "PROSITE's licence conditions", contains="PROSITE")
+    add(UPSTREAM, "hamap_about.html", "https://hamap.expasy.org/hamap_about.html", "HAMAP's statement of its licence", contains="HAMAP")
+    add(UPSTREAM, "uniprot_help_sam.json", f"{UNIPROT}/help/sam", "UniProt's account of the sequence analysis methods it applies to unreviewed entries", contains="Phobius")
+    add(UPSTREAM, "uniprot_help_unirule.json", f"{UNIPROT}/help/unirule", "UniProt's account of its rule systems", contains="RuleBase")
+    add(UPSTREAM, "uniprot_help_arba.json", f"{UNIPROT}/help/arba", "UniProt's account of its association-rule annotator", contains="ARBA")
+    add(UPSTREAM, "uniprot_help_license.json", f"{UNIPROT}/help/license", "UniProt's licence and disclaimer", contains="License")
     return out
 
 
@@ -1296,6 +1314,7 @@ TERMS = [
     # (saved page, words it must contain): the terms the files state, as they were read.
     ("terms_uniprot_license.json", "Creative Commons Attribution 4.0 International (CC BY 4.0) License"),
     ("terms_wbps_disclaimer.html", "Ensembl imposes no restrictions on access to, or use of, the data provided"),
+    ("terms_wbps_disclaimer.html", "Some of the data and software included in the distribution may be subject to third-party constraints. Users of the data and software are solely responsible for establishing the nature of and complying with any such restrictions."),
     ("terms_wbps_datausage.html", "Please cite the original paper for the genome publication"),
     ("terms_interpro_license.html", "CC0 1.0 Universal"),
     ("terms_embl_ebi.html", "EMBL-EBI imposes no additional restriction on the use of the contributed data than those provided by the data owner"),
@@ -1756,6 +1775,30 @@ def read_predictions(d, c):
     return helices, signals
 
 
+# Whose tool or rule a statement of a UniProtKB entry is by, as its evidence names it. The
+# first two are programs that UniProt's sequence analysis runs (its own account says how);
+# PROSITE and HAMAP are rule systems of the SIB with terms of their own; the others are
+# UniProt's own rule systems, or its curators.
+SYSTEMS = {
+    ("SAM", "Phobius"): "TMHMM and Phobius", ("SAM", "SignalP"): "SignalP", ("PROSITE-ProRule", None): "PROSITE", ("HAMAP-Rule", None): "HAMAP",
+    ("RuleBase", None): "UniProt's rules", ("ARBA", None): "UniProt's rules", ("PIRNR", None): "UniProt's rules", ("PIRSR", None): "UniProt's rules",
+    (None, None): "UniProt's curators, by sequence analysis", ("UniProtKB", None): "likeness",
+}
+
+
+def systems_named(evidences):
+    out = set()
+    for evidence in evidences:
+        source = evidence.get("source")
+        key = (source, evidence.get("id") if source == "SAM" else None)
+        if evidence.get("evidenceCode") == "ECO:0000250":
+            key = ("UniProtKB", None)
+        if key not in SYSTEMS:
+            raise SystemExit(f"a UniProtKB entry gives a statement by {key}; read what that is, and its terms, before the statement is used")
+        out.add(SYSTEMS[key])
+    return frozenset(out)
+
+
 def read_topology(d, c):
     """What UniProt gives for each of the species' entries: membrane-spanning segments,
     a signal peptide, whether the start of the sequence is missing, and where it places it."""
@@ -1766,10 +1809,14 @@ def read_topology(d, c):
         for comment in item.get("comments", []):
             if comment.get("commentType") == "SUBCELLULAR LOCATION":
                 for place in comment.get("subcellularLocations", []):
-                    places.append((place["location"]["value"], (place.get("topology") or {}).get("value") or ""))
+                    given = [evidence for part in ("location", "topology", "orientation") if place.get(part) for evidence in place[part].get("evidences", [])]
+                    places.append((place["location"]["value"], (place.get("topology") or {}).get("value") or "", systems_named(given)))
+        by = lambda kind: tuple(sorted(set().union(*(systems_named(feature.get("evidences", [])) for feature in features if feature["type"] == kind)))) if any(feature["type"] == kind for feature in features) else ()
         out[item["primaryAccession"]] = {
             "helices": sum(feature["type"] == "Transmembrane" for feature in features),
             "signal": any(feature["type"] == "Signal" for feature in features),
+            "helices_by": by("Transmembrane"),
+            "signal_by": by("Signal"),
             "start_missing": any(feature["type"] == "Non-terminal residue" and feature["location"]["start"]["value"] == 1 for feature in features),
             "places": places,
             "reviewed": item["entryType"].startswith("UniProtKB reviewed"),
@@ -1968,49 +2015,58 @@ class Shelves:
         protein = row[8].split()[0]
         helices, signal = self.helices.get(protein, 0), protein in self.signals
         sequence = self.c.proteins[protein]["sequence"]
+        # What a predicted side rests on: what the two programs found, or did not find, as
+        # WormBase ParaSite ran them.
+        ran = lambda on: ("gene model", on, frozenset())
         if helices >= 2 or (helices == 1 and not signal):
-            return "in", "predicted", helices, signal
+            return "in", "predicted", helices, signal, ran("helices")
         if helices == 1:
             # One helix and a signal peptide: TMHMM may have taken the signal peptide for a
             # helix. Where the hydrophobic stretch lies decides, by this tool's own reading.
             stretches = hydrophobic_stretches(sequence)
             if any(start >= SIGNAL_REACH for start, _ in stretches):
-                return "in", "predicted", helices, signal
+                return "in", "predicted", helices, signal, ran("a helix and a signal peptide")
             if stretches:
-                return "outside", "predicted", helices, signal
-            return "not known", "none", helices, signal
+                return "outside", "predicted", helices, signal, ran("a helix and a signal peptide")
+            return "not known", "none", helices, signal, None
         if signal:
-            return "outside", "predicted", helices, signal
+            return "outside", "predicted", helices, signal, ran("a signal peptide")
         if sequence.startswith("M"):
-            return "inside", "predicted", helices, signal
+            return "inside", "predicted", helices, signal, ran("nothing found")
         # The model does not begin with a start codon's methionine, so a signal peptide may
         # be missing with its beginning: nothing was predicted, and nothing can be said
         # from that, unless what its family is annotated to be leaves no real doubt.
         side = side_from_where(self.places[row[1]])
-        return (side, "by function", helices, signal) if side else ("not known", "none", helices, signal)
+        return (side, "by function", helices, signal, None) if side else ("not known", "none", helices, signal, None)
 
     def side_of_entry(self, row):
         """A UniProtKB entry: by what the entry states or what UniProt predicts on it."""
         known = self.topology[row[1]]
         helices, signal = known["helices"], known["signal"]
-        sides = {side_of_place(value, spans) for value, spans in known["places"]} - {None}
+        sides = {side_of_place(value, spans) for value, spans, _ in known["places"]} - {None}
+        # What the side rests on: the tools and rule systems named on the features, or on
+        # the stated places that give the side.
+        said = lambda side: frozenset().union(*(by for value, spans, by in known["places"] if side_of_place(value, spans) == side))
         if known["reviewed"] and len(sides) == 1:
-            return sides.pop(), "stated", helices, signal
+            side = sides.pop()
+            return side, "stated", helices, signal, ("entry", "a stated place", said(side))
         if helices:
-            return "in", "predicted", helices, signal
+            return "in", "predicted", helices, signal, ("entry", "segments", frozenset(known["helices_by"]))
         if signal:
-            return "outside", "predicted", helices, signal
+            return "outside", "predicted", helices, signal, ("entry", "a signal peptide", frozenset(known["signal_by"]))
         if len(sides) == 1:
-            return sides.pop(), "by function", helices, signal
+            side = sides.pop()
+            return side, "by function", helices, signal, ("entry", "a stated place", said(side))
         if not known["start_missing"]:
-            return "inside", "predicted", helices, signal
+            return "inside", "predicted", helices, signal, ("entry", "nothing found", frozenset())
         side = side_from_where(self.places[row[1]])
-        return (side, "by function", helices, signal) if side else ("not known", "none", helices, signal)
+        return (side, "by function", helices, signal, None) if side else ("not known", "none", helices, signal, None)
 
     def place_proteins(self):
-        self.placed = {}
+        self.placed, self.rests = {}, {}
         for row in self.rows:
-            self.placed[row[1]] = self.side_of_model(row) if row[0] == "wormbase_parasite" else self.side_of_entry(row)
+            *placed, rest = self.side_of_model(row) if row[0] == "wormbase_parasite" else self.side_of_entry(row)
+            self.placed[row[1]], self.rests[row[1]] = tuple(placed), rest
 
     # --- how the predictions fare ---------------------------------------------------------
 
@@ -2030,6 +2086,130 @@ class Shelves:
             if self.helices.get(protein, 0) == 1 and protein in self.signals:
                 settled[pair] += 1
         return out, settled
+
+
+TOOLS_OF_SAM = "TMHMM and Phobius"   # what UniProt's sequence analysis keeps a segment on
+OWN_RULES = "UniProt's rules"
+
+
+def rests_on(s, rows):
+    """What the sides rest on beyond the two databases themselves: counted from each
+    protein's placement, as side_of_model and side_of_entry say it."""
+    found = Counter()
+    for row in rows:
+        side, basis, _, _ = s.placed[row[1]]
+        rest = s.rests[row[1]]
+        if rest:
+            found[(rest[0], rest[1], tuple(sorted(rest[2])), side, basis)] += 1
+    count = lambda want: sum(n for key, n in found.items() if want(*key))
+    models = {
+        "predicted": count(lambda kind, on, by, side, basis: kind == "gene model"),
+        "in a membrane, by helices": count(lambda kind, on, by, side, basis: kind == "gene model" and on == "helices"),
+        "one helix and a signal peptide, settled by this tool": count(lambda kind, on, by, side, basis: kind == "gene model" and on == "a helix and a signal peptide"),
+        "outside, by a signal peptide": count(lambda kind, on, by, side, basis: kind == "gene model" and on == "a signal peptide"),
+        "inside, nothing found": count(lambda kind, on, by, side, basis: kind == "gene model" and on == "nothing found"),
+    }
+    entry = lambda want: count(lambda kind, on, by, side, basis: kind == "entry" and want(on, by, side, basis))
+    entries = {
+        "predicted": entry(lambda on, by, side, basis: basis == "predicted"),
+        "in a membrane, by segments of the sequence analysis": entry(lambda on, by, side, basis: on == "segments" and by == (TOOLS_OF_SAM,)),
+        "in a membrane, by segments that carry a PROSITE rule": entry(lambda on, by, side, basis: on == "segments" and "PROSITE" in by),
+        "in a membrane, by segments of UniProt's own rules": entry(lambda on, by, side, basis: on == "segments" and by == (OWN_RULES,)),
+        "outside, by a signal peptide of the sequence analysis": entry(lambda on, by, side, basis: on == "a signal peptide" and by == ("SignalP",)),
+        "outside, by a signal peptide of UniProt's own rules": entry(lambda on, by, side, basis: on == "a signal peptide" and by == (OWN_RULES,)),
+        "inside, nothing found": entry(lambda on, by, side, basis: on == "nothing found"),
+        "by function": entry(lambda on, by, side, basis: basis == "by function"),
+        "by function, on a place that names a PROSITE rule": entry(lambda on, by, side, basis: basis == "by function" and "PROSITE" in by),
+        "of which on no other rule": entry(lambda on, by, side, basis: basis == "by function" and by == ("PROSITE",)),
+        "by function, on a place that names a HAMAP rule": entry(lambda on, by, side, basis: basis == "by function" and "HAMAP" in by),
+        "by function, on a place of UniProt's own rules alone": entry(lambda on, by, side, basis: basis == "by function" and by == (OWN_RULES,)),
+        "stated, by likeness": entry(lambda on, by, side, basis: basis == "stated"),
+    }
+    # The words of the files are written for these kinds, and for no other.
+    if models["predicted"] != sum(n for key, n in models.items() if key != "predicted"):
+        raise SystemExit("a gene model's predicted side rests on something the files have no word for")
+    if entries["predicted"] != sum(entries[key] for key in list(entries)[1:7]):
+        raise SystemExit("an entry's predicted side rests on something the files have no word for")
+    if entries["by function"] != entries["by function, on a place that names a PROSITE rule"] + entries["by function, on a place that names a HAMAP rule"] + entries["by function, on a place of UniProt's own rules alone"]:
+        raise SystemExit("an entry is placed by function on a place whose rule system the files have no word for")
+    if entry(lambda on, by, side, basis: basis == "stated" and by != ("likeness",)):
+        raise SystemExit("a reviewed entry states a place on evidence the files have no word for")
+    return {"gene models": models, "entries": entries}
+
+
+def help_text(d, file):
+    """One of UniProt's help pages as running text, without its markup."""
+    content = json.loads(d.text(UPSTREAM, file))["content"]
+    return re.sub(r"\s+", " ", re.sub(r"[#*`]", " ", re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", content)))
+
+
+DTU_LICENCE = "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it"
+PHOBIUS_TERMS = "For academic users only: the program may be used for private study, education or nonprofit research, and other users are asked to write to its author. The terms are of the program: they do not speak of predictions made with it"
+UPSTREAM_SAID = [
+    # (saved page, words it must contain): the terms of each tool as the files state them.
+    *[(f"{tool}_licence.html", words) for tool in ("tmhmm", "signalp") for words in (
+        f"ACADEMIC SOFTWARE LICENSE AGREEMENT FOR END-USERS AT PUBLICLY FUNDED ACADEMIC, EDUCATION OR RESEARCH INSTITUTIONS FOR THE USE OF {tool}",
+        "If you are not a member of a publicly funded Academic and/or Education and/or Research Institution you must obtain a commercial license",
+        "free non-exclusive license to use the Software for internal research purposes only",
+        "Any use of the software which results in any form of commercialization is not allowed under this license",
+    )],
+    ("phobius_download.html", "Phobius is intended for academic users only"),
+    ("phobius_download.html", "By downloading you agree to use the software only for private study, education or nonprofit research"),
+    ("prosite_license.html", "distributed under the Creative Commons Attribution-NonCommercial-NoDerivatives (CC BY-NC-ND 4.0) License"),
+    ("prosite_license.html", "Commercial users are asked to pay a yearly license fee"),
+    ("prosite_license.html", "commercial users need their company to pay a license fee irrespective of the method by which they access the database"),
+    ("hamap_about.html", "HAMAP is copyrighted by the SIB Swiss Institute of Bioinformatics and distributed under the Creative Commons Attribution (CC BY 4.0) License"),
+    ("uniprot_help_sam.json", "TMHMM and Phobius predictors are used to infer transmembrane regions. If there is an overlap of at least 10 amino acids between TMHMM and Phobius results, the transmembrane region is annotated using the sequence ranges predicted by Phobius"),
+    ("uniprot_help_sam.json", "TMHMM, SignalP and Phobius predictors are used to infer signal peptides"),
+    ("uniprot_help_sam.json", "we annotate the sequence region predicted by SignalP"),
+    ("uniprot_help_sam.json", "These methods are applied to UniProtKB sequences by InterPro to predict sequence features"),
+    ("uniprot_help_unirule.json", "UniRule has been developed by merging existing manual rule-based systems (HAMAP, PIR name and site rules, NCBIfam rules and RuleBase rules) into one system"),
+    ("uniprot_help_arba.json", "The Association-Rule-Based Annotator (ARBA) is one of the contributors to this pipeline"),
+    ("uniprot_help_license.json", "We cannot provide unrestricted permission regarding the use of the data, as some data may be covered by patents or other rights"),
+]
+
+
+def check_upstream_terms(d):
+    for file, words in UPSTREAM_SAID:
+        page = help_text(d, file) if file.endswith(".json") else plain(d.text(UPSTREAM, file))
+        if words not in page:
+            raise SystemExit(f"{UPSTREAM}/{file} no longer says: {words}")
+    if not re.search(r"contains \d+ documentation entries, \d+ patterns, \d+ profiles and \d+ ProRule", plain(d.text(UPSTREAM, "prosite_license.html"))):
+        raise SystemExit("PROSITE's page no longer counts its rules among what it holds")
+    # The two licences of DTU Health Tech are of the program: beyond the clauses on
+    # commercialization and on benchmark tests, none speaks of results, output or predictions.
+    for tool in ("tmhmm", "signalp"):
+        page = plain(d.text(UPSTREAM, f"{tool}_licence.html"))
+        agreement = page[page.index("ACADEMIC SOFTWARE LICENSE AGREEMENT"):]
+        spoken = re.findall(r"(?i)[^.;]*\b(?:results?|outputs?|predictions?)\b[^.;]*", agreement)
+        if len(spoken) != 2 or "commercialization" not in spoken[0] or "benchmark tests" not in spoken[1]:
+            raise SystemExit(f"the licence of {tool} now speaks of results or output beyond the two clauses the files name; read it again")
+
+
+def upstream_sources(d, rests):
+    """The tools and rule systems whose results the two databases give out, each as a source
+    of its own: its terms as its own page states them, the sources its results were read
+    through, and what rests on it."""
+    check_upstream_terms(d)
+    models, entries = rests["gene models"], rests["entries"]
+    nothing = "Nothing was downloaded from it but its statement of terms, and the program was not run here."
+    day = lambda file: d.day(UPSTREAM, file)
+    prosite = entries["in a membrane, by segments that carry a PROSITE rule"], entries["by function, on a place that names a PROSITE rule"], entries["of which on no other rule"]
+    out = [
+        {"name": "TMHMM", "url": "https://services.healthtech.dtu.dk/services/TMHMM-2.0/", "accessed": day("tmhmm_licence.html"), "licence": DTU_LICENCE, "class": NON_COMMERCIAL, "through": "WormBase ParaSite and UniProt",
+         "holds": f"{nothing} WormBase ParaSite ran it and SignalP on the gene models' proteins: {models['predicted']:,} predicted sides rest on what the two found or did not find ({models['in a membrane, by helices']:,} in a membrane by helices, {models['one helix and a signal peptide, settled by this tool']:,} with one helix and a signal peptide, {models['outside, by a signal peptide']:,} outside by a signal peptide, {models['inside, nothing found']:,} inside because neither found anything). UniProt's sequence analysis keeps a segment where TMHMM and Phobius overlap: {entries['in a membrane, by segments of the sequence analysis']:,} entries are placed in a membrane by such segments, and {entries['inside, nothing found']:,} inside because nothing was found."},
+        {"name": "SignalP", "url": "https://services.healthtech.dtu.dk/services/SignalP-5.0/", "accessed": day("signalp_licence.html"), "licence": DTU_LICENCE, "class": NON_COMMERCIAL, "through": "WormBase ParaSite and UniProt",
+         "holds": f"{nothing} The gene models' sides are those counted under TMHMM. UniProt's sequence analysis gives the signal peptide SignalP predicts where TMHMM or Phobius bears it out: {entries['outside, by a signal peptide of the sequence analysis']:,} entries are placed outside by one."},
+        {"name": "Phobius", "url": "https://phobius.sbc.su.se/download", "accessed": day("phobius_download.html"), "licence": PHOBIUS_TERMS, "class": NON_COMMERCIAL, "through": "UniProt",
+         "holds": f"{nothing} The entries' segments and signal peptides are those counted under TMHMM and SignalP."},
+        {"name": "PROSITE", "url": "https://prosite.expasy.org/prosite_license.html", "accessed": day("prosite_license.html"), "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee", "class": NON_COMMERCIAL, "through": "UniProt",
+         "holds": f"Nothing was downloaded from it but its statement of terms, and nothing of it is copied. Its rules are named in UniProt's entries as what stands behind a statement: {prosite[0]:,} entries are placed in a membrane by segments that carry one, and {prosite[1]:,} are placed by function on a stated place that names one, {prosite[2]:,} of them on no other rule."},
+    ]
+    hamap = entries["by function, on a place that names a HAMAP rule"]
+    if hamap:
+        out.append({"name": "HAMAP", "url": "https://hamap.expasy.org/hamap_about.html", "accessed": day("hamap_about.html"), "licence": "CC BY 4.0", "class": PERMISSIVE, "through": "UniProt",
+                    "holds": f"Nothing was downloaded from it but its statement of terms. {hamap:,} {'entry is' if hamap == 1 else 'entries are'} placed by function on a place that one of its family rules states."})
+    return out
 
 
 def majority(sides):
@@ -2107,6 +2287,14 @@ def build_shelves(c, d, rows, atlas, facts):
     mart = "wbps-biomart-smedh1prjna885486"
     cite = {source["name"]: source["cite"] for source in atlas["sources"]}
     ambiguous = sum(1 for row in rows if row[0] == "wormbase_parasite" and s.helices.get(row[8].split()[0], 0) == 1 and row[8].split()[0] in s.signals)
+    rests = rests_on(s, rows)
+    upstream = upstream_sources(d, rests)
+    # The predicted sides that rest on the three programs: every gene model's, and every
+    # entry's but those whose segment or signal peptide a rule gives.
+    all_predicted = rests["gene models"]["predicted"] + rests["entries"]["predicted"]
+    by_programs = rests["gene models"]["predicted"] + sum(rests["entries"][key] for key in ("in a membrane, by segments of the sequence analysis", "outside, by a signal peptide of the sequence analysis", "inside, nothing found"))
+    if all_predicted != sum(count for (_, basis), count in bases.items() if basis == "predicted"):
+        raise SystemExit("the predicted sides are not all accounted for by what they rest on")
     header = {
         "format": SHELF_FORMAT,
         "species": "planarian",
@@ -2158,10 +2346,12 @@ def build_shelves(c, d, rows, atlas, facts):
                 "One helix or more without a signal peptide, or two or more with one: in a membrane. A signal peptide and no helix: outside. Neither, on a model that begins with methionine: inside. "
                 f"A signal peptide with exactly one helix ({ambiguous:,} models) is settled by this tool's own reading of the sequence, because TMHMM can take a signal peptide for a helix: "
 f"a stretch of {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or more are hydrophobic ({', '.join(sorted(HYDROPHOBIC))}) that starts at residue {SIGNAL_REACH + 1} or later puts it in a membrane; such a stretch only before that puts it outside. "
-                "UniProtKB entries: the membrane-spanning segments and signal peptides that UniProt's automatic annotation gives the entry. "
-                "Which membrane a protein spans is not predicted: the shelf stands for the cell's membranes together."
+                "UniProtKB entries: the membrane-spanning segments and signal peptides that UniProt's automatic annotation gives the entry; its sequence analysis keeps a segment where TMHMM and Phobius overlap, and gives the signal peptide SignalP predicts where TMHMM or Phobius bears it out. "
+                "Which membrane a protein spans is not predicted: the shelf stands for the cell's membranes together. "
+                f"So {by_programs:,} of the {all_predicted:,} predicted sides rest on what TMHMM, SignalP and Phobius found or did not find. "
+                "The three programs are given out for academic use; neither database's terms speak for them, and WormBase ParaSite says that third-party constraints may apply to what it gives out. Each is named among the sources, with its own terms and what rests on it."
             ),
-            "by function": "Taken from an annotation: for a UniProtKB entry with nothing predicted, the subcellular location UniProt's rules give it; for a protein whose beginning is missing and on which nothing was predicted, the place its Gene Ontology terms name, where that leaves no real doubt.",
+            "by function": f"Taken from an annotation: for a UniProtKB entry with nothing predicted, the subcellular location UniProt's rules give it; for a protein whose beginning is missing and on which nothing was predicted, the place its Gene Ontology terms name, where that leaves no real doubt. Of the {rests['entries']['by function']:,} entries placed by a rule's location, {rests['entries']['by function, on a place that names a PROSITE rule']:,} rest on a statement that names a PROSITE rule; the others rest on UniProt's own rule systems or, for {rests['entries']['by function, on a place that names a HAMAP rule']:,}, on HAMAP's.",
             "stated": "A reviewed UniProtKB entry states the location, by similarity to another species' protein.",
             "not known": "Nothing was predicted and the protein's beginning is missing, so a signal peptide could be missing with it; or the two predictors cannot be told apart.",
         },
@@ -2173,11 +2363,12 @@ f"a stretch of {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or mor
         },
         "counts": {side: all_sides.get(side, 0) for side in SIDES},
         "by_basis": {side: {basis: bases[side, basis] for basis in ("stated", "predicted", "by function", "none") if bases.get((side, basis))} for side in SIDES},
+        "rests_on": rests,
         "sources": [
             {
                 "name": "WormBase ParaSite", "url": "https://parasite.wormbase.org/", "release": WBPS_RELEASE, "accessed": d.day(mart, "biomart_tmhmm.tsv"),
                 "class": PERMISSIVE,
-                "licence": "The database's disclaimer: \"Ensembl imposes no restrictions on access to, or use of, the data provided and the software used to analyse and present it. Ensembl data generated by members of the project are available without restriction.\" It asks that the genome's paper and the database be cited.",
+                "licence": "The database's disclaimer: \"Ensembl imposes no restrictions on access to, or use of, the data provided and the software used to analyse and present it. Ensembl data generated by members of the project are available without restriction.\" It goes on: \"Some of the data and software included in the distribution may be subject to third-party constraints. Users of the data and software are solely responsible for establishing the nature of and complying with any such restrictions.\" It asks that the genome's paper and the database be cited.",
                 "cite": cite["WormBase ParaSite"],
                 "holds": "the gene models; and, from its BioMart, the helices TMHMM predicts and the signal peptides SignalP predicts on each predicted protein",
             },
@@ -2196,6 +2387,9 @@ f"a stretch of {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or mor
                 "cite": cite["UniProt"],
                 "holds": "for each of the species' entries: the membrane-spanning segments, the signal peptide and the subcellular location it gives, whether the sequence's beginning is missing, and its Gene Ontology terms",
             },
+            # The tools and rule systems whose results the two databases give out: each with
+            # its own terms, the sources it was read through, and what rests on it.
+            *upstream,
         ],
     }
     compact = lambda value: json.dumps(value, ensure_ascii=False, separators=(",", ":"))
@@ -2404,7 +2598,9 @@ def build_readme(c, facts, atlas, listed, named, everything, report, d):
     if c.papers[PAPERS["wbps"]]["licence"] != "cc by-nc-nd" or c.papers[PAPERS["planmine"]]["licence"] != "cc by-nc":
         raise SystemExit("the papers cited for WormBase ParaSite and PlanMine no longer have the licences the README states")
     pointer_rows = "\n".join(f"| {c.papers[pmid]['citation']['text']} | {c.papers[pmid]['class']} | {why_named[pmid]} |" for pmid in pointers)
-    shelf_rows = "\n".join(f"| [{s['name']}]({s['url']}), release {s['release']}, read {s['accessed']} | {s['holds'][0].upper() + s['holds'][1:]} | {s['licence']} |" for s in shelf_sources)
+    shelf_rows = "\n".join(f"| [{s['name']}]({s['url']}), release {s['release']}, read {s['accessed']} | {s['holds'][0].upper() + s['holds'][1:]} | {s['licence']} |" for s in shelf_sources if not s.get("through"))
+    upstream_rows = "\n".join(f"| {s['name']} | {s['through']} | {s['licence']} | {s['class']} | {s['holds'].split('. ', 1)[1]} |" for s in shelf_sources if s.get("through"))
+    rests = json.loads(report["text"])["rests_on"]
     shelf_files = "\n".join(f"| `{source}` | `{file}` | {entry['retrieved_utc'][:10]} | `{entry['sha256']}` |" for (source, file), entry in sorted(d.read.items()))
     return f"""# Planarian proteins
 
@@ -2520,6 +2716,35 @@ For the shelves, more was taken from the same sources, and the Gene Ontology was
 Every source in the two tables is permissive: its terms allow what is taken, with
 attribution.
 
+**What the two databases give out that a tool or a rule system computed.** The sides
+are predictions, and the programs and rules that made them have terms of their own.
+WormBase ParaSite's disclaimer says, after the sentence quoted above: "Some of the data
+and software included in the distribution may be subject to third-party constraints.
+Users of the data and software are solely responsible for establishing the nature of and
+complying with any such restrictions." UniProt's licence page says: "We cannot provide
+unrestricted permission regarding the use of the data, as some data may be covered by
+patents or other rights." Each tool and rule system is listed here with its own terms,
+read at its own page, and with what rests on it in `{SHELVES_FILE}`. Nothing was
+downloaded from any of them but its page of terms, and no program was run.
+
+| Tool or rule system | Read through | Its own terms | Class | What rests on it |
+| --- | --- | --- | --- | --- |
+{upstream_rows}
+
+UniProt's help pages describe RuleBase, ARBA and the PIR rules as parts of its own
+annotation pipeline. No terms were read for them apart from UniProt's, so they are not
+classed separately: {rests['entries']["in a membrane, by segments of UniProt's own rules"] + rests['entries']["outside, by a signal peptide of UniProt's own rules"]:,} entries are placed by a segment or a signal peptide they give, and
+{rests['entries']["by function, on a place of UniProt's own rules alone"]:,} by function on a place they state.
+
+**Two kinds of terms.** The licences of TMHMM and SignalP and the terms of Phobius are of
+the programs: they say who may run them and say nothing of predictions made with them,
+and it was WormBase ParaSite and UniProt that ran them. PROSITE's terms are of the
+database itself, of which its rules are part, and its page says that commercial users pay
+a licence fee "irrespective of the method by which they access the database". Whether
+sides that rest on the academic programs, or on PROSITE's rules, may stay in a commercial
+project is the project's to decide and is not settled here. Until it is, every such side
+is counted above and is said to be predicted wherever it is shown.
+
 **Papers named, with nothing taken beyond a name.** The atlas names planarian genes by
 the papers that reported them. A paper under CC BY may stand behind a name. A paper
 whose terms do not allow a copy is a pointer: the name it is cited for stands in a
@@ -2535,9 +2760,9 @@ paper is under CC BY-NC-ND) and {c.papers[PAPERS['planmine']]['short']} for Plan
 The paper of the mass-spectrometry library reserves all rights; it is set out above.
 
 The Gene Ontology asks for two papers to be cited, in its own words: {ontology_citation(d)}.
-Its release here is {report['ontology']}. The helices and signal peptides were predicted
-by TMHMM and SignalP, which WormBase ParaSite ran and gives out with its data; its BioMart
-names the two programs and no version.
+Its release here is {report['ontology']}. WormBase ParaSite's BioMart names TMHMM and
+SignalP and no version of either; the licence read for each is the one DTU Health Tech
+shows on its download page today.
 
 The files read for the shelves, each in its dataset folder outside the repository and
 checked against the SHA-256 its folder's MANIFEST gives:

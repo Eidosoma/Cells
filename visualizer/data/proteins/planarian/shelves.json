@@ -4108,8 +4108,8 @@
   "step": "python3 tools/build_planarian_atlas.py members --out DIR writes the files from the two tables."
  },
  "side_notes": {
-  "predicted": "Gene models: TMHMM (membrane-spanning helices) and SignalP (signal peptides) as WormBase ParaSite ran them on each model's predicted proteins and gives them in its BioMart (release 19); the gene's longest predicted protein is read. One helix or more without a signal peptide, or two or more with one: in a membrane. A signal peptide and no helix: outside. Neither, on a model that begins with methionine: inside. A signal peptide with exactly one helix (604 models) is settled by this tool's own reading of the sequence, because TMHMM can take a signal peptide for a helix: a stretch of 19 residues of which 12 or more are hydrophobic (A, F, I, L, M, V, W) that starts at residue 36 or later puts it in a membrane; such a stretch only before that puts it outside. UniProtKB entries: the membrane-spanning segments and signal peptides that UniProt's automatic annotation gives the entry. Which membrane a protein spans is not predicted: the shelf stands for the cell's membranes together.",
-  "by function": "Taken from an annotation: for a UniProtKB entry with nothing predicted, the subcellular location UniProt's rules give it; for a protein whose beginning is missing and on which nothing was predicted, the place its Gene Ontology terms name, where that leaves no real doubt.",
+  "predicted": "Gene models: TMHMM (membrane-spanning helices) and SignalP (signal peptides) as WormBase ParaSite ran them on each model's predicted proteins and gives them in its BioMart (release 19); the gene's longest predicted protein is read. One helix or more without a signal peptide, or two or more with one: in a membrane. A signal peptide and no helix: outside. Neither, on a model that begins with methionine: inside. A signal peptide with exactly one helix (604 models) is settled by this tool's own reading of the sequence, because TMHMM can take a signal peptide for a helix: a stretch of 19 residues of which 12 or more are hydrophobic (A, F, I, L, M, V, W) that starts at residue 36 or later puts it in a membrane; such a stretch only before that puts it outside. UniProtKB entries: the membrane-spanning segments and signal peptides that UniProt's automatic annotation gives the entry; its sequence analysis keeps a segment where TMHMM and Phobius overlap, and gives the signal peptide SignalP predicts where TMHMM or Phobius bears it out. Which membrane a protein spans is not predicted: the shelf stands for the cell's membranes together. So 17,524 of the 17,565 predicted sides rest on what TMHMM, SignalP and Phobius found or did not find. The three programs are given out for academic use; neither database's terms speak for them, and WormBase ParaSite says that third-party constraints may apply to what it gives out. Each is named among the sources, with its own terms and what rests on it.",
+  "by function": "Taken from an annotation: for a UniProtKB entry with nothing predicted, the subcellular location UniProt's rules give it; for a protein whose beginning is missing and on which nothing was predicted, the place its Gene Ontology terms name, where that leaves no real doubt. Of the 402 entries placed by a rule's location, 146 rest on a statement that names a PROSITE rule; the others rest on UniProt's own rule systems or, for 1, on HAMAP's.",
   "stated": "A reviewed UniProtKB entry states the location, by similarity to another species' protein.",
   "not known": "Nothing was predicted and the protein's beginning is missing, so a signal peptide could be missing with it; or the two predictors cannot be told apart."
  },
@@ -4169,6 +4169,30 @@
    "none": 795
   }
  },
+ "rests_on": {
+  "gene models": {
+   "predicted": 16566,
+   "in a membrane, by helices": 4218,
+   "one helix and a signal peptide, settled by this tool": 599,
+   "outside, by a signal peptide": 965,
+   "inside, nothing found": 10784
+  },
+  "entries": {
+   "predicted": 999,
+   "in a membrane, by segments of the sequence analysis": 578,
+   "in a membrane, by segments that carry a PROSITE rule": 3,
+   "in a membrane, by segments of UniProt's own rules": 30,
+   "outside, by a signal peptide of the sequence analysis": 131,
+   "outside, by a signal peptide of UniProt's own rules": 8,
+   "inside, nothing found": 249,
+   "by function": 402,
+   "by function, on a place that names a PROSITE rule": 146,
+   "of which on no other rule": 50,
+   "by function, on a place that names a HAMAP rule": 1,
+   "by function, on a place of UniProt's own rules alone": 255,
+   "stated, by likeness": 2
+  }
+ },
  "sources": [
   {
    "name": "WormBase ParaSite",
@@ -4176,7 +4200,7 @@
    "release": "WBPS19",
    "accessed": "2026-11-15",
    "class": "permissive",
-   "licence": "The database's disclaimer: \"Ensembl imposes no restrictions on access to, or use of, the data provided and the software used to analyse and present it. Ensembl data generated by members of the project are available without restriction.\" It asks that the genome's paper and the database be cited.",
+   "licence": "The database's disclaimer: \"Ensembl imposes no restrictions on access to, or use of, the data provided and the software used to analyse and present it. Ensembl data generated by members of the project are available without restriction.\" It goes on: \"Some of the data and software included in the distribution may be subject to third-party constraints. Users of the data and software are solely responsible for establishing the nature of and complying with any such restrictions.\" It asks that the genome's paper and the database be cited.",
    "cite": "Howe and others (2017) WormBase ParaSite - a comprehensive resource for helminth genomics. Mol Biochem Parasitol 215:2-10. Genome: Ivanković and others (2024) A comparative analysis of planarian genomes reveals regulatory conservation in the face of rapid structural divergence. Nat Commun 15:8215. The database's page of this annotation names no paper. That it is the annotation this paper describes is inferred, not stated by either: the assembly has the paper's name (schMedS3 haplotype 1), the count of coding genes in the second haplotype is the same in both (21,310), and in the first it is 21,392 here against the paper's 21,401.",
    "holds": "the gene models; and, from its BioMart, the helices TMHMM predicts and the signal peptides SignalP predicts on each predicted protein"
   },
@@ -4209,6 +4233,51 @@
    "class": "permissive",
    "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
    "holds": "for each of the species' entries: the membrane-spanning segments, the signal peptide and the subcellular location it gives, whether the sequence's beginning is missing, and its Gene Ontology terms"
+  },
+  {
+   "name": "TMHMM",
+   "url": "https://services.healthtech.dtu.dk/services/TMHMM-2.0/",
+   "accessed": "2026-11-15",
+   "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it",
+   "class": "non-commercial",
+   "through": "WormBase ParaSite and UniProt",
+   "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. WormBase ParaSite ran it and SignalP on the gene models' proteins: 16,566 predicted sides rest on what the two found or did not find (4,218 in a membrane by helices, 599 with one helix and a signal peptide, 965 outside by a signal peptide, 10,784 inside because neither found anything). UniProt's sequence analysis keeps a segment where TMHMM and Phobius overlap: 578 entries are placed in a membrane by such segments, and 249 inside because nothing was found."
+  },
+  {
+   "name": "SignalP",
+   "url": "https://services.healthtech.dtu.dk/services/SignalP-5.0/",
+   "accessed": "2026-11-15",
+   "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it",
+   "class": "non-commercial",
+   "through": "WormBase ParaSite and UniProt",
+   "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. The gene models' sides are those counted under TMHMM. UniProt's sequence analysis gives the signal peptide SignalP predicts where TMHMM or Phobius bears it out: 131 entries are placed outside by one."
+  },
+  {
+   "name": "Phobius",
+   "url": "https://phobius.sbc.su.se/download",
+   "accessed": "2026-11-15",
+   "licence": "For academic users only: the program may be used for private study, education or nonprofit research, and other users are asked to write to its author. The terms are of the program: they do not speak of predictions made with it",
+   "class": "non-commercial",
+   "through": "UniProt",
+   "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. The entries' segments and signal peptides are those counted under TMHMM and SignalP."
+  },
+  {
+   "name": "PROSITE",
+   "url": "https://prosite.expasy.org/prosite_license.html",
+   "accessed": "2026-11-15",
+   "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee",
+   "class": "non-commercial",
+   "through": "UniProt",
+   "holds": "Nothing was downloaded from it but its statement of terms, and nothing of it is copied. Its rules are named in UniProt's entries as what stands behind a statement: 3 entries are placed in a membrane by segments that carry one, and 146 are placed by function on a stated place that names one, 50 of them on no other rule."
+  },
+  {
+   "name": "HAMAP",
+   "url": "https://hamap.expasy.org/hamap_about.html",
+   "accessed": "2026-11-15",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "through": "UniProt",
+   "holds": "Nothing was downloaded from it but its statement of terms. 1 entry is placed by function on a place that one of its family rules states."
   }
  ]
 }

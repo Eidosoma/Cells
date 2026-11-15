@@ -28,7 +28,7 @@ const TOOL = path.join(ROOT, "tools", "build_mpneumoniae_atlas.py");
 // per source, each with its MANIFEST.json).
 const EVIDENCE = process.env.MPNEUMONIAE_EVIDENCE || "/mnt/workspaces/Cells/visualizer-mpneumoniae-proteins-20261115-01";
 const DATASETS = process.env.MPNEUMONIAE_DATASETS || "/mnt/datasets/Cells/mpneumoniae";
-const SOURCES_READ = ["ncbi-U00089.2", "ncbi-NC_000912.1", "uniprot-mpneumoniae", "lluchsenar2015-msb", "pmc-open-mpneumoniae-papers", "pubmed-mpneumoniae-papers", "emdb-EMD-53631", "terms-mpneumoniae-sources", "pmc-open-mpneumoniae-licence-pass", "terms-prosite"];
+const SOURCES_READ = ["ncbi-U00089.2", "ncbi-NC_000912.1", "uniprot-mpneumoniae", "lluchsenar2015-msb", "pmc-open-mpneumoniae-papers", "pubmed-mpneumoniae-papers", "emdb-EMD-53631", "terms-mpneumoniae-sources", "pmc-open-mpneumoniae-licence-pass", "terms-upstream-tools", "terms-prosite"];
 const absent = !existsSync(path.join(EVIDENCE, "requests.json"))
   ? "the request log is not on this machine (set MPNEUMONIAE_EVIDENCE)"
   : SOURCES_READ.some((source) => !existsSync(path.join(DATASETS, source, "MANIFEST.json")))
@@ -428,7 +428,8 @@ test("how a side is known is said: the predictors are named, and the reading of 
   const notes = shelves.side_notes;
   assert.match(notes.predicted, /TMHMM, Memsat, Phobius/);
   assert.match(notes.predicted, /Phobius, Predotar, SignalP and TargetP/);
-  assert.match(notes.predicted, /lipoprotein signal.*outer face of the membrane.*that reading is this file's/);
+  assert.match(notes.predicted, /this file reads a lipoprotein signal as outside.*outer face of the membrane/);
+  assert.match(notes.predicted, /made by a rule, by sequence analysis or by likeness to a protein of another organism, and not on a curator's own word or an experiment/);
   assert.match(notes["by function"], /no real doubt/);
   // A stated or predicted side says what kind of evidence it rests on; the others do not.
   for (const line of shelves.proteins) assert.equal("evidence" in line[9], ["stated", "predicted"].includes(line[5]), line[0]);
@@ -455,18 +456,49 @@ test("every source of the shelves states its terms, and the file makes no claim 
     for (const field of ["name", "url", "licence", "accessed", "holds"]) assert.ok(source[field]?.trim(), `${source.name}: ${field}`);
     assert.ok(source.url.startsWith("https://"), source.name);
     assert.ok(CLASSES.includes(source.class), `${source.name}: ${source.class}`);
-    if (source.class === "permissive") assert.ok(!/non-?commercial|\bNC\b/i.test(source.licence) && !source.through, `${source.name}: ${source.licence}`);
+    if (source.class === "permissive") assert.ok(!/non-?commercial|\bNC\b|academic/i.test(source.licence), `${source.name}: ${source.licence}`);
   }
-  // One source is not permissive: PROSITE, whose lipoprotein rule UniProt's entries apply.
-  // The file takes nothing from PROSITE itself, says so, and names where it read the rule's results.
-  const others = shelves.sources.filter((source) => source.class !== "permissive");
-  assert.deepEqual(others.map((source) => [source.name, source.class, source.through]), [["PROSITE", "non-commercial", "UniProt"]]);
-  assert.match(others[0].holds, /^Nothing was downloaded from it and nothing of it is copied\./);
-  assert.match(others[0].licence, /^CC BY-NC-ND 4\.0/);
-  assert.equal(shelves.sources.find((source) => source.name === others[0].through).class, "permissive");
-  assert.match(shelves.side_notes.predicted, /PROSITE's own terms are non-commercial, so its dependence is said here/);
+  // A tool or rule system whose results UniProt's entries give out is a source of its own:
+  // its own terms as its own page states them, `through` the source its results were read
+  // in, and what rests on it. None of them was downloaded or run. One is permissive
+  // (HAMAP); the others are not, and each is named here: the list is what awaits the
+  // user's decision, and it may not grow unseen.
+  const byName = new Map(shelves.sources.map((source) => [source.name, source]));
+  const upstream = shelves.sources.filter((source) => source.through);
+  assert.deepEqual(upstream.map((source) => [source.name, source.class, source.through]), [
+    ["PROSITE", "non-commercial", "UniProt"], ["HAMAP", "permissive", "UniProt"], ["TMHMM", "non-commercial", "UniProt"], ["Phobius", "non-commercial", "UniProt"],
+    ["SignalP", "non-commercial", "UniProt"], ["TargetP", "non-commercial", "UniProt"], ["Memsat", "no stated terms", "UniProt"], ["Predotar", "no stated terms", "UniProt"],
+  ]);
+  assert.deepEqual(shelves.sources.filter((source) => source.class !== "permissive").map((source) => source.name), upstream.filter((source) => source.name !== "HAMAP").map((source) => source.name), "a source that is not permissive is not said to be read through another");
+  for (const source of upstream) {
+    assert.equal(byName.get(source.through).class, "permissive", `${source.name} is read through ${source.through}`);
+    assert.match(source.holds, /^Nothing was downloaded from it/, source.name);
+  }
+  assert.match(byName.get("PROSITE").licence, /^CC BY-NC-ND 4\.0/);
+  for (const name of ["TMHMM", "SignalP", "TargetP"]) assert.match(byName.get(name).licence, /^Academic licence of DTU Health Tech: .*It is a licence of the program: no clause speaks of predictions made with it$/, name);
+  assert.match(byName.get("Phobius").licence, /^For academic users only: /);
+  for (const name of ["Memsat", "Predotar"]) assert.match(byName.get(name).licence, /^Terms not read: /, name);
+  assert.match(shelves.side_notes.predicted, /PROSITE's terms are non-commercial, and TMHMM, SignalP, TargetP and Phobius are given out for academic use: each is named among the sources/);
+  // What rests on each is counted, and the counts are those of the lines.
+  const { rests_on: rests, predicted, predicted_by_similarity_alone: likeness } = shelves.checks;
+  const sum = (counts) => Object.values(counts).reduce((total, n) => total + n, 0);
+  const lines = (side, basis) => shelves.proteins.filter((line) => line[4] === side && line[5] === basis).length;
+  assert.equal(predicted, shelves.proteins.filter((line) => line[5] === "predicted").length);
+  assert.deepEqual(Object.keys(rests), ["PROSITE", "HAMAP", "sequence analysis"]);
+  assert.equal(sum(rests.PROSITE.rules_predicted), sum(rests.PROSITE.predicted), "each placement that rests on PROSITE names one rule");
+  assert.equal(rests.PROSITE.rules_predicted.PRU00303, rests.PROSITE.predicted.outside, "the lipoprotein rule places outside, and nothing else of PROSITE's does");
+  assert.ok(sum(rests.PROSITE.predicted) + sum(rests.HAMAP.predicted) + likeness <= predicted && predicted <= sum(rests.PROSITE.predicted) + sum(rests.HAMAP.predicted) + sum(rests["sequence analysis"].predicted) + likeness, "the predicted sides are not all accounted for");
+  for (const [system, found] of Object.entries(rests)) for (const [side, n] of Object.entries(found.predicted)) assert.ok(n <= lines(side, "predicted"), `${system}: ${side}`);
+  for (const [system, found] of Object.entries(rests)) for (const [side, n] of Object.entries(found.stated_with_its_features)) assert.ok(n <= lines(side, "stated") && found.of_which_nothing_else_on_the_features[side] <= n, `${system}: ${side}`);
+  assert.equal(sum(Object.fromEntries(Object.entries(rests).map(([system, found]) => [system, found.of_which_nothing_else_on_the_features.in ?? 0]))), lines("in", "stated"), "a protein is stated to span the membrane in an entry whose segments are not all predicted");
+  assert.ok(shelves.side_notes.stated.includes(`(${lines("in", "stated")} proteins), the segments it gives are predicted ones in every case: by UniProt's sequence analysis for ${rests["sequence analysis"].of_which_nothing_else_on_the_features.in}, by a PROSITE rule for ${rests.PROSITE.of_which_nothing_else_on_the_features.in} and by a HAMAP rule for ${rests.HAMAP.of_which_nothing_else_on_the_features.in}.`));
+  assert.ok(byName.get("PROSITE").holds.includes(`${sum(rests.PROSITE.predicted)} predicted placements rest on them`) && byName.get("HAMAP").holds.includes(`${sum(rests.HAMAP.predicted)} predicted placements rest on them`));
   assert.ok(said.includes(`for ${shelves.checks.lipoprotein_rule} of the proteins`) && shelves.checks.lipoprotein_rule > 30, "the README does not say how many proteins the rule places");
-  assert.match(said, /Whether that use is within PROSITE's terms for this project is not settled here/);
+  // The README lists each of them with its terms, quotes what the two databases say, and leaves the decision open.
+  for (const source of upstream) assert.ok(readme.includes(`| ${source.name} | ${source.licence} | ${source.class} | `), `the README's table does not list ${source.name}`);
+  assert.match(said, /"We cannot provide unrestricted permission regarding the use of the data, as some data may be covered by patents or other rights\."/);
+  assert.match(said, /commercial users pay a licence fee "irrespective of the method by which they access the database"/);
+  assert.match(said, /is the project's to decide and is not settled here/);
   assert.ok(!/engine/i.test(shelvesText), "the shelves speak of the engine");
 });
 

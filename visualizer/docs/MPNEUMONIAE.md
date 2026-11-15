@@ -184,10 +184,21 @@ entry.
 
 - **Stated (134):** the entry states the location on a curator's word or on an experiment
   it cites. Only 17 rest on an experiment; 117 are a curator's inference.
-- **Predicted (174):** the entry's location or features come from the sequence: UniProt's
-  predictions of membrane-spanning segments and signal peptides, a family rule, or
-  likeness to another organism's protein. The file names the predictors, in UniProt's own
-  words.
+  - Where an entry states that a protein spans the membrane (95 proteins), the segments it
+    gives are predicted ones in every case: by UniProt's sequence analysis for 87, by a
+    PROSITE rule for 7 and by a HAMAP rule for 1. The statement is the curator's; what
+    the curator had to go on was a prediction.
+- **Predicted (174):** the entry's statement is made by a rule, by sequence analysis or
+  by likeness to another organism's protein. Each is counted once:
+  - 92 rest on HAMAP's family rules (83 inside, 9 in the membrane);
+  - 51 rest on PROSITE's rules: 45 outside by its lipoprotein rule, and 6 in the membrane
+    by three rules on the membrane parts of transporters;
+  - 4 rest on UniProt's sequence analysis alone (TMHMM, Memsat, Phobius and a
+    hydrophobic moment plot for segments; Phobius, Predotar, SignalP and TargetP for
+    signal peptides);
+  - 27 rest on likeness alone.
+  The file names each tool and rule system among its sources, with its own terms; the
+  section on sources below gives the table.
 - **By function (90):** only two cases. 77 proteins with no stated place work on the
   ribosome, on RNA, in transcription or on the chromosome, by their keywords. 13 are
   placed at the membrane without a face, and bind ATP or GTP, make ATP or bind DNA, so
@@ -289,9 +300,11 @@ holds no value and no statement from a source of the last two classes; such a so
 named as a pointer, with what is to be read there. A note may cite a single value from
 one, with its class beside it.
 
-**Nothing in the data files rests on such a source, with one exception that is said
-below.** On 15 November 2026 every source was classed, in the files themselves (`class`),
-and what had rested on a source that is not permissive was moved or taken out:
+**Nothing in the data files is taken from such a source.** But the shelves rest on
+results that UniProt gives out and that tools and rule systems of other owners computed:
+those are set out after the table. On 15 November 2026 every source was classed, in the
+files themselves (`class`), and what had rested on a paper that is not permissive was
+moved or taken out:
 
 | Source | Class | What it once gave the data files | What stands there now |
 | --- | --- | --- | --- |
@@ -307,14 +320,62 @@ and what had rested on a source that is not permissive was moved or taken out:
 The eight papers stay in the species file as pointers: each says what is to be read
 there, and gives no value.
 
-**One dependence remains, and is said in the files.** UniProt's curated entries record a
-lipoprotein signal or a lipid anchor for 49 proteins by a rule of **PROSITE** (PRU00303),
-and the shelves place those proteins by it. The entries are UniProt's, under CC BY 4.0.
-PROSITE's own database is distributed under CC BY-NC-ND 4.0 and asks commercial users for
-a licence fee (its licence page was read and saved on 15 November 2026). Nothing was
-downloaded from PROSITE and nothing of it is copied. The shelves name PROSITE among their
-sources as non-commercial, read through UniProt. Whether that use is within PROSITE's
-terms for the project is the coordinator's and the user's decision.
+**What UniProt gives out that others computed.** Every placement comes from a reviewed
+UniProtKB entry, and UniProt's terms are CC BY 4.0. Its licence page adds: "We cannot
+provide unrestricted permission regarding the use of the data, as some data may be
+covered by patents or other rights." Where an entry's statement is made by a rule or by
+sequence analysis, the tool or rule system behind it has terms of its own. Each was read
+at its own page on 15 November 2026 and the page was saved; nothing else was downloaded
+from any of them, and no program was run. The shelves name each as a source with
+`through: UniProt`.
+
+| Tool or rule system | Its own terms, as read | Class | Read through | Placements that rest on it |
+| --- | --- | --- | --- | --- |
+| PROSITE (its rules, ProRule) | CC BY-NC-ND 4.0; commercial users pay a licence fee "irrespective of the method by which they access the database" | Non-commercial | UniProt | 51 predicted: 45 outside by the lipoprotein rule PRU00303, and 6 in the membrane by PRU00441, PRU00426 and PRU00427. In 10 more a curator states the place and the entry's segments, signal or lipid anchor carry one of its rules |
+| HAMAP (family rules) | CC BY 4.0 | Permissive | UniProt | 92 predicted (83 inside, 9 in the membrane); 1 stated placement whose segments it gives; 9 marks "at the membrane" |
+| TMHMM | Academic licence of DTU Health Tech: free to publicly funded institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. A licence of the program: no clause speaks of predictions made with it | Non-commercial | UniProt | With Memsat, Phobius and a hydrophobic moment plot, the four methods behind the segments UniProt predicts in reviewed entries; it keeps a segment that two of them find and does not say which. 5 predicted placements in the membrane (2 of them counted under PROSITE as well), and 87 more where a curator states the place and the segments are such ones alone |
+| Phobius | For academic users only: private study, education or nonprofit research. Terms of the program | Non-commercial | UniProt | One of the four for segments and one of the four for signal peptides: the placements counted under TMHMM and SignalP |
+| SignalP | Academic licence of DTU Health Tech, as TMHMM's | Non-commercial | UniProt | With Phobius, Predotar and TargetP, the four methods behind the signal peptides UniProt predicts. 1 predicted placement outside, and 2 more where a curator states the place |
+| TargetP | Academic licence of DTU Health Tech, as TMHMM's | Non-commercial | UniProt | Those counted under SignalP |
+| Memsat | Terms not read: UniProt names it without a version or an address | No stated terms | UniProt | Those counted under TMHMM |
+| Predotar | Terms not read: its page answers a program with a check for a browser | No stated terms | UniProt | Those counted under SignalP |
+
+The fourth method for segments, the hydrophobic moment plot of Eisenberg and coworkers,
+is a published method; UniProt's page names no program for it. The 27 placements by
+likeness alone are the curators' own.
+
+**Two kinds of terms.** PROSITE's terms are of the database itself, of which its rules
+are part, and they reach a commercial user by whatever way the database is read. The
+licences of TMHMM, SignalP and TargetP and the terms of Phobius are of the programs:
+they say who may run them and say nothing of predictions made with them, and it was
+UniProt that ran them. These are not the same kind of dependence, and the counts above
+keep them apart.
+
+**The tool's own lipid-anchor rule was measured here and not adopted.** The rule that
+now reads Syn3A's lipid anchors (`docs/SYN3A.md`) was run once, unchanged, on the 688
+sequences, and compared with UniProt's own lipoprotein annotation of the same proteins.
+The bar was set beforehand: adopt it if the two agree on nine in ten of the proteins
+either calls. This is analysis; the protein-by-protein comparison is kept outside the
+repository.
+
+| | Proteins |
+| --- | --- |
+| Called by the rule | 40 |
+| Called by UniProt (49 of them by PROSITE's lipoprotein rule) | 52 |
+| Called by both | 39 |
+| Called by the rule alone | 1 |
+| Called by UniProt alone | 13 |
+| Agreement: both, over either | 39 of 53, or 74% |
+
+That is below nine in ten, so nothing in M. pneumoniae's placements was changed. Had it
+been adopted, 11 of the 13 would have lost their place outside (the other 2 are placed
+there on a curator's word), and PROSITE would still stand behind the 6 placements by its
+other three rules.
+
+**Not settled, and the user's to decide:** whether placements that rest on PROSITE's
+rules, or on the academic programs, may stay in a commercial project. Until then every
+one of them is counted in the file and in this note, and is said to be predicted
+wherever it is shown.
 
 **Values cited in this note only,** each from a source that is not permissive, with its
 class beside it where it stands: the gene counts 677 (Himmelreich and others 1996, no

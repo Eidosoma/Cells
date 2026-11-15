@@ -292,11 +292,13 @@ CC BY-NC licence): analysis only. **No stated terms**: nothing enters. A data fi
 holds no value and no statement from a source of the last two classes; such a source is
 named as a pointer. A note may cite a single value from one, with its class beside it.
 
-**The tables, the atlas and the shelves are built from permissive sources alone:** UniProt
-(CC BY 4.0), WormBase ParaSite (no restriction stated), InterPro (CC0), the Gene Ontology
-(CC BY 4.0), the nucleotide archive's records, and three papers under CC BY that name
-genes (Cowles and others 2014, Vu and others 2015, Roberts-Galbraith and others 2016).
-Each source carries its `class` in the files.
+**The tables, the atlas and the shelves take what they hold from permissive sources
+alone:** UniProt (CC BY 4.0), WormBase ParaSite (no restriction stated), InterPro (CC0),
+the Gene Ontology (CC BY 4.0), the nucleotide archive's records, and three papers under
+CC BY that name genes (Cowles and others 2014, Vu and others 2015, Roberts-Galbraith and
+others 2016). Each source carries its `class` in the files. **But nearly every side in
+the shelves is a prediction that one of those databases gives out and a program of
+another owner computed.** That is set out at the end of this section.
 
 **Papers whose terms do not allow a copy are named, and nothing of their findings is
 said.** Each has its class on its citation in the atlas:
@@ -316,12 +318,52 @@ said.** Each has its class on its citation in the atlas:
 **Values cited in this note only:** that the library covers about 10,000 proteins (Ying
 and others 2025, all rights reserved).
 
-**Not settled: predictors run by others.** The shelves take membrane-spanning helices and
-signal peptides as WormBase ParaSite and UniProt give them out, under those databases'
-terms. The databases ran third-party predictors to make them (TMHMM and SignalP at
-WormBase ParaSite; Phobius, SignalP and others at UniProt). The predictors' own licences
-were not read for this note. If a predictor's terms reach its output, these placements
-depend on them; that is for the coordinator and the user to settle.
+**What the two databases give out that others computed.** The helices and signal
+peptides behind the sides were predicted by programs that WormBase ParaSite and UniProt
+ran. Neither database's terms speak for those programs:
+
+- WormBase ParaSite's disclaimer, after "Ensembl imposes no restrictions on access to, or
+  use of, the data provided", goes on: "Some of the data and software included in the
+  distribution may be subject to third-party constraints. Users of the data and software
+  are solely responsible for establishing the nature of and complying with any such
+  restrictions." The shelves' file now quotes that sentence too.
+- UniProt's licence page says: "We cannot provide unrestricted permission regarding the
+  use of the data, as some data may be covered by patents or other rights."
+
+Each tool's terms were read at its own page on 15 November 2026 and the page was saved;
+nothing else was downloaded from any of them, and no program was run. The shelves name
+each as a source with `through`, the database or databases its results were read in.
+
+| Tool or rule system | Its own terms, as read | Class | Read through | Sides that rest on it |
+| --- | --- | --- | --- | --- |
+| TMHMM | Academic licence of DTU Health Tech: free to publicly funded institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. A licence of the program: no clause speaks of predictions made with it | Non-commercial | WormBase ParaSite and UniProt | Gene models: all 16,566 predicted sides rest on what it and SignalP found or did not find (4,218 in a membrane by helices; 599 with one helix and a signal peptide, settled by this tool's own reading; 965 outside by a signal peptide; 10,784 inside because neither found anything). Entries: 578 in a membrane by segments that UniProt keeps where TMHMM and Phobius overlap, and 249 inside because nothing was found |
+| SignalP | Academic licence of DTU Health Tech, as TMHMM's | Non-commercial | WormBase ParaSite and UniProt | The gene models counted under TMHMM; and 131 entries placed outside by a signal peptide |
+| Phobius | For academic users only: private study, education or nonprofit research. Terms of the program | Non-commercial | UniProt | The entries counted under TMHMM and SignalP |
+| PROSITE (its rules, ProRule) | CC BY-NC-ND 4.0; commercial users pay a licence fee "irrespective of the method by which they access the database" | Non-commercial | UniProt | 3 entries placed in a membrane by segments that carry one of its rules; 146 entries placed by function on a stated place that names one, 50 of them on no other rule |
+| HAMAP (family rules) | CC BY 4.0 | Permissive | UniProt | 1 entry placed by function |
+| RuleBase, ARBA and the PIR rules | No terms of their own were read: UniProt's help pages describe them as parts of its annotation pipeline, and UniProt's entries are CC BY 4.0 | Not classed separately | none: they come with UniProt's entries | 38 entries placed by a segment or a signal peptide they give; 255 placed by function on a place they state |
+
+So 17,524 of the 17,565 predicted sides rest on the three academic programs, and 149
+sides rest at least in part on PROSITE's rules. The 118 sides placed by function from
+Gene Ontology terms, and the 795 not placed, rest on none of them.
+
+**What could not be read.** WormBase ParaSite's BioMart names TMHMM and SignalP and no
+version of either, and its service that lists a genome's analyses did not answer. The
+licence read for each program is the one DTU Health Tech shows on its download page
+today; an older version may have been given out on other words.
+
+**Two kinds of terms.** The licences of TMHMM and SignalP and the terms of Phobius are of
+the programs: they say who may run them and say nothing of predictions made with them,
+and it was the two databases that ran them. PROSITE's terms are of the database itself,
+of which its rules are part, and they reach a commercial user by whatever way the
+database is read. These are not the same kind of dependence.
+
+**Not settled, and the user's to decide:** whether sides that rest on the academic
+programs, or on PROSITE's rules, may stay in a commercial project. Until then every one
+of them is counted in the file and in this note, and is said to be predicted wherever it
+is shown. The families and districts do not rest on these programs: they come from
+InterPro (CC0) and the Gene Ontology (CC BY 4.0). InterPro's entries do gather the
+signatures of member databases, PROSITE among them; that was not looked into here.
 
 ## What a whole-proteome catalogue would take
 
@@ -441,9 +483,16 @@ one pile.
   is taken for the signal peptide (68, beyond one); 5 have no such stretch and are not
   placed. The rule is this tool's and takes no published scale.
 - **UniProtKB entries.** The membrane-spanning segments and signal peptides that
-  UniProt's automatic annotation gives the entry (Phobius and SignalP, with some rules).
-  Where nothing is predicted, the subcellular location UniProt's rules give it is used,
-  and called "by function". The two "stated" are reviewed entries, by similarity.
+  UniProt's automatic annotation gives the entry. By UniProt's own account its sequence
+  analysis keeps a segment where TMHMM and Phobius overlap, and gives the signal peptide
+  SignalP predicts where TMHMM or Phobius bears it out; some segments and signal peptides
+  are given by its rule systems instead. Where nothing is predicted, the subcellular
+  location UniProt's rules give it is used, and called "by function". The two "stated"
+  are reviewed entries, by similarity.
+- **What the predicted sides rest on.** Of the 17,565 predicted sides, 17,524 rest on
+  what TMHMM, SignalP and Phobius found or did not find: all 16,566 of the gene models,
+  and 958 of the entries. The section "What rests on non-commercial or unlicensed
+  sources" gives each tool with its terms.
 - **Not placed: 795.** 660 gene models do not begin with methionine and have nothing
   predicted, so a signal peptide may be missing with their beginning; 5 are the ones
   above; 130 entries are fragments that lack their beginning. Where the Gene Ontology

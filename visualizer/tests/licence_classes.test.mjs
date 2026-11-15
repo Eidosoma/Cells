@@ -4,9 +4,11 @@
 //
 //   permissive        CC BY, CC0, or a plain statement that no restriction is placed on use:
 //                     values, tables and derived data may enter, with attribution;
-//   non-commercial    a CC BY-NC licence of any kind: analysis only. Nothing of it enters a
-//                     record; a note may cite a single value, with the class beside it;
-//   no stated terms   no open licence is stated: nothing of it enters a record.
+//   non-commercial    a CC BY-NC licence of any kind, or a program given out for academic
+//                     use only: analysis only. Nothing of it enters a record; a note may
+//                     cite a single value, with the class beside it;
+//   no stated terms   no open licence is stated, or its terms could not be read: nothing
+//                     of it enters a record.
 //
 // What this file holds, for every record it finds under data/:
 //
@@ -15,7 +17,10 @@
 //      mark's source, a product's citation, a record's values_from) is permissive;
 //   3. a source that is not permissive stands only where a pointer may stand, and says
 //      that nothing is taken from it;
-//   4. the note of each record has a section that names every such source.
+//   4. the note of each record has a section that names every such source;
+//   5. a tool or rule system whose results a permissive database gives out is a source of
+//      its own, with its own terms and `through`, the database its results were read in.
+//      Where it is not permissive, it is one of the dependences NAMED below, by species.
 //
 // It finds the records by their folders, so a record added later is held too. What it
 // cannot see is a value written into a sentence with no source named: the tools that
@@ -36,8 +41,11 @@ const SECTION = "## What rests on non-commercial or unlicensed sources";
 
 // The class that a licence text gives. A text that names a non-commercial licence is
 // never permissive, whatever else it says.
-const NON_COMMERCIAL = /CC BY-NC/;
-const NO_TERMS = /^(No open licence stated|no licence stated|no open licence)/;
+// A program given out under an academic licence, or for academic users only, is of the same
+// class: its terms do not allow a commercial project to run it. A tool whose terms could not
+// be read is held as one that states none.
+const NON_COMMERCIAL = /CC BY-NC|^Academic licence\b|^For academic users only\b/;
+const NO_TERMS = /^(No open licence stated|no licence stated|no open licence|Terms not read\b)/;
 const PERMISSIVE = /^CC BY\b(?!-NC)|^CC0\b|[Nn]o restrictions?\b|places no restriction|[Ii]mposes no restrictions|no use restrictions|^Public domain|BSD 3-Clause|^Bibliographic facts only/;
 function classOf(licence) {
   if (NON_COMMERCIAL.test(licence)) return "non-commercial";
@@ -46,12 +54,21 @@ function classOf(licence) {
 }
 
 // Which note speaks for which record: by the species or the subject the record is of.
-const NOTES = { syn3a: "docs/SYN3A.md", mpneumoniae: "docs/MPNEUMONIAE.md", planarian: "docs/PLANARIAN_ATLAS.md", planarian_bioelectric: "docs/PLANARIAN_BIOELECTRIC_EVIDENCE.md" };
-// The one dependence on a source that is not permissive which the records may carry,
-// because it is said in them and is the coordinator's and the user's to settle: PROSITE,
-// whose signature's matches UniProt gives out. Another source may not come in this way:
-// to add one here is to decide that its dependence is accepted.
-const READ_THROUGH = { PROSITE: ["UniParc", "UniProt"] };
+const NOTES = { syn3a: "docs/SYN3A.md", mpneumoniae: "docs/MPNEUMONIAE.md", planarian: "docs/PLANARIAN_ATLAS.md", planarian_bioelectric: "docs/PLANARIAN_BIOELECTRIC_EVIDENCE.md", human: "docs/HUMAN_PROTEOME.md" };
+// The dependences that are named and await the user's decision, by species: a tool or a
+// rule system that is not permissive, whose results a permissive database gives out and a
+// record rests on. Each is a source of its record with `through`, the database (or the
+// databases, joined by " and ") its results were read in. To list one here is not to
+// accept it: it says that the dependence is known, counted in the record and said in its
+// note. A dependence that is not listed fails this file, so none comes in unseen; one that
+// is listed and no longer in its record fails it too, so the list does not outlive them.
+//
+// JCVI-syn3A has none: its lipid anchors are read by the tool's own rule (15 November
+// 2026), and the one rule system behind its stated places, HAMAP, is permissive.
+const NAMED = {
+  mpneumoniae: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt" },
+  planarian: { TMHMM: "WormBase ParaSite and UniProt", SignalP: "WormBase ParaSite and UniProt", Phobius: "UniProt", PROSITE: "UniProt" },
+};
 // Papers that only a note cites, and that are not permissive: its section names them too.
 const NOTE_ONLY = {
   "docs/SYN3A.md": [["Hutchison", "2016"]],
@@ -187,42 +204,53 @@ test("a species atlas: everything it takes is from a permissive source; a paper 
   }
 });
 
-test("a species' shelves: every mark rests on a permissive source; any other source is a pointer, or says through which permissive source it was read", async () => {
+test("a species' shelves: every mark rests on a permissive source; any other source is a pointer, or a named dependence that says through which permissive source it was read", async () => {
+  const seen = new Set();
   for (const file of shelfFiles) {
     const shelves = await json(file);
     const where = rel(file);
+    seen.add(shelves.species);
+    const known = NAMED[shelves.species] || {};
     const byName = new Map(shelves.sources.map((source) => [source.name, source]));
     assert.equal(byName.size, shelves.sources.length, `${where}: two sources share a name`);
     for (const source of shelves.sources) held(source, `${where}: source ${source.name}`);
+    // What was taken is taken from a permissive source that stands for itself.
+    const taken = (source) => source.class === "permissive" && !source.through;
     for (const [name, mark] of Object.entries(shelves.marks || {})) {
       // A mark names what it rests on: one or more of the file's sources, or a table of
-      // the same folder, which is built from them. Every source it names is permissive.
+      // the same folder, which is built from them. It names at least one source that the
+      // value was taken from, and that one is permissive. Where it also names the tool
+      // behind the value, that tool is a source read through another (below).
       const rests = shelves.sources.filter((source) => String(mark.source).includes(source.name));
       const ownTable = /^[\w.-]+\.tsv$/.test(String(mark.source)) && existsSync(path.join(path.dirname(file), mark.source));
       assert.ok(rests.length || ownTable, `${where}: the mark ${name} rests on "${mark.source}", which names no source of the file`);
-      for (const source of rests) assert.equal(source.class, "permissive", `${where}: the mark ${name} rests on ${source.name}, which is ${source.class}`);
+      assert.ok(ownTable || rests.some(taken), `${where}: the mark ${name} names no permissive source that its values were taken from`);
+      for (const source of rests) assert.ok(taken(source) || source.through, `${where}: the mark ${name} rests on ${source.name}, which is ${source.class}`);
     }
     for (const source of shelves.sources) {
-      if (source.class === "permissive") {
-        assert.ok(!source.through, `${where}: ${source.name} is permissive and needs no other source to be read through`);
-        continue;
-      }
       if (source.through) {
-        // Its results were read in a permissive source, and nothing of its own was taken.
-        // Only the dependence that is named above may stand so.
-        assert.ok(READ_THROUGH[source.name]?.includes(source.through), `${where}: ${source.name} is ${source.class} and is read through ${source.through}: only ${Object.keys(READ_THROUGH).join(", ")} may be, as the notes say`);
-        assert.equal(byName.get(source.through)?.class, "permissive", `${where}: ${source.name} is read through ${source.through}`);
-        assert.match(source.holds, /^Nothing was downloaded from it and nothing of it is copied\./, `${where}: ${source.name}`);
-      } else {
+        // A tool or rule system whose results were read in a permissive database: the
+        // database is named, it is a source of the file that stands for itself, and
+        // nothing of the tool's own was taken.
+        assert.equal(typeof source.through, "string", `${where}: ${source.name}: through is the name of a source, or names joined by " and "`);
+        for (const database of byName.has(source.through) ? [source.through] : source.through.split(" and ")) assert.ok(byName.has(database) && taken(byName.get(database)), `${where}: ${source.name} is read through ${database}, which is not a permissive source of the file that stands for itself`);
+        assert.match(source.holds, /^Nothing was downloaded from it/, `${where}: ${source.name}`);
+        if (source.class !== "permissive") assert.equal(known[source.name], source.through, `${where}: ${source.name} is ${source.class} and is read through ${source.through}. It is not among the dependences named for ${shelves.species} in NAMED: the user must know of it before it is listed there`);
+      } else if (source.class !== "permissive") {
         assert.match(source.holds, /^Nothing is taken from it: a pointer to /, `${where}: ${source.name} is ${source.class} and is not said to be a pointer`);
         assert.ok(!/\d/.test(source.holds), `${where}: the pointer ${source.name} gives a number: ${source.holds}`);
       }
+      if (source.class === "permissive") continue;
       const note = NOTES[shelves.species];
       assert.ok(note, `${where}: ${source.name} is ${source.class}, and no note is known for this species`);
       const paper = /\d{4}$/.test(source.name) ? paperOf(source.name) : null;
       mustName(note, `${source.name} (${where})`, paper ? named(...paper) : new RegExp(source.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
     }
+    // The list does not outlive the dependences: each one named is in the record.
+    for (const [name, through] of Object.entries(known)) assert.equal(byName.get(name)?.through, through, `${where}: NAMED lists ${name} through ${through}, and the record does not`);
   }
+  for (const species of Object.keys(NAMED)) assert.ok(seen.has(species), `NAMED lists dependences for ${species}, and no shelves of it were found`);
+  assert.ok(!("syn3a" in NAMED), "JCVI-syn3A rests on no source that is not permissive");
 });
 
 // A quantity: a number with a unit, a span of residues, or a number in words before a unit of time.

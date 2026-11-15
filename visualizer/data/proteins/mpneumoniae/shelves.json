@@ -816,8 +816,8 @@
   ["MPN_688", "ParA family protein MPN_688", "soj", "cell", "not known", "none", "D", 270, null, {"essential": "fitness"}]
  ],
  "side_notes": {
-  "stated": "The protein's reviewed UniProtKB entry states where it is, on a curator's own word or on an experiment that the entry cites. The mark 'evidence' says which.",
-  "predicted": "Read from the sequence, as UniProt's reviewed entry for this exact protein records it. Membrane-spanning segments are those UniProt predicts with TMHMM, Memsat, Phobius and a hydrophobic moment plot, keeping a segment only where at least two agree; signal peptides are predicted with Phobius, Predotar, SignalP and TargetP. A lipoprotein signal (the PROSITE rule PRU00303, as UniProt's entries apply it; PROSITE's own terms are non-commercial, so its dependence is said here) means the protein is exported and then held by a lipid at the outer face of the membrane, which in a cell with one membrane is the cell's surface: that reading is this file's. A location that UniProt gives a whole protein family by rule (HAMAP), or by likeness to a protein of another organism, is counted as predicted too.",
+  "stated": "The protein's reviewed UniProtKB entry states where it is, on a curator's own word or on an experiment that the entry cites. The mark 'evidence' says which. Where the entry states that a protein spans the membrane (95 proteins), the segments it gives are predicted ones in every case: by UniProt's sequence analysis for 87, by a PROSITE rule for 7 and by a HAMAP rule for 1.",
+  "predicted": "A statement of the protein's reviewed UniProtKB entry that is made by a rule, by sequence analysis or by likeness to a protein of another organism, and not on a curator's own word or an experiment. Of the 174 predicted sides, 92 rest on HAMAP's family rules, 51 on PROSITE's rules, 4 on UniProt's sequence analysis alone and 27 on likeness alone. PROSITE's lipoprotein rule (PRU00303) stands behind 45 of them: this file reads a lipoprotein signal as outside, because the protein is exported and then held by a lipid at the outer face of the membrane, which in a cell with one membrane is the cell's surface. Sequence analysis is, for membrane-spanning segments, TMHMM, Memsat, Phobius and the hydrophobic moment plot of Eisenberg and coworkers, a segment being kept where at least two agree; and for signal peptides Phobius, Predotar, SignalP and TargetP. PROSITE's terms are non-commercial, and TMHMM, SignalP, TargetP and Phobius are given out for academic use: each is named among the sources, with its terms and what rests on it.",
   "by function": "Taken from what the protein does, only where that leaves no real doubt. A protein with no stated location is put inside if its UniProt keywords say it works on the ribosome, on transfer or ribosomal RNA, in transcription or on the chromosome (Ribosomal protein, Aminoacyl-tRNA synthetase, Protein biosynthesis, DNA-directed RNA polymerase, Transcription, DNA replication, DNA repair, DNA recombination, tRNA processing, rRNA processing, Ribosome biogenesis). A protein that its entry places at the membrane without saying on which face is put inside if it binds ATP or GTP, makes ATP or binds DNA, all of which are inside the cell.",
   "none": "No statement, no prediction and no function that settles it. These proteins are not placed."
  },
@@ -878,7 +878,64 @@
   "not known": 290
  },
  "checks": {
-  "lipoprotein_rule": 49
+  "lipoprotein_rule": 49,
+  "predicted": 174,
+  "rests_on": {
+   "PROSITE": {
+    "predicted": {
+     "in": 6,
+     "outside": 45
+    },
+    "stated_with_its_features": {
+     "in": 7,
+     "outside": 3
+    },
+    "of_which_nothing_else_on_the_features": {
+     "in": 7,
+     "outside": 2
+    },
+    "rules_predicted": {
+     "PRU00303": 45,
+     "PRU00426": 1,
+     "PRU00427": 2,
+     "PRU00441": 3
+    },
+    "rules_stated": {
+     "PRU00303": 3,
+     "PRU00441": 7
+    },
+    "at_the_membrane_marks": 0
+   },
+   "HAMAP": {
+    "predicted": {
+     "in": 9,
+     "inside": 83
+    },
+    "stated_with_its_features": {
+     "in": 1
+    },
+    "of_which_nothing_else_on_the_features": {
+     "in": 1
+    },
+    "at_the_membrane_marks": 9
+   },
+   "sequence analysis": {
+    "predicted": {
+     "in": 5,
+     "outside": 1
+    },
+    "stated_with_its_features": {
+     "in": 87,
+     "outside": 2
+    },
+    "of_which_nothing_else_on_the_features": {
+     "in": 87,
+     "outside": 2
+    },
+    "at_the_membrane_marks": 0
+   }
+  },
+  "predicted_by_similarity_alone": 27
  },
  "sources": [
   {
@@ -912,7 +969,70 @@
    "class": "non-commercial",
    "accessed": "2026-11-15",
    "through": "UniProt",
-   "holds": "Nothing was downloaded from it and nothing of it is copied. Its rule PRU00303 is the origin of the lipoprotein signals and lipid anchors that UniProt's curated entries record for 49 of these proteins: where those proteins are placed rests on them, as they were read in UniProt's entries."
+   "holds": "Nothing was downloaded from it but its statement of terms, and nothing of it is copied. Its rules are named in UniProt's entries as what stands behind a statement: 51 predicted placements rest on them (PRU00303, 45 placements; PRU00426, 1 placement; PRU00427, 2 placements; PRU00441, 3 placements), and in 10 more a curator states the place while the entry's segments, signal or lipid anchor are given by one of its rules. They were read in UniProt's entries."
+  },
+  {
+   "name": "HAMAP",
+   "url": "https://hamap.expasy.org/hamap_about.html",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-15",
+   "through": "UniProt",
+   "holds": "Nothing was downloaded from it but its statement of terms. Its family rules are named in UniProt's entries as what stands behind a statement: 92 predicted placements rest on them, 1 stated placement stands in an entry whose segments they give, and 9 proteins are said to be at the membrane by them."
+  },
+  {
+   "name": "TMHMM",
+   "url": "https://services.healthtech.dtu.dk/services/TMHMM-2.0/",
+   "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it",
+   "class": "non-commercial",
+   "accessed": "2026-11-15",
+   "through": "UniProt",
+   "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which. 5 placements predicted in the membrane rest on such segments, and in 87 more a curator or an experiment states that the protein spans the membrane while the entry gives its segments by sequence analysis alone."
+  },
+  {
+   "name": "Phobius",
+   "url": "https://phobius.sbc.su.se/download",
+   "licence": "For academic users only: the program may be used for private study, education or nonprofit research, and other users are asked to write to its author. The terms are of the program: they do not speak of predictions made with it",
+   "class": "non-commercial",
+   "accessed": "2026-11-15",
+   "through": "UniProt",
+   "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which; and one of the four it names for signal peptides. The placements are those counted under TMHMM and SignalP."
+  },
+  {
+   "name": "SignalP",
+   "url": "https://services.healthtech.dtu.dk/services/SignalP-5.0/",
+   "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it",
+   "class": "non-commercial",
+   "accessed": "2026-11-15",
+   "through": "UniProt",
+   "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. 1 placement predicted outside rests on such a signal, and in 2 more a curator states the place while the entry gives the signal or the lipid anchor by sequence analysis alone."
+  },
+  {
+   "name": "TargetP",
+   "url": "https://services.healthtech.dtu.dk/services/TargetP-2.0/",
+   "licence": "Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it",
+   "class": "non-commercial",
+   "accessed": "2026-11-15",
+   "through": "UniProt",
+   "holds": "Nothing was downloaded from it but its statement of terms, and the program was not run here. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. The placements are those counted under SignalP."
+  },
+  {
+   "name": "Memsat",
+   "url": "https://www.uniprot.org/help/transmem",
+   "licence": "Terms not read: UniProt's help names Memsat without a version or an address, so no page of terms could be tied to the program it runs",
+   "class": "no stated terms",
+   "accessed": "2026-11-15",
+   "through": "UniProt",
+   "holds": "Nothing was downloaded from it. One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which. The placements are those counted under TMHMM."
+  },
+  {
+   "name": "Predotar",
+   "url": "https://www.uniprot.org/help/signal",
+   "licence": "Terms not read: the program's own page answers this tool with a check for a browser, so its terms could not be read",
+   "class": "no stated terms",
+   "accessed": "2026-11-15",
+   "through": "UniProt",
+   "holds": "Nothing was downloaded from it. One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. The placements are those counted under SignalP."
   }
  ]
 }

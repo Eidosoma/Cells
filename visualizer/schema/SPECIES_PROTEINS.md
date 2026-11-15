@@ -96,11 +96,26 @@ catalogue table, the same bytes every time.
   free.
 - **A group may carry `within`,** the wider class it belongs to, for a district whose own
   name does not read alone, and its `count` and `sides`.
-- **A dependence that cannot be avoided is named.** Where a side or a mark rests on
-  another source's reading that an open database gives out (the lipid-anchor signal, which
-  UniProt reports from PROSITE's rule), the source says so in `through`, and the note
-  beside the file lists it. The test of the licence classes allows such a case by name
-  only.
+- **A tool or rule system behind a value is named, with `through`.** Where a side, a
+  mark or a note rests on what a program or a rule system of another owner computed and a
+  database gives out (the helices TMHMM predicts, as WormBase ParaSite ran it; a place
+  that a UniProt entry states by a PROSITE or a HAMAP rule), that program or rule system
+  is a source of the file in its own right:
+  - `name`, `url`, `licence` and `class` are its own: its terms as its own page states
+    them, read and saved, never classed from memory. A program given out for academic use
+    only is `non-commercial`. A page that could not be read gives the `licence` "Terms not
+    read: …" and the class `no stated terms`.
+  - **`through` stands on the tool's entry and names the database:** the `name` of the
+    source of the same file in whose records its results were read, or several such names
+    joined by " and ". That database is permissive and has no `through` of its own.
+    `through` is never put on the database's entry to name the tool.
+  - `holds` begins "Nothing was downloaded from it" and says what rests on it, with counts.
+  - A mark's `source` names the database its values were taken from; it may name the tool
+    beside it.
+  - Where the tool's class is not permissive, the dependence awaits the project's
+    decision. The note beside the file lists it with its terms and its counts, and
+    `tests/licence_classes.test.mjs` names it under its species; one the test does not
+    name fails it. A permissive one (HAMAP) needs no listing.
 - **Every source has a `class`, and a file holds no value from a source that is not
   permissive** (D173, 15 November 2026). `class` is one of `permissive` (CC BY, CC0, or
   a plain statement that no restriction is placed on use), `non-commercial` (a CC BY-NC
@@ -110,9 +125,10 @@ catalogue table, the same bytes every time.
   taken from it and what is to be read there; or, where a permissive source gives out
   results that originate in it (a database's record of another database's signature),
   with `through`, the name of that permissive source, and a `holds` that says nothing
-  was downloaded from it and what rests on it. This narrows the bullet above: such a
-  dependence is no longer only flagged. `tests/licence_classes.test.mjs` holds every file
-  to it.
+  was downloaded from it and what rests on it, as the bullet above sets out. Whether
+  such a dependence may stay is the project's decision, asked of the user on 15 November
+  2026; until it is made, each one is named and counted and the test lists it.
+  `tests/licence_classes.test.mjs` holds every file to it.
 - A file may carry further keys of its own, such as the checks its tool ran. The drawing
   ignores what it does not know.
 - **Size.** A species' file stays under 1 MB. A catalogue too large for that, or for one
@@ -197,7 +213,8 @@ stacked in the page. Fixed on 15 November 2026, before the human data was made.
 - **`basis`** is `stated`, and the mark `evidence` says what stands behind the statement:
   an experiment, a curator's inference or similarity, or an automatic rule.
 - **No stated location:** `predicted` where the entry carries a predicted membrane
-  segment or export signal, with the predictor named in the source's `through`;
+  segment or export signal, with the predictor listed among the sources as the rule on a
+  tool behind a value asks (its own entry, whose `through` names the database);
   otherwise `not known`, set apart.
 - **`unit`** is set by exact accession: the inventory's own candidate products name their
   human entries.

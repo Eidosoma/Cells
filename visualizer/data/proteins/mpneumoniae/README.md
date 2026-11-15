@@ -137,6 +137,13 @@ for each of the 688 proteins, in the catalogue's order.
   exported and then held by a lipid at the outer face of the membrane. That reading is
   this file's; UniProt records the signal, by the PROSITE rule PRU00303, for 49 of
   the proteins. The adhesins that span the membrane are `in`.
+- **What a predicted side rests on.** Of the 174 predicted sides, 92 rest on HAMAP's
+  family rules, 51 on PROSITE's rules, and the others on UniProt's sequence analysis or
+  on likeness to a protein of another organism. The table under "Sources and terms" gives
+  each tool and rule system with its own terms.
+- **What a stated side rests on.** A curator's word or an experiment that the entry cites.
+  Where a curator states that a protein spans the membrane, the segments the entry gives
+  are predicted ones in every case; `side_notes.stated` counts them.
 - **The attachment organelle** is not a shelf of its own. The 15 proteins whose entry
   states that location carry the mark `where: attachment organelle`.
 - **Districts** are the 2015 paper's classes, the letters above.
@@ -157,13 +164,38 @@ for each of the 688 proteins, in the catalogue's order.
 
 Every source above is permissive: its terms allow what is taken, with attribution.
 
-**A dependence on a non-commercial source.** UniProt's curated entries record the
-lipoprotein signal of 49 proteins by a rule of
-[PROSITE](https://prosite.expasy.org/prosite_license.html), which is distributed under
-CC BY-NC-ND 4.0 and asks commercial users for a licence fee. Nothing was downloaded from
-PROSITE and nothing of it is copied: the signals were read in UniProt's entries, under
-UniProt's terms (CC BY 4.0), and where those proteins are placed rests on them. Whether
-that use is within PROSITE's terms for this project is not settled here.
+**What UniProt's entries give out that a tool or a rule system computed.** UniProt's
+terms (CC BY 4.0) are those of its entries, and its licence page adds: "We cannot provide
+unrestricted permission regarding the use of the data, as some data may be covered by
+patents or other rights." Where an entry makes a statement by a rule or by sequence
+analysis, the tool or rule system behind it has terms of its own. Each is listed here
+with those terms, read at its own page, and with what rests on it in `shelves.json`.
+Nothing was downloaded from any of them but its page of terms, and no program was run.
+
+| Tool or rule system | Its own terms | Class | What rests on it |
+| --- | --- | --- | --- |
+| PROSITE | CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee | non-commercial | Its rules are named in UniProt's entries as what stands behind a statement: 51 predicted placements rest on them (PRU00303, 45 placements; PRU00426, 1 placement; PRU00427, 2 placements; PRU00441, 3 placements), and in 10 more a curator states the place while the entry's segments, signal or lipid anchor are given by one of its rules. They were read in UniProt's entries. |
+| HAMAP | CC BY 4.0 | permissive | Its family rules are named in UniProt's entries as what stands behind a statement: 92 predicted placements rest on them, 1 stated placement stands in an entry whose segments they give, and 9 proteins are said to be at the membrane by them. |
+| TMHMM | Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it | non-commercial | One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which. 5 placements predicted in the membrane rest on such segments, and in 87 more a curator or an experiment states that the protein spans the membrane while the entry gives its segments by sequence analysis alone. |
+| Phobius | For academic users only: the program may be used for private study, education or nonprofit research, and other users are asked to write to its author. The terms are of the program: they do not speak of predictions made with it | non-commercial | One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which; and one of the four it names for signal peptides. The placements are those counted under TMHMM and SignalP. |
+| SignalP | Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it | non-commercial | One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. 1 placement predicted outside rests on such a signal, and in 2 more a curator states the place while the entry gives the signal or the lipid anchor by sequence analysis alone. |
+| TargetP | Academic licence of DTU Health Tech: free to publicly funded academic, education or research institutions for internal research; any other user must obtain a commercial licence, and no use of the program may result in commercialization. It is a licence of the program: no clause speaks of predictions made with it | non-commercial | One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. The placements are those counted under SignalP. |
+| Memsat | Terms not read: UniProt's help names Memsat without a version or an address, so no page of terms could be tied to the program it runs | no stated terms | One of the four methods UniProt names for the membrane-spanning segments of its reviewed entries; it keeps a segment that at least two of them find, and does not say which. The placements are those counted under TMHMM. |
+| Predotar | Terms not read: the program's own page answers this tool with a check for a browser, so its terms could not be read | no stated terms | One of the four methods UniProt names for the signal peptides of its reviewed entries; it keeps a signal that at least two of them find, and does not say which. The placements are those counted under SignalP. |
+
+The fourth method UniProt names for membrane-spanning segments, the hydrophobic moment
+plot of Eisenberg and coworkers, is a published method; UniProt's page names no program
+for it.
+
+**Two kinds of terms.** PROSITE's are of the database itself, of which its rules are
+part, and its page says that commercial users pay a licence fee "irrespective of the
+method by which they access the database". The licences of TMHMM, SignalP and TargetP and
+the terms of Phobius are of the programs: they say who may run them and say nothing of
+predictions made with them, and it was UniProt that ran them. HAMAP is distributed under
+CC BY 4.0. Whether placements that rest on PROSITE's rules, or on the academic programs,
+may stay in a commercial project is the project's to decide and is not settled here.
+Until it is, every such placement is counted above and is said to be predicted wherever
+it is shown.
 
 Cite:
 

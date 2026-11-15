@@ -301,16 +301,73 @@ test("the shelves file keeps its contract: format, one shelf, declared districts
     assert.ok(groups.includes(part.group) && SIDES.includes(part.side), part.id);
     assert.ok(["superfamily", "other signature", "no signature"].includes(part.kind), part.id);
   }
-  assert.ok(shelves.sources.length >= 4);
-  for (const source of shelves.sources) {
+  // What the shelves take, they take from permissive sources. A tool or rule system whose
+  // results one of those gives out is a source of its own (below): it has `through`.
+  const taken = shelves.sources.filter((source) => !source.through);
+  assert.ok(taken.length >= 4);
+  for (const source of taken) {
     for (const field of ["name", "licence", "holds", "accessed", "cite"]) assert.ok(source[field]?.trim(), `${source.name}: ${field}`);
     assert.ok(source.url.startsWith("https://"), source.name);
-    assert.ok(!/non-?commercial|\bNC\b/i.test(source.licence), `${source.name}: ${source.licence}`);
+    assert.ok(!/non-?commercial|\bNC\b|academic/i.test(source.licence), `${source.name}: ${source.licence}`);
     assert.equal(source.class, "permissive", `${source.name}: the shelves take something from a source that is ${source.class}`);
   }
-  // A source with no plain licence must have stated that it places no restriction.
-  assert.match(shelves.sources.find((source) => source.name === "WormBase ParaSite").licence, /Ensembl imposes no restrictions on access to, or use of, the data provided/);
+  // A source with no plain licence must have stated that it places no restriction; and what
+  // it says of third parties is quoted with it.
+  const wbps = shelves.sources.find((source) => source.name === "WormBase ParaSite").licence;
+  assert.match(wbps, /Ensembl imposes no restrictions on access to, or use of, the data provided/);
+  assert.match(wbps, /Some of the data and software included in the distribution may be subject to third-party constraints\. Users of the data and software are solely responsible for establishing the nature of and complying with any such restrictions\./);
   for (const mark of Object.values(shelves.marks)) assert.ok(mark.label && mark.source && mark.measured === false, "nothing here is measured");
+});
+
+test("the tools behind the predictions are sources of their own: their terms, through which database, and how many sides rest on each", () => {
+  // The helices and signal peptides are the output of programs given out for academic use,
+  // as two permissive databases ran them and give them out. Each program, and each rule
+  // system of another owner, is named with its own terms and with `through`, the
+  // database or databases its results were read in (joined by " and "). The list is what
+  // awaits the user's decision: it may not grow unseen.
+  const byName = new Map(shelves.sources.map((source) => [source.name, source]));
+  const upstream = shelves.sources.filter((source) => source.through);
+  assert.deepEqual(upstream.map((source) => [source.name, source.class, source.through]), [
+    ["TMHMM", "non-commercial", "WormBase ParaSite and UniProt"], ["SignalP", "non-commercial", "WormBase ParaSite and UniProt"],
+    ["Phobius", "non-commercial", "UniProt"], ["PROSITE", "non-commercial", "UniProt"], ["HAMAP", "permissive", "UniProt"],
+  ]);
+  for (const source of upstream) {
+    for (const field of ["name", "licence", "holds", "accessed"]) assert.ok(source[field]?.trim(), `${source.name}: ${field}`);
+    assert.ok(source.url.startsWith("https://"), source.name);
+    for (const name of source.through.split(" and ")) assert.ok(byName.get(name)?.class === "permissive" && !byName.get(name).through, `${source.name} is read through ${name}`);
+    assert.match(source.holds, /^Nothing was downloaded from it/, source.name);
+  }
+  for (const name of ["TMHMM", "SignalP"]) assert.match(byName.get(name).licence, /^Academic licence of DTU Health Tech: .*It is a licence of the program: no clause speaks of predictions made with it$/, name);
+  assert.match(byName.get("Phobius").licence, /^For academic users only: /);
+  assert.match(byName.get("PROSITE").licence, /^CC BY-NC-ND 4\.0/);
+  // The counts are those of the members' table.
+  const kind = new Map(catalogue.map((row) => [row.id, row.kind]));
+  const rows = (isModel, want) => placed.filter((row) => (kind.get(row.id) === "gene model") === isModel && want(row)).length;
+  const { "gene models": models, entries } = shelves.rests_on;
+  assert.equal(models.predicted, rows(true, (row) => row.basis === "predicted"));
+  assert.equal(models["in a membrane, by helices"] + models["one helix and a signal peptide, settled by this tool"] + models["outside, by a signal peptide"] + models["inside, nothing found"], models.predicted);
+  assert.equal(models["inside, nothing found"], rows(true, (row) => row.basis === "predicted" && row.side === "inside"));
+  assert.equal(models["one helix and a signal peptide, settled by this tool"], rows(true, (row) => row.basis === "predicted" && row.helices === "1" && row.signal === "1"));
+  assert.equal(entries.predicted, rows(false, (row) => row.basis === "predicted"));
+  assert.equal(entries["inside, nothing found"], rows(false, (row) => row.basis === "predicted" && row.side === "inside"));
+  assert.equal(entries["in a membrane, by segments of the sequence analysis"] + entries["in a membrane, by segments that carry a PROSITE rule"] + entries["in a membrane, by segments of UniProt's own rules"], rows(false, (row) => row.basis === "predicted" && row.side === "in"));
+  assert.equal(entries["outside, by a signal peptide of the sequence analysis"] + entries["outside, by a signal peptide of UniProt's own rules"], rows(false, (row) => row.basis === "predicted" && row.side === "outside"));
+  assert.equal(entries["by function, on a place that names a PROSITE rule"] + entries["by function, on a place that names a HAMAP rule"] + entries["by function, on a place of UniProt's own rules alone"], entries["by function"]);
+  assert.ok(entries["of which on no other rule"] <= entries["by function, on a place that names a PROSITE rule"] && entries["by function"] <= rows(false, (row) => row.basis === "by function"));
+  // The notes and the sources give the same numbers.
+  const all = models.predicted + entries.predicted;
+  const byPrograms = models.predicted + entries["in a membrane, by segments of the sequence analysis"] + entries["outside, by a signal peptide of the sequence analysis"] + entries["inside, nothing found"];
+  assert.ok(shelves.side_notes.predicted.includes(`So ${byPrograms.toLocaleString("en-US")} of the ${all.toLocaleString("en-US")} predicted sides rest on what TMHMM, SignalP and Phobius found or did not find.`));
+  assert.match(shelves.side_notes.predicted, /The three programs are given out for academic use; neither database's terms speak for them/);
+  assert.ok(byName.get("TMHMM").holds.includes(`${models.predicted.toLocaleString("en-US")} predicted sides rest on what the two found or did not find`));
+  assert.ok(byName.get("PROSITE").holds.includes(`${entries["by function, on a place that names a PROSITE rule"].toLocaleString("en-US")} are placed by function on a stated place that names one`));
+  // The README lists each with its terms, quotes what the two databases say of third parties, and leaves the decision open.
+  const said = readme.replace(/\s+/g, " ");
+  for (const source of upstream) assert.ok(readme.includes(`| ${source.name} | ${source.through} | ${source.licence} | ${source.class} | `), `the README's table does not list ${source.name}`);
+  assert.match(said, /"Some of the data and software included in the distribution may be subject to third-party constraints\. Users of the data and software are solely responsible for establishing the nature of and complying with any such restrictions\."/);
+  assert.match(said, /"We cannot provide unrestricted permission regarding the use of the data, as some data may be covered by patents or other rights\."/);
+  assert.match(said, /commercial users pay a licence fee "irrespective of the method by which they access the database"/);
+  assert.match(said, /is the project's to decide and is not settled here/);
 });
 
 test("every protein of the table is in exactly one family or under no family, and the counts add up", () => {
@@ -477,7 +534,7 @@ test("the shelves' files keep their size limits, and say that everything in them
   assert.ok(said.includes(`${shelves.no_family.count.toLocaleString("en-US")} proteins carry no family signature`));
 });
 
-const SAVED = existsSync(path.join(EVIDENCE, "requests.json")) && existsSync(path.join(DATASETS, "interpro-hierarchy-and-go", "MANIFEST.json"));
+const SAVED = existsSync(path.join(EVIDENCE, "requests.json")) && ["interpro-hierarchy-and-go", "terms-upstream-tools"].every((source) => existsSync(path.join(DATASETS, source, "MANIFEST.json")));
 
 test("the build tool reproduces the atlas, the tables, the shelves and the README from the saved downloads", { skip: SAVED ? false : "the folders of saved downloads are not on this machine (set PLANARIAN_EVIDENCE and PLANARIAN_DATASETS)" }, async () => {
   const out = await mkdtemp(path.join(os.tmpdir(), "planarian-atlas-"));
