@@ -156,5 +156,11 @@
   "Registration: the lead, from a clean snapshot of the integrated candidate, after the dt study and a rehearsal; the protocol travels with the branch's merge into integration-d172 and reaches main with the single landing",
   "The single-compartment form: reported, not judged, in version 1",
   "J4's budget (corrected ruling): 1e-3 pH, the declared physical accuracy consistent with J3; the references' floor (about 5e-14 pH) shows the reference resolves it by many orders, as written in the reference rule"
+ ],
+ "recording_rules": [
+  "Keep conserved proton equivalents (H_eq, the stored row) apart from free h and pH (the closure's algebraic read): report both; the ledgers (J6) are judged on H_eq, the reference's pH (J4) on the read",
+  "Keep the closure's envelope (a validity check of a reduced representation, J5) apart from the energy and heat closure (a ledger, J6)",
+  "Keep maintained fuel apart from depletion and recovery: this world's held fuel claims neither",
+  "The lumped compartment is a deterministic continuum model, not a stochastic mean: no claim about individual compartments or their variance"
  ]
 }
