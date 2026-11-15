@@ -306,9 +306,15 @@ try {
     await key("Escape", "Escape", 27);
     s = await state();
     check("Escape closes what is open", s.opened === null, JSON.stringify([s.selected, s.opened]));
-    // A gathering of smaller families.
+    // A gathering of smaller families. The camera glides back after a family closes, so the marker's
+    // place is read once the view rests; and the gathering is looked at once it is open, not after
+    // a fixed wait (its members' file may still be on its way).
+    await evaluate(`Promise.resolve(${V}.current.ready)`);
+    await sleep(1300);
     const gathered = await at("(key) => key.includes(':m:channels|in')");
-    await click(gathered.x, gathered.y, 900);
+    await click(gathered.x, gathered.y, 300);
+    await evaluate(`new Promise((resolve) => { const lens = ${L}, began = performance.now(); const wait = () => (lens.mounted?.opened || performance.now() - began > 8000 ? resolve() : setTimeout(wait, 30)); wait(); })`);
+    await sleep(900);
     s = await state();
     check("a gathering opens to the proteins of all its families", s.opened === gathered.key && s.drawn.open?.members > 0, JSON.stringify([s.opened, s.drawn.open, s.open]));
     note(`panel: ${JSON.stringify(s.panel)}`);

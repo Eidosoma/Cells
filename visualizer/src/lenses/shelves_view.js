@@ -3,7 +3,7 @@
 //
 // The shelves stack, as the atlas's membranes do:
 //   the plate   a stretch of membrane. What spans it stands in it; what is outside stands on it.
-//   the tray    clear glass below and in front: what is inside the cell.
+//   the tray    coloured glass below and in front, of the membrane's own kind: what is inside the cell.
 //   apart       an outline with no glass, further to the front: what has no known side.
 // A protein that the atlas draws as a unit is drawn as that unit, small; every other protein
 // is a plain marker, for which Cells has no law. A large catalogue stands as families: one
@@ -977,8 +977,10 @@ export class ShelvesView {
       if (palette.dark) sheet.faces.color.copy(colour).lerp(BLACK, 0.42);
       else sheet.faces.color.copy(colour).lerp(WHITE, 0.3);
     }
-    this.trayMaterial.color.set(palette.plate).lerp(WHITE, palette.dark ? 0.08 : 0.2);
-    this.trayMaterial.opacity = palette.dark ? 0.34 : 0.42;
+    // The inside is coloured glass like the membrane shelf, a little lighter so the plate still
+    // reads as the membrane (the user, 15 November 2026). What is set apart keeps no glass.
+    this.trayMaterial.color.set(palette.bioMembrane).lerp(palette.dark ? BLACK : WHITE, palette.dark ? 0.5 : 0.36);
+    this.trayMaterial.opacity = palette.dark ? 0.5 : 0.45;
     this.lineMaterial.color.set(palette.edge);
     this.dashes.color.set(palette.ghost);
     this.ring.material.color.set(palette.fg);
