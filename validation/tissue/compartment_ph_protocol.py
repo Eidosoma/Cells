@@ -79,7 +79,9 @@ def _shared(*, include_cargo):
 def criteria_fr4():
     d = "derived"
     out = [criterion("J1_admission", [f"{d}.admission.all_admitted"], "ge", 1,
-                     "every rung, control and the reference admitted and run to its end")]
+                     "the four rungs, K1, K2 and the reference admitted and run to their end; K3 "
+                     "is refused by design, its catch J7_K3 (pre-run correction, the lead, 15 "
+                     "November 2026)")]
     out += [criterion(f"J2_order_{x}", [f"{d}.orders.{x}.passes"], "ge", 1,
                       f"{x} on the three finest rungs (1, 0.5, 0.25 ms) by the classes rule: "
                       "resolved in [1.8, 2.2]; at rounding passes; mixed passes unless its lower "
@@ -101,10 +103,13 @@ def criteria_fr4():
                   "reported beside J4: V_b, lumen K and the pump's cycles against the reference; "
                   "the reference's floor (rtol 1e-11 against 1e-12)", judged=False),
         criterion("J5_envelope_lag", [f"{d}.envelope.max_lag_ph"], "le", PH_BUDGET,
-                  "the closure's state-dependent lag estimate at every stage of every buffered "
-                  "node, on every rung"),
+                  "the engine's running maximum of the closure's state-dependent lag estimate "
+                  "over every stage of every buffered node (proton_buffer_max_lag_pH, gap 7), on "
+                  "every rung: the margin, reported"),
         criterion("J5_envelope_count", [f"{d}.envelope.stages_beyond"], "le", 0,
-                  "no stage beyond the budget (counted and reported; any failure fails)"),
+                  "zero envelope refusals: the engine refuses the step at the first stage beyond "
+                  "the budget (B4's stage check), so a completed rung has none, and a refusal "
+                  "fails the part"),
         criterion("J6_material", [f"{d}.ledgers.material.max_over_allowance"], "le", 1,
                   "material per species within its allowance (the declared floor plus N eps max "
                   "over records of its total, computed by the judge) at every record of every "
@@ -127,11 +132,14 @@ def criteria_fr4():
         criterion("J7_K1_reference", [f"{d}.controls.k1.reference_control_drop_ph"], "ge", 0,
                   "K1's reference side, reported", judged=False),
         criterion("J7_K2_planted_sign", [f"{d}.controls.k2.pH_L_max_abs_vs_reference"], "ge",
-                  2 * PH_BUDGET, "K2: the pump's moves flipped fail J4 by more than its budget "
-                  "(read as |pH - pH_reference| >= 2 x 1e-3; put to the lead)"),
+                  2 * PH_BUDGET, "K2: a self-consistent reversed pump (moves, energetics and "
+                  "ledger terms reversed), which every ledger closes, fails J4 by more than its "
+                  "budget: max over records |pH - pH_reference| >= 2 x 1e-3 (the lead's rulings)"),
         criterion("J7_K3_envelope_flags", [f"{d}.controls.k3.engine_stages_beyond"], "ge", 1,
                   "K3: with the lumen's k_on at 1e-3 /mM/s on the closure's declaration, the "
-                  "engine's envelope check flags stages at run time"),
+                  "engine refuses the world at the definition through the envelope check (its "
+                  "initial lag estimate about 1e4 pH), the refusal's reason the envelope's (the "
+                  "same world admitted with B4's stage check removed): 1 when so"),
         criterion("J7_K3_kinetic_departs", [f"{d}.controls.k3.kinetic_departure_ph"], "ge",
                   PH_BUDGET, "K3: R-kinetic at that k_on departs from the closure beyond 1e-3 pH"),
     ]
@@ -198,10 +206,11 @@ def criteria_fr5():
                                              f"{d}.reference.floor_pH_L"], "ge", 0,
                       "the reference's floor, reported", judged=False),
             criterion(f"J5_{arm}_envelope_lag", [f"{d}.envelope.max_lag_ph"], "le", PH_BUDGET,
-                      "the closure's envelope at every stage of every buffered node, through the "
-                      "damage window, on every rung and the control"),
+                      "the engine's running maximum of the closure's lag estimate over every "
+                      "stage of every buffered node (gap 7), through the damage window, on every "
+                      "rung and the control: the margin, reported"),
             criterion(f"J5_{arm}_envelope_count", [f"{d}.envelope.stages_beyond"], "le", 0,
-                      "no stage beyond the budget"),
+                      "zero envelope refusals (a stage beyond the budget refuses the step)"),
             criterion(f"J6_{arm}_protons", [f"{d}.protons.max_over_allowance"], "le", 1,
                       "H_eq at each node changes only by its routes' proton transfers (pump, leak, "
                       "proton pore), to H's material allowance, at every record (0.5 ms)"),
@@ -448,6 +457,40 @@ PROSE = {
         "floor) exceeds 2.2; reversed (the coarser < F, the finer >= F) fails; each observable's "
         "class is reported with its differences and floors (pre-run correction, the lead, 15 "
         "November 2026)",
+        ("rules", "envelope"): "the closure's estimated first-order lag behind the kinetic system, "
+        "(rho/lambda)(beta/ln 10 - h)/(h ln 10), within 1e-3 pH at every stage of every buffered "
+        "node (rapid_proton_buffer.lag_estimate_ph). The engine refuses the step at the first "
+        "stage beyond it (B4's stage check), so a completed part has none and a refusal fails "
+        "the part; it reports the running maximum of the estimate over every stage "
+        "(proton_buffer_max_lag_pH, gap 7) as the margin (pre-run correction, the lead, 15 "
+        "November 2026). Revised before registration: the FR-4 references' run 02 showed the "
+        "earlier fixed ratio lambda >= 1e3 rho does not imply the budget (it passes from k_on "
+        "0.83 /mM/s, the budget only from about 1.28e4)",
+        ("criteria", "J1_admission"): "the four rungs, K1, K2 and the reference admitted and run "
+        "without refusal; K3 is refused by design, its catch J7 (pre-run correction, the lead, "
+        "15 November 2026)",
+        ("criteria", "J5_envelope"): "the envelope rule: zero envelope refusals, and the engine's "
+        "reported running maximum of the lag estimate within 1e-3 pH at every buffered node",
+        ("controls", "K2_planted_sign"): "a self-consistent reversed pump (the lead's ruling "
+        "(b), 15 November 2026), defined physically: the declared world with its pump's two "
+        "sides exchanged in the law. The same population on the bounding patch (capacity k, n = "
+        "2, K_H, K_ATP, the held fuel at the cytosol, availability 1) hydrolyses one ATP at the "
+        "cytosol per forward cycle and moves n H+ from the lumen to the cytosol. Its cycle free "
+        "energy is dG_cyc = d_rG'_ATP + n [RT ln(h_c/h_L) + F V_b], with V_b = phi_c - phi_L and "
+        "h_c, h_L the free protons; its rate is J = k a S (1 - exp(dG_cyc/RT)), S = [1 + "
+        "(K_H/h_L)^n]^-1 [1 + K_ATP/c_ATP]^-1, saturating on the lumen's free proton, the side it "
+        "takes protons from. Per cycle: the lumen's H_eq -n and the cytosol's +n, a charge n e "
+        "from the lumen to the cytosol; heat -J dG_cyc >= 0; the maintenance's work -J "
+        "d_rG'_ATP. Every ledger closes, so only J4 can catch it: it must fail by more than its "
+        "budget, and the independent reference computes its trajectory and records that its "
+        "effect exceeds the budget (D176's G3). The pump's moves flipped alone (+n per forward "
+        "cycle) are refused by the engine's material ledger: a unit guard in the tests, not a "
+        "judged control",
+        ("controls", "K3_closure_outside"): "the lumen buffer's k_on lowered to 1e-3 mM-1 s-1 (1 "
+        "M-1 s-1): the engine refuses the world at the definition through the envelope check "
+        "(its initial lag estimate about 1e4 pH; the reason the envelope's, since the same world "
+        "is admitted with B4's stage check removed), and in the kinetic reference the closure "
+        "departs beyond 1e-3 pH units",
         ("rules", "ledgers"): "material per species within its allowance at every record: the "
         "declared floor plus N eps max over records of the species' total over the cell, the "
         "lumen and the bath (N the run's steps), computed by the judge from the records and "
@@ -495,6 +538,30 @@ DISCLOSURE = (
     "'registration' (MG0c's form), and judged_parts names the generator's parts")
 
 
+CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
+    "fr4": [
+        "pre-run correction, 15 November 2026, the lead's rulings on refusal semantics and K2: "
+        "B4's envelope check refuses the step at the first stage beyond the budget, so J5 judges "
+        "zero envelope refusals in a completed part and the engine's reported running maximum of "
+        "the lag estimate (proton_buffer_max_lag_pH, gap 7) within 1e-3 pH at every buffered "
+        "node; K3 is caught when the engine refuses its world at the definition through the "
+        "envelope (its reason the envelope's: the same world is admitted with B4's stage check "
+        "removed), and leaves J1; K2 is a self-consistent reversed pump (moves, energetics and "
+        "ledger terms reversed), which every ledger closes, so only J4 against the independent "
+        "reference can catch it (max over records |pH - pH_ref| >= 2e-3, as ruled), the "
+        "reference recording that its effect exceeds the budget (D176's G3); the moves flipped "
+        "alone stay a unit guard in the tests. Verdicts are unchanged in kind: a refusal is a "
+        "verdict",
+    ],
+    "fr5": [
+        "pre-run correction, 15 November 2026, the lead's ruling on refusal semantics: B4's "
+        "envelope check refuses the step at the first stage beyond the budget, so J5 judges zero "
+        "envelope refusals in a completed part and the engine's reported running maximum of the "
+        "lag estimate (gap 7) within 1e-3 pH at every buffered node",
+    ],
+}
+
+
 def draft(which, path=None):
     """Write the judge section into the PROPOSED protocol in place (idempotent)."""
     path = Path(path or generator.PROTOCOLS[which])
@@ -518,6 +585,9 @@ def draft(which, path=None):
     out["judge"] = judge_section(which)
     if DISCLOSURE not in out["disclosures"]:
         out["disclosures"] = [*out["disclosures"], DISCLOSURE]
+    for correction in CORRECTIONS[which]:
+        if correction not in out["disclosures"]:
+            out["disclosures"] = [*out["disclosures"], correction]
     for path_, text in PROSE[which].items():
         leaf = out
         for key in path_[:-1]:

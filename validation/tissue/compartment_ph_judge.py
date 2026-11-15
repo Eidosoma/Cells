@@ -32,6 +32,10 @@ The arithmetic, fixed before any run (the same on engine and reference records):
   from the records and never read from the engine; the residual is |total(t) - total(0)|, and
   the route ledgers (FR-5's J6 and J8) use the same allowance. The charge check still reads the
   engine's residual and tolerance.
+* **Refusals** (the lead's rulings of 15 November 2026): the engine's envelope check refuses the
+  step at the first stage beyond the budget, so a completed part has no envelope refusal and J5
+  reads the engine's running maximum of the lag estimate; K3 is caught by its refusal through the
+  envelope (the generator's `refusal_reason`), and J1's admission leaves it out.
 * **Undefined values are None, never NaN:** records compare bitwise, and a None fails.
 
 Usage:
@@ -224,6 +228,17 @@ def envelope(parts, names):
                 stages_beyond=None if any(b is None for b in beyond) else sum(beyond))
 
 
+def envelope_refusal(part):
+    """K3's catch (the lead's ruling, 15 November 2026): 1 when the engine refused the part
+    through the envelope check (the generator's attributed `refusal_reason`), 0 when it ran to its
+    end, else None (a refusal for another reason is not the catch)."""
+    if not part:
+        return None
+    if part.get("refusal_reason") == "envelope":
+        return 1
+    return 0 if part.get("completed") is True else None
+
+
 def cytosol_band(parts, names, centre):
     """The cytosol's largest |pH_c - centre| over every stage of the named parts."""
     out = []
@@ -356,8 +371,9 @@ def derive_fr4(parts, derivation):
     reference = parts.get("reference") or {}
     worlds = reference.get("worlds", {})
     ref, floor = worlds.get("declared"), worlds.get("floor")
-    engine_parts = list(rungs) + list(d["control_parts"])
-    out = dict(admission=admission(parts, engine_parts + ["reference"]))
+    k1_name, k2_name, k3_name = d["control_parts"]
+    # J1 (the lead's ruling, 15 November 2026): K3 is refused by design, so it leaves admission.
+    out = dict(admission=admission(parts, list(rungs) + [k1_name, k2_name, "reference"]))
     out["orders"] = {x: ladder(parts, rungs, x, d["band"]) for x in d["order_observables"]}
     v_b = series(parts.get(declared), "V_b")
     v_range = None if v_b is None else max(v_b) - min(v_b)
@@ -386,13 +402,13 @@ def derive_fr4(parts, derivation):
         energy=energy_ladder(parts, rungs, d["energy_order_low"]),
     )
     out["bands"] = dict(cytosol_pH_max_deviation=cytosol_band(parts, rungs, d["cytosol_pH"]))
-    k1_name, k2_name, k3_name = d["control_parts"]
     k3 = envelope(parts, [k3_name])
     out["controls"] = dict(
         k1=dict(control_drop_ph=drop(parts.get(k1_name)), declared_drop_ph=drop(eng),
                 reference_control_drop_ph=drop(worlds.get("control_k1"))),
         k2=dict(pH_L_max_abs_vs_reference=max_abs_difference(parts.get(k2_name), ref, "pH_L")),
-        k3=dict(engine_max_lag_ph=k3["max_lag_ph"], engine_stages_beyond=k3["stages_beyond"],
+        k3=dict(engine_max_lag_ph=k3["max_lag_ph"],
+                engine_stages_beyond=envelope_refusal(parts.get(k3_name)),
                 kinetic_departure_ph=max_abs_difference(worlds.get("kinetic_outside"), ref,
                                                         "pH_L")),
     )

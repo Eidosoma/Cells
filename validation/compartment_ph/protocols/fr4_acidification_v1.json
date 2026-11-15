@@ -96,7 +96,7 @@
   "dt_study": "S5's form, as D150's and MG0c's: per record, the step term |q(dt) - q(dt/2)|, and the observed orders log2 of successive max-norm differences on the three finest rungs; the rule detects bias, not order. Each difference has its floor F = N eps max|q| (N the finer rung's steps). On the two judged differences: resolved (both >= F) lies in [1.8, 2.2]; at rounding (both < F) passes; mixed (the coarser >= F, the finer < F) passes unless the implied lower bound log2(coarser difference / finer floor) exceeds 2.2; reversed (the coarser < F, the finer >= F) fails; each observable's class is reported with its differences and floors (pre-run correction, the lead, 15 November 2026)",
   "state_error": "at the declared 1 ms, the Richardson-estimated error of the lumen pH <= 1e-3 pH units and of V_b <= 1e-3 of its range",
   "reference": "at 1 ms against the independent reference, within J4's budget of 1e-3 pH: the declared physical accuracy, the same as J3's. Basis: the references agent's measured floor on this world (about 5e-14 pH) shows the reference resolves that budget by about ten orders of magnitude; a multiple of the floor would sit far below the engine's own discretisation error at 1 ms, so J4 could never pass (the coordinator's corrected ruling, 15 November)",
-  "envelope": "the closure's estimated first-order lag behind the kinetic system, (rho/lambda)(beta/ln 10 - h)/(h ln 10), within 1e-3 pH at every stage of every buffered node (rapid_proton_buffer.lag_estimate_ph), counted and reported; any failure fails the part. Revised before registration: the FR-4 references' run 02 showed the earlier fixed ratio lambda >= 1e3 rho does not imply the budget (it passes from k_on 0.83 /mM/s, the budget only from about 1.28e4)",
+  "envelope": "the closure's estimated first-order lag behind the kinetic system, (rho/lambda)(beta/ln 10 - h)/(h ln 10), within 1e-3 pH at every stage of every buffered node (rapid_proton_buffer.lag_estimate_ph). The engine refuses the step at the first stage beyond it (B4's stage check), so a completed part has none and a refusal fails the part; it reports the running maximum of the estimate over every stage (proton_buffer_max_lag_pH, gap 7) as the margin (pre-run correction, the lead, 15 November 2026). Revised before registration: the FR-4 references' run 02 showed the earlier fixed ratio lambda >= 1e3 rho does not imply the budget (it passes from k_on 0.83 /mM/s, the budget only from about 1.28e4)",
   "ledgers": "material per species within its allowance at every record: the declared floor plus N eps max over records of the species' total over the cell, the lumen and the bath (N the run's steps), computed by the judge from the records and reported per species (pre-run correction, the lead, 15 November 2026); charge within the capacitor tolerance; energy residual over flows <= 2e-3 at 1 ms (today's booking), falling at second order down the ladder (the classes, with no upper edge)",
   "bands": "the cytosol's pH within 7.2 ± 0.05 at every stage (the pump's domain refuses otherwise)",
   "judged_run": "once, after registration, from a fresh clean execution snapshot of the integrated candidate (validation/source_snapshot.py)",
@@ -104,18 +104,18 @@
   "timing": "each unit through scripts/run_detached.sh; one rung per unit; the 900 s world at 1 ms is about 0.9 CPU-hours by the charged-patch test's upper-bound cost"
  },
  "criteria": {
-  "J1_admission": "every rung admitted and run without refusal",
+  "J1_admission": "the four rungs, K1, K2 and the reference admitted and run without refusal; K3 is refused by design, its catch J7 (pre-run correction, the lead, 15 November 2026)",
   "J2_orders": "observed orders of lumen pH, V_b, lumen K and pump cycles on the three finest rungs, by the classes rule (rules.dt_study)",
   "J3_state_error": "the state_error rule at 1 ms",
   "J4_reference": "the reference rule at 1 ms: |pH_engine - pH_reference| <= 1e-3 at every record, with V_b, lumen K and pump cycles reported against the reference beside it",
-  "J5_envelope": "the envelope rule (the state-dependent lag check)",
+  "J5_envelope": "the envelope rule: zero envelope refusals, and the engine's reported running maximum of the lag estimate within 1e-3 pH at every buffered node",
   "J6_ledgers": "the ledgers rule (material within its allowance), and the bands rule",
   "J7_controls": "every control below caught as registered"
  },
  "controls": {
   "K1_no_counterion": "the same world with P_K = 0 (World().control()): the lumen's pH falls by less than 0.1 units in 900 s, against more than 1 unit with the route; the references agent confirms the effect exceeds the declared budget (D176's G3)",
-  "K2_planted_sign": "the pump's moves flipped (+n per forward cycle) in a planted build: J4 must fail by more than its budget; a contract test already catches it at kernel level",
-  "K3_closure_outside": "the lumen buffer's k_on lowered to 1e-3 mM-1 s-1 (1 M-1 s-1) in the kinetic reference: the envelope check flags it at run time, and the closure departs from the kinetic reference beyond 1e-3 pH units"
+  "K2_planted_sign": "a self-consistent reversed pump (the lead's ruling (b), 15 November 2026), defined physically: the declared world with its pump's two sides exchanged in the law. The same population on the bounding patch (capacity k, n = 2, K_H, K_ATP, the held fuel at the cytosol, availability 1) hydrolyses one ATP at the cytosol per forward cycle and moves n H+ from the lumen to the cytosol. Its cycle free energy is dG_cyc = d_rG'_ATP + n [RT ln(h_c/h_L) + F V_b], with V_b = phi_c - phi_L and h_c, h_L the free protons; its rate is J = k a S (1 - exp(dG_cyc/RT)), S = [1 + (K_H/h_L)^n]^-1 [1 + K_ATP/c_ATP]^-1, saturating on the lumen's free proton, the side it takes protons from. Per cycle: the lumen's H_eq -n and the cytosol's +n, a charge n e from the lumen to the cytosol; heat -J dG_cyc >= 0; the maintenance's work -J d_rG'_ATP. Every ledger closes, so only J4 can catch it: it must fail by more than its budget, and the independent reference computes its trajectory and records that its effect exceeds the budget (D176's G3). The pump's moves flipped alone (+n per forward cycle) are refused by the engine's material ledger: a unit guard in the tests, not a judged control",
+  "K3_closure_outside": "the lumen buffer's k_on lowered to 1e-3 mM-1 s-1 (1 M-1 s-1): the engine refuses the world at the definition through the envelope check (its initial lag estimate about 1e4 pH; the reason the envelope's, since the same world is admitted with B4's stage check removed), and in the kinetic reference the closure departs beyond 1e-3 pH units"
  },
  "guards_of_record": {
   "species_only": "a species-only guard world (D150's form) where the closure and the leak are the only energy flows, judged at rounding",
@@ -148,7 +148,8 @@
   "pre-run correction, 15 November 2026, the lead's ruling on FR4's Q3 (cost): not a discrepancy. The runbook's 0.9 CPU-h was one 1 ms rung, and that figure is the charged-patch test's upper bound from another world; the first development rung measures the real cost before anything is budgeted, and the lead sets the rehearsal's horizon from it",
   "pre-run correction, 15 November 2026, the lead's ruling on FR4's Q4 (K3's unit): confirmed. K3's engine part stays its own unit at 1 ms, because the run-time flag is what it tests; it needs gap 7's per-stage count or maximum, scheduled by the core before FR-4's registration",
   "pre-run correction, 15 November 2026, the lead's ruling on FR4's Q5 (the H floor): the 1e-16 fmol H floor sits below one ulp of the cytosol's H_eq, so the check changes: the material allowance is the declared floor plus N eps max over records of the species' total (N the run's steps), computed by the judge from the records, never read from the engine, and reported per species",
-  "pre-run correction, 15 November 2026, the lead's ruling on FR4's Q6 (resolution): one ruling with FR-5's Q3 and Q8. The floor F = N eps max|q| (N the finer rung's steps) is kept; on the two judged differences, each with its own floor: resolved (both >= F) lies in [1.8, 2.2]; at rounding (both < F) passes; mixed (the coarser >= F, the finer < F) passes unless the implied lower bound log2(coarser difference / finer floor) exceeds 2.2; reversed (the coarser < F, the finer >= F) fails. The judge reports each observable's class with its differences and floors; J3 and J4 still judge every observable against its budget"
+  "pre-run correction, 15 November 2026, the lead's ruling on FR4's Q6 (resolution): one ruling with FR-5's Q3 and Q8. The floor F = N eps max|q| (N the finer rung's steps) is kept; on the two judged differences, each with its own floor: resolved (both >= F) lies in [1.8, 2.2]; at rounding (both < F) passes; mixed (the coarser >= F, the finer < F) passes unless the implied lower bound log2(coarser difference / finer floor) exceeds 2.2; reversed (the coarser < F, the finer >= F) fails. The judge reports each observable's class with its differences and floors; J3 and J4 still judge every observable against its budget",
+  "pre-run correction, 15 November 2026, the lead's rulings on refusal semantics and K2: B4's envelope check refuses the step at the first stage beyond the budget, so J5 judges zero envelope refusals in a completed part and the engine's reported running maximum of the lag estimate (proton_buffer_max_lag_pH, gap 7) within 1e-3 pH at every buffered node; K3 is caught when the engine refuses its world at the definition through the envelope (its reason the envelope's: the same world is admitted with B4's stage check removed), and leaves J1; K2 is a self-consistent reversed pump (moves, energetics and ledger terms reversed), which every ledger closes, so only J4 against the independent reference can catch it (max over records |pH - pH_ref| >= 2e-3, as ruled), the reference recording that its effect exceeds the budget (D176's G3); the moves flipped alone stay a unit guard in the tests. Verdicts are unchanged in kind: a refusal is a verdict"
  ],
  "questions_for_the_lead": [],
  "development_runs": {
@@ -260,7 +261,7 @@
     ],
     "comparison": "ge",
     "threshold": 1,
-    "basis": "every rung, control and the reference admitted and run to its end",
+    "basis": "the four rungs, K1, K2 and the reference admitted and run to their end; K3 is refused by design, its catch J7_K3 (pre-run correction, the lead, 15 November 2026)",
     "judged": true
    },
    {
@@ -364,7 +365,7 @@
     ],
     "comparison": "le",
     "threshold": 0.001,
-    "basis": "the closure's state-dependent lag estimate at every stage of every buffered node, on every rung",
+    "basis": "the engine's running maximum of the closure's state-dependent lag estimate over every stage of every buffered node (proton_buffer_max_lag_pH, gap 7), on every rung: the margin, reported",
     "judged": true
    },
    {
@@ -374,7 +375,7 @@
     ],
     "comparison": "le",
     "threshold": 0,
-    "basis": "no stage beyond the budget (counted and reported; any failure fails)",
+    "basis": "zero envelope refusals: the engine refuses the step at the first stage beyond the budget (B4's stage check), so a completed rung has none, and a refusal fails the part",
     "judged": true
    },
    {
@@ -474,7 +475,7 @@
     ],
     "comparison": "ge",
     "threshold": 0.002,
-    "basis": "K2: the pump's moves flipped fail J4 by more than its budget (read as |pH - pH_reference| >= 2 x 1e-3; put to the lead)",
+    "basis": "K2: a self-consistent reversed pump (moves, energetics and ledger terms reversed), which every ledger closes, fails J4 by more than its budget: max over records |pH - pH_reference| >= 2 x 1e-3 (the lead's rulings)",
     "judged": true
    },
    {
@@ -484,7 +485,7 @@
     ],
     "comparison": "ge",
     "threshold": 1,
-    "basis": "K3: with the lumen's k_on at 1e-3 /mM/s on the closure's declaration, the engine's envelope check flags stages at run time",
+    "basis": "K3: with the lumen's k_on at 1e-3 /mM/s on the closure's declaration, the engine refuses the world at the definition through the envelope check (its initial lag estimate about 1e4 pH), the refusal's reason the envelope's (the same world admitted with B4's stage check removed): 1 when so",
     "judged": true
    },
    {
@@ -577,10 +578,10 @@
     "heat_cargo_pore_0_pJ": "each route's cumulative heat (cargo_pore_0)"
    },
    "stage": {
-    "envelope_max_lag_ph": "the largest rapid_proton_buffer.lag_estimate_ph over every stage of every buffered node",
-    "envelope_stages_beyond": "the count of stages where it exceeds the budget (1e-3 pH)",
-    "cytosol_pH_min": "the cytosol's smallest pH over every stage",
-    "cytosol_pH_max": "its largest"
+    "envelope_max_lag_ph": "the running maximum of rapid_proton_buffer.lag_estimate_ph over every stage of every buffered node (B4's proton_buffer_max_lag_pH, gap 7), at the last record",
+    "envelope_stages_beyond": "the envelope refusals: 0 for a part that ran to its end, since B4's stage check refuses the step at the first stage beyond the budget",
+    "cytosol_pH_min": "the cytosol's smallest pH over every stage (proton_buffer_min_pH)",
+    "cytosol_pH_max": "its largest (proton_buffer_max_pH)"
    },
    "amounts_fmol": "{node: {species: [amount at each record]}} for every node and row: the judge computes the material check and its allowance from these (the lead's ruling, 15 November 2026), never from an engine tolerance",
    "ledgers": {
@@ -591,6 +592,7 @@
     "admitted": "parsed and admitted",
     "completed": "ran to its end without a refusal",
     "refusal": "the engine's refusal message (a refusal is a verdict, not an ending)",
+    "refusal_reason": "'envelope' when the same world is admitted with B4's stage check removed (K3's catch), else None",
     "steps": "the steps taken",
     "definition_sha256": "the definition's identity"
    }

@@ -134,7 +134,8 @@
   "pre-run correction, 15 November 2026, the lead's ruling on FR5's Q5 (the H floor): as FR-4's Q5, for J6's and J8's route ledgers and X's conservation",
   "pre-run correction, 15 November 2026, the lead's ruling on FR5's Q6 (route heat): increments between records can hide a negative step. The routes §7.5 books exactly (the cargo routes: X is neutral and moved only by them) are refused per step by the engine when a raw share is negative, and a refusal is a verdict; the rest (the proton leak, the proton pore, K+) are judged on their increments at >= -1e-12 pJ, disclosed as record resolution, with each route's smallest increment reported",
   "pre-run correction, 15 November 2026, the lead's ruling on FR5's Q7 (cost): as FR-4's Q3",
-  "pre-run correction, 15 November 2026, the lead's ruling on FR5's Q8 (resolution): as FR-4's Q6"
+  "pre-run correction, 15 November 2026, the lead's ruling on FR5's Q8 (resolution): as FR-4's Q6",
+  "pre-run correction, 15 November 2026, the lead's ruling on refusal semantics: B4's envelope check refuses the step at the first stage beyond the budget, so J5 judges zero envelope refusals in a completed part and the engine's reported running maximum of the lag estimate (gap 7) within 1e-3 pH at every buffered node"
  ],
  "development_runs": {
   "runs": [],
@@ -430,7 +431,7 @@
     ],
     "comparison": "le",
     "threshold": 0.001,
-    "basis": "the closure's envelope at every stage of every buffered node, through the damage window, on every rung and the control",
+    "basis": "the engine's running maximum of the closure's lag estimate over every stage of every buffered node (gap 7), through the damage window, on every rung and the control: the margin, reported",
     "judged": true
    },
    {
@@ -440,7 +441,7 @@
     ],
     "comparison": "le",
     "threshold": 0,
-    "basis": "no stage beyond the budget",
+    "basis": "zero envelope refusals (a stage beyond the budget refuses the step)",
     "judged": true
    },
    {
@@ -724,7 +725,7 @@
     ],
     "comparison": "le",
     "threshold": 0.001,
-    "basis": "the closure's envelope at every stage of every buffered node, through the damage window, on every rung and the control",
+    "basis": "the engine's running maximum of the closure's lag estimate over every stage of every buffered node (gap 7), through the damage window, on every rung and the control: the margin, reported",
     "judged": true
    },
    {
@@ -734,7 +735,7 @@
     ],
     "comparison": "le",
     "threshold": 0,
-    "basis": "no stage beyond the budget",
+    "basis": "zero envelope refusals (a stage beyond the budget refuses the step)",
     "judged": true
    },
    {
@@ -978,10 +979,10 @@
     "heat_cargo_pore_0_pJ": "each route's cumulative heat (cargo_pore_0)"
    },
    "stage": {
-    "envelope_max_lag_ph": "the largest rapid_proton_buffer.lag_estimate_ph over every stage of every buffered node",
-    "envelope_stages_beyond": "the count of stages where it exceeds the budget (1e-3 pH)",
-    "cytosol_pH_min": "the cytosol's smallest pH over every stage",
-    "cytosol_pH_max": "its largest"
+    "envelope_max_lag_ph": "the running maximum of rapid_proton_buffer.lag_estimate_ph over every stage of every buffered node (B4's proton_buffer_max_lag_pH, gap 7), at the last record",
+    "envelope_stages_beyond": "the envelope refusals: 0 for a part that ran to its end, since B4's stage check refuses the step at the first stage beyond the budget",
+    "cytosol_pH_min": "the cytosol's smallest pH over every stage (proton_buffer_min_pH)",
+    "cytosol_pH_max": "its largest (proton_buffer_max_pH)"
    },
    "amounts_fmol": "{node: {species: [amount at each record]}} for every node and row: the judge computes the material check and its allowance from these (the lead's ruling, 15 November 2026), never from an engine tolerance",
    "ledgers": {
@@ -992,6 +993,7 @@
     "admitted": "parsed and admitted",
     "completed": "ran to its end without a refusal",
     "refusal": "the engine's refusal message (a refusal is a verdict, not an ending)",
+    "refusal_reason": "'envelope' when the same world is admitted with B4's stage check removed (K3's catch), else None",
     "steps": "the steps taken",
     "definition_sha256": "the definition's identity"
    }
