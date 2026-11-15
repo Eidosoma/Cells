@@ -135,7 +135,8 @@
   "pre-run correction, 15 November 2026, the lead's ruling on FR5's Q6 (route heat): increments between records can hide a negative step. The routes §7.5 books exactly (the cargo routes: X is neutral and moved only by them) are refused per step by the engine when a raw share is negative, and a refusal is a verdict; the rest (the proton leak, the proton pore, K+) are judged on their increments at >= -1e-12 pJ, disclosed as record resolution, with each route's smallest increment reported",
   "pre-run correction, 15 November 2026, the lead's ruling on FR5's Q7 (cost): as FR-4's Q3",
   "pre-run correction, 15 November 2026, the lead's ruling on FR5's Q8 (resolution): as FR-4's Q6",
-  "pre-run correction, 15 November 2026, the lead's ruling on refusal semantics: B4's envelope check refuses the step at the first stage beyond the budget, so J5 judges zero envelope refusals in a completed part and the engine's reported running maximum of the lag estimate (gap 7) within 1e-3 pH at every buffered node"
+  "pre-run correction, 15 November 2026, the lead's ruling on refusal semantics: B4's envelope check refuses the step at the first stage beyond the budget, so J5 judges zero envelope refusals in a completed part and the engine's reported running maximum of the lag estimate (gap 7) within 1e-3 pH at every buffered node",
+  "pre-run correction, 15 November 2026, the lead's ruling on the charge check: it reads the engine's charge residual and its capacitor tolerance from the records (ledgers.charge_residual_C and charge_tolerance_C); Q5's record-computed allowance (the judge's, from the amounts) covers material only, since computing charge from the records would need the node charges and capacitances in them"
  ],
  "development_runs": {
   "runs": [],
