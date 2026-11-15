@@ -164,8 +164,10 @@ Where older sections of this document differ, this section applies.
   - **The requirement:** reactions can make and spend fuel; pumps draw from those same amounts;
     each standard chemical potential has one authority; water and division get explicit interfaces
     later.
-  - **The representation** (inner-model pool state, inventory rows or a hybrid) is **open.** It is
-    decided in the inner-model note against this requirement.
+  - **The representation is decided (D176): F2.** ATP, ADP and Pi are shared inventory species,
+    used by reactions and pumps, with one authority for amounts and standard chemical potentials.
+    Maintained fuel is held inventory rows, not pump parameters. The "moved by the step" admission
+    keeps instantaneous regulation from reading pump-consumed fuel as unchanged.
   - **The first case. Target.** A fixed volume holds one stoichiometric regeneration reaction and
     one pump, sharing finite ATP, ADP and Pi. It shows depletion, reduced pump activity and
     recovery, with material and energy accounting checked independently. Water, division and full
