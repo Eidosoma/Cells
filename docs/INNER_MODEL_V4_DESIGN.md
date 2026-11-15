@@ -1167,8 +1167,15 @@ November):**
   - insertion@2's onset does not: a gated population on an onset patch starts from the gate the
     artifact evolved while it was closed. Today's physics after an onset therefore depends on the
     artifact.
-- **The insertion@2 bug** is to be fixed later as its own gated change (gates frozen while
-  closed, or set at opening), not in this round.
+- **The insertion@2 bug is latent** (the acceptance owner's scan, `acceptance/insertion2-scan.txt`).
+  - `membrane_insertion_v2.check_onsets` refuses any channel population on an onset patch
+    ("Channel populations on an onset patch are later work"). So no accepted definition reaches
+    the inherited gate, and no evidence is affected.
+  - Insertion@2's onset patches (S5 and its tools, crossrev's division_furrow and
+    division_quartered) carry no channels. Kir2.1 and NaV1.2 sit only on cell membranes, which
+    the partition opens with their gates set.
+  - The gate fix (gates frozen while closed, or set at opening) is a precondition for lifting
+    `check_onsets`'s refusal, and lands with or before that change, as its own gated change.
 
 **Costs accepted:** about 2.5–3 days for CORE, with INT and OPS in parallel. INT takes the
 adapter's lookup order (the object first), the composite's 11 inner type reads, the composite
