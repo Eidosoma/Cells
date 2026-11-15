@@ -42,7 +42,7 @@ catalogue table, the same bytes every time.
     ["JCVISYN3A_0001", "Chromosomal replication initiator protein", "dnaA", "cell", "inside", "predicted", "replication", 450, null, {"essential": "essential", "seen": true}]
   ],
   "side_notes": {"predicted": "How a side was predicted, in one or two sentences, naming the predictor and its source."},
-  "marks": {"essential": {"label": "Essentiality", "values": ["essential", "quasi-essential", "non-essential"], "measured": true, "source": "key"}},
+  "marks": {"essential": {"label": "Essentiality", "values": ["essential", "quasi-essential", "non-essential"], "measured": true, "source": "the name of an entry in sources"}},
   "counts": {"outside": 0, "in": 0, "inside": 0, "not known": 0},
   "sources": [{"name": "…", "url": "https://…", "licence": "…", "accessed": "2026-11-15", "holds": "what was taken"}]
 }
@@ -72,8 +72,20 @@ catalogue table, the same bytes every time.
   labelled as not modelled.
 - **`marks`** are what else can be shown or filtered: whether it was seen in proteomics,
   its essentiality, a measured or estimated amount. Each mark is declared once, with its
-  values, whether it is measured, and its source. A mark is included only where the
-  source's terms allow a copy.
+  values, whether it is measured, and its source (the name of an entry in `sources`). A
+  mark is included only where the source's terms allow a copy. Marks with a fixed meaning,
+  used where the data has them:
+  - `essential`, `seen`, `amount`: as above;
+  - `evidence`: for a `stated` side, whether an experiment or a curator's inference
+    stands behind it;
+  - `where`: a named place within the side, such as an organelle of the cell, or "at the
+    membrane" for a protein known to be at the membrane with its face not stated (its
+    side is then `not known`);
+  - `also`: another side that a source states for the same protein. `side` is then the
+    one stated first;
+  - `complex`: the assembly the protein is a member of.
+- **`side_notes`** has an entry for each basis the file uses, saying in one or two
+  sentences how that basis was applied.
 - **Size.** A species' file stays under 1 MB. A catalogue too large for that, or for one
   marker each to be read, is never cut down: it is shown whole, as families that open
   (below). Human is the last to be done.
