@@ -30,7 +30,8 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 
 const chrome = spawn(
   chromeBinary,
-  ["--headless=new", "--no-sandbox", "--mute-audio", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--remote-debugging-port=0", "--window-size=1280,800", "about:blank"],
+  // Its profile on disk, removed with the lock: never Chrome's own folder under /tmp.
+  ["--headless=new", "--no-sandbox", "--mute-audio", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--remote-debugging-port=0", "--window-size=1280,800", `--user-data-dir=${release.profile}`, "--disable-breakpad", "--no-first-run", "about:blank"],
   { stdio: ["ignore", "ignore", "pipe"] }
 );
 const endpoint = await new Promise((resolve, reject) => {
@@ -549,7 +550,12 @@ try {
   for (const line of pageLog) console.log(line);
   check("no script errors or blocked loads were reported by the page", pageLog.length === 0, `${pageLog.length} messages`);
   socket.close();
+  // Stop the browser and wait until it is gone, so that its profile folder can be removed.
+  const closed = new Promise((resolve) => chrome.once("close", resolve));
   chrome.kill();
+  await Promise.race([closed, sleep(4000)]);
+  if (chrome.exitCode === null && chrome.signalCode === null) chrome.kill("SIGKILL");
+  await Promise.race([closed, sleep(2000)]);
   server.close();
   release();
 }
