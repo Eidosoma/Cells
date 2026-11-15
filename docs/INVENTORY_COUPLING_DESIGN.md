@@ -1,9 +1,31 @@
 # Coupling out of the inventory: species-regulated availability (design)
 
-**Status: accepted, 14 November 2026 (the lead, with the advisor); rulings in §6.3.** The accepted
-scope is the junction target; the channel target is pending milestone 1 (ruling 12). No engine code
-was added or changed for this note. D155 item 1 authorises the design of one general feature,
-*coupling out of the inventory*. D145's gene-regulation hold is narrowed, not lifted.
+**Status: numerically qualified, 15 November 2026.** The design was accepted on 14 November 2026
+(the lead, with the advisor; rulings in §6.3). `species_regulated_availability@1` was built in four
+milestones (§7 to §10). The judged run of the registered protocol `coupling_regulated_availability_v1`
+(registration commit abe4ef5) passed: 47 of 47 judged criteria, and every control caught (§10.8).
+The tags are `coupling-v1-registered-2026-11-15` and `coupling-v1-qualified-2026-11-15`.
+
+**The scope of the qualification:**
+- **Targets:** the junction and the channel population (ruling 12, settled).
+- **What was judged:**
+  - A1, the factor values, on the host and on CPU XLA;
+  - the second-order convergence of A4 and A5 against the independent references R-feedback and
+    R-cell;
+  - their controls.
+- **A4's world:** reciprocal feedback through a regulatory state, over 2 s, started after its
+  contact's voltage transient, with the contact at the edge of @3's explicit-rate bound at 1 ms.
+- **A5's world:** a channel availability set at once by a neutral regulator, over 1 s.
+- **Not covered:**
+  - other platforms: version 1 is CPU only, with an L4 variant later;
+  - pumps, gated channels and leak or pump targets;
+  - longer horizons;
+  - A10, the first consumer.
+- The bitwise items (M1, A3, A6, A8, the idleness claims) are tier tests. The 1 ms errors are
+  regression pins.
+
+D155 item 1 authorises the design of one general feature, *coupling out of the inventory*. D145's
+gene-regulation hold is narrowed, not lifted.
 
 D155 item 1 reads:
 - a species amount sets another operator's control, through the contract's `CONTROL_FACTORS`;
@@ -328,6 +350,14 @@ multiply). At least one input is required, and s(0) = s₀ ∈ [0, 1].
   - `regulatory_crossing_step`, the index k of the first step end k·dt at which s ≥ θ, for a
     declared `crossing_level` θ (−1 before it). It is set by the event map at the next step start,
     from an operator step counter.
+  - **Both are counts of numerical steps.** That applies to the crossing record and the step
+    counter `coupling_step_count`.
+    - The physical time of step k, and the crossing time read from it, come from the numerical
+      plan, as ARCHITECTURE.md's modular core requires (state roles and time).
+    - Under today's fixed-step plan that time is k·dt. A coarse or adaptive plan maps steps to
+      times itself.
+    - The operator's declaration will say so in D172's round. Today the source's comment on the
+      counter ("time of a step start = count * dt") states the fixed-step case.
 
   Their energy role is diagnostic (v2 §1.1). They give the first consumer its exposure and its
   threshold time at step resolution, whatever the observation interval (§4.5), and they are the
@@ -434,7 +464,7 @@ The values are illustrative and synthetic. The channel coupling is admitted once
 | `regulatory_crossing_step` | [state, cell slot], int64 | Diagnostic, −1 until the crossing |
 | `regulatory_writes_applied` | [state, cell slot], int64 | Kinetic counter, as replacement's `generation` |
 | `coupling_enabled` | [coupling] | Kinetic, 0 or 1 |
-| `coupling_step_count` | scalar, int64 | Kinetic counter; time = count × dt |
+| `coupling_step_count` | scalar, int64 | Kinetic counter of numerical steps; its physical time comes from the numerical plan (count × dt under today's fixed step) |
 
 **Readout column:** `coupling_factor` [route], the route's F at each saved row's state.
 
@@ -1612,6 +1642,84 @@ is not registered.
   - The regression guard takes 152 s on one CPU: tier 3.
 - **§9.2's tolerance table** is superseded as a qualification by the order criterion. Its values
   are now the regression pins.
+
+### 10.6 The rehearsal on main (15 November 2026)
+
+Everything ran from a clean snapshot of main at 0448f9fc, on one CPU. Evidence is in `rehearsal/`
+of the milestone-4 folder (`rehearsal.json`, `rehearsal.log`).
+
+- **Refusals while PROPOSED.** The generator's and the judge's judged entries were refused ("the
+  protocol is not registered"), and neither wrote anything.
+- **The dry run.** A registered dry-run copy, kept in the evidence folder only, ran every part
+  through the judged entry in 1,299 s, with a memory peak of 981 MB.
+- **Its records against dev-476c6e01**, bit for bit (the judge's `compare` entry):
+  - A1, A4, A5 and the two order controls are identical;
+  - the δ-controls differ by design, run at the registered δ (2e-5 and 5e-6). Both are caught:
+    A4's V orders 1.80, 0.97 and −0.01, and A5's 1.27, 0.48 and 0.05.
+- **The judge's verdict on the copy passes.** It is a rehearsal, not a judgement.
+- **The redraft.** It adds the rehearsal record and the judged run's resource budget, and marks
+  the rehearsal and dry-run steps done. The budget is one CPU and a 4G cap; its runtime limit is
+  §10.7's. The criteria, registered δ and pins are unchanged.
+- **What remains:** the final check, the registration and one judged run.
+
+### 10.7 The advisor's final check (15 November 2026)
+
+- **Registration.** The rehearsal's dry-run copy was made by editing its status in a script. The
+  drafter had no `register` path, so none had run.
+  - The drafter now has one in MG0c's form: `register PROTOCOL RECORD`. The record's status
+    replaces PROPOSED and the record follows it. A registered protocol, or a record whose status
+    does not begin "registered", is refused. Tier 1 tests it.
+  - A copy of the redraft registered with it judges the rehearsal's results with the same
+    verdict as the rehearsal, criterion for criterion and value for value.
+- **No test trips once the protocol is registered.** In a temporary copy of the committed tree,
+  the checked-in protocol was registered with `register`. Both tests that read it pass there:
+  the protocol test (13) and the regression guard (2). No test asserts "not registered" against
+  the checked-in file or starts a judged run from it; the refusal test writes its own PROPOSED
+  protocol.
+- **D147.** All nine worlds the protocol runs have 0 free field offsets:
+  - A4's three arms and A5's two;
+  - the four controls.
+
+  Each declares `capacitive_reduction_gauged_damped_newton@2`, which agrees with the automatic
+  choice. The draft refuses any free offset, and tier 1 checks it.
+- **The runtime limit** is 4,500 s: three times the rehearsal plus 10 minutes, rounded up to the
+  minute (D150's rule; shared CPUs ran 1.65 to 4.6 times slow on 14 November).
+  - The launcher enforces it, together with the cap (`scripts/run_detached.sh`, `--runtime-max`);
+    no code reads the budget fields. The protocol writes out the launch command.
+  - The attempt rule reruns any infrastructure ending once from the same snapshot: a timeout, a
+    runtime kill, an OOM kill, a signal or an incomplete run.
+- **Disclosures.** The protocol states what was fixed with development results in view:
+  - the band;
+  - the choice of judged observables and their minimum pairs;
+  - the registered δ;
+  - the rounding-scale rule that excludes A4's uncoupled U pair at 2.33.
+
+  A1's bound and the 100-floor factor came before the runs.
+- **The criteria, registered δ and pins are unchanged.**
+
+### 10.8 The judged run (15 November 2026)
+
+- **Registration.** The lead registered the protocol in commit abe4ef5. It changed the status and
+  the registration record only, after:
+  - the rehearsal;
+  - the final check with the advisor;
+  - a check of the registration path from the landed tree.
+- **The run.** The generator's judged entry ran every part from the clean snapshot of abe4ef5 on
+  one CPU, in 1,378 s (A1 0.6 s, A4 560 s, A5 199 s, the controls 612 s). That is within the
+  4,500 s limit. The memory peak was 978 MB, under the 4G cap.
+- **The verdict.** The judge's judged entry took 1 s and passed: 47 of 47 judged criteria, and every
+  control caught (the first-order state, the stale factor, both δ-controls).
+- **Against the rehearsal.** The run's records equal the rehearsal's bit for bit in every part and
+  every control, the δ-controls included, since both ran at the registered δ (the judge's
+  `compare`). The first `compare` call was an invocation error (a missing argument, kept in
+  `compare-attempt1-missing-arg.txt`); the second ran.
+- **Evidence.** `/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/judged/` holds:
+  - `run/results.json` and `verdict/verdict.json`;
+  - `compare-to-rehearsal.json`;
+  - `judged.log`, `judged-run.sh` and `memory.peak`.
+
+  PROGRESS and the plan are at 026c86f.
+- **What it qualifies** is the status line's scope, numerically. It makes no biological claim.
 
 ## Appendix A. Equations for the independent references
 

@@ -6,6 +6,8 @@ known orders exercise the judge's resolution rule, its band and its control verd
 * A second-order record is in band; a first-order one is caught; a record under 100 floors, or
   under its rounding scale, is reported, not judged; a pair whose error is zero is not resolved.
 * The generator refuses a judged run of an unregistered protocol before writing anything.
+* Registration takes the record's status and keeps every other leaf (MG0c's form); every
+  protocol world has no free field offsets (D147).
 * A control law exists only inside its `registered` block, and the registry is restored after
   the block whether it ends normally, raises or exits.
 """
@@ -162,3 +164,57 @@ def test_the_registry_is_restored_after_the_block_even_when_it_raises(kind):
                 pass
         assert law in OPERATORS
     assert OPERATORS == before and law not in OPERATORS
+
+
+def test_the_record_comparison_finds_every_difference_but_run_times(tmp_path):
+    """The rehearsal's bitwise check of two runs' records: a changed float, a missing record and a
+    δ-control at another δ are reported; run times are not records."""
+    base = dict(
+        parts=dict(
+            a4=dict(coupled=dict(runs=[dict(errors=dict(V=[1e-9, 2e-9]), wall_s=3.0)])),
+            controls=dict(delta_basal_a4=dict(delta=2e-5, runs=[]), wall_s=9.0),
+        )
+    )
+    same = json.loads(json.dumps(base))
+    same["parts"]["a4"]["coupled"]["runs"][0]["wall_s"] = 7.0
+    moved = json.loads(json.dumps(base))
+    moved["parts"]["a4"]["coupled"]["runs"][0]["errors"]["V"][1] = np.nextafter(2e-9, 1.0)
+    moved["parts"]["controls"]["delta_basal_a4"]["delta"] = 1.8e-5
+    paths = {}
+    for name, value in dict(base=base, same=same, moved=moved).items():
+        paths[name] = tmp_path / f"{name}.json"
+        paths[name].write_text(json.dumps(value))
+    identical = judge.compare(paths["base"], paths["same"], tmp_path / "c1.json")["parts"]
+    assert identical["a4"]["identical"] and identical["controls"]["delta_basal_a4"]["identical"]
+    report = judge.compare(paths["base"], paths["moved"], tmp_path / "c2.json")["parts"]
+    assert report["a4"]["differences"] == [".coupled.runs[0].errors.V[1]"]
+    assert report["controls"]["delta_basal_a4"]["identical"] is None
+
+
+def test_registration_takes_the_records_status_and_keeps_every_other_leaf(tmp_path):
+    """The lead's registration (MG0c's form): refused for a protocol already registered or a
+    record whose status does not begin 'registered'; otherwise the status is the record's, the
+    record follows it, and every other leaf is as drafted."""
+    proposed = dict(id="x", status="PROPOSED (a draft)", criteria=[dict(id="c")], band=[1.7, 2.3])
+    path, record = tmp_path / "protocol.json", tmp_path / "record.json"
+    path.write_text(json.dumps(proposed))
+    record.write_text(json.dumps(dict(status="draft, not a registration")))
+    with pytest.raises(SystemExit, match="must begin 'registered'"):
+        drafter.register(path, record)
+    record.write_text(json.dumps(dict(status="registered 15 November 2026 by the lead", by="x")))
+    out = drafter.register(path, record)
+    assert list(out) == ["id", "status", "registration", "criteria", "band"]
+    assert out["status"] == out["registration"]["status"]
+    assert {k: v for k, v in out.items() if k not in ("status", "registration")} == {
+        k: v for k, v in proposed.items() if k != "status"
+    }
+    with pytest.raises(SystemExit, match="only a PROPOSED protocol"):
+        drafter.register(path, record)
+
+
+def test_every_protocol_world_has_no_free_field_offsets():
+    """D147, for every world the protocol runs (A4's and A5's arms, the four controls): no free
+    field offsets, so the declared field solver (@2) stands and agrees with the automatic choice."""
+    facts = drafter.d147_worlds()
+    assert len(facts["worlds"]) == 9
+    assert facts["max_free_field_offsets"] == 0 and facts["automatic_choice_agrees"]

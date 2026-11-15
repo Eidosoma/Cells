@@ -218,6 +218,80 @@ Where older sections of this document differ, this section applies.
 
   Fixed-step restrictions stay until then. The two-clock assay strategy stays within its scope.
 
+### Levels of detail
+
+**The principle.** One engine supports different declared representations of a mechanism, chosen
+per mechanism and per question. A world can combine detailed electrical dynamics with reduced
+metabolism, or the reverse, and no single global detail level implies accuracy everywhere.
+
+**The existing basis.** This builds on
+[fidelity and resolution](MULTISCALE_EXECUTION_ARCHITECTURE.md#fidelity-and-resolution-are-explicit-capabilities)
+and [spatial and temporal scales](MULTISCALE_DESIGN.md#spatial-and-temporal-scales). They already
+require:
+- named model families;
+- refusal of unsupported observations;
+- static region assignments first;
+- closures tested on future responses.
+
+- **Compatibility is defined at the physical interface. Target.**
+  - A detailed and a reduced representation may have different internal state.
+  - At the interface they expose the same quantities, controls, observations and coupling timing.
+  - Each closes its own ledgers. Both expose the same amounts and invariants at the interface.
+  - Their transient difference, such as material or free energy in transit through intermediate
+    pools, belongs to the reduction's declared error budget.
+- **One representation of a pathway per scope. Target.** "What is represented" is a declared key
+  that admission compares, so a lumped reaction and its detailed network cannot both produce the
+  same flux on the same nodes. Nothing refuses that today.
+- **A small declaration, only on laws that stand in for something. Target, reserved in D172's law
+  design.** It has four optional fields:
+  - **what it represents:** the key above, and the reference it was reduced from;
+  - **what it preserves:** retained state and history;
+  - **what can be asked of it:** supported interventions, controls and observations, with others
+    refused;
+  - **where it is qualified:** its validity envelope and error budget. Enforceable bounds, checked at
+    run time like the channel laws' voltage domains (**holds today** for those), are kept apart from
+    assumptions that need evidence.
+- **Representation and numerical method stay separate.**
+  - Deterministic and stochastic execution have explicit semantics.
+  - Reaction declarations are reused where valid, but stochastic execution needs count-based
+    propensities and its own qualification.
+  - **Holds today only within its own family:** `capsid_graph@1` assembly runs an event solver
+    ([CAPSID_ASSEMBLY.md](CAPSID_ASSEMBLY.md)).
+  - **Target, later:** general stochastic metabolism on the shared inventory.
+- **Fixed assignments come first.**
+  - Detail is selected before a run.
+  - Static mixed-detail regions come next. They need scoped writes (door S), compatible exchange
+    interfaces and synchronised accounting.
+  - Automatic promotion and demotion is a later milestone. It needs explicit state transfer,
+    reconstruction, history and uncertainty rules.
+- **Execution stays GPU-native.**
+  - **Target:** each declared representation group gets its own specialised kernels, connected
+    through array exchanges. A reduced representation must remove actual work and storage; a runtime
+    flag that still traces and evaluates the detailed mechanisms does not count.
+  - **Holds today** for runs through the shared output path: the selected representation is
+    recorded with every run, because `io.write_run` records the resolved definition
+    (`resolved_config.json`). The run view will carry it too (D154).
+  - **Rule:** fidelity never changes silently because of a resource limit.
+- **Three validations stay separate. Rule.** They are:
+  - numerical verification of each representation;
+  - reduction accuracy, where the detailed model is the reference, not biological ground truth;
+  - biological validation.
+
+  For reduction accuracy:
+  - the envelope and the error budget are declared before the comparison runs;
+  - at least one case outside the envelope must fail;
+  - the detailed reference is itself numerically verified in that regime against an independent
+    reference;
+  - the declared comparisons are automated, and they report their scope.
+- **The first consumer comes after D174's fuel case. Target, a consumer milestone, waiting for the
+  fuel representation.**
+  - D174's fuel case, one regeneration reaction and one pump, is the reduced closure.
+  - The consumer milestone adds a small detailed regeneration network, sharing the same fuel amounts
+    and pump interface.
+  - It compares depletion, demand changes and recovery, including transients, accounting and
+    measured cost.
+  - A later two-region case tests exchange between detailed and reduced regions.
+
 ### Reuse cases and the results gate
 
 Which cases must land with D172 and which come with their consumers is listed in the implementation
@@ -227,7 +301,7 @@ note.
 | --- | --- | --- |
 | Inventory → regulation → electrical response | Shared amounts, control routing, temporal coupling | Holds today numerically (Track R's A4 and A5). Its judged protocol is PROPOSED |
 | Bath dose → uptake → compartment retention or reaction | Scoped views, compartment identity, material accounting | Target, needing door S |
-| Reaction → finite fuel → pump | Chemistry and electrics sharing one energy budget | Target, needing the fuel representation |
+| Reaction → finite fuel → pump | Chemistry and electrics sharing one energy budget | Target, needing the fuel representation. Its single regeneration reaction is also the reduced closure of the first [levels-of-detail](#levels-of-detail) case |
 | Neutral solute and water in a vesicle | Reuse across biological settings, changing concentration and volume | Target, needing the passive law. Syn3A's probe P0 checks capability |
 
 - **Organism data stays apart from engine mechanisms. Target.** The organism and evidence structure

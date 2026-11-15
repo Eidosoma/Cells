@@ -5353,6 +5353,15 @@ every composition D150 and D152 admit.
   - Worlds above 7 species are outside D150's judged scope until a protocol covers them.
   - Above 16 needs another probe.
 
+**Amended 2026-11-15, the user:** "so we should increase that limit as we need!"
+- The cap is raised whenever a consumer needs more species. Each raise:
+  - is a D148 change;
+  - comes with a guard world at the new size;
+  - measures the memory and step cost.
+- D172's restructure makes every species sum one explicit order, on host and device, in the same
+  round that consolidates species identity. A raise then needs only that guard and the cost
+  measurement, not a new summation-order probe (the lead's implementation).
+
 ## D166: A scheduled bath composition in the composite (FR-10) is logged at priority 2
 
 2026-11-14. The user supplied the request (FR-10), the last of the block, at the requester's
@@ -5583,6 +5592,13 @@ contacting the authors and we will search for the missing data also help if need
   sources only, by the user's side and the agent.
 - **Agreed:** values from non-commercial papers are cited, but their tables are never copied into
   the repository. The 4D model's outputs come at the metabolism stage (D138).
+- **Licences of the data (the user, 15 November 2026):** "lets use them for analysis but ours is
+  a commerical project bvut open source".
+  - Datasets under non-commercial licences are used for analysis only. These are Maier 2011,
+    Wodke 2013, Chen 2016 and the Presutti 2026 article.
+  - Nothing from them, whether tables, traces or plots, is committed or redistributed.
+  - Any judged or published result rests on permissively licensed data where possible, and the
+    note flags every dependence on non-commercial data.
 - ***M. pneumoniae* is audited soon,** amended the same evening by the user: "But also M. pneumoniae
   soon for validation if we have more real public data there". The Syn3A agent audits it next,
   for real measured public data to validate against, and says whether it should lead any stage.
@@ -5624,6 +5640,30 @@ clarifications were adopted into the section:
 - The passive test runs on a closed two-compartment system, with reservoir work counted in
   held-bath worlds.
 - Two present-tense examples were corrected.
+
+## D175: Levels of detail as declared representations
+
+2026-11-15. The user forwarded guidance approving a concise "Levels of detail" section, with six
+refinements, and asked: "review and also get a review from your adviser then update the arch docs".
+The lead adopted it after reviewing it with the advisor. It is now in
+[ARCHITECTURE.md](ARCHITECTURE.md#levels-of-detail), linked from both multiscale documents.
+
+**What it sets.**
+- Representations of a mechanism are declared per mechanism and per question; there is no global
+  detail level.
+- Compatibility is defined at the physical interface. Each representation closes its own ledgers,
+  and the transient difference between them belongs to the declared error budget.
+- One representation of a pathway per scope, enforced by a declared key.
+- Four optional fields, only on laws that stand in for something. They are a reserved interface in
+  D172's law design.
+- The representation is kept separate from the numerical method.
+- Assignments are fixed first.
+- The reduction is real in the kernels, not a runtime flag.
+- Numerical, reduction and biological validation are kept separate. The envelope is declared
+  before the comparison, and one case outside it must fail.
+
+**Its first consumer** follows D174's fuel case and waits for the fuel representation. The
+guidance's text is kept outside the public repository.
 
 ## Implementation choices and remaining work
 
