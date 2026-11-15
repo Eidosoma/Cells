@@ -73,6 +73,25 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **MG0c judged: the reactions operator `local_species_reactions@1` (D152 v1) is numerically
+  qualified within MG0c's scope (15 November 2026).** The protocol `mg0c-turing-v1` was registered
+  at 5ab4326 (tag `mg0c-v1-registered-2026-11-15`), and one judged run was made from a clean
+  snapshot of that commit ([verdict](/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/judged-5ab4326a/combine/verdict.json);
+  [launcher log](/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/judged-inputs-5ab4326a/orchestrate.log)).
+  - **The verdict passed:**
+    - all 55 judged criteria (Q1–Q7 and the controls by parameter, every kept control caught);
+    - all 10 judged guard files;
+    - the combined verdict, whose snapshot revision is the registration commit.
+  - **Every unit succeeded,** with no out-of-memory event. a ran 63 min (peak 2.6 GB), b 74 min
+    (2.5 GB), q7 3 min, c 48 min, judge-guards 18 min (3.2 GB), then judge and combine.
+  - **It is identical to the rehearsal** in all 10,502 compared non-timing values
+    ([compare](/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/judged-5ab4326a/compare-judged-vs-rehearsal.json)).
+  - **The scope** is driven mass action of orders 0, 1 and 3 (Schnakenberg) at outside nodes, with
+    @3's species transport on faces in the composite, on CPU. The items not judged are listed in
+    the verdict.
+  - **Disclosed in the protocol:** the development runs predate FR-9, and the 1e-2 control cutoff
+    was set with the modes' sensitivities known.
+
 - **MG0c (D152): the protocol after its rehearsal on main and the final check (15 November 2026).**
   It is still PROPOSED. Tier 1 at the merge e1cdc79: 329 files, no changed outcome.
   - **The rehearsal on main 58b6f14:** every judged entry ran on a registered dry-run copy, in its own
