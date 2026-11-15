@@ -1,0 +1,119 @@
+{
+ "schema": "cells.excitable_protocol@1",
+ "id": "excitable-generic-qualification-v1",
+ "title": "Track E M2: the generic excitable cell (candidate A) on resolved_pump_tissue@3 against independent references: one cell, the passive cable, the propagated wave and the domain limits",
+ "status": "PROPOSED (drafted 15 November 2026 by Track E during M1, from M1's development runs and the independent references' results; not registered; no judged run before the lead registers it; tolerances below carry their bases, and the development runs named under development_runs_needed decide whether the engine meets them before registration)",
+ "rung": "M2 (D170: M1 and M2 on @3)",
+ "question": "Does resolved_pump_tissue@3, running the generic cell A (c_m 0.01 F/m^2; NaV1.2 1e-6, Kir2.1 1e-8, Kv1.5 3e-7 m/s; the heredity cell's leaks and pump), reproduce independent references for one cell, the passive cable, the propagated wave in chains (with a mid-chain segment), and the block-site junction voltages and peaks against the laws' domains, with closed accounting, at the declared steps on CPU?",
+ "engine_models": [
+  "resolved_pump_tissue@3 (src/cells/core/surface_pump_v3_spec.py, src/cells/models/surface_pump_v3.py): nav1p2_m3h_regularized@1, kir2p1_mh2@1, kv1p5_mh@1, kleak_always_open@1, naleak_always_open@1, constant_field@1 leaks and junctions, nak_atp_mass_action_positive@1, junction_voltage_relaxation@1 pinned open, IMEX ARS(2,2,2) with exponential stage gates, trapezoid_nonnegative@1 junction heat, field solver version 2 declared through field_solver_choice.declare() with 0 free offsets, CPU, float64"
+ ],
+ "scope": "Candidate A only; held-bath chains of 20 and 40 cells, and the 127-cell sheet at s = 300 for self-consistency only (no independent sheet reference exists); couplings s in {10, 30, 100, 300, 1000, 3000} for chains, and every perturbed junction at s * r_gj >= 20 (D170 ruling 3, provisional); steps 5 and 2.5 us (chains), 5 and 2.5 us (sheet at s = 300); stimuli as the equations appendix section 8 states them (fixed windows, rows every 5 us, APD from the stimulus end in stimulus runs). It does not qualify: candidate B or any other cell; gated junctions; any world with free field offsets; GPU; steps outside the declared set; block below the floor; the sheet's conduction against a reference; re-entry; any biological or species claim.",
+ "driver": "validation/tissue/excitable_qualification.py (to be written: excitable_probe's chain and segment parts promoted once its step ladder includes its own cap and probe 1's C4 and C5 measurement fixes are made (D170 ruling 6), reading validation/tissue/conduction_observables.py for every observable)",
+ "judge": "validation/tissue/excitable_judge.py (to be written: separate code that reads the driver's records and the references' results only, D170 ruling 6)",
+ "references": {
+  "modules": "validation/excitable/ (excitable_reference, excitable_protocols, excitable_limits), used through REFERENCES_USAGE.md and their API only",
+  "independence": "written from docs/EXCITABLE_TISSUE_EQUATIONS.md (db488771, then 99fddc35) by a separate agent that never read src/cells, the probe driver or its records; self-tests in tests/unit/test_excitable_references.py check that nothing there imports cells or validation.tissue",
+  "convergence": "the references' own error is 1e-11 or below on every reported observable (rtol 1e-10 against 1e-11 with atol / 100; REFERENCES_USAGE.md section 9's check)",
+  "rerun_needed": "the far-end S1-S2 interval with the appendix's fixed 250 ms window (795d9ec1), and APD from the stimulus end in stimulus runs, which the main results give from the onset (the follow-up checks-final gives A and B from the end)"
+ },
+ "world": {
+  "cell": "candidate A from its 2 s relaxed rest (appendix sections 7 and 8.1); reference rest -79.558918 mV",
+  "chains": "appendix section 8.4: N = 20 (and 40 for the length check), cells 0-2 stimulated at 1e-6 x (c_m / 0.05) m/s for [2, 3) ms, every junction at s_c, gates pinned open",
+  "segment": "appendix section 8.5 at A: N = 40, s_c = 1000, cells 16-23 at r_Na, junctions 15-23 at r_gj, the cases of section 8.5 at s_c * r_gj >= 20",
+  "sheet": "worlds.hexagon(6), 127 cells, 342 junctions, s = 300, under a planar stimulus whose rung launches a front (conduction_observables.launched_front)",
+  "rows_and_windows": "rows every accepted step; activation by linear interpolation between rows (the references' sampled_activation at the same row interval for comparison); every run to 250 ms (S1-S2 runs to S2's onset + 250 ms), no early stop"
+ },
+ "rules": {
+  "steps": "chains at 5 and 2.5 us; every judged chain criterion is read at 5 us, and the 2.5 us run is the refinement (R)",
+  "activation": "the first upward -30 mV crossing after the stimulus onset for every cell; for a perturbed cell also its own upstroke, recorded as continuous values (max dV/dt, inward ionic charge over its rise, source fraction); the binary reading is activation_rule.registered_binary, always reported with activation_rule.sensitivity",
+  "capture": "a launched front (conduction_observables.launched_front) for every sheet control; for chains, every cell activates",
+  "stimulus_onset": "an abrupt (switched) conductance stimulus keeps its strength times the step at or below 2e-12 m (strength in m/s per ion, step in s), or ramps its onset. In M1 every stimulus refused at its onset, with the cells at rest and every host retry accepted, was refused by the host energy ledger (Resolved pump accounting failed: energy) at 4e-12 m: 1.6e-6 m/s at 2.5 us, 8e-7 at 5 us and 4e-7 at 10 us; every one at 2e-12 m was accepted: 8e-7 at 2.5 us, 4e-7 at 5 us and 2e-7 at 10 us (s = 100, 300 and 1000; candidates A and B; /mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/HANDOFF.md). It is a limit of the stimulus form, not of the tissue",
+  "apd": "from the stimulus end in a stimulus run, from the largest dV/dt in a kicked run (conduction_observables.action_potential)",
+  "near_threshold_exclusion": "D150's and MG0c's lesson: an outcome (fires, propagates, blocks, responds) is judged only at parameter values at least 5 % (in log) from the reference's bracket edge; the cases nearer the edge are reported, not judged, and are listed before the run",
+  "controls_by_parameter": "each arm's controls are judged with their own criteria: the NaV-disabled and passive cell and chain (no overshoot; passive decay against the reference), the subthreshold stimulus (no capture) and the control segment (no perturbation)",
+  "one_bound_not_from_the_engine": "every tolerance comes from the references' convergence or from a stated physical scale, never from the engine's own spread or its development values",
+  "backend_and_timing": "CPU, float64, the declared snapshot; costs are reported, never judged",
+  "refusals": "a refusal is attributed (domain, step, check) and fails the criterion it touches; it is never read as an outcome"
+ },
+ "criteria": [
+  {"id": "D147", "metrics": "free field offsets and the declared field solver of every world", "comparison": "0 free offsets; capacitive_reduction_gauged_damped_newton@2 declared", "threshold": "exact", "basis": "D147, D156"},
+  {"id": "CELL_rest", "metrics": "A's rest after 2 s from H", "comparison": "engine minus reference (-79.558918 mV)", "threshold": "|difference| <= 0.01 mV", "basis": "a physical scale: 1 % of the 1 mV composition drift band; the reference's error is 3e-14 V"},
+  {"id": "CELL_kick_threshold", "metrics": "the kick threshold bracket", "comparison": "the reference's threshold (24.84478 mV) lies within the engine's bracket widened by 0.05 mV", "threshold": "containment", "basis": "the bisection's width; the reference's bracket is 6e-5 mV"},
+  {"id": "CELL_AP", "metrics": "at twice threshold (capped at 60 mV) and at kicks to -20 and 0 mV: peak, time to peak, largest dV/dt, APD50, APD90", "comparison": "engine minus reference", "threshold": "peak within 0.1 mV; times within 1 % or 10 us, whichever is larger; dV/dt within 2 %", "basis": "physical scales: 0.1 mV against A's 3.3 mV channel margin; 10 us is two rows; 2 % covers the row interval's sampling of a 247 V/s peak"},
+  {"id": "CELL_controls", "metrics": "NaV-disabled and passive arms at twice threshold", "comparison": "no overshoot in the engine and the reference; the passive decay's V at 80 ms", "threshold": "no overshoot; V(80 ms) within 0.1 mV", "basis": "controls by parameter"},
+  {"id": "CELL_stimulus", "metrics": "the 1 ms stimulus threshold and the S1-S2 response grid at twice it", "comparison": "threshold containment as CELL_kick_threshold; identical S1-S2 outcomes at every interval outside the near-threshold exclusion", "threshold": "containment; identical outcomes", "basis": "the references' brackets"},
+  {"id": "CABLE_passive", "metrics": "the passive chain (NaV, Kv, Kir unavailable; N = 20, s_c = 1000) under 1e-9, 2e-9 and 4e-9 m/s stimuli", "comparison": "engine against excitable_limits.linear_cable_response and against the reference's nonlinear passive chain", "threshold": "against the nonlinear reference within 1e-7 V; against the linear cable within the reference's own departure (1.2e-8, 2.6e-8, 5.7e-8 V) plus 1e-7 V", "basis": "the reference's measured departure of the linear cable; 1e-7 V is a physical scale far below the response (0.76-2.7 mV)"},
+  {"id": "CABLE_strong_coupling", "metrics": "the chain at s_c = 1e5 against excitable_limits.lumped_cell", "comparison": "the largest difference in V at 10 and 30 ms", "threshold": "within the reference's own difference (1.30 mV, 0.19 mV) plus 0.1 mV", "basis": "the reference's measured approach to the limit; reported only if s_c = 1e5 is admissible at 5 us (its explicit bound is not: then this criterion is reported, not judged)"},
+  {"id": "WAVE_outcome", "metrics": "propagation at s_c in {10, 30, 100, 300, 1000, 3000}", "comparison": "the reference's outcome (blocks at 10 and 30, propagates from 100 at point 2; A's to be run by the references)", "threshold": "identical outcomes outside the near-threshold exclusion", "basis": "the references; the coupling bracket at point 2 is 42.09-42.49"},
+  {"id": "WAVE_CV", "metrics": "CV over N/3-2N/3 at every propagating s_c, and over 6-14, 16-23, 25-31 for N = 40", "comparison": "engine against the reference's sampled_activation at the engine's row interval", "threshold": "within 0.5 %", "basis": "a physical scale: 0.5 % of CV is 0.6 us per cell at A's 8,277 cells/s, below the row interval"},
+  {"id": "WAVE_capture", "metrics": "the capture bracket at s_c = 1000", "comparison": "the reference's threshold within the engine's bracket", "threshold": "containment", "basis": "the references' bracket (A's to be run)"},
+  {"id": "WAVE_recovery", "metrics": "the far-end S1-S2 grid (appendix section 8.4, fixed 250 ms windows) and the far end's second activation times", "comparison": "identical outcomes outside the near-threshold exclusion; second activation times within 1 %", "threshold": "identical; 1 %", "basis": "the references rerun with the fixed window"},
+  {"id": "WAVE_segment", "metrics": "appendix section 8.5's cases at A within the floor: outcomes, last activated cells, segment delays, CVs, the largest segment junction voltage", "comparison": "engine against the reference's results (REFERENCES_USAGE.md section 8.5 table)", "threshold": "identical outcomes and last activated cells; delays and CVs within 0.5 %; junction voltages within 0.1 mV", "basis": "M1's blinded comparison agreed to 0.021 mV; 0.1 mV is the physical scale, 15 % of the 6.6 mV coupling-only margin at the floor"},
+  {"id": "LIMIT_junction", "metrics": "every run's largest |Vj| against the junction gate law's 120 mV", "comparison": "no junction-domain refusal at s * r_gj >= 20; the reported margin", "threshold": "no refusal", "basis": "D170 rulings 3 and 5"},
+  {"id": "LIMIT_channel", "metrics": "every run's largest Vm by class (stimulated, interior, end cell; on the sheet corner, rim, end, collision, before block)", "comparison": "against +60 mV", "threshold": "no channel-domain refusal; margins under 3 mV flagged and reported", "basis": "the channel laws' domain; M1's corner margin of 2.3 mV"},
+  {"id": "ACC_energy", "metrics": "the host energy-ledger residual of every accepted step", "comparison": "against the engine's own tolerance", "threshold": "<= 2e-3 relative (ARS)", "basis": "@3's ENERGY_RTOL; M1's chains at A reached 2.1e-4"},
+  {"id": "ACC_material_charge", "metrics": "the host material, charge and boundary checks of every accepted step", "comparison": "the engine's own checks", "threshold": "no refusal", "basis": "@3's checks"},
+  {"id": "R_refinement", "metrics": "each judged chain case at 2.5 us against 5 us", "comparison": "outcomes, last activated cells; delays, CVs and APDs; voltages", "threshold": "identical outcomes; 0.5 %; 0.5 mV", "basis": "the step study's second order; M1's chain refinement agreed to 1e-5 relative"},
+  {"id": "SHEET_self_consistency", "metrics": "the 127-cell sheet at s = 300: the planar control's launched front, the disc arms' delays, J and P margins, refinement at 2.5 us", "comparison": "no reference: self-consistency only", "threshold": "launched; refinement as R_refinement; no refusal", "basis": "M1's development runs; reported as a guard of the M3 world, not as qualification against a reference"}
+ ],
+ "activation_rule": {
+  "status": "PROPOSED (M1, 15 November 2026): the binary threshold is chosen here only, with its sensitivity shown (the lead's instruction); the lead decides",
+  "continuous_record": "each cell's source fraction: its inward ionic charge over its rise from -50 mV to its peak (the inward part of the engine's net ionic membrane current, integrated) over C (V_peak - V_rest). It is the primary record; brackets are derived from it",
+  "registered_binary": {
+   "threshold": 0.0,
+   "rule": "a perturbed cell is activated when it crosses -30 mV and its inward ionic charge over its rise exceeds the passive floor; unperturbed cells by their crossing; stimulated cells are sources by construction",
+   "floor": "the largest inward charge of any perturbed cell in the same run's passive (r_Na = 0) cases; measured exactly 0 at every coupling at s = 300 and s = 1000",
+   "basis": "the only threshold with a measured basis: a passive cell is a pure sink, so any inward charge is the cell's own channels. Every positive threshold is a convention, and the sensitivity shows how far it moves the brackets",
+   "known_weakness": "it counts weak sources: at s = 1000, combined r = 0.02, the 17 cells it counts as activated have a median source fraction of 0.006"
+  },
+  "sensitivity": {
+   "thetas": [0.0, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5],
+   "records": ["/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/records/rerun-s300/sheet-s300-rerun.json", "/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/records/rerun-s300/sheet-s300-rerun-scattered.json", "/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/records/launch-s1000-02/sheet-s1000-launch.json"],
+   "full_table": "/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/records/activation-sensitivity-s300-s1000.json (with the fraction of perturbed cells activated per case)",
+   "note": "per threshold on the source fraction, per option and arm: the largest strength that blocks and the smallest that does not (null: none). The coupling-only arm does not block at either option for theta <= 0.2; at s = 1000 the combined arm's bracket moves from s*r_gj 20-50 (theta 0) to 350-500 (theta 0.2)",
+   "by_theta": {
+   "0.0": {"s1000 disc combined": {"largest_blocking": 0.02, "smallest_passing": 0.05}, "s1000 disc coupling_only": {"largest_blocking": null, "smallest_passing": 0.02}, "s300 disc combined": {"largest_blocking": null, "smallest_passing": 0.0667}, "s300 disc coupling_only": {"largest_blocking": null, "smallest_passing": 0.0667}, "s300 disc sodium_only": {"largest_blocking": null, "smallest_passing": 0.05}, "s300 scattered combined": {"largest_blocking": null, "smallest_passing": 0.0667}, "s300 scattered coupling_only": {"largest_blocking": null, "smallest_passing": 0.0667}},
+   "0.01": {"s1000 disc combined": {"largest_blocking": 0.05, "smallest_passing": 0.08}, "s1000 disc coupling_only": {"largest_blocking": null, "smallest_passing": 0.02}, "s300 disc combined": {"largest_blocking": null, "smallest_passing": 0.0667}, "s300 disc coupling_only": {"largest_blocking": null, "smallest_passing": 0.0667}, "s300 disc sodium_only": {"largest_blocking": null, "smallest_passing": 0.05}, "s300 scattered combined": {"largest_blocking": null, "smallest_passing": 0.0667}, "s300 scattered coupling_only": {"largest_blocking": null, "smallest_passing": 0.0667}},
+   "0.02": {"s1000 disc combined": {"largest_blocking": 0.08, "smallest_passing": 0.12}, "s1000 disc coupling_only": {"largest_blocking": null, "smallest_passing": 0.02}, "s300 disc combined": {"largest_blocking": null, "smallest_passing": 0.0667}, "s300 disc coupling_only": {"largest_blocking": null, "smallest_passing": 0.0667}, "s300 disc sodium_only": {"largest_blocking": 0.05, "smallest_passing": 0.1}, "s300 scattered combined": {"largest_blocking": null, "smallest_passing": 0.0667}, "s300 scattered coupling_only": {"largest_blocking": null, "smallest_passing": 0.0667}},
+   "0.05": {"s1000 disc combined": {"largest_blocking": 0.12, "smallest_passing": 0.18}, "s1000 disc coupling_only": {"largest_blocking": null, "smallest_passing": 0.02}, "s300 disc combined": {"largest_blocking": null, "smallest_passing": 0.0667}, "s300 disc coupling_only": {"largest_blocking": null, "smallest_passing": 0.0667}, "s300 disc sodium_only": {"largest_blocking": 0.05, "smallest_passing": 0.1}, "s300 scattered combined": {"largest_blocking": 0.08, "smallest_passing": 0.25}, "s300 scattered coupling_only": {"largest_blocking": null, "smallest_passing": 0.0667}},
+   "0.1": {"s1000 disc combined": {"largest_blocking": 0.25, "smallest_passing": 0.35}, "s1000 disc coupling_only": {"largest_blocking": null, "smallest_passing": 0.02}, "s300 disc combined": {"largest_blocking": 0.18, "smallest_passing": 0.25}, "s300 disc coupling_only": {"largest_blocking": null, "smallest_passing": 0.0667}, "s300 disc sodium_only": {"largest_blocking": 0.1, "smallest_passing": 0.2}, "s300 scattered combined": {"largest_blocking": 0.08, "smallest_passing": 0.25}, "s300 scattered coupling_only": {"largest_blocking": null, "smallest_passing": 0.0667}},
+   "0.2": {"s1000 disc combined": {"largest_blocking": 0.35, "smallest_passing": 0.5}, "s1000 disc coupling_only": {"largest_blocking": null, "smallest_passing": 0.02}, "s300 disc combined": {"largest_blocking": 0.25, "smallest_passing": 0.35}, "s300 disc coupling_only": {"largest_blocking": null, "smallest_passing": 0.0667}, "s300 disc sodium_only": {"largest_blocking": 0.2, "smallest_passing": 0.5}, "s300 scattered combined": {"largest_blocking": 0.25, "smallest_passing": null}, "s300 scattered coupling_only": {"largest_blocking": null, "smallest_passing": 0.0667}},
+   "0.5": {"s1000 disc combined": {"largest_blocking": 0.7, "smallest_passing": null}, "s1000 disc coupling_only": {"largest_blocking": 0.7, "smallest_passing": null}, "s300 disc combined": {"largest_blocking": 0.5, "smallest_passing": 0.7}, "s300 disc coupling_only": {"largest_blocking": 0.18, "smallest_passing": 0.25}, "s300 disc sodium_only": {"largest_blocking": 0.5, "smallest_passing": null}, "s300 scattered combined": {"largest_blocking": 0.25, "smallest_passing": null}, "s300 scattered coupling_only": {"largest_blocking": 0.25, "smallest_passing": null}}
+   }
+  }
+ },
+ "guards_of_record": {
+  "tests": "the tier gate at the landed revision (scripts/test_tiers.py, tiers 1 and 2), tests/unit/test_conduction_observables.py and tests/unit/test_excitable_references.py",
+  "identity": "crossrev's record of resolved_pump_tissue@3's programs unchanged from the baseline of record",
+  "verdict_rule": "the combined verdict: every judged criterion and every guard of record"
+ },
+ "reported_not_judged": [
+  "each cell's own upstroke values (max dV/dt, inward ionic charge, source fraction) in every run",
+  "the cases inside the near-threshold exclusion",
+  "costs per step and per run",
+  "the sheet at s = 1000 (PLAN amendment 1 of M1 decides whether it carries a launched front)"
+ ],
+ "what_it_does_not_show": [
+  "any biological, cardiac or species claim: A's laws are BETSE-parity laws with no calibration (D107, D131)",
+  "conduction on the sheet against an independent reference",
+  "block below s * r_gj = 20, gated junctions, candidate B",
+  "GPU behaviour or any backend other than CPU"
+ ],
+ "development_runs": {
+  "done": "M1's first development runs (/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/: the chains at A and B, the sheet at s = 300 and 1000) and the references' track-e-protocols-01, track-e-followup-01 and block-site-A",
+  "needed_before_registration": [
+   "the engine at every criterion's points with the driver above, compared with the references, to show that each tolerance is met (a development run, not judged)",
+   "the references at A for WAVE_outcome, WAVE_capture and WAVE_recovery (fixed windows) and CELL_stimulus with APD from the stimulus end",
+   "the near-threshold exclusion list, from the references' brackets",
+   "the sheet at s = 300 with the upstroke series (M1's re-run, for the lead's word)"
+  ]
+ },
+ "outcome_rules": "pass when the combined verdict passes. A failure is recorded and kept; a revised protocol gets a new id.",
+ "resources": "CPU 4 (or as the lead assigns), each unit detached through scripts/run_detached.sh with --oom-first, caps of 2-4 GiB",
+ "questions_for_the_lead": [
+  "1. Whether the sheet's self-consistency (SHEET_self_consistency) belongs in M2's verdict or only in M3's world check.",
+  "2. Whether CABLE_strong_coupling is dropped: s_c = 1e5's explicit bound is far below 5 us, so it needs a smaller step than the protocol's.",
+  "3. The tolerance bases above (0.01 mV, 0.1 mV, 0.5 %, 1 %, 2 %): physical scales chosen before any engine-against-reference development run, for the lead's review."
+ ]
+}

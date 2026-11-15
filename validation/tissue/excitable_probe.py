@@ -324,11 +324,13 @@ def definition(
     obs_dt=1e-3,
     cell_nav=None,
     junction_availability=None,
+    edges=None,
 ):
     """n heredity cells (own held baths) with Kv1.5; a chain of junctions at coupling s.
 
     cell_nav {cell: availability} and junction_availability {junction: availability} hold a
     segment's NaV1.2 and junction availabilities from t = 0 (probe 2, PLAN amendment 3).
+    edges [(a, b), ...] replaces the chain by that graph (M1's sheet); junction k joins edge k.
 
     kicks {cell: mV}; stim dict(cells, pulses [(on_step, off_step)], m_s) declares the
     stimulus populations on its cells (always declared when given, so worlds share shapes);
@@ -387,18 +389,19 @@ def definition(
             group["schedule"] = [dict(time=0.0, availability=float(cell_nav[int(cell)]))]
     x["channel_capacity"] = len(m["channels"])
     if s is not None and n > 1:
+        pairs = [(k, k + 1) for k in range(n - 1)] if edges is None else list(edges)
         j, gate = junction_gate_block(gated)
         m["junctions"] = [
             dict(
                 id=f"junction_{k}",
-                sender=f"cell_{k}",
-                receiver=f"cell_{k + 1}",
+                sender=f"cell_{a}",
+                receiver=f"cell_{b}",
                 area_m2=j["area_m2"],
                 permeability_m_per_s={sp: s * v for sp, v in j["permeability_m_per_s"].items()},
                 law="constant_field@1",
                 gate=dict(gate),
             )
-            for k in range(n - 1)
+            for k, (a, b) in enumerate(pairs)
         ]
         held = junction_availability or {}
         e["junction_controls"] = [
@@ -406,9 +409,9 @@ def definition(
                 junction_id=f"junction_{k}",
                 schedule=[dict(time=0.0, availability=float(held.get(k, 1.0)))],
             )
-            for k in range(n - 1)
+            for k in range(len(pairs))
         ]
-        x["edge_capacity"] = n - 1
+        x["edge_capacity"] = len(pairs)
     if booking is not None:
         m["junction_heat_booking"] = booking
     x["max_steps"] = steps + 16
@@ -459,9 +462,13 @@ def admissible(bounds):
 
 
 def ladder_dt(limit, cap):
-    bound = cap if limit is None else min(limit, cap)
+    """The largest ladder step at or below the cap and strictly below the static limit.
+
+    Probe 1's version excluded the cap itself (its planned 10 us ran at 5 us); D170 ruling 6
+    asks that the ladder include its own cap.
+    """
     for dt in DT_LADDER:
-        if dt <= bound * (1 - 1e-12):
+        if dt <= cap * (1 + 1e-12) and (limit is None or dt < limit * (1 - 1e-12)):
             return dt
     return DT_LADDER[-1]
 
@@ -1357,7 +1364,7 @@ def part_segment(args):
         for label, r_na, r_gj in cases:
             out["cases"].append(dict(dt_s=dt, **segment_case(args, label, r_na, r_gj, dt)))
             write_json(path, out)
-    if not any(
+    if not args.no_extension and not any(
         c.get("measures", {}).get("reaches_segment")
         and not c.get("measures", {}).get("exits_segment")
         for c in out["cases"]
@@ -1827,7 +1834,389 @@ def part_verdict(args):
     )
 
 
+def span_cv(activation, lo, hi):
+    """The inverse least-squares slope of activation time against index over cells lo..hi."""
+    if hi <= lo or any(activation[i] is None for i in range(lo, hi + 1)):
+        return None
+    slope = np.polyfit(np.arange(lo, hi + 1), [activation[i] for i in range(lo, hi + 1)], 1)[0]
+    return float(1.0 / slope) if slope > 0 else None
+
+
+def part_lengths(args):
+    """C4's measurement fix (design note section 6; M1 PLAN amendment 2): CV against chain
+    length, stimulus strength and span, with the first ten cells beyond the stimulus and the
+    last ten excluded."""
+    set_point(args.nav, args.kir, args.cm)
+    out = dict(
+        provenance=provenance(),
+        plan=PLAN,
+        part="lengths",
+        point=dict(nav_m_s=args.nav, kir_m_s=args.kir, cm_F_m2=args.cm, kv_m_s=args.kv),
+        cases=[],
+    )
+    out["rest"] = relax_rest(args.kv)
+    path = Path(args.output) / "lengths.json"
+    lo = args.stim_cells + 10
+    longest = max(args.length_n)
+    for s in args.length_s:
+        bounds = static_bounds(definition(longest, dt=1e-5, end_time=0.01, kv_m_s=args.kv, s=s))
+        dt = ladder_dt(admissible(bounds), args.dt_cap)
+        for n in args.length_n:
+            hi = n - 11
+            for k in args.strengths:
+                c = chain_run(
+                    args, s, n=n, dt=dt, m_s=k * args.stim_m_s * stimulus_scale(), span=(lo, hi)
+                )
+                c.update(strength=k, span=[lo, hi], dt_s=dt)
+                act = (c.get("measures") or {}).get("activation_s")
+                if act:
+                    cuts = np.linspace(lo, hi, 4).round().astype(int).tolist()
+                    c["subspan_cv_cells_per_s"] = [
+                        span_cv(act, a, b) for a, b in zip(cuts[:-1], cuts[1:], strict=False)
+                    ]
+                    c["shared_span_cv_cells_per_s"] = span_cv(act, lo, min(args.length_n) - 11)
+                out["cases"].append(c)
+                log_chain(f"length s {s:g} n {n} strength {k:g} dt {dt:g}", c)
+                write_json(path, out)
+    rows = {}
+    for c in out["cases"]:
+        rows[(c["s"], c["n"], c["strength"])] = c
+    criteria = {}
+    short, long_ = min(args.length_n), max(args.length_n)
+    base, strong = min(args.strengths), max(args.strengths)
+    for s in args.length_s:
+        a, b = rows.get((s, short, base), {}), rows.get((s, long_, base), {})
+        c2 = rows.get((s, long_, strong), {})
+        cv_short, cv_long = a.get("shared_span_cv_cells_per_s"), b.get("shared_span_cv_cells_per_s")
+        sub_cvs = [v for v in b.get("subspan_cv_cells_per_s") or [] if v]
+        cv1 = (b.get("measures") or {}).get("cv_cells_per_s")
+        cv2 = (c2.get("measures") or {}).get("cv_cells_per_s")
+        criteria[str(s)] = dict(
+            L1_end_effect=relative(cv_short, cv_long),
+            L2_steadiness=None
+            if len(sub_cvs) < 3
+            else (max(sub_cvs) - min(sub_cvs)) / min(sub_cvs),
+            L3_strength=relative(cv2, cv1),
+            refused=[
+                c["label"] if c.get("label") else c.get("n") for c in (a, b, c2) if c.get("refusal")
+            ],
+        )
+        row = criteria[str(s)]
+        row["met"] = not row["refused"] and all(
+            row[k] is not None and row[k] < 0.02
+            for k in ("L1_end_effect", "L2_steadiness", "L3_strength")
+        )
+    out["criteria"] = criteria
+    out["peak_rss_mb"] = peak_rss_mb()
+    write_json(path, out)
+    log(f"lengths criteria: {criteria}")
+
+
+def kick_chain_run(args, s, *, n, dt, kick_mV, kicked, span):
+    """A chain launched by kicks on its first cells at t = 0: no stimulus onset in the run."""
+    raw = definition(
+        n,
+        dt=dt,
+        end_time=args.chain_end,
+        kv_m_s=args.kv,
+        s=s,
+        booking=args.booking,
+        kicks={i: kick_mV for i in range(kicked)},
+    )
+
+    def stop(o):  # The far end fired and 15 ms passed, or 25 ms all quiet after 30 ms.
+        t = o["times"]
+        if not t or t[-1] < 0.01:
+            return False
+        vm = np.asarray(o["vm"])
+        far = crossings(t, vm[:, -1], -0.030)
+        if far and t[-1] > far[0] + 0.015:
+            return True
+        recent = np.asarray(t) > t[-1] - 0.025
+        return bool(np.all(vm[recent] < -0.030) and t[-1] > 0.03)
+
+    r = execute(raw, stop=stop)
+    rec = record(raw, r, s=s, n=n, dt_s=dt, kick_mV=kick_mV, kicked=kicked, control="excitable")
+    try:
+        rec["static_bounds"] = static_bounds(raw)
+    except ConfigError as error:
+        rec["static_bounds"] = dict(refusal=str(error))
+    if len(r["times"]) > 2:
+        t, vm = np.asarray(r["times"]), np.asarray(r["vm"])
+        rec["measures"] = chain_measures(
+            t, vm, stim_cells=list(range(kicked)), stim_end=0.0, span=span
+        )
+        rec["vm_max_V"] = float(vm.max())
+    return rec
+
+
+def part_steps(args):
+    """C5's measurement fix (design note section 6; M1 PLAN amendment 2): the wave's own
+    largest admissible step. The wave is launched by kicks at t = 0, so no stimulus onset
+    enters the run; the steps are the largest the static bounds admit, below a cap."""
+    set_point(args.nav, args.kir, args.cm)
+    out = dict(
+        provenance=provenance(),
+        plan=PLAN,
+        part="steps",
+        point=dict(nav_m_s=args.nav, kir_m_s=args.kir, cm_F_m2=args.cm, kv_m_s=args.kv),
+        cases=[],
+    )
+    out["rest"] = relax_rest(args.kv)
+    path = Path(args.output) / "steps.json"
+    n = args.n_long
+    kick = 1e3 * (args.kick_to_V - POINT["rest"][0])
+    span = (args.stim_cells + 10, n - 11)
+    criteria = {}
+    for s in args.step_s:
+        limit = admissible(
+            static_bounds(definition(n, dt=1e-5, end_time=0.01, kv_m_s=args.kv, s=s))
+        )
+        dts = [
+            dt for dt in DT_LADDER if dt <= args.step_cap * (1 + 1e-12) and dt < limit * (1 - 1e-12)
+        ][: args.step_count]
+        runs = []
+        for dt in dts:
+            c = kick_chain_run(args, s, n=n, dt=dt, kick_mV=kick, kicked=args.stim_cells, span=span)
+            runs.append(c)
+            out["cases"].append(c)
+            log_chain(f"steps s {s:g} dt {dt:g}", c)
+            write_json(path, out)
+        finest = runs[-1] if runs else {}
+        f_cv = (finest.get("measures") or {}).get("cv_cells_per_s")
+        f_act = (finest.get("measures") or {}).get("activation_s")
+        table = []
+        for c in runs:
+            m = c.get("measures") or {}
+            shift = None
+            if f_act and m.get("activation_s"):
+                pairs = [
+                    (x, y)
+                    for x, y in zip(m["activation_s"], f_act, strict=False)
+                    if x is not None and y is not None
+                ]
+                shift = max(abs(x - y) for x, y in pairs) if pairs else None
+            table.append(
+                dict(
+                    dt_s=c["dt_s"],
+                    refused=bool(c.get("refusal")),
+                    attribution=(c.get("attribution") or {}).get("at_last_accepted"),
+                    cv_cells_per_s=m.get("cv_cells_per_s"),
+                    cv_over_finest=relative(m.get("cv_cells_per_s"), f_cv),
+                    activation_shift_s=shift,
+                    propagated=m.get("propagated_to_end"),
+                    energy=(c.get("diagnostics") or {}).get("max_energy_balance_relative"),
+                )
+            )
+        good = [
+            r["dt_s"]
+            for r in table
+            if not r["refused"]
+            and r["propagated"]
+            and r["cv_over_finest"] is not None
+            and r["cv_over_finest"] < 0.01
+        ]
+        criteria[str(s)] = dict(
+            static_limit_s=limit,
+            table=table,
+            largest_good_dt_s=max(good) if good else None,
+        )
+    out["criteria"] = criteria
+    out["peak_rss_mb"] = peak_rss_mb()
+    write_json(path, out)
+    log(f"steps criteria: { {k: v['largest_good_dt_s'] for k, v in criteria.items()} }")
+
+
+QUALCELL_TOLERANCES = dict(  # excitable_qualification_v1.json, CELL_rest and CELL_AP (PROPOSED)
+    rest_V=1e-5,
+    kick_threshold_widen_V=5e-5,
+    peak_V=1e-4,
+    time_relative=0.01,
+    time_absolute_s=1e-5,
+    dvdt_relative=0.02,
+    v80_V=1e-4,
+)
+
+
+def ap_row(t, v, *, reference_s, rest_V):
+    """The protocol's action-potential measures (conduction_observables; times from t = 0)."""
+    from validation.tissue import conduction_observables as co
+
+    t, v = np.asarray(t), np.asarray(v)
+    ap = co.action_potential(t, v, reference_s=reference_s, rest_V=rest_V)
+    dv = np.diff(v) / np.diff(t)
+    k = int(np.argmax(v))
+    back = co.falling(t, v, rest_V + 0.005, k)
+    return dict(
+        peak_V=float(v.max()),
+        time_to_peak_s=float(t[k]),
+        max_dVdt_V_per_s=float(dv.max()),
+        time_of_max_dVdt_s=float(0.5 * (t[int(np.argmax(dv))] + t[int(np.argmax(dv)) + 1])),
+        APD50_s=ap["apd50_s"] if ap and ap["peak_V"] > 0 else None,
+        APD90_s=ap["apd90_s"] if ap and ap["peak_V"] > 0 else None,
+        apd_reference_s=reference_s,
+        return_within_5mV_s=back,
+        V_at_80ms=float(np.interp(0.08, t, v)) if t[-1] >= 0.08 else None,
+        overshoot=bool(v.max() > 0.0),
+    )
+
+
+def compare_ap(engine, ref, tol):
+    """Engine against reference for the shared measures (development; not a verdict).
+
+    A measure absent from the reference is not compared (within None). APD and the return
+    within 5 mV are compared only when both runs overshoot: a non-firing run's APD is
+    undefined (the references' usage note).
+    """
+    out = {}
+    fired = bool(engine.get("overshoot")) and bool(ref.get("overshoot", ref.get("peak_V", -1) > 0))
+    for key, kind in (
+        ("peak_V", "V"),
+        ("V_at_80ms", "V80"),
+        ("max_dVdt_V_per_s", "dvdt"),
+        ("time_to_peak_s", "t"),
+        ("APD50_s", "t"),
+        ("APD90_s", "t"),
+        ("return_within_5mV_s", "t"),
+    ):
+        a, b = engine.get(key), ref.get(key)
+        if key in ("APD50_s", "APD90_s", "return_within_5mV_s") and not fired:
+            out[key] = dict(engine=a, reference=b, within=None, note="not firing: undefined")
+            continue
+        if b is None:
+            out[key] = dict(engine=a, reference=None, within=None, note="not in the reference")
+            continue
+        if a is None:
+            out[key] = dict(engine=None, reference=b, within=False)
+            continue
+        d = abs(a - b)
+        if kind == "V":
+            ok = d <= tol["peak_V"]
+        elif kind == "V80":
+            ok = d <= tol["v80_V"]
+        elif kind == "dvdt":
+            ok = d <= tol["dvdt_relative"] * abs(b)
+        else:
+            ok = d <= max(tol["time_relative"] * abs(b), tol["time_absolute_s"])
+        out[key] = dict(engine=a, reference=b, difference=d, within=bool(ok))
+    return out
+
+
+def part_qualcell(args):
+    """The PROPOSED protocol's one-cell criteria at the point given (A): development values and
+    their comparison with the references' saved results (excitable_qualification_v1.json;
+    M1 PLAN amendment 3). Kicked runs last 80 ms with APD from the largest dV/dt; the
+    stimulus run's APD is from the stimulus end (appendix section 8.3)."""
+    set_point(args.nav, args.kir, args.cm)
+    tol = QUALCELL_TOLERANCES
+    ref_all = json.loads(Path(args.reference_results).read_text())["cm001"][args.reference_point]
+    checks = json.loads(Path(args.reference_checks).read_text()) if args.reference_checks else {}
+    out = dict(
+        provenance=provenance(),
+        plan=PLAN,
+        part="qualcell",
+        point=dict(nav_m_s=args.nav, kir_m_s=args.kir, cm_F_m2=args.cm, kv_m_s=args.kv),
+        dt_s=args.cell_dt,
+        tolerances=tol,
+        references=dict(results=args.reference_results, checks=args.reference_checks),
+    )
+    path = Path(args.output) / "qualcell.json"
+    out["rest"] = relax_rest(args.kv)
+    rest_V = POINT["rest"][0]
+    out["CELL_rest"] = dict(
+        engine=rest_V,
+        reference=ref_all["rest_V"],
+        difference=abs(rest_V - ref_all["rest_V"]),
+        within=abs(rest_V - ref_all["rest_V"]) <= tol["rest_V"],
+    )
+    write_json(path, out)
+
+    def kicked_run(kick_mV, control="excitable"):
+        rec, r = single_run(args.kv, dt=args.cell_dt, end=0.08, kick=kick_mV, control=control)
+        t, v = np.asarray(r["times"]), np.asarray(r["vm"])[:, 0]
+        row = None
+        if len(t) > 2:
+            from validation.tissue import conduction_observables as co
+
+            row = ap_row(t, v, reference_s=co.largest_dvdt_time(t, v), rest_V=rest_V)
+        return rec, row
+
+    # The kick threshold by bisection on [0, 60] mV: fires when the peak exceeds 0 mV.
+    lo, hi, trail = 0.0, 60.0, []
+    while hi - lo > args.kick_tol_mV:
+        mid = 0.5 * (lo + hi)
+        rec, row = kicked_run(mid)
+        fired = bool(row and row["overshoot"]) and rec["refusal"] is None
+        trail.append(dict(kick_mV=mid, fired=fired, refusal=rec["refusal"]))
+        lo, hi = (lo, mid) if fired else (mid, hi)
+        log(f"qualcell kick {mid:.5f} mV fired {fired}")
+    ref_k = ref_all["kick_threshold"]
+    out["CELL_kick_threshold"] = dict(
+        engine_bracket_mV=[lo, hi],
+        reference_mV=1e3 * ref_k["threshold"],
+        within=bool(lo - 1e3 * tol["kick_threshold_widen_V"] <= 1e3 * ref_k["threshold"]
+                    <= hi + 1e3 * tol["kick_threshold_widen_V"]),
+        runs=trail,
+    )  # fmt: skip
+    write_json(path, out)
+    threshold = hi
+    twice = min(2.0 * threshold, 60.0)
+    panel = {}
+    for name, kick, control, ref_key in (
+        ("twice", twice, "excitable", "twice"),
+        ("twice_nav_off", twice, "sodium_disabled", "twice_nav_off"),
+        ("twice_all_off", twice, "passive", "twice_all_off"),
+        ("kick_to_-20mV", 1e3 * (-0.020 - rest_V), "excitable", None),
+        ("kick_to_0mV", 1e3 * (0.0 - rest_V), "excitable", None),
+    ):
+        rec, row = kicked_run(kick, control)
+        ref = ref_all["panel"][ref_key] if ref_key else ref_all[name]
+        panel[name] = dict(
+            kick_mV=kick,
+            control=control,
+            refusal=rec["refusal"],
+            engine=row,
+            comparison=None if row is None else compare_ap(row, ref, tol),
+        )
+        log(f"qualcell {name}: peak {row and row['peak_V']} refusal {rec['refusal']}")
+        write_json(path, out)
+    out["CELL_AP_and_controls"] = panel
+    # The 1 ms stimulus at 2e-7 m/s (scaled nominal), APD from the stimulus end.
+    on, width = int(round(2e-3 / args.cell_dt)), int(round(1e-3 / args.cell_dt))
+    stim = dict(cells=[0], pulses=[(on, on + width)], m_s=args.stim_m_s * stimulus_scale())
+    rec, r = single_run(args.kv, dt=args.cell_dt, end=0.08, stim=stim)
+    t, v = np.asarray(r["times"]), np.asarray(r["vm"])[:, 0]
+    row = (
+        ap_row(t, v, reference_s=(on + width) * args.cell_dt, rest_V=rest_V) if len(t) > 2 else None
+    )
+    ref_end = checks.get("stimulus_" + args.reference_point) or {}
+    ref_stim = dict(ref_all["stimulus_2e-7"])
+    if ref_end:  # The references' APDs from the stimulus end (checks-final: t_upstroke_s, 3 ms).
+        ref_stim["APD50_s"] = ref_end["APD50_from_upstroke_s"]
+        ref_stim["APD90_s"] = ref_end["APD90_from_upstroke_s"]
+        ref_stim["apd_reference_s"] = ref_end["t_upstroke_s"]
+        ref_stim.pop("max_dVdt_V_per_s", None)  # the stimulus onset's: not an upstroke measure
+    out["CELL_stimulus_run"] = dict(
+        refusal=rec["refusal"],
+        engine=row,
+        reference=ref_stim,
+        reference_from_stimulus_end=bool(ref_end),
+        comparison=None if row is None else compare_ap(row, ref_stim, tol),
+    )
+    out["peak_rss_mb"] = peak_rss_mb()
+    write_json(path, out)
+    within = [out["CELL_rest"]["within"], out["CELL_kick_threshold"]["within"]]
+    for entry in list(panel.values()) + [out["CELL_stimulus_run"]]:
+        within += [
+            c["within"] for c in (entry["comparison"] or {}).values() if c["within"] is not None
+        ]
+    log(f"qualcell: {sum(within)} of {len(within)} comparisons within the PROPOSED tolerances")
+
+
 PARTS = dict(
+    qualcell=part_qualcell,
+    lengths=part_lengths,
+    steps=part_steps,
     segment=part_segment,
     domain=part_domain,
     single=part_single,
@@ -1861,6 +2250,11 @@ def main(argv=None):
     a.add_argument("--combined", type=float, nargs="+", default=[0.5, 0.3, 0.2, 0.1, 0.05])
     a.add_argument("--sodium-only", type=float, nargs="+", default=[0.3, 0.1])
     a.add_argument("--coupling-only", type=float, nargs="+", default=[0.1, 0.03])
+    a.add_argument(
+        "--no-extension",
+        action="store_true",
+        help="segment: no extension to 0.02 and 0.01 (M1 keeps s * r_gj >= 20, D170)",
+    )
     a.add_argument("--kv-values", type=float, nargs="+", default=[0.0, 1e-8, 3e-8, 1e-7, 3e-7])
     a.add_argument("--bisections", type=int, default=7)
     a.add_argument(
@@ -1879,13 +2273,28 @@ def main(argv=None):
     a.add_argument("--device-end", type=float, default=0.05)
     a.add_argument("--device-window", type=int, default=512)
     a.add_argument("--keep-traces", action="store_true")
+    a.add_argument("--length-s", type=float, nargs="+", default=[100.0, 1000.0, 3000.0])
+    a.add_argument("--length-n", type=int, nargs="+", default=[40, 80])
+    a.add_argument("--strengths", type=float, nargs="+", default=[1.0, 2.0])
+    a.add_argument("--step-s", type=float, nargs="+", default=[100.0, 300.0])
+    a.add_argument("--step-cap", type=float, default=1e-4)
+    a.add_argument("--step-count", type=int, default=4)
+    a.add_argument("--kick-to-V", type=float, default=0.0, help="steps: the kicked cells' V(0)")
+    a.add_argument("--cell-dt", type=float, default=5e-6, help="qualcell: the step")
+    a.add_argument("--kick-tol-mV", type=float, default=0.01, help="qualcell: bisection width")
+    a.add_argument("--reference-results", default=None, help="qualcell: references' results.json")
+    a.add_argument("--reference-checks", default=None, help="qualcell: their final_checks.json")
+    a.add_argument("--reference-point", default="A")
     a.add_argument(
         "--booking",
         default="trapezoid_nonnegative@1",
         help="the chain's junction-heat booking (E07-v1's registered one by default)",
     )
     args = a.parse_args(argv)
-    if args.part in ("chain", "device", "segment") and args.kv is None:
+    if (
+        args.part in ("chain", "device", "segment", "lengths", "steps", "qualcell")
+        and args.kv is None
+    ):
         a.error("chain and device need --kv explicitly")
     if args.part == "device" and args.kick_to is None:
         a.error("device needs --kick-to explicitly")

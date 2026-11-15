@@ -198,21 +198,58 @@ Everything below is per cell unless stated.
 - **S1–S2 at twice that P_stim:** S1 at 2 ms, S2 at 2 ms + Δ, with
   Δ ∈ {5, 8, 10, 12, 15, 20, 25, 30, 40, 60} ms.
 - **S2 responds** if, after S2's onset, V newly crosses −30 mV upward and then exceeds 0 mV.
+- **APD in a stimulus run is measured from the stimulus end** (3 ms for S1, 3 ms + Δ for S2).
+  - In a stimulus run, the largest dV/dt is the stimulus onset's: the conductance switches on
+    in one step, so it does not time the upstroke.
+  - APDx is the first time after the peak at which V falls below V_peak − x·(V_peak − V_rest),
+    less the stimulus end.
+  - The largest dV/dt is reported, but marked as the onset's.
+  - The probe's records measured stimulus-run APDs from the onset's dV/dt peak. They are
+    therefore longer than this definition by the stimulus width less half a row, about 1 ms.
+  - Kicked runs (§8.2) keep the largest dV/dt as their reference.
 
 ### 8.4 Chain
 - **Set-up:** N = 20 cells (and 40 for the length check), with cells 0–2 stimulated at
   P_stim = 1e-6 × (c_m / 0.05) m/s for t in [2, 3) ms. Stimuli scale with c_m so that their rate
   (G/C) is the same at every point.
-- **Activation time** of each cell: its first upward crossing of −30 mV, interpolated
-  linearly.
+- **Coupling:** s_c = 1000 for every run in this section, except the s_c list in the report.
+  That covers the controls, the capture threshold, the S1–S2 runs and the length check.
+- **Rows:** the solution is sampled every 5 µs from t = 0, the probe's chain step.
+- **Activation time** of each cell: its first upward crossing of −30 mV after the stimulus
+  onset. It is interpolated linearly between the two 5 µs samples that bracket the crossing.
+  A reference may also give the exact crossing, but the sampled value is the one compared.
+- **Windows:** every run lasts to t = 250 ms, and each S1–S2 run to S2's onset + 250 ms. No run
+  stops early.
+  - The probe's runs did stop early, checked every 1,024 rows. A run ended in either of two
+    ways:
+    - every cell had stayed below −30 mV for 25 ms, from 30 ms after the last stimulus;
+    - the far end had activated once per pulse, and 15 ms had passed since its last activation.
+  - A development driver for the protocol uses these fixed windows.
 - **CV** = 1 / (the least-squares slope of activation time against cell index) over cells
   N/3 to 2N/3, in cells/s.
+- **Capture threshold:**
+  - At s_c = 1000, the smallest P_stim for which cell N − 1 activates within the window.
+  - It is found by geometric bisection of [1e-9, 1e-6] × (c_m / 0.05) m/s, in seven steps, as
+    the probe did.
+  - The bracket is reported.
+- **S1–S2 at the far end:**
+  - S1 is on [2, 3) ms and S2 on [2 + Δ, 3 + Δ) ms, both on cells 0–2 at P_stim.
+  - Δ ∈ {5, 8, 10, 12, 15, 20, 25, 30, 40, 60} ms, then bisected if a finer value is reported.
+  - A second wave reaches the far end if cell N − 1 crosses −30 mV upward a second time within
+    the window.
+  - **The far end's second activation time is reported for every Δ.**
+  - **Why the window matters.** Near the threshold the second wave slows sharply. A reference
+    found Δ = 27.982 ms with about a 69.5 ms window, while Δ = 27.976 ms gives a slow second wave
+    arriving at 155.8 ms in a 300 ms window.
+  - So the threshold Δ is stated with its window. The fixed window above removes the
+    dependence for comparisons.
 - **Report:**
   - activation times and peaks for s_c ∈ {10, 30, 100, 300, 1000, 3000};
   - at s_c = 1000, the NaV-disabled and passive controls;
   - the coupling bracket between block and propagation;
   - the capture threshold in P_stim;
-  - the S1–S2 interval for a second wave at the far end.
+  - the S1–S2 interval for a second wave at the far end, with the far end's second activation
+    times.
 
 ### 8.5 Chain with a mid-chain segment (the first experiment's configuration)
 

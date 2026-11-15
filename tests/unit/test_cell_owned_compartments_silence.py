@@ -13,8 +13,9 @@ so a check that could fail is live (the lead's ruling; the quiescent W's runs ar
 Planted controls, each in the same program and composition (so no new compile), bypassing one of
 the declaration's refusals in a test-only way (monkeypatch): (a) a K route on the bounding patch
 must break S1 and S2; (b) a compartment charge anchor must break S2. The restart is
-test_cell_owned_compartments_restart.py, RK4 _silence_rk4.py, and the windowed, vector-window and
-batch programs _windowed.py, _vector.py and _batch.py. One compile: not tier 1.
+test_cell_owned_compartments_restart.py (in process) and _restart_snapshot.py (through a snapshot),
+RK4 _silence_rk4.py, and the windowed, vector-window and batch programs _windowed.py, _vector.py and
+_batch.py. One compile: not tier 1.
 """
 
 import jax

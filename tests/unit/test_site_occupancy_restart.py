@@ -1,4 +1,4 @@
-"""B4 of FR-3's milestone 1: restart (the vector-window batch is test_site_occupancy_vector.py).
+"""B4 of FR-3's milestone 1: restart (the vector batch: test_site_occupancy_vector*.py).
 
 Criteria fixed before any code (/mnt/workspaces/Cells/site-occupancy-m1-20261115-01/HANDOFF.md):
 * restart from a checkpoint mid-run, in process and through a written snapshot: bitwise against the

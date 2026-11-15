@@ -73,6 +73,37 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Track E, M1's development work landed (15 November 2026).** Validation only; no judged claim.
+  Tier 1 at the merge 0385674: 337 files, no changed outcome
+  ([evidence](/mnt/workspaces/Cells/excitable-tissue-m1-20261114-01/HANDOFF.md)).
+  - **What landed:**
+    - the sheet and probe drivers;
+    - the conduction observables and the rule (b) importer (D170 ruling 5);
+    - the PROPOSED qualification protocol (`validation/tissue/excitable_qualification_v1.json`);
+    - the note and appendix revisions.
+  - **The engine models run:** `resolved_pump_tissue@3`, the generic 0.01 F/m² cell A, and its
+    fallback B, all development runs.
+  - **On the 127-cell sheet both options carry a front:** s = 300 at 5 µs, and s = 1000 at 2.5 µs
+    with a stronger, shorter stimulus.
+    - A disc of weak cells delays the far column by up to 0.23 ms (s = 300). At low coupling the
+      delay is set by load, not excitability: the active disc equals its passive twin.
+    - Within the junction floor (s·r_gj ≥ 20) no arm blocks at s = 300. At s = 1000 two
+      disc-boundary cells are passive at combined r = 0.02.
+    - Block beyond a cluster needs coupling below the floor, which is `junction_ungated@1`'s domain.
+  - **Margins:** the channel domain's is thin (+57.7 mV against +60) and the junction's wide
+    (about 38 mV). The one-cell values match the independent references in 37 of 37 comparisons.
+  - **A general finding:** an abrupt stimulus must keep strength × step ≤ 2e-12 m, or ramp its
+    onset.
+  - **Open:** the wave's own largest step (C5); C4's stimulus independence at s = 100; and the
+    activation threshold, proposed at 0 with its sensitivity shown.
+  - **M3's direction is the user's:** delay only within the floor, or block with the ungated
+    junction law in the restructure round.
+
+- **FR-1's and FR-3's four slowest test files split (15 November 2026)**, tests only, with every
+  assertion kept. Each of the eight new files fits the 90 s cap, so FR-3's idle, stage and vector
+  checks and FR-1's restart now run in the routine tier 2. Tier 1 and 2 at the merge e05619e: 449
+  files, no changed outcome.
+
 - **The G2 judge records the numerical environment (15 November 2026).** This is a record-only,
   validation-only change before today's L4 gap. `cell_replacement_judge.provenance()` now writes
   `XLA_FLAGS` and `JAX_DISABLE_JIT`, from `cells.io.runtime_identity()`, into every item record, so
