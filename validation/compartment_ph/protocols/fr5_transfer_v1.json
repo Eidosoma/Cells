@@ -1,0 +1,79 @@
+{
+ "schema": "cells.compartment_ph_protocol@1",
+ "id": "fr5-transfer-v1",
+ "title": "FR-5's first acceptance: pH-conditioned transfer, damage, leak and reseal on an owned compartment, in two arms on FR-4's steady state",
+ "status": "PROPOSED (drafted 15 November 2026 by the FR-4/FR-5 physics owner on branch fr45-physics). It stays PROPOSED until the integrated candidate runs; registration is the lead's, after the dt study and a rehearsal. The arm values are PENDING THE REFERENCES' CONFIRMATION (their rerun of §13.2's two arms from 1800 s); a value their rerun moves is revised here before registration",
+ "registration": {
+  "status": "not registered",
+  "no_judged_run_yet": "No run of either arm exists: the core's insertion points and this branch's laws are not yet wired",
+  "path": "The lead registers it from a clean snapshot of the integrated candidate, after this protocol's dt study and a rehearsal (the D150/MG0c path); it travels with fr45-physics's merge into integration-d172",
+  "launch": "each judged unit through scripts/run_detached.sh, --oom-first, cap 2G unless a development run measures more"
+ },
+ "rung": "FR-5, acceptance 1 (numerical verification, D174's first claim kind; no living-cell claim)",
+ "question": "On FR-4's steady state, does the engine move a neutral cargo across the bounding patch only while the compartment is in its declared condition (arm T), release it through a damage pore when the patch is injured and recover after resealing (arm R), with every book closed, agreement with the independent reference within X's budget, and controls that fail by at least ten times that budget?",
+ "engine_models": [
+  "resolved_pump_tissue@3 with the core's stage-read, transporter, held-row and face-free-term insertion points",
+  "rapid_proton_buffer@1, proton_atp_mass_action_positive@1, proton_constant_field_leak@1 (FR-4's laws, unchanged)",
+  "passive_neutral_permeation@1 (the conditioned transfer and the cargo pore)",
+  "bounding_patch_damage@1 (the damage control state, exact per step)",
+  "ph_conditioned_factor@1 (the condition, through the routing door)",
+  "the coupling operator's routing door (the factors' multiply), and cell_owned_compartments@1"
+ ],
+ "scope": "FR-4's scope (maintained fuel, the K+ counterion, a lumped population of 1000 as declared, fixed volume, explicit ARS(2,2,2)), plus FR-5's damage, a proton pore and a neutral cargo pore. Ionic pores are refused in version 1 (they wait for the implicit patch). The single-compartment form is reported, not judged",
+ "driver": "validation/compartment_ph/definitions.py fr5_world(parameters.ARM_T or ARM_R), run by the dt-study harness once wired",
+ "start": {
+  "declared": "FR-4's engine checkpoint at t = 1800 s of fr4_world(World()), its steady state (pH_L about 5.0946 per the references); FR-5's t = 0 is that checkpoint, with X added at its declared start amounts",
+  "reference": "passed to the reference as tr.Start, so engine and reference start from the same state"
+ },
+ "arms": {
+  "T": {
+   "claim": "X crosses while the lumen is acidic; a proton-only damage raises the lumen's pH above pH50, f closes and the transfer stops while X remains in the lumen; after resealing the pump re-acidifies and the transfer resumes",
+   "values_pending_confirmation": {"cargo_transfer_m_s": 1e-9, "pore_proton_m_s": 1e-5, "pore_cargo_m_s": 0.0, "injury_window_s": [60.0, 120.0], "injury_rate_per_s": 1.0, "resealing_rate_per_s": 0.05, "ph50": 5.5, "ph_slope": 4.0, "horizon_s": 400.0},
+   "control": "f = 1 (no condition): X keeps crossing through the alkaline window; the lumen's X and the conditioned route's cumulative transfer differ from arm T by at least 10x X's budget"
+  },
+  "R": {
+   "claim": "the slow conditioned route keeps most X in the lumen until damage; the damage opens the cargo pore and the proton pore, giving a release burst (the lumen's X falls to near the cytosol's level) and a pH rise; after resealing the pump re-acidifies",
+   "values_pending_confirmation": {"cargo_transfer_m_s": 1e-10, "pore_proton_m_s": 1e-5, "pore_cargo_m_s": 1e-6, "injury_window_s": [100.0, 160.0], "injury_rate_per_s": 1.0, "resealing_rate_per_s": 0.05, "ph50": 5.5, "ph_slope": 4.0, "horizon_s": 400.0},
+   "control": "d = 0 (no damage): no burst and no pH rise; the lumen's X differs from arm R by at least 10x X's budget"
+  }
+ },
+ "budgets": {
+  "X": "|X_L,engine - X_L,reference| <= 1e-3 of the lumen's initial X at every record; the conditioned route's cumulative transfer within 1e-3 x X_L(0) x V_L (fmol). Basis: the declared physical accuracy, as FR-4's J3 and J4; the references' floor shows they resolve it",
+  "pH": "|pH_L,engine - pH_L,reference| <= 1e-3 at every record (FR-4's J4)",
+  "controls_margin": "each control differs from its arm by at least 10x the X budget on the same quantities (G1 exact contract tests plus G3 scientific negative controls, D176)"
+ },
+ "criteria": {
+  "J1_admission": "both arms and their controls admitted and run without refusal at every rung",
+  "J2_orders": "the dt study's observed orders in [1.8, 2.2] on the three finest rungs, for the lumen's X, the lumen's pH, V_b and the damage d",
+  "J3_state_error": "at the declared 1 ms, the Richardson-estimated error of the lumen's X <= the X budget and of the lumen's pH <= 1e-3",
+  "J4_reference": "the X and pH budgets above, against the reference started at tr.Start",
+  "J5_envelope": "the closure's state-dependent envelope (rapid_proton_buffer.lag_estimate_ph <= 1e-3 pH) at every stage of every buffered node, including through the damage window",
+  "J6_protons": "H_eq conserved except across routes: the change of H_eq at each node equals the sum of its routes' proton transfers (pump, leak, proton pore) to the material floor, at every record",
+  "J7_energy": "the energy identity at every record: stored change + heat = the maintenance's supplied work, within FR-4's ledger tolerance; each passive route's heat >= 0",
+  "J8_cargo": "X conserved across lumen, cytosol and bath to its floor; whatever leaves the lumen arrives in the cytosol on the same route",
+  "J9_bands": "the cytosol's pH within its fuel band (7.2 +- 0.05) at every stage; d within [0, 1]; f within [0, 1]",
+  "J10_controls": "both controls caught with the 10x margin"
+ },
+ "dt_study_criteria_written_first": {
+  "ladder_s": [0.002, 0.001, 0.0005, 0.00025],
+  "note": "the proton pore's max-side dt x G/C_b is about 0.057 at the coarsest rung and 0.029 at 1 ms (pH 5.1); the coarsest rung sits just above the world-declared 0.05 on purpose, as FR-4's does",
+  "checks": ["admission of every rung", "orders as J2", "state error at 1 ms as J3", "energy residual <= 2e-3 at 1 ms, falling at second order", "the envelope as J5 on every rung"],
+  "verdict": "the declared 1 ms stands if every check holds; otherwise the arm declares the finest rung that passes, reported, not repaired"
+ },
+ "recording_rules": [
+  "Keep conserved proton equivalents (H_eq, the stored row) apart from free h and pH (the closure's algebraic read): report both, judge J6 on H_eq and J4's pH on the read",
+  "Keep the closure's envelope (a validity check of a reduced representation) apart from the energy and heat closure (a ledger): J5 and J7 are separate parts",
+  "Keep maintained fuel apart from depletion and recovery: like FR-4's, this world's held fuel claims neither",
+  "The lumped compartment is a deterministic continuum model of a population, not a stochastic mean: no claim about individual compartments or their variance"
+ ],
+ "reported_not_judged": ["the single-compartment form", "compile time, memory and cost per step", "the steady and peak pH values themselves (generic parameters, not claims)"],
+ "what_it_does_not_show": ["ionic pores, Cl- counterions or the implicit patch", "finite fuel, depletion or recovery", "a damaged minority within the lumped population (that needs the population split into two compartments, §9)", "any organelle- or study-specific claim"],
+ "disclosures": [
+  "The arm values were chosen after the references' first run (R-transfer from FR-4's state at 900 s; /mnt/workspaces/Cells/independent-references-20261115-01/compartment-transfer-crosschecks-01/, and validation/compartment_ph/REFERENCES_USAGE.md) showed the original world could show neither claim: X had crossed before the damage, and the condition never closed",
+  "P_X = 1e-10 m/s for arm R comes from the references' grid; the proton pore at 1e-5 m/s (not their 1e-4) was chosen by host-side steady-state arithmetic so that both arms stay explicit at 1 ms; whether the pH crosses pH50 within each window is for their rerun to confirm",
+  "The world declares 1e-9 mM traces where a row does not apply; the references use exact zeros for the absent buffer. A declared difference: the closure's mask keys on declared (node, row) pairs, so the traces are never live buffers",
+  "The start (FR-4's checkpoint at 1800 s) was fixed after the references found FR-4's 900 s state 1.4e-3 pH from steady state, beyond the 1e-3 budget"
+ ],
+ "development_runs": {"runs": [], "note": "no run of either arm; the charged-patch test's runs (fr45/charged_patch/) are development evidence for the explicit limit only"},
+ "outcome_rules": "PASS when J1-J10 hold for both arms; otherwise the failing criteria are reported with their values, without repair or retuning after the judged run"
+}
