@@ -509,3 +509,31 @@ def test_batch_signature_carries_the_structure():
     assert impl.batch_signature(a.model) == impl.batch_signature(twin.model)
     assert impl.batch_signature(a.model) != impl.batch_signature(other.model)
     assert impl.batch_signature(a.model)[:-1] == surface_pump_v3.batch_signature(a.model)
+
+
+def test_a_composition_that_closes_slots_keeps_todays_padding_dynamics():
+    """K2's amendment 6. Closers (operators with CLOSES) close population slots mid-run, and a
+    closed slot keeps its gate update at code 0, the padding code. Where a composition closes
+    slots, the compiled kinetics therefore evaluate the code-0 law there too (padding_fill),
+    and a closed slot's gate keeps today's dynamics. Worlds without closers trace no code-0
+    kernel (A4)."""
+    from tests import partition_fixtures
+
+    spec = parse_spec(partition_fixtures.divided())
+    structure = surface_pump_v3.structure(spec.model)
+    assert structure.padding_fill
+    assert spec3.KV1P5_LAW_ID not in structure.declared_channel_laws
+    plain = parse_spec(water_fixtures.heredity_cell("D", end_time=0.01))
+    assert not surface_pump_v3.structure(plain.model).padding_fill
+    voltage = jnp.linspace(-0.09, 0.03, 6)
+    codes = jnp.zeros(6, dtype=jnp.int64)  # Every slot at code 0, as closed slots are.
+
+    def kinetics(fill):
+        bound = dataclasses.replace(structure, padding_fill=fill)
+        return functools.partial(surface_pump_v3.channel_kinetics, xp=jnp, structure=bound)
+
+    assert KV1P5_LITERAL in str(jax.make_jaxpr(kinetics(True))(voltage, codes))
+    assert KV1P5_LITERAL not in str(jax.make_jaxpr(kinetics(False))(voltage, codes))
+    today = jax.jit(functools.partial(surface_pump_v3.channel_kinetics, xp=jnp))(voltage, codes)
+    mine = jax.jit(kinetics(True))(voltage, codes)
+    assert all(same_bits(np.asarray(a), np.asarray(b)) for a, b in zip(mine, today, strict=True))

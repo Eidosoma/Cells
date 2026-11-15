@@ -227,8 +227,9 @@ def channel_kinetics(voltage, codes, *, xp=jnp, structure=None):
     shape = (*voltage.shape[:-1], rows, voltage.shape[-1])
     target, tau = xp.zeros(shape, dtype=voltage.dtype), xp.ones(shape, dtype=voltage.dtype)
     laws = [law for law in structure.channel_laws if law.gated]
-    if xp is np and PADDING_FILL_LAW not in structure.declared_channel_laws:
-        laws.insert(0, inner_laws.CHANNEL_LAWS[PADDING_FILL_LAW])  # The host's padding fill.
+    fill = xp is np or structure.padding_fill  # The host's fill; compiled where slots close.
+    if fill and PADDING_FILL_LAW not in structure.declared_channel_laws:
+        laws.insert(0, inner_laws.CHANNEL_LAWS[PADDING_FILL_LAW])
     for law in laws:
         if len(law.gates) != rows:  # Not in R: every gated law has today's two gates.
             raise NotImplementedError("Channel laws with fewer gates than the structure's rows")
@@ -1271,7 +1272,18 @@ def structure(model):
         pump_laws=tuple(law for law in inner_laws.PUMP_LAWS if law in pump_laws),
         fuel_kinds=tuple(sorted(fuels)),
         junction_heat_booking=model.junction_heat_booking,
+        padding_fill=_closes_slots(model),
     )
+
+
+def _closes_slots(model):
+    """Whether a composite's operators close activity masks mid-run (contract CLOSES)."""
+    declared = getattr(model, "operators", ())
+    if not declared:
+        return False
+    from cells.models.operators import OPERATORS
+
+    return any(OPERATORS[d.law].CLOSES for d in declared)
 
 
 def moved_rows(model):
