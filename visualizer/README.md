@@ -393,6 +393,7 @@ npm run serve -- --no-proteins   # the page as it is when the species' own prote
 npm run shot -- --out /tmp/shot.png --query "lens=engine&select=num.imex" --theme dark
 npm run adapt:runs -- --evidence PATH   # make the replays under out/runs/ (not committed); PATH holds the evidence folders
 npm run export              # out/cells-architecture.html, the page as an artifact wants it, and the list of run files to publish beside it
+npm run stage -- --new out/publish-vN --old out/publish-vM   # the export laid out as the artifact is, and the uploads of what changed since the last publish
 ```
 
 From another machine, forward the port (`ssh -L 4173:127.0.0.1:4173 host`) or open the
@@ -476,7 +477,9 @@ The visualizer session publishes its own artifacts (the user, 14 November 2026).
    `members-NN.json`). On 15 November 2026 that is 331 files (109 MB): 295 files of the 59
    runs and 36 files of proteins. A publish takes at most 255 files and 64 MB, so a full
    set goes up in several publishes to the same URL; a later publish keeps the files it
-   does not send, so only what changed needs sending. A page published without the
+   does not send, so only what changed needs sending. `npm run stage` lays the export out
+   as the artifact is, in a folder that is kept as the record of what was published, and
+   writes the list of each upload (`tools/stage_publish.py`). A page published without the
    proteins' files draws the atlas as before and says that the species' own proteins could
    not be loaded.
 
