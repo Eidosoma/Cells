@@ -11,7 +11,9 @@
 
 `today_only(definition)` strips the pending parts. Today's parser refuses them by design until the
 core lands them. Absent rows (a buffer at the other node, fuel outside the cytosol) carry 0, and
-the registry's background policy (A7) decides how the inner model treats them.
+rows that do not apply at a node carry the world's declared trace (absent rows are refused,
+the operators' PLAN §2.4), with `background` (trace_mM, floor_fmol) on B_c, B_L, ATP, ADP and
+Pi. The closure's mask is the declared (node, row) pairs, so a trace is never a live buffer.
 """
 
 import copy
@@ -21,7 +23,9 @@ from validation.compartment_ph.parameters import World, h_from_ph
 
 SPECIES = (("Na", 1), ("K", 1), ("Cl", -1), ("H", 1), ("B_c", -1), ("B_L", -1),
            ("ATP", 0), ("ADP", 0), ("Pi", 0))
-PENDING_MODEL_KEYS = ("stage_reads", "transporters", "passive_routes", "held_rows", "operators")
+PENDING_MODEL_KEYS = ("stage_reads", "transporters", "passive_routes", "held_rows", "operators",
+                      "standard_concentration_mM")
+BACKGROUND_ROWS = ("B_c", "B_L", "ATP", "ADP", "Pi")
 PENDING_EXPERIMENT_KEYS = ("transporter_controls", "passive_route_controls")
 CELL, BATH, LUMEN = "cell_0", "bath_0", "lumen_0"
 PLASMA, BOUNDING = "plasma_0", "bounding_0"
@@ -32,14 +36,14 @@ def _amounts(world, node):
     if node == BATH:
         conc, volume = dict(w.bath_mM), 1.0
         rows = dict(Na=conc["Na"], K=conc["K"], Cl=conc["Cl"], H=h_from_ph(conc["pH"]))
-        return {s: rows.get(s, 0.0) * volume for s, _ in SPECIES}, volume
+        return {s: rows.get(s, w.trace_mM) * volume for s, _ in SPECIES}, volume
     if node == CELL:
         conc, volume, buffer = dict(w.cytosol_mM), w.owner[0], w.cytosol_buffer
         extra = dict(B_c=buffer.total_mM * volume, **{k: v * volume for k, v in w.fuel_mM.items()})
     else:
         conc, volume, buffer = dict(w.lumen_mM), w.lumen_volume_pL, w.lumen_buffer
         extra = dict(B_L=buffer.total_mM * volume)
-    out = {s: 0.0 for s, _ in SPECIES}
+    out = {s: w.trace_mM * volume for s, _ in SPECIES}  # absent rows: the declared trace
     out.update({k: conc[k] * volume for k in ("Na", "K", "Cl")})
     out["H"] = world.proton_equivalents_fmol(conc["pH"], buffer, volume)
     out.update(extra)
@@ -75,8 +79,10 @@ def fr4_world(world=None, *, dt_s=None):
         entry = dict(id=s, valence=z)
         if s in registry:  # §4.1: the acid form's potential relative to the base, mu_H = 0
             b = registry[s]
-            entry.update(standard_mu_RT=dict(base=0.0, acid=b.mu_acid_minus_base_RT),
-                         k_on_per_mM_s=b.k_on_per_mM_s)
+            # Pending the operators' key for the protonated form's potential (relayed later).
+            entry.update(standard_mu_RT=dict(base=0.0, acid=b.mu_acid_minus_base_RT))
+        if s in BACKGROUND_ROWS:
+            entry.update(background=dict(trace_mM=w.trace_mM, floor_fmol=w.trace_floor_fmol))
         species.append(entry)
     model = dict(
         id="resolved_pump_tissue@3", temperature_K=w.temperature_K, species=species,
@@ -89,8 +95,10 @@ def fr4_world(world=None, *, dt_s=None):
         closure=dict(law="resolved_capacitor_components_current_continuity@1",
                      gauge_reference=None),
         # --- pending (§7.4 names; the core's insertion points) ---
+        standard_concentration_mM=w.standard_concentration_mM,
         stage_reads=[dict(read_id="rapid_proton_buffer@1", proton_row="H",
-                          buffers={CELL: ["B_c"], LUMEN: ["B_L"]})],
+                          buffers={CELL: ["B_c"], LUMEN: ["B_L"]},
+                          k_on_per_mM_s={b.name: b.k_on_per_mM_s for b in registry.values()})],
         held_rows=dict(law="maintained_held_rows@1", node=CELL, rows=["ATP", "ADP", "Pi"]),
         transporters=[dict(id="pump_0", patch=BOUNDING, law="proton_atp_mass_action_positive@1",
                            capacity_fmol_s=w.pump_capacity_fmol_s, protons_per_cycle=w.pump_n,
@@ -123,8 +131,8 @@ def fr4_world(world=None, *, dt_s=None):
         solver="imex_ars222_face_electromigration@1",
         field_solver="capacitive_reduction_gauged_damped_newton@2", max_steps=steps + 8,
         max_trace_bytes=2**31,
-        material_balance_atol_fmol=dict(Na=1e-10, K=1e-10, Cl=1e-10, H=1e-16, B_c=1e-12,
-                                        B_L=1e-12, ATP=1e-12, ADP=1e-12, Pi=1e-12))
+        material_balance_atol_fmol=dict(Na=1e-10, K=1e-10, Cl=1e-10, H=1e-16,
+                                        **{s: w.trace_floor_fmol for s in BACKGROUND_ROWS}))
     return dict(schema_version=1, model=model, experiment=experiment, execution=execution)
 
 
@@ -169,7 +177,7 @@ def today_only(definition):
     for key in PENDING_MODEL_KEYS + ("patch_damage",):
         out["model"].pop(key, None)
     for entry in out["model"]["species"]:
-        for key in ("standard_mu_RT", "k_on_per_mM_s"):
+        for key in ("standard_mu_RT", "background"):
             entry.pop(key, None)
     for key in PENDING_EXPERIMENT_KEYS + ("damage_controls",):
         out["experiment"].pop(key, None)

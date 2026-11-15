@@ -5,7 +5,10 @@ physical contract". The kernel is the constant-field route at valence 0, which i
 
     J = A P m (c_out - c_in) / 1e-15   (fmol/s, positive inward, as electrochemistry.ghk_leak)
 
-with c in mM = mol/m^3, A in m^2, P in m/s and m the route's availability. What the law adds to
+with c in mM = mol/m^3, A in m^2, P in m/s and m the route's availability. The core's passive
+conventions (its note's §7.5): a membrane patch passes m = availability, a junction passes
+m = gate x availability; the inner model books the heat in its own `passive_dissipated_energy_pJ`
+and the transfers in `passive_transferred`. What the law adds to
 the route is:
 - **exact booking:** a step's heat is the exact free-energy decrease of what the route moved,
   from divided differences of each node's chemical free energy over the step (route_heat_pJ). So

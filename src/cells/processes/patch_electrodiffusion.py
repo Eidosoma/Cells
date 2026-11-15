@@ -149,7 +149,7 @@ def node_inflow(x, ci, valence, temperature, area, permeability, availability, v
 
 def stage_solve(x_hat, ci, valence, temperature, area, permeability, availability, volume_pL,
                 fixed_fmol, other_charge_fmol, capacitance_F, gamma_h, *, xp=jnp,
-                sign_of_rank_one=1.0):
+                sign_of_rank_one=1.0, owner_hat_fmol=None, owner_volume_pL=None):
     """Solve R(x) = x - x_hat - gamma_h J_j(x) = 0 for the compartment's permeant amounts.
 
     Newton at a fixed count. The Jacobian is I - gamma_h (D + u w^T): D diagonal
@@ -157,18 +157,32 @@ def stage_solve(x_hat, ci, valence, temperature, area, permeability, availabilit
     solves it in O(m). Returns (x, V_b, valid), valid where the residual is within
     NEWTON_RTOL (|x| + |x_hat|) for every species. sign_of_rank_one is for the planted-error test
     only: -1 flips w, and the solve must then fail.
+
+    The owner (the core's question 2): with owner_hat_fmol and owner_volume_pL given, the owner's
+    concentration follows the solve, c_i = (owner_hat - (x - x_hat)) / V_i. The owner receives
+    exactly -(x - x_hat) at the same stage; its known part owner_hat carries what x_hat carries.
+    That adds -dJ_j/dc_i / V_i to the diagonal, so the Jacobian stays diagonal plus rank one.
+    Without them, ci is frozen at the stage's value, an O(V_j/V_i) approximation.
     """
     x = x_hat
     k = valence * F / (R * temperature)
     pref = area * permeability * availability / MOL_PER_FMOL
     w_vec = sign_of_rank_one * (-CHARGE_PER_FMOL * valence / capacitance_F)
+    coupled = owner_hat_fmol is not None
+
+    def owner_c(x_now):
+        return (owner_hat_fmol - (x_now - x_hat)) / owner_volume_pL if coupled else ci
+
     for _ in range(NEWTON_ITERATIONS):
-        inflow, v = node_inflow(x, ci, valence, temperature, area, permeability, availability,
+        ci_now = owner_c(x)
+        inflow, v = node_inflow(x, ci_now, valence, temperature, area, permeability, availability,
                                 volume_pL, fixed_fmol, other_charge_fmol, capacitance_F, xp=xp)
         r = x - x_hat - gamma_h * inflow
 
         d_diag = -pref * bernoulli(k * v, xp=xp) / volume_pL  # dJ_j/dx on the diagonal
-        u = -flux_slope(ci, x / volume_pL, v, valence, temperature, area, permeability,
+        if coupled:  # dJ_j/dc_i = pref B(-kv), times dc_i/dx = -1/V_i
+            d_diag = d_diag - pref * bernoulli(-k * v, xp=xp) / owner_volume_pL
+        u = -flux_slope(ci_now, x / volume_pL, v, valence, temperature, area, permeability,
                         availability, xp=xp)  # dJ_j/dV_b
         a = 1.0 - gamma_h * d_diag
         uu = -gamma_h * u
@@ -176,8 +190,9 @@ def stage_solve(x_hat, ci, valence, temperature, area, permeability, availabilit
         z = uu / a
         delta = y - z * xp.sum(w_vec * y, axis=0) / (1.0 + xp.sum(w_vec * z, axis=0))
         x = x - delta
-    inflow, v = node_inflow(x, ci, valence, temperature, area, permeability, availability,
-                            volume_pL, fixed_fmol, other_charge_fmol, capacitance_F, xp=xp)
+    inflow, v = node_inflow(x, owner_c(x), valence, temperature, area, permeability,
+                            availability, volume_pL, fixed_fmol, other_charge_fmol, capacitance_F,
+                            xp=xp)
     r = x - x_hat - gamma_h * inflow
     valid = xp.all(xp.abs(r) <= NEWTON_RTOL * (xp.abs(x) + xp.abs(x_hat))) & xp.all(x > 0)
     return x, v, valid

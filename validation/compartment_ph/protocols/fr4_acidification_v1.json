@@ -63,13 +63,15 @@
    "K": 1e-10,
    "Cl": 1e-10,
    "H": 1e-16,
-   "B_c": 1e-12,
-   "B_L": 1e-12,
-   "ATP": 1e-12,
-   "ADP": 1e-12,
-   "Pi": 1e-12
+   "B_c": 1e-18,
+   "B_L": 1e-18,
+   "ATP": 1e-18,
+   "ADP": 1e-18,
+   "Pi": 1e-18
   },
-  "records": "901 rows, every 1 s"
+  "records": "901 rows, every 1 s",
+  "standard_concentration_mM": 1000.0,
+  "absent_rows": "declared traces of 1e-9 mM (background on B_c, B_L, ATP, ADP, Pi; floor 1e-18 fmol)"
  },
  "predictions_at_drafting": {
   "held_fuel_drive_kJ_mol": -51.41,
@@ -128,7 +130,8 @@
   "The closure's envelope lost its dt clause after the advisor's check that §13's inside case would otherwise leave it near steady state; the 1e3 ratio and the 1e-3 pH budget were fixed before any comparison exists",
   "The buffers' pK values, k_on and the pump's constants are generic declarations, not fits; no run of this world has been made",
   "The dt ladder (2, 1, 0.5, 0.25 ms) was chosen with the 0.05 threshold in view, so that the coarsest rung sits at it",
-  "The envelope check was revised before any run of this world, after the FR-4 references' run 02 found that the fixed ratio admitted k_on = 1e3 with a 1.26e-2 pH lag; the revised check is the state-dependent lag estimate, with that case kept as a planted test"
+  "The envelope check was revised before any run of this world, after the FR-4 references' run 02 found that the fixed ratio admitted k_on = 1e3 with a 1.26e-2 pH lag; the revised check is the state-dependent lag estimate, with that case kept as a planted test",
+  "Absent rows: the world declares a 1e-9 mM trace (background 1e-9 mM, floor 1e-18 fmol) wherever a row does not apply, since absent rows are refused; the independent references use an exact 0 for the absent buffer. This is a declared difference: the closure's mask keys on the declared (node, row) pairs, so the traces are never live buffers, and their effect on the compared quantities is reported"
  ],
  "questions_for_the_lead": [],
  "development_runs": {

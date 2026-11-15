@@ -122,3 +122,17 @@ def test_the_dt_study_ladder_and_criteria():
         ("admission", "order", "state_error_at_declared_dt", "energy", "ledgers", "bands",
          "envelope", "reference", "control"), start=1)}
     assert dt_study.observed_order(1.0, 0.25, 0.0625) == pytest.approx(2.0)
+
+
+def test_absent_rows_are_declared_traces_with_background_and_k_on_sits_on_the_read():
+    d = defs.fr4_world()
+    for node in d["model"]["cells"] + d["model"]["extracellular"]:
+        assert all(n > 0 for n in node["initial_amount_fmol"].values()), node["id"]
+    entries = {e["id"]: e for e in d["model"]["species"]}
+    for row in defs.BACKGROUND_ROWS:
+        assert entries[row]["background"] == dict(trace_mM=1e-9, floor_fmol=1e-18)
+    assert all("k_on_per_mM_s" not in e for e in entries.values())
+    assert d["model"]["stage_reads"][0]["k_on_per_mM_s"] == {"B_c": 1e7, "B_L": 1e7}
+    assert d["model"]["standard_concentration_mM"] == 1000.0
+    today = defs.today_only(d)
+    assert all("background" not in e for e in today["model"]["species"])

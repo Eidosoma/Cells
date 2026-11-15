@@ -18,6 +18,8 @@ from cells.processes.electrochemistry import F, R
 
 T = 310.0
 LN10 = math.log(10.0)
+DECL = np.array([[True]])  # the declared (node, row) pair
+DECL2 = np.array([[True], [False]])  # B_L declared in the lumen; B_c absent there
 
 
 def ph_to_h(ph):
@@ -30,7 +32,7 @@ def ph_to_h(ph):
 def test_k_from_registry_potentials_gives_the_declared_pk():
     # §13's entries: (mu_HB - mu_B)/RT = -pK ln 10 with mu_H = 0.
     for pk in (7.2, 6.0):
-        k = buf.dissociation_constant_mM(-pk * LN10, 0.0, xp=np)
+        k = buf.dissociation_constant_mM(-pk * LN10, 0.0, c0_mM=1000.0, xp=np)
         assert -math.log10(k / 1000.0) == pytest.approx(pk, abs=1e-12)
 
 
@@ -91,8 +93,8 @@ def test_closure_energy_derivative_is_the_free_proton_potential():
     h_eq = 20.0 * v
     eps = 1e-6 * h_eq
     args = (np.array([[b_tot]]), v, np.array([[k]]), 0.0, np.array([[mu_a]]), np.array([[mu_b]]), T)
-    g_plus, ok1 = buf.closure_free_energy_pJ(np.array([h_eq + eps]), *args, xp=np)
-    g_minus, ok2 = buf.closure_free_energy_pJ(np.array([h_eq - eps]), *args, xp=np)
+    g_plus, ok1 = buf.closure_free_energy_pJ(np.array([h_eq + eps]), *args, c0_mM=1000.0, xp=np)
+    g_minus, ok2 = buf.closure_free_energy_pJ(np.array([h_eq - eps]), *args, c0_mM=1000.0, xp=np)
     assert ok1.all() and ok2.all()
     slope = (g_plus[0] - g_minus[0]) / (2 * eps) * 1e3  # J/mol
     h, _ = buf.free_proton(np.array([h_eq / v]), np.array([[b_tot / v]]), np.array([[k]]), xp=np)
@@ -124,9 +126,9 @@ def test_envelope_flags_the_declared_outside_case_and_admits_the_inside_ones():
     b = np.array([[40.0]])
     k = np.array([[ph_to_h(6.0)]])
     rate = 0.031 * buf.buffer_capacity(h, b, k, xp=np) / LN10  # mM/s giving rho = 0.031 /s
-    assert buf.envelope_valid(h, b, k, np.array([[1e7]]), rate, xp=np).all()
-    assert buf.envelope_valid(h, b, k, np.array([[1e5]]), rate, xp=np).all()
-    assert not buf.envelope_valid(h, b, k, np.array([[1e-3]]), rate, xp=np).any()
+    assert buf.envelope_valid(h, b, k, np.array([[1e7]]), rate, DECL, xp=np).all()
+    assert buf.envelope_valid(h, b, k, np.array([[1e5]]), rate, DECL, xp=np).all()
+    assert not buf.envelope_valid(h, b, k, np.array([[1e-3]]), rate, DECL, xp=np).any()
 
 
 def test_planted_the_old_fixed_ratio_admits_a_case_the_lag_check_refuses():
@@ -137,26 +139,27 @@ def test_planted_the_old_fixed_ratio_admits_a_case_the_lag_check_refuses():
     k = np.array([[ph_to_h(6.0)]])
     rate = 0.031 * buf.buffer_capacity(h, b, k, xp=np) / LN10
     k_on = np.array([[1e3]])
-    lam = buf.relaxation_rate(h, b, k, k_on, xp=np)
+    lam = buf.relaxation_rate(h, b, k, k_on, DECL, xp=np)
     rho = buf.drive_rate(rate, h, b, k, xp=np)
     assert (lam >= 1e3 * rho).all()  # the old check would pass
-    lag = buf.lag_estimate_ph(h, b, k, k_on, rate, xp=np)
+    lag = buf.lag_estimate_ph(h, b, k, k_on, rate, DECL, xp=np)
     assert lag[0] == pytest.approx(1.26e-2, rel=0.05)  # the references' measured lag
-    assert not buf.envelope_valid(h, b, k, k_on, rate, xp=np).any()
+    assert not buf.envelope_valid(h, b, k, k_on, rate, DECL, xp=np).any()
     # The threshold the references found: the budget holds from k_on of about 1.28e4.
-    assert buf.envelope_valid(h, b, k, np.array([[1.3e4]]), rate, xp=np).all()
-    assert not buf.envelope_valid(h, b, k, np.array([[1.2e4]]), rate, xp=np).any()
+    assert buf.envelope_valid(h, b, k, np.array([[1.3e4]]), rate, DECL, xp=np).all()
+    assert not buf.envelope_valid(h, b, k, np.array([[1.2e4]]), rate, DECL, xp=np).any()
 
 
 def test_stage_read_over_cells_and_outside_nodes():
-    structure = buf.ReadStructure(proton_row=0, buffer_rows=(1,))
+    structure = buf.ReadStructure(proton_row=0, buffer_rows=(1,), declared=((False, True),))
     v = np.array([4.18879, 0.0654498])
     k = np.array([ph_to_h(6.0)])
     h_lumen = ph_to_h(5.0)
     total_lumen = h_lumen + 40.0 * h_lumen / (h_lumen + k[0])
     cell = np.array([[1e-4 * v[0]], [0.0]])
     outside = np.array([[total_lumen * v[1]], [40.0 * v[1]]])
-    p = buf.ReadLayout(volume_pL=v, k_mM=k, buffered=np.array([False, True]), temperature_K=T)
+    p = buf.ReadLayout(volume_pL=v, k_mM=k, k_on_per_mM_s=np.array([1e7]), c0_mM=1000.0,
+                       temperature_K=T)
     values, valid = buf.evaluate(structure, cell, outside, p, xp=np)
     assert valid.all()
     assert values["h"][0] == pytest.approx(1e-4, rel=1e-12)
@@ -312,9 +315,10 @@ def test_envelope_ignores_a_buffer_row_absent_at_the_node():
     b = np.array([[40.0], [0.0]])
     k = np.array([[ph_to_h(6.0)], [ph_to_h(7.2)]])
     rate = 0.1 * buf.buffer_capacity(h, b, k, xp=np) / LN10
-    assert buf.envelope_valid(h, b, k, np.array([[1e5], [1e5]]), rate, xp=np).all()
-    assert not buf.envelope_valid(h, b, k, np.array([[1e-3], [1e5]]), rate, xp=np).any()
-    unbuffered = buf.relaxation_rate(h, np.zeros((2, 1)), k, np.array([[1e5], [1e5]]), xp=np)
+    assert buf.envelope_valid(h, b, k, np.array([[1e5], [1e5]]), rate, DECL2, xp=np).all()
+    assert not buf.envelope_valid(h, b, k, np.array([[1e-3], [1e5]]), rate, DECL2, xp=np).any()
+    unbuffered = buf.relaxation_rate(h, np.zeros((2, 1)), k, np.array([[1e5], [1e5]]),
+                                     np.zeros((2, 1), bool), xp=np)
     assert np.isinf(unbuffered).all()
 
 
@@ -355,10 +359,11 @@ def test_domain_refuses_the_fuel_node_outside_its_ph_band():
 
 
 def test_the_read_closes_over_its_structure_and_takes_the_published_arguments():
-    read = buf.make_read(buf.ReadStructure(proton_row=0, buffer_rows=(1,)))
+    read = buf.make_read(
+        buf.ReadStructure(proton_row=0, buffer_rows=(1,), declared=((False, True),)))
     v = np.array([1.0, 0.5])
-    p = buf.ReadLayout(volume_pL=v, k_mM=np.array([ph_to_h(6.0)]),
-                       buffered=np.array([False, True]), temperature_K=T)
+    p = buf.ReadLayout(volume_pL=v, k_mM=np.array([ph_to_h(6.0)]), k_on_per_mM_s=np.array([1e7]),
+                       c0_mM=1000.0, temperature_K=T)
     values, valid = read.evaluate(np.array([[2e-4], [0.0]]), np.array([[10.0], [20.0]]), p, xp=np)
     assert read.read_id == "rapid_proton_buffer@1" and valid.all()
     assert values["h"][0] == pytest.approx(2e-4, rel=1e-13)
@@ -369,6 +374,41 @@ def test_declared_term_at_an_unbuffered_node_is_minus_rt_ln_c0_per_proton():
     # declared term is -RT ln(1000) per proton, not zero: it must be evaluated on every H node.
     n, v = 2e-5, 0.5
     term, ok = buf.declared_term_pJ(np.array([n]), np.zeros((1, 1)), v, np.array([[1e-3]]), 0.0,
-                                    np.zeros((1, 1)), np.zeros((1, 1)), T, xp=np)
+                                    np.zeros((1, 1)), np.zeros((1, 1)), T, c0_mM=1000.0, xp=np)
     assert ok.all()
     assert term[0] == pytest.approx(-1e-3 * R * T * n * math.log(1000.0), rel=1e-12)
+
+
+# --- the lead's rulings (registry c0, declared-pair masks) -------------------------------------
+
+
+def test_planted_registry_c0_conversion_gives_the_same_k():
+    # Potentials at c0 = 1000 mM give pK 7.2 and 6.0. Converted consistently to c0 = 1 mM (each
+    # species' mu/RT gains ln(c0'/c0)), they give the same K. The unconverted entries at 1 mM are
+    # off by ln(c0/1000): 3 pH units.
+    shift = math.log(1.0 / 1000.0)
+    for pk in (7.2, 6.0):
+        k1000 = buf.dissociation_constant_mM(-pk * LN10, 0.0, 0.0, c0_mM=1000.0, xp=np)
+        k1 = buf.dissociation_constant_mM(-pk * LN10 + shift, shift, shift, c0_mM=1.0, xp=np)
+        assert k1 == pytest.approx(k1000, rel=1e-12)
+        wrong = buf.dissociation_constant_mM(-pk * LN10, 0.0, 0.0, c0_mM=1.0, xp=np)
+        assert -math.log10(wrong / k1000) == pytest.approx(3.0, abs=1e-12)
+
+
+def test_planted_an_undeclared_trace_leaves_h_bitwise_unchanged():
+    # B_L declared in the lumen only; a B_L trace in the cytosol is a free row there, not a buffer.
+    structure = buf.ReadStructure(proton_row=0, buffer_rows=(1, 2), declared=((True, False),
+                                                                              (False, True)))
+    v = np.array([4.18879, 0.0654498])
+    p = buf.ReadLayout(volume_pL=v, k_mM=np.array([ph_to_h(7.2), ph_to_h(6.0)]),
+                       k_on_per_mM_s=np.array([1e7, 1e7]), c0_mM=1000.0, temperature_K=T)
+    cell = np.array([[30.0 * v[0]], [50.0 * v[0]], [0.0]])
+    lumen = np.array([[20.0 * v[1]], [0.0], [40.0 * v[1]]])
+    base, ok = buf.evaluate(structure, cell, lumen, p, xp=np)
+    cell_t = cell.copy()
+    cell_t[2, 0] = 1e-9 * v[0]  # an undeclared B_L trace in the cytosol
+    lumen_t = lumen.copy()
+    lumen_t[1, 0] = 1e-9 * v[1]  # an undeclared B_c trace in the lumen
+    traced, ok_t = buf.evaluate(structure, cell_t, lumen_t, p, xp=np)
+    assert ok.all() and ok_t.all()
+    assert np.array_equal(base["h"], traced["h"])

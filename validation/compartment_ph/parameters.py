@@ -68,6 +68,9 @@ class World:
     proton_leak_m_s: float = 6e-7
     counterion_k_m_s: float = 5e-10
     end_s: float = 900.0
+    standard_concentration_mM: float = 1000.0  # the registry's c0 (one authority)
+    trace_mM: float = 1e-9  # a row that does not apply at a node is this declared trace
+    trace_floor_fmol: float = 1e-18  # its declared material floor (the registry's background)
     dt_s: float = 1e-3
 
     # --- derived -------------------------------------------------------------------------------

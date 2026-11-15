@@ -139,7 +139,14 @@ For buffer k at one node, with acid dissociation constant K_k in mM:
   - Each buffer species is declared once with the standard potentials of its two forms, μ°(B_k)
     for the base (valence z_k) and μ°(HB_k) for the acid (valence z_k + 1).
   - The proton's is μ°(H⁺), conventionally 0 at c°.
-  - Then K_k = c° exp(−(μ°(H⁺) + μ°(B_k) − μ°(HB_k))/RT), and pK_k = −log₁₀(K_k/c°).
+  - Then K_k = c° exp(−(μ°(H⁺) + μ°(B_k) − μ°(HB_k))/RT), with c° the registry's declared
+    `standard_concentration_mM` (one authority; the worlds declare 1000), and pK_k = −log₁₀(K_k/1 M).
+    pH stays defined against 1 M. The free-energy terms (§4.4) use the same declared c°. Potentials
+    converted consistently to another c° give the same K; unconverted ones do not (a planted test).
+  - **The closure's mask is the declared (node, row) pairs** (`buffers={cell: [B_c], lumen: [B_L]}`),
+    never an amount or a per-node flag. A row that does not apply at a node is a declared trace
+    (absent rows are refused): a free row at a fixed amount whose charge counts and which has no
+    protonation. Adding an undeclared trace leaves h bitwise unchanged (a planted test).
   - The closure, the kinetic reference (Appendix A) and the free-energy term (§4.4) all read the
     same three potentials.
 - The equilibrium is h × b_k / a_k = K_k, with a_k = [HB_k] and b_k = [B_k] in mM.
@@ -199,8 +206,9 @@ The closure is a reduced representation under D175, and declares its four fields
       from k_on ≈ 1.28e4.
     - At k_on = 1e3 the ratio holds by about 1.2e3, yet the lumen lags the closure by 1.26e-2 pH.
       That case is kept as a planted test (`test_planted_the_old_fixed_ratio_admits_a_case_the_lag_check_refuses`).
-  - **Computable at run time,** from the declared k_on (a registry value of the buffer, used only
-    for this check and the reference), the stage's fluxes and the closure's state
+  - **Computable at run time,** from k_on, a parameter of the closure's own declaration (its
+    stage read; D175's stand-in parameter, used only for this check and the reference, not a
+    species-registry value), the stage's fluxes and the closure's state
     (`rapid_proton_buffer.lag_estimate_ph`). The run refuses a stage outside it, with the reason.
   - **No clause in dt.** The closure is evaluated exactly at every stage, so its error is this lag,
     whatever the step. A dt clause would tie a physical envelope to the numerics, and a dt study
@@ -499,9 +507,24 @@ i.
   - energy closing to rounding with the exact booking;
   - the passive contract on FR-1's closed pair;
   - one planted error, a wrong sign in w, which must fail.
-- **Who codes it:** the core owner decides whether it fits behind one slot in the numerical plan
-  (the coordinator's question to them). The law, its references and its qualification are this
-  note's.
+- **Who codes it:** the core's slot runs this per-compartment Newton at each implicit ARS(2,2,2)
+  stage, admitted only on a face-free node with exactly one bounding patch (the core's §7.4–7.5).
+  The law, its references and its qualification are this note's.
+- **The core's two questions, answered.**
+  - **What x̂ carries at the last stage.** ARS(2,2,2) is stiffly accurate, so the step's result is
+    the last stage. There x̂ = x_n + h [δ E₁ + (1 − δ) E₂] + (1 − γ) h J_I(Y₂):
+    - the step's start;
+    - the explicit tableau's combination of every other law's rate on the compartment's rows at
+      stages 1 and 2 (the pump, the leaks, other routes);
+    - the patch's own implicit flux at stage 2's solved state.
+    The solve then adds γ h J_I(x). At the first implicit stage, x̂ = x_n + γ h E₁.
+  - **How the owner receives the moved amount.** At every implicit stage, exactly −(x − x̂) per
+    species. Its known part n̂_i carries what x̂ carries, with the opposite sign for the patch's
+    earlier term. In the Newton the owner's concentration follows the solve,
+    c_i = (n̂_i − (x − x̂))/V_i. That adds −∂J_j/∂c_i / V_i to the diagonal, keeping it diagonal
+    plus rank one (`stage_solve(owner_hat_fmol=..., owner_volume_pL=...)`). The frozen-c_i form
+    is an O(V_j/V_i) approximation, kept for tests.
+    Material and charge are exact by construction.
 
 ## 8. Compartment-state routing
 
@@ -569,6 +592,14 @@ i.
   - Damage may also scale it, through d's factor.
 - **Accounting:** whatever leaves the compartment arrives in the owner's cytosol on the same route.
   Material and charge close in one ledger, and each route books its own heat.
+- **FR-5's first world needs no implicit patch (S, answering the lead's question).**
+  - Its pores carry only protons and neutral cargo.
+  - The proton pore at 1e-6 m/s gives G/C_b ≈ 3.6 s⁻¹ at pH 5 (h ≈ 1e-2 mM), so dt × G/C_b
+    ≈ 0.004 at 1 ms. The proton leak gives 0.002.
+  - A neutral pore has no charge relaxation. Its material rate P A/V is about 12 s⁻¹ (0.012 at
+    1 ms), within finding 3's term.
+  - The K⁺ counterion is FR-4's, at 0.025.
+  - So the implicit slot is needed only for ionic pores and Cl⁻ counterions, which come later.
 - **What runs when:**
   - proton and neutral leaks and transfers run explicitly now. Their rates are small, for example
     H⁺ at 6e-5 cm/s gives dt × G/C ≈ 0.0002 at 1 ms;
@@ -631,18 +662,22 @@ radius 250 nm each, as one node.
   - A_b = 7.85398e-10 m²;
   - C_b = 7.85398e-12 F.
 - **The cytosol:** Na 10, K 140, Cl 10 mM.
-  - Buffer B_c (base valence −1) with B_tot 50 mM, starting at pH 7.2. B_L is absent there
-    (amount 0, inert).
+  - Buffer B_c (base valence −1) with B_tot 50 mM, starting at pH 7.2. B_L does not apply there:
+    it carries the declared trace, 1e-9 mM, undeclared to the closure.
   - **B_c's registry entry:** with μ°(H⁺) = 0, (μ°(HB_c) − μ°(B_c))/RT = −7.2 ln 10 = −16.57856, so
-    pK 7.2 follows (§4.1). k_on = 1e7 mM⁻¹ s⁻¹ is used for the envelope check and the kinetic
-    reference only.
+    pK 7.2 follows (§4.1), at the declared `standard_concentration_mM` = 1000. k_on = 1e7 mM⁻¹ s⁻¹
+    sits on the closure's declaration (envelope and reference only).
+  - **Absent rows:** every row that does not apply at a node carries a declared trace of 1e-9 mM;
+    B_c, B_L, ATP, ADP and Pi declare `background` (trace 1e-9 mM, floor 1e-18 fmol). The fixed
+    charges come from fsum(z n) of the written amounts. The references use an exact 0 for the
+    absent buffer, a declared difference the protocol discloses.
   - Held fuel: ATP 3, ADP 0.3, Pi 3 mM. Δ_rG'° = −30.5 kJ/mol (a generic declared value).
   - `transformed_at(7.2, pMg 3, δ 0.05)`.
 - **The lumen:** Na 10, K 140, Cl 10 mM.
-  - Buffer B_L (base valence −1) with B_tot 40 mM, starting at pH 7.2 (a resolved start). B_c is
-    absent.
-  - **B_L's registry entry:** (μ°(HB_L) − μ°(B_L))/RT = −6.0 ln 10 = −13.81551, so pK 6.0, with
-    k_on = 1e7 mM⁻¹ s⁻¹.
+  - Buffer B_L (base valence −1) with B_tot 40 mM, starting at pH 7.2 (a resolved start). B_c,
+    ATP, ADP and Pi carry the declared trace.
+  - **B_L's registry entry:** (μ°(HB_L) − μ°(B_L))/RT = −6.0 ln 10 = −13.81551, so pK 6.0; its
+    k_on, 1e7 mM⁻¹ s⁻¹, is on the closure's declaration.
   - Mode `explicit`.
 - **Initial proton equivalents** at each node: H_eq = V (h₀ + Σ_k B̄_k h₀/(h₀ + K_k)), with
   h₀ = c° 10^{−pH₀}.

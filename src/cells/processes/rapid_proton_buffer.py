@@ -14,7 +14,8 @@ The node's charge depends on the totals only (H_eq with +1, B_tot,k with the bas
 so the inner model's charge sum over stored rows is exact as it stands.
 
 K_k comes from the registry's standard potentials, never from a second parameter (B3):
-K_k = c0 exp(-(mu_H + mu_B,k - mu_HB,k) / RT), with c0 = 1000 mM and mu in units of RT.
+K_k = c0 exp(-(mu_H + mu_B,k - mu_HB,k) / RT), with c0 the registry's declared
+standard_concentration_mM (one authority) and mu in units of RT. pH stays defined against 1 M.
 
 Energy (§4.4). The node's free energy at fixed totals is the minimum over speciation, G*, in the
 inner model's convention (D152 §3.3): per species n (RT (ln c - 1) + mu°'), c in mM and
@@ -40,16 +41,16 @@ import numpy as np
 from cells.processes.electrochemistry import R
 
 READ_ID = "rapid_proton_buffer@1"
-STANDARD_STATE_mM = 1000.0
+PH_REFERENCE_mM = 1000.0  # pH = -log10(h / 1 M), whatever the registry's c0
 RESIDUAL_RTOL = 1e-13  # |g(h)| / H at the returned root; above it the read fails.
 BISECTION_STEPS = 80  # Log-space bisection for several buffers: full double precision.
 LAG_BUDGET_PH = 1e-3  # the declared budget the estimated lag must stay within (§4.2).
 LN10 = float(np.log(10.0))
 
 
-def dissociation_constant_mM(mu_acid_RT, mu_base_RT, mu_proton_RT=0.0, *, xp=jnp):
+def dissociation_constant_mM(mu_acid_RT, mu_base_RT, mu_proton_RT=0.0, *, c0_mM, xp=jnp):
     """K (mM) of HB <=> H+ + B from the registry's standard potentials (units of RT, at c0)."""
-    return STANDARD_STATE_mM * xp.exp(-(mu_proton_RT + mu_base_RT - mu_acid_RT))
+    return c0_mM * xp.exp(-(mu_proton_RT + mu_base_RT - mu_acid_RT))
 
 
 def residual(h, total_mM, buffer_mM, k_mM, *, xp=jnp):
@@ -127,7 +128,7 @@ def _row_term(n_fmol, c_mM, mu_RT, c0, *, xp):
 
 
 def closure_free_energy_pJ(total_fmol, buffer_fmol, volume_pL, k_mM, mu_proton_RT, mu_acid_RT,
-                           mu_base_RT, temperature_K, *, xp=jnp):
+                           mu_base_RT, temperature_K, *, c0_mM, xp=jnp):
     """G* (pJ) of one or more nodes at the closure's speciation, with free energy, valid.
 
     total_fmol [...]; buffer_fmol, k_mM, mu_acid_RT, mu_base_RT [buffer, ...] (broadcastable).
@@ -136,7 +137,7 @@ def closure_free_energy_pJ(total_fmol, buffer_fmol, volume_pL, k_mM, mu_proton_R
     buffer = buffer_fmol / volume_pL
     h, valid = free_proton(total, buffer, k_mM, xp=xp)
     acid, base = speciation(h, buffer, k_mM, xp=xp)
-    c0 = STANDARD_STATE_mM
+    c0 = c0_mM  # the registry's standard_concentration_mM
     terms = _row_term(h * volume_pL, h, mu_proton_RT, c0, xp=xp) + xp.sum(
         _row_term(acid * volume_pL, acid, mu_acid_RT, c0, xp=xp)
         + _row_term(base * volume_pL, base, mu_base_RT, c0, xp=xp),
@@ -152,11 +153,11 @@ def inner_row_energy_pJ(n_fmol, volume_pL, temperature_K, *, xp=jnp):
 
 
 def declared_term_pJ(total_fmol, buffer_fmol, volume_pL, k_mM, mu_proton_RT, mu_acid_RT,
-                     mu_base_RT, temperature_K, *, xp=jnp):
+                     mu_base_RT, temperature_K, *, c0_mM, xp=jnp):
     """The closure's declared free-energy term: G* less the inner model's stored-row terms."""
     g_star, valid = closure_free_energy_pJ(
         total_fmol, buffer_fmol, volume_pL, k_mM, mu_proton_RT, mu_acid_RT, mu_base_RT,
-        temperature_K, xp=xp,
+        temperature_K, c0_mM=c0_mM, xp=xp,
     )
     stored = inner_row_energy_pJ(total_fmol, volume_pL, temperature_K, xp=xp) + xp.sum(
         inner_row_energy_pJ(buffer_fmol, volume_pL, temperature_K, xp=xp), axis=0
@@ -164,14 +165,14 @@ def declared_term_pJ(total_fmol, buffer_fmol, volume_pL, k_mM, mu_proton_RT, mu_
     return g_star - stored, valid
 
 
-def relaxation_rate(h, buffer_mM, k_mM, k_on_per_mM_s, *, xp=jnp):
+def relaxation_rate(h, buffer_mM, k_mM, k_on_per_mM_s, declared, *, xp=jnp):
     """lambda = min_k k_on,k (h + b_k + K_k) (1/s) over the buffers present at the node.
 
     A buffer row with zero total is absent there and takes no part; a node with no buffer has
     lambda = inf (nothing to relax).
     """
     _, base = speciation(h, buffer_mM, k_mM, xp=xp)
-    rates = xp.where(buffer_mM > 0, k_on_per_mM_s * (h + base + k_mM), xp.inf)
+    rates = xp.where(declared, k_on_per_mM_s * (h + base + k_mM), xp.inf)
     return xp.min(rates, axis=0)
 
 
@@ -180,20 +181,21 @@ def drive_rate(total_rate_mM_s, h, buffer_mM, k_mM, *, xp=jnp):
     return LN10 * xp.abs(total_rate_mM_s) / buffer_capacity(h, buffer_mM, k_mM, xp=xp)
 
 
-def lag_estimate_ph(h, buffer_mM, k_mM, k_on_per_mM_s, total_rate_mM_s, *, xp=jnp):
+def lag_estimate_ph(h, buffer_mM, k_mM, k_on_per_mM_s, total_rate_mM_s, declared, *, xp=jnp):
     """The closure's first-order lag behind the kinetic system (pH units), from Appendix A.2:
     (rho / lambda) (beta/ln 10 - h) / (h ln 10),
     with beta/ln 10 - h = h sum_k B_k K_k / (h + K_k)^2."""
-    lam = relaxation_rate(h, buffer_mM, k_mM, k_on_per_mM_s, xp=xp)
+    lam = relaxation_rate(h, buffer_mM, k_mM, k_on_per_mM_s, declared, xp=xp)
     rho = drive_rate(total_rate_mM_s, h, buffer_mM, k_mM, xp=xp)
     bound_slope = xp.sum(buffer_mM * k_mM / (h + k_mM) ** 2, axis=0)
     return (rho / lam) * bound_slope / LN10
 
 
-def envelope_valid(h, buffer_mM, k_mM, k_on_per_mM_s, total_rate_mM_s, *,
+def envelope_valid(h, buffer_mM, k_mM, k_on_per_mM_s, total_rate_mM_s, declared, *,
                    budget_ph=LAG_BUDGET_PH, xp=jnp):
     """§4.2's run-time check, state-dependent: the estimated lag within the budget, per node."""
-    return lag_estimate_ph(h, buffer_mM, k_mM, k_on_per_mM_s, total_rate_mM_s, xp=xp) <= budget_ph
+    lag = lag_estimate_ph(h, buffer_mM, k_mM, k_on_per_mM_s, total_rate_mM_s, declared, xp=xp)
+    return lag <= budget_ph
 
 
 class ReadLayout(NamedTuple):
@@ -201,7 +203,8 @@ class ReadLayout(NamedTuple):
 
     volume_pL: object  # [node]
     k_mM: object  # [buffer]
-    buffered: object  # [node] bool: unbuffered nodes read h = H
+    k_on_per_mM_s: object  # [buffer]: the closure's D175 stand-in (envelope and reference only)
+    c0_mM: object  # the registry's standard_concentration_mM
     temperature_K: object
 
 
@@ -210,20 +213,23 @@ class ReadStructure(NamedTuple):
 
     proton_row: int
     buffer_rows: tuple
+    declared: tuple  # [buffer][node] bools: the declared (node, row) pairs, the closure's mask
 
 
 def evaluate(structure, cell_amounts, outside_amounts, p, *, xp=jnp):
     """The stage read: ({"h": [node], "pH": [node]}, valid[node]) on a stage's own state.
 
     cell_amounts [species, cell] and outside_amounts [species, outside] are the stored rows; the
-    node axis is cells then outside nodes. At an unbuffered node the buffers are taken as absent.
+    node axis is cells then outside nodes. The mask is the declared (node, row) pairs, never the
+    amounts: an undeclared trace row is a free row at a fixed amount, whose charge counts in the
+    inner model and which has no protonation here.
     """
     amounts = xp.concatenate((cell_amounts, outside_amounts), axis=1)
     total = amounts[structure.proton_row] / p.volume_pL
     rows = xp.asarray(structure.buffer_rows)
-    buffer = xp.where(p.buffered, amounts[rows] / p.volume_pL, 0.0)
+    buffer = xp.where(xp.asarray(structure.declared), amounts[rows] / p.volume_pL, 0.0)
     h, valid = free_proton(total, buffer, xp.asarray(p.k_mM)[:, None], xp=xp)
-    return {"h": h, "pH": -xp.log10(h / STANDARD_STATE_mM)}, valid
+    return {"h": h, "pH": -xp.log10(h / PH_REFERENCE_mM)}, valid
 
 
 class StageRead(NamedTuple):
