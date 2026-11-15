@@ -2416,16 +2416,33 @@ and the guards' verdict, at the clean head e127755. It is still PROPOSED. The cr
 Judge and combine on a registered copy of the redraft pass, with the same 55 criterion verdicts as
 the rehearsal's.
 
-**For the lead's final check:**
-1. **Unit b's cap.** Unit b peaked at 2.55 GB. Its cap stays at 5 GiB, as confirmed until
-   measured; the lead may lower it.
-2. **judge-guards' memory cap,** proposed at 5 GiB by ruling 9's reasoning. It peaked at 3.18 GB
-   under 4 GiB, and a cap kill would spend the single rerun.
-3. **Guard 2's passive world** stays judged, per the answer to question 1; the final check can
-   revisit it.
+**The lead's final check** (15 November 2026):
+- **Confirmed:** the lanes as rehearsed, and judge-guards at a 5 GiB minimum cap.
+- **Unchanged:** unit b's cap (5 GiB, peak 2.55 GB) and guard 2's passive world (judged). Changing a
+  judged item now would mean another rehearsal.
+- **Two requests, done at b8f19d3:**
+  - The development runs are named again as the protocol's basis, beside the rehearsal's runs,
+    in `development_runs.basis`. They are dev-d4cee87-a, -b and -c, dev-3e7399a-d, and
+    dev-7495288-q1, -q6 and -q7, the runs the thresholds and the 165 deltas were first derived
+    from, before FR-9. The generator's `--basis` refuses to draft unless they give the same
+    criteria, thresholds, deltas and controls, and they do.
+  - The launcher of record is named in `rules.judge_entries.launcher`: `scripts/run_detached.sh`
+    and the rehearsal's `rehearse_entry.sh`, copied unchanged into the judged run's inputs. It
+    takes the snapshot's checked-in registered protocol as its argument. No code reads the caps,
+    lanes or runtime limits; the launcher alone enforces them, through run_detached.sh's
+    MemoryMax, CPUAffinity and RuntimeMaxSec.
+- Judge and combine on a registered copy of b8f19d3's protocol pass with the rehearsal judge's 55
+  verdicts.
 
-Then come registration, which the lead does through `register` with the lead's record, and one
-judged run from a fresh snapshot of main at the registration commit.
+**What follows:**
+1. Track R registers first.
+2. These commits land on main behind tier 1.
+3. From the landed tree the lead registers a copy and runs judge and combine on the rehearsal's
+   outputs. Both must run from `snapshot-58b6f14`, whose identity the runs carry, and the copy
+   must carry the rehearsal record's status so that combine accepts the rehearsal's guards
+   verdict. All 55 verdicts must match.
+4. The lead registers through `register` with the lead's record.
+5. One judged run follows, from a fresh snapshot of main at the registration commit.
 
 ## Appendix A. Equations for the independent references
 
