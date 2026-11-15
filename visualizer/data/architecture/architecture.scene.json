@@ -5,9 +5,9 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-14",
-  "generated_at": "2026-11-14T23:42:50Z",
-  "revision": "e2a86708",
-  "revision_date": "2026-11-14",
+  "generated_at": "2026-11-15T01:06:05Z",
+  "revision": "a456453b",
+  "revision_date": "2026-11-15",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
   "source_base_url": "https://github.com/Eidosoma/Cells/blob/main/",
@@ -375,7 +375,7 @@
      "covers_all": false
     }
    },
-   "checked_at": "e2a86708"
+   "checked_at": "a456453b"
   },
   "counts": {
    "units": 49,
@@ -618,6 +618,250 @@
      "with_products": 43,
      "products": 93
     }
+   },
+   {
+    "id": "mpneumoniae",
+    "label": "M. pneumoniae",
+    "organism": "Mycoplasma pneumoniae M129",
+    "taxon": 272634,
+    "plain": "A small bacterium of the human airways with 688 proteins in its genome record, audited beside JCVI-syn3A for measured data to validate Cells against; the units of the law inventory are machines of animal cells, and it has none of them.",
+    "made": "2026-11-15",
+    "method": [
+     "The organism's proteins are the 688 protein products of one frozen genome annotation, GenBank U00089.2: the genome of strain M129 as its submitters re-annotated it in 2000. UniProtKB holds a reviewed entry for 687 of them, and UniProt's archive (UniParc) holds all 688 sequences letter for letter, with the family signatures on each.",
+     "Licences were read before anything was copied; each is stated in sources, and what was read but not copied is in not_copied.",
+     "Each unit's family was taken from its own human candidates, by the same InterPro signatures that the planarian and Syn3A atlases ask. The build checks that the candidates carry them.",
+     "Each signature was looked for on all 688 sequences. None was found, for any unit.",
+     "A control for every zero: the same signature was asked of the UniProtKB entries of all mollicutes, the class of bacteria the organism belongs to; each unit's note gives what came back.",
+     "Eight further signatures, of the channels a bacterium could have (potassium, chloride, magnesium, water and membrane-stretch channels), were looked for as well. Seven were not found, although each is carried by UniProtKB entries of other mollicutes. One was: the family of water and glycerol channels, on the glycerol facilitator GlpF.",
+     "Under extra are nine of the organism's own membrane machines that bear on what the atlas draws and match no unit. Each has a reviewed UniProtKB entry of this strain and is listed by it; their functions are assigned by curators from sequence, not measured in this organism.",
+     "No similarity search was run, and nothing is called an ortholog."
+    ],
+    "sources": [
+     {
+      "name": "GenBank",
+      "url": "https://www.ncbi.nlm.nih.gov/nuccore/U00089.2",
+      "release": "U00089.2, the re-annotation of 2000",
+      "accessed": "2026-11-15",
+      "licence": "No restriction: \"NCBI places no restrictions on the use or distribution of the GenBank data\". Submitters may claim rights in what they submitted; this record states none.",
+      "cite": "Himmelreich R, Hilbert H, Li B-C; Suyama M, Dandekar T, Herrmann R (1996, 2000) Mycoplasma pneumoniae M129, complete genome. GenBank U00089.2.",
+      "holds": "the locus tags, gene names, products and lengths of the organism's proteins"
+     },
+     {
+      "name": "UniProt",
+      "url": "https://www.uniprot.org/",
+      "release": "2026_04",
+      "accessed": "2026-11-15",
+      "licence": "CC BY 4.0",
+      "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
+      "holds": "the reviewed entries of the organism's proteins; which archived sequences carry each family signature; the signatures of the units' human candidates; the control counts"
+     },
+     {
+      "name": "InterPro",
+      "url": "https://www.ebi.ac.uk/interpro/",
+      "accessed": "2026-11-15",
+      "licence": "CC0 1.0",
+      "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456.",
+      "holds": "the identifiers and names of the family signatures, as UniProt gives them"
+     }
+    ],
+    "not_copied": "No sequence is copied: they stay with the downloads, outside the repository. The papers with measured protein amounts and other tables of this organism (Maier and others 2011, Wodke and others 2013, Chen and others 2016) are under non-commercial licences: numbers from them are cited in the species file and their tables are not copied. No whole-cell or genome-scale model of the organism was read for its files.",
+    "counts": {
+     "units": 49,
+     "with_products": 0,
+     "products": 0,
+     "candidates": 0
+    },
+    "findings": [
+     {
+      "id": "found",
+      "count": 0
+     },
+     {
+      "id": "different family",
+      "count": 0
+     },
+     {
+      "id": "none found",
+      "count": 43
+     },
+     {
+      "id": "nothing to look for",
+      "count": 6
+     }
+    ],
+    "evidence": [
+     {
+      "id": "reviewed entry",
+      "count": 0
+     },
+     {
+      "id": "named in a publication",
+      "count": 0
+     },
+     {
+      "id": "family signature",
+      "count": 0
+     },
+     {
+      "id": "similarity search",
+      "count": 0
+     }
+    ],
+    "extra": [
+     {
+      "label": "atpA",
+      "detail": "ATP synthase, F1 alpha subunit, catalytic head",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "518 amino acids",
+       "Locus MPN_600, product \"ATP synthase alpha chain\" in the genome record. Its reviewed UniProtKB entry names it \"ATP synthase subunit alpha\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain)."
+      ],
+      "links": [
+       {
+        "text": "UniProt Q50329",
+        "url": "https://www.uniprot.org/uniprotkb/Q50329/entry"
+       }
+      ],
+      "note": "Part of the cell's F-type ATP synthase, which sits in its one membrane; four of its subunits are listed here. A 2013 model of the cell's metabolism has this machine run backwards, spending ATP to pump protons out; that is the model's estimate, not a measurement. The law inventory has no F-type ATPase."
+     },
+     {
+      "label": "atpD",
+      "detail": "ATP synthase, F1 beta subunit, catalytic head",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "475 amino acids",
+       "Locus MPN_598, product \"ATP synthase beta chain\" in the genome record. Its reviewed UniProtKB entry names it \"ATP synthase subunit beta\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain)."
+      ],
+      "links": [
+       {
+        "text": "UniProt Q50331",
+        "url": "https://www.uniprot.org/uniprotkb/Q50331/entry"
+       }
+      ],
+      "note": "The other subunit of the ATP synthase's catalytic head."
+     },
+     {
+      "label": "atpE",
+      "detail": "ATP synthase, F0 c subunit, proton-carrying ring",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "105 amino acids",
+       "Locus MPN_603, product \"ATP synthase C chain\" in the genome record. Its reviewed UniProtKB entry names it \"ATP synthase subunit c\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR000454 (ATP synthase, F0 complex, subunit C)."
+      ],
+      "links": [
+       {
+        "text": "UniProt Q59550",
+        "url": "https://www.uniprot.org/uniprotkb/Q59550/entry"
+       }
+      ],
+      "note": "The ring of the ATP synthase that carries protons across the membrane."
+     },
+     {
+      "label": "atpB",
+      "detail": "ATP synthase, F0 a subunit, proton path",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "293 amino acids",
+       "Locus MPN_604, product \"ATP synthase A chain\" in the genome record. Its reviewed UniProtKB entry names it \"ATP synthase subunit a\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR000568 (ATP synthase, F0 complex, subunit A)."
+      ],
+      "links": [
+       {
+        "text": "UniProt Q50326",
+        "url": "https://www.uniprot.org/uniprotkb/Q50326/entry"
+       }
+      ],
+      "note": "The membrane subunit of the ATP synthase beside the ring, where protons enter and leave."
+     },
+     {
+      "label": "pacL",
+      "detail": "P-type ATPase, ion pump",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "872 amino acids",
+       "Locus MPN_209, product \"cation-transporting P-type ATPase\" in the genome record. Its reviewed UniProtKB entry names it \"Probable cation-transporting P-type ATPase\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR001757 (P-type ATPase)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P78036",
+        "url": "https://www.uniprot.org/uniprotkb/P78036/entry"
+       }
+      ],
+      "note": "A pump of the same superfamily as the sodium-potassium and calcium pumps of animal cells. Its sequence carries the superfamily's signature and none of the signatures of those pumps' branches, so which ion it moves is not known here. It is the only P-type ATPase in the genome."
+     },
+     {
+      "label": "ntpJ",
+      "detail": "Potassium uptake protein KtrB-like, membrane part of a potassium uptake system",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "565 amino acids",
+       "Locus MPN_460, product \"KtrB\" in the genome record. Its reviewed UniProtKB entry names it \"Uncharacterized cation transporter MG322 homolog\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR003445 (Cation transporter)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P75323",
+        "url": "https://www.uniprot.org/uniprotkb/P75323/entry"
+       }
+      ],
+      "note": "The membrane part of what the genome record calls the cell's potassium uptake system, KtrAB. That is how a cell without a sodium-potassium pump or a potassium channel would take up potassium; UniProt's curators leave the protein uncharacterised."
+     },
+     {
+      "label": "yzaC",
+      "detail": "Potassium uptake protein KtrA-like, regulatory part of a potassium uptake system",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "231 amino acids",
+       "Locus MPN_461, product \"KtrA, K+ Na+ uptake\" in the genome record. Its reviewed UniProtKB entry names it \"Uncharacterized protein MG323 homolog\", with UniProt's level of evidence \"predicted\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR006037 (Regulator of K+ conductance, C-terminal)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P75322",
+        "url": "https://www.uniprot.org/uniprotkb/P75322/entry"
+       }
+      ],
+      "note": "The cytoplasmic partner that the genome record gives the potassium uptake system."
+     },
+     {
+      "label": "ptsG",
+      "detail": "Glucose transporter PtsG, sugar uptake",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "940 amino acids",
+       "Locus MPN_207, product \"PTS system, glucose-specific IIABC component\" in the genome record. Its reviewed UniProtKB entry names it \"PTS system glucose-specific EIICBA component\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR003352 (Phosphotransferase system, EIIC)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P75569",
+        "url": "https://www.uniprot.org/uniprotkb/P75569/entry"
+       }
+      ],
+      "note": "The membrane part of the system that brings in glucose, the cell's main fuel. Its ATP comes from fermenting that sugar."
+     },
+     {
+      "label": "glpF",
+      "detail": "Glycerol facilitator GlpF, channel for glycerol",
+      "tag": "Reviewed entry",
+      "tag_title": "A curated database entry for this species.",
+      "lines": [
+       "264 amino acids",
+       "Locus MPN_043, product \"glycerol uptake facilitator\" in the genome record. Its reviewed UniProtKB entry names it \"Probable glycerol uptake facilitator protein\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR000425 (Major intrinsic protein)."
+      ],
+      "links": [
+       {
+        "text": "UniProt P75071",
+        "url": "https://www.uniprot.org/uniprotkb/P75071/entry"
+       }
+      ],
+      "note": "The one channel-like protein found here: a member of the family of water and glycerol channels, annotated as the cell's glycerol uptake facilitator. It is not an ion channel, and the law inventory has no unit for it; its water permeability unit is a lumped property with no protein."
+     }
+    ]
    },
    {
     "id": "planarian",
@@ -2200,7 +2444,7 @@
    "group": "operators",
    "status": "landed",
    "as_of": "2026-11-14",
-   "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Milestones 1 and 2 landed on 14 November 2026: the operator with its refusals, the junction and channel targets, a starting condition for each cell, and the regulatory state with restart, batches and compositions. In milestone 3 its development runs agree with the independent references at second order. It is development code, guarded by tests; no protocol is registered and nothing is judged yet.",
+   "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Milestones 1 and 2 landed on 14 November 2026: the operator with its refusals, the junction and channel targets, a starting condition for each cell, and the regulatory state with restart, batches and compositions. In milestone 3 its development runs agree with the independent references at second order. Its qualification protocol is drafted and proposed (milestone 4, 15 November 2026), with 47 judged criteria. It is development code, guarded by tests; the protocol is not yet registered, and nothing is judged.",
    "detail": "Operator species_regulated_availability@1: coupling out of the inventory (D155 item 1, D156).",
    "facts": [
     [
@@ -2263,6 +2507,14 @@
     {
      "path": "docs/INVENTORY_COUPLING_DESIGN.md",
      "where": "9. Milestone 3: A4 and A5 against the independent references (14 November 2026)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The coupling operator's qualification protocol (milestone 4, PROPOSED) and the composition"
+    },
+    {
+     "path": "docs/INVENTORY_COUPLING_DESIGN.md",
+     "where": "10. Milestone 4: the qualification protocol, PROPOSED (14 November 2026)"
     }
    ],
    "files": [
@@ -4897,7 +5149,7 @@
    "group": "operators",
    "status": "landed",
    "as_of": "2026-11-13",
-   "plain": "What every operator must declare: the state it owns, what it writes and reads, its energy bookings and its conflicts. Checked when a model is built.",
+   "plain": "What every operator must declare: the state it owns, what it writes and reads, its energy bookings and its conflicts. Checked when a model is built. A matrix of which of the composite's 17 operators can run together is regenerated from these declarations by a test (15 November 2026).",
    "detail": "The operator contract of the composite pump-tissue model (docs/CELL_DIVISION_DESIGN.md §3.3).",
    "facts": [
     [
@@ -4916,6 +5168,10 @@
     {
      "path": "docs/CURRENT_PLAN.md",
      "where": "Status on 14 November 2026, and the working order (D156)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The coupling operator's qualification protocol (milestone 4, PROPOSED) and the composition"
     }
    ],
    "files": [
@@ -5256,7 +5512,7 @@
    "group": "experiments",
    "status": "planned",
    "as_of": "2026-11-14",
-   "plain": "A track beside the current work: the minimal bacterial cell JCVI-syn3A as the organism for checking whole-cell mechanisms against public measurements (D173, 14 November 2026). So far it is an evidence audit and a proposal: 15 public resources were checked at their sources, and no engine model ran. Its first milestone is fixed after a capability probe: a vesicle without channels or pumps under the water operator. Authors are never contacted; missing data are looked for in public sources only.",
+   "plain": "A track beside the current work: the minimal bacterial cell JCVI-syn3A as the organism for checking whole-cell mechanisms against public measurements (D173, 14 November 2026). So far it is an evidence audit, capability probes that ran the engine as it stands on a vesicle, and a proposed first milestone. No engine code was written for it, and nothing is accepted. The public data of a second organism, Mycoplasma pneumoniae, were audited too, and it is recommended to lead a later stage on energy, transport and pH. Authors are never contacted; missing data are looked for in public sources only.",
    "sources": [
     {
      "path": "PROGRESS.md",
@@ -5432,14 +5688,14 @@
    "facts": [
     [
      "Files",
-     "317"
+     "322"
     ],
     [
      "Lines of Python",
-     "76,522"
+     "78,185"
     ]
    ],
-   "weight": 76522
+   "weight": 78185
   },
   {
    "id": "val.division",
@@ -5622,15 +5878,15 @@
    "facts": [
     [
      "Files",
-     "749"
+     "753"
     ],
     [
      "Lines of Python",
-     "231,780"
+     "232,170"
     ],
     [
      "Tier 1 test files",
-     "326"
+     "329"
     ],
     [
      "Tier 2 test files",
@@ -5638,7 +5894,7 @@
     ],
     [
      "Tier 3 test files",
-     "223"
+     "224"
     ]
    ],
    "sources": [
@@ -5647,7 +5903,7 @@
      "where": "Milestones and provenance"
     }
    ],
-   "weight": 231780
+   "weight": 232170
   },
   {
    "id": "state.compartment",
@@ -6838,6 +7094,12 @@
    ],
    "keywords": "nav1p2_m3h_regularized@1 SCN2A SCN1B SCN2B SCN3B SCN4B 6J8E",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "3 planarian gene models carry the signature of the sodium channel's pore subunit, and a 2014 paper named 3 short planarian sequences as sodium channels (scna-1 to scna-3), which match 2 of those gene models. None can be singled out as the counterpart of NaV1.2. No planarian sequence carries either signature of the beta subunits; they mark 10 reviewed human entries.",
@@ -7193,6 +7455,12 @@
    ],
    "keywords": "nav1p3_m3h_regularized@1 SCN3A SCN1B SCN2B SCN3B SCN4B",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "3 planarian gene models carry the signature of the sodium channel's pore subunit, and a 2014 paper named 3 short planarian sequences as sodium channels (scna-1 to scna-3), which match 2 of those gene models. None can be singled out as the counterpart of NaV1.3. No planarian sequence carries either signature of the beta subunits; they mark 10 reviewed human entries.",
@@ -7568,6 +7836,12 @@
    ],
    "keywords": "nav1p6_persistent_m@1 nav_ml_instantaneous@1 SCN8A SCN1B SCN2B SCN3B SCN4B",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "3 planarian gene models carry the signature of the sodium channel's pore subunit, and a 2014 paper named 3 short planarian sequences as sodium channels (scna-1 to scna-3), which match 2 of those gene models. None can be singled out as the counterpart of NaV1.6. No planarian sequence carries either signature of the beta subunits; they mark 10 reviewed human entries.",
@@ -8014,6 +8288,12 @@
    ],
    "keywords": "navrat2_m3h_regularized@1 navrat1_m3h_regularized@1 navrat3_m3h_regularized@1 SCN1A SCN2A SCN3A SCN8A SCN1B SCN2B SCN3B SCN4B",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "3 planarian gene models carry the signature of the sodium channel's pore subunit, and a 2014 paper named 3 short planarian sequences as sodium channels (scna-1 to scna-3), which match 2 of those gene models. None can be singled out as the counterpart of the unnamed neuronal sodium channel. No planarian sequence carries either signature of the beta subunits; they mark 10 reviewed human entries.",
@@ -8371,6 +8651,12 @@
    ],
    "keywords": "kv1p1_mh2@1 KCNA1 KCNAB1 KCNAB2 KCNAB3 2A79",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "14 planarian gene models carry the signature of Kv1 (Shaker-type) potassium channels, and 2 carry that of the Kv-beta partner subunit. None can be singled out as the counterpart of Kv1.1.",
@@ -8881,6 +9167,12 @@
    ],
    "keywords": "kv1p2_mh@1 KCNA2 KCNAB1 KCNAB2 KCNAB3 2A79",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "14 planarian gene models carry the signature of Kv1 (Shaker-type) potassium channels, and 2 carry that of the Kv-beta partner subunit. None can be singled out as the counterpart of Kv1.2.",
@@ -9411,6 +9703,12 @@
    ],
    "keywords": "kv1p3_mh@1 kv1p3_ml_dynamic_m@1 KCNA3 KCNAB1 KCNAB2 KCNAB3 2A79",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "14 planarian gene models carry the signature of Kv1 (Shaker-type) potassium channels, and 2 carry that of the Kv-beta partner subunit. None can be singled out as the counterpart of Kv1.3.",
@@ -9917,6 +10215,12 @@
    ],
    "keywords": "kv1p4_mh@1 KCNA4 KCNAB1 KCNAB2 KCNAB3 2A79",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "14 planarian gene models carry the signature of Kv1 (Shaker-type) potassium channels, and 2 carry that of the Kv-beta partner subunit. None can be singled out as the counterpart of Kv1.4.",
@@ -10461,6 +10765,12 @@
    ],
    "keywords": "kv1p5_mh@1 kv1p5_ml_dynamic_m@1 kv1p5s_ml_slow_dynamic_m@1 KCNA5 KCNAB1 KCNAB2 KCNAB3 2A79",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "14 planarian gene models carry the signature of Kv1 (Shaker-type) potassium channels, and 2 carry that of the Kv-beta partner subunit. None can be singled out as the counterpart of Kv1.5.",
@@ -10971,6 +11281,12 @@
    ],
    "keywords": "kv1p6_mh@1 KCNA6 KCNAB1 KCNAB2 KCNAB3 2A79",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of Kv1-type potassium channels and Kv-beta subunits (IPR003972, IPR005983). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "14 planarian gene models carry the signature of Kv1 (Shaker-type) potassium channels, and 2 carry that of the Kv-beta partner subunit. None can be singled out as the counterpart of Kv1.6.",
@@ -11377,6 +11693,12 @@
    ],
    "keywords": "kv2p1_mh@1 kv2p1_ml_dynamic_m@1 KCNB1",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of Kv2-type potassium channels (IPR003973). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "One planarian gene model carries the signature of Kv2 potassium channels; so does one planarian sequence in UniProtKB, submitted as kcnb. None can be singled out as the counterpart of Kv2.1. For one gene model the signature is on a shorter alternative protein of the gene, not on its longest.",
@@ -11543,6 +11865,12 @@
    ],
    "keywords": "kv2p2_mh@1 KCNB2",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of Kv2-type potassium channels (IPR003973). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "One planarian gene model carries the signature of Kv2 potassium channels; so does one planarian sequence in UniProtKB, submitted as kcnb. None can be singled out as the counterpart of Kv2.2. For one gene model the signature is on a shorter alternative protein of the gene, not on its longest.",
@@ -11734,6 +12062,12 @@
    ],
    "keywords": "kv3p1_m@1 KCNC1 7PHH",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "23 planarian gene models carry the signature of Kv3 potassium channels. None can be singled out as the counterpart of Kv3.1.",
@@ -12232,6 +12566,12 @@
    ],
    "keywords": "kv3p2_m2@1 KCNC2",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "23 planarian gene models carry the signature of Kv3 potassium channels. None can be singled out as the counterpart of Kv3.2.",
@@ -12730,6 +13070,12 @@
    ],
    "keywords": "kv3p3_m2h_long_tau@1 KCNC3",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "23 planarian gene models carry the signature of Kv3 potassium channels. None can be singled out as the counterpart of Kv3.3.",
@@ -13225,6 +13571,12 @@
    ],
    "keywords": "kv3p4_mh@1 KCNC4",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of Kv3-type potassium channels (IPR003974). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "23 planarian gene models carry the signature of Kv3 potassium channels. None can be singled out as the counterpart of Kv3.4.",
@@ -13751,6 +14103,12 @@
    ],
    "keywords": "k_fast_mh@1 KCND2 KCND3",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of Kv4-type potassium channels (IPR003975). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "4 planarian gene models carry the signature of Kv4 potassium channels, the family the inventory infers for this fast-inactivating current. Nothing here says whether any of them carries such a current.",
@@ -13910,6 +14268,12 @@
    ],
    "keywords": "kv_ml1_dynamic_m@1",
    "species": {
+    "mpneumoniae": {
+     "finding": "nothing to look for",
+     "note": "The inventory gives this unit no gene product: it is a default shape of current, not a named channel. No potassium channel of any family searched was found in this organism.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "nothing to look for",
      "note": "The inventory gives this unit no gene product: it is a default shape of current, not a named channel. Planarian candidates for voltage-gated potassium channels are listed under the Kv units.",
@@ -14088,6 +14452,12 @@
    ],
    "keywords": "kir2p1_mh2@1 kir_ml_instantaneous@1 KCNJ2 7ZDZ",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of inward-rectifier potassium channels (IPR016449, IPR040445, IPR041647). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "none found",
      "note": "No planarian sequence carries the signature of inward-rectifier potassium channels: no gene model, no UniProtKB entry of the species, and none of the planarian sequences in UniProt's archive, for this signature or for 2 others of the family. The same search finds the family in 21 UniProtKB entries of other flatworms and in 16 reviewed human entries, so the search can find it where it exists.",
@@ -14246,6 +14616,12 @@
    ],
    "keywords": "hcn1_m@1 HCN1 5U6O",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "7 planarian gene models carry the signature of hyperpolarization-activated (HCN) channels. One of them matches a planarian protein that the paper reporting it calls CNG1, a cyclic-nucleotide-gated channel: the signature and the published name point to related but different kinds of channel. None can be singled out as the counterpart of HCN1.",
@@ -14550,6 +14926,12 @@
    ],
    "keywords": "hcn2_m@1 hcn2_camp_m@1 hcn2_ml_depolarization_activated_instantaneous@1 HCN2 5U6O",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "7 planarian gene models carry the signature of hyperpolarization-activated (HCN) channels. One of them matches a planarian protein that the paper reporting it calls CNG1, a cyclic-nucleotide-gated channel: the signature and the published name point to related but different kinds of channel. None can be singled out as the counterpart of HCN2.",
@@ -14854,6 +15236,12 @@
    ],
    "keywords": "hcn4_m@1 hcn4_camp_m@1 hcn4_ml_depolarization_activated_instantaneous@1 HCN4 7NP3",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "7 planarian gene models carry the signature of hyperpolarization-activated (HCN) channels. One of them matches a planarian protein that the paper reporting it calls CNG1, a cyclic-nucleotide-gated channel: the signature and the published name point to related but different kinds of channel. None can be singled out as the counterpart of HCN4.",
@@ -15093,6 +15481,12 @@
    ],
    "keywords": "hcn_leak_open@1 HCN2",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of HCN-type channels (IPR051413, IPR013621). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "7 planarian gene models carry the signature of hyperpolarization-activated (HCN) channels. One of them matches a planarian protein that the paper reporting it calls CNG1, a cyclic-nucleotide-gated channel: the signature and the published name point to related but different kinds of channel. The unit itself is an always-open leak with the ion preferences of an HCN channel; nothing here says a planarian protein behaves so.",
@@ -15630,6 +16024,12 @@
    ],
    "keywords": "cav1p2_m2h@1 CACNA1C CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY 5GJV",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "2 planarian gene models carry the signature of L-type calcium channel pore subunits; 3 carry the signature of the beta subunit and 5 carry that of the alpha-2/delta subunit. None can be singled out as the counterpart of CaV1.2.",
@@ -16224,6 +16624,12 @@
    ],
    "keywords": "cav1p3_m2h@1 cav_l_ml_instantaneous@1 cav_l_ml2_instantaneous@1 CACNA1D CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "2 planarian gene models carry the signature of L-type calcium channel pore subunits; 3 carry the signature of the beta subunit and 5 carry that of the alpha-2/delta subunit. None can be singled out as the counterpart of CaV1.3.",
@@ -16828,6 +17234,12 @@
    ],
    "keywords": "ca_l2_m2h@1 ca_l3_shift15_m2h@1 CACNA1C CACNA1D CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 5GJV",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of L-type calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR005446, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "2 planarian gene models carry the signature of L-type calcium channel pore subunits; 3 carry the signature of the beta subunit and 5 carry that of the alpha-2/delta subunit. None can be singled out as the counterpart of the channel behind this L-type current.",
@@ -17506,6 +17918,12 @@
    ],
    "keywords": "cav_g_m2h_regularized@1 CACNA1C CACNA1D CACNA1A CACNA1B CACNA1E CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "6 planarian gene models carry the signature of calcium channel pore subunits without the T-type mark, which makes them candidates for a high-voltage-activated current; 3 carry the signature of the beta subunit and 5 carry that of the alpha-2/delta subunit. Nothing here says which of them carry such a current.",
@@ -18131,6 +18549,12 @@
    ],
    "keywords": "cav2p1_m@1 CACNA1A CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "No signature marks the CaV2 group on its own. 4 planarian gene models carry the general signature of calcium channel pore subunits without the L-type or the T-type mark, which makes them the nearest candidates, not established counterparts of CaV2.1; 3 carry the signature of the beta subunit and 5 carry that of the alpha-2/delta subunit.",
@@ -18744,6 +19168,12 @@
    ],
    "keywords": "cav2p2_m2h_regularized@1 cav_n_ml_instantaneous@1 CACNA1B CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "No signature marks the CaV2 group on its own. 4 planarian gene models carry the general signature of calcium channel pore subunits without the L-type or the T-type mark, which makes them the nearest candidates, not established counterparts of CaV2.2; 3 carry the signature of the beta subunit and 5 carry that of the alpha-2/delta subunit.",
@@ -19337,6 +19767,12 @@
    ],
    "keywords": "cav2p3_mh@1 CACNA1E CACNB1 CACNB2 CACNB3 CACNB4 CACNA2D1 CACNA2D2 CACNA2D3 CACNA2D4 7MIY",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of voltage-gated calcium channel alpha-1 subunits, calcium channel beta subunits and calcium channel alpha-2/delta subunits (IPR002077, IPR000584, IPR051173, IPR013680). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "No signature marks the CaV2 group on its own. 4 planarian gene models carry the general signature of calcium channel pore subunits without the L-type or the T-type mark, which makes them the nearest candidates, not established counterparts of CaV2.3; 3 carry the signature of the beta subunit and 5 carry that of the alpha-2/delta subunit.",
@@ -19708,6 +20144,12 @@
    ],
    "keywords": "cav3p1_mh_piecewise_tau_m@1 cav_t_ml_instantaneous@1 CACNA1G 6KZO",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "2 planarian gene models carry the signature of T-type calcium channel pore subunits. None can be singled out as the counterpart of CaV3.1.",
@@ -19899,6 +20341,12 @@
    ],
    "keywords": "cav3p3_mh@1 CACNA1I 6KZO",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "2 planarian gene models carry the signature of T-type calcium channel pore subunits. None can be singled out as the counterpart of CaV3.3.",
@@ -20309,6 +20757,12 @@
    ],
    "keywords": "cagpotassium_numeric_mM_scale@1 KCNMA1 KCNN1 KCNN2 KCNN3 KCNMB1 KCNMB2 KCNMB3 KCNMB4 6V38 6V22",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of BK calcium-activated potassium channels, SK calcium-activated potassium channels and BK channel beta subunits (IPR047871, IPR015449, IPR003930). UniProtKB holds 4 entries of mollicutes, the class of bacteria it belongs to, that carry one of them. The unit's human candidates carry them, so the search finds the family where it exists. By its annotation it takes up potassium with a transporter instead (the two proteins listed under extra as KtrB and KtrA). No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "The unit does not say which of two channel families it means, and planarian gene models carry the signature of each: 9 that of the large-conductance (BK, Slowpoke-like) channels and 9 that of the small-conductance (SK) channels; 6 carry the signature of the BK beta subunit.",
@@ -20873,6 +21327,12 @@
    ],
    "keywords": "naleak_always_open@1 kleak_always_open@1 caleak_always_open@1 clleak_always_open@1 catleak_na_k@1 catleak2_na_k_ca@1 neutral_mobile_leak@1",
    "species": {
+    "mpneumoniae": {
+     "finding": "nothing to look for",
+     "note": "A background conductance that the inventory ties to no protein.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "nothing to look for",
      "note": "A background conductance that the inventory ties to no protein. Planarian two-pore-domain potassium channels, a usual molecular basis of a potassium leak, are noted under extra.",
@@ -20965,6 +21425,12 @@
    ],
    "keywords": "constant_field@1",
    "species": {
+    "mpneumoniae": {
+     "finding": "nothing to look for",
+     "note": "A lumped permeability of the whole membrane, not a population of proteins.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "nothing to look for",
      "note": "A lumped permeability of the whole membrane, not a population of proteins.",
@@ -21175,6 +21641,12 @@
    ],
    "keywords": "junction_voltage_relaxation@1 symmetric_opposing_relaxation@1 delayed_first_order_junction_formation@1 GJA1 7Z22",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "different family",
      "note": "Planarians build gap junctions from innexins, not connexins. Connexins are known only from chordates (Abascal and Zardoya 2013), and a planarian innexin gap-junction gene, smedinx-11, has been described (Oviedo and Levin 2007). 68 planarian gene models carry the innexin signature and none the connexin one; no UniProtKB entry of any flatworm carries the connexin signature either, while 21 reviewed human entries do. Which innexins a general gap-junction law would stand for is not known.",
@@ -22426,6 +22898,12 @@
    ],
    "keywords": "GJC1",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "different family",
      "note": "There is no connexin 45 to find in a planarian: its gap junctions are built from innexins, a different protein family. Connexins are known only from chordates (Abascal and Zardoya 2013), and a planarian innexin gap-junction gene, smedinx-11, has been described (Oviedo and Levin 2007). 68 planarian gene models carry the innexin signature and none the connexin one; no UniProtKB entry of any flatworm carries the connexin signature either, while 21 reviewed human entries do. Nothing says which innexins, if any, would form a channel like this one.",
@@ -23707,6 +24185,12 @@
    ],
    "keywords": "GJA5 GJA4",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Gap junctions join the neighbouring cells of a tissue, and this organism lives as single cells.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "different family",
      "note": "There is no connexin 40 or connexin 37 to find in a planarian: its gap junctions are built from innexins, a different protein family. Connexins are known only from chordates (Abascal and Zardoya 2013), and a planarian innexin gap-junction gene, smedinx-11, has been described (Oviedo and Levin 2007). 68 planarian gene models carry the innexin signature and none the connexin one; no UniProtKB entry of any flatworm carries the connexin signature either, while 21 reviewed human entries do. Nothing says which innexins, if any, would form a channel like this one.",
@@ -25253,6 +25737,12 @@
    ],
    "keywords": "nak_atp_mass_action_positive@1 nak_atp_affinity_tanh@1 ATP1A1 ATP1A2 ATP1A3 ATP1A4 ATP1B1 ATP1B2 ATP1B3 FXYD1 FXYD2 7E1Z 4HYT",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of the sodium-potassium pump's alpha subunit, its beta subunit and its FXYD regulators (IPR005775, IPR000402, IPR000272). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. The wider family, the P-type ATPases, has one member here, annotated only as a cation-transporting ATPase (locus MPN_209, listed under extra). It does not carry the mark of the sodium-potassium pump.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "5 planarian gene models carry the signature of the pump's alpha subunit, and 13 carry that of its beta subunit. The alpha signature is shared with proton-potassium pumps: one further planarian protein that carries it was described as such a pump and is listed under extra instead. No planarian sequence carries the signature of the small FXYD regulators, which marks 8 reviewed human entries and no flatworm entry.",
@@ -25874,6 +26364,12 @@
    ],
    "keywords": "plasma_calcium_pump_positive@1 ca_atp_mass_action_positive@1 finite_atp_pmca_positive@1 ATP2B1 ATP2B2 ATP2B3 ATP2B4 NPTN BSG 6A69",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of plasma-membrane calcium pumps (IPR006408). UniProtKB holds 6 entries of mollicutes, the class of bacteria it belongs to, that carry it. The unit's human candidates carry it, so the search finds the family where it exists. The wider family, the P-type ATPases, has one member here, annotated only as a cation-transporting ATPase (locus MPN_209, listed under extra). Which cation it carries is not established in any source read here, and it does not carry this signature.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "6 planarian gene models carry the signature of plasma-membrane calcium pumps. Nothing here says which of them, if any, works at the outer membrane. The two partner proteins the inventory lists (neuroplastin and basigin) were not searched for: they carry only general immunoglobulin-domain signatures, which cannot mark a counterpart.",
@@ -26203,6 +26699,12 @@
    ],
    "keywords": "er_calcium_pump_positive@1 finite_atp_er_1ca_positive@1 ATP2A1 ATP2A2 ATP2A3 1SU4",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of SERCA-type calcium pumps (IPR005782). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. It is a bacterium with a single membrane and no internal compartments, so it has no endoplasmic reticulum for this machine to sit in.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "3 planarian gene models carry the signature of SERCA-type calcium pumps. Nothing here says which of them, if any, fills the internal calcium store.",
@@ -26472,6 +26974,12 @@
    ],
    "keywords": "ncx_3na_1ca_symmetric_barrier@1 SLC8A1 SLC8A2 SLC8A3 8SGJ",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of sodium-calcium exchangers (IPR004836). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries it either. The unit's human candidates carry it, so the search finds the family where it exists. Nothing in its annotation is named a sodium-calcium exchanger.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "5 planarian gene models carry the signature of sodium-calcium exchangers; so do 5 planarian sequences in UniProtKB, submitted as slc8a-1 to slc8a-5. Nothing here says which of them, if any, works at the outer membrane.",
@@ -26866,6 +27374,12 @@
    ],
    "keywords": "er_calcium_release@1 ip3_er_release@1 ITPR1 ITPR2 ITPR3 RYR1 RYR2 RYR3 6DQJ 3J8H",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of inositol trisphosphate receptors and ryanodine receptors (IPR000493, IPR013333). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It is a bacterium with a single membrane and no internal compartments, so it has no endoplasmic reticulum for this machine to sit in.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "The unit has two candidate families, and planarian gene models carry the signature of each: 2 that of inositol trisphosphate receptors and 1 that of ryanodine receptors.",
@@ -27188,6 +27702,12 @@
    ],
    "keywords": "kcc_reversible_tanh@1 k_anion_symport_mass_action@1 SLC12A4 SLC12A5 SLC12A6 SLC12A7 6KKR 6M23",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of potassium-chloride cotransporters and the wider SLC12 transporter family (IPR000076, IPR004842). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Its annotation names no chloride-coupled cotransporter.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "One planarian gene model carries the signature of potassium-chloride cotransporters. It matches a planarian sequence called slc12a-4 in Thi-Kim Vu and others 2015. Nothing here says whether it moves potassium and chloride as the unit does.",
@@ -27394,6 +27914,12 @@
    ],
    "keywords": "nkcc_reversible_tanh@1 SLC12A2 SLC12A1 6PZT",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of sodium-potassium-chloride cotransporters and the wider SLC12 transporter family (IPR002443, IPR004842). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. Its annotation names no chloride-coupled cotransporter.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "none found",
      "note": "No planarian sequence carries the signature of the sodium-potassium-chloride branch of this transporter family. The same signature finds no UniProtKB entry of any flatworm and only 2 reviewed human entries, so it may not recognise flatworm forms. 5 planarian gene models carry the signature of the wider family (SLC12), of which one carries the potassium-chloride signature; whether any of the others moves sodium, potassium and chloride together is not known from these sources.",
@@ -27503,6 +28029,12 @@
    ],
    "keywords": "electroneutral_symport_reversible_tanh@1 cell_zone_transporter@1",
    "species": {
+    "mpneumoniae": {
+     "finding": "nothing to look for",
+     "note": "A slot that each model configuration fills with a transporter of its own; it has no fixed protein in any species. This organism's own transporters are in its protein catalogue.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "nothing to look for",
      "note": "A slot that each model configuration fills with a transporter of its own; it has no fixed protein in any species.",
@@ -27746,6 +28278,12 @@
    ],
    "keywords": "mitochondrial_passive_continuous_si@1 MCU SMDT1 MICU1 MICU2 6WDN",
    "species": {
+    "mpneumoniae": {
+     "finding": "none found",
+     "note": "None of the 688 protein products of its genome carries the signature of the mitochondrial calcium uniporter, its regulator EMRE and its MICU regulators (IPR039055, IPR006769, IPR018782, IPR039800). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. It is a bacterium and has no mitochondria.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "found",
      "note": "The unit is a lumped leak of the inner mitochondrial membrane, and the only candidate the inventory names for it is the calcium uniporter. Planarian gene models carry the signatures of two of its parts: 1 that of the pore (MCU) and 3 that of MICU. None carries that of the regulator EMRE, although 2 planarian sequences from other annotation sets carry it in UniProt's archive. For one gene model the signature is on a shorter alternative protein of the gene, not on its longest.",
@@ -27909,6 +28447,12 @@
    ],
    "keywords": "capsid_graph@1",
    "species": {
+    "mpneumoniae": {
+     "finding": "nothing to look for",
+     "note": "A protein cage designed in the laboratory, with no gene in any organism, so there is nothing to look for in this one.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "nothing to look for",
      "note": "A protein cage designed in the laboratory, with no gene in any animal, so there is nothing to look for in a planarian.",
@@ -28001,6 +28545,12 @@
    ],
    "keywords": "ideal_osmosis_linear_compliance_water@1",
    "species": {
+    "mpneumoniae": {
+     "finding": "nothing to look for",
+     "note": "A lumped water permeability of the membrane; water channels (aquaporins) are not part of it. One protein of this organism carries the aquaporin family's signature: the glycerol facilitator GlpF (locus MPN_043), listed under extra.",
+     "items": [],
+     "keywords": ""
+    },
     "planarian": {
      "finding": "nothing to look for",
      "note": "A lumped water permeability of the membrane; water channels (aquaporins) are not part of it. Planarian aquaporin-family gene models are noted under extra.",
