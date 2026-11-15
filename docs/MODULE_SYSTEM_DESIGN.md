@@ -183,6 +183,21 @@ resolution, the structure and the record hold only what the definition uses.
 - **I3.** Permuting the registration order changes nothing.
 - **I4.** The round's second planted-kind test, registered from outside `src/cells`.
 
+**The guarantee's scope.** I1–I4 show invariance for the example module, not for every module.
+- **Why Cells can't guarantee it:** explicit registration still imports the package, and an
+  import can change process-wide JAX settings.
+- **What Cells re-asserts:** x64, at every run (`execution_device`, `core/devices.py`:25). It does
+  not re-assert settings such as the default matmul precision or the PRNG implementation.
+- **So two things hold:**
+  - the build checks a declared set of process-wide settings against Cells' required values, and
+    refuses a run whose settings differ, tested with a planted module that changes one at import;
+  - the conformance kit (§6) checks invariance per module.
+
+**Fingerprints.** A definition names IDs only, so a world that uses an external law keeps the same
+definition fingerprint across module versions. The module stamp therefore also enters the batch
+signature and the batch snapshot's definition check, as it enters the compile key and the
+manifests.
+
 **Caches.** The registry stamps each external structure entry with its resolved declaration and
 module identity; built-in entries stay IDs, so today's keys hold.
 - The structure keys `compile_window` (core-d172 `vector_windows.py`:354) and the implementation
@@ -190,13 +205,14 @@ module identity; built-in entries stay IDs, so today's keys hold.
   one ID to different objects never share an executable.
 - JAX's persistent cache (`output_paths.py`:25) keys on the lowered program.
 
-**The record, per module used:** namespace, distribution, version and interfaces; the VCS
+**The record, per module used** (the shape of §6 decision 1's options; pending the user's
+answer, since it changes AGENTS.md's provenance rule): namespace, distribution, version and interfaces; the VCS
 revision and dirty flag where recorded (PEP 610 `direct_url.json`); and its files' SHA-256,
 computed at run time as `source_hashes()` does, with no literals and no per-call layer. It is
 written as `modules` into `manifest.json` (absent when none, like `composition`,
 `io.py`:293–300) and into the checkpoint manifest.
 
-**Loading** refuses a missing or different module, as it refuses changed Cells source
+**Loading** (also pending decision 1) refuses a missing or different module, as it refuses changed Cells source
 (`io.py`:159). D153's record can admit a change. Loading imports nothing.
 
 ### 2.6 The example package, and what Cells changes
