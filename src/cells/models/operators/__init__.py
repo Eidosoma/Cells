@@ -9,6 +9,7 @@ from cells.models.operators.bath_schedule import ScheduledBathComposition
 from cells.models.operators.bridge_closure import CytoplasmicBridgeClosure
 from cells.models.operators.cell_replacement import ScheduledReplacement
 from cells.models.operators.cell_replacement_v2 import ScheduledReplacementOverWater
+from cells.models.operators.compartments import CellOwnedCompartments
 from cells.models.operators.contract import check_declarations
 from cells.models.operators.current_injection import ElectrodeCurrentInjection
 from cells.models.operators.k_anion_symport import KAnionSymport
@@ -19,6 +20,7 @@ from cells.models.operators.osmotic_water import OsmoticWater
 from cells.models.operators.partition import IsopotentialPartition
 from cells.models.operators.restricted_lumen import RestrictedCleftLumen
 from cells.models.operators.restricted_lumen_v2 import RestrictedCleftLumenV2
+from cells.models.operators.site_occupancy import SiteOccupancy
 from cells.models.operators.species_exchange import ScheduledSpeciesExchange
 from cells.models.operators.species_reactions import LocalSpeciesReactions
 from cells.models.operators.species_regulated_availability import SpeciesRegulatedAvailability
@@ -44,5 +46,7 @@ OPERATORS = {
         check_declarations(LocalSpeciesReactions)(),
         check_declarations(SpeciesRegulatedAvailability)(),
         check_declarations(ScheduledBathComposition)(),
+        check_declarations(CellOwnedCompartments)(),
+        check_declarations(SiteOccupancy)(),
     )
 }

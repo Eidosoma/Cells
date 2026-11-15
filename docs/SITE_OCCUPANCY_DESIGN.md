@@ -2,6 +2,8 @@
 
 **Accepted, 14 November 2026 (the lead, with the advisor; D169).** It uses D152's unsplit SSPRK(3,3) with the per-route hybrid; the palindrome was measured and rejected. α is static in version 1. The day-one guard is judged against an independent integration of the full kinetics.
 
+**Milestone 1 built, 15 November 2026 (§12).** Stage A, the contract fit, and stage B, the half-step with its bookings and guards, are on the engine agent's branch. Every host check holds on every row of the face-free world, passive-only and mixed; three planted corruptions fail them; idle is bitwise; restart is bitwise; the stage condition refuses dt L > 1 at run time. The integrator duplicates D152's numerical block, a consolidation item for D172's round. The references, the protocol and its judged run are not part of it.
+
 **Status: PROPOSED, 14 November 2026. Revised the same day after the lead's review with the
 advisor; the rulings are recorded in §11.** No engine code was added or changed. One pre-acceptance
 probe was run, at the lead's request: a NumPy and SciPy prototype that took 14 s on one thread
@@ -1361,6 +1363,146 @@ has not seen:
 
 The probe's numbers are development evidence by the note's author. The registered references
 supersede them, and the third-order evidence that matters is ε = 0.1's (§8.3).
+
+## 12. Milestone 1 as built (15 November 2026)
+
+The engine agent built milestone 1 after D169, on its branch, as agreed with the lead on 15 November.
+It is §8.5's P1 in two stages, each committed with its tests: A, the contract fit, and B, the
+half-step with its bookings and guards. The operator was registered only with stage B. The criteria
+A1 to A5 and B1 to B6 were fixed before any code in `/mnt/workspaces/Cells/site-occupancy-m1-20261115-01/`
+(HANDOFF.md). That folder also holds the snapshots, the test logs and the queue log.
+
+**The operator** (`models/operators/site_occupancy.py`), registered with one import and one line:
+- **The declaration** (§2.1) has three parts, and it round-trips:
+  - `species`, the ligands, parsed by `species_common.parse_species`, each with a declared
+    `trace_mM`;
+  - `populations`, each with its owner (a patch and its face, or a contact and its side), copies,
+    sites per copy, accessible fraction, ligand, k_on, k_off, initial occupancy and optional
+    site-conserving internalisation;
+  - the schedule `site_controls`: a multiplier per population and route, under D152's schedule
+    rules.
+- **§6.2's refusals fire with their reasons.**
+  - The test's table holds 32 cases: the ligands, owners, populations, laws, keys, schedules and
+    RK4.
+  - The definition check refuses RK4, more than 16 species (FR-10's `check_species_cap`), an
+    identity that differs from D150's or D152's operators in either order, a population on a
+    replaced slot, and internalisation from a patch facing a declared compartment
+    (`cell_owned_compartments@1`).
+  - **The trace rule is §4.3's form (a), as proposed** (§11's open item 2, for the lead to
+    confirm). Every declared concentration of a ligand must be at or above its declared trace, to
+    1e-12 relative. That covers every node and every replacement template's amounts. The trace must
+    be at most 1e-6 K_d of every population binding the ligand.
+  - The composite's structure check refuses water, the lumens, insertion@1 and @2 and the
+    partition, in either order, and the stationary analysis refuses the composite by its own ID
+    check.
+- **The binding layout** (§2.5) holds:
+  - S = α ν N / N_f, with B₀ and R₀ as anchors;
+  - the rates and ln(K_d / 1 mM);
+  - the facing and receiving indices, and the pools (the distinct facing and receiving slots);
+  - the static component map, a union-find: a population joins its facing node, and
+    internalisation joins it to its cell.
+- **The contract** follows §1.5's table.
+  - The operator owns its eight fields. `ACCEPTS_WRITES` covers its two pools,
+    `ENTITY_WRITES` @3's two amount fields. Heat is booked at the facing nodes and work per
+    population.
+  - `CONFLICTS_VIEW` is D150's static-tissue list plus `extracellular_amount_reference`.
+  - **It provides no view, mask or capacitance, so it is no field input.** An occupancy-only
+    composition has no field inputs and does not refresh the field: ownership is separate from
+    solver invalidation (ARCHITECTURE.md's modular core, D174). A5 tests this.
+  - Species identity follows the coupling operator's pattern until D172 (§1.6), with no shared
+    change.
+- **The half-step** (§4.2, §3.3) is D152's SSPRK(3,3) over the site network, unsplit.
+  - The stage condition h max L ≤ 1/2 is checked at every stage, over the pools' loads, k_on c at
+    R, and k_off + k_int at B. Every stage and the end must be positive.
+  - The bookings follow each component's class in the step. A passive-only component books
+    H = −ΔG of its facing sub-system at the facing node, and no work.
+  - A mixed component books average-vector-field shares with divided-difference potentials and work
+    per population. Each binding route takes the per-route hybrid: its share, unless it reverses
+    within the step, else the quadrature.
+  - The site free energy is the owner's (`site_free_energy`).
+- **Idleness** (§4.8): each entry is selected with `where` wherever a route with a positive
+  multiplier writes it, never offset by a computed zero. A composition with no populations is
+  statically idle.
+- **The ledgers** (§2.5):
+  - @3's local, outside and total ledgers gain net binding at the facing node, and lose the
+    internalised cargo at the receiving cell;
+  - the energy ledger gains the site free energy's change + heat − work;
+  - the operator's own ledgers are `site_bound_entity` and `site_moiety_entity`.
+- **Observations:** the owned fields and the three readouts. `stage_report` diagnoses a refused
+  step on the host, as D152's does.
+- **The batch signature** (§2.7) holds the ligands and each population's structure: its owner,
+  facing, ligand, internalisation and destination. Identities and parameters are per-world data.
+
+**The D172 consolidation item.** The integrator duplicates D152's numerical block: SSPRK(3,3) under
+the unidirectional stage condition, with D152's exact bookings and per-route hybrid
+(`species_reactions.py`, `half_step_terms`). It was reimplemented over the site network because
+D152's files stay untouched while MG0c is judged (the lead, 15 November 2026). **It is a
+consolidation item for D172's round: one shared numerical block in the inner model's numerical plan,
+serving D152 and FR-3.** A comment at the top of the integrator says so.
+
+**One departure from §2.5: the own ledgers' floor is a constant.** It is 1e-20 fmol, D150's
+species-scale floor as its worlds declare it, plus 2.5 ε × steps × magnitude. It is not read from
+the ligand's declared floor, because the contract's `own_bounds` receives no layout (the bath
+schedule's floors are constants for the same reason). In a world that declares a larger floor for
+the ligand, the own check is stricter than §2.5's. In one that declares a smaller floor (the
+definition requires only a positive one), it is looser, by less than 1e-20 fmol. A per-ligand floor
+needs the hook to see the layout, an item for D172.
+
+**Fixtures:** `validation/tissue/site_occupancy_fixtures.py`.
+- `face_free_sites` is D150's face-free topology, with S at 1e-3 mM in the cell and in ecs_0, and a
+  trace of 1e-12 mM elsewhere.
+- `population` builds one population's declaration.
+- `with_site_occupancy` adds the operator's block, with a multiplier of 1 on every declared route by
+  default.
+
+**The gates.** They ran from clean snapshots, docs/ included, on CPU 2, one unit at a time: a 2G cap,
+`--oom-first` and `--wait-headroom 4G`. The unit at 369120a had its runtime capped so that it ended
+before the lead's memory stop at 02:10 UTC (peak 903 MB). Other units shared the machine (five at
+that unit's start, MG0c's two judged runs among them), so the times are loaded. The lead measures
+tiers on clean CPUs at landing.
+
+| Gate | Result |
+| --- | --- |
+| A1 to A5, `test_site_occupancy.py` (NumPy, tier 1) | 47 passed at 6f79249 (8 s): the 31 refusals; the five view conflicts in either order; the neighbours admitted in either order; the replaced slots; the compartment; D150's identity in either order; the cap; the round trip; the layout; the component map; identities as metadata; the contract fit; static idleness. Five cases were added after 369120a, to cover A1 fully: D152's identity in either order, a contact population's facing cells and components (5eddcfe), internalisation on a contact, lumen@2's conflict, and the stationary analysis (c7ef446). They run after the memory stop |
+| B1 and B6, `_runs.py` | 2 passed at 6f79249 and at 369120a (81 and 96 s). Passive-only and mixed: every host check on every row, the energy ledger included. R + B = S to 1e-18 fmol, and the ligand's system total (free in every node, plus bound) constant to 1e-15 relative |
+| B2, `_controls.py` | 3 passed at both. Each corruption fails the runner's host checks: the site free energy dropped from the energy ledger, a material term scaled by 1 + 1e-6, and the heat's sign flipped. The corruptions are test-only, in the host's ledger terms (monkeypatch, xp = NumPy) |
+| B3, `_idle.py` | 1 passed at 6f79249 and at 369120a (94 and 112 s). Zero multipliers, and no populations: each is bitwise equal, on every inner field and row, to the world without the operator |
+| B4, `_restart.py` and `_vector.py` | 2 passed at 6f79249, in one file (158 s): restart in process and through a snapshot, bitwise; the vector-window batch of three k_on values, within 1e-12 of its scalar runs and bitwise against its reverse. Split at 369120a, where the restart passed again (94 s). The vector file had not run when the unit's runtime limit stopped it, before the lead's memory stop; it reruns after the stop |
+| B5, `_stage.py` | It failed at 6f79249 because of the test, which closed over a NumPy layout inside `jit` (TracerArrayConversionError); its runner half had passed. Fixed at 6dff2ff: the pool reads take `xp.asarray`, and the test binds jnp arrays. 1 passed at 369120a (126 s): dt L_R = 2 is refused at run time, the checked step returns its start state bit for bit, and k_on = 2e3 is admitted |
+| The matrix, FR-1's and the contract's tests | 6, 121 and 16 passed at 6f79249 |
+| D148 | No shared code changed. The registry gains one import and one line; the matrix's tags and block are validation and docs. Crossrev was not rerun: no shared function changed, compiled or host-side, and no existing composition contains the operator |
+
+**The composition matrix** (`validation/tissue/composition_matrix.py`; docs/PUMP_COMPOSITE.md, row
+and column 19). The operator's eleven refusals all come from its `CONFLICTS_VIEW`.
+- **Ten are real:**
+  - water's volumes;
+  - the lumens' node volumes, @1 and @2;
+  - insertion@1's anchors and masks;
+  - insertion@2's closed patches and nodes;
+  - the partition's cell mask (door §5.1).
+- **One is nominal: the bath schedule's `extracellular_amount_reference`.** The sites read the
+  anchors only at finite facing nodes, since a population facing a held bath is refused. The bath
+  schedule provides the declared array away from its baths, and schedules held baths only. The slots
+  are disjoint, and the code is cited.
+- **The compartments' admitted-list rule** now marks the off-list pairs its declarations admit, site
+  occupancy among them (§6.4, FR-1's door for it). It stands behind the declarations' refusals of the
+  rest.
+
+**Not exercised by milestone 1's worlds:**
+- **composition with D150's or D152's operators in a run.** The structure check admits them and the
+  identities are checked, but no compiled world holds both;
+- **contact populations in a run.** Stage A checks their layout;
+- **the hybrid's quadrature branch.** By its parameters, no binding route in B1's mixed world
+  reverses within a step: binding starts from empty sites and stays far from equilibrium over its
+  20 ms (**S**; the branch taken was not recorded). That world is §11's open item 4's configuration: a cell receives internalised cargo and is faced
+  by an inward population binding the same ligand. The dissipation check held on all its rows: no
+  heat field fell by more than 1e-12 pJ.
+
+**Not in milestone 1:**
+- the references R-ode, R-closed, R-qss, R-dG and R-eq (a separate agent);
+- the protocol and its judged run;
+- the doors of §9;
+- the tier record (the lead measures at landing).
 
 ## Appendix A. Equations for the independent references
 
