@@ -82,8 +82,8 @@ branch `fr45-physics` from tag `d172-base-2026-11-15`. It is design before code.
   - continuum amounts;
   - either a single compartment, or a lumped population of N identical compartments as one node,
     with N × volume, area, capacitance and transporter capacity.
-  - Lumping is exact for identical members, because V/A and C/A are kept (FR-1 §1.3). The claim is
-    then a population mean.
+  - Lumping is exact for identical members, because V/A and C/A are kept (FR-1 §1.3). The lumped
+    compartment is a deterministic continuum model, not a stochastic mean.
 - **Why lumping matters here (CP4).**
   - A single 250 nm lumen holds 1.6 free protons at pH 7.4.
   - @3's absolute energy floor (2e-8 pJ) is 6% of one pump step's heat (3.2e-7 pJ at 10⁴ H⁺/s,
@@ -440,11 +440,16 @@ only, and the refused runs were let complete.
      its own dt study.
    - The world in §13 uses K⁺ at 5e-10 m/s and 140 mM, so 0.025 at 1 ms. 900 s is 9e5 steps, about
      0.9 CPU-hours at the measured upper-bound cost (**S**).
-   - **B7,** as the safety net: max over free face-free nodes of Σ_m G_m/C_node, added to
-     `explicit_rate_bound` and `membrane_rate` against `EXPLICIT_STEP_BOUND`. It is statically gated,
-     so worlds without such a node are unchanged.
-   - **Owner:** those two functions are the core's files. The core owner, or the D148 round with
-     finding 3's term, edits them. This note supplies the term.
+   - **B7,** as the safety net, host-only: max over free face-free nodes of Σ_m G_m/C_node, at the
+     definition beside `explicit_rate_bound`, at the ordinary constant (about 1).
+     - It has no run-time half and no 0.05 constant (the inner-model note §7.4 (g) 3).
+     - It is statically gated, so worlds without such a node are unchanged.
+   - **The world's 0.05 is a declaration, not an engine bound.** FR-4 declares 0.025 on the
+     max-side G. Its protocol's dt study enforces it.
+   - **State accuracy and the ledgers stay separate parts:** state accuracy (J3, J4) and the heat
+     and work closure (J6, J7) are judged apart.
+   - **Owner:** `explicit_rate_bound` is the core's file. The core owner, with finding 3's term
+     under one D148 record, adds B7 beside it. This note supplies the term.
 2. **The implicit patch (§7.3),** FR-1's door 2. Cl⁻ counterions at lysosomal values, and every
    ionic pore of FR-5, wait for it.
 
@@ -790,7 +795,8 @@ isolates it.
 - **Waits:**
   - FR-4's code waits on:
     - B5's transporter kind, held rows and B3 (the core owner);
-    - B7 as the stability safety net (the core's files, with the D148 round);
+    - B7 as the host-only stability safety net beside `explicit_rate_bound` (the core's file,
+      with the D148 round);
     - the identity map (FR-1's re-gate).
   - FR-5's code waits on FR-4, the routing door (§8: the operators stream and the integration
     owner), and the injury law as a control state.
