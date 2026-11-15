@@ -890,7 +890,24 @@ guard.
 - **"Changes no program" is not "changes no outcome",** so P3 swept the registered and PROPOSED
   protocols' worlds at their registered dt.
 
-*P3's result is written here (§17).*
+**P3's result** (two runs from the same snapshot; the first was void by a probe bug in worlds with a
+neutral species, and its rerun covers them):
+- **Every control hit its known answer:**
+  - T1 on a neutral junction: 2.000e-5 s⁻¹, as expected;
+  - T2 on a face-free chloride route: 6501.285 s⁻¹, as expected, to rounding;
+  - R refused the planted leak channel on the bounding patch;
+  - the face-free node was detected;
+  - P5's face-free gauge was excluded.
+- **No world is refused, and none is bound more tightly.** The worlds swept, at their registered
+  dt:
+  - D150's eight arms (the RK4 ones not applicable);
+  - MG0c's chains and its face-free world;
+  - E07-v1's five discs;
+  - the 56 worlds of the three L4 variants' protocols;
+  - Track R's A4 and A5 at four steps.
+- **No registered world declares a neutral permeant species.** The one free face-free world,
+  MG0c's, carries no ion route there, so T2 is 0.
+- **So I0 changes no registered or PROPOSED outcome.**
 
 **Recommendation if P3 refuses nothing:** finding 3's term rides in R with the passive law (A5), with a D148 record for @1 and @2, since they share the function. The face-free term waits for P1 and FR-4 (B7).
 
@@ -1010,7 +1027,7 @@ A larger R delays the work labelled blocking, so each wait is stated:
 2. **The name** (§6). Recommended: keep `resolved_pump_tissue@3`, with D147 amended as written.
 3. **Rounding in G1** (§3, §4). P2 found per-law dispatch bitwise, so G1 runs bitwise. The
    rounding contingency stays written, for the rest of R. Recommended: as written.
-4. **I0** (§13.6). Finding 3's term rides in R with the passive law if P3 refuses nothing, and
+4. **I0** (§13.6). P3 refused nothing, so finding 3's term rides in R with the passive law and
    needs no run-time half. The face-free term waits for P1 and FR-4 (B7).
 5. **The cost-savers** (§3): sample E07-v1 only if G1 is bitwise; derivative-program judges always
    in full.
@@ -1038,9 +1055,9 @@ runs.
 **P2, per-law dispatch against today's** (results and cost). In seven worlds, the forward runs and two worlds' Jacobians are bitwise identical. Programs lose 10 to 190 equations. Times are within noise, and second runs compile nothing (§4).
 
 **P3, the I0 sweep**, with planted controls of known answer.
-- **The first run was void, by a probe bug.** The layout holds valence as a column, so the neutral mask failed in every world that declares a neutral species, the controls included.
-- **Its ion-only worlds stand:** E07-v1's, the 56 L4 qualification worlds and Track R's A4 worlds. None was refused or bound more tightly, and P5's face-free gauge was excluded as required.
-- **A rerun** of the controls, D150, MG0c and Track R (amendment 3) is queued. *Entered after it.*
+- **The first run was void, by a probe bug** (valence held as a column). Its ion-only worlds stand.
+- **The rerun** (amendment 3) covers the controls, D150, MG0c and Track R. Every control hit its known answer.
+- **No registered or PROPOSED world is refused or tightened** (§13.6).
 
 **P5, the constants inventory.** All nine worlds share one executable with their parameter twins; the value-search hits are coincidences checked in code (§5.2).
 
