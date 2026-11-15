@@ -515,6 +515,11 @@ ITEMS = dict(Q1=q1_q3_q4, Q2=q2, Q5=q5, Q6=q6, Q7=q7)
 
 
 def provenance():
+    """The item record's provenance: invocation, host, source, and the numerical environment
+    the engine's run records keep (cells.io.runtime_identity's numerical_environment:
+    XLA_FLAGS and JAX_DISABLE_JIT), so a run under an XLA setting is identified by its record."""
+    from cells.io import runtime_identity
+
     git = ["git", "-C", str(ROOT)]
     return dict(
         argv=sys.argv,
@@ -528,7 +533,19 @@ def provenance():
             [*git, "status", "--porcelain", "--untracked-files=no"], capture_output=True, text=True
         ).stdout,
         snapshot=(ROOT / "SNAPSHOT.json").exists(),
+        numerical_environment=runtime_identity()["numerical_environment"],
     )
+
+
+def with_verdict(result):
+    """An item's result with its verdict: the item's own when it set one, else pass when it
+    has cases and every case passes. The provenance added after it is not read."""
+    if "verdict" not in result:
+        cases = result.get("cases", {})
+        result["verdict"] = (
+            "pass" if cases and all(c["verdict"] == "pass" for c in cases.values()) else "fail"
+        )
+    return result
 
 
 def run_kind(protocol=None, predictions=None, parameters=None):
@@ -598,14 +615,7 @@ def main(argv=None):
                 out.setdefault(name, {})
                 out[name].update(verdict="fail", error=repr(error), tb=traceback.format_exc())
         for name in produced:
-            result = out[name]
-            if "verdict" not in result:
-                cases = result.get("cases", {})
-                result["verdict"] = (
-                    "pass"
-                    if cases and all(c["verdict"] == "pass" for c in cases.values())
-                    else "fail"
-                )
+            result = with_verdict(out[name])
             result.update(
                 item=name,
                 dry_run=dry,
