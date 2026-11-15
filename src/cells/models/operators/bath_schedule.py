@@ -42,8 +42,12 @@ over the schedule (inner_check_spec): the explicit-rate bound's slope term grows
 Refusals. At the definition: a target that is not a held bath; a formula unit with a count that is
 not a positive int, an unknown species, or a nonzero integer charge; an event at or before 0, at or
 beyond the end, off the dt grid, out of time order for a bath, naming an unscheduled bath or an
-undeclared unit, or leaving a species of a bath non-positive; an anisosmotic step beside water@1,
-whose bath water potential is bound at the definition (the design's door W). The composite's own
+undeclared unit, or leaving a species of a bath non-positive; more than 16 species (the shared
+cap, D165); an anisosmotic step beside water@1, whose bath water potential is bound at the
+definition (the design's door W); and (milestone 2, the design's §8) a step outside the measured
+region: a step is admitted only if a measured passing point of its key (neutral species by class,
+ions by species ID) and direction dominates its ratio and level, under ARS(2,2,2) at dt <= 1 ms or
+RK4 at dt <= 0.1 ms, beside faces at kappa/V <= 10/s. The composite's own
 structure check refuses local_species_reactions@1 (it reads the field as declared, a nominal
 conflict: the design's door S), scheduled_membrane_insertion@1 (a second provider of the field),
 the closers (the field is padded beside them) and so the lumens. The stationary analysis does not
@@ -54,8 +58,10 @@ is its declared reference amounts themselves, so with no event the view is the d
 for bit.
 
 A dose from nothing is D150's unresolved switch-on at the face beside the bath, a known limit
-(D169): refused by the host energy ledger in species-only worlds, unseen in mixed ones (FR-10's
-probe 1). Steps between resolved levels are admitted at a step ratio pinned at registration.
+(D169): the host energy ledger refuses it in species-only worlds and a mixed one runs it unseen
+(FR-10's probe 1), so milestone 2 refuses it at the definition, with every other step outside the
+measured region (MEASURED_POINTS: §7's staircase probe and milestone 2's probes I and D). Dose
+through stairs inside the region.
 """
 
 from bisect import bisect_right
@@ -68,6 +74,7 @@ from cells.core.multispecies_spec import identifier
 from cells.core.specs import ConfigError, _fields
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump as first
+from cells.models.operators import species_common as common
 from cells.models.operators.contract import Operator
 from cells.numerics import osmotic_water as water_law
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
@@ -79,6 +86,23 @@ ISOSMOTIC_RTOL = 1e-12  # |sum_s dc_s| against sum_s c0_s beside water@1.
 DOSE_FLOOR_FMOL = 1e-12  # Floors of the own ledgers (plus the per-step rounding).
 ENERGY_FLOOR_PJ = 3e-12
 CHARGE_FLOOR_C = 3e-25
+# Milestone 2 (the design's §8): a step is admitted only inside the measured region.
+ARS_LAW = "imex_ars222_face_electromigration@1"
+MEASURED_DT = {ARS_LAW: 1e-3, "rk4": 1e-4}  # Solver: its largest measured step (s).
+MEASURED_FACE_RATE = 10.0  # 1/s: the fastest face (kappa / V of its other node) measured.
+NEUTRAL = "neutral"  # The key of every species of valence 0.
+# {(key, direction): ((ratio, level mM), ...)}: each point passed under both solvers, ARS at 1 ms
+# and RK4 at 0.1 ms (the design's §7). Neutral species are keyed by class, ions by species ID.
+MEASURED_POINTS = {
+    # The staircase probe (run-2a7e594/staircase): stairs of 100 and single steps of 10.
+    (NEUTRAL, "up"): ((100.0, 1e-3), (10.0, 1e-2), (3.0, 3e-3), (1.5, 1.5e-3)),
+    # Milestone 2's probe D (m2-probes/run-3d16980): steps down from 1e-2 and 1e-3 mM.
+    (NEUTRAL, "down"): ((10.0, 1e-3), (100.0, 1e-3), (10.0, 1e-2), (100.0, 1e-2)),
+    # Milestone 2's probe I: KCl for NaCl from K 5 mM; K rises, Na falls.
+    ("K", "up"): ((1.5, 7.5), (3.0, 15.0), (10.0, 50.0)),
+    ("Na", "down"): ((145.0 / 142.5, 145.0), (145.0 / 135.0, 145.0), (1.45, 145.0)),
+}
+REGION_RTOL = 1e-9  # A step on a measured corner, to representation.
 
 STATE_AXES = {
     "bath_held_amount_fmol": ["species", "extracellular_slot"],  # Held content; 0 off the baths.
@@ -293,12 +317,96 @@ def held_at(schedule, time):
     return tuple(out)
 
 
-def check_definition(spec, declaration, schedule, model):
-    """Beside water@1, every step is isosmotic: its bath water potential is bound at the definition
-    (models/operators/osmotic_water.bind), so an anisosmotic step would leave water reading the
-    declared bath (the design's door W)."""
-    if not any(op.LAW_ID in WATER_LAWS for op in model.operators):
+def steps(spec, declaration, schedule):
+    """Every step of every scheduled bath: (bath, time, species, valence, c, c') in mM."""
+    m = spec.model
+    volumes = {c.id: c.volume_pL for c in m.extracellular}
+    out = []
+    for bath, series in zip(declaration.baths, schedule.held, strict=True):
+        for (_, before), (time, after) in zip(series[:-1], series[1:], strict=True):
+            for s, (a, b) in enumerate(zip(before, after, strict=True)):
+                if a != b:
+                    v = volumes[bath]
+                    out.append((bath, time, m.species_ids[s], m.valence[s], a / v, b / v))
+    return out
+
+
+def face_rates(spec, bath, s):
+    """[1/s] kappa / V of the other node, for species row s, over every face touching `bath`."""
+    m = spec.model
+    nodes = {c.id: c for c in m.extracellular}
+    rates = []
+    for f in m.faces:
+        if bath not in (f.sender, f.receiver):
+            continue
+        other = nodes[f.receiver if f.sender == bath else f.sender]
+        if other.reservoir:
+            continue
+        kappa = 1e15 * f.diffusivity_m2_per_s[s] * f.area_m2 / f.length_m  # pL/s
+        rates.append(kappa / other.volume_pL)
+    return rates
+
+
+def admitted(key, direction, ratio, level):
+    """Whether a measured point of (key, direction) dominates (ratio, level)."""
+    bound = 1.0 + REGION_RTOL
+    return any(
+        ratio <= r * bound and level <= c * bound
+        for r, c in MEASURED_POINTS.get((key, direction), ())
+    )
+
+
+def refuse_unmeasured_steps(spec, declaration, schedule):
+    """Milestone 2's rule (the design's §8): every step inside the measured region, or refused."""
+    found = steps(spec, declaration, schedule)
+    if not found:
         return
+    x = spec.execution
+    if x.solver not in MEASURED_DT or x.dt > MEASURED_DT[x.solver] * (1.0 + REGION_RTOL):
+        raise ConfigError(
+            f"{LAW_ID}: dose steps are measured only under ARS(2,2,2) at dt <= 1 ms and RK4 at "
+            f"dt <= 0.1 ms; this definition runs {x.solver} at {x.dt} s (the design's §8)"
+        )
+    ids = list(spec.model.species_ids)
+    for bath, time, species, valence, c, c_new in found:
+        key = NEUTRAL if valence == 0 else species
+        direction = "up" if c_new > c else "down"
+        ratio, level = max(c, c_new) / min(c, c_new), max(c, c_new)
+        fast = [r for r in face_rates(spec, bath, ids.index(species)) if r > MEASURED_FACE_RATE]
+        if fast:
+            raise ConfigError(
+                f"{LAW_ID}: the step of {species} at bath {bath} at {time} s crosses a face at "
+                f"{max(fast):g}/s beside it; steps are measured only beside faces at "
+                f"kappa/V <= {MEASURED_FACE_RATE:g}/s (the design's §8)"
+            )
+        if not admitted(key, direction, ratio, level):
+            points = MEASURED_POINTS.get((key, direction), ())
+            raise ConfigError(
+                f"{LAW_ID}: the {direction} step of {species} at bath {bath} at {time} s, from "
+                f"{c:g} to {c_new:g} mM (ratio {ratio:g}, level {level:g} mM), lies outside the "
+                f"measured region for ({key}, {direction}): "
+                + (
+                    "admitted steps have a ratio and a level both within one of "
+                    + ", ".join(f"(ratio {r:g}, level {lv:g} mM)" for r, lv in points)
+                    if points
+                    else "no step of that kind is measured"
+                )
+                + ". Dose through stairs inside the region (the design's §7 and §8)"
+            )
+
+
+def check_definition(spec, declaration, schedule, model):
+    """The species cap (as every species operator); beside water@1, every step is isosmotic (its
+    bath water potential is bound at the definition, models/operators/osmotic_water.bind, so an
+    anisosmotic step would leave water reading the declared bath: the design's door W); then every
+    step inside the measured region (milestone 2, the design's §8)."""
+    common.check_species_cap(spec, LAW_ID)
+    if any(op.LAW_ID in WATER_LAWS for op in model.operators):
+        check_isosmotic(declaration, schedule)
+    refuse_unmeasured_steps(spec, declaration, schedule)
+
+
+def check_isosmotic(declaration, schedule):
     for bath, series in zip(declaration.baths, schedule.held, strict=True):
         declared = np.asarray(series[0][1])
         for time, amounts in series[1:]:
