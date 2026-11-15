@@ -76,6 +76,24 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The coupling operator's matched-arm export ran (15 November 2026, D177).** It is development
+  evidence, with no registered or judged verdict
+  ([EXPORT.md](/mnt/workspaces/Cells/coupling-export-20261115-01/EXPORT.md)).
+  - **Setup:** the driver `validation/tissue/matched_arm_export.py` ran from a clean snapshot of main
+    5c2b04d6, with `resolved_pump_composite@1` over `resolved_pump_tissue@3`,
+    `scheduled_species_turnover@1` and `species_regulated_availability@1`.
+  - **The 16 definitions** (four arms at four steps) were admitted and executed. Six fresh-process
+    restarts and the 4- and 7-step windows are byte-identical on all 103 fields.
+  - **Agreement:** the engine agrees with the refined independent reference to 2.9e-5 mV at 1 ms,
+    and to 4.5e-7 mV at 0.125 ms.
+  - **A finding: decimal record times are refused** at window planning, because an observation time
+    must be an accepted integration boundary. The export uses the engine's grid times instead.
+  - **Duration probes** at 0.125 ms: 1 s, 10 s and 60 s took 126 s, 680 s and 3481 s. At 60 s, 91% of
+    the wall time is host-side window checks; the compiled step costs 0.46 ms. That is input to the
+    round's inventory of host-side checks.
+  - **The first viewer feed,** a development run of the secreted-species world through the shared
+    output path, is in /mnt/workspaces/Cells/viewer-feed-20261115-01/.
+
 - **A future FEP track proposed (15 November 2026; docs only; PROPOSED, not scheduled).** At the
   user's request ([proposal](docs/FEP_TRACK_PROPOSAL.md);
   [source log](/mnt/workspaces/Cells/fep-track-20261115-01/sources.json)).
