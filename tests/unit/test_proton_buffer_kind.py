@@ -69,10 +69,15 @@ def buffered_world(*, end_time=0.004, k_on=1e7, quiet=False, h_route=0.0, declar
             for entry in raw["experiment"][group]:
                 entry["schedule"] = [dict(time=0.0, availability=0.0)]
     if declare:
-        m[proton_buffer.MODEL_KEY] = dict(
-            proton="H", buffers={m["cells"][0]["id"]: ["B"]}, k_on_per_mM_s={"B": k_on}
-        )
+        m[proton_buffer.MODEL_KEY] = read({m["cells"][0]["id"]: ["B"]}, {"B": k_on})
     return raw
+
+
+def read(buffers, k_on):
+    """The stage_reads declaration in FR-4's form (validation/compartment_ph/definitions.py)."""
+    return [
+        dict(read_id="rapid_proton_buffer@1", proton_row="H", buffers=buffers, k_on_per_mM_s=k_on)
+    ]
 
 
 def host(spec):
@@ -96,7 +101,7 @@ def test_the_read_gives_free_protons_and_leaves_charge_and_field():
     assert float(ci[0]) == pytest.approx(h_mM(CELL_PH), rel=1e-9)  # Free h at the buffered cell.
     stored = p.extracellular_amount_reference + state.extracellular_amount_increment
     assert float(co[0]) == float(stored[row, 0])  # The bath is read as stored.
-    h, ph = proton_buffer.readouts(state, control, p, xp=np)
+    h, ph = proton_buffer.readouts(state, state, None, control, p, xp=np)
     assert float(ph[0]) == pytest.approx(CELL_PH, abs=1e-9)
     assert float(ph[1]) == pytest.approx(BATH_PH, abs=1e-9)
     assert float(np.sum(proton_buffer.ledger_terms(state, p, xp=np)["stored_pJ"])) == 0.0
@@ -119,16 +124,14 @@ def test_two_buffers_take_the_kernels_bisection_and_agree_with_one():
         patch["permeability_m_per_s"]["B2"] = 0.0
     raw["execution"]["material_balance_atol_fmol"]["B2"] = 1e-10
     cell = m["cells"][0]["id"]
-    m[proton_buffer.MODEL_KEY] = dict(
-        proton="H", buffers={cell: ["B", "B2"]}, k_on_per_mM_s={"B": 1e7, "B2": 1e7}
-    )
+    m[proton_buffer.MODEL_KEY] = read({cell: ["B", "B2"]}, {"B": 1e7, "B2": 1e7})
     two = parse_spec(raw)
     impl, state, p, control = host(two)
     assert impl.structure.kinds == ((proton_buffer.KIND_ID, (2,)),)
-    h_two, _ = proton_buffer.readouts(state, control, p, xp=np)
+    h_two, _ = proton_buffer.readouts(state, state, None, control, p, xp=np)
     one = parse_spec(buffered_world())
     impl1, state1, p1, control1 = host(one)
-    h_one, _ = proton_buffer.readouts(state1, control1, p1, xp=np)
+    h_one, _ = proton_buffer.readouts(state1, state1, None, control1, p1, xp=np)
     assert float(h_two[0]) == pytest.approx(float(h_one[0]), rel=1e-12)
     terms = [
         float(np.sum(proton_buffer._declared_terms(q, proton_buffer._amounts(s, q, np), xp=np)))
@@ -228,6 +231,80 @@ def test_the_closure_runs_on_the_vector_window_path():
     assert moved == pytest.approx(1e-3 * steps * spec.execution.dt, rel=1e-9)
     increment = np.asarray(final[names.index("amount_increment")])
     assert float(increment[row, 0]) == pytest.approx(-moved, rel=1e-9)
+
+
+LEAK_M_S = 6e-7  # FR-4's proton leak (6e-5 cm/s).
+
+
+def leak_route(**overrides):
+    """The proton leak in FR-4's form (validation/compartment_ph/definitions.py)."""
+    entry = dict(
+        id="proton_leak_0",
+        patch="membrane_0",
+        law="proton_constant_field_leak@1",
+        permeability_m_per_s=LEAK_M_S,
+    )
+    return entry | overrides
+
+
+def leaky_world(**kwargs):
+    raw = buffered_world(**kwargs)
+    raw["model"]["passive_routes"] = [leak_route()]
+    return raw
+
+
+def test_the_proton_leak_reads_free_h_and_joins_the_stage_rule():
+    """cells.passive_routes@1's charged law: its flux is the kernel's at the closure's free h (not
+    H_eq / V) and the patch voltage, it is the patch's only H flux (gap 9), and its slope
+    conductance joins membrane_rate (gap 5)."""
+    from cells.models.inner_kinds import passive_routes
+    from cells.processes import proton_leak
+    from validation.tissue.surface_pump_v3_fixtures import HEREDITY_AREA_M2
+
+    spec = parse_spec(leaky_world())
+    impl, state, p, control = host(spec)
+    kinds = {k for k, _ in impl.structure.kinds}
+    assert kinds == {passive_routes.KIND_ID, proton_buffer.KIND_ID}
+    values = impl.readouts(state, control, p, xp=np)
+    assert values.valid
+    row = list(spec.model.species_ids).index("H")
+    t = spec.model.temperature_K
+    voltage = float(values.field.rates.membrane_voltage_V[0])
+    args = (h_mM(CELL_PH), h_mM(BATH_PH), voltage, t, HEREDITY_AREA_M2, LEAK_M_S, 1.0)
+    inward = float(proton_leak.flux_fmol_s(*args, xp=np))
+    outward = float(values.field.rates.membrane_flux_fmol_s[row, 0])
+    assert outward == pytest.approx(-inward, rel=1e-8)  # At free h, the patch's only H mover.
+    plain = parse_spec(buffered_world())
+    impl0, state0, p0, control0 = host(plain)
+    added = impl.membrane_rate(state, control, p, xp=np) - impl0.membrane_rate(
+        state0, control0, p0, xp=np
+    )
+    slope = float(proton_leak.conductance_S(*args, xp=np))
+    assert float(added) == pytest.approx(slope / p.membrane_capacitance[0], rel=1e-9)
+
+
+def test_the_proton_leak_runs_with_every_ledger():
+    result = run(parse_spec(leaky_world()))  # Host checks: material, charge, energy.
+    heat = np.asarray(result.final.state.passive_dissipated_energy_pJ)
+    assert float(heat[0]) > 0.0  # Tableau-booked, never exact: a charged route.
+
+
+def test_the_proton_leaks_admission():
+    for overrides, message in (
+        (dict(patch=None, junction="j"), "the proton leak sits on a membrane patch"),
+        (dict(species="Na"), "is not the closure's proton row"),
+        (dict(species="B"), "carries a valence \\+1 proton row"),
+        (dict(factors=[dict(law="damage", id="damage_0")]), "come with FR-5's laws"),
+    ):
+        raw = buffered_world()
+        entry = {k: v for k, v in leak_route(**overrides).items() if v is not None}
+        raw["model"]["passive_routes"] = [entry]
+        with pytest.raises(ConfigError, match=message):
+            parse_spec(raw)
+    raw = buffered_world(h_route=1e-9)
+    raw["model"]["passive_routes"] = [leak_route()]
+    with pytest.raises(ConfigError, match="has its own permeability for H"):
+        parse_spec(raw)
 
 
 def test_an_inner_route_for_the_proton_at_a_buffered_node_is_refused():

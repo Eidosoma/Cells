@@ -369,7 +369,9 @@ class KindRates(NamedTuple):
     fields' derivatives; its heat and work rates (pJ/s, joining the energy rate by role).
     membrane_flux: what it carries across membrane patches, outward [S, membrane] (fmol/s), or
     None; it joins the patches' total flux and membrane current (observations, not ledgers: its
-    moves are already in cell and outside)."""
+    moves are already in cell and outside). valid: its own domain at the stage's read and
+    potentials (a charged law's V-dependent domain, such as |dG_cyc/RT| <= 80); false refuses the
+    row or the step."""
 
     cell: object
     outside: object
@@ -377,6 +379,7 @@ class KindRates(NamedTuple):
     heat_pJ_s: object
     work_pJ_s: object
     membrane_flux: object = None
+    valid: object = True
 
 
 def _kinds(structure):
@@ -674,8 +677,10 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
     if process is not None:
         valid &= process.valid
-    if kinds:  # A failed stage read or stage check refuses the row (§7.4 (g) 1).
+    if kinds:  # A failed stage read, a kind's domain or a stage check refuses the row.
         valid &= read_valid & _stage_checks(kinds, read, cell, outside, p, xp=xp)
+        for kr in kind_rates:
+            valid &= kr.valid
     for value in _availabilities(control, kinds) if kinds else control:
         valid &= xp.all(xp.isfinite(value) & (value >= 0) & (value <= 1))
     for kind in kinds:
@@ -914,9 +919,11 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
     if kinds:
         rates = _with_kind_derivatives(rates, kind_rates, structure, state, xp=xp)
     valid = r.valid
-    if kinds:  # A failed stage read or stage check refuses the step (§7.4 (g) 1).
+    if kinds:  # A failed stage read, a kind's domain or a stage check refuses the step.
         outside_rate = xp.where(p.reservoir, 0.0, inflow)
         valid = valid & read_valid & _stage_checks(kinds, read, cell_rate, outside_rate, p, xp=xp)
+        for kr in kind_rates:
+            valid = valid & kr.valid
     if args is not None:  # The Na/K pump's domain, where its law is declared.
         valid = valid & xp.all(pump.domain_valid(*args, xp=xp))
     if ca_args is not None:
@@ -1608,6 +1615,7 @@ def observe_history(times, history, layout, requested, spec, *, structure=None):
         if not w.valid:
             raise NumericalError("Resolved kinetic observation domain invalid")
         v, n, r = w.field, p.active.size, w.field.rates
+        read = _stage_read(state, p, kinds, xp=np)[0] if kinds else state  # Kinds' readouts.
         records.append(
             (
                 np.asarray(t),
@@ -1646,7 +1654,7 @@ def observe_history(times, history, layout, requested, spec, *, structure=None):
                     column
                     for kind in kinds
                     if kind.readouts is not None
-                    for column in kind.readouts(state, control, p, xp=np)
+                    for column in kind.readouts(state, read, v.potential_V, control, p, xp=np)
                 ),
             )
         )

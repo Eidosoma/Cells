@@ -139,7 +139,7 @@ def domain(state, p, *, xp):
     return xp.all(xp.isfinite(state.exchange_moved_fmol) & (state.exchange_moved_fmol >= 0))
 
 
-def readouts(state, control, p, *, xp):
+def readouts(state, read, potentials, control, p, *, xp):
     return (species_sum(_flow(p, control), xp=xp),)
 
 
@@ -293,7 +293,7 @@ def _carrier_domain(state, p, *, xp):
     return valid & xp.all(xp.where(p.membrane_active, True, (moved == 0) & (work == 0)))
 
 
-def _carrier_readouts(state, control, p, *, xp):
+def _carrier_readouts(state, read, potentials, control, p, *, xp):
     current = CHARGE_PER_FMOL * species_sum(p.valence * _carrier_flow(p, control, xp=xp), xp=xp)
     return (current,)  # Outward current per patch (A).
 

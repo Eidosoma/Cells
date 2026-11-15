@@ -4,10 +4,12 @@ docs/INNER_MODEL_V4_DESIGN.md §7.4 (g) 1 and (k); docs/COMPARTMENT_PH_TRANSFER_
 closure, D176). The kernel is processes/rapid_proton_buffer.py (FR-4's owner); this module is
 the kind the core calls at its seams.
 
-The declaration (model key `proton_buffering`):
+The declaration (model key `stage_reads`, FR-4's form in validation/compartment_ph/definitions.py;
+version 1 admits this one read):
 
-    {"proton": "H", "buffers": {"cell_0": ["B_c"], "lumen": ["B_L"]},
-     "k_on_per_mM_s": {"B_c": 1e7, "B_L": 1e7}}
+    [{"read_id": "rapid_proton_buffer@1", "proton_row": "H",
+      "buffers": {"cell_0": ["B_c"], "lumen": ["B_L"]},
+      "k_on_per_mM_s": {"B_c": 1e7, "B_L": 1e7}}]
 
 - `buffers` names the declared (node, row) pairs, the closure's mask; a buffer row at a node it
   does not name is a declared trace, a free row whose charge counts and which has no protonation.
@@ -46,8 +48,8 @@ from cells.processes import rapid_proton_buffer as closure
 from cells.processes.electrochemistry import R
 
 KIND_ID = "cells.rapid_proton_buffer@1"
-MODEL_KEY = "proton_buffering"
-FIELDS = ("proton", "buffers", "k_on_per_mM_s")
+MODEL_KEY = "stage_reads"
+FIELDS = ("read_id", "proton_row", "buffers", "k_on_per_mM_s")
 COLUMNS = ("free_proton_mM", "pH")
 
 
@@ -59,9 +61,14 @@ class Declaration(NamedTuple):
 
 def parse(entries, base):
     m = base.model
-    if not isinstance(entries, dict) or set(entries) != set(FIELDS):
-        raise ConfigError(f"{MODEL_KEY} declares exactly {', '.join(FIELDS)}")
-    proton, buffers, k_on = (entries[k] for k in FIELDS)
+    if not isinstance(entries, list) or len(entries) != 1 or not isinstance(entries[0], dict):
+        raise ConfigError(f"{MODEL_KEY}: version 1 declares one read, {closure.READ_ID}")
+    entry = entries[0]
+    if set(entry) != set(FIELDS):
+        raise ConfigError(f"{MODEL_KEY}: a read declares exactly {', '.join(FIELDS)}")
+    read_id, proton, buffers, k_on = (entry[k] for k in FIELDS)
+    if read_id != closure.READ_ID:
+        raise ConfigError(f"{MODEL_KEY}: unknown read {read_id!r}; version 1 has {closure.READ_ID}")
     if proton not in m.species_ids:
         raise ConfigError(f"{MODEL_KEY}: unknown proton row {proton!r}")
     nodes = {c.id for c in m.cells} | {o.id for o in m.extracellular}
@@ -90,11 +97,14 @@ def parse(entries, base):
 
 
 def to_dict(declaration):
-    return dict(
-        proton=declaration.proton,
-        buffers={node: list(rows) for node, rows in declaration.buffers},
-        k_on_per_mM_s=dict(declaration.k_on),
-    )
+    return [
+        dict(
+            read_id=closure.READ_ID,
+            proton_row=declaration.proton,
+            buffers={node: list(rows) for node, rows in declaration.buffers},
+            k_on_per_mM_s=dict(declaration.k_on),
+        )
+    ]
 
 
 def structure_entry(declaration):
@@ -295,7 +305,7 @@ def ledger_terms(state, p, *, xp):
     )
 
 
-def readouts(state, control, p, *, xp):
+def readouts(state, read, potentials, control, p, *, xp):
     h, buffered, _, _, _ = _closure(_amounts(state, p, xp), p, xp)
     _, active = _nodes(p, xp)
     h = xp.where(active, h, 0.0)
