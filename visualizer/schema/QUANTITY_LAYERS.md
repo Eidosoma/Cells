@@ -51,7 +51,11 @@ the viewer changes.
    again (a flux from a permeability, a gate, a reaction rate). What a layer would need
    beyond this is asked of the engine (`docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md`). The
    list is closed; adding to it changes this contract:
-   - `difference`: a level at one end of a junction less the level at the other;
+   - `difference`: a level at one end of a junction less the level at the other. For
+     voltage this equals the junction's own voltage only where both cells' surroundings
+     share one potential: where a run kept the engine's own readout of the junction
+     voltage or of each cell's potential, the layer reads that record and derives
+     nothing;
    - `rate`: a `cumulative` record at one saved time less the same at the one before,
      divided by the time between: a mean over that interval, and said to be one;
    - `charge`: capacitance times voltage, with the capacitance and the area as the run's
@@ -61,6 +65,15 @@ the viewer changes.
      their sum, from the saved concentrations and voltage and the definition's
      temperature and valence (the engine's `electrochemical_potential`, in
      `src/cells/processes/electrochemistry.py`). Shown in millivolts, each divided by z F.
+
+   A derivation reads its inputs as the run had them. A value that an operator of the
+   run may change (a volume, a capacitance or an area, the composition of a held bath) is
+   read from the definition only where no operator of that run changes it; otherwise the
+   run must have saved it over time, or the layer is listed as one the run cannot feed.
+   **A signed record is drawn with a direction only where its sign is declared.** Until
+   the run view declares which way is positive, a layer shows the size alone; where a
+   direction must be shown it is the viewer's reading of the engine's code, and the
+   legend says so.
 2. **One layer on each visual channel.** The channels are `colour`, `height`, `links`
    (signs on junctions), `surface` (signs on a membrane), `arrows`, `motion` and `glow`.
    Switching a layer on takes its channels from whichever layer held them. Layers on
