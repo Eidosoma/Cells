@@ -73,6 +73,28 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The coupling operator's qualification protocol (milestone 4, PROPOSED) and the composition
+  matrix landed (15 November 2026).** Validation, tests and docs only, during MG0c's `src/` hold.
+  Tier 1 at the merge 200b796: 329 files, no changed outcome
+  ([summary](/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/land-gate1-200b796c/summary.json)).
+  - **The protocol** ([JSON](validation/tissue/regulated_availability_protocol.json);
+    [note](docs/INVENTORY_COUPLING_DESIGN.md) §10;
+    [evidence](/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/HANDOFF.md)):
+    - **What is judged:** the order against the independent references, in a band of [1.7, 2.3]
+      fixed in advance, with a minimum number of resolved pairs per rule. That is 47 judged
+      criteria and 16 reported.
+    - **The controls:** the regulatory state at first order, and a factor one step stale, both
+      near order 1.0; plus basal-level δ controls. Every one is caught on the development run.
+    - **The 1 ms errors** are a tier-3 regression guard, not judged.
+    - **Version 1 runs on CPU only.** The scope line is recorded.
+    - **Next:** the rehearsal on main, the final check with the advisor, registration and one
+      judged run.
+  - **The composition matrix:** all 17 operators, regenerated from their declarations by a tier-1
+    test.
+    - Real and nominal refusals are tagged. A nominal tag means disjoint slots, not that the pair
+      is safe under today's adapter (D174).
+    - Every definition rule cites its test. The composite's RK4 composition rule now has one.
+
 - **Syn3A, the proposed minimal-cell track: the evidence audit (14 November 2026, the user's
   request).** This is an assessment only; no engine model ran
   ([note](docs/SYN3A_MINIMAL_CELL_TRACK.md);

@@ -1469,7 +1469,8 @@ another machine should keep that margin in view.
   reference gives (A5), at second order in V and the amounts. The factor itself is exact to
   rounding, since D150's turnover is exact on the grid.
 - **The uncoupled baselines are second order as well**, so the coupling does not lower @3's order.
-- **The tolerances are proposals,** to be registered before a judged run:
+- **The tolerances were proposals.** The lead ruled them regression pins, not judged tolerances
+  (§10):
   - the 1 ms error × 2, at least 100 floors and at least 1e-13 for dimensionless quantities;
   - each comes with its planted control, a basal level scaled by 1 + δ, which exceeds it about
     tenfold.
@@ -1477,6 +1478,140 @@ another machine should keep that margin in view.
   - A4 and A5 at horizons beyond 2 s and 1 s;
   - worlds with pumps or gated channels (the references do not model them);
   - the first consumer's local accuracy (A10, §4.5).
+
+## 10. Milestone 4: the qualification protocol, PROPOSED (14 November 2026)
+
+**The lead's ruling on §9.2.** The 2× table is not a set of judged tolerances. Each value is twice
+an error that the record reproduces exactly, so it cannot fail: it is a regression pin, not a
+qualification.
+
+The qualification follows D150's and MG0c's path:
+1. a generator writes records;
+2. a separate judge reads them;
+3. controls show that each judged rule can fail;
+4. a rehearsal, a dry run, the final check;
+5. registration by the lead;
+6. one judged run.
+
+This milestone hands back the PROPOSED protocol and its development runs. Evidence is in
+`/mnt/workspaces/Cells/inventory-coupling-m4-20261114-01/`.
+
+### 10.1 The pieces
+
+| Piece | Module | Role |
+| --- | --- | --- |
+| Generator | `validation/tissue/regulated_availability_dt_study.py` | Writes records only: A1's factor values; A4's and A5's per-record errors at each dt, with the reference's floor and magnitudes; the controls. Its `judged` mode is refused unless the protocol is registered, the source is a clean snapshot and the output directory is new |
+| Judge | `validation/tissue/regulated_availability_judge.py` | Reads records and never runs. Derives the orders under the protocol's resolution rule and evaluates its criteria (MG0c's evaluator) |
+| Controls | `validation/tissue/regulated_availability_controls.py` | Planted defects, registered only inside a `with` block: the regulatory state at first order (explicit Euler half-steps), and the factor one step stale |
+| Drafter | `validation/tissue/regulated_availability_protocol.py` | Drafts the PROPOSED protocol from a development run, by fixed rules |
+| Protocol | `validation/tissue/regulated_availability_protocol.json` | PROPOSED; only the lead registers it |
+
+### 10.2 What is judged
+
+- **A1, the factor values.** The operator's own `route_factors` and `element_product` are compared
+  on the host and on the device against R-fac's exact path. The grid covers x from 0 to 1e10,
+  K ∈ {1e-4, 0.37, 12}, n ∈ {0.5, 1, 2, 4, 8}, b ∈ {0, 0.2} and both state laws.
+  - Each point's absolute error, in eps (`fr.eps_error`, the references agent's form), lies
+    within its a priori bound. The bound is 4 + 2 f (1 − f) n (|ln x| + |ln K| + 1), the
+    conditioning of the log-space form.
+  - At x = 0 the factor is exact.
+- **The orders against the independent references** (A4: R-feedback; A5: R-cell), over the
+  ladder 1, 0.5, 0.25 and 0.125 ms.
+  - A pair is resolved when its finer error is at least 100 times the reference's floor
+    (`rc.floor`, measured on the same world) and at least the observable's rounding scale:
+    1e-13 for s, a_eff and F, and N ε max|U| for U, which is a running sum.
+  - Every resolved pair of a judged observable must have its order in the pre-declared band
+    [1.7, 2.3].
+  - V, the amounts and U are judged wherever they have a resolved pair.
+  - s, a_eff and F are judged only where every pair of the ladder is resolved (the lead's rule).
+    A4's coupled s and a_eff, at 100 to 200 floors, are therefore reported only.
+  - Each judged rule must also keep a minimum number of resolved pairs, so it cannot pass with
+    nothing resolved.
+- **The checks around them:**
+  - row 0 at the reference's start, within 1e-15 V;
+  - the contact's gate at exactly 1 in every A4 run;
+  - A5's factor at rounding (64 ε), since D150's turnover is exact on the grid.
+- **The controls, each of which must be caught.** Caught means that, on the control's records, a
+  resolved pair of a judged observable leaves the band.
+  - The first-order state.
+  - The stale factor.
+  - A4's and A5's basal level × (1 + δ) at a registered δ, which in development puts the
+    control's plateau at 10 times the finest error.
+
+**Outside the judged list:**
+- the 1 ms errors, pinned at twice their development value
+  (`tests/unit/test_species_regulated_availability_regression.py`, tier 2 or 3);
+- the floor-limited pairs;
+- A4's coupled s and a_eff.
+
+### 10.3 Scope, and the GPU question
+
+- **Worlds and horizons.** A4 starts from the reference's state at 50 ms, with its contact at the
+  edge of @3's explicit-rate bound at 1 ms (2e-8 m/s). The horizons are 2 s (A4) and 1 s (A5).
+- **Not covered:**
+  - pumps and gated channels;
+  - A10. Its crossing level above the A.3 commitment limit is never reached; the references
+    agent's note asks that it be refused or marked unreachable, in A10's own protocol;
+  - A2 against R-state;
+  - restart, windows and batches, which stay tier tests.
+- **The GPU question.** Version 1 is CPU-only, as proposed and as the lead recommends. The floors
+  and A4's fragile observables were measured on CPU; an L4 variant is a later protocol with its
+  own development runs.
+
+### 10.4 The development run
+
+**The development run** (`dev-476c6e01/results.json`) ran from the clean snapshot of 476c6e01 on
+one CPU. Its engine errors equal milestone 3's record bit for bit. The PROPOSED protocol was
+drafted from it. The judge's development verdict on the same run passes every criterion
+(`verdict-dev-476c6e01/verdict.json`). That is a check of the tools, not a judgement: the protocol
+is not registered.
+
+- **A1.** Host, device and products: at most 1, 0.5 and 0.5 eps against R-fac's exact path, and at
+  most 0.23 of the a priori bound. The x = 0 points are exact.
+- **The judged observables the rules chose:**
+  - A4 uncoupled: V only. Its amounts and U are under 100 floors or at rounding; s is resolved
+    at one pair only.
+  - A4 coupled: V, the amounts and U. Its s, a_eff and F are under 100 floors and are reported.
+  - A4 fast arm: all six.
+  - A5 uncoupled and coupled: V and the amounts. A5's factor is judged at rounding instead.
+- **The observed orders on resolved pairs:**
+  - A4 coupled: V 2.08, 2.04, 2.02; amounts 2.00, 2.00; U 2.00, 2.00.
+  - A4 fast: 1.97 to 2.00.
+  - A4 uncoupled V: 2.01, 2.00, 2.00.
+  - A5: V 2.00 to 2.01; amounts 2.00 to 2.01.
+- **The controls, every one caught:**
+
+  | Control | Orders on resolved pairs |
+  | --- | --- |
+  | First-order state | V 0.94, 0.97, 0.99; amounts and U 1.00 |
+  | Stale factor | V 1.01 to 1.03; amounts and U 1.00 |
+  | A4 basal × (1 + 1.8e-5) | V 1.83, 1.09, 0.00; amounts and U about 0 (plateau) |
+  | A5 basal × (1 + 3.0e-6) | V 1.68, 0.75, 0.14; amounts 1.41, 0.56, 0.05 |
+
+  The registered δ are those values rounded up on a 1-2-5 grid: 2e-5 and 5e-6.
+- **The protocol:** 47 judged criteria and 16 reported entries. It also carries the 1 ms
+  regression pins, the scope line, the GPU proposal (CPU-only in version 1), the attempt rule,
+  the steps before judgement and three questions for the lead.
+
+### 10.5 For the lead
+
+- **The steps before the judged run** are listed in the protocol:
+  - the review of this draft;
+  - a rehearsal: the judged entry from a snapshot, refused while the protocol is PROPOSED;
+  - a dry run: a development run from the snapshot to be judged, judged in dev mode;
+  - the final check of the registered values against the dry run;
+  - registration;
+  - one judged run.
+- **Questions.**
+  - Is the band [1.7, 2.3] right for three pairs, with development orders of 2.00 to 2.08?
+  - Should A4's uncoupled U, at accumulated rounding in development, stay reported only?
+  - CPU-only in version 1?
+- **Tiers.**
+  - `tests/unit/test_species_regulated_availability_protocol.py` (the judge, the drafter's grid,
+    the judged-run guard and the controls on the host) takes about 9 s: tier 1.
+  - The regression guard takes 152 s on one CPU: tier 3.
+- **§9.2's tolerance table** is superseded as a qualification by the order criterion. Its values
+  are now the regression pins.
 
 ## Appendix A. Equations for the independent references
 
