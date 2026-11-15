@@ -479,7 +479,8 @@
    "judge": "python -m validation.morphogenesis.mg0c_turing judge --output OUT --protocol THIS_FILE --results RUN_DIR/results.json ...: the parts' verdict, refusing runs of another protocol, from another snapshot or incomplete",
    "guards": "python -m validation.morphogenesis.mg0c_turing judge-guards --output OUT --protocol THIS_FILE: pytest on guards_of_record.tests from the snapshot, one file at a time with no per-file cap; OUT/verdict.json with each file's counts, exit code and duration",
    "combined": "python -m validation.morphogenesis.mg0c_turing combine --output OUT --protocol THIS_FILE --results PARTS_OUT GUARDS_OUT: the one qualification verdict (every criterion, the guards' files, the scope line, the snapshot's revision), refusing verdicts of another protocol or from another snapshot",
-   "register": "python -m validation.morphogenesis.mg0c_protocol register THIS_FILE RECORD_JSON: the lead's registration; the status and the lead's record alone"
+   "register": "python -m validation.morphogenesis.mg0c_protocol register THIS_FILE RECORD_JSON: the lead's registration; the status and the lead's record alone",
+   "launcher": "each entry in its own unit: scripts/run_detached.sh NAME CAP --cpus CPU --oom-first --runtime-max LIMIT --env UNIT=NAME -- rehearse_entry.sh SNAPSHOT SNAPSHOT/validation/morphogenesis/protocols/mg0c_turing_v1.json OUT ENTRY [ARGS], with rehearse_entry.sh the rehearsal's launcher (/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/, copied unchanged into the judged run's inputs): it runs the entry from the snapshot's root with judge_entries.environment, never creates OUT (the entry does), and writes OUT.log, OUT.run.txt and the unit's memory record beside OUT. The caps, lanes and runtime limits (development_runs.units and timing) are enforced by the launcher alone (run_detached.sh's MemoryMax, CPUAffinity and RuntimeMaxSec): no code reads them"
   }
  },
  "criteria": [
@@ -2106,6 +2107,141 @@
    "q7": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/q7/results.json",
    "q4": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/rehearsal-58b6f14/c/results.json"
   },
+  "basis": {
+   "runs": [
+    {
+     "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+     "status": "Development run of MG0c (D152 v1, milestone 3); not judged.",
+     "source": {
+      "clean": true,
+      "git_revision": "d4cee8724968cb3dffed371a42c5e7472c0f2077",
+      "kind": "snapshot",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-d4cee87"
+     },
+     "parts": [
+      "floor",
+      "linear",
+      "q1",
+      "q2",
+      "sites",
+      "theory",
+      "timing"
+     ],
+     "peak_GB": 2.61
+    },
+    {
+     "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-b/results.json",
+     "status": "Development run of MG0c (D152 v1, milestone 3); not judged.",
+     "source": {
+      "clean": true,
+      "git_revision": "d4cee8724968cb3dffed371a42c5e7472c0f2077",
+      "kind": "snapshot",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-d4cee87"
+     },
+     "parts": [
+      "q3",
+      "q5",
+      "q6",
+      "q7"
+     ],
+     "peak_GB": 3.52
+    },
+    {
+     "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-c/results.json",
+     "status": "Development run of MG0c (D152 v1, milestone 3); not judged.",
+     "source": {
+      "clean": true,
+      "git_revision": "d4cee8724968cb3dffed371a42c5e7472c0f2077",
+      "kind": "snapshot",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-d4cee87"
+     },
+     "parts": [
+      "q4"
+     ],
+     "peak_GB": 0.98
+    },
+    {
+     "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-3e7399a-d/results.json",
+     "status": "Development run of MG0c (D152 v1, milestone 3); not judged.",
+     "source": {
+      "clean": true,
+      "git_revision": "3e7399a30cdbf7934ef3ac33c0b21b426d3e10aa",
+      "kind": "snapshot",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-3e7399a"
+     },
+     "parts": [
+      "d147"
+     ],
+     "peak_GB": 0.12
+    },
+    {
+     "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q1/results.json",
+     "status": "Development run of MG0c (D152 v1, milestone 3); not judged.",
+     "source": {
+      "clean": true,
+      "git_revision": "7495288b842c1fa7e525f8e74139f0cf8b1434e9",
+      "kind": "snapshot",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-7495288"
+     },
+     "parts": [
+      "q1"
+     ],
+     "peak_GB": 2.17
+    },
+    {
+     "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q6/results.json",
+     "status": "Development run of MG0c (D152 v1, milestone 3); not judged.",
+     "source": {
+      "clean": true,
+      "git_revision": "7495288b842c1fa7e525f8e74139f0cf8b1434e9",
+      "kind": "snapshot",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-7495288"
+     },
+     "parts": [
+      "q6"
+     ],
+     "peak_GB": 0.87
+    },
+    {
+     "path": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q7/results.json",
+     "status": "Development run of MG0c (D152 v1, milestone 3); not judged.",
+     "source": {
+      "clean": true,
+      "git_revision": "7495288b842c1fa7e525f8e74139f0cf8b1434e9",
+      "kind": "snapshot",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/snapshot-7495288"
+     },
+     "parts": [
+      "q7"
+     ],
+     "peak_GB": 1.8
+    }
+   ],
+   "part_sources": {
+    "floor": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+    "linear": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+    "q1": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q1/results.json",
+    "q2": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+    "sites": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+    "theory": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+    "timing": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-a/results.json",
+    "q3": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-b/results.json",
+    "q5": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-b/results.json",
+    "q6": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q6/results.json",
+    "q7": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-7495288-q7/results.json",
+    "q4": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-d4cee87-c/results.json",
+    "d147": "/mnt/workspaces/Cells/shared-inventory-reactions-v1-20261114-01/mg0c/dev-3e7399a-d/results.json"
+   },
+   "same_criteria_deltas_and_controls": true,
+   "note": "the thresholds and the registered deltas were first derived from these development runs, from snapshots before FR-9 (D165); drafting from them gives the same criteria, thresholds, registered deltas and controls as drafting from the runs above (checked at drafting), whose values they reproduce at every non-timing leaf (disclosures)"
+  },
   "units": {
    "a": {
     "parts": [
@@ -2200,7 +2336,7 @@
   "drafted_by": {
    "kind": "checkout",
    "root": "/home/robert/Cells/.claude/worktrees/agent-a6b2e9cd180913a24",
-   "git_revision": "e1277551a5d9bd5d57859fa962adbd44665ea6d3",
+   "git_revision": "5c0bb0a0f3f3d3aa98f067de58e667e76db213d8",
    "dirty": ""
   }
  },
