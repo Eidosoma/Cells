@@ -49,13 +49,18 @@ export async function acquireBrowser({ wait = 20 * 60 * 1000 } = {}) {
       await sleep(1000 + Math.random() * 1000);
     }
   }
-  // A browser run draws in software and can take a whole processor or more. The engine's own
-  // jobs share this machine and come first (the lead's request, 15 November 2026): the run and
-  // the Chrome it starts take the lowest priority and keep to one processor (CELLS_BROWSER_CPU,
-  // 3 by default; "any" leaves them free). Both are inherited by what the run starts.
-  try {
-    os.setPriority(19);
-  } catch {}
+  // A browser run draws in software and can take a whole processor or more, and the engine's
+  // own jobs share this machine. So the run and the Chrome it starts keep to one processor
+  // (CELLS_BROWSER_CPU, 3 by default; "any" leaves them free), at the usual priority (the
+  // user, 15 November 2026: more priority again, but still just on one). CELLS_BROWSER_NICE
+  // lowers the priority when the engine's jobs must come first (19 is the lowest). Both are
+  // inherited by what the run starts.
+  const nice = Number(process.env.CELLS_BROWSER_NICE || 0);
+  if (nice > 0) {
+    try {
+      os.setPriority(Math.min(19, nice));
+    } catch {}
+  }
   const cpu = process.env.CELLS_BROWSER_CPU || "3";
   if (cpu !== "any") {
     try {
