@@ -311,3 +311,10 @@ owner, answer to follow.
   totals that only grow. Under the exact booking of the rework a route's own share can
   be negative while its row's total is not: whether a route's heat still only grows
   there awaits the lead's ruling.
+- **The lead's ruling on heat under the exact booking (15 November 2026).** A route's heat
+  stays a total that only grows: in the rework's first version a step with any negative
+  share for a route is refused, so every `*_dissipated_energy_pJ` field stays zero or more
+  and never falls per element, as today. A value for one route is an exact attribution of
+  its row's fall in free energy between the routes that move it; it cannot be measured
+  apart, and the energy layer's legend says so wherever it shows routes and not elements.
+  Elsewhere (pumped rows, tableau-booked routes) today's booking and checks are unchanged.
