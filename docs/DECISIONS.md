@@ -5353,6 +5353,15 @@ every composition D150 and D152 admit.
   - Worlds above 7 species are outside D150's judged scope until a protocol covers them.
   - Above 16 needs another probe.
 
+**Amended 2026-11-15, the user:** "so we should increase that limit as we need!"
+- The cap is raised whenever a consumer needs more species. Each raise:
+  - is a D148 change;
+  - comes with a guard world at the new size;
+  - measures the memory and step cost.
+- D172's restructure makes every species sum one explicit order, on host and device, in the same
+  round that consolidates species identity. A raise then needs only that guard and the cost
+  measurement, not a new summation-order probe (the lead's implementation).
+
 ## D166: A scheduled bath composition in the composite (FR-10) is logged at priority 2
 
 2026-11-14. The user supplied the request (FR-10), the last of the block, at the requester's
@@ -5612,6 +5621,18 @@ main. Approved branch work continues.
   D169.
 - The fuel requirement is fixed. Its representation is open.
 - The reviewers' text is kept outside the public repository.
+
+**Amended 2026-11-15.** The user forwarded a second review, of 6f76b8d: "from adviser on the latest
+plan, get also your adviser on it and make changes as needed". With the advisor, five
+clarifications were adopted into the section:
+- The GPU guarantees are targets with an implementation audit pending, not open. Per-law dispatch
+  means build-time selection.
+- The status legend now separates D172's landing scope from later consumer milestones.
+- Evolution roles are kept apart from conservation relationships, and counters declare what they
+  count.
+- The passive test runs on a closed two-compartment system, with reservoir work counted in
+  held-bath worlds.
+- Two present-tense examples were corrected.
 
 ## Implementation choices and remaining work
 
