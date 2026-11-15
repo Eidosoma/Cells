@@ -67,8 +67,8 @@ to infer.
 ## 3. What models and operators declare (D142)
 
 The view is assembled from declarations, so a new operator brings its part of the view with it,
-as it brings its ledgers. Every addition is host-side and read only at write time; defaults keep
-every program, binding and checkpoint unchanged. D172 makes the one inner model modular in place;
+as it brings its ledgers. Every addition is host-side and read only at write time, so none
+changes a program, a binding or a checkpoint. D172 makes the one inner model modular in place;
 that changes where the inner model's declarations below live (with its modules), not what they
 say.
 
@@ -124,8 +124,8 @@ say.
   units resolve; the bytes repeat.
 - **A birth and a division:** S5's compact partition world (`tests/partition_fixtures.py`),
   through the windowed path. The parent's slot retires and the daughters' slots are born at the
-  division (lifetimes from `living_intervals`), and the default events name the parent and both
-  daughters. The test imports partition sources only, never a J1 source (the J2 bright line).
+  division (lifetimes from `living_intervals`), and the events from `living_intervals` name the
+  parent and both daughters. The test imports partition sources only, never a J1 source (the J2 bright line).
 - **The batch paths:** a batch of two worlds writes two views, each beside its world's
   definition.
 - **Unchanged:** every definition and fingerprint; crossrev identical in all seven sets of the
@@ -142,8 +142,7 @@ say.
   model ID, since a renamed field is a model change; units come from §3.
 - **Where this note departs from the draft:** `time` names several bases and each record names
   its own; `sets[].lifetimes` is new; padding slots are null in `ids`; a layer's representation
-  may be null (the draft allows it in the replay, and the engine uses it for operators' default
-  layers).
+  is never null (the draft allows null in the replay; the engine always states it, §3).
 
 ## 7. Options considered
 
@@ -171,8 +170,8 @@ say.
 4. **The `src/` work:** the declarations of §3, the writer and its four call sites. They are
    host-only and change no program, so crossrev stays identical. Version 1 would be one
    milestone after MG0c's `src/` hold, with tier 1 and tier 2. The inner model's declarations
-   could come with D172's restructure round, and the contract defaults, the writer and its call
-   sites before it.
+   could come with D172's restructure round, and the contract's `view_events`, the operators'
+   declarations, the writer and its call sites before it.
 5. **Operators' declarations** (§3): every registered operator's layer, and the event operators'
    `view_events`, are needed for the view to state every representation and every event's
    entities (D174). They touch files with other owners: in version 1, coordinated by the lead, or
