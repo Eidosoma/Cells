@@ -50,9 +50,12 @@ def point(value, length=3):
 class Reader:
     """Reads one folder of species files; collects warnings and remarks."""
 
-    def __init__(self, folder, capabilities):
+    def __init__(self, folder, capabilities, left_out=()):
         self.folder = Path(folder)
         self.capabilities = dict(capabilities)  # capability id -> the level it belongs to
+        # Capabilities the map leaves out of the picture for now: a species may still name a place
+        # for one (its file keeps it for the day it returns); the scene does not carry that place.
+        self.left_out = set(left_out)
         self.warnings = []
         self.remarks = []
         self.shapes = {}
@@ -371,6 +374,10 @@ class Reader:
         out["levels"] = levels
         if further:
             out["no_further_levels"] = further
+        waiting = sorted(key for key in capabilities if key in self.left_out)
+        if waiting:
+            self.remark(where, f"its place for {', '.join(waiting)} is not shown: left out of the picture for now")
+            capabilities = {key: entry for key, entry in capabilities.items() if key not in self.left_out}
         out["cell"] = {"facts": facts, "parts": parts, "capabilities": capabilities}
         out["sources"] = sources
         return out
@@ -393,8 +400,12 @@ class Reader:
         return found, shapes
 
 
-def read_species(folder, capabilities):
-    """(species, shapes, warnings, remarks) for the folder; all empty where it does not exist."""
-    reader = Reader(folder, capabilities)
+def read_species(folder, capabilities, left_out=()):
+    """(species, shapes, warnings, remarks) for the folder; all empty where it does not exist.
+
+    `left_out` names the capabilities the map leaves out of the picture for now: a species' place
+    for one is read and checked like any other, and left out of what is returned, with a remark.
+    """
+    reader = Reader(folder, capabilities, left_out)
     species, shapes = reader.run()
     return species, shapes, reader.warnings, reader.remarks

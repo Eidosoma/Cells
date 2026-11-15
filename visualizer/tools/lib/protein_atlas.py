@@ -62,6 +62,37 @@ def _fill(template, value):
     return {"text": template["text"].replace("{id}", str(value)), "url": template["url"].replace("{id}", str(value))}
 
 
+# ---------------------------------------------------------------- what is left out of the picture
+#
+# An overlay may flag a capability of the cell map, or a unit of the inventory, as left out of
+# the picture for now (`left_out`). The inventory and the engine keep it; the scene does not
+# draw it, link to it or count it, and names it once. Removing the flag brings it back.
+
+LEFT_OUT_NEEDS = ("since", "says", "reason")
+NUMBER_WORDS = ("No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten")
+
+
+def left_out_flag(where, flag):
+    """A `left_out` entry, checked: since when, how the page names the thing, and its short reason."""
+    sound = isinstance(flag, dict) and all(isinstance(flag.get(key), str) and flag[key].strip() for key in LEFT_OUT_NEEDS)
+    if not sound or not DAY.match(flag["since"]):
+        raise SystemExit(f"{where}: left_out needs 'since' (a date), 'says' (how the page names it) and 'reason' (a short one, for the page)")
+    return flag
+
+
+def left_out_sentence(total, flags, drawn=None):
+    """How the page says that units of the inventory are not drawn, in plain words; empty if all are."""
+    if not flags:
+        return ""
+    count = len(flags)
+    number = NUMBER_WORDS[count] if count < len(NUMBER_WORDS) else str(count)
+    names = [flag["says"] for flag in flags]
+    named = names[0] if count == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
+    reasons = "; ".join(dict.fromkeys(flag["reason"] for flag in flags))
+    said = f"The inventory has {total} units. {number} of them, {named}, {'is' if count == 1 else 'are'} left out of the picture for now: {reasons}."
+    return said if drawn is None else f"{said} The {drawn} others are shown and counted here."
+
+
 class Atlas:
     def __init__(self, build, snapshot, overlay, atlases=None, shelves=None):
         self.build = build
@@ -79,6 +110,8 @@ class Atlas:
         self.evidence = {item["id"]: item for item in overlay["evidence"]}
         self.sites = {item["id"]: item for item in overlay["sites"]}
         self.districts = {item["id"]: item for item in overlay["districts"]}
+        # Units the overlay flags as left out of the picture for now: unit id -> its flag.
+        self.left_out = {unit: left_out_flag(unit, extra["left_out"]) for unit, extra in overlay["units"].items() if extra.get("left_out")}
 
     # ------------------------------------------------------------ reading the checkout
 
@@ -377,7 +410,8 @@ class Atlas:
             else:
                 build.warnings.append(f"protein atlas: {law['file']} ({unit['id']}) belongs to no part of the engine map")
         target = extra.get("cell_view", kind.get("cell_view"))
-        if target:
+        # A part of the cell view that is left out of the picture is not pointed at.
+        if target and not build.is_left_out(target):
             if target not in build.entities:
                 raise SystemExit(f"{unit['id']}: the overlay points at {target}, which the scene does not have")
             build.link(identifier, target, "shown_as")
@@ -398,23 +432,47 @@ class Atlas:
         if unknown:
             self.build.warnings.append(f"protein atlas: the overlay names units the inventory does not have: {unknown}")
         by_mapping, by_district = Counter(), Counter()
-        for unit in snapshot["units"]:
+        district_of = lambda unit: overlay["units"][unit["id"]].get("district", overlay["kinds"][unit["kind"]]["district"])
+        # A unit flagged `left_out` is not drawn: the inventory keeps it, the scene names it once.
+        drawn = [unit for unit in snapshot["units"] if unit["id"] not in self.left_out]
+        hidden = [unit for unit in snapshot["units"] if unit["id"] in self.left_out]
+        for unit in drawn:
             mapping = self.unit(unit, laws_of.get(unit["id"], []), structures)
             by_mapping[mapping] += 1
-            by_district[overlay["units"][unit["id"]].get("district", overlay["kinds"][unit["kind"]]["district"])] += 1
+            by_district[district_of(unit)] += 1
+        for unit in hidden:
+            self.build.leave_out(f"unit.{unit['id']}", "unit", unit["name"], self.left_out[unit["id"]])
         if self.dropped_docs:
             self.build.warnings.append(
                 f"protein inventory: it cites documents that are not tracked any more: {sorted(self.dropped_docs)}"
             )
-        evidence_laws = Counter(law["evidence_kind"] for law in snapshot["laws"])
+        # The page counts what it draws: a record counts where a drawn unit has it.
+        drawn_ids = {unit["id"] for unit in drawn}
+        shown = [law for law in snapshot["laws"] if drawn_ids & {law["unit"], *law.get("also_in", [])}]
+        unseen = [law for law in snapshot["laws"] if not drawn_ids & {law["unit"], *law.get("also_in", [])}]
+        evidence_laws = Counter(law["evidence_kind"] for law in shown)
+        # A district, a site and a kind of evidence that only what is left out holds go with it.
+        site_of = lambda unit: overlay["units"][unit["id"]].get("site", overlay["kinds"][unit["kind"]]["site"])
+        emptied = {district_of(unit) for unit in hidden} - set(by_district)
+        unsited = {site_of(unit) for unit in hidden} - {site_of(unit) for unit in drawn}
+        unheld = {law["evidence_kind"] for law in unseen} - set(evidence_laws)
+        # The flag may say what goes with its unit (`empties`), for whoever reads it: held to what happened.
+        for unit in hidden:
+            said = self.left_out[unit["id"]].get("empties") or {}
+            for word, gone in (("district", emptied), ("site", unsited), ("evidence", unheld)):
+                if said.get(word) and said[word] not in gone:
+                    self.build.warnings.append(f"protein atlas: {unit['id']} is left out and says the {word} '{said[word]}' goes with it, but a unit that is drawn still has it")
+        outside = left_out_sentence(len(snapshot["units"]), [self.left_out[unit["id"]] for unit in hidden])
         described = snapshot["inventory"]
         species = {}
         if self.species:
             self.build.warnings.extend(self.species.warnings)
             words = self.overlay["species"]
+            reword = self.build.reword
             species = {
                 "atlases": self.species.summary(),
-                "findings": words["findings"],
+                # A finding's words, unless something left out of the picture gives them another wording.
+                "findings": [{**word, **{field: reword("species.findings", word["id"], field, word[field]) for field in ("description", "sentence") if field in word}} for word in words["findings"]],
                 "product_evidence": words["evidence"],
                 "no_entry": words["no_entry"],
                 "remarks": self.species.remarks,  # for the build's report; not written to the scene
@@ -427,7 +485,8 @@ class Atlas:
             own = {"shelves": summaries, "shelf_links": shelf_links(overlay["shelves"])}
         return {
             "title": overlay["title"],
-            "summary": overlay["summary"],
+            # Where a unit of the inventory is not drawn, the summary says so, once.
+            "summary": f"{overlay['summary']} {outside}".strip(),
             "caveat": overlay["caveat"],
             "stamp": {
                 "inventory": described["kind"],
@@ -439,8 +498,11 @@ class Atlas:
                 "gained": self.gained_since(described["read_at_revision"]),
             },
             "counts": {
-                "units": len(snapshot["units"]),
-                "laws": described["counts"]["laws"],
+                # `units` is what the page draws; `inventory_units` what the inventory has. The
+                # laws are the inventory's, less any law that only a unit left out has.
+                "units": len(drawn),
+                "inventory_units": len(snapshot["units"]),
+                "laws": described["counts"]["laws"] - sum(1 for law in unseen if law.get("record_type", "law") == "law"),
                 "records": described["counts"]["records"],
                 "genes": described["counts"]["candidate_genes"],
                 "structures": len(snapshot["structures"]),
@@ -452,9 +514,10 @@ class Atlas:
             "evidence": [
                 {"id": item["id"], "label": item["label"], "description": item["description"], "count": evidence_laws[item["id"]]}
                 for item in overlay["evidence"]
+                if item["id"] not in unheld
             ],
-            "sites": overlay["sites"],
-            "districts": [{**item, "count": by_district[item["id"]]} for item in overlay["districts"]],
+            "sites": [item for item in overlay["sites"] if item["id"] not in unsited],
+            "districts": [{**item, "count": by_district[item["id"]]} for item in overlay["districts"] if item["id"] not in emptied],
             "sources": snapshot["sources"],
             "not_copied": snapshot["not_copied"],
             **species,
@@ -739,6 +802,12 @@ class Species:
         self.findings = {item["id"]: item for item in self.words["findings"]}
         self.evidence = {item["id"]: item for item in self.words["evidence"]}
         self.unit_ids = [unit["id"] for unit in snapshot["units"]]
+        # A unit the overlay flags as left out of the picture: every species' file keeps its entry
+        # for it (the contract asks one for each unit of the inventory), and the page's counts leave it out.
+        flags = {unit: extra["left_out"] for unit, extra in overlay.get("units", {}).items() if extra.get("left_out")}
+        self.left_out = {unit for unit in self.unit_ids if unit in flags}
+        self.drawn_ids = [unit for unit in self.unit_ids if unit not in self.left_out]
+        self.left_out_line = left_out_sentence(len(self.unit_ids), [left_out_flag(unit, flags[unit]) for unit in self.unit_ids if unit in flags], drawn=len(self.drawn_ids))
         self.warnings = []
         self.remarks = []  # within the contract's letter, but worth a look
         self.atlases = []
@@ -988,40 +1057,48 @@ class Species:
         return said
 
     def summary(self):
-        """The scene's list of atlases: the reference first, then one for each species file."""
+        """The scene's list of atlases: the reference first, then one for each species file.
+
+        The counts are of the units the page draws. Where a unit of the inventory is left out of
+        the picture, each atlas says so at the end of how it was made.
+        """
         snapshot = self.snapshot
+        more = [self.left_out_line] if self.left_out_line else []
+        reference = self.words["reference"]
         listed = [
             {
-                **self.words["reference"],
+                **reference,
+                **({"method": [*reference.get("method", []), *more]} if more else {}),
                 "reference": True,
                 "made": snapshot["inventory"]["created"],
                 "sources": snapshot["sources"],
                 "not_copied": snapshot["not_copied"],
                 "counts": {
-                    "units": len(self.unit_ids),
-                    "with_products": sum(1 for unit in snapshot["units"] if unit.get("products")),
+                    "units": len(self.drawn_ids),
+                    "with_products": sum(1 for unit in snapshot["units"] if unit.get("products") and unit["id"] not in self.left_out),
                     "products": len(snapshot["products"]),
                 },
             }
         ]
         for atlas in self.atlases:
+            entries = [entry for unit, entry in atlas["units"].items() if unit not in self.left_out]
             # A product that serves several units is counted once.
             distinct = {}
-            for entry in atlas["units"].values():
+            for entry in entries:
                 for product in entry["products"]:
                     distinct.setdefault(tuple(product["ids"][0]) if product["ids"] else ("", product["label"]), product)
-            by_finding = Counter(entry["finding"] for entry in atlas["units"].values())
+            by_finding = Counter(entry["finding"] for entry in entries)
             by_evidence = Counter(product["evidence"] for product in distinct.values())
             listed.append(
                 {
                     **atlas["species"],
                     "made": atlas["made"],
-                    "method": atlas["method"],
+                    "method": [*atlas["method"], *more],
                     "sources": atlas["sources"],
                     "not_copied": atlas["not_copied"],
                     "counts": {
-                        "units": len(self.unit_ids),
-                        "with_products": sum(1 for entry in atlas["units"].values() if entry["products"]),
+                        "units": len(self.drawn_ids),
+                        "with_products": sum(1 for entry in entries if entry["products"]),
                         "products": len(distinct),
                         "candidates": sum(count for kind, count in by_evidence.items() if self.evidence[kind].get("candidate")),
                     },

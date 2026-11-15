@@ -93,6 +93,15 @@ says the engine models an organism unless the project's record says so.
   `note` where the place differs from an animal cell's. A capability has a place when the
   organism has the structure or the process it concerns. That says nothing about whether
   Cells has a model of this organism; `modelled` says that.
+- **A capability that the map keeps out of the picture.** The map's overlay may flag a
+  capability with `left_out` (`data/architecture/overlay.json`; the same flag as on a
+  unit of the protein atlas, `schema/SPECIES_ATLAS.md`): it is then no part of the scene,
+  and the cell does not draw its structure, even as scenery. A species file may still
+  name a place for it. That entry is read and held to this contract like any other, and
+  is not carried into the scene; the builder says so in a remark. The file is not
+  changed, so the place is there again when the flag is removed. The engine parts that
+  implement the capability stay on the Engine view, which maps the code; the flag's
+  `engine_note` is added to their text, so each says that it is not drawn elsewhere.
 - **`cell.parts`** says what the cell holds, from a fixed list the viewer can draw:
   how many membranes, a wall or none, a nucleus or none, the organelles of an animal
   cell, a chromosome and its length, a count of ribosomes. `SPECIES_SHAPES.md` gives the

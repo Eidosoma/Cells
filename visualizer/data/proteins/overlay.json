@@ -755,7 +755,26 @@
     },
     "U48": {
       "name": "mi3 engineered protein cage",
-      "short": "mi3 cage"
+      "short": "mi3 cage",
+      "left_out": {
+        "since": "2026-11-15",
+        "says": "an engineered protein cage",
+        "reason": "it is a designed protein, not a part of a cell",
+        "why": "The user, 15 November 2026: protein assemblies are one feature today and out of character with the rest of the picture, whose parts are all real or planned things of a cell; assembly may return later for a real machine, such as a proteasome. While this entry stands, the scene builder does not draw the unit: its district (Protein cage), its site (Cytoplasm) and its kind of evidence (Designed protein) hold nothing else and go with it, the counts on the page are of what is drawn, and the wording below stands in for the text that names a designed protein. The inventory still has the unit, and each species' atlas file keeps its entry for it. Remove this entry and all of that comes back as it was.",
+        "empties": {
+          "district": "assembly",
+          "site": "cytoplasm",
+          "evidence": "designed protein"
+        },
+        "rewords": [
+          {
+            "in": "species.findings",
+            "id": "nothing to look for",
+            "field": "description",
+            "to": "The inventory names no natural gene product for this unit: it is a lumped property, a default form of a current, or a slot that a configuration fills. Nothing was searched."
+          }
+        ]
+      }
     },
     "U49": {
       "name": "Membrane water permeability (lumped hydraulic conductance)",

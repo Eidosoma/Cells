@@ -185,6 +185,9 @@ export class CellLens {
     this.clock = 0;
     this.active = false;
     this.capabilityByPart = new Map(model.ofKind("capability").map((entity) => [entity.part, entity]));
+    // Parts of the cell that the scene leaves out of the picture for now (its `left_out`):
+    // they have no capability in the scene, and are not drawn as scenery either.
+    this.leftOut = new Set((model.raw?.left_out || []).map((item) => item.part).filter(Boolean));
     this.environment = makeEnvironment(stage.renderer);
     this.fill = new THREE.DirectionalLight(0xffffff, 0.7);
     this.fill.position.set(-70, 25, -40);
@@ -239,6 +242,17 @@ export class CellLens {
       else if (entity.scale !== "cell" && !this.levels[entity.scale]) this.absent.set(entity.id, further);
     }
     for (const { id, entity } of LEVELS) if (!this.levels[id]) this.absent.set(entity, further);
+  }
+
+  /**
+   * Whether a part of the cell is drawn for the species shown. A part that the scene leaves
+   * out of the picture for now is not, even as scenery; nor is one whose capability has no
+   * place in the species. A part with no capability at all is scenery, and is drawn.
+   */
+  draws(part) {
+    if (this.leftOut.has(part)) return false;
+    const entity = this.capabilityByPart.get(part);
+    return !entity || !this.absent.has(entity.id);
   }
 
   /** Takes down what was drawn for the species shown before. */
@@ -302,10 +316,7 @@ export class CellLens {
     const species = this.species, u = this.u;
     const notesOf = (level) => (level?.notes || []).map((item) => (typeof item === "string" ? { text: item } : item));
     // The cell, in each size mode it is drawn in. It is built in its own frame and scaled to its size.
-    const has = (part) => {
-      const entity = this.capabilityByPart.get(part);
-      return !entity || !this.absent.has(entity.id);
-    };
+    const has = (part) => this.draws(part);
     const cell = { shape: this.levels.cell.shape, parts: species.cell.parts || {}, has, neighbours: Boolean(this.levels.tissue), notes: notesOf(this.levels.cell) };
     const toWorld = (zones) => {
       for (const zone of zones) for (const part of zone.parts) part.anchor?.multiplyScalar(u);

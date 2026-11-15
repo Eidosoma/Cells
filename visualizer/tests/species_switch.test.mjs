@@ -13,7 +13,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
+import { copyFile, mkdir, mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { ROOT } from "../tools/lib/build_page.mjs";
@@ -28,6 +28,12 @@ const snapshot = JSON.parse(await readFile(SNAPSHOT, "utf8"));
 const overlay = JSON.parse(await readFile(OVERLAY, "utf8"));
 const contract = await readFile(path.join(ROOT, "schema", "SPECIES_ATLAS.md"), "utf8");
 const UNITS = snapshot.units.map((unit) => unit.id);
+// A unit the overlay flags as left out of the picture for now (`left_out`): every file keeps its
+// entry for it, and the page neither draws nor counts it. DRAWN are the others.
+const LEFT_OUT = UNITS.filter((id) => overlay.units[id]?.left_out);
+const DRAWN = UNITS.filter((id) => !overlay.units[id]?.left_out);
+/** The line every atlas adds to how it was made, where a unit is left out. */
+const LEFT_OUT_LINE = /^The inventory has \d+ units\. \w+ of them, .+, (?:is|are) left out of the picture for now: .+\. The \d+ others are shown and counted here\.$/;
 const FINDINGS = overlay.species.findings.map((word) => word.id);
 const EVIDENCE = overlay.species.evidence.map((word) => word.id);
 const MACHINE = /\/home\/|\/mnt\/|\/Users\/|\/tmp\//;
@@ -112,6 +118,37 @@ test.after(() => rm(folder, { recursive: true, force: true }));
 /** Why the build did not run, if it declined in so many words; null if it ran or crashed. */
 const declined = ({ code, said }) => (code !== 0 && !/Traceback/.test(said) ? said.trim().split("\n").at(-1) : null);
 
+// What the overlays flag as left out of the picture comes back when the flag is taken off. A
+// second build, with both overlays copied without their flags, runs beside the first.
+const MAP = path.join(ROOT, "data", "architecture", "overlay.json");
+const map = JSON.parse(await readFile(MAP, "utf8"));
+const LEFT_OUT_PARTS = map.capabilities.filter((capability) => capability.left_out);
+const aside = await mkdtemp(path.join(os.tmpdir(), "cells-leftout-"));
+test.after(() => rm(aside, { recursive: true, force: true }));
+const unflagged = { map: structuredClone(map), atlas: structuredClone(overlay) };
+for (const capability of unflagged.map.capabilities) delete capability.left_out;
+for (const unit of Object.values(unflagged.atlas.units)) delete unit.left_out;
+const UNFLAGGED_OVERLAY = path.join(aside, "proteins", "overlay.json");
+await mkdir(path.join(aside, "proteins"));
+await writeFile(UNFLAGGED_OVERLAY, JSON.stringify(unflagged.atlas));
+await copyFile(SNAPSHOT, path.join(aside, "proteins", "inventory.snapshot.json"));
+await writeFile(path.join(aside, "map.json"), JSON.stringify(unflagged.map));
+const builtUnflagged =
+  LEFT_OUT.length || LEFT_OUT_PARTS.length
+    ? new Promise((resolve) => {
+        const out = path.join(aside, "scene.out");
+        const child = spawn(
+          "python3",
+          [path.join(ROOT, "tools", "extract_architecture.py"), "--overlay", path.join(aside, "map.json"), "--proteins", path.join(aside, "proteins"), "--atlases", path.join(ROOT, "data", "proteins", "atlases"), "--out", out],
+          { stdio: ["ignore", "pipe", "pipe"] }
+        );
+        let said = "";
+        child.stdout.on("data", (chunk) => (said += chunk));
+        child.stderr.on("data", (chunk) => (said += chunk));
+        child.on("close", async (code) => resolve({ code, said, scene: code === 0 ? JSON.parse(await readFile(out, "utf8")) : null }));
+      })
+    : null;
+
 const sound = readOne(madeUp());
 const species = sound.atlases[1];
 /** The scene's protein block, as far as the view's words need it. */
@@ -138,13 +175,13 @@ test("a species file that holds to the contract raises nothing", () => {
 
 test("a species atlas counts its own units and products, a shared product once", () => {
   const counts = species.counts;
-  assert.equal(counts.units, UNITS.length);
-  assert.equal(counts.with_products, UNITS.length - 2, "all but the unit with nothing found and the lumped one");
+  assert.equal(counts.units, DRAWN.length, "the units the page draws");
+  assert.equal(counts.with_products, DRAWN.length - 2, "all but the unit with nothing found and the lumped one");
   assert.equal(counts.products, 4, "the product every found unit shares is one product");
   assert.equal(counts.candidates, 2, "the two found by signature or similarity");
-  assert.equal(species.findings.reduce((sum, item) => sum + item.count, 0), UNITS.length, "every unit has one finding");
+  assert.equal(species.findings.reduce((sum, item) => sum + item.count, 0), DRAWN.length, "every unit drawn has one finding");
   assert.deepEqual(species.findings.map((item) => item.id), FINDINGS);
-  assert.deepEqual(Object.fromEntries(species.findings.map((item) => [item.id, item.count])), { found: UNITS.length - 3, "different family": 1, "none found": 1, "nothing to look for": 1 });
+  assert.deepEqual(Object.fromEntries(species.findings.map((item) => [item.id, item.count])), { found: DRAWN.length - 3, "different family": 1, "none found": 1, "nothing to look for": 1 });
   assert.deepEqual(species.evidence.map((item) => item.count), [1, 1, 1, 1]);
   assert.equal(species.extra.length, 1);
   assert.equal(species.extra[0].note, "It bears on the picture but makes no unit.");
@@ -158,7 +195,7 @@ test("the human atlas is the inventory's own, and states no finding", () => {
   assert.equal(human.made, snapshot.inventory.created);
   assert.deepEqual(human.sources, snapshot.sources);
   assert.equal(human.counts.products, snapshot.inventory.counts.candidate_genes);
-  assert.equal(human.counts.units, snapshot.inventory.counts.functional_units);
+  assert.equal(human.counts.units, snapshot.inventory.counts.functional_units - LEFT_OUT.length, "the units the page draws");
   for (const unit of UNITS) assert.equal(sound.units[unit].human, undefined, "a unit's human candidates stay in its own sections");
 });
 
@@ -492,7 +529,10 @@ test("the species' card gives its own counts and sources, and claims nothing of 
   assert.equal(said.card.text, "A made-up animal, for the tests.");
   assert.deepEqual(said.card.sources, species.sources);
   assert.equal(said.card.notCopied, "Nothing was read.");
-  assert.deepEqual(said.card.method, ["Made up for the tests."]);
+  // How it was made: the file's own lines, and where a unit is left out of the picture, the line that says so.
+  assert.equal(said.card.method[0], "Made up for the tests.");
+  assert.equal(said.card.method.length, LEFT_OUT.length ? 2 : 1);
+  if (LEFT_OUT.length) assert.match(said.card.method[1], LEFT_OUT_LINE);
   assert.match(said.card.check, /units and their laws are the engine's, the same for every species/);
   assert.match(said.card.check, /not anything the engine models/);
   assert.match(said.card.check, /2 of the 4 products were found by signature or similarity: candidates, not established counterparts\./);
@@ -500,7 +540,7 @@ test("the species' card gives its own counts and sources, and claims nothing of 
   assert.match(said.stamp, /^Test worm atlas of 14 Nov 2026 · inventory of /);
   // The findings, as the legend lists them: a sign only where the species differs.
   assert.deepEqual(said.findings.items.map((item) => [item.id, item.count, item.swatch]), [
-    ["found", UNITS.length - 3, null],
+    ["found", DRAWN.length - 3, null],
     ["different family", 1, "find-band"],
     ["none found", 1, "find-dashes"],
     ["nothing to look for", 1, null],
@@ -521,11 +561,13 @@ test("the build puts every atlas in the scene and each species' side on every un
   assert.deepEqual(scene.meta.warnings.filter((warning) => warning.startsWith("species atlas")), []);
   assert.match(said, /species atlas testworm of 2026-11-14: products for \d+ of \d+ units, 4 gene products, 2 of them candidates/);
   assert.deepEqual(scene.proteins.atlases, sound.atlases, "the scene's atlases are the reader's");
-  assert.deepEqual(scene.proteins.findings, overlay.species.findings);
+  // The findings' words are the overlay's, but where something left out of the picture gives one another wording.
+  const reworded = new Map(LEFT_OUT.flatMap((id) => overlay.units[id].left_out.rewords || []).filter((change) => change.in === "species.findings").map((change) => [`${change.id}/${change.field}`, change.to]));
+  assert.deepEqual(scene.proteins.findings, overlay.species.findings.map((word) => Object.fromEntries(Object.entries(word).map(([field, text]) => [field, reworded.get(`${word.id}/${field}`) ?? text]))));
   assert.deepEqual(scene.proteins.product_evidence, overlay.species.evidence);
   assert.equal(scene.proteins.remarks, undefined, "remarks are for the build's report, not for the page");
   const units = scene.entities.filter((entity) => entity.kind === "unit");
-  assert.equal(units.length, UNITS.length);
+  assert.deepEqual(units.map((unit) => unit.id.replace("unit.", "")).sort(), [...DRAWN].sort(), "the units drawn are the inventory's, less what is left out");
   for (const unit of units) {
     const id = unit.id.replace("unit.", "");
     assert.deepEqual(unit.species, sound.units[id], `${unit.id}: each species' side`);
@@ -539,10 +581,12 @@ test("the build leaves the inventory's side of every unit as it was", async (t) 
   if (declined({ code, said })) return t.skip(`the build did not run: ${declined({ code, said })}`);
   assert.equal(code, 0, said);
   const stated = snapshot.inventory.counts;
+  const out = snapshot.units.filter((unit) => LEFT_OUT.includes(unit.id));
   for (const mapping of overlay.mappings) {
-    assert.equal(scene.proteins.mappings.find((item) => item.id === mapping.id).count, stated.functional_units_by_status[mapping.inventory]);
+    assert.equal(scene.proteins.mappings.find((item) => item.id === mapping.id).count, stated.functional_units_by_status[mapping.inventory] - out.filter((unit) => unit.status === mapping.inventory).length);
   }
-  assert.equal(scene.proteins.evidence.reduce((sum, item) => sum + item.count, 0), stated.records, "the evidence block still counts law records, not products");
+  const shown = snapshot.laws.filter((law) => [law.unit, ...(law.also_in || [])].some((unit) => DRAWN.includes(unit)));
+  assert.equal(scene.proteins.evidence.reduce((sum, item) => sum + item.count, 0), shown.length, "the evidence block still counts law records, not products");
   const lawEvidence = new Set(overlay.evidence.map((item) => item.id));
   for (const unit of scene.entities.filter((entity) => entity.kind === "unit")) {
     const listed = snapshot.units.find((item) => `unit.${item.id}` === unit.id);
@@ -557,6 +601,104 @@ test("the build leaves the inventory's side of every unit as it was", async (t) 
   }
 });
 
+// ---------------------------------------------------------------- left out of the picture, and back
+
+test("a unit left out of the picture keeps its entry in every file, and is not counted on the page", (t) => {
+  if (!LEFT_OUT.length) return t.skip("no unit is left out of the picture");
+  // The file must still have an entry for it: the contract asks one for each unit of the inventory.
+  const without = readOne(madeUp((data) => delete data.units[LEFT_OUT[0]]));
+  assert.match(without.warnings.join("\n"), new RegExp(`it has no entry for 1 of the inventory's ${UNITS.length} units: ${LEFT_OUT[0]}`));
+  // What the file says of it is read like any other entry, and stays out of the counts.
+  assert.equal(sound.units[LEFT_OUT[0]].testworm.finding, "found");
+  assert.equal(species.counts.units, UNITS.length - LEFT_OUT.length);
+  assert.match(species.method.at(-1), LEFT_OUT_LINE);
+  assert.match(sound.atlases[0].method.at(-1), LEFT_OUT_LINE, "the inventory's own atlas says it too");
+  assert.ok(species.method.at(-1).includes(overlay.units[LEFT_OUT[0]].left_out.says));
+});
+
+test("with its flag taken off, a unit is counted again and no atlas speaks of it", (t) => {
+  if (!LEFT_OUT.length) return t.skip("no unit is left out of the picture");
+  const back = read({ files: [["testworm", madeUp(), null]] }, UNFLAGGED_OVERLAY);
+  assert.deepEqual(back.warnings, []);
+  const [human, worm] = back.atlases;
+  assert.equal(worm.counts.units, UNITS.length);
+  assert.equal(worm.counts.with_products, UNITS.length - 2);
+  assert.equal(worm.findings.reduce((sum, item) => sum + item.count, 0), UNITS.length);
+  assert.deepEqual(worm.method, ["Made up for the tests."]);
+  assert.equal(human.counts.units, snapshot.inventory.counts.functional_units);
+  assert.deepEqual(human.method, overlay.species.reference.method);
+});
+
+test("the sentence that says what is left out reads right for one unit and for several, and a flag must say its part", async () => {
+  const SAY = `
+import json, sys
+sys.path.insert(0, sys.argv[1])
+from lib.protein_atlas import left_out_sentence, left_out_flag
+flags = json.loads(sys.argv[2])
+print(json.dumps([left_out_sentence(49, flags[:1]), left_out_sentence(49, flags, drawn=47), left_out_sentence(49, []), left_out_sentence(49, flags[:1], drawn=48)]))
+for flag in flags:
+    left_out_flag("a unit", flag)
+left_out_flag("a unit", json.loads(sys.argv[3]))
+`;
+  const flags = [
+    { since: "2026-11-15", says: "an engineered protein cage", reason: "it is a designed protein, not a part of a cell" },
+    { since: "2026-11-16", says: "a made-up pore", reason: "it is made up" },
+  ];
+  const say = (bad) => spawnSync("python3", ["-c", SAY, path.join(ROOT, "tools"), JSON.stringify(flags), JSON.stringify(bad)], { encoding: "utf8" });
+  // A flag that does not say how the page names the thing, or why, stops the build with its reason.
+  for (const bad of [{ since: "2026-11-15", reason: "none" }, { since: "soon", says: "a thing", reason: "none" }, { since: "2026-11-15", says: "a thing", reason: " " }, "yes"]) {
+    const run = say(bad);
+    assert.notEqual(run.status, 0, JSON.stringify(bad));
+    assert.match(run.stderr, /a unit: left_out needs 'since' \(a date\), 'says' \(how the page names it\) and 'reason'/);
+  }
+  const run = say(flags[0]);
+  assert.equal(run.status, 0, run.stderr);
+  const [one, two, none, counted] = JSON.parse(run.stdout);
+  assert.equal(one, "The inventory has 49 units. One of them, an engineered protein cage, is left out of the picture for now: it is a designed protein, not a part of a cell.");
+  assert.equal(two, "The inventory has 49 units. Two of them, an engineered protein cage and a made-up pore, are left out of the picture for now: it is a designed protein, not a part of a cell; it is made up. The 47 others are shown and counted here.");
+  assert.equal(none, "");
+  assert.ok(counted.endsWith("The 48 others are shown and counted here."));
+});
+
+test("with the flags taken off, the build brings back what was left out, as it was", async (t) => {
+  if (!builtUnflagged) return t.skip("nothing is left out of the picture");
+  const { code, said, scene } = await builtUnflagged;
+  if (declined({ code, said })) return t.skip(`the build did not run: ${declined({ code, said })}`);
+  assert.equal(code, 0, said);
+  assert.deepEqual(validate(scene), []);
+  assert.deepEqual(scene.left_out, []);
+  assert.ok(!/left out of the picture/.test(said + JSON.stringify(scene)), "nothing is left out, and nothing says so");
+  const parts = new Map(scene.entities.map((entity) => [entity.id, entity]));
+  // The units: all of the inventory's, each district, site and kind of evidence, and the atlas's own summary.
+  assert.deepEqual([...parts.values()].filter((entity) => entity.kind === "unit").map((unit) => unit.id.replace("unit.", "")).sort(), [...UNITS].sort());
+  assert.equal(scene.proteins.counts.units, UNITS.length);
+  assert.equal(scene.proteins.summary, overlay.summary);
+  assert.deepEqual(scene.proteins.findings, overlay.species.findings);
+  assert.deepEqual(scene.proteins.districts.map((item) => item.id), overlay.districts.map((item) => item.id));
+  assert.deepEqual(scene.proteins.sites, overlay.sites);
+  assert.deepEqual(scene.proteins.evidence.map((item) => item.id), overlay.evidence.map((item) => item.id));
+  assert.equal(scene.proteins.evidence.reduce((sum, item) => sum + item.count, 0), snapshot.inventory.counts.records);
+  // The capabilities: each is a part again, linked to what implements it, and that part's text is its own.
+  for (const capability of LEFT_OUT_PARTS) {
+    assert.equal(parts.get(capability.id)?.part, capability.part, `${capability.id} is a part of the cell again`);
+    for (const target of capability.implemented_by || []) {
+      assert.ok(scene.relations.some((relation) => relation.from === capability.id && relation.to === target && relation.kind === "implements"), `${capability.id} -> ${target}`);
+      assert.equal(parts.get(target).plain, map.components.find((item) => item.id === target).plain);
+    }
+    // Each text a wording stood in for is the overlay's own again.
+    for (const change of capability.left_out.rewords || []) {
+      if (change.in === "scales") assert.equal(parts.get(change.id)[change.field], map.scales.find((item) => item.id === change.id)[change.field], `${change.id}.${change.field}`);
+      if (change.in === "model_groups") assert.equal(scene.model_groups.find((item) => item.id === change.id)[change.field], map.model_groups.find((item) => item.id === change.id)[change.field]);
+    }
+  }
+  for (const unit of LEFT_OUT) assert.ok(scene.relations.some((relation) => relation.from === `unit.${unit}` && relation.kind === "modelled_by"), `unit.${unit} is linked to its law again`);
+  // A species' place for the capability is in the scene again, as its file has it.
+  for (const item of scene.species || []) {
+    const file = JSON.parse(await readFile(path.join(ROOT, "data", "species", `${item.id}.json`), "utf8"));
+    assert.deepEqual(Object.keys(item.cell.capabilities).sort(), Object.keys(file.cell.capabilities || {}).sort(), `${item.id}: its places`);
+  }
+});
+
 // ---------------------------------------------------------------- the repository's own species files
 
 test("every species file of the repository holds to the contract", (t) => {
@@ -567,6 +709,7 @@ test("every species file of the repository holds to the contract", (t) => {
   assert.deepEqual(warnings, []);
   assert.ok(atlases.length > 1, "the folder holds no species file");
   for (const atlas of atlases.slice(1)) {
-    assert.equal(atlas.findings.reduce((sum, item) => sum + item.count, 0), UNITS.length, `${atlas.id}: one finding for every unit`);
+    assert.equal(atlas.findings.reduce((sum, item) => sum + item.count, 0), DRAWN.length, `${atlas.id}: one finding for every unit drawn`);
+    assert.equal(atlas.counts.units, DRAWN.length);
   }
 });
