@@ -11,6 +11,7 @@
 
 import copy
 
+import numpy as np
 import pytest
 
 from cells.core import kind_registry
@@ -38,6 +39,13 @@ def planted(name, key):
         parse=parse,
         to_dict=lambda declaration: dict(declaration),
         structure_entry=lambda declaration: (),
+        control_values=lambda spec, declaration, times: {
+            f"{name}_availability": np.ones(len(times))
+        },
+        initial=lambda spec, declaration, layout: (
+            {f"{name}_moved_fmol": np.zeros(len(spec.model.cells))},
+            {f"{name}_rate_fmol_s": np.asarray([dict(declaration)["rate"]])},
+        ),
     )
 
 
@@ -74,6 +82,7 @@ def test_a_registered_but_undeclared_kind_changes_nothing():
         built = surface_pump_v3.model_for(again.model)
         assert again == spec and again.to_dict() == spec.to_dict()
         assert built.structure_key == impl.structure_key
+        assert built is impl  # The same object: the same bound functions, so the compile key.
         for name in TYPE_NAMES:
             assert getattr(built, name) is getattr(surface_pump_v3, name), name
 

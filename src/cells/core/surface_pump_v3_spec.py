@@ -273,11 +273,12 @@ def parse(data):
         channel_capacity=_integer(capacity, "channel_capacity", minimum=len(parsed)),
     )
     spec = replace(base, model=model, experiment=experiment, execution=execution)
-    from cells.models.surface_pump_v3 import check_definition
+    from cells.models.surface_pump_v3 import check_definition, structure
 
     registry.check_definition(spec)  # Ahead of @3's own checks, so its refusals come first.
     try:
-        check_definition(spec)
+        # A definition that declares kinds is checked by its structure's own functions (§7.4 (k)).
+        check_definition(spec, structure=structure(spec.model) if spec.model.kinds else None)
     except (ArithmeticError, ValueError) as error:
         raise ConfigError("Invalid resolved pump @3 definition: " + str(error)) from error
     return spec
@@ -291,4 +292,17 @@ def control_values(spec, times):
     values = np.asarray([c.channel for c in changes], dtype=np.float64)
     padded = np.zeros((len(times), spec.execution.channel_capacity))
     padded[:, : values.shape[-1]] = values[indices]
-    return base._replace(channel=padded)
+    result = base._replace(channel=padded)
+    if not spec.model.kinds:
+        return result
+    # §7.4 (k): the declared kinds' controls follow today's, in the structure's Control type
+    # (availabilities, rule (d); constant over the run in version 1, so they add no change time).
+    from cells.models import surface_pump_v3 as inner
+
+    control = inner.kind_types(inner.structure(spec.model)).Control
+    registry, extra = kind_registry.active(), {}
+    for kind_id, declaration in spec.model.kinds:
+        kind = registry.lookup(kind_id)
+        if kind.control_fields:
+            extra |= kind.control_values(spec, declaration, times)
+    return control(*result, *(extra[name] for name in control._fields[len(result) :]))
