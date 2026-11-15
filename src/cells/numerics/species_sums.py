@@ -33,11 +33,17 @@ def _barrier(values, xp):
     return jax.lax.optimization_barrier(values)
 
 
-def species_sum(values, *, xp):
-    """The serial left fold of values [S, ...] over its leading species axis, S >= 1."""
+def species_sum(values, *, xp, barrier=True):
+    """The serial left fold of values [S, ...] over its leading species axis, S >= 1.
+
+    barrier: put the device barrier on the input (the default). A7's sweep may pass False at
+    exact-product and materialised sites if the GPU reading rules the barrier for inexact sites
+    only (the operators stream's review, 15 November); the fold itself never changes.
+    """
     if values.shape[0] < 1:
         raise ValueError("species_sum requires at least one species")
-    values = _barrier(values, xp)
+    if barrier:
+        values = _barrier(values, xp)
     total = values[0]
     for s in range(1, values.shape[0]):
         total = total + values[s]

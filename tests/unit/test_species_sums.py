@@ -1,8 +1,12 @@
-"""The species-sum helper (cells/numerics/species_sums.py; operators/summation/SPEC.md §2).
+"""The species-sum helper (cells/numerics/species_sums.py; operators/summation/SPEC.md §2, §5).
 
-Host equals device, bitwise, at the spec's 8-species inexact cases: products of fluxes with
-valences z = ±3, and mu x dn, formed by the caller inside the compiled function. The fold's order
-is declared; a reduce is not used; entity_sum is xp.sum.
+SPEC §5's guard, with micro.py's M2 as the template: NumPy against the jit-compiled helper,
+bitwise, at 8, 16, 50 and 150 species and 1, 254 and 1151 columns. The cases are materialized
+terms, z x n formed inside the compiled function (|z| in {1, 2}, and z = ±3), and mu x dn formed
+inside.
+
+The guard is not vacuous: without the barrier, at least one 8-species inexact case differs
+between host and device, as test_species_cap asserts `differs > 0`.
 """
 
 import jax
@@ -12,28 +16,47 @@ import pytest
 
 from cells.numerics.species_sums import entity_sum, species_sum
 
-SPECIES = 8
+SEED = 20261115  # micro.py's.
+COUNTS = (8, 16, 50, 150)
+COLUMNS = (1, 254, 1151)
 
 
-def cases(shape):
-    rng = np.random.default_rng(20261115)
-    z = np.array([3.0, -3.0, 1.0, -1.0, 2.0, -2.0, 3.0, -3.0])[:SPECIES]
-    flux = rng.normal(scale=1e-3, size=(SPECIES, *shape)) * np.exp(rng.normal(size=(SPECIES, *shape)))
-    mu = 2.577 * np.log(rng.uniform(1e-6, 150.0, size=(SPECIES, *shape)))
-    dn = rng.normal(scale=1e-9, size=(SPECIES, *shape))
-    return z, flux, mu, dn
+def terms(s, columns, rng):
+    z_exact = np.array([(1, -1, 2, -2)[k % 4] for k in range(s)], dtype=np.float64)[:, None]
+    z_three = np.array([(3, -1, -3, 1)[k % 4] for k in range(s)], dtype=np.float64)[:, None]
+    n = rng.standard_normal((s, columns)) * 10.0 ** rng.uniform(-3, 0, size=(s, columns))
+    mu = 1e3 * rng.uniform(-60, 60, size=(s, columns))
+    return z_exact, z_three, n, mu
 
 
-@pytest.mark.parametrize("shape", [(7,), (13, 5), (64,)])
-def test_host_equals_device_bitwise_at_eight_species(shape):
-    z, flux, mu, dn = cases(shape)
-    zf = z.reshape((SPECIES,) + (1,) * len(shape))
-    host_charge = species_sum(zf * flux, xp=np)
-    host_energy = species_sum(mu * dn, xp=np)
-    device_charge = jax.jit(lambda a, b: species_sum(a * b, xp=jnp))(zf, flux)
-    device_energy = jax.jit(lambda a, b: species_sum(a * b, xp=jnp))(mu, dn)
-    assert np.asarray(device_charge).tobytes() == host_charge.tobytes()
-    assert np.asarray(device_energy).tobytes() == host_energy.tobytes()
+def same(host, device):
+    device = np.asarray(device)
+    return host.shape == device.shape and host.tobytes() == device.tobytes()
+
+
+@pytest.mark.parametrize("s", COUNTS)
+def test_host_equals_device_bitwise(s):
+    rng = np.random.default_rng(SEED + s)
+    fused = jax.jit(lambda a, b: species_sum(a * b, xp=jnp))
+    for columns in COLUMNS:
+        z_exact, z_three, n, mu = terms(s, columns, rng)
+        materialized = mu * n
+        assert same(species_sum(materialized, xp=np), jax.jit(lambda a: species_sum(a, xp=jnp))(materialized))
+        assert same(species_sum(z_exact * n, xp=np), fused(z_exact, n)), (s, columns, "z exact")
+        assert same(species_sum(z_three * n, xp=np), fused(z_three, n)), (s, columns, "z = ±3")
+        assert same(species_sum(mu * n, xp=np), fused(mu, n)), (s, columns, "mu x dn")
+
+
+def test_without_the_barrier_an_eight_species_inexact_case_differs():
+    """Non-vacuous: the fold without its barrier differs on the device in at least one case."""
+    rng = np.random.default_rng(SEED + 8)
+    bare = jax.jit(lambda a, b: species_sum(a * b, xp=jnp, barrier=False))
+    differs = 0
+    for columns in COLUMNS:
+        _, z_three, n, mu = terms(8, columns, rng)
+        differs += int(not same(species_sum(z_three * n, xp=np), bare(z_three, n)))
+        differs += int(not same(species_sum(mu * n, xp=np), bare(mu, n)))
+    assert differs > 0, "the fold without the barrier never differed: the guard reaches nothing"
 
 
 def test_the_fold_is_serial_in_declared_order():
