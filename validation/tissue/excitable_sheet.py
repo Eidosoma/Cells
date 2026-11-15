@@ -1,37 +1,46 @@
-"""Track E M1's first development runs on the 127-cell sheet (D170), and their report.
+"""Track E M1's development runs on the 127-cell sheet (D170), and their report.
 
 The held-bath hexagon (validation/stationary/worlds.hexagon(6): 127 cells, 342 junctions) of the
 generic cell (candidate A, or B as given) on resolved_pump_tissue@3, built by excitable_probe's
 definition: gates pinned open, trapezoid_nonnegative@1, D147's declared field solver. It is a
-black-box driver: the engine's own Vm and Vj at every accepted step, its host checks, and any
-refusal with the probe's attribution. The criteria are in the M1 evidence folder's PLAN.md,
-written before the runs.
+black-box driver: the engine's own readouts at every accepted step (Vm, Vj, each membrane's net
+ionic current and dVm/dt), its host checks, and any refusal with the probe's attribution. The
+criteria are in the M1 evidence folder's PLAN.md, written before the runs.
 
 `run` cases:
 - controls under three stimuli: planar (the q = -6 column, 7 cells), corner (corner (-6, 6) and
-  its three neighbours) and two-sided (the q = -6 and q = 6 columns);
+  its three neighbours) and two-sided (the q = -6 and q = 6 columns). Each control climbs its
+  stimulus ladder (width:strength rungs) until the front is launched (below);
 - a compact disc (ring <= 2 about the centre, 19 cells) or a scattered set (19 cells drawn with
   numpy's default_rng(seed) from the cells outside the planar stimulus), under the planar
-  stimulus, in a combined (r_Na = r_gj = r), coupling-only (r_gj = r), sodium-only (r_Na = r) or
-  sodium-free (r_Na = 0, r_gj = r) arm. r_gj holds every junction incident to a perturbed cell,
-  so s * r_gj is each such junction's coupling relative to s = 1. The sodium-free arm is each
-  r_gj's passive twin.
+  control's launching rung, in a combined (r_Na = r_gj = r), coupling-only (r_gj = r),
+  sodium-only (r_Na = r) or sodium-free (r_Na = 0, r_gj = r) arm. r_gj holds every junction
+  incident to a perturbed cell, so s * r_gj is each such junction's coupling relative to s = 1.
 
-Measures per case (host, numpy): each cell's first -30 mV crossing after the stimulus onset,
-peak and its time, and end voltage; each junction's largest |Vj| over the run, by class (cluster
-boundary, internal, outside); the gap between the engine's |Vj| and |Vm_a - Vm_b| per edge.
+Measures per case (host, numpy):
+- each cell's first -30 mV crossing after the stimulus onset, peak and its time, end voltage;
+- each cell's own upstroke: its largest dVm/dt (after the stimulus end for a stimulated cell)
+  and, over its rise from -50 mV to its peak, the inward part of its net ionic membrane current
+  integrated (inward charge) and its most inward value. The source fraction is the inward
+  charge over C (V_peak - V_rest): 0 for a passive cell, which is a pure sink;
+- each junction's largest |Vj| over the run, by class (cluster boundary, internal, outside);
+- the front: the mean activation per graph-distance ring from the stimulated cells. It is
+  launched when every cell crosses -30 mV, every stimulated cell crosses within its stimulus,
+  the ring means rise strictly with distance, and every ring at distance >= 2 activates after
+  the stimulus ends (the front outruns the stimulus).
 
-`report` reads saved records only (no engine) and evaluates the PLAN's criteria. A perturbed cell
-counts as activated when its peak is above 0 mV and at least 10 mV above its sodium-free twin's
-(same cells, same r_gj); an unperturbed cell when it crosses -30 mV. `select` prints PLAN's
-refinement picks from a main record.
+`report` reads saved records only (no engine). `select` prints the refinement picks from a main
+record. `selfcheck` runs the new series' fail-fast checks (one cell: C dVm/dt = -I_m; the sheet
+during its stimulus: the most inward currents are the stimulated cells; a sodium-free twin: no
+inward charge in its perturbed cells).
 Usage:
   python -B -P excitable_sheet.py run --output DIR --name NAME --nav .. --kir .. --cm .. --kv ..
-      --s 1000 --dt 2.5e-6 [--controls planar corner two-sided] [--cluster disc]
-      [--combined R ..] [--coupling-only R ..] [--sodium-only R ..] [--sodium-free R ..]
-      [--stim-from RECORD]
+      --s 1000 --dt 2.5e-6 [--controls planar corner two-sided] [--ladder W:P ..]
+      [--cluster disc] [--combined R ..] [--coupling-only R ..] [--sodium-only R ..]
+      [--sodium-free R ..] [--stim-from RECORD]
   python -B -P excitable_sheet.py report --records DIR --output FILE
   python -B -P excitable_sheet.py select --output - (--sheet RECORD | --chain SEGMENT_JSON)
+  python -B -P excitable_sheet.py selfcheck --output DIR --s 1000 --dt 2.5e-6 [point]
 """
 
 import argparse
@@ -39,16 +48,24 @@ import json
 import sys
 import time
 import traceback
+from collections import deque
 from pathlib import Path
 
-import numpy as np
+import jax
 
-from cells.core.specs import parse_spec
-from cells.core.state import initialise
-from cells.core.surface_pump_v3_spec import control_values as v3_controls
-from cells.models import surface_pump_v3 as v3
-from validation.stationary import worlds
-from validation.tissue import excitable_probe as probe
+jax.config.update("jax_enable_x64", True)
+
+import jax.numpy as jnp  # noqa: E402
+import numpy as np  # noqa: E402
+
+from cells.core.errors import NumericalError  # noqa: E402
+from cells.core.specs import ConfigError, parse_spec  # noqa: E402
+from cells.core.state import initialise  # noqa: E402
+from cells.core.surface_pump_v3_spec import control_values as v3_controls  # noqa: E402
+from cells.core.windows import WindowPolicy, iter_windows  # noqa: E402
+from cells.models import surface_pump_v3 as v3  # noqa: E402
+from validation.stationary import worlds  # noqa: E402
+from validation.tissue import excitable_probe as probe  # noqa: E402
 
 RADIUS = 6
 CLUSTER_SIZE = 19
@@ -56,24 +73,29 @@ FLOOR = 20.0  # D170 ruling 3: the provisional floor s * r_gj >= 20.
 JUNCTION_LIMIT_V = 0.120
 CHANNEL_TOP_V = 0.060
 ACTIVATION_V = -0.030
+RISE_START_V = -0.050
 TWIN_MARGIN_V = 0.010
-STIM_ON_S, STIM_WIDTH_S = 2e-3, 1e-3
+STIM_ON_S = 2e-3
 QUIET_S, MIN_AFTER_STIM_S = 0.010, 0.012
-FLAG_JUNCTION_MARGIN_V, FLAG_CHANNEL_MARGIN_V = 0.005, 0.002
+FLAG_JUNCTION_MARGIN_V, FLAG_CHANNEL_MARGIN_V = 0.005, 0.003
 REFINE_TOLERANCES = dict(vj_V=5e-4, vm_V=5e-4, total_activation_relative=0.02)
 ARMS = ("combined", "coupling_only", "sodium_only", "sodium_free")
+SERIES_CHUNK = 128
+DEFAULT_LADDER = ("1e-3:2e-7", "1e-3:4e-7", "1e-3:8e-7")
 
 SHEET_PLAN = dict(
     status="M1 development runs (D170): criteria fixed in PLAN.md before any run; not judged",
     world="127-cell held-bath hexagon, gates pinned open, trapezoid_nonnegative@1",
     floor="s * r_gj >= 20 at every perturbed junction (provisional, D170 ruling 3)",
-    activation="unperturbed: first -30 mV crossing; perturbed: peak > 0 mV and >= 10 mV above "
-    "the sodium-free twin's peak",
+    activation="recorded as continuous values: each cell's max dVm/dt and its source fraction "
+    "(inward ionic charge over its rise / C (V_peak - V_rest)); the earlier twin rule (peak > 0 mV "
+    "and >= 10 mV above the sodium-free twin's) is kept for comparison",
+    capture="launched front: all cross -30 mV; stimulated cells within the stimulus; ring means "
+    "rise strictly with graph distance; every ring at distance >= 2 after the stimulus ends",
     J="J1: no domain-classified refusal; J2: largest |Vj| by junction class against 120 mV",
-    T="block bracket per arm (largest r that blocks, smallest r that does not), refused cases "
-    "excluded; T2: a disc case blocks at s * r_gj >= 20",
+    T="block bracket per arm, refused cases excluded; T2: a disc case blocks at s * r_gj >= 20",
     P="largest peak per lightly loaded class (corner, rim, before block, collision, end) "
-    "against +60 mV",
+    "against +60 mV; a margin under 3 mV is flagged",
     R="half-step repeats: same non-activated cells, |Vj| and Vm maxima within 0.5 mV, total "
     "activation time within 2 %",
 )
@@ -109,6 +131,23 @@ def neighbours(n, edges):
     return nbrs
 
 
+def distances(n, edges, sources):
+    """Graph distance of every cell from the source set (breadth first)."""
+    nbrs = neighbours(n, edges)
+    dist = [None] * n
+    queue = deque()
+    for s in sources:
+        dist[s] = 0
+        queue.append(s)
+    while queue:
+        i = queue.popleft()
+        for j, _ in nbrs[i]:
+            if dist[j] is None:
+                dist[j] = dist[i] + 1
+                queue.append(j)
+    return dist
+
+
 def stimulus_cells(geo, kind):
     q = [c[0] for c in geo["cells"]]
     n = len(q)
@@ -141,11 +180,189 @@ def arm_values(arm, r):
     )[arm]
 
 
+def parse_ladder(words):
+    """'width_s:m_s' rungs, in order."""
+    out = []
+    for w in words:
+        width, m_s = w.split(":")
+        out.append((float(width), float(m_s)))
+    return out
+
+
+# ----------------------------------------------------------------------------- execution
+
+
+@jax.jit
+def _series(states, controls, layout):
+    """The engine's Vm, Vj, net ionic membrane current (outward +) and dVm/dt per row."""
+
+    def one(state, control):
+        w = v3.readouts(state, control, layout)
+        f = w.field
+        r = f.rates
+        return (
+            r.membrane_voltage_V,
+            r.junction_voltage_V,
+            r.membrane_current_A,
+            f.membrane_voltage_rate_V_s,
+            w.valid,
+        )
+
+    return jax.vmap(one)(states, controls)
+
+
+def window_series(spec, window, skip_first):
+    times = np.asarray(window.times)
+    history = window.history
+    controls = v3_controls(spec, times)
+    rows = len(times)
+    parts = [[] for _ in range(5)]
+    for start in range(0, rows, SERIES_CHUNK):
+        index = np.minimum(np.arange(start, start + SERIES_CHUNK), rows - 1)
+        states = type(history)(*(jnp.asarray(np.asarray(v)[index]) for v in history))
+        control = type(controls)(*(jnp.asarray(np.asarray(v)[index]) for v in controls))
+        out = _series(states, control, window.final.layout)
+        keep = min(SERIES_CHUNK, rows - start)
+        for k in range(5):
+            parts[k].append(np.asarray(out[k])[:keep])
+    first = 1 if skip_first else 0
+    vm, vj, im, dv = (np.concatenate(parts[k])[first:] for k in range(4))
+    return times[first:], vm, vj, im, dv, bool(np.all(np.concatenate(parts[4])))
+
+
+def execute_sheet(raw, *, window_steps=1024, stop=None):
+    """iter_windows with the readouts series at every accepted step (numpy, not lists).
+
+    The keys probe.record reads are kept: steps, wall_seconds, timings, diagnostics, refusal,
+    readouts_valid, observer_max_abs_dV, stopped_early_at_s and last.
+    """
+    out = dict(
+        diagnostics={},
+        timings={},
+        steps=0,
+        refusal=None,
+        observer_max_abs_dV=0.0,
+        readouts_valid=True,
+    )
+    chunks = dict(times=[], vm=[], vj=[], im=[], dvdt=[])
+    last, started, series_seconds = None, time.perf_counter(), 0.0
+    try:
+        spec = parse_spec(raw)
+        for window in iter_windows(spec, WindowPolicy(window_steps, "observations")):
+            before = time.perf_counter()
+            t, vm, vj, im, dv, ok = window_series(spec, window, skip_first=bool(chunks["times"]))
+            series_seconds += time.perf_counter() - before
+            for k, v in (("times", t), ("vm", vm), ("vj", vj), ("im", im), ("dvdt", dv)):
+                chunks[k].append(v)
+            out["readouts_valid"] &= ok
+            obs = window.observations
+            for row, when in enumerate(np.asarray(obs.times)):
+                k = np.flatnonzero(t == when)
+                if len(k):
+                    diff = np.max(np.abs(np.asarray(obs.membrane_voltage_V)[row] - vm[k[0]]))
+                    out["observer_max_abs_dV"] = max(out["observer_max_abs_dV"], float(diff))
+            for k, v in window.diagnostics.items():
+                out["diagnostics"][k] = max(out["diagnostics"].get(k, 0.0), float(v))
+            for k, v in window.timings.items():
+                out["timings"][k] = out["timings"].get(k, 0.0) + float(v)
+            out["steps"] = int(window.final.step_index)
+            last = window.final
+            if stop is not None:
+                view = dict(times=np.concatenate(chunks["times"]), vm=np.concatenate(chunks["vm"]))
+                if stop(view):
+                    out["stopped_early_at_s"] = float(window.final.time)
+                    break
+    except (NumericalError, ConfigError) as error:
+        out["refusal"] = dict(
+            kind=type(error).__name__,
+            message=str(error),
+            last_accepted_window_end_s=None if last is None else float(last.time),
+        )
+        if last is None and isinstance(error, NumericalError):
+            try:  # A refusal inside the first window: attribute from the initial state.
+                last = initialise(parse_spec(raw))
+            except (NumericalError, ConfigError):
+                last = None
+    for k, v in chunks.items():
+        out[k] = np.concatenate(v) if v else np.zeros((0,))
+    out["timings"]["probe_voltage_seconds"] = series_seconds
+    out["wall_seconds"] = time.perf_counter() - started
+    out["last"] = last
+    return out
+
+
 # ----------------------------------------------------------------------------- measures
 
 
-def sheet_measures(t, vm, vj, geo, *, stim, on_s, stim_end_s):
-    """Per-cell activation, peaks and end voltages; per-junction maxima (host, numpy)."""
+def upstroke(t, vm, im, dv, *, stim, on_s, off_s, capacitance):
+    """Per cell: max dVm/dt; over the rise from -50 mV to the peak, the inward ionic charge,
+    the most inward current, the depolarising charge C (V_peak - V_rest) and their ratio."""
+    n = vm.shape[1]
+    k_on, k_off = int(np.searchsorted(t, on_s)), int(np.searchsorted(t, off_s))
+    dts = np.diff(t, prepend=t[0])
+    stim = set(stim)
+    out = dict(
+        max_dvdt_V_s=[],
+        inward_charge_C=[],
+        peak_inward_A=[],
+        rise_charge_C=[],
+        source_fraction=[],
+        rise_start_s=[],
+    )
+    for i in range(n):
+        s0 = k_off if i in stim else k_on
+        if s0 >= len(t):
+            for key in out:
+                out[key].append(None)
+            continue
+        out["max_dvdt_V_s"].append(float(dv[s0:, i].max()))
+        k_peak = s0 + int(np.argmax(vm[s0:, i]))
+        above = np.flatnonzero(vm[s0 : k_peak + 1, i] >= RISE_START_V)
+        v_rest = float(vm[min(k_on, len(t) - 1), i])
+        rise = float(capacitance[i] * (vm[k_peak, i] - v_rest))
+        if above.size == 0:
+            q_in, peak_in, start = 0.0, 0.0, None
+        else:
+            k0 = s0 + int(above[0])
+            seg = im[k0 : k_peak + 1, i]
+            q_in = float(np.sum(np.maximum(-seg, 0.0) * dts[k0 : k_peak + 1]))
+            peak_in = float(max(-seg.min(), 0.0))
+            start = float(t[k0])
+        out["inward_charge_C"].append(q_in)
+        out["peak_inward_A"].append(peak_in)
+        out["rise_charge_C"].append(rise)
+        out["source_fraction"].append(q_in / rise if rise > 0 else 0.0)
+        out["rise_start_s"].append(start)
+    return out
+
+
+def front(activation, stim, edges, *, on_s, off_s):
+    """The launched-front rule from the activation times (see the module docstring)."""
+    n = len(activation)
+    dist = distances(n, edges, stim)
+    top = max(d for d in dist if d is not None)
+    means = []
+    for d in range(top + 1):
+        ts = [activation[i] for i in range(n) if dist[i] == d and activation[i] is not None]
+        means.append(float(np.mean(ts)) if ts else None)
+    all_cross = all(x is not None for x in activation)
+    within = all(activation[i] is not None and on_s <= activation[i] <= off_s for i in stim)
+    rising = all(
+        x is not None and y is not None and y > x for x, y in zip(means, means[1:], strict=False)
+    )
+    outruns = all(m is not None and m > off_s for m in means[2:])
+    return dict(
+        ring_mean_activation_s=means,
+        all_cross=all_cross,
+        stimulated_within_stimulus=within,
+        rings_rise=rising,
+        outruns_stimulus=outruns,
+        launched=bool(all_cross and within and rising and outruns),
+    )
+
+
+def sheet_measures(t, vm, vj, im, dv, geo, *, stim, on_s, stim_end_s, capacitance):
+    """Per-cell activation, upstroke, peaks and end voltages; per-junction maxima; the front."""
     n = vm.shape[1]
     start = int(np.searchsorted(t, on_s))
     acts = [probe.crossings(t, vm[:, i], ACTIVATION_V, start=start) for i in range(n)]
@@ -190,7 +407,11 @@ def sheet_measures(t, vm, vj, geo, *, stim, on_s, stim_end_s):
         vm_max_cell=int(np.argmax(peak)),
         vm_max_time_s=float(peak_time[int(np.argmax(peak))]),
         vm_min_V=float(vm.min()),
-    )  # fmt: skip
+        upstroke=upstroke(
+            t, vm, im, dv, stim=stim, on_s=on_s, off_s=stim_end_s, capacitance=capacitance
+        ),
+        front=front(first, stim, geo["edges"], on_s=on_s, off_s=stim_end_s),
+    )
 
 
 def stimulus_stage_ratio(raw, dt, on_step):
@@ -220,7 +441,24 @@ def refusal_class(rec):
 # ----------------------------------------------------------------------------- runs
 
 
-def sheet_case(args, geo, *, label, stimulus, cluster, arm, strength, dt, m_s):
+def sheet_definition(args, geo, *, stim, cell_nav, junctions, dt, width_s, m_s, end=None):
+    on, width = int(round(STIM_ON_S / dt)), max(1, int(round(width_s / dt)))
+    raw = probe.definition(
+        len(geo["cells"]),
+        dt=dt,
+        end_time=end or args.end,
+        kv_m_s=args.kv,
+        s=args.s,
+        booking=args.booking,
+        stim=dict(cells=stim, pulses=[(on, on + width)], m_s=m_s),
+        cell_nav=cell_nav,
+        junction_availability=junctions,
+        edges=geo["edges"],
+    )
+    return raw, on, (on + width) * dt
+
+
+def sheet_case(args, geo, *, label, stimulus, cluster, arm, strength, dt, width_s, m_s):
     stim = stimulus_cells(geo, stimulus)
     r_na, r_gj = (1.0, 1.0) if arm is None else arm_values(arm, strength)
     held = set(cluster)
@@ -230,30 +468,19 @@ def sheet_case(args, geo, *, label, stimulus, cluster, arm, strength, dt, m_s):
         if r_gj != 1.0
         else None
     )
-    on, width = int(round(STIM_ON_S / dt)), int(round(STIM_WIDTH_S / dt))
-    raw = probe.definition(
-        len(geo["cells"]),
-        dt=dt,
-        end_time=args.end,
-        kv_m_s=args.kv,
-        s=args.s,
-        booking=args.booking,
-        stim=dict(cells=stim, pulses=[(on, on + width)], m_s=m_s),
-        cell_nav=cell_nav,
-        junction_availability=junctions,
-        edges=geo["edges"],
-    )
-    stim_end = (on + width) * dt
+    raw, on, stim_end = sheet_definition(
+        args, geo, stim=stim, cell_nav=cell_nav, junctions=junctions, dt=dt, width_s=width_s,
+        m_s=m_s,
+    )  # fmt: skip
 
     def stop(o):  # Every cell below -30 mV for 10 ms, at least 12 ms after the stimulus.
         t = o["times"]
-        if not t or t[-1] < stim_end + MIN_AFTER_STIM_S:
+        if len(t) == 0 or t[-1] < stim_end + MIN_AFTER_STIM_S:
             return False
-        vm = np.asarray(o["vm"])
-        recent = np.asarray(t) > t[-1] - QUIET_S
-        return bool(np.all(vm[recent] < ACTIVATION_V))
+        recent = t > t[-1] - QUIET_S
+        return bool(np.all(o["vm"][recent] < ACTIVATION_V))
 
-    r_run = probe.execute(raw, stop=stop)
+    r_run = execute_sheet(raw, stop=stop)
     rec = probe.record(
         raw,
         r_run,
@@ -261,6 +488,7 @@ def sheet_case(args, geo, *, label, stimulus, cluster, arm, strength, dt, m_s):
         stimulus=stimulus,
         stimulus_cells=stim,
         stimulus_m_s=m_s,
+        stimulus_width_s=stim_end - on * dt,
         cluster=sorted(held),
         arm=arm,
         strength=strength,
@@ -275,26 +503,30 @@ def sheet_case(args, geo, *, label, stimulus, cluster, arm, strength, dt, m_s):
     try:
         rec["static_bounds"] = probe.static_bounds(raw)
         rec["stimulus_stage_ratio"] = stimulus_stage_ratio(raw, dt, on)
-    except probe.ConfigError as error:
+    except ConfigError as error:
         rec["static_bounds"] = dict(refusal=str(error))
     if len(r_run["times"]) > 2:
-        t, vm, vj = (np.asarray(r_run[k]) for k in ("times", "vm", "vj"))
+        cap = np.asarray(r_run["last"].layout.membrane_capacitance)[: len(geo["cells"])]
+        rec["capacitance_F"] = cap.tolist()
         rec["measures"] = sheet_measures(
-            t, vm, vj, geo, stim=stim, on_s=on * dt, stim_end_s=stim_end
-        )
+            r_run["times"], r_run["vm"], r_run["vj"], r_run["im"], r_run["dvdt"], geo,
+            stim=stim, on_s=on * dt, stim_end_s=stim_end, capacitance=cap,
+        )  # fmt: skip
     m = rec.get("measures", {})
     probe.log(
-        f"sheet {label} s {args.s:g} dt {dt:g}: crossing-never {len(m.get('crossing_never', []))} "
-        f"vj {m.get('vj_abs_max_V')} gap {m.get('vj_mapping_max_gap_V')} vm {m.get('vm_max_V')} "
-        f"steps {rec['steps']} wall {rec['wall_seconds']:.1f} refusal "
+        f"sheet {label} s {args.s:g} dt {dt:g} stim {width_s:g}:{m_s:g}: "
+        f"launched {m.get('front', {}).get('launched')} "
+        f"crossing-never {len(m.get('crossing_never', []))} vj {m.get('vj_abs_max_V')} "
+        f"vm {m.get('vm_max_V')} steps {rec['steps']} wall {rec['wall_seconds']:.1f} refusal "
         f"{rec['refusal_class']} {rec['refusal'] and rec['refusal']['message'][:90]}"
-    )  # fmt: skip
+    )
     return rec
 
 
 def captured(rec):
+    """A control captures when its front is launched without a refusal."""
     m = rec.get("measures") or {}
-    return bool(not rec["refusal"] and m and not m["crossing_never"])
+    return bool(not rec["refusal"] and m and m.get("front", {}).get("launched"))
 
 
 def part_run(args):
@@ -318,34 +550,35 @@ def part_run(args):
     )
     out["rest"] = probe.relax_rest(args.kv)
     path = Path(args.output) / f"{args.name}.json"
-    nominal = args.stim_m_s * probe.stimulus_scale()
-    planar_m_s = None
-    if args.stim_from:  # Refinements and later arms start from the main record's stimulus.
+    ladder = parse_ladder(args.ladder)
+    planar = None
+    if args.stim_from:  # Refinements and later arms use the main record's launching rung.
         with open(args.stim_from) as stream:
-            nominal = planar_m_s = json.load(stream)["planar_stimulus_m_s"]
-    out["stimulus_start_m_s"] = nominal
+            planar = json.load(stream).get("planar_stimulus")
+        if planar:
+            ladder = [(planar["width_s"], planar["m_s"])]
+    out["ladder"] = [dict(width_s=w, m_s=m) for w, m in ladder]
     for stimulus in args.controls:
-        m_s = nominal
-        for attempt in range(3):  # PLAN: double the stimulus until the control captures.
+        rec = None
+        for attempt, (width_s, m_s) in enumerate(ladder):
             rec = sheet_case(
                 args, geo, label=f"control {stimulus}", stimulus=stimulus, cluster=[],
-                arm=None, strength=None, dt=args.dt, m_s=m_s,
+                arm=None, strength=None, dt=args.dt, width_s=width_s, m_s=m_s,
             )  # fmt: skip
             rec["capture_attempt"] = attempt
             rec["captured"] = captured(rec)
             out["cases"].append(rec)
-            if rec["captured"] or rec["refusal"] or attempt == 2:
+            if rec["captured"]:
                 break
-            rec["label"] = f"control {stimulus} not captured at {m_s:g}"
+            rec["label"] = f"control {stimulus} not launched at {width_s:g}:{m_s:g}"
             write(path, out)
-            m_s *= 2.0
         write(path, out)
-        if stimulus == "planar":
-            planar_m_s = m_s if rec["captured"] else None
-    out["planar_stimulus_m_s"] = planar_m_s if planar_m_s is not None else nominal
-    planar = [c for c in out["cases"] if c["label"] == "control planar"]
-    if planar and not planar[-1]["captured"]:  # PLAN: no perturbed cases without capture.
-        out["skipped"] = "the planar control did not capture at the largest stimulus"
+        if stimulus == "planar" and rec is not None and rec["captured"]:
+            planar = dict(width_s=rec["stimulus_width_s"], m_s=rec["stimulus_m_s"])
+    out["planar_stimulus"] = planar
+    out["planar_stimulus_m_s"] = None if planar is None else planar["m_s"]
+    if args.cluster and planar is None:  # PLAN: no perturbed cases without a launched front.
+        out["skipped"] = "the planar control launched no front on its ladder"
     elif args.cluster:
         cluster = cluster_cells(geo, args.cluster, args.seed)
         out["cluster"] = dict(kind=args.cluster, cells=cluster, seed=args.seed)
@@ -354,7 +587,7 @@ def part_run(args):
                 rec = sheet_case(
                     args, geo, label=f"{args.cluster} {arm} {r:g}", stimulus="planar",
                     cluster=cluster, arm=arm, strength=r, dt=args.dt,
-                    m_s=out["planar_stimulus_m_s"],
+                    width_s=planar["width_s"], m_s=planar["m_s"],
                 )  # fmt: skip
                 out["cases"].append(rec)
                 write(path, out)
@@ -365,6 +598,82 @@ def part_run(args):
 def write(path, out):
     path.parent.mkdir(parents=True, exist_ok=True)
     probe.write_json(path, out)
+
+
+# ----------------------------------------------------------------------------- self-check
+
+
+def part_selfcheck(args):
+    """Fail-fast checks of the new series before any run relies on them (PLAN amendment 1)."""
+    probe.set_point(args.nav, args.kir, args.cm)
+    rest = probe.relax_rest(args.kv)
+    checks = dict(provenance=probe.provenance(), rest=rest)
+    # (i) One cell, kicked to -20 mV (kicks are depolarisations in mV): C dVm/dt = -I_m.
+    kick_mV = 1e3 * (-0.020 - probe.POINT["rest"][0])
+    raw = probe.definition(
+        1, dt=args.dt, end_time=0.005, kv_m_s=args.kv, kicks={0: kick_mV}, obs_dt=1e-3
+    )
+    r = execute_sheet(raw)
+    cap = float(np.asarray(r["last"].layout.membrane_capacitance)[0])
+    lhs, rhs = cap * r["dvdt"][:, 0], -r["im"][:, 0]
+    scale = float(np.max(np.abs(rhs)))
+    checks["one_cell"] = dict(
+        refusal=r["refusal"],
+        rows=int(len(lhs)),
+        max_abs_residual_A=float(np.max(np.abs(lhs - rhs))),
+        current_scale_A=scale,
+        peak_V=float(r["vm"][:, 0].max()),
+        passes=bool(r["refusal"] is None and np.max(np.abs(lhs - rhs)) <= 1e-9 * scale),
+    )
+    # (ii) and (iii): the disc's sodium-free twin at r = 0.25 on the sheet, under the first rung.
+    geo = geometry()
+    stim = stimulus_cells(geo, "planar")
+    disc = cluster_cells(geo, "disc")
+    held = set(disc)
+    width_s, m_s = parse_ladder(args.ladder)[0]
+    rec = sheet_case(
+        args, geo, label="selfcheck disc sodium_free 0.25", stimulus="planar", cluster=disc,
+        arm="sodium_free", strength=0.25, dt=args.dt, width_s=width_s, m_s=m_s,
+    )  # fmt: skip
+    junctions = {k: 0.25 for k, (a, b) in enumerate(geo["edges"]) if a in held or b in held}
+    raw2, on, stim_end = sheet_definition(
+        args, geo, stim=stim, cell_nav={i: 0.0 for i in disc}, junctions=junctions, dt=args.dt,
+        width_s=width_s, m_s=m_s, end=STIM_ON_S + 0.2e-3,
+    )  # fmt: skip
+    r2 = execute_sheet(raw2)
+    t2, im2 = r2["times"], r2["im"]
+    rows = [k for k in range(len(t2)) if on * args.dt < t2[k] <= on * args.dt + 0.1e-3]
+    inward_ok = []
+    for k in rows:
+        order = set(np.argsort(im2[k])[: len(stim)].tolist())
+        inward_ok.append(order == set(stim) and np.all(im2[k, stim] < 0))
+    checks["stimulus_inward"] = dict(
+        refusal=r2["refusal"],
+        rows_checked=len(rows),
+        passes=bool(r2["refusal"] is None and rows and all(inward_ok)),
+    )
+    up = (rec.get("measures") or {}).get("upstroke", {})
+    q = [up["inward_charge_C"][i] for i in disc] if up else []
+    rise = [up["rise_charge_C"][i] for i in disc] if up else []
+    risen = sum(1 for i in disc if up and up["rise_start_s"][i] is not None)
+    checks["twin_no_inward"] = dict(
+        refusal=rec["refusal"],
+        disc_cells_risen_above_minus50mV=risen,
+        largest_inward_charge_C=max(q) if q else None,
+        median_rise_charge_C=float(np.median(rise)) if rise else None,
+        passes=bool(
+            rec["refusal"] is None
+            and risen > 0
+            and q
+            and max(q) <= 1e-6 * max(float(np.median(rise)), 1e-30)
+        ),
+    )
+    names = ("one_cell", "stimulus_inward", "twin_no_inward")
+    checks["passes"] = all(checks[k]["passes"] for k in names)
+    probe.write_json(Path(args.output) / "selfcheck.json", checks)
+    probe.log(f"selfcheck: { {k: checks[k]['passes'] for k in names} }")
+    if not checks["passes"]:
+        raise SystemExit("selfcheck failed: see selfcheck.json")
 
 
 # ----------------------------------------------------------------------------- report
@@ -399,7 +708,8 @@ def twin_of(case, cases):
 
 
 def activation(case, cases, geo):
-    """Per-cell activation by the PLAN's rule, and the cells counted."""
+    """The earlier twin rule (kept for comparison): unperturbed cells by -30 mV crossing;
+    perturbed cells by peak > 0 mV and >= 10 mV above the sodium-free twin's."""
     m = case["measures"]
     first, peak = m["activation_s"], m["peak_V"]
     held = set(case["cluster"])
@@ -418,9 +728,24 @@ def activation(case, cases, geo):
     return active, (None if twin is None else twin["label"])
 
 
+def source_activation(case, floor_C):
+    """The sign rule (development): an unstimulated cell activates when it crosses -30 mV and
+    its inward ionic charge over its rise exceeds the passive floor (the twins' largest). A
+    stimulated cell, a source by construction, activates when it crosses -30 mV."""
+    m = case["measures"]
+    up = m.get("upstroke")
+    if not up or floor_C is None:
+        return None
+    stim = set(case["stimulus_cells"])
+    return [
+        m["activation_s"][i] is not None
+        and (i in stim or (up["inward_charge_C"][i] or 0.0) > floor_C)
+        for i in range(len(m["activation_s"]))
+    ]
+
+
 def lightly_loaded(case, active, geo):
-    """The PLAN's peak classes, stimulated cells excluded; perturbed neighbours are ignored in
-    the collision and end tests."""
+    """The PLAN's peak classes, stimulated and perturbed cells excluded from the cell classes."""
     m = case["measures"]
     first, peak, ptime = m["activation_s"], m["peak_V"], m["peak_time_s"]
     stim, held = set(case["stimulus_cells"]), set(case["cluster"])
@@ -449,6 +774,8 @@ def lightly_loaded(case, active, geo):
             out[name] = dict(
                 cell=int(i),
                 peak_V=float(peak[i]),
+                margin_V=float(CHANNEL_TOP_V - peak[i]),
+                thin=bool(CHANNEL_TOP_V - peak[i] < FLAG_CHANNEL_MARGIN_V),
                 peak_time_s=float(ptime[i]),
                 during_stimulus=bool(ptime[i] < case["stim_end_s"]),
                 kind=kind[i],
@@ -480,20 +807,48 @@ def junction_classes(case, geo):
     return out
 
 
-def case_row(case, cases, geo, planar):
+def upstroke_summary(case, floor_C):
+    """Continuous upstroke values of the perturbed and unperturbed cells (stimulated excluded)."""
+    m = case["measures"]
+    up = m.get("upstroke")
+    if not up:
+        return None
+    held, stim = set(case["cluster"]), set(case["stimulus_cells"])
+    n = len(m["activation_s"])
+
+    def stats(cells, key):
+        vals = [up[key][i] for i in cells if up[key][i] is not None]
+        if not vals:
+            return None
+        return dict(min=float(min(vals)), median=float(np.median(vals)), max=float(max(vals)))
+
+    pert = sorted(held)
+    free = [i for i in range(n) if i not in held and i not in stim]
+    return dict(
+        perturbed_source_fraction=stats(pert, "source_fraction"),
+        perturbed_max_dvdt_V_s=stats(pert, "max_dvdt_V_s"),
+        perturbed_inward_charge_C=stats(pert, "inward_charge_C"),
+        unperturbed_source_fraction=stats(free, "source_fraction"),
+        unperturbed_max_dvdt_V_s=stats(free, "max_dvdt_V_s"),
+        perturbed_above_floor=None
+        if floor_C is None
+        else int(sum((up["inward_charge_C"][i] or 0.0) > floor_C for i in pert)),
+    )
+
+
+def case_row(case, cases, geo, planar, floor_C):
     m = case["measures"]
     active, twin = activation(case, cases, geo)
     held = set(case["cluster"])
     never = [i for i, a in enumerate(active) if not a]
-    perturbed_active = [i for i in held if active[i]]
     first = m["activation_s"]
     times = [first[i] for i, a in enumerate(active) if a and first[i] is not None]
-    on = STIM_ON_S
-    total = (max(times) - on) if times else None
+    total = (max(times) - STIM_ON_S) if times else None
     p_total = planar and planar.get("total")
     far_delay = None
     if planar and m["far_column_mean_activation_s"] is not None and planar.get("far") is not None:
         far_delay = m["far_column_mean_activation_s"] - planar["far"]
+    sign = source_activation(case, floor_C)
     return dict(
         label=case["label"],
         arm=case["arm"],
@@ -502,8 +857,10 @@ def case_row(case, cases, geo, planar):
         twin=twin,
         block=bool(never),
         never=never,
-        perturbed_activated=len(perturbed_active),
+        perturbed_activated=sum(1 for i in held if active[i]),
         perturbed=len(held),
+        sign_rule_never=None if sign is None else [i for i, a in enumerate(sign) if not a],
+        sign_rule_block=None if sign is None else not all(sign),
         unperturbed_never=[i for i in never if i not in held],
         never_end_V_max=max((m["end_V"][i] for i in never), default=None),
         max_activations=m["max_activations"],
@@ -518,8 +875,22 @@ def case_row(case, cases, geo, planar):
         vm_max_V=m["vm_max_V"],
         vm_max_during_stimulus=bool(m["vm_max_time_s"] < case["stim_end_s"]),
         peaks=lightly_loaded(case, active, geo),
+        upstroke=upstroke_summary(case, floor_C),
+        front=m.get("front"),
         stimulus_stage_ratio=case.get("stimulus_stage_ratio"),
     )
+
+
+def passive_floor(cases):
+    """The largest inward charge of any perturbed cell in a passive (r_Na = 0) case: the
+    measured floor of the sign rule; None when no passive case carries upstroke values."""
+    vals = []
+    for c in cases:
+        up = (c.get("measures") or {}).get("upstroke")
+        if c.get("refusal") or not up or c["r_na"] != 0.0 or not c["cluster"]:
+            continue
+        vals += [up["inward_charge_C"][i] or 0.0 for i in c["cluster"]]
+    return max(vals) if vals else None
 
 
 def sheet_summary(records):
@@ -543,15 +914,16 @@ def sheet_summary(records):
         main = [c for c in cases if c["dt_s"] == main_dt]
         fine = {c["label"]: c for c in cases if c["dt_s"] < main_dt}
         good = [c for c in main if not c["refusal"] and c.get("measures")]
+        floor_C = passive_floor(good)
         planar_case = next((c for c in reversed(good) if c["label"] == "control planar"), None)
         planar = None
         if planar_case:
-            row = case_row(planar_case, cases, geo, None)
+            row = case_row(planar_case, cases, geo, None, floor_C)
             planar = dict(
                 total=row["total_activation_s"],
                 far=planar_case["measures"]["far_column_mean_activation_s"],
             )
-        rows = {c["label"]: case_row(c, cases, geo, planar) for c in good}
+        rows = {c["label"]: case_row(c, cases, geo, planar, floor_C) for c in good}
         refusals = [
             dict(label=c["label"], refusal_class=c.get("refusal_class"),
                  message=c["refusal"]["message"][:200],
@@ -565,6 +937,11 @@ def sheet_summary(records):
                 continue
             arms.setdefault(label.rsplit(" ", 1)[0], []).append(row)
         brackets = {k: bracket([(x["strength"], x["block"]) for x in v]) for k, v in arms.items()}
+        sign_brackets = {
+            k: bracket([(x["strength"], x["sign_rule_block"]) for x in v])
+            for k, v in arms.items()
+            if all(x["sign_rule_block"] is not None for x in v)
+        }
         within = [
             x["label"] for k, v in arms.items() if k.startswith("disc") for x in v
             if x["block"] and x["s_times_r_gj"] >= FLOOR - 1e-9
@@ -583,7 +960,7 @@ def sheet_summary(records):
             if c is None or label not in rows or f["refusal"] or not f.get("measures"):
                 refine.append(dict(label=label, comparable=False, refused=bool(f["refusal"])))
                 continue
-            a, b = rows[label], case_row(f, cases, geo, planar)
+            a, b = rows[label], case_row(f, cases, geo, planar, floor_C)
             ta, tb = a["total_activation_s"], b["total_activation_s"]
             refine.append(
                 dict(
@@ -610,33 +987,48 @@ def sheet_summary(records):
                 (x["vj_mapping_max_gap_V"] for x in rows.values()), default=None
             ),
             T_brackets=brackets,
+            T_sign_rule_brackets=sign_brackets,
             T2_block_within_floor=bool(within),
             T2_blocking=within,
+            passive_floor_C=floor_C,
             rows=rows,
             P_vm_max_V=vm,
             P_margin_V=None if vm is None else CHANNEL_TOP_V - vm,
             P_margin_flag=vm is not None and CHANNEL_TOP_V - vm < FLAG_CHANNEL_MARGIN_V,
             P_classes=classes,
+            P_edges_and_corners={k: classes[k] for k in ("corner", "rim", "end") if k in classes},
             R_refinement=refine,
             R_pass=all(
-                r["comparable"] and r["same_never"] and r["vj_difference_V"] <= tol["vj_V"]
+                r["comparable"]
+                and r["same_never"]
+                and r["vj_difference_V"] <= tol["vj_V"]
                 and r["vm_difference_V"] <= tol["vm_V"]
-                and (r["total_activation_relative"] is None
-                     or r["total_activation_relative"] <= tol["total_activation_relative"])
+                and (
+                    r["total_activation_relative"] is None
+                    or r["total_activation_relative"] <= tol["total_activation_relative"]
+                )
                 for r in refine
-            ) if refine else None,
+            )
+            if refine
+            else None,  # fmt: skip
             A_refused_on_sheet=bool(domain),
             controls={
-                c["label"]: dict(captured=c.get("captured"), stimulus_m_s=c["stimulus_m_s"],
-                                 refusal_class=c.get("refusal_class"))
-                for c in main if c["arm"] is None
-            },
+                c["label"]: dict(
+                    captured=c.get("captured"),
+                    stimulus_m_s=c["stimulus_m_s"],
+                    stimulus_width_s=c.get("stimulus_width_s"),
+                    refusal_class=c.get("refusal_class"),
+                    front=(c.get("measures") or {}).get("front"),
+                )
+                for c in main
+                if c["arm"] is None
+            },  # fmt: skip
             cost=dict(
                 wall_seconds=sum(c["wall_seconds"] for c in main),
                 execute_ms_per_step=[c.get("execute_ms_per_step") for c in main],
                 host_analysis_ms_per_step=[c.get("host_analysis_ms_per_step") for c in main],
             ),
-        )  # fmt: skip
+        )
     return out
 
 
@@ -729,32 +1121,34 @@ def part_report(args):
     for s, row in (report["sheet"] or {}).items():
         probe.log(
             f"s {s}: J1 {row['J1_no_domain_refusal']} vj {row['J_vj_abs_max_V']} "
-            f"T {row['T_brackets']} T2 {row['T2_block_within_floor']} "
-            f"P vm {row['P_vm_max_V']} R {row['R_pass']}"
+            f"T {row['T_brackets']} sign {row['T_sign_rule_brackets']} "
+            f"T2 {row['T2_block_within_floor']} P vm {row['P_vm_max_V']} R {row['R_pass']}"
         )
 
 
 def select_refinement(args):
-    """PLAN's refinement rule, from saved records only: print the half-step run's arguments.
+    """The refinement picks, from saved records only: print the half-step run's arguments.
 
-    Sheet (--sheet RECORD): per disc arm of item 1, the bracketing strengths and the case with
-    the largest |Vj|. Chain (--chain SEGMENT_JSON): per arm, the two bracketing strengths.
+    Sheet (--sheet RECORD): per disc arm (combined and coupling-only), the bracketing strengths
+    (the sign rule's when the record has upstroke values, else the twin rule's) and the case with
+    the largest |Vj|, with those strengths' sodium-free twins. Chain (--chain SEGMENT_JSON): per
+    arm, the two bracketing strengths.
     """
     picks = {}
     if args.sheet:
         with open(args.sheet) as stream:
             rec = json.load(stream)
         row = sheet_summary([rec])[str(rec["s"])]
+        brackets = row["T_sign_rule_brackets"] or row["T_brackets"]
         for arm in ("combined", "coupling_only"):
             key = f"disc {arm}"
             rows = [x for x in row["rows"].values() if x["label"].rsplit(" ", 1)[0] == key]
-            if not rows:
+            if not rows or key not in brackets:
                 continue
-            b = row["T_brackets"][key]
+            b = brackets[key]
             chosen = {b["largest_r_blocking"], b["smallest_r_passing"]}
             chosen.add(max(rows, key=lambda x: x["vj_abs_max_V"])["strength"])
             picks[arm] = sorted((r for r in chosen if r is not None), reverse=True)
-        # The twins of the picks, so that the half-step cases have same-step twins.
         twins = sorted({r for v in picks.values() for r in v}, reverse=True)
         if twins:
             picks["sodium_free"] = twins
@@ -780,7 +1174,7 @@ def select_refinement(args):
 
 def main(argv=None):
     a = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    a.add_argument("part", choices=("run", "report", "select"))
+    a.add_argument("part", choices=("run", "report", "select", "selfcheck"))
     a.add_argument("--output", required=True)
     a.add_argument("--records", default=None, help="report: the records directory")
     a.add_argument("--name", default="sheet")
@@ -792,14 +1186,19 @@ def main(argv=None):
     a.add_argument("--dt", type=float, default=2.5e-6)
     a.add_argument("--end", type=float, default=0.06)
     a.add_argument("--controls", nargs="*", default=[])
+    a.add_argument(
+        "--ladder",
+        nargs="+",
+        default=list(DEFAULT_LADDER),
+        help="stimulus rungs width_s:m_s in order (each control climbs until launched)",
+    )
     a.add_argument("--cluster", choices=("disc", "scattered"), default=None)
     a.add_argument("--seed", type=int, default=0)
     a.add_argument("--combined", type=float, nargs="*", default=[])
     a.add_argument("--coupling-only", type=float, nargs="*", default=[])
     a.add_argument("--sodium-only", type=float, nargs="*", default=[])
     a.add_argument("--sodium-free", type=float, nargs="*", default=[])
-    a.add_argument("--stim-m-s", type=float, default=1e-6, help="nominal; scaled by c_m/0.05")
-    a.add_argument("--stim-from", default=None, help="take the planar stimulus from a record")
+    a.add_argument("--stim-from", default=None, help="use a main record's launching rung")
     a.add_argument("--booking", default="trapezoid_nonnegative@1")
     a.add_argument("--sheet", default=None, help="select: a main sheet record")
     a.add_argument("--chain", default=None, help="select: a main chain segment.json")
@@ -812,11 +1211,11 @@ def main(argv=None):
         return select_refinement(args)
     probe.log(f"sheet {args.part}: driver {__file__}")
     try:
-        (part_run if args.part == "run" else part_report)(args)
+        dict(run=part_run, report=part_report, selfcheck=part_selfcheck)[args.part](args)
     except Exception:
-        where = Path(args.output) if args.part == "run" else Path(args.output).parent
+        where = Path(args.output) if args.part != "report" else Path(args.output).parent
         where.mkdir(parents=True, exist_ok=True)
-        name = f"{args.name}.FAILURE.txt" if args.part == "run" else "report.FAILURE.txt"
+        name = f"{args.name}.FAILURE.txt" if args.part == "run" else f"{args.part}.FAILURE.txt"
         (where / name).write_text(traceback.format_exc())
         raise
 
