@@ -85,8 +85,10 @@ Plain-language summary. Details, numbers and evidence are in
 [Decisions](docs/DECISIONS.md). Status words follow the plan's levels:
 *implemented* (on main), *guarded* (held by tests), *numerically qualified*, or
 qualified for short (a registered protocol passed, within its stated scope),
-and *judged* (used in a registered experiment). Development runs are evidence
-for development, not judged results.
+and *judged* (a model used in a registered experiment). A *judged run* is
+something else: a run of a registered protocol or experiment, made once and
+scored as registered. Development runs are evidence for development, not
+judged results.
 
 | Track | In simple terms | State |
 | --- | --- | --- |
@@ -97,7 +99,7 @@ for development, not judged results.
 | **Long-run time modes** | Faster ways to study hours to months, all optional. | A fixed-point and continuation analysis is qualified. Projective time-stepping failed its qualification. A quasi-steady electrical mode is planned |
 | **Morphogenesis** | How tissues take and repair shape. | A morphogen gradient and a bistable voltage domain wall passed, and Turing patterning at its predicted wavelength passed on CPU (15 November). 2-D cell mechanics (a vertex model) is qualified and on main, after a revised second judged run. See the [morphogenesis plan](docs/MORPHOGENESIS_PLAN.md) |
 | **Papers to test** | Published models we review and test in Cells. | Nine reviewed: three with test plans (Cortés-Poza, Deb et al., Shin et al.); the Myc–cyclin T1 heart papers, at high priority, which led to species regulating channels and to an excitable-tissue track; and five as notes (partial reprogramming, granzyme K and tissue ageing, kinetochore protein counts, bone mechanosensing and ageing, and a whole-cell model of the minimal cell). Secreted-species transport was promoted from the granzyme K review. A track of gene-network models validated against wet-lab experiments is logged for the coming gene-regulation layer. See the [paper backlog](docs/PAPER_BACKLOG.md) and [GRN wet-lab validations](docs/GRN_WETLAB_VALIDATION.md) |
-| **Seeing the runs** | A 3D viewer of the engine, the proteins it models and replays of saved runs. | The viewer and its reader of saved runs are on main under `visualizer/`. The engine's own run-view writer is on a development branch and merges after the restructure lands. Looping replays per species have a design, decided on 16 November and on the same branch; nothing of them is built. See [the visualizer and its replays](#the-visualizer-and-its-replays) |
+| **Seeing the runs** | A 3D viewer of the engine, the proteins it models and replays of saved runs. | The viewer and its reader of saved runs are on main under `visualizer/`; the engine's run-view writer and looping replays per species are still to come. See [the visualizer and its replays](#the-visualizer-and-its-replays) |
 | **Computing** | Where it runs. | Local CPUs and one NVIDIA L4 GPU, with many independent worlds batched on the GPU. JUPITER (GH200) throughput is not yet measured. See [GPU execution](docs/GPU_ENSEMBLES.md) and the [JUPITER runbook](docs/JUPITER_RUNBOOK.md) |
 
 ## What Cells can do (as of 16 November 2026)
@@ -164,7 +166,7 @@ record is still owed, so [Progress](PROGRESS.md) remains the record.
 | The loop reader, for a species' looping run | `visualizer/src/layers/loop.js` | On main, tested on a fixture; no species has a looping run yet |
 | The run view's design | [`docs/RUN_VIEW_DESIGN.md`](docs/RUN_VIEW_DESIGN.md) | On main, proposed |
 | The engine's run-view writer | `src/cells/run_view.py`, on a development branch | Not on main. Shown on a worked example (the secreted-species development run); it merges after the restructure lands |
-| Looping replay packages per species | [Feature request FR-11](docs/FEATURE_REQUESTS.md#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Logged. Its design note, decided on 16 November, is on the writer's development branch, not on main; nothing is built |
+| Looping replay packages per species | [Feature request FR-11](docs/FEATURE_REQUESTS.md#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Logged. Its design note is proposed, on a development branch; nothing is built |
 
 **Replays** draw what a run saved and nothing else: the sheet coloured by
 membrane voltage, a timeline, events such as cell replacement, and the class
@@ -210,15 +212,13 @@ short run of one cell of each of four cell types (human, planarian, Syn3A and
 *M. pneumoniae*), packaged to loop as the cell's resting state. It is output,
 not new physics: laws the engine has or gains through their own milestones, at
 a declared low level of detail, written by the run-view writer and labelled an
-illustration, never an experiment or a qualified result. Loops are periodic,
-with one period played and its seam checked, and in the design decided on 16
-November the writer measures each loop's closure. The planarian's loop comes
-first: a small patch of the sheet under a subthreshold current train. The human
-loop is a paced generic excitable cell, labelled as not a human cardiomyocyte
-model, and the minimal cells' cycle waits for a probe of whether the engine
-admits it. The loop reader on main already refuses a run that does not declare
-its loop and say that it closes, names no engine model or revision, or is an
-example.
+illustration, never an experiment or a qualified result. The choices recorded
+with it are periodic loops (a periodic drive, one period played and its seam
+checked), a paced heart cell for human, the cell cycle in scope for Syn3A and
+*M. pneumoniae*, and the planarian's loop first. Its design note is proposed,
+on a development branch. The loop reader on main already refuses a run that
+does not declare its loop and say that it closes, names no engine model or
+revision, or is an example.
 
 **Build, run and test it** with Node 20 or later, and Python 3 for the
 extractor and the reader (standard library only):
@@ -241,7 +241,7 @@ Chrome (`npm run check:all`) and publishing are in the
 
 ## Roadmap
 
-![Cells roadmap, 11 November 2026: water and cell size, cell replacement and tissue mechanics are in development. Next tests cover memory through cell replacement and more physics comparisons before Jupiter. Longer-term goals are integrated whole-cell models, organs and organ systems.](docs/assets/cells-roadmap.png)
+![Cells roadmap as of 11 November 2026, in three stages: build the missing biology (water and cell size, cell replacement and tissue mechanics), test memory and scale (memory through cell replacement; more physics checks, then Jupiter), and connect the scales (integrated whole-cell models, organs and organ systems).](docs/assets/cells-roadmap.png)
 
 The picture is of 11 November 2026. See the [roadmap](docs/ROADMAP.md) for
 priorities, the [current plan](docs/CURRENT_PLAN.md) for the order of work and
