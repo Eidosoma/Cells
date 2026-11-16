@@ -107,8 +107,20 @@ machine-readable inputs, results, checks and failures.
       protocols declare it by a dated pre-run correction.
   - **The end game's landing script:** its crossrev check and three other checks could pass bad
     records. They now require exact counts with exit 0, and 35 planted bad records are refused.
-  - **Next:** one integration merge (the core's batch with the transporter and the composite's
-    one-writer parts), then A7 after tonight's GPU column, then the end game.
+  - **Then, after midnight, integration-d172 at cd702afc.** The core's batch, the transporter and
+    the composite's one-writer admission are merged:
+    - an operator writing a kind's held row is refused;
+    - an operator writing an exact-booked passive route's row is refused (version 1, fail-closed).
+    - The results comparison is bitwise in 113 of 113 worlds, the crossrevs are identical in all
+      eight sets, 23 targeted files pass, and tier 1+2 is 358/132 files with 0 changed.
+    - The tier tool now forces `JAX_PLATFORMS=cpu`. Four JAX test files' old error rows came from
+      its absence.
+  - **The landing script for A7's c0 → c1 step:**
+    - c0's crossrev must be identical to the post-batch record;
+    - c1 keeps constants and bindings identical, while program texts may differ;
+    - 75 checks are refused or accepted as designed.
+  - **Next:** A7 after tonight's GPU column, then the compartment operator's refusal lifted for
+    FR-4's kinds, then the end game.
 
 - **A7's results-gate tolerance rehearsal: physical fields bitwise in all 113 worlds (15 November
   2026).** This is development evidence for the round's results gate
