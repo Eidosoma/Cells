@@ -81,7 +81,9 @@ def test_electrode_ledger_telescopes_on_relaxing_held_bath_cells(version, runs):
     grew linearly, refusing such worlds after about 35 s.
     """
     model, spec, value, history, p = runs[version]
-    assert get_model(spec.model) is model
+    # @3 resolves per declared structure (D172): get_model gives its implementation object.
+    expected = model.model_for(spec.model) if version == 3 else model
+    assert get_model(spec.model) is expected
     d = value.diagnostics
     assert d["max_electrode_charge_error_C"] <= 1e-27
     assert d["max_global_charge_bound_ratio"] <= 0.05
