@@ -1703,6 +1703,23 @@ the write, and it keeps the partition's and replacement's own rules. Option 2 is
 long-term model, but its records change across the closer worlds. It can follow when the padding
 fill is retired (the "explicit absent marker" of (b)).
 
+**The lead's ruling (16 November 2026): Option 1, built by the core** (no operators owner is
+active), with check_onsets' refusal kept.
+- **The semantics, a declared rule of insertion@2:** a channel population on an onset patch starts
+  at its declared initial gate when its patch opens, however long the patch stayed closed. It is
+  not a claim about the state of channels that vesicles deliver.
+- **Lifting the refusal** is a separate, later change with its own evidence.
+- **Option 2** stays the cleaner later alternative, if closed-slot drift ever reaches a record
+  that matters.
+- **As built (core-next):**
+  - `membrane_insertion_v2.onset_gates` binds `insertion_onset_channel` and
+    `insertion_onset_gate`;
+  - `opened_at_onset` names the populations whose patch opens at the step's onsets;
+  - its event writes their gates, and `channel_gate` is in its `STATE_RESETS`.
+- **The test** (`tests/unit/test_insertion_gate_at_opening.py`): a planted population, onset
+  early and late, starts at its declared gate whatever the padding drifted to; the write is idle in
+  today's worlds; the refusal stays.
+
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 
 - **Why.** Today a route's heat is the tableau's quadrature of its dissipation rate (Σ J Δμ̃ at the
