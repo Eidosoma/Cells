@@ -411,6 +411,7 @@ export class ShelvesView {
             this.forms.push(node.form);
             this.group.add(node.form.group);
           }
+          area.high = Math.max(area.high || 0, node.top - area.centre.y); // how high above its area the tallest thing on it reaches (the veils are fitted to it)
           node.ringAt = new THREE.Vector3(x, item.side === "in" || item.side === "outside" ? membraneTop + 0.2 : area.top + 0.15, z);
           this.nodes.set(item.key, node);
         }
@@ -473,18 +474,18 @@ export class ShelvesView {
     // that reaches far past it, as it always had. Of several shelves each area has its own,
     // close above what stands there and no larger than the area. Seen at a slant, a veil
     // above an area would leave its near edge bare and hang over the area in front; so each
-    // is kept between the eye and its own area, moved as the camera moves (placeVeils).
+    // is kept between the eye and its own area, moved and stretched as the camera moves (placeVeils).
     this.veils = [];
     const far = 3 * Math.max(this.bounds.maxX - this.bounds.minX, this.bounds.maxZ - this.bounds.minZ);
-    const veiled = (geometry, width, depth, x, y, z, above = 0) => {
+    const veiled = (geometry, width, depth, x, y, z, fit = null) => {
       const veil = new THREE.Mesh(geometry, this.veilMaterial);
       veil.scale.set(width, 0.05, depth);
       veil.position.set(x, y, z);
       veil.renderOrder = 5;
       veil.visible = false;
       veil.userData.blocker = true;
-      veil.userData.at = new THREE.Vector3(x, y, z);
-      veil.userData.above = above; // how far above what stands on its area the veil lies
+      // What a veil of several shelves is fitted by: where it lies over its area, its size there, and how far it lies above the tops of what stands on the area and above the area's underside.
+      if (fit) veil.userData.fit = { at: new THREE.Vector3(x, y, z), width, depth, ...fit };
       this.group.add(veil);
       this.veils.push(veil);
     };
@@ -494,8 +495,10 @@ export class ShelvesView {
     } else {
       for (const area of present) {
         // Above the membrane's middle as one shelf's veil is; above the glass or the outline, clear of what stands on it.
-        const lift = area.id === "plate" ? RISE - 5.2 : 9, stands = area.id === "plate" ? HALF + 2.5 : 1.5;
-        veiled(G.slab, area.width + 10, area.depth + 8, area.centre.x, area.centre.y + lift, area.centre.z, lift - stands);
+        const plate = area.id === "plate";
+        const lift = Math.max(plate ? RISE - 5.2 : 9, (area.high || 0) + 1.5);
+        const top = Math.max(area.high || 0, plate ? HALF : 0) + 0.4, underside = plate ? -HALF - 0.4 : -0.8;
+        veiled(G.slab, area.width + 10, area.depth + 8, area.centre.x, area.centre.y + lift, area.centre.z, { over: lift - top, under: lift - underside });
       }
     }
     // The names of the sides lie at the back of the areas they belong to, and the shelf's own on its membrane.
@@ -806,15 +809,25 @@ export class ShelvesView {
 
   /**
    * Of several shelves: keep each area's veil between the eye and its own area. A veil lies
-   * above what it covers, so from a slant it is moved towards the camera by as much as a
-   * line of sight runs sideways over that height.
+   * above what it covers, and a line of sight through it runs on sideways, away from the
+   * eye, by `lean` for each unit it falls. So, seen from a slant, the veil must reach from
+   * above the far edge of the tops of what stands on the area to above the near edge of
+   * the area's underside: it is moved towards the camera and stretched along the line of
+   * sight by as much as that takes, and so neither leaves a strip of its area bare nor
+   * covers what lies in front of it, which is lower.
    */
   placeVeils() {
     if (this.veils.length < 2) return;
     const rig = this.stage.rig;
     const lean = Math.tan(Math.min(1.3, Math.max(0, rig.polar)));
     const x = Math.sin(rig.azimuth) * lean, z = Math.cos(rig.azimuth) * lean;
-    for (const veil of this.veils) veil.position.set(veil.userData.at.x + x * veil.userData.above, veil.userData.at.y, veil.userData.at.z + z * veil.userData.above);
+    for (const veil of this.veils) {
+      const fit = veil.userData.fit;
+      if (!fit) continue;
+      const middle = (fit.over + fit.under) / 2, span = fit.under - fit.over;
+      veil.scale.set(fit.width + Math.abs(x) * span, 0.05, fit.depth + Math.abs(z) * span);
+      veil.position.set(fit.at.x + x * middle, fit.at.y, fit.at.z + z * middle);
+    }
   }
 
   /** Place a dish along its way: 0 at its marker, small; 1 above the shelves, full size. */
