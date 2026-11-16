@@ -144,7 +144,7 @@ def test_a_negative_share_refuses_the_step():
     )
     heat, positive, within = passive_routes.exact_booking(start, end, p, xp=np)
     assert within and not positive and heat[0] < 0
-    _, valid = passive_routes.book(None, start, end, p, 1e-3, xp=np)
+    _, valid = passive_routes.book(None, start, end, None, p, 1e-3, xp=np)
     assert not valid  # "negative exact share: step-bound breach"
 
 

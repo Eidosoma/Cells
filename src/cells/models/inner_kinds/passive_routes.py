@@ -351,7 +351,7 @@ def _booking(start, end, p, *, xp):
     return heat, ~negative, xp.abs(summed - (g1 - g0)), bound, rows
 
 
-def book(applied, start, end, p, dt, *, xp):
+def book(applied, start, end, control, p, dt, *, xp):
     """§7.5: exact routes book their exact shares; the others keep the tableau's heat."""
     heat, positive, within = exact_booking(start, end, p, xp=xp)
     booked = xp.where(

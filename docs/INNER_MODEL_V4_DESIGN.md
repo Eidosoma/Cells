@@ -1301,12 +1301,14 @@ undeclared built-in changes nothing:
      "max" | "min"), ...); the step's end state holds each field's running extremum over every
      stage so far. B4 reports `proton_buffer_max_lag_pH`, `_min_pH` and
      `_max_pH` per node; an envelope breach stays a refusal (the verdict), these are the margin.
-3. **`book(applied, start, end, p, dt, *, xp)` → ({own state field: new value}, valid),** in
-   `imex_step` after the tableau's combination; `applied(name)` is the step's applied rate of a
-   state field (the tableau's explicit and implicit weights). Every kind receives the same end
-   state (before any kind books) and may write only its own state fields, so bookings commute. A
-   false valid refuses the step: §7.5's "negative exact share: step-bound breach". §7.5's exact
-   booking is one.
+3. **`book(applied, start, end, control, p, dt, *, xp)` → ({own state field: new value},
+   valid),** in `imex_step` after the tableau's combination; `applied(name)` is the step's applied
+   rate of a state field (the tableau's explicit and implicit weights). Every kind receives the
+   same end state (before any kind books) and may write only its own state fields, so bookings
+   commute. A false valid refuses the step: §7.5's "negative exact share: step-bound breach".
+   §7.5's exact booking is one. `control` is the step's held control, constant over the step
+   ((l) 5, core-next): a kind can book an exact per-step update at the step's values, as FR-5's
+   damage step needs.
    - **Kinds need an IMEX solver (the lead's ruling, 16 November 2026; compartment-op-fixes
      9a48041c).** @3 refuses a definition that declares kinds under RK4, fail-closed
      (`surface_pump_v3._check_kinds_solver`). Every step guard above belongs to the IMEX step:

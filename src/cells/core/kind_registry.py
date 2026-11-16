@@ -229,12 +229,14 @@ class Kind:
       holds each field's running extremum: the start's value and every stage of the step (the
       closure's largest lag, the cytosol's smallest and largest pH). @3 refuses declared kinds
       under RK4 (surface_pump_v3._check_kinds_solver: every step guard here is the IMEX step's).
-    - step end: `book(applied, start, end, p, dt, *, xp)` -> ({own state field: new value},
-      valid), after the tableau's combination; `applied(name)` is the step's applied rate of a
-      state field (the tableau's weights), `start` the step's start state and `end` its end
+    - step end: `book(applied, start, end, control, p, dt, *, xp)` -> ({own state field: new
+      value}, valid), after the tableau's combination; `applied(name)` is the step's applied rate
+      of a state field (the tableau's weights), `start` the step's start state and `end` its end
       state before any kind books, the same for every kind, and only the kind's own state fields
-      may be written, so bookings commute. A false valid refuses the step (§7.5's negative exact
-      share).
+      may be written, so bookings commute. `control` is the step's held control, constant over
+      the step (§7.4 (l): a schedule's breakpoints are step boundaries), so a kind can book an
+      exact per-step update at the step's values (FR-5's damage step). A false valid refuses the
+      step (§7.5's negative exact share).
     - checks (traced on the device at binding, with stage_read, so the device's row checks
       include them as the host's do; they branch on no value in Python): `domain(state, p, *,
       xp)` -> one bool, and-ed into domain_valid; `control_domain(control, p, *, xp)` -> one

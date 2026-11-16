@@ -452,15 +452,17 @@ def _with_kind_derivatives(base, rates, structure, state, *, xp):
     )
 
 
-def _kind_bookings(kinds, applied, start, end, p, dt, *, xp):
+def _kind_bookings(kinds, applied, start, end, control, p, dt, *, xp):
     """Every kind's book hook on the same end state (before any kind books), each writing only its
-    own state fields, so bookings commute and their order cannot matter (§7.4 (k)). Returns
-    ({field: value}, valid): a booking may refuse the step (§7.5's negative exact share)."""
+    own state fields, so bookings commute and their order cannot matter (§7.4 (k)). Each receives
+    the step's held control (§7.4 (l) 5: constant over the step), so a kind can book an exact
+    per-step update at the step's values. Returns ({field: value}, valid): a booking may refuse
+    the step (§7.5's negative exact share)."""
     booked, valid = {}, True
     for kind in kinds:
         if kind.book is None:
             continue
-        values, ok = kind.book(applied, start, end, p, dt, xp=xp)
+        values, ok = kind.book(applied, start, end, control, p, dt, xp=xp)
         foreign = set(values) - set(kind.state_fields)
         if foreign:
             raise ValueError(
@@ -1124,7 +1126,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         extrema = _stage_extrema(kinds, state, explicit_states, explicit, p, xp=xp)
         stage = stage._replace(**extrema)
     if kinds:  # §7.4 (k), book: a kind's bookings from the step's applied rates.
-        booked, ok = _kind_bookings(kinds, applied, state, stage, p, dt, xp=xp)
+        booked, ok = _kind_bookings(kinds, applied, state, stage, control, p, dt, xp=xp)
         stage, valid = stage._replace(**booked), valid & ok
     valid &= domain_valid(stage, p, p.active, xp=xp, structure=structure)
     for value in stage:
