@@ -1947,21 +1947,38 @@ RECORD_LAYERS = MappingProxyType({k: v[2] for k, v in _VIEW_TABLE.items()})
 OBSERVATION_AXES = MappingProxyType({k: v[3] for k, v in _VIEW_TABLE.items() if v[3] is not None})
 ORIENTATION = MappingProxyType({k: v[4] for k, v in _VIEW_TABLE.items() if v[4] is not None})
 VIEW_AXIS_SETS = MappingProxyType({})  # A kind's axis that maps to an existing view set.
+# Records that are residuals of the step's own balances, each with its own tolerance, apart from
+# the physical records (the run view's loop closure measure, FR-11): the field solve's charge
+# residual (CHARGE_ATOL_C + CHARGE_RTOL x scale) and the floating components' current residual
+# (the Newton target or the attainable floor), both held by the step, and the stage energy-rate
+# balance, zero to rounding (§7.4 (m)).
+RECORD_DIAGNOSTICS = ("charge_residual_C", "component_current_residual_A", "energy_balance_pJ_s")
+# {increment field: its reference layout field}: a stored amount is reference + increment.
+RECORD_REFERENCES = MappingProxyType(
+    {
+        "amount_increment": "amount_reference",
+        "extracellular_amount_increment": "extracellular_amount_reference",
+    }
+)
 _VIEW_MAPS = ("UNITS", "OBSERVATION_AXES", "RECORD_KINDS", "ORIENTATION", "RECORD_LAYERS")
+_RECORD_ROLES = ("RECORD_DIAGNOSTICS", "RECORD_REFERENCES")
 
 
 def view_declarations(structure):
     """The run view's declarations for a structure (D154): @3's own, then each declared kind's
-    KindView entries for the fields its structure's types hold, its layers and its axis sets.
-    A structure without kinds gets the module's own objects."""
+    KindView entries for the fields its structure's types hold, its layers and its axis sets, its
+    residual records (RECORD_DIAGNOSTICS) and its increments' references (RECORD_REFERENCES,
+    where the reference is a field of the structure's layout). A structure without kinds gets the
+    module's own objects."""
     kinds = _kinds(structure)
     if not kinds:
-        names = (*_VIEW_MAPS, "VIEW_LAYERS", "VIEW_AXIS_SETS")
+        names = (*_VIEW_MAPS, "VIEW_LAYERS", "VIEW_AXIS_SETS", *_RECORD_ROLES)
         return {name: globals()[name] for name in names}
     types = kind_types(structure)
     present = {*types.STATE_TYPE._fields, *types.OBSERVATION_FIELDS}
     merged = {name: dict(globals()[name]) for name in _VIEW_MAPS}
     layers, axis_sets = list(VIEW_LAYERS), {}
+    diagnostics, references = list(RECORD_DIAGNOSTICS), dict(RECORD_REFERENCES)
     for kind in kinds:
         view = kind.view
         if view is None:
@@ -1978,8 +1995,19 @@ def view_declarations(structure):
         known = {layer["id"] for layer in layers}
         layers += [MappingProxyType(dict(x)) for x in view.view_layers if x["id"] not in known]
         axis_sets |= dict(view.axis_sets)
+        diagnostics += [k for k in view.record_diagnostics if k in present and k not in diagnostics]
+        references |= {
+            k: v
+            for k, v in view.record_references.items()
+            if k in present and v in types.LAYOUT_TYPE._fields
+        }
     out = {name: MappingProxyType(value) for name, value in merged.items()}
-    return out | dict(VIEW_LAYERS=tuple(layers), VIEW_AXIS_SETS=MappingProxyType(axis_sets))
+    return out | dict(
+        VIEW_LAYERS=tuple(layers),
+        VIEW_AXIS_SETS=MappingProxyType(axis_sets),
+        RECORD_DIAGNOSTICS=tuple(diagnostics),
+        RECORD_REFERENCES=MappingProxyType(references),
+    )
 
 
 # Notes a record carries, in the model's own words (its summary's membrane_transfer_ledger).

@@ -10,7 +10,11 @@ VIEW_LAYERS (with RECORD_NOTES), which replace the run-view writer's interim tab
 - on data: a membrane's voltage is its cell's potential less its outside node's, a junction's its
   sender's less its receiver's (a sheet with nonzero junction voltages), and a positive membrane or
   junction flux leaves the patch's cell or the junction's sender (the amounts' rates);
-- the passive route laws declare their provenance.
+- the passive route laws declare their provenance;
+- RECORD_DIAGNOSTICS names records that are the step's own residuals, and RECORD_REFERENCES maps
+  each increment record to its reference layout field (the run view's loop closure measure, FR-11):
+  every named field is a record and every reference a layout field, @3's and a kind world's, with
+  a kind's entries folded in where its structure has the fields.
 """
 
 import numpy as np
@@ -75,7 +79,7 @@ def test_the_implementation_object_and_the_composite_adapter_give_them():
     impl = get_model(parse_spec(raw).model)
     composite = get_model(parse_spec(cs.frozen_definition(raw)).model).inner
     names = ("UNITS", "OBSERVATION_AXES", "RECORD_KINDS", "ORIENTATION", "RECORD_LAYERS")
-    for name in (*names, "VIEW_LAYERS", "RECORD_NOTES"):
+    for name in (*names, "VIEW_LAYERS", "RECORD_NOTES", "RECORD_DIAGNOSTICS", "RECORD_REFERENCES"):
         assert getattr(impl, name) is getattr(v3, name), name
         assert getattr(composite, name) is getattr(v3, name), name
 
@@ -179,3 +183,65 @@ def test_the_passive_route_laws_declare_their_provenance():
         assert law.basis
     assert routes[inner_laws.MEMBRANE_ROUTE_LAW_ID].hosts == ("membrane", "junction")
     assert "not a reproduction" in routes[inner_laws.FACE_ROUTE_LAW_ID].basis
+
+
+def records_and_layout(impl):
+    records = {*impl.STATE_TYPE._fields, *(f for f in impl.OBSERVATION_FIELDS if f != "times")}
+    return records, {*impl.LAYOUT_TYPE._fields, *impl.FLOOR_LAYOUT_TYPE._fields}
+
+
+def test_record_diagnostics_and_references_name_records_and_layout_fields():
+    """@3's residual records and increment references: every named field is a record of the
+    model and every reference a field of its layout (both layout types)."""
+    assert v3.RECORD_DIAGNOSTICS == (
+        "charge_residual_C",
+        "component_current_residual_A",
+        "energy_balance_pJ_s",
+    )
+    assert dict(v3.RECORD_REFERENCES) == {
+        "amount_increment": "amount_reference",
+        "extracellular_amount_increment": "extracellular_amount_reference",
+    }
+    records = {*v3.STATE_AXES, *(f for f in v3.OBSERVATION_FIELDS if f != "times")}
+    assert set(v3.RECORD_DIAGNOSTICS) <= records
+    assert set(v3.RECORD_REFERENCES) <= set(v3.STATE_AXES)
+    for layout in (v3.LAYOUT_TYPE, v3.FLOOR_LAYOUT_TYPE):
+        assert set(v3.RECORD_REFERENCES.values()) <= set(layout._fields), layout
+    for name in v3.RECORD_DIAGNOSTICS:  # Readouts with an axis and a unit, like every record.
+        assert v3.OBSERVATION_AXES[name] and v3.UNITS[name], name
+
+
+def test_a_kind_world_folds_the_kinds_record_roles():
+    """FR-4's development world (as above): today's kinds declare no residual record and no
+    reference, so the object gives @3's; a kind's own entries are folded in where its structure has
+    the fields (a test-local registry with the passive routes' view extended), and dropped where
+    it has not."""
+    import dataclasses
+
+    from cells.core import kind_registry
+    from cells.models.inner_kinds import passive_routes, proton_buffer
+    from validation.compartment_ph_engine import definitions as defs
+
+    raw = defs.development_world(defs.fr4_world())
+    raw["model"].pop("transporters")
+    impl = get_model(parse_spec(raw).model)
+    records, layout = records_and_layout(impl)
+    assert impl.RECORD_DIAGNOSTICS == v3.RECORD_DIAGNOSTICS
+    assert dict(impl.RECORD_REFERENCES) == dict(v3.RECORD_REFERENCES)
+    assert set(impl.RECORD_DIAGNOSTICS) <= records
+    assert set(impl.RECORD_REFERENCES) <= records
+    assert set(impl.RECORD_REFERENCES.values()) <= layout
+    view = passive_routes.VIEW._replace(
+        record_diagnostics=("passive_dissipated_energy_pJ", "no_such_record"),
+        record_references={"passive_transferred": "passive_permeability", "no_such": "field"},
+    )
+    kinds = kind_registry.KindRegistry()
+    kinds.register(dataclasses.replace(passive_routes.PASSIVE_ROUTES, view=view))
+    kinds.register(proton_buffer.PROTON_BUFFER)
+    with kind_registry.scope(kinds):
+        planted = get_model(parse_spec(raw).model)
+    assert planted.RECORD_DIAGNOSTICS == (*v3.RECORD_DIAGNOSTICS, "passive_dissipated_energy_pJ")
+    assert dict(planted.RECORD_REFERENCES) == {
+        **v3.RECORD_REFERENCES,
+        "passive_transferred": "passive_permeability",
+    }
