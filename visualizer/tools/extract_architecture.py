@@ -648,6 +648,7 @@ def main():
     parser.add_argument("--proteins", default=str(HERE.parent / "data" / "proteins"), help="folder with the protein inventory's snapshot and overlay")
     parser.add_argument("--atlases", help="folder with the species atlases (default: atlases/ in the proteins folder; it need not exist)")
     parser.add_argument("--species", default=str(HERE.parent / "data" / "species"), help="folder with the species files and their shapes (schema/SPECIES.md; it need not exist)")
+    parser.add_argument("--machines", default=str(HERE.parent / "data" / "machines"), help="folder with the machine files (schema/MACHINES.md; it need not exist)")
     parser.add_argument("--strict", action="store_true", help="exit with an error if anything is warned about")
     arguments = parser.parse_args()
 
@@ -673,6 +674,7 @@ def main():
     # The species the viewer can show (schema/SPECIES.md): any number of files, or none. A species'
     # place for a capability that is left out of the picture stays in its file and is not shown.
     hidden = {item["id"] for item in build.left_out if item["kind"] == "capability"}
+    remarks_machines = []
     species, shapes, breaches, noted = read_species(arguments.species, {item["id"]: item["scale"] for item in overlay["capabilities"]}, hidden)
     build.warnings.extend(breaches)
     # A species may be held back from the picture for now (the overlay's `species_held`): its
@@ -694,6 +696,33 @@ def main():
             for key in ("atlases", "shelves"):
                 build.proteins[key] = [item for item in build.proteins.get(key, []) if item["id"] != identifier]
         build.left_out.append({"id": f"species.{identifier}", "kind": "species", "label": known[0].get("label") or identifier, "since": hold["since"], "says": hold["says"], "reason": hold["reason"]})
+    # Machines (schema/MACHINES.md): a species' entry names each machine that has a file of its own, by its id,
+    # its label and the file, which is published beside the page and fetched when the visitor looks closer. A
+    # species without one is written exactly as before.
+    machines_folder = Path(arguments.machines)
+    shown = {item["id"]: item for item in species}
+    for path in sorted(machines_folder.glob("*.json")) if machines_folder.is_dir() else []:
+        try:
+            machine = json.loads(path.read_text(encoding="utf-8"))
+        except ValueError as error:
+            build.warnings.append(f"machine {path.name}: not JSON ({error})")
+            continue
+        if machine.get("format") != "cells.visualizer.machine@1":
+            build.warnings.append(f"machine {path.name}: its format is {machine.get('format')!r}")
+            continue
+        if path.name != f"{machine.get('species')}.{machine.get('id')}.json":
+            build.warnings.append(f"machine {path.name}: a machine file is named <species>.<machine>.json")
+            continue
+        owner = shown.get(machine["species"])
+        if owner is None:
+            remarks_machines.append(f"machine {path.name}: its species is not shown, so the scene carries nothing of it")
+            continue
+        at = machine.get("at") or {}
+        bases = [item.get("base", {}).get("id") for item in owner.get("cell", {}).get("parts", {}).get("appendages", []) if item.get("kind") == at.get("appendage")]
+        if "appendage" in at and at.get("base") not in bases:
+            build.warnings.append(f"machine {path.name}: no {at.get('appendage')} of {owner['id']} has the base {at.get('base')!r}")
+            continue
+        owner.setdefault("machines", []).append({"id": machine["id"], "label": machine.get("label") or machine["id"], "called": machine.get("called"), "at": at, "file": f"machines/{path.name}"})
     model_groups = [
         {**group, "description": build.reword("model_groups", group["id"], "description", group.get("description"))} if "description" in group else group
         for group in overlay["model_groups"]
@@ -706,6 +735,7 @@ def main():
         build.proteins["stamp"]["checked_at"] = revision
         remarks = build.proteins.pop("remarks", [])  # on the species atlases; reported below, not written
     remarks += noted
+    remarks += remarks_machines
     remarks += [f"cited source {path} is the viewer's own and not yet in the checkout read: its link on the page opens once the branch is merged there" for path in build.ahead]
     # Only tracked files are read, so an untracked file does not make the reading dirty.
     dirty = bool(git(repo, "status", "--porcelain", "--untracked-files=no", "--", "src", "docs", "PROGRESS.md").strip())
@@ -776,6 +806,8 @@ def main():
     for item in species:
         levels = ", ".join(level["id"] for level in item["levels"])
         print(f"species {item['id']}{' (the page opens on it)' if item['default'] else ''}: {levels}; modelled: {item['modelled']['state']}")
+        for machine in item.get("machines", []):
+            print(f"  machine {machine['id']} ({machine['label']}) at {machine['at']}; beside the page: {machine['file']} ({(machines_folder / Path(machine['file']).name).stat().st_size / 1024:.0f} KB)")
     for item in build.left_out:
         print(f"left out of the picture since {item['since']}: {item['id']} ({item['says']}): {item['reason']}")
     for remark in remarks:

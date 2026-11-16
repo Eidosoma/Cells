@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-16",
-  "generated_at": "2026-11-16T21:13:17Z",
+  "generated_at": "2026-11-16T21:58:14Z",
   "revision": "3b7f1cff",
   "revision_date": "2026-11-16",
   "dirty": false,
@@ -5338,7 +5338,19 @@
      "class": "permissive",
      "accessed": "2026-11-15"
     }
-   }
+   },
+   "machines": [
+    {
+     "id": "flagellar-motor",
+     "label": "Flagellar motor",
+     "called": "motor",
+     "at": {
+      "appendage": "flagellum",
+      "base": "flagellar-motor"
+     },
+     "file": "machines/ecoli.flagellar-motor.json"
+    }
+   ]
   },
   {
    "id": "thalecress",

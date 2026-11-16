@@ -152,13 +152,18 @@ says the engine models an organism unless the project's record says so.
     go out until the whole of them shows.
   - **It can be chosen.** Its panel gives the file's numbers with their sources, and what
     was drawn.
-  - **`base`** names the machine at the foot of the appendage (a flagellum's motor), so
-    that a closer view of it can be added later: its `id` and `label`, and the mark and
-    value under which the species' own proteins list its parts
-    (`schema/SPECIES_PROTEINS.md`, `highlights`). A base is drawn where the kind's drawing
-    gives the thread a foot. Until the closer view exists, choosing the foot opens a
-    panel that says what the machine is, with a door into the Protein atlas: the species'
-    own proteins, with that mark's value picked out.
+  - **`base`** names the machine at the foot of the appendage (a flagellum's motor): its
+    `id` and `label`, and the mark and value under which the species' own proteins list
+    its parts (`schema/SPECIES_PROTEINS.md`, `highlights`). A base is drawn where the
+    kind's drawing gives the thread a foot. Choosing the foot opens a panel that says what
+    the machine is, with a door into the Protein atlas: the species' own proteins, with
+    that mark's value picked out. **Where a machine file names this base**
+    (`data/machines/<species id>.<base id>.json`, `schema/MACHINES.md`), the panel also
+    offers "Look closer", which flies to the foot chosen and draws the machine from that
+    file in the cell's place, and the scale rail has the machine's stop below one cell.
+    The scene carries, in the species' entry, only each machine's `id`, `label`, `called`,
+    `at` and `file`; the file is published beside the page and fetched when the visitor
+    looks closer.
 - **A species may be held back from the picture.** Where the viewer cannot yet draw what
   a species' cell needs, its files are kept and checked like any other, and the map's
   overlay names it under `species_held` with since when, how the page names it and why.

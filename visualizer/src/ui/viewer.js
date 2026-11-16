@@ -188,6 +188,11 @@ class CellsViewer extends HTMLElement {
       new ResizeObserver(() => {
         if (this.clientWidth !== this.widthSeen) {
           this.widthSeen = this.clientWidth;
+          // A fold of a narrow window (the rail's, the card's) ends when the window is no longer narrow.
+          if (this.clientWidth >= 760 && (this.state.railOpen || this.state.viewOpen)) {
+            this.toggleRail(false);
+            this.toggleViewCard(false);
+          }
           this.renderChrome(); // the switch may fit the bar again, or no longer
         } else this.fitCard();
       }).observe(this);
@@ -215,6 +220,8 @@ class CellsViewer extends HTMLElement {
     // effect on; "fps=1" shows the frame rate with a switch for each effect, for judging on a device.
     if (this.stage && query.get("look")) this.stage.look.choose(query.get("look"));
     if (this.stage && query.get("fps")) this.stage.look.trial = true;
+    // "frames=1": a small readout at the foot of the picture of the frames the device really draws (core/stage.js).
+    if (this.stage && query.get("frames")) this.stage.showFrames(this.frame);
     const wanted = query.get("lens") || location.hash.slice(1) || this.getAttribute("lens") || this.views[0].id;
     this.setLens(this.views.some((lens) => lens.id === wanted) ? wanted : this.views[0].id);
     if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
@@ -232,17 +239,30 @@ class CellsViewer extends HTMLElement {
       // Quantity layers: "layers=junction-drops,-voltage-relief" switches the first on and the second off; "strength=bold".
       if (query.get("strength")) this.current?.setStrength?.(query.get("strength"));
       if (query.get("layers")) this.current?.setLayers?.(query.get("layers"));
-      if (query.get("select")) {
-        this.select(query.get("select"), { fly: true });
-        // A part the address names is chosen as the page opens; what a view shows only at a visitor's own choice (flux in the Cell view) waits for one.
-        this.current?.openedWith?.(this.state.selected);
-      }
-      // A stated camera angle or distance has the last word, also over the flight to a selected part.
-      if (this.stage && (query.get("azimuth") || query.get("polar") || query.get("distance"))) {
-        const view = {};
-        for (const name of ["azimuth", "polar", "distance"]) if (query.get(name)) view[name] = Number(query.get(name));
-        this.stage.rig.setView(view);
-      }
+      const choose = () => {
+        if (query.get("select")) {
+          this.select(query.get("select"), { fly: true });
+          // A part the address names is chosen as the page opens; what a view shows only at a visitor's own choice (flux in the Cell view) waits for one.
+          this.current?.openedWith?.(this.state.selected);
+        }
+        // A stated camera angle or distance has the last word, also over the flight to a selected part.
+        if (this.stage && (query.get("azimuth") || query.get("polar") || query.get("distance"))) {
+          const view = {};
+          for (const name of ["azimuth", "polar", "distance"]) if (query.get(name)) view[name] = Number(query.get(name));
+          this.stage.rig.setView(view);
+        }
+      };
+      // A machine's closer view (schema/MACHINES.md): "machine=<id>", with "detail=1|2|3". It stands until the visitor chooses.
+      const machine = query.get("machine") && this.current?.lookCloser ? this.current.lookCloser(query.get("machine"), { address: true, detail: query.get("detail") }) : null;
+      if (machine?.then) {
+        machine.then((shown) => {
+          if (shown && !query.get("select")) {
+            this.select(`machine:${query.get("machine")}`);
+            this.current?.openedWith?.(this.state.selected);
+          }
+          choose();
+        });
+      } else choose();
     };
     // A view that loads its data first (a run) is ready a moment later; the others are ready now.
     const loading = query.get("run") ? this.current?.show?.(query.get("run")) : this.current?.ready;
@@ -294,6 +314,10 @@ class CellsViewer extends HTMLElement {
           if (this.current !== lens) return;
           this.renderChrome();
           this.renderPanel();
+        };
+        // A view that showed something the visitor asked for by a control of its own (a machine's closer view, from the scale rail): its panel opens.
+        lens.onShown = (shown) => {
+          if (this.current === lens && shown) this.select(shown);
         };
         this.lenses.set(id, lens);
       }
@@ -360,7 +384,17 @@ class CellsViewer extends HTMLElement {
    * ("show": which of the atlas's two drawings) with one set of them picked out (a mark and its value);
    * a structure of the cell opens it on the shelf of its membrane ("shelf"), with no set picked out.
    */
-  openDoor({ lens, show, mark, value, shelf }) {
+  openDoor({ lens, show, mark, value, shelf, ids, look, machine }) {
+    // A door within the view shown: a closer view of a machine (Look closer), or back out of it.
+    if (look === "closer") {
+      Promise.resolve(this.current?.lookCloser?.(machine)).then((shown) => shown && this.select(`machine:${machine}`));
+      return;
+    }
+    if (look === "back") {
+      this.select(null);
+      this.current?.back?.();
+      return;
+    }
     if (!this.views.some((view) => view.id === lens)) return;
     this.select(null);
     this.setLens(lens, true);
@@ -369,6 +403,8 @@ class CellsViewer extends HTMLElement {
       if (this.current !== view) return; // another view was chosen meanwhile
       if (mark) view.setMark?.(mark);
       if (value !== undefined) view.setFinding?.(String(value));
+      // Of the set picked out, only the proteins the door names (a machine's part: schema/MACHINES.md).
+      if (ids?.length) view.pickIds?.(ids);
       if (shelf !== undefined) {
         view.setMark?.(null); // a set picked out before would stand in the way of the shelf
         view.setFinding?.(shelf);
@@ -472,7 +508,7 @@ class CellsViewer extends HTMLElement {
     this.renderSpecies(chrome);
     this.viewCard.hidden = !chrome.view && !chrome.card && !chrome.run;
     this.viewToggle.hidden = this.viewCard.hidden;
-    const switches = chrome.view ? [chrome.view.species && !this.speciesInBar ? "species" : null, "colour", (chrome.view.sizes || ["schematic", "real"]).length > 1 ? "sizes" : null].filter(Boolean) : [];
+    const switches = chrome.view ? [chrome.view.species && !this.speciesInBar ? "species" : null, "colour", (chrome.view.sizes || ["schematic", "real"]).length > 1 && !chrome.view.machine ? "sizes" : null, chrome.view.machine ? "detail" : null].filter(Boolean) : [];
     const folded = chrome.run ? "Experiment and run" : chrome.view ? switches.join(", ").replace(/, (?=[^,]*$)/, " and ").replace(/^./, (letter) => letter.toUpperCase()) : chrome.card?.heading || "";
     this.viewToggle.replaceChildren(h("span", {}, folded), h("span", { class: "chevron", "aria-hidden": "true" }));
     this.viewCard.classList.toggle("view-card", Boolean(chrome.card || chrome.run));
@@ -503,8 +539,10 @@ class CellsViewer extends HTMLElement {
           here ? this.speciesRow(species) : null,
           here ? h("p", { class: "species-line" }, this.speciesState(species)) : null,
           this.segmented("Colour", [["biology", "Biology"], ["status", "Status"]], view.colour, (value) => this.current.setColourBy(value)),
-          sizes.length > 1 ? this.segmented("Sizes", [["schematic", "Schematic"], ["real", "To scale"]], view.size, (value) => this.current.setSizeMode(value)) : null,
-          h("p", { class: "view-note" }, sized),
+          sizes.length > 1 && !view.machine ? this.segmented("Sizes", [["schematic", "Schematic"], ["real", "To scale"]], view.size, (value) => this.current.setSizeMode(value)) : null,
+          // In a machine's closer view: how much of it is drawn, and what the picture is.
+          view.machine ? this.segmented("Detail", view.machine.detail.options.map(([value, label]) => [value, label]), view.machine.detail.active, (value) => this.current.setDetail(value)) : null,
+          h("p", { class: "view-note" }, view.machine ? view.machine.note : sized),
         ].filter(Boolean)
       );
     }
@@ -1229,6 +1267,7 @@ class CellsViewer extends HTMLElement {
         return;
       }
       const hit = this.stage.pick(event.clientX, event.clientY, this.current.pickRoots);
+      this.current.picked?.(hit); // where it was pressed: a foot that has a machine is looked at closer there
       this.select(hit?.id || null);
     });
     // Labels lie over the canvas. A press on one is handed to the camera control, which

@@ -365,7 +365,7 @@ try {
 
   // Every species the scene carries, whichever they are: its own levels, its statement, and the
   // switch staying where it stands (the bar or the card) for each of them, in both views.
-  const all = await evaluate(`${V}.model.raw.species.map((item) => ({ id: item.id, label: item.label, state: item.modelled.state, levels: item.levels.map((level) => level.id), absent: Object.entries(item.cell.capabilities || {}).filter(([, said]) => said.place === "absent").map(([id]) => id) }))`);
+  const all = await evaluate(`${V}.model.raw.species.map((item) => ({ id: item.id, label: item.label, state: item.modelled.state, levels: item.levels.map((level) => level.id), machines: (item.machines || []).length, absent: Object.entries(item.cell.capabilities || {}).filter(([, said]) => said.place === "absent").map(([id]) => id) }))`);
   const places = [];
   for (const item of all) {
     await pressSpecies(item.id);
@@ -374,7 +374,9 @@ try {
     const stops = { molecules: "molecule", cell: "cell", tissue: "tissue", organ: "organ", organism: "organism" };
     const rail = s.rail.replace("*", "").split(" ");
     const drawnAbsent = item.absent.filter((id) => s.drawn.split(" ").includes(id));
-    check(`${item.label}: the rail has the levels of its file, and nothing it marks absent is drawn`, s.species === item.id && JSON.stringify(rail) === JSON.stringify(item.levels.map((id) => stops[id])) && drawnAbsent.length === 0 && s.listWhole === true, JSON.stringify([s.rail, item.levels, drawnAbsent, s.listWhole]));
+    // A machine that can be looked at closer (schema/MACHINES.md) has a stop of its own, after the molecules.
+    const wanted = item.levels.flatMap((id) => (id === "molecules" ? [stops[id], ...Array(item.machines).fill("machine")] : [stops[id]]));
+    check(`${item.label}: the rail has the levels of its file${item.machines ? " and a stop for its machine" : ""}, and nothing it marks absent is drawn`, s.species === item.id && JSON.stringify(rail) === JSON.stringify(wanted) && drawnAbsent.length === 0 && s.listWhole === true, JSON.stringify([s.rail, item.levels, item.machines, drawnAbsent, s.listWhole]));
     check(`${item.label}: the caveat under the picture ${item.state === "proposed" ? "says nothing of it is in the engine" : "is the map's own"}`, item.state === "proposed" ? new RegExp(`^${item.label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}: nothing of it is in the engine`).test(s.caveat || "") : !/nothing of it is in the engine/.test(s.caveat || "") && Boolean(s.caveat), String(s.caveat));
   }
   await press('.switch [data-lens="proteins"]');

@@ -1223,3 +1223,31 @@ test("a looping run and an illustration never share a picture", async () => {
   assert.ok(plan.kinds.every((kind) => kind.groups.every((group) => group.id === "run")));
   assert.equal(planFor(FLUX, { species: lens.species, has: () => true }).kinds.some((kind) => kind.id === "membrane"), false, "the membrane's own routes are drawn only from a run");
 });
+
+test("a chosen part that draws no flux: the legend says so in place of asking for a choice, and the part's panel says why", () => {
+  const human = lensFor("human");
+  human.choose("cap.nucleus");
+  const legend = human.flux.legend();
+  assert.equal(human.flux.tokens.length, 0);
+  assert.match(legend.hint, /^This part draws no flux: its panel says why\./);
+  const panel = human.flux.inPanel(scene.entities.find((item) => item.id === "cap.nucleus"));
+  assert.match(JSON.stringify(panel.sections), /The picture draws flux only for ions through the channels, ions through the pumps, exchange with neighbours, water and secreted signals\. This part is none of them\./);
+  // With nothing chosen, as before.
+  human.choose(null);
+  assert.match(human.flux.legend().hint, /^Or choose a part to see its flux\./);
+});
+
+test("the Speed row is offered wherever a rate stands behind what moves: a machine's rotor as it turns", () => {
+  const ecoli = lensFor("ecoli");
+  assert.equal(ecoli.flux.legend().time, null, "nothing turns, no looping run: no Speed row");
+  ecoli.machine = { open: true, legend: () => ({ turning: true, keys: [{ key: "way", text: "Turning" }], hint: null, example: "Illustration: not a run" }), statement: () => null };
+  const legend = ecoli.flux.legend();
+  assert.deepEqual(legend.time.options.map((option) => [option.label, option.on]), [["True", true], ["1/1,000", false], ["1/1,000,000", false]]);
+  assert.equal(legend.example, "Illustration: not a run");
+  ecoli.machine.legend = () => ({ turning: false, keys: [], hint: "The motor stands.", example: null });
+  assert.equal(ecoli.flux.legend().time, null, "standing, it offers none");
+  // The one place the speed is put in words.
+  assert.equal(ecoli.flux.slowSaid(), "true speed");
+  ecoli.flux.slow = 1000;
+  assert.equal(ecoli.flux.slowSaid(), "slowed 1,000 times");
+});

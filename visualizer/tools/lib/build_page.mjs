@@ -74,6 +74,34 @@ export async function proteinFiles(scene, { proteinsDir = DEFAULT_PROTEINS, memb
   return { files, problems };
 }
 
+// The machines a species' cell can show closer (schema/MACHINES.md): each file is committed under data/machines/
+// and published beside the page, at the address the scene names: machines/<species>.<machine>.json.
+export const DEFAULT_MACHINES = path.join(ROOT, "data", "machines");
+const MACHINE_PATH = /^machines\/([a-z0-9][a-z0-9_-]*\.[a-z0-9][a-z0-9_-]*\.json)$/;
+
+/**
+ * The machine files published beside the page: for every species the scene names, each
+ * machine its entry lists. Returns { files: [{ path, source, species }], problems: [text] }.
+ * A machine whose file is not there is left out and said in `problems`: its foot then offers
+ * no closer view.
+ */
+export async function machineFiles(scene, { machinesDir = DEFAULT_MACHINES } = {}) {
+  const files = [], problems = [];
+  for (const species of scene?.species || []) {
+    for (const entry of species.machines || []) {
+      const name = MACHINE_PATH.exec(entry.file || "")?.[1];
+      if (!name) {
+        problems.push(`${species.id}: the machine ${entry.id} names no file of the form machines/<species>.<machine>.json`);
+        continue;
+      }
+      const source = path.join(machinesDir, name);
+      if ((await modified(source)) === null) problems.push(`${species.id}: ${path.relative(ROOT, source)} is not there`);
+      else files.push({ path: entry.file, source, species: species.id });
+    }
+  }
+  return { files, problems };
+}
+
 /** Write a large catalogue's members into `folder`, by the step its shelves name. Returns what went wrong, or null. */
 async function writeMembers(shelves, folder) {
   let step = null;
@@ -113,7 +141,7 @@ const SKELETON_HEAD =
   "img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>";
 
 /** The page content, as published: no doctype, html, head or body tags of its own. */
-export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS } = {}) {
+export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES } = {}) {
   const bundle = await build({
     entryPoints: [path.join(ROOT, "src", "main.js")],
     bundle: true,
@@ -151,7 +179,7 @@ export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, 
   }
   // The same for the species' own proteins: beside the page by default, inside it for a file on disk.
   if (inlineRuns) {
-    for (const file of (await proteinFiles(data, { proteinsDir, membersDir })).files) {
+    for (const file of [...(await proteinFiles(data, { proteinsDir, membersDir })).files, ...(await machineFiles(data, { machinesDir })).files]) {
       const text = (await readFile(file.source, "utf8")).replaceAll("<", "\\u003c");
       inline += `\n<script type="application/json" data-file="${file.path}">${text}</script>`;
     }

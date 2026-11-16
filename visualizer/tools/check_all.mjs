@@ -41,6 +41,12 @@ const LIMIT_MS = Math.max(1000, (Number(value("--limit", 40)) || 40) * 60 * 1000
 const flux = (name, env, minutes = 4) => ({ name: `flux-${name}`, tool: "check_cellflux.mjs", args: [pictures], env: { NAME: `flux-${name}`, ...env }, minutes });
 const SUITE = [
   { name: "species", tool: "check_species.mjs", minutes: 14 },
+  // A machine's closer view (tools/check_machine.mjs): wide, on a phone in the dark, opened by the address, and with less
+  // motion. Minutes as measured on 16 November 2026 with up to three browsers on the visualizer's eight CPUs.
+  { name: "machine-main", tool: "check_machine.mjs", args: [pictures], env: { CASE: "main", NAME: "machine-main" }, minutes: 20 },
+  { name: "machine-phone", tool: "check_machine.mjs", args: [pictures], env: { CASE: "main", NAME: "machine-phone", WIDTH: "390", HEIGHT: "844", THEME: "dark" }, minutes: 12 },
+  { name: "machine-address", tool: "check_machine.mjs", args: [pictures], env: { CASE: "address", NAME: "machine-address" }, minutes: 10 },
+  { name: "machine-reduced", tool: "check_machine.mjs", args: [pictures], env: { CASE: "reduced", NAME: "machine-reduced" }, minutes: 5 },
   { name: "input-cell", tool: "check_input.mjs", env: { CHECK_ONLY: "cell" }, minutes: 5 },
   { name: "cell-ecoli", tool: "check_input.mjs", env: { CHECK_ONLY: "cell", CHECK_SPECIES: "ecoli" }, minutes: 5 },
   { name: "cell-thalecress", tool: "check_input.mjs", env: { CHECK_ONLY: "cell", CHECK_SPECIES: "thalecress" }, minutes: 5 },

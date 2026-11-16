@@ -133,17 +133,42 @@ test("a source is permissive, or an open paper whose numbers alone are taken; su
   }
   // The stator unit is one body; the one saved figure for what it holds names no species.
   const stator = machine.parts.find((part) => part.id === "stator-units");
-  assert.deepEqual(stator.holds.figures.map((figure) => [figure.n, figure.measured_in]), [[[4, 2], "not stated"]]);
+  assert.deepEqual(stator.holds.figures.map((figure) => [figure.n, figure.measured_in]), [[[4, 2], "not stated"], [[5, 2], "other bacteria: Bacillus subtilis"]]);
+  assert.equal(stator.holds.figures[1].pdb.entry, "6YSL", "the five and two of other bacteria come from the Protein Data Bank's records, not from a paper whose text limits its use");
   assert.equal(stator.subunits.of.length, 0);
   // A number read from an open paper with no licence declared: allowed with its place in the paper, from such a source alone.
   const open = motor();
   open.sources.open2020 = { text: "Made up A (2020) An open paper. Journal 1:1.", doi: "10.0000/made.up", licence: "No open licence stated: an open paper", class: "no stated terms", standing: "open paper, numbers only" };
   open.parts.find((part) => part.id === "stator-units").holds.figures.push({ text: "five and two", n: [5, 2], read: { source: "open2020", where: "its abstract", find: ["A5B2"] }, measured_in: "other bacteria: Made-up bacterium" });
   assert.deepEqual(problemsOf(open), []);
-  open.parts.find((part) => part.id === "stator-units").holds.figures[1].read.source = "nakamura2019";
+  open.parts.find((part) => part.id === "stator-units").holds.figures.at(-1).read.source = "nakamura2019";
   assert.match(problemsOf(open).join("; "), /read from nakamura2019, which is not an open paper whose numbers alone are taken/);
-  delete open.parts.find((part) => part.id === "stator-units").holds.figures[1].read.where;
+  delete open.parts.find((part) => part.id === "stator-units").holds.figures.at(-1).read.where;
   assert.match(problemsOf(open).join("; "), /read with no place in the paper/);
+});
+
+test("a value from a structure names its entry, which the file lists with the organisms its record states, and the organism beside the value is one of them", () => {
+  const machine = motor();
+  const entries = new Map(machine.structures.map((item) => [item.entry, item]));
+  let seen = 0;
+  const walk = (node) => {
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (!node || typeof node !== "object") return;
+    if (node.pdb) {
+      seen++;
+      const entry = entries.get(node.pdb.entry);
+      assert.ok(entry, node.pdb.entry);
+      assert.ok(entry.organisms.some((organism) => organism.includes(node.measured_in.replace(/^other bacteria: /, ""))), `${node.pdb.entry}: ${node.measured_in}`);
+      assert.match(node.pdb.what, /record states|own reading of the entry's coordinates/);
+    }
+    Object.values(node).forEach(walk);
+  };
+  walk([machine.parts, machine.layers]);
+  assert.ok(seen >= 10, String(seen));
+  assert.equal(machine.sources.pdb.licence, "CC0 1.0");
+  // The C ring's FliG and FliN, from 8UOX, in Salmonella.
+  const ring = machine.parts.find((part) => part.id === "c-ring");
+  assert.deepEqual(ring.subunits.of.map((sub) => [sub.gene, sub.count?.n ?? null, sub.count?.pdb?.entry ?? sub.count?.says ?? null]), [["fliM", 34, "n-flim-34"], ["fliN", 102, "8UOX"], ["fliG", 34, "8UOX"]]);
 });
 
 test("the saved papers still hold every sentence the file quotes, and their records the licence it gives", { skip: SAVED ? false : "the saved papers are not on this machine (set ECOLI_DATASETS)" }, () => {
@@ -160,7 +185,7 @@ test("the machine is drawn at the file's sizes, in nanometres scaled to the view
   const objectsOf = (part) => built.items.find((item) => item.part === part).objects;
   const c = boxIn(built, objectsOf("c-ring")[0]);
   assert.ok(Math.abs(c.max.x - c.min.x - 45) < 0.5, `the C ring is ${c.max.x - c.min.x} nm across`);
-  assert.ok(Math.abs(c.min.y + 24) < 0.01 && Math.abs(c.max.y + 4) < 0.01, `the C ring runs ${c.min.y} to ${c.max.y}`);
+  assert.ok(Math.abs(c.min.y + 19.2) < 0.01 && Math.abs(c.max.y + 4) < 0.01, `the C ring runs ${c.min.y} to ${c.max.y}`);
   // In world units: 45 nm is 0.045 µm.
   const world = new THREE.Box3().setFromObject(objectsOf("c-ring")[0]);
   assert.ok(Math.abs(world.max.x - world.min.x - 0.045) < 0.0006);
@@ -176,7 +201,7 @@ test("the machine is drawn at the file's sizes, in nanometres scaled to the view
   for (let k = 0; k < units.count; k++) {
     units.getMatrixAt(k, matrix);
     place.setFromMatrixPosition(matrix);
-    assert.ok(Math.abs(Math.hypot(place.x, place.z) - 3.5 - 20) < 1e-6, `unit ${k} at ${Math.hypot(place.x, place.z)}`);
+    assert.ok(Math.abs(Math.hypot(place.x, place.z) - 8.7 / 2 - 20) < 1e-6, `unit ${k} at ${Math.hypot(place.x, place.z)}`);
   }
 });
 
@@ -321,7 +346,10 @@ test("still, the rotor stands with its marks and its arrowhead; the words say so
 test("the picture's words: an illustration and no run, the way and where it is seen from, and the speed; never that it is too fast to follow", () => {
   const machine = motor();
   const real = statementOf(machine, { turning: true, slow: 1 }).join(" | ");
-  assert.equal(real, "Illustration: not a run · Cells has no model of this motor | Turning as in a run: counter-clockwise, seen from outside the cell | At real-life speed: about 150 turns a second, as while the cell swims; up to 300, its top speed");
+  assert.equal(real, "Illustration: not a run · Cells has no model of this motor | Turning as in a run: counter-clockwise, seen from outside the cell | At real-life speed: about 150 turns a second, the picture's choice within the 100 to 200 one paper gives for a swimming cell (it names no species); at most 300, in E. coli and Salmonella");
+  // The rate drawn is the picture's choice within the range the saved sentences give: none gives it for E. coli as it swims.
+  const drawn = machine.motion.rotor.drawn;
+  assert.ok(drawn.choice && !drawn.says && drawn.within_says.every((key) => machine.sentences[key]));
   const slowed = statementOf(machine, { turning: true, slow: 1000, slowSaid: "slowed 1,000 times" }).join(" | ");
   assert.match(slowed, /Slowed 1,000 times: in life about 150 turns a second/);
   assert.throws(() => statementOf(machine, { turning: true, slow: 1000 }), /the flux's own words/);
@@ -382,9 +410,195 @@ test("the Protein atlas's door may name some proteins of a set: only the markers
 });
 
 test("the drawing names no machine and no species: what it draws is the file's", () => {
-  for (const file of ["src/lenses/machine_parts.js", "src/layers/machine_motion.js"]) {
+  for (const file of ["src/lenses/machine_parts.js", "src/layers/machine_motion.js", "src/lenses/machine_view.js"]) {
     const code = readFileSync(path.join(ROOT, file), "utf8").replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
     assert.doesNotMatch(code, /\b(coli|escherichia|salmonella|flagell\w*|mot[AB]|fli[A-Z]|flg[A-Z]|C ring|MS ring|in a run)\b/i, file);
   }
   for (const kind of new Set(motor().parts.map((part) => part.kind))) assert.ok(KINDS.includes(kind), kind);
+});
+
+// ------------------------------------------------------------------ the closer view in the Cell view
+
+/** A stand-in for the cell lens and its stage, with E. coli's entry for the motor and two feet. */
+async function closer({ reduced = false } = {}) {
+  const { MachineView, MACHINE_STOP, roleColour } = await import("../src/lenses/machine_view.js");
+  const camera = new THREE.PerspectiveCamera(34, 1.5, 0.01, 100);
+  camera.position.set(0, 0.5, 3);
+  const flights = [];
+  const words = [];
+  const lens = {
+    u: 1, sizeMode: "schematic", sceneryLooks: new Map(), zones: [], root: new THREE.Group(),
+    species: { id: "ecoli", label: "E. coli", machines: [{ id: "flagellar-motor", label: "Flagellar motor", called: "motor", at: { appendage: "flagellum", base: "flagellar-motor" }, file: "machines/ecoli.flagellar-motor.json" }] },
+    cells: { schematic: { scenery: [{ id: "scenery:appendage:0:base", kind: "base", base: { id: "flagellar-motor" }, feet: [{ at: new THREE.Vector3(0, -0.4, 0.5), out: new THREE.Vector3(0, 0, 1) }, { at: new THREE.Vector3(0, -0.4, -0.5), out: new THREE.Vector3(0, 0, -1) }] }] } },
+    stage: { camera, palette: { dark: false, fg: "#111111", bgRaised: "#ffffff", bioProtein: "#3f86e0", bioMito: "#f0874a", bioMembrane: "#2fb3a3", bioIon: "#37b58c", edge: "#566878", ghost: "#77889a" }, reducedMotion: reduced, rig: { azimuth: 0.4, flight: null, instant: false, limits: { minDistance: 0.87 }, flyTo: (view) => flights.push(view) }, decoration: { holds: new Set(), pause(name) { this.holds.add(name); }, resume(name) { this.holds.delete(name); } }, invalidate() {} },
+    flux: { slow: 1, on: false, slowSaid() { return this.slow === 1 ? "true speed" : `slowed ${this.slow.toLocaleString("en-US")} times`; }, words: () => words.push(1), pin() {} },
+    model: { get: (id) => (id === "cap.machines" ? { id, label: "Molecular machines", status: "planned", plain: "Larger machines such as the proteasome." } : null) },
+    zone(name) {
+      const zone = { name, root: new THREE.Group(), labels: [], fade: 0 };
+      this.zones.push(zone);
+      return zone;
+    },
+    buildLabels() {}, fades() {}, onChrome() {},
+  };
+  const view = new MachineView(lens);
+  view.files.set("machines/ecoli.flagellar-motor.json", motor()); // as fetched beside the page
+  return { view, lens, flights, words, MACHINE_STOP, roleColour };
+}
+
+test("Look closer builds the motor at the foot that faces the camera, upright, and flies there from that side; the rail has its stop", async () => {
+  const { view, lens, flights, MACHINE_STOP } = await closer();
+  assert.deepEqual(view.railStops().map((stop) => [stop.id, stop.label]), [[MACHINE_STOP, "Flagellar motor"]]);
+  assert.deepEqual(view.door({ kind: "base", base: { id: "flagellar-motor" } }), { label: "Look closer", look: "closer", machine: "flagellar-motor" });
+  assert.equal(view.door({ kind: "base", base: { id: "another" } }), null);
+  assert.equal(await view.lookCloser("flagellar-motor"), true);
+  assert.ok(view.open && view.built && view.zone && lens.zones.includes(view.zone));
+  // The foot nearer the camera (at +z), and the machine upright there, in micrometres.
+  assert.deepEqual(view.foot.at.toArray(), [0, -0.4, 0.5]);
+  assert.deepEqual(view.built.root.position.toArray(), [0, -0.4, 0.5]);
+  assert.equal(view.built.root.scale.x, NM);
+  assert.equal(flights.length, 1);
+  assert.ok(flights[0].target.y > -0.4 && flights[0].distance === view.distance);
+  // The cell's least camera distance is lifted before the flight: one that arrives at once (less motion) is not held at it.
+  assert.ok(lens.stage.rig.limits.minDistance < view.distance);
+  // A press on the other foot first: Look closer goes there.
+  view.picked({ id: "scenery:appendage:0:base", point: new THREE.Vector3(0, -0.4, -0.49) });
+  await view.lookCloser("flagellar-motor");
+  assert.deepEqual(view.foot.at.toArray(), [0, -0.4, -0.5]);
+  // A sheet opens over the lower half of the picture while it stands framed: it is framed again, further out, in the half left.
+  Object.assign(lens.stage, { width: 390, height: 844, insets: { bottom: 422 } });
+  lens.stage.rig.distance = view.distance;
+  const framed = view.distance;
+  view.update(16, 16, 16);
+  assert.equal(flights.length, 3);
+  assert.ok(flights[2].distance > 1.5 * framed);
+  // Where the visitor has moved the camera, it stays.
+  lens.stage.rig.distance = 3 * view.distance;
+  lens.stage.insets = {};
+  view.update(16, 32, 16);
+  assert.equal(flights.length, 3);
+});
+
+test("the cell gives way to the motor as the camera comes close, and the closer view ends when it goes far out", async () => {
+  const { view } = await closer();
+  await view.lookCloser("flagellar-motor");
+  const d = view.distance;
+  assert.equal(view.veil(d), 1);
+  assert.equal(view.veil(10 * d), 0);
+  const middle = view.veil(2 * d);
+  assert.ok(middle > 0 && middle < 1);
+  view.applyFade(0.5);
+  assert.ok(view.materials.filter((material) => material.userData.role === "rotor").every((material) => Math.abs(material.opacity - 0.5) < 1e-9));
+  view.watch(2 * d);
+  assert.ok(view.open, "within the closer view");
+  view.watch(4 * d);
+  assert.equal(view.open, false, "zoomed out far enough, it ends");
+  assert.equal(view.veil(d), 0);
+});
+
+test("it turns when the visitor opened it, at the flux's speed; it stands for the address, for less motion, and while leaving", async () => {
+  const { view, lens } = await closer();
+  await view.lookCloser("flagellar-motor");
+  view.applyFade(1);
+  view.sync();
+  assert.equal(view.turning, true);
+  assert.ok(lens.stage.decoration.holds.has("machine"), "the look's own motion stands while it turns");
+  view.update(16, 16, 1000 / 60);
+  assert.ok(view.motion.angle > 0);
+  assert.deepEqual(view.statement().notice, "Illustration: not a run · Cells has no model of this motor");
+  assert.match(view.statement().ways[0], /At real-life speed: about 150 turns a second/);
+  // Narrower ways break the same words at spaces, so that the statement finds room between the cards.
+  const ways = view.statement().ways;
+  assert.ok(ways.length > 2 && ways.every((way) => way.replace(/\s+/g, " ") === ways[0].replace(/\s+/g, " ")));
+  assert.ok(Math.max(...ways.at(-1).split("\n").map((line) => line.length)) <= 40);
+  // The flux is slowed: the motor reads it there, and says it in the flux's own words.
+  lens.flux.slow = 1000;
+  view.update(16, 32, 1000 / 60);
+  assert.equal(view.motion.slow, 1000);
+  assert.match(view.statement().ways[0], /^Turning as in a run: counter-clockwise, seen from outside the cell\nSlowed 1,000 times: in life about 150/);
+  // Opened by the address: it stands, and the legend says why; a visitor's choice sets it turning.
+  await view.lookCloser("flagellar-motor", { address: true });
+  view.sync();
+  assert.equal(view.turning, false);
+  assert.match(view.legend().hint, /the page's address opened this view/);
+  let panels = 0;
+  lens.onPanel = () => panels++;
+  lens.selected = "machine:flagellar-motor";
+  view.chosen();
+  view.hold(); // the address's own choice of a part, made as the page opened
+  assert.equal(view.turning, false);
+  // The panel drawn in between, while the choice counted as the visitor's, is drawn again standing.
+  assert.ok(panels >= 2);
+  assert.ok(view.describe("machine:flagellar-motor").chips.every((chip) => chip.label !== "Illustration: not a run"));
+  view.chosen();
+  assert.equal(view.turning, true);
+  view.leave(null);
+  assert.equal(view.turning, false, "flying out, it stands");
+  // Less motion asked for: it stands.
+  const still = await closer({ reduced: true });
+  await still.view.lookCloser("flagellar-motor");
+  assert.equal(still.view.turning, false);
+  assert.match(still.view.legend().hint, /asks for less motion/);
+  assert.equal(still.view.legend().example, null);
+});
+
+test("its panels: the machine's own, with its parts and the way back; each part's, with Back to the cell; ids only while it is open", async () => {
+  const { view } = await closer();
+  assert.equal(view.has("machine:flagellar-motor"), false);
+  await view.lookCloser("flagellar-motor");
+  assert.ok(view.has("machine:flagellar-motor") && view.has("machine:flagellar-motor:c-ring") && view.has("machine:flagellar-motor:outer-membrane"));
+  assert.equal(view.has("machine:flagellar-motor:no-such-part"), false);
+  const own = view.describe("machine:flagellar-motor");
+  assert.equal(own.label, "Flagellar motor");
+  assert.ok(own.doors.some((door) => door.look === "back" && door.label === "Back to the cell"));
+  assert.ok(own.doors.some((door) => door.lens === "proteins" && door.mark === "complex" && door.value === "flagellum" && /all 34/.test(door.label)));
+  assert.ok(own.opens[0].items.some((item) => item.id === "machine:flagellar-motor:c-ring"));
+  assert.match(JSON.stringify(own.sections), /Molecular machines/);
+  const ring = view.describe("machine:flagellar-motor:c-ring");
+  assert.deepEqual(ring.doors.map((door) => door.label), ["Show these 3 proteins in the Protein atlas", "Back to the cell"]);
+  // Each part is chosen under its id and lit as the lens lights scenery.
+  assert.ok(view.lens.sceneryLooks.has("machine:flagellar-motor:c-ring"));
+  view.end();
+  assert.equal(view.has("machine:flagellar-motor:c-ring"), false);
+});
+
+test("another level is built anew where the machine stands; nothing is built while it turns", async () => {
+  const { view } = await closer();
+  await view.lookCloser("flagellar-motor");
+  view.applyFade(1);
+  view.sync();
+  const before = view.built;
+  let geometries = 0;
+  const count = () => {
+    geometries = 0;
+    view.built.root.traverse((object) => object.geometry && geometries++);
+    return geometries;
+  };
+  const was = count();
+  for (let k = 0; k < 10; k++) view.update(16, k * 16, 1000 / 60);
+  assert.equal(view.built, before);
+  assert.equal(count(), was, "no geometry is made while it turns");
+  view.setDetail(3);
+  assert.notEqual(view.built, before);
+  assert.equal(view.level, 3);
+  assert.deepEqual(view.built.root.position.toArray(), [0, -0.4, 0.5]);
+  assert.deepEqual(view.chrome().detail.options, [[1, "Outline"], [2, "Parts"], [3, "Subunits"]]);
+});
+
+test("each role wears a token of the page's palette; a mark wears the theme's high-contrast neutral", async () => {
+  const { roleColour } = await closer();
+  const palette = { dark: false, fg: "#111111", bgRaised: "#ffffff", bioProtein: "#3f86e0" };
+  assert.equal(roleColour("rotor", palette), "#3f86e0");
+  assert.equal(roleColour("mark", palette), "#ffffff");
+  assert.equal(roleColour("mark", { ...palette, dark: true }), "#111111");
+});
+
+test("the machine's file is published beside the page, as the scene names it", async () => {
+  const { machineFiles } = await import("../tools/lib/build_page.mjs");
+  const scene = { species: [{ id: "ecoli", machines: [{ id: "flagellar-motor", file: "machines/ecoli.flagellar-motor.json" }] }, { id: "human" }] };
+  const found = await machineFiles(scene);
+  assert.deepEqual(found.problems, []);
+  assert.deepEqual(found.files.map((file) => [file.path, path.relative(ROOT, file.source), file.species]), [["machines/ecoli.flagellar-motor.json", "data/machines/ecoli.flagellar-motor.json", "ecoli"]]);
+  const wrong = await machineFiles({ species: [{ id: "ecoli", machines: [{ id: "x", file: "../secret.json" }, { id: "y", file: "machines/ecoli.missing.json" }] }] });
+  assert.equal(wrong.files.length, 0);
+  assert.equal(wrong.problems.length, 2);
 });

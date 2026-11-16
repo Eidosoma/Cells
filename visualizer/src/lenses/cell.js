@@ -27,6 +27,7 @@ import { buildOutline } from "./outline_parts.js";
 import { middle, words } from "./cell_scenery.js";
 import { structureAbsence, structureDoors } from "./cell_structures.js";
 import { CellFlux, FLUX_SWITCH } from "../layers/cellflux.js";
+import { LEAST_DISTANCE, MachineView, MACHINE_STOP } from "./machine_view.js";
 
 const smooth = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -309,6 +310,8 @@ export class CellLens {
     this.species = null;
     // What flows in the cell: shown for a chosen part, or all of it with the Flux switch (layers/cellflux.js).
     this.flux = new CellFlux(this);
+    // A closer view of a machine at the foot of an appendage (machine_view.js, schema/MACHINES.md).
+    this.machine = new MachineView(this);
     this.setSpecies(defaultSpecies(model.raw));
   }
 
@@ -373,6 +376,7 @@ export class CellLens {
 
   /** Takes down what was drawn for the species shown before. */
   clear() {
+    this.machine?.clear();
     this.flux.clear();
     for (const zone of this.zones) {
       this.root.remove(zone.root);
@@ -596,6 +600,7 @@ export class CellLens {
   // ------------------------------------------------------------ lens interface
 
   has(id) {
+    if (this.machine?.has(id)) return true;
     if (this.species.id && id === `species:${this.species.id}`) return true;
     if (this.sceneryItem(id) || this.flux.has(id)) return true;
     return this.model.get(id)?.group === "biology" && !this.absent.has(id);
@@ -613,8 +618,16 @@ export class CellLens {
         .map((key) => sources[key])
         .filter(Boolean)
         .map((source) => ({ text: source.text, url: source.doi ? `https://doi.org/${source.doi}` : source.url }));
+    const machine = this.machine?.describe(id);
+    if (machine) return machine;
     const scenery = this.sceneryItem(id);
-    if (scenery) return describeScenery(scenery, species, links);
+    if (scenery) {
+      const panel = describeScenery(scenery, species, links);
+      // The foot of a machine that has a file of its own: a closer view of it can be had.
+      const closer = this.machine?.door(scenery);
+      if (!closer) return panel;
+      return { ...panel, plain: `The machine at the foot of each of the cell's ${String(scenery.of).toLowerCase()}. Nothing in the engine stands behind it: Cells has no model of it. Look closer to see it drawn from published sizes, as an illustration.`, doors: [...(panel.doors || []), closer] };
+    }
     if (this.flux.has(id)) return this.flux.describe(id);
     if (!species.id || id !== `species:${species.id}`) return null;
     const absent = [...this.absent].map(([part, why]) => ({ entity: this.model.get(part), why })).filter((item) => item.entity?.kind === "capability");
@@ -692,8 +705,9 @@ export class CellLens {
       // Of a species that is only proposed, nothing is in the engine (the contract's meaning of the
       // state), so the picture says that in place of the map's caveat about runs.
       caveat: species.modelled?.state === "proposed" ? `${species.label}: nothing of it is in the engine. The picture shows where the capabilities of Cells would have a place in it.` : this.model.raw.caveat,
-      rail: this.currentStops.map((stop) => ({ id: stop.id, label: stop.label, title: stop.entity?.plain })),
-      railActive: this.activeStop,
+      // A machine's closer view stands among the levels, below one cell (machine_view.js).
+      rail: this.currentStops.flatMap((stop) => [{ id: stop.id, label: stop.label, title: stop.entity?.plain }, ...(stop.id === "molecule" ? (this.machine?.railStops() ?? []) : [])]),
+      railActive: this.machine?.open && !this.machine?.leaving ? MACHINE_STOP : this.activeStop,
       // Where the species has no tissue, organ or body, the rail says so in the species' words.
       railNote: LEVELS.every(({ id }) => this.levels[id]) ? null : species.no_further_levels || null,
       together: (this.model.raw.model_groups || []).map((group) => ({ id: group.id, label: group.label, title: group.description })),
@@ -704,6 +718,7 @@ export class CellLens {
         size: this.sizeMode,
         sizes: this.modes,
         look: this.lookChrome(),
+        machine: this.machine?.chrome(), // while the closer view is open: its detail switch and what the card says of it
         across: cellAcross(this.levels.cell.shape),
         species: species.id
           ? {
@@ -724,6 +739,7 @@ export class CellLens {
   /** What the scale bar may say: micrometres per unit, or why no bar applies here. */
   scaleInfo() {
     const distance = this.stage.rig.distance, u = this.u;
+    if (this.machine?.fade > 0.5) return { micronsPerUnit: 1, note: "drawn to scale from published sizes; simple shapes, not structures" };
     if (this.sizeMode === "schematic" && distance < 13 * u) return { note: "Close-up not to scale" };
     // From where the sheet starts to give way to the outlines, the bar says what they are.
     if (this.ranges.tissue?.out && distance > this.ranges.tissue.out[0]) return { micronsPerUnit: 1, note: "the outline is a placeholder" };
@@ -793,11 +809,35 @@ export class CellLens {
   /** The page's address named this part: it is chosen as the page opens and shows no flux until the visitor chooses a part or presses the switch. */
   openedWith(id) {
     this.flux.hold(id);
+    this.machine?.hold(); // a machine's view the address opened stands until the visitor chooses
   }
 
   /** A choice is about to be set that was made through the page: the same part chosen again counts as the visitor's choice. */
   chosen() {
     this.flux.release();
+    this.machine?.chosen();
+  }
+
+  /** The visitor pressed something in the picture: where, so that "Look closer" goes to the foot that was pressed. */
+  picked(hit) {
+    this.machine?.picked(hit);
+  }
+
+  /** Look closer at a machine of the species' cell (`id`, or its first): fetched, built at its foot, flown to. */
+  lookCloser(id, options) {
+    return this.machine?.lookCloser(id, options);
+  }
+
+  /** The level of detail of a machine's closer view: 1, 2 or 3. */
+  setDetail(level) {
+    this.machine?.setDetail(level);
+  }
+
+  /** Escape with nothing chosen, or "Back to the cell": out of a machine's closer view. Returns whether it did. */
+  back() {
+    if (!this.machine?.open || this.machine?.leaving) return false;
+    this.goToScale("cell");
+    return true;
   }
 
   /** "rich", "plain", or "full": rich, with every effect held on whatever the frame rate. */
@@ -841,6 +881,7 @@ export class CellLens {
   deactivate() {
     this.active = false;
     this.flux.shine(); // the bloom and the hold on the look's motion go with the view
+    this.machine?.holdLook(false);
     this.trial?.hide();
     this.stage.dress({ rich: false }); // the other views keep the look they had
     this.stage.scene.remove(this.root);
@@ -921,15 +962,28 @@ export class CellLens {
       const said = why && why.length <= 80 ? why : "Ion channels have no place in this species";
       zoneOf("molecules").labels.push(labels.add({ text: `${said}: the close-up shows a pump`, anchor: beside, priority: 289, kind: "note", lift: -20 }));
     }
+    this.machine?.label(labels); // the names of a machine's parts, in its closer view
     // Past the cell of a species with no further levels: its own sentence, where they would be.
     if (zoneOf("beyond")) note("beyond", { text: this.species.no_further_levels, anchor: new THREE.Vector3(0, 0, R * 1.9 * u), priority: 290 });
     this.flux.label(labels); // what the picture says of the flux it shows
   }
 
   goToScale(id, immediate = false) {
+    if (id === MACHINE_STOP) {
+      if (!this.machine?.open || this.machine?.leaving) this.machine?.lookCloser(null)?.then((shown) => shown && this.onShown?.(this.machine?.entry && `machine:${this.machine?.entry.id}`));
+      return;
+    }
     const stop = this.currentStops.find((item) => item.id === id);
     if (!stop) return;
     const view = this.stopView(stop);
+    // Out of a machine's closer view: the camera flies there, and the cell comes back as it goes.
+    if (this.machine?.open && !this.machine?.leaving) {
+      this.stage.rig.limits.minDistance = 0.03 * Math.min(1, this.u);
+      this.machine?.leave(immediate ? null : view);
+      if (immediate) this.stage.rig.setView(view);
+      this.fades(true);
+      return;
+    }
     this.stage.rig.limits.minDistance = 0.03 * Math.min(1, this.u);
     if (immediate) this.stage.rig.setView(view);
     else this.stage.rig.flyTo(view, 1700);
@@ -1043,9 +1097,13 @@ export class CellLens {
       this.dustFade = dust;
       force = true;
     }
+    // In a machine's closer view the cell gives way to the machine as the camera comes close (machine_view.js).
+    const veil = this.machine?.veil(distance) ?? 0;
     for (const zone of this.zones) {
       const range = zone.range;
-      const fade = !this.shows(zone) ? 0 : (range.in ? smooth(range.in[0], range.in[1], distance) : 1) * (range.out ? 1 - smooth(range.out[0], range.out[1], distance) : 1);
+      const own = zone === this.machine?.zone;
+      const fade = own ? veil : (!this.shows(zone) ? 0 : (range.in ? smooth(range.in[0], range.in[1], distance) : 1) * (range.out ? 1 - smooth(range.out[0], range.out[1], distance) : 1)) * (1 - veil);
+      if (own) this.machine?.applyFade(fade, force);
       if (!force && Math.abs(fade - zone.fade) < 0.004) continue;
       changed = true;
       zone.fade = fade;
@@ -1057,6 +1115,7 @@ export class CellLens {
       }
       for (const label of zone.labels) label.hidden = fade < 0.55;
     }
+    this.machine?.watch(distance); // zoomed or flown out far enough, the closer view ends
     // Which stop are we nearest to, on a log scale?
     let nearest = this.activeStop, best = Infinity;
     for (const stop of this.currentStops) {
@@ -1082,13 +1141,15 @@ export class CellLens {
     }
     // The camera may come close at the cut edge, but looking at the middle of the cell it stays outside.
     const atEdge = 1 - smooth(0.3, 2.8, this.cells[this.sizeMode].shape.depth({ x: rig.target.x / u, z: rig.target.z / u }));
-    rig.limits.minDistance = (R + 6 + (0.03 - R - 6) * atEdge) * u;
+    // In a machine's closer view the camera may come as close as the machine asks (machine_view.js).
+    rig.limits.minDistance = this.machine?.open ? LEAST_DISTANCE : (R + 6 + (0.03 - R - 6) * atEdge) * u;
     return changed;
   }
 
-  update(dt) {
+  update(dt, time, real = dt) {
     const changed = this.fades();
-    const flowing = this.flux.frame(); // beads keep their own time
+    const turning = this.machine?.update(dt, time, real) ?? false; // a machine's rotor turns by the time that really passed
+    const flowing = this.flux.frame() || turning; // beads keep their own time
     const near = this.zones.some((zone) => zone.mode === this.sizeMode && zone.fade > 0.02);
     if (!near) return changed || flowing;
     if (this.stage.reducedMotion) {
@@ -1142,6 +1203,7 @@ export class CellLens {
   }
 
   applyPalette(palette) {
+    this.machine?.applyPalette(palette);
     for (const zone of this.zones) {
       for (const part of zone.parts) part.colour(palette);
       for (const material of zone.neutrals) {
@@ -1156,6 +1218,7 @@ export class CellLens {
   }
 
   dispose() {
+    this.machine?.clear();
     this.flux.dispose();
     this.stopLook();
     this.trial?.dispose();

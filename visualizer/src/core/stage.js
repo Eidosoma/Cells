@@ -104,6 +104,41 @@ export class Stage {
     }
   }
 
+  /**
+   * "frames=1" in the address: a small readout at the foot of the picture of the frames this
+   * device really draws, as the mean time between the frames drawn in the last second and the
+   * frames a second that makes. The server that checks the page draws in software, so the figure
+   * that counts is the one read on the visitor's own device. Absent, nothing is shown and
+   * nothing is measured. It only watches frames as they are drawn: it asks for none, and the
+   * clock the views keep (frameTimes) is not touched.
+   */
+  showFrames(parent) {
+    if (this.frames) return;
+    const box = document.createElement("div");
+    box.className = "frame-readout";
+    box.setAttribute("role", "status");
+    Object.assign(box.style, { position: "absolute", left: "max(16px, env(safe-area-inset-left, 0px))", bottom: "4px", zIndex: "6", padding: "1px 6px", borderRadius: "6px", border: "1px solid var(--line)", background: "var(--bg-raised)", color: "var(--muted)", font: "11px/1.3 var(--font-body, system-ui, sans-serif)", fontVariantNumeric: "tabular-nums", pointerEvents: "none" });
+    (parent || this.canvas.parentNode || this.host).append(box);
+    const drawn = [];
+    const watch = () => drawn.push(performance.now());
+    const write = () => {
+      const now = performance.now();
+      // The frames of the last second; where a frame takes longer than that, the last two. It says
+      // what was measured: a picture that stands and a device that stalls both draw no frame.
+      while (drawn.length > 2 && drawn[0] < now - 1000) drawn.shift();
+      if (drawn.length < 2) box.textContent = "Frames: fewer than two drawn yet";
+      else if (drawn.at(-1) < now - 4000) box.textContent = "Frames: none drawn in the last 4 seconds";
+      else {
+        const mean = (drawn.at(-1) - drawn[0]) / (drawn.length - 1);
+        box.textContent = `Frames: ${mean.toFixed(1)} ms · ${(1000 / mean).toFixed(mean > 100 ? 1 : 0)} a second, over the last ${mean > 1000 ? "two frames" : "second"}`;
+      }
+    };
+    this.afterRender.add(watch);
+    const timer = setInterval(write, 500);
+    write();
+    this.frames = { box, stop: () => (this.afterRender.delete(watch), clearInterval(timer), box.remove()) };
+  }
+
   /** A lens registers a tick(dt, time, real) that returns true while it is animating (frameTimes says what dt and real are). */
   onTick(callback) {
     this.listeners.add(callback);
@@ -302,6 +337,7 @@ export class Stage {
   }
 
   dispose() {
+    this.frames?.stop();
     this.stopWatching();
     this.observer.disconnect();
     document.removeEventListener("visibilitychange", this.onVisibility);

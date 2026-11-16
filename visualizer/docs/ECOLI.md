@@ -225,10 +225,17 @@ full text. The build stops if a sentence it rests on is gone.
   are those of `shelves.json`, where 34 proteins carry them; the build and the test
   check it.
 
-## For a closer view of the motor, later
+## The motor, looked at closer
 
-Not built. This lists what such a view would have to draw, for a later decision. It is
-not a design.
+Since 16 November 2026 the motor has a closer view in the Cell view: "Look closer" in the
+foot's panel, or the motor's stop on the scale rail. It is drawn from its own file,
+`data/machines/ecoli.flagellar-motor.json`, by the contract `schema/MACHINES.md`, and it
+turns as rule 13 of `schema/QUANTITY_LAYERS.md` allows: an illustration from papers, at
+real-life speed unless the flux is slowed. Cells has no model of it, and the picture says
+so. The file gives every number with its basis: a saved sentence (with the organism the
+sentence names), an entry of the Protein Data Bank (with the organism its record states),
+or the picture's choice. The table below is what the first look at the motor found; the
+file is now where its numbers are kept.
 
 | Part, as the literature names it | Proteins among the 34 marked `complex: flagellum` | Rough size or number |
 | --- | --- | --- |
@@ -264,8 +271,14 @@ not a design.
   - cap: 5H5V (E. coli FliD).
 - **Only two of these are of E. coli,** and none is stated to be of K-12. A picture drawn
   from them shows the motor of the family, not this strain's own.
-- **The Protein Data Bank's terms were not read for this note.** They are to be read and
-  saved before anything is drawn from a structure.
+- **The Protein Data Bank's terms were read and saved on 16 November 2026**
+  (`/mnt/datasets/Cells/ecoli/wwpdb-terms/`): "Data files contained in the PDB archive are
+  available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication." Fourteen
+  entries are saved with their records under `/mnt/datasets/Cells/ecoli/wwpdb-flagellar-motor/`.
+  The motor's file takes some counts from them (the copies each record states, such as the
+  34 FliG and 102 FliN of the C ring in 8UOX, of Salmonella) and some sizes (read from the
+  entries' alpha carbons by the motor agent, not checked against the papers that describe
+  the entries), each with its entry and organism. No shape is drawn from a structure.
 
 ## Sources and terms
 

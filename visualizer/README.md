@@ -241,10 +241,32 @@ must bve configurable as well based on our different species as we add them".
 - **Threads and hairs are a general part** (`cell.parts.appendages` in `schema/SPECIES.md`;
   the user, 15 November 2026: "lets draw flagella, pili as a general feature"). E. coli
   draws 3 of its 1 to 5 flagella and 120 of its 200 to 500 pili, and the picture says how
-  many of how many. The foot of a flagellum can be chosen: it opens the Protein atlas on
-  the 34 proteins of the species' flagellum. A closer view of the motor is not built.
-  A further kind of thread or organelle is one small function in
-  `src/lenses/cell_scenery.js`.
+  many of how many. The foot of a flagellum can be chosen (from close by: seen whole, the
+  cell's feet are a few pixels wide): its panel opens the Protein atlas on the 34 proteins
+  of the species' flagellum, and offers "Look closer". A further kind of thread or
+  organelle is one small function in `src/lenses/cell_scenery.js`.
+- **A machine can be looked at closer** (`schema/MACHINES.md`; the user, 16 November 2026:
+  "look closer sounds good"). "Look closer" in a foot's panel, or the machine's stop on
+  the scale rail between the molecules and one cell, flies to a foot (the one chosen, else
+  the one that faces the camera most). The cell fades out and the machine fades in, drawn
+  from its own file (`data/machines/<species>.<machine>.json`, published beside the page)
+  at its true size, upright, at one of three levels of detail (Outline, Parts, Subunits).
+  Every part can be chosen. Its panel names its proteins, gives each of its numbers with
+  what it rests on (a saved sentence and the organism it names; an entry of the Protein
+  Data Bank and the organism its record states; or the picture's choice), and opens the
+  Protein atlas on just those proteins. E. coli's flagellar motor is the first: most of
+  its ring sizes were measured in Salmonella, and its panels say so. **Cells has no model
+  of the motor**, and the picture says so for as long as it shows.
+- **The motor turns as its flux** (`schema/QUANTITY_LAYERS.md`, rule 13; the user: "motor,
+  yes it should turn at real life speeds at flux ... except if we slow down the flux"). It
+  turns at real-life speed, about 150 turns a second, counter-clockwise seen from outside
+  the cell, as in a run. That rate is the picture's choice within the 100 to 200 a second
+  one paper gives for a swimming cell, which names no species; the top speed, 300, is said
+  beside it. At that speed its marks are drawn smeared round, as the eye would see them,
+  with an arrowhead for the way. The legend's Speed row slows it a thousand or a million
+  times, and then its marks turn. It stands when the address opens the view
+  (`machine=flagellar-motor`), on a page opened still, and for a visitor who asks for less
+  motion.
 - **Licence classes.** Every source in a data file states its licence and its class:
   permissive, non-commercial, or no stated terms. A data file holds no value from a source
   that is not permissive (the user's rule, D173); such a source is a pointer in words.
@@ -465,6 +487,7 @@ npm run check:layers        # real clicks on a replay's quantity layers (zero, s
                             # holds the page to numbers worked out from the run's own arrays (tools/reference_flow.py); example: RUN=example-sheet--invented-numbers
 npm run check:look          # the Cell view's look: each effect, the switch, and the other views unchanged
 npm run check:flux          # flux in the Cell view: nothing flows as the page opens, a chosen part, the switch (THEME, WIDTH and HEIGHT, SPECIES, MOVING=1, ADDRESS=1 set the case)
+npm run check:machine       # a machine's closer view: Look closer, the turn and its speed, a part's panel and door, the way back (CASE=main|address|reduced; WIDTH, HEIGHT, THEME, FRAMES=1)
 npm run check:all           # every real-click check once, four at a time, with a table of what passed and summary.json (--only PATTERN, --jobs N, --out DIR, --list)
 npm run serve -- --no-proteins   # the page as it is when the species' own proteins are not published beside it
 npm run shot -- --out /tmp/shot.png --query "lens=engine&select=num.imex" --theme dark
@@ -622,8 +645,9 @@ stay out of git (61 runs in 327 files, 96 MB).
    statuses and the stamp agree, until the map is reviewed again: the map of 16 November
    2026 states main 3b7f1cff.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
-   `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look` and
-   `check:flux` once, four at a time, and writes a log for each and `summary.json`. Each
+   `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,
+   `check:flux` and `check:machine` once, four at a time, and writes a log for each and
+   `summary.json`. Each
    check says at its end whether the page's own font had arrived: with the stand-in, words
    run longer and cards stand taller, and a miss is read against that.
 5. `npm run export`
@@ -735,8 +759,31 @@ Ideas kept for after the basics (the user, 14 November 2026):
   run view once replays exist.
 - Statuses are as of the date in the top bar; the map does not update itself.
 - The checks' pictures are drawn by software WebGL or on the project machine's one graphics
-  card, as each run's record says. Frame times have been measured only on that card, not on
-  a phone or a laptop.
+  card, as each run's record says.
+- Frame rates are measured only on that card (an NVIDIA L4; 16 November 2026, a window of
+  1400 by 900). A frame's own work, the page's handler with the card's drawing in it, took
+  7.6 ms for E. coli's cell, 3.6 ms for its motor turning, and 11 ms for the planarian's
+  cell in the rich look (6 ms in the plain one): room to spare at 60 frames a second.
+  Headless Chrome paced those frames at 60 a second through ANGLE's OpenGL back end and at
+  22 to 30 through its Vulkan back end, whatever the page cost, so a rate read in a check
+  is the browser's pacing, not the page's cost. Nothing is measured on a phone or a laptop;
+  `frames=1` in the address shows a small readout of the frames the visitor's own device
+  draws.
+- A machine's closer view draws simple shapes from published sizes, not structures: no
+  shape is taken from the Protein Data Bank yet. Of its sizes, many are the picture's
+  choice (each says so), and those read from the Protein Data Bank's entries are the
+  agent's own reading of the coordinates, not checked against the papers behind them.
+- The machine is drawn upright at the foot it stands at, whatever way the foot faces: the
+  cell is faded out while it shows, so the two are never seen together whole. A foot is
+  hard to press while the cell is seen whole (it is a few pixels wide, under its thread);
+  the machine's stop on the scale rail is the easy way in. Escape leaves the closer view
+  only while the keyboard's focus is inside the viewer. On a phone the picture's statement
+  may find no room beside the open sheet; the sheet then carries it.
+- Slowed a thousand times, each of the motor's marks is sharp where a frame takes under
+  0.83 s; at Subunits the rings' 34 like marks are sharp throughout at 60 frames a second
+  and partly swept at 30. A device that draws a frame in more than 2 s turns the motor
+  slower than life (the stage counts so long a frame as a tenth of a second). The rule
+  never lets a mark jump (`schema/QUANTITY_LAYERS.md`, rule 13).
 - On a phone the scale rail folds behind one button under the bar, and while a panel is
   open the view's card folds behind another; the legend's title and the look's switch then
   stand on the panel's top edge. The open legend is tall there and scrolls; a card that

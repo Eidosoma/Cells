@@ -32,6 +32,7 @@ import { fitOnRow } from "./statement.js";
 import { SLOWS, statementOf, tokenWords, timeWords, STILL_WORDS, HEAD_WORDS } from "./marks/beads.js";
 import { ionColours } from "./ions.js";
 import { clock } from "../replay/format.js";
+import { speedWords } from "../replay/player.js";
 import declaredFlux from "../../data/layers/flux.json" with { type: "json" };
 import ionTable from "../../data/layers/ions.json" with { type: "json" };
 
@@ -289,6 +290,15 @@ export class CellFlux {
     this.lens.onChrome?.();
   }
 
+  /**
+   * The slow-down in force, in the words the picture says it: "true speed", "slowed 1,000
+   * times". The one place the Cell view's speed is put in words: a machine's closer view
+   * (lenses/machine_view.js) says its own speed with these.
+   */
+  slowSaid() {
+    return speedWords(1 / this.slow).phrase;
+  }
+
   setSlow(slow) {
     if (!SLOWS.includes(slow) || slow === this.slow) return;
     this.slow = slow;
@@ -441,7 +451,8 @@ export class CellFlux {
   /** Bloom and the hold on the look's own motion, for as long as flux shows in the lens shown; and no longer. */
   shine() {
     const { stage } = this.lens;
-    const showing = Boolean(this.lens.active) && this.tokens.length > 0;
+    // A machine's closer view hides the cell, and its beads with it: no bloom and no hold for what cannot be seen.
+    const showing = Boolean(this.lens.active) && this.tokens.length > 0 && !this.lens.machine?.open;
     const lit = showing ? this.tokens.flatMap((set) => set.tokens.shines) : [];
     for (const object of this.lit) if (!lit.includes(object)) stage.glow?.(object, false);
     for (const object of lit) if (!this.lit.includes(object)) stage.glow?.(object, true);
@@ -469,6 +480,9 @@ export class CellFlux {
    * between the cards is the one shown.
    */
   statement() {
+    // While a machine's closer view shows, the picture says what the machine's motion is (rule 13): one statement on the picture.
+    const machine = this.lens.machine?.statement?.();
+    if (machine) return machine;
     if (!this.tokens.length) return null;
     const still = this.still();
     if (this.source.kind === "illustration") {
@@ -570,6 +584,9 @@ export class CellFlux {
   /** The switch, the notice and the signs, for the legend (ui/legend.js, `layers`); null where nothing of the species could flow. */
   legend() {
     const { plan, flux } = this;
+    // A machine's closer view: the legend speaks of what moves there, and offers the Speed row while it turns.
+    const machine = this.lens.machine?.legend?.();
+    if (machine) return this.machineLegend(machine);
     if (!flux || (!plan.kinds.length && !plan.withheld.length)) return null;
     const showing = this.showing(), flowing = this.tokens.length > 0, still = this.still();
     const run = this.source.kind === "run";
@@ -598,8 +615,14 @@ export class CellFlux {
       keys.push({ key: "pump", text: "Where a lane runs is the picture's choice: the engine has no place for a single channel or pump" });
     }
     // The Cell view has no timeline: a looping run is slowed from the legend, in the same words as a replay's speed.
-    const time = run && flowing ? { label: "Speed", options: SLOWS.map((value) => ({ id: value, label: value === 1 ? "True" : `1/${value.toLocaleString("en-US")}`, title: timeWords(1 / value), on: this.slow === value })) } : null;
+    const time = run && flowing ? this.speedRow() : null;
     const cannot = showing.withheld.map((item) => ({ id: item.id, label: item.label, why: item.why }));
+    // A part is chosen (by the visitor) and draws nothing: the legend says so, in place of asking for a choice.
+    const selected = this.lens.selected, part = selected && (this.lens.model.get(selected)?.kind === "capability" || this.lens.sceneryItem?.(selected));
+    const chosen = Boolean(part) && !(this.held && selected === this.held);
+    const nothing = chosen && !showing.kinds.some((kind) => kind.part === showing.part);
+    // Where the legend lists what is not drawn and why, that says it; else the chosen part's panel does (inPanel).
+    const ask = cannot.length ? null : nothing ? "This part draws no flux: its panel says why." : "Or choose a part to see its flux.";
     return {
       title: "Flux",
       // An illustration says so for as long as it shows (rule 11).
@@ -608,13 +631,37 @@ export class CellFlux {
       time,
       // While nothing flows the cell's own drops, signals and ions move (a chosen part that draws nothing included): the
       // picture's own motion, which the page says is no measured flow, wherever motion is allowed.
-      hint: flowing ? null : [cannot.length ? null : "Or choose a part to see its flux.", still ? null : REST_WORDS].filter(Boolean).join(" ") || null,
+      hint: flowing ? null : [ask, still ? null : REST_WORDS].filter(Boolean).join(" ") || null,
       keys,
       cannot,
       // The view's card stands just above the legend: the signs, what is not drawn and the door to the panel keep to one line.
       compact: flowing ? "What the beads mean" : "Why nothing is drawn here",
       // With the switch on and no part chosen, a panel says what stands behind all of it; a chosen part's own panel says it of that part.
       details: flowing && !showing.kinds.some((kind) => kind.part === showing.part) ? FLUX_PANEL : null,
+    };
+  }
+
+  /**
+   * The Speed row: true speed, or slowed. Offered wherever a rate stands behind what moves: a
+   * looping run as it flows, and a machine's rotor as it turns. A later step gives the whole
+   * Cell view the Experiments timeline's control in its place.
+   */
+  speedRow() {
+    return { label: "Speed", options: SLOWS.map((value) => ({ id: value, label: value === 1 ? "True" : `1/${value.toLocaleString("en-US")}`, title: timeWords(1 / value), on: this.slow === value })) };
+  }
+
+  /** The legend in a machine's closer view: the switch, the Speed row while the rotor turns, and what its motion means. */
+  machineLegend(machine) {
+    return {
+      title: "Flux",
+      example: machine.example,
+      rows: [{ channel: "motion", label: "Show", options: [{ label: "Off", off: FLUX_SWITCH, on: !this.on }, { id: FLUX_SWITCH, label: "All", on: this.on, title: "Show all that moves" }] }],
+      time: machine.turning ? this.speedRow() : null,
+      hint: machine.hint,
+      keys: machine.keys,
+      cannot: [],
+      compact: "What its motion means",
+      details: null,
     };
   }
 
@@ -672,7 +719,14 @@ export class CellFlux {
     if (!entity || entity.kind !== "capability" || !entity.part) return entity;
     const kinds = this.plan.kinds.filter((kind) => kind.part === entity.part);
     const withheld = this.plan.withheld.filter((item) => item.part === entity.part);
-    if (!kinds.length && !withheld.length) return entity;
+    if (!kinds.length && !withheld.length) {
+      // A part through which the picture draws no flux at all: its panel says so, and what the picture draws flux for.
+      const drawn = [...new Set((this.flux?.kinds || []).filter((kind) => kind.groups?.length).map((kind) => kind.label).filter(Boolean))];
+      // Only a part the species has and that no kind of flux names: one the species lacks, or one a kind names, gets no word here, as before.
+      if (!this.flux || !drawn.length || this.lens.absent?.has(entity.id) || this.flux.kinds.some((kind) => kind.part === entity.part)) return entity;
+      const list = drawn.map((label) => `${label[0].toLowerCase()}${label.slice(1)}`).join(", ").replace(/, (?=[^,]*$)/, " and ");
+      return { ...entity, sections: [...(entity.sections || []), { title: "Flux", items: [{ label: "None drawn for this part", lines: [`The picture draws flux only for ${list}. This part is none of them.`] }] }] };
+    }
     const run = this.source.kind === "run";
     const items = [...kinds.flatMap((kind) => kind.groups.map((group) => this.item(kind, group))), ...withheld.map((item) => ({ label: `${item.label}: not drawn`, lines: [item.why] }))];
     const title = run ? "Flux, from the looping run" : `Flux. ${this.flux.illustration.notice}`;

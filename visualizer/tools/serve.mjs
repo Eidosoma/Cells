@@ -11,7 +11,7 @@
 import http from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { buildPage, proteinFiles, wrap, contentSecurityPolicy, ROOT, THREE_CDN, THREE_LOCAL, DEFAULT_SCENE, DEFAULT_RUNS, DEFAULT_PROTEINS, DEFAULT_MEMBERS } from "./lib/build_page.mjs";
+import { buildPage, proteinFiles, machineFiles, wrap, contentSecurityPolicy, ROOT, THREE_CDN, THREE_LOCAL, DEFAULT_SCENE, DEFAULT_RUNS, DEFAULT_PROTEINS, DEFAULT_MEMBERS, DEFAULT_MACHINES } from "./lib/build_page.mjs";
 
 // Reports script errors and blocked loads back to this server, in previews only.
 const REPORTER = `<script>
@@ -28,12 +28,17 @@ const REPORTER = `<script>
  * large catalogue's members are written; `proteins: null` serves none of them, as a page
  * published without those files would find.
  */
-export function createServer({ scene = DEFAULT_SCENE, runs = DEFAULT_RUNS, offline = false, log = console.log, proteins = DEFAULT_PROTEINS, members = DEFAULT_MEMBERS } = {}) {
+export function createServer({ scene = DEFAULT_SCENE, runs = DEFAULT_RUNS, offline = false, log = console.log, proteins = DEFAULT_PROTEINS, members = DEFAULT_MEMBERS, machines = DEFAULT_MACHINES } = {}) {
   // The files beside the page, by the address the page fetches them at. Listed again with each page, so a rebuilt scene is followed.
-  let beside = new Map();
+  let beside = new Map(), machined = new Map();
   const list = async () => {
+    const data = JSON.parse(await readFile(scene, "utf8"));
+    // A machine's file (schema/MACHINES.md), as it is published beside the page.
+    const made = machines ? await machineFiles(data, { machinesDir: machines }) : { files: [], problems: [] };
+    for (const problem of made.problems) log(`[server] machines: ${problem}`);
+    machined = new Map(made.files.map((file) => [`/${file.path}`, file.source]));
     if (!proteins) return;
-    const found = await proteinFiles(JSON.parse(await readFile(scene, "utf8")), { proteinsDir: proteins, membersDir: members });
+    const found = await proteinFiles(data, { proteinsDir: proteins, membersDir: members });
     for (const problem of found.problems) log(`[server] proteins: ${problem}`);
     beside = new Map(found.files.map((file) => [`/${file.path}`, file.source]));
   };
@@ -58,6 +63,15 @@ export function createServer({ scene = DEFAULT_SCENE, runs = DEFAULT_RUNS, offli
       const run = /^\/runs\/([a-z0-9.-]+\.json)$/.exec(url.pathname);
       if (run) {
         const file = await readFile(path.join(runs, run[1])).catch(() => null);
+        if (!file) response.writeHead(404).end("not found");
+        else response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }).end(file);
+        return;
+      }
+      // A machine's file is served beside the page too, as it is published.
+      if (url.pathname.startsWith("/machines/")) {
+        if (!machined.size) await list();
+        const source = machined.get(url.pathname);
+        const file = source ? await readFile(source).catch(() => null) : null;
         if (!file) response.writeHead(404).end("not found");
         else response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }).end(file);
         return;

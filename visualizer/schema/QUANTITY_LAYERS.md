@@ -226,6 +226,42 @@ the viewer changes.
     so beside the Flux switch. They hold still where they stood while any flux shows,
     those of a part whose flux shows give way to its beads, and they stand for a visitor
     who asks for reduced motion.
+13. **A machine's own motion is illustration from papers, and says so** (the user, 16
+    November 2026: "motor, yes it should turn at real life speeds at flux ... except if we
+    slow down the flux"; and of the blur: "sounds good on the blur but you can skipt the
+    too fast to follow text").
+    - **Its basis.** In a closer view of a machine (`schema/MACHINES.md`), a part turns only
+      where the machine's file gives a saved sentence of a permissive paper for its way,
+      with the side it is seen from, and a sentence, a declared derivation or a stated choice
+      within the range the sentences give, for its rate. This is the one exception to "No
+      textbook direction is drawn" in "Flux in the Cell view".
+    - **It is the machine's flux.** It moves while the machine is the part shown (opened by
+      the visitor: "Look closer", the machine's stop on the scale rail), or while the Flux
+      switch shows all. It stands when the address opens the closer view (until the visitor
+      chooses), on a page opened still, and for a visitor who asks for reduced motion.
+    - **Its speed.** It turns at real-life speed, at the rate the file draws. Only the Cell
+      view's flux slow-down slows it: it keeps that one speed, offered in the legend's Speed
+      row while it turns, and has no speed, no steps and no words for them of its own. Its
+      clock is the real time that passed.
+    - **An arrowhead shows the way** whenever the machine is drawn, turning or still.
+    - **No mark may be read as another way or another rate.** The marks give way to a swept
+      form, the marks smeared round into a body of revolution with no angle of its own:
+      above an eighth of a turn in a frame for a single mark, and above a quarter of their
+      spacing for a set of like copies, judging each frame by the larger of its own step and
+      the smoothed step. The two fade into each other over the half step below the limit.
+    - **What the picture states**, for as long as the machine shows (or the panel or sheet in
+      front of it, where the picture has no room): "Illustration: not a run" while it turns;
+      that Cells has no model of the machine; the way, and where it is seen from; and the
+      speed: the rate drawn with what it rests on, and the top rate the papers give, or,
+      slowed, the flux's own words for the slow-down with the rate in life. The panel names
+      the papers. Nothing says that it is too fast to follow.
+    - **It holds the motion channel**, so the look's own motion stops while it moves (rule
+      12). It never shares a picture with a run-fed layer: the cell and its beads are
+      faded out while the machine shows, and the picture's one statement is the machine's.
+    - **Tokens through a part** follow rule 3. None is drawn yet: the user's decision of 16
+      November 2026 was to wait with protons.
+    - **A motion with no sentence** for its way or for its rate is not drawn. Where Cells
+      comes to model the machine, its run's numbers take the place of the papers'.
 
 ## Flux in the Cell view
 
@@ -264,7 +300,8 @@ for the engine's generic cell: it is drawn on a species only where the page show
 species as the generic cell, or as modelled, and the species' file has no words of its
 own on the part. Where no basis gives a direction, both ways are drawn side by side and
 the page says that neither is claimed to carry more; or nothing is drawn and the reason
-is given. No textbook direction is drawn.
+is given. No textbook direction is drawn. A machine's closer view is not flux of the cell:
+what moves there follows rule 13, the one exception.
 
 | What flows | Drawn as illustration | Basis |
 | --- | --- | --- |
