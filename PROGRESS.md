@@ -80,6 +80,28 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core.**
+  ([handoff](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/transporter/HANDOFF.md).)
+  - **What it adds:**
+    - FR-5's source kinds, patch damage and a pH condition, on the routing door;
+    - refusal 4 version 1.2 and refusal 5 version 1.1 for FR-1's compartments, so a charged lumen can
+      resume from its own checkpoint;
+    - FR-5's start part and engine records;
+    - `fr5_quick_check` and `world_agreement`.
+  - **Development evidence, not verdicts:**
+    - **FR-4's dt study** (snapshot 3c10b833) passes J1–J7. pH, V_b, K_L and the cycles all class at
+      rounding. pH is within 1.4e-12 of the independent reference at 1 ms. Energy converges at
+      orders 2.02–2.04. The planted controls are caught.
+      ([reading](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dev-3c10b833-dt/reading/verdict.json)).
+    - **FR-5's world agreement:** the development and declared worlds are bitwise equal over 400 s
+      on both arms, 800,000 steps each, including arm R's release burst
+      ([check](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/worlds-d82e1935/check.json)). FR-5 runs at 1.2–1.4 ms per step on quiet
+      cores. An earlier "9 ms per step" was CPU starvation on a shared foreground CPU.
+  - **Gates:**
+    - tiers 1+2 on 32a72dab: 506 files, none changed;
+    - the light re-check on 7f9bf71f: 371 files, none changed;
+    - the admission-change files on the merged head 3bda393d.
+
 - **windows-next-clean merged into main (16 November 2026, evening).** It brings the planner seams and
   opt-in device-resident row checks ([handoff](/mnt/workspaces/Cells/windows-next-20261116/HANDOFF.md)).
   - **What it adds:**
