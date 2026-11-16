@@ -16,10 +16,19 @@ while tracing or on the host.
 
 import copy
 from collections import Counter
+from dataclasses import replace
 
 import numpy as np
 
-from cells.core.kind_registry import ConfigError, Kind, KindRegistry
+from cells.core.kind_registry import (
+    ConfigError,
+    Kind,
+    KindRegistry,
+    Schedule,
+    declared_schedule,
+    parse_series,
+    series_to_dict,
+)
 from cells.numerics.species_sums import species_sum
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
@@ -178,9 +187,58 @@ EXCHANGE = Kind(
 )
 
 
-def registry(*more):
+# ------------------------------------------------------------------ the scheduled planted kind
+# docs/INNER_MODEL_V4_DESIGN.md §7.4 (l): `tests.exchange@1` with its availability on a schedule,
+# under the experiment key `test_exchange_controls`: [{"time": t, "availability": a}, ...], one
+# series. An omitted key is the default, availability 1 throughout (version 1's constant), which
+# schedule_to_dict omits. The values are parsed without parse_series' [0, 1] check, so the core's
+# own control check (rule (d), at every change time) is what refuses an availability outside it.
+
+SCHEDULE_KEY = "test_exchange_controls"
+DEFAULT_SCHEDULE = Schedule((("availability", ((0.0, 1.0),)),))
+
+
+def _parse_schedule(raw, base, declaration):
+    if SCHEDULE_KEY not in raw:
+        return DEFAULT_SCHEDULE
+    points = parse_series(
+        raw[SCHEDULE_KEY], SCHEDULE_KEY, value="availability", unit_interval=False
+    )
+    return Schedule((("availability", points),))
+
+
+def _schedule_to_dict(schedule, declaration):
+    if schedule == DEFAULT_SCHEDULE:
+        return {}
+    points = dict(schedule.series)["availability"]
+    return {SCHEDULE_KEY: series_to_dict(points, value="availability")}
+
+
+def _scheduled_controls(spec, declaration, times):
+    held = declared_schedule(spec, KIND_ID).values("availability", times)
+    return dict(exchange_availability=held[:, None])
+
+
+SCHEDULED_EXCHANGE = replace(
+    EXCHANGE,
+    control_values=_spy("control_values", _scheduled_controls),
+    experiment_keys=(SCHEDULE_KEY,),
+    parse_schedule=_spy("parse_schedule", _parse_schedule),
+    schedule_to_dict=_spy("schedule_to_dict", _schedule_to_dict),
+)
+
+
+def schedule(raw, points):
+    """raw with the exchange's availability schedule, ((time, availability), ...)."""
+    raw = copy.deepcopy(raw)
+    raw["experiment"][SCHEDULE_KEY] = [dict(time=t, availability=a) for t, a in points]
+    return raw
+
+
+def registry(*more, exchange=EXCHANGE):
+    """A test-local registry with the exchange (SCHEDULED_EXCHANGE for its scheduled form)."""
     out = KindRegistry()
-    out.register(EXCHANGE)
+    out.register(exchange)
     for kind in more:
         out.register(kind)
     return out

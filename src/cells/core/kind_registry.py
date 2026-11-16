@@ -10,13 +10,20 @@ IDs are namespaced ("cells.transporter@1"); a bare ID resolves in the `cells` na
 outside package cannot collide with a built-in. The canonical kind order, the order in which a
 structure's kinds append their fields, is the sorted namespaced ID: total, and independent of
 registration, import and declaration order.
+
+A kind's controls may follow a schedule (§7.4 (l)): the kind declares experiment keys, parses them
+into a `Schedule` (named piecewise-constant series), and the schedule's breakpoints join the
+experiment's change times, so each is a step boundary and the change records carry its values.
 """
 
 import importlib
+import math
 from collections.abc import Callable
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
+
+import numpy as np
 
 # The kind interface's parsing surface (§7.4 (k); D180's external modules): a kind's parse and
 # check_definition refuse with ConfigError and may use these public helpers, never the
@@ -28,12 +35,16 @@ __all__ = (
     "ConfigError",
     "Kind",
     "KindRegistry",
+    "Schedule",
     "active",
     "bounded_integer",
+    "declared_schedule",
     "finite_number",
+    "parse_series",
     "qualified",
     "require_fields",
     "scope",
+    "series_to_dict",
 )
 
 NAMESPACE = "cells"
@@ -45,6 +56,114 @@ def qualified(identifier):
         raise ValueError(f"A kind or law ID must be a non-empty string, not {identifier!r}")
     head = identifier.split("@", 1)[0]
     return identifier if "." in head else f"{NAMESPACE}.{identifier}"
+
+
+# ---------------------------------------------------------------------- schedules (§7.4 (l))
+
+
+def _points(points, name):
+    """((time, value), ...) as floats: non-empty, from time 0, strictly increasing, finite."""
+    if not isinstance(points, tuple) or not points:
+        raise ConfigError(f"Series {name!r} holds one or more (time, value) points")
+    out = []
+    for point in points:
+        if not (isinstance(point, tuple) and len(point) == 2) or any(
+            isinstance(v, bool) or not isinstance(v, (int, float)) for v in point
+        ):
+            raise ConfigError(f"Series {name!r}: each point is a (time, value) pair of numbers")
+        time, value = float(point[0]), float(point[1])
+        if not (math.isfinite(time) and math.isfinite(value)):
+            raise ConfigError(f"Series {name!r}: times and values are finite")
+        out.append((time, value))
+    if out[0][0] != 0.0 or any(b[0] <= a[0] for a, b in zip(out, out[1:], strict=False)):
+        raise ConfigError(f"Series {name!r} starts at time 0 and its times strictly increase")
+    return tuple(out)
+
+
+@dataclass(frozen=True)
+class Schedule:
+    """A kind's parsed control schedule (§7.4 (l)): named series, each right-continuous and
+    piecewise constant from time 0.
+
+    series: ((name, ((time, value), ...)), ...), names distinct and non-empty, times from 0 and
+    strictly increasing, values finite (stored as floats). Its breakpoints (`times`) join the
+    experiment's change times, so each is a step boundary; its values there (`at`) join the change
+    records, so a branch cannot rewrite them before its checkpoint; `values` evaluates one series.
+    """
+
+    series: tuple
+
+    def __post_init__(self):
+        if not isinstance(self.series, tuple) or not self.series:
+            raise ConfigError("A schedule holds one or more named series")
+        names, normal = set(), []
+        for item in self.series:
+            if not (isinstance(item, tuple) and len(item) == 2):
+                raise ConfigError("A schedule's series are (name, ((time, value), ...)) pairs")
+            name, points = item
+            if not isinstance(name, str) or not name or name in names:
+                raise ConfigError(f"Series names are distinct, non-empty strings, not {name!r}")
+            names.add(name)
+            normal.append((name, _points(points, name)))
+        object.__setattr__(self, "series", tuple(normal))
+
+    @property
+    def names(self):
+        return tuple(name for name, _ in self.series)
+
+    @property
+    def times(self):
+        """Every breakpoint of every series, sorted (0 included)."""
+        return tuple(sorted({time for _, points in self.series for time, _ in points}))
+
+    def at(self, time):
+        """Each series' value at `time`, in series order (right-continuous)."""
+        return tuple(
+            points[np.searchsorted([t for t, _ in points], time, side="right") - 1][1]
+            for _, points in self.series
+        )
+
+    def values(self, name, times):
+        """The named series at `times` (right-continuous), float64."""
+        points = dict(self.series)[name]
+        times = np.asarray(times, dtype=np.float64)
+        if np.any(times < 0):
+            raise ValueError("A schedule starts at time 0")
+        held = np.asarray([value for _, value in points], dtype=np.float64)
+        return held[np.searchsorted([t for t, _ in points], times, side="right") - 1]
+
+
+def parse_series(entries, name, *, value="value", unit_interval=True):
+    """((time, value), ...) from a definition's [{"time": t, value: v}, ...] (§7.4 (l)): non-empty,
+    from time 0, strictly increasing, values finite, and in [0, 1] when unit_interval (rule (d)'s
+    availabilities). FR-5's injury and resealing schedules are two such lists per population."""
+    if not isinstance(entries, list) or not entries:
+        raise ConfigError(f"{name} is a non-empty list of {{time, {value}}} entries")
+    points = []
+    for entry in entries:
+        require_fields(entry, {"time", value}, f"an entry of {name}")
+        time = finite_number(entry["time"], f"{name}: time")
+        held = entry[value]
+        if isinstance(held, bool) or not isinstance(held, (int, float)):
+            raise ConfigError(f"{name}: {value} must be a finite number")
+        held = float(held)
+        if not math.isfinite(held) or (unit_interval and not 0.0 <= held <= 1.0):
+            raise ConfigError(
+                f"{name}: {value} must be finite" + (" and in [0, 1]" if unit_interval else "")
+            )
+        points.append((time, held))
+    return _points(tuple(points), name)
+
+
+def series_to_dict(series, *, value="value"):
+    """parse_series' inverse: [{"time": t, value: v}, ...]."""
+    return [{"time": time, value: held} for time, held in series]
+
+
+def declared_schedule(spec, kind_id):
+    """The parsed Schedule of a declared kind in this definition's experiment (§7.4 (l)), or None
+    for a kind that declares no experiment keys."""
+    return dict(getattr(spec.experiment, "kinds", ())).get(qualified(kind_id))
 
 
 @dataclass(frozen=True, eq=False)
@@ -69,6 +188,15 @@ class Kind:
       field: [time, ...] array}; `moved_rows(declaration)` -> ((species, node ID), ...) or
       ((species, node ID, law ID), ...), the rows it moves in the step; `check_definition(spec)`,
       its refusals, after the species registry's and before @3's.
+    - schedule (§7.4 (l)): `experiment_keys`, the kind's own keys in the definition's experiment
+      (each optional in a definition); `parse_schedule(raw, base, declaration)` -> a Schedule,
+      `raw` being {key: value} for the keys the definition gives (possibly none: the kind's
+      default); `schedule_to_dict(schedule, declaration)` -> the {key: value} to write back (the
+      kind omits its default, so a definition that omits a key keeps its form). The schedule's
+      breakpoints join the change times (each a step boundary) and its values the change records.
+      @3 evaluates `control_values` once per change record, at the change times, and holds each
+      row over the steps that record governs, so a kind's controls are constant between change
+      times on every path; a scheduled kind reads its schedule with declared_schedule(spec, ID).
     - stage: `stage_read(state, p, *, xp)` -> (the state whose amount fields hold the amounts
       every rate of the stage reads, valid), composed in hook order; a failed read refuses the
       step, and domain_valid evaluates the reads at every checked state (the step's end
@@ -150,6 +278,10 @@ class Kind:
     readouts: Callable | None = None
     moved_rows: Callable | None = None
     check_definition: Callable | None = None
+    # §7.4 (l): the kind's schedule in the definition's experiment.
+    experiment_keys: tuple = ()
+    parse_schedule: Callable | None = None
+    schedule_to_dict: Callable | None = None
 
     @property
     def state_fields(self):
@@ -172,6 +304,25 @@ class KindRegistry:
         clash = [k for k in self._kinds.values() if k.model_key == kind.model_key and k is not kind]
         if clash:
             raise ValueError(f"Kind {key}'s model key {kind.model_key!r} is already registered")
+        keys = kind.experiment_keys  # §7.4 (l): its schedule's keys, each owned by one kind.
+        if not isinstance(keys, tuple) or any(not isinstance(k, str) or not k for k in keys):
+            raise ValueError(f"Kind {key}'s experiment_keys are a tuple of non-empty strings")
+        if len(set(keys)) != len(keys):
+            raise ValueError(f"Kind {key} declares an experiment key twice")
+        if keys and (kind.parse_schedule is None or kind.schedule_to_dict is None):
+            raise ValueError(
+                f"Kind {key} declares experiment keys, so it supplies parse_schedule and "
+                "schedule_to_dict"
+            )
+        taken = [
+            (k, other.kind_id)
+            for other in self._kinds.values()
+            if other is not kind
+            for k in other.experiment_keys
+            if k in keys
+        ]
+        if taken:
+            raise ValueError(f"Kind {key}'s experiment key {taken[0][0]!r} is {taken[0][1]}'s")
         self._kinds[key] = kind
         return kind
 
@@ -187,6 +338,10 @@ class KindRegistry:
     def model_keys(self):
         """{model key: kind} of every registered kind."""
         return {kind.model_key: kind for kind in self._kinds.values()}
+
+    def experiment_keys(self):
+        """{experiment key: kind} of every registered kind's schedule keys (§7.4 (l))."""
+        return {key: kind for kind in self._kinds.values() for key in kind.experiment_keys}
 
     @staticmethod
     def canonical(kind_ids):
