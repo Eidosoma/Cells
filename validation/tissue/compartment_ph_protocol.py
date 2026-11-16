@@ -26,8 +26,8 @@ import json
 import sys
 from pathlib import Path
 
-from validation.compartment_ph import definitions as defs
-from validation.compartment_ph import dt_study
+from validation.compartment_ph_engine import definitions as defs
+from validation.compartment_ph_engine import dt_study
 from validation.tissue import compartment_ph_qualification as generator
 from validation.tissue import compartment_ph_reference_stage as stage
 
@@ -528,6 +528,8 @@ PROSE = {
         "(its initial lag estimate about 1e4 pH; the reason the envelope's, since the same world "
         "is admitted with B4's stage check removed), and in the kinetic reference the closure "
         "departs beyond 1e-3 pH units",
+        ("world", "builder"): "validation/compartment_ph_engine/definitions.py "
+        "fr4_world(parameters.World())",
         ("rules", "state_error"): "at the declared 1 ms, the Richardson-estimated error of the pH "
         "at every buffered node, the lumen and the cytosol (the maximum over both), <= 1e-3 pH "
         "units and of V_b <= 1e-3 of its range (pre-run correction, the lead, 15 November 2026)",
@@ -620,6 +622,17 @@ J3_START_NODES = (
     "cytosol, the maximum over both; V_b stays as written. Stricter, and free: the records hold "
     "both nodes"
 )
+MODULE_PATHS = (
+    "pre-run correction, 16 November 2026, the lead's ruling on the module paths (paths only): the "
+    "lane's engine-facing modules moved from validation/compartment_ph/ to "
+    "validation/compartment_ph_engine/ (parameters, definitions and dt_study; with them on "
+    "fr45-transporter engine_records, planted, compare_reference, path_agreement and "
+    "refusal_paths), so validation/compartment_ph/ holds the independent references' code-blind "
+    "modules alone (their isolation tests: nothing there imports cells, jax or validation.tissue), "
+    "with this protocol beside them. The driver and the world's builder name the new paths; "
+    "earlier text naming the old ones (the execution path's correction, the questions as asked) "
+    "reads with the new folder. Nothing else changes"
+)
 EXECUTION_PATH = (
     "pre-run correction, 15 November 2026, the lead's ruling on the execution path: every engine "
     "part runs its world as the one world of a vector window (cells.core.vector_windows; the "
@@ -662,6 +675,7 @@ CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
         EXECUTION_PATH,
         COST_FR4,
         J3_START_NODES,
+        MODULE_PATHS,
         "pre-run correction, 15 November 2026, the lead's rulings on refusal semantics and K2: "
         "B4's envelope check refuses the step at the first stage beyond the budget, so J5 judges "
         "zero envelope refusals in a completed part and the engine's reported running maximum of "
@@ -681,6 +695,7 @@ CORRECTIONS = {  # Dated pre-run corrections beyond the questions' rulings.
         EXECUTION_PATH,
         COST_FR5,
         J3_START_NODES,
+        MODULE_PATHS,
         "pre-run correction, 15 November 2026, the lead's ruling on refusal semantics: B4's "
         "envelope check refuses the step at the first stage beyond the budget, so J5 judges zero "
         "envelope refusals in a completed part and the engine's reported running maximum of the "
@@ -708,7 +723,7 @@ def draft(which, path=None):
     out["judged_parts"] = list(generator.PARTS[which])
     out["driver"] = ("validation/tissue/compartment_ph_qualification.py (the generator) and "
                      "validation/tissue/compartment_ph_judge.py (the judge), on "
-                     "validation/compartment_ph/definitions.py's worlds")
+                     "validation/compartment_ph_engine/definitions.py's worlds")
     out["judge"] = judge_section(which)
     if DISCLOSURE not in out["disclosures"]:
         out["disclosures"] = [*out["disclosures"], DISCLOSURE]

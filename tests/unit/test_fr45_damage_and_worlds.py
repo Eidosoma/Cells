@@ -10,9 +10,9 @@ from scipy.integrate import solve_ivp
 from cells.processes import patch_damage as dmg
 from cells.processes import ph_condition as phc
 from cells.processes import rapid_proton_buffer as buf
-from validation.compartment_ph import definitions as defs
-from validation.compartment_ph import dt_study
-from validation.compartment_ph.parameters import ARM_R, ARM_T, DamageWorld, World
+from validation.compartment_ph_engine import definitions as defs
+from validation.compartment_ph_engine import dt_study
+from validation.compartment_ph_engine.parameters import ARM_R, ARM_T, DamageWorld, World
 
 # --- bounding_patch_damage@1 -------------------------------------------------------------------
 
