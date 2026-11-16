@@ -28,7 +28,7 @@ Every option below is judged against these three.
 ## 1. Summary
 
 1. **The list is closed, and "four" was a lower bound** (§2). The full-cycle definition was built
-   and parsed once, then lifted layer by layer, host only. It has **seven items**:
+   and parsed once, then lifted layer by layer, host only. It has **eight items**:
    - the four as stated, with gap 1 split into production (1a) and the partition (1b);
    - **gap 5, new and silent:** water reads the activity masks without declaring them. In the
      cycle it moves water across the daughters' patches before they are born;
@@ -37,25 +37,36 @@ Every option below is judged against these three.
      admission order is circular (mask readers must follow the partition, and the partition must
      follow water);
    - **gap 7, beyond the minimal cycle:** the furrow world. Water and a lumen both provide one
-     cleft's volume, and an onset node's volume must keep its anchor.
+     cleft's volume, and an onset node's volume must keep its anchor;
+   - **item 8, by design and not a composition gap:** FR-11's "ions' share" of growth cannot be
+     produced. Turnover "acts on neutral species only (valence 0)", because producing a charged
+     species would create charge. That share must come through transport: pumps (gap 4) or the
+     K-anion symport over water.
 
    Once the seven declared fixed reads are lifted, **nothing else in the engine refuses the
    cycle.** What remains is silent: water on closed slots, volume lost at division, a pre-birth
    rate admitted, and a retired patch's pump still cycling. The probe found each by evaluating
    the parts in NumPy.
 2. **The central option** (§4).
-   - **(A):** one general rule plus four small, general composite refinements, no new law IDs.
+   - **(A):** one general rule plus six small, general refinements of the contract and the
+     composite (C1–C6), with no new law IDs.
    - **(B):** a new `@2` per pairing.
-   - **Recommendation: A.** Its cost is paid once in the composite, about 2.5–3.5 days. Existing
-     qualifications stay valid because non-composing programs are identical. B adds three or four
-     laws, each unqualified on every world, and it still needs the same order rule.
+   - **Recommendation: A.**
+     - The read rules (C1–C4) cost about 2.5–3.5 days, paid once in M1. The two booking rules
+       (C5, C6) sit inside M4, the partition over water.
+     - Existing qualifications stay valid, because non-composing programs are identical, which
+       meets D148's criteria by construction.
+     - B adds three or four laws, each unqualified on every world, and it still needs the same
+       order rule.
 3. **No `@2` is needed in this lane.** The partition over water is the one place where B is
-   defensible, because its accounting genuinely changes. A keeps it one law through declared
-   conditional bookings (§4.4).
+   defensible, because its accounting genuinely changes. So is the partition's pump record in gap
+   4. A keeps each one law through declared conditional bookings, keyed on a static condition of
+   the composition's structure (§4.4).
 4. **Gap 4 is ownership, not a read** (§13). Behind its parse refusal, a retired parent's pump
-   keeps cycling on the inner model's placeholder concentration. Static pumps on a dividing cell
-   cost about 2.5–3 days. Capacity as state and kinds beside closers are the core owner's
-   (questions in §13.4).
+   keeps cycling at a rate independent of its closed cell's contents, consistent with the inner
+   model's placeholder concentration, and writes Na and K into the closed cell. Static pumps on a
+   dividing cell cost about 2.5–3 days. Capacity as state and kinds beside closers are the core
+   owner's (questions in §13.4).
 5. **No gap has a registered judged consumer today** (§10). The division plan's judged observables
    (Xenopus, 1 to 4 cells) need no water, growth or pump. This is a finding for the lead:
    numerical qualification can proceed, but judged status waits for a consumer protocol.
@@ -88,7 +99,10 @@ A variant keeps the heredity Na/K pump on the parent.
 - **L4:** the lifted parts evaluated in NumPy at the bound state;
 - **L5:** what lies behind the pump refusal;
 - **a second pass** with the refused fields declared `current`, not just lifted, and the furrow
-  world with water.
+  world with water;
+- **a third pass:** ion production, the planted pre-birth rate through every definition check, the
+  RK4 rule raised by the engine itself, the retired pump's inputs, and the K-anion symport beside
+  the cycle.
 
 ### 2.2 What the engine says
 
@@ -108,9 +122,13 @@ A variant keeps the heredity Na/K pump on the parent.
 - **L2.** With the seven fixed reads lifted, the structure check passes and **every definition
   check passes**: species registry, scope, event times, compact binding, field inputs, every
   scheduled control's domain, each operator's `check_definition` and the bound step checks.
-  - The only refusal is the RK4 rule. Water's coupled part beside event maps and split parts means
-    the composed cycle cannot run under RK4, so references must come from NumPy and IMEX
-    self-convergence (§10).
+  - The only other refusal is under RK4. Run on the cycle with solver `rk4`, the engine's own
+    `Composition.check_definition` says: "An RK4 composition with a coupled operator cannot hold
+    event maps, split-only parts or integer state". Water's coupled part sits beside event maps and
+    split parts, so references must come from NumPy and IMEX self-convergence (§10).
+- **The ions' share** (third pass). A turnover route on K or on P is refused at the parser:
+  "scheduled_species_turnover@1 acts on neutral species only (valence 0); 'K' has valence 1", and
+  likewise 'P' with −1. The closure therefore covers neutral production only (item 8).
 
 ### 2.3 What the engine does not say
 
@@ -130,7 +148,7 @@ compact world.
 | --- | --- | --- |
 | The masks at t = 0 | The view closes d1, d2 and their patches. Water's bound masks and turnover's `p.active` hold them all open | The two readers see slots the partition keeps closed |
 | Water's rates at t = 0 | −0.0014 pL/s at each pending daughter (half the parent's −0.0028) | Water flows through patches that do not exist yet |
-| A turnover rate on d1 before its birth (planted) | Admitted. The first half-step writes 5.0e-13 fmol into d1. At the division the partition overwrites d1's increment, and S's material ledger at d1 reads −2.0e-12 fmol | No rule refuses it at the definition. Only the run-time ledger would catch it |
+| A turnover rate on d1 before its birth (planted) | Admitted: the planted world passes every definition check (third pass). The first half-step writes 5.0e-13 fmol into d1. At the division the partition overwrites d1's increment, and S's material ledger at d1 reads −2.0e-12 fmol | No rule refuses it at the definition. Only the run-time ledger would catch it |
 | The partition's event after two water and turnover steps | The parent's −5.58e-6 pL stays on the retired slot. The daughters keep the −2.79e-6 pL each that water gave them while pending | The volume is never moved. In this symmetric world the sum matches only because water ran on the daughters in proportion |
 | The same with strong production at the parent (1000 fmol/s) | The daughters' volumes sum to the parent's minus 2.36e-7 pL after 2 ms | Volume is lost at division, and every ledger still closes |
 
@@ -172,8 +190,8 @@ The bath schedule's isosmotic rule beside water (PUMP_COMPOSITE.md's matrix) sta
 
 ### 2.6 The closed list
 
-**Scope of the closure.** It is closed for the minimal cycle's world: no onset, one held bath, IMEX.
-The furrow world adds gap 7.
+**Scope of the closure.** It is closed for the minimal cycle's world (no onset, one held bath,
+IMEX) with neutral production. The furrow world adds gap 7, and the ions' share is item 8.
 
 | # | Gap | Found by | Kind |
 | --- | --- | --- | --- |
@@ -185,6 +203,7 @@ The furrow world adds gap 7.
 | 5 | **New:** water reads the masks undeclared | L3, L4 | Real and silent |
 | 6 | **New:** the composite's rules for current reads (the fallback, the stage-aware order) and per-stage modes | Second pass | Composite and contract |
 | 7 | **New, the furrow world:** (7a) water beside a lumen on one node; (7b) an onset node's volume under water | §2.5 | 7b follows from gap 5: with current masks a closed node's volume keeps its anchor, so water can declare it (M2, §14). 7a is new physics: water through faces, for the Xenopus-with-water consumer (§14) |
+| 8 | The ions' share of growth: turnover refuses charged species | Third pass | **By design** (charge conservation), not a composition gap. Growth's ions come through transport. The K-anion symport adds no declared refusal beside the cycle, but its route mask reads the declared `membrane_active` (`k_anion_symport.symport_rates`). On a dividing cell's patch it would keep cycling, as the pump does: gap 4's class |
 
 ## 3. Each refusal, read site by read site
 
@@ -248,6 +267,22 @@ The composite resolves each read when the model is built:
   area;
 - **otherwise the declared value**, with the part's call unchanged.
 
+**Why the law IDs stay (D147, D148).** D147 makes an ID promise its semantics. D148 admits a change
+under an unchanged ID only if four things hold:
+- physical fields stay bitwise in every qualified world and program;
+- verdicts are unchanged;
+- ledger accumulators move only at rounding;
+- the crossrev baseline is renewed at the landing.
+
+A meets all four by construction. Every world that does not compose keeps its program, so its
+records do not move at all, and the crossrev renewal is a no-op. The newly admitted compositions
+are new definitions (D143), refused today. In them each law computes its stated semantics:
+- water's flow "Q = 1e15 A Lp a (ψ_cell − ψ_outside)" with the patch's area;
+- turnover's work, "the exact free-energy change of the touched node".
+
+If the lead reads a current read as a change of a law's semantics, D147 sends it to a new ID,
+which is option B. That is the ruling this note asks for.
+
 **What A needs, all general and none per pairing:**
 
 | # | Refinement | Where | Why |
@@ -256,7 +291,7 @@ The composite resolves each read when the model is built:
 | C2 | **The stage-aware order rule.** A reader sees every change made at an earlier stage of the step whatever the declared order. Same-stage pairs keep door S's rule 3, and a writer of a provider's state counts as a changer at its stage | `structure_errors` (the "reads before a closer" and "no earlier operator provides it" rules) | §2.4's circular order (§5) |
 | C3 | **Per-stage read modes** | `contract._check_scopes` | §3's two-mode fields |
 | C4 | **Scoped views.** A current reader receives its read fields only, merged to its stage, without `refresh_field` or the padding of unread fields | `pump_composite_adapter` | Fast (§11) |
-| C5 | **Declared conditional bookings.** An operator's booking fields, entity writes and ledger terms for a current read exist only where that read is current | `contract.py`, the composite's types and field map | §4.4: the partition over water, and gap 4's record |
+| C5 | **Declared conditional bookings.** An operator's booking fields, entity writes and ledger terms exist only under a declared static condition of the composition's structure. There are two kinds: a read field has a changer (the partition's volume bookings beside water), or the inner structure declares a law (the partition's pump record where `structure.pump_laws` is non-empty) | `contract.py`, the composite's types and field map | §4.4: the partition over water, and gap 4's record |
 | C6 | **An owner's declared free-energy term.** Writers book its change through the contract, never by importing the owner | `contract.py`; water's `node_free_energy_pJ`, already written as "its free-energy owner declaration" | Extendable: the partition must not import water (the J2 bright line's spirit) |
 
 **Per operator** (the operators owner's files): the read declarations and read sites of §3, each
@@ -284,7 +319,18 @@ owns its fields at all times.
 | New laws | None | Three or four, each with its own crossrev worlds, composition-matrix rows and columns, "two versions of one law" refusals, docs, summaries and batch signatures |
 | Later pairings | A new provider or closer composes by declaration | Each new provider or closer may force another `@N` of every reader: a pairing table by another name |
 | Precedent cost | — | Replacement@2 added about 1.5 ms per step on the 127-cell sheet, and its compile took 44 s against water's 28 s (PUMP_COMPOSITE_V2_DESIGN.md, B.13). Its qualification on the heredity sheet still waits for its assay (CURRENT_PLAN) |
-| Effort, gaps 1–3, 5, 6 (§14) | 9.5–12.5 agent-days, plus references 3–4 in parallel | About 13–20, plus the same per later pairing (**S**) |
+| Effort, gaps 1–3, 5, 6 (§14) | 9.5–12.5 agent-days, plus references 3–4 in parallel | About 12–18, a rough bound (**S**), plus the same per later pairing. The derivation follows this table |
+
+**B's rough bound, derived (S):**
+- **Code:** three new laws with their scaffolding (parse, `to_dict`, summary, batch signature,
+  matrix rows, "two versions" refusals). Water@2 takes 2–3 days, turnover@2 2–3 and partition@2
+  3–4, so 7–10 in all.
+- **Qualification:** 1–2 days per law on its own worlds, so 3–6.
+- **The composite:** C2 and C4, which B still wants, take 1.5–2. B skips C1, C3, C5 and C6: each
+  @2 `REQUIRES` its provider, hard-codes its read sites, owns its fields and may import its partner.
+- **In all:** about 12–18, against A's 9.5–12.5. A is cheaper by about 2–5.5 agent-days on this
+  lane. The larger difference is B's qualification debt, which sits on every world of each new
+  law.
 
 ### 4.4 Where an `@2` would be justified, and why A does not need one
 
@@ -297,11 +343,13 @@ class-level, so adding them under the same law ID changes every existing world o
 | 1a (turnover's volume) | None: the same expression at another volume (the identity of §3) | A |
 | 3 (turnover's masks) | None: the occupant and living-interval rules are definition-time | A |
 | 1b (the partition over water) | **Yes:** a moved-volume accumulator, an entity write onto water's `volume_increment_pL`, water's ledger terms, water's free-energy change | **The accounting genuinely differs.** B is defensible here. A keeps one law through C5, with bookings that exist only where `volume` has a changer, plus C6 |
-| 4 (pumps) | **Yes:** the retirement record of the pump's history | The same: C5, keyed on a pump on a dividing parent |
+| 4 (pumps) | **Yes:** the retirement record of the pump's history | The same: C5, keyed on a pump law declared in the inner structure (`structure.pump_laws`, built from the definition's patches). Every division world in crossrev is built pump-free (`tests/partition_fixtures` sets each patch's pump to None), so their programs stay identical |
 
 **Recommendation: no `@2` in this lane.** C5 is the single general rule that lets the partition's
-volume bookings exist only beside a volume owner. Without C5, the partition over water is the one
-`@2` to accept, `isopotential_partition@2`, as replacement@2 was. That is the lead's call.
+volume bookings exist only beside a volume owner, and its pump record only where a pump law is
+declared. Without C5, the partition over water is the one `@2` to accept,
+`isopotential_partition@2`, as replacement@2 was, and gap 4 would add another. That is the lead's
+call.
 
 **One general split rule, designed once.** The partition writes water's per-cell state through
 water's declared interfaces (`ACCEPTS_WRITES`, C6) and never by name. So any owner that declares
@@ -316,8 +364,8 @@ state". Sites, D152's pools and the pump's units (§13) are its next consumers.
 - It is extendable: declarations only (§12).
 - It is fast: build-time resolution, identical programs outside compositions, and scoped views
   (§11).
-- It saves 3.5–7.5 agent-days against B on this lane alone, and B's cost recurs with every later
-  pairing.
+- It saves roughly 2–5.5 agent-days against B on this lane alone (§4.3). B's cost and its
+  qualification debt recur with every later pairing.
 
 ## 5. The full cycle's read/provide graph, per stage
 
@@ -544,12 +592,18 @@ This is about ownership and partition, not a read.
   every other definition check passes.
 - **The retired patch keeps pumping.** After the division the parent's patch is closed at the view,
   but `pump_present` is true and the view's `pump_capacity` is 0.0326 fmol/s.
-  - The inner pump keeps cycling at 1.41e-5 fmol/s, driven by @3's 1 mM placeholder concentration
-    at inactive cells (`surface_tissue.py:292`). `role_inputs` keeps "physically present pumps" in
-    their real domain.
+  - The inner pump keeps cycling at 1.41e-5 fmol/s.
+  - The rate is unchanged to the bit when the closed cell's amounts are raised by a quarter of
+    their anchors (third pass). That is consistent with @3's readouts forming a 1 mM placeholder
+    concentration at inactive cells (`where(p.active, ci / p.volume, 1.0)` in
+    `surface_pump_v3.readouts`). `role_inputs` keeps "physically present pumps" in their real
+    domain. The placeholder itself is not exposed by the readouts, so this is inferred from the
+    code and the invariance.
   - It writes −4.24e-5 fmol/s of Na and +2.82e-5 fmol/s of K at the closed cell (3:2 per cycle),
     and books 9.6e-4 pJ/s each of heat and metabolic work.
-  - The readouts and the domain at the view stay valid, so nothing catches it.
+  - The readouts and the domain at the view are valid at the state right after the event. Whether
+    a later step's checks would refuse the closed cell's drift was not run, because that needs a
+    step.
 - **The pump's history is not retired.** The partition's record covers membrane, junction and
   channel history, not `pump_cycles`, `pump_dissipated_energy_pJ`, metabolic work or the calcium
   pump's fields.
@@ -656,6 +710,10 @@ Folder: `/mnt/workspaces/Cells/composition-design-20261116/`.
 - `composition_closure_probe.py`, `closure-probe.json`, `closure-probe.log`: L0–L5.
 - `composition_closure_probe_2.py`, `closure-probe-2.json`, `closure-probe-2.log`: current reads
   declared, the furrow world, the booking identity, the pump's drive.
+- `composition_closure_probe_3.py`, `closure-probe-3.json`, `closure-probe-3.log`: ion production,
+  the planted rate through every definition check, the RK4 rule raised by the engine, the retired
+  pump's inputs, the symport beside the cycle.
+- Every `"error"` entry in the three JSON files is a recorded engine refusal. No section failed.
 - `volume_split_exactness.py`, `volume-split-exactness.log`: §7, NumPy and XLA on the CPU.
 
 All ran on CPU 22 at nice 10, host only. **The probes exist only in this folder.** Whether they
@@ -674,4 +732,4 @@ land under `validation/replay/` beside FR-11's `cycle_probe.py` is the lead's ca
 - CLOSED_COMPARTMENT_DESIGN.md §5.3;
 - HUMAN_CARDIAC_LAWS_DESIGN.md on cardiac-laws;
 - LOOPING_REPLAY_DESIGN.md §6 on run-view-d154;
-- DECISIONS D142, D143, D144, D150, D169, D174, D176 and D185.
+- DECISIONS D142, D143, D144, D147, D148, D150, D169, D174, D176 and D185.
