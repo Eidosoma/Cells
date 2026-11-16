@@ -478,6 +478,22 @@ lock looks at every thread of what a run started once a second and puts a proces
 thread elsewhere back. (A scope bound to a processor would hold them at once; it needs
 the cpuset controller, which a user's session is not given on this machine.)
 
+**On the graphics card, where it is free.** The tools ask Chrome for the software
+renderer. A run may draw on the machine's graphics card instead by starting Chrome
+through `tools/chrome_gpu.sh`, which no tool needs changing for:
+`CHROME=$PWD/tools/chrome_gpu.sh npm run check:all` (add `CELLS_GPU_LOG=FILE` and each
+browser writes there which renderer it took). The engine's work on the card comes first,
+by the rule its lead gave on 16 November 2026: each browser holds the engine's own lock
+file shared for as long as it lives, so an engine job waits for the browsers to end and
+none starts while a job holds the card; none starts while the engine's reservation flag
+exists or another process is on the card. In each of those cases the wrapper starts
+Chrome on the software renderer, as it was asked to. Measured that day on one clean copy
+under the same load, two Cell-view scenarios took 310 s and 403 s in software and 175 s
+and 157 s on the card, with the same checks passing. A run's record says which renderer
+it used, and one gate or one before-and-after pair of pictures never mixes the two. The
+software renderer stays the reference for the gates until a full suite on the card has
+matched it scenario by scenario.
+
 ## How it is built
 
 ```
