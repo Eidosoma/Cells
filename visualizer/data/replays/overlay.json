@@ -596,6 +596,73 @@
         }
       }
     },
+    "planarian-loop": {
+      "adapter": "standard-history",
+      "development": true,
+      "label": "Planarian loop (development run)",
+      "plain": "A development run of the engine, not judged: FR-11's interim planarian loop. Seven planarian heredity cells on a hexagonal patch, with a subthreshold square-wave current into the centre cell (cell_3), run for four periods and then saved for one more period of 2 s, packaged to loop. An illustration at a low level of detail: lumped cells and reduced laws, with the cells' places prescribed by its builder. It is not a measurement of a planarian, and it shows no result.",
+      "sources": [
+        {
+          "path": "PROGRESS.md",
+          "where": "Runs: The run-view writer merged into main (16 November 2026, evening), What it adds"
+        },
+        {
+          "path": "docs/LOOPING_REPLAY_DESIGN.md",
+          "where": "§4, the interim planarian loop"
+        },
+        {
+          "path": "validation/replay/planarian.py",
+          "where": "the builder: the world, the drive and the loop"
+        }
+      ],
+      "outcome": {
+        "judged": false,
+        "status": "Development run, no verdict; 16 November 2026",
+        "answer": null,
+        "text": "FR-11's first looping run: a planarian development run (not judged) that closes within 2.76e-5 against a tolerance of 1e-4, bitwise the same before and after the adoption.",
+        "sources": [
+          {
+            "path": "PROGRESS.md",
+            "where": "Runs: The run-view writer merged into main (16 November 2026, evening), What it adds"
+          }
+        ]
+      },
+      "engine_entities": [
+        "models.composite",
+        "models.pump_tissue",
+        "op.electrode_current_injection@1",
+        "cap.junctions"
+      ],
+      "events": {
+        "current": {
+          "label": "Electrode current",
+          "plain": "The electrode's current into the centre cell changes: the square wave steps up or down."
+        }
+      },
+      "parameters": {
+        "execution.dt": {
+          "label": "Time step",
+          "unit": "s"
+        },
+        "model.inner_model": {
+          "label": "Inner model"
+        }
+      },
+      "readouts": {
+        "status": {
+          "label": "Status"
+        },
+        "end_time": {
+          "label": "End",
+          "unit": "s"
+        }
+      },
+      "stops": {
+        "complete": {
+          "label": "Ran to its end"
+        }
+      }
+    },
     "example-sheet": {
       "adapter": "standard-history",
       "example": true,

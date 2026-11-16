@@ -1203,8 +1203,8 @@ test("no machine path, host name or traceback is written for any experiment", ()
 
 // ---------------------------------------------------------------- views written by the engine's own writer
 //
-// tests/engine-views/run-view-fd008813 holds two small runs that the engine's run-view writer wrote on its branch
-// (run-view-d154 at fd008813; tools/make_engine_view_fixture.sh makes them again): the short secretion world through
+// tests/engine-views/run-view-fd008813 holds small runs that the engine's run-view writer wrote on its development
+// branch, now on main through its merge (run-view-d154 at fd008813; tools/make_engine_view_fixture.sh makes them again): the short secretion world through
 // io.write_run, and S5's partition world, a division, through the windowed path. They are the writer's output, kept
 // apart from the fixtures the run-fixture tool writes. A test that needs a view the writer does not give (a source, a
 // loop, a contradiction) changes a copy, and says so.
@@ -1444,7 +1444,7 @@ test("a view of the writer's shape that contradicts itself, or that the page cou
 // tests/engine-views/run-view-fd008813/subset: the short secretion world with a recording subset, as the branch's own test
 // records one (four fields, of the species only S, every second observed row). tests/engine-views/loop-d7a11d5b: the
 // interim planarian loop, a development run with no verdict that the writer at d7a11d5b wrote from an execution snapshot,
-// copied unchanged from the engine's lead's folder; its writer is not on main.
+// copied unchanged from the engine's lead's folder; its writer is on main since 050aa741.
 
 const LOOPS = path.join(ROOT, "tests", "engine-views", "loop-d7a11d5b");
 const LOOP_RUN = "planarian-d7a11d5b", LOOP_ID = `${VIEWS}--${LOOP_RUN}`;
@@ -1500,7 +1500,7 @@ test("the engine's first looping run: its subset, its source, its own geometry a
   // The note says what the run is and where it came from; the source is the run's own, from its execution snapshot.
   const note = readFileSync(path.join(LOOPS, "README.md"), "utf8");
   assert.match(note, /a development run with no verdict/);
-  assert.match(note, /not on main/);
+  assert.match(note, /its writer is on main since 050aa741/);
   assert.match(note, /copied unchanged from the engine's lead's folder/);
   assert.deepEqual(written.run.source, { dirty: false, from: "the execution snapshot's record (SNAPSHOT.json)", revision: "d7a11d5b0e20f3133c081386e487fe21b8b8f893" });
   assert.deepEqual([view.run.revision, view.run.source], [written.run.source.revision, written.run.source]);
@@ -1599,37 +1599,39 @@ test("a recorded subset or a loop block that contradicts itself, or that the pag
 
 // ---------------------------------------------------------------- the writer that reads the engine's own declarations
 //
-// tests/engine-views/run-view-b08af640: five small worlds the run-view writer wrote at b08af640, on the development
-// branch run-view-d154, not on main (tools/make_engine_view_fixture.sh). From that revision the writer takes @3's own
+// tests/engine-views/run-view-050aa741: five small worlds main's run-view writer wrote at 050aa741
+// (tools/make_engine_view_fixture.sh), byte for byte what the development branch's b08af640 wrote but for the label the
+// script plants (the two writers are the same file). From b08af640 the writer takes @3's own
 // view declarations and record roles: a voltage's difference is confirmed, each increment names its fixed reference
 // (amount_reference becomes a named constant), the engine's check residuals are marked diagnostics, and a kind's set
 // (the passive routes) carries a list of species for each route. tests/engine-views/loop-b08af640: the looping run
 // again, written by that writer from an execution snapshot (copied from the engine's lead's folder; not published).
 
-const WRITER_B = path.join(ROOT, "tests", "engine-views", "run-view-b08af640");
+const WRITER_B = path.join(ROOT, "tests", "engine-views", "run-view-050aa741");
 const B_WORLDS = ["secretion", "subset", "increments", "kinds", "division"];
-const bOut = path.join(scratch, "views-b08af640-out");
+const bOut = path.join(scratch, "views-050aa741-out");
 const bDone = tool("--experiment", VIEWS, "--root", WRITER_B, ...B_WORLDS.flatMap((world) => ["--run", world]), ...VIEW_ARGS, "--out", bOut);
-assert.equal(bDone.status, 0, `the adapter failed on the views written at b08af640:\n${bDone.stderr}`);
+assert.equal(bDone.status, 0, `the adapter failed on the views written at 050aa741:\n${bDone.stderr}`);
 const writtenB = (world) => readJson(path.join(WRITER_B, world, "view.json"));
 
-/** A world of b08af640 with its view changed in a copy, adapted; [result, output folder, run id]. */
+/** A world of 050aa741 with its view changed in a copy, adapted; [result, output folder, run id]. */
 function changedB(label, change, world = "secretion") {
-  const copy = path.join(scratch, `b08af640-${label}`);
+  const copy = path.join(scratch, `main-${label}`);
   cpSync(WRITER_B, copy, { recursive: true });
   const file = path.join(copy, world, "view.json");
   const view = readJson(file);
   change(view);
   writeFileSync(file, JSON.stringify(view));
-  const target = path.join(scratch, `b08af640-${label}-out`);
+  const target = path.join(scratch, `main-${label}-out`);
   return [tool("--experiment", VIEWS, "--root", copy, "--run", world, ...VIEW_ARGS, "--out", target), target, `${VIEWS}--${world}`];
 }
 
-test("the views written at b08af640 are the writer's own, of the revision their note names, each well under 1 MB", () => {
+test("the views written by main's writer at 050aa741 are its own, of the revision their note names, each well under 1 MB", () => {
   const note = readFileSync(path.join(WRITER_B, "README.md"), "utf8");
-  assert.match(note, /branch run-view-d154, b08af640/);
-  assert.match(note, /b08af640c3db83e891e29ade36c300d6f8e5a553/);
-  assert.match(note, /on a development\s+branch, not on main/);
+  assert.match(note, /^# Runs written by the engine's run-view writer \(050aa741\)/);
+  assert.match(note, /050aa741ddff540971169225d7ccd275c2e89462/);
+  assert.match(note, /that is main at `050aa741`: the writer is on main since 050aa741 \(16 November 2026\)/);
+  assert.equal(writtenB("secretion").run.revision, "050aa741", "the caller's label the script plants, and no more");
   const size = (folder) => readdirSync(folder, { withFileTypes: true }).reduce((total, item) => total + (item.isDirectory() ? size(path.join(folder, item.name)) : statSync(path.join(folder, item.name)).size), 0);
   for (const world of B_WORLDS) {
     const view = writtenB(world);
@@ -1640,7 +1642,7 @@ test("the views written at b08af640 are the writer's own, of the revision their 
   assert.ok(!PATHS.test(readdirSync(WRITER_B, { recursive: true }).filter((name) => /\.(json|jsonl|md)$/.test(name)).map((name) => readFileSync(path.join(WRITER_B, name), "utf8")).join("\n")));
 });
 
-test("at b08af640: a voltage's difference is confirmed, the check residuals are diagnostics, and the increments name their references", () => {
+test("main's writer (from b08af640): a voltage's difference is confirmed, the check residuals are diagnostics, and the increments name their references", () => {
   const { view, file, record, run } = openWhole(bOut, `${VIEWS}--secretion`);
   assert.deepEqual(validateReplay(file), []);
   const written = writtenB("secretion");
@@ -1662,7 +1664,7 @@ test("at b08af640: a voltage's difference is confirmed, the check residuals are 
   assert.ok(Object.fromEntries(layersFor(run, LAYERS, MARKS).map((offer) => [offer.layer.id, offer.ok]))["ion-push-pull"]);
 });
 
-test("at b08af640: a level saved only as an increment is the named reference plus the increment, worked out and said", () => {
+test("main's writer (from b08af640): a level saved only as an increment is the named reference plus the increment, worked out and said", () => {
   const sums = open(bOut, `${VIEWS}--increments`);
   const saved = open(bOut, `${VIEWS}--secretion`);
   assert.deepEqual(validateReplay(sums.file), []);
@@ -1693,7 +1695,7 @@ test("at b08af640: a level saved only as an increment is the named reference plu
   assert.ok(left.view.derivation.some((line) => line.startsWith("Not packaged: amount (its increment amount_increment is stored over {\"field\": \"amount_reference\"}")));
 });
 
-test("at b08af640: a kind's set carries a list of species for each entity, read as written, and is no operator's for the secreted species", () => {
+test("main's writer (from b08af640): a kind's set carries a list of species for each entity, read as written, and is no operator's for the secreted species", () => {
   const { view, file } = open(bOut, `${VIEWS}--kinds`);
   assert.deepEqual(validateReplay(file), []);
   const routes = view.sets.find((item) => item.id === "passive_route");
@@ -1710,7 +1712,21 @@ test("at b08af640: a kind's set carries a list of species for each entity, read 
   }
 });
 
-test("at b08af640: a malformed role is refused with what and where", () => {
+test("main's writer (from 050aa741): a pH condition's own set and a kind's records are read past, never refused", () => {
+  // Main's kinds at 050aa741 (patch damage, the pH condition, the transporter) bring sets and records of their own. No kept
+  // world uses them, so a changed copy of the kind world gives the pH condition's set as its view_sets declares it:
+  // roles, the law under kinds (the queued mismatch), the node it reads at, and two facts of its own (ph50, slope).
+  const condition = { id: "ph_condition", ids: ["acid_0"], scale: "cell", owner: "resolved_pump_tissue@3", roles: { node: "the node whose free proton read sets the condition's pH" }, kinds: ["ph_conditioned_factor@1"], at: [{ node: "lumen_0" }], ph50: [5.5], slope: [1.0] };
+  const [result, target, id] = changedB("ph-condition", (view) => view.sets.push(condition), "kinds");
+  assert.equal(result.status, 0, result.stderr);
+  const { view, file } = open(target, id);
+  assert.deepEqual(validateReplay(file), []);
+  const carried = view.sets.find((item) => item.id === "ph_condition");
+  assert.deepEqual([carried.kinds, carried.at, carried.roles, carried.owner], [condition.kinds, condition.at, condition.roles, condition.owner]);
+  assert.ok(view.derivation.some((line) => line.includes("ph_condition: acid_0 (ph_conditioned_factor@1) at lumen_0")));
+});
+
+test("main's writer (from b08af640): a malformed role is refused with what and where", () => {
   for (const [label, change, message] of [
     ["diagnostic", (view) => (view.records.find((item) => item.id === "observed_charge_residual_C").diagnostic = ""), /its view's record observed_charge_residual_C is marked a diagnostic with no words for what it is/],
     ["reference", (view) => (view.records.find((item) => item.id === "observed_amount_increment").reference = { constant: "no_such_constant" }), /its view's record observed_amount_increment names a reference that is not one constant, record or field of the view/],
@@ -1726,7 +1742,7 @@ test("the looping run written at b08af640: read as before, its source the new re
   const LOOPS_B = path.join(ROOT, "tests", "engine-views", "loop-b08af640");
   const note = readFileSync(path.join(LOOPS_B, "README.md"), "utf8");
   assert.match(note, /a development run with no verdict/);
-  assert.match(note, /not on main/);
+  assert.match(note, /its writer is on main since 050aa741/);
   const written = readJson(path.join(LOOPS_B, "planarian-b08af640", "view.json"));
   assert.deepEqual(written.run.source, { dirty: false, from: "the execution snapshot's record (SNAPSHOT.json)", revision: "b08af640c3db83e891e29ade36c300d6f8e5a553" });
   assert.deepEqual(written.loop, loopView().loop, "the same loop block as the run written at d7a11d5b");
@@ -1761,6 +1777,45 @@ test("the looping run written at b08af640: read as before, its source the new re
   assert.equal(grouped.status, 0, grouped.stderr);
   const both = readLoop(openWhole(groupedOut, `${VIEWS}--planarian-b08af640`).run, "planarian");
   assert.equal(closesWords(both.loop), `Its last record meets its first within 2.8e-5 (tolerance 1.0e-4), in the records it measures; of its records, 1 is not measured (${diagnostics.why}); 7 are not measured (${written.loop.not_measured[0].why})`);
+});
+
+test("the planarian's loop for the page: its catalogue entry's words, and a package the page's checks and loop reader take", () => {
+  // The run is the kept fixture loop-b08af640 (the lead's folder replay-20261116/planarian-b08af640, copied unchanged),
+  // packaged with the catalogue's own entry and selection as `npm run adapt:runs` packages it.
+  const LOOPS_B = path.join(ROOT, "tests", "engine-views", "loop-b08af640");
+  const overlay = path.join(ROOT, "data", "replays", "overlay.json"), selection = path.join(ROOT, "data", "replays", "selection.json");
+  const entry = readJson(overlay).experiments["planarian-loop"];
+  assert.deepEqual(readJson(selection)["planarian-loop"].runs, ["planarian-b08af640"]);
+  assert.equal(readJson(selection)["planarian-loop"].evidence_folder, "replay-20261116");
+  // The words the page carries for it: a development run of the engine, not judged; what it is and what it may not claim.
+  assert.deepEqual([entry.development, entry.outcome.judged, entry.outcome.answer, entry.label], [true, false, null, "Planarian loop (development run)"]);
+  assert.match(entry.plain, /^A development run of the engine, not judged: FR-11's interim planarian loop\./);
+  assert.match(entry.plain, /It is not a measurement of a planarian, and it shows no result\.$/);
+  assert.equal(entry.outcome.text, "FR-11's first looping run: a planarian development run (not judged) that closes within 2.76e-5 against a tolerance of 1e-4, bitwise the same before and after the adoption.");
+  const out = path.join(scratch, "planarian-loop-out");
+  const done = tool("--experiment", "planarian-loop", "--root", LOOPS_B, "--run", "planarian-b08af640", "--overlay", overlay, "--selection", selection, "--out", out);
+  assert.equal(done.status, 0, done.stderr);
+  const { view, file, run } = openWhole(out, "planarian-loop--planarian-b08af640");
+  assert.deepEqual(validateReplay(file), []);
+  // The model and the revision, from the run's own record of its source.
+  assert.deepEqual([view.run.engine_models, view.run.revision, view.run.source.dirty], [["resolved_pump_composite@1", "resolved_pump_tissue@3", "electrode_current_injection@1"], "b08af640c3db83e891e29ade36c300d6f8e5a553", false]);
+  // How it closes, in the run's own sentence and numbers, and what the closure leaves out.
+  const read = readLoop(run, "planarian");
+  assert.equal(read.ok, true, read.why);
+  assert.equal(read.loop.closes.says, "the last observed row meets the first within 2.8e-05 relative (largest in observed_membrane_flux_fmol_s)");
+  assert.deepEqual([read.loop.closes.within, read.loop.closes.tolerance], [2.7606981408476794e-05, 0.0001]);
+  assert.equal(closesWords(read.loop), "Its last record meets its first within 2.8e-5 (tolerance 1.0e-4), in the records it measures; of its records, 7 are not measured (cumulative totals: they grow by design, so the reader differences them inside the loop)");
+  assert.equal(engineWords(read.loop), "Made by the engine at revision b08af640c3db83e891e29ade36c300d6f8e5a553, from a clean tree");
+  // What the catalogue names for it, as the real-output check asks: every event kind, the stop, the parameters and readouts.
+  const listed = readJson(path.join(out, "index.json")).experiments.find((item) => item.id === "planarian-loop");
+  for (const event of view.events) {
+    assert.ok(listed.events?.[event.kind], `the catalogue labels the event kind ${event.kind}`);
+    assert.ok(event.time >= run.start && event.time <= run.end, "an event lies within the records");
+  }
+  assert.ok(listed.stops?.[view.run.stop]);
+  for (const [kind, id] of [...view.run.parameters.map((item) => ["parameters", item.id]), ...view.run.readouts.map((item) => ["readouts", item.id])]) assert.ok(listed[kind]?.[id]?.label, id);
+  const size = ["planarian-loop--planarian-b08af640.json", ...(view.parts || []).map((part) => path.basename(part.file))].reduce((total, name) => total + statSync(path.join(out, name)).size, 0);
+  assert.ok(size < 200_000, `the package is ${size} bytes`);
 });
 
 // ---------------------------------------------------------------- a folder of real output

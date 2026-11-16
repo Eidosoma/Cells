@@ -77,5 +77,12 @@
     "runs": [
       "secreted-species-dev-run"
     ]
+  },
+  "planarian-loop": {
+    "note": "FR-11's first looping run (16 November 2026): the interim planarian loop as the engine's run-view writer wrote it after adopting the engine's own view declarations (b08af640, the writer on main since 050aa741); one run, no verdict.",
+    "evidence_folder": "replay-20261116",
+    "runs": [
+      "planarian-b08af640"
+    ]
   }
 }

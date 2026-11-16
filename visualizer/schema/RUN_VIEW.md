@@ -3,7 +3,7 @@
 Status: **draft from the visualizer side, 14 November 2026**, for the lead's design note
 under D154. Names here are proposals; the engine-side note fixes the final file and field
 names, and the viewer adapts. **From 15 November 2026 the engine's own run-view writer
-exists** (on a branch, with a worked example). Where its view and the proposals below
+exists** (first on a development branch, with a worked example; on main since 050aa741, 16 November 2026). Where its view and the proposals below
 differ, the writer's view stands, and the viewer reads it as written: see "The engine's
 view".
 
@@ -129,12 +129,15 @@ derived from the saved junction topology. Adapters read saved files only.
 ## The engine's view
 
 The engine's run-view writer (`cells.run_view@1`: one `view.json` beside a run's files)
-**is not on main yet.** It lives on a development branch, `run-view-d154`, and reaches main
-by a merge that keeps the branch's revisions, so the revisions cited here stay as they are
-(16 November 2026: `src/cells/run_view.py`, and `docs/RUN_VIEW_DESIGN.md` §3, §4 and §9 and
-`docs/LOOPING_REPLAY_DESIGN.md` §2 and §3 on that branch). The adapter reads the writer at
+**is on main since `050aa741` (16 November 2026):** `src/cells/run_view.py`, with its format
+in `docs/RUN_VIEW_DESIGN.md` (§3, §4 and §9) and the loop's in `docs/LOOPING_REPLAY_DESIGN.md`
+(§2 and §3). It grew on the development branch `run-view-d154`, which main merged without a
+rebase, so the branch's revisions cited here (`fd008813`, `d7a11d5b`, `b08af640`) stay as they
+are, and main holds them. The writer and both notes at main's `050aa741` are the same as at
+`b08af640`, so everything said here of `b08af640` holds for main's writer; the runs written
+with it stay what they are, development runs with no verdict. The adapter reads the writer at
 `fd008813`, at `d7a11d5b` (the loop block and a record's `diagnostic` and `reference`) and at
-`b08af640`, each on the development branch, not on main. At `b08af640` the writer drops its
+`b08af640` and `050aa741`. At `b08af640` the writer drops its
 interim table of @3's fields and takes the engine's own view declarations and record roles
 (@3's `UNITS`, `OBSERVATION_AXES`, `RECORD_KINDS`, `ORIENTATION`, `RECORD_LAYERS`,
 `VIEW_LAYERS`, `RECORD_NOTES`, `RECORD_DIAGNOSTICS` and `RECORD_REFERENCES`, folded with its
@@ -143,11 +146,15 @@ worked example made from the development run of one cell that secretes a species
 format grew on 16 November. The adapter reads every shape. Each addition is read only where a
 view gives its key, so a view of an earlier shape is packaged exactly as before. Kept as
 fixtures (`tests/engine-views/`): small runs that the writer wrote at `fd008813` (three
-worlds) and at `b08af640` (five), made by `tools/make_engine_view_fixture.sh`; and the interim
-planarian loop, a development run with no verdict, as the writers at `d7a11d5b` and
-`b08af640` wrote it from execution snapshots (copied from the engine's lead's folder; not
-published, and off the page until its writer lands). The interim shape (`fd008813`,
-`d7a11d5b`) is kept beside the new one: reading it costs no code of its own. The writer
+worlds) and at main's `050aa741` (five), made by `tools/make_engine_view_fixture.sh`; and the
+interim planarian loop, a development run with no verdict, as the writers at `d7a11d5b` and
+`b08af640` wrote it from execution snapshots (copied from the engine's lead's folder). The
+`b08af640` one is packaged for the page as a development run (`data/replays`, experiment
+`planarian-loop`). The interim shape (`fd008813`, `d7a11d5b`) is kept beside the new one:
+reading it costs no code of its own. The engine has three format follow-ups queued (its
+lead, 16 November 2026): `kinds` to hold words with a law's ID under a key of its own; a
+statement of what `carries` means; a reference constant written only where a record names
+one. Until they land the adapter reads past them as below. The writer
 conforms to most of this note. Where it differs, by design, the viewer reads what the writer
 gives:
 
@@ -174,8 +181,7 @@ gives:
   proposals above, and the viewer's older packages, say `first` and `second`, or `cell` and
   `outside node`; the viewer reads both sets of words. The 15 November shape gives no
   `roles`, and its signs are read as written. The adapter carries each set's `roles`, and
-  refuses a sign that names what are not two roles of its set. From `b08af640` (on the
-  development branch, not on main) the signs are @3's own declarations, `confirmed` by the
+  refuses a sign that names what are not two roles of its set. From `b08af640` the signs are @3's own declarations, `confirmed` by the
   core's owner from the code, and the flux rates (`membrane_flux_fmol_s` and the others) carry
   the signs of their totals; the page packages none of the rates.
 - **A voltage is a difference** (16 November). In place of `sign` a voltage's record gives
@@ -183,7 +189,7 @@ gives:
   roles of its set, so it is positive when `plus` is the higher. At `fd008813` the
   membrane's voltage is its cell's potential less its outside node's and a junction's its
   sender's less its receiver's, and `source` says that both are read from the code, for the
-  core's owner to confirm. From `b08af640` (on the development branch, not on main) the same
+  core's owner to confirm. From `b08af640` the same
   differences are @3's own declarations and carry `confirmed` in place of `source` ("the
   core's owner, from the code (core-next, 16 November 2026)"). The adapter carries `difference` as written and gives the
   record the page's `sign`: the view's `says`, its `source` or `confirmed` (whichever the
@@ -205,7 +211,7 @@ gives:
   (`volume`, `extracellular_volume`, `membrane_area`, `membrane_capacitance`) under that
   name, with `array` naming the merged view; the derivation names the others, which are not
   packaged. A field that a view states both as a constant and as a merged view is refused.
-- **Added by the writer:** (from `b08af640`, on the development branch, not on main, it
+- **Added by the writer:** (from `b08af640`, so in main's writer, it
   refuses a field of the inner model that its declarations give no unit, axes or layer, and
   lists one they give no kind under `unstated`, as `kind`, with the reason) `constants`; `unstated` (`[{"id", "what", "why"}]`: what the
   view does not state, with the reason); `recording` (`{"mode", "subset"}`: whether only
@@ -233,10 +239,15 @@ gives:
   each carries), `direction` and `kinds` (a word each, the operator's own: `export` or
   `import`, `production` or `clearance`) and `at` (`{set id: entity id}`, the entity each acts
   at), one value for each id. A set may describe entities that no record lies on (turnover's
-  routes, `turnover_route`). From `b08af640` (on the development branch, not on main) an entry
+  routes, `turnover_route`). From `b08af640` an entry
   of `carries` is one species id or a list of them, and the inner model's kinds declare sets
   of their own, owned by the inner model (the passive routes' `passive_route`, which carries a
-  list for each route, names its law under `kinds` and its patch or junction under `at`). The
+  list for each route, names its law under `kinds` and its patch or junction under `at`). A
+  list in `carries` means, in the engine's lead's words (16 November 2026), that each species
+  moves through the route with its own flux, not as a coupled set: a coupled stoichiometry is
+  a cycle, declared by the transporter kind. A law's ID under `kinds` is a mismatch with the
+  format (`kinds` are words), queued to be fixed with the law's ID under a key of its own; the
+  adapter carries `kinds` as written meanwhile, and reads no meaning into it. The
   adapter carries every such set: `carries` as the set's `species` (what the page reads for a
   route; a list stays a list) and the others as written. A list that is not one value for
   each id, a species that is not the run's, an empty list, or an entity that is not the
@@ -293,7 +304,7 @@ gives:
   now, a subset of the entities of any set but the species (the page draws every entity of a
   set it shows).
 - **A record's `diagnostic` and `reference`** (the roles from `d7a11d5b`; declared by @3
-  itself from `b08af640`, on the development branch, not on main). `diagnostic` says, in
+  itself from `b08af640`, so in main's writer). `diagnostic` says, in
   words, that the record is the residual of the engine's own check, held to its own
   tolerance, and not a quantity of the simulated world: at `b08af640` @3's
   `charge_residual_C`, `component_current_residual_A` and `energy_balance_pJ_s`. The page
@@ -313,11 +324,10 @@ gives:
   stored over a reference that the adapter does not add is not packaged. A `diagnostic` with
   no words, or a `reference` that is not one constant, record or field of the view, is
   refused.
-- **The loop block** (FR-11, `docs/LOOPING_REPLAY_DESIGN.md` on the branch, ruled by the lead
+- **The loop block** (FR-11, `docs/LOOPING_REPLAY_DESIGN.md`, on main since `050aa741`; ruled by the lead
   on 16 November 2026), written from `d7a11d5b` on: `loop: {"species", "cell_type"?, "cell",
   "period", "closes": {"within", "tolerance", "says", "zero"}, "not_measured": [{"why",
-  "records"}], "follows"?}`. `cell_type` (from `0fac9d56`, so at `b08af640`; on the
-  development branch, not on main) is the caller's word for which of the species' cell types
+  "records"}], "follows"?}`. `cell_type` (from `0fac9d56`, so at `b08af640` and in main's writer) is the caller's word for which of the species' cell types
   the loop is of, absent for its default cell: carried as written, and refused where it is no
   word. The writer measures the closure on the saved files, as the largest change
   from the first observed row to the last over the record's own largest magnitude, for every
@@ -494,11 +504,9 @@ Rules that tighten the run view above:
   {"within": number, "tolerance": number, "says": text, "zero": [record ids]},
   "not_measured": [{"why": text, "records": [record ids]}], "follows": [{"time": seconds,
   "from": id, "to": id}]}`, as the engine's run-view writer gives it (FR-11, ruled by the
-  lead on 16 November 2026; written on the development branch from `d7a11d5b` on, not yet
-  on main). The run is one period of a looping run of one cell of that species
+  lead on 16 November 2026; written from `d7a11d5b` on, and by main's writer since `050aa741`). The run is one period of a looping run of one cell of that species
   (`schema/QUANTITY_LAYERS.md`, rule 7). `species` is the species' id in `data/species/`;
-  `cell_type` (optional; written from `0fac9d56`, at `b08af640` on the development branch, not
-  on main) the caller's word for which of the species' cell types the loop is of, absent for
+  `cell_type` (optional; written from `0fac9d56`, so by main's writer) the caller's word for which of the species' cell types the loop is of, absent for
   its default cell; `cell` the cell's id in the run's set of cells; `period` the loop's length in the run's
   time, equal to the span of its records, which run from the loop's start to its closing
   record. `closes.within` is the largest relative change from the first record to the last
@@ -519,8 +527,7 @@ Rules that tighten the run view above:
   writes a loop only for a run that names its engine source. A run with `example` is never a
   loop. The first real one is the interim planarian loop, a development run with no verdict,
   written at `d7a11d5b` and again at `b08af640` with the same arrays and loop block
-  (`tests/engine-views/loop-d7a11d5b/` and `loop-b08af640/`; not published, and off the page
-  until its writer lands).
+  (`tests/engine-views/loop-d7a11d5b/` and `loop-b08af640/`); the `b08af640` run is the page's, as the development run `planarian-loop` (`data/replays`), not judged.
 - **`view.constants[]`** (optional) are named constants of the run's definition: values
   that a derivation of a quantity layer may read in place of a saved record
   (`schema/QUANTITY_LAYERS.md`, rule 1). `[{"id", "label", "unit", "set", "axes",

@@ -2,9 +2,10 @@
 # Small runs written by the engine's own run-view writer, kept as fixtures for the adapter's
 # reading of a view (tools/adapt_run.py, adapt_engine_view; schema/RUN_VIEW.md, "The engine's view").
 #
-# The writer is not on main yet: it lives on the branch run-view-d154. This script exports one
-# revision of that branch with `git archive` (src, tests and validation; no worktree is registered),
-# runs the branch's own unit-test worlds there with the engine's Python, out of process, and
+# The writer is on main since 050aa741 (16 November 2026); before, it lived on the development branch
+# run-view-d154, whose revisions main keeps through its merge. This script exports one revision with
+# `git archive` (src, tests and validation; no worktree is registered), runs the engine's own
+# unit-test worlds there with the engine's Python, out of process, and
 # copies what the writer wrote into tests/engine-views/run-view-<rev8>/. Nothing of the engine is
 # copied into the visualizer: only the runs' saved files (view.json and the arrays it names, the
 # definition and the summary).
@@ -13,14 +14,14 @@
 #              makes S and secretes it into a finite node that leaks to a held bath; 10 steps of
 #              1 ms, 6 observed rows), through io.write_run. No declaration is planted: turnover and
 #              exchange declare their own run-view items at this revision.
-#   subset     the same short secretion world through io.write_run with a recording subset, as the branch's
+#   subset     the same short secretion world through io.write_run with a recording subset, as the engine's
 #              own test of it records one (tests/unit/test_run_view.py): four fields, of the species only S,
 #              every second observed row. No declaration is planted.
 #   increments the same world with a recording subset that keeps the two increments in place of the
 #              amounts (amount_increment, extracellular_amount_increment), of the species only S: from
 #              the revision on which @3 declares its RECORD_REFERENCES, each is stored over a fixed
 #              reference that the view names. No declaration is planted.
-#   kinds      a kind world: FR-4's development world without its transporter, as the branch's own test
+#   kinds      a kind world: FR-4's development world without its transporter, as the engine's own test
 #              of the inner model's kinds builds it (tests/unit/test_run_view.py), run for 10 steps:
 #              @3 alone with its passive routes (a set whose `carries` lists species) and its proton
 #              buffer (pH on the node set). Written only where the revision's writer reads the kinds'
@@ -28,7 +29,7 @@
 #   division   S5's compact partition world (tests/partition_fixtures.py, divided(): a cell divides
 #              into two daughters at 2 ms; 5 observed rows), through window_io.write_windowed_run
 #              with two windows. The membrane state's and the partition's run-view declarations are
-#              planted for the run only, exactly as the branch's own test of it does
+#              planted for the run only, exactly as the engine's own test of it does
 #              (tests/run_view_fixtures.py, declare_division): those operators do not declare them
 #              in their files yet, so the layer "division" and its label are the test's words.
 #
@@ -38,23 +39,32 @@
 # The secretion run (not the subset run) is given the revision's short form as the caller's label (run.revision), which
 # this script plants; the division run is given none. Neither is the engine's own word for its source.
 # The division run's helper (declare_division) also patches the writer's source lookup to give none,
-# as the branch's tests do; from an export the lookup gives none anyway, as the unpatched secretion run shows.
+# as the engine's tests do; from an export the lookup gives none anyway, as the unpatched secretion run shows.
 #
 # The engine's Python runs as its own memory-capped unit through the project's wrapper
 # (scripts/run_detached.sh, cells.slice), never in this shell: the script waits for the unit, and the
 # run writes its own log beside the export (write.log).
 #
-# Usage: tools/make_engine_view_fixture.sh [REVISION]   (default: b08af640, on the development branch
-# run-view-d154, not on main: the writer that reads the engine's own view declarations, 16 November
-# 2026; fd008813 made the folder run-view-fd008813, with its first three worlds). Environment: CELLS_VIEW_EXPORT (where the export goes), CELLS_PYTHON (the
+# Usage: tools/make_engine_view_fixture.sh [REVISION]   (default: main at 050aa741, 16 November 2026,
+# whose writer reads the engine's own view declarations; the development branch's fd008813 made the
+# folder run-view-fd008813, with its first three worlds). Environment: CELLS_VIEW_EXPORT (where the export goes), CELLS_PYTHON (the
 # engine's Python), CELLS_CPUS (the processors the unit is pinned to), CELLS_WRAPPER (run_detached.sh).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VISUALIZER="$(dirname "$HERE")"
 TOP="$(git -C "$VISUALIZER" rev-parse --show-toplevel)"
-REVISION="$(git -C "$TOP" rev-parse --verify "${1:-b08af640c3db83e891e29ade36c300d6f8e5a553}^{commit}")"
+REVISION="$(git -C "$TOP" rev-parse --verify "${1:-050aa741ddff540971169225d7ccd275c2e89462}^{commit}")"
 SHORT="${REVISION:0:8}"
+# Where the revision stands: on main's own line, or a development branch's revision that main holds through a merge.
+# (grep reads all its input: with pipefail, grep -q stopping early would fail rev-list on a closed pipe.)
+if git -C "$TOP" rev-list --first-parent main | grep -x "$REVISION" > /dev/null; then
+  WHERE="main at \`$SHORT\`: the writer is on main since 050aa741 (16 November 2026)"
+elif git -C "$TOP" merge-base --is-ancestor "$REVISION" main; then
+  WHERE="the development branch \`run-view-d154\` at \`$SHORT\`, which main holds through its merge; the writer is on main since 050aa741 (16 November 2026)"
+else
+  WHERE="the development branch \`run-view-d154\` at \`$SHORT\`, not on main"
+fi
 EXPORT="${CELLS_VIEW_EXPORT:-/mnt/workspaces/Cells/visualizer-scratch-20261116-02/run-view-$SHORT}"
 PYTHON="${CELLS_PYTHON:-/mnt/workspaces/Cells/venv-cpu/bin/python}"
 CPUS="${CELLS_CPUS:-12-15,28-31}"
@@ -75,7 +85,7 @@ LOG="$EXPORT/write.log"
 rm -rf "$WORK" "$LOG"
 mkdir -p "$WORK"
 
-# The run, as a file the unit can start: the branch's own test worlds and helpers, through the shared output paths.
+# The run, as a file the unit can start: the engine's own test worlds and helpers, through the shared output paths.
 cat > "$PROGRAM" <<'PYTHON'
 import json
 import sys
@@ -165,12 +175,11 @@ if grep -rlE '/(home|mnt|Users|tmp|var|root|opt|srv)/' "$DEST"; then
   exit 1
 fi
 cat > "$DEST/README.md" <<NOTE
-# Runs written by the engine's run-view writer (branch run-view-d154, $SHORT)
+# Runs written by the engine's run-view writer ($SHORT)
 
-Written by \`tools/make_engine_view_fixture.sh $SHORT\` on the branch \`run-view-d154\` at revision
-\`$REVISION\`, exported with \`git archive\` (src, tests, validation) and run with the engine's own
-Python as a memory-capped unit (\`scripts/run_detached.sh\`). The writer is on a development
-branch, not on main. Every
+Written by \`tools/make_engine_view_fixture.sh $SHORT\` at revision \`$REVISION\`, that is $WHERE.
+Exported with \`git archive\` (src, tests, validation) and run with the engine's own Python as a
+memory-capped unit (\`scripts/run_detached.sh\`). Every
 file here is the writer's own output, kept as written: \`view.json\` (\`cells.run_view@1\`), the
 arrays it names, \`resolved_config.json\` and \`summary.json\` (the manifest and the final checkpoint
 are left out). Do not edit by hand; run the script again.
@@ -178,18 +187,18 @@ are left out). Do not edit by hand; run the script again.
 - \`secretion\`: the worked example's short world (one cell makes S and secretes it into a finite
   node that leaks to a held bath; 10 steps, 6 observed rows) through \`io.write_run\`. No declaration
   is planted.
-- \`subset\`: the same world through \`io.write_run\` with a recording subset, as the branch's own
+- \`subset\`: the same world through \`io.write_run\` with a recording subset, as the engine's own
   test records one: four fields, of the species only S, every second observed row. Nothing is
   planted.
 - \`increments\` (where written): the same world with a recording subset that keeps the two
   increments in place of the amounts, of the species only S. Nothing is planted.
-- \`kinds\` (where written): FR-4's development world without its transporter, as the branch's own
+- \`kinds\` (where written): FR-4's development world without its transporter, as the engine's own
   test of the inner model's kinds builds it, run for 10 steps: @3 alone with its passive routes
   and its proton buffer. Nothing is planted. The writer reads the kinds' declarations only from
   b08af640 on; written.json in the export says why where it was skipped.
 - \`division\`: S5's compact partition world (a cell divides into two daughters) through
   \`window_io.write_windowed_run\` with two windows. The membrane state's and the partition's
-  run-view declarations are planted for the run only, as the branch's own test does
+  run-view declarations are planted for the run only, as the engine's own test does
   (\`declare_division\`): the layer "division" and its label are the test's words, not the
   operators' files'.
 
@@ -199,9 +208,8 @@ are left out). Do not edit by hand; run the script again.
 \`run.revision\` of the secretion view, \`$SHORT\`, is a caller's label **planted** by the script;
 it is not the engine's own word for its source, and nothing may read it as that. The other views
 name no revision. The division run's helper (\`declare_division\`) also patches
-the writer's source lookup to give none, as the branch's tests do; from an export the lookup gives
-none anyway, as the unpatched runs show. The exported code is that of
-\`$REVISION\`, the branch's tip when it was exported.
+the writer's source lookup to give none, as the engine's tests do; from an export the lookup gives
+none anyway, as the unpatched runs show. The exported code is that of \`$REVISION\`.
 
 These are development runs of unit-test worlds: no result and no evidence.
 NOTE

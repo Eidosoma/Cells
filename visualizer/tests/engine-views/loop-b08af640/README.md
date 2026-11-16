@@ -2,10 +2,11 @@
 
 The interim planarian loop of FR-11, re-run by the engine's lead after the writer adopted the
 engine's own view declarations: a development run with no verdict, an illustration, not registered.
-Its writer is on a development branch (`run-view-d154` at b08af640), not on main; it reaches main
-only after its own landing and gates. Nothing of it is published, and it stays off the page until
-the lead says its writer has landed. Kept beside `loop-d7a11d5b/`, the same package written by the
-writer at d7a11d5b.
+It was written at b08af640, a revision of the development branch `run-view-d154` that main holds
+through its merge: its writer is on main since 050aa741 (16 November 2026), and main's writer is the
+same file as b08af640's. The run is still what it was, a development run with no verdict. It is the
+run the page carries, packaged as the experiment `planarian-loop` (`data/replays`). Kept beside
+`loop-d7a11d5b/`, the same package written by the writer at d7a11d5b.
 
 - **What it is:** the same world, drive and period as `loop-d7a11d5b/` (see its note): seven
   heredity cells, a square-wave current into the centre cell `cell_3`, period 2 s, 101 observed rows

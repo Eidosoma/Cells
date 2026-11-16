@@ -1652,7 +1652,8 @@ VIEW_KEYS = {"format", "run", "time", "space", "layers", "sets", "records", "eve
 # a field the catalogue does not name is not packaged for the page.
 FIELD_LABELS = {field: label for field, (_, label, _) in HISTORY_FIELDS.items()}
 TIME_CLOSE = dict(rel_tol=1e-9, abs_tol=1e-12)
-# The writer's additions of 16 November 2026 (branch run-view-d154; docs/RUN_VIEW_DESIGN.md there, §9). Each is read only
+# The writer's additions of 16 November 2026 (made on the development branch run-view-d154, on main since 050aa741;
+# docs/RUN_VIEW_DESIGN.md §9). Each is read only
 # where the view gives its key, so that a view of the 15 November shape is packaged exactly as before.
 #
 # A set's roles the page has a word for, as the end of a difference that is the higher when the value is positive: the
@@ -1670,7 +1671,7 @@ VIEW_FIELD_LABELS = {"volume": "Cell volume", "extracellular_volume": "Volume ou
 # records its closure leaves out by reason (not_measured) and those identically zero over the loop (closes.zero).
 LOOP_KEYS = {"species", "cell_type", "cell", "period", "closes", "not_measured", "follows"}
 # A level the page reads that the engine may store as an increment over a fixed reference (its RECORD_REFERENCES, from
-# b08af640 on the development branch run-view-d154, not on main): where the run saved no record of the level itself,
+# b08af640 on, the writer on main since 050aa741, 16 November 2026): where the run saved no record of the level itself,
 # the level is the view's named reference plus the increment, worked out here and said to be.
 INCREMENT_OF = {"amount": "amount_increment", "extracellular_amount": "extracellular_amount_increment"}
 # The operators whose ledgers among the page's fields (HISTORY_FIELDS) are their own; every other field there is the
@@ -1987,7 +1988,7 @@ def adapt_engine_view(root, name, experiment, entry):
     both = sorted({record["field"] for record in listed if merged(record)} & {item["id"] for item in constants_in})
     if both:
         raise Refused(f"{name}: its view states {', '.join(both)} both as a constant of the definition and as the merged view the composition changes ({VIEW_PREFIX}<field>)")
-    # The two record roles (from b08af640 on the development branch run-view-d154, not on main): a diagnostic says in
+    # The two record roles (from b08af640 on; the writer on main since 050aa741, 16 November 2026): a diagnostic says in
     # words that the record is the residual of the engine's own check; a reference names the fixed reference a record
     # is stored over (a constant of the view, the merged view's record, or a field the run did not save). A role that
     # is not so given is refused, as the writer's own check refuses it.
