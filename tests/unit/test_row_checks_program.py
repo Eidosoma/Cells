@@ -6,7 +6,8 @@ its predecessor and its global step count; slots past the window's real steps ne
 The decision hands a window to the host on any failed check or any ratio above the band,
 NaN included. Device mode is refused, fail-closed, wherever it cannot serve: a run that is not
 compiled, a model without device checks or margins, a model whose device diagnostics are not
-its host diagnostics, the batch and vector paths, and from the CLI.
+its host diagnostics, the batch and vector paths, and from the CLI. It is also refused where
+it is not yet qualified: a GPU backend and a composition with a live retiring operator.
 """
 
 import json
@@ -172,6 +173,25 @@ def test_device_mode_refuses_what_it_cannot_serve(monkeypatch):
         patch.setattr(surface_pump, "DEVICE_DIAGNOSTICS", surface_pump.DEVICE_DIAGNOSTICS[:-1])
         with pytest.raises(ConfigError, match="differ in max_global_charge_bound_ratio"):
             next(iter(iter_windows(spec, policy)))
+
+
+def test_device_mode_is_refused_on_a_gpu_backend():
+    """Not yet qualified (no GPU measurement): refused before any device is touched."""
+    spec = parse_spec(definition(backend="gpu"))
+    with pytest.raises(ConfigError, match="qualified on the CPU only"):
+        plan_windows(spec, WindowPolicy(3, "checkpoints", "device"))
+    plan_windows(spec, WindowPolicy(3, "checkpoints"))  # Host mode admits it.
+
+
+def test_device_mode_is_refused_for_a_live_retiring_composition():
+    """Not yet qualified: a dividing world's partition retires cells, so its device checks read
+    adjusted rows, whose refusals have no planted test yet."""
+    from validation.division import division_crossrev as division
+
+    spec = parse_spec(division.division_worlds()["division_compact"])
+    with pytest.raises(ConfigError, match="live retiring operator"):
+        plan_windows(spec, WindowPolicy(3, "checkpoints", "device"))
+    plan_windows(spec, WindowPolicy(3, "checkpoints"))  # Host mode admits it.
 
 
 def test_the_cli_passes_row_checks_to_admission(tmp_path):
