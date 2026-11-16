@@ -547,7 +547,10 @@ test("the fixtures kept in the checkout are the ones the tool writes", (t) => {
   const walk = (folder, base = folder) =>
     readdirSync(folder, { withFileTypes: true }).flatMap((item) => (item.isDirectory() ? walk(path.join(folder, item.name), base) : [path.relative(base, path.join(folder, item.name))]));
   const written = walk(FIXTURES).sort();
-  const kept = existsSync(KEPT) ? walk(KEPT).sort() : [];
+  // Only what the tool writes is its to keep: the folders and files at the top of its output. Other tests keep their
+  // own fixtures beside these (tests/fixtures/entries, say), and this test leaves them alone.
+  const owned = new Set(readdirSync(FIXTURES));
+  const kept = existsSync(KEPT) ? walk(KEPT).filter((name) => owned.has(name.split(path.sep)[0])).sort() : [];
   for (const name of kept) assert.ok(written.includes(name), `tests/fixtures/${name} is not written by the tool`);
   const missing = written.filter((name) => !kept.includes(name));
   for (const name of kept) {
@@ -1592,6 +1595,172 @@ test("a recorded subset or a loop block that contradicts itself, or that the pag
     assert.match(result.stderr, message, label);
     assert.ok(!existsSync(path.join(target, "index.json")), `${label}: nothing is catalogued`);
   }
+});
+
+// ---------------------------------------------------------------- the writer that reads the engine's own declarations
+//
+// tests/engine-views/run-view-b08af640: five small worlds the run-view writer wrote at b08af640, on the development
+// branch run-view-d154, not on main (tools/make_engine_view_fixture.sh). From that revision the writer takes @3's own
+// view declarations and record roles: a voltage's difference is confirmed, each increment names its fixed reference
+// (amount_reference becomes a named constant), the engine's check residuals are marked diagnostics, and a kind's set
+// (the passive routes) carries a list of species for each route. tests/engine-views/loop-b08af640: the looping run
+// again, written by that writer from an execution snapshot (copied from the engine's lead's folder; not published).
+
+const WRITER_B = path.join(ROOT, "tests", "engine-views", "run-view-b08af640");
+const B_WORLDS = ["secretion", "subset", "increments", "kinds", "division"];
+const bOut = path.join(scratch, "views-b08af640-out");
+const bDone = tool("--experiment", VIEWS, "--root", WRITER_B, ...B_WORLDS.flatMap((world) => ["--run", world]), ...VIEW_ARGS, "--out", bOut);
+assert.equal(bDone.status, 0, `the adapter failed on the views written at b08af640:\n${bDone.stderr}`);
+const writtenB = (world) => readJson(path.join(WRITER_B, world, "view.json"));
+
+/** A world of b08af640 with its view changed in a copy, adapted; [result, output folder, run id]. */
+function changedB(label, change, world = "secretion") {
+  const copy = path.join(scratch, `b08af640-${label}`);
+  cpSync(WRITER_B, copy, { recursive: true });
+  const file = path.join(copy, world, "view.json");
+  const view = readJson(file);
+  change(view);
+  writeFileSync(file, JSON.stringify(view));
+  const target = path.join(scratch, `b08af640-${label}-out`);
+  return [tool("--experiment", VIEWS, "--root", copy, "--run", world, ...VIEW_ARGS, "--out", target), target, `${VIEWS}--${world}`];
+}
+
+test("the views written at b08af640 are the writer's own, of the revision their note names, each well under 1 MB", () => {
+  const note = readFileSync(path.join(WRITER_B, "README.md"), "utf8");
+  assert.match(note, /branch run-view-d154, b08af640/);
+  assert.match(note, /b08af640c3db83e891e29ade36c300d6f8e5a553/);
+  assert.match(note, /on a development\s+branch, not on main/);
+  const size = (folder) => readdirSync(folder, { withFileTypes: true }).reduce((total, item) => total + (item.isDirectory() ? size(path.join(folder, item.name)) : statSync(path.join(folder, item.name)).size), 0);
+  for (const world of B_WORLDS) {
+    const view = writtenB(world);
+    assert.equal(view.format, "cells.run_view@1");
+    assert.equal(view.run.source, undefined, `${world}: run from an export, no engine source`);
+    assert.ok(size(path.join(WRITER_B, world)) < 300_000, `${world} is ${size(path.join(WRITER_B, world))} bytes`);
+  }
+  assert.ok(!PATHS.test(readdirSync(WRITER_B, { recursive: true }).filter((name) => /\.(json|jsonl|md)$/.test(name)).map((name) => readFileSync(path.join(WRITER_B, name), "utf8")).join("\n")));
+});
+
+test("at b08af640: a voltage's difference is confirmed, the check residuals are diagnostics, and the increments name their references", () => {
+  const { view, file, record, run } = openWhole(bOut, `${VIEWS}--secretion`);
+  assert.deepEqual(validateReplay(file), []);
+  const written = writtenB("secretion");
+  const stated = written.records.find((item) => item.id === "observed_membrane_voltage_V").difference;
+  assert.equal(stated.source, undefined);
+  assert.deepEqual(record("membrane_voltage_V").sign, { says: stated.says, high: "inside", confirmed: stated.confirmed });
+  assert.match(stated.confirmed, /^the core's owner, from the code/);
+  // The diagnostics are read past and counted, in the view's words; none is shown.
+  const diagnostics = written.records.filter((item) => "diagnostic" in item).map((item) => item.field);
+  assert.deepEqual([...new Set(diagnostics)].sort(), ["charge_residual_C", "component_current_residual_A", "energy_balance_pJ_s"]);
+  assert.ok(view.derivation.some((line) => line.startsWith("The view marks 3 field(s) as diagnostics, in its words 'a diagnostic: the residual of the engine's own check") && line.endsWith(": charge_residual_C, component_current_residual_A, energy_balance_pJ_s. The page shows none of them.")));
+  // The references: each increment names its fixed reference, a named constant of the view; amount_reference is new.
+  assert.deepEqual(written.records.find((item) => item.id === "observed_amount_increment").reference, { constant: "amount_reference" });
+  const reference = view.constants.find((item) => item.id === "amount_reference");
+  assert.deepEqual([reference.unit, reference.axes], ["fmol", ["species", "cell"]]);
+  assert.ok(view.derivation.includes("The view stores 2 field(s) as an increment over a fixed reference (its reference): amount_increment over amount_reference, extracellular_amount_increment over extracellular_amount_reference."));
+  // The amounts themselves were saved: they are read as saved, and nothing is worked out.
+  assert.equal(record("amount.S").note, undefined);
+  assert.ok(Object.fromEntries(layersFor(run, LAYERS, MARKS).map((offer) => [offer.layer.id, offer.ok]))["ion-push-pull"]);
+});
+
+test("at b08af640: a level saved only as an increment is the named reference plus the increment, worked out and said", () => {
+  const sums = open(bOut, `${VIEWS}--increments`);
+  const saved = open(bOut, `${VIEWS}--secretion`);
+  assert.deepEqual(validateReplay(sums.file), []);
+  assert.deepEqual(writtenB("increments").recording.subset.fields, ["membrane_voltage_V", "cell_potential_V", "amount_increment", "extracellular_amount_increment"]);
+  for (const [level, reference] of [["amount.S", "amount_reference"], ["extracellular_amount.S", "extracellular_amount_reference"]]) {
+    const item = sums.record(level);
+    assert.match(item.note, new RegExp(`^Worked out by the viewer: the run's fixed reference ${reference} \\(a named constant of the view\\) plus its record observed_`));
+    assert.deepEqual(item.reference, { constant: reference });
+    // The same world, whose run saved the level itself: the sum gives the engine's own readout.
+    const part = (opened, id) => {
+      const entry = opened.record(id);
+      const held = readJson(path.join(bOut, path.basename(opened.view.parts.find((item) => item.id === entry.part).file)));
+      const bytes = Buffer.from(held.payload.data, "base64");
+      return Array.from(new Float32Array(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), entry.offset, entry.shape[0] * entry.shape[1]));
+    };
+    assert.deepEqual(part(sums, level), part(saved, level), `${level}: reference plus increment is the level the engine saved`);
+  }
+  assert.ok(sums.view.derivation.includes("Saved only as an increment over a fixed reference (the view's reference), and so worked out by the viewer as the reference plus the increment, row by row: amount is amount_reference plus amount_increment; extracellular_amount is extracellular_amount_reference plus extracellular_amount_increment. Each such record says so in its note."));
+  // Not said to be unrecorded: the run kept it, as an increment.
+  assert.equal(sums.run.unstated.has("amount"), false);
+  // A reference the run did not save (a field only) cannot be added: the level is not packaged, and that is said.
+  const [unsaved, unsavedOut, id] = changedB("unsaved-reference", (view) => {
+    for (const item of view.records) if (item.field === "amount_increment") item.reference = { field: "amount_reference" };
+  }, "increments");
+  assert.equal(unsaved.status, 0, unsaved.stderr);
+  const left = open(unsavedOut, id);
+  assert.equal(left.view.records.some((item) => item.id === "amount.S"), false);
+  assert.ok(left.view.derivation.some((line) => line.startsWith("Not packaged: amount (its increment amount_increment is stored over {\"field\": \"amount_reference\"}")));
+});
+
+test("at b08af640: a kind's set carries a list of species for each entity, read as written, and is no operator's for the secreted species", () => {
+  const { view, file } = open(bOut, `${VIEWS}--kinds`);
+  assert.deepEqual(validateReplay(file), []);
+  const routes = view.sets.find((item) => item.id === "passive_route");
+  assert.deepEqual(writtenB("kinds").sets.find((item) => item.id === "passive_route").carries, [["H"]]);
+  assert.deepEqual([routes.species, routes.kinds, routes.at, routes.owner], [[["H"]], ["proton_constant_field_leak@1"], [{ membrane: "bounding_0" }], "resolved_pump_tissue@3"]);
+  assert.ok(view.derivation.includes("What the run's operators state of each of their entities is carried as the view gives it (passive_route: proton_leak_0 (proton_constant_field_leak@1) carries H at bounding_0); a route's species is the one the view says it carries."));
+  assert.equal(view.sets.find((item) => item.id === "species").secreted, undefined, "a leak of the inner model's is no operator's secretion");
+  // A list that names a species the run does not have, or names none, is refused.
+  for (const [label, carries] of [["carries-foreign", [["H", "Xe"]]], ["carries-empty", [[]]]]) {
+    const [result, target] = changedB(label, (view) => (view.sets.find((item) => item.id === "passive_route").carries = carries), "kinds");
+    assert.notEqual(result.status, 0, label);
+    assert.match(result.stderr, /its view says an entity of passive_route carries a species that is not among the run's species/, label);
+    assert.ok(!existsSync(path.join(target, "index.json")));
+  }
+});
+
+test("at b08af640: a malformed role is refused with what and where", () => {
+  for (const [label, change, message] of [
+    ["diagnostic", (view) => (view.records.find((item) => item.id === "observed_charge_residual_C").diagnostic = ""), /its view's record observed_charge_residual_C is marked a diagnostic with no words for what it is/],
+    ["reference", (view) => (view.records.find((item) => item.id === "observed_amount_increment").reference = { constant: "no_such_constant" }), /its view's record observed_amount_increment names a reference that is not one constant, record or field of the view/],
+  ]) {
+    const [result, target] = changedB(label, change);
+    assert.notEqual(result.status, 0, label);
+    assert.match(result.stderr, message, label);
+    assert.ok(!existsSync(path.join(target, "index.json")), `${label}: nothing is catalogued`);
+  }
+});
+
+test("the looping run written at b08af640: read as before, its source the new revision, and a loop's cell type and diagnostics carried", () => {
+  const LOOPS_B = path.join(ROOT, "tests", "engine-views", "loop-b08af640");
+  const note = readFileSync(path.join(LOOPS_B, "README.md"), "utf8");
+  assert.match(note, /a development run with no verdict/);
+  assert.match(note, /not on main/);
+  const written = readJson(path.join(LOOPS_B, "planarian-b08af640", "view.json"));
+  assert.deepEqual(written.run.source, { dirty: false, from: "the execution snapshot's record (SNAPSHOT.json)", revision: "b08af640c3db83e891e29ade36c300d6f8e5a553" });
+  assert.deepEqual(written.loop, loopView().loop, "the same loop block as the run written at d7a11d5b");
+  const adapt = (label, change) => {
+    const copy = path.join(scratch, `loop-b-${label}`);
+    cpSync(LOOPS_B, copy, { recursive: true });
+    const file = path.join(copy, "planarian-b08af640", "view.json");
+    const view = readJson(file);
+    change(view);
+    writeFileSync(file, JSON.stringify(view));
+    const target = path.join(scratch, `loop-b-${label}-out`);
+    return [tool("--experiment", VIEWS, "--root", copy, "--run", "planarian-b08af640", ...VIEW_ARGS, "--out", target), target];
+  };
+  const [result, target] = adapt("as-written", () => {});
+  assert.equal(result.status, 0, result.stderr);
+  const { view, run, record } = openWhole(target, `${VIEWS}--planarian-b08af640`);
+  assert.deepEqual(view.loop, { species: "planarian", cell: "cell_3", period: 2, closes: written.loop.closes, not_measured: written.loop.not_measured });
+  const read = readLoop(run, "planarian");
+  assert.equal(read.ok, true, read.why);
+  assert.equal(engineWords(read.loop), "Made by the engine at revision b08af640c3db83e891e29ade36c300d6f8e5a553, from a clean tree");
+  assert.match(record("junction_voltage_V").sign.confirmed, /^the core's owner, from the code/);
+  // A loop of one of the species' cell types names it (from 0fac9d56): carried as written; a cell type with no word is refused.
+  const [typed, typedOut] = adapt("cell-type", (view) => (view.loop.cell_type = "neoblast"));
+  assert.equal(typed.status, 0, typed.stderr);
+  assert.equal(open(typedOut, `${VIEWS}--planarian-b08af640`).view.loop.cell_type, "neoblast");
+  const [blank] = adapt("cell-type-blank", (view) => (view.loop.cell_type = ""));
+  assert.notEqual(blank.status, 0);
+  assert.match(blank.stderr, /its view's loop names its cell type with no word/);
+  // Where the closure leaves out diagnostics as well as running totals, each group is said with the run's reason.
+  const diagnostics = { why: "diagnostics: residuals of the engine's own checks, held to their own absolute tolerances", records: ["observed_membrane_voltage_V"] };
+  const [grouped, groupedOut] = adapt("diagnostics", (view) => view.loop.not_measured.unshift(diagnostics));
+  assert.equal(grouped.status, 0, grouped.stderr);
+  const both = readLoop(openWhole(groupedOut, `${VIEWS}--planarian-b08af640`).run, "planarian");
+  assert.equal(closesWords(both.loop), `Its last record meets its first within 2.8e-5 (tolerance 1.0e-4), in the records it measures; of its records, 1 is not measured (${diagnostics.why}); 7 are not measured (${written.loop.not_measured[0].why})`);
 });
 
 // ---------------------------------------------------------------- a folder of real output

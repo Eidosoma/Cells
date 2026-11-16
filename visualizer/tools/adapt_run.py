@@ -1668,7 +1668,11 @@ VIEW_PREFIX = "view_"
 VIEW_FIELD_LABELS = {"volume": "Cell volume", "extracellular_volume": "Volume outside", "membrane_area": "Membrane area", "membrane_capacitance": "Membrane capacitance"}
 # The loop block: as designed (schema/RUN_VIEW.md, view.loop), and as the writer builds it from d7a11d5b on, with the
 # records its closure leaves out by reason (not_measured) and those identically zero over the loop (closes.zero).
-LOOP_KEYS = {"species", "cell", "period", "closes", "not_measured", "follows"}
+LOOP_KEYS = {"species", "cell_type", "cell", "period", "closes", "not_measured", "follows"}
+# A level the page reads that the engine may store as an increment over a fixed reference (its RECORD_REFERENCES, from
+# b08af640 on the development branch run-view-d154, not on main): where the run saved no record of the level itself,
+# the level is the view's named reference plus the increment, worked out here and said to be.
+INCREMENT_OF = {"amount": "amount_increment", "extracellular_amount": "extracellular_amount_increment"}
 # The operators whose ledgers among the page's fields (HISTORY_FIELDS) are their own; every other field there is the
 # inner model's. And the view's set for the page's name of a set where the two differ.
 FIELD_OPERATORS = {
@@ -1769,7 +1773,11 @@ def looped(name, loop, cells, times, record_ids=()):
     span = times[-1] - times[0]
     if not (finite(loop["period"]) and loop["period"] > 0 and math.isclose(loop["period"], span, rel_tol=1e-9, abs_tol=1e-12)):
         raise Refused(f"{where} gives a period of {loop['period']} s, and its records span {span} s: they must be the same")
+    if "cell_type" in loop and not (isinstance(loop["cell_type"], str) and loop["cell_type"].strip()):
+        raise Refused(f"{where} names its cell type with no word")
     out = {"species": loop["species"], "cell": loop["cell"], "period": loop["period"], "closes": {"within": closes["within"], "tolerance": closes["tolerance"], "says": closes["says"]}}
+    if "cell_type" in loop:
+        out["cell_type"] = loop["cell_type"]
     if "zero" in closes:
         out["closes"]["zero"] = list(closes["zero"])
     if "not_measured" in loop:
@@ -1838,7 +1846,7 @@ def adapt_engine_view(root, name, experiment, entry):
             values = item[key]
             if not (isinstance(values, list) and len(values) == len(item.get("ids") or [])):
                 raise Refused(f"{name}: its view gives the set {identifier} '{key}' that is not one value for each of its entities")
-            if key == "carries" and not all(value in declared_species for value in values):
+            if key == "carries" and not all((value in declared_species) if isinstance(value, str) else (isinstance(value, list) and value and all(isinstance(each_, str) and each_ in declared_species for each_ in value)) for value in values):
                 raise Refused(f"{name}: its view says an entity of {identifier} carries a species that is not among the run's species")
             if key == "at" and not all(isinstance(value, dict) and len(value) == 1 and next(iter(value)) in sets and next(iter(value.values())) in [entity for entity in sets[next(iter(value))].get("ids") or [] if entity is not None] for value in values):
                 raise Refused(f"{name}: its view says an entity of {identifier} acts at an entity that is not one of the view's")
@@ -1979,6 +1987,28 @@ def adapt_engine_view(root, name, experiment, entry):
     both = sorted({record["field"] for record in listed if merged(record)} & {item["id"] for item in constants_in})
     if both:
         raise Refused(f"{name}: its view states {', '.join(both)} both as a constant of the definition and as the merged view the composition changes ({VIEW_PREFIX}<field>)")
+    # The two record roles (from b08af640 on the development branch run-view-d154, not on main): a diagnostic says in
+    # words that the record is the residual of the engine's own check; a reference names the fixed reference a record
+    # is stored over (a constant of the view, the merged view's record, or a field the run did not save). A role that
+    # is not so given is refused, as the writer's own check refuses it.
+    constant_ids = {item["id"] for item in constants_in}
+    record_ids = {record.get("id") for record in view["records"] if isinstance(record, dict)}
+    for record in listed:
+        where = f"{name}: its view's record {record.get('id')}"
+        if "diagnostic" in record and not (isinstance(record["diagnostic"], str) and record["diagnostic"].strip()):
+            raise Refused(f"{where} is marked a diagnostic with no words for what it is")
+        reference = record.get("reference")
+        if "reference" in record and not (isinstance(reference, dict) and len(reference) == 1 and (reference.get("constant") in constant_ids or reference.get("record") in record_ids or isinstance(reference.get("field"), str))):
+            raise Refused(f"{where} names a reference that is not one constant, record or field of the view")
+    # A level the page reads that the run saved only as an increment over a fixed reference: the record of the increment
+    # on the replay's own base where it has one; the level is worked out below as the reference plus the increment.
+    summed = {}
+    for level, increment in INCREMENT_OF.items():
+        if any(record["field"] == level for record in listed):
+            continue
+        found = sorted((record for record in listed if record["field"] == increment and isinstance(record.get("reference"), dict)), key=lambda record: record["base"] != timeline)
+        if found:
+            summed[level] = found[0]
     # The fields a recording subset kept, by the writer's names (a merged view by its view_<field>): every record of the
     # view is of one of them. Of the fields the page has a name for, those it does not list are unrecorded, in the run's
     # own statement; nothing stands in for them.
@@ -1987,7 +2017,7 @@ def adapt_engine_view(root, name, experiment, entry):
         strays = sorted({record["id"] if merged(record) else record["field"] for record in listed} - set(subset["fields"]))
         if strays:
             raise Refused(f"{name}: its view gives records of {', '.join(strays)}, which its recording subset does not keep")
-        present = {record.get("field") for record in view["records"] if isinstance(record, dict)}
+        present = {record.get("field") for record in view["records"] if isinstance(record, dict)} | set(summed)
         # Only what the run could have recorded: a field of an operator the run's composition lacks, or over a set the view
         # gives no entity of, is said of nothing here, as for a full recording of such a run.
         operators = set((view["run"].get("composition") or {}).get("operators") or []) if isinstance(view["run"], dict) and isinstance(view["run"].get("composition"), dict) else set()
@@ -1999,9 +2029,9 @@ def adapt_engine_view(root, name, experiment, entry):
 
         not_recorded = [field for field in HISTORY_FIELDS if field not in subset["fields"] and field not in present and could_record(field)]
     labels = {**FIELD_LABELS, **VIEW_FIELD_LABELS}
-    voltages, unread_voltages, referenced = {}, [], []
+    voltages, unread_voltages, referenced, sums, unsummed = {}, [], [], {}, []
     for field in [*HISTORY_FIELDS, *VIEW_FIELD_LABELS]:  # the page's own order of fields, then the merged views it reads
-        for record in [item for item in listed if item["field"] == field and merged(item) == (field in VIEW_FIELD_LABELS)]:
+        for record in [item for item in listed if item["field"] == field and merged(item) == (field in VIEW_FIELD_LABELS)] + ([summed[field]] if field in summed else []):
             rows = range(count)
             if record["base"] != timeline:
                 if field in on_timeline:
@@ -2029,7 +2059,27 @@ def adapt_engine_view(root, name, experiment, entry):
             per = 1
             for size in shape:
                 per *= size
-            if record.get("reference") is not None:
+            fixed = None
+            if record["field"] != field:
+                # The level is the run's fixed reference plus its increment (the view's reference): the reference is a
+                # named constant of the view, or the merged view's record on the same base; one the run did not save
+                # (a field only) cannot be added, and the level is then not packaged.
+                reference = record["reference"]
+                if "constant" in reference:
+                    constant = next(item for item in constants_in if item["id"] == reference["constant"])
+                    if constant.get("axes") == axes and isinstance(constant.get("values"), list):
+                        table = constant["values"]
+                        fixed = lambda row, species_k, k: table[species_k][k] if len(axes) == 2 else table[k]  # noqa: E731
+                elif "record" in reference:
+                    held = next((item for item in listed if item.get("id") == reference["record"]), None)
+                    if held is not None and held["base"] == record["base"] and [axis for axis in held.get("axes") or [] if axis != "time"] == axes:
+                        _, held_values, _ = view_rows(name, folder, bases[held["base"]], held.get("array"))
+                        fixed = lambda row, species_j, k: held_values[row * per + species_j * width + k] if len(axes) == 2 else held_values[row * per + k]  # noqa: E731
+                if fixed is None:
+                    unsummed.append(f"{field} (its increment {record['field']} is stored over {json.dumps(reference, sort_keys=True)}, which the run did not save in a form the adapter can add)")
+                    continue
+                sums[field] = (record["field"], reference)
+            elif record.get("reference") is not None:
                 # Stored as an increment over a fixed reference (its owner's RECORD_REFERENCES): its quantity is the
                 # reference plus the record, which the page does not add. Not packaged, and said.
                 referenced.append(f"{field} (over {json.dumps(record['reference'], sort_keys=True)})")
@@ -2051,7 +2101,23 @@ def adapt_engine_view(root, name, experiment, entry):
             stated.update({"array": record.get("array"), "base": record["base"]})
             if record["base"] != timeline:
                 stated["rows"] = f"the row of the base '{record['base']}' that falls on each of the replay's times"
-            split = {identifier: array("f", (values[row * per + old * width + k] for row in rows for k in columns)) for identifier, old in species_rows} if len(axes) == 2 else {None: array("f", (values[row * per + k] for row in rows for k in columns))}
+            if fixed is not None:
+                # The constant's rows run over every species, the array's over the recorded ones: each is read by its own.
+                species_k = {identifier: sets["species"]["ids"].index(identifier) for identifier, _ in species_rows}
+                is_constant = "constant" in record["reference"]
+                stated["note"] = (
+                    f"Worked out by the viewer: the run's fixed reference {record['reference'].get('constant') or record['reference'].get('record')} "
+                    f"({'a named constant of the view' if is_constant else 'the merged view the run saved'}) plus its record {record.get('array')}, "
+                    "as the view states the increment is stored (its reference)."
+                )
+                stated["reference"] = dict(record["reference"])
+                split = (
+                    {identifier: array("f", (values[row * per + old * width + k] + fixed(row, species_k[identifier] if is_constant else old, k) for row in rows for k in columns)) for identifier, old in species_rows}
+                    if len(axes) == 2
+                    else {None: array("f", (values[row * per + k] + fixed(row, None, k) for row in rows for k in columns))}
+                )
+            else:
+                split = {identifier: array("f", (values[row * per + old * width + k] for row in rows for k in columns)) for identifier, old in species_rows} if len(axes) == 2 else {None: array("f", (values[row * per + k] for row in rows for k in columns))}
 
             def declare(target, values_, species_id=None, part=None):
                 label = labels[field] if species_id is None else f"{labels[field]}: {species_id}"
@@ -2107,6 +2173,21 @@ def adapt_engine_view(root, name, experiment, entry):
         derivation.append(f"The view saves the merged view of {len(unread_views)} more field(s) that the run's operators change, which no layer of the page reads; they are not packaged: {', '.join(unread_views)}.")
     if referenced:
         derivation.append(f"Not packaged, because each is stored as an increment over a fixed reference that the page does not add (the view's reference): {', '.join(sorted(set(referenced)))}.")
+    if sums:
+        derivation.append(
+            "Saved only as an increment over a fixed reference (the view's reference), and so worked out by the viewer as the reference plus the increment, row by row: "
+            + "; ".join(f"{level} is {reference.get('constant') or reference.get('record')} plus {increment}" for level, (increment, reference) in sums.items())
+            + ". Each such record says so in its note."
+        )
+    if unsummed:
+        derivation.append(f"Not packaged: {'; '.join(unsummed)}.")
+    diagnostics = sorted({record["field"] for record in listed if "diagnostic" in record})
+    if diagnostics:
+        said_of = next(record["diagnostic"] for record in listed if "diagnostic" in record)
+        derivation.append(f"The view marks {len(diagnostics)} field(s) as diagnostics, in its words '{said_of}': {', '.join(diagnostics)}. The page shows none of them.")
+    stored_over = sorted({f"{record['field']} over {next(iter(record['reference'].values()))}" for record in listed if isinstance(record.get("reference"), dict)})
+    if stored_over:
+        derivation.append(f"The view stores {len(stored_over)} field(s) as an increment over a fixed reference (its reference): {', '.join(stored_over)}.")
     if subset is not None:
         kept = "every field" if subset["fields"] is None else f"{len(subset['fields'])} field(s) ({', '.join(subset['fields'])})"
         species_kept = f", and of the species only {', '.join(elements['species'])}" if "species" in elements else ""
@@ -2253,7 +2334,7 @@ def adapt_engine_view(root, name, experiment, entry):
             words = ", ".join(values[k] for values in (directions, kinds) if values)
             line = entity + (f" ({words})" if words else "")
             if carried:
-                line += f" carries {carried[k]}"
+                line += f" carries {carried[k] if isinstance(carried[k], str) else ' and '.join(carried[k])}"
             if places:
                 line += f" at {next(iter(places[k].values()))}"
             said.append(line)
@@ -2261,10 +2342,12 @@ def adapt_engine_view(root, name, experiment, entry):
     if facts:
         derivation.append(f"What the run's operators state of each of their entities is carried as the view gives it ({' | '.join(facts)}); a route's species is the one the view says it carries.")
     operators = set((stated_run.get("composition") or {}).get("operators") or []) if isinstance(stated_run.get("composition"), dict) else set()
-    carriers = [identifier for identifier in sets if identifier in stating and each(identifier, "carries") is not None]
+    # The inner model's kinds' sets (passive routes, say) carry species too, but no operator of the run moves those species
+    # in or out of a cell by them: only an operator's sets are read for the secreted species.
+    carriers = [identifier for identifier in sets if identifier in stating and each(identifier, "carries") is not None and sets[identifier].get("owner") in operators]
     if carriers:
         # The species the run's operators' entities carry, make or clear, as the view states it of each: the view calls no species secreted.
-        carried = {value for identifier in carriers for value in each(identifier, "carries")}
+        carried = {species_id for identifier in carriers for value in each(identifier, "carries") for species_id in ([value] if isinstance(value, str) else value)}
         secreted = [identifier for identifier in species if identifier in carried]
         if secreted:
             packaged["species"]["secreted"] = secreted

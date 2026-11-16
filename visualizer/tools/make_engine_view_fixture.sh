@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Three small runs written by the engine's own run-view writer, kept as fixtures for the adapter's
+# Small runs written by the engine's own run-view writer, kept as fixtures for the adapter's
 # reading of a view (tools/adapt_run.py, adapt_engine_view; schema/RUN_VIEW.md, "The engine's view").
 #
 # The writer is not on main yet: it lives on the branch run-view-d154. This script exports one
@@ -16,6 +16,15 @@
 #   subset     the same short secretion world through io.write_run with a recording subset, as the branch's
 #              own test of it records one (tests/unit/test_run_view.py): four fields, of the species only S,
 #              every second observed row. No declaration is planted.
+#   increments the same world with a recording subset that keeps the two increments in place of the
+#              amounts (amount_increment, extracellular_amount_increment), of the species only S: from
+#              the revision on which @3 declares its RECORD_REFERENCES, each is stored over a fixed
+#              reference that the view names. No declaration is planted.
+#   kinds      a kind world: FR-4's development world without its transporter, as the branch's own test
+#              of the inner model's kinds builds it (tests/unit/test_run_view.py), run for 10 steps:
+#              @3 alone with its passive routes (a set whose `carries` lists species) and its proton
+#              buffer (pH on the node set). Written only where the revision's writer reads the kinds'
+#              declarations; otherwise skipped, with the writer's reason in written.json.
 #   division   S5's compact partition world (tests/partition_fixtures.py, divided(): a cell divides
 #              into two daughters at 2 ms; 5 observed rows), through window_io.write_windowed_run
 #              with two windows. The membrane state's and the partition's run-view declarations are
@@ -35,15 +44,16 @@
 # (scripts/run_detached.sh, cells.slice), never in this shell: the script waits for the unit, and the
 # run writes its own log beside the export (write.log).
 #
-# Usage: tools/make_engine_view_fixture.sh [REVISION]   (default: fd008813, the branch's tip on
-# 16 November 2026). Environment: CELLS_VIEW_EXPORT (where the export goes), CELLS_PYTHON (the
+# Usage: tools/make_engine_view_fixture.sh [REVISION]   (default: b08af640, on the development branch
+# run-view-d154, not on main: the writer that reads the engine's own view declarations, 16 November
+# 2026; fd008813 made the folder run-view-fd008813, with its first three worlds). Environment: CELLS_VIEW_EXPORT (where the export goes), CELLS_PYTHON (the
 # engine's Python), CELLS_CPUS (the processors the unit is pinned to), CELLS_WRAPPER (run_detached.sh).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VISUALIZER="$(dirname "$HERE")"
 TOP="$(git -C "$VISUALIZER" rev-parse --show-toplevel)"
-REVISION="$(git -C "$TOP" rev-parse --verify "${1:-fd00881394d10fd33c05e47e17c88838fcf2b7c7}^{commit}")"
+REVISION="$(git -C "$TOP" rev-parse --verify "${1:-b08af640c3db83e891e29ade36c300d6f8e5a553}^{commit}")"
 SHORT="${REVISION:0:8}"
 EXPORT="${CELLS_VIEW_EXPORT:-/mnt/workspaces/Cells/visualizer-scratch-20261116-02/run-view-$SHORT}"
 PYTHON="${CELLS_PYTHON:-/mnt/workspaces/Cells/venv-cpu/bin/python}"
@@ -96,6 +106,26 @@ write_run(
     run(secretion()),
     view=run_view.Request({"id": "secretion-subset", "label": f"{label}: the short secretion world, a recorded subset"}, recording=keep),
 )
+skipped = {}
+increments = run_view.Recording(fields=("membrane_voltage_V", "cell_potential_V", "amount_increment", "extracellular_amount_increment"), elements={"species": ("S",)})
+write_run(
+    out / "increments",
+    run(secretion()),
+    view=run_view.Request({"id": "secretion-increments", "label": f"{label}: the short secretion world, its increments recorded"}, recording=increments),
+)
+try:  # The kinds' declarations are read by the writer from b08af640 on; before, it refuses the kind world.
+    from validation.compartment_ph_engine import definitions as defs
+
+    raw = defs.development_world(defs.fr4_world())
+    raw["model"].pop("transporters")
+    dt = raw["execution"]["dt"]
+    raw["experiment"]["end_time"] = 10 * dt
+    raw["experiment"]["observation_times"] = [k * dt for k in range(0, 11, 2)]
+    raw["execution"]["max_steps"] = 18
+    spec = parse_spec(raw)
+    write_run(out / "kinds", run(spec), view=run_view.Request({"id": "kinds-short", "label": f"{label}: a kind world (passive routes and a proton buffer)"}))
+except (run_view.ViewRefused, ImportError, AttributeError, KeyError) as exc:
+    skipped["kinds"] = f"{type(exc).__name__}: {exc}"
 with pytest.MonkeyPatch.context() as patch:
     declare_division(patch)
     raw = pf.divided()
@@ -106,7 +136,7 @@ with pytest.MonkeyPatch.context() as patch:
         WindowPolicy(2, "full"),
         view=run_view.Request({"id": "division-short", "label": f"{label}: S5's partition world"}),
     )
-(out / "written.json").write_text(json.dumps({"worlds": sorted(p.name for p in out.iterdir() if p.is_dir())}) + "\n")
+(out / "written.json").write_text(json.dumps({"worlds": sorted(p.name for p in out.iterdir() if p.is_dir()), "skipped": skipped}) + "\n")
 print("written:", ", ".join(sorted(p.name for p in out.iterdir() if p.is_dir())))
 PYTHON
 
@@ -122,7 +152,8 @@ if [ ! -f "$WORK/written.json" ]; then
 fi
 
 rm -rf "$DEST"
-for world in secretion subset division; do
+for world in secretion subset increments kinds division; do
+  [ -f "$WORK/$world/view.json" ] || continue
   mkdir -p "$DEST/$world"
   cp "$WORK/$world/view.json" "$WORK/$world/resolved_config.json" "$WORK/$world/summary.json" "$DEST/$world/"
   if [ -f "$WORK/$world/trajectory.npz" ]; then cp "$WORK/$world/trajectory.npz" "$DEST/$world/"; fi
@@ -134,11 +165,12 @@ if grep -rlE '/(home|mnt|Users|tmp|var|root|opt|srv)/' "$DEST"; then
   exit 1
 fi
 cat > "$DEST/README.md" <<NOTE
-# Three runs written by the engine's run-view writer (branch run-view-d154, $SHORT)
+# Runs written by the engine's run-view writer (branch run-view-d154, $SHORT)
 
 Written by \`tools/make_engine_view_fixture.sh $SHORT\` on the branch \`run-view-d154\` at revision
 \`$REVISION\`, exported with \`git archive\` (src, tests, validation) and run with the engine's own
-Python as a memory-capped unit (\`scripts/run_detached.sh\`). The writer is not on main yet. Every
+Python as a memory-capped unit (\`scripts/run_detached.sh\`). The writer is on a development
+branch, not on main. Every
 file here is the writer's own output, kept as written: \`view.json\` (\`cells.run_view@1\`), the
 arrays it names, \`resolved_config.json\` and \`summary.json\` (the manifest and the final checkpoint
 are left out). Do not edit by hand; run the script again.
@@ -149,6 +181,12 @@ are left out). Do not edit by hand; run the script again.
 - \`subset\`: the same world through \`io.write_run\` with a recording subset, as the branch's own
   test records one: four fields, of the species only S, every second observed row. Nothing is
   planted.
+- \`increments\` (where written): the same world with a recording subset that keeps the two
+  increments in place of the amounts, of the species only S. Nothing is planted.
+- \`kinds\` (where written): FR-4's development world without its transporter, as the branch's own
+  test of the inner model's kinds builds it, run for 10 steps: @3 alone with its passive routes
+  and its proton buffer. Nothing is planted. The writer reads the kinds' declarations only from
+  b08af640 on; written.json in the export says why where it was skipped.
 - \`division\`: S5's compact partition world (a cell divides into two daughters) through
   \`window_io.write_windowed_run\` with two windows. The membrane state's and the partition's
   run-view declarations are planted for the run only, as the branch's own test does
@@ -159,10 +197,10 @@ are left out). Do not edit by hand; run the script again.
 (\`SNAPSHOT.json\`), from which alone the writer learns its source, so no view here has
 \`run.source\`: each lists the engine source as unstated, with the writer's reason. The
 \`run.revision\` of the secretion view, \`$SHORT\`, is a caller's label **planted** by the script;
-it is not the engine's own word for its source, and nothing may read it as that. The subset view and
-the division view name no revision. The division run's helper (\`declare_division\`) also patches
+it is not the engine's own word for its source, and nothing may read it as that. The other views
+name no revision. The division run's helper (\`declare_division\`) also patches
 the writer's source lookup to give none, as the branch's tests do; from an export the lookup gives
-none anyway, as the unpatched secretion and subset runs show. The exported code is that of
+none anyway, as the unpatched runs show. The exported code is that of
 \`$REVISION\`, the branch's tip when it was exported.
 
 These are development runs of unit-test worlds: no result and no evidence.

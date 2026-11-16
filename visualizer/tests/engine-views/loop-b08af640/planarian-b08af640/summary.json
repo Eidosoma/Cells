@@ -1,0 +1,109 @@
+{
+  "active_cells": 7,
+  "boundary": "held chemical/electrical reservoirs",
+  "calcium_pump_law": "ca_atp_mass_action_positive@1",
+  "capacity": 7,
+  "channel_laws": {
+    "kir_0": "kir2p1_mh2@1",
+    "kir_1": "kir2p1_mh2@1",
+    "kir_2": "kir2p1_mh2@1",
+    "kir_3": "kir2p1_mh2@1",
+    "kir_4": "kir2p1_mh2@1",
+    "kir_5": "kir2p1_mh2@1",
+    "kir_6": "kir2p1_mh2@1",
+    "nav_0": "nav1p2_m3h_regularized@1",
+    "nav_1": "nav1p2_m3h_regularized@1",
+    "nav_2": "nav1p2_m3h_regularized@1",
+    "nav_3": "nav1p2_m3h_regularized@1",
+    "nav_4": "nav1p2_m3h_regularized@1",
+    "nav_5": "nav1p2_m3h_regularized@1",
+    "nav_6": "nav1p2_m3h_regularized@1"
+  },
+  "closure_law": "resolved_capacitor_components_current_continuity@1",
+  "composition": {
+    "inner_model": "resolved_pump_tissue@3",
+    "model": "resolved_pump_composite@1",
+    "operators": [
+      "electrode_current_injection@1"
+    ]
+  },
+  "composition_status": "development composition: integration grants no acceptance; judged status only from a registered protocol for this composition",
+  "end_time": 10.0,
+  "executed_steps": 10000,
+  "field_solver": "capacitive_reduction_gauged_damped_newton@2",
+  "gate_integrator": "exponential_mean_rate_linear_target_gates@1",
+  "global_step_index": 10000,
+  "injection_electrodes": {
+    "cell_3": {
+      "K": 0.4912,
+      "M": 0.5088
+    }
+  },
+  "injection_law": "electrode_current_injection@1",
+  "injection_rk4": "exact half-steps around the inner RK4 step",
+  "inner_model": "resolved_pump_tissue@3",
+  "junction_heat_booking": "explicit_tableau",
+  "junction_law": "junction_voltage_relaxation@1",
+  "max_balance_error_fmol": 2.8900493109773606e-15,
+  "max_capacitor_charge_error_C": 1.262177448353619e-29,
+  "max_electrode_charge_error_C": 1.5777218104420236e-30,
+  "max_electrode_work_error_pJ": 0.0,
+  "max_energy_balance_error_pJ": 3.504441824962734e-05,
+  "max_energy_balance_relative": 1.40151059584043e-06,
+  "max_extracellular_balance_error_fmol": 7.990298960675046e-16,
+  "max_global_balance_error_fmol": 2.8900493109773606e-15,
+  "max_global_charge_bound_ratio": 0.05607303057672738,
+  "max_global_charge_error_C": 2.0275618530352534e-25,
+  "max_metabolic_work_error_pJ": 1.887379141862766e-14,
+  "max_reservoir_work_error_pJ": 5.204170427930421e-17,
+  "membrane_transfer_ledger": "baseline passive only; channel and pump ledgers separate",
+  "model": "resolved_pump_composite@1",
+  "observation_scope": "accepted integration boundaries only",
+  "operator_steps": {
+    "electrode_current_injection@1": null
+  },
+  "operators": [
+    "electrode_current_injection@1"
+  ],
+  "pump_law": "nak_atp_mass_action_positive@1",
+  "species_ids": [
+    "Na",
+    "K",
+    "M",
+    "P"
+  ],
+  "splitting": "events_then_symmetric_operator_halves@1",
+  "start_time": 0.0,
+  "state_fields": [
+    "amount_increment",
+    "extracellular_amount_increment",
+    "membrane_transferred",
+    "junction_transferred",
+    "face_transferred",
+    "reservoir_supplied",
+    "membrane_dissipated_energy_pJ",
+    "junction_dissipated_energy_pJ",
+    "face_dissipated_energy_pJ",
+    "electrode_charge_transferred_C",
+    "reservoir_work_pJ",
+    "electrode_work_pJ",
+    "channel_gate",
+    "channel_transferred",
+    "channel_dissipated_energy_pJ",
+    "junction_gate",
+    "pump_cycles",
+    "pump_dissipated_energy_pJ",
+    "metabolic_work_pJ",
+    "calcium_pump_cycles",
+    "calcium_pump_dissipated_energy_pJ",
+    "calcium_metabolic_work_pJ",
+    "injection_supplied_fmol",
+    "injection_removed_fmol",
+    "injection_charge_C",
+    "injection_image_charge_C",
+    "injection_work_pJ",
+    "injection_energy_magnitude_pJ"
+  ],
+  "status": "complete",
+  "time_integrator": "imex_ars222_face_electromigration@1"
+}
