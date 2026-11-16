@@ -42,7 +42,10 @@ Rules the map keeps, so it can be shown outside the team:
 - It states no status the record does not state. The shared-state entities and the plan's
   gates carry the plan's own words, not an inferred status.
 - Every status has a source and, where the record gives one, a date.
-- Everything drawn is bound to a part of the scene or is neutral grey illustration.
+- Everything drawn is bound to a part of the scene or is neutral grey illustration. One
+  exception, by the user's decision of 16 November 2026: chloroplasts are green, as they
+  are in life, where the cell is coloured by kind. They are still scenery, their panel
+  says so, and they are neutral where colour shows status.
 - The cell picture carries the README's caveat: capabilities vary by model, and
   whole-cell integration is ongoing. The legend's "Runs together in" filter shows which
   parts run together in one model today.
