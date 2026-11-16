@@ -581,13 +581,16 @@ def _inner(model):
     return getattr(model, "inner", model)
 
 
-def _engine_source():
+def _engine_source(root=None):
     """The running engine's source revision, from its execution snapshot's own record
     (SNAPSHOT.json beside src/, validation/source_snapshot.py), or None when it runs from a
-    checkout. AGENTS.md: a run's provenance is its Git revision, dirty diff and frozen snapshot."""
-    import cells
+    checkout. AGENTS.md: a run's provenance is its Git revision, dirty diff and frozen snapshot.
+    root: the source root (default: the one this package was imported from)."""
+    if root is None:
+        import cells
 
-    path = Path(cells.__file__).resolve().parents[2] / "SNAPSHOT.json"
+        root = Path(cells.__file__).resolve().parents[2]
+    path = Path(root) / "SNAPSHOT.json"
     if not path.is_file():
         return None
     record = json.loads(path.read_text())

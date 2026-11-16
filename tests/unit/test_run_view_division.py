@@ -120,3 +120,15 @@ def test_a_division_through_the_windowed_path(declared, monkeypatch, tmp_path):
     patches = sets["membrane"]["ids"]
     assert [patches[i] for i in np.flatnonzero(restarted)] == ["membrane_0"]
     assert np.array_equal(restarted, closed)
+    # A membrane voltage is a difference: its cell's potential less its outside node's, on the
+    # open patches (records["observed_membrane_voltage_V"]["difference"]).
+    _, voltage = observed(tmp_path / "w", view, "observed_membrane_voltage_V")
+    _, inside = observed(tmp_path / "w", view, "observed_cell_potential_V")
+    _, outside = observed(tmp_path / "w", view, "observed_extracellular_potential_V")
+    cell_of = sets["membrane"]["geometry"]["index"]
+    node_of = sets["membrane"]["outside"]["index"]
+    expected = inside[:, cell_of] - outside[:, node_of]
+    assert np.abs(voltage[open_]).max() > 1e-3  # Nonzero: the check is not empty.
+    assert np.allclose(voltage[open_], expected[open_], rtol=1e-12, atol=0.0)
+    difference = records["observed_membrane_voltage_V"]["difference"]
+    assert (difference["plus"], difference["minus"]) == ("inside", "outside")

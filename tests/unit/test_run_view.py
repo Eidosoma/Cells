@@ -294,6 +294,34 @@ def test_a_batch_request_names_every_world_once():
         run_view.requests_for({10: request}, [10, 11])
 
 
+# ------------------------------------------------------------------ the engine's source
+
+ENGINE_SOURCE = run_view._engine_source  # The real one: the fixtures plant None.
+
+
+def test_the_engine_source_comes_from_the_execution_snapshot(written, monkeypatch, tmp_path):
+    assert ENGINE_SOURCE(root=tmp_path) is None  # A checkout: no SNAPSHOT.json.
+    record = {"git_revision": "abc123", "selected_status_porcelain_v1_z": ""}
+    (tmp_path / "SNAPSHOT.json").write_text(json.dumps(record))
+    clean = ENGINE_SOURCE(root=tmp_path)
+    assert clean == {
+        "revision": "abc123",
+        "dirty": False,
+        "from": "the execution snapshot's record (SNAPSHOT.json)",
+    }
+    (tmp_path / "SNAPSHOT.json").write_text(json.dumps(record | {"dirty": True}))
+    assert ENGINE_SOURCE(root=tmp_path)["dirty"] is True
+    spec, result, _ = written
+    monkeypatch.setattr(run_view, "_engine_source", lambda root=None: clean)
+    plan = run_view.prepare(spec, run_view.Request(), layout=result.final.layout)
+    view = plan.view({}, "prepared")
+    run_view.validate(view)
+    assert view["run"]["source"] == clean
+    assert "source" not in {u["id"] for u in view["unstated"]}
+    later = run_view.prepare(spec, run_view.Request(), layout=result.final.layout, recompute=False)
+    assert "source" not in later.view({}, "prepared")["run"]  # A run on disk: not this engine.
+
+
 # ------------------------------------------------------------------ the reader's check
 
 

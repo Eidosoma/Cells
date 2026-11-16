@@ -60,9 +60,11 @@ def layers(layer_id, label, representation="prescribed"):
 
 def declare_secretion(patch):
     """Turnover's and exchange's layers, as their files declare them (with the rest of their run
-    view's declarations), kept here so a test states what it relies on."""
+    view's declarations), kept here so a test states what it relies on; and no engine source, so
+    a view reads the same from a checkout and from a frozen snapshot (run_view._engine_source)."""
     plant(patch, TURNOVER, VIEW_LAYERS=layers("turnover", "Species turnover"))
     plant(patch, EXCHANGE, VIEW_LAYERS=layers("exchange", "Species exchange"))
+    patch.setattr(run_view, "_engine_source", lambda root=None: None)
 
 
 def division_set(self, spec, declaration):
@@ -77,7 +79,9 @@ def division_set(self, spec, declaration):
 
 
 def declare_division(patch):
-    """The membrane state's and the partition's view declarations (S5's partition world)."""
+    """The membrane state's and the partition's view declarations (S5's partition world), and no
+    engine source (as declare_secretion)."""
+    patch.setattr(run_view, "_engine_source", lambda root=None: None)
     plant(
         patch,
         STATE,

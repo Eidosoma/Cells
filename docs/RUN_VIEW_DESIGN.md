@@ -199,6 +199,23 @@ composition changes it, and a constant of the definition otherwise.
   method of `pump_composite.py`, and the writer reads that instead of the adapter's tables
   (`MASK_FIELDS`, `PADDED_FIELDS`), a stopgap named as such in the code until then.
 
+**Additions to `cells.run_view@1` as built (16 November 2026),** from door S and the visualizer's
+reading of the worked example (its eleven items):
+- **`view_<field>` records** on the observation base: the merged view (above).
+- **`roles` on every set with ends** (`{role: what it is}`): the inner sets' from the writer, an
+  operator's from its `view_sets`. A flow's `sign` names two of them as `from` and `to`; a
+  difference (a voltage) gives `difference` with `plus` and `minus` instead (plus less minus).
+  The voltages' are read from the code, and say so (`source`), until the core's owner confirms.
+- **Per-entity facts on an operator's sets:** `carries` (species), `direction` and `kinds`
+  (words), `at` (`{set id: entity id}`); a set may describe entities no field has as an axis
+  (turnover's routes). A label such as "secreted" stays the reader's, from these facts.
+- **`resets.mask`:** the mask whose closing marks the slots that restart.
+- **`time.event_rows`:** the row saved at an event's time holds the state before it.
+- **`run.id`** (a caller label), **`run.end`** (status, time, step) and **`run.source`** (the
+  running engine's revision and dirty flag, from its execution snapshot's record, where a shared
+  path writes the view; unstated with the reason otherwise). A view written later by
+  `write_view` therefore differs from the run's own in its source.
+
 ## 10. For the lead
 
 1. **Geometry from the builders** (§4, §7): accepted for version 1?
