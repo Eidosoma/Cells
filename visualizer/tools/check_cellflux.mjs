@@ -244,6 +244,10 @@ try {
     check("the picture says \"Illustration: not a run\", and what form it is", s.source === "illustration" && notice?.shown && s.said.some((item) => item.shown && /^Direction only:/.test(item.text)), JSON.stringify(s.said));
     check("the statement stands on the picture, under the top bar and inside the window", s.said.filter((item) => item.shown).every((item) => item.box[1] >= 56 && item.box[0] >= 0 && item.box[2] <= s.width), JSON.stringify(s.said.map((item) => item.box)));
     check("the part's panel carries the notice and the basis", s.panel && /Flux\. Illustration: not a run/.test(s.panel.text), s.panel ? s.panel.title : "no panel");
+    // With a panel open beside it or above it, the scale bar and its words stand clear of the caveat under the picture.
+    const foot = Object.fromEntries(s.foot.map(([name, ...edges]) => [name, edges]));
+    const apart = (a, b) => !a || !b || a[2] <= b[0] || b[2] <= a[0] || a[3] <= b[1] - 2 || b[3] <= a[1] - 2;
+    check("with the part's panel open the scale bar and its words stand clear of the caveat", apart(foot.scalebar, foot.caveat), JSON.stringify(s.foot));
     check("the switch itself stays off: the part was chosen, not the switch", s.on === false, JSON.stringify(s.rows));
     check("the picture's own tokens of other parts stand as they stood", (kind === "water" || s.old.drops === atRest.drops) && (kind === "secretion" || s.old.signals === atRest.signals), JSON.stringify([atRest, s.old]));
     if (MOVING) {
@@ -261,6 +265,22 @@ try {
       check("a bead moves", moved(later) && later.still === false, JSON.stringify([before, later.tokens[0]?.first]));
     } else check("opened still, the beads stand and the picture says so", s.still === true && s.said.some((item) => /shown still$/.test(item.text)), JSON.stringify(s.said.map((item) => item.text)));
     await shot(`${NAME}-part`);
+    // With the part's panel still open, a real press reaches the Flux switch: on a narrow window the legend's title
+    // stands on the top edge of the panel, which is a sheet along the bottom there, and the legend opens upward.
+    const flux = 'cells-legend .layer-row[data-channel="motion"] button[data-layer="flux"]', fluxOff = 'cells-legend .layer-row[data-channel="motion"] button[data-layer=""]';
+    let unfolded = false, reachedAll = await press(flux);
+    if (!reachedAll) {
+      unfolded = await press("cells-legend .legend-toggle");
+      reachedAll = await press(flux);
+    }
+    s = await until((now) => now.on === true);
+    const above = (now) => !now.panel || now.width >= 760 || now.legendBox[3] <= now.panel.box[1];
+    check(`with the part's panel open a real press reaches the Flux switch${unfolded ? ", behind the legend's title on the panel's edge" : ""}; the part stays chosen and its panel open`, reachedAll && s.on === true && s.selected === part && Boolean(s.panel) && above(s), JSON.stringify({ reached: reachedAll, unfolded, on: s.on, selected: s.selected, legend: s.legendBox, panel: s.panel?.box }));
+    // And back as it was: a real press on Off, and the legend folded again, before the part is let go.
+    const reachedOff = await press(fluxOff);
+    s = await until((now) => now.on === false);
+    if (unfolded) await press("cells-legend .legend-toggle");
+    check("and a real press on Off turns it off again, the part still chosen", reachedOff && s.on === false && s.selected === part, JSON.stringify({ reached: reachedOff, on: s.on, selected: s.selected }));
     await evaluate(`${V}.select(null)`);
     // The labels are laid out with the next frame drawn: wait for it.
     s = await until((now) => now.tokens.length === 0 && now.said.every((item) => !item.shown));

@@ -99,6 +99,7 @@
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/a7/tiers-f991fce1/measured.json",
   "/mnt/workspaces/Cells/core-next-20261116/measure-82d3d67a/measured.json",
   "/mnt/workspaces/Cells/core-next-20261116/measure-19d850bc/measured.json",
+  "/mnt/workspaces/Cells/windows-next-20261116/stepc/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/run-view-20261115-01/rows-0407c088/measure/measured.json",
   "/mnt/workspaces/Cells/run-view-20261115-01/rows-b08af640/measure/measured.json"
  ],
@@ -814,6 +815,14 @@
    "root": "/mnt/workspaces/Cells/core-next-20261116/snapshot-full-19d850bc",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-16T17:13:46+00:00"
+  },
+  {
+   "git_revision": "c2aec027360fe95e28d918d6e92ce110dfe45457",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/windows-next-20261116/stepc/snapshot-c2aec027",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-16T18:59:25+00:00"
   },
   {
    "git_revision": "0407c0880c0bafe80bfb5968b502eaf32d2dfc07",
@@ -2937,6 +2946,14 @@
     }
    },
    {
+    "file": "tests/unit/test_row_checks_program.py",
+    "seconds": 6.84,
+    "exit_code": 0,
+    "counts": {
+     "passed": 14
+    }
+   },
+   {
     "file": "tests/unit/test_run_view_door_s.py",
     "seconds": 17.68,
     "exit_code": 0,
@@ -4980,6 +4997,62 @@
     "exit_code": 0,
     "counts": {
      "passed": 30
+    }
+   },
+   {
+    "file": "tests/unit/test_vector_window_seams.py",
+    "seconds": 37.89,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_vector_window_world_mode.py",
+    "seconds": 44.12,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_vector_window_world_mode_observations.py",
+    "seconds": 40.1,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_vector_window_world_mode_step.py",
+    "seconds": 45.15,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_window_row_checks.py",
+    "seconds": 63.68,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_window_row_checks_composite.py",
+    "seconds": 33.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_window_row_checks_families.py",
+    "seconds": 48.01,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
     }
    }
   ],

@@ -227,7 +227,7 @@ export class ShelvesView {
     this.focused = undefined; // the shelf in focus: its id, null for what is on no shelf, undefined for the whole stack
     this.isolate = null; // a side
     this.basis = null; // how a side is known
-    this.mark = null; // { name, value }
+    this.mark = null; // { name, value }, and `ids` where a door names some proteins of the set
     this.units = false; // only what Cells has a law for
     this.opened = null; // the family, part or gathering that is open
     this.wanted = null; // the one being fetched
@@ -594,7 +594,7 @@ export class ShelvesView {
       if (this.mark && this.shelves.kind === "proteins" && String(item.marks?.[this.mark.name] ?? false) !== this.mark.value) return false;
     }
     // In families a mark picks out a set: a marker is lit for the proteins of the set it holds, a member if it is one of them.
-    if (this.mark && this.shelves.kind === "families" && !this.shelves.highlightOf(item, this.mark.name, this.mark.value).length) return false;
+    if (this.mark && this.shelves.kind === "families" && !this.shelves.highlightOf(item, this.mark.name, this.mark.value, this.mark.ids || null).length) return false;
     return true;
   }
 
@@ -604,14 +604,14 @@ export class ShelvesView {
    * way to these. They stand back, as every name does, while a family is open.
    */
   tagSet(rest) {
-    const set = this.shelves.kind === "families" ? this.mark : null, now = set ? `${set.name}=${set.value}` : "";
+    const set = this.shelves.kind === "families" ? this.mark : null, now = set ? `${set.name}=${set.value}${set.ids ? `:${[...set.ids].sort().join(",")}` : ""}` : "";
     if (this.labelLayer && now !== this.tagged) {
       for (const tag of this.setTags || []) this.labelLayer.remove(tag);
       this.setTags = [];
       this.tagged = now;
-      const total = set ? this.shelves.highlight.get(set.name)?.get(set.value)?.total || 0 : 0;
+      const total = set ? this.shelves.highlightTotal(set.name, set.value, set.ids || null) : 0;
       for (const node of set ? this.nodes.values() : []) {
-        const held = this.shelves.highlightOf(node.item, set.name, set.value).length;
+        const held = this.shelves.highlightOf(node.item, set.name, set.value, set.ids || null).length;
         if (held) this.setTags.push(this.labelLayer.add({ id: node.item.key, text: `${held} of the ${total} · ${node.item.type === "l" ? "families of one" : node.item.label}`, anchor: new THREE.Vector3(node.position.x, node.top + 0.4, node.position.z), priority: 3000 + held, kind: "part label-unit", lift: 6 }));
       }
     }

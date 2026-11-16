@@ -494,9 +494,19 @@ Also read now, and not in the list: turnover and exchange declare their own kind
 signs, so under a view the sign of what an exchange route moved is the run's own and no
 longer the viewer's reading.
 
-**Still to close on the viewer's side:** a view that records a subset
-(`recording.subset`) is refused, and FR-11's looping packages record one, so the adapter
-must read `recorded` before the first loop package arrives; the builder's geometry is not
-read; the page does not yet use `time.event_rows` or `resets.mask`, and takes no rate in
-either interval an event bounds, which is the careful reading.
+**Closed later the same day:** the adapter reads a recorded subset (its fields, the
+species it kept, its rows) and says what was not recorded; a subset of another set's
+entities is still refused. It reads a builder's 2-D cell polygons. The lane's first
+engine-written looping run, the interim planarian loop from `snapshot-d7a11d5b` (one cell
+of the patch, a period of 2 s, 101 rows, closing within 2.8e-5 against a tolerance of
+1e-4), is read and accepted by the page's loop reader: 31 streams through that cell's
+channels, its pump, its membrane and its six junctions. It is kept as a development
+fixture (`tests/engine-views/loop-d7a11d5b/`) and is not on the page: its writer is not on
+main.
+
+**Still to close on the viewer's side:** the page does not fetch a species' loop yet, and
+the species reader refuses the field that would name it; a builder's points, spheres and
+3-D geometry are not read; a record stored over a reference is not packaged; the page
+does not yet use `time.event_rows` or `resets.mask`, and takes no rate in either interval
+an event bounds, which is the careful reading.
 

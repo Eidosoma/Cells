@@ -6056,7 +6056,9 @@ inventory, sorted into three classes:
 - **Stale tests:** fix with the reason the file changed, or retire. A stale pin is never fixed by
   updating the hash alone.
 - **Possibly real defects in older code:** these are open findings, each with its own plan item.
-  Examples are the missing refusal for a 73 µs observation time, the cotransport energy failure, the
+  Examples are the missing `[anchor]` refusal (corrected the same evening: the 73 µs observation-time
+  case, `[off_grid]`, passes; the audit traced the `[anchor]` loss to 88866b60 of 9 November, a change
+  to the shared `numerics/surface_field`, so it reaches @3), the cotransport energy failure, the
   excision charge failure and the fixed-step tracing errors.
 
 **Old regression tests that do not earn their cost are retired, not kept indefinitely.**

@@ -205,6 +205,49 @@
           "note": "Version 1 at the new link: the same file as the first version at the earlier link, unchanged since 15 November 2026. It was not looked at in a browser at the new link"
         }
       ]
+    },
+    "laws_library": {
+      "title": "Laws Library",
+      "url": "https://claude.ai/artifact/4qg4cEdawueJK9R5pBzeQ4",
+      "page": "docs/ideas/laws-library.html",
+      "note": "Options to choose from, with five live 3D sketches, for opening the Engine view's Laws shelf into a library of the engine's declared pieces, tied to the modular structure. Nothing in it is built. The sketches are drawn in the page from the list of 176 pieces read from the engine's code on 16 November 2026, with what is on main kept apart from what is on the landing candidate and on development branches. The note beside it is docs/LAWS_LIBRARY.md, which also drafts the feature request for the engine's declarations manifest.",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-16",
+          "note": "First version: five options (the racks, recommended; the stacks; the card catalogue; the plugboard; the pull-out shelf), what the Engine view holds today and where it runs out, what the engine declares, a comparison, the questions for the user and what the engine would be asked for. Checked by its author in headless Chrome drawn in software: wide and at 400 px, light and dark, with less motion and without three.js; real clicks on each sketch. No frame rate was measured, and it was not looked at in the artifact's own frame"
+        }
+      ]
+    },
+    "atlas_look": {
+      "title": "Protein Shelves in Colour",
+      "url": "https://claude.ai/artifact/J6YmuwUAnb88iKZbLLLPJH",
+      "page": "/mnt/workspaces/Cells/visualizer-atlas-look-20261116-01/atlas-look.html",
+      "note": "Options to choose from for the Protein atlas's shelves of a species' own proteins: three looks that colour each protein by the side of its own membrane, and three ways around (a trail, a search that stays in view, a small map of the stack), after a walk through today's page with real presses. Nothing in it is built. Its pictures are of today's page and of working prototypes in a scratch copy of the code. The page is not in git, because its 38 pictures make it 2.0 MB; it is kept on the workspaces disk with the copy it was pictured from. The note beside it is docs/ATLAS_LOOK.md, which carries the findings, the recommendation and the questions.",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-16",
+          "note": "First version: the walk of today's page; looks A (colour by side, recommended), B (tinted glass) and C (a calm stack with a map); the trail, the search and the map; the palettes with their numbers; eight questions. Checked before publishing: the text read, each of the 38 pictures looked at, and the page loaded in headless Chrome at 1,280, 400 and 360 pixels wide in both themes (no sideways scrolling, no picture missing)."
+        }
+      ]
+    },
+    "origin_of_life": {
+      "title": "Origin of Life",
+      "url": "https://claude.ai/artifact/UCnCre28i6qEH9rTEAzeHY",
+      "page": "docs/ideas/origin-of-life.html",
+      "note": "Options to choose from for showing GARD (Graded Autocatalysis Replication Domain, a lipid-world model of how heredity could begin) in the viewer, as the first entry under a new heading, Origin of life: the entry itself, one assembly growing and splitting, its composition, similarity at each fission and over time, a map of compositions, lineages, and one time control. Nothing in it is built, and nothing of GARD is in the engine: the engine's design note is proposed, on a development branch, not on main, and the page follows its names and run records. Every sketch is drawn from a toy the page runs itself, with invented seed and choices; it is not the engine and not the preprint's runs, and nothing it shows is a finding. The note beside it is docs/ORIGIN_OF_LIFE.md.",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-16",
+          "note": "First version: options A to G with live sketches, what a run would save and what each sketch would read, nine questions for the user and six for the engine's lead. Checked before publishing: the text read; the page loaded in headless Chrome at 1,280, 400 and 360 pixels wide in light and dark (no sideways scrolling, no script error, both fonts arrived, nine canvases drawn); stills of the assembly, similarity, map and lineage sketches looked at."
+        },
+        {
+          "date": "2026-11-16",
+          "note": "Version 2: one sentence reworded at the engine lead's request. The page said what the engine's proposed note finds about the published kernel; it now says only that the note has an open finding on the published kernel, under review, and takes no view on it, since the finding is unreviewed and concerns other authors' published model."
+        }
+      ]
     }
   }
 }

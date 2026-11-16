@@ -949,6 +949,14 @@ test("a run is read as a species' loop only where it says so, names the engine, 
   assert.match(readLoop(await opened(asLoop(cell, { period: 11 })), "planarian").why, /^The run's loop gives a period of 11, and its records span 12 s: they must be the same\.$/);
   assert.match(readLoop(await opened(asLoop(cell, { period: undefined })), "planarian").why, /gives a period of none/);
   assert.equal(closesWords(read.loop), "Its last record meets its first within 1.0e-9 (tolerance 1.0e-6)");
+  assert.deepEqual([read.loop.notMeasured, read.loop.zero], [[], []], "a loop that names nothing left out has nothing to say of it");
+  // The block the engine's writer builds names what its closure leaves out, by reason, and the records identically zero:
+  // both are said with the closure, in the run's words, so a running total is never read as one that meets itself.
+  const totals = { why: "cumulative totals: they grow by design, so the reader differences them inside the loop", records: ["observed_membrane_transferred", "observed_pump_cycles"] };
+  const measured = readLoop(await opened(asLoop(cell, { closes: { ...CLOSES, zero: ["observed_cell_potential_V"] }, not_measured: [totals] })), "planarian");
+  assert.equal(measured.ok, true);
+  assert.deepEqual([measured.loop.notMeasured, measured.loop.zero], [[totals], ["observed_cell_potential_V"]]);
+  assert.equal(closesWords(measured.loop), `Its last record meets its first within 1.0e-9 (tolerance 1.0e-6), in the records it measures; of its records, 2 are not measured (${totals.why}); 1 is identically zero over the loop`);
   // The revision: the package's own, or where it carries the engine's source instead, that one, with its dirty flag.
   const sourced = readLoop(await opened((view) => {
     asLoop(cell)(view);
@@ -1119,6 +1127,13 @@ test("with a looping run the Cell view shows the run and no illustration, even f
   const panel = flux.describe(FLUX_PANEL);
   assert.equal(panel.chips[0].label, "From the looping run");
   assert.equal(panel.plain, `Planarian · the engine's looping run ${SHEET} · a loop of ${clock(run.end - run.start)} of the cell's time. ${CLOSES.says} Its last record meets its first within 1.0e-9 (tolerance 1.0e-6). Made by the engine at revision 0000000.`);
+  // The run's own sentence on its closure stands after a full stop: the panel begins it with a capital, and the run's
+  // sentence is left as the run wrote it.
+  const says = flux.loop.closes.says;
+  flux.loop.closes.says = "the last observed row meets the first within 2.8e-05 relative (largest in observed_membrane_flux_fmol_s)";
+  assert.match(flux.describe(FLUX_PANEL).plain, /of the cell's time\. The last observed row meets the first within 2\.8e-05 relative \(largest in observed_membrane_flux_fmol_s\)\. Its last record/);
+  assert.equal(flux.loop.closes.says, "the last observed row meets the first within 2.8e-05 relative (largest in observed_membrane_flux_fmol_s)");
+  flux.loop.closes.says = says;
   assert.match(panel.note, /no difference is taken across the seam/);
   assert.deepEqual(panel.sections.map((section) => section.title), ["Drawn", "Not drawn", "Over the interval shown"]);
   assert.equal(panel.sections[2].items.length, flux.loop.streams.length);

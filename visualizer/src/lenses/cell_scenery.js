@@ -30,8 +30,8 @@ export const MOST = { flagellum: 12, pilus: 120, chloroplasts: 100 };
 // In the schematic mode parts are enlarged and few (the page says so on the card): this many, this much larger.
 const FEW = { chloroplasts: { count: 18, larger: 1.5 } };
 
-/** Which shell of the cell a word of the contract means, as how much larger than the cell membrane it is drawn. */
-const shellOf = (env, name) => (name === "outer membrane" && env.parts.membranes === 2 ? env.shells.outer : name === "wall" && env.parts.wall ? env.shells.wall : 1);
+/** Which shell of the cell a word of the contract means, as how far outside the cell membrane it stands (0 for the cell membrane). */
+const shellOf = (env, name) => (name === "outer membrane" && env.parts.membranes === 2 ? env.shells.outerGap : name === "wall" && env.parts.wall ? env.shells.wallGap : 0);
 
 /**
  * Places on the part of the cell that is kept (below the cut), spread as the contract's
@@ -68,13 +68,13 @@ function flagellum(env, spec, id) {
   const count = Math.round(middle(spec.count)), drawn = Math.min(count, MOST.flagellum);
   const length = middle(spec.length_um) / env.u, radius = Math.max(middle(spec.width_nm) / 2000 / env.u, env.thinnest);
   const wave = { reach: 0.2 / env.u, pitch: 2.3 / env.u };
-  const grow = shellOf(env, spec.from), outer = Math.max(env.shells.outer, env.shells.wall);
+  const gap = shellOf(env, spec.from), outer = Math.max(env.shells.outerGap, env.shells.wallGap);
   const thread = env.glass({ opacity: 0.62, glass: 0.3, thin: 0.5 });
   const foot = spec.base ? env.glass({ opacity: 0.85, glass: 0.2 }) : null;
   let reach = 0;
   const feet = []; // where each thread's foot is and which way is out: what a closer view of the machine there would be framed on
   for (const at of places(env, spec.where, drawn)) {
-    const start = at.position.clone().multiplyScalar(grow), out = at.direction;
+    const start = at.position.clone().addScaledVector(at.direction, gap), out = at.direction;
     feet.push({ at: at.position.clone(), out: out.clone() });
     const side = new THREE.Vector3().crossVectors(out, Math.abs(out.y) < 0.9 ? UP : new THREE.Vector3(1, 0, 0)).normalize(), other = new THREE.Vector3().crossVectors(out, side);
     const phase = env.random() * Math.PI * 2, steps = Math.max(24, Math.ceil((length / wave.pitch) * 14));
@@ -88,7 +88,7 @@ function flagellum(env, spec, id) {
     if (foot) {
       // The machine at the foot: a short drum through the cell's shells, at least 45 nm across and
       // a little more than twice as wide as its thread (its size is the picture's choice: the file gives none).
-      const through = at.position.length() * (outer - 1) + 0.03 / env.u, across = Math.max(0.0225 / env.u, radius * 2.2);
+      const through = outer + 0.03 / env.u, across = Math.max(0.0225 / env.u, radius * 2.2);
       const drum = new THREE.Mesh(new THREE.CylinderGeometry(across, across, through, 14), foot);
       drum.position.copy(at.position).addScaledVector(out, through / 2 - 0.012 / env.u);
       drum.quaternion.copy(along(out));
@@ -103,9 +103,9 @@ function flagellum(env, spec, id) {
 function pilus(env, spec, id) {
   const count = Math.round(middle(spec.count)), drawn = Math.min(count, MOST.pilus);
   const length = middle(spec.length_um) / env.u, radius = Math.max(middle(spec.width_nm) / 2000 / env.u, env.thinnest);
-  const grow = shellOf(env, spec.from);
+  const gap = shellOf(env, spec.from);
   const hair = new THREE.CylinderGeometry(radius, radius, length, 5).translate(0, length / 2, 0);
-  const spots = places(env, spec.where, drawn).map((at) => ({ position: at.position.clone().multiplyScalar(grow), direction: at.direction }));
+  const spots = places(env, spec.where, drawn).map((at) => ({ position: at.position.clone().addScaledVector(at.direction, gap), direction: at.direction }));
   env.add(env.instanced(hair, env.glass({ opacity: 0.5, glass: 0.3 }), spots), id);
   const reach = Math.max(0, ...spots.map((spot) => spot.position.length())) + length;
   return { drawn: spots.length, of: spec.count, reach, note: `${spots.length} of ${words(spec.count)} ${spec.label.toLowerCase()} drawn`, sizes: [["Drawn", `${spots.length} of them, on the part of the cell that is kept, each ${words(Number(middle(spec.length_um).toPrecision(2)), "µm")} long and ${words(Number(middle(spec.width_nm).toPrecision(2)), "nm")} wide.`]] };

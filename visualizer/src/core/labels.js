@@ -194,25 +194,49 @@ export class LabelLayer {
   placeInPlace(labels, placed) {
     // Important labels first; among equals, the nearer one.
     labels.sort((a, b) => b.priority + b.boost - (a.priority + a.boost) || a.depth - b.depth);
+    // A name is not drawn under a card that lies over the picture, where it would be cut or hidden, nor cut by the
+    // window's edge: near an edge it moves along, its tick still at its point (--tick), and where even that leaves
+    // its point outside it, it is not shown. What must stay (boost: the chosen part's name, what the picture says
+    // of a layer) is never hidden for it: it may stand over a card, and moves inside the window as far as it can.
+    // A name's padding may touch a card (6 px across, 2 down): only its words must stay clear.
+    const cards = (this.blocked ? this.blocked() : []).map((card) => ({ left: card.left + 6, top: card.top + 2, right: card.right - 6, bottom: card.bottom - 2 }));
+    const width = this.stage.width, EDGE = 4;
+    const meets = (box, other) => box.left < other.right && box.right > other.left && box.top < other.bottom && box.bottom > other.top;
+    // The chosen part's name does not lie over what else must stay (what the picture says of a layer): it steps down
+    // below it, its tick then pointing up at its point. Other words that must stay (a close-up's) keep their places.
+    const kept = [];
     for (const label of labels) {
       if (label.callout) {
         label.element.classList.remove("is-callout");
         this.lead(label, false);
       }
-      const left = Math.round(label.x - label.width / 2);
-      const top = Math.round(label.y - label.height - label.lift);
-      if (top < this.keepClear.top) {
+      const forced = label.boost >= 1000;
+      const middle = Math.round(label.x - label.width / 2);
+      const left = width > EDGE * 2 + label.width ? Math.max(EDGE, Math.min(middle, width - EDGE - label.width)) : middle;
+      let top = Math.round(label.y - label.height - label.lift);
+      const tick = forced ? Math.min(Math.max(label.x - left, 6), label.width - 6) : label.x - left;
+      if (top < this.keepClear.top || (!forced && (tick < 6 || tick > label.width - 6))) {
         this.show(label, false);
         continue;
       }
-      const box = { left: left - 3, top: top - 2, right: left + label.width + 3, bottom: top + label.height + 2 };
-      const forced = label.boost >= 1000;
-      const clash = !forced && placed.some((other) => box.left < other.right && box.right > other.left && box.top < other.bottom && box.bottom > other.top);
+      let box = { left: left - 3, top: top - 2, right: left + label.width + 3, bottom: top + label.height + 2 };
+      const chosen = forced && label.element.classList.contains("is-focus");
+      const under = chosen ? kept.filter((other) => meets(box, other)) : [];
+      if (under.length) {
+        top = Math.round(Math.max(...under.map((other) => other.bottom)) + 4);
+        box = { left: left - 3, top: top - 2, right: left + label.width + 3, bottom: top + label.height + 2 };
+      }
+      if (chosen || label.element.classList.contains("is-below")) label.element.classList.toggle("is-below", under.length > 0);
+      const clash = !forced && (placed.some((other) => meets(box, other)) || cards.some((card) => meets(box, card)));
       if (clash) {
         this.show(label, false);
         continue;
       }
       placed.push(box);
+      if (forced) kept.push(box);
+      if (left !== middle) label.element.style.setProperty("--tick", `${Math.round(tick)}px`);
+      else if (label.ticked) label.element.style.removeProperty("--tick");
+      label.ticked = left !== middle;
       label.element.style.transform = `translate(${left}px, ${top}px)`;
       this.show(label, true);
     }

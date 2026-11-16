@@ -1666,7 +1666,19 @@ PER_ENTITY = ("carries", "direction", "kinds", "at")
 # with what the page calls each. The others are not packaged, and the derivation names them.
 VIEW_PREFIX = "view_"
 VIEW_FIELD_LABELS = {"volume": "Cell volume", "extracellular_volume": "Volume outside", "membrane_area": "Membrane area", "membrane_capacitance": "Membrane capacitance"}
-LOOP_KEYS = {"species", "cell", "period", "closes", "follows"}
+# The loop block: as designed (schema/RUN_VIEW.md, view.loop), and as the writer builds it from d7a11d5b on, with the
+# records its closure leaves out by reason (not_measured) and those identically zero over the loop (closes.zero).
+LOOP_KEYS = {"species", "cell", "period", "closes", "not_measured", "follows"}
+# The operators whose ledgers among the page's fields (HISTORY_FIELDS) are their own; every other field there is the
+# inner model's. And the view's set for the page's name of a set where the two differ.
+FIELD_OPERATORS = {
+    "turnover_produced_fmol": "scheduled_species_turnover@1",
+    "turnover_cleared_fmol": "scheduled_species_turnover@1",
+    "turnover_outside_cleared_fmol": "scheduled_species_turnover@1",
+    "exchange_moved_fmol": "scheduled_species_exchange@1",
+}
+FIELD_SETS = {"route": "exchange_route"}
+CLOSES_KEYS = {"within", "tolerance", "says", "zero"}
 
 
 def finite(value):
@@ -1695,28 +1707,73 @@ def view_rows(name, folder, base, array_name):
     return shape, values, rows
 
 
-def looped(name, loop, cells, times):
+# A builder's length unit (the writer's LENGTH_UNITS), in the um the page draws in.
+IN_UM = {"m": 1e6, "mm": 1e3, "um": 1.0, "nm": 1e-3}
+
+
+def builder_polygons(geometry, space, kept):
+    """The cells' polygons as the run's view gives them (a builder's geometry), for the cells kept (`kept`: their slots), in
+    um, with coincident vertices given one index so that the page finds the edge two cells share: {vertices, faces,
+    given, moved}; or None where the view gives no polygons in a plane, in a unit it names. A vertex within a billionth
+    of the drawing's extent of an earlier one is given that one's index; `moved` is the largest distance, in um, between
+    two vertices so given one index (rounding, where the builder's cells share their corners)."""
+    if not (isinstance(geometry, dict) and geometry.get("kind") == "polygons" and isinstance(space, dict) and space.get("dimensions") == 2 and space.get("unit") in IN_UM):
+        return None
+    vertices, faces = geometry.get("vertices"), geometry.get("faces")
+    if not (isinstance(vertices, list) and isinstance(faces, list) and all(isinstance(face, list) and len(face) >= 3 and all(type(v) is int and 0 <= v < len(vertices) for v in face) for face in (faces[k] for k in kept if k < len(faces)))):
+        return None
+    if not all(isinstance(v, list) and len(v) == 2 and all(finite(x) for x in v) for v in vertices) or len(faces) < max(kept, default=-1) + 1:
+        return None
+    factor = IN_UM[space["unit"]]
+    points = [[x * factor, y * factor] for x, y in vertices]
+    extent = max((max(abs(x), abs(y)) for x, y in points), default=0.0) or 1.0
+    near, cell = 1e-9 * extent, 1e-6 * extent
+    kept_points, index, grid, moved = [], {}, {}, 0.0
+    for number, (x, y) in enumerate(points):
+        key = (round(x / cell), round(y / cell))
+        found = next((k for dx in (-1, 0, 1) for dy in (-1, 0, 1) for k in grid.get((key[0] + dx, key[1] + dy), ()) if abs(kept_points[k][0] - x) <= near and abs(kept_points[k][1] - y) <= near), None)
+        if found is None:
+            found = len(kept_points)
+            kept_points.append([x, y])
+            grid.setdefault(key, []).append(found)
+        moved = max(moved, math.hypot(kept_points[found][0] - x, kept_points[found][1] - y))
+        index[number] = found
+    return {"vertices": kept_points, "faces": [[index[v] for v in faces[k]] for k in kept], "given": len(vertices), "moved": moved}
+
+
+def looped(name, loop, cells, times, record_ids=()):
     """A view's loop block (FR-11; schema/RUN_VIEW.md, view.loop), checked against the run, in the shape the page reads:
-    {species, cell, period, closes: {within, tolerance, says}, follows?}. `cells` are the view's named cells and `times`
-    the replay's record times as the run saved them (64-bit). Refused where the block is malformed, where the run says
-    it closes above its own tolerance, where its period is not the span of its records, or where it names a cell the
-    run does not have."""
+    {species, cell, period, closes: {within, tolerance, says, zero?}, not_measured?, follows?}. `cells` are the view's
+    named cells, `times` the replay's record times as the run saved them (64-bit) and `record_ids` the ids of the view's
+    records. Refused where the block is malformed, where the run says it closes above its own tolerance, where its period
+    is not the span of its records, or where it names a cell or a record the run does not have. What the closure leaves
+    out (not_measured) and the records identically zero over the loop (closes.zero) are carried as written: a record not
+    measured is not read as one that meets itself."""
     where = f"{name}: its view's loop"
     if not (isinstance(loop, dict) and {"species", "cell", "period", "closes"} <= set(loop) <= LOOP_KEYS):
-        raise Refused(f"{where} does not give its species, cell, period and closure (and at most the cells it follows)")
+        raise Refused(f"{where} does not give its species, cell, period and closure (and at most what its closure leaves out and the cells it follows)")
     if not (isinstance(loop["species"], str) and loop["species"]):
         raise Refused(f"{where} names no species")
     if loop["cell"] not in cells:
         raise Refused(f"{where} is of a cell the run does not have ({loop['cell']})")
     closes = loop["closes"]
-    if not (isinstance(closes, dict) and set(closes) == {"within", "tolerance", "says"} and finite(closes["within"]) and closes["within"] >= 0 and finite(closes["tolerance"]) and closes["tolerance"] >= 0 and isinstance(closes["says"], str) and closes["says"].strip()):
+    if not (isinstance(closes, dict) and {"within", "tolerance", "says"} <= set(closes) <= CLOSES_KEYS and finite(closes["within"]) and closes["within"] >= 0 and finite(closes["tolerance"]) and closes["tolerance"] >= 0 and isinstance(closes["says"], str) and closes["says"].strip()):
         raise Refused(f"{where} does not say how closely its last record meets its first (within), against which tolerance, and in what words")
+    if "zero" in closes and not (isinstance(closes["zero"], list) and all(record in record_ids for record in closes["zero"])):
+        raise Refused(f"{where} names, as records identically zero over the loop, what are not records of the view")
+    left = loop.get("not_measured")
+    if "not_measured" in loop and not (isinstance(left, list) and all(isinstance(group, dict) and set(group) == {"why", "records"} and isinstance(group["why"], str) and group["why"].strip() and isinstance(group["records"], list) and group["records"] and all(record in record_ids for record in group["records"]) for group in left)):
+        raise Refused(f"{where} does not give, for each group of records its closure leaves out, the records by the view's ids and the reason")
     if closes["within"] > closes["tolerance"]:
         raise Refused(f"{where} says its last record meets its first within {closes['within']}, above its own tolerance of {closes['tolerance']}")
     span = times[-1] - times[0]
     if not (finite(loop["period"]) and loop["period"] > 0 and math.isclose(loop["period"], span, rel_tol=1e-9, abs_tol=1e-12)):
         raise Refused(f"{where} gives a period of {loop['period']} s, and its records span {span} s: they must be the same")
     out = {"species": loop["species"], "cell": loop["cell"], "period": loop["period"], "closes": {"within": closes["within"], "tolerance": closes["tolerance"], "says": closes["says"]}}
+    if "zero" in closes:
+        out["closes"]["zero"] = list(closes["zero"])
+    if "not_measured" in loop:
+        out["not_measured"] = [{"why": group["why"], "records": list(group["records"])} for group in left]
     if "follows" in loop:
         steps = loop["follows"]
         if not (isinstance(steps, list) and all(isinstance(step, dict) and set(step) == {"time", "from", "to"} and finite(step["time"]) and times[0] <= step["time"] <= times[-1] and step["from"] in cells and step["to"] in cells for step in steps)):
@@ -1735,9 +1792,19 @@ def adapt_engine_view(root, name, experiment, entry):
         raise Refused(f"{name}: its {VIEW_FILE} lacks {', '.join(sorted(VIEW_KEYS - set(view)))}")
     if (folder / EXAMPLE_FILE).is_file():
         raise Refused(f"{name}: an example with invented numbers has no view of the engine's; the two are not read together")
+    # A recording subset (recording.subset: the fields kept, the elements kept, the cadence), the run's own statement of
+    # what it saved. What it kept is packaged; what it did not keep is said to be unrecorded, never filled in.
     recording = view.get("recording")
-    if isinstance(recording, dict) and recording.get("subset") is not None:
-        raise Refused(f"{name}: its view records a subset of the run (some fields, some elements or a cadence), which the adapter does not read yet")
+    subset = recording.get("subset") if isinstance(recording, dict) else None
+    if subset is not None:
+        kept_fields, kept_elements, every = (subset.get(key) for key in ("fields", "elements", "every")) if isinstance(subset, dict) else (None, None, None)
+        if not (
+            isinstance(subset, dict) and set(subset) == {"fields", "elements", "every"}
+            and (kept_fields is None or (isinstance(kept_fields, list) and kept_fields and all(isinstance(field, str) and field for field in kept_fields)))
+            and (kept_elements is None or (isinstance(kept_elements, dict) and all(isinstance(ids, list) and ids and all(isinstance(entity, str) and entity for entity in ids) for ids in kept_elements.values())))
+            and type(every) is int and every >= 1
+        ):  # fmt: skip
+            raise Refused(f"{name}: its view's recording subset does not give the fields it keeps, the elements it keeps and its cadence (recording.subset)")
     derivation = [
         f"Read from the engine's own view of the run ({VIEW_FILE}, {VIEW_FORMAT}), beside its files: every set, unit, kind, sign, owner and layer is as that view declares it. "
         "The viewer adds no table of its own and reads nothing out of the arrays' values; what the view does not state is not stated here."
@@ -1777,6 +1844,28 @@ def adapt_engine_view(root, name, experiment, entry):
                 raise Refused(f"{name}: its view says an entity of {identifier} acts at an entity that is not one of the view's")
             if key in ("direction", "kinds") and not all(isinstance(value, str) and value for value in values):
                 raise Refused(f"{name}: its view gives the set {identifier} '{key}' that is not a word for each of its entities")
+    # The entities a recording subset kept: each set's `recorded` (indices into its ids) names exactly the elements the
+    # subset lists for it, in their order. Only the species are read so far: a field saved once for each species is
+    # packaged for the recorded ones. The page draws every entity of a set it shows, so a subset of cells, membranes or
+    # any other set is refused, with the sets named.
+    elements = (subset or {}).get("elements") or {}
+    for identifier, item in sets.items():
+        recorded = item.get("recorded")
+        if (recorded is not None) != (identifier in elements):
+            raise Refused(f"{name}: its view's set {identifier} and its recording subset disagree on whether only some of its entities were recorded")
+        if recorded is not None:
+            ids = item.get("ids") or []
+            if not (isinstance(recorded, list) and all(type(k) is int and 0 <= k < len(ids) for k in recorded) and [ids[k] for k in recorded] == elements[identifier]):
+                raise Refused(f"{name}: its view's set {identifier} records entities (recorded) that are not the ones its recording subset names")
+    unknown_sets = sorted(set(elements) - set(sets))
+    if unknown_sets:
+        raise Refused(f"{name}: its view's recording subset keeps elements of {', '.join(unknown_sets)}, which the view does not list as a set")
+    laid_out = sorted(set(elements) - {"species"})
+    if laid_out:
+        raise Refused(f"{name}: its view records only some entities of {', '.join(laid_out)} (recording.subset.elements), which the adapter does not lay out yet: the page draws every entity of a set it shows")
+    # Which row of an array over the species holds which species: the recorded ones in their order, or every named one.
+    recorded_species = sets["species"].get("recorded")
+    species_rows = [(sets["species"]["ids"][k], j) for j, k in enumerate(recorded_species)] if recorded_species is not None else [(sets["species"]["ids"][k], k) for k in keep["species"]]
 
     def onto(identifier, target, index):
         """A set's index into another set, for its named entities, in that set's numbering without its padding."""
@@ -1809,9 +1898,24 @@ def adapt_engine_view(root, name, experiment, entry):
         "cells": [{"id": cell, "volume_pL": volume["values"][keep["cell"][k]] if volume else 1.0} for k, cell in enumerate(cells)],
         "junctions": [{"id": identifier, "sender": cells[a], "receiver": cells[b]} for identifier, (a, b) in zip(junction_ids, junction_links["ends"] if junction_ids else [])],
     }
-    if sets["cell"].get("geometry") is not None:
-        derivation.append(f"The view places its cells itself ({(sets['cell']['geometry'] or {}).get('kind')}); the adapter does not read a builder's geometry yet, and lays the cells out as below.")
-    sheet = lay_out(name, like, derivation, row=True)
+    # Where the run gives its cells' polygons (a builder's geometry, in a plane), the picture stands them where the run
+    # does; the adapter's own layout is the fallback where the view gives none, or gives a geometry the page cannot draw.
+    built = builder_polygons(sets["cell"].get("geometry"), view.get("space"), keep["cell"])
+    if built is not None:
+        sheet = lay_out(name, like, [], row=True)
+        sheet.vertices, sheet.faces = built["vertices"], built["faces"]
+        space = view["space"]
+        derivation.append(
+            f"Cell positions and shapes are the run's own geometry ({space['representation']}, from {space['source']}): each cell's polygon as the view gives it, in {space['unit']}"
+            f"{'' if space['unit'] == 'um' else ', here in um'}. Vertices that coincide are given one index ({built['given']} given, {len(built['vertices'])} kept), so that the page finds the edge two cells share; the corners so joined were at most {built['moved']:.1g} um apart."
+        )
+    else:
+        stated = sets["cell"].get("geometry")
+        if isinstance(stated, dict) and stated.get("kind") == "polygons":
+            derivation.append("The view places its cells itself (polygons), in a form the page does not draw (not in a plane, in no length unit the adapter knows, or not one face of its vertices for each cell); the adapter lays the cells out as below.")
+        elif stated is not None:
+            derivation.append(f"The view places its cells itself ({(stated or {}).get('kind')}); the adapter does not read a builder's geometry of that kind yet, and lays the cells out as below.")
+        sheet = lay_out(name, like, derivation, row=True)
     if not volume:
         derivation.append("The view states no cell volume: the size the cells are drawn at stands for nothing.")
     membranes = None
@@ -1875,8 +1979,27 @@ def adapt_engine_view(root, name, experiment, entry):
     both = sorted({record["field"] for record in listed if merged(record)} & {item["id"] for item in constants_in})
     if both:
         raise Refused(f"{name}: its view states {', '.join(both)} both as a constant of the definition and as the merged view the composition changes ({VIEW_PREFIX}<field>)")
+    # The fields a recording subset kept, by the writer's names (a merged view by its view_<field>): every record of the
+    # view is of one of them. Of the fields the page has a name for, those it does not list are unrecorded, in the run's
+    # own statement; nothing stands in for them.
+    not_recorded = []
+    if subset is not None and subset["fields"] is not None:
+        strays = sorted({record["id"] if merged(record) else record["field"] for record in listed} - set(subset["fields"]))
+        if strays:
+            raise Refused(f"{name}: its view gives records of {', '.join(strays)}, which its recording subset does not keep")
+        present = {record.get("field") for record in view["records"] if isinstance(record, dict)}
+        # Only what the run could have recorded: a field of an operator the run's composition lacks, or over a set the view
+        # gives no entity of, is said of nothing here, as for a full recording of such a run.
+        operators = set((view["run"].get("composition") or {}).get("operators") or []) if isinstance(view["run"], dict) and isinstance(view["run"].get("composition"), dict) else set()
+
+        def could_record(field):
+            set_id = FIELD_SETS.get(HISTORY_FIELDS[field][0][-1], HISTORY_FIELDS[field][0][-1])
+            owner = FIELD_OPERATORS.get(field)
+            return (owner is None or owner in operators) and any(entity is not None for entity in (sets.get(set_id) or {}).get("ids") or [])
+
+        not_recorded = [field for field in HISTORY_FIELDS if field not in subset["fields"] and field not in present and could_record(field)]
     labels = {**FIELD_LABELS, **VIEW_FIELD_LABELS}
-    voltages, unread_voltages = {}, []
+    voltages, unread_voltages, referenced = {}, [], []
     for field in [*HISTORY_FIELDS, *VIEW_FIELD_LABELS]:  # the page's own order of fields, then the merged views it reads
         for record in [item for item in listed if item["field"] == field and merged(item) == (field in VIEW_FIELD_LABELS)]:
             rows = range(count)
@@ -1895,15 +2018,23 @@ def adapt_engine_view(root, name, experiment, entry):
                 skipped.append(field)
                 continue
             shape, values, _ = view_rows(name, folder, bases[record["base"]], record.get("array"))
-            if tuple(shape) != tuple(len(sets[axis]["ids"]) for axis in axes):
+            if tuple(shape) != tuple(len(sets[axis]["recorded"]) if "recorded" in sets[axis] else len(sets[axis]["ids"]) for axis in axes):
                 raise Refused(f"{name}: {record.get('array')} does not have the shape its view's axes give it")
+            if "recorded" in sets[axes[-1]]:
+                skipped.append(field)
+                continue  # a field over the recorded species alone: the page reads a species' value as a field's record of its own
             entity, columns, width = axes[-1], keep[axes[-1]], shape[-1]
             if not columns:
                 continue  # a set with no entity: nothing to package, and the view says that it has none
             per = 1
             for size in shape:
                 per *= size
-            stated = {key: record[key] for key in ("kind", "sign", "monotone", "resets", "note", "writers") if record.get(key) is not None}
+            if record.get("reference") is not None:
+                # Stored as an increment over a fixed reference (its owner's RECORD_REFERENCES): its quantity is the
+                # reference plus the record, which the page does not add. Not packaged, and said.
+                referenced.append(f"{field} (over {json.dumps(record['reference'], sort_keys=True)})")
+                continue
+            stated = {key: record[key] for key in ("kind", "sign", "monotone", "resets", "note", "writers", "diagnostic") if record.get(key) is not None}
             difference = record.get("difference")
             if difference is not None:
                 # A voltage is a difference (plus less minus, by its set's roles), as the run's view states it. The page
@@ -1920,7 +2051,7 @@ def adapt_engine_view(root, name, experiment, entry):
             stated.update({"array": record.get("array"), "base": record["base"]})
             if record["base"] != timeline:
                 stated["rows"] = f"the row of the base '{record['base']}' that falls on each of the replay's times"
-            split = {species[new]: array("f", (values[row * per + old * width + k] for row in rows for k in columns)) for new, old in enumerate(keep["species"])} if len(axes) == 2 else {None: array("f", (values[row * per + k] for row in rows for k in columns))}
+            split = {identifier: array("f", (values[row * per + old * width + k] for row in rows for k in columns)) for identifier, old in species_rows} if len(axes) == 2 else {None: array("f", (values[row * per + k] for row in rows for k in columns))}
 
             def declare(target, values_, species_id=None, part=None):
                 label = labels[field] if species_id is None else f"{labels[field]}: {species_id}"
@@ -1974,6 +2105,19 @@ def adapt_engine_view(root, name, experiment, entry):
         derivation.append(f"Changed by the run's operators, and so saved as the merged view at each observed row (the arrays {VIEW_PREFIX}<field>), not as constants: {', '.join(merged_packaged)}, packaged under the field's own name.")
     if unread_views:
         derivation.append(f"The view saves the merged view of {len(unread_views)} more field(s) that the run's operators change, which no layer of the page reads; they are not packaged: {', '.join(unread_views)}.")
+    if referenced:
+        derivation.append(f"Not packaged, because each is stored as an increment over a fixed reference that the page does not add (the view's reference): {', '.join(sorted(set(referenced)))}.")
+    if subset is not None:
+        kept = "every field" if subset["fields"] is None else f"{len(subset['fields'])} field(s) ({', '.join(subset['fields'])})"
+        species_kept = f", and of the species only {', '.join(elements['species'])}" if "species" in elements else ""
+        derivation.append(f"The run recorded a subset of itself (recording.subset, its own statement): {kept}{species_kept}, {'every observed row' if subset['every'] == 1 else f"one observed row in every {subset['every']}, from its first"}. The replay's records are the rows it kept.")
+        if not_recorded:
+            derivation.append(
+                f"Of the fields the page has a name for, the run's recording subset lists none of these, and its view gives no record of them: {', '.join(not_recorded)}. "
+                "Nothing is packaged for them and nothing stands in for them: each is listed as not stated, with that reason, and a layer that needs one says the run did not save it."
+            )
+        if "species" in elements:
+            derivation.append(f"A field saved once for each species is packaged for the recorded species only ({', '.join(elements['species'])}); the others were not recorded.")
     left = sorted(f"{padding[identifier]} of {identifier}" for identifier in padding if padding[identifier])
     if left:
         derivation.append(f"Slots the view gives no name (padding) are left out, with their columns: {', '.join(left)}.")
@@ -2058,6 +2202,8 @@ def adapt_engine_view(root, name, experiment, entry):
             continue  # a flag (true or false), or a set with no entity: nothing a layer reads
         constants.append({"id": item["id"], "unit": item["unit"], "axes": axes, "values": values, "from": item.get("from"), "says": item["says"]})
     unstated = [{"id": item["id"], "what": item.get("what"), "why": item["why"]} for item in view["unstated"] if isinstance(item, dict) and isinstance(item.get("id"), str) and isinstance(item.get("why"), str)]
+    said = {item["id"] for item in unstated}
+    unstated += [{"id": field, "what": "record", "why": "The run's recording subset does not list it (recording.subset.fields): the run kept only the fields that list names"} for field in not_recorded if field not in said]
 
     out = assemble(run, (), {}, sheet, records, [], [], derivation, parts, None, membranes=membranes, species=species, constants=constants, unstated=unstated)
     packaged = {item["id"]: item for item in out["sets"]}
@@ -2137,8 +2283,11 @@ def adapt_engine_view(root, name, experiment, entry):
                 f"The species an operator of the run declares ({', '.join(f'{identifier}, by {source}' for identifier, source in declared_by if source in operators)}) is taken as the species the run secretes: "
                 "the view names the operator that declares it, and does not itself call it secreted."
             )
-    # The spaces outside the cells, where the viewer can stand them beside the cells.
-    if membranes and "outside" in packaged:
+    # The spaces outside the cells, where the viewer can stand them beside the cells: not beside the run's own geometry,
+    # which places the cells and gives the outside nodes no tiles of the adapter's.
+    if built is not None and "outside" in packaged:
+        derivation.append("The outside nodes are not drawn: the cells stand where the run's own geometry places them, and the adapter lays out no tiles of its own beside them.")
+    elif membranes and "outside" in packaged:
         face_links = packaged.get("face", {}).get("geometry") if "face" in packaged else None
         nodes = membranes["nodes"]
         faces_like = [{"sender": nodes[a], "receiver": nodes[b]} for a, b in face_links["ends"]] if face_links and face_links.get("between") == membranes["set"] else []
@@ -2159,6 +2308,27 @@ def adapt_engine_view(root, name, experiment, entry):
                     item[end] = {"set": identifier, "index": packaged[identifier]["ids"].index(entity)}
         if "at" in item:
             events.append(item)
+    # A replay's timeline runs over its records: an event the run states outside them (a looping package keeps only its
+    # last period) is not carried as an event, and the derivation says how many there are and when, before and after.
+    def inside(item):
+        return not ((item["time"] < times[0] and not math.isclose(item["time"], times[0], **TIME_CLOSE)) or (item["time"] > times[-1] and not math.isclose(item["time"], times[-1], **TIME_CLOSE)))
+
+    stated_count = len(events)
+    before = sorted(item["time"] for item in events if not inside(item) and item["time"] < times[0])
+    after = sorted(item["time"] for item in events if not inside(item) and item["time"] > times[-1])
+    events = [item for item in events if inside(item)]
+    if before or after:
+        kinds = sorted({item["kind"] for item in view["events"] if isinstance(item, dict) and isinstance(item.get("kind"), str)})
+        said = []
+        for times_, where, edge in ((before, "before its recorded period, which begins", times[0]), (after, "after its recorded period, which ends", times[-1])):
+            if times_:
+                span = f"at {times_[0]:g} s" if len(times_) == 1 else f"the first at {times_[0]:g} s, the last at {times_[-1]:g} s"
+                said.append(f"{len(times_)} {'lies' if len(times_) == 1 else 'lie'} {where} at {edge:g} s: {span}")
+        kind_words = " or ".join(f"'{kind}'" for kind in kinds)
+        derivation.append(
+            f"Of the run's {stated_count} events (of the kind {kind_words}), {'; '.join(said)}. They are not shown, because the replay runs over its records; "
+            f"the {len(events)} that lie within them are."
+        )
     if events:
         out["events"] = sorted(events, key=lambda item: item["time"])
     # The view's layers that a packaged record or event belongs to, each with its owner and how it is represented, as written.
@@ -2181,11 +2351,21 @@ def adapt_engine_view(root, name, experiment, entry):
         )
     # One period of a looping run (FR-11): the view's own block, checked and carried in the shape the page reads (src/layers/loop.js, readLoop).
     if "loop" in view:
-        out["loop"] = looped(name, view["loop"], named("cell"), times)
+        # The writer writes a loop only for a run that names its engine's source and saved its observed rows: a caller's
+        # label is no engine's word for a looping package's revision.
+        if source is None:
+            raise Refused(f"{name}: its view gives a loop for a run that names no engine source (run.source): a looping run names the engine that made it, from its execution snapshot")
+        if timeline != "observation":
+            raise Refused(f"{name}: its view gives a loop for a run that saved no observed rows")
+        out["loop"] = looped(name, view["loop"], named("cell"), times, [record.get("id") for record in view["records"] if isinstance(record, dict)])
         derivation.append(
             f"The run says it is one period of a loop (view.loop, carried as written): {out['loop']['period']} s of the cell {out['loop']['cell']}, for the species {out['loop']['species']}; "
             f"its last record meets its first within {out['loop']['closes']['within']}, and its tolerance is {out['loop']['closes']['tolerance']}."
         )
+        for group in out["loop"].get("not_measured") or []:
+            derivation.append(f"The loop's closure leaves out {len(group['records'])} record(s), in the run's words '{group['why']}': {', '.join(group['records'])}. Not measured says nothing of how they stand at the seam.")
+        if out["loop"]["closes"].get("zero"):
+            derivation.append(f"Identically zero over the loop, as the run states it (closes.zero), so not divided by in its closure: {', '.join(out['loop']['closes']['zero'])}.")
     missing = sorted({record["set"] for record in records if record.get("set")} - set(packaged))
     if missing:
         raise Refused(f"{name}: records lie on {', '.join(missing)}, which its view does not list as a set")

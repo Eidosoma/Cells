@@ -27,8 +27,12 @@ is not a kind yet: `tip_um` narrows the whole cell, so such a cell is given as a
 
 The viewer opens every cell with one flat cut and lays its contents out on the cut face.
 Where the cut lies, how parts are spread and the "Schematic" enlargement are the viewer's
-own, the same for every species. A cell under 2 µm across is drawn in one size mode only:
-at that size its molecules are large enough to see, so the picture is already near scale.
+own, the same for every species. A cell under 2 µm across is drawn in one size mode only,
+for now: the schematic layout scaled down to the cell's own size. Its flagella and fimbriae
+are then drawn at the sizes its file gives and its ribosomes at a textbook 20 nm, while its
+membranes, membrane proteins, ions and small molecules stay enlarged, the more so the larger
+the cell: the membrane about 6 times in a cell 1 µm across, and near its own thickness in a
+cell 0.2 µm across.
 
 A cell of a species that has a tissue level is drawn as one cell of a layer, with its
 neighbours round it, side against side (four for a four-sided `prism`, six for any other
@@ -44,11 +48,11 @@ close-up shows a pump, and says in the species' words that no channel has a plac
 | Part | Value | Drawn as |
 | --- | --- | --- |
 | `membranes` | 1 or 2 | The cell membrane; a second one is an outer shell, as scenery |
-| `wall` | true or false | A wall outside the membrane, as scenery. In a cell with two membranes the wall lies between them, and the second membrane is the outermost shell |
+| `wall` | true or false | A wall outside the membrane, as scenery. In a cell with two membranes the wall lies between them, and the second membrane is the outermost shell. Each shell stands at one distance outside the cell membrane all round, at a rod's ends as along its sides |
 | `nucleus` | true or false | A nucleus with its double envelope, its pores, a nucleolus and chromatin. It is a part of the map (planned; the user, 16 November 2026, `docs/CELL_STRUCTURES.md`) |
 | `organelles` | a list from `er`, `golgi`, `mitochondria`, `chloroplasts`, `vacuole` | The organelles the cell holds. The first three are an animal cell's: left out, a cell with a nucleus has those three and a cell without one has none. `chloroplasts` and `vacuole` (one large central vacuole) are a plant cell's, and are named only where the file lists them. Both are scenery: a chloroplast is a lens against the inside of the membrane; the vacuole takes the cell's own shape and presses the other parts to the side. The vacuole is neutral glass. A chloroplast is green, as it is in life, where the cell is coloured by kind (the user, 16 November 2026: the one piece of scenery with a colour of its own), and neutral where colour shows status, since green there says "qualified" |
 | `organelle_sizes` | keyed by organelle: `count`, `volume_fl`, `across_um`, `share`, `sources` | How many of an organelle the cell holds and how large each is, or what share of the cell's volume it fills (above 0, at most 1). Each a number or a range of two, with the keys of its sources; each number is also a fact of the species' card. `chloroplasts` are drawn from `count` and `across_um`, and the picture says how many of how many; the `vacuole` from `share`, in both size modes |
-| `wall_nm` | a thickness in nanometres, or a range of two | How thick the wall is, for a cell with a wall. To scale the wall stands that far outside the cell membrane; in the schematic picture it is enlarged |
+| `wall_nm` | a thickness in nanometres, or a range of two | How thick the wall is, for a cell with a wall. To scale the wall stands that far outside the cell membrane, all round; in the schematic picture it is enlarged |
 | `chromosome_kbp` | a length in thousands of base pairs | A chromosome lying free in the cell. Only for a cell without a nucleus |
 | `ribosomes` | a count | Ribosomes, a part of the map (planned; the user, 16 November 2026). Where the count is given, the share of it that lies in the part of the cell kept below the picture's cut is drawn (300 of Syn3A's 500), and the panel says how many of how many; where none is given, the number drawn is the picture's choice and the panel says so. Every cell has them |
 | `appendages` | a list, as `SPECIES.md` sets out | Threads and hairs that stand out from the cell (a flagellum, a pilus), as scenery; each may name the machine at its foot. A piece of scenery that the species' file describes can be chosen: its panel says that it is scenery and gives the file's numbers with their sources |
