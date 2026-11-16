@@ -21,6 +21,15 @@ Changed from @1:
   daughter born later, or a cell already retired. So the zero-charge onset of @1 holds
   unchanged: the node opens with its one cell's patches, at zero voltage.
 * Version 1 refuses an onset at a division's time.
+* Gates at opening (docs/INNER_MODEL_V4_DESIGN.md §7.4 (o); the lead's ruling, 16 November
+  2026). A channel population on an onset patch starts at its declared initial gate when its
+  patch opens, however long the patch stayed closed. This is a declared rule of this operator,
+  not a claim about the state of channels that vesicles deliver. While the patch is closed its
+  slot is padding, whose gate @3 evolves under code 0's law (the padding artifact of (j)); the
+  partition and replacement set the gates of the slots they open, and so, at its onset, does
+  this operator (STATE_RESETS: channel_gate). Such populations stay refused (check_onsets)
+  until a later change lifts the refusal with its own evidence; until then the write is
+  idle (no population is on an onset patch) and the records are unchanged.
 * The energy rule at the view is the composite's (§5.3). This operator books its heat in the
   energy ledger and its image charge in the rounding bounds, not the view's capacitor terms.
 * It precedes every operator that retires slots (isopotential_partition@1), whose step-check
@@ -81,6 +90,28 @@ def check_onsets(base, schedule):
             raise ConfigError("An onset patch faces a finite node, not a held bath")
         if node.initial_charge_C != 0.0:
             raise ConfigError("An onset node's charge anchor must be 0")
+
+
+def onset_gates(spec, schedule, inner_state):
+    """{insertion_onset_channel: [channel] a population on an onset patch, insertion_onset_gate:
+    [gate, channel] its declared initial gate (zero elsewhere)}: the gate it starts at when its
+    patch opens (§7.4 (o)). The declared gates are the inner model's initial state's."""
+    patches, _, _ = v1.onset_entities(spec, schedule)
+    onset = np.zeros(spec.execution.channel_capacity, dtype=bool)
+    for k, population in enumerate(spec.model.channels):
+        onset[k] = population.membrane_id in patches
+    gate = np.asarray(inner_state.channel_gate, dtype=np.float64)
+    return dict(
+        insertion_onset_channel=onset,
+        insertion_onset_gate=np.where(onset[None, :], gate, 0.0),
+    )
+
+
+def opened_at_onset(state, control, p, *, xp):
+    """[channel] the populations whose patch opens at this step's onsets: the onsets due at the
+    step start (membrane_insertion.apply_onsets' rule) on the patches the populations sit on."""
+    due = p.insertion_onset_patch & (control.insertion_open > 0) & (state.insertion_opened == 0)
+    return p.insertion_onset_channel & due[p.channel_membranes]
 
 
 def lifetimes(spec):
@@ -239,10 +270,11 @@ class ScheduledMembraneInsertionV2(Operator):
     STATE_AXES = v1.STATE_AXES
     STATE_DTYPES = {"insertion_opened": np.int64}
     HEAT_FIELDS = ("insertion_dissipated_energy_pJ",)
-    LAYOUT_FIELDS = v1.LAYOUT_FIELDS
+    LAYOUT_FIELDS = (*v1.LAYOUT_FIELDS, "insertion_onset_channel", "insertion_onset_gate")
     CONTROL_FIELDS = ("insertion_rate_m2_s", "insertion_open")
     EXPERIMENT_KEYS = ("insertion_controls",)
     CLOSES = ("membrane_active", "outside_active")
+    STATE_RESETS = ("channel_gate",)  # A population's gate at its patch's onset (§7.4 (o)).
     VIEW_READS = ("membrane_capacitance",)
     ENTITY_WRITES = {
         "membrane_area_increment_m2": ("inserted_area_m2",),
@@ -320,7 +352,8 @@ class ScheduledMembraneInsertionV2(Operator):
     # ------------------------------------------------------------ binding
 
     def initial_values(self, spec, declaration, schedule, inner_state, inner_layout):
-        return v1.bind(spec, declaration, schedule)
+        state, layout = v1.bind(spec, declaration, schedule)
+        return state, layout | onset_gates(spec, schedule, inner_state)
 
     # ------------------------------------------------------------ step parts
 
@@ -328,7 +361,10 @@ class ScheduledMembraneInsertionV2(Operator):
         return closures(state, p, xp=xp)
 
     def event(self, state, control, p, *, xp, view=None):
-        return v1.apply_onsets(state, control, p, xp=xp)
+        opening = opened_at_onset(state, control, p, xp=xp)
+        new, valid = v1.apply_onsets(state, control, p, xp=xp)
+        gate = xp.where(opening[None, :], p.insertion_onset_gate, new.channel_gate)
+        return new._replace(channel_gate=gate), valid
 
     def half_step(self, state, h, control, p, *, xp, view=None):
         if view is None:

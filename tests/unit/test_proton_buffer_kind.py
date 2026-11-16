@@ -304,7 +304,10 @@ def test_the_proton_leaks_admission():
             "species B has two forms .*proton_constant_field_leak@1\\) at cell_0 moves its cell "
             "rows, and no law declares how it moves the forms",
         ),
-        (dict(factors=[dict(law="damage", id="damage_0")]), "come with FR-5's laws"),
+        # The routing door (§7.4 (n), 207393ba): factors are factor-source IDs, and binding
+        # refuses an ID that no declared kind exposes (FR-5's sources are the FR lane's kinds).
+        (dict(factors=[dict(law="damage", id="damage_0")]), "a list of distinct factor-source IDs"),
+        (dict(factors=["damage_0"]), "names unknown factor sources \\['damage_0'\\]"),
     ):
         raw = buffered_world()
         entry = {k: v for k, v in leak_route(**overrides).items() if v is not None}

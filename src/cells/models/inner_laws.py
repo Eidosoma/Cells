@@ -203,6 +203,38 @@ PUMP_LAWS = MappingProxyType(
 )
 
 
+@dataclass(frozen=True)
+class RouteLaw:
+    """A passive route law: the hosts it serves, what it is, and its provenance (§7.1)."""
+
+    law_id: str
+    hosts: tuple[str, ...]
+    basis: str
+    provenance: str = "parity"
+
+
+# The passive route laws every membrane, junction and face declares (provenance for the run view,
+# D154): moved unchanged into @3 with its families (parity, not calibrated); `basis` says what
+# each is, in its own sources' words.
+ROUTE_LAWS = MappingProxyType(
+    {
+        MEMBRANE_ROUTE_LAW_ID: RouteLaw(
+            MEMBRANE_ROUTE_LAW_ID,
+            ("membrane", "junction"),
+            "the Goldman-Hodgkin-Katz constant-field flux of each permeant species "
+            "(coupling/selective.selective_flux)",
+        ),
+        FACE_ROUTE_LAW_ID: RouteLaw(
+            FACE_ROUTE_LAW_ID,
+            ("face",),
+            "Cells' own discrete electrodiffusion between two well-mixed outside nodes: the "
+            "Nernst-Planck flux at the species' logarithmic-mean concentration "
+            "(docs/SPATIAL_EXTRACELLULAR_SPEC.md: a design, not a reproduction of a paper)",
+        ),
+    }
+)
+
+
 def channel_codes():
     """{law ID: registry code} of every registered channel law."""
     return {law_id: law.code for law_id, law in CHANNEL_LAWS.items()}
@@ -231,6 +263,9 @@ class InnerStructure:
     # The declared kinds (§7.4 (j), (k)): ((namespaced kind ID, the kind's structure entry), ...)
     # in canonical (sorted ID) order; () for every definition of today's.
     kinds: tuple = ()
+    # The routing door's table (§7.4 (n)), resolved at binding: ((sink kind ID, control field,
+    # slot, ((source kind ID, position), ...)), ...), value-free; () without a sink (A4).
+    routes: tuple = ()
 
     def __post_init__(self):
         ids = [kind_id for kind_id, _ in self.kinds]
