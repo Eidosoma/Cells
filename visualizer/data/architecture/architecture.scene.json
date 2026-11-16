@@ -5,9 +5,9 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-15",
-  "generated_at": "2026-11-15T22:06:53Z",
-  "revision": "2c00d08d",
-  "revision_date": "2026-11-15",
+  "generated_at": "2026-11-16T11:22:02Z",
+  "revision": "b9659141",
+  "revision_date": "2026-11-16",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
   "source_base_url": "https://github.com/Eidosoma/Cells/blob/main/",
@@ -375,7 +375,7 @@
      "covers_all": true
     }
    },
-   "checked_at": "2c00d08d"
+   "checked_at": "b9659141"
   },
   "counts": {
    "units": 48,
@@ -19068,7 +19068,7 @@
    "facts": [
     [
      "Files",
-     "329"
+     "330"
     ],
     [
      "Lines of Python",
