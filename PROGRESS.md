@@ -77,6 +77,77 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **G2-Q1's Q7 passes on the L4 under the deterministic flag (16 November 2026;
+  `resolved_pump_replacement@1`, `resolved_pump_tissue@3`).**
+  - **The failure it answers.** On 14 November the composite's L4 judged run C passed W1, W2 and
+    G2-Q1's Q1–Q6, and failed Q7. Q7 claims the replacement model without events equals @3
+    bitwise on the 825-node world. The cause was the L4's own run-to-run nondeterminism: unflagged
+    repeats differ by up to 1.9e-11 relative.
+  - **The flag.** Under `--xla_gpu_deterministic_ops=true`, 15 of 15 repeats were bitwise across
+    processes.
+  - **The judged run.** Q7 was then judged alone under the flag, with the registered G2 variant,
+    from a clean snapshot of main cfbe7122, at 03:06–03:10 UTC. It passed: every state field and
+    observation is bitwise, every diagnostic equal, the replacement fields zero, and `XLA_FLAGS`
+    is in the item record.
+  - **Its scope.** The verdict holds in the declared flagged mode only (D168, D181). C's Q7
+    failure stays C's verdict, because the protocol judges once and retries nothing. The unflagged
+    mode's run-to-run term stays as measured.
+  - **Records:** [record](/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/record.json),
+    [Q7](/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/q7-judged/judged-q7/Q7.json),
+    [determinism test](/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/determinism/l4-20261115/analysis.json).
+  - **The flagged block's amendment** for D172's 13-run L4 block is registered before its first run
+    (`validation/tissue/l4_variants/flagged_block_amendment.json`).
+  - **Also overnight:**
+    - the summation GPU column settled A7's barrier placement (D182);
+    - the W1 full-tissue hold completed its 70-minute retention (segment 4 ended 02:28 UTC). Its
+      comparison with the predictions written before the run is development analysis, still to
+      do.
+
+- **D172's round on the evening of 15 November 2026: schema A landed on the integration branch,
+  the core's kinds cleared, and FR-4's first development rung.** Evidence is under
+  `/mnt/workspaces/Cells/d172-restructure-20261115-01/` (`integration/`, `core/c8`, `core/c9`,
+  `fr45/pipeline/`).
+  - **integration-d172 at 72f5c29e, schema A with the adapter work:**
+    - the sharded results comparison is bitwise in 113 of 113 worlds;
+    - the crossrev pair is identical in all eight sets, so schema A changes no program of today's
+      worlds;
+    - tier 1+2 at the merge is 356 and 120 files, none changed from the record.
+    - The first gate on the branch had found two earlier regressions that per-merge test lists had
+      missed. Both are fixed in the merge.
+  - **The core's kinds on core-d172, at 2c780f9f,** cleared for integration by three regressions
+    (134, 273 and 287 tests), tier 3 and three crossrevs identical in all eight sets. They are:
+    - the proton buffer, `cells.rapid_proton_buffer@1`, with its term in @3's 1 mM convention;
+    - the passive law, `cells.passive_routes@1`, with §7.5's exact booking and the proton leak law;
+    - the kind seams: per-node stage terms with the stage's potentials, held rows with one writer,
+      per-stage extrema, `KindRates.valid` and a public parsing surface.
+    - Its advisor found and fixed a real bug in the exact booking's scope.
+  - **FR-4 (development evidence, not judged; the protocols stay PROPOSED):**
+    - the transporter kind, `cells.transporter@1`, drives FR-4's world with every ledger closed;
+    - the 900 s rung at 1 ms agrees with the independent reference to 1.4e-12 pH at all 901
+      records;
+    - the reversed-pump control K2(b) runs its 900 s and tracks its own reference to 7.5e-11 pH. It
+      is caught at the first record, 3.28 pH from the declared world, against the reference's
+      effect recorded on main (81559119).
+    - The device-checked vector path covers the same checks and agrees bitwise except two
+      accumulators, at about 1e-13. It steps 7.5× faster, so a pass costs about 2.3 CPU-h. The
+      protocols declare it by a dated pre-run correction.
+  - **The end game's landing script:** its crossrev check and three other checks could pass bad
+    records. They now require exact counts with exit 0, and 35 planted bad records are refused.
+  - **Then, after midnight, integration-d172 at cd702afc.** The core's batch, the transporter and
+    the composite's one-writer admission are merged:
+    - an operator writing a kind's held row is refused;
+    - an operator writing an exact-booked passive route's row is refused (version 1, fail-closed).
+    - The results comparison is bitwise in 113 of 113 worlds, the crossrevs are identical in all
+      eight sets, 23 targeted files pass, and tier 1+2 is 358/132 files with 0 changed.
+    - The tier tool now forces `JAX_PLATFORMS=cpu`. Four JAX test files' old error rows came from
+      its absence.
+  - **The landing script for A7's c0 → c1 step:**
+    - c0's crossrev must be identical to the post-batch record;
+    - c1 keeps constants and bindings identical, while program texts may differ;
+    - 75 checks are refused or accepted as designed.
+  - **Next:** A7 after tonight's GPU column, then the compartment operator's refusal lifted for
+    FR-4's kinds, then the end game.
+
 - **A7's results-gate tolerance rehearsal: physical fields bitwise in all 113 worlds (15 November
   2026).** This is development evidence for the round's results gate
   ([note](/mnt/workspaces/Cells/d172-restructure-20261115-01/operators/summation/out/rehearsal/NOTE.md)).

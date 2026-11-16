@@ -1,0 +1,44 @@
+{
+ "kind": "cells.l4_measurement_mode_amendment@1",
+ "id": "l4-flagged-block-v1",
+ "status": "registered by the lead (registrar), 16 November 2026, before the first run of D172's 13-run L4 block (D181)",
+ "decision": "D181 (the lead's ruling with the advisor, 15 November 2026): the 13-run L4 block runs under the deterministic flag as a declared measurement mode",
+ "applies_to": {
+  "block": "D172's 13-run L4 block on the integrated candidate, in the end game after A7 (endgame/06-l4.sh)",
+  "variants": [
+   "validation/tissue/l4_variants/w1_backend_variant.json",
+   "validation/tissue/l4_variants/w2_backend_variant.json",
+   "validation/tissue/l4_variants/g2_backend_variant.json",
+   "validation/betse/protocols/physical_p3_k_mem_dense_l4.json",
+   "validation/betse/protocols/physical_p3_na_mem_dense_l4.json",
+   "validation/betse/protocols/physical_p3_na_mem_gj_block_dense_l4.json",
+   "validation/betse/protocols/physical_p3_pump_block_dense_l4.json",
+   "validation/betse/protocols/physical_p4_kleak_dense_l4.json",
+   "validation/betse/protocols/physical_p4_kv1p5_kleak_dense_l4.json",
+   "validation/betse/protocols/physical_p4b_kir_h_dense_l4.json",
+   "validation/betse/protocols/physical_p4b_kir_navsim_dense_l4.json",
+   "validation/betse/protocols/physical_p4b_nav_kirsim_dense_l4.json",
+   "validation/betse/protocols/physical_p4b_nav_kleak_dense_l4.json"
+  ],
+  "unchanged": "every registered protocol and variant file above stays as registered; this amendment adds the measurement mode for the block only"
+ },
+ "mode": {
+  "xla_flags": "--xla_gpu_deterministic_ops=true",
+  "where": "every L4 process of the block: the runs, their confirming repeats, the judged runs and any packed groups; set in those processes only, never in a hold's environment",
+  "recorded": "each record carries XLA_FLAGS (the judges' numerical_environment, 2c00349d; the agreement driver's runs record their backend and the step logs their flag)"
+ },
+ "terms": {
+  "backend": "remeasured under the flag: |CPU reference - X| for the flagged L4 run X, by each part's own difference measure as registered; the registered unflagged backend terms are not reused",
+  "run_to_run": "exactly 0 under the flag: X's confirming repeat Y (one per structure group) must equal X in every judged quantity; the agreement driver's terms --mode flagged --runs X Y records repeat_bitwise",
+  "stop": "a flagged confirming repeat that is not bitwise stops the block, which is diagnosed; terms records stop and exits 2, and variant refuses those terms",
+  "tool": "validation/tissue/composite_l4_agreement.py terms --mode flagged (39bb4fae)"
+ },
+ "tolerances": "unchanged: max(registered, up1(3 x (registered sum + backend + 0))), or max(registered, up1(3 x backend)) for a fixed bound, with the flagged backend term; no registered tolerance narrowed; no stop rule changed; the parity variants' own tolerances as registered",
+ "packed_runs": "where the block runs packed: packed repeats under the flag bitwise; packed against scalar per world within Q6's declared 1e-12 relative bound wherever it holds; the 825-node figure measured once under the flag in the packed qualification and declared before any judged run",
+ "bridge": "the flagged mode relates to the registered unflagged mode through the plain-against-flagged difference measured on 15 November: about 1.8e-11 relative on the 825-node world, the same level as unflagged repeats (composite-l4-agreement-20261114-01/determinism/l4-20261115/analysis.json)",
+ "evidence": {
+  "flag_bitwise": "15 of 15 flagged repeats of the 825-node @3 world and 12 of 12 replacement-against-@3 pairs bitwise across processes (determinism/l4-20261115/)",
+  "q7": "G2-Q1's Q7 judged under the flag passed bitwise, 16 November (composite-l4-agreement-20261114-01/record.json)",
+  "draft": "d172-restructure-20261115-01/acceptance/flagged-block-amendment-draft.md"
+ }
+}
