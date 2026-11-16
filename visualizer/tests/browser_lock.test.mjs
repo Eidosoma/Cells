@@ -1,7 +1,8 @@
-// The browser lock keeps a run and the Chrome it starts on the run's processor
-// (tools/lib/browser_lock.mjs). Chrome's software renderer pins its own worker threads
-// elsewhere, so the lock looks at every thread of what the run started and puts a process
-// with a thread elsewhere back.
+// The browser lock gives each browser run a place: a share of the processors set aside for
+// browser runs, whole cores (tools/lib/browser_lock.mjs). It keeps the run and the Chrome it
+// starts there: Chrome's software renderer pins its own worker threads elsewhere, so the
+// lock looks at every thread of what the run started and puts a process with a thread
+// elsewhere back.
 //
 //   node --test tests/browser_lock.test.mjs
 
@@ -11,7 +12,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { cpusOf, descendants, keepOn, strays } from "../tools/lib/browser_lock.mjs";
+import { acquireBrowser, BROWSER_CPUS, cpusOf, descendants, keepOn, places, shares, strays } from "../tools/lib/browser_lock.mjs";
 
 test("a list of processors is read as the kernel and taskset write one", () => {
   assert.deepEqual([...cpusOf("3")], [3]);
@@ -95,3 +96,55 @@ test("a child that moved itself to another processor is put back", { skip: cpus.
     child.kill();
   }
 });
+
+// The project's machine: processor n and n + 16 are the two threads of core n.
+const twoThreads = (cpu) => cpu % 16;
+
+test("the processors set aside are shared out as whole cores, both threads of a core together", () => {
+  assert.deepEqual(shares("12-15,28-31", 4, twoThreads), ["12,28", "13,29", "14,30", "15,31"]);
+  assert.deepEqual(shares("12-15,28-31", 2, twoThreads), ["12,14,28,30", "13,15,29,31"]);
+  assert.deepEqual(shares("12-15,28-31", 1, twoThreads), ["12,13,14,15,28,29,30,31"]);
+  assert.deepEqual(shares("12-15,28-31", 9, twoThreads), ["12,28", "13,29", "14,30", "15,31"], "never more shares than cores");
+  assert.deepEqual(shares("3", 4, twoThreads), ["3"]);
+  assert.deepEqual(shares("12-15", 3, (cpu) => cpu), ["12,15", "13", "14"], "where each processor is its own core, they are dealt in turn");
+  assert.deepEqual(shares("none", 2, twoThreads), [], "a list that names no processor gives no share");
+  // No processor is given twice, and none is left out.
+  for (const slots of [1, 2, 3, 4]) assert.deepEqual(shares(BROWSER_CPUS, slots, twoThreads).flatMap((list) => [...cpusOf(list)]).sort((a, b) => a - b), [12, 13, 14, 15, 28, 29, 30, 31]);
+});
+
+test("the places follow the two settings, and 'any' leaves the runs free", () => {
+  assert.equal(places({}).length >= 1, true);
+  assert.deepEqual(places({ CELLS_BROWSER_CPU: "any", CELLS_BROWSER_SLOTS: "3" }), ["any", "any", "any"]);
+  assert.deepEqual(places({ CELLS_BROWSER_CPU: "any" }).every((place) => place === "any"), true);
+  assert.equal(places({ CELLS_BROWSER_CPU: "0", CELLS_BROWSER_SLOTS: "4" }).length, 1, "one processor is one place, whatever is asked");
+  assert.deepEqual(places({ CELLS_BROWSER_CPU: "nothing" }), ["any"], "a list that names no processor leaves the run free and does not stop it");
+});
+
+test("two runs hold two places at once, a third waits, and a place given back is taken again", { skip: cpus.length < 2 ? "needs two processors this process may use" : false }, async () => {
+  const before = { ...process.env };
+  process.env.CELLS_BROWSER_CPU = "any"; // the places are what is tested here, not the pinning
+  process.env.CELLS_BROWSER_SLOTS = "2";
+  let first = null, second = null, third = null;
+  // In a folder of its own, so that a real browser run going on beside the test neither helps nor hinders it.
+  const at = await mkdtemp(path.join(os.tmpdir(), "browser-places-"));
+  try {
+    first = await acquireBrowser({ wait: 4000, at });
+    second = await acquireBrowser({ wait: 4000, at });
+    assert.deepEqual([first.slot, second.slot].sort(), [0, 1], "each has a place of its own");
+    await assert.rejects(acquireBrowser({ wait: 1500, at }), /held the lock for too long/, "a third run waits, and says so when its wait runs out");
+    assert.notEqual(first.profile, second.profile, "and a profile of its own");
+    first();
+    first = null;
+    third = await acquireBrowser({ wait: 4000, at });
+    assert.equal([0, 1].includes(third.slot), true);
+    assert.notEqual(third.slot, second.slot, "the place that was given back is the one taken");
+  } finally {
+    for (const release of [first, second, third]) release?.();
+    await rm(at, { recursive: true, force: true });
+    process.env.CELLS_BROWSER_CPU = before.CELLS_BROWSER_CPU ?? "";
+    process.env.CELLS_BROWSER_SLOTS = before.CELLS_BROWSER_SLOTS ?? "";
+    if (before.CELLS_BROWSER_CPU === undefined) delete process.env.CELLS_BROWSER_CPU;
+    if (before.CELLS_BROWSER_SLOTS === undefined) delete process.env.CELLS_BROWSER_SLOTS;
+  }
+});
+

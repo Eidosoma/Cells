@@ -400,6 +400,7 @@ npm run check:layers        # real clicks on a replay's quantity layers (zero, s
                             # holds the page to numbers worked out from the run's own arrays (tools/reference_flow.py); example: RUN=example-sheet--invented-numbers
 npm run check:look          # the Cell view's look: each effect, the switch, and the other views unchanged
 npm run check:flux          # flux in the Cell view: nothing flows as the page opens, a chosen part, the switch (THEME, WIDTH and HEIGHT, SPECIES, MOVING=1, ADDRESS=1 set the case)
+npm run check:all           # every real-click check once, four at a time, with a table of what passed and summary.json (--only PATTERN, --jobs N, --out DIR, --list)
 npm run serve -- --no-proteins   # the page as it is when the species' own proteins are not published beside it
 npm run shot -- --out /tmp/shot.png --query "lens=engine&select=num.imex" --theme dark
 npm run adapt:runs -- --evidence PATH   # make the replays under out/runs/ (not committed); PATH holds the evidence folders
@@ -414,11 +415,15 @@ opens straight from disk.
 The preview server sends a content policy close to the artifact frame's, so a load that
 would be blocked when published is reported in the terminal while developing.
 
-Every check that starts Chrome takes one lock (`tools/lib/browser_lock.mjs`), so only one
-browser runs at a time, on the processors set aside for browser runs (`CELLS_BROWSER_CPU`,
-a list as `taskset` takes one; cores 12 to 15 with both their threads, `12-15,28-31`,
-unless set), with its profile on disk and not in memory-backed `/tmp`. Chrome's software
-renderer pins its own
+Every check that starts Chrome takes a place first (`tools/lib/browser_lock.mjs`). A place
+is a share of the processors set aside for browser runs, whole cores: `CELLS_BROWSER_CPU`
+names them (a list as `taskset` takes one; cores 12 to 15 with both their threads,
+`12-15,28-31`, unless set) and `CELLS_BROWSER_SLOTS` says how many browsers run at once
+(four unless set: one core each). A run beyond that waits its turn. Each run has its
+profile on disk and not in memory-backed `/tmp`. On the project's machine the look check
+takes 162 s on one core, 85 s on two and 49 s on four, so a suite goes fastest with four
+browsers side by side, and one check alone goes fastest with all four cores
+(`CELLS_BROWSER_SLOTS=1`). Chrome's software renderer pins its own
 worker threads to the first processors by number, whatever the run is allowed, so the
 lock looks at every thread of what a run started once a second and puts a process with a
 thread elsewhere back. (A scope bound to a processor would hold them at once; it needs
@@ -516,11 +521,11 @@ stay out of git (61 runs in 327 files, 96 MB).
    `out/runs/` is still on disk.
 3. `npm run extract -- --strict && npm test`. The extractor reads the main checkout, so
    the map states the revision main is at.
-4. The real-click checks in headless Chrome, one at a time: `npm run check:input`,
-   `check:species`, `check:shelves` (each scenario), `check:layers` (each scenario),
-   `check:look` and `check:flux`. About an hour in all on one processor with the browser
-   to themselves. Each says at its end whether the page's own font had arrived: with the
-   stand-in, words run longer and cards stand taller, and a miss is read against that.
+4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
+   `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look` and
+   `check:flux` once, four at a time, and writes a log for each and `summary.json`. Each
+   check says at its end whether the page's own font had arrived: with the stand-in, words
+   run longer and cards stand taller, and a miss is read against that.
 5. `npm run export`
 6. Publish `out/cells-architecture.html` with every file listed in
    `out/cells-architecture.files.json` beside it, under the same relative paths
