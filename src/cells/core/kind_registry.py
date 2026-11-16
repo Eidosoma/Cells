@@ -99,8 +99,8 @@ class Kind:
       field: value} at every explicit stage of an IMEX step, with the stage_check's arguments;
       `stage_extrema` = ((field, "max" | "min"), ...) names the reduction. The step's end state
       holds each field's running extremum: the start's value and every stage of the step (the
-      closure's largest lag, the cytosol's smallest and largest pH). RK4 steps leave them as
-      they are.
+      closure's largest lag, the cytosol's smallest and largest pH). @3 refuses declared kinds
+      under RK4 (surface_pump_v3._check_kinds_solver: every step guard here is the IMEX step's).
     - step end: `book(applied, start, end, p, dt, *, xp)` -> ({own state field: new value},
       valid), after the tableau's combination; `applied(name)` is the step's applied rate of a
       state field (the tableau's weights), `start` the step's start state and `end` its end

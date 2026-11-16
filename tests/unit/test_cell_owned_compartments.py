@@ -495,7 +495,9 @@ def test_refusal_4_admits_routes_beside_a_compartment_only_with_an_imex_tableau(
     IMEX tableau (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1; the core's review): an RK4 step runs
     neither the per-stage rule nor B7's and the kinds' definition-time terms. The review's probe:
     FR-4's declared world with the stiff K+ permeability is admitted under IMEX, whose step checks
-    then refuse it as before, and refused under RK4, where it used to pass its step checks."""
+    then refuse it as before, and refused under RK4, where it used to pass its step checks. @3
+    now refuses declared kinds under RK4 first (surface_pump_v3._check_kinds_solver), so the
+    operator's own rule is checked on @3's parsed base, which reaches it under either solver."""
     import dataclasses
 
     import numpy as np
@@ -506,8 +508,8 @@ def test_refusal_4_admits_routes_beside_a_compartment_only_with_an_imex_tableau(
     assert spec.execution.solver != comp.RK4_SOLVER
     with pytest.raises(ConfigError, match="IMEX step exceeds the explicit-rate stability bound"):
         get_model(spec.model).bind_step_checks(spec)(np.full(STIFF_STEPS, STIFF_DT))
-    with pytest.raises(ConfigError, match="declared with kinds in a world that steps with RK4"):
-        parse_spec(stiff_fr4(comp.RK4_SOLVER))
+    with pytest.raises(ConfigError, match=r"cells\.transporter@1\) require an IMEX solver"):
+        parse_spec(stiff_fr4(comp.RK4_SOLVER))  # @3's refusal, ahead of the operator's.
     # The operator's own rule, on @3's parsed base under each solver.
     base = parse_spec(stiff_fr4(operator=False))
     block = defs.fr4_world()["model"]["operators"][0]

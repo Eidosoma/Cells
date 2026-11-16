@@ -676,7 +676,10 @@ it failed open.
   RK4's real-axis limit of about 2.8), was admitted and passed its step checks, while the same
   world under IMEX is refused by the explicit-rate bound. So under RK4 refusal 4 admits **no
   declared kind** beside a compartment, and a permeability stays refused as in version 1: version
-  1's refusal stands (fails closed).
+  1's refusal stands (fails closed). @3 itself now refuses declared kinds under RK4 for the same
+  reason, whether or not a compartment is declared (`surface_pump_v3._check_kinds_solver`; the
+  core's review, finding 6), so in a parsed world @3's refusal comes first and refusal 4's RK4
+  rule stands behind it until a design for kinds under RK4 lifts both.
 - Refusals 1–3 and 5–7 are unchanged. Refusal 5 (no charge anchor) still holds the content
   electroneutral at the start; FR-4's world declares none.
 
