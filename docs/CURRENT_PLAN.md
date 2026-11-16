@@ -85,6 +85,17 @@ experiment).
         against lone is judged on every field, and the field solver is set to `auto`.
       - The core seams it asked for follow: a public window-arguments constructor, mask-and-continue
         on the device, a world ID on every vectorized refusal, and a typed memory refusal.
+      - **A development GPU run** (16 November, the planner's pre-D172 head 69a14cb5, under the
+        flag; `packed-gpu-20261115-01/dev-gpu-69a14cb5/`):
+        - packed repeats are bitwise, and the refusing world is refused on both paths;
+        - but packing alone, against the same world run alone on the GPU, moves 78 field-world
+          pairs beyond 1e-12, up to 1.6e-8 relative. They are the small extracellular, junction
+          and reservoir flux observables and running ledgers, the fields where the vector path
+          already differs from scalar on the CPU. The CPU showed packing at 3.4e-16 or less.
+        - So the ruled criterion, packed against lone within 1e-12 on every field, does not hold on
+          the GPU. It needs a basis in the field solve's conditioning before the qualification.
+        - The throughput steps also overran the 3600 s GPU budget: throughput-128 was stopped, and
+          256 was skipped.
    5. The module system's stage 1, one external law (D180), after the user's decisions in its §6.
 3. **Queued follow-ups** (each its own gated change):
    - insertion@2's gate fix, before `check_onsets` is lifted (§7.4 (j));
