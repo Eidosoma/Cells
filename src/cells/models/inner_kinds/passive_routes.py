@@ -10,7 +10,7 @@ owner's, called here and never edited:
   tableau-booked (charged), with its slope conductance in the stage rule (B7) and its flux in the
   membrane current.
 
-The declaration (model key `passive_routes`, FR-4's form in validation/compartment_ph/
+The declaration (model key `passive_routes`, FR-4's form in validation/compartment_ph_engine/
 definitions.py), each route on one host (`patch`, or `junction` for the neutral law):
 
     [{"id": "proton_leak_0", "patch": "bounding_0", "law": "proton_constant_field_leak@1",

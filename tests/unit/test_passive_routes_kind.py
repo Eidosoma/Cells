@@ -51,7 +51,7 @@ def closed_pair(*, node_mM=5e-4, pool_mM=1e-3, end=0.02, dt=1e-3, routes=None, w
 
 
 def route(rid, permeability, *, host=("patch", "contact_0"), species=fx.SPECIES):
-    """A neutral route in FR-4's form (validation/compartment_ph/definitions.py)."""
+    """A neutral route in FR-4's form (validation/compartment_ph_engine/definitions.py)."""
     return {
         "id": rid,
         host[0]: host[1],
