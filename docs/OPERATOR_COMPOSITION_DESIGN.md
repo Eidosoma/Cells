@@ -714,6 +714,8 @@ Folder: `/mnt/workspaces/Cells/composition-design-20261116/`.
   the planted rate through every definition check, the RK4 rule raised by the engine, the retired
   pump's inputs, the symport beside the cycle.
 - Every `"error"` entry in the three JSON files is a recorded engine refusal. No section failed.
+- `water_mask_reachability.py`, `water-mask-reachability-7c8bfa47.json`: gap 5's reachability on
+  main at 7c8bfa47 (§16.3).
 - `volume_split_exactness.py`, `volume-split-exactness.log`: §7, NumPy and XLA on the CPU.
 
 All ran on CPU 22 at nice 10, host only. **The probes exist only in this folder.** Whether they
@@ -733,3 +735,67 @@ land under `validation/replay/` beside FR-11's `cycle_probe.py` is the lead's ca
 - HUMAN_CARDIAC_LAWS_DESIGN.md on cardiac-laws;
 - LOOPING_REPLAY_DESIGN.md §6 on run-view-d154;
 - DECISIONS D142, D143, D144, D147, D148, D150, D169, D174, D176 and D185.
+
+## 16. What option A changes in main's assertions, and gap 5 today
+
+The lead's two checks, read on main at 7c8bfa47.
+
+### 16.1 The refusals A would turn into admissions
+
+**One registered protocol and four test files assert them:**
+
+| Where | The assertion | Flipped by |
+| --- | --- | --- |
+| **D150's registered protocol** (`validation/tissue/secreted_species_protocol.json`). Its Q5, "The guards of record hold at the judged snapshot", runs `tests/unit/test_secreted_species.py`. Q5 was judged at f7f0592 (`/mnt/workspaces/Cells/secreted-species-v1-20261114-01/judged-f7f0592/q5/verdict.json`) | `test_version_1_refuses_volume_providers_area_providers_and_mask_providers`: turnover beside water, "reads volume as declared"; turnover beside insertion@1, "reads outside_active as declared". Its third case, exchange beside membrane state, stays refused | Gaps 1a and 3 |
+| `tests/unit/test_membrane_state.py` | `test_operators_that_read_the_declared_area_refuse_the_membrane_state`: water beside membrane state, "reads membrane_area as declared". Replacement@1's half stays | Gap 2 |
+| `tests/unit/test_pump_composite_contract.py` | `test_ownership_refusals_when_a_composition_is_built`: a current read with no provider, "reads the view volume; no earlier operator provides it" | C1 |
+| `tests/unit/test_door_s.py` | `test_a_current_reader_follows_the_changers_of_its_slots`: "test_alone@1 … no earlier operator provides it"; and a split reader placed before an event-stage changer of its slot, "… before test_dose@1 changes it" | C1, then C2 |
+| `tests/unit/test_composition_matrix.py`, with `docs/PUMP_COMPOSITE.md` and `validation/tissue/composition_matrix.py`'s tags | The matrix's refused cells and their tags. They are the only assertion of the partition's volume refusal beside water, and they also hold water's area refusal and turnover's volume and mask refusals | Gaps 1a, 1b, 2 and 3 |
+
+**A's cost here.**
+- Q5 is amended, or its test is split. The version-1 refusals stay in Q5's file for the static-tissue scope its verdict covers, and A's admissions are tested in a file outside Q5's list. The verdict judged at f7f0592 stands.
+- Q5's scope line already limits any qualified statement to a static tissue.
+- `test_membrane_state.py`, `test_pump_composite_contract.py` and `test_door_s.py` change their
+  assertions to the admissions.
+- `test_composition_matrix.py` passes again once the matrix is regenerated and the lifted tags are
+  removed, in the same commit as each gap.
+
+**Asserted nowhere on main:** the partition's pump refusal ("Pumps on a dividing cell are later
+work") has no test. S5's registered protocol (`validation/division/s5_protocol.json`) states no
+water or pump scope. M5's tests cover both what it lifts and what stays refused.
+
+**These stay refused under A**, outside this lane:
+- replacement over water or beside a closer;
+- injection beside water;
+- exchange, the reactions operator and the coupling operator.
+
+That holds only if turnover gets its own declaration. Exchange and the coupling operator share
+`species_common.CONFLICTS_VIEW`, so it must not be edited.
+
+### 16.2 Gaps 2 and 5 land together
+
+Water's area refusal is gap 5's only guard. Every operator that closes or provides a mask water
+reads requires membrane state, and water refuses membrane state. Lifting gap 2 alone would admit
+water beside insertion@2, with water flowing through closed onset patches before their onset. So M2
+(§14) lands gaps 2 and 5 in one change, and no milestone lifts water's area read without its
+current mask reads.
+
+### 16.3 Water on closed slots is not reachable today
+
+Gap 5 is latent, not an open finding on existing code.
+- **The mask changers.** Only the partition (`active`), insertion@1 and insertion@2
+  (`membrane_active`, `outside_active`) close or provide a mask water reads. Each is refused beside
+  water in either order by rules that no reordering or added operator removes: all three need
+  membrane state, and the partition also conflicts on volume.
+- **What main admits.** Water's admitted partners are the K-anion symport, the bath schedule and
+  replacement@2. That gives seven admitted water compositions, and none changes a mask.
+  Replacement@2 restarts slots in place and closes nothing.
+
+So in every admitted world water's bound masks are the view's masks.
+
+**Evidence:** host-only enumeration on main's code:
+- `water_mask_reachability.py`;
+- `water-mask-reachability-7c8bfa47.json`.
+
+Both are in `/mnt/workspaces/Cells/composition-design-20261116/`. The matrix's water row in
+`docs/PUMP_COMPOSITE.md` at 7c8bfa47 agrees.
