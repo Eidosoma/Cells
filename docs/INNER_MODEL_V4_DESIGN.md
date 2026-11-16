@@ -1556,6 +1556,90 @@ reactions operator closes it with its node sums (D152). For a kind:
 - **The test:** the planted conversion closes `total` with its record, host and device alike, and
   fails it by exactly its record without one.
 
+**As built (core-next 3e7095cc; accepted by the lead):** `KindRates.stored_pJ_s` and the ledger
+role `produced` are additions to the kind interface's public surface (D180), as (l)'s `book`
+control is. The transporter's finite fuel adopts them in its own module (the FR lane's).
+
+#### (n) The routing door: factors from source kinds into routed control slots (designed 16 November 2026, before code)
+
+**What it must do** (FR-5; the FR-4/FR-5 note §16 on `fr45-next`; the lead's brief):
+- FR-5's routes are FR-4's laws, each scaled by a rate multiplier m ∈ [0, 1], the product of the
+  route's factors in declared order. The factors are a patch's damage d (`cells.patch_damage@1`)
+  and a node's pH condition f(pH) (`cells.ph_condition@1`).
+- The factors are evaluated on each stage's state, which keeps second order. A factor outside
+  [0, 1] refuses the step. Factors book nothing.
+- One kind's factor must reach another kind's routes without a cross-kind read ((k)'s rule). So
+  this is one core seam, a stable surface for external modules (D180).
+- FR-4's structure, Control type and compile key stay as they are. The sink's multiplier slot
+  exists only where some route declares factors (the lead's preference).
+
+**The design.**
+1. **Sources.** A kind declares `factor_sources(declaration)` → (source ID, ...): the entity IDs
+   whose factors it exposes. It also declares `factors(read, p, *, xp)` → [len(sources)] values
+   at the stage, from its own fields and the stage's read state. A factor that depends on node
+   potentials would be a later extension of this seam.
+2. **Sinks.** A kind declares `routed_controls(declaration)` → ((control field, slot, (source ID,
+   ...)), ...). Each entry names a slot of one of its own control fields and the sources whose
+   product scales it, in declared order.
+3. **Binding.**
+   - The core resolves every named source to one declared kind's source.
+   - It refuses an unknown ID, an ID that two kinds expose, a slot routed twice, a field that is
+     not the sink's own control field, and a slot outside its field.
+   - The resolved table, (field, slot, ((source kind, position), ...)), is the structure's
+     `routes`. It is value-free, so it enters the compile key.
+   - A definition without a sink has (), so the door is absent and every program unchanged (A4).
+4. **At every stage,** the stage read comes first and the door second; then every kind's
+   `rates`, `stage_term` and `readouts` see its result.
+   - This happens in `readouts` (observed rows included), `explicit_rates` and `membrane_rate`'s
+     stage term.
+   - Each routed slot becomes its held value × its sources' values, a left fold in declared order,
+     so its rounding is fixed. The result is written into the control that every kind receives at
+     that stage.
+   - A source value outside [0, 1], or not finite, refuses the row or the step. The routed product
+     is then held to the sink's control rule ((d), or its `control_domain`) like any control.
+   - `book` receives the step's held control, not a routed one: `book` is per step, while a routed
+     value belongs to a stage.
+   - No ledger and no state: factors book nothing, and the routes book what they move.
+5. **Fields that depend on the declaration (schema A completed).**
+   - A kind may declare `declared_fields(entry)` → `KindFields(state_axes, layout_fields,
+     control_fields, readout_columns)` for its structure entry. Without it, its static fields
+     stand.
+   - The core binds each declared kind to its entry's fields wherever it resolves a structure's
+     kinds: the hooks, the types, the controls and the adapter's ownership map.
+   - Classes are cached by field set in canonical order, with a deterministic name for each
+     variant.
+   - So a field exists only where the declaration needs it, as (j) asked: "present when any
+     declared law needs it".
+6. **The sink, `cells.passive_routes@1`.**
+   - A route's `factors` is a list of source IDs, in declared order.
+   - Where any route declares factors, the kind's entry records which routes and which sources.
+     That record is value-free. The kind's fields then gain the control `passive_multiplier`
+     [route], 1.0 from `control_values`, and each factored route is routed through
+     `routed_controls`.
+   - Each route's opening is multiplied by the slot in `rates`, `stage_term` and `readouts`.
+   - Unchanged:
+     - §7.5's exact booking and its scope, so the cargo routes stay exact;
+     - `bound_rate`, which holds at m ≤ 1;
+     - `moved_rows`.
+   - FR-4's routes declare no factors, so FR-4 keeps the same entry, fields, types and programs.
+     The `@2` fallback is not needed.
+
+**Why a control slot** (FR-4/FR-5 note §16.3, kept): every hook keeps its signature, and a sink
+reads only its own field. Scheduled and routed controls compose: a slot's held value may itself
+follow a schedule ((l)).
+
+**Acceptance (tests, with planted source and sink kinds under `tests.`):**
+- a routed slot equals held × Π sources, a left fold, at the stage's state;
+- a factor outside [0, 1] refuses the step;
+- each binding refusal fires;
+- with no sink, the door is absent and the programs identical;
+- FR-4's kind worlds are unchanged (the pair check);
+- the passive routes with a planted source:
+  - at a held factor m, a route equals a route of permeability m·P, to rounding;
+  - a factored cargo route keeps its exact booking;
+  - `passive_multiplier` exists only where a route declares factors;
+- crossrev is identical.
+
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 
 - **Why.** Today a route's heat is the tableau's quadrature of its dissipation rate (Σ J Δμ̃ at the
