@@ -231,6 +231,9 @@ class InnerStructure:
     # The declared kinds (§7.4 (j), (k)): ((namespaced kind ID, the kind's structure entry), ...)
     # in canonical (sorted ID) order; () for every definition of today's.
     kinds: tuple = ()
+    # The routing door's table (§7.4 (n)), resolved at binding: ((sink kind ID, control field,
+    # slot, ((source kind ID, position), ...)), ...), value-free; () without a sink (A4).
+    routes: tuple = ()
 
     def __post_init__(self):
         ids = [kind_id for kind_id, _ in self.kinds]

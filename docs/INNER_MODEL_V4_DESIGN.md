@@ -1248,7 +1248,8 @@ canonical kind order (sorted ID) that schema A's types use:
   axes' names. Schema A appends them in canonical order;
 - `parse(entries, base)` → its declaration, from its model-key block (`entries`) and the parsed
   @2 base definition; `to_dict(declaration)` → that block; `control_values(spec, declaration,
-  times)` → {control field: [time, ...]}, constant over the run in version 1;
+  times)` → {control field: [time, ...]}, constant over the run in version 1, piecewise constant
+  on the step grid from its schedule under (l);
 - `initial(spec, declaration, layout)` → ({state field: array}, {layout field: array});
 - `structure_entry(declaration)` → its hashable, value-free part of the InnerStructure. That part
   enters the compile key, the batch signature and the cached implementation.
@@ -1282,7 +1283,9 @@ undeclared built-in changes nothing:
    kind's own domain at the stage's read and potentials (a charged law's V-dependent domain,
    such as |ΔG_cyc/RT| ≤ 80), and-ed into the stage's validity. `KindRates.membrane_flux` (outward
    [species, membrane], optional) joins the patches' total flux and membrane current
-   (observations; gap 9, 669f8ed6).
+   (observations; gap 9, 669f8ed6). `KindRates.stored_pJ_s` (optional, gap 2, (m)) is the rate of
+   the kind's stored free energy that its read does not carry; it joins the stage energy-rate
+   observation by role.
    - **Step size (B7 for kinds; gap 5, 669f8ed6; 5b1b931e; 2c780f9f):** `stage_term(read,
      potentials, control, p, *, xp)` → [cells, then outside nodes] conductance (S) at the stage's
      read and node potentials, a patch's slope at both of its ends (`patch_node_conductance`), so
@@ -1300,12 +1303,14 @@ undeclared built-in changes nothing:
      "max" | "min"), ...); the step's end state holds each field's running extremum over every
      stage so far. B4 reports `proton_buffer_max_lag_pH`, `_min_pH` and
      `_max_pH` per node; an envelope breach stays a refusal (the verdict), these are the margin.
-3. **`book(applied, start, end, p, dt, *, xp)` → ({own state field: new value}, valid),** in
-   `imex_step` after the tableau's combination; `applied(name)` is the step's applied rate of a
-   state field (the tableau's explicit and implicit weights). Every kind receives the same end
-   state (before any kind books) and may write only its own state fields, so bookings commute. A
-   false valid refuses the step: §7.5's "negative exact share: step-bound breach". §7.5's exact
-   booking is one.
+3. **`book(applied, start, end, control, p, dt, *, xp)` → ({own state field: new value},
+   valid),** in `imex_step` after the tableau's combination; `applied(name)` is the step's applied
+   rate of a state field (the tableau's explicit and implicit weights). Every kind receives the
+   same end state (before any kind books) and may write only its own state fields, so bookings
+   commute. A false valid refuses the step: §7.5's "negative exact share: step-bound breach".
+   §7.5's exact booking is one. `control` is the step's held control, constant over the step
+   ((l) 5, core-next): a kind can book an exact per-step update at the step's values, as FR-5's
+   damage step needs.
    - **Kinds need an IMEX solver (the lead's ruling, 16 November 2026; compartment-op-fixes
      9a48041c).** @3 refuses a definition that declares kinds under RK4, fail-closed
      (`surface_pump_v3._check_kinds_solver`). Every step guard above belongs to the IMEX step:
@@ -1315,12 +1320,12 @@ undeclared built-in changes nothing:
      RK4 a kind's derivative fields integrate like any state, described that unguarded path; no
      test or world used it. A design for kinds under RK4 can lift the refusal. The core's review
      of FR-1's refusal 4, version 1.1, found the gap (CLOSED_COMPARTMENT_DESIGN.md §3.4.1).
-4. **`ledger_terms(state, p, *, xp)` → {"cell", "outside", "heat_pJ", "work_pJ", "stored_pJ"}
-   (any subset):** cumulative inward-positive node transfers, heat and work accumulators, and
-   `stored_pJ`, the free energy the kind holds beyond the stored rows' own terms (its change
-   since the start: FR-4's buffer term, finite fuel's standard term), folded by role into
-   `balances`, `device_balances` and the ledger magnitudes, so every ledger closes with its
-   moves.
+4. **`ledger_terms(state, p, *, xp)` → {"cell", "outside", "produced", "heat_pJ", "work_pJ",
+   "stored_pJ"} (any subset):** cumulative inward-positive node transfers, a reaction's net
+   production per species (`produced`, (m)), heat and work accumulators, and `stored_pJ`, the
+   free energy the kind holds beyond the stored rows' own terms (its change since the start:
+   FR-4's buffer term, finite fuel's standard term), folded by role into `balances`,
+   `device_balances` and the ledger magnitudes, so every ledger closes with its moves.
 5. **`domain(state, p, *, xp)` → one bool,** and-ed into `domain_valid`, on the host and the
    device; **`control_domain(control, p, *, xp)` → one bool,** in place of the [0, 1] rule for
    its controls (rule (d)).
@@ -1381,6 +1386,273 @@ undeclared built-in changes nothing:
   - B5's transporter is FR45's, reviewed by CORE before INT merges it;
   - B4's stage read is CORE's, with FR45's closure kernel;
   - the passive law is CORE's insertion with FR45's kernel.
+
+#### (l) Time-varying kind controls: schedules on the step grid (gap 6; designed 16 November 2026, before code)
+
+**What it must do.**
+- In version 1 a kind's controls are constant over the run: `control_values(spec, declaration,
+  times)` gives one value at every time (the transporter's availability 1).
+- A kind must be able to declare piecewise-constant control schedules. FR-5 is the first consumer.
+  - Its damage state on a bounding patch (`bounding_patch_damage@1`, `processes/patch_damage.py`)
+    follows dd/dt = k_inj u_inj(t)(1 − d) − k_res u_res(t) d, with u_inj and u_res declared
+    schedules in [0, 1] (the FR-4/FR-5 note, §9).
+  - Its step, d(h) = d_eq + (d − d_eq) e^{−(a+b)h}, is exact only where the schedules are
+    constant over the step. So every breakpoint must be a step boundary, and the step's update
+    must see the step's values.
+  - FR-5's definitions already declare the form, as a pending experiment key
+    (`validation/compartment_ph_engine/definitions.py`): `damage_controls`, [{damage_id,
+    injury: [{time, value}], resealing: [{time, value}]}].
+- Today's definitions, programs and records stay as they are.
+
+**How controls work today** (the facts the design turns on):
+- Controls are host-side, right-continuous and held over each step. Every path evaluates
+  `control_values(spec, times[:-1])` at the steps' starts: the runner, the windowed and vector
+  paths, and the projective mode.
+- The step grid is `EventGrid(spec)`: the nominal i·dt grid joined with every time of
+  `spec.experiment.changes`, an off-nominal time inserted exactly. So a breakpoint is a step
+  boundary exactly when it is a change time.
+- The change records hold, at each time, every family's values. They also serve two checks:
+  - a checkpoint's event index (`event_index`);
+  - `branch_checkpoint`, which compares the records before a branch's checkpoint, so a branch
+    cannot rewrite the past schedule.
+- The vector path holds controls per segment between change times, and refuses controls that
+  vary inside one (`vector_windows.held_controls`). The scalar runner has no such check.
+- The composite's and replacement's records build on @3's (`ionic.Experiment.changes.fget`). Each
+  operator adds its `schedule_times` and its `value_at` records.
+- A kind's declaration lives in the model block, and `branch_checkpoint` refuses any change of
+  the model.
+
+**The design.**
+1. **A kind's schedule lives in the experiment, under its own keys.**
+   - A kind declares `experiment_keys`, as an operator declares `EXPERIMENT_KEYS`. Each key is
+     optional in a definition. One that the definition omits takes the kind's default, version 1's
+     constant.
+   - `parse_schedule(raw, base, declaration)` → a `Schedule` (2), with `raw` the {key: value} that
+     the definition gives, possibly none. `schedule_to_dict(schedule, declaration)` → the {key:
+     value} to write back. The kind omits its default, so a definition that omits the key keeps
+     its form and its fingerprint.
+   - @3's parse pops each declared kind's experiment keys before @2's strict parse. It refuses an
+     experiment key of a registered kind that the model does not declare. The registry refuses
+     two kinds with one experiment key, and the composite refuses an operator's key that a
+     registered kind declares.
+   - In the experiment, a branch may change a kind's future schedule, as it may any control's.
+   - Schedules are values. They enter neither `structure_entry` nor the compile key, so
+     definitions that differ only in their schedules share one implementation object and its
+     executables.
+2. **One schedule type, the core's: `kind_registry.Schedule`.**
+   - It holds named series, each right-continuous and piecewise constant from time 0: ((name,
+     ((time, value), ...)), ...). Times start at 0 and strictly increase, and values are finite.
+     `times` is the union of the breakpoints, `at(t)` gives one value per series, and
+     `values(name, times)` evaluates one series.
+   - The core checks every breakpoint against the horizon.
+   - **Why one type, not one per kind:** every control reaches the step as a number per slot, held
+     over the step. So named scalar series carry anything the control path can, and the core
+     needs no hooks for the times or the records.
+   - The parsing surface gains `parse_series(entries, name, *, value="value", unit_interval=True)`
+     → ((time, value), ...) for a list of {time, value} entries, and `series_to_dict(series, *,
+     value="value")`. FR-5's form is two such lists per population.
+3. **The breakpoints join the change times, and the records carry the values.**
+   - @3's experiment gains `kinds`: ((kind ID, Schedule), ...) for the declared kinds that
+     declare experiment keys, in canonical order. Every other definition has (), and so keeps
+     today's records, by value and by type.
+   - With a schedule, the change times are the union of today's and every schedule's
+     breakpoints. Each record is a `KindChange`: today's held values plus each schedule's `at(t)`.
+     So:
+     - each breakpoint is a step boundary, on the nominal grid or inserted exactly;
+     - the composite's and replacement's records carry it, since they build on @3's;
+     - `branch_checkpoint` refuses a branch that rewrites a kind's schedule before the checkpoint;
+     - the definition's control check, which evaluates the controls at every change time
+       (`check_definition`), holds rule (d), or the kind's `control_domain`, at every breakpoint.
+4. **The control table comes from the change records.**
+   - @3's `control_values` evaluates each kind's `control_values(spec, declaration, change times)`
+     once per record. It holds each row over the steps that record governs, by the records'
+     index: the row of the last change time at or before each time, as today's families' rows.
+   - So a kind's controls are constant between change times on every path, the scalar runner
+     included.
+   - The hook's signature is unchanged. A scheduled kind reads its schedule with
+     `kind_registry.declared_schedule(spec, kind_id)`.
+5. **The step's control reaches `book`** (a seam change, in its own commit):
+   - `book(applied, start, end, control, p, dt, *, xp)`, with `control` the step's held control,
+     constant over the step by 3 and 4;
+   - so a kind can book an exact per-step update at the step's values, FR-5's d(h);
+   - a bound term reads the schedule through `declared_schedule` where it needs it (for example
+     its largest value).
+6. **What stays unchanged.**
+   - A definition without a scheduled kind keeps the same records (values and type), grid, event
+     indices, controls and programs.
+   - Today's built-in kinds declare no experiment keys. The transporter keeps its constant
+     availability until its owner adopts (g) 2's `transporter_controls` in this form.
+
+**Acceptance (tests, with planted scheduled kinds registered from outside `src/cells`):**
+- an off-nominal breakpoint splits the grid exactly, and each step's control is the schedule's
+  value at the step's start;
+- a planted relaxation, booked per step at the step's control (FR-5's form, through
+  `patch_damage.exact_step`), matches its closed form across the breakpoints to rounding;
+- a planted constant-rate mover under a schedule moves exactly Σ rate × value × duration;
+- the definition round-trips with and without the key, and an omitted key keeps its default and
+  its fingerprint;
+- refused: an undeclared kind's key, a breakpoint past the horizon, and a value outside the
+  control domain;
+- two schedules share one implementation object and compile key;
+- `branch_checkpoint` refuses a rewritten past and admits a changed future. A restart from a
+  checkpoint across a breakpoint continues bitwise, in a fresh process as well;
+- the vector-window path and the composite path hold the same controls (FR-5's judged world runs
+  with FR-1's compartment operator);
+- crossrev against 3c10b833 identical, and a pair check on kind-declaring worlds (FR-4's
+  development and declared worlds): jaxpr text, and control bindings at every change time.
+
+**As built (core-next, 16 November 2026; accepted by the lead):** 614a081b (the schedules) and
+5fcfe9ed (`book` receives the step's control). The second changes a hook's signature, so it is a
+change of the kind interface's public surface (D180): every kind's `book` takes `control`.
+
+#### (m) The stored-rate term in the stage energy-rate observation (gap 2; designed 16 November 2026)
+
+**What it must do.**
+- A kind that holds free energy beyond the stored rows' own terms books it as `stored_pJ` in
+  `ledger_terms`, its change since the start, so the cumulative energy ledger closes ((k) 4).
+- The stage energy-rate observation, `energy_balance_pJ_s`, has no term for that free energy's
+  rate. It is the chemical rate at the stage's read concentrations, plus the capacitor's, plus the
+  heat, minus the work. It is zero to rounding in every world of today's, FR-4's included.
+- Finite fuel (`finite_fuel_rows@1`, D176 item 2, the R-fuel world) is the first case. Its rows'
+  standard part, Σ μ°' ṅ = Δ_rG'° × cycles, lies outside @3's RT ln c terms, so without its rate
+  the observation is off by exactly that amount.
+
+**What the read already carries.** The chemical rate is Σ RT ln c ṅ at the read's
+concentrations. A stage read whose stored term G has ∂G/∂n = RT ln(c_read/c_stored) therefore has
+its rate in the chemical rate already. B4's closure term is one: its H_eq derivative is
+RT ln(h/H̄), (g) 1. So B4 declares no stored rate, and its world's observation closes today
+(checked: residual 0.0 at FR-4's development world's rows).
+
+**The design.**
+- `KindRates` gains `stored_pJ_s`, optional (None by default). It is the rate (pJ/s) of the
+  kind's stored free energy at the stage, less the part that its read carries.
+- It joins `energy_balance_pJ_s` by role, after today's terms and the kinds' heat and work, in
+  hook order: + stored. The ledger roles and the rate roles now match: heat_pJ and heat_pJ_s,
+  work_pJ and work_pJ_s, stored_pJ and stored_pJ_s.
+- **The rule for a kind's author:** `stored_pJ_s` is the time derivative of the kind's `stored_pJ`
+  less its read's carried part. Then the cumulative ledger and the rate observation agree. For
+  finite fuel it is Δ_rG'° × cycles at the fuel node.
+- **Unchanged:** a kind that gives no stored rate adds nothing to any program (None is static).
+  Today's kinds give none (B4's is carried, and the passive routes and held fuel store nothing),
+  so FR-4's programs are identical.
+
+**Acceptance:** a planted kind converting a neutral S to a neutral P at a cell, with declared
+standard potentials, so its standard part is stored and no read carries it. Every ledger closes
+in the host checks, and its observation's residual is zero to rounding. Without its stored rate,
+the residual is exactly minus that rate while the cumulative ledger still closes. FR-4's kind
+worlds are unchanged in the pair check, and crossrev is identical.
+
+**Found while building it: a kind's net production per species.** The planted conversion failed
+the global material ledger, `total`: Σ amounts − the reservoirs' supply, per species, which
+holds every transfer to zero. A kind's `cell` and `outside` terms close the node ledgers but do
+not reach `total`. Finite fuel converts ATP into ADP and Pi, so it would fail there too. The
+reactions operator closes it with its node sums (D152). For a kind:
+- **`ledger_terms` gains the role `produced`:** [species], the cumulative net amount the kind has
+  created (+) or consumed (−). It is a reaction's record and joins `total` and its magnitude.
+- **A transfer kind gives none,** so `total` still holds it to conservation independently of its
+  node terms.
+- **Charge:** `produced` must be charge-neutral, or the global charge ledger refuses it. Finite
+  fuel's rows are neutral.
+- **The test:** the planted conversion closes `total` with its record, host and device alike, and
+  fails it by exactly its record without one.
+
+**As built (core-next 3e7095cc; accepted by the lead):** `KindRates.stored_pJ_s` and the ledger
+role `produced` are additions to the kind interface's public surface (D180), as (l)'s `book`
+control is. The transporter's finite fuel adopts them in its own module (the FR lane's).
+
+#### (n) The routing door: factors from source kinds into routed control slots (designed 16 November 2026, before code)
+
+**What it must do** (FR-5; the FR-4/FR-5 note §16 on `fr45-next`; the lead's brief):
+- FR-5's routes are FR-4's laws, each scaled by a rate multiplier m ∈ [0, 1], the product of the
+  route's factors in declared order. The factors are a patch's damage d (`cells.patch_damage@1`)
+  and a node's pH condition f(pH) (`cells.ph_condition@1`).
+- The factors are evaluated on each stage's state, which keeps second order. A factor outside
+  [0, 1] refuses the step. Factors book nothing.
+- One kind's factor must reach another kind's routes without a cross-kind read ((k)'s rule). So
+  this is one core seam, a stable surface for external modules (D180).
+- FR-4's structure, Control type and compile key stay as they are. The sink's multiplier slot
+  exists only where some route declares factors (the lead's preference).
+
+**The design.**
+1. **Sources.** A kind declares `factor_sources(declaration)` → (source ID, ...): the entity IDs
+   whose factors it exposes. It also declares `factors(read, p, *, xp)` → [len(sources)] values
+   at the stage, from its own fields and the stage's read state. A factor that depends on node
+   potentials would be a later extension of this seam.
+2. **Sinks.** A kind declares `routed_controls(declaration)` → ((control field, slot, (source ID,
+   ...)), ...). Each entry names a slot of one of its own control fields and the sources whose
+   product scales it, in declared order.
+3. **Binding.**
+   - The core resolves every named source to one declared kind's source.
+   - It refuses an unknown ID, an ID that two kinds expose, a slot routed twice, a field that is
+     not the sink's own control field, and a slot outside its field.
+   - The resolved table, (field, slot, ((source kind, position), ...)), is the structure's
+     `routes`. It is value-free, so it enters the compile key.
+   - A definition without a sink has (), so the door is absent and every program unchanged (A4).
+4. **At every stage,** the stage read comes first and the door second; then every kind's
+   `rates`, `stage_term` and `readouts` see its result.
+   - This happens in `readouts` (observed rows included), `explicit_rates` and `membrane_rate`'s
+     stage term.
+   - Each routed slot becomes its held value × its sources' values, a left fold in declared order,
+     so its rounding is fixed. The result is written into the control that every kind receives at
+     that stage.
+   - A source value outside [0, 1], or not finite, refuses the row or the step. The routed product
+     is then held to the sink's control rule ((d), or its `control_domain`) like any control.
+   - `book` receives the step's held control, not a routed one: `book` is per step, while a routed
+     value belongs to a stage.
+   - No ledger and no state: factors book nothing, and the routes book what they move.
+5. **Fields that depend on the declaration (schema A completed).**
+   - A kind may declare `declared_fields(entry)` → `KindFields(state_axes, layout_fields,
+     control_fields, readout_columns)` for its structure entry. Without it, its static fields
+     stand.
+   - The core binds each declared kind to its entry's fields wherever it resolves a structure's
+     kinds: the hooks, the types, the controls and the adapter's ownership map.
+   - Classes are cached by field set in canonical order, with a deterministic name for each
+     variant.
+   - So a field exists only where the declaration needs it, as (j) asked: "present when any
+     declared law needs it".
+6. **The sink, `cells.passive_routes@1`.**
+   - A route's `factors` is a list of source IDs, in declared order.
+   - Where any route declares factors, the kind's entry records which routes and which sources.
+     That record is value-free. The kind's fields then gain the control `passive_multiplier`
+     [route], 1.0 from `control_values`, and each factored route is routed through
+     `routed_controls`.
+   - Each route's opening is multiplied by the slot in `rates`, `stage_term` and `readouts`.
+   - Unchanged:
+     - §7.5's exact booking and its scope, so the cargo routes stay exact;
+     - `bound_rate`, which holds at m ≤ 1;
+     - `moved_rows`.
+   - FR-4's routes declare no factors, so FR-4 keeps the same entry, fields, types and programs.
+     The `@2` fallback is not needed.
+
+**Why a control slot** (FR-4/FR-5 note §16.3, kept): every hook keeps its signature, and a sink
+reads only its own field. Scheduled and routed controls compose: a slot's held value may itself
+follow a schedule ((l)).
+
+**Acceptance (tests, with planted source and sink kinds under `tests.`):**
+- a routed slot equals held × Π sources, a left fold, at the stage's state;
+- a factor outside [0, 1] refuses the step;
+- each binding refusal fires;
+- with no sink, the door is absent and the programs identical;
+- FR-4's kind worlds are unchanged (the pair check);
+- the passive routes with a planted source:
+  - at a held factor m, a route equals a route of permeability m·P, to rounding;
+  - a factored cargo route keeps its exact booking;
+  - `passive_multiplier` exists only where a route declares factors;
+- crossrev is identical.
+
+**As built (core-next; the API accepted by the lead, 16 November 2026):**
+- **The registry:** `KindFields`, `bound(kind, entry)` (cached, one object per kind and entry) and
+  the hooks `declared_fields`, `factor_sources`, `factors` and `routed_controls`.
+- **The structure:** `InnerStructure.routes`.
+- **@3's door:** `surface_pump_v3._route`.
+  - It runs in `readouts`, `explicit_rates` and `membrane_rate`, and on the kinds' readouts in
+    `observe_history`.
+  - It is gated on `structure.routes`. The FR-4 pair check showed why: an absent door's
+    `valid & True` alone changed FR-4's jaxpr text.
+- **The checks at binding:** `_routes` (sources, ownership, slots routed twice) and
+  `_check_routes` (factors traced as [len(sources)] floats, slots inside their field).
+- **The sink:** `cells.passive_routes@1`'s entry is `Factored(laws)` only where a route declares
+  factors; otherwise it is today's tuple of laws.
 
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 

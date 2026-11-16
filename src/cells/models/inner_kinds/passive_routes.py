@@ -19,8 +19,15 @@ definitions.py), each route on one host (`patch`, or `junction` for the neutral 
       "species": "X", "permeability_m_per_s": 1e-9}]
 
 `species` is the neutral law's carried row; the leak's is the proton row (`species`, default "H",
-which must be B4's proton_row when B4 is declared). `factors` (FR-5's damage and pH condition)
-come with FR-5's laws: an entry may carry an empty list only.
+which must be B4's proton_row when B4 is declared). `factors` is a list of factor-source IDs
+(§7.4 (n): FR-5's damage d and pH condition f), in declared order; omitted or empty, none.
+
+- **The routing door's sink (§7.4 (n) 6):** where any route declares factors, the kind's entry
+  records it and its fields gain the control `passive_multiplier` [route], held at 1; each
+  factored route's slot is routed (`routed_controls`), so at every stage it is the left fold of
+  its sources' factors. Each route's opening is multiplied by it in rates and stage_term.
+  Booking, its scope, bound_rate (m <= 1) and moved_rows are unchanged. A definition whose routes
+  declare no factors keeps today's entry, fields and programs.
 
 - **The flux,** inward from the host's outside end (a patch's outside node, a junction's receiver)
   to its inside end (a patch's cell, a junction's sender), at every explicit stage, on the read
@@ -48,7 +55,7 @@ from typing import NamedTuple
 
 import numpy as np
 
-from cells.core.kind_registry import BUILTIN, ConfigError, Kind
+from cells.core.kind_registry import BUILTIN, ConfigError, Kind, KindFields
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes import passive_permeation as passive
@@ -64,6 +71,22 @@ DEFAULT_PROTON = "H"
 RAW_SUM_FACTOR = 16.0  # §7.5: |sum of shares - exact decrease| <= 16 eps sum|terms|, per row.
 NEGATIVE_SHARE = "negative exact share: step-bound breach"
 HOSTS = ("patch", "junction")
+MULTIPLIER = "passive_multiplier"  # The sink's control field (§7.4 (n) 6).
+STATE_AXES = (
+    ("passive_transferred", ("species", "passive_route")),
+    ("passive_dissipated_energy_pJ", ("passive_route",)),
+)
+LAYOUT_FIELDS = (
+    "passive_permeability",
+    "passive_area",
+    "passive_inside",
+    "passive_outside",
+    "passive_membrane",
+    "passive_junction",
+    "passive_on_junction",
+    "passive_leak",
+    "passive_exact",
+)
 
 
 class Route(NamedTuple):
@@ -75,6 +98,7 @@ class Route(NamedTuple):
     outside: str  # A patch's outside node, a junction's receiver.
     species: str
     permeability: float  # m/s
+    factors: tuple = ()  # Factor-source IDs, in declared order (§7.4 (n)).
 
 
 def parse(entries, base):
@@ -98,11 +122,13 @@ def parse(entries, base):
         law = raw["law"]
         if law not in LAWS:
             raise ConfigError(f"{MODEL_KEY} {rid}: law must be one of {', '.join(LAWS)}")
-        if raw.get("factors"):
-            raise ConfigError(
-                f"{MODEL_KEY} {rid}: route factors (FR-5's damage and pH condition) come with "
-                "FR-5's laws"
-            )
+        factors = raw.get("factors", [])
+        if (
+            not isinstance(factors, list)
+            or any(not isinstance(f, str) or not f for f in factors)
+            or len(set(factors)) != len(factors)
+        ):
+            raise ConfigError(f"{MODEL_KEY} {rid}: factors is a list of distinct factor-source IDs")
         kind, host = hosts[0], raw[hosts[0]]
         if kind == "patch":
             if host not in patches:
@@ -123,7 +149,7 @@ def parse(entries, base):
         value = float(value)
         if not (np.isfinite(value) and value >= 0):
             raise ConfigError(f"{MODEL_KEY} {rid}: permeability_m_per_s is finite and >= 0")
-        routes.append(Route(rid, law, kind, host, inside, outside, species, value))
+        routes.append(Route(rid, law, kind, host, inside, outside, species, value, tuple(factors)))
     ids = [r.id for r in routes]
     if len(set(ids)) != len(ids):
         raise ConfigError(f"{MODEL_KEY}: route IDs must be unique")
@@ -141,13 +167,42 @@ def to_dict(declaration):
         }
         if r.law == LAW_ID or r.species != DEFAULT_PROTON:
             entry["species"] = r.species
+        if r.factors:
+            entry["factors"] = list(r.factors)
         out.append(entry)
     return out
 
 
+class Factored(NamedTuple):
+    """The structure entry of a declaration whose routes declare factors (§7.4 (n) 6)."""
+
+    laws: tuple
+
+
 def structure_entry(declaration):
-    """Value-free: the declared laws (the leak traces its own kernel)."""
-    return tuple(sorted({route.law for route in declaration}))
+    """Value-free: the declared laws (the leak traces its own kernel); Factored(laws) where any
+    route declares factors, so today's declarations keep today's entry."""
+    laws = tuple(sorted({route.law for route in declaration}))
+    return Factored(laws) if any(route.factors for route in declaration) else laws
+
+
+def declared_fields(entry):
+    """The kind's fields for its entry (§7.4 (n) 5): the multiplier exists only where factored."""
+    return KindFields(
+        STATE_AXES, LAYOUT_FIELDS, (MULTIPLIER,) if isinstance(entry, Factored) else (), ()
+    )
+
+
+def control_values(spec, declaration, times):
+    """The multiplier's held value, 1 on every route; the door routes the factored ones."""
+    return {MULTIPLIER: np.ones((len(times), len(declaration)))}
+
+
+def routed_controls(declaration):
+    """Each factored route's multiplier slot and its sources, in declared order (§7.4 (n))."""
+    return tuple(
+        (MULTIPLIER, k, route.factors) for k, route in enumerate(declaration) if route.factors
+    )
 
 
 def _node_ids(spec):
@@ -249,13 +304,16 @@ def _net(moved, p, nodes, xp):
 
 
 def _opening(state, control, p, xp):
-    """Each route's opening: its patch's availability, or its junction's gate x availability."""
+    """Each route's opening: its patch's availability, or its junction's gate x availability,
+    times its routed multiplier where the declaration has one (§7.4 (n) 6)."""
     opening = xp.ones(p.passive_area.shape)
     if control.membrane.shape[-1]:  # Static: membrane routes need a patch to exist.
         opening = control.membrane[p.passive_membrane]
     if control.junction.shape[-1]:  # Static: junction routes need a junction to exist.
         gated = control.junction * state.junction_gate
         opening = xp.where(p.passive_on_junction, gated[p.passive_junction], opening)
+    if MULTIPLIER in type(control)._fields:  # Static: a factored declaration's field.
+        opening = opening * getattr(control, MULTIPLIER)
     return opening
 
 
@@ -351,7 +409,7 @@ def _booking(start, end, p, *, xp):
     return heat, ~negative, xp.abs(summed - (g1 - g0)), bound, rows
 
 
-def book(applied, start, end, p, dt, *, xp):
+def book(applied, start, end, control, p, dt, *, xp):
     """§7.5: exact routes book their exact shares; the others keep the tableau's heat."""
     heat, positive, within = exact_booking(start, end, p, xp=xp)
     booked = xp.where(
@@ -463,21 +521,8 @@ PASSIVE_ROUTES = BUILTIN.register(
     Kind(
         kind_id=KIND_ID,
         model_key=MODEL_KEY,
-        state_axes=(
-            ("passive_transferred", ("species", "passive_route")),
-            ("passive_dissipated_energy_pJ", ("passive_route",)),
-        ),
-        layout_fields=(
-            "passive_permeability",
-            "passive_area",
-            "passive_inside",
-            "passive_outside",
-            "passive_membrane",
-            "passive_junction",
-            "passive_on_junction",
-            "passive_leak",
-            "passive_exact",
-        ),
+        state_axes=STATE_AXES,
+        layout_fields=LAYOUT_FIELDS,
         parse=parse,
         to_dict=to_dict,
         structure_entry=structure_entry,
@@ -490,5 +535,8 @@ PASSIVE_ROUTES = BUILTIN.register(
         moved_rows=moved_rows,
         bound_rate=bound_rate,
         check_definition=check_definition,
+        declared_fields=declared_fields,
+        control_values=control_values,
+        routed_controls=routed_controls,
     )
 )
