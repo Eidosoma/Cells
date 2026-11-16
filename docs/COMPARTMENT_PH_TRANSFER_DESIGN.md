@@ -1340,6 +1340,24 @@ On the core's gap-2 seams (INNER_MODEL_V4_DESIGN §7.4 (m), landed):
    pump's stored rate in-step, is `energy_balance_pJ_s` expected to close at rounding in a world
    where both write the fuel rows? This lane's probe will measure it either way.
 
+**The core's answers (16 November 2026, relayed by the lead):**
+1. **D4: (a), go.**
+   - The core builds a kind hook, `material_term(read, potentials, control, p, *, xp)`. It returns
+     the kind's material slope (1/s) on [cells, then outside nodes].
+   - @3's checked step refuses when dt × max(slope) > `EXPLICIT_STEP_BOUND`, beside B7's rule.
+   - No program changes until a kind declares the hook.
+   - This lane adds the neutral transporter's term, which closes CLOSED_COMPARTMENT_DESIGN
+     §3.4.1's open item.
+2. **D3:** the check lives in `species_registry` as `check_potentials`, called from
+   `check_definition`. A contract hook, `species_potentials(declaration)`, is implemented by D152.
+   The core builds both.
+3. **The observation closes at rounding.**
+   - D152 is not part of it, since its in-step rates are zero.
+   - With `stored_pJ_s` the pump's terms cancel exactly. Leaving it out leaves minus the stored
+     part's rate, as §17.4's planted error expects, in §17.2's frame.
+   - D152's standard term matters for the integrated energy ledger instead, which is why D3's
+     check is the guard of record.
+
 ## Appendix A. Equations for the independent references
 
 Write these from this appendix alone. The state per node is the amounts. Everything else is
