@@ -43,7 +43,7 @@ class CellsViewer extends HTMLElement {
     // "species" is the one species the page shows: the levels and the cell of the cell view and the
     // species' side of the protein atlas follow it. It stays while the page is open. "atlas" is
     // the same choice under its earlier name.
-    this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false, species: null, atlas: null };
+    this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false, railOpen: false, viewOpen: false, species: null, atlas: null };
     this.lenses = new Map();
   }
 
@@ -92,8 +92,13 @@ class CellsViewer extends HTMLElement {
     this.panel = h("cells-panel", { class: "card", hidden: true });
     this.index = h("cells-index", { class: "card", hidden: true });
     this.caveat = h("p", { class: "caveat", hidden: true });
-    this.rail = h("nav", { class: "rail card", hidden: true, "aria-label": "Scale" });
-    this.viewCard = h("div", { class: "view card", hidden: true });
+    this.rail = h("nav", { class: "rail card", id: "cells-rail", hidden: true, "aria-label": "Scale" });
+    // On a phone the rail folds behind this button, which names the level shown (styles.js); a wide window does not show it.
+    this.railToggle = h("button", { class: "rail-toggle card", type: "button", hidden: true, "aria-expanded": "false", "aria-controls": "cells-rail", onclick: () => this.toggleRail() });
+    this.viewCard = h("div", { class: "view card", id: "cells-view", hidden: true });
+    // On a phone with a panel open the view's card folds behind this button under the bar, so that the picture keeps
+    // its room above the panel; a press opens the card over the picture (styles.js). Elsewhere it is not shown.
+    this.viewToggle = h("button", { class: "view-toggle card", type: "button", hidden: true, "aria-expanded": "false", "aria-controls": "cells-view", onclick: () => this.toggleViewCard() });
     this.scaleLine = h("span", { class: "scalebar-line" });
     this.scaleText = h("span", { class: "scalebar-text" });
     // The resting look's switch and its few words stand over the scale bar: there they take no room from the labels' column.
@@ -110,7 +115,9 @@ class CellsViewer extends HTMLElement {
       this.hint,
       this.caveat,
       this.timeline,
+      this.railToggle,
       this.rail,
+      this.viewToggle,
       this.viewCard,
       this.scaleBar,
       this.legend,
@@ -184,6 +191,8 @@ class CellsViewer extends HTMLElement {
           this.renderChrome(); // the switch may fit the bar again, or no longer
         } else this.fitCard();
       }).observe(this);
+      // On a phone the panel is a sheet along the bottom: what stands on its top edge follows its height.
+      new ResizeObserver(() => this.placeSheet()).observe(this.panel);
       document.fonts?.ready.then(() => {
         this.labels.measure();
         this.renderChrome(); // words are as wide as they will be only now: the species switch may fit the bar, or no longer
@@ -462,6 +471,10 @@ class CellsViewer extends HTMLElement {
     this.stamp.textContent = chrome.stamp || this.mapStamp;
     this.renderSpecies(chrome);
     this.viewCard.hidden = !chrome.view && !chrome.card && !chrome.run;
+    this.viewToggle.hidden = this.viewCard.hidden;
+    const switches = chrome.view ? [chrome.view.species && !this.speciesInBar ? "species" : null, "colour", (chrome.view.sizes || ["schematic", "real"]).length > 1 ? "sizes" : null].filter(Boolean) : [];
+    const folded = chrome.run ? "Experiment and run" : chrome.view ? switches.join(", ").replace(/, (?=[^,]*$)/, " and ").replace(/^./, (letter) => letter.toUpperCase()) : chrome.card?.heading || "";
+    this.viewToggle.replaceChildren(h("span", {}, folded), h("span", { class: "chevron", "aria-hidden": "true" }));
     this.viewCard.classList.toggle("view-card", Boolean(chrome.card || chrome.run));
     this.viewCard.classList.toggle("run-card", Boolean(chrome.run));
     if (chrome.card) this.viewCard.replaceChildren(...this.card(chrome.card));
@@ -485,6 +498,8 @@ class CellsViewer extends HTMLElement {
       const here = species && !this.speciesInBar;
       this.viewCard.replaceChildren(
         ...[
+          // Opened over a panel on a phone the card covers the picture's statement: it carries the notice itself, as the legend does (rule 11).
+          chrome.flux?.example ? h("p", { class: "layer-example view-notice", role: "status" }, chrome.flux.example) : null,
           here ? this.speciesRow(species) : null,
           here ? h("p", { class: "species-line" }, this.speciesState(species)) : null,
           this.segmented("Colour", [["biology", "Biology"], ["status", "Status"]], view.colour, (value) => this.current.setColourBy(value)),
@@ -502,18 +517,57 @@ class CellsViewer extends HTMLElement {
         ...look.notes.map((note) => h("p", { class: "look-note" }, note))
       );
     }
-    this.rail.hidden = !chrome.rail;
+    this.rail.hidden = this.railToggle.hidden = !chrome.rail;
+    if (!chrome.rail) this.toggleRail(false);
     if (chrome.rail) {
       this.rail.replaceChildren(
         h("span", { class: "rail-title" }, "Scale"),
         ...chrome.rail.map((stop) =>
-          h("button", { type: "button", dataset: { stop: stop.id }, "aria-pressed": String(stop.id === chrome.railActive), title: stop.title || "", onclick: () => this.current.goToScale(stop.id) }, stop.label)
+          h(
+            "button",
+            {
+              type: "button",
+              dataset: { stop: stop.id },
+              "aria-pressed": String(stop.id === chrome.railActive),
+              title: stop.title || "",
+              onclick: () => {
+                this.current.goToScale(stop.id);
+                // Folded on a phone, the rail closes once a level is chosen; the focus goes back to its button.
+                if (this.state.railOpen) {
+                  this.toggleRail(false);
+                  this.railToggle.focus({ preventScroll: true });
+                }
+              },
+            },
+            stop.label
+          )
         ),
         // A species of single cells has no further levels: the rail says so in the species' words.
         ...(chrome.railNote ? [h("p", { class: "rail-note" }, chrome.railNote)] : [])
       );
+      const active = chrome.rail.find((stop) => stop.id === chrome.railActive) || chrome.rail[0];
+      this.railToggle.replaceChildren(h("span", { class: "seg-label" }, "Scale"), h("span", {}, active?.label || ""), h("span", { class: "chevron", "aria-hidden": "true" }));
+      this.railToggle.setAttribute("aria-label", `Scale: ${active?.label || ""}. Press for the other levels.`);
     }
     this.fitCard();
+  }
+
+  /** Open or close the view's card, folded on a phone while a panel is open. */
+  toggleViewCard(force) {
+    const open = force ?? !this.state.viewOpen;
+    this.state.viewOpen = open;
+    this.frame.classList.toggle("view-open", open);
+    this.viewToggle.classList.toggle("is-open", open);
+    this.viewToggle.setAttribute("aria-expanded", String(open));
+  }
+
+  /** Open or close the folded rail of a phone. */
+  toggleRail(force) {
+    const open = force ?? !this.state.railOpen;
+    this.state.railOpen = open;
+    this.frame.classList.toggle("rail-open", open);
+    this.railToggle.classList.toggle("is-open", open);
+    this.railToggle.setAttribute("aria-expanded", String(open));
   }
 
   /**
@@ -918,8 +972,8 @@ class CellsViewer extends HTMLElement {
           );
         const judged = experiments.filter((item) => !item.development && !item.example), development = experiments.filter((item) => item.development), examples = experiments.filter((item) => item.example);
         const group = (list, label) => [h("p", { class: "eyebrow" }, label), h("div", { class: "experiments", role: "group", "aria-label": label }, list.map(row))];
-        // Many: a list to choose from, with a development run named as one.
-        if (experiments.length > 6) return [h("p", { class: "eyebrow" }, "Experiments"), chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.example ? "Example: " : item.development ? "Development run: " : ""}${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}`]), experiments.find((item) => item.active)?.first)];
+        // Many, or more than one on a phone, where rows would cover the picture: a list to choose from, with a development run and an example named as such.
+        if (experiments.length > 6 || (experiments.length > 1 && this.clientWidth < 760)) return [h("p", { class: "eyebrow" }, "Experiments"), chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.example ? "Example: " : item.development ? "Development run: " : ""}${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}`]), experiments.find((item) => item.active)?.first)];
         // One: its name. Several: a row each, with what the record says it found.
         if (experiments.length <= 1) return [h("p", { class: "eyebrow" }, examples.length ? "Example" : development.length ? "Development run" : "Experiment"), h("p", { class: "card-title" }, heading)];
         return [...(judged.length ? group(judged, judged.length > 1 ? "Experiments" : "Experiment") : []), ...(development.length ? group(development, development.length > 1 ? "Development runs" : "Development run") : []), ...(examples.length ? group(examples, examples.length > 1 ? "Examples" : "Example") : [])];
@@ -979,7 +1033,14 @@ class CellsViewer extends HTMLElement {
    */
   fitCard() {
     const card = this.viewCard, least = 150;
-    if (card.hidden || this.clientWidth < 760) {
+    this.placeFoot();
+    if (this.clientWidth < 760) {
+      // On a phone the cards keep their own heights (styles.js); the legend opens upward from where it stands, as far as the bar.
+      card.style.maxHeight = "";
+      this.placeSheet();
+      return;
+    }
+    if (card.hidden) {
       card.style.maxHeight = "";
       this.legend.style.maxHeight = "";
       return;
@@ -987,6 +1048,38 @@ class CellsViewer extends HTMLElement {
     this.legend.style.maxHeight = `${Math.max(120, this.clientHeight - card.offsetTop - least - 12 - 16)}px`;
     const legend = this.legend.hidden ? 0 : this.legend.offsetHeight + 16;
     card.style.maxHeight = `${Math.max(least, this.clientHeight - card.offsetTop - legend - 12)}px`;
+  }
+
+  /**
+   * On a phone the panel is a sheet along the bottom. What stands on its top edge (the legend's
+   * title, the look's switch, a replay's timeline) is placed by its height (--sheet, styles.js),
+   * so that each can still be pressed with the panel open; and the legend, which opens upward,
+   * may reach as far as the bar and scrolls within that.
+   */
+  placeSheet() {
+    const narrow = this.clientWidth < 760, open = narrow && !this.panel.hidden;
+    if (open) this.frame.style.setProperty("--sheet", `${this.panel.offsetHeight}px`);
+    else this.frame.style.removeProperty("--sheet");
+    if (!narrow) return;
+    if (this.legend.hidden) {
+      this.legend.style.maxHeight = "";
+      return;
+    }
+    const origin = this.getBoundingClientRect().top;
+    // As far as the bar, or with a panel open as far as the folded card's button under it, which stands in front.
+    const over = [this.bar, open && !this.viewToggle.hidden ? this.viewToggle : null].filter(Boolean).map((element) => element.getBoundingClientRect()).filter((rect) => rect.height > 0);
+    const bottom = this.legend.getBoundingClientRect().bottom - origin, top = Math.max(...over.map((rect) => rect.bottom)) - origin + 8;
+    this.legend.style.maxHeight = `${Math.max(56, Math.floor(bottom - top))}px`;
+  }
+
+  /** The scale bar's words stand clear of the caveat under the picture: where the two would meet (a panel open beside them, long words), the bar moves up over it. */
+  placeFoot() {
+    const bar = this.scaleBar;
+    bar.style.bottom = "";
+    if (bar.hidden || this.caveat.hidden) return;
+    const a = bar.getBoundingClientRect(), b = this.caveat.getBoundingClientRect();
+    if (!a.width || !a.height || !b.width || !b.height) return;
+    if (a.left < b.right && a.right > b.left && a.bottom > b.top - 6 && a.top < b.bottom) bar.style.bottom = `${Math.ceil(this.getBoundingClientRect().bottom - b.top + 8)}px`;
   }
 
   segmented(label, options, active, onPick) {
@@ -1005,8 +1098,12 @@ class CellsViewer extends HTMLElement {
   /** Panels that labels must not run under, in the viewer's own coordinates. */
   blockedRects() {
     const origin = this.getBoundingClientRect();
-    return [this.legend, this.viewCard, this.rail, this.panel, this.index, this.timeline]
-      .filter((element) => !element.hidden)
+    // The bar's switches too (on a narrow window the bar may wrap to a second line), the look's switch over the scale
+    // bar (which moves up over the caveat where the two would meet, and on a phone stands on a panel's top edge), and
+    // on a phone the folded rail's and view card's buttons.
+    const look = this.lookBox.hidden ? null : this.lookBox.querySelector(".look-switch");
+    return [this.switchBox, this.speciesBox, this.indexButton.parentElement, this.legend, this.viewCard, this.viewToggle, this.rail, this.railToggle, this.panel, this.index, this.timeline, look]
+      .filter((element) => element && !element.hidden)
       .map((element) => element.getBoundingClientRect())
       .filter((rect) => rect.width && rect.height)
       .map((rect) => ({ left: rect.left - origin.left, top: rect.top - origin.top, right: rect.right - origin.left, bottom: rect.bottom - origin.top }));
@@ -1036,6 +1133,7 @@ class CellsViewer extends HTMLElement {
     this.scaleLine.hidden = !width;
     this.scaleLine.style.width = `${width}px`;
     this.scaleText.textContent = text;
+    this.placeFoot(); // longer words may now meet the caveat
   }
 
   renderLegend() {
@@ -1067,7 +1165,8 @@ class CellsViewer extends HTMLElement {
           : "Colour shows the kind of part, and every part is drawn whole. The dot beside each name is its status; Colour: Status shows what is not built as grey sketches. Clear glass shapes and grey outlines are scenery.";
       note = { swatch: "illustration", text };
     }
-    this.legend.render({ ...base, title: "Status", items, filter, note, layers: chrome.flux || null });
+    // On a phone with a panel open the legend has little room above the panel: the Flux switch stands first there.
+    this.legend.render({ ...base, title: "Status", items, filter, note, layers: chrome.flux || null, layersFirst: this.clientWidth < 760 && Boolean(this.state.selected) });
   }
 
   renderIndex() {
@@ -1077,11 +1176,28 @@ class CellsViewer extends HTMLElement {
   renderPanel() {
     this.panel.show({ model: this.model, entity: this.lookup(this.state.selected) });
     for (const button of this.shadowRoot.querySelectorAll(".species-state")) button.setAttribute("aria-pressed", String(this.state.selected?.startsWith("species:") || false));
+    const had = this.frame.classList.contains("has-panel");
     this.frame.classList.toggle("has-panel", Boolean(this.state.selected));
+    if (!this.state.selected) this.toggleViewCard(false); // the card folds again with the next panel
+    if (had !== Boolean(this.state.selected) && this.clientWidth < 760) this.renderLegend(); // the Flux switch moves to the legend's head, or back
+    this.placeSheet();
+    this.placeFoot();
     if (this.stage) {
       const open = Boolean(this.state.selected);
       const narrow = this.clientWidth < 760;
-      this.stage.setInsets(open ? (narrow ? { bottom: this.panel.offsetHeight } : { right: this.panel.offsetWidth + 16 }) : {});
+      // On a phone the picture is centred in the band left free: from what stands under the bar (the folded card's button)
+      // down to the first of what stands on the sheet's top edge (a replay's timeline, the legend's title, the look's
+      // switch) or the sheet itself, so that the chosen part and its name are under none of them.
+      let bottom = 0;
+      if (narrow && open) {
+        const origin = this.getBoundingClientRect().top, shown = (element) => element && !element.hidden && element.getClientRects().length > 0;
+        const top = Math.max(0, ...[this.bar, this.viewToggle].filter(shown).map((element) => element.getBoundingClientRect().bottom - origin));
+        const look = this.lookBox.hidden ? null : this.lookBox.querySelector(".look-switch");
+        const floors = [this.panel, this.timeline, look].filter(shown).map((element) => element.getBoundingClientRect().top - origin);
+        if (shown(this.legend)) floors.push(this.legend.getBoundingClientRect().bottom - origin - Math.min(this.legend.offsetHeight, 56)); // its title, open or not
+        bottom = Math.max(0, this.clientHeight - top - Math.min(...floors));
+      }
+      this.stage.setInsets(open ? (narrow ? { bottom } : { right: this.panel.offsetWidth + 16 }) : {});
     }
   }
 
@@ -1144,7 +1260,14 @@ class CellsViewer extends HTMLElement {
     });
     this.shadowRoot.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
-        if (this.state.selected) this.select(null);
+        if (this.state.railOpen) {
+          // The folded rail of a phone closes first, and the focus goes back to its button; so does a view's card opened over a panel.
+          this.toggleRail(false);
+          this.railToggle.focus({ preventScroll: true });
+        } else if (this.state.viewOpen && this.state.selected) {
+          this.toggleViewCard(false);
+          this.viewToggle.focus({ preventScroll: true });
+        } else if (this.state.selected) this.select(null);
         else if (this.current?.back?.()) return;
         else if (this.state.indexOpen) this.toggleIndex(false);
       }

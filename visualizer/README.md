@@ -355,7 +355,9 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
   and a sheet's transfers until a saved run of a sheet carries those totals.
 - **Flux in the Cell view** (published 16 November 2026). A Flux switch in the Cell
   view's legend, off as the page opens; a part shows its flux alone when the visitor
-  chooses it; beads with bloom. No species has a looping run of its own yet, so what
+  chooses it; beads with bloom. No species has a looping run on the page yet (the
+  engine's first, an interim planarian loop of 16 November 2026, is read by the tests
+  and waits for its writer to land on main), so what
   shows is illustration, marked "Illustration: not a run", of the form "direction only":
   pumps and secreted signals go the way the engine's own laws say (cited in
   `data/layers/flux.json`), channels, junctions and water are drawn both ways with none
@@ -675,7 +677,24 @@ Ideas kept for after the basics (the user, 14 November 2026):
   run view once replays exist.
 - Statuses are as of the date in the top bar; the map does not update itself.
 - Screenshots use software WebGL; performance on real hardware is not measured.
-- On a phone the top of the cell view is crowded: the view switches and the scale rail both sit there.
+- On a phone the scale rail folds behind one button under the bar, and while a panel is
+  open the view's card folds behind another; the legend's title and the look's switch then
+  stand on the panel's top edge. The open legend is tall there and scrolls; a card that
+  scrolls inside itself shows a shade along the edge that has more beyond it.
+- On a phone every control is at least 44 px in its smaller dimension in the states that
+  were measured (16 November 2026): the Cell view at rest and with its legend, rail, card
+  or a panel open; a replay with its speed list and a cell's panel; the atlas's card. Not
+  measured: links inside a panel's text, the List, the Engine view, and the atlas's shelves
+  with a family open. The names on the picture are smaller (about 18 px); the List gives
+  every part as a row to press.
+- A name on the picture is not drawn where a card lies over it or where the window's edge
+  would cut it, so a small window shows fewer names than a large one, and the List has
+  them all. The chosen part's name is always drawn, and may stand over a card in a wide
+  window; in a replay on a phone with a cell chosen it can stand under the timeline.
+- On a phone the closed choosers of the experiment and the run show only the start of a
+  long name (a press opens the list with every name whole); an opened run card over a
+  panel covers the replay's statement of what a bead stands for until it is closed; and
+  in Syn3A's shelves the caveat lies over the name of the set-apart group.
 - Established (slate) and landed (blue) differ mainly in saturation. The four status hues
   pass the colour-blindness checks on both backgrounds; slate is a neutral and is not part
   of that check, so the panel and the list always name the status in words.

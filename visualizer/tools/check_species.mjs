@@ -465,6 +465,34 @@ try {
   await settled(false);
   s = await state();
   check("and a touch on a row chooses it, inside the card", s.species === "syn3a" && s.rail === "molecule cell*" && fits && (await list()).open === false, JSON.stringify([s.species, s.rail, fits]));
+
+  // A structure's panel on a phone (the human's nucleus): its door into the Protein atlas, whose words are long, is a
+  // button of its own, at least 44 px tall and inside the panel, its words whole; a touch on it opens the atlas.
+  await open("lens=cell&species=human&select=cap.nucleus");
+  const doorAt = () =>
+    evaluate(`(() => {
+      const root = ${V}.shadowRoot, el = root.querySelector("cells-panel .panel-door button"), body = root.querySelector("cells-panel .panel-body");
+      if (!el || !body) return null;
+      el.scrollIntoView({ block: "nearest" });
+      const r = el.getBoundingClientRect(), p = body.getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2, box: [r.left, r.top, r.right, r.bottom].map(Math.round), panel: [p.left, p.top, p.right, p.bottom].map(Math.round), whole: el.scrollWidth <= el.clientWidth + 1, words: el.textContent, top: root.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) === el || el.contains(root.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)) };
+    })()`);
+  let door = null;
+  for (let tries = 0; tries < 240 && !door; tries++) {
+    door = await doorAt();
+    if (!door) await sleep(250);
+  }
+  check("on a phone a structure's door is a button at least 44 px tall inside the panel, its long words whole", Boolean(door) && door.box[3] - door.box[1] >= 44 && door.box[0] >= door.panel[0] && door.box[2] <= door.panel[2] && door.whole && door.top && /Protein atlas/.test(door.words), JSON.stringify(door));
+  if (door) {
+    await touch(door.x, door.y);
+    let there = null;
+    for (let tries = 0; tries < 480; tries++) {
+      there = await evaluate(`({ lens: ${V}.state.lens, mode: ${V}.current.mode ?? null })`);
+      if (there.lens === "proteins" && there.mode === "own") break;
+      await sleep(250);
+    }
+    check("and a touch on it opens the Protein atlas on the species' own proteins", there?.lens === "proteins" && there.mode === "own", JSON.stringify(there));
+  }
 } catch (error) {
   check("the run completed", false, error.stack || error.message);
 } finally {
