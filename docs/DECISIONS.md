@@ -6012,6 +6012,19 @@ public repository's setup.
 **When:** stage 1 (one external law, registered explicitly) starts after D172's landing. The manifest and
 the guide follow with it.
 
+## D186: Numbers from open papers may be used with a citation, even when no licence is stated
+
+2026-11-16. The user told the visualizer session: "you can use any numbers from open papers even if no
+licence is decrlared". The user then confirmed it to the lead: "yes on the licence ruling". The lead
+adopts the visualizer session's reading for the whole project:
+- **What it covers:** numbers taken from an open paper and entered with a citation, such as parameter
+  values and measured quantities, in the engine, in `validation/` and in the visualizer.
+- **What it does not cover:** copying a paper's text, figures or data files into the repository.
+- **Unchanged:** data under a non-commercial licence is used for analysis only and never committed
+  (D173's rule for datasets).
+- **It widens D178 in kind.** D178 lets membrane-placement predictions read from UniProt and WormBase
+  ParaSite stay. D186 lets cited numbers from open papers stay when no licence is stated.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
