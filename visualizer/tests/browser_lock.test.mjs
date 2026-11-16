@@ -120,7 +120,7 @@ test("the places follow the two settings, and 'any' leaves the runs free", () =>
   assert.deepEqual(places({ CELLS_BROWSER_CPU: "nothing" }), ["any"], "a list that names no processor leaves the run free and does not stop it");
 });
 
-test("two runs hold two places at once, a third waits, and a place given back is taken again", { skip: cpus.length < 2 ? "needs two processors this process may use" : false }, async () => {
+test("two runs hold two places at once, a third waits, and a place given back is taken again", async () => {
   const before = { ...process.env };
   process.env.CELLS_BROWSER_CPU = "any"; // the places are what is tested here, not the pinning
   process.env.CELLS_BROWSER_SLOTS = "2";

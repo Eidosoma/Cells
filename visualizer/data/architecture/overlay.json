@@ -510,8 +510,8 @@
       "label": "Living-cell loops (FR-11)",
       "layer": "execution",
       "status": "planned",
-      "as_of": "2026-11-15",
-      "plain": "Short replay packages that show each species' cell alive, in a loop, whenever no research run is being explored (the user's request, 15 November 2026). It is output, not new physics: each package is a short run of laws the engine has, at a low level of detail, and is labelled an illustration, never a result. The user chose periodic loops, with one period of a periodic drive played and its seam checked; a paced heart cell for human; and, for the minimal cells, their cycle of growth and division, as an illustration. Logged; it comes after the run-view writer, with a planarian loop first.",
+      "as_of": "2026-11-16",
+      "plain": "Short replay packages that show each species' cell alive, in a loop, whenever no research run is being explored (the user's request, 15 November 2026). It is output, not new physics: each package is a short run of laws the engine has, at a low level of detail, and is labelled an illustration, never a result. The user chose periodic loops, with one period of a periodic drive played and its seam checked; for the human, a paced human ventricular cell built on the human cardiac law set, with no generic stand-in (D183, 16 November 2026): it waits for those laws, which are being designed; and, for the minimal cells, their cycle of growth and division, as an illustration. Logged; it comes after the run-view writer, with a planarian loop first.",
       "sources": [
         {
           "path": "docs/FEATURE_REQUESTS.md",
@@ -520,6 +520,10 @@
         {
           "path": "docs/CURRENT_PLAN.md",
           "where": "FR-11's interim planarian loop"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D183: The human cardiac law set is brought forward"
         }
       ]
     },
@@ -1267,8 +1271,8 @@
       "label": "Excitable tissue",
       "layer": "laws",
       "status": "designed",
-      "as_of": "2026-11-14",
-      "plain": "General physics for tissue that carries a travelling electrical wave, to be qualified against cable theory. The design note is accepted narrowly (D170, 14 November 2026), for its first two milestones on the tissue model as it stands. The probe registered for the acceptance failed its first criterion, so the acceptance rests on a second probe, post hoc but written before its runs. The first milestone's development work landed on 15 November 2026 as validation code only, with a proposed qualification protocol; nothing is judged yet, and the junction floor stays provisional. Its new channel and junction laws enter after the modular rework, as declared pieces. No new engine code yet.",
+      "as_of": "2026-11-16",
+      "plain": "General physics for tissue that carries a travelling electrical wave, to be qualified against cable theory. The design note is accepted narrowly (D170, 14 November 2026), for its first two milestones on the tissue model as it stands. The probe registered for the acceptance failed its first criterion, so the acceptance rests on a second probe, post hoc but written before its runs. The first milestone's development work landed on 15 November 2026 as validation code only, with a proposed qualification protocol; nothing is judged yet, and the junction floor stays provisional. Its new channel and junction laws enter after the modular rework, as declared pieces. No new engine code yet. On 16 November 2026 the user brought the human ventricular law set forward (D183): it starts as a lane of its own, design first, with options put to the user, and no engine code is written until the user chooses.",
       "sources": [
         {
           "path": "docs/EXCITABLE_TISSUE_DESIGN.md"
@@ -1292,6 +1296,10 @@
         {
           "path": "docs/INNER_MODEL_V4_DESIGN.md",
           "where": "13.1 Track E's channel laws, and D167's move"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D183: The human cardiac law set is brought forward"
         }
       ]
     },
