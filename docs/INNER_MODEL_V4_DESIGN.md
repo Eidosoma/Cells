@@ -1283,7 +1283,9 @@ undeclared built-in changes nothing:
    kind's own domain at the stage's read and potentials (a charged law's V-dependent domain,
    such as |ΔG_cyc/RT| ≤ 80), and-ed into the stage's validity. `KindRates.membrane_flux` (outward
    [species, membrane], optional) joins the patches' total flux and membrane current
-   (observations; gap 9, 669f8ed6).
+   (observations; gap 9, 669f8ed6). `KindRates.stored_pJ_s` (optional, gap 2, (m)) is the rate of
+   the kind's stored free energy that its read does not carry; it joins the stage energy-rate
+   observation by role.
    - **Step size (B7 for kinds; gap 5, 669f8ed6; 5b1b931e; 2c780f9f):** `stage_term(read,
      potentials, control, p, *, xp)` → [cells, then outside nodes] conductance (S) at the stage's
      read and node potentials, a patch's slope at both of its ends (`patch_node_conductance`), so
@@ -1498,6 +1500,47 @@ undeclared built-in changes nothing:
   with FR-1's compartment operator);
 - crossrev against 3c10b833 identical, and a pair check on kind-declaring worlds (FR-4's
   development and declared worlds): jaxpr text, and control bindings at every change time.
+
+**As built (core-next, 16 November 2026; accepted by the lead):** 614a081b (the schedules) and
+5fcfe9ed (`book` receives the step's control). The second changes a hook's signature, so it is a
+change of the kind interface's public surface (D180): every kind's `book` takes `control`.
+
+#### (m) The stored-rate term in the stage energy-rate observation (gap 2; designed 16 November 2026)
+
+**What it must do.**
+- A kind that holds free energy beyond the stored rows' own terms books it as `stored_pJ` in
+  `ledger_terms`, its change since the start, so the cumulative energy ledger closes ((k) 4).
+- The stage energy-rate observation, `energy_balance_pJ_s`, has no term for that free energy's
+  rate. It is the chemical rate at the stage's read concentrations, plus the capacitor's, plus the
+  heat, minus the work. It is zero to rounding in every world of today's, FR-4's included.
+- Finite fuel (`finite_fuel_rows@1`, D176 item 2, the R-fuel world) is the first case. Its rows'
+  standard part, Σ μ°' ṅ = Δ_rG'° × cycles, lies outside @3's RT ln c terms, so without its rate
+  the observation is off by exactly that amount.
+
+**What the read already carries.** The chemical rate is Σ RT ln c ṅ at the read's
+concentrations. A stage read whose stored term G has ∂G/∂n = RT ln(c_read/c_stored) therefore has
+its rate in the chemical rate already. B4's closure term is one: its H_eq derivative is
+RT ln(h/H̄), (g) 1. So B4 declares no stored rate, and its world's observation closes today
+(checked: residual 0.0 at FR-4's development world's rows).
+
+**The design.**
+- `KindRates` gains `stored_pJ_s`, optional (None by default). It is the rate (pJ/s) of the
+  kind's stored free energy at the stage, less the part that its read carries.
+- It joins `energy_balance_pJ_s` by role, after today's terms and the kinds' heat and work, in
+  hook order: + stored. The ledger roles and the rate roles now match: heat_pJ and heat_pJ_s,
+  work_pJ and work_pJ_s, stored_pJ and stored_pJ_s.
+- **The rule for a kind's author:** `stored_pJ_s` is the time derivative of the kind's `stored_pJ`
+  less its read's carried part. Then the cumulative ledger and the rate observation agree. For
+  finite fuel it is Δ_rG'° × cycles at the fuel node.
+- **Unchanged:** a kind that gives no stored rate adds nothing to any program (None is static).
+  Today's kinds give none (B4's is carried, and the passive routes and held fuel store nothing),
+  so FR-4's programs are identical.
+
+**Acceptance:** a planted kind converting a neutral S to a neutral P at a cell, with declared
+standard potentials, so its standard part is stored and no read carries it. Every ledger closes
+in the host checks, and its observation's residual is zero to rounding. Without its stored rate,
+the residual is exactly minus that rate while the cumulative ledger still closes. FR-4's kind
+worlds are unchanged in the pair check, and crossrev is identical.
 
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 
