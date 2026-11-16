@@ -138,20 +138,23 @@ INNER_AXES = {  # The run view's inner axis sets (cells/run_view.py, AXIS_SETS).
 
 
 def test_a_kind_worlds_declarations_cover_its_kinds_fields():
-    """FR-4's development world with the passive routes and B4's closure (its transporter, the
-    FR lane's kind, left out until its own declarations land): the implementation object folds
-    the kinds' declarations into @3's, every field and column of the structure is declared, and
-    every axis has a view set (an inner one, a kind's axis set or a kind's own view set)."""
+    """FR-4's development world with the passive routes, B4's closure and the transporter (its
+    declarations landed with the FR lane's): the implementation object folds the kinds'
+    declarations into @3's, every field and column of the structure is declared, and every axis
+    has a view set (an inner one, a kind's axis set or a kind's own view set)."""
     from validation.compartment_ph_engine import definitions as defs
 
     raw = defs.development_world(defs.fr4_world())
-    raw["model"].pop("transporters")
     spec = parse_spec(raw)
     impl = get_model(spec.model)
     assert [k for k, _ in impl.structure.kinds] == [
         "cells.passive_routes@1",
         "cells.rapid_proton_buffer@1",
+        "cells.transporter@1",
     ]
+    cycles = impl.ORIENTATION["transporter_cycles"]  # Outward-positive: the role leaves the cell.
+    assert (cycles["from"], cycles["to"]) == ("inside", "outside")
+    assert "transporter_fuel_supplied_fmol" not in impl.ORIENTATION
     names = [*impl.STATE_TYPE._fields, *(f for f in impl.OBSERVATION_FIELDS if f != "times")]
     layers = {layer["id"] for layer in impl.VIEW_LAYERS}
     for name in names:
