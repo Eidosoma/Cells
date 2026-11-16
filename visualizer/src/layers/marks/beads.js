@@ -3,7 +3,13 @@
 // a token of a rate, not an ion: the legend says how many ions one stands for and what time
 // the picture keeps (schema/QUANTITY_LAYERS.md, rule 3).
 //
-//   beads a second on the screen = ions a second / (ions in one bead x how much it is slowed)
+//   beads a second on the screen = ions a second of the run x the speed / ions in one bead
+//
+// The speed is the replay's own (src/replay/player.js): seconds of the run for each second
+// of watching, below one where the replay is slowed and above it where it is made faster. The
+// beads keep the replay's one clock: while it is paused they stand, and played, as much of
+// the run passes for them as for the playhead. What one bead stands for follows the speed,
+// so that the run's busiest stream passes about ten beads a second at any speed.
 //
 // The rate sets how many beads pass, never how fast one travels: every bead crosses the
 // membrane in the same time, which stands for nothing. The rate is a mean over the interval
@@ -24,42 +30,39 @@
 import * as THREE from "../../three.js";
 import { rate } from "../derive.js";
 import { declared, family, fromFirst, restartsBetween, signedByShort } from "../records.js";
+import { speedWords } from "../../replay/player.js";
 
 export const PER_FMOL = 6.02214076e23 * 1e-15; // ions in a femtomole
 export const BUSIEST = 10; // beads a second on the screen for a run's busiest stream
-export const SLOWS = [1, 1e3, 1e6]; // the slow-downs offered: true speed, a thousand times, a million times
+export const SLOWS = [1, 1e3, 1e6]; // the slow-downs a species' looping run is offered in the Cell view, which has no timeline: true speed, a thousand times, a million times
 export const CROSSING = 1.6; // seconds a bead takes to cross: the same for every bead
 export const MOST = 18; // beads on one lane at a time
 const SIZE = { quiet: 1, bold: 1.35 };
 
 /**
- * How many ions one bead stands for at a slow-down: 1, 2 or 5 times a power of ten, the
- * smallest with which the run's busiest stream passes at most ten beads a second. Never
- * under one ion: slowed enough, a bead is an ion.
+ * How many ions one bead stands for at a speed (seconds of the run each second of watching):
+ * 1, 2 or 5 times a power of ten, the smallest with which the run's busiest stream passes at
+ * most ten beads a second. Never under one ion: slowed enough, a bead is an ion.
  */
-export function tokenFor(busiest, slow = 1) {
-  const raw = Math.abs(busiest) / (BUSIEST * slow);
+export function tokenFor(busiest, speed = 1) {
+  const raw = (Math.abs(busiest) * speed) / BUSIEST;
   if (!(raw > 1)) return 1;
   const power = Math.pow(10, Math.floor(Math.log10(raw)));
   const size = [1, 2, 5, 10].find((step) => step * power >= raw * (1 - 1e-9)) ?? 10;
   return Math.round(size * power);
 }
 
-/** How many beads pass in a second on the screen, for a rate in ions a second: its size alone. */
-export function beadsASecond(ions, token, slow = 1) {
-  return Math.abs(ions) / (token * slow);
+/** How many beads pass in a second on the screen, for a rate in ions a second of the run, at a speed: its size alone. */
+export function beadsASecond(ions, token, speed = 1) {
+  return (Math.abs(ions) * speed) / token;
 }
 
 /** A rate in femtomoles a second as ions a second. */
 export const ionsASecond = (fmol) => fmol * PER_FMOL;
 
-/** What time the picture keeps, in the legend's words: true speed, or how much it is slowed and what a second here is in the cell. */
-export function timeWords(slow = 1) {
-  if (!(slow > 1)) return "True speed: one second here is one second in the cell";
-  const seconds = 1 / slow;
-  const [value, unit] = seconds >= 1e-3 ? [seconds * 1e3, "millisecond"] : seconds >= 1e-6 ? [seconds * 1e6, "microsecond"] : [seconds * 1e9, "nanosecond"];
-  const shown = Number(value.toPrecision(3));
-  return `Slowed ${slow.toLocaleString("en-US")} times: one second here is ${shown === 1 ? `one ${unit}` : `${shown.toLocaleString("en-US")} ${unit}s`} in the cell`;
+/** What time the picture keeps at a speed, in the legend's words: true speed, slowed or made faster, and what a second here is in the run. */
+export function timeWords(speed = 1) {
+  return speedWords(speed).says;
 }
 
 /** What one bead stands for, in the legend's words. `what` names the particle: an ion, or a molecule of a species that is none. */
@@ -69,13 +72,23 @@ export function tokenWords(token, what = "ion") {
 
 /** What a legend adds to the time a motion layer keeps where nothing may move. */
 export const STILL_WORDS = "Shown still here: the beads stand, as many as would be on their way at one moment";
+/** What a legend adds to the time a motion layer keeps while its replay is paused. */
+export const PAUSED_WORDS = "Paused: the beads stand, as many as would be on their way at one moment at this speed";
+/** What a legend says of a motion layer's clock on a replay: it is the replay's own. */
+export const CLOCK_WORDS = "The beads keep the replay's own time: the timeline's speed is theirs";
+
+/** The legend's line on the time a motion layer keeps on a replay: the speed, whose clock it is, and why the beads stand where they do. */
+export function timeKey(speed = 1, still = false, paused = false) {
+  return `${timeWords(speed)}. ${CLOCK_WORDS}${still ? `. ${STILL_WORDS}` : paused ? `. ${PAUSED_WORDS}` : ""}`;
+}
 
 /**
- * The picture's own short statement of a motion layer (rule 3): the token, the time, and the
- * interval the rate is a mean over. Where nothing may move (`still`), it says that too.
+ * The picture's own short statement of a motion layer (rule 3): the token, the speed, and the
+ * interval the rate is a mean over. Where nothing may move (`still`), it says so; where the
+ * replay is paused (`paused`), that. Nothing may move wins where both hold.
  */
-export function statementOf({ token, what = "ion", slow = 1, interval, clock, still = false }) {
-  const time = `${slow > 1 ? `slowed ${slow.toLocaleString("en-US")} times` : "true speed"}${still ? ", shown still" : ""}`;
+export function statementOf({ token, what = "ion", speed = 1, interval, clock, still = false, paused = false }) {
+  const time = `${speedWords(speed).phrase}${still ? ", shown still" : paused ? ", paused" : ""}`;
   const over = interval ? `mean of ${clock(interval[0])} to ${clock(interval[1])}` : "no rate at the run's first record";
   return `${tokenWords(token, what)} · ${time} · ${over}`;
 }
@@ -215,10 +228,10 @@ export const beads = {
   needs_sign: true,
 
   /** The legend's lines for a layer of beads: what one bead stands for, and what time the picture keeps. */
-  keys(busiest, slow = 1, still = false) {
+  keys(busiest, speed = 1, still = false, paused = false) {
     return [
-      { key: "bead", text: `${tokenWords(tokenFor(busiest, slow))}. More beads a second means more ions a second; how fast a bead travels stands for nothing` },
-      { key: "time", text: still ? `${timeWords(slow)}. ${STILL_WORDS}` : timeWords(slow) },
+      { key: "bead", text: `${tokenWords(tokenFor(busiest, speed))}. More beads a second means more ions a second; how fast a bead travels stands for nothing` },
+      { key: "time", text: timeKey(speed, still, paused) },
     ];
   },
 
@@ -226,10 +239,10 @@ export const beads = {
    * context (see ./index.js): the close-up's surface, the run, the membrane's number,
    * `fed.sources` (the channel populations' totals as declared) and `fed.extras` (by role
    * "pump": the pump's saved cycles), the colours, `memo` (what is worked out once for the
-   * run), `slow()` (how much the picture is slowed: 1 is true speed) and `still()` (whether
-   * nothing may move).
+   * run), `speed()` (the replay's speed: seconds of the run each second of watching),
+   * `paused()` (whether the replay stands) and `still()` (whether nothing may move).
    */
-  create({ surface, run, fed, membrane, colours, strength = "quiet", memo = (key, make) => make(), slow = () => 1, still = () => false }) {
+  create({ surface, run, fed, membrane, colours, strength = "quiet", memo = (key, make) => make(), speed = () => 1, paused = () => false, still = () => false }) {
     const { piece, order } = surface;
     const pump = fed.extras.find((entry) => entry.role === "pump");
     const cycles = pump ? declared(run, pump.record) : null;
@@ -366,17 +379,18 @@ export const beads = {
         if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       }
     };
-    const token = () => tokenFor(ionsASecond(busiest), slow());
+    const token = () => tokenFor(ionsASecond(busiest), speed());
+    const stands = () => still() || paused();
     let shown = { step: 0, valid: false };
     const settle = () => {
-      const one = token(), slowed = slow();
+      const one = token(), fast = speed();
       for (const stream of streams) {
         const mean = shown.valid ? meanRate(run, stream.record, stream.entity, shown.step) : null;
         stream.mean = mean === null ? null : mean * stream.per; // fmol a second of this ion, positive as the record's sign says
-        stream.perSecond = stream.mean ? beadsASecond(ionsASecond(stream.mean), one, slowed) : 0;
+        stream.perSecond = stream.mean ? beadsASecond(ionsASecond(stream.mean), one, fast) : 0;
         if (stream.mean) stream.up = stream.mean > 0 === stream.out;
         if (!stream.perSecond) stream.beads = [];
-        else if (still()) stream.beads = standing(stream.perSecond);
+        else if (stands()) stream.beads = standing(stream.perSecond);
       }
       drawBeads();
     };
@@ -397,16 +411,17 @@ export const beads = {
         shown = { step, valid };
         settle();
       },
-      /** Advance by a frame of `milliseconds`. Returns whether a bead is on its way, so that frames keep coming. */
+      /** Advance by `milliseconds` of watching at the replay's speed: the run's time the playhead covered, over the speed. Returns whether a bead is on its way. */
       tick(milliseconds) {
-        if (still()) return false;
+        if (stands()) return false;
         const seconds = milliseconds / 1000;
         let moving = false;
         for (const stream of streams) moving = advance(stream, seconds) || moving;
         drawBeads();
         return moving;
       },
-      setSlow() {
+      /** The replay's clock changed (its speed, or whether it plays): a bead stands for another number, and the beads stand or set out. */
+      retime() {
         for (const stream of streams) stream.due = 0;
         settle();
       },
@@ -417,7 +432,7 @@ export const beads = {
       /** The numbers behind each stream at the record shown, for the panel. */
       readings() {
         const { step } = shown;
-        const one = token(), slowed = slow();
+        const one = token(), fast = speed();
         return streams.map((stream) => ({
           kind: stream.kind,
           name: stream.name,
@@ -431,7 +446,7 @@ export const beads = {
           mean: stream.mean,
           reset: restarted(run, stream.record, stream.entity, step),
           particles: stream.mean === null ? null : Math.abs(ionsASecond(stream.mean)),
-          beads: stream.mean === null ? null : beadsASecond(ionsASecond(stream.mean), one, slowed),
+          beads: stream.mean === null ? null : beadsASecond(ionsASecond(stream.mean), one, fast),
           way: stream.mean ? (stream.up ? "out of the cell" : "into the cell") : null,
         }));
       },
@@ -440,7 +455,7 @@ export const beads = {
         const species = [...new Set(streams.map((stream) => stream.species).filter(Boolean))];
         const lines = [];
         if (species.length) lines.push({ key: "ions", chips: species.map((id) => ({ label: id, colour: tones.ionCss(id) })), text: "Up is out of the cell, down is into it" });
-        lines.push(...beads.keys(ionsASecond(busiest), slow(), still()));
+        lines.push(...beads.keys(ionsASecond(busiest), speed(), still(), paused()));
         const by = new Map();
         for (const stream of streams) {
           const sign = stream.source.sign, whose = signedByShort(sign);

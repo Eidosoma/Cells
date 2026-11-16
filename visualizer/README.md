@@ -276,6 +276,11 @@ only when it is shown:
   threshold at the first record, and the replay says so.
 - **Held back:** the W1 heredity pilot adapts (two runs), but the view draws every event
   as a replacement and the pilot's events are a cue in many cells at once.
+- **Speed.** The timeline's speed lists the steps a run is offered, each in words: slowed
+  a million, a thousand or four times, true speed, and 4, 15, 60 or 240 times faster where
+  the run still lasts five seconds of watching. A run under two minutes opens at true
+  speed, a longer one at 60 times. The beads of a layer that moves keep the replay's
+  clock: paused, they stand.
 - **A development run and an example stand apart** from the experiments, each under a
   heading of its own: the engine's first run made for the viewer (one cell that secretes
   a species; no verdict), and an example sheet with invented numbers for the layers that
@@ -316,7 +321,7 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
 | Voltage drops | the voltage across each junction, and how far its gate is open | the sheet's junctions |
 | Push and pull on ions | for each ion, the push of its concentration difference, the pull of the voltage, and their sum | a close-up of a chosen cell's membrane |
 | Membrane charge | the charge a stated piece of membrane holds | the same close-up |
-| Transfers | what crosses each border, as beads: one bead is a stated number of molecules, at true speed, with a slow-down beside it | the sheet, or the tiles of a small world |
+| Transfers | what crosses each border, as beads: one bead is a stated number of molecules; the beads keep the replay's clock, which the timeline slows or makes faster, and what one bead stands for follows the speed | the sheet, or the tiles of a small world |
 | Ion traffic | beads through a cell's channel populations, its pump and the membrane itself | the close-up |
 | Energy dissipated | the rate of each dissipated-energy ledger, as a glow | borders, and spots on the cell |
 | Secreted species | the amount of the run's secreted species, as a fog | cells, and the spaces outside them |
@@ -338,8 +343,9 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
   pumps and secreted signals go the way the engine's own laws say (cited in
   `data/layers/flux.json`), channels, junctions and water are drawn both ways with none
   claimed, and fuel draws nothing. No textbook direction is drawn. At rest nothing
-  flows: the cell's own drops and signals stand still, and only the crowd's drift and
-  the membrane's shimmer move.
+  flows. The cell's own drops, signals and close-up ions move as they always did: the
+  picture's own motion, not a measured flow, as the legend says beside the switch; they
+  hold still while any flux shows.
 - **Not built yet:** the field between cells, the tension web and the wavefront.
   `docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` lists what the layers ask of the engine,
   with the lead's answers.

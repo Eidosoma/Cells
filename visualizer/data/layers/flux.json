@@ -5,8 +5,8 @@
   "colours": "A bead of sodium or of potassium wears that ion's own colour (data/layers/ions.json, rule 8). Every other bead wears the one neutral tone of that file: only three colours were validated together, so no hue of the cell picture stands beside them.",
   "engine": {
     "branch": "main",
-    "revision": "faa9fc36",
-    "read": "2026-11-15",
+    "revision": "34253235",
+    "read": "2026-11-16",
     "says": "Each law cited here was read in the engine's source at this revision. The viewer keeps the words and does not read the engine: when a law changes, this file is brought up to date by hand."
   },
   "illustration": {
@@ -101,6 +101,7 @@
       "part": "junctions",
       "label": "Exchange with neighbours",
       "token": "ion",
+      "stream": "junction",
       "groups": [
         {
           "id": "ions",
@@ -135,6 +136,7 @@
       "part": "secretion",
       "label": "Secreted signals",
       "token": "molecule",
+      "stream": "route",
       "groups": [
         {
           "id": "signals",

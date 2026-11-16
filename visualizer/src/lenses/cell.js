@@ -1040,23 +1040,28 @@ export class CellLens {
       return changed;
     }
     this.clock += dt / 1000;
-    this.animate(this.clock);
+    // The cell's own tokens keep a clock of their own: it runs at rest, and holds while any flux shows or the picture
+    // is a still one, so that nothing jumps when a part is chosen and they move on from where they stood.
+    this.resting ??= 0.35;
+    if (!this.flux.flowing && !this.flux.still()) this.resting += dt / 1000;
+    this.animate(this.clock, this.resting);
     return true;
   }
 
   /**
    * The drops where water crosses, the signals that leave and the ions in the close-up's channel
-   * are the bodies of their parts. They once moved, each with a direction; at rest nothing flows
-   * (schema/QUANTITY_LAYERS.md, rule 12: a token that moves with a direction is data), so they
-   * stand where they stood for a visitor who asked for less motion. While the flux of their part
-   * shows they give way to its beads (layers/cellflux.js), which are a layer's: drawn out of the
-   * look, marked to glow, and holding the look's own motion still. Only the cages turn here, in
-   * place. The look's motion is not here: the crowd's drift and the membrane's shimmer live in
-   * the materials (core/materials.js) and have no direction.
+   * are the bodies of their parts, and at rest they move as they always did (the user, 16
+   * November 2026: "bring motion back"). Their motion is the picture's own, not a measured
+   * flow, and the Flux legend says so (layers/cellflux.js). They stand where they stood for a
+   * visitor who asked for less motion, and hold still while any flux shows; while the flux of
+   * their part shows they give way to its beads, which are a layer's: drawn out of the look,
+   * marked to glow, and holding the look's own motion still. The cages turn in place. The look's
+   * motion is not here: the crowd's drift and the membrane's shimmer live in the materials
+   * (core/materials.js) and have no direction.
    */
-  animate(time) {
+  animate(time, resting = time) {
     const cell = this.cells[this.sizeMode];
-    const rest = 0.35, water = !this.flux.takes("water"), leaving = !this.flux.takes("secretion"), crossing = !this.flux.takes("channels");
+    const rest = resting, water = !this.flux.takes("water"), leaving = !this.flux.takes("secretion"), crossing = !this.flux.takes("channels");
     for (const stream of cell.streams) {
       stream.drops.forEach((drop, index) => {
         drop.visible = water;

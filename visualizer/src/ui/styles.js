@@ -321,6 +321,15 @@ cells-timeline { position: absolute; left: 268px; right: 244px; bottom: calc(16p
 .tl-read b { color: var(--fg); font-weight: 600; }
 .tl-speed { min-width: 48px; padding: 6px 9px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .tl-speed:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.tl-speeds { position: absolute; right: 0; bottom: calc(100% + 6px); display: grid; gap: 1px; width: min(330px, calc(100vw - 24px)); max-height: min(60vh, 420px); overflow: auto; padding: 5px; border-radius: 12px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line), 0 10px 30px -18px rgb(0 0 0 / .45); }
+.tl-speeds[hidden] { display: none; }
+cells-timeline.is-choosing { z-index: 4; }
+.tl-speed-step { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; align-items: baseline; padding: 5px 8px; border-radius: 8px; text-align: left; font-size: 12.5px; line-height: 1.3; color: var(--fg); }
+.tl-speed-step b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.tl-speed-step span { color: var(--muted); }
+.tl-speed-step:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.tl-speed-step[aria-pressed="true"] { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.tl-speed-step[aria-pressed="true"] span { color: var(--fg); }
 .has-timeline.has-panel .scalebar { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 .label-read { font-variant-numeric: tabular-nums; pointer-events: none; }
 .label-region { font-style: normal; font-weight: 600; color: var(--fg); padding: 1px 7px; border-radius: 5px; background: color-mix(in srgb, var(--bg) 66%, transparent); }

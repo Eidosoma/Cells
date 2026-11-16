@@ -328,15 +328,23 @@ Rules that tighten the run view above:
   "tools/make_run_fixture.py"}`. The run's numbers are invented (`schema/QUANTITY_LAYERS.md`,
   rule 6): no record then names a model as its owner, `run.engine_models` is empty, and
   the page keeps the words of `says` on the picture and in the legend.
-- **`view.loop`** (optional): `{"species": id, "cell": id, "closes": {"within": number,
-  "says": text}}`. The run is the looping run of one cell of that species
-  (`schema/QUANTITY_LAYERS.md`, rule 7). `species` is the species' id in `data/species/`;
-  `cell` is the cell's id in the run's set of cells; `closes.within` is the largest
-  relative difference of any level between the last record and the first, and
-  `closes.says` the sentence the page may show. The run's records run from the loop's
-  start to its closing record, one more record than intervals; its `run.engine_models`
-  and `run.revision` must be given. A run with `example` is never a loop. No packaged
-  run carries the field yet: the engine's side is to make such runs.
+- **`view.loop`** (optional): `{"species": id, "cell": id, "period": seconds, "closes":
+  {"within": number, "tolerance": number, "says": text}, "follows": [{"time": seconds,
+  "from": id, "to": id}]}`, as the engine's run-view writer gives it (its design of 16
+  November 2026 for FR-11, ruled by the lead that day; nothing built). The run is one period of a looping run
+  of one cell of that species (`schema/QUANTITY_LAYERS.md`, rule 7). `species` is the
+  species' id in `data/species/`; `cell` the cell's id in the run's set of cells;
+  `period` the loop's length in the run's time, equal to the span of its records, which
+  run from the loop's start to its closing record. `closes.within` is the largest
+  relative difference of any level between the last record and the first, as the writer
+  measured it; `closes.tolerance` the tolerance its caller declared (`within` is never
+  above it); `closes.says` the sentence the page may show. `follows` (optional, for a
+  cell cycle) names the cell the loop follows from a time on, after a division: the page
+  says so, and reads the loop's first cell. The run names its engine models and its
+  revision: `run.revision`, or `run.source.revision` where the package carries the
+  engine's own word for its source, which is the one the engine holds to. A run with
+  `example` is never a loop. No packaged run carries the field yet: the engine's side is
+  to make such runs.
 - **`view.constants[]`** (optional) are named constants of the run's definition: values
   that a derivation of a quantity layer may read in place of a saved record
   (`schema/QUANTITY_LAYERS.md`, rule 1). `[{"id", "label", "unit", "set", "axes",

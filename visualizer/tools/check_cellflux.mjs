@@ -14,10 +14,13 @@
 // molecule, for the close-up of the membrane), THEME (dark), MOVING (1:
 // the page is not opened still, and the check waits to see a bead move), PART (the id of the
 // capability to choose; the first the species has flux for otherwise) and NAME (what the
-// pictures are called in OUT_DIR: NAME-part.png and NAME-all.png). With ADDRESS=1 it checks
+// pictures are called in OUT_DIR: NAME-rest.png, NAME-part.png and NAME-all.png). With ADDRESS=1 it checks
 // one thing instead, on a page whose address names the part: that the part is chosen as the
 // page opens and nothing flows, until a real press on the part's name or on the switch (the
-// picture is NAME-address.png). One browser at a time:
+// picture is NAME-address.png). With MOVING=1 it also checks that at rest the cell's own drops,
+// signals and close-up ions move (the picture's own motion, which the legend says is no
+// measured flow), and that they hold still while a part's flux shows. It says at its end
+// whether the page's own font had arrived. One browser at a time:
 // it takes the lock in tools/lib/browser_lock.mjs, whose profile folder is on disk and
 // removed afterwards. One call is one short hold of the browser.
 
@@ -52,6 +55,8 @@ const chrome = spawn(
   { stdio: ["ignore", "ignore", "pipe"] }
 );
 let failed = null, socket = null;
+// Whether the page's own font had arrived by the end, once the page can be asked.
+let fontOf = async () => "not known";
 try {
   const endpoint = await new Promise((resolve, reject) => {
     let text = "";
@@ -95,6 +100,7 @@ try {
   };
   const V = "document.querySelector('cells-viewer')";
   const L = `${V}.current`;
+  fontOf = () => evaluate(`document.fonts.status === "loaded" && ["Inter", "Space Grotesk"].every((family) => [...document.fonts].some((face) => face.family.includes(family) && face.status === "loaded")) ? "arrived" : "not arrived: the stand-in was shown, whose words run longer"`);
   /** The view holds still: three looks in a row with the camera and the stage where they were (at most 8 s). */
   const rest = async () => {
     let before = null, same = 0;
@@ -153,6 +159,8 @@ try {
         said: [...root.querySelectorAll(".label-example, .label-flow")].map((el) => ({ text: el.textContent, shown: !el.classList.contains("is-off"), box: box(el) })),
         panel: !panel || panel.hidden ? null : { title: panel.querySelector("h2")?.textContent ?? null, text: panel.textContent, box: box(panel) },
         old: { drops: cell.streams.flatMap((stream) => stream.drops).filter((drop) => drop.visible).length, signals: cell.signals.filter((bead) => bead.visible).length, ions: cell.molecule.ions.filter((ion) => ion.visible).length },
+        // Where the cell's own first drop, signal and close-up ion stand now.
+        oldAt: [cell.streams[0]?.drops[0], cell.signals[0], cell.molecule.ions[0]].map((item) => (item ? item.position.toArray().map((n) => Math.round(n * 1e6) / 1e6).join() : null)),
         foot: [...root.querySelectorAll(".scalebar, .look-box, .caveat")].filter((el) => !el.hidden && el.getBoundingClientRect().height > 0).map((el) => [el.className.split(" ")[0], ...box(el)]),
       };
     })()`);
@@ -207,6 +215,13 @@ try {
   const clear = (now) => !now.viewBox || now.legendBox[1] >= now.viewBox[3] || now.legendBox[0] >= now.viewBox[2] || now.legendBox[2] <= now.viewBox[0];
   check("at rest the legend, with its Flux switch, stands clear of the view's card", clear(s), JSON.stringify({ legend: s.legendBox, view: s.viewBox }));
   const atRest = s.old;
+  await shot(`${NAME}-rest`);
+  if (MOVING) {
+    // At rest the cell's own tokens move: the picture's own motion, and the legend says it is no measured flow.
+    const before = s.oldAt;
+    const later = await until((now) => now.oldAt.some((at, k) => at !== null && at !== before[k]));
+    check("at rest the cell's own drops, signals and ions move, and the legend says that motion is the picture's own", later.oldAt.some((at, k) => at !== null && at !== before[k]) && /What moves at rest is the picture's own, not a measured flow\./.test(later.hint || ""), JSON.stringify([before, later.oldAt, later.hint]));
+  }
 
   // ------------------------------------------------------------ a part is chosen
   // A part whose name stands on the picture now, so that it can be pressed: a name may have given way to another.
@@ -231,6 +246,13 @@ try {
     check("the part's panel carries the notice and the basis", s.panel && /Flux\. Illustration: not a run/.test(s.panel.text), s.panel ? s.panel.title : "no panel");
     check("the switch itself stays off: the part was chosen, not the switch", s.on === false, JSON.stringify(s.rows));
     check("the picture's own tokens of other parts stand as they stood", (kind === "water" || s.old.drops === atRest.drops) && (kind === "secretion" || s.old.signals === atRest.signals), JSON.stringify([atRest, s.old]));
+    if (MOVING) {
+      // While flux shows, the cell's own tokens hold still where they stood.
+      const held = s.oldAt;
+      await sleep(1500);
+      const again = await state();
+      check("while flux shows the cell's own tokens hold where they stood", JSON.stringify(again.oldAt) === JSON.stringify(held), JSON.stringify([held, again.oldAt]));
+    }
     if (MOVING) {
       // A bead is somewhere else a moment later: by more than rounding, and not by a whole turn of its lane.
       const before = s.tokens[0].first;
@@ -290,6 +312,9 @@ try {
 } catch (error) {
   failed = error;
 } finally {
+  // Whether the page's own font had arrived by the end: with the stand-in, words run longer and cards stand
+  // taller, and a miss is read against that.
+  note(`the page's own font: ${await fontOf().catch(() => "not known")}`);
   socket?.close();
   // The browser is gone before the lock is given back, so that its profile folder can be removed.
   const closed = new Promise((resolve) => chrome.once("close", resolve));

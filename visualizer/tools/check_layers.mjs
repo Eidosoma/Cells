@@ -14,8 +14,10 @@
 // on a run with a secreted species (the engine's development run of one cell and its
 // surroundings): that it opens coloured by the species, with the spaces outside as flat
 // tiles; that pressing Transfers puts beads on the borders and the picture then states what
-// one bead stands for and what time it keeps; that the glow stands where energy is
-// dissipated; and that the slow-down changes what a bead stands for and not how many pass.
+// one bead stands for and at what speed the replay runs; that the glow stands where energy is
+// dissipated; that the timeline offers speeds slower and faster than true speed, each in
+// words, and that a slower one changes what a bead stands for and not how many pass; and
+// that the beads keep the replay's clock: they stand while it is paused and travel while it plays.
 // With REFERENCE set to a JSON file of numbers worked out from the run's own 64-bit arrays
 // ({ run, time, interval, lanes: { face_0: { before, now, mean, from, to } }, busiest, token,
 // glow: { face_0: { before, now, mean } }, full, amounts: { cell_0, bath, ecs_0 } }), it holds
@@ -206,10 +208,14 @@ const state = () =>
         const words = (name) => [...root.querySelectorAll("." + name)].filter((el) => !el.classList.contains("is-off")).map((el) => el.textContent);
         const stream = lens.drawn.get("transfers")?.mark, glow = lens.drawn.get("energy-glow")?.mark, fog = lens.drawn.get("signal-fog")?.mark;
         return {
-          slow: lens.slow, example: words("label-example"), statement: words("label-flow"),
+          speed: lens.player.speed, playing: lens.player.playing, example: words("label-example"), statement: words("label-flow"),
           tiles: lens.surface.outside ? lens.surface.outside.tiles.map((tile, n) => ({ name: lens.surface.outside.set.ids[n], held: tile.held, level: lens.surface.outside.level })) : null,
           regions: words("label-region"),
           time: [...root.querySelectorAll('cells-legend .layer-row[data-channel="time"] button')].map((b) => b.textContent + (b.getAttribute("aria-pressed") === "true" ? "*" : "")),
+          // The timeline's speed: its button, and the steps its list offers (each with its words), the one in use starred.
+          speedButton: (() => { const b = root.querySelector("cells-timeline .tl-speed"); return b ? { text: b.textContent, title: b.title, expanded: b.getAttribute("aria-expanded") } : null; })(),
+          speeds: [...root.querySelectorAll("cells-timeline .tl-speed-step")].map((b) => b.textContent + (b.getAttribute("aria-pressed") === "true" ? "*" : "")),
+          speedsOpen: (() => { const list = root.querySelector("cells-timeline .tl-speeds"); return Boolean(list && !list.hidden && list.getBoundingClientRect().height > 0); })(),
           legendExample: root.querySelector("cells-legend .layer-example")?.textContent ?? null,
           lanes: stream ? { token: stream.token, what: stream.what, busiest: stream.busiest, beads: stream.lanes.map((lane) => lane.beads.length), drawn: stream.drawn, readings: stream.readings() } : null,
           glow: glow ? { full: glow.full, unit: glow.shown.unit, readings: glow.readings() } : null,
@@ -530,7 +536,7 @@ try {
     await press(option("motion", "ion-traffic"));
     await fetched();
     s = await until((now) => now.on.includes("ion-traffic") && /Choose a cell/.test(now.hint || ""));
-    check("Ion traffic waits for a cell to be chosen, and the slow-down stands beside the true speed", s.on.includes("ion-traffic") && s.closeup === null && /Choose a cell of the sheet/.test(s.hint || "") && JSON.stringify(s.flow.time) === JSON.stringify(["True*", "1/1,000", "1/1,000,000"]), JSON.stringify([s.on, s.hint, s.flow.time]));
+    check("Ion traffic waits for a cell to be chosen; the legend keeps no clock of its own, and the timeline gives the replay's speed", s.on.includes("ion-traffic") && s.closeup === null && /Choose a cell of the sheet/.test(s.hint || "") && s.flow.time.length === 0 && s.flow.speedButton?.text === "1×", JSON.stringify([s.on, s.hint, s.flow.time, s.flow.speedButton]));
     // A cell chosen with a real press on the sheet.
     let first = null;
     for (let number = 0; number < 19 && !first; number++) {
@@ -548,7 +554,7 @@ try {
       s.selected === `cell:${first.number}` && through?.forms.length === 4 && through.forms[2] === "pump" && through.forms[3] === "membrane itself" && through.readings.length === 6 && through.beads.slice(0, 4).every((count) => count >= 1) && through.drawn.heads === 6,
       JSON.stringify([s.selected, through?.forms, through?.beads, through?.drawn])
     );
-    check("the close-up says that it is an example, and states what one bead stands for, the time it keeps and the interval", /^Example: invented numbers/.test(caption) && /One bead is [\d,]+ ions · true speed, shown still · mean of 0\.5 s to 1\.0 s/.test(caption), caption.slice(0, 220));
+    check("the close-up says that it is an example, and states what one bead stands for, the time it keeps and the interval", /^Example: invented numbers/.test(caption) && /One bead is [\d,]+ ions · true speed, shown still\nmean of 0\.5 s to 1\.0 s/.test(caption), caption.slice(0, 220));
     const ways = Object.fromEntries((through?.readings || []).map((reading) => [`${reading.kind} ${reading.species}`, reading.way]));
     check("potassium leaves through its channels and sodium enters through its own; the pump carries three sodium out and two potassium in for each cycle", ways["channel K"] === "out of the cell" && ways["channel Na"] === "into the cell" && ways["pump Na"] === "out of the cell" && ways["pump K"] === "into the cell" && through.readings.filter((reading) => reading.kind === "pump").map((reading) => reading.per).join() === "-3,2", JSON.stringify(ways));
     check("each stream's beads a second are its ions a second over the token", through.readings.every((reading) => Math.abs(reading.beads - (Math.abs(reading.mean) * 6.02214076e8) / through.token) <= 1e-6 * reading.beads), JSON.stringify(through.readings.map((reading) => [reading.name, reading.species, reading.mean, reading.beads])));
@@ -584,7 +590,18 @@ try {
     const lanes = Object.fromEntries((s.flow.lanes?.readings || []).map((reading) => [reading.name, reading]));
     const trueToken = s.flow.lanes?.token;
     check("pressing Transfers puts a lane of beads on each border a saved total crosses, and the picture states the token, the time and the interval", s.flow.lanes?.readings.length > 0 && /^One bead is [\d,]+ (molecule|ion)s? · true speed, shown still · mean of [\d.]+ s to [\d.]+ s$/.test(s.flow.statement[0] || ""), JSON.stringify([Object.keys(lanes), s.flow.statement]));
-    check("the slow-down stands beside the true speed, which is the one that is on", JSON.stringify(s.flow.time) === JSON.stringify(["True*", "1/1,000", "1/1,000,000"]), JSON.stringify(s.flow.time));
+    check("the legend keeps no clock of its own: the replay's speed is the timeline's, true speed as this short run opens", s.flow.time.length === 0 && s.flow.speed === 1 && s.flow.speedButton?.text === "1×" && /^True speed: one second here is one second of the run$/.test(s.flow.speedButton.title), JSON.stringify([s.flow.time, s.flow.speed, s.flow.speedButton]));
+    // A real press on the timeline's speed: the steps the run is offered, slower and faster, each in words.
+    await press("cells-timeline .tl-speed");
+    s = await until((now) => now.flow.speedsOpen);
+    check(
+      "a press on the timeline's speed lists the steps below true speed and above it, each saying what a second here is in the run",
+      s.flow.speedsOpen && s.flow.speeds.length >= 4 && s.flow.speeds.some((text) => /^1\/1,000,000×slowed 1,000,000 times: one second here is one microsecond of the run$/.test(text)) && s.flow.speeds.some((text) => /^1\/1,000×slowed 1,000 times: one second here is one millisecond of the run$/.test(text)) && s.flow.speeds.some((text) => /^1×true speed: one second here is one second of the run\*$/.test(text)) && s.flow.speeds.every((text) => /: one second here is .* of the run\*?$/.test(text)),
+      JSON.stringify(s.flow.speeds)
+    );
+    await shot("flow-speeds");
+    await press("cells-timeline .tl-speed");
+    s = await until((now) => !now.flow.speedsOpen);
     check("where nothing may move (a still picture) the beads stand, as many as would be crossing at one moment, and each lane that carries something ends in an arrowhead", s.flow.lanes.beads.every((count, n) => count === Math.min(18, Math.round(s.flow.lanes.readings[n].beads * 1.6))) && s.flow.lanes.drawn.heads === s.flow.lanes.readings.filter((reading) => reading.mean).length, JSON.stringify([s.flow.lanes.beads, s.flow.lanes.drawn]));
     if (reference) {
       for (const [name, wanted] of Object.entries(reference.lanes)) {
@@ -609,46 +626,66 @@ try {
       check("the glow's scale ends on a round number at or above the largest power of the run", close(s.flow.glow.full, reference.full, 1e-9), String(s.flow.glow.full));
     }
 
-    // The slow-down: a bead stands for fewer, and as many pass.
-    await press(option("time", "1000"));
-    s = await until((now) => now.flow.slow === 1000 && /slowed 1,000 times/.test(now.flow.statement[0] || ""));
+    // Slowed on the timeline, with real presses: a bead stands for fewer, and as many pass.
+    const step = (speed) => `cells-timeline .tl-speed-step[data-speed="${speed}"]`;
+    await press("cells-timeline .tl-speed");
+    await until((now) => now.flow.speedsOpen);
+    await press(step("0.001"));
+    s = await until((now) => now.flow.speed === 0.001 && /slowed 1,000 times/.test(now.flow.statement[0] || ""));
     const slowed = Object.fromEntries((s.flow.lanes?.readings || []).map((reading) => [reading.name, reading]));
     const same = s.flow.lanes.token * 1000 === trueToken ? Object.keys(lanes).every((name) => close(slowed[name].beads, lanes[name].beads, 1e-6)) : true;
     check(
-      "slowed a thousand times, a bead stands for a thousandth as many and as many beads pass; the picture and the legend say so",
-      s.flow.lanes.token === Math.max(1, trueToken / 1000) && same && s.flow.keys.some((text) => text.startsWith("Slowed 1,000 times: one second here is one millisecond in the cell")) && JSON.stringify(s.flow.time) === JSON.stringify(["True", "1/1,000*", "1/1,000,000"]),
-      JSON.stringify([trueToken, s.flow.lanes.token, s.flow.statement, s.flow.time])
+      "slowed a thousand times on the timeline, a bead stands for a thousandth as many and as many beads pass; the picture, the legend and the timeline say so",
+      s.flow.lanes.token === Math.max(1, trueToken / 1000) && same && s.flow.keys.some((text) => text.startsWith("Slowed 1,000 times: one second here is one millisecond of the run")) && s.flow.speedButton?.text === "1/1,000×" && !s.flow.speedsOpen,
+      JSON.stringify([trueToken, s.flow.lanes.token, s.flow.statement, s.flow.speedButton])
     );
-    await press(option("time", "1"));
-    s = await until((now) => now.flow.slow === 1);
+    await press("cells-timeline .tl-speed");
+    await until((now) => now.flow.speedsOpen);
+    await press(step("1"));
+    s = await until((now) => now.flow.speed === 1 && !now.flow.speedsOpen);
 
-    // Where things may move, beads set out and cross. Every other step here looks at a still picture (the page is opened
-    // with still=1): this one lets the view move for a moment, watches a lane, and puts the stillness back.
+    // Where things may move, the beads keep the replay's clock. Every other step here looks at a still picture (the page
+    // is opened with still=1, and paused at a time): this one lets the view move for a moment, first paused and then
+    // playing (slowed a thousand times, so that the playhead stays in this interval), and puts the stillness back.
     const moving = await evaluate(`(async () => {
-      const viewer = ${V}, lens = viewer.current, mark = lens.drawn.get("transfers").mark, lane = mark.lanes[0];
+      const viewer = ${V}, lens = viewer.current, player = lens.player, mark = lens.drawn.get("transfers").mark;
+      const lane = mark.lanes.reduce((most, item) => (item.perSecond > most.perSecond ? item : most), mark.lanes[0]);
       const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
       viewer.stage.rig.instant = false;
       lens.draw();
       viewer.stage.invalidate();
-      await wait(600);
-      const emptied = lane.beads.length; // the standing beads are gone or under way; from here on beads set out one by one
+      await wait(1200);
+      // Paused, nothing may be still on account of the view, yet the beads stand: the replay's clock does not run.
+      const paused = { playing: player.playing, still: lens.still(), beads: lane.beads.slice(), statement: lens.tags.flow.text };
+      await wait(1200);
+      paused.later = lane.beads.slice();
+      player.setSpeed(0.001);
+      player.play();
       await wait(2600);
-      const first = lane.beads.slice(), drawn = mark.drawn;
+      const first = lane.beads.slice(), drawn = mark.drawn, statement = lens.tags.flow.text, time = player.time;
       // A later look, once a frame has come (the browser of a check draws few frames a second): at most twenty seconds.
       let later = first;
       for (let tries = 0; tries < 100 && JSON.stringify(later) === JSON.stringify(first); tries++) {
         await wait(200);
         later = lane.beads.slice();
       }
+      player.pause();
+      const covered = player.time - time;
+      player.setSpeed(1);
       viewer.stage.rig.instant = true;
       lens.draw();
       viewer.stage.invalidate();
-      return { still: lens.still(), emptied, first, later, drawn, rate: mark.readings()[0].beads, standing: lane.beads.length };
+      return { paused, first, later, drawn, statement, covered, rate: mark.readings()[mark.lanes.indexOf(lane)].beads, still: lens.still(), standing: lane.beads.length };
     })()`);
     check(
-      "where things may move, beads set out one after another and travel: a lane holds about its rate times the crossing time, and its beads have moved a moment later",
-      moving.first.length >= 1 && moving.first.length <= Math.ceil(moving.rate * 1.6) + 1 && moving.first.every((share) => share > 0 && share < 1) && JSON.stringify(moving.first) !== JSON.stringify(moving.later) && moving.drawn.heads >= 1,
-      JSON.stringify({ rate: moving.rate, first: moving.first.map((share) => Number(share.toFixed(2))), later: moving.later.map((share) => Number(share.toFixed(2))), drawn: moving.drawn })
+      "paused, the beads stand although the view may move, and the picture says it is paused",
+      moving.paused.playing === false && moving.paused.still === false && JSON.stringify(moving.paused.beads) === JSON.stringify(moving.paused.later) && moving.paused.beads.length === Math.min(18, Math.round(moving.rate * 1.6)) && /, paused · /.test(moving.paused.statement || ""),
+      JSON.stringify(moving.paused)
+    );
+    check(
+      "played, beads set out one after another and travel in the replay's time: a lane holds about its rate times the crossing time, and its beads have moved a moment later",
+      moving.first.length >= 1 && moving.first.length <= Math.ceil(moving.rate * 1.6) + 1 && moving.first.every((share) => share > 0 && share < 1) && JSON.stringify(moving.first) !== JSON.stringify(moving.later) && moving.drawn.heads >= 1 && /slowed 1,000 times · /.test(moving.statement || "") && moving.covered > 0 && moving.covered < 0.05,
+      JSON.stringify({ rate: moving.rate, first: moving.first.map((share) => Number(share.toFixed(2))), later: moving.later.map((share) => Number(share.toFixed(2))), drawn: moving.drawn, statement: moving.statement, covered: moving.covered })
     );
     check("put back to a still picture, the beads stand again as many as would be crossing", moving.still === true && moving.standing === Math.min(18, Math.round(moving.rate * 1.6)), JSON.stringify([moving.still, moving.standing]));
 

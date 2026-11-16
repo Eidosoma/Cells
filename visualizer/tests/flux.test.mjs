@@ -17,8 +17,8 @@ import { fileURLToPath } from "node:url";
 import * as THREE from "three";
 import { openReplay, loadPart } from "../src/replay/source.js";
 import { readFlux, planFor, speaksFor, shownKinds, shownWithheld, illustrationWords, FLUX_FORMAT, PACE, FORMS } from "../src/layers/flux.js";
-import { readLoop, loopAt, loopStreams, loopToken, loopRates, planFromLoop, loopWords } from "../src/layers/loop.js";
-import { CellFlux, seatsOf, arrange, FLUX, PROBLEMS, SIZES, BLOOM, FLUX_PANEL, FLUX_SWITCH, STATEMENT } from "../src/layers/cellflux.js";
+import { readLoop, loopAt, loopStreams, loopToken, loopRates, planFromLoop, loopWords, closesWords, bordersOf, READ_WORDS } from "../src/layers/loop.js";
+import { CellFlux, seatsOf, arrange, FLUX, PROBLEMS, SIZES, BLOOM, FLUX_PANEL, FLUX_SWITCH, STATEMENT, REST_WORDS, CLOSE_PUMP } from "../src/layers/cellflux.js";
 import { Tokens, swell, RIM } from "../src/layers/marks/tokens.js";
 import { fitOnRow, clearOf } from "../src/layers/statement.js";
 import { CROSSING, standing, tokenFor, ionsASecond, beadsASecond, meanRate, STILL_WORDS, SLOWS } from "../src/layers/marks/beads.js";
@@ -417,9 +417,53 @@ test("the page opens with nothing flowing: the switch off, no bloom asked for, t
   assert.equal(legend.title, "Flux");
   assert.equal(legend.example, null, "no notice while nothing shows");
   assert.deepEqual(legend.rows, [{ channel: "motion", label: "Show", options: [{ label: "Off", off: FLUX_SWITCH, on: true }, { id: FLUX_SWITCH, label: "All", on: false, title: "Show all that flows in this cell" }] }]);
-  assert.equal(legend.hint, "Or choose a part to see its flux.");
+  // The cell's own drops, signals and ions move at rest: the legend says beside the switch that it is the picture's own motion.
+  assert.equal(legend.hint, `Or choose a part to see its flux. ${REST_WORDS}`);
+  assert.equal(REST_WORDS, "What moves at rest is the picture's own, not a measured flow.");
   assert.deepEqual([legend.keys, legend.cannot, legend.time, legend.details], [[], [], null, null]);
-  for (const part of ["water", "secretion", "channels", "pumps"]) assert.equal(flux.takes(part), false, "the picture's own drops, signals and ions stand as they are");
+  for (const part of ["water", "secretion", "channels", "pumps"]) assert.equal(flux.takes(part), false, "the picture's own drops, signals and ions are as they are");
+  assert.equal(flux.flowing, false);
+  // Where nothing may move, nothing is said of motion at rest.
+  assert.equal(lensFor("planarian", { stage: stageOf({ moving: false }) }).flux.legend().hint, "Or choose a part to see its flux.");
+});
+
+test("at rest the cell's own drops, signals and ions move; while flux shows they hold where they stood, and the chosen part's give way", () => {
+  const lens = lensFor("planarian");
+  const cell = lens.cells[lens.sizeMode];
+  Object.assign(lens, { clock: 0, fades: () => false, animate: (time, resting) => CellLens.prototype.animate.call(lens, time, resting) });
+  const update = (ms) => CellLens.prototype.update.call(lens, ms);
+  const drop = cell.streams[0].drops[0], signal = cell.signals[0], ion = cell.molecule.ions[0];
+  const where = () => [drop, signal, ion].map((item) => item.position.toArray().map((value) => Number(value.toFixed(9))).join());
+  assert.ok(drop && signal && ion, "the planarian's cell has drops, signals and a channel's ions");
+  update(16);
+  const first = where();
+  assert.equal(update(100), true, "frames keep coming while they move");
+  const moved = where();
+  assert.ok(moved.every((at, k) => at !== first[k]), "at rest each moves");
+  // A pump chosen: its flux shows. The other parts' tokens hold where they stood; none is hidden but the pump's own (it has none).
+  lens.choose("cap.pumps");
+  assert.equal(lens.flux.flowing, true);
+  update(100);
+  assert.deepEqual(where(), moved, "held while flux shows");
+  assert.ok([drop, signal, ion].every((item) => item.visible));
+  // Water chosen: its drops give way to the beads; the others still hold.
+  lens.choose(lens.capabilityByPart.get("water").id);
+  update(100);
+  assert.deepEqual([drop.visible, signal.visible, ion.visible], [false, true, true]);
+  assert.deepEqual(where().slice(1), moved.slice(1));
+  // Nothing chosen: they move on from where they stood, by one frame and no more.
+  lens.choose(null);
+  update(16);
+  const after = where();
+  assert.ok(after.every((at, k) => at !== moved[k]) && drop.visible);
+  const step = (a, b) => Math.hypot(...a.split(",").map((value, k) => Number(value) - Number(b.split(",")[k])));
+  assert.ok(step(after[1], moved[1]) < step(moved[1], first[1]), "no jump: a frame of 16 ms moves a signal less than one of 100 ms did");
+  // For a visitor who asks for less motion they stand, as before.
+  lens.stage.reducedMotion = true;
+  update(100);
+  const still = where();
+  update(100);
+  assert.deepEqual(where(), still);
 });
 
 test("choosing a part shows that part's flux alone, with bloom, the look's motion held and the notice on the picture", () => {
@@ -485,7 +529,7 @@ test("a part that the page's address names is chosen as the page opens and shows
   assert.deepEqual([stage.bloom, stage.shining.size, stage.decoration.holds.size], [0, 0, 0]);
   assert.ok(lens.labels.made.every((label) => label.hidden), "and the picture says nothing of flux");
   assert.equal(flux.legend().example, null);
-  assert.equal(flux.legend().hint, "Or choose a part to see its flux.");
+  assert.equal(flux.legend().hint, `Or choose a part to see its flux. ${REST_WORDS}`);
   assert.equal(flux.takes("pumps"), false);
   // The part's panel still says what would flow through it, and on what basis.
   assert.equal(flux.inPanel(lens.model.get("cap.pumps")).sections.at(-1).title, "Flux. Illustration: not a run");
@@ -745,7 +789,7 @@ test("every species goes through its own file: what its cell lacks is never offe
   const legend = cress.flux.legend();
   assert.equal(legend.example, null);
   assert.deepEqual(legend.cannot.map((item) => item.label), ["Sodium–potassium pump", "Calcium pump"]);
-  assert.deepEqual([legend.compact, legend.hint, legend.keys], ["Why nothing is drawn here", null, []]);
+  assert.deepEqual([legend.compact, legend.hint, legend.keys], ["Why nothing is drawn here", REST_WORDS, []], "nothing flows, so the cell's own tokens move, and the legend says what that motion is");
   assert.match(legend.cannot[0].why, /^No direction is drawn for Thale cress: its file says of its own part, “Not the sodium-potassium pump of animal cells/);
   assert.deepEqual(cress.flux.inPanel(cress.model.get("cap.pumps")).sections.at(-1).items.map((item) => item.label), ["Sodium–potassium pump: not drawn", "Calcium pump: not drawn"]);
   cress.choose(null);
@@ -804,6 +848,41 @@ test("drawn to scale, lanes of the channel's own size stand in the close-up, whe
   assert.equal(minimal.flux.tokens.length, 1);
 });
 
+test("drawn to scale, the close-up's pump has lanes of its own size, over the pump where the cell's builder stands it", () => {
+  const lens = lensFor("planarian", { mode: "real" });
+  lens.choose("cap.pumps");
+  assert.equal(lens.flux.tokens.length, 2);
+  const [wide, close] = lens.flux.tokens;
+  assert.deepEqual([wide.zone.name, close.zone.name], ["cell", "molecules"]);
+  // The close-up has one pump: the sodium–potassium pump's two lanes stand there, sodium out and potassium in, by the engine's law.
+  assert.deepEqual(close.lanes.map((item) => [item.lane.key, item.reverse]), [["pumps/sodium-potassium/sodium", true], ["pumps/sodium-potassium/potassium", false]]);
+  const nm = 0.001 / lens.cells.real.frame.u;
+  assert.ok(near(close.tokens.radius, 0.3 * nm));
+  // Where the builder stands the pump: its lobes, recorded as it adds them.
+  const lobes = [], recording = context(), made = recording.part;
+  recording.part = (name, anchor) => {
+    const part = made(name, anchor);
+    if (name === "pumps") part.add = (mesh) => lobes.push(mesh.position.clone());
+    return part;
+  };
+  buildMolecules(recording, "real", lens.cells.real.frame, lens.draws);
+  assert.equal(lobes.length, 3, "the builder's pump has three lobes");
+  const middle = close.lanes[0].path(0.5).add(close.lanes[1].path(0.5)).multiplyScalar(0.5);
+  assert.ok(Math.hypot(middle.x - lobes[0].x, middle.z - lobes[0].z) < 0.01 * nm, `the lanes cross the membrane where the pump's main lobe stands (${CLOSE_PUMP.beside} nm from the channel)`);
+  assert.ok(near(middle.y - lobes[0].y, (CLOSE_PUMP.over - 0.5) * nm, 1e-6), "over its lobes, clear of them");
+  assert.ok(near(close.lanes[0].path(0).distanceTo(close.lanes[0].path(1)), 22 * nm, 1e-6), "22 nm from end to end, as through the channel");
+  assert.ok(near(close.lanes[0].path(0.5).distanceTo(close.lanes[1].path(0.5)), CLOSE_PUMP.pitch * nm, 1e-6));
+  // All of it: the channel's lanes and the pump's share the close-up.
+  lens.choose(null);
+  lens.flux.setOn(true);
+  const near_ = lens.flux.tokens.find((set) => set.zone.name === "molecules");
+  assert.deepEqual(near_.lanes.map((item) => item.lane.key), ["channels/ions/in", "channels/ions/out", "pumps/sodium-potassium/sodium", "pumps/sodium-potassium/potassium"]);
+  // Thale cress: the engine's pump law does not speak for its pumps, so the close-up has no pump lanes.
+  const cress = lensFor("thalecress", { mode: "real" });
+  cress.flux.setOn(true);
+  assert.ok(!cress.flux.tokens.some((set) => set.lanes.some((item) => item.lane.key.startsWith("pumps/"))));
+});
+
 // ------------------------------------------------------------ a species' looping run (rule 7), against a fixture made here
 
 // The fixture is test-only: the example sheet of the run-fixture tool, packaged by the run adapter as the page
@@ -819,13 +898,13 @@ for (const [tool, args] of [["make_run_fixture.py", ["--out", FIXTURES]], ["adap
 const SHEET = "example-sheet--invented-numbers";
 const readJson = (file) => JSON.parse(readFileSync(file, "utf8"));
 const CATALOGUE = readJson(path.join(PACKAGED, "index.json"));
-const CLOSES = { within: 1e-9, says: "The fixture's last record is taken to meet its first." };
-/** The packaged example, opened with every record read in; `change(view)` makes it say what a loop would. */
-async function opened(change = null) {
-  const file = readJson(path.join(PACKAGED, `${SHEET}.json`));
+const CLOSES = { within: 1e-9, tolerance: 1e-6, says: "The fixture's last record is taken to meet its first." };
+/** The packaged example (or another packaged fixture), opened with every record read in; `change(view)` makes it say what a loop would. */
+async function opened(change = null, id = SHEET) {
+  const file = readJson(path.join(PACKAGED, `${id}.json`));
   const parts = Object.fromEntries((file.view.parts || []).map((part) => [part.id, readJson(path.join(PACKAGED, path.basename(part.file)))]));
   if (change) change(file.view);
-  const run = openReplay(file, CATALOGUE.runs.find((row) => row.id === SHEET));
+  const run = openReplay(file, CATALOGUE.runs.find((row) => row.id === id));
   const fetcher = async (url) => {
     const part = Object.values(parts).find((item) => url.endsWith(`.${item.part}.json`));
     return { ok: Boolean(part), status: part ? 200 : 404, json: async () => part };
@@ -838,7 +917,7 @@ const asLoop = (cell, more = {}) => (view) => {
   delete view.example;
   view.run.engine_models = ["fixture_model@1"];
   view.run.revision = "0000000";
-  view.loop = { species: "planarian", cell, closes: CLOSES, ...more };
+  view.loop = { species: "planarian", cell, period: view.run.end_s, closes: CLOSES, ...more };
 };
 /** A cell of the sheet's written disc, where every stream runs. */
 const discOf = (run) => run.sets.get("cell").ids.findIndex((_, cell) => run.records.get("vm").at(0, cell) > -0.05);
@@ -863,7 +942,34 @@ test("a run is read as a species' loop only where it says so, names the engine, 
   assert.match(readLoop(run, "human").why, /^The run is the loop of another species' cell \(planarian\)\.$/);
   assert.match(readLoop(await opened(asLoop("no-such-cell")), "planarian").why, /^The run has no cell called no-such-cell\.$/);
   assert.match(readLoop(await opened(asLoop(cell, { closes: undefined })), "planarian").why, /does not say that its end meets its start/);
-  assert.match(readLoop(await opened(asLoop(cell, { closes: { within: 1e-9 } })), "planarian").why, /does not say that its end meets its start/);
+  assert.match(readLoop(await opened(asLoop(cell, { closes: { within: 1e-9, says: "said" } })), "planarian").why, /does not say that its end meets its start within a tolerance/, "the block the engine writes declares its tolerance");
+  assert.equal(readLoop(await opened(asLoop(cell, { closes: { within: 2e-6, tolerance: 1e-6, says: "said" } })), "planarian").why, "The run's last record meets its first within 2.0e-6, above its own tolerance of 1.0e-6: it is not played as a loop.");
+  // The period is the loop's length, and must be the records' span.
+  assert.equal(read.loop.length, run.end - run.start);
+  assert.match(readLoop(await opened(asLoop(cell, { period: 11 })), "planarian").why, /^The run's loop gives a period of 11, and its records span 12 s: they must be the same\.$/);
+  assert.match(readLoop(await opened(asLoop(cell, { period: undefined })), "planarian").why, /gives a period of none/);
+  assert.equal(closesWords(read.loop), "Its last record meets its first within 1.0e-9 (tolerance 1.0e-6)");
+  // The revision: the package's own, or where it carries the engine's source instead, that one, with its dirty flag.
+  const sourced = readLoop(await opened((view) => {
+    asLoop(cell)(view);
+    delete view.run.revision;
+    view.run.source = { revision: "abc1234", dirty: true };
+  }), "planarian");
+  assert.deepEqual([sourced.ok, sourced.loop?.revision, sourced.loop?.dirty], [true, "abc1234", true]);
+  // A cycle: from a time the loop follows a daughter cell. It is carried, and the picture says so; nothing is refused for it.
+  const daughter = run.sets.get("cell").ids.find((id) => id !== cell);
+  const cycle = readLoop(await opened(asLoop(cell, { follows: [{ time: 6, from: cell, to: daughter }] })), "planarian");
+  assert.equal(cycle.ok, true);
+  assert.deepEqual(cycle.loop.follows, [{ time: 6, from: cell, to: daughter }]);
+  assert.match(loopWords(cycle.loop, "JCVI-syn3A", clock), new RegExp(`· a loop of 12 s of the cell's time · from 6 s it follows ${daughter}, a daughter of ${cell}$`));
+  assert.match(readLoop(await opened(asLoop(cell, { follows: [{ time: 6, from: cell, to: "no-such-cell" }] })), "planarian").why, /^The loop follows a cell the run does not have/);
+  // A run's own label stands beside its name, whatever it says of the run.
+  const label = "one period of a periodic drive, at a low level of detail (illustration)";
+  const paced = readLoop(await opened((view) => {
+    asLoop(cell)(view);
+    view.run.label = label;
+  }), "planarian");
+  assert.equal(loopWords(paced.loop, "Generic cell", clock), `Generic cell · the engine's looping run ${SHEET} (${label}) · a loop of 12 s of the cell's time`);
   const unnamed = await opened((view) => {
     asLoop(cell)(view);
     view.run.engine_models = [];
@@ -889,10 +995,22 @@ test("the loop's rates are means inside the loop, never across its seam", async 
     const at = loopAt(loop, (k / 400) * loop.length * 2.5);
     assert.ok(at.step >= 1 && at.step <= run.count - 1 && at.interval[1] > at.interval[0] && at.time >= run.start && at.time < run.end);
   }
-  // The streams through the loop's cell, as the replay's bead layer reads them.
+  // The streams through the loop's cell, as the replay's bead layer reads them; then across its junctions, as the transfers layer does.
   const read = loopStreams(loop);
   assert.equal(read.ok, true);
-  assert.deepEqual(read.streams.map((stream) => [stream.kind, stream.species, stream.per]), [["channel", "K", 1], ["channel", "Na", 1], ["pump", "Na", -3], ["pump", "K", 2], ["membrane", "K", 1], ["membrane", "M", 1]]);
+  assert.deepEqual(read.streams.slice(0, 6).map((stream) => [stream.kind, stream.species, stream.per]), [["channel", "K", 1], ["channel", "Na", 1], ["pump", "Na", -3], ["pump", "K", 2], ["membrane", "K", 1], ["membrane", "M", 1]]);
+  // A junction stream for each junction that has the cell at one end, and each species whose total there ever changes: a
+  // positive total leaves the cell where the cell is the junction's sender, by the total's declared sign, and enters it otherwise.
+  const junctions = run.sets.get("junction"), crossing = read.streams.slice(6);
+  assert.ok(crossing.length > 0 && crossing.every((stream) => stream.kind === "junction" && stream.per === 1));
+  for (const stream of crossing) {
+    const ends = junctions.geometry.ends[stream.entity];
+    assert.ok(ends.includes(loop.cell), stream.name);
+    assert.equal(stream.out, ends[0] === loop.cell, `${stream.name}: the cell is ${ends[0] === loop.cell ? "its sender" : "its receiver"}`);
+    assert.match(stream.source.sign.says, /sender/);
+  }
+  const touching = junctions.geometry.ends.filter((ends) => ends.includes(loop.cell)).length;
+  assert.ok(new Set(crossing.map((stream) => stream.name)).size <= touching);
   // The busiest of this cell's streams over any interval of the loop sizes the token.
   let most = 0;
   for (const stream of read.streams) for (let step = 1; step < run.count; step++) most = Math.max(most, Math.abs(meanRate(run, stream.record, stream.entity, step) * stream.per));
@@ -924,9 +1042,13 @@ test("with a looping run the Cell view shows the run and no illustration, even f
   const { flux, stage } = lens;
   assert.deepEqual(flux.setLoop("planarian", run), { ok: true });
   assert.equal(flux.source.kind, "run");
-  // What the run has saved is drawn from it; the rest is named as not read, and illustration never fills it in.
-  assert.deepEqual(kindsOf(flux.plan), ["channels", "pumps", "membrane"]);
-  assert.deepEqual(flux.plan.withheld.map((item) => [item.id, item.why.split(":")[0]]), [["junctions", "Not read from the run"], ["water", "Not read from the run"], ["secretion", "Not read from the run"], ["fuel", "Not read from the run"]]);
+  // What the run has saved is drawn from it; the rest is named as not read, or as not saved, and illustration never fills it in.
+  assert.deepEqual(kindsOf(flux.plan), ["channels", "pumps", "junctions", "membrane"]);
+  assert.deepEqual(flux.plan.withheld.map((item) => [item.id, item.why]), [
+    ["water", `Not read from the run: ${READ_WORDS}, and no total of this is among them.`],
+    ["secretion", "The run saved no total for it."],
+    ["fuel", FLUX.kinds.find((kind) => kind.id === "fuel").nothing],
+  ]);
   assert.equal(flux.tokens.length, 0, "the switch is still off");
   lens.choose("cap.water");
   assert.equal(flux.tokens.length, 0, "no bead is drawn for water: the run says nothing of it, and illustration is not mixed in");
@@ -949,7 +1071,7 @@ test("with a looping run the Cell view shows the run and no illustration, even f
   assert.deepEqual(legend.time.options.map((option) => [option.id, option.label, option.on]), [[1, "True", true], [1000, "1/1,000", false], [1000000, "1/1,000,000", false]]);
   assert.deepEqual(legend.keys.map((item) => item.key), ["ions", "bead", "time", "way", "head", "pump"]);
   assert.equal(legend.keys[1].text, `One bead is ${token.toLocaleString("en-US")} ions. More beads a second means more of them a second; how fast a bead travels stands for nothing`);
-  assert.equal(legend.keys[2].text, `True speed: one second here is one second in the cell. The run loops: ${clock(run.end - run.start)} of the cell's time, then again from its start`);
+  assert.equal(legend.keys[2].text, `True speed: one second here is one second of the run. The run loops: ${clock(run.end - run.start)} of the cell's time, then again from its start`);
   assert.equal(legend.keys[3].text, "A bead goes the way its total grew over the interval shown, by the run's own signs");
   assert.equal(flux.inPanel(lens.model.get("cap.pumps")).sections.at(-1).title, "Flux, from the looping run");
   // Time passes at true speed: the interval shown moves on with the loop, and comes round to its start.
@@ -974,13 +1096,14 @@ test("with a looping run the Cell view shows the run and no illustration, even f
   // The panel behind all of it names the run and says that no rate crosses the seam.
   lens.choose(null);
   flux.setOn(true);
-  assert.equal(lanesOf(lens).length, 6, "six streams, six lanes");
+  assert.equal(lanesOf(lens).length, flux.loop.streams.length, "one lane a stream");
+  assert.ok(flux.loop.streams.length > 6, "the six through the membrane, and those across the junctions");
   const panel = flux.describe(FLUX_PANEL);
   assert.equal(panel.chips[0].label, "From the looping run");
-  assert.match(panel.plain, new RegExp(`^Planarian · the engine's looping run ${SHEET} · a loop of .* of the cell's time\\. ${CLOSES.says}$`));
+  assert.equal(panel.plain, `Planarian · the engine's looping run ${SHEET} · a loop of ${clock(run.end - run.start)} of the cell's time. ${CLOSES.says} Its last record meets its first within 1.0e-9 (tolerance 1.0e-6).`);
   assert.match(panel.note, /no difference is taken across the seam/);
   assert.deepEqual(panel.sections.map((section) => section.title), ["Drawn", "Not drawn", "Over the interval shown"]);
-  assert.equal(panel.sections[2].items.length, 6);
+  assert.equal(panel.sections[2].items.length, flux.loop.streams.length);
   assert.deepEqual([stage.bloom, [...stage.decoration.holds]], [BLOOM, ["flux"]]);
   // Another species keeps illustration: the run is the planarian's.
   const other = lensFor("human");
@@ -993,13 +1116,46 @@ test("with a looping run the Cell view shows the run and no illustration, even f
   assert.equal(refused.flux.source.kind, "illustration");
 });
 
+test("a loop's exchange routes are read as its secreted signals: released out, taken up in, by the run's own signs", async () => {
+  const WORLD = "synthetic-world--secreting";
+  const plain = await opened(null, WORLD);
+  const cell = plain.sets.get("cell").ids[0];
+  const run = await opened(asLoop(cell), WORLD);
+  const { loop } = readLoop(run, "planarian");
+  const read = loopStreams(loop);
+  assert.equal(read.ok, true, read.why);
+  // The world's two routes on its cell's membrane, each with the species it carries; its face joins two spaces outside, not the cell.
+  assert.deepEqual(read.streams.map((stream) => [stream.kind, stream.name, stream.species, stream.out]), [["route", "secrete", "S", true], ["route", "sink", "S", true]]);
+  // An import route's total falls: over any interval its beads go into the cell; the export's go out.
+  const step = 2, token = loopToken(read.busiest, 1);
+  const [secrete, sink] = loopRates(loop, read.streams, step, token, 1);
+  assert.deepEqual([secrete.out, sink.out], [true, false]);
+  assert.ok(near(secrete.mean, meanRate(run, read.streams[0].record, read.streams[0].entity, step)));
+  // In the Cell view: the signals' lanes are the run's two routes, and nothing else of the run is drawn.
+  const lens = lensFor("planarian");
+  assert.deepEqual(lens.flux.setLoop("planarian", run), { ok: true });
+  assert.deepEqual(kindsOf(lens.flux.plan), ["secretion"]);
+  assert.deepEqual(lens.flux.plan.kinds[0].groups[0].lanes.map((lane) => lane.label), ["secrete · S", "sink · S"]);
+  assert.equal(lens.flux.plan.withheld.find((item) => item.id === "channels").why, "The run saved no total for it.");
+  lens.choose("cap.secretion");
+  assert.equal(lanesOf(lens).length, 2);
+  lens.flux.advance(0);
+  assert.deepEqual(lens.flux.tokens[0].tokens.lanes.map((lane) => lane.reverse), lens.flux.readings().map((rate) => rate.out === true));
+  // A route whose amounts do not add up has no declared way, and is not read (rule 1).
+  const loose = await opened(asLoop(cell), "synthetic-world--unbalanced");
+  assert.deepEqual(loopStreams(readLoop(loose, "planarian").loop).streams.filter((stream) => stream.kind === "route"), []);
+  // The reader alone: a total with no declared direction gives no stream.
+  const across = bordersOf(run, [{ id: "exchange_moved_fmol", set: read.streams[0].source.set, sign: { says: "unknown" } }], loop.cell);
+  assert.deepEqual(across, []);
+});
+
 test("a run that is the species' loop and cannot be read still stands in illustration's place", async () => {
   const plain = await opened();
   const cell = plain.sets.get("cell").ids[discOf(plain)];
-  // The same loop, with no total of what its channel populations carried: the bead layer has nothing to read.
+  // The same loop, with no total of what its channel populations or its junctions carried: nothing the viewer reads of a loop is left.
   const bare = await opened((view) => {
     asLoop(cell)(view);
-    const gone = new Set(view.records.filter((record) => /^channel_transferred/.test(record.id) || /^channel_transferred/.test(record.field || "")).map((record) => record.id));
+    const gone = new Set(view.records.filter((record) => /^(channel|junction)_transferred/.test(record.id) || /^(channel|junction)_transferred/.test(record.field || "")).map((record) => record.id));
     view.records = view.records.filter((record) => !gone.has(record.id));
   });
   assert.equal(readLoop(bare, "planarian").ok, true);
@@ -1011,7 +1167,8 @@ test("a run that is the species' loop and cannot be read still stands in illustr
   assert.deepEqual([answer.ok, answer.reads, answer.why], [true, false, unread.why]);
   assert.equal(lens.flux.source.kind, "run", "the species has a run: illustration is no longer shown for it");
   assert.deepEqual(kindsOf(lens.flux.plan), []);
-  assert.deepEqual(lens.flux.plan.withheld.map((item) => [item.id, item.why === unread.why]), [["channels", true], ["pumps", true], ["junctions", false], ["water", false], ["secretion", false], ["fuel", false], ["membrane", true]]);
+  assert.match(unread.why, /^The run saved no total of anything that crossed this cell's borders that the viewer reads/);
+  assert.deepEqual(lens.flux.plan.withheld.map((item) => [item.id, item.why === unread.why]), [["channels", true], ["pumps", true], ["junctions", true], ["water", false], ["secretion", true], ["fuel", false], ["membrane", true]]);
   lens.flux.setOn(true);
   assert.equal(lens.flux.tokens.length, 0);
   assert.equal(lens.flux.legend().example, null);

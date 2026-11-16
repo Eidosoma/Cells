@@ -14,7 +14,9 @@
 // own, they lie flat beside the cells, never as prisms: a small world of one cell and its
 // surroundings. A layer on the motion channel draws beads for what the run's saved totals
 // say crossed a border between two records; the picture then states what one bead stands
-// for and what time it keeps (rule 3). A run whose numbers are invented says "Example:
+// for and at what speed the replay runs (rule 3). The playhead is the replay's one clock:
+// the beads keep its time, stand while it is paused, and are slowed or made faster with it
+// from the timeline. A run whose numbers are invented says "Example:
 // invented numbers" on the picture for as long as it shows (rule 6).
 //
 // It shows what the run saved. Every step is a saved record and nothing is interpolated;
@@ -24,7 +26,7 @@
 import * as THREE from "../three.js";
 import { disposeTree } from "../core/stage.js";
 import { loadRun, loadPart } from "../replay/source.js";
-import { Player } from "../replay/player.js";
+import { Player, speedWords } from "../replay/player.js";
 import { Catalogue, RUN, CELL } from "../replay/catalogue.js";
 import { Ramp, parse } from "../replay/ramp.js";
 import { clock, display, niceDomain, number, rateDisplay } from "../replay/format.js";
@@ -32,7 +34,7 @@ import "../replay/trace.js";
 import { MARKS } from "../layers/marks/index.js";
 import { paint } from "../layers/marks/tint.js";
 import { paintOutside } from "../layers/marks/fog.js";
-import { SLOWS, statementOf, timeWords } from "../layers/marks/beads.js";
+import { statementOf } from "../layers/marks/beads.js";
 import { worldOf } from "../layers/world.js";
 import { raise } from "../layers/marks/relief.js";
 import { layersFor, readDeclarations, account, Switch, CHANNELS, CHANNEL_WORDS, STRENGTHS } from "../layers/layers.js";
@@ -89,7 +91,6 @@ export class ReplayLens {
     this.closeup = null;
     this.onMembrane = new Map(); // the id of a layer that lives on a membrane and is on -> { layer, fed, mark }
     this.memos = new Map(); // what a mark worked out once for the run shown (the scale of its arrows)
-    this.slow = 1; // how much a layer on the motion channel is slowed: 1 is true speed
     this.glass = new THREE.Color();
     this.raised = new THREE.Color();
     this.ions = new Map(); // species id -> { css, colour } for the run shown and the theme
@@ -100,6 +101,14 @@ export class ReplayLens {
       if (!this.player.playing) this.numbersMoved();
     });
     this.player.addEventListener("state", () => {
+      // Played, paused or set to another speed: the beads of a layer that moves keep this clock. They stand or set
+      // out, a bead stands for the number that suits the speed, and the picture and the legend say so.
+      const marks = [...this.drawn.values(), ...this.onMembrane.values()].filter(({ mark }) => mark.retime);
+      for (const { mark } of marks) mark.retime();
+      if (marks.length) {
+        this.draw();
+        this.onChrome?.();
+      }
       this.stage.invalidate();
       this.numbersMoved();
     });
@@ -490,7 +499,7 @@ export class ReplayLens {
     for (const { mark } of this.drawn.values()) mark.dispose();
     this.drawn.clear();
     if (!this.surface) return this.shine();
-    const context = { surface: this.surface, run: this.run, scaleOf: (record) => this.scaleOf(record), shown: display, strength: this.switch.strength, colours: this.colours(), slow: () => this.slow, still: () => this.still(), ions: this.knownIons() };
+    const context = { surface: this.surface, run: this.run, scaleOf: (record) => this.scaleOf(record), shown: display, strength: this.switch.strength, colours: this.colours(), ...this.clockOf(), ions: this.knownIons() };
     for (const id of this.switch.on) {
       const fed = this.offer(id);
       if (!fed?.ok || fed.parts.length || this.livesOnMembrane(fed)) continue;
@@ -531,7 +540,7 @@ export class ReplayLens {
       if (!this.memos.has(key)) this.memos.set(key, make());
       return this.memos.get(key);
     };
-    const context = { surface: this.closeup.surface, run: this.run, membrane: membrane.index, strength: this.switch.strength, colours: this.colours(), memo, slow: () => this.slow, still: () => this.still() };
+    const context = { surface: this.closeup.surface, run: this.run, membrane: membrane.index, strength: this.switch.strength, colours: this.colours(), memo, ...this.clockOf() };
     for (const fed of on) this.onMembrane.set(fed.layer.id, { layer: fed.layer, fed, mark: MARKS[fed.layer.mark].create({ ...context, layer: fed.layer, fed }) });
     this.tags = null;
     // Once the window has settled (a panel may be opening), the view makes room for the close-up if it has none.
@@ -542,6 +551,11 @@ export class ReplayLens {
   /** Whether nothing may move: the visitor asks for less motion, or the picture is a still one. */
   still() {
     return Boolean(this.stage.reducedMotion || this.stage.rig?.instant);
+  }
+
+  /** The replay's clock as a mark that moves keeps it: the playhead's speed, whether it stands, and whether nothing may move. */
+  clockOf() {
+    return { speed: () => this.player.speed, paused: () => !this.player.playing, still: () => this.still() };
   }
 
   /** The species of the run shown that the page knows as ions (data/layers/ions.json): a bead of another species is a token of molecules. */
@@ -631,14 +645,15 @@ export class ReplayLens {
     // On a wide window the close-up also says what its signs are; on a narrow one the legend alone does, to keep the card low.
     const notes = this.stage.width >= 760 ? [...this.onMembrane.values()].map(({ mark }) => mark.note?.(number)).filter(Boolean) : [];
     // What a motion layer must state on the picture itself (rule 3), and that an example's numbers are invented (rule 6): on a window of any width.
-    const flow = [...this.onMembrane.values()].map(({ mark }) => this.statement(mark)).filter(Boolean);
+    // The interval its rate is a mean over stands on a line of its own, so that no time is broken between its number and its unit.
+    const flow = [...this.onMembrane.values()].map(({ mark }) => this.statement(mark)?.replace(/ · (?=[^·]*$)/, "\n")).filter(Boolean);
     return [...(run.example ? [run.example.says] : []), `${which} at ${clock(this.player.time, { precise: true })}`, this.catalogue.title(entry), ...flow, `Worked out by the viewer from ${from}.`, ...notes].join("\n");
   }
 
-  /** What a mark on the motion channel states on the picture: what one bead stands for, the time it keeps, the interval its rate is a mean over. */
+  /** What a mark on the motion channel states on the picture: what one bead stands for, the replay's speed, the interval its rate is a mean over. */
   statement(mark) {
     if (!mark?.interval || mark.token === undefined) return null;
-    return statementOf({ token: mark.token, what: mark.what || "ion", slow: this.slow, interval: mark.interval(), clock: (seconds) => clock(seconds, { precise: true }), still: this.still() });
+    return statementOf({ token: mark.token, what: mark.what || "ion", speed: this.player.speed, interval: mark.interval(), clock: (seconds) => clock(seconds, { precise: true }), still: this.still(), paused: !this.player.playing });
   }
 
   /** Place the close-up for the frame about to be drawn: in the free part of the window, by its cell. */
@@ -728,7 +743,8 @@ export class ReplayLens {
     if (!reading.mean) return { label, detail: "nothing in this interval", lines: [totals] };
     const way = reading.way || `from ${reading.from} to ${reading.to}`;
     const each = Math.round(reading.particles).toLocaleString("en-US");
-    return { label, detail: `${number(Math.abs(reading.mean) * speed.factor, 3)} ${speed.unit} ${way}${per}`, lines: [totals, `${each} ${what}s a second; one bead is ${token.toLocaleString("en-US")}, so ${number(reading.beads, 2)} beads a second pass${this.slow > 1 ? `, slowed ${this.slow.toLocaleString("en-US")} times` : ""}`] };
+    const pace = this.player.speed === 1 ? "" : `, ${speedWords(this.player.speed).phrase}`;
+    return { label, detail: `${number(Math.abs(reading.mean) * speed.factor, 3)} ${speed.unit} ${way}${per}`, lines: [totals, `${each} ${what}s a second of the run; one bead is ${token.toLocaleString("en-US")}, so ${number(reading.beads, 2)} beads a second pass${pace}`] };
   }
 
   /**
@@ -1228,10 +1244,8 @@ export class ReplayLens {
     // A layer on a membrane is drawn for a chosen cell: with none chosen, the switch says how to see it.
     const waiting = this.layersOn().filter((item) => this.livesOnMembrane(item.fed) && !this.onMembrane.has(item.layer.id));
     const hint = waiting.length ? "Choose a cell of the sheet: a piece of its membrane is drawn beside it." : null;
-    // The time a layer on the motion channel keeps: true speed as it opens, and a slow-down beside it.
-    const moving = this.layersOn().some((item) => item.layer.channels.includes("motion"));
-    const time = moving ? { label: "Speed", options: SLOWS.map((value) => ({ id: value, label: value === 1 ? "True" : `1/${value.toLocaleString("en-US")}`, title: timeWords(value), on: this.slow === value })) } : null;
-    return { title: "Layers", rows, cannot, keys, hint, time, example: this.run.example?.says || null, strength: { options: STRENGTHS.map((value) => ({ id: value, label: value.charAt(0).toUpperCase() + value.slice(1), on: this.switch.strength === value })) }, details: this.layersOn().length ? LAYERS : null };
+    // A layer on the motion channel keeps the replay's own time: its speed is set on the timeline, and the legend has no clock of its own.
+    return { title: "Layers", rows, cannot, keys, hint, example: this.run.example?.says || null, strength: { options: STRENGTHS.map((value) => ({ id: value, label: value.charAt(0).toUpperCase() + value.slice(1), on: this.switch.strength === value })) }, details: this.layersOn().length ? LAYERS : null };
   }
 
   /** What the panel says of the layers that are on: what each shows and what stands behind its numbers (rule 4). */
@@ -1413,17 +1427,18 @@ export class ReplayLens {
   }
 
   update(dt) {
+    // One clock: the beads of a layer that moves are advanced by the run's time the playhead covered in this frame,
+    // over its speed, so that as much of the run passes for them as for the playhead, on a slow device as on a fast
+    // one. Paused, nothing passes and they stand; a jump of the playhead sets no bead out.
+    // The playhead takes the stage's frame (at most a tenth of a second), as it always did: on a slow device the replay,
+    // and its beads with it, run more slowly than the speed stated, together.
+    const before = this.player.time, was = this.player.playing;
     const playing = this.active ? this.player.tick(dt) : false;
+    const covered = was && this.active ? Math.max(0, this.player.time - before) : 0;
     this.placeCloseup();
     this.placeFlow();
-    // A mark that moves (a layer on the motion channel) is advanced on every frame, and keeps the frames coming. It
-    // is advanced by the time that truly passed since the frame before: the stage hands a frame at most a tenth of a
-    // second, which on a slow device would let the beads pass more slowly than the picture says they do.
-    const clock = globalThis.performance?.now?.() ?? null;
-    const passed = clock !== null && this.ticked !== undefined && this.ticked !== null ? Math.max(dt, clock - this.ticked) : dt;
     let moving = false;
-    if (this.active) for (const { mark } of [...this.drawn.values(), ...this.onMembrane.values()]) if (mark.tick) moving = mark.tick(passed, this.slow) || moving;
-    this.ticked = moving ? clock : null; // a lane that was not watched starts afresh: its first frame is the stage's own
+    if (this.active && covered > 0) for (const { mark } of [...this.drawn.values(), ...this.onMembrane.values()]) if (mark.tick) moving = mark.tick((covered / this.player.speed) * 1000) || moving;
     // A close-up just built waits a moment for the window to settle, then asks for room once.
     let waiting = false;
     if (this.closeup && this.roomIn > 0) {
@@ -1454,20 +1469,6 @@ export class ReplayLens {
       this.coveredAge = 0;
     }
     clearOf({ stage: this.stage, blocked: this.covered, home: this.flowHome, wide: flow.width || 0, tall: flow.height || 0, lift: flow.lift || 0, out: flow.anchor });
-  }
-
-  /**
-   * How much a layer on the motion channel is slowed: 1 is true speed (a second here is a
-   * second in the cell). The legend states it with what one token stands for (rule 3).
-   */
-  setSlow(value) {
-    if (!(value >= 1) || value === this.slow) return;
-    this.slow = value;
-    for (const { mark } of [...this.drawn.values(), ...this.onMembrane.values()]) mark.setSlow?.();
-    this.draw();
-    this.onChrome?.();
-    this.numbersMoved();
-    this.stage.invalidate();
   }
 
   setRamp(palette) {

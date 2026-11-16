@@ -137,10 +137,19 @@ the viewer changes.
    different channels show together.
 3. **Something moves only where a rate stands behind it.** A level or a difference never
    moves. A bead is a token of a rate: the legend says how much one stands for. A layer
-   on the `motion` channel states its time on the picture: true speed, how much it is
-   slowed, or the loop it plays; and what one token stands for. The rate sets how many
-   tokens pass, never how fast one travels. The interval the rate is a mean over stands
-   with the time. An arrowhead ends each lane that carries something and points the way
+   on the `motion` channel keeps the clock of what it is drawn in (the user, 16 November
+   2026, asked whether beads keep a clock of their own or follow the playhead: "the
+   replays and you must be able to slow down and make replays faster"). On a replay that
+   is the replay's own clock: its tokens stand while the replay is paused and, while it
+   plays, as many pass as the rate gives over the stretch of the run the playhead covers.
+   A replay may be slowed below true speed and made faster than it, from its timeline,
+   which says in words what each step is. In the Cell view a looping run keeps its
+   loop's clock, slowed from the legend. What one token stands for follows the speed, so
+   that the busiest lane passes about as many tokens a second at any speed. The picture
+   states the speed (true speed, how much it is slowed or made faster), that the replay
+   is paused where it is, the loop it plays, and what one token stands for. The rate
+   sets how many tokens pass, never how fast one travels. The interval the rate is a
+   mean over stands with the time. An arrowhead ends each lane that carries something and points the way
    its tokens go, so that a still picture, and a visitor who asks for less motion, are
    told the way. Where nothing may move, the tokens stand, as many as would be on their
    way at one moment, and the picture says that it is shown still; a stream too thin for
@@ -169,12 +178,18 @@ the viewer changes.
    says that it loops, and gives the loop's length in the cell's time and how much it is
    slowed. A species with no such run shows no run-fed layer in its Cell view. A
    packaged replay says that it is such a loop in its view (`loop`,
-   `schema/RUN_VIEW.md`): the species whose cell it is, the cell, and the run's own word
-   that its last record meets its first. The viewer refuses a run that is an example,
-   that names no model of the engine or no revision, that is another species' cell, or
-   that does not say it closes. The loop is the run's records from the first to the
+   `schema/RUN_VIEW.md`, in the shape the engine's writer gives it): the species whose
+   cell it is, the cell, the loop's period, and the run's own word that its last record
+   meets its first, with how closely and within which declared tolerance. The viewer
+   refuses a run that is an example, that names no model of the engine or no revision,
+   that is another species' cell, whose period is not its records' span, or that does
+   not close within its tolerance. The loop is the run's records from the first to the
    closing one; every rate is a mean between two records that both lie inside it, and
-   no difference is taken across the seam.
+   no difference is taken across the seam. Of a looping run the viewer reads what
+   crossed the cell's channel populations, its pump and its membrane itself (the totals
+   of `ion-traffic`), and its junctions and its exchange routes (the totals of
+   `transfers`), each the way the run's declared sign gives; what it does not read
+   (water) is named as not read, and fuel keeps its own reason.
 8. **Colour by the job it does:** one hue for a level, two hues about a neutral middle
    for a signed quantity, each validated for colour-blind readers against the light and
    the dark surface. Each ion has one fixed colour everywhere, with its name beside it:
@@ -203,7 +218,14 @@ the viewer changes.
     words are in sight wherever illustration shows.
 12. **Decoration never moves with a direction.** Motion that is not a layer (a drifting
     crowd, a shimmering membrane) has no net direction, stops while any layer on the
-    `motion` channel shows, and stops for a visitor who asks for reduced motion.
+    `motion` channel shows, and stops for a visitor who asks for reduced motion. One
+    exception, the user's of 16 November 2026 ("bring motion back"): in the Cell view
+    the cell's own tokens (the drops where water crosses, the signals that leave, the
+    ions in the close-up's channel) move at rest as they did before, each its own way.
+    Their motion is the picture's own and stands for no measured flow, and the page says
+    so beside the Flux switch. They hold still where they stood while any flux shows,
+    those of a part whose flux shows give way to its beads, and they stand for a visitor
+    who asks for reduced motion.
 
 ## Flux in the Cell view
 
@@ -226,8 +248,8 @@ turned off again. A chosen part that draws nothing (see below)
 shows nothing, and its reason. While any flux shows, the bloom is on, the look's own
 motion is held still (rule 12), and the picture's own tokens of that part (the drops
 where water crosses, the signals that leave, the ions in the close-up's channel) give
-way to the beads. At rest those tokens stand still: they are the bodies of their parts
-and do not move.
+way to the beads. At rest those tokens move, as rule 12's exception allows: they are the
+bodies of their parts, and their motion is the picture's own.
 
 **One source at a time.** A species' cell shows flux from its own looping run (rule 7),
 or, where it has none, as illustration (rule 11). A species with a run shows no
@@ -256,7 +278,9 @@ is given. No textbook direction is drawn.
 **Where a lane runs is the picture's choice,** and the legend says so: the engine has no
 single channel or pump and no place for one. An illustration draws each lane at every
 place the picture has for its part; a run gives each of its streams one lane, so that as
-many beads pass as the run's rate says.
+many beads pass as the run's rate says. Drawn to scale, the membrane's close-up has lanes
+of its own size through its channel and over its pump; its one pump carries the
+sodium–potassium lanes.
 
 **Colours.** A bead of sodium or of potassium wears that ion's colour; every other bead
 wears the one neutral tone (rule 8). The picture's own hues for water and for signals

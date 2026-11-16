@@ -7,7 +7,10 @@
 //
 // A bead is a token of a rate, not a particle (schema/QUANTITY_LAYERS.md, rule 3):
 //
-//   beads a second on the screen = particles a second / (particles in one bead x how much it is slowed)
+//   beads a second on the screen = particles a second of the run x the speed / particles in one bead
+//
+// The speed is the replay's own: the beads keep its one clock (src/replay/player.js). Paused,
+// they stand; played, as much of the run passes for them as for the playhead.
 //
 // The rate sets how many beads pass, never how fast one travels: every bead takes the same
 // time to cross, which stands for nothing. The rate is a mean over the interval that ends at
@@ -23,7 +26,7 @@
 // go, so that a still picture, and a visitor who asks for less motion, are told the way too.
 
 import * as THREE from "../../three.js";
-import { tokenFor, beadsASecond, ionsASecond, timeWords, tokenWords, meanRate, restarted, standing, advance, headSize, MOST, HEAD_WORDS, STILL_WORDS } from "./beads.js";
+import { tokenFor, beadsASecond, ionsASecond, tokenWords, meanRate, restarted, standing, advance, headSize, timeKey, MOST, HEAD_WORDS } from "./beads.js";
 import { fromFirst, signedByShort } from "../records.js";
 
 const SIZE = { quiet: 1, bold: 1.35 };
@@ -94,11 +97,12 @@ export const stream = {
 
   /**
    * context (see ./index.js): the sheet with its `world` (the borders between tiles), the
-   * run, `fed.sources` (the saved totals as declared), the colours, `slow()` (how much the
-   * picture is slowed: 1 is true speed), `still()` (whether nothing may move), `ions` (the
-   * species the page knows as ions) and `strength`.
+   * run, `fed.sources` (the saved totals as declared), the colours, `speed()` (the replay's
+   * speed: seconds of the run each second of watching), `paused()` (whether the replay
+   * stands), `still()` (whether nothing may move), `ions` (the species the page knows as
+   * ions) and `strength`.
    */
-  create({ surface, run, fed, colours, strength = "quiet", slow = () => 1, still = () => false, ions = new Set() }) {
+  create({ surface, run, fed, colours, strength = "quiet", speed = () => 1, paused = () => false, still = () => false, ions = new Set() }) {
     const world = surface.world;
     const { lanes, unplaced, undirected } = lanesOf(run, fed.sources || [], world);
     const busiest = busiestOf(run, lanes); // fmol a second
@@ -196,17 +200,18 @@ export const stream = {
         if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       }
     };
-    const token = () => tokenFor(ionsASecond(busiest), slow());
+    const token = () => tokenFor(ionsASecond(busiest), speed());
+    const stands = () => still() || paused();
     let shown = { step: 0, valid: false };
     const settle = () => {
-      const one = token(), slowed = slow();
+      const one = token(), fast = speed();
       for (const lane of lanes) {
         lane.mean = shown.valid ? meanRate(run, lane.record, lane.entity, shown.step) : null;
-        lane.perSecond = lane.mean ? beadsASecond(ionsASecond(lane.mean), one, slowed) : 0;
+        lane.perSecond = lane.mean ? beadsASecond(ionsASecond(lane.mean), one, fast) : 0;
         if (lane.mean) lane.way = (lane.mean > 0) === lane.forward ? 1 : -1;
-        // With nothing passing, the lane empties; where nothing may move, the beads stand as many as would be crossing.
+        // With nothing passing, the lane empties; where nothing may move or the replay is paused, the beads stand as many as would be crossing.
         if (!lane.perSecond) lane.beads = [];
-        else if (still()) lane.beads = standing(lane.perSecond);
+        else if (stands()) lane.beads = standing(lane.perSecond);
       }
       drawBeads();
     };
@@ -229,17 +234,17 @@ export const stream = {
         shown = { step, valid };
         settle();
       },
-      /** Advance by a frame of `milliseconds`. Returns whether a bead is on its way, so that frames keep coming. */
+      /** Advance by `milliseconds` of watching at the replay's speed: the run's time the playhead covered, over the speed. Returns whether a bead is on its way. */
       tick(milliseconds) {
-        if (still()) return false;
+        if (stands()) return false;
         const seconds = milliseconds / 1000;
         let moving = false;
         for (const lane of lanes) moving = advance(lane, seconds) || moving;
         drawBeads();
         return moving;
       },
-      /** The slow-down changed: a bead stands for another number, and as many pass as before for the busiest lane. */
-      setSlow() {
+      /** The replay's clock changed (its speed, or whether it plays): a bead stands for another number, as many pass as before for the busiest lane, and the beads stand or set out. */
+      retime() {
         for (const lane of lanes) lane.due = 0;
         settle();
       },
@@ -250,7 +255,7 @@ export const stream = {
       /** The numbers behind each lane at the record shown, for the panel: the two totals, the mean rate, what it is in beads. */
       readings() {
         const { step } = shown;
-        const one = token(), slowed = slow();
+        const one = token(), fast = speed();
         return lanes.map((lane) => {
           const { border } = lane.place;
           const names = [border.a, border.b].map((tile) => run.sets.get(tile.set).ids[tile.index]);
@@ -267,7 +272,7 @@ export const stream = {
             mean: lane.mean,
             reset: restarted(run, lane.record, lane.entity, step),
             particles: lane.mean === null ? null : Math.abs(ionsASecond(lane.mean)),
-            beads: lane.mean === null ? null : beadsASecond(ionsASecond(lane.mean), one, slowed),
+            beads: lane.mean === null ? null : beadsASecond(ionsASecond(lane.mean), one, fast),
             from: lane.mean ? ends[0] : null,
             to: lane.mean ? ends[1] : null,
           };
@@ -280,7 +285,7 @@ export const stream = {
         const lines = [
           ...(species.length ? [{ key: "ions", chips: species.map((id) => ({ colour: tones.ionCss(id), label: id })), text: species.length > 1 ? "Each species that crosses has its own colour" : "The colour of the species that crosses" }] : []),
           { key: "bead", text: `${tokenWords(one, what)}. More beads a second means more ${what === "ion" ? "ions" : what === "molecule" ? "molecules" : "of them"} a second; how fast a bead travels stands for nothing` },
-          { key: "time", text: still() ? `${timeWords(slow())}. ${STILL_WORDS}` : timeWords(slow()) },
+          { key: "time", text: timeKey(speed(), still(), paused()) },
         ];
         // Whose word the direction is: each source says it, and the sources that share a word are named together.
         const by = new Map();
