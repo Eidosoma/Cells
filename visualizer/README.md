@@ -328,14 +328,15 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
   viewer feeds the secreted species, the transfers and the glow. An example with
   invented numbers, marked as such on the picture and in the legend, feeds ion traffic
   and a sheet's transfers until a saved run of a sheet carries those totals.
-- **Flux in the Cell view is built on the branch and not yet published** (15 November
-  2026; not yet seen in a browser). A Flux switch in the Cell view's legend, off as the
-  page opens; a chosen part shows its flux alone; beads with bloom. No species has a
-  looping run of its own yet, so what shows is illustration, marked "Illustration: not a
-  run", of the form "direction only": pumps and secreted signals go the way the engine's
-  own laws say (cited in `data/layers/flux.json`), channels, junctions and water are
-  drawn both ways with none claimed, and fuel draws nothing. No textbook direction is
-  drawn.
+- **Flux in the Cell view** (published 16 November 2026). A Flux switch in the Cell
+  view's legend, off as the page opens; a part shows its flux alone when the visitor
+  chooses it; beads with bloom. No species has a looping run of its own yet, so what
+  shows is illustration, marked "Illustration: not a run", of the form "direction only":
+  pumps and secreted signals go the way the engine's own laws say (cited in
+  `data/layers/flux.json`), channels, junctions and water are drawn both ways with none
+  claimed, and fuel draws nothing. No textbook direction is drawn. At rest nothing
+  flows: the cell's own drops and signals stand still, and only the crowd's drift and
+  the membrane's shimmer move.
 - **Not built yet:** the field between cells, the tension web and the wavefront.
   `docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` lists what the layers ask of the engine,
   with the lead's answers.
