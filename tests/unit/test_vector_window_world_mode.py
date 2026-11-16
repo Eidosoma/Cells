@@ -1,13 +1,13 @@
-"""refusals="world" on the vector path (docs/WINDOW_DEVICE_CHECKS_DESIGN.md §5.5).
+"""refusals="world" on the vector path (docs/WINDOW_DEVICE_CHECKS_DESIGN.md §5.5): failed checks.
 
 A failing world is refused alone: the other worlds continue on the same executable at the same
 world count, bitwise as in a cohort where nothing is refused, and the refused world's last
 accepted state is its checkpoint at the start of its refusing window (window granularity). Its
 record (exc.refusal in batch mode, the result's refusals in world mode) has the same fields and
-reason in both modes. Two worlds failing in one window are each refused alone. A world refused by
-its host observations has already run the next window, whose outputs for it are discarded; it is
-masked from the window after. Carried refusals keep a world masked, a replica in a group of
-identical worlds included, while the group goes on.
+reason in both modes. Two worlds failing in one window are each refused alone. A carried refusal
+keeps a resumed world masked. The refused-step kind is test_vector_window_world_mode_step.py;
+observation refusals and replicas are test_vector_window_world_mode_observations.py (split to
+keep each file under the tier cap).
 """
 
 import jax
@@ -15,16 +15,13 @@ import numpy as np
 import pytest
 
 from cells.core.batch import WorldRefusal
-from cells.core.specs import ConfigError
-from cells.core.vector_windows import WorldCheckError, plan_vector_windows, run_vector_windowed
-from cells.core.windows import WindowPolicy
+from cells.core.vector_windows import WorldCheckError, run_vector_windowed
 from cells.models import surface_pump
 from tests.unit.test_vector_windows import POLICY, cohort, corrupted_step, definition
 
 SUFFIX = "; vectorized batch refused"
 # One function object per kind, so every cohort of one shape reuses one executable.
 STEPS = {kind: corrupted_step(kind) for kind in ("ledger", "refuse")}
-SHORT = WindowPolicy(2, "checkpoints")
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -59,8 +56,10 @@ def assert_same_record(a, b):
     assert same_state(a.checkpoint.state, b.checkpoint.state)
 
 
-@pytest.mark.parametrize("kind", ["ledger", "refuse"])
-def test_world_mode_refuses_one_world_and_the_others_run_as_unrefused(kind, monkeypatch):
+def refuses_one_world_and_the_others_run_as_unrefused(kind, monkeypatch):
+    """A world refused alone (kind "ledger": a failed device check; "refuse": a refused step):
+    its record is batch mode's, and the other worlds run bitwise as in a cohort where nothing
+    is refused, on the same executable."""
     monkeypatch.setattr(surface_pump, "checked_step", STEPS[kind])
     refusing, twin = failing_cohort(0.5), failing_cohort(0.6)
 
@@ -121,6 +120,10 @@ def test_world_mode_refuses_one_world_and_the_others_run_as_unrefused(kind, monk
                 )
 
 
+def test_a_failed_check_refuses_one_world_and_the_others_run_as_unrefused(monkeypatch):
+    refuses_one_world_and_the_others_run_as_unrefused("ledger", monkeypatch)
+
+
 def test_two_worlds_failing_in_one_window_are_each_refused_alone(monkeypatch):
     monkeypatch.setattr(surface_pump, "checked_step", STEPS["ledger"])
     both, twin = failing_cohort(0.5, 0.5), failing_cohort(0.6, 0.6)
@@ -146,67 +149,3 @@ def test_two_worlds_failing_in_one_window_are_each_refused_alone(monkeypatch):
     unrefused = run_vector_windowed(twin, POLICY)
     assert unrefused.timings["compile_seconds"] == 0.0  # The same executable.
     assert same_state(result.worlds[1].final.state, unrefused.worlds[1].final.state)
-
-
-def test_an_observation_refusal_drops_the_next_window_and_masks_the_world_after(monkeypatch):
-    policy = SHORT
-    spec = cohort([definition(), definition(scale=1.1), definition(scale=1.2)])
-    target, at = spec.worlds[2].simulation.fingerprint, 0.0007
-    original = surface_pump.observe_history
-
-    def observe(times, history, layout, requested, simulation):
-        if simulation.fingerprint == target and at in list(requested):
-            raise ConfigError("planted observation refusal")
-        return original(times, history, layout, requested, simulation)
-
-    reference = run_vector_windowed(spec, policy)
-    monkeypatch.setattr(surface_pump, "observe_history", observe)
-    windows = []
-    result = run_vector_windowed(spec, policy, refusals="world", sink=windows.append)
-    assert set(result.refusals) == {3} and set(result.worlds) == {1, 2}
-    record = result.refusals[3]
-    assert (record.stage, record.error) == ("observation", "ConfigError")
-    assert record.message == "World 3: planted observation refusal"
-    k = next(i for i, w in enumerate(windows) if 3 in w.refusals)
-    assert record.checkpoint.step_index == windows[k - 1].checkpoints[3].step_index
-    assert len(windows) >= k + 3, "the test needs a window after the dropped one"
-    for window in windows[k:]:
-        assert 3 not in window.diagnostics and 3 not in window.observations
-        assert window.checkpoints[3].step_index == record.checkpoint.step_index
-    # Window k + 1 ran it (launched before window k's observations); from k + 2 it is masked.
-    steps = [w.resources["executed_world_steps"] for w in windows]
-    assert steps[k + 2] < steps[k + 1]
-    for identity in (1, 2):
-        assert same_state(
-            result.worlds[identity].final.state, reference.worlds[identity].final.state
-        )
-    with pytest.raises(ConfigError) as caught:  # Batch mode: today's refusal, with a record.
-        run_vector_windowed(spec, policy)
-    assert str(caught.value) == caught.value.refusal.message + SUFFIX
-    assert caught.value.refusal.world_id == 3
-
-
-def test_a_carried_refusal_masks_one_replica_while_its_group_goes_on():
-    shared = definition()
-    spec = cohort([shared, shared, definition(scale=1.2)])  # Worlds 1 and 2: one group.
-    assert plan_vector_windows(spec, SHORT).groups[0] == (0, 1)
-    record = WorldRefusal(2, "check", "WorldCheckError", "World 2: carried")
-    windows, seen = [], []
-    result = run_vector_windowed(
-        spec, SHORT, refusals="world", refused={2: record}, sink=windows.append
-    )
-    reference = run_vector_windowed(spec, SHORT, sink=seen.append)
-    assert reference.timings["compile_seconds"] == 0.0  # The same executable.
-    assert set(result.worlds) == {1, 3} and dict(result.refusals) == {2: record}
-    for identity in (1, 3):
-        assert same_state(
-            result.worlds[identity].final.state, reference.worlds[identity].final.state
-        )
-    start = reference.worlds[2].start_step
-    for mine, theirs in zip(windows, seen, strict=True):
-        assert 2 not in mine.diagnostics and 2 not in mine.observations
-        assert mine.checkpoints[2].step_index == start
-        assert (
-            3 * mine.resources["executed_world_steps"]
-            == 2 * theirs.resources["executed_world_steps"]
-        )
