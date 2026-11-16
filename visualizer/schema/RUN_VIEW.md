@@ -129,15 +129,24 @@ derived from the saved junction topology. Adapters read saved files only.
 ## The engine's view
 
 The engine's run-view writer (`cells.run_view@1`: one `view.json` beside a run's files)
-was shown on a worked example on 15 November 2026, made from the development run of one
-cell that secretes a species. It conforms to most of this note. Where it differs, by
-design, the viewer reads what the writer gives:
+**is not on main yet.** It lives on the branch `run-view-d154`, read here at `fd008813`
+(16 November 2026: `src/cells/run_view.py`, and `docs/RUN_VIEW_DESIGN.md` §3, §4 and §9 on
+that branch). It was first shown on 15 November 2026, on a worked example made from the
+development run of one cell that secretes a species, and its format grew on 16 November.
+The adapter reads both shapes. Each addition of 16 November is read only where a view gives
+its key, so a view of the 15 November shape is packaged exactly as before. Two small runs
+that the writer wrote at `fd008813` are kept as fixtures (`tests/engine-views/`, made again
+by `tools/make_engine_view_fixture.sh`). The writer conforms to most of this note. Where it
+differs, by design, the viewer reads what the writer gives:
 
 - **Two time bases.** `time` is `{"unit": "s", "bases": [...]}`, each base
   `{"id", "array", "says", "files": [{"file", "rows": [from, to]}]}`: the state's rows
   (`accepted`) and the observed rows (`observation`), each with the files that hold it and
   the rows in each file. Every record names its `base`. There is no `time.file` and no
-  `time.array`.
+  `time.array`. `time.event_rows` (16 November) is the writer's sentence on which state a
+  record saved at an event's time holds: the state before the event, the next record the
+  state after it. The adapter carries the sentence as written (`view.time.event_rows`) and
+  derives no word from it.
 - **A record's file comes from its base, and it has no label.** A record has `id` (its
   array's name), `field` (the engine's name for the quantity), `array`, `base`, `axes` over
   sets (the species among them), `set`, `unit`, `layer` and `owner`. What the page calls a
@@ -145,14 +154,39 @@ design, the viewer reads what the writer gives:
 - **Padding slots are null, and cells carry lifetimes.** A set's `ids` holds null for a slot
   that has no entity, and every array keeps a column for it. `cell.lifetimes` gives, for
   each cell, null or its birth and its retirement (either may be null).
-- **Signs name roles.** `sign` is `{"says", "from", "to", "confirmed"}`, with `from` and
-  `to` the roles of the record's set: `inside` and `outside` for a membrane patch and what
-  lies on one, `sender` and `receiver` for a junction or a face, `exterior` and `node` for
-  an outside node. A positive value goes from `from` to `to`. The proposals above, and the
-  viewer's older packages, say `first` and `second`, or `cell` and `outside node`; the
-  viewer reads both sets of words.
+- **Signs name roles, and each set states its roles.** From 16 November every set with
+  ends gives `roles`, `{role: what it is}`: `inside` and `outside` for a membrane patch and
+  what lies on one, `sender` and `receiver` for a junction or a face, `exterior` and `node`
+  for an outside node. A flow's `sign` is `{"says", "from", "to", "confirmed"}`, with `from`
+  and `to` two roles of the record's set: a positive value goes from `from` to `to`. The
+  proposals above, and the viewer's older packages, say `first` and `second`, or `cell` and
+  `outside node`; the viewer reads both sets of words. The 15 November shape gives no
+  `roles`, and its signs are read as written. The adapter carries each set's `roles`, and
+  refuses a sign that names what are not two roles of its set.
+- **A voltage is a difference** (16 November). In place of `sign` a voltage's record gives
+  `difference`, `{"says", "plus", "minus", "source"}`: the value is plus less minus, two
+  roles of its set, so it is positive when `plus` is the higher. At `fd008813` the
+  membrane's voltage is its cell's potential less its outside node's and a junction's its
+  sender's less its receiver's, and `source` says that both are read from the code, for the
+  core's owner to confirm. The adapter carries `difference` as written and gives the
+  record the page's `sign`: the view's `says`, its `source` or `confirmed` (whichever the
+  view gives) as written, and `high`, the end the page calls the higher, from the role
+  `plus` (`inside` and `outside` as they are; a link's `sender` as `first`, its `receiver`
+  as `second`; no kept view has a junction yet, so those two are not exercised on a run).
+  Where a role has no such word the record gets no sign, and the page draws no direction
+  for it. A record with both `sign` and `difference`, or a difference that does not name
+  two roles of its set, is refused.
 - **Constants have no label and no set.** A constant has `id`, `unit`, `axes`, `values`,
   `from` and `says`; the set it lies on is the one its values run along, beside the species.
+  A flag (true or false) is no number a layer reads, and is left out.
+- **What the composition changes is a record, not a constant** (door S, 16 November). A view
+  field that an operator provides, or that closure changes (every activity mask, and the
+  padded fields), is saved as its merged view at each observed row: a record whose `id` and
+  `array` are `view_<field>` and whose `field` is the field's own name, on the base
+  `observation`. The adapter packages those that a layer reads by the field's name
+  (`volume`, `extracellular_volume`, `membrane_area`, `membrane_capacitance`) under that
+  name, with `array` naming the merged view; the derivation names the others, which are not
+  packaged. A field that a view states both as a constant and as a merged view is refused.
 - **Added by the writer:** `constants`; `unstated` (`[{"id", "what", "why"}]`: what the
   view does not state, with the reason); `recording` (`{"mode", "subset"}`: whether only
   some fields, elements or rows were recorded); a layer's `owner` beside its
@@ -161,9 +195,13 @@ design, the viewer reads what the writer gives:
 - **A total that restarts.** A dissipated-energy ledger only grows (`monotone`), except
   where an operator retires a slot: the retired slot's history moves into that operator's
   own record, and the ledger restarts at nought on that slot. Such a record carries
-  `"resets": {"by": [laws], "says": "..."}` in place of `monotone`. No rate is taken across
-  a reset (`schema/QUANTITY_LAYERS.md`, rule 1): the events of the layers that those laws
-  own say when it happens, and at which cell.
+  `"resets": {"by": [laws], "says": "...", "mask": "..."}` in place of `monotone`. `mask`
+  (16 November) names the activity mask of the record's set (`membrane_active`, say): the
+  slots that restart are those where that mask closes at the event, as its merged view
+  `view_<mask>` shows where the run saved one. The adapter carries `resets` whole, and
+  refuses a `mask` that is no name. No rate is taken across a reset
+  (`schema/QUANTITY_LAYERS.md`, rule 1): the events of the layers that those laws own say
+  when it happens, and the page traces each entity to its cell, as before.
 - **More about the sets.** `species.valence`, and `species.species` (each species'
   identity, and the operator that declares it); `outside.reservoir` (the held baths); a
   membrane set that `holds` "membrane patch", with each patch's `laws`, `pumps` (null, or
@@ -171,10 +209,50 @@ design, the viewer reads what the writer gives:
   "inward-positive"}`) and `calcium_pumps`; an operator's own sets (`exchange_route`, which
   `holds` "exchange route", lies on its membrane and names its `owner`); and the sets
   `node`, `world`, `gate` and `floating_component`.
+- **What an operator states of each of its entities** (16 November): `carries` (the species
+  each carries), `direction` and `kinds` (a word each, the operator's own: `export` or
+  `import`, `production` or `clearance`) and `at` (`{set id: entity id}`, the entity each acts
+  at), one value for each id. A set may describe entities that no record lies on (turnover's
+  routes, `turnover_route`). The adapter carries every such set: `carries` as the set's
+  `species` (what the page reads for a route) and the others as written. A list that is not
+  one value for each id, a species that is not the run's, or an entity that is not the
+  view's, is refused.
+- **The secreted species is the viewer's word.** The view calls no species secreted (the
+  lead's ruling of 16 November). Where the operators' sets state `carries`, the package's
+  `species.secreted` is the species they carry, make or clear; in the 15 November shape it
+  is the species whose identity an operator declares. Either way the derivation says that
+  this is the viewer's reading.
 - **Events name entities by id** (`"at": {"cell": "cell_0"}`), and a cell's birth and its
   retirement are events.
+- **The run** (16 November). `run.id` is the caller's label for the run: the derivation
+  names it, and the catalogue keeps its own ids. `run.end` (`{"status", "time", "step"}`) is
+  how the run ended: the package's `stop` is its status, `run.end` is carried, and a view
+  whose end is before its last record, or whose status is not the one in the run's
+  `summary.json`, is refused. `run.source` (`{"revision", "dirty", "from"}`) is the running
+  engine's revision and whether its tree was dirty, from its execution snapshot's record;
+  it is the engine's one word for its revision. The package's `run.revision` is filled from
+  `run.source.revision`, `run.source` is carried, and the derivation says whether the tree
+  was clean or dirty. A caller's `run.revision` that names another revision is refused (a
+  short form of the same one is not). Where the view states no source, `unstated` says why
+  (the engine ran from a checkout or an export, not an execution snapshot, or the view was
+  written later for a run on disk); a caller's `run.revision` is then carried as that
+  label, and the derivation says that it is not the engine's own record of its source.
 - **No positions without a builder.** `space` is null and each set's `geometry` is null
   where the caller gave no geometry, and `unstated` says so.
+- **The loop block is designed, not built** (FR-11, `docs/LOOPING_REPLAY_DESIGN.md` on the
+  branch, ruled by the lead on 16 November 2026). The writer at `fd008813` writes no `loop`,
+  and its own check refuses a top-level key it does not know. Where a view gives `loop`
+  (`{"species", "cell", "period", "closes": {"within", "tolerance", "says"}, "follows"?}`),
+  the adapter checks it and carries it as `view.loop`, the shape the page's loop reader
+  takes (below): its cell must be the run's, `within` no more than `tolerance`, `period` the
+  span of the replay's records as the run saved them, and each step of `follows` a time
+  inside the records with cells of the run. Otherwise the view is refused.
+- **Not read yet.** A recording subset (`recording.subset`, with each set's `recorded`
+  entities) is refused; FR-11's looping packages will record one, so they are refused until
+  the adapter reads it. A builder's geometry (`space`, and `points`, `spheres` or `polygons`
+  on cells and outside nodes) is not read: the cells are laid out by the adapter, and the
+  derivation says so. The caller's labels `experiment`, `arm` and `seed` are not read: the
+  catalogue names the run.
 
 ## Packaged for the viewer: `cells.visualizer.replay@1`
 
@@ -341,10 +419,11 @@ Rules that tighten the run view above:
   above it); `closes.says` the sentence the page may show. `follows` (optional, for a
   cell cycle) names the cell the loop follows from a time on, after a division: the page
   says so, and reads the loop's first cell. The run names its engine models and its
-  revision: `run.revision`, or `run.source.revision` where the package carries the
-  engine's own word for its source, which is the one the engine holds to. A run with
-  `example` is never a loop. No packaged run carries the field yet: the engine's side is
-  to make such runs.
+  revision: `run.revision`, which the adapter fills from `run.source.revision` where the
+  view states the engine's source (`run.source` is then carried, with whether its tree
+  was clean, and the page says so of a loop). A run with `example` is never a loop. The
+  writer at `fd008813` writes no loop block yet, and no packaged run carries the field:
+  the engine's side is to make such runs.
 - **`view.constants[]`** (optional) are named constants of the run's definition: values
   that a derivation of a quantity layer may read in place of a saved record
   (`schema/QUANTITY_LAYERS.md`, rule 1). `[{"id", "label", "unit", "set", "axes",
@@ -539,6 +618,24 @@ those words.
 - **The secreted species** is the species an operator of the run declares (the view names
   the operator that declares each species); the view does not itself call it secreted,
   and the derivation says that this is the viewer's reading.
+- **Signs and differences.** A record's `sign` is carried as written. A voltage's
+  `difference` (what it is the difference of: `plus`, `minus`, `says`), which the
+  writer's present shape gives in place of a sign, is carried as written, and the record
+  gets the page's `sign` from it: `says`, `high` from the role `plus`, and the view's own
+  `source` or `confirmed`. Where a role has no word of the page's, the record gets no
+  sign.
+- **Sets carry their `roles`.** An operator's set carries `species` (the view's `carries`),
+  `direction`, `kinds` and `at` as written, and is packaged even where no record lies on
+  it.
+- **The run** carries `source` and `end` where the view states them. `run.revision` is
+  `run.source.revision`; where the view states no source it is the caller's label, and the
+  derivation says that it is that and not the engine's own record of its source.
+- **`view.time.event_rows`** is the run's own sentence on what a row saved at an event's
+  time holds, as written.
+- **Merged views** (`view_<field>`: a field an operator changes, as it stood at each
+  observed row) of `volume`, `extracellular_volume`, `membrane_area` and
+  `membrane_capacitance` are records under the field's name; the others are named in the
+  derivation and not packaged.
 - **Refused:** a view that records a subset (`recording.subset`), which the adapter does
   not read yet; a view whose files, arrays, rows or shapes are not as it says; an example
   (`example.json`) with a view beside it.

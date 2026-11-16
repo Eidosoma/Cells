@@ -1646,6 +1646,11 @@ test("the engine's own words are read as written: what a set holds, which end a 
   assert.equal(signedBy(declared(run, "face_transferred.S").sign), " Declared by the run's own view; confirmed by synthetic fixture: written with the rest.");
   assert.equal(signedBy({ says: "x", by: "the viewer's reading" }), " That is the viewer's reading.");
   assert.equal(signedBy({ says: "x" }), " Declared by the run's own view.");
+  // What the view says of its own statement is not dropped: a difference read from the code and not yet confirmed says so.
+  assert.equal(signedBy({ says: "x", source: "read from the code: numerics/surface_transport.transport (the core's owner to confirm)" }), " Declared by the run's own view, which says it is read from the code: numerics/surface_transport.transport (the core's owner to confirm).");
+  assert.equal(signedBy({ says: "x", source: "declared by the operator.", confirmed: "the lead, 16 November 2026" }), " Declared by the run's own view, which says it is declared by the operator; confirmed by the lead, 16 November 2026.");
+  assert.equal(signedBy({ says: "x", source: "  " }), " Declared by the run's own view.");
+  assert.equal(signedBy({ says: "x", by: "the viewer's reading", source: "anything" }), " That is the viewer's reading.", "a reading of the viewer's own is never passed off as the run's");
   // What stands behind a record now says how its part of the engine is represented, as the view's layer states.
   assert.equal(behind(declared(run, "face_dissipated_energy_pJ")), "Saved by the run; computed by resolved_pump_tissue@3, simulated.");
   assert.match(behind(declared(run, "turnover_produced_fmol.S")), /^Saved by the run; computed by scheduled_species_turnover@1, prescribed by the experiment\.$/);

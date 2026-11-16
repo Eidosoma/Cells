@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 import * as THREE from "three";
 import { openReplay, loadPart } from "../src/replay/source.js";
 import { readFlux, planFor, speaksFor, shownKinds, shownWithheld, illustrationWords, FLUX_FORMAT, PACE, FORMS } from "../src/layers/flux.js";
-import { readLoop, loopAt, loopStreams, loopToken, loopRates, planFromLoop, loopWords, closesWords, bordersOf, READ_WORDS } from "../src/layers/loop.js";
+import { readLoop, loopAt, loopStreams, loopToken, loopRates, planFromLoop, loopWords, closesWords, engineWords, bordersOf, READ_WORDS } from "../src/layers/loop.js";
 import { CellFlux, seatsOf, arrange, FLUX, PROBLEMS, SIZES, BLOOM, FLUX_PANEL, FLUX_SWITCH, STATEMENT, REST_WORDS, CLOSE_PUMP } from "../src/layers/cellflux.js";
 import { Tokens, swell, RIM } from "../src/layers/marks/tokens.js";
 import { fitOnRow, clearOf } from "../src/layers/statement.js";
@@ -956,6 +956,24 @@ test("a run is read as a species' loop only where it says so, names the engine, 
     view.run.source = { revision: "abc1234", dirty: true };
   }), "planarian");
   assert.deepEqual([sourced.ok, sourced.loop?.revision, sourced.loop?.dirty], [true, "abc1234", true]);
+  // As the adapter packages a view that states its source: the revision filled from it, and the source carried beside it.
+  const filled = readLoop(await opened((view) => {
+    asLoop(cell)(view);
+    view.run.revision = "abc1234";
+    view.run.source = { revision: "abc1234", dirty: true, from: "an execution snapshot" };
+  }), "planarian");
+  assert.deepEqual([filled.ok, filled.loop?.revision, filled.loop?.dirty], [true, "abc1234", true], "a dirty tree is not lost where the package also names the revision");
+  const clean = readLoop(await opened((view) => {
+    asLoop(cell)(view);
+    view.run.revision = "abc1234";
+    view.run.source = { revision: "abc1234", dirty: false };
+  }), "planarian");
+  assert.equal(clean.loop?.dirty, false);
+  assert.equal(read.loop.dirty, null, "a package that carries no source says nothing of its tree");
+  // The page says the revision, and of the tree only what the run says.
+  assert.equal(engineWords(read.loop), "Made by the engine at revision 0000000");
+  assert.equal(engineWords(clean.loop), "Made by the engine at revision abc1234, from a clean tree");
+  assert.equal(engineWords(filled.loop), "Made by the engine at revision abc1234, from a tree with changes that were not committed");
   // A cycle: from a time the loop follows a daughter cell. It is carried, and the picture says so; nothing is refused for it.
   const daughter = run.sets.get("cell").ids.find((id) => id !== cell);
   const cycle = readLoop(await opened(asLoop(cell, { follows: [{ time: 6, from: cell, to: daughter }] })), "planarian");
@@ -1100,7 +1118,7 @@ test("with a looping run the Cell view shows the run and no illustration, even f
   assert.ok(flux.loop.streams.length > 6, "the six through the membrane, and those across the junctions");
   const panel = flux.describe(FLUX_PANEL);
   assert.equal(panel.chips[0].label, "From the looping run");
-  assert.equal(panel.plain, `Planarian · the engine's looping run ${SHEET} · a loop of ${clock(run.end - run.start)} of the cell's time. ${CLOSES.says} Its last record meets its first within 1.0e-9 (tolerance 1.0e-6).`);
+  assert.equal(panel.plain, `Planarian · the engine's looping run ${SHEET} · a loop of ${clock(run.end - run.start)} of the cell's time. ${CLOSES.says} Its last record meets its first within 1.0e-9 (tolerance 1.0e-6). Made by the engine at revision 0000000.`);
   assert.match(panel.note, /no difference is taken across the seam/);
   assert.deepEqual(panel.sections.map((section) => section.title), ["Drawn", "Not drawn", "Over the interval shown"]);
   assert.equal(panel.sections[2].items.length, flux.loop.streams.length);

@@ -143,11 +143,17 @@ export function constantOf(run, id) {
 
 const REPRESENTED = { simulated: "simulated", modelled: "modelled in aggregate", prescribed: "prescribed by the experiment" };
 
-/** Whose word a sign is, as a sentence: the reading an adapter gives with it, or the run's own view. */
+/**
+ * Whose word a sign is, as a sentence: the reading an adapter gives with it, or the run's own
+ * view. What the view says of its own statement is passed on: who confirmed it, or where
+ * the view says it comes from (`source`: a statement read from the code and not yet
+ * confirmed says so, and the page does not drop that).
+ */
 export function signedBy(sign) {
   if (!sign) return "";
   if (sign.by) return ` That is ${sign.by}.`;
-  return ` Declared by the run's own view${sign.confirmed ? `; confirmed by ${sign.confirmed}` : ""}.`;
+  const source = typeof sign.source === "string" && sign.source.trim() ? `, which says it is ${sign.source.trim().replace(/\.$/, "")}` : "";
+  return ` Declared by the run's own view${source}${sign.confirmed ? `; confirmed by ${sign.confirmed}` : ""}.`;
 }
 
 /** The same for a legend: its first sentence. What more an adapter says with it (how the run's own amounts agree) stands in the panel on what the layers show. */

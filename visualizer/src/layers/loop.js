@@ -125,7 +125,7 @@ export function readLoop(run, speciesId) {
   return {
     ok: true,
     loop: {
-      run, species: speciesId, name: run.id, label: run.info?.label || null, models, revision, dirty: run.info?.revision ? null : run.info?.source?.dirty ?? null,
+      run, species: speciesId, name: run.id, label: run.info?.label || null, models, revision, dirty: run.info?.source?.dirty ?? null,
       cell, membrane: own.length ? own[0] : null, start: run.start, length: said.period,
       closes: { within: closes.within, tolerance: closes.tolerance, says: closes.says.trim() }, follows,
     },
@@ -258,6 +258,15 @@ export function planFromLoop(flux, loop, streams, { has, unread = null }) {
 export function loopWords(loop, speciesLabel, clock) {
   const follows = (loop.follows || []).map((step) => ` · from ${clock(step.time)} it follows ${step.to}, a daughter of ${step.from}`).join("");
   return `${speciesLabel} · the engine's looping run ${loop.name}${loop.label ? ` (${loop.label})` : ""} · a loop of ${clock(loop.length)} of the cell's time${follows}`;
+}
+
+/**
+ * The engine's revision behind the loop, and what the run says of the tree it was made from: clean, or with changes
+ * that were not committed. Nothing is said of the tree where the package carries no source of the engine's.
+ */
+export function engineWords(loop) {
+  const tree = loop.dirty === true ? ", from a tree with changes that were not committed" : loop.dirty === false ? ", from a clean tree" : "";
+  return `Made by the engine at revision ${loop.revision}${tree}`;
 }
 
 /** How closely the loop closes, as the run measured it and against the tolerance its caller declared. */
