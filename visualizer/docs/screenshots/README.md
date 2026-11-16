@@ -3,8 +3,10 @@
 Pictures of the Cells visualizer for the project's README and other documents. Each is
 1600 by 1000 pixels, WebP, taken in headless Chrome from the `visualizer` branch on
 16 November 2026, with the page's own fonts loaded. They show the page as a visitor sees
-it, with nothing added. The first four were taken at `dc566524`; the human's cell at
-`fe6f1fb5` and E. coli's at `e7cbe990`.
+it, with nothing added. The first four were taken at `dc566524`; the human's cell and
+E. coli's at `e7cbe990`, whose map states main `9a15108e`. (The human's cell was first
+taken at `fe6f1fb5`, whose map stated a revision of main that was amended before it was
+pushed; that frame was taken again.)
 
 | File | What it shows | Where its numbers come from |
 | --- | --- | --- |
