@@ -80,6 +80,22 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The test audit (D187) merged into main (16 November 2026, late evening).** It ships its tools
+  and the inventory ([evidence](/mnt/workspaces/Cells/test-audit-20261116-01/)). Nothing is retired by this merge.
+  - **Tier 3's frozen record** (`tests/tier3_record.json`): D172's 229 files and 7,736 test IDs, with
+    outcomes and normalized errors. The tier tool gains `collect`, `freeze` and `diff`, so a later
+    tier-3 run is compared per test ID instead of re-running old code. The diff mode's 14 planted
+    cases catch 12 of 12 mutants of the tool.
+  - **The triage of tier 3:** 29.8 core-hours per run. 187 files pass. The rest are 23 harness
+    limits, 11 stale tests, and possibly real defects F1–F8. F1, F3 and F6 have since been fixed in
+    core-fixes.
+  - **The legacy inventory** (`scripts/legacy_inventory.py`, D188 step 0): 111 families, of which 5
+    are active, 4 are for the user to decide, and 102 are legacy. The modular path makes 42 imports
+    into older modules.
+  - **The retire list, proposed to the user:** `docs/TEST_AUDIT_RETIRE_LIST.md`. The firm list saves
+    about 7.5 of tier 3's 29.8 core-hours per run.
+  - **Gate:** tier 1 with its own tier tool, 365 files, none changed.
+
 - **core-fixes merged into main (16 November 2026, late evening).** It fixes two of the test
   audit's findings ([evidence](/mnt/workspaces/Cells/core-fixes-20261116/)).
   - **F1, a real validation gap since 88866b60** (9 November, gauge option 2). A definition with a

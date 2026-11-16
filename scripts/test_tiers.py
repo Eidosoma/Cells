@@ -13,11 +13,35 @@ files are timed individually and grouped into tiers:
            above the row's is reported in summary.json's count_increases (a stale
            row to re-measure), not changed
 
+Tier 3 (D187): its rows hold no outcome (they hit the 90 s measuring cap), so each
+landing's final tier-3 table is frozen per test ID in tests/tier3_record.json, and a
+later tier-3 run is compared with it instead of re-running old code:
+  collect  the test IDs of a finished run's files, in collection order, from the tree the
+           run ran on (its run.json's root), written beside the run
+  freeze   tier 3's record from finished run folders (later folders win per file): per
+           file its status, counts and seconds, per test ID its outcome and, for a
+           failing test, its normalized error lines
+  diff     finished run folders against the record, per test ID; only what changed is
+           reported. Blocking (exit 1): a new failure, a changed error, a removed test, a
+           test now skipped, a new timeout, a signal ending (no verdict), a collection
+           error, a log that does not align with its collected IDs. Reported only: a new
+           pass, a newly reached or added test, a test no longer reached, a file that now
+           completes, and a file time beyond --factor (and --min-seconds)
+One reader serves freeze and diff: pytest -q prints one progress character per test in
+collection order, so a file's log is read against its collected IDs, and error lines are
+normalized for the run's own paths (root, run folder, interpreter, pytest's tmp, home) and
+addresses. The -q logs carry file wall times only, so time is compared per file.
+
 Example:
   python scripts/test_tiers.py measure --out RUN_DIR --cpus 4,5,6,7 --cap 90
   python scripts/test_tiers.py tiers --measured RUN_DIR/measured.json --out tests/test_tiers.json
   python scripts/test_tiers.py run --tiers tests/test_tiers.json --tier 1 \
       --out RUN_DIR --cpus 4,5,6,7
+  python scripts/test_tiers.py run --tiers tests/test_tiers.json --tier 3 \
+      --out RUN_DIR --cpus 4,5,6,7 --cap 1800
+  python scripts/test_tiers.py collect --run RUN_DIR --cpu 4
+  python scripts/test_tiers.py diff --record tests/tier3_record.json --run RUN_DIR \
+      --out RUN_DIR/diff.json
 """
 
 import argparse
@@ -289,6 +313,525 @@ def compare_with_record(results, record):
     return changed, increases
 
 
+# ------------------------------------------------------------------ tier 3's record (D187)
+
+RECORD_KIND = "cells.tier3_record@1"
+IDS_KIND = "cells.test_ids@1"
+DIFF_KIND = "cells.tier3_diff@1"
+PROGRESS_LINE = re.compile(r"^([.FEsxX]+)\s*(?:\[\s*\d+%\])?\s*$")
+SECTION = re.compile(r"^_+ (\S.*?) _+$")
+BANNER = re.compile(r"^=+ (.*?) =+$")
+WORD = {".": "passed", "F": "failed", "E": "error", "s": "skipped", "x": "xfailed", "X": "xpassed"}
+FAILING, PASSING, SKIPPING = ("failed", "error"), ("passed", "xpassed"), ("skipped", "xfailed")
+PHASES = ("ERROR at setup of ", "ERROR at teardown of ")
+ERROR_LINES, ERROR_WIDTH = 12, 300  # per failing test: its first E lines, each cut to this width
+BLOCKING = (
+    "new failure",
+    "changed error",
+    "removed",
+    "now skipped",
+    "new timeout",
+    "no verdict",
+    "collection error",
+    "unaligned",
+)
+
+
+def file_status(row):
+    """A file's ending: pass, pass-skips, pass-empty, fail, timeout, signal N or no exit."""
+    if row.get("timed_out"):
+        return "timeout"
+    code, counts = row.get("exit_code"), row.get("counts", {})
+    if code is None:
+        return "no exit"
+    if code < 0:
+        return f"signal {code}"
+    if code != 0 or counts.get("failed", 0) or counts.get("error", 0):
+        return "fail"
+    if not counts.get("passed", 0):
+        return "pass-empty"
+    return "pass-skips" if counts.get("skipped", 0) else "pass"
+
+
+def _completed(status):
+    return status in ("pass", "pass-skips", "pass-empty", "fail")
+
+
+def _unreached(status):
+    if status == "timeout":
+        return "not run (cap)"
+    return "not run (signal)" if status.startswith("signal") else "not run"
+
+
+def normalizer(paths):
+    """A function normalizing one error line for comparison across runs.
+
+    paths: (path, token) pairs, e.g. the run's tree as <root> and its folder as <run>: each
+    path becomes its token, the longest first. Then pytest's tmp folders, home folders and
+    hexadecimal addresses are replaced, and the line is cut to ERROR_WIDTH characters.
+    """
+    subs = sorted(
+        ((str(p).rstrip("/"), t) for p, t in paths if p and str(p).rstrip("/")),
+        key=lambda pair: -len(pair[0]),
+    )
+    patterns = [(re.compile(re.escape(p)), t) for p, t in subs] + [
+        (re.compile(r"/tmp/pytest-of-[^/\s]+/pytest-\d+"), "<tmp>"),
+        (re.compile(r"/home/[^/\s'\"]+"), "<home>"),
+        (re.compile(r"0x[0-9a-fA-F]+"), "0x?"),
+    ]
+
+    def norm(line):
+        for pattern, token in patterns:
+            line = pattern.sub(token, line)
+        return line[:ERROR_WIDTH]
+
+    return norm
+
+
+def _progress(lines):
+    """The first block of pytest -q progress lines, as one string of outcome characters."""
+    out, started = [], False
+    for line in lines:
+        m = PROGRESS_LINE.match(line)
+        if m:
+            started = True
+            out.append(m[1])
+        elif started:
+            break
+    return "".join(out)
+
+
+def _sections(lines, norm):
+    """{section title: its normalized E lines} of the log's FAILURES and ERRORS parts."""
+    out, title, inside = {}, None, False
+    for line in lines:
+        m = BANNER.match(line)
+        if m:
+            inside, title = m[1] in ("FAILURES", "ERRORS"), None
+            continue
+        if not inside:
+            continue
+        m = SECTION.match(line)
+        if m and not re.fullmatch(r"[_ ]+", m[1]):
+            title = m[1]
+            out.setdefault(title, [])
+        elif title is not None and line.startswith("E   "):
+            out[title].append(norm(line.rstrip()))
+    return out
+
+
+def _summary(lines, path, ids):
+    """({test ID: FAILED or ERROR, with its message}, collection error?) of the short summary.
+
+    Matched against the collected IDs (a parametrized ID may hold spaces or " - "); a failing
+    node that matches none is kept under its own text, so it shows as not aligning.
+    """
+    prefix, found, collection = path + "::", {}, False
+    known = sorted(ids, key=len, reverse=True)
+    for line in lines:
+        for word in ("FAILED ", "ERROR "):
+            if not line.startswith(word):
+                continue
+            rest = line[len(word) :]
+            if rest == path or rest.startswith(path + " - "):
+                collection = True
+            elif rest.startswith(prefix):
+                node = rest[len(prefix) :]
+                test = next((i for i in known if node == i or node.startswith(i + " - ")), None)
+                if test is None:
+                    test = node.split(" - ", 1)[0]
+                found[test] = (word.strip(), node[len(test) + 3 :] if node != test else "")
+    return found, collection
+
+
+def read_file(row, ids, norm):
+    """One file's reading: its log (row["log"]) read against its collected test IDs.
+
+    pytest -q prints one progress character per test in collection order. A completed file
+    aligns when it has one character per collected ID and its F and E positions are exactly
+    the short summary's FAILED and ERROR IDs; a file stopped at the cap or by a signal aligns
+    as a prefix, its unreached tests "not run (cap)" or "not run (signal)". A file that does
+    not align keeps the summary's failing IDs and "unknown" for every other test, with
+    aligned False: it is reported, never guessed. A failing test carries its normalized E
+    lines (its failure sections, else its summary message); one stopped before the summary
+    carries none, and its error is not compared.
+    """
+    status = file_status(row)
+    try:
+        lines = Path(row["log"]).read_text(errors="replace").splitlines()
+    except (KeyError, OSError, TypeError):
+        lines = []
+    chars = _progress(lines)
+    failing, collection = _summary(lines, row["file"], ids)
+    sections = _sections(lines, norm)
+    heads = {i.replace("::", "."): i for i in ids}
+    errors, collection_lines = {}, []
+    for title, found in sections.items():
+        if title.startswith("ERROR collecting "):
+            collection, collection_lines = True, collection_lines + found
+            continue
+        name = next((title[len(p) :] for p in PHASES if title.startswith(p)), title)
+        if name in heads:
+            errors.setdefault(heads[name], []).extend(found)
+    n, why = len(ids), None
+    if _completed(status) and len(chars) != n:
+        why = f"{len(chars)} progress characters for {n} collected tests"
+    elif not _completed(status) and len(chars) > n:
+        why = f"{len(chars)} progress characters for {n} collected tests (stopped)"
+    elif _completed(status):
+        at = {ids[i] for i, c in enumerate(chars) if c in "FE"}
+        if at != set(failing):
+            why = "F/E positions differ from the summary's FAILED/ERROR IDs"
+    if why is None:
+        outcomes = [WORD[c] for c in chars] + [_unreached(status)] * (n - len(chars))
+    else:
+        outcomes = ["unknown"] * n
+        for k, test in enumerate(ids):
+            if test in failing:
+                outcomes[k] = "failed" if failing[test][0] == "FAILED" else "error"
+    tests = []
+    for test, outcome in zip(ids, outcomes, strict=True):
+        if outcome not in FAILING:
+            tests.append([test, outcome])
+        elif test in errors:
+            tests.append([test, outcome, errors[test][:ERROR_LINES]])
+        elif test in failing:
+            tests.append([test, outcome, [norm(failing[test][1])] if failing[test][1] else []])
+        else:
+            tests.append([test, outcome])
+    reading = {
+        "status": status,
+        "exit_code": row.get("exit_code"),
+        "timed_out": bool(row.get("timed_out")),
+        "counts": row.get("counts", {}),
+        "seconds": row.get("seconds"),
+        "collected": n,
+        "reached": min(len(chars), n),
+        "aligned": why is None,
+    }
+    if why is not None:
+        reading["unaligned"] = why
+        reading["unmatched_failing"] = sorted(set(failing) - set(ids))
+    if collection:
+        reading["collection_error"] = collection_lines[:ERROR_LINES]
+    reading["tests"] = tests
+    return reading
+
+
+def _tree_revision(root):
+    snapshot = Path(root) / "SNAPSHOT.json"
+    if snapshot.is_file():
+        return json.loads(snapshot.read_text()).get("git_revision")
+    if (Path(root) / ".git").exists():
+        return subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True, text=True
+        ).stdout.strip()
+    return None
+
+
+def _run_doc(run_dir):
+    """A finished run folder's run.json (the tier runner's, or an attribution runner's)."""
+    doc = json.loads((Path(run_dir) / "run.json").read_text())
+    provenance = doc.get("provenance") or {}
+    root = provenance.get("root") or doc.get("target")
+    python = provenance.get("python") or doc.get("python")
+    return doc, root, python
+
+
+def _collect_once(root, files, cpu, scratch):
+    env = dict(
+        os.environ,
+        PYTHONPATH=str(Path(root) / "src"),
+        CUDA_VISIBLE_DEVICES="",
+        JAX_PLATFORMS="cpu",
+        JAX_ENABLE_X64="1",
+        CELLS_OUTPUT_ROOT=str(scratch / "outputs"),
+        CELLS_COMPONENT_EVIDENCE=str(scratch / "evidence"),
+    )
+    cmd = [sys.executable, "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider"]
+    cmd += ["--continue-on-collection-errors", "--collect-only", *files]
+    if cpu is not None:
+        cmd = ["taskset", "-c", str(cpu), *cmd]
+    proc = subprocess.run(cmd, cwd=root, env=env, capture_output=True, text=True)
+    ids = {f: [] for f in files}
+    for line in proc.stdout.splitlines():
+        path, sep, test = line.partition("::")
+        if sep and path in ids:
+            ids[path].append(test)
+    return ids, proc.stdout
+
+
+def collect(args):
+    """The test IDs of finished runs' files in their own tree, in collection order.
+
+    Collect on the tree the runs ran on, as it was: right after a run on a checkout. A tree
+    whose revision differs from the one a run recorded is refused.
+    """
+    roots, files, revisions = set(), [], set()
+    for run_dir in args.run:
+        doc, root, _ = _run_doc(run_dir)
+        roots.add(str(Path(root).resolve()))
+        revisions.add(
+            (doc.get("provenance") or {}).get("git_revision") or doc.get("target_revision")
+        )
+        files += [r["file"] for r in doc["files"] if not r.get("absent") and not r.get("not_run")]
+    if len(roots) != 1:
+        sys.exit(f"the runs ran on different trees: {sorted(roots)}")
+    root, files = roots.pop(), sorted(set(files))
+    now = _tree_revision(root)
+    if now and revisions - {None, now}:
+        sys.exit(f"{root} is at {now}, but the runs recorded {sorted(revisions - {None})}")
+    out = Path(args.out) if args.out else Path(args.run[0]) / "collected.json"
+    if out.exists():
+        sys.exit(f"refused: {out} exists")
+    scratch = out.parent / (out.stem + "-scratch")
+    scratch.mkdir(parents=True, exist_ok=True)
+    ids, text = _collect_once(root, files, args.cpu, scratch)
+    logs = {"all": text}
+    for f in [f for f in files if not ids[f]]:  # Collected alone, as the run ran it.
+        alone, logs[f] = _collect_once(root, [f], args.cpu, scratch)
+        ids[f] = alone[f]
+    record = {
+        "kind": IDS_KIND,
+        "root": root,
+        "root_revision": _tree_revision(root),
+        "runs": [str(Path(r).resolve()) for r in args.run],
+        "python": sys.executable,
+        "utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "files": ids,
+    }
+    out.write_text(json.dumps(record, indent=1) + "\n")
+    (out.parent / (out.stem + ".log")).write_text(
+        "".join(f"== {k}\n{v}\n" for k, v in logs.items())
+    )
+    empty = [f for f in files if not ids[f]]
+    print(json.dumps({"files": len(files), "tests": sum(map(len, ids.values())), "empty": empty}))
+    print(out)
+
+
+def _listings(paths):
+    """{resolved tree: {file: [test IDs]}} of collect's listings."""
+    out = {}
+    for path in paths:
+        doc = json.loads(Path(path).read_text())
+        out.setdefault(str(Path(doc["root"]).resolve()), {}).update(doc["files"])
+    return out
+
+
+def readings(run_dirs, listing_paths):
+    """({file: reading}, {run folder: cap}) of finished run folders, later folders winning.
+
+    Each folder's files are read against the listing collected from that folder's own tree,
+    with that folder's paths normalized; rows that record no run (absent, not run) are skipped.
+    """
+    listings, out, caps = _listings(listing_paths), {}, {}
+    for run_dir in run_dirs:
+        doc, root, python = _run_doc(run_dir)
+        tree = listings.get(str(Path(root).resolve()))
+        if tree is None:
+            sys.exit(f"no collected test IDs for {root} (run {run_dir}): run collect on it")
+        interpreter = Path(python).parents[1] if python else None
+        norm = normalizer(((run_dir, "<run>"), (root, "<root>"), (interpreter, "<python>")))
+        caps[str(run_dir)] = doc.get("cap_seconds")
+        for row in doc["files"]:
+            if row.get("absent") or row.get("not_run"):
+                continue
+            if row["file"] not in tree:
+                sys.exit(f"{row['file']} is not in the listing collected from {root}")
+            reading = read_file(row, tree[row["file"]], norm)
+            out[row["file"]] = {"run": str(run_dir), "log": row.get("log"), **reading}
+    return out, caps
+
+
+def write_record(path, doc):
+    """The record as JSON with one line per test, so a refreeze diffs readably in Git."""
+    head = json.dumps({k: v for k, v in doc.items() if k != "files"}, indent=1)
+    parts = []
+    for name, row in doc["files"].items():
+        meta = json.dumps({k: v for k, v in row.items() if k != "tests"}, ensure_ascii=False)
+        tests = ",\n".join("   " + json.dumps(t, ensure_ascii=False) for t in row["tests"])
+        body = meta[:-1] + ', "tests": [' + (f"\n{tests}\n  " if tests else "") + "]}"
+        parts.append(f"  {json.dumps(name)}: {body}")
+    text = head[:-2] + ',\n "files": {\n' + ",\n".join(parts) + "\n }\n}\n"
+    if json.loads(text) != json.loads(json.dumps(doc)):
+        raise AssertionError("the record's layout does not round-trip")
+    Path(path).write_text(text)
+
+
+def freeze(args):
+    """Tier 3's record from finished run folders: per test ID, with normalized errors."""
+    out = Path(args.out)
+    if out.exists() and not args.replace:
+        sys.exit(f"refused: {out} exists (--replace to refreeze)")
+    found, caps = readings(args.run, args.collected)
+    notes = json.loads(Path(args.notes).read_text()) if args.notes else {}
+    if len(set(caps.values())) != 1:
+        sys.exit(f"the run folders' caps differ: {caps}")
+    doc = {
+        "kind": RECORD_KIND,
+        **notes.get("header", {}),
+        "frozen_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "cap_seconds": next(iter(caps.values())),
+        "runs": [str(r) for r in args.run],
+        "collected": [str(c) for c in args.collected],
+        "time": "file wall seconds only: the -q logs carry no per-test times",
+        "outcomes": sorted(set(WORD.values()))
+        + ["not run (cap)", "not run (signal)", "not run", "unknown"],
+        "files": {f: {**found[f], **notes.get("files", {}).get(f, {})} for f in sorted(found)},
+    }
+    write_record(out, doc)
+    tiers = json.loads(Path(args.tiers).read_text())["tiers"]["3"] if args.tiers else None
+    report = {
+        "files": len(found),
+        "tests": sum(r["collected"] for r in found.values()),
+        "unaligned": sorted(f for f, r in found.items() if not r["aligned"]),
+    }
+    if tiers is not None:
+        rows = {r["file"] for r in tiers}
+        report["tier3_rows_not_frozen"] = sorted(rows - set(found))
+        report["frozen_not_tier3_rows"] = sorted(set(found) - rows)
+    print(json.dumps(report))
+    return 1 if report["unaligned"] else 0
+
+
+def _test_change(was, now):
+    """The kind of change between two [id, outcome(, errors)] entries (None: unchanged)."""
+    a = was[1] if was else "absent"
+    b = now[1] if now else "absent"
+    if a == b:
+        if b in FAILING and len(was) > 2 and len(now) > 2 and was[2] != now[2]:
+            return "changed error"
+        return None
+    if b in FAILING:
+        return "changed error" if a in FAILING else "new failure"
+    if b == "absent":
+        return "removed"
+    if a == "absent":
+        return "added"
+    if "unknown" in (a, b):
+        return None  # Not failing by the summary; the file's "unaligned" entry stands for it.
+    if b.startswith("not run"):
+        return None if a.startswith("not run") else "not reached"
+    if a.startswith("not run"):
+        return "newly reached"
+    if b in SKIPPING and (a in PASSING or a in FAILING):
+        return "now skipped"
+    if b in PASSING and (a in FAILING or a in SKIPPING):
+        return "new pass"
+    return "changed outcome"
+
+
+def diff_readings(record, found, factor=2.0, min_seconds=60.0):
+    """(blocking, reported, unchanged files) of run readings against tier 3's record.
+
+    Per test ID: a test failing now that did not fail (or was not reached, or is new) is a
+    new failure; failing in both with other error lines (or failed <-> error) a changed
+    error; a test that disappears is removed; a passing or failing test now skipped is now
+    skipped. Per file: completed -> timeout is a new timeout; a signal or no exit is no
+    verdict (its tests are not compared: the file owes a run alone); a log that does not
+    align with its IDs is unaligned; a new or changed collection error. All of these block.
+    Reported only: new passes, newly reached and added tests, tests no longer reached, a
+    file that now completes, a new file, and time: completed in both with the seconds beyond
+    the factor either way and at least min_seconds apart, or timed out in both with the
+    number of tests reached beyond the factor.
+    """
+    blocking, reported, unchanged = [], [], []
+    for f in sorted(found):
+        now, was = found[f], record["files"].get(f)
+        size = len(blocking) + len(reported)
+
+        def add(kind, f=f, **detail):
+            (blocking if kind in BLOCKING else reported).append({"file": f, "kind": kind, **detail})
+
+        if was is None:
+            add("new file", now=now["status"])
+            was = {"status": "absent", "tests": [], "reached": 0, "seconds": None}
+        ws, ns = was["status"], now["status"]
+        if ns.startswith("signal") or ns == "no exit":
+            failing = [t[0] for t in now["tests"] if t[1] in FAILING]
+            add("no verdict", was=ws, now=ns, reached=now["reached"], failing_before_end=failing)
+            continue
+        if not now["aligned"]:
+            add("unaligned", now=ns, why=now.get("unaligned"))
+        if _completed(ws) and ns == "timeout":
+            add("new timeout", was=ws, now=ns, reached=now["reached"], collected=now["collected"])
+        if ws == "timeout" and _completed(ns):
+            add("now completes", was=ws, now=ns, seconds=now["seconds"])
+        if now.get("collection_error") and now.get("collection_error") != was.get(
+            "collection_error"
+        ):
+            add("collection error", was=was.get("collection_error"), now=now["collection_error"])
+        before = {t[0]: t for t in was["tests"]}
+        after = {t[0]: t for t in now["tests"]}
+        for test in list(before) + [t for t in after if t not in before]:
+            a, b = before.get(test), after.get(test)
+            kind = _test_change(a, b)
+            if kind:
+                detail = {
+                    "test": test,
+                    "was": a[1] if a else "absent",
+                    "now": b[1] if b else "absent",
+                }
+                if kind == "changed error":
+                    detail |= {"errors_was": a[2] if len(a) > 2 else None, "errors_now": b[2]}
+                elif kind == "new failure" and len(b) > 2:
+                    detail["errors_now"] = b[2]
+                add(kind, **detail)
+        w, n = was.get("seconds"), now.get("seconds")
+        if _completed(ws) and _completed(ns) and w and n is not None:
+            if abs(n - w) >= min_seconds and (n > factor * w or n * factor < w):
+                add("time", was=w, now=n, factor=round(n / w, 2))
+        elif ws == "timeout" and ns == "timeout":
+            w, n = was["reached"], now["reached"]
+            if n * factor < w or n > factor * w:
+                add("time", was_reached=w, now_reached=n, within_cap=True)
+        if len(blocking) + len(reported) == size:
+            unchanged.append(f)
+    return blocking, reported, unchanged
+
+
+def diff(args):
+    """Finished run folders against tier 3's record: only what changed, per test ID."""
+    record = json.loads(Path(args.record).read_text())
+    found, caps = readings(args.run, args.collected)
+    blocking, reported, unchanged = diff_readings(record, found, args.factor, args.min_seconds)
+    missing = sorted(set(record["files"]) - set(found))
+    caps_differ = sorted({c for c in caps.values() if c != record.get("cap_seconds")})
+    counts = {}
+    for entry in blocking + reported:
+        counts[entry["kind"]] = counts.get(entry["kind"], 0) + 1
+    result = {
+        "kind": DIFF_KIND,
+        "record": str(args.record),
+        "runs": [str(r) for r in args.run],
+        "factor": args.factor,
+        "min_seconds": args.min_seconds,
+        "record_cap_seconds": record.get("cap_seconds"),
+        "run_caps": caps,
+        "caps_differ": caps_differ,
+        "files_read": len(found),
+        "files_unchanged": len(unchanged),
+        "record_files_not_in_runs": missing,
+        "counts": counts,
+        "blocking": blocking,
+        "reported": reported,
+    }
+    if args.out:
+        Path(args.out).write_text(json.dumps(result, indent=1) + "\n")
+    print(json.dumps({k: result[k] for k in ("files_read", "files_unchanged", "counts")}))
+    if caps_differ:
+        print(f"caps differ from the record's {record.get('cap_seconds')} s: {caps_differ}")
+    if missing:
+        print(f"{len(missing)} record files not in these runs")
+    for entry in blocking:
+        print(
+            f"BLOCKING {entry['kind']}: {entry['file']}"
+            + (f"::{entry['test']}" if "test" in entry else "")
+        )
+    incomplete = bool(missing) and args.require_complete
+    return 1 if blocking or caps_differ or incomplete else 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -312,8 +855,31 @@ def main(argv=None):
     r.add_argument("--out", required=True)
     r.add_argument("--cpus", type=cpus, default=[4, 5, 6, 7])
     r.add_argument("--cap", type=float, default=300.0)
+    c = sub.add_parser("collect", help="the test IDs of finished runs' files, from their tree")
+    c.add_argument("--run", required=True, nargs="+", help="run folders on one tree")
+    c.add_argument("--out", help="listing to write (default RUN/collected.json)")
+    c.add_argument("--cpu", type=int, help="CPU for the collecting pytest (taskset)")
+    f = sub.add_parser("freeze", help="tier 3's record from finished run folders")
+    f.add_argument("--run", required=True, nargs="+", help="run folders, later ones win")
+    f.add_argument("--collected", required=True, nargs="+", help="collect's listings")
+    f.add_argument("--out", required=True)
+    f.add_argument("--notes", help='JSON {"header": {...}, "files": {file: {...}}} to add')
+    f.add_argument("--tiers", help="tier record whose tier-3 rows the record should cover")
+    f.add_argument("--replace", action="store_true", help="refreeze over an existing record")
+    d = sub.add_parser("diff", help="finished run folders against tier 3's record")
+    d.add_argument("--record", required=True)
+    d.add_argument("--run", required=True, nargs="+", help="run folders, later ones win")
+    d.add_argument("--collected", nargs="+", help="listings (default RUN/collected.json)")
+    d.add_argument("--out", help="diff JSON to write")
+    d.add_argument("--factor", type=float, default=2.0, help="file time factor reported")
+    d.add_argument("--min-seconds", type=float, default=60.0, help="smaller time changes ignored")
+    d.add_argument("--require-complete", action="store_true", help="fail when files are missing")
     args = parser.parse_args(argv)
-    return {"measure": measure, "tiers": tiers, "run": run}[args.command](args) or 0
+    if args.command == "diff" and not args.collected:
+        args.collected = [str(Path(r) / "collected.json") for r in args.run]
+    commands = {"measure": measure, "tiers": tiers, "run": run}
+    commands |= {"collect": collect, "freeze": freeze, "diff": diff}
+    return commands[args.command](args) or 0
 
 
 if __name__ == "__main__":
