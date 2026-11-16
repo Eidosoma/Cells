@@ -16,6 +16,53 @@ hour, named what the viewer could show: assemblies growing and splitting; their 
 similarity H and composomes; lineages across fissions, and the inheritance threshold (H > 0.9, F12); and
 reminded that nothing of GARD is in the engine, so whatever is drawn is labelled so.
 
+## Decided
+
+The user answered the nine questions of section 6 on 16 November 2026, after the options page was
+published: "get adviser in on this then go on your recommendation on all of those", and, a moment
+later, "be ambitous". The visualizer session's advisor reviewed the answers and reversed none. So,
+as recommended:
+
+1. **"Origin of life" is a new heading in the species switch, and a GARD assembly is a model system,
+   not a species**: a new kind of entry, with four levels of its own (Molecules, One assembly,
+   Population, Lineages).
+2. **The assembly is drawn as a micelle**, labelled as the picture's choice, with the cluster on a
+   phone and where less motion is asked for.
+3. **A GARD run plays in the entry's own view**; the Experiments view lists GARD runs and opens them
+   there.
+4. **The clock counts fissions**, with molecule by molecule at the slow end and no "true speed". It is
+   the page's one time control with a second ladder of speeds, not a control of its own.
+5. **The 0.9 line is drawn only on the comparison of a parent with the daughter that carries on.**
+   Anywhere else a threshold is the picture's choice and is said to be.
+6. **Composomes are named only where a run or its analysis names them.**
+7. **The options page's toy does not enter the built viewer.** The viewer draws saved runs.
+8. **One lineage first, populations later.**
+9. **Where the engine runs both forms of its kernel, the viewer shows the pair under one clock**, each
+   labelled with the law it ran, and says nothing of which is right.
+
+**How "be ambitious" is read** (the visualizer session's reading, not the user's words): the whole
+view is built now, and not only the entry with an empty view while the engine's first GARD run is
+awaited.
+
+- **The view is built standing alone first**, as the Laws library was: the assembly, the composition,
+  the similarity, the map, the lineages and the clock, with the page's look.
+- **Until the engine has a GARD run, the view plays an example run of invented numbers**, made by a
+  tool in this folder and saved as a small file, and marked as an example on the picture and in the
+  legend, in the way the example sheet of the replays is marked today. It is not a run of Cells' engine
+  and not the preprint's runs, and nothing it shows is a finding. This goes one step past answer 7 as it
+  was recommended (which named such a file for tests only), and is the one point of this reading that
+  the user may want to turn down.
+- **The view reads a run through a contract of the viewer's own.** The engine's GARD design note is
+  proposed, on a development branch, not on main, so no code here binds to its record names: a table
+  says which of its proposed records each field would be read from, and an adapter is written when the
+  engine's first run exists.
+- **The entry, its contract and its place in the switch are designed together with the cell-type
+  contract** (`docs/CELL_TYPES_DESIGN.md`): species, cell type and model system change the same reader
+  and the same switch, so they are one change. It is wired into the page when the files it shares with
+  work in progress are free.
+
+What follows is the note as it was handed over, unchanged but for this section.
+
 ## In short
 
 - **Recommendation.** Add a heading "Origin of life" to the species switch, with "GARD assembly" as a
