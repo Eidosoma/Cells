@@ -10,7 +10,7 @@ import path from "node:path";
 import * as THREE from "three";
 import { ROOT } from "../tools/lib/build_page.mjs";
 import { LAWS_FORMAT, Library, problemsOf } from "../src/lenses/laws_data.js";
-import { LawsLens, LAWS_LOOK, LAWS_BLOOM, MARKS } from "../src/lenses/laws.js";
+import { LawsLens, LAWS_LOOK, LAWS_BLOOM, LAWS_BLOOM_LIGHT, MARKS } from "../src/lenses/laws.js";
 import { plaquesOf, longDate } from "../src/lenses/laws_marks.js";
 import { PER_BAND } from "../src/lenses/laws_layout.js";
 import { LAWS_CSS } from "../src/lenses/laws_styles.js";
@@ -184,7 +184,7 @@ print(json.dumps({"kinds": [tool.constant_kind(name, where) for name, where in n
 
 // ------------------------------------------------------------ the view, without a browser
 
-function lensFor({ moving = false, width = 1600, height = 1000 } = {}) {
+function lensFor({ moving = false, width = 1600, height = 1000, dark = false } = {}) {
   const shown = [];
   const labels = {
     shown,
@@ -196,7 +196,9 @@ function lensFor({ moving = false, width = 1600, height = 1000 } = {}) {
     clear: () => shown.splice(0),
     remove: (item) => shown.splice(shown.indexOf(item), 1),
   };
-  const palette = { ghost: "#77889a", fg: "#12283a", plate: "#e3eaf1", edge: "#566878", plateEdge: "#bccad7", accent: "#1f6fd0", bg: "#eef2f6", dark: false };
+  const palette = dark
+    ? { ghost: "#8496a8", fg: "#e6edf3", plate: "#172836", edge: "#95a6b7", plateEdge: "#314a60", accent: "#5b9dee", bg: "#0b151e", dark: true }
+    : { ghost: "#77889a", fg: "#12283a", plate: "#e3eaf1", edge: "#566878", plateEdge: "#bccad7", accent: "#1f6fd0", bg: "#eef2f6", dark: false };
   const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 5000);
   const dressed = [], bloom = [], glows = new Set(), flights = [];
   const place = (view) => {
@@ -384,7 +386,7 @@ test("only what is chosen glows: bloom is off at rest, and on only from the chos
   assert.equal(lens.litBars.mesh.count + lens.litSlots.mesh.count, 0, "and at rest it holds nothing to draw");
   const piece = byId.get("nak_atp_mass_action_positive@1");
   lens.setSelection(`laws:${piece.id}`);
-  assert.equal(bloom.at(-1), LAWS_BLOOM.strength);
+  assert.equal(bloom.at(-1), LAWS_BLOOM_LIGHT.strength, "in the light theme, the light theme's bloom");
   assert.equal(lens.litBars.mesh.count, 1, "the chosen bar's lit copy");
   assert.equal(lens.litSlots.mesh.count, expectedSlots(piece).size, "a lit copy of each slot that declares it");
   for (const object of [...shining, ...lens.lines.children]) assert.ok([lens.litBars.mesh, lens.litSlots.mesh, lens.ring].includes(object) || object.parent === lens.lines, "nothing else is in the group that glows");
@@ -399,6 +401,40 @@ test("only what is chosen glows: bloom is off at rest, and on only from the chos
   lens.deactivate();
   assert.equal(bloom.at(-1), 0, "leaving the view turns it off");
   assert.equal(glows.size, 0, "and unmarks what it marked");
+});
+
+test("a chosen rack in the light theme shines at its edges and rails, its cards still cards; in the dark it shines whole", () => {
+  const id = "resolved_pump_composite@1";
+  const at = (set, n) => {
+    const matrix = new THREE.Matrix4(), position = new THREE.Vector3(), scale = new THREE.Vector3();
+    set.mesh.getMatrixAt(n, matrix);
+    matrix.decompose(position, new THREE.Quaternion(), scale);
+    return { z: position.z, d: scale.z, w: scale.x, h: scale.y };
+  };
+  const colourOf = (set, n) => {
+    const colour = new THREE.Color();
+    set.mesh.getColorAt(n, colour);
+    return colour.getHexString();
+  };
+  const light = lensFor({ moving: false }), dark = lensFor({ moving: false, dark: true });
+  for (const { lens, bloom } of [light, dark]) {
+    lens.setSelection(`laws:${id}`);
+    lens.update(16);
+    const theme = lens.palette.dark ? "dark" : "light";
+    const cards = lens.cardList.map((card, index) => ({ card, index })).filter(({ card }) => card.frame === id);
+    const rails = lens.rails.items.filter((rail) => rail.id === `laws:${id}`).length;
+    assert.equal(lens.litSlots.mesh.count, cards.length + 1 + (theme === "light" ? rails : 0), `${theme}: a lit copy for each card and the block${theme === "light" ? ", and each rail" : ""}`);
+    const accent = new THREE.Color(lens.palette.accent).getHexString();
+    for (const { index } of cards) assert.equal(colourOf(lens.slots, index) === accent, theme === "dark", `${theme}: a lit card's face ${theme === "dark" ? "is" : "is not"} the accent itself`);
+    // Where each lit copy's front stands against its card's front.
+    cards.forEach(({ index }, n) => {
+      const card = at(lens.slots, index), copy = at(lens.litSlots, n);
+      const ahead = copy.z + copy.d / 2 > card.z + card.d / 2;
+      assert.equal(ahead, theme === "dark", `${theme}: the shine ${theme === "dark" ? "covers the card" : "stands behind the card's face, round its edges"}`);
+      if (theme === "light") assert.ok(copy.w > card.w && copy.h > card.h, "and it is wider and taller, so its edges show");
+    });
+    assert.equal(bloom.at(-1), (theme === "dark" ? LAWS_BLOOM : LAWS_BLOOM_LIGHT).strength);
+  }
 });
 
 test("the legend says what each visual difference stands for, and nothing else differs", () => {

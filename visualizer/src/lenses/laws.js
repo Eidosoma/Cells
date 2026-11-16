@@ -26,6 +26,9 @@ import { PLANK, FOOT, PLINTH, plaquesOf, plaqueMesh, routeMaterial, mergeTubes, 
 export const LAWS_LOOK = { rich: true, filmic: true, exposure: 1.06, contact: true, reach: 0.5, shade: 0.6 };
 /** The bloom while something is chosen: only what is chosen is marked to shine (stage.glow). */
 export const LAWS_BLOOM = { strength: 0.35, radius: 0.34, floor: 0.08 };
+/** In the light theme a little less: on a light ground the glow washes out what it shines from. */
+export const LAWS_BLOOM_LIGHT = { strength: 0.28, radius: 0.3, floor: 0.1 };
+const RIM = 0.1; // how much wider and taller than a card its lit edge is, in the light theme
 const LIFT = { chosen: 0.62, found: 0.2, slot: 0.3 };
 const GROW = 0.5; // seconds for a route's light to reach its slot
 const RUNS = 3; // how many times the light runs along the routes after a choice, before it holds steady
@@ -332,7 +335,7 @@ export class LawsLens {
     const capacity = Math.max(1, bars.length);
     this.litBars = new Instances(box, this.materials.lit, capacity);
     this.litBars.mesh.count = 0;
-    this.litSlots = new Instances(box, this.materials.lit, Math.max(1, cards.length + blocks.length + 1));
+    this.litSlots = new Instances(box, this.materials.lit, Math.max(1, cards.length + blocks.length + rails.length + 1));
     this.litSlots.mesh.count = 0;
     this.lines = new THREE.Group();
     this.lines.userData.unpickable = true;
@@ -639,20 +642,22 @@ export class LawsLens {
       });
       if (set.mesh.instanceColor) set.mesh.instanceColor.needsUpdate = true;
     }
-    // The racks' cards: a lit one comes out of its socket.
+    // The racks' cards: a lit one comes out of its socket. In the light theme its face stays a
+    // card (slate drawn toward the accent) and its edges shine; in the dark theme it shines whole.
+    const face = this.palette?.dark ? base.accent : base.litFace;
     this.cardList.forEach((card, index) => {
       const chosen = lit.cards.has(`${card.frame}|${card.row}|${card.index}`);
-      this.slots.tint(index, chosen ? base.accent : passes(card.piece) ? (card.form === "design" ? base.glass : base.slate) : base.dim);
+      this.slots.tint(index, chosen ? face : passes(card.piece) ? (card.form === "design" ? base.glass : base.slate) : base.dim);
       this.slots.target[index] = chosen ? LIFT.slot : 0;
     });
     this.cardBandList.forEach((card, index) => {
       const chosen = lit.cards.has(`${card.frame}|${card.row}|${card.index}`);
-      this.slotBands.tint(index, chosen ? base.accent : base.band);
+      this.slotBands.tint(index, chosen ? (this.palette?.dark ? base.accent : base.band) : base.band);
       this.slotBands.target[index] = chosen ? LIFT.slot : 0;
     });
     this.blocks.items.forEach((block, index) => {
       const chosen = lit.blocks.has(`${block.frame}|${engineId(block.id)}`);
-      this.blocks.tint(index, chosen ? base.accent : base.rail);
+      this.blocks.tint(index, chosen ? face : base.rail);
       this.blocks.target[index] = chosen ? LIFT.slot : 0;
     });
     this.rails.items.forEach((rail, index) => this.rails.tint(index, lit.frame && engineId(rail.id) === lit.frame.id ? base.accent : base.rail));
@@ -664,12 +669,19 @@ export class LawsLens {
     this.labelChosen(lit);
     // Bloom only while something is chosen, and only from what was marked: the chosen and its routes.
     const any = Boolean(lit.piece || lit.frame || (this.selected && this.has(this.selected)));
-    this.stage.setBloom?.(any && this.active ? LAWS_BLOOM.strength : 0, { radius: LAWS_BLOOM.radius, floor: LAWS_BLOOM.floor });
+    const bloom = this.palette?.dark ? LAWS_BLOOM : LAWS_BLOOM_LIGHT;
+    this.stage.setBloom?.(any && this.active ? bloom.strength : 0, { radius: bloom.radius, floor: bloom.floor });
     this.stage.invalidate?.();
   }
 
-  /** The lit copies: one over each chosen bar and each lit slot, a little larger, that ease out with it. */
+  /**
+   * The lit copies: one over each chosen bar and each lit slot, a little larger, that ease out
+   * with it. In the light theme a lit slot's copy stands behind the card, a little wider and
+   * taller, so that only its edges shine round a face that can still be read; the chosen rack's
+   * rails shine too. The dark theme keeps the whole card shining.
+   */
   placeLit(lit) {
+    const light = !this.palette?.dark;
     const bars = [];
     // A design piece keeps its glass outline when chosen: it is tinted, and only what has a bar of slate gets a lit copy.
     for (const id of lit.bars) for (const entry of this.barSlot.get(id) || []) if (entry.set === "solid") bars.push({ set: entry.set, index: entry.index });
@@ -686,11 +698,13 @@ export class LawsLens {
     // A chosen older family: its box on the plinth.
     this.older.items.forEach((item, index) => pageId(item.id) === this.selected && slots.push({ item: { ...item, w: this.narrow ? 0.07 : WIDE.older.w, h: WIDE.older.h, d: this.narrow ? 0.07 : WIDE.older.w }, set: this.older, index, lift: 0 }));
     this.blocks.items.forEach((block, index) => lit.blocks.has(`${block.frame}|${engineId(block.id)}`) && slots.push({ item: block, set: this.blocks, index }));
+    if (light && lit.frame) this.rails.items.forEach((rail, index) => engineId(rail.id) === lit.frame.id && slots.push({ item: rail, set: this.rails, index, lift: 0, whole: true }));
     this.litSlots.mesh.count = slots.length;
-    slots.forEach(({ item, set, index, lift = LIFT.slot }, n) => {
+    slots.forEach(({ item, set, index, lift = LIFT.slot, whole = false }, n) => {
       this.litSlots.offset[n] = set.offset[index];
       this.litSlots.target[n] = lift;
-      this.litSlots.place(n, { ...item, w: item.w * 1.02, h: item.h * 1.08, d: item.d * 1.1 });
+      const rim = light && !whole && set !== this.older;
+      this.litSlots.place(n, rim ? { ...item, w: item.w + RIM, h: item.h + RIM, d: item.d * 0.5, z: item.z - item.d * 0.25 - 0.01 } : whole ? { ...item, w: item.w + 0.02, h: item.h + 0.02, d: item.d + 0.02 } : { ...item, w: item.w * 1.02, h: item.h * 1.08, d: item.d * 1.1 });
     });
     for (const set of [this.litBars, this.litSlots]) set.flush();
   }
@@ -896,7 +910,7 @@ export class LawsLens {
     const tone = (value) => new THREE.Color(value || "#888888");
     this.colours = {
       slate: tone(palette.ghost), band: tone(palette.fg), glass: tone(palette.plate), ghost: tone(palette.ghost), rail: tone(palette.plateEdge),
-      accent: tone(palette.accent), dim: tone(palette.ghost).lerp(tone(palette.bg), 0.82),
+      accent: tone(palette.accent), dim: tone(palette.ghost).lerp(tone(palette.bg), 0.82), litFace: tone(palette.ghost).lerp(tone(palette.accent), 0.5),
     };
     const plank = tone(palette.plateEdge).lerp(tone(palette.ghost), 0.35);
     for (const room of [this.planks, this.dividers]) {

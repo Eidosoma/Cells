@@ -269,7 +269,9 @@ each one that is drawn (`MARKS` in `src/lenses/laws.js`, with a swatch for each 
 - forward and faint: what a search or a filter finds and does not; a faint bar: an empty place,
   in a test of size only;
 - blue light: what is chosen, the slots that declare it and the routes between. Only these are
-  marked to glow, and bloom is on only while something is chosen.
+  marked to glow, and bloom is on only while something is chosen. In the light theme a lit card
+  keeps a face that reads as a card, drawn toward the accent, and its edges and its rack's rails
+  shine; in the dark theme the card shines whole. Both mean the same thing.
 
 Nothing else differs. The glass, rails, planks, dividers, sockets and plinth are the room. No
 mark is dashed (on the page's other views a dashed outline is how the planned status looks). The

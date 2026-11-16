@@ -1,0 +1,164 @@
+// One view standing alone, on a page of its own (tools/build_view_page.mjs): the page's stage
+// with the view in it, its panel (a bottom sheet on a phone), its legend, its search and the
+// choices its card offers. It shows a view before the view is on the map's page, and it gives
+// the view the same calls the viewer gives every view (setSelection, then focus, then the
+// panel and the room the panel takes), so what it shows is what the viewer will show.
+//
+// A view's mount module (src/standalone/<view>.js) calls mountView({ make, styles }) with how
+// to make the view; nothing here knows which view it is. The page carries its data as JSON
+// blocks: the scene (data-standalone="scene") and each further file (data-standalone-into="key",
+// put into the scene under that key, as the viewer's build carries it).
+
+import { css } from "../ui/styles.js";
+import { h, statusSwatch } from "../ui/dom.js";
+import "../ui/panel.js";
+import { SceneModel } from "../scene/model.js";
+import { Stage } from "../core/stage.js";
+import { LabelLayer } from "../core/labels.js";
+
+/** The words the page says on itself, always: the tool writes them in the page's notice. */
+export const NOTICE = "Preview: this view is not on the map's page yet";
+
+const NARROW = 700;
+
+const STYLE = `
+:host { display: block; position: absolute; inset: 0; }
+.frame { position: absolute; inset: 0; }
+.bar-card { position: absolute; left: 12px; top: 12px; right: auto; z-index: 5; padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; max-width: calc(100% - 24px); box-sizing: border-box; }
+.bar-card b { font-weight: 600; }
+.bar-card input, .bar-card select { font: inherit; font-size: 13px; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); min-width: 0; }
+.bar-card input { width: 170px; }
+.bar-card select { max-width: 210px; }
+cells-panel { position: absolute; right: 12px; top: 12px; bottom: 12px; width: min(400px, 46vw); overflow: auto; z-index: 6; }
+.legend-card { position: absolute; left: 12px; bottom: 12px; z-index: 5; padding: 8px 12px; width: min(320px, calc(100% - 24px)); max-height: calc(100% - 96px); overflow: auto; box-sizing: border-box; font-size: 12px; line-height: 1.3; }
+.legend-card summary { cursor: pointer; font-weight: 600; }
+.legend-card ul { list-style: none; margin: 6px 0 2px; padding: 0; display: grid; gap: 5px; }
+.legend-card li { display: flex; gap: 8px; align-items: center; }
+.legend-card li b { margin-left: auto; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+.legend-card p { margin: 6px 0 0; color: var(--muted); }
+@media (max-width: ${NARROW}px) {
+  .bar-card { left: 8px; right: 8px; top: 8px; max-width: none; flex-wrap: nowrap; gap: 6px; padding: 6px 8px; }
+  .bar-card b { flex: none; font-size: 13px; }
+  .bar-card input { flex: 1 1 0; width: auto; }
+  .bar-card select { flex: 1 1 0; max-width: none; }
+  .bar-card .wide-only { display: none; }
+  cells-panel { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 46%; }
+  .legend-card { left: 8px; bottom: 8px; width: auto; max-width: calc(100% - 16px); }
+}
+`;
+
+/** The page's data: the scene, with each further file put into it under its key. */
+export function readData(root = document) {
+  const block = root.querySelector('script[data-standalone="scene"]');
+  if (!block) throw new Error("the page carries no scene");
+  const scene = JSON.parse(block.textContent);
+  for (const more of root.querySelectorAll("script[data-standalone-into]")) scene[more.dataset.standaloneInto] = JSON.parse(more.textContent);
+  return scene;
+}
+
+/** Registers <cells-standalone>, which mounts the view `make` returns. */
+export function mountView({ make, styles = "" }) {
+  class StandaloneView extends HTMLElement {
+    connectedCallback() {
+      if (this.stage) return;
+      this.model = new SceneModel(readData(document));
+      this.replaceChildren();
+      const root = this.attachShadow({ mode: "open" });
+      this.canvas = h("canvas", { tabIndex: 0, role: "img", "aria-label": "The view" });
+      this.labelBox = h("div", { class: "labels" });
+      this.panel = h("cells-panel", { class: "card", hidden: true });
+      this.bar = h("div", { class: "card bar-card" });
+      this.legendBox = h("details", { class: "card legend-card" });
+      root.append(h("style", {}, css + styles + STYLE), h("div", { class: "frame" }, this.canvas, this.labelBox, this.bar, this.legendBox, this.panel));
+      this.stage = new Stage({ canvas: this.canvas, host: this });
+      this.labels = new LabelLayer(this.labelBox, this.stage, (id) => this.select(id));
+      this.stage.afterRender.add(() => this.labels.layout());
+      this.lens = make(this.stage, this.model, this.labels);
+      this.stage.onTick((dt) => this.lens.update?.(dt));
+      this.stage.onPalette((palette) => this.lens.applyPalette?.(palette));
+      this.lens.onChrome = () => this.renderChrome();
+      this.lens.activate();
+      this.canvas.setAttribute("aria-label", this.lens.chrome?.().card?.heading || "The view");
+      this.renderBar();
+      this.renderChrome();
+      this.wire();
+      this.stage.invalidate();
+      window.__standalone = this;
+    }
+
+    /** The card's title, the search (where the view has one) and its choices, as small controls. */
+    renderBar() {
+      const card = this.lens.chrome?.().card || {};
+      const parts = [h("b", {}, card.heading || "")];
+      if (typeof this.lens.setQuery === "function") {
+        this.find = h("input", { type: "search", placeholder: "Find", "aria-label": `Find in ${card.heading || "the view"}`, oninput: () => this.lens.setQuery(this.find.value) });
+        parts.push(this.find);
+      }
+      const choose = (spec, call) => {
+        if (!spec?.options?.length || typeof call !== "function") return null;
+        const select = h("select", { "aria-label": spec.label, onchange: () => call.call(this.lens, select.value) }, ...spec.options.map(([value, label]) => h("option", { value }, label)));
+        select.value = spec.active || spec.options[0][0];
+        return select;
+      };
+      this.markSelect = choose(card.marks, this.lens.setMark);
+      this.modeSelect = choose(card.modes, this.lens.setMode);
+      // On a phone the bar keeps to one row: the title, the search and the first choice.
+      if (this.markSelect && this.modeSelect) this.modeSelect.classList.add("wide-only");
+      for (const select of [this.markSelect, this.modeSelect]) if (select) parts.push(select);
+      this.bar.replaceChildren(...parts);
+    }
+
+    /** The legend card, from the view's chrome: what each mark drawn now stands for. */
+    renderChrome() {
+      const legend = this.lens.chrome?.().legend;
+      this.legendBox.hidden = !legend || (this.lens.selected && this.narrow());
+      if (!legend) return;
+      const open = this.legendBox.open;
+      this.legendBox.replaceChildren(
+        h("summary", {}, legend.title || "Legend"),
+        h("ul", {}, ...(legend.items || []).map((item) => h("li", { title: item.description || "" }, statusSwatch(item.swatch), h("span", {}, item.label), item.count === undefined ? null : h("b", {}, String(item.count))))),
+        legend.note ? h("p", {}, legend.note.text) : null
+      );
+      this.legendBox.open = open;
+    }
+
+    narrow() {
+      return this.clientWidth <= NARROW;
+    }
+
+    wire() {
+      let down = null;
+      this.canvas.addEventListener("pointerdown", (event) => (down = { x: event.clientX, y: event.clientY }));
+      this.canvas.addEventListener("pointerup", (event) => {
+        if (!down || Math.hypot(event.clientX - down.x, event.clientY - down.y) > 5) return;
+        const hit = this.stage.pick(event.clientX, event.clientY, this.lens.pickRoots);
+        this.select(hit?.id || null);
+      });
+      this.canvas.addEventListener("pointermove", (event) => this.lens.setHover?.(this.stage.pick(event.clientX, event.clientY, this.lens.pickRoots)?.id || null));
+      this.canvas.addEventListener("keydown", (event) => {
+        if ((event.key === "ArrowRight" || event.key === "ArrowLeft") && this.lens.step) this.select(this.lens.step(event.key === "ArrowRight" ? 1 : -1));
+        if (event.key === "Escape") this.select(null);
+      });
+      // The panel's own links and close button choose through the page's event.
+      this.shadowRoot.addEventListener("cells-select", (event) => {
+        event.stopPropagation();
+        this.select(event.detail?.id || null);
+      });
+    }
+
+    /** In the viewer's order (viewer.js select, then renderPanel): the choice, the move, the panel, then the room it takes. */
+    select(id) {
+      const chosen = id && this.lens.has?.(id) ? id : null;
+      this.lens.setSelection(chosen);
+      if (chosen) this.lens.focus?.(chosen);
+      else if (this.lens.homeView) this.stage.rig.flyTo(this.lens.homeView(), 900);
+      this.panel.show({ model: this.model, entity: chosen ? this.lens.describe(chosen) : null });
+      const narrow = this.narrow();
+      if (chosen) this.legendBox.open = false;
+      this.renderChrome();
+      this.stage.setInsets(chosen ? (narrow ? { bottom: this.panel.offsetHeight + 8 } : { right: this.panel.offsetWidth + 16 }) : {});
+      this.stage.invalidate();
+    }
+  }
+  if (!customElements.get("cells-standalone")) customElements.define("cells-standalone", StandaloneView);
+}
