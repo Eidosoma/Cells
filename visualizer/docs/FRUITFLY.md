@@ -226,10 +226,11 @@ python3 tools/build_fruitfly_atlas.py build --datasets DATA   # the same bytes e
 node --test tests/fruitfly_atlas.test.mjs                      # set FRUITFLY_DATASETS elsewhere
 ```
 
-**A shared module would now be the cleaner home.** The tool imports the human's tool for
-the shelves' machinery, the M. pneumoniae tool for the families asked of every species,
-and the E. coli tool for the download step and the list of accessory families. Three
-species' tools now reach into one another. Moving the shared parts (the datasets and
-manifests, the vocabulary and placement, the filing into families, the lines, the
-download step, the units' family table) into one module under `tools/lib/` would end
-that; it touches four tools and their byte-for-byte tests, so it was not done here.
+**The shared parts are in one module** since 16 November 2026:
+`tools/lib/proteome_shelves.py` holds the datasets and manifests, the vocabulary and
+placement, the filing into families, the lines, the download step and the writing of the
+files. This tool keeps what is the fly's own: its sources, the Shab note, its outlines,
+its species and atlas files and its sentences. It still reads the families asked of
+every species from the M. pneumoniae tool's table. No tool sets another's variables any
+more, so several species can be built in one process; every file this tool writes came
+out the same byte for byte after the move.

@@ -457,8 +457,10 @@ export class CellLens {
     return part;
   }
 
-  neutral(zone, material, { opacity = 0.5, colour = "ghost" } = {}) {
-    material.userData = { ...material.userData, base: opacity, colour };
+  neutral(zone, material, { opacity = 0.5, colour = "ghost", natural = null } = {}) {
+    // `natural` names the colour a piece of scenery has in life (a chloroplast's green). It wears it
+    // where the cell is coloured by kind, and the neutral colour where colour shows status.
+    material.userData = { ...material.userData, base: opacity, colour, natural };
     // Scenery in the page's own ink (outlines, marks) stays out of filmic light; glass takes it with the parts.
     material.toneMapped = material.isMeshStandardMaterial === true;
     material.opacity = opacity;
@@ -1082,7 +1084,8 @@ export class CellLens {
     for (const zone of this.zones) {
       for (const part of zone.parts) part.colour(palette);
       for (const material of zone.neutrals) {
-        material.color.set(palette[material.userData.colour] || palette.ghost);
+        const natural = this.colourBy === "biology" ? material.userData.natural : null;
+        material.color.set(palette[natural || material.userData.colour] || palette.ghost);
         material.userData.rim?.uRimColor.value.copy(material.color).lerp(WHITE, 0.5);
       }
     }

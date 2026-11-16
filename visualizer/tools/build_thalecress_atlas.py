@@ -18,10 +18,11 @@ inside it, and the vacuole's membrane.
     python3 tools/build_thalecress_atlas.py build --datasets DATA     the same bytes every time
     python3 tools/build_thalecress_atlas.py members --out DIR         the members' files, for the page
 
-The reading of entries, the gene-by-gene catalogue and the members' files are the fruit fly tool's;
-the shelves' machinery is the human tool's; the families asked of every species are the M. pneumoniae
-tool's; the download step, the papers' checks and the accessory families are the E. coli tool's.
-A change to any of them shows in this tool's byte-for-byte test.
+The download step, the papers' checks, the reading of a whole proteome's entries, the gene-by-gene
+catalogue, the shelves' machinery, the members' files and the search for the families of Cells'
+units are tools/lib/proteome_shelves.py, which every species' tool shares, here with a plant cell's
+shelves; the families asked of every species are the M. pneumoniae tool's, read and never changed.
+A change to either shows in this tool's byte-for-byte test.
 
 This is the viewer's reference data. Nothing of the plant is in the engine. Standard library only.
 """
@@ -33,16 +34,14 @@ import json
 import math
 import re
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
-import build_human_atlas as H  # noqa: E402
-import build_mpneumoniae_atlas as M  # noqa: E402
-import build_ecoli_atlas as E  # noqa: E402
-import build_fruitfly_atlas as F  # noqa: E402
+import build_mpneumoniae_atlas as M  # noqa: E402  the families asked of every species, read and never changed
+from lib import proteome_shelves as P  # noqa: E402  the shelves' machinery
 
 SNAPSHOT = ROOT / "data" / "proteins" / "inventory.snapshot.json"
 SPECIES_FILE = ROOT / "data" / "species" / "thalecress.json"
@@ -60,10 +59,12 @@ GENE_SETS = "https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowl
 KB = "thalecress/uniprot-thalecress-reference-proteome"
 PAPERS_AT = "thalecress/europepmc-open-papers"
 FLY_KB = "fruitfly/uniprot-fruitfly-reference-proteome"  # read only: UniProt's help page on its automatic annotation
+HUMAN_KB, KB_DOCS, IPR, GO, BIG_PI = "human/uniprot-human-reviewed-proteome", "human/uniprot-docs-and-terms", "human/interpro-entries-tree-and-go", "human/geneontology-go-basic", "human/terms-big-pi"  # read only
 PLACES_FILE = f"uniprotkb_{PROTEOME}_places.json.gz"
 SIGNATURES_FILE = f"uniprotkb_{PROTEOME}_signatures.tsv.gz"
 CANONICAL_FILE = f"{PROTEOME}_{TAXON}.fasta.gz"
 ALL = f"(proteome:{PROTEOME})"
+GENE_DB = ("Araport", "AT")  # the database whose gene identifiers tie a gene's entries together, and how they begin
 PLACE_FIELDS = "accession,id,protein_name,gene_primary,xref_araport,length,protein_existence,cc_subcellular_location,ft_transmem,ft_intramem,ft_signal,ft_transit,ft_topo_dom,ft_lipid,cc_alternative_products,fragment"
 
 # The open paper the cell's and the plant's numbers rest on, with the sentences it must hold.
@@ -95,8 +96,9 @@ SOURCES = {
 # beyond. A protein free in the stroma stands on the envelope's shelf, inside; one held at the
 # thylakoid membrane and facing the stroma stands on the thylakoid's shelf, outside.
 
-M_, IN_, OUT_, WHOLE_, REGION_, ELSE_ = H.MEMBRANE, H.INSIDE, H.OUTSIDE, H.WHOLE, H.REGION, H.ELSEWHERE
-_human = {shelf["id"]: shelf for shelf in H.SHELVES}
+M_, IN_, OUT_, WHOLE_, REGION_, ELSE_ = P.MEMBRANE, P.INSIDE, P.OUTSIDE, P.WHOLE, P.REGION, P.ELSEWHERE
+ANIMAL = P.ANIMAL_CELL
+_human = {shelf["id"]: shelf for shelf in ANIMAL.shelves}
 SHELVES = [
     {**_human["cell"], "outside": "Outside the cell: in its wall and in the space around it"},
     _human["er"],
@@ -113,10 +115,10 @@ SHELF_NOTES = {
     "plastid": "The plastid's two envelope membranes stand as one shelf: a protein in either of them is in the envelope, and its mark 'where' says which where the entry does. A protein free in the stroma stands here, on the inside. Most of the plant's plastids are chloroplasts; the entries' words say which kind.",
     "thylakoid": "The membrane inside the chloroplast. Its lumen is on the inside; the stroma lies beyond it, so a protein held at this membrane and facing the stroma stands on the outside, while a protein free in the stroma stands on the plastid envelope's shelf.",
     "vacuole": "The membrane of the vacuole, a plant cell's largest compartment.",
-    **H.SHELF_NOTES,
+    **ANIMAL.notes,
 }
 PLACES = {
-    **{name: line for name, line in H.PLACES.items() if name != "Vacuole"},
+    **{name: line for name, line in ANIMAL.places.items() if name != "Vacuole"},
     "Plastid": ("plastid", WHOLE_),
     "Plastid stroma": ("plastid", IN_),
     "Plastid envelope": ("plastid", WHOLE_),            # the two membranes; which, and which face, is not said
@@ -138,16 +140,17 @@ PLACES = {
     "Periplasm": (None, ELSE_),
 }
 FACES = {
-    **H.FACES,
-    "Cytoplasmic side": {**H.FACES["Cytoplasmic side"], "plastid": "outside", "vacuole": "outside"},
-    "Lumenal side": {**H.FACES["Lumenal side"], "thylakoid": "inside", "vacuole": "inside"},
+    **ANIMAL.faces,
+    "Cytoplasmic side": {**ANIMAL.faces["Cytoplasmic side"], "plastid": "outside", "vacuole": "outside"},
+    "Lumenal side": {**ANIMAL.faces["Lumenal side"], "thylakoid": "inside", "vacuole": "inside"},
     "Stromal side": {"thylakoid": "outside", "plastid": "inside"},
-    "Intermembrane side": {**H.FACES["Intermembrane side"], "plastid": "in"},  # between the envelope's two membranes: within the envelope
+    "Intermembrane side": {**ANIMAL.faces["Intermembrane side"], "plastid": "in"},  # between the envelope's two membranes: within the envelope
 }
-AWAY = {**H.AWAY, "vacuole": "inside"}  # the vacuole lies along the secretory pathway
-UPSTREAM = F.UPSTREAM
-TABLE_COLUMNS = F.TABLE_COLUMNS
-listed, plural, some = E.listed, E.plural, F.some
+AWAY = {**ANIMAL.away, "vacuole": "inside"}  # the vacuole lies along the secretory pathway
+CELL = P.Cell(SHELVES, PLACES, FACES, AWAY, notes=SHELF_NOTES)
+UPSTREAM = ["PROSITE", "HAMAP", "TMHMM", "Phobius", "SignalP", "TargetP", "Memsat", "Predotar", "big-PI"]
+TABLE_COLUMNS = P.PROTEOME_COLUMNS
+plural = P.plural
 
 
 def requests():
@@ -156,7 +159,7 @@ def requests():
     def add(source, file, url, purpose, **more):
         out.append({"source": source, "file": file, "url": url, "purpose": purpose, **more})
 
-    q = H.q
+    q = P.q
     stream = f"{UNIPROT}/uniprotkb/stream?query={q(ALL)}&compressed=true"
     add(KB, PLACES_FILE, f"{stream}&format=json&fields={PLACE_FIELDS}", "every entry of the proteome: its name, gene, Araport gene, length and level of evidence, where the entry places it and on what evidence, its segments, signals, transit peptides and anchors", gzip=True)
     add(KB, SIGNATURES_FILE, f"{stream}&format=tsv&fields=accession,xref_interpro,go_id", "the InterPro entries and the Gene Ontology terms UniProt gives each entry", gzip=True)
@@ -172,17 +175,7 @@ def requests():
 
 
 def fetch(datasets, refresh=False):
-    E.requests, E.SOURCES, E.MINE, E.TOOL = requests, SOURCES, MINE, TOOL
-    return E.fetch(datasets, refresh=refresh)
-
-
-def adopt():
-    """Give the shared machinery this organism's folders and a plant cell's shelves."""
-    F.KB, F.PLACES_FILE, F.SIGNATURES_FILE, F.CANONICAL_FILE, F.GENE_DB = KB, PLACES_FILE, SIGNATURES_FILE, CANONICAL_FILE, ("Araport", "AT")
-    F.adopt(None)
-    H.SHELVES, H.SHELF_IDS, H.SHELF_NOTES = SHELVES, [shelf["id"] for shelf in SHELVES], SHELF_NOTES
-    H.PLACES, H.FACES, H.AWAY = PLACES, FACES, AWAY
-    E.PAPERS, E.PAPERS_AT = PAPERS, PAPERS_AT
+    return P.fetch(datasets, requests(), SOURCES, MINE, TOOL, refresh=refresh)
 
 
 # ---------------------------------------------------------------------------------------
@@ -218,153 +211,52 @@ def outlines():
 # ---------------------------------------------------------------------------------------
 
 def build(datasets_folder, snapshot):
-    d = H.Datasets(datasets_folder)
-    must = lambda source, file, pattern, field=None: re.search(pattern, json.loads(d.text(source, file))[field] if field else H.plain(d.text(source, file))) or sys.exit(f"{source}/{file} no longer states its terms as they were read; read the page again before building")
-    KB_DOCS, IPR, GO, BIG_PI = F.KB_DOCS, F.IPR, F.GO, F.BIG_PI
+    d = P.Datasets(datasets_folder)
+    must = lambda source, file, pattern, field=None: P.holds(d, source, file, pattern, field)
     must(KB_DOCS, "terms_uniprot_license.json", r"We have chosen to apply the \[?Creative Commons Attribution 4\.0 International \(CC BY 4\.0\) License\]?(\([^)]*\))? to all copyrightable parts of our databases", "content")
     must(IPR, "terms_interpro_license.html", r"All of the InterPro, Pfam, PRINTS and SFLD downloadable data provided on the InterPro website is freely available under CC0 1\.0 Universal")
     must(GO, "go_citation_policy.html", r"licensed under the Creative Commons Attribution 4\.0 Unported License")
     must(FLY_KB, "help_arba.json", r"ARBA", "content")
-    must(*H.SAVED_TERMS["prosite"], r"distributed under the Creative Commons Attribution-NonCommercial-NoDerivatives \(CC BY-NC-ND 4\.0\) License")
-    must(*H.SAVED_TERMS["hamap"], r"distributed under the Creative Commons Attribution \(CC BY 4\.0\) License")
+    must(*P.SAVED_TERMS["prosite"], r"distributed under the Creative Commons Attribution-NonCommercial-NoDerivatives \(CC BY-NC-ND 4\.0\) License")
+    must(*P.SAVED_TERMS["hamap"], r"distributed under the Creative Commons Attribution \(CC BY 4\.0\) License")
     for tool in ("tmhmm", "signalp", "targetp"):
-        must(*H.SAVED_TERMS[tool], rf"ACADEMIC SOFTWARE LICENSE AGREEMENT FOR END-USERS AT PUBLICLY FUNDED ACADEMIC, EDUCATION OR RESEARCH INSTITUTIONS FOR THE USE OF {tool}")
-    must(*H.SAVED_TERMS["phobius"], r"Phobius is intended for academic users only")
+        must(*P.SAVED_TERMS[tool], rf"ACADEMIC SOFTWARE LICENSE AGREEMENT FOR END-USERS AT PUBLICLY FUNDED ACADEMIC, EDUCATION OR RESEARCH INSTITUTIONS FOR THE USE OF {tool}")
+    must(*P.SAVED_TERMS["phobius"], r"Phobius is intended for academic users only")
     must(BIG_PI, "gpi_server.html", r"big-PI Predictor")
     must(KB_DOCS, "help_transmem.json", r"predicted by the application of the predictive tools TMHMM, Memsat, Phobius and the hydrophobic moment plot method", "content")
     must(KB_DOCS, "help_signal.json", r"predicted by the application of the predictive tools Phobius, Predotar, SignalP and TargetP", "content")
     must(KB_DOCS, "help_transit.json", r"predicted by the application of the predictive tools \[Mitofates\]\([^)]*\), \[Predotar\]\([^)]*\) and \[TargetP\]\([^)]*\)", "content")
 
-    adopt()
-    vocabulary = H.Vocabulary(d)
+    vocabulary = P.Vocabulary(d, KB_DOCS, CELL)
     text = re.sub(r"\s+", " ", re.sub(r"\nDE   ", " ", d.text(KB_DOCS, "subcell.txt")))
     for sentence in ("The plasmodesma (plural plasmodesmata) is a plasma membrane-lined channel that crosses the cell wall between two adjacent plant cells", "formed by the cytoplasms of individual cells connected by plasmodesmata"):
         if sentence not in text:
             raise SystemExit(f"UniProt's vocabulary of places no longer says: {sentence}")
-    every, read = F.read_entries(d, vocabulary)
+    every, read = P.read_proteome(d, KB, PLACES_FILE, vocabulary, GENE_DB)
     raw = {item["primaryAccession"]: item for item in json.loads(d.text(KB, PLACES_FILE))["results"]}
-    release = d.entry(KB, PLACES_FILE)["x_uniprot_release"]
-    proteome = json.loads(d.text(KB, f"proteome_{PROTEOME}.json"))
-    total = {name: d.total(KB, f"count_{name}.json") for name in ("all", "reviewed", "unreviewed", "reviewed_with_place", "unreviewed_with_place")}
-    if any(d.entry(KB, file)["x_uniprot_release"] != release for file in (SIGNATURES_FILE, "count_all.json", "count_reviewed.json", "count_unreviewed.json")) or vocabulary.release != release:
-        raise SystemExit("the downloads from UniProt are not of one release; fetch them again")
-    if total["all"] != len(every) or total["reviewed"] != sum(1 for e in every.values() if e["reviewed"]) or total["reviewed"] + total["unreviewed"] != total["all"] or proteome["proteinCount"] != total["all"] or proteome["taxonomy"]["taxonId"] != TAXON:
-        raise SystemExit(f"the entries read do not add up to UniProt's own counts: {total}")
-    if total["reviewed_with_place"] != read["reviewed, states a place"] or total["unreviewed_with_place"] != read["unreviewed, states a place"]:
-        raise SystemExit(f"the entries that state a place are not as many as UniProt's search finds: {dict(read)} against {total}")
+    total, release, proteome = P.proteome_totals(d, KB, PLACES_FILE, SIGNATURES_FILE, PROTEOME, TAXON, vocabulary, every, read)
 
     # --- the catalogue: one protein for each gene, as UniProt's gene-by-gene set gives it ---------------
-    chosen = F.canonical(d)
-    missing = [accession for accession in chosen if accession not in every]
-    if missing:
-        raise SystemExit(f"{len(missing)} proteins of the gene-by-gene set are not entries of the proteome as fetched ({missing[:5]}); fetch both again")
-    entries = {accession: every[accession] for accession in chosen}
-    of_gene = defaultdict(set)
-    for accession, entry in every.items():
-        for gene_id in entry["flybase"]:  # the field holds the gene identifiers of the database named in F.GENE_DB: here Araport's
-            of_gene[gene_id].add(accession)
-    together = {accession: len(set().union({accession}, *(of_gene[gene_id] for gene_id in entry["flybase"]))) for accession, entry in entries.items()}
-    covered = set().union(set(entries), *(of_gene[gene_id] for entry in entries.values() for gene_id in entry["flybase"]))
-    stated = {
-        "entries": total["all"], "reviewed": total["reviewed"], "unreviewed": total["unreviewed"], "genes": proteome["geneCount"],
-        "shown": len(entries), "shown_reviewed": sum(1 for e in entries.values() if e["reviewed"]), "shown_unreviewed": sum(1 for e in entries.values() if not e["reviewed"]),
-        "further": total["all"] - len(entries), "further_tied_to_a_shown_gene": len(covered) - len(entries), "no_araport_gene": sum(1 for e in entries.values() if not e["flybase"]),
-    }
-    if abs(stated["shown"] - stated["genes"]) > 0.01 * stated["genes"]:
-        raise SystemExit(f"the gene-by-gene set holds {stated['shown']:,} proteins and the proteome counts {stated['genes']:,} genes")
-    filing = H.Filing(d, entries)
-    placed = {accession: H.place(entry, vocabulary) for accession, entry in entries.items()}
+    entries, together, stated = P.one_for_each_gene(d, KB, CANONICAL_FILE, every, total, proteome, "no_araport_gene")
+    filing = P.Filing(d, entries, KB, SIGNATURES_FILE, IPR, GO, catalogue=True)
+    placed = {accession: P.place(entry, vocabulary) for accession, entry in entries.items()}
     gene = lambda accession: entries[accession]["gene"] or accession
-    order = lambda accessions: sorted(set(accessions), key=lambda a: H.natural(gene(a).lower()))
-    by_gene = lambda accessions: [gene(a) for a in order(accessions)]
     at_plasmodesma = [a for a, entry in entries.items() if any(statement["name"] == "Plasmodesma" for statement in entry["statements"])]
 
     # --- the atlas: the families behind Cells' units, asked of this organism ---------------------------
-    carriers = defaultdict(list)
-    for accession, found in filing.signatures.items():
-        for signature in found:
-            carriers[signature].append(accession)
-    human_lines = d.text(F.HUMAN_KB, "uniprotkb_UP000005640_reviewed_signatures.tsv.gz").splitlines()[1:]
-    human_signatures = {line.split("\t")[0]: set(line.split("\t")[1].split(";")) for line in human_lines}
-    signature_name = lambda signature: filing.names[signature]["name"]
-    carried = lambda family: order(accession for signature in family["signatures"] for accession in carriers.get(signature, []))
-    said = lambda families: f"{listed(family['of'] for family in families)} ({', '.join(signature for family in families for signature in family['signatures'])})"
-    units, unit_of, beside = {}, defaultdict(set), {}
-    for unit in snapshot["units"]:
-        spec = M.UNITS[unit["id"]]
-        if spec.get("finding"):
-            units[unit["id"]] = {"finding": spec["finding"], "note": F.NOTHING[unit["id"]], "products": []}
-            continue
-        families = [(key, M.FAMILIES[key]) for key in spec["parts"]]
-        candidates = [product["human_uniprot"] for product in unit.get("products") or [] if product.get("human_uniprot")]
-        for _, family in families:
-            if family.get("human", True) and not any(set(family["signatures"]) & human_signatures.get(candidate, set()) for candidate in candidates):
-                raise SystemExit(f"{unit['id']}: none of its human candidates carries the signature of {family['of']}; the question is not the unit's")
-        own = [family for key, family in families if key not in E.ACCESSORY and family.get("human", True)]
-        other = [family for key, family in families if key not in E.ACCESSORY and not family.get("human", True)]
-        going_with = [family for key, family in families if key in E.ACCESSORY]
-        if any(carried(family) for family in own):
-            finding, shown = "found", [family for family in [*own, *going_with] if carried(family)]
-        elif any(carried(family) for family in other):
-            finding, shown = "different family", [family for family in other if carried(family)]
-        else:
-            finding, shown = "none found", []
-        products, listed_here = [], set()
-        for family in shown:
-            for accession in carried(family):
-                if accession in listed_here:
-                    continue
-                listed_here.add(accession)
-                entry = entries[accession]
-                which = [signature for signature in family["signatures"] if accession in carriers.get(signature, [])]
-                products.append({
-                    "name": entry["name"], "gene": entry["gene"] or None, "role": family["of"], "ids": [{"db": "uniprot", "id": accession}], "length": entry["length"],
-                    "evidence": "reviewed entry" if entry["reviewed"] else "family signature",
-                    "evidence_note": f"Its {'reviewed' if entry['reviewed'] else 'unreviewed'} UniProtKB entry carries {', '.join(which)} ({'; '.join(signature_name(s) for s in which)}). A signature says the family, not which member does the unit's work.",
-                    "citation": None,
-                })
-                unit_of[accession].add(unit["id"])
-        hits = order(listed_here)
-        if finding == "found":
-            note = f"{plural(len(hits), 'protein')} of its {len(entries):,} carr{'ies' if len(hits) == 1 else 'y'} the signature of {said(shown)}: {some(by_gene(hits))}. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the plant."
-        elif finding == "different family":
-            note = f"None of its {len(entries):,} proteins carries the signature of {said(own)}, the family the engine's law names. {plural(len(hits), 'protein')} carr{'ies' if len(hits) == 1 else 'y'} that of {said(shown)}, the other family this machine is asked for: {some(by_gene(hits))}."
-        else:
-            only = [(family, carried(family)) for family in going_with if carried(family)]
-            aside = " ".join(f"{plural(len(found), 'protein')} ({some(by_gene(found))}) carr{'ies' if len(found) == 1 else 'y'} that of {family['of']}, which go with the machine and make none by themselves: no candidate for the unit." for family, found in only)
-            note = f"None of its {len(entries):,} proteins carries the signature of {said([*own, *other])}. {aside} The unit's human candidates carry {'them' if len(own) + len(other) > 1 or len(own[0]['signatures']) > 1 else 'it'}, so the search finds the family where it exists.".replace("  ", " ")
-            if any(key in ("connexin", "innexin") for key, _ in families):
-                note += f" A plant's cells are joined in another way: by plasmodesmata, channels lined by the cell membrane that cross the wall between two cells (UniProt's vocabulary). {plural(len(at_plasmodesma), 'protein')} of the catalogue {'is' if len(at_plasmodesma) == 1 else 'are'} stated to be there; they stand on the cell membrane's shelf."
-            for family, found in only:
-                for accession in found:
-                    beside[accession] = family["of"]
-        units[unit["id"]] = {"finding": finding, "note": note, "products": products}
-    if set(units) != {unit["id"] for unit in snapshot["units"]}:
-        raise SystemExit("the units of the atlas are not the units of the inventory")
-    unit_ids = {accession: sorted(found, key=H.natural) for accession, found in unit_of.items()}
+    def joined(unit_id, families, finding, note):
+        # Where no gap junction is found: how a plant's cells are joined instead.
+        if finding == "none found" and any(key in ("connexin", "innexin") for key, _ in families):
+            note += f" A plant's cells are joined in another way: by plasmodesmata, channels lined by the cell membrane that cross the wall between two cells (UniProt's vocabulary). {plural(len(at_plasmodesma), 'protein')} of the catalogue {'is' if len(at_plasmodesma) == 1 else 'are'} stated to be there; they stand on the cell membrane's shelf."
+        return note
+
+    units, unit_ids, beside = P.find_units(snapshot, entries, filing, P.human_signatures(d, HUMAN_KB), M.FAMILIES, M.UNITS, P.NOTHING, "the plant", more=joined)
 
     # --- the lines of the shelves -----------------------------------------------------------------------
-    lines, alone, rest = H.make_lines(entries, placed, filing, unit_ids)
-    sequence = [protein for line in [*lines, *alone, *rest] for protein in line["proteins"]]
-    if len(sequence) != len(entries) or len(set(sequence)) != len(entries):
-        raise SystemExit("a protein is filed twice or not at all")
-    SIDES, NO_SHELF = H.SIDES, H.NO_SHELF
-    key = lambda shelf: NO_SHELF if shelf is None else shelf
-    shelf_counts = {name: {side: 0 for side in SIDES} for name in [*H.SHELF_IDS, NO_SHELF]}
-    for item in placed.values():
-        shelf_counts[key(item["shelf"])][item["side"]] += 1
-    counts = {side: sum(found[side] for found in shelf_counts.values()) for side in SIDES}
-    bases = Counter((item["side"], item["basis"]) for item in placed.values())
-    rules = Counter(item["rule"] for item in placed.values())
-    evidence = Counter(item["evidence"] for item in placed.values() if item["evidence"])
-
-    def sure(accession):
-        item = placed[accession]
-        return "predicted from a segment or a signal" if item["basis"] == "predicted" else "not known" if item["basis"] == "none" else {"experiment": "stated, on an experiment", "similarity": "stated, by likeness", "curator": "stated, by a curator's inference", "rule": "stated, by a rule", H.NOT_GIVEN: "stated, with no evidence given"}[item["evidence"]]
-    kinds = ["stated, on an experiment", "stated, by likeness", "stated, by a curator's inference", "stated, with no evidence given", "stated, by a rule", "predicted from a segment or a signal", "not known"]
-    how_sure = {kind: {"reviewed": 0, "unreviewed": 0} for kind in kinds}
-    for accession in entries:
-        how_sure[sure(accession)]["reviewed" if entries[accession]["reviewed"] else "unreviewed"] += 1
+    lines, alone, rest = P.make_lines(entries, placed, filing, unit_ids, CELL)
+    sequence = P.in_order(entries, lines, alone, rest)
+    shelf_counts, counts, bases, rules, evidence = P.counted(placed, CELL)
+    how_sure, kinds = P.how_sure(entries, placed), P.SURE
     # What a plant cell adds, counted apart: the plastid's two levels, the vacuole, the wall and the plasmodesmata.
     first = lambda accession: placed[accession]["where"]["name"] if placed[accession]["where"] else None
     on = lambda shelf, side: shelf_counts[shelf][side]
@@ -387,51 +279,29 @@ def build(datasets_folder, snapshot):
     }
     family_total = Counter(filing.family.values())
     distinct = len({line["id"] for line in lines})
-    lone_families = sum(1 for size in family_total.values() if size <= H.LONE_UP_TO)
-    shelves = []
-    for shelf in SHELVES:
-        here_lines = [line for line in lines if line["shelf"] == shelf["id"]]
-        here = sum(len(line["proteins"]) for line in alone if line["shelf"] == shelf["id"])
-        shelves.append({**shelf, **({"note": SHELF_NOTES[shelf["id"]]} if shelf["id"] in SHELF_NOTES else {}), "proteins": sum(shelf_counts[shelf["id"]].values()), "families": len(here_lines) + here, "lines": len(here_lines), "lone": here, "no_family": sum(len(line["proteins"]) for line in rest if line["shelf"] == shelf["id"])})
-    none = [line for line in lines if line["shelf"] is None]
-    here = sum(len(line["proteins"]) for line in alone if line["shelf"] is None)
-    no_shelf = {"proteins": sum(shelf_counts[NO_SHELF].values()), "families": len(none) + here, "lines": len(none), "lone": here, "no_family": sum(len(line["proteins"]) for line in rest if line["shelf"] is None)}
-    groups = []
-    for group in H.DISTRICT_ORDER:
-        asked = next((terms for key_, _, terms in H.DISTRICTS if key_ == group), None)
-        said_from = "Gene Ontology terms: " + ", ".join(f"{name} ({term})" for term, name in asked) if asked else "The line's proteins carry Gene Ontology terms, and none of the districts' terms" if group == H.OTHER_DISTRICT[0] else "The line's proteins carry no Gene Ontology term"
-        here_lines = [line for line in lines if line["group"] == group]
-        groups.append({"id": group, "label": H.DISTRICT_LABEL[group], "from": said_from, "lines": len(here_lines), "proteins": sum(len(line["proteins"]) for line in here_lines), "lone": sum(len(line["proteins"]) for line in alone if line["group"] == group)})
-    first_places = Counter(item["where"]["name"] for item in placed.values() if item["where"])
-    used = {statement["name"] for entry in entries.values() for statement in entry["statements"]}
-    place_rows = []
-    for name in sorted(used, key=lambda name: (-first_places[name], name)):
-        shelf, kind, how, under = vocabulary.resolve(name)
-        place_rows.append([vocabulary.by_name[name]["accession"], vocabulary.by_name[name]["path"], shelf, kind, how, under, first_places[name]])
-    codes_used = {part for entry in entries.values() for statement in entry["statements"] for part in H.code(statement).split(".")}
-    place_words = {term["accession"][3:]: term["path"] for term in sorted(vocabulary.terms.values(), key=lambda term: term["accession"]) if term["accession"][3:] in codes_used}
+    lone_families = sum(1 for size in family_total.values() if size <= P.LONE_UP_TO)
+    shelves, no_shelf = P.shelf_rows(CELL, shelf_counts, lines, alone, rest)
+    groups = P.district_rows(lines, alone)
+    places, place_words, first_places, used = P.place_rows(entries, placed, vocabulary)
 
-    resting, rule_ids = H.account(entries, placed)
-    if set(resting) - F.OWNERS:
-        raise SystemExit(f"a placement rests on a rule system or a program this tool does not name: {sorted(set(resting) - F.OWNERS)}")
+    resting, rule_ids = P.account(entries, placed)
+    if set(resting) - P.OWNERS:
+        raise SystemExit(f"a placement rests on a rule system or a program this tool does not name: {sorted(set(resting) - P.OWNERS)}")
     of = lambda owner, what="placements": resting.get(owner, {}).get(what, 0)
-    PLACE, SPANS, FACE = "the stated place", "the statement that it spans the membrane", "the stated face"
-    FROM_SEGMENTS, FROM_SIGNAL = "a side read from its segments", "a side read from its signal peptide"
+    PLACE, SPANS, FACE, FROM_SEGMENTS, FROM_SIGNAL = P.ON_PLACE, P.ON_SPANS, P.ON_FACE, P.FROM_SEGMENTS, P.FROM_SIGNAL
     named = lambda owner: f"{of(owner):,} ({of(owner, FROM_SEGMENTS):,} by a side read from segments, {of(owner, FROM_SIGNAL):,} from a signal peptide, {of(owner, SPANS) + of(owner, PLACE) + of(owner, FACE):,} behind a statement)"
     # A place stated on a sequence analysis that names no program: where the entry carries a transit
     # peptide given by sequence analysis alone, UniProt's help names the three programs behind it.
-    analysed = [a for a, item in placed.items() if item["where"] and item["where"]["behind"] == (H.ANALYSIS,) and entries[a]["segments_behind"] != (H.ANALYSIS,) and entries[a]["signal_behind"] != (H.ANALYSIS,)]
+    analysed = [a for a, item in placed.items() if item["where"] and item["where"]["behind"] == (P.ANALYSIS,) and entries[a]["segments_behind"] != (P.ANALYSIS,) and entries[a]["signal_behind"] != (P.ANALYSIS,)]
     transit_only = lambda a: (lambda found: bool(found) and all(e["evidenceCode"] == "ECO:0000255" and not e.get("source") for f in found for e in f.get("evidences", [{"evidenceCode": ""}])))([f for f in raw[a].get("features", []) if f["type"] == "Transit peptide"])
     by_transit = [a for a in analysed if transit_only(a)]
     if len(analysed) != of("unnamed analysis", PLACE):
         raise SystemExit(f"the places stated on an unnamed analysis are counted two ways: {len(analysed)} and {of('unnamed analysis', PLACE)}")
-    predictors = "TMHMM, Memsat, Phobius and a hydrophobic moment plot for the segments; Phobius, Predotar, SignalP and TargetP for the signal peptides"
-    ruling = "By the project's rule (the user, 15 November 2026), a value stands on the terms of the database it was read from, and the tool behind it is named and counted: the project's rule, not a legal opinion."
     for paper in PAPERS:
-        E.paper_text(d, paper)
+        P.paper_text(d, PAPERS_AT, PAPERS, paper)
     made = d.last_day()
     header = {
-        "format": H.SHELF_FORMAT, "species": SPECIES_ID, "made": made,
+        "format": P.SHELF_FORMAT, "species": SPECIES_ID, "made": made,
         "from": f"UniProtKB release {release}: the reference proteome {PROTEOME} of Arabidopsis thaliana, {stated['entries']:,} entries ({stated['reviewed']:,} reviewed, {stated['unreviewed']:,} unreviewed) for {stated['genes']:,} genes. One protein is shown for each gene, the one that UniProt's own gene-by-gene set of the proteome gives: {stated['shown']:,} proteins, {stated['shown_reviewed']:,} with a reviewed entry and {stated['shown_unreviewed']:,} with an unreviewed one. The proteome's other {stated['further']:,} entries are further forms of the same genes; each protein counts its gene's entries in the mark 'entries'.",
         "from_counts": stated,
         "predicted": False,
@@ -441,7 +311,7 @@ def build(datasets_folder, snapshot):
         "groups": groups,
         "groups_from": "A protein's Gene Ontology terms are those InterPro maps to any of its signatures and those UniProt gives its entry. With every broader term (by the ontology's kind-of and part-of links), the protein falls in the first district, in the order listed, one of whose terms it carries. A family's line stands in the district most of its classed members on that shelf fall in; of equal counts, the first listed. A protein that is the only member of its family stands in its own district. A part of no_family stands in a district only if more than half of all its members on that shelf fall there. The choice of the districts' terms and their order is the viewer's, and is the same for every species; the terms were chosen for animal cells, and a plant's own work (photosynthesis, the wall) falls under the districts they name.",
         "family_from": f"A family is an InterPro entry of the type Family (InterPro {filing.release}). A protein is filed under the narrowest family among the InterPro entries UniProt gives it: one that is not a broader kind of another it carries, by InterPro's tree of entries. Where several unrelated families remain ({filing.several:,} proteins), it is the deepest in that tree, then the one fewest proteins of this catalogue are in, then the first by accession. This is the rule of every species' file, so a family has the same id in each.",
-        "family_columns": H.FAMILY_COLUMNS,
+        "family_columns": P.FAMILY_COLUMNS,
         "family_notes": {
             "lines": "A family has one line for each shelf that holds members of it, and one with a null shelf for its members that are on no shelf. A line is identified by id and shelf together; side, group, count, sides, file, at and units are of its members on that shelf alone.",
             "side": "The side most of the line's members sit on; of equal counts, a membrane first.",
@@ -450,97 +320,62 @@ def build(datasets_folder, snapshot):
             "counts": "distinct_families is the number of families that have lines; families_in_all counts also the families of one, whose proteins are under 'lone'.",
         },
     }
-    lone_sides = Counter(side for line in alone for side, n in line["sides"].items() for _ in range(n))
-    lone = {"label": H.LONE_LABEL, "count": sum(len(line["proteins"]) for line in alone), "families": lone_families, "sides": H.ordered_sides(lone_sides), "parts_from": f"A family with a single member in this catalogue does not open, so it has no line among the families: {lone_families:,} families of one. Their proteins are listed here together, one part for each shelf, district and side, and each names its family in its mark 'family'. A part is not a family.", "part_columns": H.PART_COLUMNS}
-    no_family = {"label": "No family assigned", "count": len(filing.part), "sides": H.ordered_sides(Counter(placed[protein]["side"] for protein in filing.part)), "parts_from": "A protein with no family is filed under one part. If it carries an InterPro entry of the type Homologous superfamily, the part is that superfamily: a wider grouping than a family, by shared structure. Of several superfamilies it is the one fewest proteins of this catalogue carry, then the first by accession. The other two parts hold the proteins with only a domain, repeat or site signature, and those with no signature at all. A part has one line for each shelf, as a family has.", "part_columns": H.PART_COLUMNS}
+    lone = P.lone_block(alone, lone_families)
+    no_family = P.no_family_block(filing, placed)
     files = sorted({line["file"] for line in [*lines, *alone, *rest]})
     tail = {
-        "member_columns": ["id", "label", "gene", "side", "basis", "length", "unit", "marks"],
+        "member_columns": P.MEMBER_COLUMNS,
         "members_from": {
-            "table": f"data/proteins/{SPECIES_ID}/{H.TABLE_FILE}", "format": H.MEMBERS_FORMAT,
+            "table": f"data/proteins/{SPECIES_ID}/{P.TABLE_FILE}", "format": P.MEMBERS_FORMAT,
             "order": "The table's lines are the members in order: every line of the families as listed here, then every part of 'lone', then every part of 'no_family'; within each, by gene name. A line's members are the next 'count' lines of the table. For a family's line and for a part of no_family, 'under' is its id and 'shelf' its shelf (empty for none); for a part of 'lone', 'under' is the protein's own family and 'family' that family's name.",
-            "files": f"A file holds the members of consecutive lines: a new file begins where the next line would take it past {H.MEMBERS_PER_FILE:,} members, so a line is never split. 'file' names the file and 'at' the first and one past the last of its members there.",
+            "files": f"A file holds the members of consecutive lines: a new file begins where the next line would take it past {P.MEMBERS_PER_FILE:,} members, so a line is never split. 'file' names the file and 'at' the first and one past the last of its members there.",
             "places": "In the table a stated place is written with UniProt's identifiers, without their prefix: the place, then the topology and the face where the entry states them, joined by a full stop. 'place_words' gives the words of each.",
-            "letters": {"basis": {letter: word for word, letter in H.BASIS_LETTER.items()}, "evidence": {letter: word for word, letter in H.EVIDENCE_LETTER.items()}, "seen": {str(level): H.SEEN[level] for level in sorted(H.SEEN)}},
+            "letters": P.letters(),
             "step": f"python3 {TOOL} members --out DIR writes the files from the two files.",
         },
         "side_notes": {
             "stated": "The protein's UniProtKB entry states where it is, and the first place it states decides the shelf and the side. For a reviewed entry the statement is a curator's, and the mark 'evidence' says what stands behind it: an experiment, likeness to another protein, the curator's inference, or a rule. For an unreviewed entry no curator wrote it: the statement was made by one of UniProt's rule systems, and its evidence is 'rule'.",
-            "predicted": f"Read from the entry's own features, where its words do not give the side. A membrane-spanning segment puts the protein in a membrane; a signal peptide with no such segment puts it on the side away from the cytoplasm. Where the entry states no place, the protein stands on the shelf of a membrane that is not named. A transit peptide, which sends a protein into a plastid or a mitochondrion, is not read here: where a curator states such a place on it, the place is stated. In a reviewed entry UniProt's pages name the predictors behind the predicted features: {predictors}. In an unreviewed entry the program is named on each feature. Each is named among the sources, with its terms and what rests on it. {ruling}",
+            "predicted": f"Read from the entry's own features, where its words do not give the side. A membrane-spanning segment puts the protein in a membrane; a signal peptide with no such segment puts it on the side away from the cytoplasm. Where the entry states no place, the protein stands on the shelf of a membrane that is not named. A transit peptide, which sends a protein into a plastid or a mitochondrion, is not read here: where a curator states such a place on it, the place is stated. In a reviewed entry UniProt's pages name the predictors behind the predicted features: {P.PREDICTORS}. In an unreviewed entry the program is named on each feature. Each is named among the sources, with its terms and what rests on it. {P.RULING}",
             "none": "The entry states a membrane or a place and not the side (the protein then stands apart beside that shelf, with the place in its mark 'where'), or it states no place of the cell and carries no membrane-spanning segment and no signal peptide (the protein is then on no shelf). Nothing is placed by guess.",
         },
-        "placed_by": [{"rule": rule, "basis": basis, "what": what, "proteins": rules[rule]} for rule, basis, what in H.RULES_USED],
-        "place_kinds": H.KINDS,
-        "place_columns": ["id", "words", "shelf", "names", "resolved", "under", "first"],
+        "placed_by": [{"rule": rule, "basis": basis, "what": what, "proteins": rules[rule]} for rule, basis, what in P.RULES_USED],
+        "place_kinds": P.KINDS,
+        "place_columns": P.PLACE_COLUMNS,
         "place_notes": "Every place the entries state, in UniProt's words, with the shelf and what the place names against its membrane (place_kinds), how the table's line was reached and which of the table's terms it rests on, and how many proteins it places as the statement that decided.",
     }
     marks = {
         "reviewed": {"label": "Curated entry", "values": [True, False], "measured": False, "note": "Whether the protein's UniProtKB entry is reviewed, written by a curator, or unreviewed, annotated automatically.", "source": "UniProt"},
         "entries": {"label": "Entries for its gene", "values": "number", "measured": False, "note": "The proteome's entries for the same gene, by the Araport gene that UniProt gives each entry: this protein's own and the further forms of the gene. The marker stands for the one UniProt's gene-by-gene set names.", "source": "UniProt"},
         "isoforms": {"label": "Isoforms described", "values": "number", "measured": False, "note": "The canonical sequence and the other sequences its own entry describes.", "source": "UniProt"},
-        "seen": {"label": "Evidence that the protein exists", "values": [H.SEEN[level] for level in sorted(H.SEEN)], "measured": False, "note": "UniProt's level of evidence for the entry: at protein level, at transcript level, inferred from homology, predicted, or uncertain.", "source": "UniProt"},
-        "evidence": {"label": "What stands behind the stated place", "values": [word for word, _, _ in H.EVIDENCE] + [H.NOT_GIVEN], "measured": False, "note": "From UniProt's evidence codes on the statement: an experiment in a paper the entry cites; likeness to a protein of which it is known; a curator's inference; a rule (a family rule or a sequence model that a curator applied, or, in an unreviewed entry, one of UniProt's automatic rule systems); not given, an older curated statement. Of several, the first in this order.", "source": "UniProt"},
+        "seen": {"label": "Evidence that the protein exists", "values": [P.SEEN[level] for level in sorted(P.SEEN)], "measured": False, "note": "UniProt's level of evidence for the entry: at protein level, at transcript level, inferred from homology, predicted, or uncertain.", "source": "UniProt"},
+        "evidence": {"label": "What stands behind the stated place", "values": [word for word, _, _ in P.EVIDENCE] + [P.NOT_GIVEN], "measured": False, "note": "From UniProt's evidence codes on the statement: an experiment in a paper the entry cites; likeness to a protein of which it is known; a curator's inference; a rule (a family rule or a sequence model that a curator applied, or, in an unreviewed entry, one of UniProt's automatic rule systems); not given, an older curated statement. Of several, the first in this order.", "source": "UniProt"},
         "where": {"label": "Stated place", "values": "text", "measured": False, "note": "The statement that decided the shelf, in UniProt's words: the place, then the topology and the face where the entry states them.", "source": "UniProt"},
         "also": {"label": "Also stated", "values": "text", "measured": False, "note": "The entry's other statements of place, in order and in UniProt's words.", "source": "UniProt"},
         "family": {"label": "Family, of which it is the only member here", "values": "text", "measured": False, "note": "The InterPro family's accession and name, for a protein listed among the only members of their families.", "source": "InterPro"},
         "of": {"label": "Stated for", "values": "text", "measured": False, "note": "The named form of the protein that the place is stated for, where the entry states none for the protein as a whole.", "source": "UniProt"},
     }
-    cite_uniprot = "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)"
-    cite_interpro = "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456."
-    terms_day = lambda name: d.day(*H.SAVED_TERMS[name])
-    own_said = "; ".join(f"{owner} {of(owner):,}" for owner in F.OWN_SYSTEMS if of(owner))
+    terms_day = lambda name: d.day(*P.SAVED_TERMS[name])
+    own_said = "; ".join(f"{owner} {of(owner):,}" for owner in P.OWN_SYSTEMS if of(owner))
     sources = [
-        {"name": "UniProt", "url": "https://www.uniprot.org/", "release": release, "accessed": d.day(KB, PLACES_FILE), "licence": "CC BY 4.0", "class": "permissive", "cite": cite_uniprot,
+        {"name": "UniProt", "url": "https://www.uniprot.org/", "release": release, "accessed": d.day(KB, PLACES_FILE), "licence": "CC BY 4.0", "class": "permissive", "cite": P.CITE_UNIPROT,
          "holds": f"for each entry of the plant's reference proteome: its name, gene, Araport gene, length and level of evidence, the places it states with the evidence for each, its membrane-spanning segments, signal peptide and anchors, and the InterPro entries and Gene Ontology terms UniProt gives it; the gene-by-gene set of the proteome; and UniProt's vocabulary of places. The programs and rule systems of other owners behind its statements are sources below. Placements that rest on UniProt's own automatic systems or on an analysis for which it names no program: {own_said or 'none'}. Of the {of('unnamed analysis', PLACE):,} places stated on such an analysis, {len(by_transit):,} are in entries whose transit peptide is given by sequence analysis alone; UniProt's help names three programs for those"},
-        {"name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "release": filing.release, "accessed": d.day(IPR, "entry.list"), "licence": "CC0 1.0", "class": "permissive", "cite": cite_interpro, "holds": "the type and name of each entry, the tree of broader and narrower entries, and the mapping of entries to Gene Ontology terms"},
-        {"name": "Gene Ontology", "url": "https://geneontology.org/", "release": filing.ontology, "accessed": d.day(GO, "go-basic.obo"), "licence": "CC BY 4.0", "class": "permissive", "cite": H.ontology_citation(d), "holds": "the names of terms and which term is a kind or a part of which; no term's text is copied beyond the names of the districts' terms"},
-        {"name": "PROSITE", "url": "https://prosite.expasy.org/prosite_license.html", "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee", "class": "non-commercial", "accessed": terms_day("prosite"), "through": "UniProt",
-         "holds": f"Nothing was downloaded from it but its statement of terms, and nothing of it is copied. Its rules (ProRule) are named in UniProt's entries as what stands behind a statement. {of('PROSITE-ProRule'):,} placements rest on them alone: {of('PROSITE-ProRule', PLACE):,} by the statement of place that decides the shelf ({len(rule_ids.get('PROSITE-ProRule', {})):,} rules), {of('PROSITE-ProRule', SPANS):,} by the statement that the protein spans the membrane, and {of('PROSITE-ProRule', FROM_SEGMENTS) + of('PROSITE-ProRule', FROM_SIGNAL):,} by a side read here from a feature that a rule gives."},
-        {"name": "HAMAP", "url": "https://hamap.expasy.org/hamap_about.html", "licence": "CC BY 4.0", "class": "permissive", "accessed": terms_day("hamap"), "through": "UniProt",
-         "holds": f"Nothing was downloaded from it but its statement of terms. Its family rules are named in UniProt's entries as what stands behind a statement: {of('HAMAP-Rule'):,} placements rest on them alone."},
-        {"name": "TMHMM", "url": "https://services.healthtech.dtu.dk/services/TMHMM-2.0/", "licence": H.DTU_LICENCE, "class": "non-commercial", "accessed": terms_day("tmhmm"), "through": "UniProt",
-         "holds": f"{H.NOT_RUN} {H.FOUR_SEGMENTS}. In reviewed entries {of('segments'):,} placements rest on segments that an entry gives by sequence analysis alone ({of('segments', FROM_SEGMENTS):,} read here from such segments, {of('segments', SPANS):,} statements of spanning, {of('segments', PLACE):,} stated places). In unreviewed entries UniProt names the program on each feature: TMHMM on {named('TMHMM')}."},
-        {"name": "Phobius", "url": "https://phobius.sbc.su.se/download", "licence": "For academic users only: the program may be used for private study, education or nonprofit research, and other users are asked to write to its author. The terms are of the program: they do not speak of predictions made with it", "class": "non-commercial", "accessed": terms_day("phobius"), "through": "UniProt",
-         "holds": f"{H.NOT_RUN} In reviewed entries, one of the four methods for segments and of the four for signal peptides: the placements counted under TMHMM ({of('segments'):,}) and SignalP ({of('signal'):,}). In unreviewed entries UniProt names it on each feature: {named('Phobius')}."},
-        {"name": "SignalP", "url": "https://services.healthtech.dtu.dk/services/SignalP-5.0/", "licence": H.DTU_LICENCE, "class": "non-commercial", "accessed": terms_day("signalp"), "through": "UniProt",
-         "holds": f"{H.NOT_RUN} {H.FOUR_SIGNALS}. In reviewed entries {of('signal'):,} placements rest on a signal peptide that an entry gives by sequence analysis alone. In unreviewed entries UniProt names the program on each feature: SignalP on {named('SignalP')}."},
-        {"name": "TargetP", "url": "https://services.healthtech.dtu.dk/services/TargetP-2.0/", "licence": H.DTU_LICENCE, "class": "non-commercial", "accessed": terms_day("targetp"), "through": "UniProt", "holds": f"{H.NOT_RUN} {H.FOUR_SIGNALS}. The placements are those counted under SignalP for reviewed entries ({of('signal'):,})."},
-        {"name": "Memsat", "url": "https://www.uniprot.org/help/transmem", "licence": "Terms not read: UniProt's help names Memsat without a version or an address, so no page of terms could be tied to the program it runs", "class": "no stated terms", "accessed": d.day(KB_DOCS, "help_transmem.json"), "through": "UniProt", "holds": f"Nothing was downloaded from it. {H.FOUR_SEGMENTS}. The placements are those counted under TMHMM for reviewed entries ({of('segments'):,})."},
-        {"name": "Predotar", "url": "https://www.uniprot.org/help/signal", "licence": "Terms not read: the program's own page answers this tool with a check for a browser, so its terms could not be read", "class": "no stated terms", "accessed": d.day(KB_DOCS, "help_signal.json"), "through": "UniProt", "holds": f"Nothing was downloaded from it. {H.FOUR_SIGNALS}. The placements are those counted under SignalP for reviewed entries ({of('signal'):,})."},
-        {"name": "big-PI", "url": "https://mendel.imp.ac.at/gpi/gpi_server.html", "licence": "No open licence stated: the predictor's own page gives no terms of use", "class": "no stated terms", "accessed": d.day(BIG_PI, "gpi_server.html"), "through": "UniProt",
-         "holds": f"Nothing was downloaded from it but its own page, and the program was not run here. The predictor that UniProt's help names for the GPI anchors it predicts. {of('big-PI'):,} placements rest on a GPI anchor that the entry states on a sequence analysis alone: such an anchor puts the protein on the face away from the cytoplasm."},
+        {"name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "release": filing.release, "accessed": d.day(IPR, "entry.list"), "licence": "CC0 1.0", "class": "permissive", "cite": P.CITE_INTERPRO, "holds": "the type and name of each entry, the tree of broader and narrower entries, and the mapping of entries to Gene Ontology terms"},
+        {"name": "Gene Ontology", "url": "https://geneontology.org/", "release": filing.ontology, "accessed": d.day(GO, "go-basic.obo"), "licence": "CC BY 4.0", "class": "permissive", "cite": P.ontology_citation(d, GO), "holds": "the names of terms and which term is a kind or a part of which; no term's text is copied beyond the names of the districts' terms"},
+        P.through_uniprot("PROSITE", terms_day("prosite"), f"Nothing was downloaded from it but its statement of terms, and nothing of it is copied. Its rules (ProRule) are named in UniProt's entries as what stands behind a statement. {of('PROSITE-ProRule'):,} placements rest on them alone: {of('PROSITE-ProRule', PLACE):,} by the statement of place that decides the shelf ({len(rule_ids.get('PROSITE-ProRule', {})):,} rules), {of('PROSITE-ProRule', SPANS):,} by the statement that the protein spans the membrane, and {of('PROSITE-ProRule', FROM_SEGMENTS) + of('PROSITE-ProRule', FROM_SIGNAL):,} by a side read here from a feature that a rule gives."),
+        P.through_uniprot("HAMAP", terms_day("hamap"), f"Nothing was downloaded from it but its statement of terms. Its family rules are named in UniProt's entries as what stands behind a statement: {of('HAMAP-Rule'):,} placements rest on them alone."),
+        P.through_uniprot("TMHMM", terms_day("tmhmm"), f"{P.NOT_RUN} {P.FOUR_SEGMENTS}. In reviewed entries {of('segments'):,} placements rest on segments that an entry gives by sequence analysis alone ({of('segments', FROM_SEGMENTS):,} read here from such segments, {of('segments', SPANS):,} statements of spanning, {of('segments', PLACE):,} stated places). In unreviewed entries UniProt names the program on each feature: TMHMM on {named('TMHMM')}."),
+        P.through_uniprot("Phobius", terms_day("phobius"), f"{P.NOT_RUN} In reviewed entries, one of the four methods for segments and of the four for signal peptides: the placements counted under TMHMM ({of('segments'):,}) and SignalP ({of('signal'):,}). In unreviewed entries UniProt names it on each feature: {named('Phobius')}."),
+        P.through_uniprot("SignalP", terms_day("signalp"), f"{P.NOT_RUN} {P.FOUR_SIGNALS}. In reviewed entries {of('signal'):,} placements rest on a signal peptide that an entry gives by sequence analysis alone. In unreviewed entries UniProt names the program on each feature: SignalP on {named('SignalP')}."),
+        P.through_uniprot("TargetP", terms_day("targetp"), f"{P.NOT_RUN} {P.FOUR_SIGNALS}. The placements are those counted under SignalP for reviewed entries ({of('signal'):,})."),
+        P.through_uniprot("Memsat", d.day(KB_DOCS, "help_transmem.json"), f"Nothing was downloaded from it. {P.FOUR_SEGMENTS}. The placements are those counted under TMHMM for reviewed entries ({of('segments'):,})."),
+        P.through_uniprot("Predotar", d.day(KB_DOCS, "help_signal.json"), f"Nothing was downloaded from it. {P.FOUR_SIGNALS}. The placements are those counted under SignalP for reviewed entries ({of('signal'):,})."),
+        P.through_uniprot("big-PI", d.day(BIG_PI, "gpi_server.html"), f"Nothing was downloaded from it but its own page, and the program was not run here. The predictor that UniProt's help names for the GPI anchors it predicts. {of('big-PI'):,} placements rest on a GPI anchor that the entry states on a sequence analysis alone: such an anchor puts the protein on the face away from the cytoplasm."),
     ]
     sources = [source for source in sources if source["name"] != "big-PI" or of("big-PI")]
-    closing = {"marks": marks, "counts": counts, "shelf_counts": shelf_counts, "by_basis": {side: {basis: bases[side, basis] for basis in ("stated", "predicted", "none") if bases.get((side, basis))} for side in SIDES}, "by_evidence": {word: evidence.get(word, 0) for word in [word for word, _, _ in H.EVIDENCE] + [H.NOT_GIVEN]}, "sources": sources}
+    closing = {"marks": marks, "counts": counts, "shelf_counts": shelf_counts, "by_basis": P.by_basis(bases), "by_evidence": P.by_evidence(evidence), "sources": sources}
 
-    compact = H.compact
-    rows = lambda items, pad=" ": "[\n" + ",\n".join(f"{pad} " + compact(item) for item in items) + f"\n{pad}]"
-    nested = lambda block, items: json.dumps(block, indent=1, ensure_ascii=False).replace("\n", "\n ")[:-3] + ',\n  "parts": ' + rows(items, "  ") + "\n }"
-    body = json.dumps(header, indent=1, ensure_ascii=False)[:-2]
-    body += ',\n "families": ' + rows([H.line_row(line, H.FAMILY_COLUMNS) for line in lines])
-    body += f',\n "distinct_families": {distinct},\n "family_lines": {len(lines)},\n "families_in_all": {len(family_total)}'
-    body += ',\n "lone": ' + nested(lone, [H.line_row(line, H.PART_COLUMNS) for line in alone])
-    body += ',\n "no_family": ' + nested(no_family, [H.line_row(line, H.PART_COLUMNS) for line in rest])
-    body += "," + json.dumps(tail, indent=1, ensure_ascii=False)[1:-2]
-    body += ',\n "places": ' + rows(place_rows)
-    body += ',\n "place_words": ' + json.dumps(place_words, ensure_ascii=False, separators=(", ", ": "))
-    body += "," + json.dumps(closing, indent=1, ensure_ascii=False)[1:] + "\n"
-    json.loads(body)
-
-    lone_of = {protein for line in alone for protein in line["proteins"]}
-    table_rows = []
-    for protein in sequence:
-        entry, item = entries[protein], placed[protein]
-        under = filing.family.get(protein) or filing.part[protein]
-        table_rows.append([
-            protein, entry["gene"], entry["name"], str(entry["length"]), str(entry["isoforms"]), str(entry["seen"]), under, item["shelf"] or "", item["side"], H.BASIS_LETTER[item["basis"]], H.EVIDENCE_LETTER[item["evidence"]] if item["evidence"] else "",
-            H.code(item["where"]) if item["where"] else "", ",".join(H.code(statement) for statement in item["also"]), ";".join(unit_ids.get(protein, [])),
-            filing.names[under]["name"] if protein in lone_of else "", entry["of"] or "", "1" if entry["reviewed"] else "0", str(together[protein]),
-        ])
-    for row in table_rows:
-        if any("\t" in value or "\n" in value for value in row):
-            raise SystemExit(f"{row[0]}: a value of the table holds a tab or a line break")
-    table = "\n".join("\t".join(row) for row in [TABLE_COLUMNS, *table_rows]) + "\n"
+    body = P.shelves_text(header, lines, alone, rest, lone, no_family, tail, places, place_words, closing, len(family_total))
+    table = P.table_text(TABLE_COLUMNS, sequence, entries, placed, filing, alone, unit_ids, more=P.proteome_values(entries, together))
 
     # --- the species file and its outlines ---------------------------------------------------------------
     findings = Counter(unit["finding"] for unit in units.values())
@@ -599,7 +434,7 @@ def build(datasets_folder, snapshot):
         "capability_sources": {"cap.junctions": ["uniprot"], "cap.pumps": ["uniprot"]},
         "sources": {
             "uniprot": {"text": f"UniProt Consortium, UniProt release {release}: the reference proteome {PROTEOME} (Arabidopsis thaliana), its entries and its gene-by-gene set, and UniProt's vocabulary of subcellular locations.", "url": f"https://www.uniprot.org/proteomes/{PROTEOME}", "licence": "CC BY 4.0", "class": "permissive", "accessed": d.day(KB, PLACES_FILE)},
-            "tolleter2024": {"text": E.paper_cite(d, "tolleter2024"), "doi": PAPERS["tolleter2024"]["doi"], "licence": "CC BY", "class": "permissive", "accessed": d.day(PAPERS_AT, "tolleter2024_fulltext.xml")},
+            "tolleter2024": {"text": P.paper_cite(d, PAPERS_AT, PAPERS, "tolleter2024"), "doi": PAPERS["tolleter2024"]["doi"], "licence": "CC BY", "class": "permissive", "accessed": d.day(PAPERS_AT, "tolleter2024_fulltext.xml")},
         },
     }
     atlas = {
@@ -616,8 +451,8 @@ def build(datasets_folder, snapshot):
             "No similarity search was run, and nothing is called an ortholog.",
         ],
         "sources": [
-            {"name": "UniProt", "url": "https://www.uniprot.org/", "release": release, "accessed": d.day(KB, PLACES_FILE), "licence": "CC BY 4.0", "class": "permissive", "cite": cite_uniprot, "holds": "the entries of the plant's proteins, reviewed and unreviewed, with the InterPro entries UniProt gives each; the signatures of the units' human candidates; the vocabulary's words on plasmodesmata"},
-            {"name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "release": filing.release, "accessed": d.day(IPR, "entry.list"), "licence": "CC0 1.0", "class": "permissive", "cite": cite_interpro, "holds": "the identifiers and names of the family signatures"},
+            {"name": "UniProt", "url": "https://www.uniprot.org/", "release": release, "accessed": d.day(KB, PLACES_FILE), "licence": "CC BY 4.0", "class": "permissive", "cite": P.CITE_UNIPROT, "holds": "the entries of the plant's proteins, reviewed and unreviewed, with the InterPro entries UniProt gives each; the signatures of the units' human candidates; the vocabulary's words on plasmodesmata"},
+            {"name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "release": filing.release, "accessed": d.day(IPR, "entry.list"), "licence": "CC0 1.0", "class": "permissive", "cite": P.CITE_INTERPRO, "holds": "the identifiers and names of the family signatures"},
         ],
         "not_copied": "No sequence is copied. The plant's own database, TAIR, is linked to nowhere and nothing was downloaded from it: its pages refused this tool, so its terms could not be read. The Araport genes used here are those UniProt gives its entries.",
         "units": units,
@@ -625,7 +460,7 @@ def build(datasets_folder, snapshot):
     }
     report = {
         "release": release, "interpro": filing.release, "ontology": filing.ontology, "made": made, "stated": stated, "read": dict(read),
-        "shelf_counts": shelf_counts, "counts": counts, "bases": {f"{side} / {basis}": n for (side, basis), n in sorted(bases.items())}, "rules": {rule: rules[rule] for rule, _, _ in H.RULES_USED},
+        "shelf_counts": shelf_counts, "counts": counts, "bases": {f"{side} / {basis}": n for (side, basis), n in sorted(bases.items())}, "rules": {rule: rules[rule] for rule, _, _ in P.RULES_USED},
         "evidence": dict(evidence), "how_sure": how_sure, "plant": plant, "resting": resting, "rule_systems": {owner: len(found) for owner, found in rule_ids.items()},
         "unnamed_analysis": {"places": len(analysed), "with a transit peptide given by analysis alone": len(by_transit), "of those, first stated at": dict(Counter(first(a) for a in by_transit).most_common(6))},
         "families": len(family_total), "in_families": len(filing.family), "several": filing.several, "no_family": len(filing.part),
@@ -637,13 +472,7 @@ def build(datasets_folder, snapshot):
     }
     files_out = {"shelves": body, "table": table, "species": json.dumps(species, indent=1, ensure_ascii=False) + "\n", "shapes": json.dumps(outlines(), ensure_ascii=False, separators=(",", ":")) + "\n", "atlas": json.dumps(atlas, indent=1, ensure_ascii=False) + "\n"}
     files_out["readme"] = build_readme(report, header, closing)
-    for name, text_ in files_out.items():
-        if PATHS.search(text_):
-            raise SystemExit(f"the {name} would hold a machine path")
-    size = {name: len(text_.encode("utf-8")) for name, text_ in files_out.items()}
-    if size["shelves"] >= H.LIMIT_SHELVES or max(size.values()) >= H.LIMIT_FILE:
-        raise SystemExit(f"the files have outgrown their limits: {size}")
-    report["sizes"] = size
+    report["sizes"] = P.within_limits(files_out, PATHS)
     return files_out, report
 
 
@@ -732,10 +561,7 @@ def main():
     if args.step == "members":
         if not args.out:
             parser.error("members needs --out")
-        Path(args.out).mkdir(parents=True, exist_ok=True)
-        for name, text in F.cut_members(args.out_dir).items():
-            (Path(args.out) / name).write_text(text, encoding="utf-8")
-            print(f"wrote {Path(args.out) / name} ({len(text.encode('utf-8')):,} bytes)")
+        P.write_members(args.out_dir, args.out, first=P.proteome_marks)
         return
     if not args.datasets:
         parser.error(f"{args.step} needs --datasets")
@@ -743,7 +569,7 @@ def main():
         sys.exit(1 if fetch(Path(args.datasets), refresh=args.refresh) else 0)
     files, report = build(Path(args.datasets), json.loads(SNAPSHOT.read_text(encoding="utf-8")))
     folder = Path(args.out_dir)
-    for target, name in [(folder / H.SHELVES_FILE, "shelves"), (folder / H.TABLE_FILE, "table"), (folder / "README.md", "readme"), (Path(args.out_species), "species"), (Path(args.out_shapes), "shapes"), (Path(args.out_atlas), "atlas")]:
+    for target, name in [(folder / P.SHELVES_FILE, "shelves"), (folder / P.TABLE_FILE, "table"), (folder / "README.md", "readme"), (Path(args.out_species), "species"), (Path(args.out_shapes), "shapes"), (Path(args.out_atlas), "atlas")]:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(files[name], encoding="utf-8")
         print(f"wrote {target.name} ({len(files[name].encode('utf-8')):,} bytes)")

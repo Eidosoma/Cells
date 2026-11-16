@@ -161,10 +161,12 @@ function chloroplasts(env, sizes, id) {
   }
   const kept = spots.filter((spot) => spot.kept);
   const lens = new THREE.SphereGeometry(half, 18, 12).scale(1, flat, 1);
-  const body = env.glass({ opacity: 0.86, glass: 0.15, depthWrite: true, thin: 0.6, texture: "grain" });
+  // Green, as a chloroplast is (the user, 16 November 2026): the one piece of scenery with a colour of
+  // its own. Where colour shows status it is neutral like the rest, since green there says "qualified".
+  const body = env.glass({ opacity: 0.86, glass: 0.15, depthWrite: true, thin: 0.6, texture: "grain", natural: "bioChloroplast" });
   env.add(env.instanced(lens, body, kept.map((spot) => ({ position: spot.at, direction: spot.out }))), id);
   const text = few ? `${kept.length} of ${of.toLocaleString("en-US")} chloroplasts drawn, enlarged` : `${kept.length} of ${of.toLocaleString("en-US")} chloroplasts drawn: the rest were cut away`;
-  return { drawn: kept.length, of, note: text, sizes: [["Drawn", few ? `${kept.length} of them, ${few.larger} times their size, in the schematic picture.` : `${kept.length} of them, each ${words(middle(sizes.across_um), "µm")} across: the ones that lie in the part of the cell that is kept. That each is a little flatter than it is wide is the picture's choice.`]] };
+  return { drawn: kept.length, of, note: text, sizes: [["Drawn", few ? `${kept.length} of them, ${few.larger} times their size, in the schematic picture.` : `${kept.length} of them, each ${words(middle(sizes.across_um), "µm")} across: the ones that lie in the part of the cell that is kept. That each is a little flatter than it is wide is the picture's choice.`], ["Colour", "Green, as a chloroplast is. It is the one piece of scenery with a colour of its own, and says nothing of a status: where colour shows status it is neutral like the rest."]] };
 }
 
 // Each with the name the page gives it. Drawn in this order: the vacuole first, since what else the cell holds is pressed against it.
