@@ -77,6 +77,33 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **D172's end game, paused for a planned machine restart (16 November 2026, 10:33 UTC).** Records
+  are under `/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/`, and the resume steps are
+  in the round's `LEAD-NOTES.md`.
+  - **c0 = integration-d172 22356272** (the integrated candidate before A7, main merged in):
+    - G1 bitwise, 113 of 113 worlds;
+    - crossrev identical in all eight sets;
+    - tiers 1+2: 491 files, 0 changed.
+  - **c1 = integration-d172 3c10b833** (c0 plus A7, D182):
+    - crossrev against c0: constants and bindings identical in all eight sets, program texts
+      changed by A7 as intended;
+    - G1 under the frozen tolerance file: 113 of 113 within it, physical fields bitwise, and the
+      same 31 bitwise and 82 moved worlds as the rehearsal;
+    - tiers 1+2: 492 files, 0 changed.
+  - **G2 at c1:** every registered small protocol re-run passes. That is Track R, D150, S3, Rm1,
+    S5a, MG0b, MG0c, cell replacement and stationary E: 23 steps, every verdict read. E07-v1 is on
+    hold (D181).
+  - **L4 block at c1, under the deterministic flag:**
+    - phase 1 is complete: W1, W2, G2-Q1 and the ten parity cases repeat bitwise, the backend terms
+      are at most 4.2e-14 V, and every tolerance is unchanged. The ten parity CPU reruns are bitwise
+      equal to their registered judged results;
+    - the three flagged variants are registered;
+    - W1's judged run C **passed**.
+    - C's other items and the parity judged pass stopped for the restart before any verdict was
+      written. They are re-attempted after it.
+  - **Tier 3 at c1** was partial when stopped. It resumes for the remaining files, with every
+    failure attributed against the tag and c0.
+
 - **G2-Q1's Q7 passes on the L4 under the deterministic flag (16 November 2026;
   `resolved_pump_replacement@1`, `resolved_pump_tissue@3`).**
   - **The failure it answers.** On 14 November the composite's L4 judged run C passed W1, W2 and
