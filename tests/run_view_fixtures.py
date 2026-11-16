@@ -22,6 +22,10 @@ TURNOVER = "scheduled_species_turnover@1"
 EXCHANGE = "scheduled_species_exchange@1"
 PARTITION = "isopotential_partition@1"
 STATE = "membrane_entity_state@1"
+INJECTION = "electrode_current_injection@1"
+# A 3 M KCl filling's proportion, with M as the heredity world's anion (as
+# tests/unit/test_current_injection_runs.py declares it).
+CARRIERS = {"K": 0.4912, "M": 0.5088}
 
 
 def secretion(end=0.01, every=0.002, produce=1e-4, **world):
@@ -46,6 +50,28 @@ def secretion(end=0.01, every=0.002, produce=1e-4, **world):
         [("secrete", cell, [(0.0, 0.1)]), ("sink", cell, [(0.0, 1e6, 5e-4)])],
     )
     return parse_spec(raw)
+
+
+def injection_world(currents, *, end=0.004, every=None):
+    """One heredity cell facing its held bath, with an electrode in it
+    (tests/unit/test_current_injection_runs.py's world): currents ((step, current_A), ...), each
+    change at an exact step; observed at 0 and the end, or every `every` seconds."""
+    from cells.core import pump_composite_spec as cs
+    from validation.tissue import pump_water_fixtures as water
+
+    base = water.heredity_cell("H", dt=DT, end_time=end)
+    base["experiment"]["observation_times"] = (
+        [0.0, end] if every is None else fx.grid_times(end, DT, every)
+    )
+    raw = cs.frozen_definition(base)
+    cell = raw["model"]["cells"][0]["id"]
+    raw["model"]["operators"] = [
+        dict(law=INJECTION, electrodes=[dict(cell_id=cell, carriers=dict(CARRIERS))])
+    ]
+    raw["experiment"]["injection_controls"] = [
+        dict(cell_id=cell, schedule=[dict(time=k * DT, current_A=i) for k, i in currents])
+    ]
+    return raw
 
 
 def plant(patch, law, **declarations):

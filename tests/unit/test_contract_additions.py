@@ -33,7 +33,6 @@ PENDING_LAYERS = frozenset(
     {
         "cell_owned_compartments@1",
         "cytoplasmic_bridge_closure@1",
-        "electrode_current_injection@1",
         "ideal_osmosis_linear_compliance_water@1",
         "isopotential_partition@1",
         "k_anion_symport_mass_action@1",
@@ -195,6 +194,27 @@ def test_the_pending_run_view_declarations_only_shrink():
         if (op.EVENT or op.EXPERIMENT_KEYS) and "view_events" not in vars(type(op))
     }
     assert events <= PENDING_EVENTS
+
+
+def test_the_injection_declares_its_run_view():
+    """electrode_current_injection@1's run view (declared by the run view's owner: ruling 3 of
+    docs/LOOPING_REPLAY_DESIGN.md §9): one prescribed layer, every accumulator a total since the
+    start, and an event for each scheduled current at its electrode's cell, in time order."""
+    from cells.core import pump_composite_spec as cs
+    from tests.run_view_fixtures import INJECTION, injection_world
+
+    op = OPERATORS[INJECTION]
+    assert [layer["representation"] for layer in op.VIEW_LAYERS] == ["prescribed"]
+    assert op.RECORD_KINDS == dict.fromkeys(op.STATE_AXES, "cumulative")
+    spec = parse_spec(injection_world([(0, 1e-12), (2, -1e-12), (4, 0.0)], end=0.006))
+    ((_, declaration, schedule),) = cs.entries(spec)
+    events = op.view_events(spec, declaration, schedule)
+    cell = spec.model.cells[0].id
+    assert [(e["time"], e["kind"], e["at"], e["layer"]) for e in events] == [
+        (time, "current", {"cell": cell}, "injection") for time in (0.0, 0.002, 0.004)
+    ]
+    assert events[1]["label"].endswith(" -1e-12 A")
+    assert op.living_intervals(spec, declaration, schedule) == {}
 
 
 def test_declarations_may_declare_their_run_view():

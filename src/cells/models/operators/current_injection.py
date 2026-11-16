@@ -264,6 +264,41 @@ class ElectrodeCurrentInjection(Operator):
         "electrode_charge_transferred_C": ("injection_image_charge_C",),
         "electrode_work_pJ": ("injection_work_pJ", "injection_energy_magnitude_pJ"),
     }
+    # Its layer in the run view (docs/RUN_VIEW_DESIGN.md §3): a scheduled current, and the moved
+    # amounts follow it exactly (f_s I h / (z_s F)), so prescribed.
+    VIEW_LAYERS = (
+        {"id": "injection", "label": "Electrode current injection", "representation": "prescribed"},
+    )
+    # Its records in the run view (the contract): every accumulator is a total since the start.
+    # Supplied and removed grow by the moved amounts (each >= 0); the charge by I h, positive into
+    # the cell; the image charge by its magnitude; the work is a declared work field and the
+    # magnitude a sum of absolute terms. Every field's name carries its unit.
+    RECORD_KINDS = {
+        "injection_supplied_fmol": "cumulative",
+        "injection_removed_fmol": "cumulative",
+        "injection_charge_C": "cumulative",
+        "injection_image_charge_C": "cumulative",
+        "injection_work_pJ": "cumulative",
+        "injection_energy_magnitude_pJ": "cumulative",
+    }
+
+    def view_events(self, spec, declaration, schedule):
+        """Its events in the run view: every scheduled current of each electrode, at the
+        electrode's cell (the entry at time 0 sets the starting current). An electrode decides no
+        cell's life, so there are no births or retirements to keep."""
+        layer = self.VIEW_LAYERS[0]["id"]
+        events = [
+            dict(
+                time=float(c.time),
+                kind="current",
+                layer=layer,
+                at={"cell": e.cell_id},
+                label=f"electrode current in {e.cell_id}: {c.current_A!r} A",
+            )
+            for e, changes in zip(declaration.electrodes, schedule, strict=True)
+            for c in changes
+        ]
+        return tuple(sorted(events, key=lambda e: (e["time"], e["label"])))
 
     # ------------------------------------------------------------ definition
 

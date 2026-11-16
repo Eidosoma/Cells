@@ -552,6 +552,41 @@ def test_every_field_of_the_inner_model_is_described():
             assert kind == "cumulative"
 
 
+def test_the_injections_records_layer_and_events(monkeypatch):
+    """The writer reads electrode_current_injection@1's own declarations (host only, no run):
+    each field's unit (from its name), axes, kind and prescribed layer, and each scheduled current
+    as an event at the electrode's cell."""
+    from tests.run_view_fixtures import INJECTION, injection_world
+
+    monkeypatch.setattr(run_view, "_engine_source", lambda root=None: None)
+    spec = parse_spec(injection_world([(0, 1e-12), (2, -1e-12)], end=0.004))
+    _, layout = get_model(spec.model).initial_values(spec)
+    plan = run_view.prepare(spec, layout=layout)
+    view = plan.view(run_view.single_file_bases([0.0, 0.004], [0.0, 0.004]), "write_run")
+    run_view.validate(view)
+    records = {r["id"]: r for r in view["records"]}
+    expected = {
+        "injection_supplied_fmol": ("fmol", ["time", "species", "cell"]),
+        "injection_removed_fmol": ("fmol", ["time", "species", "cell"]),
+        "injection_charge_C": ("C", ["time", "cell"]),
+        "injection_image_charge_C": ("C", ["time", "outside"]),
+        "injection_work_pJ": ("pJ", ["time", "cell"]),
+        "injection_energy_magnitude_pJ": ("pJ", ["time", "cell"]),
+    }
+    for name, (unit, axes) in expected.items():
+        for record_id in (name, f"observed_{name}"):
+            record = records[record_id]
+            got = tuple(record[k] for k in ("unit", "axes", "kind", "layer", "owner"))
+            assert got == (unit, axes, "cumulative", "injection", INJECTION), record_id
+    (layer,) = [x for x in view["layers"] if x["owner"] == INJECTION]
+    assert (layer["id"], layer["representation"]) == ("injection", "prescribed")
+    cell = spec.model.cells[0].id
+    assert [(e["time"], e["kind"], e["at"]) for e in view["events"]] == [
+        (0.0, "current", {"cell": cell}),
+        (0.002, "current", {"cell": cell}),
+    ]
+
+
 # The operators' declarations the run view reads by getattr and that are not declared yet (the
 # requested contract seams): only shrink, as each owner declares them.
 PENDING_UNITS = frozenset(
