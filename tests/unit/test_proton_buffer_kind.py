@@ -290,10 +290,19 @@ def test_the_proton_leak_runs_with_every_ledger():
 
 
 def test_the_proton_leaks_admission():
+    # A single-form row of another valence is the kind's own refusal (M, the world's valence -1
+    # anion). The buffer's two-form row B is refused first by the species registry, whose checks
+    # run ahead of the kinds': its moved_in_step joins the kinds' moved_rows (the operators'
+    # registry join), so check_two_form_rows sees the leak's route.
     for overrides, message in (
         (dict(patch=None, junction="j"), "the proton leak sits on a membrane patch"),
         (dict(species="Na"), "is not the closure's proton row"),
-        (dict(species="B"), "carries a valence \\+1 proton row"),
+        (dict(species="M"), "carries a valence \\+1 proton row"),
+        (
+            dict(species="B"),
+            "species B has two forms .*proton_constant_field_leak@1\\) at cell_0 moves its cell "
+            "rows, and no law declares how it moves the forms",
+        ),
         (dict(factors=[dict(law="damage", id="damage_0")]), "come with FR-5's laws"),
     ):
         raw = buffered_world()
