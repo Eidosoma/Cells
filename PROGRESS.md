@@ -144,7 +144,8 @@ machine-readable inputs, results, checks and failures.
     - **tier 3:** 229 files. 187 pass. All 42 non-passing files are classified
       ([table](/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-table.md)), and none is the round's or A7's:
       - 23 pre-existing failures;
-      - 16 pre-existing timeouts, whose roughly 280 tail tests never ran in either tree;
+      - 16 pre-existing timeouts, whose 328 tail tests never ran in either tree (the heads-up said
+        about 280; the audit's count is 328);
       - 2 stale tests from the round, fixed in the next commit with their masked checks
         verified;
       - 1 that passes when run alone.
