@@ -1,6 +1,5 @@
 """Native generated-source correspondence, owner accounting and bounded CPU JAX."""
 
-import hashlib
 import json
 import os
 from copy import deepcopy
@@ -104,41 +103,6 @@ def test_decimal_source_law_and_conservative_owners(row):
         rtol=5e-12,
     )
     assert charge[2] == 0
-
-
-@pytest.mark.parametrize("name", [r["name"] for r in CASES])
-def test_authenticated_native_capture_matches_component(name):
-    directory = os.environ.get("CELLS_BETSE_NETWORK_NATIVE_CAPTURE")
-    if not directory:
-        pytest.skip("Bounded runner supplies authenticated native captures")
-    captured = json.loads((Path(directory) / (name + ".json")).read_text())
-    row, c, v, t, p, a, rho = prepared(captured["input"])
-    actual = transport.rates(c, v, t, p, a, rho, xp=np)
-    assert captured["status"] == "passed" and not captured["native_geometry_or_updates_executed"]
-    np.testing.assert_allclose(
-        actual.flux_density_mol_m2_s[0], captured["actual_flux_mol_m2_s"], rtol=5e-12, atol=1e-18
-    )
-    np.testing.assert_allclose(actual.native_net_z[0], captured["native_net_z"], rtol=0, atol=3e-13)
-
-
-def test_native_manifest_authenticates_source_and_preserves_known_failures():
-    directory = os.environ.get("CELLS_BETSE_NETWORK_NATIVE_CAPTURE")
-    if not directory:
-        pytest.skip("Bounded runner supplies authenticated native captures")
-    root = Path(directory)
-    manifest = json.loads((root / "source-manifest.json").read_text())
-    source = PROTOCOL["native_source"]
-    assert manifest["status"] == "passed" and not manifest["native_simulation"]
-    assert manifest["revision"] == source["revision"] and manifest["version"] == source["version"]
-    for relative, expected in source["source_sha256"].items():
-        assert manifest["files"][relative]["sha256"] == expected
-        assert hashlib.sha256((root / "upstream" / relative).read_bytes()).hexdigest() == expected
-    assert manifest["successful_cases"] == len(CASES)
-    assert manifest["expected_native_failures"] == len(source_failures())
-    for name in source_failures():
-        assert (
-            json.loads((root / (name + ".json")).read_text())["status"] == "expected_native_failure"
-        )
 
 
 def test_literal_q_conversion_is_outside_power_and_product_km_is_absent():

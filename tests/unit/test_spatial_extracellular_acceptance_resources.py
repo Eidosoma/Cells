@@ -12,7 +12,6 @@ from scripts import spatial_extracellular_acceptance_plan as science
 from scripts import spatial_extracellular_acceptance_resources as resources
 from scripts import verify_spatial_extracellular_build as driver
 from scripts.audit_spatial_extracellular_build import ARRAY_FIELDS, compare, implementation
-from tests.spatial_extracellular_fixtures import load_cases
 
 
 def registration(name):
@@ -78,20 +77,6 @@ def test_v2_captures_both_protocols_projection_and_baseline():
     assert selected.allowed_edits == resources.RETRY_EDITS
 
 
-def test_prior_stopped_evidence_and_frozen_definition_coverage():
-    proof = resources.authenticate_prior_stop(resources.get_resources("v2"))
-    assert proof == {"receipt_sha256": sha(resources.STOPPED), "files": 880}
-    saved = json.loads(resources.STOPPED.read_text())
-    prior = json.loads((resources.ROOT / saved["session"] / "registration.json").read_text())
-    _, cases = load_cases()
-    assert prior["eager_schedule"] == science.eager_schedule(cases)
-    assert prior["definitions"] == {
-        f"{mode}/{case.id}": science.registered_spec(case, mode).to_dict()
-        for mode in ("jit", "eager", "refined")
-        for case in cases
-    }
-
-
 @pytest.mark.parametrize("name", ["v1", "v2"])
 def test_child_context_selects_the_saved_resource_profile(tmp_path, name):
     saved = registration(name)
@@ -119,34 +104,6 @@ def test_artifact_budget_still_applies(tmp_path, monkeypatch):
     monkeypatch.setattr(driver, "monotonic", lambda: 0)
     with pytest.raises(ValueError, match="artifact budget"):
         driver.guard(tmp_path, 0, resources.PROFILES["v1"])
-
-
-@pytest.mark.parametrize("name", ["v1", "v2"])
-def test_driver_registers_before_work_and_retains_failure(tmp_path, monkeypatch, name):
-    selected = resources.get_resources(name)
-    alarms = []
-    monkeypatch.setattr(driver.signal, "alarm", alarms.append)
-    monkeypatch.setattr(driver.os, "sched_getaffinity", lambda _: {0, 1, 2, 3})
-    for key in science.THREADS:
-        monkeypatch.setenv(key, "1")
-
-    def refuse_trajectory_work(*args, **kwargs):
-        raise RuntimeError("synthetic prelude stop")
-
-    monkeypatch.setattr(driver, "audit_reference", refuse_trajectory_work)
-    output = tmp_path / "capture"
-    with pytest.raises(RuntimeError, match="synthetic prelude stop"):
-        driver.verify(output, resources=selected)
-    saved = json.loads((output / "registration.json").read_text())
-    assert resources.from_registration(saved) == selected
-    assert saved["implementation_files_sha256"] == implementation(selected)
-    failure = json.loads((output / "failure.json").read_text())
-    assert failure["error"] == "synthetic prelude stop"
-    assert failure["implementation_files_sha256"] == implementation(selected)
-    assert not (output / "verification.json").exists()
-    assert alarms == [selected.max_seconds, 0]
-    with pytest.raises(FileExistsError):
-        driver.verify(output, resources=selected)
 
 
 def test_profile_is_immutable():

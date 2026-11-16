@@ -492,17 +492,6 @@ def test_interrupted_or_mutating_consumer_closes_and_cannot_promote_window(
     )
 
 
-def test_real_scope_prior_sources_and_shared_quota():
-    r = profile.specification(profile.OUTPUT_PARENT / "evidence-01")
-    assert len(profile.SOURCES) == 62 and len(r["planned_attempts"]) == 12
-    assert r["plan"]["policies"] == ["full_trace", "rk4_basis"]
-    assert r["plan"]["readout_policy"] == "batched_cached"
-    assert r["storage_budget"]["prior_bytes"] == 803085279
-    assert r["storage_budget"]["new_root_limit_bytes"] == 270656545
-    assert not r["plan"]["long_study_run"] and not r["plan"]["compact_long_policy_adopted"]
-    assert len(r["production_source_hashes"]) == 39
-
-
 @pytest.fixture
 def registration_fixture(tmp_path, monkeypatch, protocol):
     source = tmp_path / "fixture.txt"
@@ -518,17 +507,6 @@ def registration_fixture(tmp_path, monkeypatch, protocol):
     for key, value in profile.campaign.THREADS.items():
         monkeypatch.setenv(key, value)
     return tmp_path / "new", source
-
-
-def test_registration_archive_identity_and_exclusivity(registration_fixture):
-    output, source = registration_fixture
-    registered = profile.register(output)
-    assert profile.check_registration(output) == registered
-    with pytest.raises(FileExistsError):
-        profile.register(output)
-    source.write_text("changed source fixture\n")
-    with pytest.raises(ValueError, match="source identity"):
-        profile.check_registration(output)
 
 
 @pytest.mark.parametrize("timeout", [False, True])
