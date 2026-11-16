@@ -1,0 +1,205 @@
+{
+ "format": "cells.visualizer.species@1",
+ "id": "mouse",
+ "label": "Mouse",
+ "organism": "Mus musculus",
+ "taxon": 10090,
+ "plain": "The laboratory mouse: 21,872 genes in UniProt's reference proteome, with one protein shown for each. Its cell is drawn as the planarian's is: one cell of a sheet that stands for skin-like tissue.",
+ "group": "Animals",
+ "order": 15,
+ "default": false,
+ "made": "2026-11-16",
+ "modelled": {
+  "state": "generic",
+  "text": "Cells models a generic cell and a sheet of such cells, not this animal. The sheet stands for skin-like tissue and is drawn on the ear for the scales only. The ear and the mouse are placeholder outlines: nothing at those scales is simulated. In the project's record the mouse is named for a planned comparison: in the work on excitable tissue, a generic cell comes first for qualification, then the mouse for the first comparison, then the human (decision D155, 14 November 2026). That comparison concerns heart muscle cells, and nothing of it is built yet."
+ },
+ "levels": [
+  {
+   "id": "molecules"
+  },
+  {
+   "id": "cell",
+   "shape": {
+    "kind": "prism",
+    "sides": 6,
+    "radius_um": 10.6,
+    "height_um": 13,
+    "corner_um": 2.4,
+    "edge_um": 1.3
+   },
+   "note": "The cell drawn is one cell of the sheet, which stands for skin-like tissue; it is not a model of a mouse's skin cell. Its shape and its sizes are the picture's choice: six flat sides where it meets its neighbours, an outer face and a base, about 20 µm across and as tall as the sheet's cells. The plate under the layer is scenery: Cells models nothing beneath the sheet.",
+   "notes": [
+    {
+     "text": "One cell of the skin-like layer"
+    },
+    {
+     "text": "Its flat-sided shape is the picture's choice",
+     "roomy": true
+    }
+   ],
+   "fade_out_um": [
+    120,
+    190
+   ]
+  },
+  {
+   "id": "tissue",
+   "shape": {
+    "kind": "cell sheet",
+    "rings": 6,
+    "beyond": [
+     [
+      8,
+      0.34
+     ],
+     [
+      10,
+      0.2
+     ],
+     [
+      11,
+      0.1
+     ]
+    ]
+   },
+   "note": "The sheet stands for skin-like tissue: a single layer of cells. It is drawn on the ear of the placeholder mouse for the scales only; the simulated sheet is not the mouse's skin.",
+   "notes": [
+    {
+     "text": "The sheet stands for skin-like tissue: a single layer of cells",
+     "short": "Stands for skin-like tissue"
+    }
+   ],
+   "fade_in_um": [
+    100,
+    190
+   ]
+  },
+  {
+   "id": "organ",
+   "label": "Ear",
+   "shape": {
+    "kind": "outline",
+    "ref": "mouse",
+    "parts": [
+     "left ear"
+    ],
+    "context": [
+     "head and body",
+     "right ear"
+    ]
+   },
+   "note": "The outline drawn is a mouse's ear, as a placeholder: a thin rounded blade, laid back flat from the head so that the sheet of cells, drawn level, can lie on it. The ear is the picture's choice of organ, so that the sheet that stands for skin-like tissue lies on a part of the animal a visitor knows; no ear is modelled, and the ear's own cells are not modelled. The sheet is drawn on the ear so that the scales follow one another; it is not the ear's tissue. The ear is drawn 13.3 mm long, the mean that one study measured in four house mice trapped in Qatar, wild mice and not laboratory mice; its breadth, its thickness, its shape and the way it lies are the picture's choice.",
+   "sources": [
+    "islam2021"
+   ],
+   "sheet_mark": {
+    "band": 0.15,
+    "note": "The sheet, to scale: drawn on the ear for the scales only",
+    "note_at_um": [
+     0,
+     0,
+     1800
+    ]
+   },
+   "notes": [
+    {
+     "text": "A mouse's ear: a placeholder outline"
+    },
+    {
+     "text": "The ear's own cells are not modelled",
+     "lift": -22,
+     "roomy": true
+    }
+   ]
+  },
+  {
+   "id": "organism",
+   "label": "Whole mouse",
+   "shape": {
+    "kind": "outline",
+    "ref": "mouse"
+   },
+   "note": "The outline drawn is a mouse on its feet, as a placeholder: 78.5 mm from the nose to the base of the tail, with a tail of 85.3 mm, the means that one study measured in four house mice trapped in Qatar. Those were wild house mice, not laboratory mice, so the sizes are indicative. The widths, the height and the proportions are the picture's choice. The sheet of cells is drawn on the left ear for the scales only.",
+   "sources": [
+    "islam2021"
+   ],
+   "view": {
+    "frame_um": [
+     270000,
+     160000
+    ],
+    "toward_um": [
+     -8000,
+     0,
+     0
+    ]
+   },
+   "sheet_mark": {
+    "band": 0.22,
+    "note": "Here lies the sheet: too small to see, so its ring is not to scale",
+    "note_at_um": [
+     0,
+     0,
+     -9000
+    ],
+    "roomy": true
+   },
+   "notes": [
+    {
+     "text": "A mouse: a placeholder outline"
+    }
+   ]
+  }
+ ],
+ "cell": {
+  "facts": [
+   {
+    "label": "Proteins",
+    "value": "21,872 genes in UniProt's reference proteome, with 228,903 entries: 17,279 reviewed by a curator and 211,624 annotated automatically. One protein is shown for each gene",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Cells' machines",
+    "value": "of the 49 units of the law inventory, 43 have proteins of the same family in the mouse; the other 6 name no natural protein to look for",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "The outlines' sizes",
+    "value": "head and body 78.5 mm, tail 85.3 mm, ear 13.3 mm: the means of four house mice trapped in Qatar, wild and not laboratory mice",
+    "sources": [
+     "islam2021"
+    ]
+   }
+  ],
+  "parts": {
+   "membranes": 1,
+   "wall": false,
+   "nucleus": true,
+   "organelles": [
+    "er",
+    "golgi",
+    "mitochondria"
+   ]
+  }
+ },
+ "sources": {
+  "uniprot": {
+   "text": "UniProt Consortium, UniProt release 2026_04: the reference proteome UP000000589 (Mus musculus (strain C57BL/6J)), its entries and its gene-by-gene set.",
+   "url": "https://www.uniprot.org/proteomes/UP000000589",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-16"
+  },
+  "islam2021": {
+   "text": "Islam MM, Farag E, Mahmoudi A, Hassan MM, Atta M, Mostafavi E, Alnager IA, Farrag HA, Eljack GEA, Bansal D, Haroun M, Abdeen R, Al-Romaihi H, Al-Zeyara AA, Almalki SA, Mkhize-Kwitshana Z (2021) Morphometric Study of Mus musculus, Rattus norvegicus, and Rattus rattus in Qatar. Animals : an open access journal from MDPI 11:2162. Its Table 2 gives, for four house mice (Mus musculus) trapped in Qatar, a head and body length of 78.5 ± 2.4 mm, a tail of 85.3 ± 4.1 mm and a right ear of 13.3 ± 1.7 mm.",
+   "doi": "10.3390/ani11082162",
+   "licence": "CC BY",
+   "class": "permissive",
+   "accessed": "2026-11-16"
+  }
+ }
+}

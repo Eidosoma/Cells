@@ -16,7 +16,7 @@ One data file, the scene, drawn through four lenses, in this order:
 
 | Lens | What you see |
 | --- | --- |
-| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar. **The species list sets the levels, the shapes and what the cell holds:** Human, Planarian and Fruit fly under Animals; Syn3A, M. pneumoniae and E. coli under Bacteria; Thale cress under Plants. A single-celled species ends at its cell; the outlines of organs and bodies (the planarian's brain and worm, the human's heart and body, the fly's wing and the fly, the cress's leaf and rosette) are placeholders. The cell has a resting look, with a switch back to the plain picture |
+| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar. **The species list sets the levels, the shapes and what the cell holds:** Human, Mouse, Planarian and Fruit fly under Animals; Syn3A, M. pneumoniae and E. coli under Bacteria; Thale cress under Plants. A single-celled species ends at its cell; the outlines of organs and bodies (the planarian's brain and worm, the human's heart and body, the mouse's ear and the mouse, the fly's wing and the fly, the cress's leaf and rosette) are placeholders. The cell has a resting look, with a switch back to the plain picture |
 | **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER and mitochondrial units inside. Each links to its engine part and out to the public atlases. For the species shown it gives the gene products that would make each machine (Human and Planarian today), and it shows every species' own proteins on shelves: each protein by its side of a membrane, as families that open where there are thousands |
 | **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Quantity layers draw onto it what cannot be seen: voltage as height, the drops across junctions, the push and pull on each ion, the charge on a membrane, what flows, where energy is dissipated, a secreted signal. Shown only when replays have been made |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
@@ -182,9 +182,9 @@ must bve configurable as well based on our different species as we add them".
   with outlines for an organ or a body under `data/species/shapes/`
   (`schema/SPECIES_SHAPES.md`). The viewer holds no drawing of any species; a test checks
   that no module names one.
-- **What Cells models of a species is said on the page.** Human, Planarian, Fruit fly and
+- **What Cells models of a species is said on the page.** Human, Mouse, Planarian, Fruit fly and
   Thale cress are `generic`: Cells models a generic cell and sheet, and the species lends
-  names or outlines (no plant cell is modelled, and thale cress's card says so). JCVI-syn3A, Mycoplasma pneumoniae and E. coli are `proposed`: nothing of them
+  names or outlines (no plant cell is modelled, and thale cress's card says so; the mouse's card adds what the record decides of it, D155's planned comparison of heart muscle cells, of which nothing is built). JCVI-syn3A, Mycoplasma pneumoniae and E. coli are `proposed`: nothing of them
   is in the engine, and the picture shows where Cells' capabilities would have a place in
   them.
   This is the viewer's switch; the engine has no organism switch.
@@ -203,7 +203,8 @@ must bve configurable as well based on our different species as we add them".
   and "Its N proteins": Syn3A and M. pneumoniae open on their own proteins, the planarian
   on the machines.
 - **A cell with several membranes has several shelves, stacked.** The human's 20,414
-  reviewed proteins (UniProt's reference proteome) and the fruit fly's 13,814, one for
+  reviewed proteins (UniProt's reference proteome), and the mouse's 21,872 and the fruit
+  fly's 13,814, one for
   each gene, stand on six: the cell membrane, the endoplasmic reticulum's, the
   mitochondrial inner membrane, the nuclear envelope, other membranes, and "a membrane,
   not told which". E. coli's 4,403 stand on three: its inner membrane, its outer
@@ -213,7 +214,7 @@ must bve configurable as well based on our different species as we add them".
   and a protein for which no membrane is stated stands apart. "Show by" picks out a set
   of a species' proteins: for E. coli its chemotaxis proteins, and the assemblies a
   protein is part of (the flagellum, the chemoreceptor array, the ribosome).
-  `docs/HUMAN_PROTEOME.md`, `docs/ECOLI.md` and `docs/FRUITFLY.md` give each one's
+  `docs/HUMAN_PROTEOME.md`, `docs/MOUSE.md`, `docs/ECOLI.md` and `docs/FRUITFLY.md` give each one's
   method and counts.
 - **A plant cell is drawn from the same files.** Thale cress has 27,368 proteins, one for
   each gene, on nine shelves (`docs/THALECRESS.md`): a plant cell adds the plastid
@@ -243,7 +244,8 @@ must bve configurable as well based on our different species as we add them".
   The test keeps the register of those tools for each species. Nothing is downloaded
   from a restricted source itself; a source with no stated terms, or a kind of tool not
   seen before, goes to the user first.
-- **Rough edges:** the human heart and body are quick placeholders; M. pneumoniae is drawn
+- **Rough edges:** the human heart and body are quick placeholders; the mouse's ears are laid flat, so
+  that the sheet, which the viewer draws level, can lie on one; M. pneumoniae is drawn
   as a plain rod, since the shape list cannot yet narrow one end for its attachment
   organelle; a cell under 2 µm across has one size mode for now (a second, to scale, is
   planned); to scale, thale cress's wall reaches past its neighbours' membranes, because

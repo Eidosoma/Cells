@@ -57,7 +57,7 @@ function classOf(licence) {
 }
 
 // Which note speaks for which record: by the species or the subject the record is of.
-const NOTES = { syn3a: "docs/SYN3A.md", mpneumoniae: "docs/MPNEUMONIAE.md", planarian: "docs/PLANARIAN_ATLAS.md", planarian_bioelectric: "docs/PLANARIAN_BIOELECTRIC_EVIDENCE.md", human: "docs/HUMAN_PROTEOME.md", ecoli: "docs/ECOLI.md", fruitfly: "docs/FRUITFLY.md", thalecress: "docs/THALECRESS.md" };
+const NOTES = { syn3a: "docs/SYN3A.md", mpneumoniae: "docs/MPNEUMONIAE.md", planarian: "docs/PLANARIAN_ATLAS.md", planarian_bioelectric: "docs/PLANARIAN_BIOELECTRIC_EVIDENCE.md", human: "docs/HUMAN_PROTEOME.md", ecoli: "docs/ECOLI.md", fruitfly: "docs/FRUITFLY.md", thalecress: "docs/THALECRESS.md", mouse: "docs/MOUSE.md" };
 // The register of the dependences that the user's ruling covers, by species: a tool or a
 // rule system that is not permissive, whose results a permissive database gives out and a
 // record rests on. The user ruled on 15 November 2026 that such a value stands on the
@@ -83,6 +83,8 @@ const NAMED = {
   fruitfly: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt", "big-PI": "UniProt" },
   // Thale cress's line, added with its data on 15 November 2026: the same eight tools.
   thalecress: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt", "big-PI": "UniProt" },
+  // The mouse's line, added with its data on 16 November 2026: the same eight tools, none new.
+  mouse: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt", "big-PI": "UniProt" },
 };
 // Papers that only a note cites, and that are not permissive: its section names them too.
 const NOTE_ONLY = {

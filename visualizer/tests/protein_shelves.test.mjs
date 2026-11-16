@@ -1952,5 +1952,5 @@ test("the build puts each species' summary and the patterns of the addresses in 
   for (const item of scene.proteins.shelves) assert.ok(["own", "units"].includes(firstMode(scene.proteins, item.id)));
   const files = await proteinFiles(scene, { membersDir: path.join(folder, "cut") });
   assert.deepEqual(files.problems, []);
-  assert.ok(files.files.length <= 60, `${files.files.length} files beside the page: the page may publish 255 in all, and the runs need theirs`);
+  assert.ok(files.files.length <= 80, `${files.files.length} files beside the page: a version holds at most 511, a publish sends 255 at a time, and the runs need theirs`);
 });
