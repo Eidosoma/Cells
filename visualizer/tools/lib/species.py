@@ -19,14 +19,22 @@ LEVELS = ["molecules", "cell", "tissue", "organ", "organism"]
 FURTHER = ["tissue", "organ", "organism"]
 STATES = ["generic", "proposed", "modelled"]
 PLACES = ["absent", "present"]
-ORGANELLES = ["er", "golgi", "mitochondria"]
+ORGANELLES = ["er", "golgi", "mitochondria", "chloroplasts", "vacuole"]
+ANIMAL_ORGANELLES = ["er", "golgi", "mitochondria"]  # what a cell with a nucleus holds where its file does not say
+# The size and number of an organelle (schema/SPECIES_SHAPES.md): how many, how large, or what share of the cell it fills.
+ORGANELLE_SIZE_KEYS = {"count", "volume_fl", "across_um", "share", "sources"}
 # What a cell's shape may be, with what each kind must and may take.
 CELL_KINDS = {
     "sphere": ({"across_um"}, set()),
     "capsule": ({"length_um", "across_um"}, {"tip_um"}),
     "prism": ({"sides", "height_um"}, {"across_um", "radius_um", "corner_um", "edge_um"}),
 }
-PARTS = {"membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes"}
+PARTS = {"membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes", "appendages", "wall_nm", "organelle_sizes"}
+# An appendage: a thread or a hair that stands out from the cell (schema/SPECIES.md, "Appendages are a general part").
+APPENDAGE_KEYS = {"kind", "label", "count", "length_um", "width_nm", "where", "from", "base", "sources"}
+APPENDAGE_KINDS = ("flagellum", "pilus")
+APPENDAGE_WHERE = ("all over", "one pole", "both poles", "one side")
+APPENDAGE_FROM = ("cell membrane", "inner membrane", "outer membrane")
 LEVEL_FIELDS = {"id", "label", "shape", "note", "notes", "sources", "centre_um", "view", "label_um", "sheet_mark", "fade_in_um", "fade_out_um"}
 PART_KINDS = {"loft", "lines", "discs"}
 # The structure a capability is drawn at, where it is not the cell as a whole.
@@ -50,9 +58,12 @@ def point(value, length=3):
 class Reader:
     """Reads one folder of species files; collects warnings and remarks."""
 
-    def __init__(self, folder, capabilities):
+    def __init__(self, folder, capabilities, left_out=()):
         self.folder = Path(folder)
         self.capabilities = dict(capabilities)  # capability id -> the level it belongs to
+        # Capabilities the map leaves out of the picture for now: a species may still name a place
+        # for one (its file keeps it for the day it returns); the scene does not carry that place.
+        self.left_out = set(left_out)
         self.warnings = []
         self.remarks = []
         self.shapes = {}
@@ -248,6 +259,9 @@ class Reader:
                 problems.append(f"it has no {key}")
         if not number(data.get("order")):
             problems.append("order is a number")
+        # The heading the species stands under in the list of species; a few words, or not given.
+        if data.get("group") is not None and not (isinstance(data["group"], str) and data["group"].strip() and len(data["group"]) <= 40):
+            problems.append("group is a heading of a few words")
         if not isinstance(data.get("default", False), bool):
             problems.append("default is true or false")
         if not (isinstance(data.get("made"), str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", data["made"])):
@@ -321,7 +335,68 @@ class Reader:
                 problems.append(f"cell.parts.{key} is a number above zero")
         if parts.get("nucleus") and "chromosome_kbp" in parts:
             problems.append("a free chromosome is drawn only in a cell without a nucleus")
-        held = set(ORGANELLES if organelles is None and parts.get("nucleus", True) else organelles or [])
+        # Appendages: each a kind the viewer can draw, with its count and sizes (a number or a
+        # range of two), where it stands, the membrane it starts at, and the sources of its numbers.
+        appendages = parts.get("appendages", [])
+        if not isinstance(appendages, list):
+            problems.append("cell.parts.appendages is a list")
+            appendages = []
+        amount = lambda value: positive(value) or (isinstance(value, list) and len(value) == 2 and all(positive(item) for item in value) and value[0] <= value[1])
+        for index, item in enumerate(appendages):
+            where = f"cell.parts.appendages[{index}]"
+            if not isinstance(item, dict):
+                problems.append(f"{where} is keyed")
+                continue
+            if set(item) - APPENDAGE_KEYS:
+                problems.append(f"{where} has a key the contract does not give: {', '.join(sorted(set(item) - APPENDAGE_KEYS))}")
+            if item.get("kind") not in APPENDAGE_KINDS:
+                problems.append(f"{where}.kind is one of {', '.join(APPENDAGE_KINDS)}")
+            if not (isinstance(item.get("label"), str) and item["label"].strip()):
+                problems.append(f"{where} has no label")
+            for key in ("count", "length_um", "width_nm"):
+                if not amount(item.get(key)):
+                    problems.append(f"{where}.{key} is a number above zero, or a range of two")
+            if item.get("where") not in APPENDAGE_WHERE:
+                problems.append(f"{where}.where is one of {', '.join(APPENDAGE_WHERE)}")
+            if item.get("from") not in APPENDAGE_FROM:
+                problems.append(f"{where}.from is one of {', '.join(APPENDAGE_FROM)}")
+            if (item.get("from") == "cell membrane") != (parts.get("membranes", 1) == 1):
+                problems.append(f"{where}.from names a membrane the cell does not have")
+            cited = item.get("sources")
+            if not (isinstance(cited, list) and cited and all(key in sources for key in cited)):
+                problems.append(f"{where}.sources names keys of the species' sources")
+            base = item.get("base")
+            if base is not None and not (isinstance(base, dict) and set(base) == {"id", "label", "mark", "value"} and all(isinstance(value, str) and value.strip() for value in base.values())):
+                problems.append(f"{where}.base gives an id, a label, and the mark and value of its proteins")
+        held = set(ANIMAL_ORGANELLES if organelles is None and parts.get("nucleus", True) else organelles or [])
+        # A wall's thickness, and the size and number of the organelles the cell holds: each a number or a range of two.
+        if "wall_nm" in parts:
+            if not amount(parts["wall_nm"]):
+                problems.append("cell.parts.wall_nm is a number above zero, or a range of two")
+            if not parts.get("wall"):
+                problems.append("a wall's thickness is given only for a cell with a wall")
+        sizes = parts.get("organelle_sizes", {})
+        if not isinstance(sizes, dict):
+            problems.append("cell.parts.organelle_sizes is keyed by organelle")
+            sizes = {}
+        for word, item in sizes.items():
+            where = f"cell.parts.organelle_sizes.{word}"
+            if word not in held:
+                problems.append(f"{where}: the cell does not hold this organelle")
+            if not isinstance(item, dict) or set(item) - ORGANELLE_SIZE_KEYS:
+                problems.append(f"{where} takes {', '.join(sorted(ORGANELLE_SIZE_KEYS))}")
+                continue
+            for key in ("count", "volume_fl", "across_um"):
+                if key in item and not amount(item[key]):
+                    problems.append(f"{where}.{key} is a number above zero, or a range of two")
+            share = item.get("share")
+            if share is not None and not all(isinstance(value, (int, float)) and not isinstance(value, bool) and 0 < value <= 1 for value in (share if isinstance(share, list) and len(share) == 2 else [share])):
+                problems.append(f"{where}.share is a part of the cell's volume, above 0 and at most 1, or a range of two")
+            if not set(item) & {"count", "volume_fl", "across_um", "share"}:
+                problems.append(f"{where} gives no number")
+            cited = item.get("sources")
+            if not (isinstance(cited, list) and cited and all(key in sources for key in cited)):
+                problems.append(f"{where}.sources names keys of the species' sources")
         capabilities = cell.get("capabilities", {})
         if not isinstance(capabilities, dict):
             problems.append("cell.capabilities is keyed")
@@ -366,11 +441,15 @@ class Reader:
         for key, level in self.capabilities.items():
             if level == "tissue" and not tissue and key not in capabilities:
                 self.remark(where, f"{key} belongs to a tissue, which this species does not have; it is listed with no_further_levels as its reason")
-        out = {key: data[key] for key in ("id", "label", "organism", "taxon", "plain", "order", "made", "modelled") if key in data}
+        out = {key: data[key] for key in ("id", "label", "organism", "taxon", "plain", "group", "order", "made", "modelled") if key in data}
         out["default"] = bool(data.get("default", False))
         out["levels"] = levels
         if further:
             out["no_further_levels"] = further
+        waiting = sorted(key for key in capabilities if key in self.left_out)
+        if waiting:
+            self.remark(where, f"its place for {', '.join(waiting)} is not shown: left out of the picture for now")
+            capabilities = {key: entry for key, entry in capabilities.items() if key not in self.left_out}
         out["cell"] = {"facts": facts, "parts": parts, "capabilities": capabilities}
         out["sources"] = sources
         return out
@@ -393,8 +472,12 @@ class Reader:
         return found, shapes
 
 
-def read_species(folder, capabilities):
-    """(species, shapes, warnings, remarks) for the folder; all empty where it does not exist."""
-    reader = Reader(folder, capabilities)
+def read_species(folder, capabilities, left_out=()):
+    """(species, shapes, warnings, remarks) for the folder; all empty where it does not exist.
+
+    `left_out` names the capabilities the map leaves out of the picture for now: a species' place
+    for one is read and checked like any other, and left out of what is returned, with a remark.
+    """
+    reader = Reader(folder, capabilities, left_out)
     species, shapes = reader.run()
     return species, shapes, reader.warnings, reader.remarks

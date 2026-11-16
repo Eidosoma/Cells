@@ -1,0 +1,596 @@
+{
+ "format": "cells.visualizer.species_atlas@1",
+ "species": {
+  "id": "thalecress",
+  "label": "Thale cress",
+  "organism": "Arabidopsis thaliana",
+  "taxon": 3702,
+  "plain": "A small flowering plant of the laboratory, with 27,368 genes in UniProt's reference proteome. The units of the law inventory are machines of animal cells; this is what their family signatures find among the one protein shown for each gene."
+ },
+ "made": "2026-11-15",
+ "method": [
+  "The plant's proteins are the 27,368 of UniProt's gene-by-gene set of the reference proteome UP000006548 (release 2026_04): one for each gene, 16,212 with a reviewed entry and 11,156 with an unreviewed one.",
+  "Licences were read before anything was copied; each is stated in sources.",
+  "Each unit's family was taken from its own human candidates, by the same InterPro signatures that the other species' atlases ask. The build checks that the candidates carry them.",
+  "Each signature was looked for among the InterPro entries UniProt gives each protein. A unit counts as found only where a protein carries the signature of a family that makes the machine itself; an accessory family alone does not make it found.",
+  "A plant has channels and pumps of families of its own, which no unit of the inventory stands for. They are not listed here: the search asks only for the families of Cells' units. 'Different family' is given only where the inventory's table names another family for the same machine, and it names none that a plant has.",
+  "A product with a reviewed entry is listed as a reviewed entry, one with an unreviewed entry as a family signature. Either is a candidate by family, and nothing here says which protein does which unit's work.",
+  "No similarity search was run, and nothing is called an ortholog."
+ ],
+ "sources": [
+  {
+   "name": "UniProt",
+   "url": "https://www.uniprot.org/",
+   "release": "2026_04",
+   "accessed": "2026-11-15",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "cite": "The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)",
+   "holds": "the entries of the plant's proteins, reviewed and unreviewed, with the InterPro entries UniProt gives each; the signatures of the units' human candidates; the vocabulary's words on plasmodesmata"
+  },
+  {
+   "name": "InterPro",
+   "url": "https://www.ebi.ac.uk/interpro/",
+   "release": "111.0",
+   "accessed": "2026-11-15",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "cite": "Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456.",
+   "holds": "the identifiers and names of the family signatures"
+  }
+ ],
+ "not_copied": "No sequence is copied. The plant's own database, TAIR, is linked to nowhere and nothing was downloaded from it: its pages refused this tool, so its terms could not be read. The Araport genes used here are those UniProt gives its entries.",
+ "units": {
+  "U01": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of voltage-gated sodium channel alpha subunits (IPR001696). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U02": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of voltage-gated sodium channel alpha subunits (IPR001696). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U03": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of voltage-gated sodium channel alpha subunits (IPR001696). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U04": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of voltage-gated sodium channel alpha subunits (IPR001696). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U05": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of Kv1-type potassium channels (IPR003972). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U06": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of Kv1-type potassium channels (IPR003972). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U07": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of Kv1-type potassium channels (IPR003972). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U08": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of Kv1-type potassium channels (IPR003972). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U09": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of Kv1-type potassium channels (IPR003972). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U10": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of Kv1-type potassium channels (IPR003972). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U11": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of Kv2-type potassium channels (IPR003973). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U12": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of Kv2-type potassium channels (IPR003973). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U13": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of Kv3-type potassium channels (IPR003974). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U14": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of Kv3-type potassium channels (IPR003974). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U15": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of Kv3-type potassium channels (IPR003974). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U16": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of Kv3-type potassium channels (IPR003974). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U17": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of Kv4-type potassium channels (IPR003975). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U18": {
+   "finding": "nothing to look for",
+   "note": "The inventory gives this unit no gene product: it is a default shape of current, not a named channel.",
+   "products": []
+  },
+  "U19": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of inward-rectifier potassium channels (IPR016449, IPR040445, IPR041647). The unit's human candidates carry them, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U20": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of HCN-type channels (IPR051413, IPR013621). The unit's human candidates carry them, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U21": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of HCN-type channels (IPR051413, IPR013621). The unit's human candidates carry them, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U22": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of HCN-type channels (IPR051413, IPR013621). The unit's human candidates carry them, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U23": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of HCN-type channels (IPR051413, IPR013621). The unit's human candidates carry them, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U24": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of L-type calcium channel alpha-1 subunits (IPR005446). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U25": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of L-type calcium channel alpha-1 subunits (IPR005446). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U26": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of L-type calcium channel alpha-1 subunits (IPR005446). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U27": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of voltage-gated calcium channel alpha-1 subunits (IPR002077). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U28": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of voltage-gated calcium channel alpha-1 subunits (IPR002077). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U29": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of voltage-gated calcium channel alpha-1 subunits (IPR002077). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U30": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of voltage-gated calcium channel alpha-1 subunits (IPR002077). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U31": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U32": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of T-type calcium channel alpha-1 subunits (IPR005445). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U33": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of BK calcium-activated potassium channels and SK calcium-activated potassium channels (IPR047871, IPR015449). The unit's human candidates carry them, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U34": {
+   "finding": "nothing to look for",
+   "note": "A background conductance that the inventory ties to no protein.",
+   "products": []
+  },
+  "U35": {
+   "finding": "nothing to look for",
+   "note": "A lumped permeability of the whole membrane, not a population of proteins.",
+   "products": []
+  },
+  "U36": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). The unit's human candidates carry them, so the search finds the family where it exists. A plant's cells are joined in another way: by plasmodesmata, channels lined by the cell membrane that cross the wall between two cells (UniProt's vocabulary). 32 proteins of the catalogue are stated to be there; they stand on the cell membrane's shelf.",
+   "products": []
+  },
+  "U37": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). The unit's human candidates carry them, so the search finds the family where it exists. A plant's cells are joined in another way: by plasmodesmata, channels lined by the cell membrane that cross the wall between two cells (UniProt's vocabulary). 32 proteins of the catalogue are stated to be there; they stand on the cell membrane's shelf.",
+   "products": []
+  },
+  "U38": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of connexins and innexins (IPR000500, IPR013092, IPR000990). The unit's human candidates carry them, so the search finds the family where it exists. A plant's cells are joined in another way: by plasmodesmata, channels lined by the cell membrane that cross the wall between two cells (UniProt's vocabulary). 32 proteins of the catalogue are stated to be there; they stand on the cell membrane's shelf.",
+   "products": []
+  },
+  "U39": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of the sodium-potassium pump's alpha subunit (IPR005775). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U40": {
+   "finding": "found",
+   "note": "10 proteins of its 27,368 carry the signature of plasma-membrane calcium pumps (IPR006408): ACA1, ACA2, ACA4, ACA7, ACA8, ACA9, ACA10, ACA11, ACA12 and ACA13. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the plant.",
+   "products": [
+    {
+     "name": "Calcium-transporting ATPase 1",
+     "gene": "ACA1",
+     "role": "plasma-membrane calcium pumps",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q37145"
+      }
+     ],
+     "length": 1020,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Calcium-transporting ATPase 2, plasma membrane-type",
+     "gene": "ACA2",
+     "role": "plasma-membrane calcium pumps",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "O81108"
+      }
+     ],
+     "length": 1014,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Calcium-transporting ATPase 4, plasma membrane-type",
+     "gene": "ACA4",
+     "role": "plasma-membrane calcium pumps",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "O22218"
+      }
+     ],
+     "length": 1030,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Putative calcium-transporting ATPase 7, plasma membrane-type",
+     "gene": "ACA7",
+     "role": "plasma-membrane calcium pumps",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "O64806"
+      }
+     ],
+     "length": 1015,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Calcium-transporting ATPase 8, plasma membrane-type",
+     "gene": "ACA8",
+     "role": "plasma-membrane calcium pumps",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9LF79"
+      }
+     ],
+     "length": 1074,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Calcium-transporting ATPase 9, plasma membrane-type",
+     "gene": "ACA9",
+     "role": "plasma-membrane calcium pumps",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9LU41"
+      }
+     ],
+     "length": 1086,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Calcium-transporting ATPase 10, plasma membrane-type",
+     "gene": "ACA10",
+     "role": "plasma-membrane calcium pumps",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9SZR1"
+      }
+     ],
+     "length": 1069,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Putative calcium-transporting ATPase 11, plasma membrane-type",
+     "gene": "ACA11",
+     "role": "plasma-membrane calcium pumps",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9M2L4"
+      }
+     ],
+     "length": 1025,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Calcium-transporting ATPase 12, plasma membrane-type",
+     "gene": "ACA12",
+     "role": "plasma-membrane calcium pumps",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9LY77"
+      }
+     ],
+     "length": 1033,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Putative calcium-transporting ATPase 13, plasma membrane-type",
+     "gene": "ACA13",
+     "role": "plasma-membrane calcium pumps",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9LIK7"
+      }
+     ],
+     "length": 1017,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR006408 (P-type ATPase, subfamily IIB). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U41": {
+   "finding": "found",
+   "note": "1 protein of its 27,368 carries the signature of SERCA-type calcium pumps (IPR005782): ECA3. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the plant.",
+   "products": [
+    {
+     "name": "Calcium-transporting ATPase 3, endoplasmic reticulum-type",
+     "gene": "ECA3",
+     "role": "SERCA-type calcium pumps",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9SY55"
+      }
+     ],
+     "length": 998,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR005782 (P-type ATPase, subfamily IIA, SERCA-type). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U42": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of sodium-calcium exchangers (IPR004836). The unit's human candidates carry it, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U43": {
+   "finding": "none found",
+   "note": "None of its 27,368 proteins carries the signature of inositol trisphosphate receptors and ryanodine receptors (IPR000493, IPR013333). The unit's human candidates carry them, so the search finds the family where it exists.",
+   "products": []
+  },
+  "U44": {
+   "finding": "found",
+   "note": "1 protein of its 27,368 carries the signature of the wider SLC12 transporter family (IPR004842): CCC1. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the plant.",
+   "products": [
+    {
+     "name": "Cation-chloride cotransporter 1",
+     "gene": "CCC1",
+     "role": "the wider SLC12 transporter family",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q2UVJ5"
+      }
+     ],
+     "length": 975,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U45": {
+   "finding": "found",
+   "note": "1 protein of its 27,368 carries the signature of the wider SLC12 transporter family (IPR004842): CCC1. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the plant.",
+   "products": [
+    {
+     "name": "Cation-chloride cotransporter 1",
+     "gene": "CCC1",
+     "role": "the wider SLC12 transporter family",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q2UVJ5"
+      }
+     ],
+     "length": 975,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR004842 (SLC12A transporter family). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U46": {
+   "finding": "nothing to look for",
+   "note": "A slot that each model configuration fills with a transporter of its own; it has no fixed protein in any species.",
+   "products": []
+  },
+  "U47": {
+   "finding": "found",
+   "note": "7 proteins of its 27,368 carry the signature of the mitochondrial calcium uniporter and its MICU regulators (IPR039055, IPR006769, IPR039800): MCU1, MCU2, MCU3, MCU4, MCU5, MCU6 and MICU. Each is a candidate by its family alone: no source read here says which of them does the unit's work in the plant.",
+   "products": [
+    {
+     "name": "Calcium uniporter protein 1, mitochondrial",
+     "gene": "MCU1",
+     "role": "the mitochondrial calcium uniporter",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "F4I111"
+      }
+     ],
+     "length": 292,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Calcium uniporter protein 2, mitochondrial",
+     "gene": "MCU2",
+     "role": "the mitochondrial calcium uniporter",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q8VYR0"
+      }
+     ],
+     "length": 293,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Calcium uniporter protein 3, mitochondrial",
+     "gene": "MCU3",
+     "role": "the mitochondrial calcium uniporter",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "O64823"
+      }
+     ],
+     "length": 336,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Calcium uniporter protein 4, mitochondrial",
+     "gene": "MCU4",
+     "role": "the mitochondrial calcium uniporter",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q1PE15"
+      }
+     ],
+     "length": 338,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Calcium uniporter protein 5, mitochondrial",
+     "gene": "MCU5",
+     "role": "the mitochondrial calcium uniporter",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9FJV7"
+      }
+     ],
+     "length": 293,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Chloroplastic calcium uniporter protein",
+     "gene": "MCU6",
+     "role": "the mitochondrial calcium uniporter",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9LVR5"
+      }
+     ],
+     "length": 321,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR039055, IPR006769 (MCU family; Calcium uniporter protein, C-terminal). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    },
+    {
+     "name": "Calcium uptake protein, mitochondrial",
+     "gene": "MICU",
+     "role": "its MICU regulators",
+     "ids": [
+      {
+       "db": "uniprot",
+       "id": "Q9SZ45"
+      }
+     ],
+     "length": 498,
+     "evidence": "reviewed entry",
+     "evidence_note": "Its reviewed UniProtKB entry carries IPR039800 (Calcium uptake protein 1/2/3). A signature says the family, not which member does the unit's work.",
+     "citation": null
+    }
+   ]
+  },
+  "U48": {
+   "finding": "nothing to look for",
+   "note": "A protein cage designed in the laboratory, with no gene in any organism, so there is nothing to look for in this one.",
+   "products": []
+  },
+  "U49": {
+   "finding": "nothing to look for",
+   "note": "A lumped water permeability of the membrane; water channels (aquaporins) are not part of it.",
+   "products": []
+  }
+ },
+ "extra": []
+}

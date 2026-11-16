@@ -123,8 +123,8 @@
    "from": "Breuer and others 2019, supplementary file 3: the secondary functional class",
    "count": 57,
    "sides": {
-    "outside": 2,
-    "in": 35,
+    "outside": 3,
+    "in": 34,
     "inside": 20
    }
   },
@@ -157,8 +157,8 @@
    "from": "Breuer and others 2019, supplementary file 3: the secondary functional class",
    "count": 83,
    "sides": {
-    "outside": 3,
-    "in": 39,
+    "outside": 10,
+    "in": 32,
     "inside": 38,
     "not known": 3
    }
@@ -223,7 +223,7 @@
   ["JCVISYN3A_0105","Exodeoxyribonuclease VII small subunit","xseB","cell","inside","predicted","dna-maintenance",71,null,{"essential":"non-essential","seen":true,"amount":6.88,"class":"Mismatch repair"}],
   ["JCVISYN3A_0106","Exodeoxyribonuclease VII large subunit","xseA","cell","inside","predicted","dna-maintenance",469,null,{"essential":"non-essential","seen":true,"amount":14.7,"class":"Mismatch repair"}],
   ["JCVISYN3A_0107","Transcription antitermination factor","nusB","cell","inside","predicted","transcription",132,null,{"essential":"quasi-essential","seen":true,"amount":17.7,"class":"Transcription factors"}],
-  ["JCVISYN3A_0108","Uncharacterized lipoprotein","","cell","in","predicted","no-kegg-ortholog",370,null,{"essential":"quasi-essential","seen":true,"amount":68.9,"class":"Function unknown","segments":1,"at_start_only":true}],
+  ["JCVISYN3A_0108","Uncharacterized lipoprotein","","cell","outside","predicted","no-kegg-ortholog",370,null,{"essential":"quasi-essential","seen":true,"amount":68.9,"class":"Function unknown","lipid_anchor":true}],
   ["JCVISYN3A_0109","Deoxyribonuclease IV","","cell","inside","predicted","dna-maintenance",289,null,{"essential":"quasi-essential","seen":true,"amount":22.3,"class":"Base excision repair"}],
   ["JCVISYN3A_0113","Glycolipid synthase A","bcsA","cell","in","predicted","biosynthesis",449,null,{"essential":"essential","seen":true,"amount":79.5,"class":"Lipid metabolism","segments":4}],
   ["JCVISYN3A_0114","Glycolipid synthase B","bcsB; cps","cell","inside","predicted","biosynthesis",306,null,{"essential":"essential","seen":true,"amount":43.3,"class":"Lipid metabolism"}],
@@ -259,7 +259,7 @@
   ["JCVISYN3A_0166","Oligopeptide ABC transporter permease","","cell","in","predicted","membrane-transport",336,null,{"essential":"quasi-essential","seen":true,"amount":64.2,"class":"Amino acid and peptides","segments":5}],
   ["JCVISYN3A_0167","Oligopeptide ABC transporter ATP-binding protein","amiE","cell","inside","predicted","membrane-transport",566,null,{"essential":"quasi-essential","seen":true,"amount":242,"class":"Amino acid and peptides"}],
   ["JCVISYN3A_0168","Oligopeptide ABC transporter ATP-binding protein","amiF","cell","inside","predicted","membrane-transport",622,null,{"essential":"quasi-essential","seen":true,"amount":241,"class":"Amino acid and peptides"}],
-  ["JCVISYN3A_0169","Oligopeptide ABC transporter substrate-binding protein","amiA","cell","in","predicted","membrane-transport",1033,null,{"essential":"quasi-essential","seen":true,"amount":314,"class":"Amino acid and peptides","segments":1,"at_start_only":true}],
+  ["JCVISYN3A_0169","Oligopeptide ABC transporter substrate-binding protein","amiA","cell","outside","predicted","membrane-transport",1033,null,{"essential":"quasi-essential","seen":true,"amount":314,"class":"Amino acid and peptides","lipid_anchor":true}],
   ["JCVISYN3A_0195","Spermidine/putrescine ABC transporter permease","potC","cell","in","predicted","membrane-transport",1036,null,{"essential":"quasi-essential","seen":true,"amount":182,"class":"Polyamines","segments":5}],
   ["JCVISYN3A_0196","Spermidine/putrescine ABC transporter permease","potB","cell","in","predicted","membrane-transport",330,null,{"essential":"quasi-essential","seen":true,"amount":19.1,"class":"Polyamines","segments":5}],
   ["JCVISYN3A_0197","Spermidine/putrescine ABC transporter ATP-binding protein","potA","cell","inside","predicted","membrane-transport",351,null,{"essential":"quasi-essential","seen":true,"amount":208,"class":"Polyamines","where":"at the membrane","stated_in":"Q2SSS4, Mycoplasma capricolum subsp. capricolum (strain California kid / ATCC 27343 / NCTC 10154): Cell membrane; Peripheral membrane protein (by rule)"}],
@@ -407,8 +407,8 @@
   ["JCVISYN3A_0435","Mannose-6-phosphate isomerase","manA","cell","inside","predicted","central-carbon-metabolism",309,null,{"essential":"non-essential","seen":true,"amount":43.6,"class":"Carbohydrate metabolism"}],
   ["JCVISYN3A_0437","Putative 3'-5' exoribonuclease","yhaM","cell","inside","predicted","folding-sorting-and-degradation",326,null,{"essential":"essential","seen":true,"amount":517,"class":"RNA degradation"}],
   ["JCVISYN3A_0438","Uncharacterized protein","hinT","cell","inside","predicted","central-carbon-metabolism",132,null,{"essential":"non-essential","seen":true,"amount":197,"class":"Nucleotide metabolism"}],
-  ["JCVISYN3A_0439","Uncharacterized lipoprotein","","cell","in","predicted","no-kegg-ortholog",718,null,{"essential":"essential","seen":true,"amount":374,"class":"Function unknown","segments":1,"at_start_only":true}],
-  ["JCVISYN3A_0440","Uncharacterized lipoprotein","","cell","in","predicted","no-kegg-ortholog",978,null,{"essential":"essential","seen":true,"amount":408,"class":"Function unknown","segments":1,"at_start_only":true}],
+  ["JCVISYN3A_0439","Uncharacterized lipoprotein","","cell","outside","predicted","no-kegg-ortholog",718,null,{"essential":"essential","seen":true,"amount":374,"class":"Function unknown","lipid_anchor":true}],
+  ["JCVISYN3A_0440","Uncharacterized lipoprotein","","cell","outside","predicted","no-kegg-ortholog",978,null,{"essential":"essential","seen":true,"amount":408,"class":"Function unknown","lipid_anchor":true}],
   ["JCVISYN3A_0441","Cysteine desulfurase","iscS","cell","inside","predicted","biosynthesis",412,null,{"essential":"essential","seen":true,"amount":51.4,"class":"Amino acid metabolism"}],
   ["JCVISYN3A_0442","Iron-sulfur cluster assembly scaffold protein","iscU","cell","inside","predicted","energy-metabolism",145,null,{"essential":"essential","seen":true,"amount":18.9,"class":"Other"}],
   ["JCVISYN3A_0443","5-Formyltetrahydrofolate cyclo-ligase","yggN","cell","inside","predicted","central-carbon-metabolism",187,null,{"essential":"essential","seen":true,"amount":37.6,"class":"Other central metabolism enzymes"}],
@@ -422,7 +422,7 @@
   ["JCVISYN3A_0475","L-lactate dehydrogenase","ldh","cell","inside","by function","central-carbon-metabolism",318,null,{"essential":"essential","seen":true,"amount":1100,"class":"Glycolysis"}],
   ["JCVISYN3A_0478","Uncharacterized protein","","cell","in","predicted","no-kegg-ortholog",194,null,{"essential":"essential","seen":true,"amount":8.15,"class":"Function unknown","segments":4}],
   ["JCVISYN3A_0479","Uncharacterized peptidase","","cell","in","predicted","folding-sorting-and-degradation",548,null,{"essential":"quasi-essential","seen":true,"amount":65.9,"class":"Peptidases","segments":2}],
-  ["JCVISYN3A_0481","Uncharacterized lipoprotein","","cell","in","predicted","no-kegg-ortholog",145,null,{"essential":"non-essential","seen":true,"amount":8.35,"class":"Function unknown","segments":1,"at_start_only":true}],
+  ["JCVISYN3A_0481","Uncharacterized lipoprotein","","cell","outside","predicted","no-kegg-ortholog",145,null,{"essential":"non-essential","seen":true,"amount":8.35,"class":"Function unknown","lipid_anchor":true}],
   ["JCVISYN3A_0482","30S ribosomal protein S21","rpsU","cell","inside","predicted","translation",54,null,{"essential":"essential","seen":true,"amount":0.463,"class":"Ribosome","complex":"ribosome"}],
   ["JCVISYN3A_0493","Uncharacterized peptidase","","cell","inside","predicted","no-kegg-ortholog",449,null,{"essential":"quasi-essential","seen":true,"amount":77.6,"class":"Function unknown"}],
   ["JCVISYN3A_0494","N-acetylmannosamine-6-phosphate 2-epimerase","nanE","cell","inside","predicted","central-carbon-metabolism",226,null,{"essential":"non-essential","seen":true,"amount":30,"class":"Other central metabolism enzymes"}],
@@ -432,7 +432,7 @@
   ["JCVISYN3A_0501","50S ribosomal protein L21","rplU","cell","inside","predicted","translation",100,null,{"essential":"essential","seen":true,"amount":246,"class":"Ribosome","complex":"ribosome"}],
   ["JCVISYN3A_0503","Uncharacterized protein","","cell","inside","predicted","no-kegg-ortholog",133,null,{"essential":"quasi-essential","seen":false,"class":"Function unknown"}],
   ["JCVISYN3A_0504","16S rRNA (cytidine(1402)-2'-O)-methyltransferase","rsmI","cell","inside","predicted","translation",295,null,{"essential":"non-essential","seen":true,"amount":37.6,"class":"Ribosome biogenesis"}],
-  ["JCVISYN3A_0505","Uncharacterized lipoprotein","","cell","in","predicted","no-kegg-ortholog",357,null,{"essential":"non-essential","seen":true,"amount":251,"class":"Function unknown","segments":1,"at_start_only":true}],
+  ["JCVISYN3A_0505","Uncharacterized lipoprotein","","cell","outside","predicted","no-kegg-ortholog",357,null,{"essential":"non-essential","seen":true,"amount":251,"class":"Function unknown","lipid_anchor":true}],
   ["JCVISYN3A_0511","Uncharacterized protein","","cell","inside","predicted","no-kegg-ortholog",207,null,{"essential":"essential","seen":true,"amount":201,"class":"Function unknown"}],
   ["JCVISYN3A_0512","Acyl-phosphate glycerol 3-phosphate acyltransferase","plsC","cell","inside","predicted","biosynthesis",315,null,{"essential":"essential","seen":true,"amount":170,"class":"Lipid metabolism"}],
   ["JCVISYN3A_0513","ACP synthase","acpS","cell","inside","stated","biosynthesis",110,null,{"essential":"essential","seen":true,"amount":1.41,"class":"Lipid metabolism","stated_in":"Q6MT35, Mycoplasma mycoides subsp. mycoides SC (strain CCUG 32753 / NCTC 10114 / PG1): Cytoplasm","evidence":"rule"}],
@@ -447,7 +447,7 @@
   ["JCVISYN3A_0523","Cell division protein","ftsA","cell","inside","predicted","cell-growth",386,null,{"essential":"non-essential","seen":true,"amount":50.5,"class":"Cell division"}],
   ["JCVISYN3A_0524","16S rRNA (cytosine(1402)-N(4))-methyltransferase","rsmH; mraW","cell","inside","predicted","translation",308,null,{"essential":"non-essential","seen":true,"amount":33.5,"class":"Ribosome biogenesis"}],
   ["JCVISYN3A_0525","Cell division/cell wall cluster transcriptional repressor","mraZ","cell","inside","predicted","transcription",133,null,{"essential":"non-essential","seen":false,"class":"Transcription factors"}],
-  ["JCVISYN3A_0526","50S ribosomal protein L32","rpmF","cell","inside","by function","translation",59,null,{"essential":"essential","seen":true,"amount":21.5,"class":"Ribosome","complex":"ribosome"}],
+  ["JCVISYN3A_0526","50S ribosomal protein L32","rpmF","cell","inside","predicted","translation",59,null,{"essential":"essential","seen":true,"amount":21.5,"class":"Ribosome","complex":"ribosome"}],
   ["JCVISYN3A_0527","Uncharacterized protein","","cell","inside","predicted","no-kegg-ortholog",172,null,{"essential":"non-essential","seen":true,"amount":331,"class":"Function unknown"}],
   ["JCVISYN3A_0528","Phenylalanine--tRNA ligase subunit beta","pheRS","cell","inside","predicted","translation",794,null,{"essential":"essential","seen":true,"amount":778,"class":"tRNA loading"}],
   ["JCVISYN3A_0529","Phenylalanine--tRNA ligase subunit alpha","pheS","cell","inside","predicted","translation",350,null,{"essential":"essential","seen":true,"amount":290,"class":"tRNA loading"}],
@@ -471,7 +471,7 @@
   ["JCVISYN3A_0600","Ribonuclease J","rnjA","cell","inside","predicted","folding-sorting-and-degradation",610,null,{"essential":"essential","seen":true,"amount":120,"class":"RNA degradation"}],
   ["JCVISYN3A_0601","Uncharacterized protein","","cell","in","predicted","no-kegg-ortholog",314,null,{"essential":"non-essential","seen":true,"amount":72.5,"class":"Function unknown","segments":5}],
   ["JCVISYN3A_0604","Uncharacterized protein","","cell","in","predicted","kegg-ortholog-defined",222,null,{"essential":"non-essential","seen":true,"amount":345,"class":"General function prediction only","segments":1}],
-  ["JCVISYN3A_0605","Uncharacterized protein","","cell","outside","predicted","no-kegg-ortholog",102,null,{"essential":"non-essential","seen":true,"amount":68.1,"class":"Function unknown","lipid_anchor":true}],
+  ["JCVISYN3A_0605","Uncharacterized protein","","cell","in","predicted","no-kegg-ortholog",102,null,{"essential":"non-essential","seen":true,"amount":68.1,"class":"Function unknown","segments":1,"at_start_only":true}],
   ["JCVISYN3A_0606","Phosphoglycerate kinase","pgk","cell","inside","predicted","central-carbon-metabolism",404,null,{"essential":"essential","seen":true,"amount":411,"class":"Glycolysis"}],
   ["JCVISYN3A_0607","Type I glyceraldehyde-3-phosphate dehydrogenase","gapDH","cell","inside","predicted","central-carbon-metabolism",338,null,{"essential":"essential","seen":true,"amount":1360,"class":"Glycolysis"}],
   ["JCVISYN3A_0608","Primosomal protein","dnaI","cell","inside","predicted","dna-maintenance",312,null,{"essential":"essential","seen":true,"amount":40.8,"class":"DNA replication"}],
@@ -489,7 +489,7 @@
   ["JCVISYN3A_0622","Uncharacterized lipoprotein","","cell","outside","predicted","no-kegg-ortholog",120,null,{"essential":"non-essential","seen":false,"class":"Function unknown","lipid_anchor":true}],
   ["JCVISYN3A_0623","Uncharacterized protein","","cell","inside","predicted","no-kegg-ortholog",356,null,{"essential":"non-essential","seen":false,"class":"Function unknown"}],
   ["JCVISYN3A_0634","Leucine--tRNA ligase","leuRS","cell","inside","predicted","translation",804,null,{"essential":"essential","seen":true,"amount":208,"class":"tRNA loading"}],
-  ["JCVISYN3A_0636","Uncharacterized lipoprotein","","cell","in","predicted","no-kegg-ortholog",929,null,{"essential":"essential","seen":true,"amount":111,"class":"Function unknown","segments":1,"at_start_only":true}],
+  ["JCVISYN3A_0636","Uncharacterized lipoprotein","","cell","outside","predicted","no-kegg-ortholog",929,null,{"essential":"essential","seen":true,"amount":111,"class":"Function unknown","lipid_anchor":true}],
   ["JCVISYN3A_0637","30S ribosomal protein S9","rpsI","cell","inside","predicted","translation",132,null,{"essential":"essential","seen":true,"amount":426,"class":"Ribosome","complex":"ribosome"}],
   ["JCVISYN3A_0638","50S ribosomal protein L13","rplM","cell","inside","predicted","translation",151,null,{"essential":"essential","seen":true,"amount":632,"class":"Ribosome","complex":"ribosome"}],
   ["JCVISYN3A_0639","Uncharacterized efflux ABC transporter permease","","cell","in","predicted","membrane-transport",1381,null,{"essential":"essential","seen":true,"amount":94.5,"class":"Generic","segments":8}],
@@ -599,13 +599,13 @@
   ["JCVISYN3A_0832","Aminoacyl-tRNA hydrolase","pth","cell","inside","predicted","translation",186,null,{"essential":"essential","seen":true,"amount":152,"class":"Translation factors"}],
   ["JCVISYN3A_0833","50S ribosomal protein L9","rplI","cell","inside","predicted","translation",147,null,{"essential":"quasi-essential","seen":true,"amount":122,"class":"Ribosome","complex":"ribosome"}],
   ["JCVISYN3A_0834","Replicative DNA helicase","dnaC","cell","inside","by function","dna-maintenance",438,null,{"essential":"essential","seen":true,"amount":118,"class":"DNA replication complex"}],
-  ["JCVISYN3A_0835","Uncharacterized lipoprotein","","cell","in","predicted","no-kegg-ortholog",435,null,{"essential":"essential","seen":true,"amount":297,"class":"Function unknown","segments":1,"at_start_only":true}],
+  ["JCVISYN3A_0835","Uncharacterized lipoprotein","","cell","outside","predicted","no-kegg-ortholog",435,null,{"essential":"essential","seen":true,"amount":297,"class":"Function unknown","lipid_anchor":true}],
   ["JCVISYN3A_0836","Uncharacterized ECF transporter S component","ecfS","cell","in","predicted","membrane-transport",308,null,{"essential":"essential","seen":true,"amount":0.96,"class":"Cofactor","segments":6}],
   ["JCVISYN3A_0837","Cysteine--tRNA ligase","cysRS","cell","inside","predicted","translation",441,null,{"essential":"essential","seen":true,"amount":111,"class":"tRNA loading"}],
   ["JCVISYN3A_0838","23S rRNA (guanosine(2251)-2'-O)-methyltransferase","rlmB","cell","inside","by function","translation",244,null,{"essential":"non-essential","seen":true,"amount":135,"class":"Ribosome biogenesis"}],
   ["JCVISYN3A_0839","Preprotein translocase subunit","secE","cell","in","predicted","folding-sorting-and-degradation",107,null,{"essential":"essential","seen":true,"amount":8.47,"class":"Protein export","segments":1}],
   ["JCVISYN3A_0840","Antitermination protein","nusG","cell","inside","predicted","transcription",213,null,{"essential":"quasi-essential","seen":true,"amount":238,"class":"Transcription factors"}],
-  ["JCVISYN3A_0851","Uncharacterized lipoprotein","","cell","in","predicted","no-kegg-ortholog",60,null,{"essential":"non-essential","seen":false,"class":"Function unknown","segments":1,"at_start_only":true}],
+  ["JCVISYN3A_0851","Uncharacterized lipoprotein","","cell","outside","predicted","no-kegg-ortholog",60,null,{"essential":"non-essential","seen":false,"class":"Function unknown","lipid_anchor":true}],
   ["JCVISYN3A_0852","Uncharacterized protein","","cell","in","predicted","no-kegg-ortholog",76,null,{"essential":"non-essential","seen":false,"class":"Function unknown","segments":2}],
   ["JCVISYN3A_0853","Uncharacterized protein","","cell","inside","predicted","no-kegg-ortholog",239,null,{"essential":"non-essential","seen":true,"amount":7.24,"class":"Function unknown"}],
   ["JCVISYN3A_0859","DNA topoisomerase I","topA","cell","inside","predicted","dna-maintenance",653,null,{"essential":"essential","seen":true,"amount":175,"class":"DNA replication control"}],
@@ -635,8 +635,8 @@
  ],
  "side_notes": {
   "stated": "Taken from a reviewed UniProtKB entry whose sequence is, letter for letter, this protein's. Each such entry is of another organism, named in the mark stated_in: it states the place of the same protein there, not in JCVI-syn3A. None of these statements rests on an experiment: each is made by a family rule or by similarity, as the mark evidence says.",
-  "predicted": "This tool's own reading of the sequence, not the output of an established predictor: UniProt's archive holds family signatures on these sequences and no prediction of membrane-spanning stretches. A stretch of 19 residues is read as membrane-spanning where its mean hydropathy on Kyte and Doolittle's scale is 1.6 or more and it holds no charged residue, or 2.2 or more with at most one. The window of 19 and the level of 1.6 are the usual reading of that scale (Paulet and others 2011 state it); the conditions on charged residues are this tool's, set against this organism's own proteins. A protein with such a stretch is placed in the membrane. A protein with none and no lipid anchor is placed inside, which includes proteins attached to the membrane's inner face. A lipid anchor is read by a rule of this tool's own, fixed from open descriptions before it was run and not adjusted to any protein. A bacterial lipoprotein is made with a signal peptide of three parts, a positively charged beginning, a hydrophobic stretch and the lipobox, whose cysteine takes the lipid; the signal peptide is on average 16 to 26 residues long (Smithers and others 2021). The rule takes the first cysteine that has a lipobox before it ([LVI]-[ASTVI]-[GAS], the form Desvaux and others 2018 state for bacteria with one membrane), that sits within the first 40 residues, and that is preceded by a stretch of 10 residues with a mean hydropathy of 1.6 or more and no charged residue, with a lysine or an arginine before that stretch. The reach of 40 residues and the stretch of 10 are this tool's own choice: no source read states a limit. Such a protein is placed outside, because the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface (Christodoulides and others 2018, said of mycoplasmas in general and not measured in this strain).",
-  "by function": "The sequence has a hydrophobic stretch, or reads as carrying a lipid anchor, but the protein's class in the 2019 paper leaves no doubt that it works inside the cell: translation, transcription, the upkeep of DNA, sugar breakdown, the pentose phosphate pathway or nucleotide metabolism. Function is never used to place a transport protein.",
+  "predicted": "This tool's own reading of the sequence, not the output of an established predictor: UniProt's archive holds family signatures on these sequences and no prediction of membrane-spanning stretches. A stretch of 19 residues is read as membrane-spanning where its mean hydropathy on Kyte and Doolittle's scale is 1.6 or more and it holds no charged residue, or 2.2 or more with at most one. The window of 19 and the level of 1.6 are the usual reading of that scale (Paulet and others 2011 state it); the conditions on charged residues are this tool's, set against this organism's own proteins. A protein with such a stretch is placed in the membrane. A protein with none and no lipid anchor is placed inside, which includes proteins attached to the membrane's inner face. A lipid anchor is read from the lipoprotein signature (PROSITE PS51257, as UniProt's archive gives it under UniProt's own terms; PROSITE is named among the sources with its own terms, which are non-commercial) where a hydrophobic stretch begins before its cysteine; such a protein is placed outside, because the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface (Christodoulides and others 2018, said of mycoplasmas in general and not measured in this strain).",
+  "by function": "The sequence has a hydrophobic stretch, but the protein's class in the 2019 paper leaves no doubt that it works inside the cell: translation, transcription, the upkeep of DNA, sugar breakdown, the pentose phosphate pathway or nucleotide metabolism. Function is never used to place a transport protein.",
   "none": "The sequence has a hydrophobic stretch that holds charged residues, and the protein's function is not known: nothing settles its side, so it is not placed."
  },
  "marks": {
@@ -707,8 +707,8 @@
     true
    ],
    "measured": false,
-   "note": "This tool's reading, by a rule of its own: a lipobox within the first 40 residues, with a hydrophobic stretch before its cysteine and a lysine or an arginine before that. Such a protein is placed outside, unless a membrane-spanning stretch follows the anchor: then it is placed in the membrane. No lipid was measured on any of these proteins. The rule is strict: lipoboxes of other forms have been reported (Legood and others 2020), and a lipoprotein with such a one is not called. It is then placed like any other protein, usually in the membrane by the hydrophobic stretch of its signal, with the mark that its one stretch is at its start.",
-   "source": "Desvaux and others 2018"
+   "note": "The lipoprotein signature with a hydrophobic stretch before its cysteine. Such a protein is placed outside, unless a membrane-spanning stretch follows the anchor: then it is placed in the membrane. The signature is a profile of PROSITE, whose own terms are non-commercial (CC BY-NC-ND 4.0); where it matches was read in UniProt's archive, under UniProt's terms (CC BY 4.0), and nothing was downloaded from PROSITE. By the project's rule (the user, 15 November 2026), a value stands on the terms of the database it was read from, and the tool behind it is named and counted.",
+   "source": "UniParc"
   },
   "at_start_only": {
    "label": "Its one stretch is at the protein's start",
@@ -749,22 +749,22 @@
   }
  },
  "counts": {
-  "outside": 5,
-  "in": 94,
+  "outside": 13,
+  "in": 86,
   "inside": 352,
   "not known": 4
  },
  "by_basis": {
   "outside": {
-   "predicted": 5
+   "predicted": 13
   },
   "in": {
-   "predicted": 94
+   "predicted": 86
   },
   "inside": {
    "stated": 6,
-   "predicted": 325,
-   "by function": 21
+   "predicted": 326,
+   "by function": 20
   },
   "not known": {
    "none": 4
@@ -775,7 +775,6 @@
   "inside_by_class": {
    "proteins": 224,
    "with_a_hydrophobic_stretch": 20,
-   "with_an_anchor_read_and_no_such_stretch": 1,
    "read_as_spanning": [
     "ldh"
    ]
@@ -801,10 +800,10 @@
     }
    }
   },
-  "lipid_anchor": {
-   "read": 7,
-   "kept": 6,
-   "placed_outside": 5,
+  "lipoprotein_profile": {
+   "sequences": 15,
+   "kept": 14,
+   "placed_outside": 13,
    "placed_in": 1,
    "set_aside": [
     "rpmF"
@@ -817,9 +816,9 @@
    "all_estimated_copies": 77028
   },
   "in_the_membrane": {
-   "proteins": 94,
-   "one_stretch": 28,
-   "one_stretch_at_the_start": 14
+   "proteins": 86,
+   "one_stretch": 20,
+   "one_stretch_at_the_start": 6
   }
  },
  "sources": [
@@ -848,7 +847,7 @@
    "licence": "CC BY 4.0",
    "class": "permissive",
    "accessed": "2026-11-14",
-   "holds": "That its archive holds exactly these sequences, and which UniProtKB entries of other organisms have the same ones. No signature of another database is read from it for the shelves."
+   "holds": "The sequences, and where PROSITE's lipoprotein profile matches them, as UniProt's archive records the matches. The profile itself is PROSITE's: it was not downloaded and is not copied."
   },
   {
    "name": "UniProtKB",
@@ -887,6 +886,16 @@
    "holds": "That the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface."
   },
   {
+   "name": "PROSITE",
+   "cite": "SIB Swiss Institute of Bioinformatics, PROSITE: its profile PS51257.",
+   "url": "https://prosite.expasy.org/prosite_license.html",
+   "licence": "CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee",
+   "class": "non-commercial",
+   "accessed": "2026-11-15",
+   "through": "UniParc",
+   "holds": "Nothing was downloaded from it but its statement of terms, and nothing of it is copied. Its lipoprotein profile is the origin of the matches that UniProt's archive records on these sequences: the mark lipid_anchor of 14 proteins rests on those matches, 13 of them placed outside and 1 in the membrane, as they were read in UniProt's archive."
+  },
+  {
    "name": "HAMAP",
    "cite": "SIB Swiss Institute of Bioinformatics, HAMAP: its family rules, as UniProt applies them in reviewed entries.",
    "url": "https://hamap.expasy.org/hamap_about.html",
@@ -894,34 +903,7 @@
    "class": "permissive",
    "accessed": "2026-11-15",
    "through": "UniProtKB",
-   "holds": "Nothing was downloaded from it but its statement of terms. Its family rules are what reviewed entries of other organisms give a place by: the stated side of 5 proteins and the place at the membrane of 1 rests on them, as read in UniProt's entries."
-  },
-  {
-   "name": "Desvaux and others 2018",
-   "cite": "Desvaux and others (2018) Surfaceome and Proteosurfaceome in Parietal Monoderm Bacteria: Focus on Protein Cell-Surface Display. Front Microbiol 9:100.",
-   "url": "https://doi.org/10.3389/fmicb.2018.00100",
-   "licence": "CC BY 4.0",
-   "class": "permissive",
-   "accessed": "2026-11-15",
-   "holds": "The lipobox, as the review states it for bacteria with one membrane: the residues allowed at the three places before the cysteine that takes the lipid."
-  },
-  {
-   "name": "Smithers and others 2021",
-   "cite": "Smithers and others (2021) Bacterial Lipoprotein Posttranslational Modifications. New Insights and Opportunities for Antibiotic and Vaccine Development. Front Microbiol 12:788445.",
-   "url": "https://doi.org/10.3389/fmicb.2021.788445",
-   "licence": "CC BY 4.0",
-   "class": "permissive",
-   "accessed": "2026-11-15",
-   "holds": "The three parts of a lipoprotein's signal peptide (a positively charged beginning, a hydrophobic stretch, the lipobox) and its usual length."
-  },
-  {
-   "name": "Legood and others 2020",
-   "cite": "Legood and others (2020) Mode of action of lipoprotein modification enzymes—Novel antibacterial targets. Mol Microbiol 115(3):356–65.",
-   "url": "https://doi.org/10.1111/mmi.14610",
-   "licence": "CC BY 4.0",
-   "class": "permissive",
-   "accessed": "2026-11-15",
-   "holds": "That lipoboxes of other forms than the usual one have been reported: what the rule can miss."
+   "holds": "Nothing was downloaded from it but its statement of terms. Its family rules are what reviewed entries of other organisms give a place by: the stated side of 5 proteins and the place at the membrane of 1 rest on them, as read in UniProt's entries."
   },
   {
    "name": "Kyte and Doolittle 1982",

@@ -35,9 +35,19 @@ const plan = [
 ];
 const entries = [];
 for (const { experiment, stop, ...options } of plan) {
-  const { file, entry } = syntheticRun(options);
+  const { file, entry, parts } = syntheticRun(options);
   entry.id = file.view.run.id = `${experiment}--${options.arm}--seed${options.seed}`;
   entry.file = `runs/${entry.id}.json`;
+  // The records that come in files of their own, under the run's new name.
+  for (const [part, content] of Object.entries(parts)) {
+    const name = `${entry.id}.${part}.json`;
+    content.run = entry.id;
+    file.view.parts.find((item) => item.id === part).file = `runs/${name}`;
+    const written = JSON.stringify(content);
+    entry.parts.find((item) => item.id === part).file = `runs/${name}`;
+    entry.parts.find((item) => item.id === part).bytes = Buffer.byteLength(written);
+    await writeFile(path.join(out, name), written);
+  }
   entry.experiment = file.view.run.experiment = experiment;
   if (options.erode === 0) file.view.run.class = entry.class = "neutral";
   if (experiment === "synthetic-pilot") {

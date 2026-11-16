@@ -1,7 +1,7 @@
 // Getting one run into the page, as schema/RUN_VIEW.md fixes it ("Packaged for the
 // viewer"): the run is inline in the page, or it is fetched from beside the page.
 
-import { Run, validateReplay } from "./run.js";
+import { Run, validateReplay, PART_FORMAT } from "./run.js";
 
 /** Base64 text to bytes, in a browser or in Node. */
 export function decodeBase64(text) {
@@ -46,4 +46,39 @@ export async function loadRun(entry, { root = globalThis.document, fetcher = glo
   const run = openReplay(file, entry);
   if (run.id !== entry.id) throw new Error(`the file holds run ${run.id}, not ${entry.id}`);
   return run;
+}
+
+/**
+ * Fetch one part of a run: records that come in a file of their own beside the run's, so
+ * that the run's own file stays small (schema/QUANTITY_LAYERS.md, rule 10). It is looked
+ * for in the page first (<script type="application/json" data-replay-part="run-id/part">),
+ * then fetched from the part's `file`. Resolves when its records can be read.
+ */
+export async function loadPart(run, partId, { root = globalThis.document, fetcher = globalThis.fetch } = {}) {
+  const part = run.parts.get(partId);
+  if (!part) throw new Error(`the run has no part ${partId}`);
+  if (part.loaded) return run;
+  if (part.loading) return part.loading;
+  part.loading = (async () => {
+    let file = null;
+    const inline = root?.querySelector?.(`script[type="application/json"][data-replay-part="${run.id}/${partId}"]`);
+    if (inline) {
+      file = JSON.parse(inline.textContent);
+    } else {
+      if (typeof fetcher !== "function") throw new Error("this page cannot fetch the run's records");
+      const response = await fetcher(part.file);
+      if (!response.ok) throw new Error(`${part.file} answered ${response.status}`);
+      file = await response.json();
+    }
+    if (file?.format !== PART_FORMAT) throw new Error(`the file is ${file?.format}, not ${PART_FORMAT}`);
+    if (file.run !== run.id || file.part !== partId) throw new Error(`the file holds ${file.part} of run ${file.run}, not ${partId} of ${run.id}`);
+    if (file.payload?.encoding !== "base64" || typeof file.payload.data !== "string") throw new Error("its arrays must be base64");
+    run.attach(partId, decodeBase64(file.payload.data));
+    return run;
+  })();
+  try {
+    return await part.loading;
+  } finally {
+    part.loading = null;
+  }
 }

@@ -323,8 +323,10 @@ test("the tools behind the predictions are sources of their own: their terms, th
   // The helices and signal peptides are the output of programs given out for academic use,
   // as two permissive databases ran them and give them out. Each program, and each rule
   // system of another owner, is named with its own terms and with `through`, the
-  // database or databases its results were read in (joined by " and "). The list is what
-  // awaits the user's decision: it may not grow unseen.
+  // database or databases its results were read in (joined by " and "). By the user's
+  // ruling of 15 November 2026 a value stands on the terms of the database it was read
+  // from, and the tool behind it is named and counted: this list is the count, and it may
+  // not grow unseen.
   const byName = new Map(shelves.sources.map((source) => [source.name, source]));
   const upstream = shelves.sources.filter((source) => source.through);
   assert.deepEqual(upstream.map((source) => [source.name, source.class, source.through]), [
@@ -358,16 +360,20 @@ test("the tools behind the predictions are sources of their own: their terms, th
   const all = models.predicted + entries.predicted;
   const byPrograms = models.predicted + entries["in a membrane, by segments of the sequence analysis"] + entries["outside, by a signal peptide of the sequence analysis"] + entries["inside, nothing found"];
   assert.ok(shelves.side_notes.predicted.includes(`So ${byPrograms.toLocaleString("en-US")} of the ${all.toLocaleString("en-US")} predicted sides rest on what TMHMM, SignalP and Phobius found or did not find.`));
-  assert.match(shelves.side_notes.predicted, /The three programs are given out for academic use; neither database's terms speak for them/);
+  assert.match(shelves.side_notes.predicted, /The three programs are given out for academic use, and WormBase ParaSite says that third-party constraints may apply to what it gives out\. By the project's rule \(the user, 15 November 2026\), a value stands on the terms of the database it was read from, and the tool behind it is named and counted: each program is named among the sources/);
   assert.ok(byName.get("TMHMM").holds.includes(`${models.predicted.toLocaleString("en-US")} predicted sides rest on what the two found or did not find`));
   assert.ok(byName.get("PROSITE").holds.includes(`${entries["by function, on a place that names a PROSITE rule"].toLocaleString("en-US")} are placed by function on a stated place that names one`));
-  // The README lists each with its terms, quotes what the two databases say of third parties, and leaves the decision open.
+  // The README lists each with its terms, quotes what the two databases say of third
+  // parties, and states the rule the values stand on, as the project's rule and not as law.
   const said = readme.replace(/\s+/g, " ");
   for (const source of upstream) assert.ok(readme.includes(`| ${source.name} | ${source.through} | ${source.licence} | ${source.class} | `), `the README's table does not list ${source.name}`);
   assert.match(said, /"Some of the data and software included in the distribution may be subject to third-party constraints\. Users of the data and software are solely responsible for establishing the nature of and complying with any such restrictions\."/);
   assert.match(said, /"We cannot provide unrestricted permission regarding the use of the data, as some data may be covered by patents or other rights\."/);
   assert.match(said, /commercial users pay a licence fee "irrespective of the method by which they access the database"/);
-  assert.match(said, /is the project's to decide and is not settled here/);
+  assert.match(said, /\*\*The project's rule \(the user, 15 November 2026\): a value stands on the terms of the database it was read from, and the tool behind it is named and counted\.\*\*/);
+  assert.match(said, /Every side counted above was read in WormBase ParaSite's or UniProt's records, which the two databases give out under their own open terms, so each stands as its database gives it\./);
+  assert.match(said, /This is the project's rule, and not a legal opinion\./);
+  assert.ok(!/not settled here|to decide/.test(said), "the README still says the question is open");
 });
 
 test("every protein of the table is in exactly one family or under no family, and the counts add up", () => {

@@ -1,0 +1,418 @@
+{
+ "format": "cells.visualizer.species@1",
+ "id": "ecoli",
+ "label": "E. coli",
+ "organism": "Escherichia coli K-12",
+ "taxon": 83333,
+ "plain": "A rod-shaped bacterium of the animal gut: 4,403 proteins in UniProt's reference proteome of strain K-12, in a cell a few micrometres long with two membranes and a wall between them. It swims with flagella.",
+ "group": "Bacteria",
+ "order": 50,
+ "default": false,
+ "made": "2026-11-15",
+ "modelled": {
+  "state": "proposed",
+  "text": "The project's record adds it as a data-only organism, for a proposed track whose first stage is bacterial chemotaxis in a well-mixed cell; the track is on hold (decision D179, 15 November 2026). Nothing of it is in the engine: no organism definition, no model and no run."
+ },
+ "levels": [
+  {
+   "id": "molecules"
+  },
+  {
+   "id": "cell",
+   "label": "One cell",
+   "shape": {
+    "kind": "capsule",
+    "length_um": 2.5,
+    "across_um": 1
+   },
+   "note": "Drawn as a rod 2.5 µm long and 1 µm across: the picture's choice, within the ranges given for the cell. Its second membrane and its wall are drawn as clear shells around the cell membrane, and its 6,800 ribosomes are the low end of the range one paper gives. Its flagella and fimbriae are given as appendages, with the ranges their sources give; that the fimbriae stand all over the cell is the picture's choice, since no source read for this file says where they stand.",
+   "sources": [
+    "volkmer2011",
+    "urich2008",
+    "uniprot"
+   ]
+  }
+ ],
+ "no_further_levels": "A single-celled organism: each cell lives on its own, so there is no tissue, organ or body.",
+ "cell": {
+  "facts": [
+   {
+    "label": "Shape and size",
+    "value": "a straight rod; earlier work put its average length between 1.6 and 3.1 µm and its width at 0.7 to 1.1 µm, and one study measured 1.6 µm (cells at rest) to 3.9 µm (cells growing on a rich medium) in length and 1.26 µm in width",
+    "sources": [
+     "volkmer2011",
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Volume",
+    "value": "1.5 to 4.4 femtolitres, by the conditions it grows in",
+    "sources": [
+     "volkmer2011"
+    ]
+   },
+   {
+    "label": "Envelope",
+    "value": "two membranes: the inner one separates the cytoplasm from the periplasm, the outer one the periplasm from the cell's surroundings; the cell wall lies between them",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Inside",
+    "value": "a bacterium, with no nucleus: its chromosome lies in a region of the cytoplasm that no membrane surrounds",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Chromosome",
+    "value": "one circle of 4,641,652 base pairs",
+    "sources": [
+     "genbank"
+    ]
+   },
+   {
+    "label": "Proteins",
+    "value": "4,403 in UniProt's reference proteome of strain K-12, every one with a reviewed entry",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Ribosomes",
+    "value": "between 6,800 and 72,000 in a cell, depending on its phase of growth, as one open paper sums up earlier estimates",
+    "sources": [
+     "urich2008"
+    ]
+   },
+   {
+    "label": "Movement",
+    "value": "swims with flagella that grow all over its surface, or does not move",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Flagella",
+    "value": "1 to 5 on a cell in one study of single cells, and 3.4 on average by another paper; each a thread typically 5 to 10 µm long (7.5 µm by one measurement). Of the width the sources disagree: about 20 nm by one, 40 nm by another",
+    "sources": [
+     "mears2014",
+     "schavemaker2022",
+     "dvoriashyna2021",
+     "zhuang2025"
+    ]
+   },
+   {
+    "label": "Where the flagella stand",
+    "value": "all over the cell body; the motor at the foot of each sits in the inner membrane, where its ring protein FliF and its stator proteins MotA and MotB are stated to be. 34 proteins are parts of the flagellum by the Gene Ontology terms UniProt gives them",
+    "sources": [
+     "dvoriashyna2021",
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Type 1 fimbriae",
+    "value": "200 to 500 on a cell by one paper's summary, each up to 1 µm long and about 7 to 10 nm wide, standing out from the outer membrane",
+    "sources": [
+     "jahnke2016"
+    ]
+   },
+   {
+    "label": "Chemotaxis",
+    "value": "22 of its proteins carry UniProt's keyword for chemotaxis (aer, cheA, cheB, cheR, cheW, cheY, cheZ, dppA, fliG, fliJ, fliL, fliM, fliN, fliO, mglB, motA, motB, rbsB, tap, tar, trg and tsr), and 34 are parts of the flagellum by the Gene Ontology terms UniProt gives them",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Energy",
+    "value": "respiration and fermentation: it lives with or without oxygen",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Where it lives",
+    "value": "the lower gut of animals; it survives when released to the natural environment",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Ion channels",
+    "value": "none of the animal families Cells has laws for; 15 proteins of bacterial channel families (aqpZ, clcA, clcB, corA, glpF, kch, mscK, mscL, mscM, mscS, ybdG, ybiO, yfeO, ynaI and zntB)",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Signalling",
+    "value": "64 proteins carry UniProt's keyword for two-component regulatory systems",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Strain",
+    "value": "K-12; the genome record is of its substrain MG1655, and UniProt's proteome is of the same genome assembly (GCA_000005845.2)",
+    "sources": [
+     "genbank",
+     "uniprot"
+    ]
+   }
+  ],
+  "parts": {
+   "membranes": 2,
+   "wall": true,
+   "nucleus": false,
+   "chromosome_kbp": 4642,
+   "ribosomes": 6800,
+   "appendages": [
+    {
+     "kind": "flagellum",
+     "label": "Flagella",
+     "count": [
+      1,
+      5
+     ],
+     "length_um": [
+      5,
+      10
+     ],
+     "width_nm": [
+      20,
+      40
+     ],
+     "where": "all over",
+     "from": "inner membrane",
+     "base": {
+      "id": "flagellar-motor",
+      "label": "Flagellar motor",
+      "mark": "complex",
+      "value": "flagellum"
+     },
+     "sources": [
+      "mears2014",
+      "schavemaker2022",
+      "dvoriashyna2021",
+      "zhuang2025",
+      "uniprot"
+     ]
+    },
+    {
+     "kind": "pilus",
+     "label": "Type 1 fimbriae",
+     "count": [
+      200,
+      500
+     ],
+     "length_um": 1,
+     "width_nm": [
+      7,
+      10
+     ],
+     "where": "all over",
+     "from": "outer membrane",
+     "sources": [
+      "jahnke2016"
+     ]
+    }
+   ]
+  },
+  "capabilities": {
+   "cap.membrane": {
+    "place": "present",
+    "note": "It has two membranes. By UniProt's vocabulary the inner one separates the cytoplasm from the periplasm, and the outer one the periplasm from the cell's surroundings. No source read for this file measured a voltage across either."
+   },
+   "cap.channels": {
+    "place": "present",
+    "note": "Not the channels of animal cells: none of its proteins carries the signature of a channel family that Cells has a law for. 15 of its proteins carry the signature of a bacterial channel family: the potassium channel domain (kch); the large-conductance mechanosensitive channel (MscL) (mscL); the mechanosensitive channel MscS (mscK, mscM, mscS, ybdG, ybiO and ynaI); chloride channels of the ClC family (clcA, clcB and yfeO); aquaporins and their relatives (major intrinsic proteins) (aqpZ and glpF); CorA-type magnesium channels (corA and zntB)."
+   },
+   "cap.pumps": {
+    "place": "present",
+    "note": "Not the pumps of animal cells: none of its proteins carries the signature of the sodium-potassium pump. Its P-type ATPases (copA, kdpB, mgtA and zntA) and its ATP synthase are stated to be in the inner membrane."
+   },
+   "cap.junctions": {
+    "place": "absent",
+    "why": "It lives as single cells and has no gap junctions: none of its proteins carries the signature of connexins or innexins."
+   },
+   "cap.extracellular": {
+    "place": "present",
+    "note": "Two spaces lie beyond its inner membrane: the periplasm, between its two membranes, and what surrounds the cell, the lower gut of an animal or wherever it is released."
+   },
+   "cap.water": {
+    "place": "present",
+    "note": "By UniProt's vocabulary a wall lies between its two membranes and plays a part in the cell's shape and stability. One of its proteins, AqpZ, carries the signature of the aquaporin family."
+   },
+   "cap.calcium": {
+    "place": "absent",
+    "why": "It has no endoplasmic reticulum, the store this capability concerns: no entry of its proteome states a place in one, and none of its proteins carries the signature of the store's calcium pump or of its release channels."
+   },
+   "cap.energy": {
+    "place": "present",
+    "note": "It lives by respiration and by fermentation, with or without oxygen; its ATP synthase is stated to be in the inner membrane."
+   },
+   "cap.mitochondria": {
+    "place": "absent",
+    "why": "It is a bacterium and has no mitochondria: no entry of its proteome states a place in one. Its ATP synthase is in the inner membrane."
+   },
+   "cap.circuits": {
+    "place": "present",
+    "note": "At the chromosome, which lies in a region of the cytoplasm that no membrane surrounds: there is no nucleus. 64 of its proteins carry UniProt's keyword for two-component regulatory systems."
+   },
+   "cap.grn": {
+    "place": "absent",
+    "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."
+   },
+   "cap.trafficking": {
+    "place": "absent",
+    "why": "It has no endoplasmic reticulum and no Golgi: no entry of its proteome states a place in either. By the names of their entries, its proteins cross or enter the inner membrane through the Sec and Tat translocases."
+   },
+   "cap.assembly": {
+    "place": "present",
+    "note": "Its assemblies are its ribosomes, RNA polymerase, the ATP synthase, its flagella and its chemoreceptor arrays. The designed protein cage that Cells models is not one of its proteins."
+   },
+   "cap.machines": {
+    "place": "present",
+    "note": "Its ribosomes, RNA polymerase, the ATP synthase, the protein translocases and the motor of its flagella. One of its proteins carries the signature of the proteasome's subunits: its entry names it \"ATP-dependent protease subunit HslV\"."
+   },
+   "cap.secretion": {
+    "place": "present",
+    "note": "Some of its proteins are stated to be secreted, and porins and transporters carry molecules across its two membranes. Signalling between its own cells was not looked for."
+   },
+   "cap.repair": {
+    "place": "present",
+    "note": "The place would be its envelope. No source read for this file describes an injury of it or its resealing in this organism."
+   },
+   "cap.division": {
+    "place": "present",
+    "note": "It divides as a single cell: its proteome names the cell division protein FtsZ."
+   },
+   "cap.replacement": {
+    "place": "absent",
+    "why": "It forms no tissue, so there is no neighbour for a new cell to replace."
+   },
+   "cap.mechanics": {
+    "place": "absent",
+    "why": "It forms no sheet: its cells share no edges to pull on. Its own movement, swimming with flagella, is not what this capability models."
+   },
+   "cap.sheet": {
+    "place": "absent",
+    "why": "It lives as single cells and forms no sheet of coupled cells."
+   }
+  }
+ },
+ "capability_sources": {
+  "cap.membrane": [
+   "uniprot"
+  ],
+  "cap.channels": [
+   "uniprot"
+  ],
+  "cap.pumps": [
+   "uniprot"
+  ],
+  "cap.extracellular": [
+   "uniprot"
+  ],
+  "cap.water": [
+   "uniprot"
+  ],
+  "cap.calcium": [
+   "uniprot"
+  ],
+  "cap.energy": [
+   "uniprot"
+  ],
+  "cap.mitochondria": [
+   "uniprot"
+  ],
+  "cap.circuits": [
+   "uniprot"
+  ],
+  "cap.trafficking": [
+   "uniprot"
+  ],
+  "cap.assembly": [
+   "uniprot"
+  ],
+  "cap.machines": [
+   "uniprot"
+  ],
+  "cap.secretion": [
+   "uniprot"
+  ],
+  "cap.division": [
+   "uniprot"
+  ],
+  "cap.junctions": [
+   "uniprot"
+  ]
+ },
+ "sources": {
+  "uniprot": {
+   "text": "UniProt Consortium, UniProt release 2026_04: the reviewed entries of the reference proteome UP000000625 (Escherichia coli strain K-12), the proteome's own description, and UniProt's vocabulary of subcellular locations.",
+   "url": "https://www.uniprot.org/proteomes/UP000000625",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
+  "genbank": {
+   "text": "GenBank U00096.3: Escherichia coli str. K-12 substr. MG1655, complete genome.",
+   "url": "https://www.ncbi.nlm.nih.gov/nuccore/U00096.3",
+   "licence": "No restriction: \"NCBI places no restrictions on the use or distribution of the GenBank data\".",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
+  "volkmer2011": {
+   "text": "Volkmer B, Heinemann M (2011) Condition-dependent cell volume and concentration of Escherichia coli to facilitate data conversion for systems biology modeling. PLoS One 6:e23126.",
+   "doi": "10.1371/journal.pone.0023126",
+   "licence": "CC BY",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
+  "urich2008": {
+   "text": "Urich T, Lanzén A, Qi J, Huson DH, Schleper C, Schuster SC (2008) Simultaneous assessment of soil microbial community structure and function through analysis of the meta-transcriptome. PLoS One 3:e2527.",
+   "doi": "10.1371/journal.pone.0002527",
+   "licence": "CC BY",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
+  "mears2014": {
+   "text": "Mears PJ, Koirala S, Rao CV, Golding I, Chemla YR (2014) Escherichia coli swimming is robust against variations in flagellar number. eLife 3:e01916.",
+   "doi": "10.7554/eLife.01916",
+   "licence": "CC BY",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
+  "schavemaker2022": {
+   "text": "Schavemaker PE, Lynch M (2022) Flagellar energy costs across the tree of life. eLife 11:e77266.",
+   "doi": "10.7554/eLife.77266",
+   "licence": "CC BY",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
+  "dvoriashyna2021": {
+   "text": "Dvoriashyna M, Lauga E (2021) Hydrodynamics and direction change of tumbling bacteria. PloS one 16:e0254551.",
+   "doi": "10.1371/journal.pone.0254551",
+   "licence": "CC BY",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
+  "zhuang2025": {
+   "text": "Zhuang XY, Lo CJ (2025) Decoding Bacterial Motility: From Swimming States to Patterns and Chemotactic Strategies. Biomolecules 15:170.",
+   "doi": "10.3390/biom15020170",
+   "licence": "CC BY",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
+  "jahnke2016": {
+   "text": "Jahnke JP, Terrell JL, Smith AM, Cheng X, Stratis-Cullum DN (2016) Influences of Adhesion Variability on the \"Living\" Dynamics of Filamentous Bacteria in Microfluidic Channels. Molecules (Basel, Switzerland) 21:E985.",
+   "doi": "10.3390/molecules21080985",
+   "licence": "CC BY",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  }
+ }
+}

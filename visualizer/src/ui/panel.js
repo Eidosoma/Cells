@@ -77,6 +77,8 @@ class CellsPanel extends HTMLElement {
       body.append(trace);
       trace.data = entity.chart;
     }
+    // A door into another view: which view, and what to show there (the Protein atlas on one set of a species' proteins).
+    for (const door of entity.doors || []) body.append(h("p", { class: "panel-door" }, h("button", { class: "link-button", type: "button", onclick: () => emit(this, "cells-door", door) }, `${door.label} →`)));
     for (const section of entity.sections || []) {
       if (section.items?.length) body.append(this.list(section.title, section.items.map(item), "items", section.note));
     }
