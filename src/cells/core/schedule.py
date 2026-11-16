@@ -9,6 +9,7 @@ from cells.core.er_spec import ERChange
 from cells.core.gated_calcium_spec import GatedCalciumChange
 from cells.core.gated_calcium_spec import base_spec as plasma_spec
 from cells.core.plasma_calcium_spec import PlasmaChange
+from cells.core.plasma_calcium_spec import base_spec as plasma_prior
 from cells.core.reaction_spec import ReactionChange
 from cells.core.spatial_calcium_spec import CalciumChange, ionic_spec, store_spec
 from cells.core.specs import (
@@ -411,18 +412,20 @@ def control_values(spec, times):
         padded[:, : len(spec.model.membranes)] = values
         return SurfaceCalciumWaterControl(*original, padded)
     if isinstance(spec.model, SurfaceCalciumEnergyMitochondriaModel):
-        from cells.core.surface_calcium_energy_mitochondria_spec import Control, base_spec
+        from cells.core.surface_calcium_energy_mitochondria_spec import Control
+        from cells.core.surface_calcium_energy_mitochondria_spec import base_spec as prior
 
-        original = control_values(base_spec(spec), times)
+        original = control_values(prior(spec), times)
         indices = np.searchsorted([c.time for c in changes], times, side="right") - 1
         values = np.asarray([c.mitochondria for c in changes])[indices]
         padded = np.zeros((len(times), spec.execution.capacity))
         padded[:, : len(spec.model.mitochondria)] = values
         return Control(*original, padded)
     if isinstance(spec.model, SurfaceCalciumEnergyTransportModel):
-        from cells.core.surface_calcium_energy_transport_spec import Control, base_spec
+        from cells.core.surface_calcium_energy_transport_spec import Control
+        from cells.core.surface_calcium_energy_transport_spec import base_spec as prior
 
-        original = control_values(base_spec(spec), times)
+        original = control_values(prior(spec), times)
         changes = spec.experiment.changes
         indices = np.searchsorted([c.time for c in changes], times, side="right") - 1
         values = np.asarray([c.network_transport for c in changes])[indices]
@@ -598,7 +601,7 @@ def control_values(spec, times):
         array[:, : values.shape[-1]] = values
         return GatedCalciumControl(*original, array)
     if isinstance(changes[0], PlasmaChange):
-        original = control_values(base_spec(spec), times)
+        original = control_values(plasma_prior(spec), times)
         indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
         routes = []
         for name in ("plasma_pump", "plasma_exchange"):
