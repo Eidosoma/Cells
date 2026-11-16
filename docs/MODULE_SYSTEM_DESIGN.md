@@ -311,7 +311,8 @@ accuracy, validity and performance are qualified apart.
 
 **Decided by the user on 16 November 2026 (D185):**
 - 1: (c);
-- 2: (b);
+- 2: new physics goes into `src/cells` as modules of its structure. (b) was confirmed first and
+  revised by the user the same day (D185);
 - 3: the conformance kit, where a pass means the kit's checks passed, not that the science is
   qualified;
 - 4: (a);
@@ -319,9 +320,9 @@ accuracy, validity and performance are qualified apart.
 
 D185 adds a declarations manifest and a contributor guide with a pull-request template.
 
-Still open: §6.3's question of whether the project lists the modules that pass; provenance for
-in-tree contributed modules (stage 1's design); and AGENTS.md's physics rule for modules, which
-goes to the user before stage 1's first commit.
+Still open: §6.3's question of whether the project lists the modules that pass, and provenance
+for in-tree contributed modules (stage 1's design). AGENTS.md's physics rule stands (D185, item
+3).
 
 1. **Provenance.** AGENTS.md's provenance (Git revision, dirty diff, frozen snapshot) cannot
    cover an out-of-tree module.

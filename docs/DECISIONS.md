@@ -5978,13 +5978,15 @@ additions, and asked the user to confirm them. The user replied: "sounds good".
    - *The lead's reading:* a pass means the kit's checks passed. It does not qualify the science,
      which still needs a registered protocol.
    - Still open from §6.3: whether the project lists the modules that pass.
-3. **D144 with modules (§6.2): modules incubate.**
-   - New physics may live in a module first. It enters `cells` when a second consumer needs it, with
-     its qualification. D144 still governs what enters `cells`.
-   - *The lead's reading:* a contributed module counts as engine physics in its own namespace, not as
-     validation code, so `validation/` still holds no physics.
-   - AGENTS.md's rule that physics an experiment needs is added to `src/cells` stands as written for
-     now. Its amendment for modules goes to the user before stage 1's first commit.
+3. **D144 with modules (§6.2): new physics goes into `src/cells`, as modules.**
+   - The default confirmed first was (b), "modules incubate". The user then said: "So yes new
+     physics go into src/cells but we have a modular architecture there right?"
+   - So AGENTS.md's rule stands. Physics enters `src/cells` as modules of its structure (laws, kinds
+     and operators, each declared and registered), under D144.
+   - A contributed module is a PR that adds its pieces inside `src/cells`, in their own namespace.
+   - Packages outside the repository can still extend Cells through the same registry. The
+     project's own experiments run on physics in `src/cells`.
+   - `validation/` still holds no physics.
 4. **The example (§6.4): in this repository.**
    - It is a separately installable folder (for example `examples/modules/cells-example-law/`),
      installed as a wheel in tier 2, with a test that it imports only Cells' public interface.
