@@ -103,6 +103,13 @@ machine-readable inputs, results, checks and failures.
     - the snapshot test, which enumerates every tracked file, on the merged tree: 24 passed
       ([log](/mnt/workspaces/Cells/visualizer-merge-20261116/source_snapshot.log)).
     - This is a smaller guard set than the 15 November merge's (68 passed).
+  - **A fifth visualizer merge** (visualizer 35098c8e) adds:
+    - two cell-view screenshots, now in the README: the human's generic cell with its planned
+      nucleus, Golgi apparatus and ribosomes, and E. coli, which is proposed and not modelled;
+    - the published page's revision stamp, corrected. A local, amended commit had been stamped;
+    - a build guard that refuses a revision on no remote branch.
+
+    **Checks:** `npm test` on a clean copy gave 443 passed, 2 skipped and 0 failed.
   - **A fourth visualizer merge** (visualizer 5830bfdf) adds:
     - the nucleus, the Golgi apparatus and the ribosomes, as planned parts of the map that are
       illustration only (by the user's decision of 16 November);

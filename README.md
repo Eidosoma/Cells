@@ -203,6 +203,21 @@ that Cells models; JCVI-syn3A, *M. pneumoniae* and *E. coli* are proposed, with
 nothing of them in the engine. A review of the viewer's statuses against the
 record is still owed, so [Progress](PROGRESS.md) remains the record.
 
+![The viewer's Cell view of a generic animal cell under the human's names: a six-sided cell cut open, with a nucleus opened like a globe, purple endoplasmic reticulum, a pink Golgi stack, orange mitochondria, and named parts with status dots](visualizer/docs/screenshots/cell-view-human-structures.webp)
+
+*The Cell view under the human's names: the generic cell that Cells models, cut open, with the
+nucleus opened to show its envelope, pores, chromatin and nucleolus, and the endoplasmic
+reticulum, the Golgi apparatus, ribosomes and mitochondria around it. The nucleus, the Golgi
+apparatus and the ribosomes are planned parts, illustration only: nothing of them is in the engine
+yet. No human cell type is modelled.*
+
+![The viewer's Cell view of E. coli: a cut-open rod-shaped bacterium with long flagella and many fine fimbriae standing out from it, ribosomes and a tangled chromosome inside, and named parts; a chip in the top bar reads "Proposed, not modelled"](visualizer/docs/screenshots/cell-view-ecoli.webp)
+
+*The Cell view of E. coli: a rod-shaped bacterium about 1 by 2 µm, cut open, with its two
+membranes and the wall between them, flagella, fimbriae, ribosomes and its free chromosome. E. coli
+is proposed, not modelled: nothing of it is in the engine, and the picture shows where the
+capabilities of Cells would have a place in it.*
+
 | Part | Where | Status |
 | --- | --- | --- |
 | The viewer, with its quantity layers and flux in the Cell view | [`visualizer/`](visualizer/README.md) | On main |
