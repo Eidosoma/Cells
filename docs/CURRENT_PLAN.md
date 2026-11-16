@@ -99,6 +99,10 @@ experiment).
    5. The module system's stage 1, one external law (D180), after the user's decisions in its §6.
 3. **Queued follow-ups** (each its own gated change):
    - insertion@2's gate fix, before `check_onsets` is lifted (§7.4 (j));
+   - A7's allow-list note (`tests/species_sum_entity_sums.json`) wrongly says no entry includes the
+     species axis. Three entries, partition's host-only end-of-run summary, sum mixed
+     [species, slot] and [slot] fields. Either fix the wording, or fold those fields per field;
+     G1 compares neither;
    - a kind hook so that rows written by operators join the passive law's exact-scope fixpoint,
      moving those routes to tableau booking. Design it with the core under D180. Until then the
      composite refuses an operator that writes an exact-booked route's row (fail-closed, version 1);
