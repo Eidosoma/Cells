@@ -121,6 +121,11 @@ experiment).
           long packed-against-lone pair that settles the horizon.
    5. The module system's stage 1, one external law (D180), with §6 decided by D185: in-tree contributed modules, a conformance kit, a declarations manifest, and a contributor guide.
 3. **Queued follow-ups** (each its own gated change):
+   - **The test-suite audit (D187),** after the landing, starting from D172's tier-3 table:
+     - freeze the table as tier 3's record;
+     - triage it in three classes (harness limits, stale tests, possibly real defects);
+     - retire old regression tests that don't earn their cost, sending the user the retire list in
+       one batch first.
    - **Operator composition: operators reading each other's current state.** FR-11's cycle probe
      (16 November, `/mnt/workspaces/Cells/replay-20261116/cycle-probe-0407c088.md`) found four
      general gaps, each refused by the engine today. These are general composition features

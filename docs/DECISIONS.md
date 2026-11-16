@@ -6025,6 +6025,47 @@ adopts the visualizer session's reading for the whole project:
 - **It widens D178 in kind.** D178 lets membrane-placement predictions read from UniProt and WormBase
   ParaSite stay. D186 lets cited numbers from open papers stay when no licence is stated.
 
+## D187: Testing as little as possible but enough for the science; old regression tests not kept indefinitely
+
+2026-11-16. The user said: "we like to design for as little testing as possible but still enough no
+compromizes on quality of science". The user then approved the lead's plan, which was reviewed with
+the advisor: "sounds good lets go on those test plans and not keep endless old regression tests
+also".
+
+**The rules** (the lead's proposal, approved):
+1. **Prove each claim once, at the cheapest level that can prove it,** such as a law against its
+   reference at the kernel. Add one composed-world check per claim about composition, because the
+   raw-sum bound and the cycle refusals of 16 November showed up only in composed worlds.
+2. **Crossrev and the results gate carry regression only for what their worlds exercise.** Each
+   landed feature adds one world to the baseline and crossrev sets, starting with the kinds set.
+3. **New tests need teeth:** a planted error they must catch. The 90 s split rule applies to them,
+   and a test that cannot fail is removed.
+4. **Gate once per merge,** on main plus the branch. While building, run targeted files.
+5. **Make long checks faster rather than skip them,** for example with device checks and faster
+   harnesses.
+6. **The science is never thinned.** Each claim keeps its independent reference, its planted
+   control, its conservation checks and one registered judged run. No tolerance is loosened to save
+   time.
+
+**Tier 3:** each landing's final table is frozen, per test ID with its normalized error. The next run
+is compared against it, instead of re-running old code to learn what was already failing.
+
+**The audit,** after D172's landing (about 1–2 agent-days for the triage). D172's tier-3 table is the
+inventory, sorted into three classes:
+- **Harness limits:** fix the harness, or retire the test.
+- **Stale tests:** fix with the reason the file changed, or retire. A stale pin is never fixed by
+  updating the hash alone.
+- **Possibly real defects in older code:** these are open findings, each with its own plan item.
+  Examples are the missing refusal for a 73 µs observation time, the cotransport energy failure, the
+  excision charge failure and the fixed-step tracing errors.
+
+**Old regression tests that do not earn their cost are retired, not kept indefinitely.**
+- This includes tests of frozen older families.
+- The tree is tagged before any removal, so every retired test stays recoverable, and the frozen
+  evidence is kept.
+- The retire list goes to the user in one batch before the removal commit lands.
+- AGENTS.md is unchanged.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
