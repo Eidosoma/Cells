@@ -11,6 +11,11 @@ each observed row (view_<field>), never constants, and bitwise the views the hos
 for those rows (across the run's two windows); the row saved at the division's time holds the state
 before it (time.event_rows).
 
+The junction fixture (the lead's ruling on resets.mask): the same world with a neighbour in gated
+contact with the parent, which the division maps to both daughters. On the saved arrays the
+junction slots whose transfers restart are exactly those whose merged mask closes, and a junction's
+voltage is its sender's potential less its receiver's.
+
 The membrane state's and the partition's view declarations are planted for the test only.
 """
 
@@ -132,3 +137,44 @@ def test_a_division_through_the_windowed_path(declared, monkeypatch, tmp_path):
     assert np.allclose(voltage[open_], expected[open_], rtol=1e-12, atol=0.0)
     difference = records["observed_membrane_voltage_V"]["difference"]
     assert (difference["plus"], difference["minus"]) == ("inside", "outside")
+
+
+def test_a_divided_contact_restarts_where_its_junction_mask_closes(declared, tmp_path):
+    """The junction fixture (the lead's ruling on resets.mask, docs/RUN_VIEW_DESIGN.md §9): S5's
+    world with a neighbour (cell_1, in D) in gated contact with the parent, which the division maps
+    to both daughters. On the saved arrays: the junction slots whose transfers restart at the
+    division are exactly those whose merged mask closes there (resets.mask: junction_active), and
+    a junction's voltage is its sender's potential less its receiver's on the open junctions."""
+    raw = pf.divided(neighbour=True)
+    raw["experiment"]["observation_times"] = [0.0, 0.001, 0.002, 0.003, 0.004]
+    spec = parse_spec(raw)
+    write_windowed_run(tmp_path / "w", spec, WindowPolicy(2, "full"), view=run_view.Request())
+    view = json.loads((tmp_path / "w" / run_view.FILE).read_text())
+    run_view.validate(view, tmp_path / "w")
+    sets = {s["id"]: s for s in view["sets"]}
+    records = {r["id"]: r for r in view["records"]}
+    resets = records["junction_transferred"]["resets"]
+    assert (resets["by"], resets["mask"]) == ([PARTITION], "junction_active")
+    times, moved = observed(tmp_path / "w", view, "junction_transferred", "accepted")
+    seen, open_ = observed(tmp_path / "w", view, "view_junction_active")
+    row, at = times.tolist().index(pf.EVENT), seen.tolist().index(pf.EVENT)
+    restarted = np.any(moved[row] != 0, axis=0) & np.all(moved[row + 1] == 0, axis=0)
+    closed = open_[at] & ~open_[at + 1]
+    junctions = sets["junction"]["ids"]
+    assert [junctions[i] for i in np.flatnonzero(restarted)] == ["contact"]
+    assert np.array_equal(restarted, closed)
+    born = ~open_[at] & open_[at + 1]
+    assert sorted(junctions[i] for i in np.flatnonzero(born)) == ["contact_d1", "contact_d2"]
+    # A junction voltage is a difference: its sender's potential less its receiver's, by the
+    # junction set's ends, on the open junctions before and after the division.
+    _, voltage = observed(tmp_path / "w", view, "observed_junction_voltage_V")
+    _, potential = observed(tmp_path / "w", view, "observed_cell_potential_V")
+    ends = sets["junction"]["geometry"]["ends"]
+    live = [j for j, e in enumerate(ends) if e is not None]
+    sender, receiver = ([ends[j][k] for j in live] for k in (0, 1))
+    expected = potential[:, sender] - potential[:, receiver]
+    got, shown = voltage[:, live], open_[:, live]
+    assert np.abs(got[shown]).max() > 1e-3  # Nonzero (H against D): the check is not empty.
+    assert np.allclose(got[shown], expected[shown], rtol=1e-12, atol=0.0)
+    difference = records["observed_junction_voltage_V"]["difference"]
+    assert (difference["plus"], difference["minus"]) == ("sender", "receiver")
