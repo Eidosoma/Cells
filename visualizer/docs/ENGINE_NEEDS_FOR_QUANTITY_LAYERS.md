@@ -228,7 +228,7 @@ The viewer's contract asks eight things of every record. Set beside
 
 ## Questions on the modular rework
 
-The rework is in development on a branch and not on main. These are questions.
+These were asked while the rework was on its branch; it landed on main on 16 November 2026.
 
 - **Owners as declared laws.** Will a law's `law_id` and `provenance` be readable from
   the definition's side, where the run view's writer assembles its declarations, or
@@ -445,8 +445,9 @@ would be refused:
 
 ### The lead's news on the format (16 November 2026)
 
-The run view's writer has moved on, on its branch (`run-view-d154`, RUN_VIEW_DESIGN §9);
-it lands on main after the modular rework. The eleven items above are answered there.
+The run view's writer moved on, on its branch (`run-view-d154`, RUN_VIEW_DESIGN §9), and
+merged into main on the evening of 16 November 2026 (main 050aa741). The eleven items above
+are answered there.
 What the viewer's reader has to take, when it lands:
 
 - **`view_<field>` records:** the merged view of each field that an operator changes, for
@@ -464,9 +465,9 @@ What the viewer's reader has to take, when it lands:
   clean, from the execution snapshot (item 11).
 - Geometry stays the caller's input (item 9).
 
-**The loop block** (FR-11, `docs/LOOPING_REPLAY_DESIGN.md` on the same branch; ruled by
-the lead on 16 November 2026, with the human loop amended by D183 the same day; nothing
-built): `loop: {"species", "cell", "period", "closes": {"within", "says",
+**The loop block** (FR-11, `docs/LOOPING_REPLAY_DESIGN.md`, on main with the writer since
+050aa741; ruled by the lead on 16 November 2026, with the human loop amended by D183 the
+same day; in the writer since, with a first development run): `loop: {"species", "cell", "period", "closes": {"within", "says",
 "tolerance"}, "follows"?}`. The writer measures `within` on the saved arrays and refuses a
 block without `run.source`. The revision is read from `run.source.revision`, the one
 source of truth; the viewer's packaged replay fills its own `run.revision` from it.
@@ -501,8 +502,8 @@ engine-written looping run, the interim planarian loop from `snapshot-d7a11d5b` 
 of the patch, a period of 2 s, 101 rows, closing within 2.8e-5 against a tolerance of
 1e-4), is read and accepted by the page's loop reader: 31 streams through that cell's
 channels, its pump, its membrane and its six junctions. It is kept as a development
-fixture (`tests/engine-views/loop-d7a11d5b/`) and is not on the page: its writer is not on
-main.
+fixture (`tests/engine-views/loop-d7a11d5b/`) and is not on the page. Its writer is on main
+since 050aa741 (16 November 2026).
 
 **Still to close on the viewer's side:** the page does not fetch a species' loop yet, and
 the species reader refuses the field that would name it; a builder's points, spheres and

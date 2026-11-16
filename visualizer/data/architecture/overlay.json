@@ -356,7 +356,7 @@
         },
         {
           "path": "docs/CURRENT_PLAN.md",
-          "where": "Next, after the landing, in order"
+          "where": "Now, after the landing, in order"
         },
         {
           "path": "README.md",
@@ -370,7 +370,7 @@
       "layer": "execution",
       "status": "planned",
       "as_of": "2026-11-16",
-      "plain": "The user decided on 16 November 2026 (D188) that the engine's source takes the modular layout: each law a module of its own, grouped by mechanism (channels, junctions, pumps, routes, reactions, transport), and folders of their own for kinds, operators, models, numerics, execution, the registry, definitions and records. The older model families move into a folder of legacy code that nothing outside it imports. It is reached by two scripted moves, the older families first, each checked at every commit: the same collected tests, the compiled programs unchanged, all 113 saved worlds the same, and tiers 1 and 2 with no changed outcome. A design note and a probe come first, and the list of legacy families goes to the user. D188 lets it start once the core's next branch is on main, which it is since the evening of 16 November 2026; the plan's order places it after the other lanes built on the round have merged. Files are moved, not rewritten: putting each law's declaration, mathematics and citation in one module is a separate pass. Planned; no file has moved yet.",
+      "plain": "The user decided on 16 November 2026 (D188) that the engine's source takes the modular layout: each law a module of its own, grouped by mechanism (channels, junctions, pumps, routes, reactions, transport), and folders of their own for kinds, operators, models, numerics, execution, the registry, definitions and records. The older model families move into a folder of legacy code that nothing outside it imports. It is reached by two scripted moves, the older families first, each checked at every commit: the same collected tests, the compiled programs unchanged, all 113 saved worlds the same, and tiers 1 and 2 with no changed outcome. A design note and a probe come first, and the list of legacy families goes to the user. D188 lets it start once the core's next branch is on main, and the plan's order places it after the four lanes built on the round: the core's next lane, FR-4 and FR-5, the run-view writer and the windows lane, all of which merged on the evening of 16 November 2026. Files are moved, not rewritten: putting each law's declaration, mathematics and citation in one module is a separate pass. Planned; no file has moved yet.",
       "sources": [
         {
           "path": "docs/DECISIONS.md",
@@ -387,6 +387,18 @@
         {
           "path": "PROGRESS.md",
           "where": "core-next merged into main"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The run-view writer merged into main (16 November 2026, evening): run-view-d154"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "windows-next-clean merged into main (16 November 2026, evening)"
         }
       ]
     },
@@ -456,11 +468,15 @@
         "src/cells/core/runner.py",
         "src/cells/core/windows.py"
       ],
-      "plain": "Runs one world step by step with every check, in bounded windows. A reference path.",
+      "plain": "Runs one world step by step with every check, in bounded windows. A reference path. Since the evening of 16 November 2026 its windows can, on request, have their rows checked on the device instead of on the host, on the CPU only (see GPU-native execution).",
       "sources": [
         {
           "path": "docs/ARCHITECTURE_REVIEW_NOTES.md",
           "where": "5. Four overlapping execution paths"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "windows-next-clean merged into main (16 November 2026, evening)"
         }
       ]
     },
@@ -502,11 +518,19 @@
       "match": [
         "src/cells/core/vector_windows.py"
       ],
-      "plain": "Advances many worlds as one vectorised batch with the checks on the device. The candidate for the one production path.",
+      "plain": "Advances many worlds as one vectorised batch with the checks on the device. The candidate for the one production path. Since the evening of 16 November 2026 it names the world in every refusal it raises, refuses with a typed error when memory runs short, and on request sets a refused world aside and carries on with the others: seams the packed planner asked for.",
       "sources": [
         {
           "path": "docs/ARCHITECTURE_REVIEW_NOTES.md",
           "where": "5. Four overlapping execution paths"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "windows-next-clean merged into main (16 November 2026, evening)"
+        },
+        {
+          "path": "docs/WINDOW_DEVICE_CHECKS_DESIGN.md",
+          "where": "5. Ask 2: the packed planner's seams"
         }
       ]
     },
@@ -540,8 +564,8 @@
       "id": "exec.run_view",
       "label": "Run-view output",
       "layer": "execution",
-      "status": "designed",
-      "plain": "Every run will save what a viewer needs to replay it: geometry, identities, record metadata, events and how each layer is represented. The requirement is recorded (D154), and its design note is proposed (15 November 2026). The operator contract's interface for it landed with the rework on 16 November 2026, and the tissue model's and the kinds' own declarations of what a view shows landed the same evening; the operators' declarations and a writer are built on a branch of their own, the writer shown on a worked example from a development run and on a first looping planarian run. Now that the rework has landed, it merges after its own gate, followed by the interfaces it asks of the engine, and then the first living-cell loop (FR-11). Not on main.",
+      "status": "landed",
+      "plain": "Every run can save what a viewer needs to replay it: geometry, identities, record metadata, events and how each layer is represented (D154). The writer merged into main on the evening of 16 November 2026, with its tests. A run that asks for it writes one view file beside its definition, through the shared output paths, and writing it changes no result. It reads what the tissue model, its kinds and the operators declare of themselves, keeps no table of its own for any model, and writes door S's merged view of each field that operators change; what it cannot state it refuses, or lists as unstated. Its first version covers the composite model and the tissue model alone, and refuses the older families. It also writes the loop block of a living-cell loop (FR-11), with a measure of how well the loop closes. Three format items from the viewer's reader follow. Implemented and guarded.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -555,43 +579,33 @@
           "path": "docs/RUN_VIEW_DESIGN.md"
         },
         {
-          "path": "docs/CURRENT_PLAN.md",
-          "where": "The run-view writer (D154)"
-        },
-        {
-          "path": "README.md",
-          "where": "The visualizer and its replays"
-        },
-        {
-          "path": "docs/CURRENT_PLAN.md",
-          "where": "The D172 restructure"
-        },
-        {
-          "path": "docs/CURRENT_PLAN.md",
-          "where": "Run-view output (D154)"
+          "path": "PROGRESS.md",
+          "where": "core-next merged into main"
         },
         {
           "path": "PROGRESS.md",
-          "where": "core-next merged into main"
+          "where": "The run-view writer merged into main (16 November 2026, evening): run-view-d154"
+        },
+        {
+          "path": "tests/unit/test_run_view.py"
         }
       ],
-      "as_of": "2026-11-16"
+      "as_of": "2026-11-16",
+      "match": [
+        "src/cells/run_view.py"
+      ]
     },
     {
       "id": "fr.loop_packages",
       "label": "Living-cell loops (FR-11)",
       "layer": "execution",
-      "status": "planned",
+      "status": "designed",
       "as_of": "2026-11-16",
-      "plain": "Short replay packages that show each species' cell alive, in a loop, whenever no research run is being explored (the user's request, 15 November 2026). It is output, not new physics: each package is a short run of laws the engine has, at a low level of detail, and is labelled an illustration, never a result. The user chose periodic loops, with one period of a periodic drive played and its seam checked. The design, ruled on 16 November 2026, starts with a planarian patch driven by a train of small currents below its firing threshold; a first looping planarian run was made with the run-view writer, on its branch. For the human, a paced human ventricular cell built on the human cardiac law set, with no generic stand-in (D183, D184): it waits for those laws, about 20 to 30 working days after the landing by its design note's estimate. For the minimal cells, their cycle of growth and division, as an illustration, after a probe of what the engine admits: that probe found four cases where operators must read each other's current state, which the engine refuses today. Logged; it comes after the run-view writer.",
+      "plain": "Short replay packages that show each species' cell alive, in a loop, whenever no research run is being explored (the user's request, 15 November 2026). It is output, not new physics: each package is a short run of laws the engine has, at a low level of detail, and is labelled an illustration, never a result. The user chose periodic loops, with one period of a periodic drive played and its seam checked. Its design note was ruled by the lead on 16 November 2026. The first loop is on main since that evening, with the run-view writer: a seven-cell planarian patch whose centre cell receives a small current that alternates in sign each half period, so that it nets to zero, far below the voltage that would switch the cell; a development run, not judged. Over its period it closes within 2.76e-5, against a tolerance of 1e-4. For the human, a paced human ventricular cell built on the human cardiac law set, with no generic stand-in (D183, D184): it waits for those laws, about 20 to 30 working days after the landing by its design note's estimate. For the minimal cells, their cycle of growth and division, as an illustration: a probe of what the engine admits found four cases where operators must read each other's current state, which the engine refuses today.",
       "sources": [
         {
           "path": "docs/FEATURE_REQUESTS.md",
           "where": "FR-11"
-        },
-        {
-          "path": "docs/CURRENT_PLAN.md",
-          "where": "FR-11's interim planarian loop"
         },
         {
           "path": "docs/DECISIONS.md",
@@ -602,34 +616,39 @@
           "where": "D184: The human cardiac law set's choices, and the whole-cell comparison approved for O'Hara–Rudy 2011"
         },
         {
-          "path": "README.md",
-          "where": "The visualizer and its replays"
-        },
-        {
           "path": "docs/CURRENT_PLAN.md",
           "where": "Operator composition: operators reading each other's current state"
+        },
+        {
+          "path": "docs/LOOPING_REPLAY_DESIGN.md",
+          "where": "9. The lead's rulings (16 November 2026)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The run-view writer merged into main (16 November 2026, evening): run-view-d154"
+        },
+        {
+          "path": "tests/unit/test_replay_packages.py"
+        },
+        {
+          "path": "validation/replay/planarian.py"
         }
+      ],
+      "match": [
+        "validation/replay/**"
       ]
     },
     {
       "id": "exec.gpu_native",
       "label": "GPU-native execution",
       "layer": "execution",
-      "status": "designed",
+      "status": "landed",
       "as_of": "2026-11-16",
-      "plain": "What the rebuilt core must show on a GPU. Since the rework landed on 16 November 2026, two of these hold, each shown by a test on main: a law that a world does not declare is absent from its compiled program, and a change of parameters alone reuses the compiled program and gives, bit for bit, what a fresh compile gives. The others are still targets: stepping, step checks and refusals kept on the device in production, with no Python per cell and no CPU solver in the loop, and compile time, memory and end-to-end time measured on representative worlds. Steps and their checks already run inside one compiled program in the vector-window path; an audit lists the exceptions, and moving the host's window checks into device windows is queued.",
+      "plain": "What the rebuilt core already shows of the engine's GPU requirements. Since the rework landed on 16 November 2026, two hold, each shown by a test on main: a law that a world does not declare is absent from its compiled program, and a change of parameters alone reuses the compiled program and gives, bit for bit, what a fresh compile gives. Since the evening of the same day, a run of one world in windows can also check its saved rows on the device, on request: a second compiled program tests each window's rows, and any failure, or any account above half its bound, hands the window back to the usual checks on the host. This is opt-in and qualified on the CPU only. It is refused on a GPU until a GPU measurement exists, and for a world with an operator that retires cells, as division does, until a planted test exists. Every run made both ways gave the same results bit for bit, and no window was handed back. Against the host's checks on the same processors, the measured runs were 1.05 to 4.8 times as fast, and two long runs, whose host side is estimated, about 9 and 14 times. What is still to come on the GPU is a part of its own.",
       "sources": [
         {
           "path": "docs/ARCHITECTURE.md",
           "where": "GPU-native execution"
-        },
-        {
-          "path": "docs/INNER_MODEL_V4_DESIGN.md",
-          "where": "5. The GPU"
-        },
-        {
-          "path": "docs/INNER_MODEL_V4_DESIGN.md",
-          "where": "15.1 List (a): what R needs to land"
         },
         {
           "path": "docs/INNER_MODEL_V4_DESIGN.md",
@@ -644,6 +663,59 @@
         {
           "path": "PROGRESS.md",
           "where": "D172's round landed on main"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "windows-next-clean merged into main (16 November 2026, evening)"
+        },
+        {
+          "path": "docs/WINDOW_DEVICE_CHECKS_DESIGN.md",
+          "where": "9.2 The switch and its refusals"
+        },
+        {
+          "path": "docs/WINDOW_DEVICE_CHECKS_DESIGN.md",
+          "where": "9.7 The evidence as run"
+        },
+        {
+          "path": "tests/unit/test_window_row_checks.py"
+        },
+        {
+          "path": "tests/unit/test_row_checks_program.py"
+        }
+      ],
+      "match": [
+        "src/cells/core/row_checks.py",
+        "validation/execution/window_check_probe.py",
+        "validation/execution/window_row_checks_runs.py"
+      ]
+    },
+    {
+      "id": "exec.gpu_production",
+      "label": "GPU-native production",
+      "layer": "execution",
+      "status": "designed",
+      "as_of": "2026-11-16",
+      "plain": "What the rebuilt core must still show on a GPU. In production, stepping, step checks and refusals stay on the device, with no Python per cell and no CPU solver in the loop. What a world's program is built from, the values it runs on and the host's own work are declared apart. Compile time, memory and end-to-end time are measured on representative worlds; these measurements are also owed from the rework's acceptance plan. Steps and their checks already run inside one compiled program in the vector-window path, and the audit lists the exceptions. Checking a window's rows on the device in a run of one world landed on the CPU only: on a GPU it stays refused until a measurement there shows how far the device's checks and the host's can differ. Targets; not on main.",
+      "sources": [
+        {
+          "path": "docs/ARCHITECTURE.md",
+          "where": "GPU-native execution"
+        },
+        {
+          "path": "docs/INNER_MODEL_V4_DESIGN.md",
+          "where": "5. The GPU"
+        },
+        {
+          "path": "docs/INNER_MODEL_V4_DESIGN.md",
+          "where": "15.1 List (a): what R needs to land"
+        },
+        {
+          "path": "docs/WINDOW_DEVICE_CHECKS_DESIGN.md",
+          "where": "9.2 The switch and its refusals"
+        },
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "Owed from the landing's acceptance plan"
         }
       ]
     },
@@ -653,7 +725,7 @@
       "layer": "execution",
       "status": "designed",
       "as_of": "2026-11-16",
-      "plain": "Many worlds of one structure packed into one batch on the GPU, to keep it busy. On the L4, one world of the 825-node tissue keeps about a quarter of the GPU's processors active; 128 worlds or more keep about 90% active. The same planner is meant to serve production ensembles. Its design was proposed on 15 November 2026, at the user's request, and a planner is built on a branch of its own. In a development run on the L4 on 16 November 2026, packed repeats were identical bit for bit, but packing alone moved some small flux and ledger values by up to 1.6e-8 relative, more than the criterion set for it. The same day this was traced to rounding amplified by the conditioning of the field solve: the moved values are small differences of potentials. The direction ruled judges each field at 1e-12 of the scale it is computed from, with an empirical cap for the outside network's ledgers and an exact check of what the host computes from the state; it is not frozen until a held-out pass on the merged code. Now that the rework has landed, the planner merges after its own gate, and its one-time GPU qualification runs on the merged code. Not on main.",
+      "plain": "Many worlds of one structure packed into one batch on the GPU, to keep it busy. On the L4, one world of the 825-node tissue keeps about a quarter of the GPU's processors active; 128 worlds or more keep about 90% active. The same planner is meant to serve production ensembles. Its design was proposed on 15 November 2026, at the user's request, and a planner is built on a branch of its own. In a development run on the L4 on 16 November 2026, packed repeats were identical bit for bit, but packing alone moved some small flux and ledger values by up to 1.6e-8 relative, more than the criterion set for it. The same day this was traced to rounding amplified by the conditioning of the field solve: the moved values are small differences of potentials. The direction ruled judges each field at 1e-12 of the scale it is computed from, with an empirical cap for the outside network's ledgers and an exact check of what the host computes from the state; it is not frozen until a held-out pass on the merged code. The four seams it asked of the core landed with the windows lane on the evening of 16 November 2026: arguments built for each window, a world named on every refusal, a typed refusal for memory, and an opt-in mode that sets a refused world aside and carries on with the others. The planner merges after its own gate, and its one-time GPU qualification runs on the merged code. Not on main.",
       "sources": [
         {
           "path": "docs/PACKED_GPU_EXECUTION_DESIGN.md",
@@ -670,6 +742,14 @@
         {
           "path": "docs/CURRENT_PLAN.md",
           "where": "The D172 restructure"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "windows-next-clean merged into main (16 November 2026, evening)"
+        },
+        {
+          "path": "docs/WINDOW_DEVICE_CHECKS_DESIGN.md",
+          "where": "5. Ask 2: the packed planner's seams"
         }
       ]
     },
@@ -1501,7 +1581,7 @@
         "src/cells/core/kind_registry.py",
         "src/cells/models/inner_kinds/__init__.py"
       ],
-      "plain": "How a new kind of piece joins the tissue model. A kind is one module's contribution: its own fields, and hooks that the tissue model calls at fixed points of its step. Each kind registers itself on a registry that belongs to one model build, exactly as a package from outside Cells would, and a kind that a world does not declare changes nothing. Its name carries a namespace, so an outside kind cannot collide with a built-in one, and the order in which kinds add their fields is fixed by their sorted names. On main since the rework landed on 16 November 2026, with three built-in kinds: passive routes, a rapid proton buffer and transporters. A test on main registers a planted kind from outside the engine's source and runs it through every seam, and two kinds whose reads of one row could disagree are refused when a world is built. On the evening of 16 November 2026, with the core's next lane, it gained controls that change on a schedule, a routing door through which one kind's factors scale another's routes, and the terms finite fuel needs in the energy accounts. Implemented and guarded.",
+      "plain": "How a new kind of piece joins the tissue model. A kind is one module's contribution: its own fields, and hooks that the tissue model calls at fixed points of its step. Each kind registers itself on a registry that belongs to one model build, exactly as a package from outside Cells would, and a kind that a world does not declare changes nothing. Its name carries a namespace, so an outside kind cannot collide with a built-in one, and the order in which kinds add their fields is fixed by their sorted names. On main since the rework landed on 16 November 2026, with three built-in kinds: passive routes, a rapid proton buffer and transporters. Since the evening of the same day there are two more, for feature request FR-5: the damage of a membrane patch and a pH condition, which act on routes only through the routing door. A test on main registers a planted kind from outside the engine's source and runs it through every seam, and two kinds whose reads of one row could disagree are refused when a world is built. On the evening of 16 November 2026, with the core's next lane, it gained controls that change on a schedule, a routing door through which one kind's factors scale another's routes, and the terms finite fuel needs in the energy accounts. Implemented and guarded.",
       "sources": [
         {
           "path": "PROGRESS.md",
@@ -1528,6 +1608,10 @@
         {
           "path": "PROGRESS.md",
           "where": "core-next merged into main"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core"
         }
       ]
     },
@@ -1544,7 +1628,7 @@
         "src/cells/processes/proton_pump.py",
         "src/cells/processes/rapid_proton_buffer.py"
       ],
-      "plain": "Two kinds of piece of the tissue model, on main since the rework landed on 16 November 2026. A transporter is a population on a membrane patch that spends one ATP per cycle to move a species from one side to the other: an uncharged one, or protons, as the pump that acidifies a compartment does (feature request FR-4). In this round its fuel is held constant, as rows of the shared inventory that are read and never used up; finite fuel is refused until a later step. The rapid proton buffer sets, at every stage of a step, how many of a node's protons are free and how many are bound to the buffers declared there, so that laws can read the pH while the node's charge stays as stored. Implemented and guarded; nothing is judged. FR-4's protocols are registered and judged once the lanes built on the round have merged.",
+      "plain": "Two kinds of piece of the tissue model, on main since the rework landed on 16 November 2026. A transporter is a population on a membrane patch that spends one ATP per cycle to move a species from one side to the other: an uncharged one, or protons, as the pump that acidifies a compartment does (feature request FR-4). In this round its fuel is held constant, as rows of the shared inventory that are read and never used up; finite fuel is refused until a later step. The rapid proton buffer sets, at every stage of a step, how many of a node's protons are free and how many are bound to the buffers declared there, so that laws can read the pH while the node's charge stays as stored. Implemented and guarded; nothing is judged. FR-4's protocol is proposed; its registration and judged run are the plan's next item, now that the lanes built on the round have merged.",
       "sources": [
         {
           "path": "PROGRESS.md",
@@ -1564,7 +1648,7 @@
         },
         {
           "path": "docs/CURRENT_PLAN.md",
-          "where": "Next, after the landing, in order"
+          "where": "Now, after the landing, in order"
         },
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -1573,6 +1657,44 @@
         {
           "path": "docs/FEATURE_REQUESTS.md",
           "where": "FR-4"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core"
+        }
+      ]
+    },
+    {
+      "id": "laws.route_factors",
+      "label": "Membrane damage and pH condition",
+      "layer": "laws",
+      "status": "landed",
+      "as_of": "2026-11-16",
+      "match": [
+        "src/cells/models/inner_kinds/patch_damage.py",
+        "src/cells/models/inner_kinds/ph_condition.py",
+        "src/cells/processes/patch_damage.py",
+        "src/cells/processes/ph_condition.py"
+      ],
+      "plain": "Two kinds of piece of the tissue model that move nothing themselves: each acts on a route only as a factor between 0 and 1, through the routing door. The damage of a membrane patch grows under injury and falls as the patch reseals, each at a rate switched on a schedule: the older tissue families' injury and resealing, re-expressed as a kind. A pH condition opens a route as a node's pH falls below a declared threshold, reading the pH from the proton buffer. On main since the evening of 16 November 2026, for feature request FR-5, where they act on a compartment's leak and transfer. Implemented and guarded; nothing is judged.",
+      "sources": [
+        {
+          "path": "PROGRESS.md",
+          "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core"
+        },
+        {
+          "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
+          "where": "16.2 The design: two source kinds, one routing door, the passive routes as its sink"
+        },
+        {
+          "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+          "where": "3.4.2 Version 1.2: the routing door's source kinds"
+        },
+        {
+          "path": "tests/unit/test_fr5_source_kinds.py"
+        },
+        {
+          "path": "tests/unit/test_fr5_source_kinds_engine.py"
         }
       ]
     },
@@ -1651,7 +1773,7 @@
         },
         {
           "path": "docs/CURRENT_PLAN.md",
-          "where": "Next, after the landing, in order"
+          "where": "Now, after the landing, in order"
         },
         {
           "path": "PROGRESS.md",
@@ -2107,7 +2229,7 @@
         "src/cells/models/operators/contract.py",
         "src/cells/models/operators/__init__.py"
       ],
-      "plain": "What every operator must declare: the state it owns, what it writes and reads, its energy bookings and its conflicts. Checked when a model is built. A matrix of which of the composite's 19 operators can run together is regenerated from these declarations by a test (15 November 2026). Since the rework landed on 16 November 2026 it also carries door S's declarations: the places an operator reads and changes, how its change combines and at which stage. It also holds the interface through which an operator will declare what a run's view shows of it.",
+      "plain": "What every operator must declare: the state it owns, what it writes and reads, its energy bookings and its conflicts. Checked when a model is built. A matrix of which of the composite's 19 operators can run together is regenerated from these declarations by a test (15 November 2026). Since the rework landed on 16 November 2026 it also carries door S's declarations: the places an operator reads and changes, how its change combines and at which stage. Through it each operator declares what a run's view shows of it: its units, axes, kinds of record and their direction, layers and events. The run-view writer, on main since the evening of 16 November 2026, reads those declarations and keeps no table of its own.",
       "sources": [
         {
           "path": "docs/PUMP_COMPOSITE_V2_DESIGN.md"
@@ -2131,6 +2253,10 @@
         {
           "path": "docs/CURRENT_PLAN.md",
           "where": "Run-view output (D154)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The run-view writer merged into main (16 November 2026, evening): run-view-d154"
         }
       ]
     },
@@ -2254,7 +2380,7 @@
       "layer": "operators",
       "status": "designed",
       "as_of": "2026-11-16",
-      "plain": "A closed compartment inside a cell: a finite node the cell owns, bounded by one patch of its membrane, with its own volume and its own rows of the shared inventory. The user's high priority (14 November 2026). Its design is accepted (D169, 14 November 2026). Its first milestone, the declaration of a compartment, landed on 15 November 2026 as an operator; the compartment's own volume and inventory come in later milestones. Since the rework landed on 16 November 2026, the operator admits the kinds of piece the engine knows on the compartment's bounding membrane, such as the proton pump and the proton leak, only under the implicit–explicit step whose checks hold their rates, and refuses any other kind.",
+      "plain": "A closed compartment inside a cell: a finite node the cell owns, bounded by one patch of its membrane, with its own volume and its own rows of the shared inventory. The user's high priority (14 November 2026). Its design is accepted (D169, 14 November 2026). Its first milestone, the declaration of a compartment, landed on 15 November 2026 as an operator; the compartment's own volume and inventory come in later milestones. Since the rework landed on 16 November 2026, the operator admits the kinds of piece the engine knows on the compartment's bounding membrane, such as the proton pump and the proton leak, only under the implicit–explicit step whose checks hold their rates, and refuses any other kind. Since the evening of the same day it also admits FR-5's damage and pH condition, and a compartment whose admitted routes charge it can resume from its own checkpoint, in those worlds only (refusal 4 version 1.2, refusal 5 version 1.1).",
       "sources": [
         {
           "path": "docs/CLOSED_COMPARTMENT_DESIGN.md"
@@ -2274,6 +2400,18 @@
         {
           "path": "PROGRESS.md",
           "where": "D172's round landed on main"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core"
+        },
+        {
+          "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+          "where": "3.4.2 Version 1.2: the routing door's source kinds"
+        },
+        {
+          "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+          "where": "3.4.3 Refusal 5 version 1.1: the charge anchor where charged routes are admitted"
         }
       ]
     },
@@ -2320,9 +2458,9 @@
       "id": "fr.compartment_ph",
       "label": "Compartment pH (FR-4)",
       "layer": "operators",
-      "status": "designed",
+      "status": "landed",
       "as_of": "2026-11-16",
-      "plain": "Protons as a species, a pump that acidifies a compartment against its gradient, and buffering. Since 15 November 2026 it is one of the two priority users of the modular rework (D176), and its design note was proposed the same day: protons are one species whose free part is set by a fast buffer rule at every stage, the proton pump is a transporter law on the compartment's membrane, counterions are explicit, and its first case runs on fuel held constant. Its independent references landed on main the same day, written by a separate agent that read no engine code. In its first world the compartment acidifies from pH 7.2 to about 5.1 against its gradient, while the cytoplasm stays within 0.02 pH; without the counterion route it stalls. They also found one of the design's checks too loose, and the design now uses a check that depends on the state. Its pump, its buffer and a proton leak landed on main with the rework on 16 November 2026, as pieces of the tissue model; before the landing, a development run of the first world agreed with the reference to about 1e-12 pH over 900 s. A kernel for treating the compartment's membrane implicitly in the step is on main too, with its tests, and no model uses it yet. Nothing is judged: its protocols are proposed, and their registration, rehearsal and judged runs are the plan's first item after the landing, once the lanes built on the round have merged.",
+      "plain": "Protons as a species, a pump that acidifies a compartment against its gradient, and buffering (feature request FR-4), one of the two priority users of the modular rework (D176). Protons are one species whose free part is set by a fast buffer rule at every stage, the proton pump is a transporter on the compartment's membrane, counterions are explicit, and its first case runs on fuel held constant. Its pump, its buffer and a proton leak landed on main with the rework on 16 November 2026, as pieces of the tissue model, together with the drivers that build its first world and the tools for its qualification. In a development run of that world, which is not a verdict, the compartment's pH stays within 1.4e-12 of the independent reference at a step of 1 ms, the energy accounts converge at second order as the step shrinks, and the planted errors are caught. Its independent references, written by a separate agent that read no engine code, show the compartment acidifying from pH 7.2 to about 5.1 against its gradient while the cytoplasm stays within 0.02 pH; without the counterion route it stalls. A kernel for treating the compartment's membrane implicitly in the step is on main too, with its tests; no model uses it yet, and chloride and pores wait for it. Implemented and guarded; nothing is judged. Its protocol is proposed, and its registration and judged run are the plan's next item.",
       "sources": [
         {
           "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md"
@@ -2352,7 +2490,7 @@
         },
         {
           "path": "docs/CURRENT_PLAN.md",
-          "where": "Next, after the landing, in order"
+          "where": "Now, after the landing, in order"
         },
         {
           "path": "PROGRESS.md",
@@ -2369,10 +2507,26 @@
         {
           "path": "docs/CURRENT_PLAN.md",
           "where": "Feature requests (D157–D167)"
+        },
+        {
+          "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
+          "where": "FR-4 is built and on main"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core"
         }
       ],
       "match": [
-        "src/cells/processes/patch_electrodiffusion.py"
+        "src/cells/processes/patch_electrodiffusion.py",
+        "validation/compartment_ph_engine/compare_reference.py",
+        "validation/compartment_ph_engine/definitions.py",
+        "validation/compartment_ph_engine/dt_study.py",
+        "validation/compartment_ph_engine/engine_records.py",
+        "validation/compartment_ph_engine/parameters.py",
+        "validation/compartment_ph_engine/path_agreement.py",
+        "validation/compartment_ph_engine/planted.py",
+        "validation/compartment_ph_engine/refusal_paths.py"
       ]
     },
     {
@@ -2381,7 +2535,7 @@
       "layer": "operators",
       "status": "designed",
       "as_of": "2026-11-16",
-      "plain": "A compartment's membrane that can leak and reseal, with transfer across it at a rate that reads the compartment's own state, such as its pH. The other priority user of the modular rework (D176, 15 November 2026). Its design is in the note proposed with compartment pH the same day: damage is the existing injury and resealing law on the compartment's membrane, and the damage and the pH each act on the leak and on the transfer as control factors. It depends on the internal compartment, on compartment pH and on the passive permeation law. Its independent references landed on main on 15 November 2026. They showed that the note's first test world could not show its claims, so the world was revised into two arms with numbers, which the references confirm: while the compartment is not acid enough, transfer slows about 14-fold rather than stopping; after damage, the leak releases most of the compartment's cargo; and in both arms the compartment is acid enough again after about 330 s and 370 s. Two of its kernels are on main since the rework landed on 16 November 2026, with their tests: the damage of the compartment's membrane with its resealing, and the factor by which the compartment's pH opens the transfer. The routing door through which they would act on a route, and controls that change on a schedule, landed the same evening with the core's next lane. No model uses the two kernels yet: the transfer itself follows on its own branch, and its judged runs after it.",
+      "plain": "A compartment's membrane that can leak and reseal, with transfer across it at a rate that reads the compartment's own state, such as its pH (feature request FR-5), the other priority user of the modular rework (D176). Its pieces are on main since the evening of 16 November 2026. Two kinds of piece, the damage of the compartment's membrane and a pH condition, act on the compartment's passive routes as factors, through a routing door the core built for any kind, and a compartment that holds charge can now resume from its own checkpoint, so FR-5's world starts from FR-4's steady state. In development runs, which are not verdicts, its declared world and its development world gave the same results bit for bit over 400 s on both of its arms, 800,000 steps each, including the burst of release after damage. Its independent references show the transfer slowing about 14-fold while the compartment is not acid enough, the leak releasing most of the compartment's cargo after damage, and the compartment acid enough again after about 330 s and 370 s. Nothing is judged. Its protocol is proposed, and its registration and judged run are the plan's next item. Its design note still places the request on its branch, so it stays marked designed here.",
       "sources": [
         {
           "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md"
@@ -2411,16 +2565,32 @@
         },
         {
           "path": "docs/CURRENT_PLAN.md",
-          "where": "Next, after the landing, in order"
+          "where": "Now, after the landing, in order"
         },
         {
           "path": "PROGRESS.md",
           "where": "core-next merged into main"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core"
+        },
+        {
+          "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
+          "where": "16. FR-5 on the kind interface"
+        },
+        {
+          "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+          "where": "3.4.2 Version 1.2: the routing door's source kinds"
+        },
+        {
+          "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+          "where": "3.4.3 Refusal 5 version 1.1: the charge anchor where charged routes are admitted"
         }
       ],
       "match": [
-        "src/cells/processes/patch_damage.py",
-        "src/cells/processes/ph_condition.py"
+        "validation/compartment_ph_engine/fr5_quick_check.py",
+        "validation/compartment_ph_engine/world_agreement.py"
       ]
     },
     {
@@ -2787,7 +2957,7 @@
         },
         {
           "path": "docs/CURRENT_PLAN.md",
-          "where": "Next, after the landing, in order"
+          "where": "Now, after the landing, in order"
         },
         {
           "path": "tests/unit/test_delivery_world.py"
@@ -3168,9 +3338,9 @@
       "id": "val.results_gate",
       "label": "Results gate",
       "layer": "references",
-      "status": "designed",
+      "status": "landed",
       "as_of": "2026-11-16",
-      "plain": "How the rework was to be accepted. A machine-readable list names every scientific result that must still hold, and the gate fails if any of them did not actually run. Every existing world is run before and after on the CPU and compared field by field. Every registered protocol that uses the tissue model is run again and must keep its verdict; the user held E07-v1's re-run, whose worlds the comparison covers instead (D181). Three deliberately planted changes must each be caught, or the gate is void. Compile time, memory and run time are measured. The rework landed through its results comparison on 16 November 2026: all 113 saved worlds were the same bit for bit before the round's last change, and within its declared tolerance after it, and every registered small protocol run again passed. The planted changes and the measurements were not run as separate steps of the round's end game, and the record lists them as owed: the planted changes on landed main, about one to two hours of CPU, and the measurements on a quiet machine. The round's per-commit contract tests ran in the tiers, and the comparison's own planted-difference self-test is a test on main. So the gate stays marked as designed here. Its comparison tool is on main since 15 November 2026, and the routine test gate now also flags a test file whose count of passing tests falls or whose count of skipped tests rises.",
+      "plain": "How the rework was accepted, and how changes built on it are checked. A machine-readable list names every scientific result that must still hold, and the gate fails if any of them did not actually run. Every saved world is run before and after on the CPU and compared field by field (G1). Every registered protocol that uses the tissue model is run again and must keep its verdict (G2); the user held E07-v1's re-run, whose worlds the comparison covers instead (D181). The rework landed through it on 16 November 2026: all 113 saved worlds were the same bit for bit before the round's last change, and within its declared tolerance after it, and every registered small protocol run again passed. The same evening the core's next lane merged with all 113 worlds again the same bit for bit. Two parts are still owed, each shown as a part of its own: the planted changes that it must catch (G3), and the measurements of compile time, memory and run time (G4). The comparison's own planted-difference self-test is a test on main, and the routine test gate also flags a test file whose count of passing tests falls or whose count of skipped tests rises.",
       "sources": [
         {
           "path": "docs/ARCHITECTURE.md",
@@ -3205,6 +3375,66 @@
         },
         {
           "path": "tests/unit/test_results_baseline.py"
+        },
+        {
+          "path": "docs/ARCHITECTURE.md",
+          "where": "The results gate for D172"
+        },
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "The D172 restructure"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "core-next merged into main"
+        },
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "Owed from the landing's acceptance plan"
+        }
+      ]
+    },
+    {
+      "id": "val.gate_controls",
+      "label": "Planted changes (G3)",
+      "layer": "references",
+      "status": "planned",
+      "as_of": "2026-11-16",
+      "plain": "Deliberate errors planted in the engine, each of which the results gate must catch: the gate's design asks for them before it counts as complete. Owed from the rework's acceptance plan: they were not run as a separate step of its end game, and are to be run on landed main, about one to two hours of processor time. Meanwhile the round's tests of each commit's contract ran in the routine tiers, and the comparison's own planted difference is a test on main. Planned.",
+      "sources": [
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "Owed from the landing's acceptance plan"
+        },
+        {
+          "path": "docs/ARCHITECTURE.md",
+          "where": "The results gate for D172"
+        },
+        {
+          "path": "docs/INNER_MODEL_V4_DESIGN.md",
+          "where": "3. The results gate"
+        }
+      ]
+    },
+    {
+      "id": "val.gate_measurements",
+      "label": "Cost measurements (G4)",
+      "layer": "references",
+      "status": "planned",
+      "as_of": "2026-11-16",
+      "plain": "Compile time, memory and end-to-end time of the rebuilt engine, measured on representative worlds on a quiet machine. Owed from the rework's acceptance plan: not run as a separate step of its end game, and not run since. They are also the measurements that GPU-native production asks for. Planned.",
+      "sources": [
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "Owed from the landing's acceptance plan"
+        },
+        {
+          "path": "docs/ARCHITECTURE.md",
+          "where": "The results gate for D172"
+        },
+        {
+          "path": "docs/INNER_MODEL_V4_DESIGN.md",
+          "where": "3. The results gate"
         }
       ]
     },
@@ -3402,7 +3632,7 @@
         "label": "Membrane insertion @2",
         "status": "qualified",
         "as_of": "2026-11-14",
-        "plain": "Membrane insertion in the form division uses, where new patches open during the run. Since the evening of 16 November 2026, a channel population on a patch that opens during the run starts at its declared initial gate; the compiled programs of the three division worlds that use this operator changed with it, as intended and recorded.",
+        "plain": "Membrane insertion in the form division uses, where new patches open during the run. Since the evening of 16 November 2026, a channel population on a patch that opens during the run starts at its declared initial gate, however long the patch was closed. No accepted world has such a population, because the operator still refuses one on a patch that opens, so the change is idle in today's worlds. The compiled programs of the three division worlds that use this operator changed with it, as intended and recorded, and all 113 saved worlds of the results comparison stayed the same bit for bit.",
         "sources": [
           {
             "path": "PROGRESS.md",
@@ -3596,7 +3826,7 @@
         "label": "Cell-owned compartments",
         "status": "landed",
         "as_of": "2026-11-15",
-        "plain": "A compartment that a cell owns, declared with its own identity and role: the first step toward closed compartments inside cells. Its first milestone landed on 15 November 2026 (feature request FR-1): the declaration alone, which leaves every existing run unchanged; no physics depends on the role yet. Since the rework landed on 16 November 2026 it admits the kinds of piece the engine knows on a compartment's bounding membrane, under the implicit–explicit step only, and refuses any other kind. It is development code, guarded by tests; its qualification comes later. It records the first form of the compartment identity map, as information only.",
+        "plain": "A compartment that a cell owns, declared with its own identity and role: the first step toward closed compartments inside cells. Its first milestone landed on 15 November 2026 (feature request FR-1): the declaration alone, which leaves every existing run unchanged; no physics depends on the role yet. Since the rework landed on 16 November 2026 it admits the kinds of piece the engine knows on a compartment's bounding membrane, under the implicit–explicit step only, and refuses any other kind. Since the evening of the same day it also admits FR-5's damage and pH condition, and a compartment whose admitted routes charge it can resume from its own checkpoint, in those worlds only (refusal 4 version 1.2, refusal 5 version 1.1). It is development code, guarded by tests; its qualification comes later. It records the first form of the compartment identity map, as information only.",
         "sources": [
           {
             "path": "PROGRESS.md",
@@ -3621,6 +3851,18 @@
           {
             "path": "PROGRESS.md",
             "where": "D172's round landed on main"
+          },
+          {
+            "path": "PROGRESS.md",
+            "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core"
+          },
+          {
+            "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+            "where": "3.4.2 Version 1.2: the routing door's source kinds"
+          },
+          {
+            "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+            "where": "3.4.3 Refusal 5 version 1.1: the charge anchor where charged routes are admitted"
           }
         ]
       },
@@ -3694,7 +3936,7 @@
       "execution": {
         "label": "Execution",
         "plain": "Make execution dependable: fast plan validation, live progress markers, one production path and a compile policy.",
-        "note": "The plan-validation fix was accepted on 12 November. Phase markers record start, completion and failure since 15 November. One production path, the compile policy and the registry are not started. The run-view output's design note is proposed; its writer is built on a branch of its own and merges after its own gate, now that the rework has landed. The plan's table for this gate also lists the closed internal compartment (FR-1), whose first milestone landed on 15 November.",
+        "note": "The plan-validation fix was accepted on 12 November. Phase markers record start, completion and failure since 15 November. One production path, the compile policy and the registry are not started. The run-view output's writer merged into main on the evening of 16 November, with its tests. The plan's table for this gate also lists the closed internal compartment (FR-1), whose first milestone landed on 15 November.",
         "delivers": [
           "exec.one_path",
           "exec.compile_policy",
@@ -4048,7 +4290,7 @@
         },
         {
           "path": "docs/CURRENT_PLAN.md",
-          "where": "Next, after the landing, in order"
+          "where": "Now, after the landing, in order"
         }
       ]
     },
@@ -4349,11 +4591,13 @@
       "status": "established",
       "representation": "prescribed",
       "runs_in": [
+        "composite",
         "resolved"
       ],
-      "plain": "A membrane injury leaks ions and reseals. The resealing follows a set schedule. This runs in the earlier tissue families only; the injury law is to move into the composite model as an operator, for feature request FR-5 (D167). A form of the injury law for a compartment's membrane is on main since 16 November 2026, with its tests, for FR-5; no model uses it yet.",
+      "plain": "A membrane injury leaks ions and reseals. The resealing follows a set schedule. In the earlier tissue families it runs on a cell's membrane. Since the evening of 16 November 2026 the tissue model has it too, as a kind of piece, for feature request FR-5 (D167): the damage of a membrane patch and its resealing, each switched on a schedule, acting on a compartment's routes. Implemented and guarded there; not judged.",
       "implemented_by": [
-        "laws.injury"
+        "laws.injury",
+        "laws.route_factors"
       ],
       "sources": [
         {
@@ -4366,6 +4610,10 @@
         },
         {
           "path": "src/cells/processes/patch_damage.py"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core"
         }
       ]
     },
@@ -5019,7 +5267,7 @@
       "label": "the registry returns one implementation for each declared structure"
     },
     {
-      "from": "exec.gpu_native",
+      "from": "exec.gpu_production",
       "to": "exec.vector_windows",
       "kind": "extends",
       "label": "that path already runs steps and their checks in one compiled program"
@@ -5365,6 +5613,42 @@
       "to": "models.modular",
       "kind": "extends",
       "label": "its pieces move into folders by role"
+    },
+    {
+      "from": "exec.gpu_production",
+      "to": "exec.gpu_native",
+      "kind": "extends",
+      "label": "checking rows on the device stays refused on a GPU until it is measured there"
+    },
+    {
+      "from": "val.gate_controls",
+      "to": "val.results_gate",
+      "kind": "extends",
+      "label": "owed from the rework's acceptance plan"
+    },
+    {
+      "from": "val.gate_measurements",
+      "to": "val.results_gate",
+      "kind": "extends",
+      "label": "owed from the rework's acceptance plan"
+    },
+    {
+      "from": "fr.internal_transfer",
+      "to": "laws.route_factors",
+      "kind": "extends",
+      "label": "its damage and its pH condition"
+    },
+    {
+      "from": "laws.route_factors",
+      "to": "laws.injury",
+      "kind": "extends",
+      "label": "the older families' injury and resealing, re-expressed as a kind"
+    },
+    {
+      "from": "laws.route_factors",
+      "to": "laws.passive_permeation",
+      "kind": "extends",
+      "label": "they scale its routes through the routing door"
     }
   ],
   "relation_kinds": [
