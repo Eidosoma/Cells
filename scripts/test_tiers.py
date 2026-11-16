@@ -68,6 +68,8 @@ def _run_file(path, cpu, cap, log_dir):
 
     Scientific code is float64 (JAX_ENABLE_X64), and tests that write outputs or
     component evidence get their own directories under the run, never shared paths.
+    The tiers are CPU-only by definition: no GPU is visible and JAX's platform is the
+    CPU (JAX_PLATFORMS, which some tests assert), whatever the caller's environment.
     """
     slug = path.replace("/", "__")
     outputs = log_dir.parent / "outputs" / slug
@@ -78,6 +80,7 @@ def _run_file(path, cpu, cap, log_dir):
         os.environ,
         PYTHONPATH=str(ROOT / "src"),
         CUDA_VISIBLE_DEVICES="",
+        JAX_PLATFORMS="cpu",
         JAX_ENABLE_X64="1",
         CELLS_OUTPUT_ROOT=str(outputs),
         CELLS_COMPONENT_EVIDENCE=str(evidence),
