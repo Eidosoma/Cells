@@ -29,7 +29,7 @@ from cells.core.kind_registry import (
     parse_series,
     series_to_dict,
 )
-from cells.numerics.species_sums import species_sum
+from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 KIND_ID = "tests.exchange@1"
@@ -539,4 +539,151 @@ def declare_relaxation(raw, *, injury, resealing, initial=0.0, schedule=None):
         raw["experiment"][RELAXATION_SCHEDULE_KEY] = {
             name: [dict(time=t, value=v) for t, v in points] for name, points in schedule.items()
         }
+    return raw
+
+
+# ------------------------------------------------------------------ the stored-energy planted kind
+# docs/INNER_MODEL_V4_DESIGN.md §7.4 (m), gap 2: `tests.conversion@1` converts a neutral substrate
+# S into a neutral product P at one cell at a declared constant rate: finite fuel's bookkeeping in
+# miniature. Each has a declared standard potential mu°/RT, which @3's RT ln c terms leave out, and
+# no stage read carries it; so the kind stores the standard part, (mu°_P - mu°_S) x moved, as
+# stored_pJ, and gives its rate as stored_pJ_s. Its heat is the conversion's free-energy decrease,
+# -r (mu_P - mu_S) with mu = mu° + RT ln c. conversion(stored_rate=False) leaves the rate out: the
+# cumulative energy ledger still closes, but the stage energy-rate observation does not.
+
+CONVERSION_ID = "tests.conversion@1"
+CONVERSION_KEY = "test_conversion"
+CONVERSION_FIELDS = (
+    "substrate",
+    "product",
+    "cell",
+    "rate_fmol_s",
+    "substrate_mu_RT",
+    "product_mu_RT",
+)
+
+
+def _conversion_parse(entries, base):
+    m = base.model
+    if set(entries) != set(CONVERSION_FIELDS):
+        raise ConfigError("test_conversion declares " + ", ".join(CONVERSION_FIELDS))
+    if entries["substrate"] not in m.species_ids or entries["product"] not in m.species_ids:
+        raise ConfigError("test_conversion: unknown species")
+    if entries["cell"] not in [c.id for c in m.cells]:
+        raise ConfigError("test_conversion: unknown cell")
+    rate = float(entries["rate_fmol_s"])
+    if not rate >= 0:
+        raise ConfigError("test_conversion: rate_fmol_s must be nonnegative")
+    return tuple(entries[k] for k in CONVERSION_FIELDS[:3]) + (
+        rate,
+        float(entries["substrate_mu_RT"]),
+        float(entries["product_mu_RT"]),
+    )
+
+
+def _conversion_initial(spec, declaration, layout):
+    substrate, product, cell, rate, mu_s, mu_p = declaration
+    m, n = spec.model, spec.execution.capacity
+    at = np.zeros(n)
+    at[[c.id for c in m.cells].index(cell)] = rate
+    rows = np.asarray([m.species_ids.index(substrate), m.species_ids.index(product)])
+    state = dict(conversion_moved_fmol=np.zeros(n), conversion_heat_pJ=np.zeros(n))
+    return state, dict(
+        conversion_rate_fmol_s=at, conversion_rows=rows, conversion_mu_RT=np.asarray([mu_s, mu_p])
+    )
+
+
+def _conversion_moves(p, species, per_cell, *, xp):
+    """[S, n]: +per_cell at the product's row, -per_cell at the substrate's."""
+    rows = xp.arange(species)[:, None]
+    gained = xp.where(rows == p.conversion_rows[1], per_cell[None, :], 0.0)
+    return gained - xp.where(rows == p.conversion_rows[0], per_cell[None, :], 0.0)
+
+
+def _conversion_standard_J_mol(p):
+    """mu°_P - mu°_S (J/mol)."""
+    return R * p.temperature * (p.conversion_mu_RT[1] - p.conversion_mu_RT[0])
+
+
+def _conversion_rates(stored_rate):
+    def rates(state, potentials, control, p, *, xp):
+        from cells.models.surface_pump_v3 import KindRates
+
+        ci, _ = _potentials(state, p, xp=xp)
+        rate = p.conversion_rate_fmol_s  # [n] fmol/s converted at each cell
+        drop = _conversion_standard_J_mol(p) + R * p.temperature * (
+            xp.log(ci[p.conversion_rows[1]]) - xp.log(ci[p.conversion_rows[0]])
+        )  # mu_P - mu_S (J/mol) per cell
+        heat = -1e-3 * rate * drop  # pJ/s
+        species = state.amount_increment.shape[0]
+        return KindRates(
+            cell=_conversion_moves(p, species, rate, xp=xp),
+            outside=xp.zeros_like(state.extracellular_amount_increment),
+            derivatives=dict(conversion_moved_fmol=rate, conversion_heat_pJ=heat),
+            heat_pJ_s=heat,
+            work_pJ_s=xp.zeros(()),
+            stored_pJ_s=1e-3 * rate * _conversion_standard_J_mol(p) if stored_rate else None,
+        )
+
+    return rates
+
+
+def _conversion_ledger_terms(produced):
+    def ledger_terms(state, p, *, xp):
+        moved = state.conversion_moved_fmol
+        species = state.amount_increment.shape[0]
+        terms = dict(
+            cell=_conversion_moves(p, species, moved, xp=xp),
+            heat_pJ=state.conversion_heat_pJ,
+            stored_pJ=1e-3 * _conversion_standard_J_mol(p) * moved,
+        )
+        if produced:  # The reaction's record: S1 consumed, S2 produced, over every cell.
+            total = entity_sum(moved, axis=None, xp=xp)
+            terms["produced"] = _conversion_moves(p, species, total[None], xp=xp)[:, 0]
+        return terms
+
+    return ledger_terms
+
+
+def _conversion_domain(state, p, *, xp):
+    moved, heat = state.conversion_moved_fmol, state.conversion_heat_pJ
+    return xp.all(xp.isfinite(moved) & (moved >= 0)) & xp.all(xp.isfinite(heat))
+
+
+def conversion(*, stored_rate=True, produced=True):
+    """The conversion kind; stored_rate=False gives no stored_pJ_s and produced=False no
+    `produced` ledger term (planted omissions)."""
+    return Kind(
+        kind_id=CONVERSION_ID,
+        model_key=CONVERSION_KEY,
+        state_axes=(
+            ("conversion_moved_fmol", ("cell_slot",)),
+            ("conversion_heat_pJ", ("cell_slot",)),
+        ),
+        layout_fields=("conversion_rate_fmol_s", "conversion_rows", "conversion_mu_RT"),
+        parse=_conversion_parse,
+        to_dict=lambda declaration: dict(zip(CONVERSION_FIELDS, declaration, strict=True)),
+        structure_entry=lambda declaration: (),
+        initial=_conversion_initial,
+        rates=_conversion_rates(stored_rate),
+        ledger_terms=_conversion_ledger_terms(produced),
+        domain=_conversion_domain,
+        moved_rows=lambda declaration: (
+            (declaration[0], declaration[2]),
+            (declaration[1], declaration[2]),
+        ),
+    )
+
+
+def declare_conversion(raw, *, rate, substrate_mu_RT, product_mu_RT, substrate="S1", product="S2"):
+    """raw with the conversion declared at its first cell."""
+    raw = copy.deepcopy(raw)
+    raw["model"][CONVERSION_KEY] = dict(
+        substrate=substrate,
+        product=product,
+        cell=raw["model"]["cells"][0]["id"],
+        rate_fmol_s=rate,
+        substrate_mu_RT=substrate_mu_RT,
+        product_mu_RT=product_mu_RT,
+    )
     return raw

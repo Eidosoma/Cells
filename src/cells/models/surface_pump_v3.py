@@ -372,7 +372,10 @@ class KindRates(NamedTuple):
     None; it joins the patches' total flux and membrane current (observations, not ledgers: its
     moves are already in cell and outside). valid: its own domain at the stage's read and
     potentials (a charged law's V-dependent domain, such as |dG_cyc/RT| <= 80); false refuses the
-    row or the step."""
+    row or the step. stored_pJ_s (§7.4 (m), gap 2): the rate (pJ/s) of the free energy the kind
+    stores beyond the stored rows' own terms (its ledger_terms' stored_pJ), less the part its stage
+    read carries (the chemical rate is taken at the read's concentrations, so B4's closure term is
+    carried and B4 gives none), or None; it joins the stage energy-rate observation by role."""
 
     cell: object
     outside: object
@@ -381,6 +384,7 @@ class KindRates(NamedTuple):
     work_pJ_s: object
     membrane_flux: object = None
     valid: object = True
+    stored_pJ_s: object = None
 
 
 def _kinds(structure):
@@ -656,6 +660,9 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     )
     for kr in kind_rates:
         energy = energy - entity_sum(kr.work_pJ_s, axis=None, xp=xp)
+    for kr in kind_rates:  # §7.4 (m), gap 2: a kind's stored free energy, by role (static).
+        if kr.stored_pJ_s is not None:
+            energy = energy + entity_sum(kr.stored_pJ_s, axis=None, xp=xp)
     result = STATE_TYPE(
         cell,
         outside,
@@ -1315,7 +1322,7 @@ def _check_held_rows(spec, kinds):
                 )
 
 
-LEDGER_TERM_KEYS = ("cell", "outside", "heat_pJ", "work_pJ", "stored_pJ")
+LEDGER_TERM_KEYS = ("cell", "outside", "produced", "heat_pJ", "work_pJ", "stored_pJ")
 
 
 def _check_device_hooks(kinds, state, p, control):
@@ -1340,6 +1347,7 @@ def _check_device_hooks(kinds, state, p, control):
     shapes = dict(
         cell=np.shape(state.amount_increment),
         outside=np.shape(state.extracellular_amount_increment),
+        produced=np.shape(state.amount_increment)[:1],
     )
     tree = jax.tree.structure(state)
     for kind in kinds:
@@ -1538,7 +1546,9 @@ def _fold_kind_ledgers(result, state, p, kinds, *, xp):
     inward-positive node transfers close the material ledgers (they are in the amounts, rule
     (c)); its heat and work accumulators join the energy ledger as dissipation and work; its
     stored term (free energy it holds beyond the stored rows' own terms, since the start: FR-4's
-    buffer term, finite fuel's standard term) joins the stored energy."""
+    buffer term, finite fuel's standard term) joins the stored energy. Its net production per
+    species (`produced`, a reaction's record: finite fuel's ATP -> ADP + Pi) joins the global
+    material ledger, which otherwise holds every kind to transfers (§7.4 (m))."""
     for kind in kinds:
         if kind.ledger_terms is None:
             continue
@@ -1547,6 +1557,8 @@ def _fold_kind_ledgers(result, state, p, kinds, *, xp):
             result["local"] = result["local"] - terms["cell"]
         if "outside" in terms:
             result["outside"] = result["outside"] - terms["outside"]
+        if "produced" in terms:
+            result["total"] = result["total"] - terms["produced"]
         if "heat_pJ" in terms:
             result["energy"] = result["energy"] + entity_sum(terms["heat_pJ"], axis=None, xp=xp)
         if "work_pJ" in terms:
@@ -1578,7 +1590,7 @@ def channel_magnitudes(row, p, *, xp=np, structure=None):
         if kind.ledger_terms is None:
             continue
         terms = kind.ledger_terms(row, p, xp=xp)
-        for key, ledger in (("cell", "local"), ("outside", "outside")):
+        for key, ledger in (("cell", "local"), ("outside", "outside"), ("produced", "total")):
             index = first.LEDGERS.index(ledger)
             if key in terms and magnitudes[index] is not None:
                 magnitudes[index] = magnitudes[index] + xp.abs(terms[key])

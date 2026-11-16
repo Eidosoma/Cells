@@ -1320,12 +1320,12 @@ undeclared built-in changes nothing:
      RK4 a kind's derivative fields integrate like any state, described that unguarded path; no
      test or world used it. A design for kinds under RK4 can lift the refusal. The core's review
      of FR-1's refusal 4, version 1.1, found the gap (CLOSED_COMPARTMENT_DESIGN.md §3.4.1).
-4. **`ledger_terms(state, p, *, xp)` → {"cell", "outside", "heat_pJ", "work_pJ", "stored_pJ"}
-   (any subset):** cumulative inward-positive node transfers, heat and work accumulators, and
-   `stored_pJ`, the free energy the kind holds beyond the stored rows' own terms (its change
-   since the start: FR-4's buffer term, finite fuel's standard term), folded by role into
-   `balances`, `device_balances` and the ledger magnitudes, so every ledger closes with its
-   moves.
+4. **`ledger_terms(state, p, *, xp)` → {"cell", "outside", "produced", "heat_pJ", "work_pJ",
+   "stored_pJ"} (any subset):** cumulative inward-positive node transfers, a reaction's net
+   production per species (`produced`, (m)), heat and work accumulators, and `stored_pJ`, the
+   free energy the kind holds beyond the stored rows' own terms (its change since the start:
+   FR-4's buffer term, finite fuel's standard term), folded by role into `balances`,
+   `device_balances` and the ledger magnitudes, so every ledger closes with its moves.
 5. **`domain(state, p, *, xp)` → one bool,** and-ed into `domain_valid`, on the host and the
    device; **`control_domain(control, p, *, xp)` → one bool,** in place of the [0, 1] rule for
    its controls (rule (d)).
@@ -1541,6 +1541,20 @@ standard potentials, so its standard part is stored and no read carries it. Ever
 in the host checks, and its observation's residual is zero to rounding. Without its stored rate,
 the residual is exactly minus that rate while the cumulative ledger still closes. FR-4's kind
 worlds are unchanged in the pair check, and crossrev is identical.
+
+**Found while building it: a kind's net production per species.** The planted conversion failed
+the global material ledger, `total`: Σ amounts − the reservoirs' supply, per species, which
+holds every transfer to zero. A kind's `cell` and `outside` terms close the node ledgers but do
+not reach `total`. Finite fuel converts ATP into ADP and Pi, so it would fail there too. The
+reactions operator closes it with its node sums (D152). For a kind:
+- **`ledger_terms` gains the role `produced`:** [species], the cumulative net amount the kind has
+  created (+) or consumed (−). It is a reaction's record and joins `total` and its magnitude.
+- **A transfer kind gives none,** so `total` still holds it to conservation independently of its
+  node terms.
+- **Charge:** `produced` must be charge-neutral, or the global charge ledger refuses it. Finite
+  fuel's rows are neutral.
+- **The test:** the planted conversion closes `total` with its record, host and device alike, and
+  fails it by exactly its record without one.
 
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 

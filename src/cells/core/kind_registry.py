@@ -206,7 +206,9 @@ class Kind:
       shared row are refused at binding (they do not commute). `rates(state, potentials,
       control, p, *, xp)` -> surface_pump_v3.KindRates: inward-positive node changes (cell
       [species, cell], outside [species, outside node]) into the shared inventory, the kind's own
-      state derivatives {field: array}, and heat and work rates (pJ/s); `potentials` are the
+      state derivatives {field: array}, and heat and work rates (pJ/s), and optionally
+      stored_pJ_s, the rate of its stored free energy (its stored_pJ's) less the part its read
+      carries, which joins the stage energy-rate observation (§7.4 (m)); `potentials` are the
       stage's node potentials, cells then outside nodes (V). `stage_check(read, cell, outside,
       p, *, xp)` -> one bool, after every rate of the stage: `read` is the read state, `cell`
       [species, cell] and `outside` [species, outside node] the stage's total node rates (fmol/s;
@@ -241,11 +243,13 @@ class Kind:
       include them as the host's do; they branch on no value in Python): `domain(state, p, *,
       xp)` -> one bool, and-ed into domain_valid; `control_domain(control, p, *, xp)` -> one
       bool, in place of the [0, 1] rule for its controls; `ledger_terms(state, p, *, xp)` ->
-      {"cell": [species, cell], "outside": [species, outside node], "heat_pJ": ..., "work_pJ":
-      ..., "stored_pJ": ...} (any subset): cumulative inward-positive node transfers, heat and
-      work accumulators, and the free energy the kind stores beyond the stored rows' own terms
-      (its change since the start), folded into balances, device_balances and the ledger
-      magnitudes by role.
+      {"cell": [species, cell], "outside": [species, outside node], "produced": [species],
+      "heat_pJ": ..., "work_pJ": ..., "stored_pJ": ...} (any subset): cumulative inward-positive
+      node changes, the net amount per species the kind created (+) or consumed (-) (a
+      reaction's record, which the global material ledger otherwise holds to zero; charge-neutral,
+      or the global charge ledger refuses it; §7.4 (m)), heat and work accumulators, and the free
+      energy the kind stores beyond the stored rows' own terms (its change since the start),
+      folded into balances, device_balances and the ledger magnitudes by role.
     - observation: `readouts(state, read, potentials, control, p, *, xp)` -> its readout columns,
       in order, after today's (on the host): the stored state, the row's read state (free h at a
       buffered node) and its node potentials, so a charged law can report its instantaneous rate.
