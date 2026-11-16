@@ -125,17 +125,19 @@ export function headSize(perSecond) {
  *
  * The stretch may be of any length. A bead that set out within it stands where it has got
  * to since the moment it set out, so as many beads pass a second at two frames a second as
- * at sixty, and after a long gap the lane is as full as it would be had it been watched all
- * along. (A stretch longer than a crossing and a half is no different from one of that
- * length: every bead of before has arrived.)
+ * at sixty, and after a gap of any length the lane is as it would be had it been watched all
+ * along: a device that draws a frame only every few seconds shows the beads where they have
+ * truly got to, not at the same places frame after frame.
  */
 export function advance(lane, seconds) {
-  const stretch = Math.min(Math.max(0, seconds), CROSSING * 1.5);
+  const stretch = Math.max(0, seconds);
   if (lane.beads.length) lane.beads = lane.beads.map((share) => share + stretch / CROSSING).filter((share) => share < 1);
   if (lane.perSecond > 0) {
     // The clock of setting out runs on from where it stood: a bead sets out each time it passes a whole number.
+    // It runs on by the whole stretch, however long, so that the beads stand where they would after exactly that
+    // time; of those that set out within it, only the ones of the last crossing are still on their way.
     const before = lane.due, after = before + lane.perSecond * stretch;
-    for (let number_ = Math.floor(before) + 1; number_ <= after; number_++) {
+    for (let number_ = Math.max(Math.floor(before) + 1, Math.ceil(after - lane.perSecond * CROSSING)); number_ <= after; number_++) {
       const since = (after - number_) / lane.perSecond; // seconds since this bead set out
       if (since < CROSSING && lane.beads.length < MOST) lane.beads.push(since / CROSSING);
     }

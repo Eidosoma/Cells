@@ -22,7 +22,7 @@ const WHOLE = new THREE.Quaternion();
 /** How much larger than a bead its rim is drawn, in the ground's colour, so that a bead reads on any part behind it. */
 export const RIM = 1.32;
 /** An arrowhead's width beside a bead's, at its full size. */
-export const HEAD = 1.55;
+export const HEAD = 1.25;
 
 /** A bead's size along its lane, as a share of its full size: it comes and goes small. */
 export function swell(share) {

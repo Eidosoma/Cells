@@ -223,7 +223,11 @@ class CellsViewer extends HTMLElement {
       // Quantity layers: "layers=junction-drops,-voltage-relief" switches the first on and the second off; "strength=bold".
       if (query.get("strength")) this.current?.setStrength?.(query.get("strength"));
       if (query.get("layers")) this.current?.setLayers?.(query.get("layers"));
-      if (query.get("select")) this.select(query.get("select"), { fly: true });
+      if (query.get("select")) {
+        this.select(query.get("select"), { fly: true });
+        // A part the address names is chosen as the page opens; what a view shows only at a visitor's own choice (flux in the Cell view) waits for one.
+        this.current?.openedWith?.(this.state.selected);
+      }
       // A stated camera angle or distance has the last word, also over the flight to a selected part.
       if (this.stage && (query.get("azimuth") || query.get("polar") || query.get("distance"))) {
         const view = {};
@@ -374,6 +378,7 @@ class CellsViewer extends HTMLElement {
     }
     const held = this.state.selected;
     this.state.selected = id && this.shows(id) ? id : null;
+    this.current?.chosen?.(); // a choice made through the page: what a view holds back as the page opens (see openedWith) waits no longer
     this.current?.setSelection(this.state.selected);
     // Letting go of everything also lets go of what a view has open (a family of proteins).
     if (!this.state.selected) this.current?.letGo?.(held);

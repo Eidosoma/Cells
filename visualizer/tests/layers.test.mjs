@@ -1145,6 +1145,18 @@ test("beads on a lane: as many set out a second as the rate says, each crosses i
   const gap = { perSecond: 3, due: 0, beads: [0.5] };
   advance(gap, 600);
   assert.ok(Math.abs(gap.beads.length - 3 * CROSSING) <= 1 && gap.beads.every((share) => share >= 0 && share < 1));
+  // And each bead stands where it would after exactly that time: one stretch of 7.3 s is 730 frames of a hundredth.
+  // (A device that draws a frame every few seconds once showed the beads at the same places frame after frame.)
+  const once = { perSecond: 1.25, due: 0, beads: [] }, often = { perSecond: 1.25, due: 0, beads: [] };
+  advance(once, 7.3);
+  for (let frame = 0; frame < 730; frame++) advance(often, 0.01);
+  assert.equal(once.beads.length, often.beads.length);
+  assert.ok(once.beads.every((share, k) => Math.abs(share - often.beads[k]) < 1e-9), `${once.beads} in one stretch, ${often.beads} in 730`);
+  const slowly = { perSecond: 1.25, due: 0, beads: [] };
+  advance(slowly, CROSSING);
+  const stood = slowly.beads.slice();
+  advance(slowly, 3);
+  assert.ok(slowly.beads.some((share, k) => Math.abs(share - stood[k]) > 0.05), "a frame three seconds later, the beads have moved on");
   // Standing: evenly spaced, as many as would be crossing at one moment; none for a stream too thin for that, and none for nothing.
   assert.deepEqual(standing(0), []);
   assert.deepEqual(standing(0.01), [], "a bead every hundred seconds is almost never on its way: the lane's arrowhead alone stands for it");
@@ -1343,6 +1355,31 @@ test("a run with a secreted species opens coloured by it: the cell and each spac
   await lens.setLayer("signal-fog", false);
   assert.ok(closeTo(tone(outside.geometry.attributes.color.array, outside.tiles[1].start), (() => { linear.setRGB(...lens.neutral, THREE.SRGBColorSpace); return [linear.r, linear.g, linear.b]; })()));
   assert.ok(lens.labels.shown.some((label) => label.text === "ecs_0"), "and the tile keeps its name");
+});
+
+test("the statement of what moves is cut by no card that lies over the picture", async (t) => {
+  const { lens, restore, stage } = lensFor([packaged(WORLD)], CATALOGUE.experiments);
+  t.after(restore);
+  await lens.ready;
+  lens.activate();
+  await lens.setLayer("transfers", true);
+  const flow = lens.labels.shown.find((label) => /^One bead is/.test(label.text || ""));
+  const at = (point) => stage.project(point, new THREE.Vector3());
+  const natural = at(lens.flowHome);
+  // The stand-in page has a card down its left side, 303 px wide (the legend's column). A short statement has room where it is.
+  lens.update(16);
+  assert.ok(flow.anchor.distanceTo(lens.flowHome) < 1e-9, "it follows its own point, in front of the sheet");
+  // As long as the page writes it, its start would lie under the card: it moves along its row until it stands clear.
+  flow.width = 2 * (natural.x - 303) + 80;
+  flow.height = 18;
+  lens.update(16);
+  const moved = at(flow.anchor);
+  assert.ok(near(moved.x - flow.width / 2, 303 + 6, 1e-6), `its start stands six pixels clear of the card (${moved.x - flow.width / 2})`);
+  assert.ok(Math.abs(moved.y - natural.y) < 1e-6, "on its own row");
+  // The card gone (the panel closed, the legend folded): it is back at its own point after the cards are looked up again.
+  lens.labels.blocked = () => [];
+  for (let frame = 0; frame < 12; frame++) lens.update(16);
+  assert.ok(flow.anchor.distanceTo(lens.flowHome) < 1e-9);
 });
 
 test("beads cross the borders of the small world as its saved totals grew: how many, which way, and what the picture says of them", async (t) => {

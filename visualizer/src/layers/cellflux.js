@@ -23,6 +23,7 @@ import * as THREE from "../three.js";
 import { readFlux, planFor, shownKinds, shownWithheld, illustrationWords, citation, PACE } from "./flux.js";
 import { readLoop, loopAt, loopStreams, loopToken, loopRates, planFromLoop, loopWords } from "./loop.js";
 import { Tokens } from "./marks/tokens.js";
+import { fitOnRow } from "./statement.js";
 import { SLOWS, statementOf, tokenWords, timeWords, STILL_WORDS, HEAD_WORDS } from "./marks/beads.js";
 import { ionColours } from "./ions.js";
 import { clock } from "../replay/format.js";
@@ -45,8 +46,10 @@ export const STATEMENT = { top: 64, gap: 6, margin: 6 };
  * far apart the two lanes of a junction run.
  */
 export const SIZES = {
-  schematic: { bead: 0.085, pitch: 0.22, reach: 1.0, over: { channels: 0.3, membrane: 0.3, pumps: 0.56, junctions: 0.3, water: 0.28, secretion: 0.1 }, bridge: 0.92 },
-  real: { bead: 0.04, pitch: 0.1, reach: 0.45, over: { channels: 0.06, membrane: 0.06, pumps: 0.06, junctions: 0.06, water: 0.1, secretion: 0.05 }, bridge: 0.1 },
+  // Schematic: a bead about as large as the picture's own drops, so that it can be seen with the whole cell in view.
+  // Two lanes at a channel run over its two walls, a quarter of a unit to each side of its pore.
+  schematic: { bead: 0.15, pitch: 0.46, reach: 1.15, over: { channels: 0.46, membrane: 0.46, pumps: 0.68, junctions: 0.46, water: 0.4, secretion: 0.2 }, bridge: 0.92 },
+  real: { bead: 0.09, pitch: 0.27, reach: 0.7, over: { channels: 0.14, membrane: 0.14, pumps: 0.14, junctions: 0.14, water: 0.16, secretion: 0.1 }, bridge: 0.27 },
 };
 
 /**
@@ -128,9 +131,10 @@ export class CellFlux {
     this.elapsed = 0; // seconds of the cell's time the loop has played
     this.step = null;
     this.tags = null;
-    this.place = null; // where the picture's statement stands on the screen
+    this.said = null; // what the picture says of the flux it shows
+    this.fitted = null; // where that statement has room on the screen, for the window and the cards as they were last seen
     this.taken = new Set(); // the parts whose flux shows now
-    this.pins = 0;
+    this.held = null; // the part the page's address chose: it shows no flux until the visitor chooses a part or presses the switch
   }
 
   // ------------------------------------------------------------ what the species has
@@ -204,10 +208,30 @@ export class CellFlux {
 
   // ------------------------------------------------------------ what shows now
 
-  /** The part of the cell that is chosen, where a capability of the map is: its name in the cell's builder, or null. */
+  /**
+   * The part of the cell that the visitor chose, where a capability of the map is: its name
+   * in the cell's builder, or null. A part that the page's address named is chosen as the
+   * page opens, and is not the visitor's choice: nothing flows as the page opens.
+   */
   chosenPart() {
-    const entity = this.lens.selected ? this.lens.model.get(this.lens.selected) : null;
+    const { lens } = this;
+    if (this.held && lens.selected === this.held) return null;
+    const entity = lens.selected ? lens.model.get(lens.selected) : null;
     return entity?.kind === "capability" ? entity.part || null : null;
+  }
+
+  /**
+   * The page's address named this part, and the page opened with it chosen: it shows no flux
+   * until the visitor chooses a part (another, or this one again) or presses the switch.
+   */
+  hold(id) {
+    this.held = id || null;
+    this.refresh();
+  }
+
+  /** The visitor made a choice through the page (the viewer says so before it sets it): the address's choice holds nothing back any longer. */
+  release() {
+    this.held = null;
   }
 
   /** What shows now: { part, kinds, withheld }. */
@@ -230,6 +254,7 @@ export class CellFlux {
   setOn(on) {
     if (this.on === Boolean(on)) return;
     this.on = Boolean(on);
+    this.held = null; // the visitor pressed the switch: from here on a chosen part shows as any chosen part does
     this.refresh();
     this.lens.onChrome?.();
   }
@@ -258,6 +283,8 @@ export class CellFlux {
    */
   refresh(force = false) {
     const { lens } = this;
+    // The address's choice lasts until the visitor chooses: another part, or none.
+    if (this.held && lens.selected !== this.held) this.held = null;
     // The cell drawn in the other size mode may have other places for what flows.
     if (this.builtFor !== lens.sizeMode) this.build();
     const showing = this.showing();
@@ -395,18 +422,21 @@ export class CellFlux {
   /**
    * What the picture itself says for as long as flux shows: for an illustration its notice
    * and its form; for a run its name, that it loops and the loop's length, then what one
-   * bead stands for, the time and the interval the rates are means over.
+   * bead stands for, the time and the interval the rates are means over. `ways` are the
+   * same words broken in more and more places, the whole first: the first that has room
+   * between the cards is the one shown.
    */
   statement() {
     if (!this.tokens.length) return null;
     const still = this.still();
     if (this.source.kind === "illustration") {
       const [notice, form] = illustrationWords(this.flux, still);
-      return { notice, lines: [form] };
+      return { notice, ways: [form, form.replace(" and their pace ", "\nand their pace "), form.replace(": ", ":\n").replace(" and their pace ", " and their pace\n").replace(" · ", "\n")] };
     }
     const loop = this.loop, at = loopAt(loop, this.elapsed);
     const what = this.showing().kinds[0]?.token || "ion";
-    return { notice: null, lines: [loopWords(loop, this.species.label, clock), statementOf({ token: loopToken(loop.busiest, this.slow), what, slow: this.slow, interval: at.interval, clock, still })] };
+    const lines = [loopWords(loop, this.species.label, clock), statementOf({ token: loopToken(loop.busiest, this.slow), what, slow: this.slow, interval: at.interval, clock, still })].join("\n");
+    return { notice: null, ways: [lines, lines.replace(/ · /g, "\n")] };
   }
 
   /** The lens has made its labels anew: the flux's own are made with them. */
@@ -426,61 +456,71 @@ export class CellFlux {
   words() {
     const tags = this.tags;
     if (!tags) return;
-    const said = this.statement();
-    // On a narrow screen a long line is broken, so that the statement fits between the cards.
-    const narrow = (this.lens.stage.width || 1000) < 620;
-    const fold = (line) => (narrow ? line.replace(/ · /g, "\n").replace(/: the number of beads and/, ":\nthe number of beads and") : line);
-    tags.labels.setText(tags.notice, said?.notice || "");
-    tags.labels.setText(tags.lines, said ? said.lines.map(fold).join("\n") : "");
-    tags.notice.hidden = !said?.notice;
-    tags.lines.hidden = !said;
-    this.place = null; // other words may need other room
+    this.said = this.statement();
+    tags.labels.setText(tags.notice, this.said?.notice || "");
+    tags.labels.setText(tags.lines, this.said ? this.said.ways[0] : "");
+    this.fitted = null; // other words need their room found again
     this.pin();
   }
 
   /**
    * Keep the statement at one place on the screen wherever the camera looks: it stays on the
    * picture for as long as flux shows. A label follows a point of the scene and stands just
-   * above it, so the point is moved to where the label's foot is to lie on the screen.
+   * above it, so the point is moved to where the label's foot is to lie on the screen. Where
+   * the cards leave it no room at all (a narrow screen with its legend open over the
+   * picture), it is not put under them in pieces: the legend in front then carries the notice.
    */
   pin() {
     const tags = this.tags, { stage } = this.lens;
-    const camera = stage.camera;
-    if (!tags || !camera?.isCamera || !(stage.height > 0) || !(stage.width > 0)) return;
-    // Where the cards lie is looked up now and then, not in every frame.
-    if (!this.place || this.pins++ % 12 === 0 || this.place.width !== stage.width || this.place.height !== stage.height) this.place = this.room();
-    const { top, middle } = this.place;
-    const across = (2 * middle) / stage.width - 1, down = (pixels) => 1 - (2 * pixels) / stage.height;
-    const notice = tags.notice.hidden ? 0 : (tags.notice.height || 18) + STATEMENT.gap;
-    tags.notice.anchor.set(across, down(top + (tags.notice.height || 18)), 0).unproject(camera);
-    tags.lines.anchor.set(across, down(top + notice + (tags.lines.height || 18)), 0).unproject(camera);
+    if (!tags) return;
+    const said = this.said, camera = stage.camera;
+    if (!said || !camera?.isCamera || !(stage.height > 0) || !(stage.width > 0)) {
+      tags.notice.hidden = !said?.notice;
+      tags.lines.hidden = !said;
+      return;
+    }
+    // The room is found again whenever the window or a card over the picture has changed.
+    const blocked = tags.labels.blocked?.() || [];
+    const key = JSON.stringify([stage.width, stage.height, blocked.map((rect) => [Math.round(rect.left), Math.round(rect.top), Math.round(rect.right), Math.round(rect.bottom)])]);
+    if (!this.fitted || this.fitted.key !== key) this.fitted = { key, place: this.fit(blocked) };
+    const place = this.fitted.place;
+    tags.notice.hidden = !said.notice || !place;
+    tags.lines.hidden = !place;
+    if (!place) return;
+    camera.updateMatrixWorld(); // the camera may have moved in this frame, and its matrices are brought up to date only when the frame is drawn
+    const across = (2 * place.middle) / stage.width - 1, down = (pixels) => 1 - (2 * pixels) / stage.height;
+    const notice = said.notice ? (tags.notice.height || 18) + STATEMENT.gap : 0;
+    tags.notice.anchor.set(across, down(place.top + (tags.notice.height || 18)), 0).unproject(camera);
+    tags.lines.anchor.set(across, down(place.top + notice + (tags.lines.height || 18)), 0).unproject(camera);
   }
 
   /**
-   * Where the statement has room: the highest place under the top bar where it fits between
-   * the cards that lie over the picture (the view's card, the scale rail, a panel, the
-   * legend), in the middle of the window where that is free and else in the middle of the
-   * widest free stretch. On a narrow screen that is under the view's card, over the top of
-   * the picture, and never in the foot.
+   * Where the statement has room, and in how many lines: { top, middle } in pixels of the
+   * window, or null where there is none. It stands as high under the top bar as it can,
+   * between the cards that lie over the picture (the view's card, the scale rail, a panel,
+   * the legend) and as near to the middle of the window as they allow; on each row it is
+   * said in the fewest lines that fit there. Never in the lower part of the picture, where
+   * the foot is.
    */
-  room() {
-    const tags = this.tags, { stage } = this.lens;
-    const { width, height } = stage;
-    const blocked = tags.labels.blocked?.() || [];
-    const wide = Math.max(tags.notice.hidden ? 0 : tags.notice.width || 0, tags.lines.hidden ? 0 : tags.lines.width || 0) + 2 * STATEMENT.margin;
-    const tall = (tags.notice.hidden ? 0 : (tags.notice.height || 18) + STATEMENT.gap) + (tags.lines.hidden ? 0 : tags.lines.height || 18);
-    for (let top = STATEMENT.top; top + tall <= height * 0.6; top += 8) {
-      let free = [[STATEMENT.margin, width - STATEMENT.margin]];
-      for (const rect of blocked) {
-        if (rect.bottom < top - STATEMENT.gap || rect.top > top + tall + STATEMENT.gap) continue;
-        free = free.flatMap(([from, to]) => [[from, Math.min(to, rect.left - STATEMENT.margin)], [Math.max(from, rect.right + STATEMENT.margin), to]]).filter(([from, to]) => to > from);
+  fit(blocked) {
+    const tags = this.tags, said = this.said, { width, height } = this.lens.stage;
+    const notice = said.notice ? (tags.notice.height || 18) + STATEMENT.gap : 0;
+    // Each way of breaking the lines, measured once by the label layer.
+    const ways = said.ways.map((text) => {
+      tags.labels.setText(tags.lines, text);
+      return { text, wide: Math.max(said.notice ? tags.notice.width || 0 : 0, tags.lines.width || 0), tall: notice + (tags.lines.height || 18) };
+    });
+    for (let top = STATEMENT.top; top <= height * 0.6; top += 8) {
+      for (const way of ways) {
+        if (top + way.tall > height * 0.6) continue;
+        const middle = fitOnRow({ width, blocked, top, tall: way.tall, wide: way.wide, wanted: width / 2, margin: STATEMENT.margin });
+        if (middle === null) continue;
+        tags.labels.setText(tags.lines, way.text);
+        return { top, middle };
       }
-      const centred = free.find(([from, to]) => from <= width / 2 - wide / 2 && to >= width / 2 + wide / 2);
-      const widest = free.sort((a, b) => b[1] - b[0] - (a[1] - a[0]))[0];
-      if (centred) return { top, middle: width / 2, width, height };
-      if (widest && widest[1] - widest[0] >= wide) return { top, middle: (widest[0] + widest[1]) / 2, width, height };
     }
-    return { top: STATEMENT.top, middle: width / 2, width, height };
+    tags.labels.setText(tags.lines, ways[0].text);
+    return null;
   }
 
   // ------------------------------------------------------------ the legend and the panel
@@ -521,12 +561,13 @@ export class CellFlux {
       title: "Flux",
       // An illustration says so for as long as it shows (rule 11).
       example: flowing && !run ? flux.illustration.notice : null,
-      rows: [{ channel: "motion", label: "Flux", options: [{ label: "Off", off: FLUX_SWITCH, on: !this.on }, { id: FLUX_SWITCH, label: "All", on: this.on, title: "Show all that flows in this cell" }] }],
+      rows: [{ channel: "motion", label: "Show", options: [{ label: "Off", off: FLUX_SWITCH, on: !this.on }, { id: FLUX_SWITCH, label: "All", on: this.on, title: "Show all that flows in this cell" }] }],
       time,
-      hint: flowing || cannot.length ? null : "Choose a part to see what flows through it.",
+      hint: flowing || cannot.length ? null : "Or choose a part to see its flux.",
       keys,
       cannot,
-      cannotSays: cannot.length > 2 ? `${cannot.length} flows not drawn, each with its reason` : null,
+      // The view's card stands just above the legend: the signs, what is not drawn and the door to the panel keep to one line.
+      compact: flowing ? "What the beads mean" : "Why nothing is drawn here",
       // With the switch on and no part chosen, a panel says what stands behind all of it; a chosen part's own panel says it of that part.
       details: flowing && !showing.kinds.some((kind) => kind.part === showing.part) ? FLUX_PANEL : null,
     };

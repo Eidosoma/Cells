@@ -197,7 +197,10 @@ the viewer changes.
     "Illustration: not a run" stand in the panel of a chosen part as well, since a
     narrow screen hides the legend behind a panel. The form `typical values` is declared
     and holds no entries; it is not offered until an entry with a cited source stands
-    behind each number.
+    behind each number. Where the cards over the picture leave the statement no room (a
+    phone with its legend open; a narrow window with a card, the legend and a panel), the
+    picture carries none, and the legend or the panel in front carries the notice: the
+    words are in sight wherever illustration shows.
 12. **Decoration never moves with a direction.** Motion that is not a layer (a drifting
     crowd, a shimmering membrane) has no net direction, stops while any layer on the
     `motion` channel shows, and stops for a visitor who asks for reduced motion.
@@ -217,7 +220,9 @@ and fuel, each where a rate stands behind it.
 opens. A part's flux shows when the visitor chooses the part, alone, whatever the
 switch; the switch shows all of it. A part that the page's address names is chosen as
 the page opens and shows no flux until the visitor chooses a part or presses the
-switch: nothing flows as the page opens. A chosen part that draws nothing (see below)
+switch: nothing flows as the page opens. Once the switch has been pressed, the part the
+address named shows as any chosen part does, and goes on showing when the switch is
+turned off again. A chosen part that draws nothing (see below)
 shows nothing, and its reason. While any flux shows, the bloom is on, the look's own
 motion is held still (rule 12), and the picture's own tokens of that part (the drops
 where water crosses, the signals that leave, the ions in the close-up's channel) give
@@ -252,6 +257,10 @@ is given. No textbook direction is drawn.
 single channel or pump and no place for one. An illustration draws each lane at every
 place the picture has for its part; a run gives each of its streams one lane, so that as
 many beads pass as the run's rate says.
+
+**Colours.** A bead of sodium or of potassium wears that ion's colour; every other bead
+wears the one neutral tone (rule 8). The picture's own hues for water and for signals
+are not used for beads: only the ions' colours were validated together.
 
 ## Outside nodes on the picture
 

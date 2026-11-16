@@ -39,6 +39,7 @@ import { layersFor, readDeclarations, account, Switch, CHANNELS, CHANNEL_WORDS, 
 import { Closeup, freeRect } from "../layers/closeup.js";
 import { membranesOf } from "../layers/membrane.js";
 import { ionColours } from "../layers/ions.js";
+import { clearOf } from "../layers/statement.js";
 import declaredLayers from "../../data/layers/layers.json" with { type: "json" };
 import ionTable from "../../data/layers/ions.json" with { type: "json" };
 
@@ -980,7 +981,8 @@ export class ReplayLens {
       // What the picture says of itself for as long as it shows: that an example's numbers are invented (rule 6),
       // and for a layer on the motion channel what one bead stands for and what time it keeps (rule 3).
       this.tags.example = this.run.example ? labels.add({ text: this.run.example.says, anchor: new THREE.Vector3(0, this.high, -this.extent * 1.02), priority: 980, kind: "note label-region label-example", lift: 10 }) : null;
-      this.tags.flow = labels.add({ text: "", anchor: new THREE.Vector3(0, 0, this.extent * 1.06), priority: 970, kind: "note label-region label-flow", lift: 0 });
+      this.flowHome = new THREE.Vector3(0, 0, this.extent * 1.06); // in front of the sheet: where the statement stands when no card lies there
+      this.tags.flow = labels.add({ text: "", anchor: this.flowHome.clone(), priority: 970, kind: "note label-region label-flow", lift: 0 });
       for (const label of [this.tags.example, this.tags.flow]) if (label) label.boost = 1000;
       // The close-up's own words: the ions' names and readings, which side is which, and its caption.
       this.closeup?.attach(labels);
@@ -1413,6 +1415,7 @@ export class ReplayLens {
   update(dt) {
     const playing = this.active ? this.player.tick(dt) : false;
     this.placeCloseup();
+    this.placeFlow();
     // A mark that moves (a layer on the motion channel) is advanced on every frame, and keeps the frames coming. It
     // is advanced by the time that truly passed since the frame before: the stage hands a frame at most a tenth of a
     // second, which on a slow device would let the beads pass more slowly than the picture says they do.
@@ -1434,6 +1437,23 @@ export class ReplayLens {
       }
     }
     return playing || waiting || moving;
+  }
+
+  /**
+   * The statement of what moves stays whole (rule 3: it is on the picture for as long as the
+   * layer shows). It follows a point in front of the sheet; where a card lies over its
+   * start or its end there (the legend, with a panel open), it moves along its row until it
+   * stands clear, or up where the row has no room (layers/statement.js).
+   */
+  placeFlow() {
+    const flow = this.tags?.flow;
+    if (!this.active || !flow || flow.hidden || !this.flowHome || !this.stage.camera?.isCamera || !this.stage.project) return;
+    // Where the cards lie is looked up now and then, not in every frame.
+    if (!this.covered || this.coveredAge++ > 10) {
+      this.covered = this.labels.blocked ? this.labels.blocked() : [];
+      this.coveredAge = 0;
+    }
+    clearOf({ stage: this.stage, blocked: this.covered, home: this.flowHome, wide: flow.width || 0, tall: flow.height || 0, lift: flow.lift || 0, out: flow.anchor });
   }
 
   /**

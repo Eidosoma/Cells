@@ -732,6 +732,16 @@ export class CellLens {
     this.flux.setSlow(slow);
   }
 
+  /** The page's address named this part: it is chosen as the page opens and shows no flux until the visitor chooses a part or presses the switch. */
+  openedWith(id) {
+    this.flux.hold(id);
+  }
+
+  /** A choice is about to be set that was made through the page: the same part chosen again counts as the visitor's choice. */
+  chosen() {
+    this.flux.release();
+  }
+
   /** "rich", "plain", or "full": rich, with every effect held on whatever the frame rate. */
   setLook(word) {
     if (!this.stage.look.choose(word)) return;

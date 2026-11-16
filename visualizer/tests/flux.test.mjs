@@ -20,6 +20,7 @@ import { readFlux, planFor, speaksFor, shownKinds, shownWithheld, illustrationWo
 import { readLoop, loopAt, loopStreams, loopToken, loopRates, planFromLoop, loopWords } from "../src/layers/loop.js";
 import { CellFlux, seatsOf, arrange, FLUX, PROBLEMS, SIZES, BLOOM, FLUX_PANEL, FLUX_SWITCH, STATEMENT } from "../src/layers/cellflux.js";
 import { Tokens, swell, RIM } from "../src/layers/marks/tokens.js";
+import { fitOnRow, clearOf } from "../src/layers/statement.js";
 import { CROSSING, standing, tokenFor, ionsASecond, beadsASecond, meanRate, STILL_WORDS, SLOWS } from "../src/layers/marks/beads.js";
 import { CellLens } from "../src/lenses/cell.js";
 import { buildCell, buildMolecules } from "../src/lenses/cell_parts.js";
@@ -61,10 +62,16 @@ function stageOf({ moving = true, width = 1280, height = 800, dark = false } = {
   };
 }
 
-/** A stand-in for the label layer: it keeps the labels the flux adds and what they say. */
+/** A stand-in for the label layer: it keeps the labels the flux adds and what they say, and measures them as a page would (seven pixels a letter, sixteen a line). */
 function labelLayer() {
   const made = [];
-  return { made, add: (spec) => (made.push({ ...spec, hidden: false, height: 18 }), made.at(-1)), setText: (label, text) => (label.text = text) };
+  const measure = (label) => {
+    const lines = String(label.text || "").split("\n");
+    label.width = Math.max(...lines.map((line) => line.length)) * 7 + 14;
+    label.height = 16 * lines.length + 2;
+    return label;
+  };
+  return { made, add: (spec) => (made.push(measure({ ...spec, hidden: false })), made.at(-1)), setText: (label, text) => measure(Object.assign(label, { text })) };
 }
 
 /**
@@ -409,8 +416,8 @@ test("the page opens with nothing flowing: the switch off, no bloom asked for, t
   const legend = flux.legend();
   assert.equal(legend.title, "Flux");
   assert.equal(legend.example, null, "no notice while nothing shows");
-  assert.deepEqual(legend.rows, [{ channel: "motion", label: "Flux", options: [{ label: "Off", off: FLUX_SWITCH, on: true }, { id: FLUX_SWITCH, label: "All", on: false, title: "Show all that flows in this cell" }] }]);
-  assert.equal(legend.hint, "Choose a part to see what flows through it.");
+  assert.deepEqual(legend.rows, [{ channel: "motion", label: "Show", options: [{ label: "Off", off: FLUX_SWITCH, on: true }, { id: FLUX_SWITCH, label: "All", on: false, title: "Show all that flows in this cell" }] }]);
+  assert.equal(legend.hint, "Or choose a part to see its flux.");
   assert.deepEqual([legend.keys, legend.cannot, legend.time, legend.details], [[], [], null, null]);
   for (const part of ["water", "secretion", "channels", "pumps"]) assert.equal(flux.takes(part), false, "the picture's own drops, signals and ions stand as they are");
 });
@@ -467,6 +474,90 @@ test("choosing a part shows that part's flux alone, with bloom, the look's motio
   assert.ok(lens.chromes >= 2, "the page was told each time what shows changed");
 });
 
+test("a part that the page's address names is chosen as the page opens and shows no flux until the visitor chooses", () => {
+  const lens = lensFor("planarian");
+  const { flux, stage } = lens;
+  // The viewer chooses the part the address names, then tells the view that the choice was the address's.
+  lens.selected = "cap.pumps";
+  flux.refresh();
+  flux.hold("cap.pumps");
+  assert.equal(flux.tokens.length, 0, "nothing flows as the page opens");
+  assert.deepEqual([stage.bloom, stage.shining.size, stage.decoration.holds.size], [0, 0, 0]);
+  assert.ok(lens.labels.made.every((label) => label.hidden), "and the picture says nothing of flux");
+  assert.equal(flux.legend().example, null);
+  assert.equal(flux.legend().hint, "Or choose a part to see its flux.");
+  assert.equal(flux.takes("pumps"), false);
+  // The part's panel still says what would flow through it, and on what basis.
+  assert.equal(flux.inPanel(lens.model.get("cap.pumps")).sections.at(-1).title, "Flux. Illustration: not a run");
+  // The colours or the size mode may change meanwhile: still nothing flows.
+  flux.refresh(true);
+  assert.equal(flux.tokens.length, 0);
+  // The visitor chooses another part: its flux shows. And the first again: it shows as any chosen part does.
+  lens.choose("cap.water");
+  assert.deepEqual([...new Set(lanesOf(lens).map((item) => item.lane.key.split("/")[0]))], ["water"]);
+  lens.choose("cap.pumps");
+  assert.deepEqual([...new Set(lanesOf(lens).map((item) => item.lane.key.split("/")[0]))], ["pumps"]);
+  // Or the visitor chooses nothing and then the same part again.
+  const again = lensFor("planarian");
+  again.selected = "cap.pumps";
+  again.flux.hold("cap.pumps");
+  again.choose(null);
+  again.choose("cap.pumps");
+  assert.equal(again.flux.tokens.length, 1);
+  // Or presses the name of the very part the address chose: the viewer says that a choice was made, and sets the same one.
+  const same = lensFor("planarian");
+  same.selected = "cap.pumps";
+  same.flux.hold("cap.pumps");
+  same.flux.refresh(); // the view is shown again, or its species changes: no choice of the visitor's, and nothing flows
+  assert.equal(same.flux.tokens.length, 0);
+  same.flux.release();
+  same.choose("cap.pumps");
+  assert.equal(same.flux.tokens.length, 1);
+  // Or presses the switch: from then on the part, still chosen, shows alone as any chosen part does.
+  const pressed = lensFor("planarian");
+  pressed.selected = "cap.pumps";
+  pressed.flux.hold("cap.pumps");
+  assert.equal(pressed.flux.tokens.length, 0);
+  pressed.flux.setOn(true);
+  assert.deepEqual([...new Set(lanesOf(pressed).map((item) => item.lane.key.split("/")[0]))], ["pumps"]);
+  pressed.flux.setOn(false);
+  assert.equal(pressed.flux.tokens.length, 1, "the chosen part goes on showing: the visitor has chosen");
+  // An address that names nothing holds nothing.
+  const plain = lensFor("planarian");
+  plain.flux.hold(null);
+  plain.choose("cap.pumps");
+  assert.equal(plain.flux.tokens.length, 1);
+});
+
+test("a statement has room on a row where no card lies, as near to where it was wanted as can be", () => {
+  const legend = { left: 16, top: 330, right: 252, bottom: 884 }, panel = { left: 1024, top: 64, right: 1384, bottom: 884 };
+  const row = { width: 1400, blocked: [legend, panel], top: 550, tall: 18 };
+  // Wanted at 448 and 400 wide, it would start four pixels under the legend: it moves ten along, to stand six clear.
+  assert.equal(fitOnRow({ ...row, wide: 400, wanted: 448 }), 252 + 6 + 200);
+  assert.equal(fitOnRow({ ...row, wide: 400, wanted: 640 }), 640, "with room where it is wanted, it stays");
+  assert.equal(fitOnRow({ ...row, wide: 400, wanted: 1300 }), 1024 - 6 - 200, "and it stands clear of the panel as well");
+  assert.equal(fitOnRow({ ...row, wide: 800, wanted: 448 }), null, "no room between the two cards for one this wide");
+  // A row above the legend: only the panel lies there.
+  assert.equal(fitOnRow({ ...row, top: 200, wide: 400, wanted: 100 }), 6 + 200);
+  assert.equal(fitOnRow({ width: 400, blocked: [], top: 0, tall: 10, wide: 500, wanted: 200 }), null, "wider than the window");
+  // The same for a label that follows a point of the scene: its point is moved, along its row or up, never cut.
+  const camera = new THREE.PerspectiveCamera(34, 1400 / 900, 0.1, 5000);
+  camera.position.set(0, 220, 200);
+  camera.lookAt(0, 0, 0);
+  camera.updateMatrixWorld();
+  const stage = { width: 1400, height: 900, camera, project: (point, out) => (out.copy(point).project(camera), (out.x = (out.x * 0.5 + 0.5) * 1400), (out.y = (-out.y * 0.5 + 0.5) * 900), out) };
+  const home = new THREE.Vector3(-60, 0, 40), natural = stage.project(home, new THREE.Vector3());
+  const placed = (blocked, wide) => stage.project(clearOf({ stage, blocked, home, wide, tall: 18, lift: 0, out: new THREE.Vector3() }), new THREE.Vector3());
+  const column = { left: 0, top: 56, right: natural.x - 150, bottom: 900 };
+  assert.ok(placed([column], 200).distanceTo(natural) < 1e-6, "clear of the card: it stays at home");
+  const moved = placed([column], 400);
+  assert.ok(near(moved.x - 200, natural.x - 150 + 6, 1e-6) && Math.abs(moved.y - natural.y) < 1e-6, "its start would lie under the card: it moves along its row until it stands clear");
+  assert.ok(near(moved.z, natural.z, 1e-6), "at the same depth");
+  const lifted = placed([{ left: 0, top: natural.y - 40, right: 1400, bottom: 900 }], 400);
+  assert.ok(lifted.y <= natural.y - 40 - 6 + 1e-6 && lifted.y > natural.y - 80 && Math.abs(lifted.x - natural.x) < 1e-6, `no room on its row: it moves up, over the card (${lifted.y} from ${natural.y})`);
+  assert.ok(placed([{ left: 0, top: 0, right: 1400, bottom: 900 }], 400).distanceTo(natural) < 1e-6, "no room anywhere: it stays at home");
+});
+
 test("the Flux switch shows all of it under one legend, and a panel says what stands behind it", () => {
   const lens = lensFor("planarian");
   const { flux } = lens;
@@ -487,7 +578,7 @@ test("the Flux switch shows all of it under one legend, and a panel says what st
   for (const item of lanesOf(lens)) tones.set(`#${item.colour.getHexString()}`, (tones.get(`#${item.colour.getHexString()}`) || 0) + 1);
   assert.deepEqual([...tones].sort(), [["#2a78d6", 2], ["#6e6a64", 21], ["#eb6834", 2]]);
   assert.deepEqual(legend.cannot.map((item) => [item.id, item.label]), [["fuel", "Fuel (ATP)"]]);
-  assert.equal(legend.cannotSays, null);
+  assert.equal(legend.compact, "What the beads mean", "the view's card stands just above the legend: the signs, what is not drawn and the door to the panel keep to one line");
   assert.equal(legend.details, FLUX_PANEL);
   // The panel: what is drawn with each basis, what is not and why, the laws as cited, and the two forms.
   assert.equal(flux.has(FLUX_PANEL), true);
@@ -545,39 +636,71 @@ test("for a visitor who asks for less motion the beads stand, and the picture an
   assert.equal(notice.boost, 1000, "it gives way to no other label");
 });
 
-test("the statement stands where no card lies over the picture: beside the view's card, or under it on a narrow screen", () => {
+test("the statement is said in the fewest lines that have room between the cards, and is never put under them", () => {
   const foot = (label, lens) => {
     const point = label.anchor.clone().project(lens.stage.camera);
     return [Math.round(((point.x + 1) / 2) * lens.stage.width), Math.round(((1 - point.y) / 2) * lens.stage.height)];
   };
-  const sized = (lens, blocked) => {
+  /** The statement as it stands with these cards over the picture: its two labels, and where their feet lie. */
+  const shown = (lens, blocked) => {
     lens.labels.blocked = () => blocked;
     lens.flux.setOn(true);
     const [notice, lines] = lens.labels.made;
-    Object.assign(notice, { width: 150, height: 18 });
-    Object.assign(lines, { width: lens.stage.width < 620 ? 292 : 420, height: lens.stage.width < 620 ? 30 : 18 });
-    lens.flux.place = null;
-    lens.flux.pin();
-    return [foot(notice, lens), foot(lines, lens)];
+    return { notice, lines, at: [foot(notice, lens), foot(lines, lens)] };
   };
+  const whole = "Direction only: the number of beads and their pace stand for no number";
+  const inTwo = "Direction only: the number of beads\nand their pace stand for no number";
+  const card = { left: 16, top: 64, right: 252, bottom: 250 };
   // A wide window: the view's card at the left, the rail at the right's middle. The middle of the window is free at the top.
-  const wide = lensFor("planarian");
-  assert.deepEqual(sized(wide, [{ left: 16, top: 64, right: 252, bottom: 250 }, { left: 1180, top: 300, right: 1264, bottom: 500 }]), [[640, 82], [640, 106]]);
-  // With a part's panel open at the right the middle of the window is still free, and the statement stays there;
-  // where a panel reaches over the middle, the statement moves to the middle of what is left.
-  const panelled = lensFor("planarian");
-  assert.deepEqual(sized(panelled, [{ left: 16, top: 64, right: 252, bottom: 250 }, { left: 888, top: 64, right: 1264, bottom: 780 }])[0], [640, 82]);
-  const crowded = lensFor("planarian");
-  assert.deepEqual(sized(crowded, [{ left: 16, top: 64, right: 252, bottom: 250 }, { left: 700, top: 64, right: 1264, bottom: 780 }])[0], [(258 + 694) / 2, 82]);
-  // A phone: the view's card takes the top left and the rail the right from 124 px down. Beside the card there is no
-  // room for the lines, so the statement stands under the card, over the top of the picture; never in the foot.
-  const phone = lensFor("planarian", { stage: stageOf({ width: 400, height: 780 }) });
-  const [top, under] = sized(phone, [{ left: 16, top: 54, right: 224, bottom: 196 }, { left: 316, top: 124, right: 390, bottom: 262 }, { left: 16, top: 716, right: 130, bottom: 764 }]);
-  assert.equal(phone.labels.made[1].text, "Direction only:\nthe number of beads and their pace stand for no number", "the long line is broken");
-  assert.ok(top[1] - 18 >= 196 + STATEMENT.gap && top[1] < 300, `under the card (${top})`);
-  assert.ok(top[0] - 304 / 2 >= 0 && top[0] + 304 / 2 <= 316 - STATEMENT.margin, "clear of the rail");
-  assert.equal(under[1], top[1] + STATEMENT.gap + 30);
-  assert.ok(under[1] < 780 * 0.6, "in the upper part of the picture");
+  let said = shown(lensFor("planarian"), [card, { left: 1180, top: 300, right: 1264, bottom: 500 }]);
+  assert.equal(said.lines.text, whole);
+  assert.deepEqual(said.at, [[640, STATEMENT.top + 18], [640, STATEMENT.top + 18 + STATEMENT.gap + 18]]);
+  // A part's panel open at the right: the statement moves aside as little as will do, and stays whole.
+  said = shown(lensFor("planarian"), [card, { left: 888, top: 64, right: 1264, bottom: 780 }]);
+  assert.equal(said.lines.text, whole);
+  assert.equal(said.at[0][0], 888 - STATEMENT.margin - said.lines.width / 2);
+  // Less room between the two cards than the whole line needs: it is said in two lines.
+  said = shown(lensFor("planarian"), [card, { left: 700, top: 64, right: 1264, bottom: 780 }]);
+  assert.equal(said.lines.text, inTwo);
+  assert.ok(Math.abs(said.at[0][0] - (700 - STATEMENT.margin - said.lines.width / 2)) <= 1 && said.at[0][1] === STATEMENT.top + 18);
+  // A phone: the view's card takes the top left and the rail the right from 124 px down. Beside the card there is
+  // no room, so the statement stands under the card, in two lines, over the top of the picture; never in the foot.
+  const phone = () => lensFor("planarian", { stage: stageOf({ width: 400, height: 780 }) });
+  const small = { left: 16, top: 54, right: 224, bottom: 196 }, rail = { left: 316, top: 124, right: 390, bottom: 262 }, toggle = { left: 16, top: 716, right: 130, bottom: 764 };
+  said = shown(phone(), [small, rail, toggle]);
+  assert.equal(said.lines.text, inTwo);
+  assert.ok(said.at[0][1] - 18 >= 196 + STATEMENT.margin && said.at[1][1] < 300, `under the card (${said.at})`);
+  assert.ok(said.at[1][0] + said.lines.width / 2 <= 316 - STATEMENT.margin + 1 && said.at[1][0] - said.lines.width / 2 >= STATEMENT.margin - 1, "clear of the rail and of the window's edge");
+  assert.deepEqual([said.notice.hidden, said.lines.hidden], [false, false]);
+  // The phone with a part's panel open: the panel is a sheet over the lower half, and the card and the legend are away.
+  said = shown(phone(), [rail, { left: 0, top: 345, right: 400, bottom: 780 }]);
+  assert.equal(said.lines.text, inTwo);
+  assert.ok(said.at[1][1] <= 345 - STATEMENT.margin && said.at[0][1] - 18 >= STATEMENT.top, `above the panel (${said.at})`);
+  // The phone with its legend opened over the picture: no room is left, and the statement is not put under the cards
+  // in pieces. The legend in front carries the notice.
+  const covered = phone();
+  said = shown(covered, [small, rail, { left: 16, top: 181, right: 384, bottom: 764 }]);
+  assert.deepEqual([said.notice.hidden, said.lines.hidden], [true, true]);
+  assert.equal(covered.flux.legend().example, "Illustration: not a run");
+  // The legend closed again: the statement is back.
+  covered.labels.blocked = () => [small, rail, toggle];
+  covered.flux.advance(0);
+  assert.deepEqual([said.notice.hidden, said.lines.hidden, said.lines.text], [false, false, inTwo]);
+  // A window 800 wide with the view's card, the legend and a part's panel all open: between the card and the panel
+  // 160 px are left, less than the statement needs in any of its ways. It is not shown on the picture there; the
+  // legend and the panel, which lie in front, carry the notice. (Rule 11 asks for it on the picture: reported.)
+  const tight = lensFor("planarian", { stage: stageOf({ width: 800, height: 700 }) });
+  said = shown(tight, [{ left: 16, top: 64, right: 252, bottom: 218 }, { left: 16, top: 226, right: 252, bottom: 684 }, { left: 424, top: 64, right: 784, bottom: 684 }]);
+  assert.deepEqual([said.notice.hidden, said.lines.hidden], [true, true]);
+  assert.equal(tight.flux.legend().example, "Illustration: not a run");
+  assert.equal(tight.flux.inPanel(tight.model.get("cap.pumps")).sections.at(-1).title, "Flux. Illustration: not a run");
+  // A window narrower still: short lines.
+  said = shown(lensFor("planarian", { stage: stageOf({ width: 270, height: 600 }) }), []);
+  assert.equal(said.lines.text, "Direction only:\nthe number of beads and their pace\nstand for no number");
+  assert.deepEqual([said.notice.hidden, said.lines.hidden], [false, false]);
+  // Where nothing may move the last line says so, in every way of breaking it.
+  const still = lensFor("planarian", { stage: stageOf({ moving: false, width: 270, height: 600 }) });
+  assert.equal(shown(still, []).lines.text, "Direction only:\nthe number of beads and their pace\nstand for no number\nshown still");
 });
 
 test("the beads move in the time that passed, fade with the cell, and leave with the view", () => {
@@ -622,12 +745,13 @@ test("every species goes through its own file: what its cell lacks is never offe
   const legend = cress.flux.legend();
   assert.equal(legend.example, null);
   assert.deepEqual(legend.cannot.map((item) => item.label), ["Sodium–potassium pump", "Calcium pump"]);
+  assert.deepEqual([legend.compact, legend.hint, legend.keys], ["Why nothing is drawn here", null, []]);
   assert.match(legend.cannot[0].why, /^No direction is drawn for Thale cress: its file says of its own part, “Not the sodium-potassium pump of animal cells/);
   assert.deepEqual(cress.flux.inPanel(cress.model.get("cap.pumps")).sections.at(-1).items.map((item) => item.label), ["Sodium–potassium pump: not drawn", "Calcium pump: not drawn"]);
   cress.choose(null);
   cress.flux.setOn(true);
   assert.deepEqual([...new Set(lanesOf(cress).map((item) => item.lane.key.split("/")[0]))], ["channels", "water", "secretion"]);
-  assert.equal(cress.flux.legend().cannotSays, "3 flows not drawn, each with its reason");
+  assert.equal(cress.flux.legend().cannot.length, 3);
   // JCVI-syn3A: no ion channel, no junction; nothing of it is in the engine, so no lane claims a direction.
   const minimal = lensFor("syn3a");
   minimal.flux.setOn(true);
