@@ -42,7 +42,7 @@ experiment).
 | Phase markers | Start, completion and failure records implemented (`core/phases.py`'s `Recorder`, 15 November) |
 | Run-view output (D154) | Design note proposed (15 November, [RUN_VIEW_DESIGN](RUN_VIEW_DESIGN.md)); its code joins D172's round |
 | Coupling out of the inventory (D155, scoped by D156) | **Numerically qualified** (15 November): the judged protocol passed, with second order against independent references for reciprocal feedback (A4) and a species setting a channel (A5). CPU only, within its scope line |
-| Excitable tissue (D155) | Design accepted narrowly, for M1 and M2 on @3 (D170). The generic cell is 0.01 F/m² (candidate A), on post-hoc probe evidence; the junction floor is provisional until M1's sheet runs |
+| Excitable tissue (D155) | Design accepted narrowly, for M1 and M2 on @3 (D170). The generic cell is 0.01 F/m² (candidate A), on post-hoc probe evidence; the junction floor is provisional until M1's sheet runs. The human law set is brought forward as its own lane (D183, 16 November); its design note with options for the user comes first |
 | Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestones 1 and 2, FR-1's milestone 1 and FR-3's milestone 1 landed (15 November). FR-4 and FR-5's design note is proposed |
 | The D172 restructure (one modular inner model, `resolved_pump_tissue@3`) | **In implementation** (D176). It runs on the integration branch `integration-d172` from tag `d172-base-2026-11-15`, with one integrated acceptance gate and landing; the [note](INNER_MODEL_V4_DESIGN.md) is the design. On the branch by the evening of 15 November: door S, the species registry, per-law dispatch with the padding fill, the registry hook and B7, all bitwise against the tag's records. The kind interface (§7.4 (k)) and schema A's first stage are committed on the core's branch. The integrated landing is estimated at about 25 November (§15.6). The end game is staged and rehearsed (D181). FR-4 and FR-5 are the priority consumers |
 | Field-solver interface | Designed; code waits for the GH200 numbers |
@@ -65,12 +65,23 @@ experiment).
       - the operator contract's view declarations, and the default `view_events` entity form fixed
         to `{"cell": id}`;
       - @3's own units, readout axes and layers, which replace the writer's interim table;
-      - door S recording the merged view of each changed field;
+      - door S's merged view of each changed field at observation. It is built by route B on
+        run-view-d154 (61a2f4e7): with `view=` only, the writer re-forms the view with the
+        composite's own view function, bitwise the observer's. After the landing the composite
+        declares its changed set in one method of pump_composite.py, and the writer reads that
+        instead of the adapter's tables (MASK_FIELDS, PADDED_FIELDS), a stopgap named in the code
+        until then;
       - the visualizer's reading of the worked example: its eleven items, in
         `visualizer/docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` on the visualizer branch at d818cb34.
         Items 1 and 10 are answered from the engine's code. `exchange_moved_fmol` is cumulative and
         positive outward. The saved `membrane_transferred` holds the passive routes only.
-      FR-11's interim planarian loop comes after these. Its run must carry what the viewer's loop
+      FR-11's interim planarian loop comes after these. Its design is
+      `docs/LOOPING_REPLAY_DESIGN.md` on run-view-d154 (49848ce0; ruled 16 November):
+      - a loop block whose closure the writer measures;
+      - the planarian patch driven by a subthreshold current train;
+      - the human loop: a paced human ventricular cell on Track E's human law set, brought
+        forward by D183 (16 November) in place of a generic stand-in. It waits for those laws;
+      - the minimal cells' cycle after an admission probe. Its run must carry what the viewer's loop
       reader requires: the visualizer's "What a species' looping run must carry", on its branch at
       cf11924a.
       - a `loop` block in the view: the species, the cell, and the run's own closure statement
@@ -96,9 +107,25 @@ experiment).
           the GPU. It needs a basis in the field solve's conditioning before the qualification.
         - The throughput steps also overran the 3600 s GPU budget: throughput-128 was stopped, and
           256 was skipped.
+        - **The diagnosis** (16 November): it is rounding amplified by conditioning. Lone equals
+          scalar bitwise on the GPU, and observables are host maps of the state. The moved fields
+          are small differences of potentials, with outside potentials near 0.5 µV against cells
+          at 21 mV.
+        - **The direction ruled:**
+          - a class table, each field judged at 1e-12 of the scale it is computed from (the
+            minimal table);
+          - an empirical 1e-10 cap for the outside network's ledgers;
+          - an exact host-map check;
+          - `LOCKED_LIMIT_S = 4800`.
+          Not frozen until a held-out development pass at a batch of 128 on the merged head, and a
+          long packed-against-lone pair that settles the horizon.
    5. The module system's stage 1, one external law (D180), after the user's decisions in its §6.
 3. **Queued follow-ups** (each its own gated change):
    - insertion@2's gate fix, before `check_onsets` is lifted (§7.4 (j));
+   - the BETSE physiology validation's dangling reference, found by tier 3 at c1 and pre-existing at
+     the tag: `validation/betse/physiology/core/physiology_protein_block_calendar.py:106` reads
+     `scoped.PINS`, which its scope module doesn't define, so those tests never reach their
+     assertions;
    - A7's allow-list note (`tests/species_sum_entity_sums.json`) wrongly says no entry includes the
      species axis. Three entries, partition's host-only end-of-run summary, sum mixed
      [species, slot] and [slot] fields. Either fix the wording, or fold those fields per field;

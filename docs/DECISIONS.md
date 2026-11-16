@@ -5874,6 +5874,34 @@ in the end game.
   3 min of L4 time) settle it in a later gap.
 - **The tree** stays the option if species counts go well past 150.
 
+## D183: The human cardiac law set is brought forward
+
+2026-11-16. The user was asked whether FR-11's human loop should start as a paced generic excitable
+cell, labelled "not a human cardiomyocyte model", while Track E's human cardiac laws waited for its
+milestones M4 and M5. The user decided: "let's bring the human cardiac laws forward", noting that the
+machine now has more CPUs.
+- **What moves.** Track E's human ventricular law set ([excitable tissue design](EXCITABLE_TISSUE_DESIGN.md)
+  §3.3, §7, and M4 and M5 in §11) starts now as its own lane on the inner model that D172 lands,
+  instead of waiting for M1–M3. M1–M3 on the generic cell are unchanged.
+- **FR-11's human loop** becomes a paced human ventricular cell built on that law set, with no
+  generic stand-in, and it waits for those laws. The planarian loop stays first. This replaces the
+  generic paced cell in the FR-11 design that the lead ruled earlier the same day.
+- **Design first (D142).** The lane's first deliverable is a design note with options for the
+  user. It covers:
+  - the source of equations and parameters: O'Hara–Rudy 2011, its ToR-ORd successor, or ten
+    Tusscher–Panfilov 2006;
+  - the cell types, the form of the sodium current, and the temperature;
+  - the verification.
+
+  No engine code is written until the user chooses. The prerequisites stay as Track E lists them:
+  calcium handling moved under D167, the ungated junction law, and the step condition of §4.2.
+- **Unchanged:**
+  - each law is general and named by its mechanism, not by a protein or for one experiment (D144);
+  - a whole-cell action-potential comparison against a published model needs the user's approval
+    (D138, D151), and the note asks for it;
+  - external simulators run only out of process against saved outputs, and every parameter is
+    cited.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |
