@@ -53,7 +53,7 @@ Where older sections of this document differ, this section applies.
 | Mechanism declarations | Each law's inputs, the quantities it changes, its conservation and energy role, its domain of validity | The operator contract (`contract.py`). Since the landing, @3's laws are frozen declarations (`models/inner_laws.py`), with one implementation built per declared structure, and kinds register through the build-scoped kind registry (`core/kind_registry.py`; the built-in kinds are in `models/inner_kinds/`) |
 | Numerical plan | Evaluation order, explicit or implicit treatment, splitting, event boundaries, error checks | @3's IMEX and RK4 steps, the operators' split parts, `StepChecks`, schedules |
 | Biological definitions | Organism, strain, conditions, parameter values, evidence references | World builders and fixtures. No organism definition yet; the [Syn3A note](SYN3A_MINIMAL_CELL_TRACK.md) proposes one |
-| Execution and outputs | Binding, device windows, checkpoints, observations, the shared run view | The runner, batch and window paths; D153's checkpoints; D154's run view, whose interface in the operator contract (`VIEW_LAYERS`, `view_events`) is on main, while the operators' declarations and the writer are on a development branch |
+| Execution and outputs | Binding, device windows, checkpoints, observations, the shared run view | The runner, batch and window paths; D153's checkpoints; D154's run view, whose interface in the operator contract (`VIEW_LAYERS`, `view_events`) is on main, and so are the operators' declarations and the writer (`src/cells/run_view.py`), since 16 November |
 
 - **Arrays in the loop.** The composite builder assembles these parts into one bound array program.
   Python objects and modular interfaces belong to definition, validation and binding, and the
@@ -89,8 +89,9 @@ Where older sections of this document differ, this section applies.
     - It moved no result: the integrated candidate before A7 was bitwise on all 113 worlds of the
       results gate. A7's summation order then moved ledger and diagnostic arrays at rounding, so
       the round re-ran the registered protocols (G2), with E07-v1's re-run held (D181).
-  - **Executable reuse and device-resident checks. Reuse holds today, in a landed test;
-    device-resident checks are a target.**
+  - **Executable reuse and device-resident checks. Reuse holds today, in a landed test.
+    Device-resident checks hold in part: opt-in for scalar windows on the CPU since 16 November;
+    the vector path and the GPU are targets.**
     - For a fixed law set, numerical plan, compatible array shapes, dtypes and device placement,
       parameter-only changes reuse the executable.
     - Production state advancement, step checks and refusal handling remain inside device windows.
@@ -105,8 +106,11 @@ Where older sections of this document differ, this section applies.
       world of another structure compiles its own (`tests/unit/test_inner_executable_reuse.py`).
     - **The audit** lists the exceptions: constants baked into programs, and checks or refusals run
       on the host per row in production paths. Its two inventories are in the inner-model note
-      (§5.1, §5.2), and moving the host-side window checks into device windows is queued in the
-      current plan.
+      (§5.1, §5.2). Moving the host-side window checks into device windows has begun:
+      `WindowPolicy(row_checks="device")` checks scalar windows' rows on the device and hands a
+      window back to the host checks on any failure or margin above 1/2
+      ([design](WINDOW_DEVICE_CHECKS_DESIGN.md)). It is refused on a GPU until a GPU measurement
+      exists.
   - **Adding a mechanism adds no per-cell Python dispatch and no CPU solver to the production loop.
     Target.**
   - **Compile time, host and device memory, and end-to-end time are measured on representative
@@ -369,7 +373,7 @@ note.
 - **The shared run view. Target.** It exposes the same entity identities, units, events, model
   scope and representation, and the viewer consumes them without reconstructing meaning from driver
   conventions. D154's note is proposed; the operator contract's view interface is on main, and the
-  operators' declarations and the writer are on a development branch.
+  operators' declarations and the writer are on main since 16 November.
 
 ### Order
 
@@ -942,7 +946,7 @@ is insufficient for memory experiments.
   - the scale.
 - It is kept out of the definition, so definitions, bindings and crossrev are unaffected.
 - Its exact form is in the design note, [RUN_VIEW_DESIGN.md](RUN_VIEW_DESIGN.md) (proposed). The
-  writer is built on a development branch.
+  writer is on main since 16 November (`src/cells/run_view.py`).
 
 ## Technical references
 

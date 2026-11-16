@@ -12,7 +12,7 @@ the [project README](../README.md) gives the short feature overview.
 | [Inner model design](INNER_MODEL_V4_DESIGN.md) | D172's one modular inner model (`resolved_pump_tissue@3`): declared laws, dispatch per declared structure, kinds and the results gate. Landed on 16 November 2026 |
 | [Scoped composition (door S)](SCOPED_COMPOSITION_DESIGN.md) | How operators change and read slots of one view field, admitted per slot and merged in declared order. Landed with D172's round |
 | [Module system design](MODULE_SYSTEM_DESIGN.md) | External and contributed modules: one registration path, a conformance kit and stages set by real consumers. Proposed, with its five decisions made by the user (D185) |
-| [Run view design](RUN_VIEW_DESIGN.md) | The `view.json` record that makes every run visualizable (D154). Proposed; its writer is built on a development branch |
+| [Run view design](RUN_VIEW_DESIGN.md) | The `view.json` record that makes every run visualizable (D154). Proposed; its writer is on main since 16 November |
 | [Current plan](CURRENT_PLAN.md) | The current order, adopted 12 November 2026 (D145): gates and their completion evidence, after two architecture reviews |
 | [Composite tissue model](PUMP_COMPOSITE.md) | `resolved_pump_composite@1`: `@3`'s step plus declared operators (water, symport, replacement), its contract and its bitwise guards |
 | [Composite v2 design](PUMP_COMPOSITE_V2_DESIGN.md) | Reviewed design before code: declared energy roles, observation ownership, cross-operator writes, membrane state (S2), current injection, the L4 agreement protocol |
@@ -28,7 +28,7 @@ the [project README](../README.md) gives the short feature overview.
 | [Secreted-species transport design](SECRETED_SPECIES_TRANSPORT_DESIGN.md) | Accepted design (D150): secreted species as rows of @3's one inventory, moved by @3's faces, with turnover and exchange operators; version 1 landed on 14 November and is numerically qualified for transport, decay and clearance |
 | [Shared-inventory reactions design](SHARED_INVENTORY_REACTIONS_DESIGN.md) | Accepted 14 November 2026 (D152): local reactions on @3's species rows, with exact energy bookings and MG0c's Turing qualification; its operator, `local_species_reactions@1`, is numerically qualified within MG0c's scope (15 November, CPU only) |
 | [Feature requests](FEATURE_REQUESTS.md) | Requested engine features with priority and status. FR-1, a closed internal compartment on the shared inventory, is high priority (D157) |
-| [Closed compartment design](CLOSED_COMPARTMENT_DESIGN.md) | FR-1's cell-owned compartment and its refusals (v1.1 and v1.2 of refusals 4 and 5 on fr45-next) |
+| [Closed compartment design](CLOSED_COMPARTMENT_DESIGN.md) | FR-1's cell-owned compartment and its refusals (refusal 4 to version 1.2 and refusal 5 to version 1.1, on main since 16 November) |
 | [Site occupancy design](SITE_OCCUPANCY_DESIGN.md) | FR-3's binding to sites (`site_occupancy@1`) |
 | [Bath schedule design](BATH_SCHEDULE_DESIGN.md) | Scheduled changes of bath composition |
 | [Inventory coupling design](INVENTORY_COUPLING_DESIGN.md) | Coupling out of the shared inventory (D155, D156) |
@@ -36,6 +36,12 @@ the [project README](../README.md) gives the short feature overview.
 | [Excitable tissue design](EXCITABLE_TISSUE_DESIGN.md) | Track E: conduction in excitable tissue (D155, D170) |
 | [Human cardiac laws design](HUMAN_CARDIAC_LAWS_DESIGN.md) | The human ventricular law set (D183, D184): proposed, nothing built |
 | [Syn3A minimal-cell track](SYN3A_MINIMAL_CELL_TRACK.md) | JCVI-syn3A as the first whole cell: evidence audit and probes, no engine code |
+| [Operator composition design](OPERATOR_COMPOSITION_DESIGN.md) | Operators that read each other's current state: one general rule, option A (D191, 16 November 2026); built in D194's step 3 |
+| [GARD design](GARD_DESIGN.md) | Catalytic assemblies, exchange, fission and lineage for the origin-of-life track (D192); the kernel finding's scope is in §2.5 |
+| [Mitochondria design](MITOCHONDRIA_DESIGN.md) | One law set for mitochondria and bacteria, Beard 2005 as the source (D193) |
+| [Looping replay design](LOOPING_REPLAY_DESIGN.md) | FR-11's looping replay packages: the loop block and its closure measure (ruled 16 November 2026) |
+| [Device row checks design](WINDOW_DEVICE_CHECKS_DESIGN.md) | Device-resident row checks for scalar windows, opt-in on the CPU, and the vector path's seams |
+| [Test audit retire list](TEST_AUDIT_RETIRE_LIST.md) | D187's audit: the firm, held and candidate retirements, approved in D189 |
 | [Packed GPU execution design](PACKED_GPU_EXECUTION_DESIGN.md) | Packing independent worlds on one GPU, and its qualification criterion |
 | [E15 pattern-recovery experiment path](EXPERIMENT_PATH_PATTERN_RECOVERY.md) | Backlog, not active (13 November 2026): the engine features needed to test which layers restore a pattern after damage rather than only generating it, and a version 0 as E07-v2 arms |
 | [Paper backlog](PAPER_BACKLOG.md) and [GRN wet-lab validations](GRN_WETLAB_VALIDATION.md) | Papers under test, and gene-network models validated against experiments (logged) |

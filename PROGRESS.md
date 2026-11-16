@@ -23,9 +23,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   - **Landed (16 November):** D172's single restructure round (D176), as main ab267c39, tagged
     `d172-landed-2026-11-16`, with FR-4's kinds in it. Its gates are in the run entry "D172's round
     landed on main" below.
-    The lanes built on it merge next, each after its own gate, and FR-5 follows on its own branch.
+    The lanes built on it merged the same evening, each after its own gate: core-next, windows,
+    fr45-next (FR-5's source kinds and refusals among them), the run-view writer, core-fixes and the
+    test audit. The full verification of main a83d8f15 then passed (tiers 1+2, G1 113 of 113,
+    crossrev's new record). The next steps are D194's order, starting with D188's moves.
   - **Proposed designs:** the FR-4/FR-5 physics note, the run view (D154), the module system, with
     its five decisions made (D185), and the human cardiac law set, with its choices made (D184).
+    Decided on 16 November and built in D194's order: operator composition (option A, D191), GARD
+    (D192) and mitochondria (D193).
   - **On the L4:** Q7's run-to-run nondeterminism at 825 nodes goes away under the deterministic
     flag (15 of 15 bitwise pairs, D181). Judged alone under the flag on 16 November, Q7 passed, and
     the landing's L4 block passed under it. The W1 full-tissue hold completed its 70-minute
@@ -79,6 +84,30 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **FR-5's dt study: the development reading passes (16 November 2026, late evening).** Run
+  dt5-a6639e79, from snapshot-a6639e79 on CPUs 8–11, 21:44–23:23 UTC
+  ([verdict](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dt5-a6639e79/reading/verdict.json),
+  [summary](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dt5-a6639e79/summary.log),
+  [the start against 4b81a39c's](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dt5-a6639e79/start-vs-4b81a39c.json)). This is
+  development evidence: `fr5-transfer-v1` stays proposed and is not judged.
+  - **Result:** every criterion, J1–J11, holds on both arms, so the declared 0.5 ms step stands.
+    All 12 parts exited 0, with the expected step counts.
+  - **The start** was re-run from the same snapshot. Its extract equals the earlier start's, leaf
+    by leaf, apart from the source fields.
+  - **Arm T (transfer):** the state errors at 0.5 ms are 2.8e-7 of the budget for X_L and 2.9e-9
+    for pH. The crossings fall within 6e-8 s of the independent reference, and the planted
+    control reads 314 × the budget.
+  - **Arm R (release):** the X_L error is 3.3e-5 of the budget. The release in the window, 0.87363,
+    equals the reference's, and the control reads 872 × the budget.
+  - **Both arms:** energy residuals of 3.3e-11 and 2.1e-11, against 2e-3.
+  - **The one visible margin:** arm R's cargo route ledger, at 0.147 of its allowance. Every other
+    ledger ratio is at 1e-5 or below.
+  - **Before registration:** the judge's F4 names the 1 ms rung for the energy residual, while the
+    protocol's J7 reads 0.5 ms. Both pass here (1.3e-10 and 8.2e-11 at 1 ms).
+  - **Costs:** 0.82–1.5 ms per step (spread unexplained), so runtime limits are sized from 1.5 ms.
+  - **The judge's fix merged with fr45-next dac02715:** a part whose records end inside the injury
+    window reads None for the release through the pore, rather than crashing.
 
 - **The test audit (D187) merged into main (16 November 2026, late evening).** It ships its tools
   and the inventory ([evidence](/mnt/workspaces/Cells/test-audit-20261116-01/)). Nothing is retired by this merge.
