@@ -195,10 +195,14 @@ Where older sections of this document differ, this section applies.
     one pump, sharing finite ATP, ADP and Pi. It shows depletion, reduced pump activity and
     recovery, with material and energy accounting checked independently. Water, division and full
     metabolism are not prerequisites.
-- **Two boundaries to declare. Open.**
-  - **Transformed potentials against protons.** The finite-energy law uses transformed ATP, ADP and
-    Pi potentials under buffered pH and Mg. Composing it with explicit proton chemistry (FR-4) needs
-    a declared thermodynamic boundary. This is a prerequisite of FR-4's note.
+- **Two boundaries to declare.**
+  - **Transformed potentials against protons: declared for maintained fuel, open for finite fuel.**
+    - **For maintained fuel** (FR-4 §5.2, `cells.transporter@1`, landed with D172): hydrolysis is
+      transformed at the fuel node's `ph_ref`. The domain refuses any stage where
+      |pH − `ph_ref`| > `ph_band`, and Δ_rG'° comes only from the species registry. pMg is implicit
+      in the registry's transformed potentials.
+    - **Still refused, and open:** finite fuel at a node with a dynamic proton row. This is the
+      finite-fuel design in the FR-4/FR-5 lane's queue.
   - **Booked work is not fuel.** D152's booked external work is not a finite fuel-consumption law.
     Finite fuel needs a declared donor, stoichiometry and affinity.
 
