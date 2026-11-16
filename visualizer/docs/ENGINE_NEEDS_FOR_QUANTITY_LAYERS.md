@@ -416,3 +416,30 @@ rework lands.
     recording subset (`recording.subset`) is refused by the viewer's adapter until there
     is an example of one, and a builder's geometry in a view is not read yet for the same
     reason.
+
+### What a species' looping run must carry (16 November 2026)
+
+Flux in the Cell view is published. No species has a looping run of its own yet, so it
+shows as illustration ("Illustration: not a run", direction only). The first real flux
+there needs a run the engine made of one cell of a species, packaged to loop
+(`schema/QUANTITY_LAYERS.md`, rule 7). The viewer's reader refuses a run as a loop unless
+all of this holds, so that a run written the way the development run of 15 November was
+would be refused:
+
+- **`loop` in the run's view** (`schema/RUN_VIEW.md`): `{"species", "cell", "closes":
+  {"within", "says"}}`. The species by the viewer's id (`human`, `planarian`,
+  `fruitfly`, `syn3a`, `mpneumoniae`, `ecoli`, `thalecress`), the cell's id in the run's
+  set of cells, and the run's own word that its last record meets its first: the largest
+  relative difference of any level between the two, and a sentence the page may show.
+- **The engine's models and its revision** (`run.engine_models`, `run.revision`). The
+  development run names no revision in its own files (item 11 above, then a reading
+  note). For a loop that is a gap: a run with no revision is refused.
+- **Not an example.** A run with invented numbers is never a loop.
+- **The totals whose rates feed the beads,** each with its kind and its sign as the run
+  view declares them: what crossed through each channel population, the pump's cycles
+  with what one cycle moves, and what crossed the membrane itself. Those three are read
+  today. What crossed junctions, water, the exchange routes and fuel is not read from a
+  loop yet; where a run carries them the page names them as not read.
+- Every rate is a mean between two records that both lie inside the loop; no difference
+  is taken across its seam.
+
