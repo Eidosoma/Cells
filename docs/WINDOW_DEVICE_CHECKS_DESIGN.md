@@ -797,17 +797,19 @@ row with itself instead of its predecessor fails the boundary case.
   103 of 103 bindings.
 - **Every one of the 73 worlds traces the opted-in program** (`device_checks_margins`).
 - **d6814d57 against c1** (informative): identical in seven sets. The division set's three worlds
-  differ in their step, right-hand-side and device-check texts and in their bindings. These are
-  core-next's changes, since main changed no `src` since c1.
+  differ in their step, right-hand-side and device-check texts and in their bindings. This is
+  core-next's item 4, insertion@2's gate at opening, recorded as an intended change before
+  core-next landed.
 
 **C5: the measured speedups beside the projections** (`validation/execution/window_row_checks_runs.py`,
-`run_windowed`, on the timed lane, CPUs 4 and 5, at the records' window size and recording).
+`run_windowed`, on the timed lane, CPUs 4 and 5, at the records' window size and recording). The
+headline figures compare both modes on the same cores; the records' figures are given beside them.
 
 | Run | Host mode | Device mode | Measured speedup | Projected (§7) |
 | --- | --- | --- | --- | --- |
 | The export, 8,000 steps | 33.2 s | 23.3 s | 1.4× (compile dominates) | — |
 | The export, 80,000 steps | 166.6 s | 34.8 s | 4.8× | — |
-| The export, 480,000 steps | 3481 s in its record; about 908 s on these cores (estimate) | 96.3 s | 36× against the record; about 9.4× on these cores | 310–370 s, about 10× |
+| The export, 480,000 steps | about 908 s on these cores (estimate; 3481 s in its record) | 96.3 s | about 9.4× (36× against the record) | 310–370 s, about 10× |
 | FR-4's 20 s pass, 20,000 steps | 162.7 s | 44.1 s | 3.7× | 39–43 s, from 176 s |
 | FR-4's 900 s, 900,000 steps | about 6,220 s (estimate) | 453.0 s | about 13.7× | about 14× |
 | The 825-node tissue, 2,000 steps | 168.5 s (137.9 s without compile) | 161.3 s (116.4 s) | 1.05×; 1.18× without compile | at most about 1.4× (host share 28%) |
