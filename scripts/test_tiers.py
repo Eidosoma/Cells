@@ -6,7 +6,12 @@ files are timed individually and grouped into tiers:
   measure  run each test file once, with a per-file wall cap, recording duration,
            outcome and counts to a JSON file (written incrementally)
   tiers    group measured files: tier 1 (< 20 s), tier 2 (< cap), tier 3 (cap hit)
-  run      run every file of the given tiers and compare outcomes with the record
+  run      run every file of the given tiers and compare outcomes with the record:
+           a file is changed when its exit code, failed or error count differs from
+           its row, its passed count falls below the row's or its skipped count rises
+           above it (tests silently lost to collection or a skipif); a passed count
+           above the row's is reported in summary.json's count_increases (a stale
+           row to re-measure), not changed
 
 Example:
   python scripts/test_tiers.py measure --out RUN_DIR --cpus 4,5,6,7 --cap 90
@@ -231,31 +236,57 @@ def run(args):
     results = _parallel(
         [r["file"] for r in wanted], args.cpus, args.cap, out, out / "run.json", header
     )
-    before = {r["file"]: r for r in wanted}
-    changed = [
-        r
-        for r in results
-        if (r["exit_code"], r["counts"].get("failed", 0), r["counts"].get("error", 0))
-        != (
-            before[r["file"]]["exit_code"],
-            before[r["file"]]["counts"].get("failed", 0),
-            before[r["file"]]["counts"].get("error", 0),
-        )
-    ]
+    changed, increases = compare_with_record(results, {r["file"]: r for r in wanted})
     summary = {
         "files": len(results),
-        "changed_vs_record": [
-            {
-                "file": r["file"],
-                "now": [r["exit_code"], r["counts"]],
-                "recorded": [before[r["file"]]["exit_code"], before[r["file"]]["counts"]],
-            }
-            for r in changed
-        ],
+        "changed_vs_record": changed,
+        "count_increases": increases,
     }
     (out / "summary.json").write_text(json.dumps(summary, indent=1) + "\n")
-    print(json.dumps({"files": len(results), "changed": len(changed)}))
+    print(
+        json.dumps(
+            {"files": len(results), "changed": len(changed), "count_increases": len(increases)}
+        )
+    )
     return 1 if changed else 0
+
+
+def compare_with_record(results, record):
+    """(changed, count_increases) of a run's file results against their tier rows.
+
+    A file is changed when its exit code, failed or error count differs from its row, when
+    its passed count falls below the row's, or when its skipped count rises above it: tests
+    that silently stop being collected or start skipping change the file, as a failure
+    does. A passed count above the row's is not a change (tests were added since the row
+    was measured); such files are listed in count_increases so their rows get re-measured.
+    Each entry is {"file", "now": [exit_code, counts], "recorded": [...]}; a changed one
+    also names why.
+    """
+    changed, increases = [], []
+    for r in results:
+        row = record[r["file"]]
+        now, was = r["counts"], row["counts"]
+        why = []
+        if (r["exit_code"], now.get("failed", 0), now.get("error", 0)) != (
+            row["exit_code"],
+            was.get("failed", 0),
+            was.get("error", 0),
+        ):
+            why.append("exit code, failed or error count differs")
+        if now.get("passed", 0) < was.get("passed", 0):
+            why.append("passed below the record")
+        if now.get("skipped", 0) > was.get("skipped", 0):
+            why.append("skipped above the record")
+        entry = {
+            "file": r["file"],
+            "now": [r["exit_code"], now],
+            "recorded": [row["exit_code"], was],
+        }
+        if why:
+            changed.append({**entry, "why": why})
+        if now.get("passed", 0) > was.get("passed", 0):
+            increases.append(entry)
+    return changed, increases
 
 
 def main(argv=None):
