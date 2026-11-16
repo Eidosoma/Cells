@@ -100,6 +100,7 @@
   "/mnt/workspaces/Cells/core-next-20261116/measure-82d3d67a/measured.json",
   "/mnt/workspaces/Cells/core-next-20261116/measure-19d850bc/measured.json",
   "/mnt/workspaces/Cells/windows-next-20261116/stepc/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/windows-next-20261116/stepc/refusals/measure/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/tiers-d82e1935/measure/measured.json"
  ],
  "measured_provenance": [
@@ -822,6 +823,14 @@
    "root": "/mnt/workspaces/Cells/windows-next-20261116/stepc/snapshot-c2aec027",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-16T18:59:25+00:00"
+  },
+  {
+   "git_revision": "cca8de3c245ef357cf41030cf73800b0ade55ecf",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/windows-next-20261116/stepc/refusals/snapshot-cca8de3c",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-16T20:20:53+00:00"
   },
   {
    "git_revision": "d82e19357e6e2dc4383055b37cd91ed6702b7941",
@@ -2938,10 +2947,10 @@
    },
    {
     "file": "tests/unit/test_row_checks_program.py",
-    "seconds": 6.84,
+    "seconds": 7.84,
     "exit_code": 0,
     "counts": {
-     "passed": 14
+     "passed": 16
     }
    },
    {

@@ -92,10 +92,14 @@ machine-readable inputs, results, checks and failures.
     - the vector set and 14 tier-3 files against c1's frozen rows: no change;
     - the continuity acceptance from a writable copy: 13 of 13;
     - crossrev: 8 of 8 sets identical.
-  - **Speed, against the host checks on the same core:**
-    - the export, 480,000 steps: 9.4×;
-    - FR-4, 900,000 steps: 13.7×;
-    - the 825-node tissue: 1.05×.
+  - **Speed against the host checks, on the same cores.**
+    - **Both arms measured:**
+      - the export: 4.8× at 80,000 steps, 1.4× at 8,000 (compile-dominated);
+      - FR-4's 20 s pass: 3.7×;
+      - the 825-node tissue: 1.05×.
+    - **Long runs, device arm measured, host arm estimated** from the measured per-row host cost:
+      - the export, 480,000 steps: about 9.4× (96.3 s against about 908 s);
+      - FR-4, 900,000 steps: about 13.7× (453 s against about 6,220 s).
 
     Every run made in both modes is bitwise, and no window was handed back.
   - **Follow-up, fail-closed:** device mode is refused for a live retiring composition, until a planted
