@@ -99,7 +99,8 @@
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/a7/tiers-f991fce1/measured.json",
   "/mnt/workspaces/Cells/core-next-20261116/measure-82d3d67a/measured.json",
   "/mnt/workspaces/Cells/core-next-20261116/measure-19d850bc/measured.json",
-  "/mnt/workspaces/Cells/core-fixes-20261116/measure-9637cb77/measured.json"
+  "/mnt/workspaces/Cells/core-fixes-20261116/measure-9637cb77/measured.json",
+  "/mnt/workspaces/Cells/core-fixes-20261116/measure-f6-10961572/measured.json"
  ],
  "measured_provenance": [
   {
@@ -821,6 +822,14 @@
    "root": "/mnt/workspaces/Cells/core-fixes-20261116/snapshot-full-9637cb77",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-16T19:44:16+00:00"
+  },
+  {
+   "git_revision": "109615725aa284a77a93a0b7d31536daa55224a9",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-fixes-20261116/snapshot-full-10961572",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-16T20:15:13+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2016,16 +2025,6 @@
     }
    },
    {
-    "file": "tests/unit/test_gated_calcium.py",
-    "seconds": 10.09,
-    "exit_code": 1,
-    "counts": {
-     "failed": 9,
-     "passed": 22,
-     "error": 12
-    }
-   },
-   {
     "file": "tests/unit/test_geometry_profile_preparation.py",
     "seconds": 16.32,
     "exit_code": 1,
@@ -2168,16 +2167,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 17
-    }
-   },
-   {
-    "file": "tests/unit/test_ip3_calcium.py",
-    "seconds": 7.98,
-    "exit_code": 1,
-    "counts": {
-     "failed": 7,
-     "passed": 18,
-     "error": 10
     }
    },
    {
@@ -2699,16 +2688,6 @@
     "counts": {
      "failed": 1,
      "passed": 113
-    }
-   },
-   {
-    "file": "tests/unit/test_plasma_calcium.py",
-    "seconds": 7.34,
-    "exit_code": 1,
-    "counts": {
-     "failed": 11,
-     "passed": 22,
-     "error": 11
     }
    },
    {
@@ -3686,16 +3665,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 36
-    }
-   },
-   {
-    "file": "tests/unit/test_tissue_calcium.py",
-    "seconds": 6.81,
-    "exit_code": 1,
-    "counts": {
-     "failed": 17,
-     "passed": 5,
-     "error": 12
     }
    },
    {
@@ -5442,6 +5411,12 @@
     "counts": {}
    },
    {
+    "file": "tests/unit/test_gated_calcium.py",
+    "seconds": 90.13,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
     "file": "tests/unit/test_hcn_extra_catalog.py",
     "seconds": 90.1,
     "exit_code": null,
@@ -5462,6 +5437,12 @@
    {
     "file": "tests/unit/test_integrated_ensemble.py",
     "seconds": 90.24,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_ip3_calcium.py",
+    "seconds": 90.13,
     "exit_code": null,
     "counts": {}
    },
@@ -5679,6 +5660,12 @@
    },
    {
     "file": "tests/unit/test_partition_runs.py",
+    "seconds": 90.11,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_plasma_calcium.py",
     "seconds": 90.11,
     "exit_code": null,
     "counts": {}
@@ -6278,6 +6265,12 @@
    {
     "file": "tests/unit/test_tissue.py",
     "seconds": 90.13,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_tissue_calcium.py",
+    "seconds": 90.14,
     "exit_code": null,
     "counts": {}
    },
