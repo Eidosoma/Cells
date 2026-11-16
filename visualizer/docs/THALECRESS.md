@@ -275,7 +275,9 @@ python3 tools/build_thalecress_atlas.py build --datasets DATA   # the same bytes
 node --test tests/thalecress_atlas.test.mjs                      # set THALECRESS_DATASETS elsewhere
 ```
 
-The tool imports four others: the fly's for the reading of entries and the catalogue,
-the human's for the shelves' machinery, the M. pneumoniae tool for the units' families,
-and the E. coli tool for the download step and the papers' checks. What a shared module
-would hold and cost is said in the coordinator's record; nothing was moved.
+Since 16 November 2026 the tool uses one shared module, `tools/lib/proteome_shelves.py`,
+for the reading of entries and the catalogue, the shelves' machinery, the download step
+and the papers' checks; it reads the units' families from the M. pneumoniae tool's
+table. What is the plant's own stays here: the plant cell built on the animal cell, the
+plasmodesma sentence, the plant's counts, its outlines and its sentences. Every file the
+tool writes came out the same byte for byte after the move.

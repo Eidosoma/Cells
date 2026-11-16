@@ -390,10 +390,10 @@ own four folders, what the other species' tools saved there: UniProt's vocabular
 help pages, InterPro's and the Gene Ontology's files, and the terms of the tools behind
 UniProt's predictions.
 
-**One thing to know about the tool.** It does not copy the shelves' machinery: it imports
-`tools/build_human_atlas.py` for the placement, the families and the districts, and
-`tools/build_mpneumoniae_atlas.py` for the families asked of every species, and gives
-them E. coli's own table of places. A family therefore has one id in every species by
-construction. The cost is that a change to either tool can change E. coli's files; the
-byte-for-byte test shows it. A shared module under `tools/lib/` would be the cleaner
-home, and is a change to files that are not this note's.
+**One thing to know about the tool.** It does not copy the shelves' machinery: the
+placement, the families and the districts are in one module that every species' tool
+uses, `tools/lib/proteome_shelves.py` (since 16 November 2026; until then this tool
+imported the human's). The tool gives that module E. coli's own table of places, and
+reads the families asked of every species from `tools/build_mpneumoniae_atlas.py`. A
+family therefore has one id in every species by construction. A change to the shared
+module can change E. coli's files; the byte-for-byte test shows it.
