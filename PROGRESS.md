@@ -80,6 +80,27 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **windows-next-clean merged into main (16 November 2026, evening).** It brings the planner seams and
+  opt-in device-resident row checks ([handoff](/mnt/workspaces/Cells/windows-next-20261116/HANDOFF.md)).
+  - **What it adds:**
+    - `window_arguments`, `WorldRefusal`, `MemoryRefusal` and the world-mode refusals;
+    - `WindowPolicy(row_checks="device")`, which checks rows on the device and hands a window back to
+      the host checks on any failure or any ratio above 1/2 (R3's margins);
+    - the design note `docs/WINDOW_DEVICE_CHECKS_DESIGN.md`.
+  - **The gate,** at 74ebb91b, with main merged in:
+    - tiers 1+2: 510 files, none changed;
+    - the vector set and 14 tier-3 files against c1's frozen rows: no change;
+    - the continuity acceptance from a writable copy: 13 of 13;
+    - crossrev: 8 of 8 sets identical.
+  - **Speed, against the host checks on the same core:**
+    - the export, 480,000 steps: 9.4×;
+    - FR-4, 900,000 steps: 13.7×;
+    - the 825-node tissue: 1.05×.
+
+    Every run made in both modes is bitwise, and no window was handed back.
+  - **Follow-up, fail-closed:** device mode is refused for a live retiring composition, until a planted
+    dissipation test exists, and on a GPU backend, until a GPU measurement exists.
+
 - **The visualizer merged into main (16 November 2026, evening): visualizer a4ef7492.**
   `visualizer/` only.
   - **What it adds:**

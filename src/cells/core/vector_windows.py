@@ -19,7 +19,18 @@ parameters, controls and clocks may differ per world, and each world keeps its
 own clock, as in core/batch_windows.py: slots beyond a world's window, or after
 its first failure, are masked. Under vmap a world evaluates every slot (a
 batched lax.cond selects rather than branches), so a masked or refused step is
-computed and discarded, never accepted. A failing world refuses the batch.
+computed and discarded, never accepted. A failing world refuses the batch
+(refusals="batch", the default). With refusals="world" a failing world is
+refused alone and rides on as a finished world (no steps, nothing stored),
+while every other world continues on the same executable at the same world
+count; its last accepted state is at window granularity, its checkpoint at the
+start of the refusing window (docs/WINDOW_DEVICE_CHECKS_DESIGN.md §5.5).
+
+Every refusal of one world carries its WorldRefusal record as exc.refusal (the
+exception's class and message are unchanged); a cohort above max_working_bytes
+raises MemoryRefusal. window_arguments gives a cohort's first window as the
+program receives it, from the path's own constructors (abstract=True places
+nothing on the device), for planners that key and size batches.
 
 The BatchSpec is the cohort identity shared with core/batch_windows.py and its
 snapshots; its mapping field names the guarded scalar mapping that format
@@ -40,10 +51,14 @@ import numpy as np
 from cells.core import phases
 from cells.core.batch import (
     BatchSpec,
+    MemoryRefusal,
+    WorldRefusal,
     WorldSpec,
     _array_bytes,
     _checkpoint_map,
+    _refusing,
     _stack,
+    _world_error,
     checkpoint_batch_limits,
 )
 from cells.core.batch_windows import WindowedBatchResult
@@ -77,6 +92,7 @@ DEVICE_HOOKS = (
 )
 STEP_REFUSED = "step"  # Failure bit 0: the model's checked step refused the step.
 MIN_CONTROL_ROWS = 2  # One held control change per window keeps one executable.
+REFUSALS = ("batch", "world")  # A failing world refuses the batch, or is refused alone.
 
 
 class WorldCheckError(NumericalError):
@@ -84,7 +100,7 @@ class WorldCheckError(NumericalError):
 
     step_index is the global index of the first rejected row: the end of a
     refused step, or an accepted row that failed a check. checks names the
-    failures there, in host order.
+    failures there, in host order. Its WorldRefusal is exc.refusal.
     """
 
     def __init__(self, message, *, world_id, step_index, time_interval, checks):
@@ -166,8 +182,14 @@ def cohort_limits(spec):
     bound = len(worlds) * max(upper.values())
     if bound > reduced.max_padded_steps:
         raise ConfigError("Conservative padded work exceeds batch max_padded_steps")
-    if 2 * sum(storage[id(w.simulation)] for w in worlds) > reduced.max_working_bytes:
-        raise ConfigError("Checkpoint aggregate arrays exceed batch max_working_bytes")
+    required = 2 * sum(storage[id(w.simulation)] for w in worlds)
+    if required > reduced.max_working_bytes:
+        raise MemoryRefusal(
+            "Checkpoint aggregate arrays exceed batch max_working_bytes",
+            required_bytes=required,
+            limit_bytes=reduced.max_working_bytes,
+            stage="checkpoints",
+        )
     return replace(reduced, worlds=worlds), bound
 
 
@@ -183,6 +205,11 @@ def plan_vector_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
 
 
 def _plan_vector_windows(spec, policy, checkpoints, record):
+    if getattr(policy, "row_checks", "host") != "host":
+        raise ConfigError(
+            "row_checks device runs on the scalar windowed path only; vector windows always "
+            "check rows on the device"
+        )
     spec, bound = cohort_limits(spec)
     if checkpoints is not None:
         _checkpoint_map(spec, checkpoints)
@@ -211,7 +238,8 @@ def _plan_vector_windows(spec, policy, checkpoints, record):
                     local.spec, checkpoint, local.grid, initial=initial[id(world.simulation)]
                 )
         except (ConfigError, NumericalError) as exc:
-            raise type(exc)(f"World {world.world_id}: {exc}") from exc
+            message = f"World {world.world_id}: {exc}"
+            raise _world_error(type(exc), world.world_id, "admission", message) from exc
         plans.append(local)
         record.end(
             "plan.world",
@@ -244,7 +272,12 @@ def _plan_vector_windows(spec, policy, checkpoints, record):
         for p, g in zip((plans[g[0]] for g in groups), groups, strict=True)
     )
     if estimate > spec.max_working_bytes:
-        raise ConfigError("Estimated vectorized rows exceed batch max_working_bytes")
+        raise MemoryRefusal(
+            "Estimated vectorized rows exceed batch max_working_bytes",
+            required_bytes=estimate,
+            limit_bytes=spec.max_working_bytes,
+            stage="estimate",
+        )
     return VectorWindowPlan(
         spec,
         plans[0].policy,
@@ -477,6 +510,9 @@ class VectorWindow:
     checkpoints: Mapping[int, Checkpoint]  # Complete cohort, including finished worlds.
     timings: dict
     resources: dict
+    # refusals="world": every world refused so far (world ID -> WorldRefusal). A refused
+    # world's checkpoint stays its last accepted one, at the start of its refusing window.
+    refusals: Mapping[int, WorldRefusal] = MappingProxyType({})
 
 
 def _initial_checkpoints(plan, checkpoints):
@@ -491,7 +527,8 @@ def _initial_checkpoints(plan, checkpoints):
             shared = initialise(local.spec)
             validate_checkpoint(local.spec, shared, local.grid)
         except (ConfigError, NumericalError) as exc:
-            raise type(exc)(f"World {world.world_id}: {exc}") from exc
+            message = f"World {world.world_id}: {exc}"
+            raise _world_error(type(exc), world.world_id, "start", message) from exc
         for i in group:
             result[plan.spec.worlds[i].world_id] = shared
     return result
@@ -540,9 +577,10 @@ def _observation_rows(local, times, index, first_round):
     return chosen, rows, stop
 
 
-def _failure(plan, model, ids, times, first, bits):
-    failing = np.flatnonzero(first >= 0)
-    i = int(failing[0])
+def _check_refusal(plan, model, ids, times, first, bits, i, start):
+    """World i's WorldRefusal for its first rejected row of this window, first[i] (a refused
+    step, stage "step", or a failed device check, stage "check"); start is its checkpoint at the
+    window's start, its last accepted state at window granularity."""
     row, mask = int(first[i]), int(bits[i])
     names = tuple(
         name for bit, name in enumerate((STEP_REFUSED, *model.DEVICE_CHECKS)) if mask & (1 << bit)
@@ -553,14 +591,33 @@ def _failure(plan, model, ids, times, first, bits):
     else:
         messages = "; ".join(model.device_failure_message(n) for n in names)
         reason = f"{messages} at accepted time {interval[1]}"
-    others = f" ({len(failing) - 1} more failing worlds)" if len(failing) > 1 else ""
-    raise WorldCheckError(
-        f"World {ids[i]}: {reason}; vectorized batch refused{others}",
-        world_id=ids[i],
-        step_index=plan.worlds[i].grid.exact_index(interval[1]),
-        time_interval=interval,
-        checks=names,
+    return WorldRefusal(
+        ids[i],
+        "step" if names[0] == STEP_REFUSED else "check",
+        WorldCheckError.__name__,
+        f"World {ids[i]}: {reason}",
+        plan.worlds[i].grid.exact_index(interval[1]),
+        interval,
+        names,
+        start,
     )
+
+
+def _failure(plan, model, ids, times, first, bits, starts=None):
+    """Refuse the batch for its first failing world (refusals="batch")."""
+    failing = np.flatnonzero(first >= 0)
+    i = int(failing[0])
+    start = None if starts is None else starts[ids[i]]
+    refusal = _check_refusal(plan, model, ids, times, first, bits, i, start)
+    others = f" ({len(failing) - 1} more failing worlds)" if len(failing) > 1 else ""
+    error = WorldCheckError(
+        f"{refusal.message}; vectorized batch refused{others}",
+        world_id=refusal.world_id,
+        step_index=refusal.step_index,
+        time_interval=refusal.time_interval,
+        checks=refusal.checks,
+    )
+    raise _refusing(error, refusal)
 
 
 class _Round:
@@ -613,6 +670,19 @@ class _Round:
         self.observing = any(r > 0 for rows in self.rows for r in rows)
         self.seconds = perf_counter() - tick
 
+    def mask(self, plan, positions, starts, ids):
+        """The worlds at positions ride this round as finished worlds: no steps, nothing
+        stored, not live (refused worlds, refusals="world"). Their group's clock is unchanged,
+        so replicas of a refused world go on; the program, its shapes and the world count are
+        those of the unmasked round."""
+        steps, counts, _, index, slots, origin = self.arrays
+        for i in positions:
+            counts[i], steps[i], index[i], slots[i] = 0, 0.0, 0, plan.observation_rows
+            origin[i] = len(plan.worlds[i].grid) - 1
+            self.live[i], self.chosen[i], self.rows[i] = False, (), []
+            self.times[i] = np.array([starts[ids[i]].time])
+        self.observing = any(r > 0 for rows in self.rows for r in rows)
+
 
 def resident_inputs(plan, starts, model, device):
     """(state, params, active, constants, host layouts by id) for a cohort's starts.
@@ -655,14 +725,111 @@ def resident_inputs(plan, starts, model, device):
     return (*values, host_layouts)
 
 
-def _iter_vector_windows(plan, checkpoints):
+def _grids(plan):
+    """Each group's window clock (core.grid.EventGrid.windows), as the driving loop reads it."""
+    return [
+        plan.worlds[g[0]].grid.windows(plan.worlds[g[0]].start_step, plan.policy.window_steps)
+        for g in plan.groups
+    ]
+
+
+def _observation_index(plan, starts, ids):
+    """Each world's first requested observation at or after its start."""
+    return [
+        bisect_left(p.spec.experiment.observation_times, starts[i].time)
+        for i, p in zip(ids, plan.worlds, strict=True)
+    ]
+
+
+def _first_round(plan, grids, starts, ids, observation_index):
+    """The cohort's first round (its clocks advance one window)."""
+    return _Round(plan, grids, starts, ids, observation_index, True)
+
+
+@dataclass(frozen=True)
+class WindowArguments:
+    """A cohort's first window as the window program receives it (window_arguments)."""
+
+    model: object
+    # compile_window's arguments, each leaf [world, ...]: state, steps, counts, held control
+    # table, control index, observation slots, first step, parameters, active mask, constants.
+    args: tuple
+    rows: int  # Stored observation rows per world (compile_window's rows).
+    starts: Mapping[int, Checkpoint]  # Each world's start checkpoint.
+
+
+def _abstract_resident(plan, starts, model, sharding):
+    """resident_inputs' (state, params, active, constants) as jax.ShapeDtypeStruct leaves
+    [world, ...], placing nothing on the device. Each group's lead world gives the trees; the
+    cohort's trees are homogeneous (core.batch._stack refuses them otherwise, as the real
+    path's stacking does)."""
+    trees = []
+    for group in plan.groups:
+        local, start = plan.worlds[group[0]], starts[plan.spec.worlds[group[0]].world_id]
+        layout = type(start.layout)(*(np.asarray(v) for v in start.layout))
+        trees.append(
+            (
+                start.state,
+                model.parameters(local.spec, layout),
+                layout.active,
+                model.device_check_constants(local.spec),
+            )
+        )
+    count = len(plan.spec.worlds)
+    return jax.tree.map(
+        lambda v: jax.ShapeDtypeStruct(
+            (count, *v.shape[1:]), jax.dtypes.canonicalize_dtype(v.dtype), sharding=sharding
+        ),
+        _stack(trees),
+    )
+
+
+def window_arguments(plan, checkpoints=None, *, abstract=False):
+    """A planned cohort's (plan_vector_windows) first window as the program receives it.
+
+    It is built by the path's own constructors: the starts (_initial_checkpoints, which
+    validates fresh starts), the first round (the driving loop's round builder) and the
+    resident inputs (resident_inputs). With abstract=True every leaf is a jax.ShapeDtypeStruct
+    with the device's sharding and nothing is placed on the device: the arguments for keying
+    (window_key) and for compiling a probe executable (compile_window), whose key a real run's
+    first launch then shares. Otherwise the leaves are device arrays, as the run's own launch
+    passes them.
+    """
+    starts = _initial_checkpoints(plan, checkpoints)
+    model = get_model(plan.spec.worlds[0].simulation.model)
+    ids = [w.world_id for w in plan.spec.worlds]
+    device = execution_device(plan.spec.worlds[0].simulation.execution.backend)
+    first = _first_round(plan, _grids(plan), starts, ids, _observation_index(plan, starts, ids))
+    if abstract:
+        sharding = jax.sharding.SingleDeviceSharding(device)
+        state, params, active, constants = _abstract_resident(plan, starts, model, sharding)
+        rounds = jax.tree.map(
+            lambda v: jax.ShapeDtypeStruct(
+                np.shape(v), jax.dtypes.canonicalize_dtype(np.asarray(v).dtype), sharding=sharding
+            ),
+            first.arrays,
+        )
+    else:
+        state, params, active, constants, _ = resident_inputs(plan, starts, model, device)
+        rounds = jax.device_put(first.arrays, device)
+    return WindowArguments(
+        model,
+        (state, *rounds, params, active, constants),
+        plan.observation_rows,
+        MappingProxyType(dict(starts)),
+    )
+
+
+def _iter_vector_windows(plan, checkpoints, refusals="batch", refused=None):
     """The rounds of a planned vectorized run; their phases write start, completion and
     failure records (core.phases.Recorder)."""
     with phases.Recorder() as record:
-        yield from _vector_window_rounds(plan, checkpoints, record)
+        yield from _vector_window_rounds(plan, checkpoints, record, refusals, refused)
 
 
-def _vector_window_rounds(plan, checkpoints, record):
+def _vector_window_rounds(plan, checkpoints, record, refusals="batch", refused=None):
+    alone = refusals == "world"
+    refused = dict(refused or {})  # World ID -> WorldRefusal (refusals="world").
     started = perf_counter()
     record.start("binding", worlds=len(plan.spec.worlds))
     spec = plan.spec
@@ -673,14 +840,8 @@ def _vector_window_rounds(plan, checkpoints, record):
     state, params, active, constants, host_layouts = resident_inputs(plan, starts, model, device)
     static_seconds = perf_counter() - started
     record.end("binding", worlds=len(ids), seconds=static_seconds)
-    grids = [
-        plan.worlds[g[0]].grid.windows(plan.worlds[g[0]].start_step, plan.policy.window_steps)
-        for g in plan.groups
-    ]
-    observation_index = [
-        bisect_left(p.spec.experiment.observation_times, starts[i].time)
-        for i, p in zip(ids, plan.worlds, strict=True)
-    ]
+    grids = _grids(plan)
+    observation_index = _observation_index(plan, starts, ids)
     tails = [None] * len(ids)
     executable = None
 
@@ -697,17 +858,27 @@ def _vector_window_rounds(plan, checkpoints, record):
                 for k in ("argument_size_in_bytes", "output_size_in_bytes", "temp_size_in_bytes")
             )
             if needed and needed > spec.max_working_bytes:
-                raise ConfigError(
+                raise MemoryRefusal(
                     f"Compiled vectorized window needs {needed} bytes, above batch "
-                    f"max_working_bytes ({spec.max_working_bytes})"
+                    f"max_working_bytes ({spec.max_working_bytes})",
+                    required_bytes=needed,
+                    limit_bytes=spec.max_working_bytes,
+                    stage="compiled",
                 )
         return executable(*args), perf_counter(), compile_seconds, memory
 
-    current = _Round(plan, grids, starts, ids, observation_index, True)
+    def masked():
+        return [i for i, identity in enumerate(ids) if identity in refused]
+
+    current = _first_round(plan, grids, starts, ids, observation_index)
+    if refused:
+        current.mask(plan, masked(), starts, ids)
     if not any(current.live):
         return
     outputs, launched, compile_seconds, memory = launch(current)
-    round_index = 0
+    # dropped: worlds whose outputs of the current window are discarded, being refused in it or,
+    # by their observations, in the window before (the device already ran this one for them).
+    round_index, dropped = 0, set()
     while current is not None:
         name = "first_window" if round_index == 0 else "window"
         record.start(name, debug=round_index > 0, index=round_index)
@@ -725,10 +896,19 @@ def _vector_window_rounds(plan, checkpoints, record):
             execute_seconds=execute_seconds,
             steps=int(current.arrays[1].sum()),
         )
-        if np.any(first >= 0):
-            _failure(plan, model, ids, current.times, first, bits)
+        if alone:  # Each failing world alone, at window granularity; the others go on.
+            for i in map(int, np.flatnonzero(first >= 0)):
+                if current.live[i] and i not in dropped and ids[i] not in refused:
+                    refused[ids[i]] = _check_refusal(
+                        plan, model, ids, current.times, first, bits, i, starts[ids[i]]
+                    )
+                    dropped.add(i)
+        elif np.any(first >= 0):
+            _failure(plan, model, ids, current.times, first, bits, starts)
         state = final
         following = _Round(plan, grids, starts, ids, current.stops, False)
+        if refused:
+            following.mask(plan, masked(), starts, ids)
         if not any(following.live):
             following = None
         else:  # The device runs the next window while the host finishes this one.
@@ -739,8 +919,9 @@ def _vector_window_rounds(plan, checkpoints, record):
         transfer_seconds = perf_counter() - transfer_started
         analysis_started = perf_counter()
         endings, observations, diagnostics = dict(starts), {}, {}
+        lagged = set()
         for i, identity in enumerate(ids):
-            if not current.live[i]:
+            if not current.live[i] or i in dropped:
                 continue
             local, times, start = plan.worlds[i], current.times[i], starts[identity]
             endings[identity] = Checkpoint(
@@ -772,7 +953,20 @@ def _vector_window_rounds(plan, checkpoints, record):
                     )
                     tails[i] = _observation_tail(model, local.spec, found, tails[i], local.grid)
                 except (ConfigError, NumericalError) as exc:
-                    raise type(exc)(f"World {identity}: {exc}; vectorized batch refused") from exc
+                    message = f"World {identity}: {exc}"
+                    refusal = WorldRefusal(
+                        identity, "observation", type(exc).__name__, message, checkpoint=start
+                    )
+                    if not alone:
+                        error = type(exc)(f"{message}; vectorized batch refused")
+                        raise _refusing(error, refusal) from exc
+                    # Refused alone: nothing of this window is accepted for it, and its next
+                    # window (already running) is discarded.
+                    refused[identity] = refusal
+                    endings[identity] = start
+                    del diagnostics[identity]
+                    lagged.add(i)
+                    continue
                 observations[identity] = found
         for value in endpoint:
             value.setflags(write=False)
@@ -802,22 +996,65 @@ def _vector_window_rounds(plan, checkpoints, record):
             MappingProxyType(endings),
             timings,
             resources,
+            MappingProxyType(dict(refused)),
         )
         round_index += 1
         current, compile_seconds, memory = following, 0.0, None
+        dropped = lagged
         if following is not None:
             outputs, launched = next_outputs, next_launched
 
 
-def iter_vector_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
-    """Yield only wholly checked rounds; preflight runs before the iterator returns."""
-    return _iter_vector_windows(plan_vector_windows(spec, policy, checkpoints), checkpoints)
+def _refusal_mode(spec, refusals, refused):
+    if refusals not in REFUSALS:
+        raise ConfigError("refusals must be batch or world")
+    if refused is None or (isinstance(refused, Mapping) and not refused):
+        return
+    if refusals != "world":
+        raise ConfigError('Carried refusals require refusals="world"')
+    ids = {w.world_id for w in spec.worlds}
+    if not isinstance(refused, Mapping) or any(
+        identity not in ids or type(value) is not WorldRefusal or value.world_id != identity
+        for identity, value in refused.items()
+    ):
+        raise ConfigError("Carried refusals must map the cohort's world IDs to their WorldRefusal")
 
 
-def run_vector_windowed(spec, policy=DEFAULT_POLICY, checkpoints=None, *, sink=None):
-    """Vectorized counterpart of batch_windows.run_batch_windowed (same result type)."""
+def iter_vector_windows(
+    spec, policy=DEFAULT_POLICY, checkpoints=None, *, refusals="batch", refused=None
+):
+    """Yield only wholly checked rounds; preflight runs before the iterator returns.
+
+    refusals="batch" (default): the first failing world refuses the batch, raising its
+    WorldCheckError (a refused step or device check) or its observer's error; nothing of that
+    window is accepted for any world. refusals="world": every failing world is refused alone and
+    the others go on; each VectorWindow's refusals hold the refusals so far. A refused world's
+    last accepted state is at window granularity: its checkpoint at the start of the refusing
+    window, which its record carries and its entry in checkpoints keeps. A world refused by its
+    host observations in window k has already run window k + 1, whose outputs for it are
+    discarded. refused: refusals carried across a resume (refusals="world"); those worlds ride
+    masked from the first round, so the world count and the executable stay those of the run.
+    The round builder's own refusals mid-run (held-control segments and observation rows that a
+    later window cannot hold, for a definition the plan admitted) are cohort-level: they carry
+    no record and end the run in either mode.
+    """
+    _refusal_mode(spec, refusals, refused)
+    plan = plan_vector_windows(spec, policy, checkpoints)
+    return _iter_vector_windows(plan, checkpoints, refusals, refused)
+
+
+def run_vector_windowed(
+    spec, policy=DEFAULT_POLICY, checkpoints=None, *, sink=None, refusals="batch", refused=None
+):
+    """Vectorized counterpart of batch_windows.run_batch_windowed (same result type).
+
+    refusals and refused as for iter_vector_windows. With refusals="world" the result's worlds
+    hold the completed worlds and its refusals every refused world (WorldRefusal, with its last
+    accepted checkpoint at the start of its refusing window).
+    """
     if sink is not None and not callable(sink):
         raise ConfigError("Vector window sink must be callable")
+    _refusal_mode(spec, refusals, refused)
     started = perf_counter()
     plan = plan_vector_windows(spec, policy, checkpoints)
     preflight = perf_counter() - started
@@ -827,7 +1064,8 @@ def run_vector_windowed(spec, policy=DEFAULT_POLICY, checkpoints=None, *, sink=N
     timings, peaks = {}, {}
     executed = padded = rounds = 0
     sink_seconds, memory, endings = 0.0, None, None
-    for window in _iter_vector_windows(plan, checkpoints):
+    gone = MappingProxyType(dict(refused or {}))
+    for window in _iter_vector_windows(plan, checkpoints, refusals, refused):
         for identity, values in window.diagnostics.items():
             merge_diagnostics(diagnostics[identity], values)
             windows[identity] += 1
@@ -848,11 +1086,13 @@ def run_vector_windowed(spec, policy=DEFAULT_POLICY, checkpoints=None, *, sink=N
             before = perf_counter()
             sink(window)
             sink_seconds += perf_counter() - before
-        endings = window.checkpoints
+        endings, gone = window.checkpoints, window.refusals
         rounds += 1
     worlds = {}
     for world, local in zip(plan.spec.worlds, plan.worlds, strict=True):
         identity = world.world_id
+        if identity in gone:
+            continue
         worlds[identity] = WindowedResult(
             local.spec,
             plan.policy,
@@ -893,4 +1133,5 @@ def run_vector_windowed(spec, policy=DEFAULT_POLICY, checkpoints=None, *, sink=N
             "compiled_memory_analysis": memory,
             "device_peak_bytes_in_use": None if stats is None else stats.get("peak_bytes_in_use"),
         },
+        gone,
     )
