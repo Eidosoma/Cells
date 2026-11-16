@@ -437,6 +437,28 @@ def test_definition_refusals(name):
         parse_spec(build())
 
 
+def test_refusal_4_admits_the_known_kinds_and_fails_closed_on_any_other():
+    """Refusal 4, version 1.1 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1): FR-4's declared world, in
+    the composite's form, is admitted with its proton pump (cells.transporter@1), its proton leak
+    (cells.passive_routes@1) and its K+ permeability on the bounding patch, and B4's stage read; a
+    compartment in a world declaring a kind refusal 4 does not know is refused (fails closed). A
+    permeability in a world without kinds stays refused (REFUSALS), as do pumps and channels."""
+    from cells.core import kind_registry
+    from tests import kind_fixtures
+    from validation.compartment_ph_engine import definitions as defs
+
+    spec = parse_spec(defs.declared_world(defs.fr4_world()))
+    bounding = next(p for p in spec.model.membranes if p.id == defs.BOUNDING)
+    assert any(v > 0 for v in bounding.permeability_m_per_s)  # The K+ counterion.
+    assert {k for k, _ in spec.model.kinds} == {*comp.ROUTE_KINDS, *comp.READ_KINDS}
+    populations = dict(spec.model.kinds)["cells.transporter@1"]
+    routes = dict(spec.model.kinds)["cells.passive_routes@1"]
+    assert {t.patch for t in populations} == {r.host for r in routes} == {defs.BOUNDING}
+    with kind_registry.scope(kind_fixtures.registry()):
+        with pytest.raises(ConfigError, match="which refusal 4 does not know"):
+            parse_spec(kind_fixtures.declare(w(), species="S"))
+
+
 def replaced(events):
     raw = two_cells(
         contacts=(("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_1", "ecs_1")),

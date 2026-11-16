@@ -14,9 +14,12 @@ Refused at the definition, each with its reason (§1.4, §1.5):
 2. a patch that is not declared, is not the only patch whose outside is the node, or whose inside
    is not the declared owner (a declared cell);
 3. two compartments on one node (an owner may own several);
-4. an ion route on the bounding patch (version 1): a nonzero permeability, a Na/K or Ca pump, or a
-   channel population. That is the charged door (§3.4): a compartment has no face, so @3's per-cell
-   bound would not see its own charge relaxation;
+4. an ion route on the bounding patch (version 1.1, §3.4.1): a Na/K or Ca pump or a channel
+   population; a nonzero permeability unless the world declares kinds; and any declared kind
+   outside the known ones (ROUTE_KINDS, READ_KINDS), which fails closed. That is the charged door
+   (§3.4): a compartment has no face, so its charge relaxation is held only by B7's face-free term
+   and, with kinds declared, by the per-stage rule at free outside nodes, where the known kinds
+   put their routes' slopes;
 5. a nonzero charge anchor (version 1): the content is electroneutral, so q = 0 and V_b = 0;
 6. an owner whose capacitor component (cells and outside nodes joined by membrane patches, as
    numerics/surface_field.bind joins them) holds no held bath (version 1). In such a component no
@@ -53,6 +56,11 @@ from cells.core.specs import ConfigError, _fields
 from cells.models.operators.contract import Operator
 
 LAW_ID = "cell_owned_compartments@1"
+# Refusal 4's known kinds (version 1.1, §3.4.1): kinds whose routes on a bounding patch hold the
+# compartment's node through their per-node stage_term and their bound_rate, and a stage read that
+# declares no route. Any other declared kind is refused while a compartment is declared.
+ROUTE_KINDS = ("cells.passive_routes@1", "cells.transporter@1")
+READ_KINDS = ("cells.rapid_proton_buffer@1",)
 REPLACEMENT_LAW = "scheduled_cell_replacement@1"
 # §4's admitted list (fails closed). @3 itself is the composite's inner model.
 ADMITTED = (
@@ -152,10 +160,15 @@ def capacitor_components(model):
 
 
 def refuse_ion_routes(model, node, bounding):
-    """Refusal 4: no ion route on the bounding patch (version 1), the charged door (§3.4)."""
+    """Refusal 4 (version 1.1, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1), the charged door: on
+    the bounding patch @3's Na/K or Ca pump and channel populations are refused, and a
+    constant-field permeability unless the world declares kinds (only then does the per-stage
+    rule hold the compartment's node); a declared kind outside ROUTE_KINDS and READ_KINDS is
+    refused, since its routes may cross the patch (fails closed)."""
+    kinds = [kind_id for kind_id, _ in getattr(model, "kinds", ())]
     channels = [c.id for c in model.channels if c.membrane_id == bounding.id]
     if (
-        any(v != 0.0 for v in bounding.permeability_m_per_s)
+        (any(v != 0.0 for v in bounding.permeability_m_per_s) and not kinds)
         or bounding.pump is not None
         or bounding.calcium_pump is not None
         or channels
@@ -165,6 +178,14 @@ def refuse_ion_routes(model, node, bounding):
             "route (a nonzero permeability, a pump or a channel population). Version 1 is "
             "neutral and silent: a charged compartment is the charged door (FR-4, FR-5), "
             "since its patch's charge relaxation is outside @3's per-cell explicit bound"
+        )
+    unknown = sorted(k for k in kinds if k not in ROUTE_KINDS + READ_KINDS)
+    if unknown:
+        raise ConfigError(
+            f"{LAW_ID}: compartment {node!r} is declared with the kind(s) {', '.join(unknown)}, "
+            "which refusal 4 does not know: a kind's routes may cross its bounding patch "
+            f"{bounding.id!r}, so version 1.1 admits only {', '.join(ROUTE_KINDS + READ_KINDS)} "
+            "(fails closed)"
         )
 
 
@@ -373,8 +394,9 @@ class CellOwnedCompartments(Operator):
             "compartments_role_default": ROLE,  # Entries with role_declared False carry it.
             "compartments_role_physics": "none in version 1: a role is metadata",
             "compartments_scope": (
-                "version 1: neutral and electrically silent (no ion route on a bounding patch, a "
-                "zero charge anchor, a held-bath topology), at a fixed volume; owners are never "
-                "replaced, used as donors or divided"
+                "version 1.1: a zero charge anchor and a held-bath topology at a fixed volume; "
+                "on a bounding patch no ion route but refusal 4's admitted ones (the known "
+                "kinds' routes, and @3's permeabilities when the world declares kinds); owners "
+                "are never replaced, used as donors or divided"
             ),
         }
