@@ -652,6 +652,16 @@ it failed open.
   and declares no route. **Any other kind is refused** while a compartment is declared: the operator
   cannot know whether its routes cross the bounding patch (D180's external kinds), so it fails
   closed, as §4's admitted list does for operators.
+- **Only with an IMEX tableau** (the core's review of version 1.1, 16 November 2026; the lead's
+  ruling). Both holds above belong to @3's IMEX step: the per-stage rule runs in `imex_step` only,
+  and @3's step checks hold B7's term and the kinds' `bound_rate` for the IMEX solvers only
+  (`surface_pump_v3.StepChecks`). An RK4 step (an empty tableau) runs neither and keeps only its
+  0.1 ms cap. The review's probe showed the gap: FR-4's declared world under RK4 at 0.1 ms, with
+  its K⁺ permeability scaled 10⁴ times (the lumen's row at 2.5 × 10⁵ s⁻¹, dt × rate = 25, far past
+  RK4's real-axis limit of about 2.8), was admitted and passed its step checks, while the same
+  world under IMEX is refused by the explicit-rate bound. So under RK4 refusal 4 admits **no
+  declared kind** beside a compartment, and a permeability stays refused as in version 1: version
+  1's refusal stands (fails closed).
 - Refusals 1–3 and 5–7 are unchanged. Refusal 5 (no charge anchor) still holds the content
   electroneutral at the start; FR-4's world declares none.
 
@@ -662,7 +672,9 @@ a 20 s pass first, then 900 s.
 
 **Tests.** An admitted kind on the bounding patch is accepted (FR-4's declared world, in the
 composite's form). An unknown planted kind is refused. Refusal 4's other cases are unchanged,
-including a permeability in a world without kinds.
+including a permeability in a world without kinds. The review's probe is a test: FR-4's declared
+world with the stiff K⁺ permeability is refused under RK4 and admitted under IMEX, where the
+explicit-rate bound then refuses its step, as before.
 
 ### 3.5 Floating components and the gauge
 

@@ -459,6 +459,56 @@ def test_refusal_4_admits_the_known_kinds_and_fails_closed_on_any_other():
             parse_spec(kind_fixtures.declare(w(), species="S"))
 
 
+STIFF_DT = 1e-4  # RK4's largest step (surface_tissue.check_steps).
+STIFF_STEPS = 20
+
+
+def stiff_fr4(solver=None, *, operator=True):
+    """FR-4's world at STIFF_DT with its bounding patch's K+ permeability scaled 1e4: the lumen's
+    row at about 2.5e5 1/s, so dt x rate = 25 (the core's review of refusal 4 version 1.1). The
+    declared world (the composite with FR-1's operator), or the development world without it."""
+    from validation.compartment_ph_engine import definitions as defs
+
+    world = defs.declared_world if operator else defs.development_world
+    raw = world(defs.fr4_world())
+    end = STIFF_STEPS * STIFF_DT
+    raw["execution"].update(dt=STIFF_DT, max_steps=2 * STIFF_STEPS)
+    if solver is not None:
+        raw["execution"]["solver"] = solver
+    raw["experiment"].update(end_time=end, observation_times=[0.0, end])
+    patch(raw, defs.BOUNDING)["permeability_m_per_s"]["K"] *= 1e4
+    return raw
+
+
+def test_refusal_4_admits_routes_beside_a_compartment_only_with_an_imex_tableau():
+    """Refusal 4, version 1.1, admits kinds and @3's permeability on a bounding patch only with an
+    IMEX tableau (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1; the core's review): an RK4 step runs
+    neither the per-stage rule nor B7's and the kinds' definition-time terms. The review's probe:
+    FR-4's declared world with the stiff K+ permeability is admitted under IMEX, whose step checks
+    then refuse it as before, and refused under RK4, where it used to pass its step checks."""
+    import dataclasses
+
+    import numpy as np
+
+    from validation.compartment_ph_engine import definitions as defs
+
+    spec = parse_spec(stiff_fr4())  # FR-4's own IMEX solver.
+    assert spec.execution.solver != comp.RK4_SOLVER
+    with pytest.raises(ConfigError, match="IMEX step exceeds the explicit-rate stability bound"):
+        get_model(spec.model).bind_step_checks(spec)(np.full(STIFF_STEPS, STIFF_DT))
+    with pytest.raises(ConfigError, match="declared with kinds in a world that steps with RK4"):
+        parse_spec(stiff_fr4(comp.RK4_SOLVER))
+    # The operator's own rule, on @3's parsed base under each solver.
+    base = parse_spec(stiff_fr4(operator=False))
+    block = defs.fr4_world()["model"]["operators"][0]
+    assert comp.parse_declaration(block, base).compartments[0].node == defs.LUMEN
+    rk4 = dataclasses.replace(
+        base, execution=dataclasses.replace(base.execution, solver=comp.RK4_SOLVER)
+    )
+    with pytest.raises(ConfigError, match="version 1's refusal stands"):
+        comp.parse_declaration(block, rk4)
+
+
 def replaced(events):
     raw = two_cells(
         contacts=(("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_1", "ecs_1")),
