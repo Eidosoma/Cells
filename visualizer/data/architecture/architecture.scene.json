@@ -4,9 +4,9 @@
  "title": "Cells architecture",
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
-  "as_of": "2026-11-15",
-  "generated_at": "2026-11-16T11:22:02Z",
-  "revision": "b9659141",
+  "as_of": "2026-11-16",
+  "generated_at": "2026-11-16T12:04:56Z",
+  "revision": "34253235",
   "revision_date": "2026-11-16",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
@@ -14,11 +14,11 @@
   "counts": {
    "engine_files": 506,
    "engine_files_placed": 506,
-   "parts": 232,
-   "relations": 899,
+   "parts": 239,
+   "relations": 909,
    "by_kind": {
     "operator": 19,
-    "component": 126,
+    "component": 133,
     "state": 6,
     "gate": 8,
     "capability": 20,
@@ -27,10 +27,10 @@
    },
    "by_status": {
     "qualified": 40,
-    "landed": 16,
+    "landed": 19,
     "established": 59,
-    "planned": 23,
-    "designed": 24,
+    "planned": 25,
+    "designed": 26,
     "failed": 1,
     "external": 4,
     "unstated": 65
@@ -375,7 +375,7 @@
      "covers_all": true
     }
    },
-   "checked_at": "b9659141"
+   "checked_at": "34253235"
   },
   "counts": {
    "units": 48,
@@ -15260,7 +15260,7 @@
    "group": "operators",
    "status": "qualified",
    "as_of": "2026-11-15",
-   "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Numerically qualified on 15 November 2026: its judged run passed all 47 criteria. It agrees at second order with independent references, for two cells whose contact is set by each cell's regulatory state and for a species that sets a channel's availability. The qualification is for CPU runs within its stated scope: worlds without pumps or gated channels, over 1 and 2 seconds.",
+   "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Numerically qualified on 15 November 2026: its judged run passed all 47 criteria. It agrees at second order with independent references, for two cells whose contact is set by each cell's regulatory state and for a species that sets a channel's availability. The qualification is for CPU runs within its stated scope: worlds without pumps or gated channels, over 1 and 2 seconds. On 15 November 2026 an export driver ran its world in four matched arms, as development evidence with no verdict (D177): restarts and windows were identical byte for byte, and the engine agreed with the refined reference to 4.5e-7 mV at the finest step.",
    "detail": "Operator species_regulated_availability@1: coupling out of the inventory (D155 item 1, D156).",
    "facts": [
     [
@@ -15335,6 +15335,10 @@
     {
      "path": "docs/INVENTORY_COUPLING_DESIGN.md",
      "where": "10. Milestone 4: the qualification protocol, PROPOSED (14 November 2026)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The coupling operator's matched-arm export ran (15 November 2026, D177)"
     }
    ],
    "files": [
@@ -15555,7 +15559,7 @@
    "group": "compute",
    "status": "qualified",
    "as_of": "2026-11-11",
-   "plain": "One GPU runs many independent worlds at once. All 12 BETSE parity protocols also pass on it, under registered GPU variants.",
+   "plain": "One GPU runs many independent worlds at once. All 12 BETSE parity protocols also pass on it, under registered GPU variants. Under a deterministic setting, repeated runs of the 825-node tissue are identical bit for bit; the rework's GPU checks use it as a declared mode (D181).",
    "sources": [
     {
      "path": "PROGRESS.md",
@@ -15564,6 +15568,14 @@
     {
      "path": "docs/ARCHITECTURE_REVIEW_NOTES.md",
      "where": "4. The GPU-native angle"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D181: The round's end game: E07-v1's re-run held, and the L4 block run under the deterministic flag"
     }
    ],
    "weight": 0
@@ -15732,6 +15744,33 @@
     {
      "path": "docs/CURRENT_PLAN.md",
      "where": "A declarative registry"
+    }
+   ],
+   "weight": 0
+  },
+  {
+   "id": "exec.modules",
+   "label": "External modules",
+   "kind": "component",
+   "group": "execution",
+   "status": "designed",
+   "as_of": "2026-11-15",
+   "plain": "Packages maintained outside Cells could add laws and mechanisms that meet the same checks, accounting and execution contracts as the engine's own. Cells stays under the MIT licence, aiming at broad use (the user's direction, D180, 15 November 2026). Each part would be registered explicitly for one model build, then checked, assembled, compiled and run; registering a module that a model does not use changes nothing. The design is proposed, not yet adopted. The modular rework leaves four openings for it. Its first stage, one law from a separately installed package, starts after the rework lands, and five decisions in it are the user's. Today the engine's registries are closed tables inside Cells. Not on main.",
+   "sources": [
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D180: External modules are a first-class architectural requirement; Cells stays MIT"
+    },
+    {
+     "path": "docs/MODULE_SYSTEM_DESIGN.md"
+    },
+    {
+     "path": "docs/ARCHITECTURE.md",
+     "where": "External modules (proposed)"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "The module system's stage 1"
     }
    ],
    "weight": 0
@@ -15984,7 +16023,7 @@
    "group": "execution",
    "status": "designed",
    "as_of": "2026-11-15",
-   "plain": "Every run will save what a viewer needs to replay it: geometry, identities, record metadata, events and how each layer is represented. The requirement is recorded (D154). Its design note is written and proposed, for the lead's review (15 November 2026); no engine code yet.",
+   "plain": "Every run will save what a viewer needs to replay it: geometry, identities, record metadata, events and how each layer is represented. The requirement is recorded (D154), and its design note is proposed (15 November 2026). Its code joins the modular rework: a writer is built on a branch of its own, with a worked example on a development run. It merges after the rework lands, followed by the viewer's requests and a first living-cell loop (FR-11). Not on main.",
    "sources": [
     {
      "path": "docs/CURRENT_PLAN.md",
@@ -15996,6 +16035,30 @@
     },
     {
      "path": "docs/RUN_VIEW_DESIGN.md"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "The run-view writer (D154)"
+    }
+   ],
+   "weight": 0
+  },
+  {
+   "id": "fr.loop_packages",
+   "label": "Living-cell loops (FR-11)",
+   "kind": "component",
+   "group": "execution",
+   "status": "planned",
+   "as_of": "2026-11-15",
+   "plain": "Short replay packages that show each species' cell alive, in a loop, whenever no research run is being explored (the user's request, 15 November 2026). It is output, not new physics: each package is a short run of laws the engine has, at a low level of detail, and is labelled an illustration, never a result. The user chose periodic loops, with one period of a periodic drive played and its seam checked; a paced heart cell for human; and, for the minimal cells, their cycle of growth and division, as an illustration. Logged; it comes after the run-view writer, with a planarian loop first.",
+   "sources": [
+    {
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "FR-11"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "FR-11's interim planarian loop"
     }
    ],
    "weight": 0
@@ -16020,6 +16083,30 @@
     {
      "path": "docs/INNER_MODEL_V4_DESIGN.md",
      "where": "15.1 List (a): what R needs to land"
+    }
+   ],
+   "weight": 0
+  },
+  {
+   "id": "exec.packed",
+   "label": "Packed GPU execution",
+   "kind": "component",
+   "group": "execution",
+   "status": "designed",
+   "as_of": "2026-11-16",
+   "plain": "Many worlds of one structure packed into one batch on the GPU, to keep it busy. On the L4, one world of the 825-node tissue keeps about a quarter of the GPU's processors active; 128 worlds or more keep about 90% active. The same planner would serve the rework's GPU checks and production ensembles. Its design was proposed on 15 November 2026, at the user's request, and a planner is built on a branch of its own. In a development run on the L4 on 16 November 2026, packed repeats were identical bit for bit, but packing alone moved some small flux and ledger values by up to 1.6e-8 relative, more than the criterion set for it; that needs a basis before its qualification. Not on main.",
+   "sources": [
+    {
+     "path": "docs/PACKED_GPU_EXECUTION_DESIGN.md",
+     "where": "Where we are on the L4 (records)"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "The packed GPU planner"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "Packed GPU execution, a design point (proposed)"
     }
    ],
    "weight": 0
@@ -17231,7 +17318,7 @@
    "group": "laws",
    "status": "designed",
    "as_of": "2026-11-15",
-   "plain": "Today the tissue model's own channel laws are a closed table: they are computed for every channel population and selected afterwards, even in a world that has no channels. In the rework each channel law, junction law, pump family, fuel kind and solver is a piece of its own, chosen when a world's program is built, so a mechanism that is not declared is absent from the program. A probe found that separating the laws moves no result: in seven worlds every value at every step stayed the same bit for bit, with smaller programs. The operators already declare what they read, change and book, through the operator contract. In development on the integration branch since 15 November 2026; not on main.",
+   "plain": "Today the tissue model's own channel laws are a closed table: they are computed for every channel population and selected afterwards, even in a world that has no channels. In the rework each channel law, junction law, pump family, fuel kind and solver is a piece of its own, chosen when a world's program is built, so a mechanism that is not declared is absent from the program. A probe found that separating the laws moves no result: in seven worlds every value at every step stayed the same bit for bit, with smaller programs. The operators already declare what they read, change and book, through the operator contract. Built on the integration branch by 15 November 2026, where the saved worlds give the same results bit for bit; not on main.",
    "sources": [
     {
      "path": "docs/ARCHITECTURE.md",
@@ -17248,6 +17335,10 @@
     {
      "path": "docs/DECISIONS.md",
      "where": "D174: The external architecture review adopted into D172; the architecture document first"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "The D172 restructure"
     }
    ],
    "weight": 0
@@ -17258,8 +17349,8 @@
    "kind": "component",
    "group": "laws",
    "status": "designed",
-   "as_of": "2026-11-15",
-   "plain": "Each kind of molecule gets one identity and one conserved total, declared once where a world is defined, however many arrays hold it: free and bound molecules of one kind are one species. New laws then need no checks against each other's species lists, which operators make pair by pair today. Sums over species follow one declared order everywhere, so that raising the limit on the number of species later needs only a check on one test world and a cost measurement; which order is settled by one bounded comparison first (D176). A probe found that a fixed order moves results at rounding only, so it lands last in the round, alone, at a declared tolerance, and every registered protocol is run again. In development on the integration branch since 15 November 2026; not on main.",
+   "as_of": "2026-11-16",
+   "plain": "Each kind of molecule gets one identity and one conserved total, declared once where a world is defined, however many arrays hold it: free and bound molecules of one kind are one species. New laws then need no checks against each other's species lists, which operators make pair by pair today. Sums over species follow one declared order everywhere, so that raising the limit on the number of species later needs only a check on one test world and a cost measurement. The order was settled on 16 November 2026 (D182): every such sum adds the species one at a time, in their declared order. Measured on the L4, it costs no measurable time at 16 species, and its sums come out bit for bit the same on the GPU and the CPU. It moves only ledgers and diagnostics, at rounding: in all 113 saved worlds every physical quantity stayed the same bit for bit. It is the round's last change, made alone. The species registry and this order are built on the integration branch; not on main.",
    "sources": [
     {
      "path": "docs/ARCHITECTURE.md",
@@ -17276,6 +17367,14 @@
     {
      "path": "docs/DECISIONS.md",
      "where": "D176: The modular rework proceeds, with FR-4 and FR-5 as its priority consumers"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D182: A7's summation order"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "The D172 restructure"
     }
    ],
    "weight": 0
@@ -17287,7 +17386,7 @@
    "group": "laws",
    "status": "designed",
    "as_of": "2026-11-15",
-   "plain": "Decided on 15 November 2026 (D176): ATP, ADP and phosphate become ordinary species of the shared inventory. Reactions make and spend them, pumps draw from the same amounts, and the standard chemical potential of each is declared in one place. Fuel that is held constant is a held row of that inventory, not a parameter of a pump. The first case is small: one regeneration reaction and one pump share a finite amount of fuel, and show depletion, a slower pump and recovery, checked against an independent reference. Two boundaries are still open: how this meets explicit proton chemistry, and that work booked by a reaction is not fuel. Today finite fuel exists only in the earlier tissue families, and the tissue model holds its fuel constant. Designed; not on main.",
+   "plain": "Decided on 15 November 2026 (D176): ATP, ADP and phosphate become ordinary species of the shared inventory. Reactions make and spend them, pumps draw from the same amounts, and the standard chemical potential of each is declared in one place. In the design, finite fuel is a transporter's default, and fuel held constant is the special case: a held row of that inventory, not a parameter of a pump. The first case is small: one regeneration reaction and one pump share a finite amount of fuel, and show depletion, a slower pump and recovery. Its independent reference landed on main on 15 November 2026: with regeneration stopped for 200 s, ATP falls almost to nothing and the pump to about 0.2% of its rate; two seconds after regeneration resumes the pump is back within 1%, and every account closes. The engine's own case is checked against it after the rework lands. Two boundaries are still open: how this meets explicit proton chemistry, and that work booked by a reaction is not fuel. Today finite fuel exists only in the earlier tissue families, and the tissue model holds its fuel constant. Designed; not on main.",
    "sources": [
     {
      "path": "docs/ARCHITECTURE.md",
@@ -17300,6 +17399,18 @@
     {
      "path": "docs/INNER_MODEL_V4_DESIGN.md",
      "where": "10. Material identity and fuel"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-5's and the finite-fuel case's independent references landed"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The results baseline tool, the protocol scan and the matched-arm export driver landed"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "Next, after the landing, in order"
     }
    ],
    "weight": 0
@@ -17311,7 +17422,7 @@
    "group": "laws",
    "status": "designed",
    "as_of": "2026-11-15",
-   "plain": "A law for molecules that cross a membrane on their own, down their gradient. In a closed test with two compartments it must conserve material, stop when both sides are at equal chemical potential, reverse with the driving force, and turn the free energy lost into heat with no work from outside. The engine's present operator for secretion and uptake is a driven route that books work, so it does not count as passive. This is the one law added in the rework round, to show that adding a law changes nothing for worlds that do not use it; its core computation already exists in the tissue model's own membrane transport. The minimal-cell track's vesicle tests are its first user. In development on the integration branch since 15 November 2026; not on main.",
+   "plain": "A law for molecules that cross a membrane on their own, down their gradient. In a closed test with two compartments it must conserve material, stop when both sides are at equal chemical potential, reverse with the driving force, and turn the free energy lost into heat with no work from outside. The engine's present operator for secretion and uptake is a driven route that books work, so it does not count as passive. This is the one law added in the rework round, to show that adding a law changes nothing for worlds that do not use it; its core computation already exists in the tissue model's own membrane transport. The minimal-cell track's vesicle tests are its first user. Its independent reference landed on main on 15 November 2026, written by a separate agent that read no engine code: in it, flow and heat are exactly zero at equal concentrations, the flow reverses exactly, and heat never decreases. The law is built on the integration branch, with the heat it releases booked exactly; not on main.",
    "sources": [
     {
      "path": "docs/ARCHITECTURE.md",
@@ -17324,6 +17435,17 @@
     {
      "path": "docs/SYN3A_MINIMAL_CELL_TRACK.md",
      "where": "5.3 The passive contract, in ARCHITECTURE.md's corrected wording"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-4's and the passive law's independent references landed (15 November 2026)"
+    },
+    {
+     "path": "validation/passive/REFERENCES_USAGE.md"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D172's round on the evening of 15 November 2026"
     }
    ],
    "weight": 0
@@ -17687,7 +17809,7 @@
    "group": "models",
    "status": "qualified",
    "as_of": "2026-11-15",
-   "plain": "The newer design: the pump tissue's own step plus declared operators, so new combinations are definitions and not new model modules. Numerically qualified on CPU through its frozen-model guards and judged in E07-v1. On the L4 GPU it agrees within the registered tolerance (W1, W2, and Q1 to Q6 of G2-Q1 pass); the one criterion that asks for bitwise equality fails, from the GPU's own nondeterminism, and stays open.",
+   "plain": "The newer design: the pump tissue's own step plus declared operators, so new combinations are definitions and not new model modules. Numerically qualified on CPU through its frozen-model guards and judged in E07-v1. On the L4 GPU it agrees within the registered tolerance (W1, W2, and Q1 to Q6 of G2-Q1 pass); the one criterion that asks for bitwise equality failed on the judged run, from the GPU's own nondeterminism. Judged alone under a deterministic GPU setting on 16 November 2026, it passed, in that setting only.",
    "detail": "resolved_pump_composite@1: resolved_pump_tissue@3's own step plus declared operators.",
    "facts": [
     [
@@ -17724,6 +17846,10 @@
     {
      "path": "PROGRESS.md",
      "where": "The composite's L4 agreement"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag"
     }
    ],
    "files": [
@@ -17738,8 +17864,8 @@
    "kind": "component",
    "group": "models",
    "status": "designed",
-   "as_of": "2026-11-15",
-   "plain": "The tissue model is being rebuilt in place as one modular model: each channel law, junction law, pump family, fuel kind and solver becomes a separate declared piece, and a world compiles only the pieces it declares. No second inner model is kept beside it, and the model keeps its name (the user's decision, D172; D176). The work is in implementation since 15 November 2026, as one round on an integration branch, and is not on main. It is accepted by results, not by identical programs: existing worlds must give the same results, and every affected registered protocol is run again, E07 included. The parts it delivers are its outline: each says what holds today, what lands in the round and what is only reserved there.",
+   "as_of": "2026-11-16",
+   "plain": "The tissue model is being rebuilt in place as one modular model: each channel law, junction law, pump family, fuel kind and solver becomes a separate declared piece, and a world compiles only the pieces it declares. No second inner model is kept beside it, and the model keeps its name (the user's decision, D172; D176). The work is in implementation since 15 November 2026, as one round on an integration branch, and is not on main. It is accepted by results, not by identical programs: existing worlds must give the same results, and every affected registered protocol is run again. The user held one re-run, E07-v1's: its worlds are covered by the results comparison instead (D181). On 16 November 2026 the round's candidate passed the first steps of its final checks. All 113 saved worlds gave the same results: bit for bit before the round's last change, the order of sums over species (D182), and within its declared tolerance after it, with every physical quantity still bit for bit. Every registered small protocol was run again and passed. Part of its GPU checks and the third tier of tests stopped for a planned restart before any verdict was written, and resume after it. The parts it delivers are its outline: each says what holds today, what lands in the round and what is only reserved there.",
    "sources": [
     {
      "path": "docs/DECISIONS.md",
@@ -17760,6 +17886,18 @@
     {
      "path": "docs/CURRENT_PLAN.md",
      "where": "The D172 restructure"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D172's end game, paused for a planned machine restart"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D181: The round's end game: E07-v1's re-run held, and the L4 block run under the deterministic flag"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D182: A7's summation order"
     }
    ],
    "weight": 0
@@ -18395,7 +18533,7 @@
    "group": "operators",
    "status": "designed",
    "as_of": "2026-11-15",
-   "plain": "How several operators share one field. Today one operator supplies a field and replaces all of it, so two operators that touch different cells of the same field cannot be combined. In the rework each operator declares which cells or nodes it reads and changes, whether its change adds, multiplies or replaces, and at which stage of the step; the composite model then merges the changes place by place. Two operators that change separate places must give the same result in either order, and an overlap is refused unless a rule says how to combine it. Its design note was proposed on 15 November 2026. Its test case is a chain: a dose in the bath, uptake, a compartment, and a reaction inside it. In development on the integration branch since 15 November 2026; not on main.",
+   "plain": "How several operators share one field. Today one operator supplies a field and replaces all of it, so two operators that touch different cells of the same field cannot be combined. In the rework each operator declares which cells or nodes it reads and changes, whether its change adds, multiplies or replaces, and at which stage of the step; the composite model then merges the changes place by place. Two operators that change separate places must give the same result in either order, and an overlap is refused unless a rule says how to combine it. Its design note was proposed on 15 November 2026. Its test case is a chain: a dose in the bath, uptake, a compartment, and a reaction inside it. Built on the integration branch by 15 November 2026, where the saved worlds give the same results bit for bit; not on main.",
    "sources": [
     {
      "path": "docs/ARCHITECTURE.md",
@@ -18407,6 +18545,10 @@
     {
      "path": "docs/INNER_MODEL_V4_DESIGN.md",
      "where": "8. Scoped composition: door S's runtime merge (list (a))"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "The D172 restructure"
     }
    ],
    "weight": 0
@@ -18551,7 +18693,7 @@
    "group": "operators",
    "status": "designed",
    "as_of": "2026-11-15",
-   "plain": "Protons as a species, a pump that acidifies a compartment against its gradient, and buffering. Since 15 November 2026 it is one of the two priority users of the modular rework (D176), and its design note was proposed the same day: protons are one species whose free part is set by a fast buffer rule at every stage, the proton pump is a transporter law on the compartment's membrane, counterions are explicit, and its first case runs on fuel held constant. Its code waits for the rework. No engine code yet.",
+   "plain": "Protons as a species, a pump that acidifies a compartment against its gradient, and buffering. Since 15 November 2026 it is one of the two priority users of the modular rework (D176), and its design note was proposed the same day: protons are one species whose free part is set by a fast buffer rule at every stage, the proton pump is a transporter law on the compartment's membrane, counterions are explicit, and its first case runs on fuel held constant. Its independent references landed on main the same day, written by a separate agent that read no engine code. In its first world the compartment acidifies from pH 7.2 to about 5.1 against its gradient, while the cytoplasm stays within 0.02 pH; without the counterion route it stalls. They also found one of the design's checks too loose, and the design now uses a check that depends on the state. Its pump and buffer are built on the integration branch, where a development run of the first world agrees with the reference to about 1e-12 pH over 900 s. Nothing is judged: its protocols are proposed, and are registered and judged after the rework lands. Not on main.",
    "sources": [
     {
      "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md"
@@ -18567,6 +18709,21 @@
     {
      "path": "docs/INNER_MODEL_V4_DESIGN.md",
      "where": "15.4 What FR-4, FR-5 and Track E's M3 each wait on"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-4's and the passive law's independent references landed (15 November 2026)"
+    },
+    {
+     "path": "validation/compartment_ph/REFERENCES_USAGE.md"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D172's round on the evening of 15 November 2026"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "Next, after the landing, in order"
     }
    ],
    "weight": 0
@@ -18578,7 +18735,7 @@
    "group": "operators",
    "status": "designed",
    "as_of": "2026-11-15",
-   "plain": "A compartment's membrane that can leak and reseal, with transfer across it at a rate that reads the compartment's own state, such as its pH. The other priority user of the modular rework (D176, 15 November 2026). Its design is in the note proposed with compartment pH the same day: damage is the existing injury and resealing law on the compartment's membrane, and the damage and the pH each act on the leak and on the transfer as control factors. It depends on the internal compartment, on compartment pH and on the passive permeation law. No engine code yet.",
+   "plain": "A compartment's membrane that can leak and reseal, with transfer across it at a rate that reads the compartment's own state, such as its pH. The other priority user of the modular rework (D176, 15 November 2026). Its design is in the note proposed with compartment pH the same day: damage is the existing injury and resealing law on the compartment's membrane, and the damage and the pH each act on the leak and on the transfer as control factors. It depends on the internal compartment, on compartment pH and on the passive permeation law. Its independent references landed on main on 15 November 2026. They showed that the note's first test world could not show its claims, so the world was revised into two arms with numbers, which the references confirm: while the compartment is not acid enough, transfer slows about 14-fold rather than stopping; after damage, the leak releases most of the compartment's cargo; and in both arms the compartment is acid enough again after about 330 s and 370 s. Its engine code comes in the rework; none is on main.",
    "sources": [
     {
      "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md"
@@ -18594,6 +18751,13 @@
     {
      "path": "docs/INNER_MODEL_V4_DESIGN.md",
      "where": "15.4 What FR-4, FR-5 and Track E's M3 each wait on"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-5's and the finite-fuel case's independent references landed"
+    },
+    {
+     "path": "validation/compartment_ph/REFERENCES_USAGE.md"
     }
    ],
    "weight": 0
@@ -18693,8 +18857,8 @@
    "kind": "component",
    "group": "experiments",
    "status": "landed",
-   "as_of": "2026-11-14",
-   "plain": "Does the composite model give the same answers on the L4 GPU as on the CPU, within a registered tolerance? On the judged run, W1 and W2 pass and G2-Q1 passes Q1 to Q6. Q7, which asks for bitwise equality, fails because of the L4's own nondeterminism at 825 nodes, and stays open. A repeat under a deterministic GPU setting is to be tried first; if there is none, a tolerance-based item follows (D168).",
+   "as_of": "2026-11-16",
+   "plain": "Does the composite model give the same answers on the L4 GPU as on the CPU, within a registered tolerance? On the judged run, W1 and W2 pass and G2-Q1 passes Q1 to Q6. Q7, which asks for bitwise equality, failed on that run because of the L4's own nondeterminism at 825 nodes, and that verdict stands, since the protocol judges once. Under a deterministic GPU setting, repeated runs became identical bit for bit, and Q7, judged alone in that setting on 16 November 2026, passed. That pass holds in the deterministic setting only (D168, D181).",
    "sources": [
     {
      "path": "docs/CURRENT_PLAN.md",
@@ -18707,6 +18871,14 @@
     {
      "path": "docs/DECISIONS.md",
      "where": "D168: G2-Q1's Q7 on the L4: a deterministic setting first, then a tolerance item if needed"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D181: The round's end game: E07-v1's re-run held, and the L4 block run under the deterministic flag"
     }
    ],
    "weight": 0
@@ -18754,7 +18926,7 @@
    "group": "experiments",
    "status": "qualified",
    "as_of": "2026-11-14",
-   "plain": "Can a voltage pattern written into a tissue survive while its cells are replaced? Judged: under donor-copy turnover it did not renew, and 8 of 15 predictions held.",
+   "plain": "Can a voltage pattern written into a tissue survive while its cells are replaced? Judged: under donor-copy turnover it did not renew, and 8 of 15 predictions held. Its re-run on the rebuilt tissue model is held by the user: its worlds are covered by the rework's results comparison instead (D181).",
    "sources": [
     {
      "path": "PROGRESS.md",
@@ -18762,6 +18934,10 @@
     },
     {
      "path": "docs/E07_V1_DESIGN.md"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D181: The round's end game: E07-v1's re-run held, and the L4 block run under the deterministic flag"
     }
    ],
    "weight": 0
@@ -18773,10 +18949,14 @@
    "group": "experiments",
    "status": "designed",
    "as_of": "2026-11-14",
-   "plain": "The follow-up heredity experiment: write a state, clear the cue, then challenge the tissue. Drafted as proposed, awaiting review.",
+   "plain": "The follow-up heredity experiment: write a state, clear the cue, then challenge the tissue. Drafted as proposed; three questions wait for the user.",
    "sources": [
     {
      "path": "docs/E07_V2_DESIGN.md"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "E07-v2 is proposed, with three questions waiting for the user"
     }
    ],
    "weight": 0
@@ -18844,8 +19024,8 @@
    "kind": "component",
    "group": "experiments",
    "status": "landed",
-   "as_of": "2026-11-12",
-   "plain": "Development runs: a brief cue writes a depolarised disc, and written discs held for 70 minutes, also with water.",
+   "as_of": "2026-11-16",
+   "plain": "Development runs: a brief cue writes a depolarised disc, and written discs held for 70 minutes, also with water. On the full tissue of 825 nodes, on the L4 GPU, the 70-minute hold completed on 16 November 2026; its comparison with the predictions written before the run is still to do.",
    "sources": [
     {
      "path": "PROGRESS.md",
@@ -18853,6 +19033,10 @@
     },
     {
      "path": "docs/HEREDITY_FIRST_EXPERIMENT.md"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag"
     }
    ],
    "weight": 0
@@ -18923,6 +19107,29 @@
     {
      "path": "docs/DECISIONS.md",
      "where": "D155"
+    }
+   ],
+   "weight": 0
+  },
+  {
+   "id": "exp.fep",
+   "label": "FEP track",
+   "kind": "component",
+   "group": "experiments",
+   "status": "planned",
+   "as_of": "2026-11-15",
+   "plain": "A possible future track on the free-energy principle and active inference, starting with chemotaxis signalling in one well-mixed bacterial cell. It was proposed on 15 November 2026 at the user's request, with a rule on claims: no result here would prove the principle, so every comparison must be able to fail. The user put it on hold until more of the inner model exists (D179). E. coli is kept as data only, with no engine organism; nothing is built, run or scheduled.",
+   "sources": [
+    {
+     "path": "docs/FEP_TRACK_PROPOSAL.md"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D179: The FEP track's decisions"
+    },
+    {
+     "path": "docs/CURRENT_PLAN.md",
+     "where": "the FEP track (D179)"
     }
    ],
    "weight": 0
@@ -19275,6 +19482,115 @@
    "weight": 1534
   },
   {
+   "id": "val.compartment_ph",
+   "label": "Compartment pH and fuel references",
+   "kind": "component",
+   "group": "references",
+   "status": "landed",
+   "as_of": "2026-11-15",
+   "plain": "Reference solutions for compartment pH (FR-4), for transfer across a compartment's membrane with leak and reseal (FR-5), and for a pump that runs on a finite amount of fuel, written by a separate agent that read no engine code. In each, the energy accounts close. They found one of the pH design's checks too loose, and that FR-5's first test world could not show its claims; both were revised. Their own tests are in the routine gate. They landed on 15 November 2026; nothing has been judged against them yet.",
+   "facts": [
+    [
+     "Files",
+     "9"
+    ],
+    [
+     "Lines of Python",
+     "1,888"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "validation/compartment_ph/REFERENCES_USAGE.md"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-4's and the passive law's independent references landed (15 November 2026)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-5's and the finite-fuel case's independent references landed"
+    }
+   ],
+   "files": [
+    "validation/compartment_ph/REFERENCES_USAGE.md",
+    "validation/compartment_ph/fuel_crosschecks.py",
+    "validation/compartment_ph/fuel_reference.py",
+    "validation/compartment_ph/k2b_crosschecks.py",
+    "validation/compartment_ph/ph_crosschecks.py",
+    "validation/compartment_ph/ph_reference.py",
+    "validation/compartment_ph/transfer_arms_crosschecks.py",
+    "validation/compartment_ph/transfer_crosschecks.py",
+    "validation/compartment_ph/transfer_reference.py"
+   ],
+   "weight": 1888
+  },
+  {
+   "id": "val.passive",
+   "label": "Passive permeation reference",
+   "kind": "component",
+   "group": "references",
+   "status": "landed",
+   "as_of": "2026-11-15",
+   "plain": "A reference solution for the passive permeation law, written by a separate agent that read no engine code: a closed pair of compartments solved exactly, and any closed set of compartments integrated independently. In it, flow and heat are exactly zero at equal concentrations, the flow reverses exactly, heat never decreases, and material is conserved. Its own tests are in the routine gate. It landed on 15 November 2026; the law itself is not on main yet.",
+   "facts": [
+    [
+     "Files",
+     "3"
+    ],
+    [
+     "Lines of Python",
+     "449"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "validation/passive/REFERENCES_USAGE.md"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-4's and the passive law's independent references landed (15 November 2026)"
+    }
+   ],
+   "files": [
+    "validation/passive/REFERENCES_USAGE.md",
+    "validation/passive/passive_crosschecks.py",
+    "validation/passive/passive_reference.py"
+   ],
+   "weight": 449
+  },
+  {
+   "id": "val.results_baseline",
+   "label": "Results baseline",
+   "kind": "component",
+   "group": "references",
+   "status": "landed",
+   "as_of": "2026-11-15",
+   "plain": "The tool behind the rework's results gate. It saves what a defined set of worlds computes at a tagged version, on the CPU, and compares a later version with it, bit for bit or within a declared tolerance; a refused run must be refused in the same way. A second tool lists the engine models that each registered protocol names, so that the protocols a change affects can be run again. Validation code with its own tests in the routine gate, on main since 15 November 2026.",
+   "detail": "The results baseline at a tag, and the comparison integration commits are checked against.",
+   "facts": [
+    [
+     "Files",
+     "2"
+    ],
+    [
+     "Lines of Python",
+     "717"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "PROGRESS.md",
+     "where": "The results baseline tool, the protocol scan and the matched-arm export driver landed"
+    }
+   ],
+   "files": [
+    "validation/protocol_models.py",
+    "validation/results_baseline.py"
+   ],
+   "weight": 717
+  },
+  {
    "id": "val.other",
    "label": "Other validation areas",
    "kind": "component",
@@ -19284,14 +19600,14 @@
    "facts": [
     [
      "Files",
-     "423"
+     "409"
     ],
     [
      "Lines of Python",
-     "90,785"
+     "87,731"
     ]
    ],
-   "weight": 90785
+   "weight": 87731
   },
   {
    "id": "val.tiers",
@@ -19336,8 +19652,8 @@
    "kind": "component",
    "group": "references",
    "status": "designed",
-   "as_of": "2026-11-15",
-   "plain": "How the rework is accepted. A machine-readable list names every scientific result that must still hold, and the gate fails if any of them did not actually run. Every existing world is run before and after on the CPU and compared field by field. Every registered protocol that uses the tissue model is run again and must keep its verdict. Three deliberately planted changes must each be caught, or the gate is void. Compile time, memory and run time are measured. Today's routine gate compares only exit codes and counts of failures; this closes that gap. In development with the rework; not on main.",
+   "as_of": "2026-11-16",
+   "plain": "How the rework is accepted. A machine-readable list names every scientific result that must still hold, and the gate fails if any of them did not actually run. Every existing world is run before and after on the CPU and compared field by field. Every registered protocol that uses the tissue model is run again and must keep its verdict; the user held E07-v1's re-run, whose worlds the comparison covers instead (D181). Three deliberately planted changes must each be caught, or the gate is void. Compile time, memory and run time are measured. Today's routine gate compares only exit codes and counts of failures; this closes that gap. Its comparison tool is on main since 15 November 2026. On 16 November 2026, on the round's candidate, all 113 saved worlds were the same bit for bit before the round's last change, and within its declared tolerance after it. The gate itself runs with the rework, on the integration branch; not on main.",
    "sources": [
     {
      "path": "docs/ARCHITECTURE.md",
@@ -19346,6 +19662,18 @@
     {
      "path": "docs/INNER_MODEL_V4_DESIGN.md",
      "where": "3. The results gate"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "D172's end game, paused for a planned machine restart"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The results baseline tool, the protocol scan and the matched-arm export driver landed"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D181: The round's end game: E07-v1's re-run held, and the L4 block run under the deterministic flag"
     }
    ],
    "weight": 0
@@ -19522,7 +19850,7 @@
    "group": "plan",
    "order": 1,
    "plain": "Make execution dependable: fast plan validation, live progress markers, one production path and a compile policy.",
-   "note": "The plan-validation fix was accepted on 12 November. Phase-marker completion records are implemented, and start and failure records landed on 15 November (PROGRESS; the plan's table still lists them as pending). One production path, the compile policy and the registry are not started. The run-view output's design note is written and proposed, under review. The plan's table for this gate also lists the closed internal compartment (FR-1), whose first milestone landed on 15 November.",
+   "note": "The plan-validation fix was accepted on 12 November. Phase markers record start, completion and failure since 15 November. One production path, the compile policy and the registry are not started. The run-view output's design note is proposed, and its code joins the modular rework. The plan's table for this gate also lists the closed internal compartment (FR-1), whose first milestone landed on 15 November.",
    "facts": [
     [
      "Order in the plan",
@@ -19566,7 +19894,7 @@
    "group": "plan",
    "order": 2,
    "plain": "One composite physiology model with an explicit contract for who owns and who writes each piece of state.",
-   "note": "From the plan and PROGRESS, 15 November: secreted-species transport version 1 is numerically qualified in its stated scope, and reactions on the shared inventory are numerically qualified within MG0c's scope. The merge of several operators' changes to one field (door S) is designed, and joins the modular rework (D174).",
+   "note": "From the plan and PROGRESS, 15 November: secreted-species transport version 1 is numerically qualified in its stated scope, and reactions on the shared inventory are numerically qualified within MG0c's scope. The merge of several operators' changes to one field (door S) is built on the integration branch with the modular rework (D176), not on main. On the L4, the composite's one bitwise criterion failed on its judged run, and that verdict stands; judged alone under a deterministic setting on 16 November, it passed, in that setting only.",
    "facts": [
     [
      "Order in the plan",
@@ -19671,7 +19999,7 @@
    "group": "plan",
    "order": 5,
    "plain": "The heredity question: can a written state repeatedly renew as cells are replaced?",
-   "note": "From the plan, 14 November: E07-v1 is judged, and under donor-copy turnover the written disc did not renew. E07-v2 is drafted as proposed.",
+   "note": "From the plan, 14 November: E07-v1 is judged, and under donor-copy turnover the written disc did not renew. Since 15 November its re-run on the rebuilt model is held (D181). E07-v2 is proposed, with three questions waiting for the user.",
    "facts": [
     [
      "Order in the plan",
@@ -19829,7 +20157,7 @@
    ],
    "part": "pumps",
    "scale": "cell",
-   "plain": "The sodium–potassium pump and calcium pumps move ions uphill and spend ATP. Each is a population with a rate law. The calcium pump's comparison passed on a second protocol, after the first failed on one item. In the tissue model their fuel is held constant today. Designed, not yet on main: pumps draw ATP from the same shared amounts that reactions make and spend (D176). A proton pump for acidic compartments is designed for feature request FR-4, in a note proposed on 15 November 2026; no code yet.",
+   "plain": "The sodium–potassium pump and calcium pumps move ions uphill and spend ATP. Each is a population with a rate law. The calcium pump's comparison passed on a second protocol, after the first failed on one item. In the tissue model their fuel is held constant today. Designed, not yet on main: pumps draw ATP from the same shared amounts that reactions make and spend (D176). A proton pump for acidic compartments is designed for feature request FR-4, in a note proposed on 15 November 2026; it is built in the rework, on the integration branch, and not on main.",
    "sources": [
     {
      "path": "PROGRESS.md",
@@ -46196,6 +46524,20 @@
    "label": "that path already runs steps and their checks in one compiled program"
   },
   {
+   "from": "exec.modules",
+   "to": "exec.registry",
+   "kind": "extends",
+   "weight": 1,
+   "label": "today's registries are closed tables inside Cells"
+  },
+  {
+   "from": "exec.modules",
+   "to": "models.modular",
+   "kind": "extends",
+   "weight": 1,
+   "label": "the rework leaves four openings for it (D180)"
+  },
+  {
    "from": "exec.one_path",
    "to": "exec.vector_windows",
    "kind": "extends",
@@ -46207,6 +46549,20 @@
    "kind": "extends",
    "weight": 1,
    "label": "definitions would gain an organism's own data and evidence"
+  },
+  {
+   "from": "exec.packed",
+   "to": "compute.ensemble",
+   "kind": "extends",
+   "weight": 1,
+   "label": "the same planner would serve production ensembles"
+  },
+  {
+   "from": "exec.packed",
+   "to": "exec.vector_windows",
+   "kind": "extends",
+   "weight": 1,
+   "label": "packs worlds of one structure into its batches"
   },
   {
    "from": "exec.registry_decl",
@@ -46295,7 +46651,7 @@
    "to": "models.modular",
    "kind": "extends",
    "weight": 1,
-   "label": "its code waits for the rework (D176)"
+   "label": "its pump and buffer are built in the round (D176)"
   },
   {
    "from": "fr.compartment_ph",
@@ -46310,6 +46666,13 @@
    "kind": "extends",
    "weight": 1,
    "label": "buffering inside a compartment beside a dose in the bath needs the scoped merge"
+  },
+  {
+   "from": "fr.compartment_ph",
+   "to": "val.compartment_ph",
+   "kind": "extends",
+   "weight": 1,
+   "label": "its protocols will judge it against these references"
   },
   {
    "from": "fr.internal_compartment",
@@ -46351,6 +46714,13 @@
    "label": "its neutral leak"
   },
   {
+   "from": "fr.internal_transfer",
+   "to": "val.compartment_ph",
+   "kind": "extends",
+   "weight": 1,
+   "label": "its protocols will judge it against these references"
+  },
+  {
    "from": "fr.internalisation",
    "to": "fr.internal_compartment",
    "kind": "extends",
@@ -46369,6 +46739,13 @@
    "kind": "extends",
    "weight": 1,
    "label": "the retrieval direction"
+  },
+  {
+   "from": "fr.loop_packages",
+   "to": "exec.run_view",
+   "kind": "extends",
+   "weight": 1,
+   "label": "written by the run-view writer, in its format"
   },
   {
    "from": "fr.site_occupancy",
@@ -46446,6 +46823,13 @@
    "label": "reactions would make and spend the fuel"
   },
   {
+   "from": "laws.fuel",
+   "to": "val.compartment_ph",
+   "kind": "extends",
+   "weight": 1,
+   "label": "its first case will be checked against the finite-fuel reference"
+  },
+  {
    "from": "laws.grn",
    "to": "laws.regulation",
    "kind": "extends",
@@ -46471,6 +46855,13 @@
    "kind": "extends",
    "weight": 1,
    "label": "its core computation is the membrane transport's route for an uncharged molecule"
+  },
+  {
+   "from": "laws.passive_permeation",
+   "to": "val.passive",
+   "kind": "extends",
+   "weight": 1,
+   "label": "its checks will compare the law with this reference"
   },
   {
    "from": "laws.species_identity",
@@ -46609,6 +47000,13 @@
    "kind": "extends",
    "weight": 1,
    "label": "its populations already declare a functional unit and a catalogue reference"
+  },
+  {
+   "from": "val.results_gate",
+   "to": "val.results_baseline",
+   "kind": "extends",
+   "weight": 1,
+   "label": "its comparison of saved worlds is this tool"
   },
   {
    "from": "val.results_gate",
