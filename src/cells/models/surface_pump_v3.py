@@ -49,14 +49,18 @@ process: it must add no membrane conductance the family's bound does not cover
 (an electroneutral process adds none). With no process the code is unchanged.
 """
 
+import re
+import sys
 from dataclasses import make_dataclass, replace
-from functools import cached_property
+from functools import cache, cached_property, partial
+from types import MappingProxyType, SimpleNamespace
 from typing import NamedTuple
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 
+from cells.core import kind_registry
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
 from cells.core.surface_pump_v3_spec import (
@@ -69,6 +73,7 @@ from cells.core.surface_pump_v3_spec import (
     projection,
 )
 from cells.coupling.selective import selective_flux
+from cells.models import inner_laws
 from cells.models import kinetic_finite_extracellular as pumps
 from cells.models import surface_kinetic as kinetic
 from cells.models import surface_pump as first
@@ -80,6 +85,7 @@ from cells.numerics import surface_imex as imex
 from cells.numerics import surface_transport as surface
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.fixed_step import rk4_checked_step
+from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes import calcium_atpase, junction_gate, sodium_channels, voltage_gates
 from cells.processes import kinetic_pump as pump
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
@@ -129,9 +135,15 @@ EXPLICIT_STEP_BOUND = first.EXPLICIT_STEP_BOUND
 GATE_INTEGRATOR_ID = gates.LAW_ID
 VOLTAGE_DOMAIN_V = voltage_gates.VOLTAGE_DOMAIN_V
 # RK4 reference steps keep the resolved channel family's qualified bounds
-# (surface_kinetic.check_steps): 2.5 us with NaV1.2, 25 us with Kv1.5/Kir2.1.
-RK4_SODIUM_STEP = 2.5e-6
-RK4_POTASSIUM_STEP = 25e-6
+# (surface_kinetic.check_steps): 2.5 us with NaV1.2, 25 us with Kv1.5/Kir2.1. The laws'
+# declarations hold them (models/inner_laws.py).
+RK4_SODIUM_STEP = inner_laws.RK4_SODIUM_STEP_S
+RK4_POTASSIUM_STEP = inner_laws.RK4_POTASSIUM_STEP_S
+# Inactive population slots carry code 0 (domain_valid; the composite adapter's close), the
+# code of this law. Where it is not declared, the host observer still reads its kinetics at an
+# inactive slot, today's padding values, as a declared fill (docs/INNER_MODEL_V4_DESIGN.md
+# §7.4 (b); temporary, until an explicit absent marker for padded entries).
+PADDING_FILL_LAW = next(law for law, code in LAW_CODES.items() if code == 0)
 
 parameters = first.parameters
 batch_signature = first.batch_signature
@@ -165,7 +177,28 @@ def working_size(spec):
     return second.working_size(projection(spec)) + 2 * (2 + 2 * s) * x.channel_capacity
 
 
-def initial_values(spec):
+def initial_values(spec, *, structure=None):
+    state, layout = _todays_initial_values(spec)
+    if structure is None or not structure.kinds:
+        return state, layout
+    # Schema A (§7.4 (j), (k)): each declared kind adds its state and layout fields, by name, in
+    # canonical order, into its structure's types.
+    types = kind_types(structure)
+    registry = kind_registry.active()
+    declarations = dict(spec.model.kinds)
+    fields, entries = state._asdict(), layout._asdict()
+    for kind_id, _ in structure.kinds:
+        kind = registry.lookup(kind_id)
+        own_state, own_layout = kind.initial(spec, declarations[kind_id], entries)
+        fields |= own_state
+        entries |= own_layout
+    floor = "field_current_floor" in entries
+    return types.STATE_TYPE(**fields), (types.FLOOR_LAYOUT_TYPE if floor else types.LAYOUT_TYPE)(
+        **entries
+    )
+
+
+def _todays_initial_values(spec):
     state, layout = second.initial_values(projection(spec))
     m, nc, s = spec.model, spec.execution.channel_capacity, len(spec.model.species_ids)
     v = layout._asdict()
@@ -200,17 +233,47 @@ def initial_values(spec):
     return STATE_TYPE(**(state._asdict() | channel)), kind(**v)
 
 
-def channel_kinetics(voltage, codes, *, xp=jnp):
-    """Targets and time constants [..., 2, channel] in s; gate-free leaks get 0 and 1."""
-    gated = codes < GATED_CODES
-    target, tau = sodium_channels.kinetics(voltage, xp.where(gated, codes, 0), xp=xp)
-    rows = xp.expand_dims(gated, -2)
-    return xp.where(rows, target, 0.0), xp.where(rows, tau, 1.0)
+def channel_kinetics(voltage, codes, *, xp=jnp, structure=None):
+    """Targets and time constants [..., rows, channel] in s; gate-free leaks get 0 and 1.
+
+    structure None: today's dispatch over the full catalogue. With a structure (§7.4 (c)), only
+    the declared gated laws' kernels are traced, each selected where a slot carries its code, in
+    code order (probe P2's form). A code-0 slot of a world that does not declare the code-0 law is
+    padding: compiled programs give it 0 and 1, which nothing compiled reads, while the host, where
+    the observer runs, gives it the code-0 law's values as today, a declared fill (§7.4 (b)).
+    """
+    if structure is None:
+        gated = codes < GATED_CODES
+        target, tau = sodium_channels.kinetics(voltage, xp.where(gated, codes, 0), xp=xp)
+        rows = xp.expand_dims(gated, -2)
+        return xp.where(rows, target, 0.0), xp.where(rows, tau, 1.0)
+    rows = structure.gate_rows
+    shape = (*voltage.shape[:-1], rows, voltage.shape[-1])
+    target, tau = xp.zeros(shape, dtype=voltage.dtype), xp.ones(shape, dtype=voltage.dtype)
+    laws = [law for law in structure.channel_laws if law.gated]
+    fill = xp is np or structure.padding_fill  # The host's fill; compiled where slots close.
+    if fill and PADDING_FILL_LAW not in structure.declared_channel_laws:
+        laws.insert(0, inner_laws.CHANNEL_LAWS[PADDING_FILL_LAW])
+    for law in laws:
+        if len(law.gates) != rows:  # Not in R: every gated law has today's two gates.
+            raise NotImplementedError("Channel laws with fewer gates than the structure's rows")
+        law_target, law_tau = law.kinetics(voltage, xp=xp)
+        mask = xp.expand_dims(codes == law.code, -2)
+        target = xp.where(mask, law_target, target)
+        tau = xp.where(mask, law_tau, tau)
+    return target, tau
 
 
-def channel_opening(gate, codes, *, xp=jnp):
-    gated = codes < GATED_CODES
-    return xp.where(gated, sodium_channels.opening(gate, xp.where(gated, codes, 0), xp=xp), 1.0)
+def channel_opening(gate, codes, *, xp=jnp, structure=None):
+    """Open fractions [..., channel]: today's catalogue, or the declared gated laws (§7.4 (c))."""
+    if structure is None:
+        gated = codes < GATED_CODES
+        return xp.where(gated, sodium_channels.opening(gate, xp.where(gated, codes, 0), xp=xp), 1.0)
+    opening = xp.ones_like(gate[..., 0, :])
+    for law in structure.channel_laws:
+        if law.gated:
+            opening = xp.where(codes == law.code, law.opening(gate, xp=xp), opening)
+    return opening
 
 
 def channel_voltage(membrane_voltage, p, *, xp=jnp):
@@ -224,11 +287,13 @@ def channel_domain_valid(voltage, target, tau, p, *, xp=jnp):
     return xp.all(xp.where(p.channel_active, inside & xp.all(kinetics, axis=-2), True))
 
 
-def channel_rates(gate, ci, co, membrane_voltage, delta_mu, availability, p, *, xp=jnp):
+def channel_rates(
+    gate, ci, co, membrane_voltage, delta_mu, availability, p, *, xp=jnp, structure=None
+):
     """Outward flux and heat [species, channel], kinetics and voltage of each population."""
     patch = p.channel_membranes
     voltage = channel_voltage(membrane_voltage, p, xp=xp)
-    target, tau = channel_kinetics(voltage, p.channel_laws, xp=xp)
+    target, tau = channel_kinetics(voltage, p.channel_laws, xp=xp, structure=structure)
     flux = selective_flux(
         ci[:, p.membrane_cell[patch]],
         co[:, p.membrane_outside[patch]],
@@ -239,7 +304,7 @@ def channel_rates(gate, ci, co, membrane_voltage, delta_mu, availability, p, *, 
         p.channel_permeability * p.channel_relative_permeability,
         0.0,
         p.channel_abundance,
-        channel_opening(gate, p.channel_laws, xp=xp) * availability,
+        channel_opening(gate, p.channel_laws, xp=xp, structure=structure) * availability,
         xp=xp,
     )
     flux = xp.where(p.channel_active, flux, 0.0)
@@ -253,22 +318,222 @@ def channel_to_membrane(value, p, *, xp=jnp):
 
 def channel_heat(heat, p, *, xp=jnp):
     return scatter(
-        xp.sum(heat, axis=0), xp.zeros_like(p.membrane_area), (p.channel_membranes,), xp=xp
+        species_sum(heat, xp=xp), xp.zeros_like(p.membrane_area), (p.channel_membranes,), xp=xp
     )
 
 
-def readouts(state, control, p, *, xp=jnp, membrane_process=None):
+def nak_pump_rates(ci, co, delta_mu, control, p, *, xp=jnp, structure=None):
+    """(Rates, domain arguments) of the Na/K pump law at its patches' inputs [species, membrane].
+
+    Undeclared (§7.4 (c)): its kernel is not traced; its rates are exact zeros, which today's
+    masked expressions turn into the same bits as a pump-free membrane's padding (whose drive and
+    cycle energy are exactly +0.0), and its arguments are None (no domain to check).
+    """
+    if structure is not None and pump.LAW_ID not in structure.pump_laws:
+        zero = xp.zeros_like(p.pump_capacity)
+        return pump.Rates(zero, zero, zero), None
+    args = (
+        *pumps.role_inputs(ci, co, delta_mu, p.temperature, p, xp=xp),
+        pumps.pump_parameters(p),
+        control.pump,
+    )
+    return pump.kinetics(*args, xp=xp), args
+
+
+def calcium_pump_rates(ci, co, voltage, control, p, *, xp=jnp, structure=None):
+    """surface_pump_v2.calcium_rates where the calcium pump law is declared; else its exact zeros.
+
+    (cycles, dissipation, metabolic power, affinity, domain arguments or None), with the zeros
+    through calcium_rates' own expressions, so a pump-free membrane keeps today's bits.
+    """
+    if structure is not None and calcium_atpase.LAW_ID not in structure.pump_laws:
+        zero = xp.zeros_like(p.calcium_pump_capacity)
+        cycles = xp.where(p.calcium_pump_present, zero, 0.0)
+        affinity = xp.where(p.calcium_pump_present, zero, 0.0)
+        return cycles, -1e-3 * cycles * zero, -1e-3 * cycles * zero, affinity, None
+    return second.calcium_rates(ci, co, voltage, control, p, xp=xp)
+
+
+def junction_gate_rhs(gate, junction_voltage, p, *, xp=jnp, structure=None):
+    """The junction law's gate derivative; exact zeros, with no kernel, where none is declared.
+
+    Callers keep today's mask on active junctions, so the catalogue path's program is today's.
+    """
+    if structure is not None and not structure.junction_laws:
+        return xp.zeros_like(gate)
+    return junction_gate.rhs(gate, junction_voltage, kinetic.junction_parameters(p), xp=xp)
+
+
+class KindRates(NamedTuple):
+    """A kind's rates at one stage (§7.4 (k), the rates hook): cell [S, n] and outside [S, o]
+    inward-positive node changes, which land in the shared inventory (rule (c)); its own state
+    fields' derivatives; its heat and work rates (pJ/s, joining the energy rate by role).
+    membrane_flux: what it carries across membrane patches, outward [S, membrane] (fmol/s), or
+    None; it joins the patches' total flux and membrane current (observations, not ledgers: its
+    moves are already in cell and outside). valid: its own domain at the stage's read and
+    potentials (a charged law's V-dependent domain, such as |dG_cyc/RT| <= 80); false refuses the
+    row or the step."""
+
+    cell: object
+    outside: object
+    derivatives: dict
+    heat_pJ_s: object
+    work_pJ_s: object
+    membrane_flux: object = None
+    valid: object = True
+
+
+def _kinds(structure):
+    """The declared kinds' declarations, in hook order; none for today's structures."""
+    if structure is None or not structure.kinds:
+        return ()
+    registry = kind_registry.active()
+    return tuple(registry.lookup(kind_id) for kind_id in hook_order(structure))
+
+
+def _stage_read(state, p, kinds, *, xp):
+    """The kinds' stage reads, composed in hook order: (the state whose amounts the rates read,
+    valid). A failed read refuses the step (§7.4 (g) 1)."""
+    valid = True
+    for kind in kinds:
+        if kind.stage_read is not None:
+            state, ok = kind.stage_read(state, p, xp=xp)
+            valid = valid & ok
+    return state, valid
+
+
+def _field_values(state, read, control, p, *, xp):
+    """tissue.field_values with the stage read's concentrations and the stored rows' charges: a
+    read changes the concentrations the rates see, never a node's charge (§7.4 (k); FR-4's H_eq
+    and buffer totals carry the charge). Today's call, unchanged, when nothing is read."""
+    if read is state:
+        return tissue.field_values(state, control, p, xp=xp)
+    ci, co = physical_amounts(read, p)
+    q = tissue.charge_increment(state, p, xp=xp)
+    n = p.active.size
+    return field.solve(
+        xp.where(p.active, ci / p.volume, 1.0),
+        xp.where(p.outside_active, co / p.extracellular_volume, 1.0),
+        p.initial_cell_charge_C + q[:n],
+        p.initial_outside_charge_C + q[n:],
+        control.membrane,
+        control.junction,
+        p.boundary_V,
+        tissue.field_layout(p),
+        xp=xp,
+    )
+
+
+def _stage_checks(kinds, read, cell, outside, p, *, xp):
+    """The kinds' stage checks at the stage's total node rates (§7.4 (k)); true without any."""
+    valid = True
+    for kind in kinds:
+        if kind.stage_check is not None:
+            valid = valid & kind.stage_check(read, cell, outside, p, xp=xp)
+    return valid
+
+
+def _kind_rates(kinds, state, potentials, control, p, *, xp):
+    return [kind.rates(state, potentials, control, p, xp=xp) for kind in kinds if kind.rates]
+
+
+def _with_kind_derivatives(base, rates, structure, state, *, xp):
+    """base's derivative in the structure's state type, the kinds' fields by name."""
+    types = kind_types(structure)
+    derivatives = {}
+    for kr in rates:
+        derivatives |= kr.derivatives
+    own = types.STATE_TYPE._fields[len(STATE_TYPE._fields) :]
+    return types.STATE_TYPE(
+        **base._asdict(),
+        **{
+            f: derivatives[f] if f in derivatives else xp.zeros_like(getattr(state, f)) for f in own
+        },
+    )
+
+
+def _kind_bookings(kinds, applied, start, end, p, dt, *, xp):
+    """Every kind's book hook on the same end state (before any kind books), each writing only its
+    own state fields, so bookings commute and their order cannot matter (§7.4 (k)). Returns
+    ({field: value}, valid): a booking may refuse the step (§7.5's negative exact share)."""
+    booked, valid = {}, True
+    for kind in kinds:
+        if kind.book is None:
+            continue
+        values, ok = kind.book(applied, start, end, p, dt, xp=xp)
+        foreign = set(values) - set(kind.state_fields)
+        if foreign:
+            raise ValueError(
+                f"Kind {kind.kind_id}'s book writes {sorted(foreign)}; a booking writes only "
+                "its own state fields"
+            )
+        booked |= values
+        valid = valid & ok
+    return booked, valid
+
+
+def _stage_extrema(kinds, start, states, rates, p, *, xp):
+    """Gap 7: each kind's stage_values at every explicit stage (its read state and the stage's
+    total node rates, as stage_check sees them), reduced over the stages as its stage_extrema
+    say, from the step start's value: {own state field: running extremum}."""
+    out = {}
+    for kind in kinds:
+        if kind.stage_values is None:
+            continue
+        how = dict(kind.stage_extrema)
+        per_stage = [
+            kind.stage_values(
+                _stage_read(state, p, kinds, xp=xp)[0],
+                stage_rates.amount_increment,
+                stage_rates.extracellular_amount_increment,
+                p,
+                xp=xp,
+            )
+            for state, stage_rates in zip(states, rates, strict=True)
+        ]
+        for name in per_stage[0]:
+            if name not in kind.state_fields or how.get(name) not in ("max", "min"):
+                raise ValueError(
+                    f"Kind {kind.kind_id}'s stage value {name} is not one of its state fields "
+                    "with a declared extremum (max or min)"
+                )
+            reduce = xp.maximum if how[name] == "max" else xp.minimum
+            value = getattr(start, name)
+            for values in per_stage:
+                value = reduce(value, values[name])
+            out[name] = value
+    return out
+
+
+def _availabilities(control, kinds):
+    """Rule (d): today's control fields and the kinds' availability controls (those of kinds
+    without a control_domain hook), each held to [0, 1]."""
+    names = list(Control._fields)
+    for kind in kinds:
+        if kind.control_domain is None:
+            names.extend(kind.control_fields)
+    return [getattr(control, name) for name in names]
+
+
+def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None):
     """surface_pump_v2.readouts with the channel populations' currents and gate rates.
 
-    membrane_process: the opt-in extra membrane process (module docstring).
+    membrane_process: the opt-in extra membrane process (module docstring). structure: the
+    declared structure (§7.4), or None for today's dispatch over the full catalogue.
     """
     from cells.core.schedule import SurfaceControl
 
-    v = tissue.field_values(
-        state, SurfaceControl(control.membrane, control.junction * state.junction_gate), p, xp=xp
+    kinds = _kinds(structure)
+    read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
+    v = _field_values(  # §7.4 (k): the rates read `read`; the field solve the stored charges.
+        state,
+        read,
+        SurfaceControl(control.membrane, control.junction * state.junction_gate),
+        p,
+        xp=xp,
     )
     r, n = v.rates, p.active.size
-    ci, co = physical_amounts(state, p)
+    ci, co = physical_amounts(read, p)
     ci, co = (
         xp.where(p.active, ci / p.volume, 1.0),
         xp.where(p.outside_active, co / p.extracellular_volume, 1.0),
@@ -282,32 +547,33 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None):
         control.channel,
         p,
         xp=xp,
+        structure=structure,
     )
     gate_rate = xp.where(p.channel_gate_active, (target - state.channel_gate) / tau, 0.0)
-    args = (
-        *pumps.role_inputs(
-            ci[:, p.membrane_cell],
-            co[:, p.membrane_outside],
-            r.membrane_delta_mu_J_mol,
-            p.temperature,
-            p,
-            xp=xp,
-        ),
-        pumps.pump_parameters(p),
-        control.pump,
+    pr, args = nak_pump_rates(
+        ci[:, p.membrane_cell],
+        co[:, p.membrane_outside],
+        r.membrane_delta_mu_J_mol,
+        control,
+        p,
+        xp=xp,
+        structure=structure,
     )
-    pr = pump.kinetics(*args, xp=xp)
     cycles = xp.where(p.pump_present, pr.cycles_fmol_s, 0.0)
     pump_d = -1e-3 * cycles * pr.cycle_free_energy_J_mol
     metabolic = -1e-3 * cycles * pr.chemical_drive_J_mol
-    ca_cycles, ca_d, ca_metabolic, ca_affinity, ca_args = second.calcium_rates(
-        ci[:, p.membrane_cell], co[:, p.membrane_outside], r.membrane_voltage_V, control, p, xp=xp
+    ca_cycles, ca_d, ca_metabolic, ca_affinity, ca_args = calcium_pump_rates(
+        ci[:, p.membrane_cell],
+        co[:, p.membrane_outside],
+        r.membrane_voltage_V,
+        control,
+        p,
+        xp=xp,
+        structure=structure,
     )
     jgate_rate = xp.where(
         p.junction_active,
-        junction_gate.rhs(
-            state.junction_gate, r.junction_voltage_V, kinetic.junction_parameters(p), xp=xp
-        ),
+        junction_gate_rhs(state.junction_gate, r.junction_voltage_V, p, xp=xp, structure=structure),
         0.0,
     )
     # Inward-positive pump stoichiometries, outward-positive channel flux.
@@ -330,7 +596,15 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None):
     out_extra = scatter(extra, r.outside_rate_fmol_s, (p.membrane_outside,), xp=xp)
     outside = r.outside_rate_fmol_s + xp.where(p.reservoir, 0.0, out_extra)
     supplied = r.reservoir_supply_fmol_s - xp.where(p.reservoir, out_extra, 0.0)
+    kind_rates = _kind_rates(kinds, read, v.potential_V, control, p, xp=xp)
+    for kr in kind_rates:  # §7.4 (k), rates: into the shared inventory (rule (c)).
+        cell = cell + kr.cell
+        outside = outside + xp.where(p.reservoir, 0.0, kr.outside)
+        supplied = supplied - xp.where(p.reservoir, kr.outside, 0.0)
     total_flux = r.membrane_flux_fmol_s + extra
+    for kr in kind_rates:  # Gap 9: a kind's patch flux joins the patches' total and current.
+        if kr.membrane_flux is not None:
+            total_flux = total_flux + kr.membrane_flux
     total_membrane_d = (
         r.membrane_dissipation_pJ_s + pump_d + ca_d + channel_heat(channel_d, p, xp=xp)
     )
@@ -341,31 +615,45 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None):
         outside_rate_fmol_s=outside,
         reservoir_supply_fmol_s=supplied,
         membrane_flux_fmol_s=total_flux,
-        membrane_current_A=CHARGE_PER_FMOL * xp.sum(p.valence * total_flux, axis=0),
+        membrane_current_A=CHARGE_PER_FMOL * species_sum(p.valence * total_flux, xp=xp),
         membrane_dissipation_pJ_s=total_membrane_d,
     )
-    qdot = CHARGE_PER_FMOL * xp.sum(p.valence * xp.concatenate((cell, outside), axis=1), axis=0)
+    qdot = CHARGE_PER_FMOL * species_sum(p.valence * xp.concatenate((cell, outside), axis=1), xp=xp)
     dphi = field._capacitor_solve(qdot, xp.zeros_like(qdot), tissue.field_layout(p), xp=xp)
     dvm = xp.where(p.membrane_active, dphi[p.membrane_cell] - dphi[n + p.membrane_outside], 0.0)
     electrode = xp.where(p.reservoir, (p.field_capacitor_matrix @ dphi)[n:], 0.0)
-    chemical = 1e-3 * R * p.temperature * (xp.sum(xp.log(ci) * cell) + xp.sum(xp.log(co) * outside))
-    capacitor = 1e12 * xp.sum(p.membrane_capacitance * r.membrane_voltage_V * dvm)
+    chemical = (
+        1e-3
+        * R
+        * p.temperature
+        * (
+            entity_sum(species_sum(xp.log(ci) * cell, xp=xp), axis=None, xp=xp)
+            + entity_sum(species_sum(xp.log(co) * outside, xp=xp), axis=None, xp=xp)
+        )
+    )
+    capacitor = 1e12 * entity_sum(
+        p.membrane_capacitance * r.membrane_voltage_V * dvm, axis=None, xp=xp
+    )
     mu = R * p.temperature * xp.log(co) + p.valence * F * v.potential_V[n:]
-    reservoir_work = 1e-3 * xp.sum(mu * supplied, axis=0)
+    reservoir_work = 1e-3 * species_sum(mu * supplied, xp=xp)
     electrode_work = 1e12 * p.boundary_V * electrode
     dissipation = (
-        xp.sum(total_membrane_d)
-        + xp.sum(r.junction_dissipation_pJ_s)
-        + xp.sum(r.face_dissipation_pJ_s)
+        entity_sum(total_membrane_d, axis=None, xp=xp)
+        + entity_sum(r.junction_dissipation_pJ_s, axis=None, xp=xp)
+        + entity_sum(r.face_dissipation_pJ_s, axis=None, xp=xp)
     )
+    for kr in kind_rates:  # The kinds' heat and work, by role (rule (a)).
+        dissipation = dissipation + entity_sum(kr.heat_pJ_s, axis=None, xp=xp)
     energy = (
         chemical
         + capacitor
         + dissipation
-        - xp.sum(reservoir_work + electrode_work)
-        - xp.sum(metabolic)
-        - xp.sum(ca_metabolic)
+        - entity_sum(reservoir_work + electrode_work, axis=None, xp=xp)
+        - entity_sum(metabolic, axis=None, xp=xp)
+        - entity_sum(ca_metabolic, axis=None, xp=xp)
     )
+    for kr in kind_rates:
+        energy = energy - entity_sum(kr.work_pJ_s, axis=None, xp=xp)
     result = STATE_TYPE(
         cell,
         outside,
@@ -390,37 +678,50 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None):
         ca_d,
         ca_metabolic,
     )
-    valid = v.converged & xp.all(pump.domain_valid(*args, xp=xp))
-    valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
+    if kinds:
+        result = _with_kind_derivatives(result, kind_rates, structure, state, xp=xp)
+    valid = v.converged
+    if args is not None:  # The Na/K pump's domain, where its law is declared.
+        valid = valid & xp.all(pump.domain_valid(*args, xp=xp))
+    if ca_args is not None:
+        valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
     valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
     if process is not None:
         valid &= process.valid
-    for value in control:
+    if kinds:  # A failed stage read, a kind's domain or a stage check refuses the row.
+        valid &= read_valid & _stage_checks(kinds, read, cell, outside, p, xp=xp)
+        for kr in kind_rates:
+            valid &= kr.valid
+    for value in _availabilities(control, kinds) if kinds else control:
         valid &= xp.all(xp.isfinite(value) & (value >= 0) & (value <= 1))
-    valid &= xp.all(
-        junction_gate.domain_valid(
-            state.junction_gate,
-            r.junction_voltage_V,
-            kinetic.junction_parameters(p),
-            control.junction,
-            xp=xp,
+    for kind in kinds:
+        if kind.control_domain is not None:
+            valid &= kind.control_domain(control, p, xp=xp)
+    if structure is None or structure.junction_laws:
+        valid &= xp.all(
+            junction_gate.domain_valid(
+                state.junction_gate,
+                r.junction_voltage_V,
+                kinetic.junction_parameters(p),
+                control.junction,
+                xp=xp,
+            )
         )
-    )
     for value in result:
         valid &= xp.all(xp.isfinite(value))
     for value in (qdot, dphi, chemical, capacitor, dissipation, energy):
         valid &= xp.all(xp.isfinite(value))
-    valid &= domain_valid(state, p, p.active, xp=xp)
+    valid &= domain_valid(state, p, p.active, xp=xp, structure=structure)
     total_rates = total_rates._replace(valid=valid)
     v = v._replace(
         rates=total_rates,
         electrode_current_A=electrode,
-        reservoir_supply_charge_A=CHARGE_PER_FMOL * xp.sum(p.valence * supplied, axis=0),
+        reservoir_supply_charge_A=CHARGE_PER_FMOL * species_sum(p.valence * supplied, xp=xp),
         membrane_voltage_rate_V_s=dvm,
         chemical_energy_rate_pJ_s=chemical,
         capacitor_energy_rate_pJ_s=capacitor,
-        reservoir_power_pJ_s=xp.sum(reservoir_work),
-        electrode_power_pJ_s=xp.sum(electrode_work),
+        reservoir_power_pJ_s=entity_sum(reservoir_work, axis=None, xp=xp),
+        electrode_power_pJ_s=entity_sum(electrode_work, axis=None, xp=xp),
         dissipation_pJ_s=dissipation,
         energy_balance_pJ_s=energy,
         converged=valid,
@@ -437,19 +738,26 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None):
     )
 
 
-def field_values(state, control, p, *, xp=jnp):
-    return readouts(state, control, p, xp=xp).field
+def field_values(state, control, p, *, xp=jnp, structure=None):
+    return readouts(state, control, p, xp=xp, structure=structure).field
 
 
-def rhs(state, control, p, active, *, xp=jnp):
-    values = readouts(state, control, p, xp=xp)
-    return STATE_TYPE(*(xp.where(values.valid, v, xp.nan) for v in values.derivative))
+def rhs(state, control, p, active, *, xp=jnp, structure=None):
+    values = readouts(state, control, p, xp=xp, structure=structure)
+    derivative = values.derivative  # The structure's own state type (schema A).
+    return type(derivative)(*(xp.where(values.valid, v, xp.nan) for v in derivative))
 
 
-def domain_valid(state, p, active, *, xp=jnp):
+def domain_valid(state, p, active, *, xp=jnp, structure=None):
     valid = tissue.domain_valid(kinetic.passive_state(state), p, active, xp=xp)
     laws = p.channel_laws
-    valid &= xp.all((laws >= 0) & (laws < len(LAW_CODES)))
+    if structure is None:  # Today's check against the whole registry.
+        valid &= xp.all((laws >= 0) & (laws < len(LAW_CODES)))
+    else:  # An active slot runs a declared law; no literal comes from the registry.
+        declared = xp.zeros(laws.shape, dtype=bool)
+        for law in structure.channel_laws:
+            declared = declared | (laws == law.code)
+        valid &= xp.all(xp.where(p.channel_active, declared, True))
     valid &= xp.all(xp.where(p.channel_active, True, laws == 0))
     masks = (
         p.channel_gate_active,
@@ -463,7 +771,9 @@ def domain_valid(state, p, active, *, xp=jnp):
         p.calcium_pump_present,
         p.calcium_pump_present,
     )
-    for value, mask in zip(state[len(tissue.STATE_TYPE._fields) :], masks, strict=True):
+    todays = STATE_TYPE._fields[len(tissue.STATE_TYPE._fields) :]
+    for name, mask in zip(todays, masks, strict=True):  # Today's fields; kinds' below.
+        value = getattr(state, name)
         valid &= xp.all(xp.isfinite(value)) & xp.all(xp.where(mask, True, value == 0))
     valid &= xp.all((state.channel_gate >= 0) & (state.channel_gate <= 1))
     valid &= xp.all((state.junction_gate >= p.junction_minimum) & (state.junction_gate <= 1))
@@ -473,27 +783,42 @@ def domain_valid(state, p, active, *, xp=jnp):
     valid &= xp.all(xp.where(route > 0, True, state.channel_dissipated_energy_pJ == 0))
     valid &= xp.all(xp.where(p.pump_capacity > 0, True, state.pump_cycles == 0))
     valid &= xp.all(xp.where(p.calcium_pump_capacity > 0, True, state.calcium_pump_cycles == 0))
+    if structure is not None and structure.kinds:  # Each declared kind's own domain (§7.4 (k)).
+        kinds = _kinds(structure)
+        _, read_valid = _stage_read(state, p, kinds, xp=xp)  # The reads hold at this state too.
+        valid &= read_valid
+        for kind in kinds:
+            if kind.domain is not None:
+                valid &= kind.domain(state, p, xp=xp)
     return valid
 
 
-def control_domain_valid(state, control, p, active, *, xp=jnp):
-    valid = domain_valid(state, p, active, xp=xp)
+def hook_order(structure):
+    """The kinds' hook-evaluation order (§7.4 (k)): named apart from the field order
+    (structure.kinds, canonical), and equal to it in version 1."""
+    return tuple(kind_id for kind_id, _ in structure.kinds)
+
+
+def control_domain_valid(state, control, p, active, *, xp=jnp, structure=None):
+    valid = domain_valid(state, p, active, xp=xp, structure=structure)
     if xp is np:
         if not valid:
             return np.asarray(False)
         try:
-            return readouts(state, control, p, xp=np).valid
+            return readouts(state, control, p, xp=np, structure=structure).valid
         except np.linalg.LinAlgError:
             return np.asarray(False)
     return jax.lax.cond(
-        valid, lambda: readouts(state, control, p).valid, lambda: jnp.asarray(False)
+        valid,
+        lambda: readouts(state, control, p, structure=structure).valid,
+        lambda: jnp.asarray(False),
     )
 
 
 domain_valid.with_control = control_domain_valid
 
 
-def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=None):
+def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=None, structure=None):
     """surface_pump_v2.explicit_rates with the channel currents at the same potentials.
 
     The gate rate is zero here: IMEX steps set gates by the exponential update.
@@ -501,7 +826,9 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
     and the call returns (rates, valid, MembraneProcess); otherwise (rates, valid).
     """
     s, n = tissue.field_layout(p).surface, p.active.size
-    ci, co = physical_amounts(state, p)
+    kinds = _kinds(structure)
+    read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
+    ci, co = physical_amounts(read, p)
     ci = xp.where(p.active, ci / p.volume, 1.0)
     co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
     r = surface.transport(
@@ -525,23 +852,26 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
         control.channel,
         p,
         xp=xp,
+        structure=structure,
     )
-    args = (
-        *pumps.role_inputs(
-            ci[:, p.membrane_cell],
-            co[:, p.membrane_outside],
-            r.membrane_delta_mu_J_mol,
-            p.temperature,
-            p,
-            xp=xp,
-        ),
-        pumps.pump_parameters(p),
-        control.pump,
+    rate, args = nak_pump_rates(
+        ci[:, p.membrane_cell],
+        co[:, p.membrane_outside],
+        r.membrane_delta_mu_J_mol,
+        control,
+        p,
+        xp=xp,
+        structure=structure,
     )
-    rate = pump.kinetics(*args, xp=xp)
     cycles = xp.where(p.pump_present, rate.cycles_fmol_s, 0.0)
-    ca_cycles, ca_d, ca_metabolic, _, ca_args = second.calcium_rates(
-        ci[:, p.membrane_cell], co[:, p.membrane_outside], r.membrane_voltage_V, control, p, xp=xp
+    ca_cycles, ca_d, ca_metabolic, _, ca_args = calcium_pump_rates(
+        ci[:, p.membrane_cell],
+        co[:, p.membrane_outside],
+        r.membrane_voltage_V,
+        control,
+        p,
+        xp=xp,
+        structure=structure,
     )
     extra = (
         -p.stoichiometry * cycles
@@ -564,12 +894,17 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
         - scatter(diffusion, zero, (p.face_sender,), xp=xp)
         + scatter(diffusion, zero, (p.face_receiver,), xp=xp)
     )
-    gate = junction_gate.rhs(
-        state.junction_gate, r.junction_voltage_V, kinetic.junction_parameters(p), xp=xp
+    gate = junction_gate_rhs(
+        state.junction_gate, r.junction_voltage_V, p, xp=xp, structure=structure
     )
     outside_zero = xp.zeros_like(p.boundary_V)
+    cell_rate = r.cell_rate_fmol_s - scatter(extra, r.cell_rate_fmol_s, (p.membrane_cell,), xp=xp)
+    kind_rates = _kind_rates(kinds, read, potential, control, p, xp=xp)
+    for kr in kind_rates:  # §7.4 (k), rates: into the shared inventory (rule (c)).
+        cell_rate = cell_rate + kr.cell
+        inflow = inflow + kr.outside
     rates = STATE_TYPE(
-        r.cell_rate_fmol_s - scatter(extra, r.cell_rate_fmol_s, (p.membrane_cell,), xp=xp),
+        cell_rate,
         xp.where(p.reservoir, 0.0, inflow),
         r.membrane_flux_fmol_s,
         r.junction_flux_fmol_s,
@@ -592,22 +927,36 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
         ca_d,
         ca_metabolic,
     )
-    valid = r.valid & xp.all(pump.domain_valid(*args, xp=xp))
-    valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
+    if kinds:
+        rates = _with_kind_derivatives(rates, kind_rates, structure, state, xp=xp)
+    valid = r.valid
+    if kinds:  # A failed stage read, a kind's domain or a stage check refuses the step.
+        outside_rate = xp.where(p.reservoir, 0.0, inflow)
+        valid = valid & read_valid & _stage_checks(kinds, read, cell_rate, outside_rate, p, xp=xp)
+        for kr in kind_rates:
+            valid = valid & kr.valid
+    if args is not None:  # The Na/K pump's domain, where its law is declared.
+        valid = valid & xp.all(pump.domain_valid(*args, xp=xp))
+    if ca_args is not None:
+        valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
     valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
-    valid &= xp.all(
-        junction_gate.domain_valid(
-            state.junction_gate,
-            r.junction_voltage_V,
-            kinetic.junction_parameters(p),
-            control.junction,
-            xp=xp,
+    if structure is None or structure.junction_laws:
+        valid &= xp.all(
+            junction_gate.domain_valid(
+                state.junction_gate,
+                r.junction_voltage_V,
+                kinetic.junction_parameters(p),
+                control.junction,
+                xp=xp,
+            )
         )
-    )
     for value in (*control, *rates):
         valid &= xp.all(xp.isfinite(value))
-    for value in control:
+    for value in _availabilities(control, kinds) if kinds else control:
         valid &= xp.all((value >= 0) & (value <= 1))
+    for kind in kinds:
+        if kind.control_domain is not None:
+            valid &= kind.control_domain(control, p, xp=xp)
     if process is not None:
         valid &= process.valid & xp.all(xp.isfinite(process.flux))
         valid &= xp.all(xp.isfinite(process.heat))
@@ -623,7 +972,7 @@ def implicit_rates(weight, potential, state, p, *, xp=jnp):
     inflow = scatter(flux, zero, (p.face_receiver,), xp=xp) - scatter(
         flux, zero, (p.face_sender,), xp=xp
     )
-    rates = STATE_TYPE(*(xp.zeros_like(v) for v in state))
+    rates = type(state)(*(xp.zeros_like(v) for v in state))  # The state's own type (schema A).
     return rates._replace(
         extracellular_amount_increment=xp.where(p.reservoir, 0.0, inflow),
         face_transferred=flux,
@@ -631,12 +980,12 @@ def implicit_rates(weight, potential, state, p, *, xp=jnp):
     )
 
 
-def potential_kinetics(potential, p, *, xp=jnp):
+def potential_kinetics(potential, p, *, xp=jnp, structure=None):
     """Channel targets, time constants and voltage-domain status at node potentials."""
     n = p.active.size
     membrane = potential[p.membrane_cell] - potential[n + p.membrane_outside]
     voltage = channel_voltage(xp.where(p.membrane_active, membrane, 0.0), p, xp=xp)
-    target, tau = channel_kinetics(voltage, p.channel_laws, xp=xp)
+    target, tau = channel_kinetics(voltage, p.channel_laws, xp=xp, structure=structure)
     return target, tau, channel_domain_valid(voltage, target, tau, p, xp=xp)
 
 
@@ -651,7 +1000,7 @@ def stage_gates(gate, start, stage, fraction, dt, p, *, xp=jnp):
     return xp.where(p.channel_gate_active, advanced, gate), stage[2]
 
 
-def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None):
+def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure=None):
     """surface_pump_v2.imex_step with channel currents and exponential stage gates.
 
     With a membrane_process (opt-in, module docstring) the call returns
@@ -660,14 +1009,21 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None):
     step, for the composing model's own ledgers. Otherwise (state, valid).
     """
     hook = {} if membrane_process is None else dict(membrane_process=membrane_process)
+    hook["structure"] = structure
     processes = []
+    kinds = _kinds(structure)
     f = tissue.field_layout(p)
     s, explicit_matrix, implicit_matrix = f.surface, p.imex_explicit, p.imex_implicit
     stages = explicit_matrix.shape[0]
-    first_values = readouts(state, control, p, xp=xp)
+    first_values = readouts(state, control, p, xp=xp, structure=structure)
     start = first_values.field.potential_V
     valid = first_values.valid
-    amount = p.extracellular_amount_reference + state.extracellular_amount_increment
+    if kinds:  # The face weights' amounts are the read's (§7.4 (k)).
+        read, read_valid = _stage_read(state, p, kinds, xp=xp)
+        valid &= read_valid
+    else:
+        read = state
+    amount = p.extracellular_amount_reference + read.extracellular_amount_increment
     predicted = (
         amount + p.imex_operator_time * dt * first_values.derivative.extracellular_amount_increment
     )
@@ -681,9 +1037,12 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None):
     rates, ok, *process = explicit_rates(state, start, control, p, xp=xp, **hook)
     processes += process
     explicit, implicit, valid = [rates], [None], valid & ok
+    explicit_states = [state]  # Each explicit stage's state (gap 7's per-stage values).
     # Channel currents are explicit: refuse the step where their actual
     # conductance at an explicit stage exceeds the family's stability bound.
-    valid &= dt * membrane_rate(state, control, p, xp=xp) <= EXPLICIT_STEP_BOUND
+    valid &= dt * membrane_rate(
+        state, control, p, xp=xp, structure=structure, potentials=start
+    ) <= (EXPLICIT_STEP_BOUND)
     # The start kinetics are the law's own (readouts at the start potentials).
     start_kinetics = (first_values.channel_targets, first_values.channel_tau_s)
     potential, stage = start, state
@@ -705,8 +1064,8 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None):
         gate, ok = stage_gates(
             state.channel_gate,
             start_kinetics,
-            potential_kinetics(potential, p, xp=xp),
-            xp.sum(explicit_matrix[i]),
+            potential_kinetics(potential, p, xp=xp, structure=structure),
+            entity_sum(explicit_matrix[i], axis=None, xp=xp),
             dt,
             p,
             xp=xp,
@@ -716,7 +1075,12 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None):
             rates, ok, *process = explicit_rates(stage, potential, control, p, xp=xp, **hook)
             processes += process
             explicit.append(rates)
-            valid &= ok & (dt * membrane_rate(stage, control, p, xp=xp) <= EXPLICIT_STEP_BOUND)
+            explicit_states.append(stage)
+            valid &= ok & (
+                dt
+                * membrane_rate(stage, control, p, xp=xp, structure=structure, potentials=potential)
+                <= EXPLICIT_STEP_BOUND
+            )
     last = stages - 1
 
     def applied(name):
@@ -730,7 +1094,9 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None):
         1e-3
         * R
         * p.temperature
-        * xp.sum(xp.where(weight > 0, flux * flux / xp.where(weight > 0, weight, 1.0), 0.0), axis=0)
+        * species_sum(
+            xp.where(weight > 0, flux * flux / xp.where(weight > 0, weight, 1.0), 0.0), xp=xp
+        )
     )
     electrode = first.electrode_increment(state, stage, p, xp=xp)
     co = xp.where(p.outside_active, p.extracellular_amount_reference / p.extracellular_volume, 1.0)
@@ -739,7 +1105,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None):
         face_dissipated_energy_pJ=state.face_dissipated_energy_pJ + dt * heat,
         electrode_charge_transferred_C=state.electrode_charge_transferred_C + electrode,
         reservoir_work_pJ=state.reservoir_work_pJ
-        + 1e-3 * xp.sum(mu * (dt * applied("reservoir_supplied")), axis=0),
+        + 1e-3 * species_sum(mu * (dt * applied("reservoir_supplied")), xp=xp),
         electrode_work_pJ=state.electrode_work_pJ + 1e12 * p.boundary_V * electrode,
     )
     if p.junction_heat_trapezoid.shape[0]:  # trapezoid_nonnegative@1 (a static choice).
@@ -754,7 +1120,13 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None):
             junction_dissipated_energy_pJ=state.junction_dissipated_energy_pJ
             + 0.5 * dt * (explicit[0].junction_dissipated_energy_pJ + end_power)
         )
-    valid &= domain_valid(stage, p, p.active, xp=xp)
+    if kinds:  # Gap 7: the kinds' per-stage values, their running extrema over the stages.
+        extrema = _stage_extrema(kinds, state, explicit_states, explicit, p, xp=xp)
+        stage = stage._replace(**extrema)
+    if kinds:  # §7.4 (k), book: a kind's bookings from the step's applied rates.
+        booked, ok = _kind_bookings(kinds, applied, state, stage, p, dt, xp=xp)
+        stage, valid = stage._replace(**booked), valid & ok
+    valid &= domain_valid(stage, p, p.active, xp=xp, structure=structure)
     for value in stage:
         valid &= xp.all(xp.isfinite(value))
     if membrane_process is None:
@@ -809,17 +1181,20 @@ def junction_heat_rate(state, potential, control, p, *, xp=jnp):
         xp=xp,
     )
     flux, mu = xp.where(active, flux, 0.0), xp.where(active, mu, 0.0)
-    return 1e-3 * xp.sum(flux * mu, axis=0)
+    return 1e-3 * species_sum(flux * mu, xp=xp)
 
 
-def checked_step(state, dt, control, p, active):
+def checked_step(state, dt, control, p, active, *, structure=None):
     """RK4 for an empty tableau (reference runs); otherwise the declared IMEX step."""
     if p.imex_explicit.shape[0] == 0:
-        return rk4_checked_step(rhs, domain_valid, state, dt, control, p, active)
-    return imex_step(state, dt, control, p)
+        if structure is None:
+            return rk4_checked_step(rhs, domain_valid, state, dt, control, p, active)
+        bound = _bound_checks(structure)
+        return rk4_checked_step(bound.rhs, bound.domain_valid, state, dt, control, p, active)
+    return imex_step(state, dt, control, p, structure=structure)
 
 
-def check_definition(spec):
+def check_definition(spec, *, structure=None):
     from cells.core.surface_pump_v3_spec import control_values
 
     m = spec.model
@@ -835,17 +1210,163 @@ def check_definition(spec):
             channel_capacity=len(m.channels),
         ),
     )
-    state, p = initial_values(compact)
+    _check_kinds_solver(spec)  # Ahead of the kinds' own checks: under RK4 they are moot.
+    kinds = _kinds(structure)
+    for kind in kinds:  # §7.4 (k): a kind's definition checks, ahead of @3's.
+        if kind.check_definition is not None:
+            kind.check_definition(spec)
+    _check_stage_rows(spec, kinds)
+    _check_held_rows(spec, kinds)
+    state, p = initial_values(compact, structure=structure)
     controls = control_values(compact, [c.time for c in compact.experiment.changes])
+    control_type = kind_types(structure).Control if structure is not None else Control
+    if kinds:
+        _check_device_hooks(kinds, state, p, control_type(*(v[0] for v in controls)))
     with np.errstate(all="ignore"):
         for i in range(len(controls.membrane)):
             if not control_domain_valid(
-                state, Control(*(v[i] for v in controls)), p, p.active, xp=np
+                state,
+                control_type(*(v[i] for v in controls)),
+                p,
+                p.active,
+                xp=np,
+                structure=structure,
             ):
                 raise ConfigError("Initial resolved channel/junction/pump domain invalid")
 
 
-def membrane_rate(state, control, p, *, xp=jnp):
+def _check_kinds_solver(spec):
+    """Declared kinds need an IMEX solver; under RK4 they are refused, fail-closed (the core's
+    review of refusal 4 version 1.1, finding 6; the lead's ruling, 16 November 2026). Every kind
+    guard that bounds or books a step belongs to the IMEX step: StepChecks holds B7's term and the
+    kinds' bound_rate (kind_rate) for the IMEX solvers only, and the per-stage rule (membrane_rate
+    with each kind's stage_term) and the end-of-step bookings (book, §7.5's exact booking) run in
+    imex_step only. An RK4 step keeps only its 0.1 ms cap. A design for kinds under RK4 can lift
+    this refusal."""
+    declared = [kind_id for kind_id, _ in getattr(spec.model, "kinds", ())]
+    if declared and spec.execution.solver == "rk4":
+        raise ConfigError(
+            f"Declared kinds ({', '.join(declared)}) require an IMEX solver: under RK4 none of "
+            "the kinds' step guards run (the definition-time bound terms, the per-stage rule, the "
+            "end-of-step bookings), so @3 refuses them (fails closed)"
+        )
+
+
+def _check_stage_rows(spec, kinds):
+    """§7.4 (k): stage reads compose in hook order, so two that share a row would compose by ID,
+    not physically. A kind's stage read declares the rows it reads or rewrites, and two kinds'
+    reads on a shared row are refused at binding (until a dependency order exists)."""
+    if not kinds:
+        return
+    declarations, claimed = dict(spec.model.kinds), {}
+    for kind in kinds:
+        if kind.stage_read is None:
+            continue
+        if kind.stage_rows is None:
+            raise ConfigError(f"Kind {kind.kind_id} has a stage read but declares no stage rows")
+        for row in kind.stage_rows(declarations[kind.kind_id]):
+            other = claimed.setdefault(tuple(row), kind.kind_id)
+            if other != kind.kind_id:
+                raise ConfigError(
+                    f"Kinds {other} and {kind.kind_id} both read row {tuple(row)} at each stage; "
+                    "stage reads on a shared row do not commute and are refused"
+                )
+
+
+def moved_nodes(model):
+    """{(species, node ID): (mover, ...)} of every in-step mover of the inner model, from
+    moved_rows: each route's two end nodes (a channel's or a pump's, its patch's), and a kind's
+    named nodes. A mover is named "<mover kind> <entity>" (a kind's: its kind ID)."""
+    ends = {m.id: (m.inside, m.outside) for m in model.membranes}
+    ends |= {j.id: (j.sender, j.receiver) for j in model.junctions}
+    ends |= {f.id: (f.sender, f.receiver) for f in model.faces}
+    ends |= {c.id: ends[c.membrane_id] for c in model.channels}
+    out = {}
+    for species, movers in moved_rows(model).items():
+        for mover, _, entities in movers:
+            for entity in entities:
+                nodes = ends.get(entity, (entity,)) if mover in INNER_MOVERS else (entity,)
+                name = f"{mover} {entity}" if mover in INNER_MOVERS else mover
+                for node in nodes:
+                    out.setdefault((species, node), []).append(name)
+    return {key: tuple(value) for key, value in out.items()}
+
+
+INNER_MOVERS = ("membrane", "junction", "face", "channel", "pump")
+
+
+def _check_held_rows(spec, kinds):
+    """Gap 8, one writer: a row a kind holds (read at every stage, never moved, such as held fuel)
+    is moved by nothing in the inner step, neither a route nor another kind. Operators' writers
+    are the composite's admission (species_registry.moved_in_step)."""
+    held = [kind for kind in kinds if kind.held_rows is not None]
+    if not held:
+        return
+    declarations, movers = dict(spec.model.kinds), moved_nodes(spec.model)
+    for kind in held:
+        for species, node in kind.held_rows(declarations[kind.kind_id]):
+            writers = movers.get((species, node), ())
+            if writers:
+                raise ConfigError(
+                    f"Kind {kind.kind_id} holds {species} at {node}, which {writers[0]} moves in "
+                    "the step; a held row is moved by nothing in the step (one writer)"
+                )
+
+
+LEDGER_TERM_KEYS = ("cell", "outside", "heat_pJ", "work_pJ", "stored_pJ")
+
+
+def _check_device_hooks(kinds, state, p, control):
+    """§7.4 (k): the check-path hooks (stage_read, which domain_valid evaluates, domain,
+    control_domain, ledger_terms) trace under jax.numpy with no value branch, so the device's row
+    checks include the kinds as the host's do. Each is traced once here, on the definition's
+    initial state, and its result's form is checked."""
+
+    def refuse(kind, hook, reason):
+        raise ConfigError(f"Kind {kind.kind_id}'s {hook} hook {reason}")
+
+    def traced(kind, hook, function, *args):
+        try:
+            return jax.eval_shape(function, *args)
+        except jax.errors.JAXTypeError as error:
+            refuse(kind, hook, f"does not trace on the device (a value branch?): {error}")
+
+    def boolean(kind, hook, value):
+        if value.shape != () or value.dtype != np.bool_:
+            refuse(kind, hook, f"must return one boolean, not {value.shape} {value.dtype}")
+
+    shapes = dict(
+        cell=np.shape(state.amount_increment),
+        outside=np.shape(state.extracellular_amount_increment),
+    )
+    tree = jax.tree.structure(state)
+    for kind in kinds:
+        if kind.stage_read is not None:  # On the check path too: domain_valid evaluates reads.
+            read, ok = traced(kind, "stage_read", partial(kind.stage_read, xp=jnp), state, p)
+            if jax.tree.structure(read) != tree:
+                refuse(kind, "stage_read", "must return a state of the structure's state type")
+            boolean(kind, "stage_read", ok)
+        if kind.stage_check is not None:  # On the step path; traced here for an early refusal.
+            rates = (state.amount_increment, state.extracellular_amount_increment)
+            check = traced(kind, "stage_check", partial(kind.stage_check, xp=jnp), state, *rates, p)
+            boolean(kind, "stage_check", check)
+        if kind.domain is not None:
+            domain = traced(kind, "domain", partial(kind.domain, xp=jnp), state, p)
+            boolean(kind, "domain", domain)
+        if kind.control_domain is not None:
+            hook = partial(kind.control_domain, xp=jnp)
+            boolean(kind, "control_domain", traced(kind, "control_domain", hook, control, p))
+        if kind.ledger_terms is not None:
+            terms = traced(kind, "ledger_terms", partial(kind.ledger_terms, xp=jnp), state, p)
+            unknown = set(terms) - set(LEDGER_TERM_KEYS)
+            if unknown:
+                refuse(kind, "ledger_terms", f"returns unknown terms {sorted(unknown)}")
+            for key, shape in shapes.items():
+                if key in terms and tuple(terms[key].shape) != shape:
+                    refuse(kind, "ledger_terms", f"returns {key} of shape {terms[key].shape}")
+
+
+def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None):
     """Gershgorin rate (1/s) of membrane charge relaxation at a stage's actual openings.
 
     @1's membrane term, max_i sum_m G_m / C_i, with each population's open
@@ -859,21 +1380,67 @@ def membrane_rate(state, control, p, *, xp=jnp):
     co = xp.where(p.outside_active, co / p.extracellular_volume, 0.0)
     slope, n, patch = F * F / (R * p.temperature), p.active.size, p.channel_membranes
     largest = xp.maximum(ci[:, p.membrane_cell], co[:, p.membrane_outside])
-    passive = xp.sum(p.valence**2 * p.membrane_permeability * largest, axis=0) * control.membrane
+    passive = (
+        species_sum(p.valence**2 * p.membrane_permeability * largest, xp=xp) * control.membrane
+    )
     open_fraction = xp.where(
         p.channel_active,
-        p.channel_abundance * channel_opening(state.channel_gate, p.channel_laws, xp=xp),
+        p.channel_abundance
+        * channel_opening(state.channel_gate, p.channel_laws, xp=xp, structure=structure),
         0.0,
     )
-    channel = xp.sum(
+    channel = species_sum(
         p.valence**2 * p.channel_permeability * p.channel_relative_permeability * largest[:, patch],
-        axis=0,
+        xp=xp,
     ) * (open_fraction * control.channel)
     membrane = xp.where(p.membrane_active, passive * p.membrane_area, 0.0)
     membrane += scatter(channel * p.membrane_area[patch], membrane, (patch,), xp=xp)
     total = slope * scatter(membrane, xp.zeros(n), (p.membrane_cell,), xp=xp)
     capacitance = scatter(p.membrane_capacitance, xp.zeros(n), (p.membrane_cell,), xp=xp)
-    return xp.max(xp.where(p.active, total / xp.where(p.active, capacitance, 1.0), 0.0))
+    kinds = _kinds(structure)
+    if not kinds:  # Today's rate: the cells' rows.
+        return xp.max(xp.where(p.active, total / xp.where(p.active, capacitance, 1.0), 0.0))
+    # Gap 5 with kinds: each kind's conductance at the stage, per node (cells, then outside
+    # nodes), at the read amounts and the stage's potentials; and the free outside nodes' rows
+    # too (a face-free compartment's small capacitance), with @3's own patch terms there.
+    read, _ = _stage_read(state, p, kinds, xp=xp)
+    nodes = xp.zeros(n + p.outside_active.size)
+    for kind in kinds:
+        if kind.stage_term is not None:
+            nodes = nodes + kind.stage_term(read, potentials, control, p, xp=xp)
+    total = total + nodes[:n]
+    cells = xp.max(xp.where(p.active, total / xp.where(p.active, capacitance, 1.0), 0.0))
+    o = p.outside_active.size
+    node_total = slope * scatter(membrane, xp.zeros(o), (p.membrane_outside,), xp=xp) + nodes[n:]
+    patches = xp.where(p.membrane_active, p.membrane_capacitance, 0.0)
+    node_capacitance = scatter(patches, xp.zeros(o), (p.membrane_outside,), xp=xp)
+    free = free_outside_nodes(p, xp=xp) & (node_capacitance > 0)
+    outside = xp.max(xp.where(free, node_total / xp.where(free, node_capacitance, 1.0), 0.0))
+    return xp.maximum(cells, outside)
+
+
+def free_outside_nodes(p, *, xp=jnp):
+    """[outside] the free outside nodes: active, not a held bath, not the gauge, not a fixed node
+    and named by no active face (B7's face-free nodes, surface_pump.face_free_node_rate), whose
+    charge their patches relax explicitly."""
+    o, n = p.outside_active.size, p.active.size
+    zero = xp.zeros(o)
+    faced = xp.where(p.face_active, 1.0, 0.0)
+    named = scatter(faced, zero, (p.face_sender,), xp=xp) + scatter(
+        faced, zero, (p.face_receiver,), xp=xp
+    )
+    fixed = p.field_fixed[n:] if hasattr(p, "field_fixed") else xp.zeros(o, dtype=bool)
+    return p.outside_active & ~p.reservoir & (named == 0) & ~p.field_gauge_mask & ~fixed
+
+
+def patch_node_conductance(slope, p, *, xp=jnp):
+    """[cells, then outside nodes] a per-patch conductance [membrane] (S) at both of each active
+    patch's ends: the form a kind's stage_term returns (gap 5)."""
+    n, o = p.active.size, p.outside_active.size
+    slope = xp.where(p.membrane_active, slope, 0.0)
+    zero = xp.zeros(n + o)
+    inside = scatter(slope, zero, (p.membrane_cell,), xp=xp)
+    return inside + scatter(slope, zero, (n + p.membrane_outside,), xp=xp)
 
 
 def check_steps(spec, steps, controls):
@@ -921,6 +1488,17 @@ class StepChecks(first.StepChecks):
     def gated_laws(self):
         return {c.kinetic_law for c in self.spec.model.channels if c.initial_gate}
 
+    @cached_property
+    def kind_rate(self):
+        """Gap 5: the declared kinds' definition-time bound terms (1/s; the passive law's
+        dt L <= 1, say), each its own rule: the largest."""
+        registry, rates = kind_registry.active(), [0.0]
+        for kind_id, declaration in getattr(self.spec.model, "kinds", ()):
+            kind = registry.lookup(kind_id)
+            if kind.bound_rate is not None:
+                rates.append(float(kind.bound_rate(self.spec, declaration)))
+        return max(rates)
+
     def __call__(self, steps):
         spec, step = self.spec, np.max(steps, initial=0)
         if spec.execution.solver == "rk4":
@@ -936,18 +1514,46 @@ class StepChecks(first.StepChecks):
                 raise ConfigError("IMEX step exceeds the explicit-rate stability bound")
             if step * self.calcium_rate > EXPLICIT_STEP_BOUND:
                 raise ConfigError("IMEX step exceeds the explicit calcium pump rate bound")
+            if step * self.kind_rate > EXPLICIT_STEP_BOUND:
+                raise ConfigError("IMEX step exceeds a declared kind's explicit-rate bound")
         if step * self.junction_rate > first.GATE_STEP_BOUND:
             raise ConfigError("Resolved junction step exceeds conservative kinetic bound")
 
 
-def balances(state, p):
+def balances(state, p, *, structure=None):
     total = state.membrane_transferred + channel_to_membrane(state.channel_transferred, p, xp=np)
     result = second.balances(state._replace(membrane_transferred=total), p)
-    result["energy"] += np.sum(state.channel_dissipated_energy_pJ)
+    result["energy"] += entity_sum(
+        species_sum(state.channel_dissipated_energy_pJ, xp=np), axis=None, xp=np
+    )
+    if structure is not None and structure.kinds:
+        _fold_kind_ledgers(result, state, p, _kinds(structure), xp=np)
     return result
 
 
-def channel_magnitudes(row, p, *, xp=np):
+def _fold_kind_ledgers(result, state, p, kinds, *, xp):
+    """Rule (a): each kind's ledger terms fold into today's ledgers by role. Its cumulative
+    inward-positive node transfers close the material ledgers (they are in the amounts, rule
+    (c)); its heat and work accumulators join the energy ledger as dissipation and work; its
+    stored term (free energy it holds beyond the stored rows' own terms, since the start: FR-4's
+    buffer term, finite fuel's standard term) joins the stored energy."""
+    for kind in kinds:
+        if kind.ledger_terms is None:
+            continue
+        terms = kind.ledger_terms(state, p, xp=xp)
+        if "cell" in terms:
+            result["local"] = result["local"] - terms["cell"]
+        if "outside" in terms:
+            result["outside"] = result["outside"] - terms["outside"]
+        if "heat_pJ" in terms:
+            result["energy"] = result["energy"] + entity_sum(terms["heat_pJ"], axis=None, xp=xp)
+        if "work_pJ" in terms:
+            result["energy"] = result["energy"] - entity_sum(terms["work_pJ"], axis=None, xp=xp)
+        if "stored_pJ" in terms:
+            result["energy"] = result["energy"] + entity_sum(terms["stored_pJ"], axis=None, xp=xp)
+
+
+def channel_magnitudes(row, p, *, xp=np, structure=None):
     """surface_pump.ledger_magnitudes with both pumps' and the channels' accumulators."""
     membrane = (
         xp.abs(row.membrane_transferred)
@@ -962,25 +1568,51 @@ def channel_magnitudes(row, p, *, xp=np):
             + 1e-3 * xp.abs(p.calcium_pump_drive * row.calcium_pump_cycles),
         )
     )
-    return first.ledger_magnitudes(row, p, membrane, metabolic, xp=xp)
+    magnitudes = first.ledger_magnitudes(row, p, membrane, metabolic, xp=xp)
+    if structure is None or not structure.kinds:
+        return magnitudes
+    magnitudes = list(magnitudes)  # Rule (a): the kinds' terms join their ledgers' magnitudes.
+    for kind in _kinds(structure):
+        if kind.ledger_terms is None:
+            continue
+        terms = kind.ledger_terms(row, p, xp=xp)
+        for key, ledger in (("cell", "local"), ("outside", "outside")):
+            index = first.LEDGERS.index(ledger)
+            if key in terms and magnitudes[index] is not None:
+                magnitudes[index] = magnitudes[index] + xp.abs(terms[key])
+        # The energy ledger's bound scales with the flows, which take every *_dissipated_energy_pJ
+        # and *_work_pJ field by name, the kinds' accumulators included.
+    return tuple(magnitudes)
 
 
 DISSIPATION_FIELDS = tuple(k for k in STATE_AXES if k.endswith("_dissipated_energy_pJ"))
 
 
-def check_values(state, spec, steps=None):
+def check_values(state, spec, steps=None, *, structure=None):
     """The family's host checks (surface_pump.checked_rows) with the channel ledgers."""
-    _, p = initial_values(spec)
+    _, p = initial_values(spec, structure=structure)
+    kinds = structure is not None and bool(structure.kinds)
     return first.checked_rows(
         state,
         spec,
         p,
-        domain=domain_valid,
-        balances=balances,
-        magnitudes=channel_magnitudes,
-        dissipation=DISSIPATION_FIELDS,
+        domain=domain_valid if structure is None else _bound_checks(structure).domain_valid,
+        balances=partial(balances, structure=structure) if kinds else balances,
+        magnitudes=partial(channel_magnitudes, structure=structure)
+        if kinds
+        else channel_magnitudes,
+        dissipation=dissipation_fields(structure),
         steps=steps,
     )
+
+
+def dissipation_fields(structure):
+    """Every *_dissipated_energy_pJ state field of the structure's state type, kinds' included
+    (checked nonnegative and non-decreasing per element, on the host and the device)."""
+    if structure is None or not structure.kinds:
+        return DISSIPATION_FIELDS
+    axes = kind_types(structure).STATE_AXES
+    return tuple(k for k in axes if k.endswith("_dissipated_energy_pJ"))
 
 
 # Device checks (cells.core.vector_windows, core/projective.py): check_values'
@@ -996,32 +1628,39 @@ device_failure_message = first.device_failure_message
 device_check_constants = first.device_check_constants
 
 
-def device_balances(state, p):
+def device_balances(state, p, *, structure=None):
     """balances() with jax.numpy: the same channel terms, then @2's, in the same order."""
     total = state.membrane_transferred + channel_to_membrane(state.channel_transferred, p, xp=jnp)
     result = second.device_balances(state._replace(membrane_transferred=total), p)
-    result["energy"] += jnp.sum(state.channel_dissipated_energy_pJ)
+    result["energy"] += entity_sum(
+        species_sum(state.channel_dissipated_energy_pJ, xp=jnp), axis=None, xp=jnp
+    )
+    if structure is not None and structure.kinds:
+        _fold_kind_ledgers(result, state, p, _kinds(structure), xp=jnp)
     return result
 
 
-def device_checks(previous, row, p, constants, steps):
+def device_checks(previous, row, p, constants, steps, *, structure=None):
     """check_values' tests for one accepted row on the device: (failed, diagnostics).
 
     steps is the row's accepted-step count, the host check's value for that row.
     """
     from cells.models.surface_pump_checks import row_checks
 
+    kinds = structure is not None and bool(structure.kinds)
     return row_checks(
         previous,
         row,
         p,
         constants,
         steps,
-        domain_valid=domain_valid,
-        balances=device_balances,
+        domain_valid=domain_valid if structure is None else _bound_checks(structure).domain_valid,
+        balances=partial(device_balances, structure=structure) if kinds else device_balances,
         limits=first.ledger_limits,
-        magnitudes=channel_magnitudes,
-        dissipation=DISSIPATION_FIELDS,
+        magnitudes=partial(channel_magnitudes, structure=structure)
+        if kinds
+        else channel_magnitudes,
+        dissipation=dissipation_fields(structure),
     )
 
 
@@ -1031,7 +1670,7 @@ Observations = make_dataclass(
 )
 
 
-def observe_history(times, history, layout, requested, spec):
+def observe_history(times, history, layout, requested, spec, *, structure=None):
     from cells.core.surface_pump_v3_spec import control_values
 
     p = type(layout)(*(np.asarray(v) for v in layout))
@@ -1039,16 +1678,19 @@ def observe_history(times, history, layout, requested, spec):
     if any(t not in times for t in requested):
         raise ConfigError("Resolved kinetic observations require accepted times")
     controls, records = control_values(spec, requested), []
+    types = kind_types(structure) if structure is not None else TODAYS_TYPES
+    kinds = _kinds(structure)
     for j, t in enumerate(requested):
         i = int(np.flatnonzero(times == t)[0])
         state, control = (
-            STATE_TYPE(*(v[i] for v in history)),
-            Control(*(v[j] for v in controls)),
+            types.STATE_TYPE(*(v[i] for v in history)),
+            types.Control(*(v[j] for v in controls)),
         )
-        w = readouts(state, control, p, xp=np)
+        w = readouts(state, control, p, xp=np, structure=structure)
         if not w.valid:
             raise NumericalError("Resolved kinetic observation domain invalid")
         v, n, r = w.field, p.active.size, w.field.rates
+        read = _stage_read(state, p, kinds, xp=np)[0] if kinds else state  # Kinds' readouts.
         records.append(
             (
                 np.asarray(t),
@@ -1083,23 +1725,39 @@ def observe_history(times, history, layout, requested, spec):
                 w.calcium_pump_affinity_J_mol,
                 w.derivative.calcium_metabolic_work_pJ,
                 control.calcium_pump,
+                *(  # Rule (b): the kinds' readout columns follow today's.
+                    column
+                    for kind in kinds
+                    if kind.readouts is not None
+                    for column in kind.readouts(state, read, v.potential_V, control, p, xp=np)
+                ),
             )
         )
     if records:
-        return Observations(*(np.stack(v) for v in zip(*records, strict=True)))
-    sample = observe_history(times[:1], STATE_TYPE(*(v[:1] for v in history)), p, times[:1], spec)
-    return Observations(
+        return types.Observations(*(np.stack(v) for v in zip(*records, strict=True)))
+    sample = observe_history(
+        times[:1],
+        types.STATE_TYPE(*(v[:1] for v in history)),
+        p,
+        times[:1],
+        spec,
+        structure=structure,
+    )
+    return types.Observations(
         *(np.empty((0, *v.shape[1:]), dtype=v.dtype) for v in vars(sample).values())
     )
 
 
-def ensemble_voltage(state, layout, spec, time):
+def ensemble_voltage(state, layout, spec, time, *, structure=None):
     from cells.core.surface_pump_v3_spec import control_values
 
     controls = control_values(spec, [time])
-    control = Control(*(v[0] for v in controls))
+    types = kind_types(structure) if structure is not None else TODAYS_TYPES
+    control = types.Control(*(v[0] for v in controls))
     p = type(layout)(*(np.asarray(v) for v in layout))
-    v = field_values(STATE_TYPE(*(np.asarray(v) for v in state)), control, p, xp=np)
+    v = field_values(
+        types.STATE_TYPE(*(np.asarray(v) for v in state)), control, p, xp=np, structure=structure
+    )
     if not v.converged:
         raise NumericalError("Resolved kinetic ensemble endpoint invalid")
     return v.rates.membrane_voltage_V[p.membrane_active]
@@ -1119,3 +1777,308 @@ def summarize(history, diagnostics, spec):
         "membrane_transfer_ledger": "baseline passive only; channel and pump ledgers separate",
         "junction_heat_booking": spec.model.junction_heat_booking,
     }
+
+
+# ------------------------------------------------------------------ declared structure (D172)
+# docs/INNER_MODEL_V4_DESIGN.md §7.4: what a definition declares is structure (Python values,
+# never a parameter value); every value is a layout array. registry.get_model returns one
+# implementation object per structure, cached, so equal structures share the object, its
+# functions and their compiled executables. Its structure-dependent functions are this module's,
+# bound once to the structure (keyword `structure`), so a program traces only the declared laws'
+# kernels. The module's own names keep structure=None, today's dispatch over the full catalogue,
+# for callers that have not moved to the object yet (the composite's adapter until it does).
+
+
+def structure(model):
+    """The InnerStructure of a parsed @3 (or composite) model block, on the host."""
+    codes = inner_laws.channel_codes()
+    declared = sorted({c.kinetic_law for c in model.channels}, key=codes.__getitem__)
+    pump_laws = {m.pump.law for m in model.membranes if m.pump is not None}
+    pump_laws |= {m.calcium_pump.law for m in model.membranes if m.calcium_pump is not None}
+    fuels = {
+        p.metabolism.kind
+        for m in model.membranes
+        for p in (m.pump, m.calcium_pump)
+        if p is not None
+    }
+    return inner_laws.InnerStructure(
+        declared_channel_laws=tuple(declared),
+        junction_laws=tuple(sorted({j.law for j in model.junctions})),
+        pump_laws=tuple(law for law in inner_laws.PUMP_LAWS if law in pump_laws),
+        fuel_kinds=tuple(sorted(fuels)),
+        junction_heat_booking=model.junction_heat_booking,
+        padding_fill=_closes_slots(model),
+        kinds=_kind_entries(model),
+    )
+
+
+def _kind_entries(model):
+    """((kind ID, structure entry), ...) of the declared kinds, from the active registry."""
+    registry = kind_registry.active()
+    entries = []
+    for kind_id, declaration in getattr(model, "kinds", ()):
+        kind = registry.lookup(kind_id)
+        entries.append((kind_id, kind.structure_entry(declaration) if kind.structure_entry else ()))
+    return tuple(entries)
+
+
+def _closes_slots(model):
+    """Whether a composite's operators close activity masks mid-run (contract CLOSES)."""
+    declared = getattr(model, "operators", ())
+    if not declared:
+        return False
+    from cells.models.operators import OPERATORS
+
+    return any(OPERATORS[d.law].CLOSES for d in declared)
+
+
+def moved_rows(model):
+    """Every in-step mover of the inner model, by species (§7.4 (f), answer 6), on the host.
+
+    {species: ((mover kind, law ID, entity IDs), ...)} for the species something moves inside
+    @3's step: membrane and junction routes with nonzero permeability, faces with nonzero
+    diffusivity, each declared channel law's permeant ions on its populations, and the pumps'
+    transported ions on their patches. Today's pumps hold their fuel as parameters, so they move
+    no fuel row; a species absent from the mapping is moved by nothing in the step.
+    """
+    movers = {s: [] for s in model.species_ids}
+
+    def add(species, kind, law, entities):
+        if entities:
+            movers[species].append((kind, law, tuple(entities)))
+
+    for row, s in enumerate(model.species_ids):
+        route = inner_laws.MEMBRANE_ROUTE_LAW_ID
+        add(s, "membrane", route, [m.id for m in model.membranes if m.permeability_m_per_s[row]])
+        add(s, "junction", route, [j.id for j in model.junctions if j.permeability_m_per_s[row]])
+        add(
+            s,
+            "face",
+            inner_laws.FACE_ROUTE_LAW_ID,
+            [f.id for f in model.faces if f.diffusivity_m2_per_s[row]],
+        )
+    for law in structure(model).declared_channel_laws:
+        for s in model.species_ids:
+            add(
+                s,
+                "channel",
+                law,
+                [
+                    c.id
+                    for c in model.channels
+                    if c.kinetic_law == law
+                    and any(i.species_id == s and i.relative_permeability for i in c.permeant_ions)
+                ],
+            )
+    for s in model.species_ids:
+        add(s, "pump", pump.LAW_ID, [m.id for m in model.membranes if m.pump and s in m.pump.roles])
+        add(
+            s,
+            "pump",
+            calcium_atpase.LAW_ID,
+            [m.id for m in model.membranes if m.calcium_pump and m.calcium_pump.role == s],
+        )
+    # §7.4 (k): each declared kind's moved rows, (species, node ID) pairs, or (species, node ID,
+    # law ID) triples, grouped as (kind ID, law ID, (node IDs, ...)); the registry places each
+    # node from the model's node lists (the operators stream's moved_in_step).
+    registry = kind_registry.active()
+    for kind_id, declaration in getattr(model, "kinds", ()):
+        kind = registry.lookup(kind_id)
+        if kind.moved_rows is None:
+            continue
+        grouped = {}
+        for entry in kind.moved_rows(declaration):
+            species, node, law = (*entry, kind_id) if len(entry) == 2 else entry
+            grouped.setdefault((species, law), []).append(node)
+        for (species, law), nodes in grouped.items():
+            add(species, kind_id, law, nodes)
+    return MappingProxyType({s: tuple(v) for s, v in movers.items() if v})
+
+
+class KindTypes(NamedTuple):
+    """The types of one set of declared kinds (§7.4 (j), schema A)."""
+
+    STATE_AXES: object
+    STATE_TYPE: object
+    LAYOUT_TYPE: object
+    FLOOR_LAYOUT_TYPE: object
+    Control: object
+    OBSERVATION_FIELDS: tuple
+    Observations: object
+
+
+TODAYS_TYPES = KindTypes(
+    STATE_AXES,
+    STATE_TYPE,
+    LAYOUT_TYPE,
+    FLOOR_LAYOUT_TYPE,
+    Control,
+    OBSERVATION_FIELDS,
+    Observations,
+)
+
+
+@cache
+def _kind_types(kind_ids, registry):
+    if not kind_ids:
+        return TODAYS_TYPES
+    kinds = [registry.lookup(kind_id) for kind_id in kind_ids]
+    label = "".join("_" + re.sub(r"\W", "_", kind_id) for kind_id in kind_ids)  # Deterministic.
+    axes = dict(STATE_AXES)
+    for kind in kinds:
+        for name, name_axes in kind.state_axes:  # Not `field`: the field-solver module's name.
+            if name in axes:
+                raise ValueError(f"Kind {kind.kind_id}'s state field {name} is already declared")
+            axes[name] = list(name_axes)
+    state = NamedTuple("SurfacePumpChannelState" + label, [(k, object) for k in axes])
+    layout_extra = [name for kind in kinds for name in kind.layout_fields]
+    layout = NamedTuple(
+        "SurfacePumpChannelLayout" + label,
+        [(k, object) for k in (*LAYOUT_TYPE._fields, *layout_extra)],
+    )
+    floor = NamedTuple(
+        "SurfacePumpChannelFloorLayout" + label,
+        [(k, object) for k in (*FLOOR_LAYOUT_TYPE._fields, *layout_extra)],
+    )
+    control = NamedTuple(
+        "SurfacePumpChannelControl" + label,
+        [
+            (k, object)
+            for k in (*Control._fields, *(f for kind in kinds for f in kind.control_fields))
+        ],
+    )
+    # Rule (b): a kind's state fields are observation columns right after today's state fields
+    # (the windowed runner rebuilds states from observations by name); its readouts follow
+    # today's readouts.
+    today_state = len(STATE_TYPE._fields) + 1
+    fields = (
+        *OBSERVATION_FIELDS[:today_state],
+        *(field for kind in kinds for field, _ in kind.state_axes),
+        *OBSERVATION_FIELDS[today_state:],
+        *(column for kind in kinds for column in kind.readout_columns),
+    )
+    observations = make_dataclass(
+        "SurfacePumpChannelObservations" + label, [(k, np.ndarray) for k in fields], frozen=True
+    )
+    return KindTypes(axes, state, layout, floor, control, fields, observations)
+
+
+def kind_types(structure):
+    """The structure's types: today's own objects when it declares no kind (§7.4 (j), schema A),
+    else classes cached by the set of declared kinds, in canonical order."""
+    return _kind_types(tuple(kind_id for kind_id, _ in structure.kinds), kind_registry.active())
+
+
+class InnerImplementation:
+    """resolved_pump_tissue@3 for one declared structure (§7.4 (c)); see implementation().
+
+    It has every public name of this module, with the same signature: structure-free names
+    (types, constants, parameters, physical_amounts, projection, rebind, ...) are the module's
+    own objects, and the step, readout, domain, check and observation functions are taken from
+    it by every consumer. New names: structure, structure_key, declared_channel_laws,
+    law_columns, gate_rows, junction_kinetics.
+    """
+
+    def __init__(self, structure):
+        self.structure = structure
+        self.structure_key = (MODEL_ID, structure)
+        self.law_columns = MappingProxyType(
+            {law: column for column, law in enumerate(structure.declared_channel_laws)}
+        )
+        # Bound once, so jit's static arguments and compile_window's key see stable objects.
+        for name in STRUCTURED_FUNCTIONS:
+            setattr(self, name, partial(getattr(_MODULE, name), structure=structure))
+        self.domain_valid.with_control = self.control_domain_valid
+        self.batch_signature = structured_batch_signature
+        for name, value in kind_types(structure)._asdict().items():  # Schema A (§7.4 (j)).
+            setattr(self, name, value)
+
+    def __getattr__(self, name):
+        # Only reached for names the object does not define: this module's own.
+        if name.startswith("__"):
+            raise AttributeError(name)
+        try:
+            return getattr(_MODULE, name)
+        except AttributeError:
+            raise AttributeError(
+                f"resolved_pump_tissue@3 implementation has no attribute {name!r}"
+            ) from None
+
+    def __dir__(self):
+        return sorted(set(dir(_MODULE)) | set(vars(self)) | set(dir(type(self))))
+
+    def __repr__(self):
+        return f"<{MODEL_ID} implementation for {self.structure!r}>"
+
+    @property
+    def declared_channel_laws(self):
+        return self.structure.declared_channel_laws
+
+    @property
+    def gate_rows(self):
+        return self.structure.gate_rows
+
+    def junction_kinetics(self, voltage, p, *, xp=jnp):
+        """The declared junction law's kinetics at junction voltages (junction_gate.Rates)."""
+        return junction_gate.kinetics(voltage, kinetic.junction_parameters(p), xp=xp)
+
+
+# The module's functions that read the declared structure; the object binds each to its own.
+STRUCTURED_FUNCTIONS = (
+    "initial_values",
+    "balances",
+    "device_balances",
+    "channel_magnitudes",
+    "channel_kinetics",
+    "channel_opening",
+    "channel_rates",
+    "readouts",
+    "field_values",
+    "rhs",
+    "domain_valid",
+    "control_domain_valid",
+    "explicit_rates",
+    "potential_kinetics",
+    "imex_step",
+    "checked_step",
+    "membrane_rate",
+    "check_definition",
+    "check_values",
+    "device_checks",
+    "observe_history",
+    "ensemble_voltage",
+)
+
+
+@cache
+def _bound_checks(structure):
+    """rhs and domain_valid bound to a structure, for the RK4 step and the row checks."""
+    domain = partial(domain_valid, structure=structure)
+    domain.with_control = partial(control_domain_valid, structure=structure)
+    return SimpleNamespace(rhs=partial(rhs, structure=structure), domain_valid=domain)
+
+
+def structured_batch_signature(model):
+    """The batch signature with the declared structure: different law sets never share a batch."""
+    return (*batch_signature(model), structure(model))
+
+
+def implementation(structure):
+    """The one InnerImplementation of a structure (cached: equal structures share it). A
+    structure that declares kinds is also keyed on the active kind registry, whose kinds its
+    types are built from; one that declares none shares its object across registries, so a
+    registered but undeclared kind changes nothing, the compile key included."""
+    return _implementation(structure, kind_registry.active() if structure.kinds else None)
+
+
+@cache
+def _implementation(structure, registry):
+    return InnerImplementation(structure)
+
+
+def model_for(model):
+    """registry.get_model's answer for a parsed @3 model block."""
+    return implementation(structure(model))
+
+
+_MODULE = sys.modules[__name__]

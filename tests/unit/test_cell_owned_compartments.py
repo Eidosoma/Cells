@@ -388,8 +388,15 @@ REFUSALS = {
         lambda: declared(w(), [cfx.compartment(), cfx.compartment(cid="lys_1", label="again")]),
         "one compartment per node",
     ),
-    "an ion route on the bounding patch": (permeable, "carries an ion route"),
-    "a pump on the bounding patch": (pumped, "carries an ion route"),
+    "an ion route on the bounding patch": (
+        permeable,
+        "carries an ion route, a nonzero constant-field permeability, in a world that declares "
+        "no kind",
+    ),
+    "a pump on the bounding patch": (
+        pumped,
+        "carries an ion route version 1.1 refuses there, pump_c",
+    ),
     "an ID that is its node's": (
         lambda: declared(w(), [cfx.compartment(cid="ecs_0")]),
         "collides with an ID the world already declares",
@@ -416,7 +423,10 @@ REFUSALS = {
         lambda: declared(w(), [cfx.compartment(role=5)]),
         "a short string",
     ),
-    "a channel population on the bounding patch": (channelled, "carries an ion route"),
+    "a channel population on the bounding patch": (
+        channelled,
+        "carries an ion route version 1.1 refuses there, leak_0",
+    ),
     "a charge anchor": (charged, "nonzero charge anchor"),
     "no held bath in the owner's component": (lambda: closed_world("bath"), "with no held bath"),
     "an empty label": (
@@ -435,6 +445,149 @@ def test_definition_refusals(name):
     build, message = REFUSALS[name]
     with pytest.raises(ConfigError, match=message):
         parse_spec(build())
+
+
+def test_refusal_4_admits_the_known_kinds_and_fails_closed_on_any_other():
+    """Refusal 4, version 1.1 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1): FR-4's declared world, in
+    the composite's form, is admitted with its proton pump (cells.transporter@1), its proton leak
+    (cells.passive_routes@1) and its K+ permeability on the bounding patch, and B4's stage read; a
+    compartment in a world declaring a kind refusal 4 does not know is refused (fails closed). A
+    permeability in a world without kinds stays refused (REFUSALS), as do pumps and channels."""
+    from cells.core import kind_registry
+    from tests import kind_fixtures
+    from validation.compartment_ph_engine import definitions as defs
+
+    spec = parse_spec(defs.declared_world(defs.fr4_world()))
+    bounding = next(p for p in spec.model.membranes if p.id == defs.BOUNDING)
+    assert any(v > 0 for v in bounding.permeability_m_per_s)  # The K+ counterion.
+    assert {k for k, _ in spec.model.kinds} == {*comp.ROUTE_KINDS, *comp.READ_KINDS}
+    populations = dict(spec.model.kinds)["cells.transporter@1"]
+    routes = dict(spec.model.kinds)["cells.passive_routes@1"]
+    assert {t.patch for t in populations} == {r.host for r in routes} == {defs.BOUNDING}
+    with kind_registry.scope(kind_fixtures.registry()):
+        with pytest.raises(ConfigError, match="which refusal 4 does not know"):
+            parse_spec(kind_fixtures.declare(w(), species="S"))
+
+
+STIFF_DT = 1e-4  # RK4's largest step (surface_tissue.check_steps).
+STIFF_STEPS = 20
+
+
+def stiff_fr4(solver=None, *, operator=True):
+    """FR-4's world at STIFF_DT with its bounding patch's K+ permeability scaled 1e4: the lumen's
+    row at about 2.5e5 1/s, so dt x rate = 25 (the core's review of refusal 4 version 1.1). The
+    declared world (the composite with FR-1's operator), or the development world without it."""
+    from validation.compartment_ph_engine import definitions as defs
+
+    world = defs.declared_world if operator else defs.development_world
+    raw = world(defs.fr4_world())
+    end = STIFF_STEPS * STIFF_DT
+    raw["execution"].update(dt=STIFF_DT, max_steps=2 * STIFF_STEPS)
+    if solver is not None:
+        raw["execution"]["solver"] = solver
+    raw["experiment"].update(end_time=end, observation_times=[0.0, end])
+    patch(raw, defs.BOUNDING)["permeability_m_per_s"]["K"] *= 1e4
+    return raw
+
+
+def test_refusal_4_admits_routes_beside_a_compartment_only_with_an_imex_tableau():
+    """Refusal 4, version 1.1, admits kinds and @3's permeability on a bounding patch only with an
+    IMEX tableau (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1; the core's review): an RK4 step runs
+    neither the per-stage rule nor B7's and the kinds' definition-time terms. The review's probe:
+    FR-4's declared world with the stiff K+ permeability is admitted under IMEX, whose step checks
+    then refuse it as before, and refused under RK4, where it used to pass its step checks. @3
+    now refuses declared kinds under RK4 first (surface_pump_v3._check_kinds_solver), so the
+    operator's own rule is checked on @3's parsed base, which reaches it under either solver."""
+    import dataclasses
+
+    import numpy as np
+
+    from validation.compartment_ph_engine import definitions as defs
+
+    spec = parse_spec(stiff_fr4())  # FR-4's own IMEX solver.
+    assert spec.execution.solver != comp.RK4_SOLVER
+    with pytest.raises(ConfigError, match="IMEX step exceeds the explicit-rate stability bound"):
+        get_model(spec.model).bind_step_checks(spec)(np.full(STIFF_STEPS, STIFF_DT))
+    with pytest.raises(ConfigError, match=r"cells\.transporter@1\) require an IMEX solver"):
+        parse_spec(stiff_fr4(comp.RK4_SOLVER))  # @3's refusal, ahead of the operator's.
+    # The operator's own rule, on @3's parsed base under each solver.
+    base = parse_spec(stiff_fr4(operator=False))
+    block = defs.fr4_world()["model"]["operators"][0]
+    assert comp.parse_declaration(block, base).compartments[0].node == defs.LUMEN
+    rk4 = dataclasses.replace(
+        base, execution=dataclasses.replace(base.execution, solver=comp.RK4_SOLVER)
+    )
+    with pytest.raises(ConfigError, match="version 1's refusal stands"):
+        comp.parse_declaration(block, rk4)
+
+
+def test_refusal_4s_known_kinds_carry_the_terms_its_admission_names():
+    """ROUTE_KINDS' comment and §3.4.1 (wording corrected after the core's review, finding 4): each
+    known route kind puts its charged routes' slopes in the per-stage rule (stage_term) and has a
+    definition-time term (bound_rate: the proton law's, the passive neutral law's); the known read
+    kind is a stage read that moves nothing and has no rates. If a hook goes, refusal 4's
+    admission loses its premise and this fails."""
+    from cells.core import kind_registry
+
+    registry = kind_registry.active()
+    for kind_id in comp.ROUTE_KINDS:
+        kind = registry.lookup(kind_id)
+        assert kind.stage_term is not None and kind.bound_rate is not None, kind_id
+        assert kind.rates is not None and kind.moved_rows is not None, kind_id
+    for kind_id in comp.READ_KINDS:
+        kind = registry.lookup(kind_id)
+        assert kind.stage_read is not None, kind_id
+        assert kind.rates is None and kind.moved_rows is None and kind.stage_term is None, kind_id
+
+
+def test_refusal_4s_premise_the_stage_rule_holds_a_permeability_at_the_compartments_node(
+    monkeypatch,
+):
+    """Refusal 4's premise (§3.4.1; the core's review, finding 3): with kinds declared, @3's
+    per-stage rule (surface_pump_v3.membrane_rate) counts @3's own constant-field permeability at
+    the compartment's free node, so an IMEX step at dt G_b / C_b > 1 is refused there. FR-4's world
+    with its K+ permeability scaled k, at its own 1 ms: at k = 60 the lumen's row from the K+ route
+    alone is about 1.5 / dt while the owner's whole row stays under 1 / dt (the cells-only rate
+    would have passed the step), and the step is refused by the stage bound; at k = 20 (about 0.5)
+    it is accepted. The declared world (with the operator) is admitted at both."""
+    import numpy as np
+
+    from cells.core.surface_pump_v3_spec import control_values
+    from cells.models import surface_pump_v3
+    from cells.processes.electrochemistry import F, R
+    from validation.compartment_ph_engine import definitions as defs
+
+    def scaled(k, world):
+        raw = world(defs.fr4_world())
+        patch(raw, defs.BOUNDING)["permeability_m_per_s"]["K"] *= k
+        return raw
+
+    for k, accepted in ((20, True), (60, False)):
+        parse_spec(scaled(k, defs.declared_world))  # Refusal 4 admits it (kinds, IMEX).
+        spec = parse_spec(scaled(k, defs.development_world))  # The same @3 world and kinds.
+        impl = get_model(spec.model)
+        state, p = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        dt = spec.execution.dt
+        b = [m.id for m in spec.model.membranes].index(defs.BOUNDING)
+        cell, node = int(p.membrane_cell[b]), int(p.membrane_outside[b])
+        assert bool(surface_pump_v3.free_outside_nodes(p, xp=np)[node])  # The lumen is free.
+        row = spec.model.species_ids.index("K")
+        c_in = p.amount_reference[row, cell] / p.volume[cell]
+        c_out = p.extracellular_amount_reference[row, node] / p.extracellular_volume[node]
+        slope = F * F / (R * spec.model.temperature_K)  # @3's constant-field slope factor.
+        g_k = slope * p.membrane_permeability[row, b] * max(c_in, c_out) * p.membrane_area[b]
+        node_rate = g_k / p.membrane_capacitance[b]  # The K+ route alone, at the lumen (1/s).
+        assert (dt * node_rate > 1.0) == (not accepted), (k, dt * node_rate)
+        rate = float(impl.membrane_rate(state, control, p, xp=np))
+        cells_only = float(surface_pump_v3.membrane_rate(state, control, p, xp=np))
+        assert rate >= node_rate and dt * cells_only < 1.0, (k, rate, cells_only)
+        _, valid = impl.imex_step(state, dt, control, p, xp=np)
+        assert bool(valid) == accepted, (k, dt * rate)
+        if not accepted:  # The stage bound is what refuses it.
+            monkeypatch.setattr(surface_pump_v3, "EXPLICIT_STEP_BOUND", np.inf)
+            assert bool(impl.imex_step(state, dt, control, p, xp=np)[1])
+            monkeypatch.undo()
 
 
 def replaced(events):

@@ -31,10 +31,15 @@ layout. This adapter is the only place that knows @3's names:
   change at fixed free-node charges: potentials, image charge and heat).
 """
 
+import sys
+from functools import cache
+from types import MappingProxyType
+
 import jax
 import jax.numpy as jnp
 import numpy as np
 
+from cells.core import kind_registry
 from cells.core.specs import ConfigError
 from cells.core.surface_pump_v2_spec import Control
 from cells.models import surface_pump as first
@@ -71,6 +76,27 @@ VIEW_FIELDS = (
     "junction_active",
     "face_active",
     "extracellular_amount_reference",
+)
+# Door S (docs/SCOPED_COMPOSITION_DESIGN.md §2): each view field's entity axis, its last axis,
+# named by the definition's entity list (spec.model.<name>) its slots index.
+VIEW_FIELD_ENTITIES = dict(
+    volume="cells",
+    extracellular_volume="extracellular",
+    membrane_area="membranes",
+    membrane_capacitance="membranes",
+    initial_cell_charge_C="cells",
+    channel_abundance="channels",
+    channel_permeability="channels",
+    membrane_permeability="membranes",
+    pump_capacity="membranes",
+    calcium_pump_capacity="membranes",
+    active="cells",
+    outside_active="extracellular",
+    membrane_active="membranes",
+    channel_active="channels",
+    junction_active="junctions",
+    face_active="faces",
+    extracellular_amount_reference="extracellular",
 )
 # Inputs of the derived field arrays: providing one makes the view refresh them.
 FIELD_INPUTS = ("membrane_capacitance", "active", "outside_active", "membrane_active")
@@ -157,6 +183,160 @@ device_check_constants = ionic.device_check_constants
 device_failure_message = ionic.device_failure_message
 rebind = first.rebind
 
+# I2 (docs/INNER_MODEL_V4_DESIGN.md §7.4 (c)): the inner protocol taken from one implementation
+# object per declared structure. These names are the object's, and so are the types (TYPE_NAMES,
+# schema A) and any other name the object defines itself (channel_kinetics, junction_kinetics,
+# field_values, structure, Control, ...); every other name is this module's own (the view and its
+# merge, the field arrays, the energy terms), else @3's module's through the object.
+FORWARDED = (
+    "initial_values",
+    "checked_step",
+    "imex_step",
+    "readouts",
+    "domain_valid",
+    "control_domain_valid",
+    "balances",
+    "device_balances",
+    "check_steps",
+    "bind_step_checks",
+    "batch_signature",
+    "working_size",
+    "observe_history",
+    "summarize",
+    "device_check_constants",
+    "device_failure_message",
+)
+inner_structure = ionic.structure  # The InnerStructure of a parsed @3 or composite model block.
+
+# Schema A (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j)): the names an adapter takes per structure from
+# its implementation object (structure_names). This module's own values are today's: the full
+# catalogue declares no kind.
+TYPE_NAMES = (
+    "STATE_AXES",
+    "STATE_TYPE",
+    "LAYOUT_TYPE",
+    "FLOOR_LAYOUT_TYPE",
+    "CONTROL_TYPE",
+    "STATE_FIELDS",
+    "CONTROL_FIELDS",
+    "OBSERVATION_FIELDS",
+    "DISSIPATION_FIELDS",
+    "HEAT_FIELDS",
+    "WORK_FIELDS",
+)
+KINDS = ()  # The declared kinds' namespaced IDs, in canonical order.
+KIND_FIELDS = MappingProxyType({})  # {state, layout or control field: the kind that declares it}
+
+
+def structure_names(implementation):
+    """{name: value} of TYPE_NAMES, KINDS and KIND_FIELDS for one implementation object (schema A).
+
+    The object carries its structure's types: today's fields, then each declared kind's in
+    canonical order (§7.4 (j)). The other names derive from them. A kind's state field is a heat
+    (and dissipation) field when it ends in _dissipated_energy_pJ and a work field when it ends in
+    _work_pJ, by @3's own rule (its dissipation_fields, and the energy flows its ledger bound reads
+    by name). For a structure that declares no kind every value is this module's own object.
+    """
+    state_type, control_type = implementation.STATE_TYPE, implementation.Control
+    added = state_type._fields[len(STATE_FIELDS) :]
+    heat = tuple(k for k in added if k.endswith("_dissipated_energy_pJ"))
+    work = tuple(k for k in added if k.endswith("_work_pJ"))
+    kinds = tuple(kind_id for kind_id, _ in implementation.structure.kinds)
+    owned = {}
+    for kind_id in kinds:  # The registry the object's types were built from (its cache key).
+        kind = kind_registry.active().lookup(kind_id)
+        owned |= dict.fromkeys(
+            (*kind.state_fields, *kind.layout_fields, *kind.control_fields), kind_id
+        )
+    return dict(
+        STATE_AXES=implementation.STATE_AXES,
+        STATE_TYPE=state_type,
+        LAYOUT_TYPE=implementation.LAYOUT_TYPE,
+        FLOOR_LAYOUT_TYPE=implementation.FLOOR_LAYOUT_TYPE,
+        CONTROL_TYPE=control_type,
+        STATE_FIELDS=state_type._fields,
+        CONTROL_FIELDS=control_type._fields,
+        OBSERVATION_FIELDS=implementation.OBSERVATION_FIELDS,
+        DISSIPATION_FIELDS=(*DISSIPATION_FIELDS, *heat) if heat else DISSIPATION_FIELDS,
+        HEAT_FIELDS=(*HEAT_FIELDS, *heat) if heat else HEAT_FIELDS,
+        WORK_FIELDS=(*WORK_FIELDS, *work) if work else WORK_FIELDS,
+        KINDS=kinds,
+        KIND_FIELDS=MappingProxyType(owned) if owned else KIND_FIELDS,
+    )
+
+
+class InnerAdapter:
+    """This module with the inner protocol of one implementation object (I2): a composite's
+    `inner`, and what an operator that declares USES_INNER receives as `inner=`.
+
+    Schema A (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j)): the object carries its structure's types.
+    The adapter takes them and the names derived from them from the object (structure_names), and
+    its functions that build @3's state, layout and control (inner_state, layout_kind,
+    inner_layout, inner_control, view and control_view) build the structure's own. For a structure
+    that declares no kind each of these is this module's: the same objects and the same results.
+    """
+
+    def __init__(self, implementation):
+        self.implementation = implementation
+        self.structure_key = implementation.structure_key
+        for name in FORWARDED:
+            setattr(self, name, getattr(implementation, name))
+        self.magnitudes = implementation.channel_magnitudes
+        for name, value in structure_names(implementation).items():
+            setattr(self, name, value)
+
+    def __getattr__(self, name):
+        # Only reached for names not set above: the object's own names first (its per-structure
+        # types and structure-bound functions, schema A), then this module's, then the object's
+        # fallback, @3's module names.
+        if name.startswith("__"):
+            raise AttributeError(name)
+        implementation = self.implementation
+        if name in vars(implementation) or any(
+            name in vars(k) for k in type(implementation).__mro__[:-1]
+        ):
+            return getattr(implementation, name)
+        if hasattr(_MODULE, name):
+            return getattr(_MODULE, name)
+        return getattr(implementation, name)
+
+    def __repr__(self):
+        return f"<{MODEL_ID} adapter for {self.implementation!r}>"
+
+    def inner_state(self, state):
+        return self.STATE_TYPE(*(getattr(state, k) for k in self.STATE_FIELDS))
+
+    def layout_kind(self, p):
+        return self.FLOOR_LAYOUT_TYPE if hasattr(p, "field_current_floor") else self.LAYOUT_TYPE
+
+    def inner_layout(self, p):
+        """The structure's declared layout (the bound values)."""
+        kind = self.layout_kind(p)
+        return kind(*(getattr(p, k) for k in kind._fields))
+
+    def inner_control(self, control):
+        return self.CONTROL_TYPE(*(getattr(control, k) for k in self.CONTROL_FIELDS))
+
+    def view(self, p, state, providers, closers=(), *, xp=jnp):
+        """The module's view (below) on the structure's declared layout."""
+        return _view(self.inner_layout, p, state, providers, closers, xp=xp)
+
+    def control_view(self, control, state, p, factors, *, xp=jnp):
+        """The module's control_view (below) on the structure's control."""
+        return _control_view(self.inner_control(control), state, p, factors, xp=xp)
+
+
+def for_structure(structure):
+    """The adapter of one declared inner structure: one per implementation object, so equal
+    structures share it, and a structure that declares kinds is also keyed on the active kind
+    registry, as its object is (surface_pump_v3.implementation)."""
+    return _adapter(ionic.implementation(structure))
+
+
+@cache
+def _adapter(implementation):
+    return InnerAdapter(implementation)
+
 
 def inner_state(state):
     return STATE_TYPE(*(getattr(state, k) for k in STATE_FIELDS))
@@ -177,25 +357,66 @@ def inner_control(control):
 
 
 def view(p, state, providers, closers=(), *, xp=jnp):
-    """@3's layout at the composite state: declared fields, replaced by the providers'.
+    """@3's layout at the composite state: the declared fields, merged with the providers'.
 
-    providers: operators with VIEW_FIELDS, in declared order (one provider per
-    field, checked when the composite is built). Without providers this is the
-    declared layout itself. closers: operators that close activity masks (CLOSES), each
-    not statically idle; with none the call is exactly the one without closers.
+    providers: operators with VIEW_FIELDS, in declared order. Each provider's values are merged
+    onto the accumulated view (door S, docs/SCOPED_COMPOSITION_DESIGN.md §4): on every slot, a
+    replacing provider's values are the field itself, as before door S; a scoped change is taken
+    only on its masked slots (merge). Overlaps are admitted only as the composite's structure and
+    scope checks allow. Without providers this is the declared layout itself. closers: operators
+    that close activity masks (CLOSES), each not statically idle; with none the call is exactly
+    the one without closers.
     """
-    q = inner_layout(p)
+    return _view(inner_layout, p, state, providers, closers, xp=xp)
+
+
+def _view(declared, p, state, providers, closers, *, xp):
+    """view, with `declared` giving the declared layout of p: this module's inner_layout, or an
+    adapter's for its structure (schema A)."""
+    q = declared(p)
     provided = set()
     for operator in providers:
         values = operator.view(state, p, q, xp=xp)
-        q = q._replace(**values)
+        changes = {k: operator.view_change(k) for k in values}
+        masks = operator.view_slots(p, xp=xp) if any(c.scoped for c in changes.values()) else {}
+        q = q._replace(
+            **{
+                k: merge(
+                    getattr(q, k),
+                    v,
+                    changes[k].contribution,
+                    masks[k] if changes[k].scoped else None,
+                    xp=xp,
+                )
+                for k, v in values.items()
+            }
+        )
         provided |= set(values)
     if closers:
         q = close(q, state, p, closers, xp=xp)
         provided |= set(MASK_FIELDS)
     if provided & set(FIELD_INPUTS):
-        q = refresh_field(q, inner_layout(p), xp=xp)
+        q = refresh_field(q, declared(p), xp=xp)
     return q
+
+
+_MODULE = sys.modules[__name__]
+
+
+def merge(current, value, contribution, mask=None, *, xp):
+    """Door S's merge of one change onto the accumulated field (docs/SCOPED_COMPOSITION_DESIGN.md
+    §4). Without a mask the change covers every slot (a replacement is the value itself); with
+    one (a bool array over the field's last axis) it is taken on the masked slots only, and every
+    other slot is selected from `current`, never offset by a computed zero."""
+    if contribution == "replace":
+        combined = value
+    elif contribution == "add":
+        combined = current + value
+    elif contribution == "multiply":
+        combined = current * value
+    else:
+        raise ValueError(f"Unknown view contribution {contribution!r}")
+    return combined if mask is None else xp.where(mask, combined, current)
 
 
 def close(q, state, p, closers, *, xp):
@@ -247,7 +468,11 @@ def close_state(state, q, *, xp):
 
 def control_view(control, state, p, factors, *, xp=jnp):
     """@3's control: each factored availability times its multipliers, in declared order."""
-    c = inner_control(control)
+    return _control_view(inner_control(control), state, p, factors, xp=xp)
+
+
+def _control_view(c, state, p, factors, *, xp):
+    """control_view from @3's control c: this module's, or an adapter's for its structure."""
     for operator in factors:
         values = operator.control_factors(state, p, xp=xp)
         c = c._replace(**{k: getattr(c, k) * v for k, v in values.items()})

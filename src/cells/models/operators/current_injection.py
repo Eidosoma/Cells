@@ -46,6 +46,7 @@ from cells.core.specs import ConfigError, _fields
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_tissue as tissue
 from cells.models.operators.contract import Operator
+from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes.electrochemistry import CHARGE_PER_FMOL
 
 LAW_ID = "electrode_current_injection@1"
@@ -185,7 +186,7 @@ def injected(state, current, h, p, *, xp=jnp, view=None):
     )
     increment = state.amount_increment + delta
     available = xp.all(xp.where(delta < 0, p.amount_reference + increment > 0, True))
-    dq = CHARGE_PER_FMOL * xp.sum(p.valence * delta, axis=0)
+    dq = CHARGE_PER_FMOL * species_sum(p.valence * delta, xp=xp)
     new = state._replace(
         amount_increment=increment,
         injection_supplied_fmol=state.injection_supplied_fmol + xp.maximum(delta, 0.0),
@@ -207,9 +208,13 @@ def injected(state, current, h, p, *, xp=jnp, view=None):
         e0 = xp.zeros(())
         e1 = adapter.charge_energy_change(adapter.inner_state(state), dv0, dv1, view, xp=xp)
     cells = xp.any(delta != 0, axis=0)
-    count = xp.maximum(xp.sum(cells), 1)
-    shared = (e1 - e0 - xp.sum(work)) / count
-    magnitude = xp.abs(g0) + xp.abs(g1) + (xp.abs(e0) + xp.abs(e1) + xp.sum(xp.abs(work))) / count
+    count = xp.maximum(entity_sum(cells, axis=None, xp=xp), 1)
+    shared = (e1 - e0 - entity_sum(work, axis=None, xp=xp)) / count
+    magnitude = (
+        xp.abs(g0)
+        + xp.abs(g1)
+        + (xp.abs(e0) + xp.abs(e1) + entity_sum(xp.abs(work), axis=None, xp=xp)) / count
+    )
     new = new._replace(
         electrode_charge_transferred_C=state.electrode_charge_transferred_C + electrode,
         electrode_work_pJ=state.electrode_work_pJ + work,
@@ -346,9 +351,11 @@ class ElectrodeCurrentInjection(Operator):
     def ledger_terms(self, result, row, p, *, xp):
         net = row.injection_removed_fmol - row.injection_supplied_fmol
         result["local"] = result["local"] + net
-        result["total"] = result["total"] + xp.sum(net, axis=1)
-        result["global_charge"] = result["global_charge"] + xp.sum(row.injection_charge_C)
-        result["energy"] = result["energy"] - xp.sum(row.injection_work_pJ)
+        result["total"] = result["total"] + entity_sum(net, axis=1, xp=xp)
+        result["global_charge"] = result["global_charge"] + entity_sum(
+            row.injection_charge_C, axis=None, xp=xp
+        )
+        result["energy"] = result["energy"] - entity_sum(row.injection_work_pJ, axis=None, xp=xp)
         return result, {}
 
     def magnitude_terms(self, magnitudes, row, p, *, xp):
@@ -356,12 +363,14 @@ class ElectrodeCurrentInjection(Operator):
         energy terms; every term is zero without current, so the bounds are then @3's."""
         moved = row.injection_removed_fmol + row.injection_supplied_fmol
         magnitudes[0] = magnitudes[0] + moved
-        magnitudes[2] = magnitudes[2] + xp.sum(moved, axis=1)
-        charge = CHARGE_PER_FMOL * xp.sum(xp.abs(p.valence) * moved)
+        magnitudes[2] = magnitudes[2] + entity_sum(moved, axis=1, xp=xp)
+        charge = CHARGE_PER_FMOL * entity_sum(
+            species_sum(xp.abs(p.valence) * moved, xp=xp), axis=None, xp=xp
+        )
         magnitudes[5] = charge if magnitudes[5] is None else magnitudes[5] + charge
         image = row.injection_image_charge_C
         magnitudes[4] = image if magnitudes[4] is None else magnitudes[4] + image
-        energy = xp.sum(row.injection_energy_magnitude_pJ)
+        energy = entity_sum(row.injection_energy_magnitude_pJ, axis=None, xp=xp)
         magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
         return magnitudes
 

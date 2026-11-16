@@ -70,7 +70,7 @@ def closed_ions(raw):
 
 def test_definition_round_trip_and_dispatch():
     spec = parse_spec(cell())
-    assert get_model(spec.model) is surface_pump_water
+    assert get_model(spec.model).module is surface_pump_water  # I2: per structure.
     assert parse_spec(spec.to_dict()) == spec
     assert spec.to_dict()["model"]["id"] == "resolved_pump_water@1"
     raw = cell()

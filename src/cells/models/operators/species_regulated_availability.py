@@ -65,17 +65,17 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from cells.core import pump_composite_spec as composite_spec
+from cells.core import species_registry
 from cells.core.multispecies_spec import identifier
 from cells.core.specs import ConfigError, _fields, _number
 from cells.models.operators import species_common as common
 from cells.models.operators.contract import Operator
+from cells.numerics.species_sums import entity_sum
 from cells.processes import hill_factors
 
 LAW_ID = "species_regulated_availability@1"
 STEP_ID = "exact_two_state_half_steps@1"
 STATE_LAW = "hill_regulated_two_state@1"
-REACTIONS_LAW = "local_species_reactions@1"
 # Admitted targets: @3's junction and channel-population availabilities (the channel after
 # milestone 1's probe P1). The leak (membrane) and pump availabilities are later targets.
 TARGET_CONTROLS = ("junction", "channel")
@@ -708,7 +708,7 @@ def state_inputs(state, p, *, xp):
         p.regulatory_input_kind,
         xp=xp,
     )
-    return xp.exp(xp.sum(log_f, axis=1))
+    return xp.exp(entity_sum(log_f, axis=1, xp=xp))
 
 
 def state_half_step(state, h, p, *, xp):
@@ -780,22 +780,26 @@ def own_valid(state, *, xp):
 
 
 def check_identities(spec, declaration):
-    """Refuse a species that D150's or D152's operators declare with another identity."""
-    mine = {s.id: s for s in declaration.species}
-    for op, other, _ in composite_spec.entries(spec):
-        if op.LAW_ID in common.SPECIES_LAWS:
-            theirs = other.species
-        elif op.LAW_ID == REACTIONS_LAW:
-            theirs = tuple(s.identity for s in other.species)
-        else:
+    """Refuse a species declared with another identity than its one authority (the species
+    registry: D150's and D152's operators come first, as authors; D176)."""
+    common.check_identities(spec, LAW_ID, declaration.species)
+
+
+def check_unmoved_sources(declaration, moved):
+    """Refuse an instantaneous coupling whose source row something moves inside the inner step
+    (moved: species_registry.moved_in_step). The parse-time refusals (a charged source; a route
+    through a membrane, junction or channel) stay; this one adds every other in-step mover, such
+    as a pump's fuel rows under F2 or an in-step process (D176, "moved by the step")."""
+    for coupling in declaration.couplings:
+        if coupling.source_kind != "species":
             continue
-        for item in theirs:
-            own = mine.get(item.id)
-            if own is not None and (own.catalogue, own.evidence) != (item.catalogue, item.evidence):
-                raise ConfigError(
-                    f"{LAW_ID} declares species {item.id!r} with another identity than "
-                    f"{op.LAW_ID} (catalogue reference and kind of evidence must agree)"
-                )
+        movers = moved.get(coupling.source, {}).get("cell", ())
+        if movers:
+            raise ConfigError(
+                f"{LAW_ID}: coupling {coupling.id} reads {coupling.source!r} instantaneously, but "
+                f"{movers[0]} moves it inside the inner step, so a factor held through the step "
+                "would lag (first order): read it through a state (§1.4)"
+            )
 
 
 def check_replaced_slots(spec, declaration):
@@ -846,6 +850,7 @@ def check_rate_limit(spec, declaration):
 
 class SpeciesRegulatedAvailability(Operator):
     LAW_ID = LAW_ID
+    IDENTITY_ROLE = "user"  # Species registry (D176): it reads species others declare.
     STEP_ID = STEP_ID
     EVENT = True
     SPLIT = True
@@ -895,9 +900,13 @@ class SpeciesRegulatedAvailability(Operator):
                 written[i, j], value[i, j] = number, last
         return switch[indices], written[indices], value[indices]
 
+    def species_identities(self, declaration):
+        return declaration.species
+
     def check_definition(self, spec, declaration, schedule, model):
         common.check_species_cap(spec, LAW_ID)
         check_identities(spec, declaration)
+        check_unmoved_sources(declaration, species_registry.moved_in_step(spec))
         check_replaced_slots(spec, declaration)
         check_rate_limit(spec, declaration)
 

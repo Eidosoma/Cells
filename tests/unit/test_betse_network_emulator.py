@@ -209,7 +209,7 @@ def test_resolved_definition_adds_one_population_per_patch_and_channel(network_c
     assert {v for k, v in availability.items() if "K_Leak" in k} == {0.0}  # init active False
     assert {v for k, v in availability.items() if "-Kv-" in k} == {1.0}
     spec = parse_spec(raw)
-    assert get_model(spec.model) is surface_pump_v3
+    assert get_model(spec.model) is surface_pump_v3.model_for(spec.model)  # D172: per structure.
 
     # SIM handoff: gates at the steady state of Cells' INIT-end patch voltage.
     state, layout = surface_pump_v3.initial_values(spec)
@@ -394,7 +394,8 @@ def test_resolved_definition_maps_heredity_laws_ions_and_gates(heredity_case):
         for c in raw["experiment"]["channel_controls"]
     }
     assert availability == {"Nav": 1.0, "Kir": 1.0, "Na_Leak": 0.0}
-    assert get_model(parse_spec(raw).model) is surface_pump_v3
+    model = parse_spec(raw).model
+    assert get_model(model) is surface_pump_v3.model_for(model)  # D172: one object per structure.
 
 
 def test_sim_gates_can_start_at_a_shifted_voltage(heredity_case):

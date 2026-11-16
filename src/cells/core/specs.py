@@ -71,7 +71,9 @@ def read_json(path: str | Path) -> dict:
         raise ConfigError(f"Invalid JSON: {exc}") from exc
 
 
-def _fields(value: Any, expected: set[str], name: str) -> dict:
+def require_fields(value: Any, expected: set[str], name: str) -> dict:
+    """value, an object with exactly the expected keys (a public parsing helper: kinds and
+    external modules parse their declarations with it; docs/INNER_MODEL_V4_DESIGN.md §7.4 (k))."""
     if not isinstance(value, dict):
         raise ConfigError(f"{name} must be an object")
     missing, unknown = expected - value.keys(), value.keys() - expected
@@ -80,7 +82,8 @@ def _fields(value: Any, expected: set[str], name: str) -> dict:
     return value
 
 
-def _number(value: Any, name: str, *, positive: bool = False) -> float:
+def finite_number(value: Any, name: str, *, positive: bool = False) -> float:
+    """value as a finite, nonnegative float (positive if asked); booleans are refused (public)."""
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ConfigError(f"{name} must be a finite number")
     try:
@@ -92,10 +95,17 @@ def _number(value: Any, name: str, *, positive: bool = False) -> float:
     return result
 
 
-def _integer(value: Any, name: str, *, minimum: int = 1, maximum: int = 2**31 - 1) -> int:
+def bounded_integer(value: Any, name: str, *, minimum: int = 1, maximum: int = 2**31 - 1) -> int:
+    """value, an int (never a bool or a float) in [minimum, maximum] (public)."""
     if type(value) is not int or not minimum <= value <= maximum:
         raise ConfigError(f"{name} must be an integer in [{minimum}, {maximum}]")
     return value
+
+
+# The private names stay as aliases for the many existing callers (the lead, 15 November).
+_fields = require_fields
+_number = finite_number
+_integer = bounded_integer
 
 
 @dataclass(frozen=True)
