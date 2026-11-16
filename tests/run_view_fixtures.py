@@ -48,19 +48,6 @@ def secretion(end=0.01, every=0.002, produce=1e-4, **world):
     return parse_spec(raw)
 
 
-def route_set(self, spec, declaration):
-    """Exchange's route axis as the view's set (the operator's view_sets)."""
-    routes = declaration.routes
-    return {
-        "exchange_route": {
-            "id": "exchange_route",
-            "ids": tuple(r.id for r in routes),
-            "holds": "exchange route",
-            "on": ("membrane", tuple(r.patch for r in routes)),
-        }
-    }
-
-
 def plant(patch, law, **declarations):
     """Set declarations on a registered operator's class through a MonkeyPatch."""
     for name, value in declarations.items():
@@ -72,9 +59,10 @@ def layers(layer_id, label, representation="prescribed"):
 
 
 def declare_secretion(patch):
-    """Turnover's and exchange's view declarations, whether or not their files carry them."""
+    """Turnover's and exchange's layers, as their files declare them (with the rest of their run
+    view's declarations), kept here so a test states what it relies on."""
     plant(patch, TURNOVER, VIEW_LAYERS=layers("turnover", "Species turnover"))
-    plant(patch, EXCHANGE, VIEW_LAYERS=layers("exchange", "Species exchange"), view_sets=route_set)
+    plant(patch, EXCHANGE, VIEW_LAYERS=layers("exchange", "Species exchange"))
 
 
 def division_set(self, spec, declaration):
@@ -115,9 +103,10 @@ def load(directory):
     return json.loads((directory / run_view.FILE).read_text())
 
 
-def observed(directory, view, array):
-    """(times, values) of an observation-base array, over the files its view names, in order."""
-    base = next(b for b in view["time"]["bases"] if b["id"] == "observation")
+def observed(directory, view, array, base="observation"):
+    """(times, values) of an array on a time base (the observed rows by default), over the files
+    its view names, in order."""
+    base = next(b for b in view["time"]["bases"] if b["id"] == base)
     times, values = [], []
     for part in base["files"]:
         with np.load(directory / part["file"], allow_pickle=False) as saved:

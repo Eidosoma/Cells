@@ -122,7 +122,12 @@ def write_windowed_batch(
     for identity, view_plan in shown.items():  # Each world's view, beside its chunks.
         prefix = f"worlds/world-{identity}"
         bases = run_view.window_bases(directory / "windows.jsonl", world_id=identity, prefix=prefix)
-        view_plan.write(directory / prefix, bases, policy.recording)
+        view_plan.write(
+            directory / prefix,
+            bases,
+            policy.recording,
+            end=run_view.end_of(result.worlds[identity].final),
+        )
     # Fixed O(worlds) inventory. The index authenticates all chunk payloads and
     # periodic cohort manifests; each cohort manifest authenticates its children.
     fixed = ["resolved_batch.json", "summary.json", "windows.jsonl"]

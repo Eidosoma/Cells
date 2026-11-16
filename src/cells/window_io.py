@@ -142,7 +142,12 @@ def write_windowed_run(
     summary = result.summary()
     _write_json(directory / "summary.json", summary)
     if shown is not None:  # Its parts from the index; covered by the manifest below.
-        shown.write(directory, run_view.window_bases(index_path), policy.recording)
+        shown.write(
+            directory,
+            run_view.window_bases(index_path),
+            policy.recording,
+            end=run_view.end_of(result.final),
+        )
     model = get_model(spec.model)
     fixed = (
         "resolved_config.json",

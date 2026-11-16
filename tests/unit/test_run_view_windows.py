@@ -72,11 +72,15 @@ def test_a_windowed_run_names_each_chunk_once_per_time_base(declared, tmp_path):
     write_windowed_run(plain, spec, WindowPolicy(3, "full"))
     assert not (plain / "view.json").exists()
     assert len(json.loads((plain / "manifest.json").read_text())["files_sha256"]) == 7
-    # A saved windowed run gets the same view afterwards.
+    # A saved windowed run gets the same view afterwards, but for the engine that ran it.
     run_view.write_view(plain, out=tmp_path / "later")
-    assert (tmp_path / "later" / "view.json").read_bytes() == (
-        tmp_path / "full" / "view.json"
-    ).read_bytes()
+    later, full = load(tmp_path / "later"), load(tmp_path / "full")
+    whys = []
+    for each in (later, full):  # Each says why it names no engine source.
+        (source,) = [u for u in each["unstated"] if u["id"] == "source"]
+        each["unstated"].remove(source)
+        whys.append(source["why"])
+    assert later == full and whys[0] == "the view is written for a run already on disk"
 
 
 def test_a_windowed_batch_writes_one_view_per_world(declared, tmp_path):

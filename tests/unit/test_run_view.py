@@ -91,7 +91,7 @@ def test_without_a_view_write_run_writes_what_it_wrote(written):
 
 
 def test_write_run_writes_a_valid_deterministic_view(written, tmp_path):
-    spec, _, root = written
+    spec, result, root = written
     view = load(root / "a")
     run_view.validate(view, root / "a")
     data = (root / "a" / "view.json").read_bytes()
@@ -114,28 +114,61 @@ def test_write_run_writes_a_valid_deterministic_view(written, tmp_path):
     assert sets["membrane"]["outside"]["index"] == [0, 1]
     assert sets["exchange_route"]["ids"] == ["secrete", "sink"]
     assert sets["exchange_route"]["geometry"] == {"kind": "on", "set": "membrane", "index": [1, 1]}
+    # Each route's species, declared direction and roles; turnover's routes, where each acts.
+    assert sets["exchange_route"]["carries"] == ["S", "S"]
+    assert sets["exchange_route"]["direction"] == ["export", "import"]
+    assert set(sets["exchange_route"]["roles"]) == {"inside", "outside"}
+    assert sets["turnover_route"]["ids"] == ["produce", "clear"]
+    assert sets["turnover_route"]["carries"] == ["S", "S"]
+    assert sets["turnover_route"]["kinds"] == ["production", "clearance"]
+    assert sets["turnover_route"]["at"] == [{"cell": "cell_0"}, {"outside": "ecs_0"}]
+    assert set(sets["membrane"]["roles"]) == {"inside", "outside"}
     assert records["observed_membrane_transferred"]["sign"]["from"] == "inside"
     assert records["observed_reservoir_supplied"]["sign"]["to"] == "node"
     assert records["observed_exchange_moved_fmol"]["layer"] == "exchange"
     assert records["observed_exchange_work_pJ"]["kind"] == "cumulative"  # A declared work field.
-    # Its kind and sign are the owner's to declare: an accumulator may be a retirement record.
-    assert {"kind", "sign"}.isdisjoint(records["observed_exchange_moved_fmol"])
+    moved = records["observed_exchange_moved_fmol"]
+    assert moved["kind"] == "cumulative" and (moved["sign"]["from"], moved["sign"]["to"]) == (
+        "inside",
+        "outside",
+    )
+    for name in ("produced", "cleared", "outside_cleared", "energy_magnitude"):
+        assert (
+            records[f"turnover_{name}_fmol" if "energy" not in name else f"turnover_{name}_pJ"][
+                "kind"
+            ]
+            == "cumulative"
+        )
+    with np.load(root / "a" / "trajectory.npz") as saved:  # Export positive, import negative.
+        totals = saved["exchange_moved_fmol"]
+    assert np.all(totals[:, 0] >= 0) and np.all(totals[:, 1] <= 0) and totals[-1].all()
+    # Voltages are differences: plus less minus, by the set's roles.
+    voltage = records["observed_membrane_voltage_V"]["difference"]
+    assert (voltage["plus"], voltage["minus"]) == ("inside", "outside") and "sign" not in voltage
+    junction = records["observed_junction_voltage_V"]["difference"]
+    assert (junction["plus"], junction["minus"]) == ("sender", "receiver")
+    assert "the passive membrane routes only" in records["membrane_transferred"]["note"]
     assert records["face_dissipated_energy_pJ"]["monotone"] == "non-decreasing"
     assert "resets" not in records["face_dissipated_energy_pJ"]  # Nothing retires here.
     # Nothing here changes a view field: every one is a constant, and no merged view is saved.
     assert {c["id"] for c in view["constants"]} == set(run_view.VIEW_FIELD_AXES)
     with np.load(root / "a" / "trajectory.npz") as saved:
         assert not [k for k in saved.files if k.startswith(run_view.VIEW_PREFIX)]
-    assert {(u["id"], u["what"]) for u in view["unstated"]} >= {
-        ("exchange_moved_fmol", "kind"),
-        ("turnover_energy_magnitude_pJ", "kind"),
-        ("geometry", "geometry"),
-    }
+    unstated = {(u["id"], u["what"]) for u in view["unstated"]}
+    assert ("geometry", "geometry") in unstated and ("source", "engine source") in unstated
+    assert not {u for u in unstated if u[1] == "kind"}  # D150's two declare every kind.
     assert view["events"] == [] and view["space"] is None
-    # The same view, written afterwards from the saved run.
+    end = {"status": "complete", "time": float(result.final.time), "step": 10}
+    assert view["run"]["end"] == end and result.final.step_index == 10
+    # The same view, written afterwards from the saved run, but for the engine that ran it.
     out = tmp_path / "later"
     run_view.write_view(root / "plain", out=out, run={"label": "test run"})
-    assert (out / "view.json").read_bytes() == data
+    later = load(out)
+    ((why,),) = [[u["why"] for u in later["unstated"] if u["id"] == "source"]]
+    assert why == "the view is written for a run already on disk"
+    for each in (view, later):
+        each["unstated"] = [u for u in each["unstated"] if u["id"] != "source"]
+    assert later == view
 
 
 def test_a_recording_subset_keeps_the_declared_fields_elements_and_cadence(
@@ -289,6 +322,20 @@ def _mutations():
         rec = next(r for r in view["records"] if r.get("sign"))
         rec["sign"] = dict(rec["sign"], to="sender")
 
+    def bad_difference(view):
+        rec = next(r for r in view["records"] if r.get("difference"))
+        rec["difference"] = dict(rec["difference"], minus=rec["difference"]["plus"])
+
+    def roleless_set(view):  # A sign whose set states no roles names no role.
+        rec = next(r for r in view["records"] if r.get("sign") and r["set"] == "exchange_route")
+        next(s for s in view["sets"] if s["id"] == rec["set"]).pop("roles")
+
+    def foreign_cargo(view):
+        next(s for s in view["sets"] if s["id"] == "exchange_route")["carries"][0] = "Xe"
+
+    def bad_end(view):
+        view["run"]["end"]["step"] = 1.5
+
     def host_path(view):
         view["time"]["bases"][0]["files"][0]["file"] = "/tmp/trajectory.npz"
 
@@ -301,6 +348,10 @@ def _mutations():
         ("rows", gap),
         ("duplicate", duplicate),
         ("sign", bad_sign),
+        ("difference", bad_difference),
+        ("roles", roleless_set),
+        ("carries", foreign_cargo),
+        ("end", bad_end),
         ("path", host_path),
         ("extra key", lambda v: v.update(viewer_hint=1)),
     ]

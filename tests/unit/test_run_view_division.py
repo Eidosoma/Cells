@@ -16,6 +16,7 @@ The membrane state's and the partition's view declarations are planted for the t
 
 import json
 
+import numpy as np
 import pytest
 
 from cells import run_view
@@ -59,8 +60,12 @@ def test_a_division_through_the_windowed_path(declared, monkeypatch, tmp_path):
     # The ledgers the partition writes restart on a retired slot (the parent's membrane heat
     # falls to 0 at the division); the heat it does not write keeps its monotone claim, which
     # the reader's check above confirmed on the saved arrays.
-    for name in ("membrane_dissipated_energy_pJ", "channel_dissipated_energy_pJ"):
+    for name, mask in (
+        ("membrane_dissipated_energy_pJ", "membrane_active"),
+        ("channel_dissipated_energy_pJ", "channel_active"),
+    ):
         assert records[name]["resets"]["by"] == [PARTITION] and "monotone" not in records[name]
+        assert records[name]["resets"]["mask"] == mask
     assert records["observed_membrane_transferred"]["resets"]["by"] == [PARTITION]
     for name in ("pump_dissipated_energy_pJ", "face_dissipated_energy_pJ"):
         assert records[name]["monotone"] == "non-decreasing" and "resets" not in records[name]
@@ -105,3 +110,13 @@ def test_a_division_through_the_windowed_path(declared, monkeypatch, tmp_path):
         "d1": True,
         "d2": True,
     }
+    # The membrane slots whose heat restarts at the division are those whose merged mask closes
+    # there (resets.mask): the parent's patch.
+    times, heat = observed(tmp_path / "w", view, "membrane_dissipated_energy_pJ", "accepted")
+    _, open_ = observed(tmp_path / "w", view, "view_membrane_active")
+    row = times.tolist().index(pf.EVENT)
+    restarted = (heat[row] > 0) & (heat[row + 1] == 0)
+    closed = open_[at] & ~open_[at + 1]
+    patches = sets["membrane"]["ids"]
+    assert [patches[i] for i in np.flatnonzero(restarted)] == ["membrane_0"]
+    assert np.array_equal(restarted, closed)

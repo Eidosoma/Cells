@@ -122,16 +122,20 @@ Declarations (class attributes):
   - ``view_events``: its events with their entities by id, each entity one {set: id}; the
     default gives the births and retirements of ``living_intervals`` at {"cell": id};
   - ``view_sets(spec, declaration)``: the view's set of each axis of its own (an axis of its
-    STATE_AXES or OBSERVATION_AXES that the inner model does not have), as {axis: {"id",
-    "ids", optional "holds", optional "on": (set id, entity ids)}}; the default declares none;
+    STATE_AXES or OBSERVATION_AXES that the inner model does not have), and of any other kind
+    of entity it declares (routes, sites), as {axis or key: {"id", "ids", optional "holds",
+    "on": (set id, entity ids), "roles": {role: what it is}, and per-entity facts: "carries"
+    (species ids), "direction" and "kinds" (words), "at" ({set id: entity id})}}; the default
+    declares none;
   - ``OBSERVATION_AXES`` ({readout column: axes}): its READOUT_COLUMNS' axes, as STATE_AXES
     gives its state's;
   - ``UNITS`` ({field: unit}): the unit of an own field whose name carries no unit suffix;
   - ``RECORD_KINDS`` ({field: kind}), kind one of RECORD_KIND_VALUES: ``level``, ``amount``,
     ``cumulative`` (a total since the start) or ``rate``;
-  - ``ORIENTATION`` ({field: {"from", "to", "says"}}): which way a positive value moves, by
-    the roles of the record's entity set (the writer checks the roles; ``confirmed`` may
-    name who confirmed it);
+  - ``ORIENTATION`` ({field: {"from", "to", "says"}} for a flow, which way a positive value
+    moves; {field: {"plus", "minus", "says"}} for a difference, plus less minus), by the roles
+    of the record's entity set (the writer checks the roles; ``confirmed`` may name who
+    confirmed it, ``source`` where it was read);
   - ``RECORD_LAYERS`` ({field: layer id}): the layer, one of its VIEW_LAYERS, of an own field
     or of a view field it provides or closes (door S's merged view, a record of the view);
     needed only with more than one layer.
@@ -155,8 +159,9 @@ REPRESENTATIONS = ("simulated", "modelled", "prescribed")
 LAYER_KEYS = frozenset({"id", "label", "representation"})
 # The run view's record kinds and sign keys (docs/RUN_VIEW_DESIGN.md §3; cells/run_view.py).
 RECORD_KIND_VALUES = ("level", "amount", "cumulative", "rate")
-ORIENTATION_KEYS = frozenset({"from", "to", "says"})
-ORIENTATION_OPTIONAL = frozenset({"confirmed"})
+# An orientation is a flow's (from, to) or a difference's (plus, minus), each with says.
+ORIENTATION_FORMS = (("from", "to"), ("plus", "minus"))
+ORIENTATION_OPTIONAL = frozenset({"confirmed", "source"})
 # Door S (docs/SCOPED_COMPOSITION_DESIGN.md §2).
 CONTRIBUTIONS = ("replace", "add", "multiply")  # Of a provided field; a closer's is "and".
 COMMUTING = ("add", "multiply", "and")  # Overlaps admitted, applied in declared order.
@@ -689,14 +694,18 @@ def _check_records(operator):
             raise ValueError(f"{name}: the kind of {field} is one of {RECORD_KIND_VALUES}")
     for field, sign in operator.ORIENTATION.items():
         keys = set(sign) if hasattr(sign, "keys") else set()
-        if not (ORIENTATION_KEYS <= keys <= ORIENTATION_KEYS | ORIENTATION_OPTIONAL) or not all(
-            isinstance(sign[k], str) and sign[k] for k in keys
+        form = next((f for f in ORIENTATION_FORMS if {*f, "says"} <= keys), None)
+        if (
+            form is None
+            or not keys <= {*form, "says", *ORIENTATION_OPTIONAL}
+            or not all(isinstance(sign[k], str) and sign[k] for k in keys)
         ):
             raise ValueError(
-                f"{name}: the orientation of {field} gives from, to and says (and may name who "
-                "confirmed it), each a non-empty string"
+                f"{name}: the orientation of {field} gives from, to and says (a flow) or plus, "
+                "minus and says (a difference), and may name who confirmed it or its source, each "
+                "a non-empty string"
             )
-        if sign["from"] == sign["to"]:
+        if sign[form[0]] == sign[form[1]]:
             raise ValueError(f"{name}: the orientation of {field} names two different roles")
     layers = {layer["id"] for layer in operator.VIEW_LAYERS or ()}
     for field, layer in operator.RECORD_LAYERS.items():

@@ -136,6 +136,8 @@ SIGN = {"from": "inside", "to": "outside", "says": "a positive amount leaves the
         (dict(ORIENTATION={"moved_fmol": {"from": "inside", "to": "outside"}}), "from, to and"),
         (dict(ORIENTATION={"moved_fmol": dict(SIGN, to="inside")}), "two different roles"),
         (dict(ORIENTATION={"moved_fmol": dict(SIGN, extra="x")}), "from, to and says"),
+        (dict(ORIENTATION={"moved_fmol": dict(SIGN, plus="inside")}), "from, to and says"),
+        (dict(ORIENTATION={"rate_fmol_s": dict(plus="a", minus="a", says="s")}), "two different"),
         (dict(RECORD_LAYERS={"moved_fmol": "elsewhere"}), "not of its VIEW_LAYERS"),
         (dict(UNITS=[("moved_fmol", "fmol")]), "UNITS maps its own fields"),
     ],
@@ -145,7 +147,12 @@ def test_the_run_view_record_declarations_are_checked(declared, message):
         OBSERVATION_AXES={"rate_fmol_s": ("cell_slot",)},
         UNITS={"moved_fmol": "fmol"},
         RECORD_KINDS={"moved_fmol": "cumulative", "rate_fmol_s": "rate"},
-        ORIENTATION={"moved_fmol": dict(SIGN, confirmed="its owner")},
+        ORIENTATION={
+            "moved_fmol": dict(SIGN, confirmed="its owner"),
+            "rate_fmol_s": dict(
+                plus="inside", minus="outside", says="inside less outside", source="x"
+            ),
+        },
         RECORD_LAYERS={"moved_fmol": "sites"},
     )
     check_declarations(operator(**OWN, VIEW_LAYERS=(LAYER,), **whole))

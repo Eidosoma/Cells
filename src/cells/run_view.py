@@ -38,8 +38,10 @@ Declarations read, and their interim stand-ins
 * Retirement: where an operator RETIRES slots, a retired slot's inner history moves into that
   operator's own record at its retirement (the composite's checks add it back), so the inner
   ledgers it writes (the field map's writers) restart at zero there on the saved arrays. Their
-  records say so (``resets``) and claim no monotonicity; every other ``*_dissipated_energy_pJ``
-  record is ``monotone`` (on S5's division the fallen heat ledgers were exactly those).
+  records say so (``resets``, with ``mask``: the slots are those where that set's merged mask,
+  the record view_<mask>, closes at the event) and claim no monotonicity; every other
+  ``*_dissipated_energy_pJ`` record is ``monotone`` (on S5's division the fallen heat ledgers were
+  exactly those).
 * Owners: the composition's field map (state owners, observation owner chains: the last).
 * Laws (requirement 4): each channel population's, junction's and pump's law from the structure
   record's law declarations (models/inner_laws.py), with its provenance; membranes and faces carry
@@ -86,11 +88,23 @@ one per window chunk for the windowed paths, read from the run's own index. Ever
 base lies in those files at those rows. The layout arrays of trajectory.npz are the definition's
 bound values, not records.
 
-Orientation (requirement 2): ``sign`` gives ``from`` and ``to`` by the roles of the record's
-entity set: membrane and channel records ``inside`` (the patch's cell) and ``outside`` (its
-outside node); junction and face records ``sender`` and ``receiver`` (the set's link ends, in
-order); outside-node records ``exterior`` (beyond the world) and ``node``. A positive value moves
-from ``from`` to ``to``.
+Orientation (requirement 2): every set with ends states its ``roles``, each with what it is
+(the inner sets': SET_ROLES; an operator's: its view_sets). A flow's ``sign`` gives ``from`` and
+``to``, two roles of the record's set: a positive value moves from ``from`` to ``to``. A
+difference (a voltage) gives ``plus`` and ``minus`` instead: the value is plus less minus, so
+positive when ``plus`` is the higher.
+
+Sets of operators' entities (view_sets) may give per-entity facts: the species each carries
+(``carries``), a declared word each (``direction``, ``kinds``) and the entity each acts at
+(``at``). So the view states, for instance, where a species is produced and by which routes it
+leaves a cell; a label such as "secreted" stays the reader's, from those facts.
+
+The run (``run``): the caller's labels (RUN_KEYS), the engine models, the definition's
+fingerprint, the scale, how it ended (``end``: status, time and step, from the shared path's final
+checkpoint or the saved run's summary) and, where a shared path writes the view as the run ends,
+the running engine's ``source``: its revision and whether it was dirty, from its execution
+snapshot's own record (AGENTS.md: a run's provenance is its Git revision, dirty diff and frozen
+snapshot). From a checkout, or for a run already on disk, the source is unstated with the reason.
 """
 
 import json
@@ -112,7 +126,14 @@ KINDS = ("level", "amount", "cumulative", "rate")
 SCALES = ("molecule", "cell", "tissue", "organ", "organism")
 GEOMETRY_KINDS = ("points", "polygons", "links", "on", "spheres")
 LENGTH_UNITS = ("m", "mm", "um", "nm")
-RUN_KEYS = {"experiment": str, "arm": str, "seed": int, "revision": str, "label": str}
+RUN_KEYS = {
+    "id": str,
+    "experiment": str,
+    "arm": str,
+    "seed": int,
+    "revision": str,
+    "label": str,
+}
 TOP_KEYS = frozenset(
     {
         "format",
@@ -132,9 +153,11 @@ HEAT_SUFFIX = "_dissipated_energy_pJ"
 RESETS_NOTE = (
     "Written at the events of these operators, which retire slots: a retired slot's history in "
     "this ledger moves into the retiring operator's own record (the composite's checks add it "
-    "back), so on that slot it restarts at zero. A difference across such an event is the "
-    "operator's booking, not this ledger's flow; a heat total only grows with that record added "
-    "back."
+    "back), so on that slot it restarts at zero. The slots are those its closure closes at that "
+    "event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired "
+    "cell, its membrane patches, the populations on them and its junctions. A difference across "
+    "such an event is the operator's booking, not this ledger's flow; a heat total only grows "
+    "with that record added back."
 )
 HEAT_NOTE = (
     "A total per element: zero or more and never falling, checked at every accepted row (the "
@@ -159,14 +182,46 @@ EVENT_ROWS = (
     "the event's time: the row saved at that time holds the state before the event, the next row "
     "the state after it."
 )
-# Roles a sign may name, by the record's entity set.
-SIGN_ROLES = {
-    "membrane": ("inside", "outside"),
-    "channel": ("inside", "outside"),
-    "junction": ("sender", "receiver"),
-    "face": ("sender", "receiver"),
-    "outside": ("exterior", "node"),
-}
+# The roles of the inner model's sets, each with what it is (a set states its own, "roles"): an
+# oriented record names two roles of its set, as from and to (a flow) or plus and minus (a
+# difference). Operators' sets declare theirs (view_sets).
+SET_ROLES = MappingProxyType(
+    {
+        "membrane": {
+            "inside": "the patch's cell",
+            "outside": "the patch's outside node (the set's outside index)",
+        },
+        "channel": {
+            "inside": "the cell of the population's patch",
+            "outside": "that patch's outside node",
+        },
+        "junction": {
+            "sender": "the junction's first cell (ends[0])",
+            "receiver": "its second cell (ends[1])",
+        },
+        "face": {
+            "sender": "the face's first outside node (ends[0])",
+            "receiver": "its second outside node (ends[1])",
+        },
+        "outside": {"exterior": "beyond the world (a held node's reservoir)", "node": "the node"},
+    }
+)
+FLOW_KEYS, DIFFERENCE_KEYS = ("from", "to"), ("plus", "minus")
+# Per-entity facts an operator's set may give (view_sets), one per id: the species each carries,
+# a word each (declared direction, kind), or the entity each acts at ({set id: entity id}).
+PER_ENTITY = ("carries", "direction", "kinds", "at")
+# The activity mask of each set (the adapter's MASK_FIELDS): a retirement restarts a ledger on the
+# slots where it closes.
+SET_MASKS = MappingProxyType(
+    {
+        "cell": "active",
+        "outside": "outside_active",
+        "membrane": "membrane_active",
+        "channel": "channel_active",
+        "junction": "junction_active",
+        "face": "face_active",
+    }
+)
 # Unit suffixes, compound ones before their tails (docs/RUN_VIEW_DESIGN.md §3: a suffix rule and
 # a table); a name that ends in none of them needs its owner's UNITS.
 SUFFIX_UNITS = (
@@ -223,7 +278,9 @@ _CHANNEL = MappingProxyType(
         "from": "inside",
         "to": "outside",
         "says": "a positive amount leaves the cell of the population's patch for that patch's "
-        "outside node (added unchanged into the patch's membrane total)",
+        "outside node; it is added unchanged into the patch's total in the material balance, the "
+        "balance's own sum, not the saved membrane_transferred (which holds the passive routes "
+        "only)",
         "confirmed": _CONFIRMED,
     }
 )
@@ -259,6 +316,28 @@ _SUPPLY = MappingProxyType(
         "to": "node",
         "says": "a positive amount is supplied into the held outside node from beyond the world",
         "confirmed": _CONFIRMED,
+    }
+)
+# Potential differences (plus less minus), read from the code (numerics/surface_transport.py,
+# transport: the membrane's cell potential less its outside node's; the junction's sender's less
+# its receiver's). The core's owner has not confirmed them yet: "source" says where they come from.
+_SOURCE = "read from the code: numerics/surface_transport.transport (the core's owner to confirm)"
+_MEMBRANE_VOLTAGE = MappingProxyType(
+    {
+        "plus": "inside",
+        "minus": "outside",
+        "says": "the potential of the patch's cell less that of its outside node: positive when "
+        "the cell is at the higher potential",
+        "source": _SOURCE,
+    }
+)
+_JUNCTION_VOLTAGE = MappingProxyType(
+    {
+        "plus": "sender",
+        "minus": "receiver",
+        "says": "the potential of the junction's sender cell less that of its receiver: positive "
+        "when the sender is at the higher potential",
+        "source": _SOURCE,
     }
 )
 TISSUE_3_LAYERS = (
@@ -308,8 +387,8 @@ TISSUE_3 = MappingProxyType(
         ),
         "cell_potential_V": (("cell_slot",), None, "level", "membrane", None),
         "extracellular_potential_V": (("extracellular_slot",), None, "level", "membrane", None),
-        "membrane_voltage_V": (("membrane_slot",), None, "level", "membrane", None),
-        "junction_voltage_V": (("edge_slot",), None, "level", "membrane", None),
+        "membrane_voltage_V": (("membrane_slot",), None, "level", "membrane", _MEMBRANE_VOLTAGE),
+        "junction_voltage_V": (("edge_slot",), None, "level", "membrane", _JUNCTION_VOLTAGE),
         "membrane_flux_fmol_s": (("species", "membrane_slot"), None, "rate", "membrane", None),
         "junction_flux_fmol_s": (("species", "edge_slot"), None, "rate", "membrane", None),
         "face_flux_fmol_s": (("species", "face_slot"), None, "rate", "membrane", None),
@@ -372,8 +451,10 @@ VIEW_FIELD_AXES = MappingProxyType(
 # membrane_transfer_ledger).
 TISSUE_3_NOTES = MappingProxyType(
     {
-        "membrane_transferred": "the passive membrane routes only: each channel population's and "
-        "each pump's transfers are their own ledgers (channel_transferred, pump_cycles)",
+        "membrane_transferred": "the passive membrane routes only. A patch's total in the "
+        "material balance is the balance's own sum: this record plus channel_transferred of its "
+        "populations, less each pump's per-cycle rows times its cycles (pump_cycles); the pump is "
+        "a separate term, never in this record",
     }
 )
 INNER_TABLES = MappingProxyType(
@@ -500,6 +581,38 @@ def _inner(model):
     return getattr(model, "inner", model)
 
 
+def _engine_source():
+    """The running engine's source revision, from its execution snapshot's own record
+    (SNAPSHOT.json beside src/, validation/source_snapshot.py), or None when it runs from a
+    checkout. AGENTS.md: a run's provenance is its Git revision, dirty diff and frozen snapshot."""
+    import cells
+
+    path = Path(cells.__file__).resolve().parents[2] / "SNAPSHOT.json"
+    if not path.is_file():
+        return None
+    record = json.loads(path.read_text())
+    revision = record.get("git_revision")
+    if not isinstance(revision, str) or not revision:
+        return None
+    dirty = (
+        record["dirty"] if "dirty" in record else bool(record.get("selected_status_porcelain_v1_z"))
+    )
+    return {
+        "revision": revision,
+        "dirty": bool(dirty),
+        "from": "the execution snapshot's record (SNAPSHOT.json)",
+    }
+
+
+def end_of(checkpoint):
+    """A shared path's end state for its view: the run completed at its final checkpoint."""
+    return {
+        "status": "complete",
+        "time": float(checkpoint.time),
+        "step": int(checkpoint.step_index),
+    }
+
+
 # ------------------------------------------------------------------ the plan
 
 
@@ -530,6 +643,19 @@ class Plan:
         self.layout = (
             type(layout)(*(np.asarray(v) for v in layout)) if hasattr(layout, "_fields") else None
         )
+        # The engine that runs this run, where a shared path writes the view as it runs.
+        self.source = _engine_source() if self.recompute else None
+        if self.source is None:
+            self.unstated.append(
+                {
+                    "id": "source",
+                    "what": "engine source",
+                    "why": "the view is written for a run already on disk"
+                    if not self.recompute
+                    else "the engine runs from a checkout, not an execution snapshot: its revision "
+                    "is the caller's label, if given",
+                }
+            )
         self.retiring = tuple(op.LAW_ID for op, _, _ in self.entries if op.RETIRES)
         table, inner_layers, notes = INNER_TABLES[self.inner_id]
         inner = _inner(self.model)
@@ -673,6 +799,7 @@ class Plan:
                 "ids": outside,
                 "reservoir": [bool(r) for r in reservoir],
                 "geometry": None,
+                "roles": dict(SET_ROLES["outside"]),
             },
             "membrane": {
                 "id": "membrane",
@@ -714,6 +841,7 @@ class Plan:
                     len(membranes),
                 ),
                 "pumps_are": "columns of this set (version 1)",
+                "roles": dict(SET_ROLES["membrane"]),
             },
             "junction": {
                 "id": "junction",
@@ -728,6 +856,7 @@ class Plan:
                     ),
                 },
                 "laws": padded([junction_law(j) for j in m.junctions], len(junctions)),
+                "roles": dict(SET_ROLES["junction"]),
             },
             "face": {
                 "id": "face",
@@ -746,6 +875,7 @@ class Plan:
                     [{"law_id": getattr(f, "law", inner_laws.FACE_ROUTE_LAW_ID)} for f in m.faces],
                     len(faces),
                 ),
+                "roles": dict(SET_ROLES["face"]),
             },
             "channel": {
                 "id": "channel",
@@ -760,6 +890,7 @@ class Plan:
                     ),
                 },
                 "laws": padded([channel_law(c) for c in m.channels], len(channels)),
+                "roles": dict(SET_ROLES["channel"]),
             },
             "gate": {
                 "id": "gate",
@@ -786,7 +917,11 @@ class Plan:
         }
 
     def _operator_sets(self):
-        """Each operator's own axes, from its view_sets declaration (the contract)."""
+        """Each operator's own sets, from its view_sets declaration (the contract): one for every
+        axis of its own (refused without), and any further set of its entities it describes. An
+        entry gives id and ids, optionally holds, roles ({role: what it is}), "on" (set id, entity
+        ids) and per-entity facts (PER_ENTITY: the species each carries, a word each, or the
+        entity each acts at)."""
         for op, declaration, _ in self.entries:
             own = {
                 axis
@@ -794,37 +929,69 @@ class Plan:
                 for axis in axes
                 if axis not in self.axis_sets
             }
-            if not own:
-                continue
             declared = op.view_sets(self.spec, declaration)
-            for axis in sorted(own):
-                if axis not in declared:
-                    self.problems.append(f"{op.LAW_ID} declares no set for its axis {axis}")
-                    continue
-                entry = dict(declared[axis])
-                ids = list(entry.pop("ids"))
-                set_id = entry.pop("id")
-                if set_id in self.sets:
-                    self.problems.append(f"{op.LAW_ID}: set {set_id} is declared twice")
-                    continue
-                if len(set(ids)) != len(ids) or not all(isinstance(i, str) for i in ids):
-                    self.problems.append(f"{op.LAW_ID}: the ids of set {set_id} are unique strings")
-                item = {"id": set_id, "scale": "cell", "ids": ids, "owner": op.LAW_ID}
-                on = entry.pop("on", None)
-                if on is not None:
-                    target, of = on
-                    known = self.sets[target]["ids"]
-                    if any(x not in known for x in of) or len(of) != len(ids):
-                        self.problems.append(f"{op.LAW_ID}: set {set_id} lies on unknown entities")
-                    else:
-                        item["geometry"] = {
-                            "kind": "on",
-                            "set": target,
-                            "index": [known.index(x) for x in of],
-                        }
-                item |= entry
-                self.sets[set_id] = item
-                self.axis_sets[axis] = set_id
+            for axis in sorted(own - set(declared)):
+                self.problems.append(f"{op.LAW_ID} declares no set for its axis {axis}")
+            for key in sorted(declared):
+                set_id = self._operator_set(op, dict(declared[key]))
+                if set_id is not None and key in own:
+                    self.axis_sets[key] = set_id
+
+    def _operator_set(self, op, entry):
+        """One declared set into self.sets (its id), or None with the problem noted."""
+        law, set_id, ids = op.LAW_ID, entry.pop("id", None), list(entry.pop("ids", ()))
+        if not isinstance(set_id, str) or not set_id or set_id in self.sets:
+            self.problems.append(f"{law}: set {set_id!r} is unnamed or declared twice")
+            return None
+        if len(set(ids)) != len(ids) or not all(isinstance(i, str) and i for i in ids):
+            self.problems.append(f"{law}: the ids of set {set_id} are unique strings")
+        item = {"id": set_id, "scale": "cell", "ids": ids, "owner": law}
+        on = entry.pop("on", None)
+        if on is not None:
+            target, of = on
+            known = self.sets.get(target, {}).get("ids", [])
+            if any(x not in known for x in of) or len(of) != len(ids):
+                self.problems.append(f"{law}: set {set_id} lies on unknown entities")
+            else:
+                item["geometry"] = {
+                    "kind": "on",
+                    "set": target,
+                    "index": [known.index(x) for x in of],
+                }
+        roles = entry.pop("roles", None)
+        if roles is not None:
+            if not (
+                hasattr(roles, "items")
+                and roles
+                and all(
+                    isinstance(k, str) and isinstance(v, str) and k and v for k, v in roles.items()
+                )
+            ):
+                self.problems.append(f"{law}: the roles of set {set_id} name what each role is")
+            item["roles"] = dict(roles)
+        for key in PER_ENTITY:
+            if key not in entry:
+                continue
+            values = list(entry.pop(key))
+            if len(values) != len(ids):
+                self.problems.append(f"{law}: set {set_id} gives {key} once per id")
+            elif key == "carries" and any(v not in self.sets["species"]["ids"] for v in values):
+                self.problems.append(f"{law}: set {set_id} carries species the model lacks")
+            elif key == "at" and not all(self._entity(v) for v in values):
+                self.problems.append(f"{law}: set {set_id} acts at entities not the definition's")
+            elif key not in ("carries", "at") and not all(isinstance(v, str) for v in values):
+                self.problems.append(f"{law}: set {set_id} gives {key} as words")
+            item[key] = [dict(v) for v in values] if key == "at" else values
+        item |= entry
+        self.sets[set_id] = item
+        return set_id
+
+    def _entity(self, value):
+        """Whether value is one {set id: entity id} of a declared entity."""
+        if not (hasattr(value, "items") and len(value) == 1):
+            return False
+        ((set_id, entity_id),) = value.items()
+        return bool(entity_id) and entity_id in self.sets.get(set_id, {}).get("ids", ())
 
     # -------------------------------------------------------------- fields
 
@@ -945,9 +1112,10 @@ class Plan:
         if kind is not None and kind not in KINDS:
             self.problems.append(f"field {name}: kind {kind!r} is not one of {KINDS}")
         if sign is not None:
-            roles = SIGN_ROLES.get(sets[-1] if sets else None, ())
-            if sign.get("from") not in roles or sign.get("to") not in roles:
-                self.problems.append(f"field {name}: its sign names roles its set does not have")
+            roles = self.sets[sets[-1]].get("roles", {}) if sets else {}
+            ends = DIFFERENCE_KEYS if "plus" in sign else FLOW_KEYS
+            if any(sign.get(k) not in roles for k in ends) or sign[ends[0]] == sign[ends[1]]:
+                self.problems.append(f"field {name}: its orientation names roles its set lacks")
             sign = dict(sign)
         return dict(
             name=name,
@@ -1283,6 +1451,7 @@ class Plan:
             "composition": composition,
             "definition_sha256": self.spec.fingerprint,
             "scale": "cell",
+            **({"source": self.source} if self.source else {}),
         }
 
     # -------------------------------------------------------------- the recording subset
@@ -1342,8 +1511,9 @@ class Plan:
 
     # -------------------------------------------------------------- the view
 
-    def view(self, bases, mode):
-        """The view of a run whose time bases lie in `bases` ({base: [(file, rows)]})."""
+    def view(self, bases, mode, end=None):
+        """The view of a run whose time bases lie in `bases` ({base: [(file, rows)]}); end: how
+        it ended (end_of), when known."""
         time = []
         for base, parts in bases.items():
             array, says = BASES[base]
@@ -1379,12 +1549,14 @@ class Plan:
                     record["writers"] = list(info.writers)
                 if info.kind is not None:
                     record["kind"] = info.kind
-                if info.sign is not None:
-                    record["sign"] = info.sign
+                if info.sign is not None:  # A flow's sign, or a difference's ends.
+                    record["difference" if "plus" in info.sign else "sign"] = info.sign
                 by = [law for law in info.writers if law in self.retiring]
                 resets = bool(by) and info.owner == self.inner_id and info.kind == "cumulative"
                 if resets:  # A retired slot's history moves out at its retirement.
                     record["resets"] = {"by": by, "says": RESETS_NOTE}
+                    if record["set"] in SET_MASKS:
+                        record["resets"]["mask"] = SET_MASKS[record["set"]]
                 elif name.endswith(HEAT_SUFFIX):
                     record["monotone"] = "non-decreasing"
                     record["note"] = HEAT_NOTE
@@ -1422,9 +1594,13 @@ class Plan:
                 }
                 for name, info in self.changes.items()
             ]
+        if end is None:
+            unstated.append(
+                {"id": "end", "what": "end state", "why": "the run's end state was not given"}
+            )
         return {
             "format": FORMAT,
-            "run": self.run,
+            "run": self.run | ({"end": dict(end)} if end is not None else {}),
             "time": {"unit": "s", "bases": time, "event_rows": EVENT_ROWS},
             "space": self.space,
             "layers": self.layers,
@@ -1436,13 +1612,13 @@ class Plan:
             "recording": {"mode": mode, "subset": self.recording},
         }
 
-    def write(self, directory, bases, mode, *, out=None, files=False):
+    def write(self, directory, bases, mode, *, out=None, files=False, end=None):
         """Write view.json (into `out`, default `directory`, the run's folder), its structure
         checked first; with files, also against the files it names, which lie in `directory`.
 
         The shared paths check the structure only: their view is written after the payload and
         before the manifest, and everything else was checked before any output (prepare)."""
-        value = self.view(bases, mode)
+        value = self.view(bases, mode, end)
         validate(value, directory if files else None)
         folder = Path(out or directory)
         folder.mkdir(parents=True, exist_ok=True)  # A batch world without chunks has no folder.
@@ -1598,7 +1774,16 @@ def write_view(directory, spec=None, *, out=None, run=None, geometry=None, bases
     plan = prepare(
         spec, Request(run or {}, geometry), layout=saved_layout(directory), recompute=False
     )
-    return plan.write(directory, bases, mode or "write_run", out=out, files=True)
+    end = None
+    if (directory / "summary.json").exists():  # The run's own summary says how it ended.
+        summary = read_json(directory / "summary.json")
+        if {"status", "end_time", "global_step_index"} <= set(summary):
+            end = {
+                "status": summary["status"],
+                "time": float(summary["end_time"]),
+                "step": int(summary["global_step_index"]),
+            }
+    return plan.write(directory, bases, mode or "write_run", out=out, files=True, end=end)
 
 
 # ------------------------------------------------------------------ the reader's check
@@ -1644,6 +1829,29 @@ def validate(view, directory=None):
     for key, kind in RUN_KEYS.items():
         if key in run:
             _check(type(run[key]) is kind, problems, f"run {key} is a {kind.__name__}")
+    if "end" in run:
+        end = run["end"]
+        _check(
+            isinstance(end, dict)
+            and set(end) == {"status", "time", "step"}
+            and isinstance(end["status"], str)
+            and isinstance(end["time"], (int, float))
+            and math.isfinite(end["time"])
+            and type(end["step"]) is int,
+            problems,
+            "run end gives its status, time and step",
+        )
+    if "source" in run:
+        source = run["source"]
+        _check(
+            isinstance(source, dict)
+            and set(source) == {"revision", "dirty", "from"}
+            and isinstance(source["revision"], str)
+            and source["revision"]
+            and type(source["dirty"]) is bool,
+            problems,
+            "run source gives the engine's revision, whether it was dirty, and where from",
+        )
     layers = view.get("layers") or []
     layer_ids = [layer.get("id") for layer in layers]
     _check(len(set(layer_ids)) == len(layer_ids), problems, "layer ids are unique")
@@ -1679,9 +1887,21 @@ def validate(view, directory=None):
             "reservoir",
             "valence",
             "species",
+            *PER_ENTITY,
         ):
             if key in s:
                 _check(len(s[key]) == len(ids), problems, f"set {set_id}: {key} has one per id")
+        if "roles" in s:
+            roles = s["roles"]
+            _check(
+                isinstance(roles, dict)
+                and roles
+                and all(
+                    isinstance(k, str) and isinstance(v, str) and k and v for k, v in roles.items()
+                ),
+                problems,
+                f"set {set_id}: its roles name what each role is",
+            )
         if "recorded" in s:
             _check(
                 all(isinstance(i, int) and 0 <= i < len(ids) and ids[i] for i in s["recorded"]),
@@ -1698,8 +1918,27 @@ def validate(view, directory=None):
             problems,
             "space gives a length unit, 2 or 3 dimensions, a representation and a source",
         )
+    species = (sets.get("species") or {}).get("ids") or []
     for set_id, s in sets.items():
         _validate_geometry(set_id, s, sets, sizes, space, problems)
+        if "carries" in s:
+            _check(
+                all(c in species for c in s["carries"]),
+                problems,
+                f"set {set_id}: carries the model's species",
+            )
+        if "at" in s:
+            _check(
+                all(
+                    isinstance(a, dict)
+                    and len(a) == 1
+                    and next(iter(a)) in sets
+                    and next(iter(a.values())) in (sets[next(iter(a))].get("ids") or [])
+                    for a in s["at"]
+                ),
+                problems,
+                f"set {set_id}: each acts at one declared entity",
+            )
         if set_id == "membrane" and "outside" in s:
             index = s["outside"].get("index", [])
             _check(
@@ -1760,24 +1999,27 @@ def validate(view, directory=None):
             resets = record["resets"]
             _check(
                 isinstance(resets, dict)
-                and set(resets) == {"by", "says"}
+                and {"by", "says"} <= set(resets) <= {"by", "says", "mask"}
                 and resets["by"]
                 and all(isinstance(law, str) and "@" in law for law in resets["by"])
+                and resets.get("mask", "active") in SET_MASKS.values()
                 and "monotone" not in record,
                 problems,
-                f"record {rid}: resets names the retiring laws, and claims no monotonicity",
+                f"record {rid}: resets names the retiring laws (and a mask), and claims no "
+                "monotonicity",
             )
-        if "sign" in record:
-            roles = SIGN_ROLES.get(record.get("set"), ())
-            sign = record["sign"]
+        roles = (sets.get(record.get("set")) or {}).get("roles") or {}
+        for key, ends in (("sign", FLOW_KEYS), ("difference", DIFFERENCE_KEYS)):
+            if key not in record:
+                continue
+            given = record[key]
             _check(
-                isinstance(sign, dict)
-                and sign.get("from") in roles
-                and sign.get("to") in roles
-                and sign["from"] != sign["to"]
-                and isinstance(sign.get("says"), str),
+                isinstance(given, dict)
+                and all(given.get(e) in roles for e in ends)
+                and given[ends[0]] != given[ends[1]]
+                and isinstance(given.get("says"), str),
                 problems,
-                f"record {rid}: its sign names two roles of its set and says what positive means",
+                f"record {rid}: its {key} names two roles of its set and says what positive means",
             )
     for event in view.get("events") or []:
         ok = (

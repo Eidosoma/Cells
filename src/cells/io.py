@@ -271,7 +271,7 @@ def write_run(
     _write_json(directory / "summary.json", summary)
     if plan is not None:  # Before the checksums, which then cover it.
         bases = run_view.single_file_bases(result.times, arrays["observation_times"])
-        plan.write(directory, bases, "write_run")
+        plan.write(directory, bases, "write_run", end=run_view.end_of(result.final))
     checksums = {
         str(path.relative_to(directory)): _sha256(path)
         for path in sorted(directory.rglob("*"))
