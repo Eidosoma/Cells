@@ -115,17 +115,12 @@ PARTS = {
 }
 ENGINE_PARTS = {*FR4_RUNGS, *FR4_CONTROLS, "start", *FR5_RUNGS, *FR5_CONTROL_PARTS}
 
-# What remains a stand-in on this branch, and why, and the parts each one blocks. Empty once
-# everything is wired.
-STAND_INS = {
-    "fr5_kinds": "FR-5's engine path is wired (the source kinds, the routing door, the schedules, "
-                 "the records), but the cargo routes' exact booking (cells.passive_routes@1, "
-                 "§7.5's raw-sum check, the core's) refuses arm R after its release burst: its "
-                 "bound omits the inputs' rounding (16 November 2026, fr5_quick_check)",
-}
-STAND_IN_PARTS = {
-    "fr5_kinds": {*FR5_RUNGS, *FR5_CONTROL_PARTS},
-}
+# What remains a stand-in on this branch, and why, and the parts each one blocks. Empty: every
+# part is wired. The last, fr5_kinds (FR-5's rungs and controls), went on 16 November 2026 with the
+# core's raw-sum bound (cells.passive_routes@1, §7.5 amended, 0649f00e), after which arm R runs
+# its release burst without refusal (fr5_quick_check, nothing relaxed).
+STAND_INS = {}
+STAND_IN_PARTS = {}
 
 
 def blocking_stand_ins(which):

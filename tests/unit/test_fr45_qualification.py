@@ -481,31 +481,47 @@ def test_the_judged_entry_refuses_before_writing_anything(tmp_path, which):
     assert not out.exists()
 
 
+PLANTED_STAND_IN = "a planted stand-in (this test's): FR-5's rungs and controls are not wired"
+
+
+def plant_stand_in(monkeypatch):
+    """Every part is wired, so STAND_INS is empty (the last, fr5_kinds, went with the core's
+    raw-sum bound, 16 November 2026). The guard is shown with a planted stand-in that blocks what
+    fr5_kinds blocked: FR-5's rungs and controls."""
+    assert generator.STAND_INS == {} and generator.STAND_IN_PARTS == {}
+    monkeypatch.setattr(generator, "STAND_INS", {"planted": PLANTED_STAND_IN})
+    monkeypatch.setattr(generator, "STAND_IN_PARTS",
+                        {"planted": {*generator.FR5_RUNGS, *generator.FR5_CONTROL_PARTS}})
+
+
 def test_a_stand_in_blocks_only_the_judged_runs_of_the_protocol_whose_parts_it_blocks(
         tmp_path, monkeypatch):
-    """FR-4's judged run does not wait for FR-5's stand-ins (the start checkpoint, FR-5's kinds):
-    a stand-in blocks a protocol's judged run only when it blocks one of that protocol's parts,
-    and every run records the stand-ins that block its own protocol (the judge refuses any)."""
-    for which in ("fr4", "fr5"):
-        blocking = generator.blocking_stand_ins(which)
-        assert blocking == sorted(n for n in generator.STAND_INS
-                                  if generator.STAND_IN_PARTS[n] & set(generator.PARTS[which]))
-    assert generator.blocking_stand_ins("fr4") == []  # FR-4's parts are wired.
-    # The run's record, without an engine or a reference run: the reference part stubbed.
-    monkeypatch.setitem(generator.FUNCTIONS["fr4"], "reference",
-                        lambda name, context: dict(kind="reference"))
-    out = tmp_path / "dev"
-    record = generator.run("fr4", ["reference"], out, status="Development run")
-    assert record["stand_ins"] == generator.blocking_stand_ins("fr4") == []
-    assert json.loads((out / "results.json").read_text())["stand_ins"] == []
+    """FR-4's judged run does not wait for FR-5's stand-ins: a stand-in blocks a protocol's judged
+    run only when it blocks one of that protocol's parts, and every run records the stand-ins that
+    block its own protocol (the judge refuses any). Nothing blocks either protocol today; a
+    planted stand-in on FR-5's rungs and controls blocks FR-5's judged run alone."""
     clean_snapshot(tmp_path / "snap")
+    registered = {which: json.loads(copy(tmp_path, which, "registered (a test copy)").read_text())
+                  for which in ("fr4", "fr5")}
     for which in ("fr4", "fr5"):
-        registered = json.loads(copy(tmp_path, which, "registered (a test copy)").read_text())
-        refusal = generator.judged_run_refusal(registered, tmp_path / "snap")
-        if generator.blocking_stand_ins(which):
-            assert "stand-ins remain" in refusal and "this protocol's parts" in refusal
-        else:
-            assert refusal is None
+        assert generator.blocking_stand_ins(which) == []
+        assert generator.judged_run_refusal(registered[which], tmp_path / "snap") is None
+    plant_stand_in(monkeypatch)
+    assert generator.blocking_stand_ins("fr5") == ["planted"]
+    assert generator.blocking_stand_ins("fr4") == []
+    refusal = generator.judged_run_refusal(registered["fr5"], tmp_path / "snap")
+    assert "stand-ins remain" in refusal and "this protocol's parts" in refusal
+    assert generator.judged_run_refusal(registered["fr4"], tmp_path / "snap") is None
+    # Each run's record, without an engine or a reference run: the reference parts stubbed.
+    for which in ("fr4", "fr5"):
+        monkeypatch.setitem(generator.FUNCTIONS[which], "reference",
+                            lambda name, context: dict(kind="reference"))
+    for which, recorded in (("fr4", []), ("fr5", ["planted"])):
+        out = tmp_path / f"dev-{which}"
+        record = generator.run(which, ["reference"], out, status="Development run",
+                               extract={"producer": "engine"})
+        assert record["stand_ins"] == recorded
+        assert json.loads((out / "results.json").read_text())["stand_ins"] == recorded
 
 
 def test_compare_checks_records_bit_for_bit_with_run_times_apart(tmp_path):
@@ -527,6 +543,47 @@ def test_compare_checks_records_bit_for_bit_with_run_times_apart(tmp_path):
     assert not report["parts"]["rung_1ms"]["identical"]
     assert report["parts"]["rung_1ms"]["differences"] == [".series.pH_L[3]"]
     assert all(p["identical"] for n, p in report["parts"].items() if n != "rung_1ms")
+
+
+def test_world_agreement_compares_two_saved_worlds_bit_for_bit(tmp_path):
+    """FR-5's world agreement with one world per unit (world_agreement --world, then --compare):
+    the two records files are compared leaf by leaf, run times and the world's name apart; a
+    planted one-ulp difference is found at its path; files that are not one arm's two worlds of one
+    definition are refused."""
+    from validation.compartment_ph_engine import world_agreement as wa
+
+    meta = dict(arm="T", path="vector", horizon_s=2.0, window_s=[0.5, 1.5], dt_s=None,
+                start=dict(producer="engine", time_s=1800.0, extract_sha256="start-a"),
+                definition_sha256="definition-a")
+    dev = dict(admitted=True, completed=True, refusal=None, steps=4000, record_s=[0, 1, 2],
+               series=dict(X_L=[1.0, 0.5, 0.25], pH_L=[5.1, 5.2, 5.3]), world="development",
+               timings=dict(compile_seconds=1.0))
+    dec = dict(json.loads(json.dumps(dev)), world="declared", timings=dict(compile_seconds=2.0))
+
+    def write(name, world, records, **changes):
+        path = tmp_path / name
+        path.write_text(json.dumps(dict(kind=wa.RECORDS_KIND, world=world, **{**meta, **changes},
+                                        records=records)))
+        return path
+
+    a, b, out = write("dev.json", "development", dev), write("dec.json", "declared", dec), \
+        tmp_path / "out.json"
+    assert wa.main(["--compare", str(a), str(b), str(out)]) == 0
+    report = json.loads(out.read_text())
+    assert report["bitwise"] and report["differences"] == []
+    assert report["runs"]["declared"] == dict(admitted=True, completed=True, refusal=None,
+                                              steps=4000, records=3)
+    planted = json.loads(json.dumps(dec))
+    planted["series"]["X_L"][2] = math.nextafter(0.25, 1.0)
+    wa.main(["--compare", str(a), str(write("planted.json", "declared", planted)), str(out)])
+    report = json.loads(out.read_text())
+    assert not report["bitwise"] and report["differences"] == [".series.X_L[2]"]
+    for name, changes in (("arm.json", dict(arm="R")),
+                          ("definition.json", dict(definition_sha256="definition-b"))):
+        with pytest.raises(SystemExit, match="not one arm's two worlds"):
+            wa.compare_files(a, write(name, "declared", dec, **changes))
+    with pytest.raises(SystemExit, match="declared records expected"):
+        wa.compare_files(a, a)
 
 
 def test_judged_runs_take_the_vector_path_and_development_runs_either(tmp_path):
@@ -575,24 +632,26 @@ def test_judged_runs_take_the_declared_world_and_development_runs_either(tmp_pat
     assert not out.exists()
 
 
-def stand_in_text(name):
-    return generator.STAND_INS[name][:40]
-
-
-def test_the_development_entry_refuses_the_parts_a_stand_in_blocks(tmp_path):
+def test_the_development_entry_refuses_the_parts_a_stand_in_blocks(tmp_path, monkeypatch):
+    """With nothing stood in, FR-5's rungs and controls pass the development entry's refusals; a
+    planted stand-in refuses exactly its own parts, by its text, before anything is written."""
     out = tmp_path / "dev"
-    assert set(generator.STAND_IN_PARTS) >= set(generator.STAND_INS)
-    for name in generator.STAND_INS:  # Each remaining stand-in blocks only its own parts.
-        part = sorted(generator.STAND_IN_PARTS[name])[0]
-        which = "fr4" if part in generator.PARTS["fr4"] else "fr5"
-        why = generator.refusal_before_writing(which, [part], out, {"producer": "engine"},
-                                               judged=False, quick=False)
-        assert "stand-in" in why and stand_in_text(name) in why
-        if which == "fr4":
-            with pytest.raises(SystemExit, match="stand-in"):
-                generator.main(["dev", which, str(out), part])
-        assert not out.exists()
-    assert not any("rung_1ms" in parts for parts in generator.STAND_IN_PARTS.values())
+    engine_start = {"producer": "engine"}
+    fr5_parts = sorted({*generator.FR5_RUNGS, *generator.FR5_CONTROL_PARTS})
+    for part in fr5_parts:
+        assert generator.refusal_before_writing("fr5", [part], out, engine_start, judged=False,
+                                                quick=False) is None
+    plant_stand_in(monkeypatch)
+    for part in fr5_parts:
+        why = generator.refusal_before_writing("fr5", [part], out, engine_start, judged=False,
+                                               quick=False)
+        assert "stand-in" in why and PLANTED_STAND_IN in why
+    for which, part in (("fr5", "start"), ("fr5", "reference"), ("fr4", "rung_1ms")):
+        assert generator.refusal_before_writing(which, [part], out, engine_start, judged=False,
+                                                quick=False) is None  # Not its parts.
+    with pytest.raises(SystemExit, match="stand-in"):  # Before the start is asked for.
+        generator.main(["dev", "fr5", str(out), fr5_parts[0]])
+    assert not out.exists()
     with pytest.raises(SystemExit, match="--start"):
         generator.main(["dev", "fr5", str(out), "reference"])
     with pytest.raises(SystemExit, match="unknown"):
