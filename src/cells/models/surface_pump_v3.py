@@ -85,6 +85,7 @@ from cells.numerics import surface_imex as imex
 from cells.numerics import surface_transport as surface
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.fixed_step import rk4_checked_step
+from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes import calcium_atpase, junction_gate, sodium_channels, voltage_gates
 from cells.processes import kinetic_pump as pump
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
@@ -317,7 +318,7 @@ def channel_to_membrane(value, p, *, xp=jnp):
 
 def channel_heat(heat, p, *, xp=jnp):
     return scatter(
-        xp.sum(heat, axis=0), xp.zeros_like(p.membrane_area), (p.channel_membranes,), xp=xp
+        species_sum(heat, xp=xp), xp.zeros_like(p.membrane_area), (p.channel_membranes,), xp=xp
     )
 
 
@@ -614,35 +615,45 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         outside_rate_fmol_s=outside,
         reservoir_supply_fmol_s=supplied,
         membrane_flux_fmol_s=total_flux,
-        membrane_current_A=CHARGE_PER_FMOL * xp.sum(p.valence * total_flux, axis=0),
+        membrane_current_A=CHARGE_PER_FMOL * species_sum(p.valence * total_flux, xp=xp),
         membrane_dissipation_pJ_s=total_membrane_d,
     )
-    qdot = CHARGE_PER_FMOL * xp.sum(p.valence * xp.concatenate((cell, outside), axis=1), axis=0)
+    qdot = CHARGE_PER_FMOL * species_sum(p.valence * xp.concatenate((cell, outside), axis=1), xp=xp)
     dphi = field._capacitor_solve(qdot, xp.zeros_like(qdot), tissue.field_layout(p), xp=xp)
     dvm = xp.where(p.membrane_active, dphi[p.membrane_cell] - dphi[n + p.membrane_outside], 0.0)
     electrode = xp.where(p.reservoir, (p.field_capacitor_matrix @ dphi)[n:], 0.0)
-    chemical = 1e-3 * R * p.temperature * (xp.sum(xp.log(ci) * cell) + xp.sum(xp.log(co) * outside))
-    capacitor = 1e12 * xp.sum(p.membrane_capacitance * r.membrane_voltage_V * dvm)
+    chemical = (
+        1e-3
+        * R
+        * p.temperature
+        * (
+            entity_sum(species_sum(xp.log(ci) * cell, xp=xp), axis=None, xp=xp)
+            + entity_sum(species_sum(xp.log(co) * outside, xp=xp), axis=None, xp=xp)
+        )
+    )
+    capacitor = 1e12 * entity_sum(
+        p.membrane_capacitance * r.membrane_voltage_V * dvm, axis=None, xp=xp
+    )
     mu = R * p.temperature * xp.log(co) + p.valence * F * v.potential_V[n:]
-    reservoir_work = 1e-3 * xp.sum(mu * supplied, axis=0)
+    reservoir_work = 1e-3 * species_sum(mu * supplied, xp=xp)
     electrode_work = 1e12 * p.boundary_V * electrode
     dissipation = (
-        xp.sum(total_membrane_d)
-        + xp.sum(r.junction_dissipation_pJ_s)
-        + xp.sum(r.face_dissipation_pJ_s)
+        entity_sum(total_membrane_d, axis=None, xp=xp)
+        + entity_sum(r.junction_dissipation_pJ_s, axis=None, xp=xp)
+        + entity_sum(r.face_dissipation_pJ_s, axis=None, xp=xp)
     )
     for kr in kind_rates:  # The kinds' heat and work, by role (rule (a)).
-        dissipation = dissipation + xp.sum(kr.heat_pJ_s)
+        dissipation = dissipation + entity_sum(kr.heat_pJ_s, axis=None, xp=xp)
     energy = (
         chemical
         + capacitor
         + dissipation
-        - xp.sum(reservoir_work + electrode_work)
-        - xp.sum(metabolic)
-        - xp.sum(ca_metabolic)
+        - entity_sum(reservoir_work + electrode_work, axis=None, xp=xp)
+        - entity_sum(metabolic, axis=None, xp=xp)
+        - entity_sum(ca_metabolic, axis=None, xp=xp)
     )
     for kr in kind_rates:
-        energy = energy - xp.sum(kr.work_pJ_s)
+        energy = energy - entity_sum(kr.work_pJ_s, axis=None, xp=xp)
     result = STATE_TYPE(
         cell,
         outside,
@@ -705,12 +716,12 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     v = v._replace(
         rates=total_rates,
         electrode_current_A=electrode,
-        reservoir_supply_charge_A=CHARGE_PER_FMOL * xp.sum(p.valence * supplied, axis=0),
+        reservoir_supply_charge_A=CHARGE_PER_FMOL * species_sum(p.valence * supplied, xp=xp),
         membrane_voltage_rate_V_s=dvm,
         chemical_energy_rate_pJ_s=chemical,
         capacitor_energy_rate_pJ_s=capacitor,
-        reservoir_power_pJ_s=xp.sum(reservoir_work),
-        electrode_power_pJ_s=xp.sum(electrode_work),
+        reservoir_power_pJ_s=entity_sum(reservoir_work, axis=None, xp=xp),
+        electrode_power_pJ_s=entity_sum(electrode_work, axis=None, xp=xp),
         dissipation_pJ_s=dissipation,
         energy_balance_pJ_s=energy,
         converged=valid,
@@ -1054,7 +1065,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
             state.channel_gate,
             start_kinetics,
             potential_kinetics(potential, p, xp=xp, structure=structure),
-            xp.sum(explicit_matrix[i]),
+            entity_sum(explicit_matrix[i], axis=None, xp=xp),
             dt,
             p,
             xp=xp,
@@ -1083,7 +1094,9 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         1e-3
         * R
         * p.temperature
-        * xp.sum(xp.where(weight > 0, flux * flux / xp.where(weight > 0, weight, 1.0), 0.0), axis=0)
+        * species_sum(
+            xp.where(weight > 0, flux * flux / xp.where(weight > 0, weight, 1.0), 0.0), xp=xp
+        )
     )
     electrode = first.electrode_increment(state, stage, p, xp=xp)
     co = xp.where(p.outside_active, p.extracellular_amount_reference / p.extracellular_volume, 1.0)
@@ -1092,7 +1105,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         face_dissipated_energy_pJ=state.face_dissipated_energy_pJ + dt * heat,
         electrode_charge_transferred_C=state.electrode_charge_transferred_C + electrode,
         reservoir_work_pJ=state.reservoir_work_pJ
-        + 1e-3 * xp.sum(mu * (dt * applied("reservoir_supplied")), axis=0),
+        + 1e-3 * species_sum(mu * (dt * applied("reservoir_supplied")), xp=xp),
         electrode_work_pJ=state.electrode_work_pJ + 1e12 * p.boundary_V * electrode,
     )
     if p.junction_heat_trapezoid.shape[0]:  # trapezoid_nonnegative@1 (a static choice).
@@ -1168,7 +1181,7 @@ def junction_heat_rate(state, potential, control, p, *, xp=jnp):
         xp=xp,
     )
     flux, mu = xp.where(active, flux, 0.0), xp.where(active, mu, 0.0)
-    return 1e-3 * xp.sum(flux * mu, axis=0)
+    return 1e-3 * species_sum(flux * mu, xp=xp)
 
 
 def checked_step(state, dt, control, p, active, *, structure=None):
@@ -1367,16 +1380,18 @@ def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None)
     co = xp.where(p.outside_active, co / p.extracellular_volume, 0.0)
     slope, n, patch = F * F / (R * p.temperature), p.active.size, p.channel_membranes
     largest = xp.maximum(ci[:, p.membrane_cell], co[:, p.membrane_outside])
-    passive = xp.sum(p.valence**2 * p.membrane_permeability * largest, axis=0) * control.membrane
+    passive = (
+        species_sum(p.valence**2 * p.membrane_permeability * largest, xp=xp) * control.membrane
+    )
     open_fraction = xp.where(
         p.channel_active,
         p.channel_abundance
         * channel_opening(state.channel_gate, p.channel_laws, xp=xp, structure=structure),
         0.0,
     )
-    channel = xp.sum(
+    channel = species_sum(
         p.valence**2 * p.channel_permeability * p.channel_relative_permeability * largest[:, patch],
-        axis=0,
+        xp=xp,
     ) * (open_fraction * control.channel)
     membrane = xp.where(p.membrane_active, passive * p.membrane_area, 0.0)
     membrane += scatter(channel * p.membrane_area[patch], membrane, (patch,), xp=xp)
@@ -1508,7 +1523,9 @@ class StepChecks(first.StepChecks):
 def balances(state, p, *, structure=None):
     total = state.membrane_transferred + channel_to_membrane(state.channel_transferred, p, xp=np)
     result = second.balances(state._replace(membrane_transferred=total), p)
-    result["energy"] += np.sum(state.channel_dissipated_energy_pJ)
+    result["energy"] += entity_sum(
+        species_sum(state.channel_dissipated_energy_pJ, xp=np), axis=None, xp=np
+    )
     if structure is not None and structure.kinds:
         _fold_kind_ledgers(result, state, p, _kinds(structure), xp=np)
     return result
@@ -1529,11 +1546,11 @@ def _fold_kind_ledgers(result, state, p, kinds, *, xp):
         if "outside" in terms:
             result["outside"] = result["outside"] - terms["outside"]
         if "heat_pJ" in terms:
-            result["energy"] = result["energy"] + xp.sum(terms["heat_pJ"])
+            result["energy"] = result["energy"] + entity_sum(terms["heat_pJ"], axis=None, xp=xp)
         if "work_pJ" in terms:
-            result["energy"] = result["energy"] - xp.sum(terms["work_pJ"])
+            result["energy"] = result["energy"] - entity_sum(terms["work_pJ"], axis=None, xp=xp)
         if "stored_pJ" in terms:
-            result["energy"] = result["energy"] + xp.sum(terms["stored_pJ"])
+            result["energy"] = result["energy"] + entity_sum(terms["stored_pJ"], axis=None, xp=xp)
 
 
 def channel_magnitudes(row, p, *, xp=np, structure=None):
@@ -1615,7 +1632,9 @@ def device_balances(state, p, *, structure=None):
     """balances() with jax.numpy: the same channel terms, then @2's, in the same order."""
     total = state.membrane_transferred + channel_to_membrane(state.channel_transferred, p, xp=jnp)
     result = second.device_balances(state._replace(membrane_transferred=total), p)
-    result["energy"] += jnp.sum(state.channel_dissipated_energy_pJ)
+    result["energy"] += entity_sum(
+        species_sum(state.channel_dissipated_energy_pJ, xp=jnp), axis=None, xp=jnp
+    )
     if structure is not None and structure.kinds:
         _fold_kind_ledgers(result, state, p, _kinds(structure), xp=jnp)
     return result

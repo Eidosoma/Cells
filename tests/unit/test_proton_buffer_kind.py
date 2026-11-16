@@ -74,7 +74,8 @@ def buffered_world(*, end_time=0.004, k_on=1e7, quiet=False, h_route=0.0, declar
 
 
 def read(buffers, k_on):
-    """The stage_reads declaration in FR-4's form (validation/compartment_ph/definitions.py)."""
+    """The stage_reads declaration in FR-4's form
+    (validation/compartment_ph_engine/definitions.py)."""
     return [
         dict(read_id="rapid_proton_buffer@1", proton_row="H", buffers=buffers, k_on_per_mM_s=k_on)
     ]
@@ -237,7 +238,7 @@ LEAK_M_S = 6e-7  # FR-4's proton leak (6e-5 cm/s).
 
 
 def leak_route(**overrides):
-    """The proton leak in FR-4's form (validation/compartment_ph/definitions.py)."""
+    """The proton leak in FR-4's form (validation/compartment_ph_engine/definitions.py)."""
     entry = dict(
         id="proton_leak_0",
         patch="membrane_0",

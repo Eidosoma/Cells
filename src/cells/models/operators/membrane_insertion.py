@@ -69,6 +69,7 @@ from cells.models import surface_pump as first
 from cells.models.operators import membrane_state
 from cells.models.operators.contract import Operator
 from cells.numerics.extracellular_field import scatter
+from cells.numerics.species_sums import entity_sum
 
 LAW_ID = "scheduled_membrane_insertion@1"
 STEP_ID = "fixed_charge_exact_half_steps@1"
@@ -419,8 +420,8 @@ def inserted(state, h, control, p, *, xp=jnp):
     )
     work = 1e12 * p.boundary_V * image
     moving = area > 0
-    count = xp.maximum(xp.sum(moving), 1)
-    spread = (xp.abs(second) + xp.sum(xp.abs(work))) / count
+    count = xp.maximum(entity_sum(moving, axis=None, xp=xp), 1)
+    spread = (xp.abs(second) + entity_sum(xp.abs(work), axis=None, xp=xp)) / count
     valid &= xp.all(xp.isfinite(image)) & xp.all(xp.isfinite(heat)) & xp.all(heat >= 0)
     new = state._replace(
         membrane_area_increment_m2=state.membrane_area_increment_m2 + area,
@@ -604,7 +605,11 @@ class ScheduledMembraneInsertion(Operator):
     def ledger_terms(self, result, row, p, *, xp):
         view, bound = capacitor_view(row, p, xp=xp)
         energy, electrode, _, _ = adapter.view_capacitor_terms(row, view, bound, xp=xp)
-        result["energy"] = result["energy"] + energy + xp.sum(row.insertion_dissipated_energy_pJ)
+        result["energy"] = (
+            result["energy"]
+            + energy
+            + entity_sum(row.insertion_dissipated_energy_pJ, axis=None, xp=xp)
+        )
         result["electrode"] = result["electrode"] - electrode
         return result, {}
 
@@ -616,9 +621,9 @@ class ScheduledMembraneInsertion(Operator):
         _, _, energy, electrode = adapter.view_capacitor_terms(row, view, bound, xp=xp)
         image = row.insertion_image_charge_C + electrode
         magnitudes[4] = image if magnitudes[4] is None else magnitudes[4] + image
-        charge = xp.sum(row.insertion_image_charge_C)
+        charge = entity_sum(row.insertion_image_charge_C, axis=None, xp=xp)
         magnitudes[5] = charge if magnitudes[5] is None else magnitudes[5] + charge
-        energy = energy + xp.sum(row.insertion_energy_magnitude_pJ)
+        energy = energy + entity_sum(row.insertion_energy_magnitude_pJ, axis=None, xp=xp)
         magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
         return magnitudes
 

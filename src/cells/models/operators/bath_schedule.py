@@ -77,6 +77,7 @@ from cells.models import surface_pump as first
 from cells.models.operators import species_common as common
 from cells.models.operators.contract import Change, Operator
 from cells.numerics import osmotic_water as water_law
+from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
 
 LAW_ID = "scheduled_bath_composition@1"
@@ -410,8 +411,14 @@ def check_isosmotic(declaration, schedule):
     for bath, series in zip(declaration.baths, schedule.held, strict=True):
         declared = np.asarray(series[0][1])
         for time, amounts in series[1:]:
-            change = abs(float(np.sum(np.asarray(amounts) - declared)))
-            if change > ISOSMOTIC_RTOL * float(np.sum(declared)):
+            change = abs(
+                float(
+                    entity_sum(species_sum(np.asarray(amounts) - declared, xp=np), axis=None, xp=np)
+                )
+            )
+            if change > ISOSMOTIC_RTOL * float(
+                entity_sum(species_sum(declared, xp=np), axis=None, xp=np)
+            ):
                 raise ConfigError(
                     f"{LAW_ID}: the step of bath {bath} at {time} s is anisosmotic; beside water@1 "
                     "only isosmotic steps are admitted, since water reads the declared bath "
@@ -462,17 +469,17 @@ def apply_events(state, control, p, *, xp=jnp):
     magnitude = adapter.species_chemical_magnitude_pJ(anchor, change, volume, t, xp=xp)
     # B: 1e-3 sum_s (mu_old - mu_new) S_s, with mu_old - mu_new = RT ln(n_old / n_new).
     shift = 1e-3 * R * t * xp.log(anchor / goal) * state.reservoir_supplied
-    charge = CHARGE_PER_FMOL * xp.sum(p.valence * change, axis=0)
+    charge = CHARGE_PER_FMOL * species_sum(p.valence * change, xp=xp)
     new = state._replace(
         bath_held_amount_fmol=xp.where(on, target, held),
         bath_dose_fmol=state.bath_dose_fmol + change,
         bath_dose_free_energy_pJ=state.bath_dose_free_energy_pJ
-        + xp.sum(_masked(on, energy, 0.0, xp=xp), axis=0),
+        + species_sum(_masked(on, energy, 0.0, xp=xp), xp=xp),
         bath_compensation_charge_C=state.bath_compensation_charge_C - xp.where(due, charge, 0.0),
         bath_reservoir_work_term_pJ=state.bath_reservoir_work_term_pJ
-        + xp.sum(_masked(on, shift, 0.0, xp=xp), axis=0),
+        + species_sum(_masked(on, shift, 0.0, xp=xp), xp=xp),
         bath_energy_magnitude_pJ=state.bath_energy_magnitude_pJ
-        + xp.sum(_masked(on, magnitude + xp.abs(shift), 0.0, xp=xp), axis=0),
+        + species_sum(_masked(on, magnitude + xp.abs(shift), 0.0, xp=xp), xp=xp),
     )
     valid = xp.all(xp.where(scheduled[None, :], xp.isfinite(target) & (target > 0), True))
     flowing = xp.any(due)  # Nothing due: the start state, bitwise.
@@ -495,8 +502,8 @@ def reconciliation(row, p, *, xp):
     declared = _masked(on, p.extracellular_amount_reference, 1.0, xp=xp)
     term = 1e-3 * R * p.temperature * xp.log(now / declared) * row.reservoir_supplied
     term = _masked(on, term, 0.0, xp=xp)
-    k = row.bath_reservoir_work_term_pJ + xp.sum(term, axis=0)
-    return k, xp.abs(row.bath_reservoir_work_term_pJ) + xp.sum(xp.abs(term), axis=0)
+    k = row.bath_reservoir_work_term_pJ + species_sum(term, xp=xp)
+    return k, xp.abs(row.bath_reservoir_work_term_pJ) + species_sum(xp.abs(term), xp=xp)
 
 
 def own_valid(state, p, *, xp):
@@ -692,7 +699,7 @@ class ScheduledBathComposition(Operator):
         return dict(
             bath_dose=held - declared - row.bath_dose_fmol,
             bath_dose_free_energy=row.bath_dose_free_energy_pJ
-            - xp.sum(_masked(on, energy, 0.0, xp=xp), axis=0),
+            - species_sum(_masked(on, energy, 0.0, xp=xp), xp=xp),
             bath_neutrality=row.bath_compensation_charge_C,
         )
 
@@ -708,9 +715,9 @@ class ScheduledBathComposition(Operator):
         return (
             amounts + xp.abs(row.bath_dose_fmol),
             xp.abs(row.bath_dose_free_energy_pJ)
-            + xp.sum(_masked(on, energy, 0.0, xp=xp), axis=0)
+            + species_sum(_masked(on, energy, 0.0, xp=xp), xp=xp)
             + row.bath_energy_magnitude_pJ,
-            CHARGE_PER_FMOL * xp.sum(xp.abs(p.valence) * amounts, axis=0),
+            CHARGE_PER_FMOL * species_sum(xp.abs(p.valence) * amounts, xp=xp),
         )
 
     def own_bounds(self, magnitudes, steps):

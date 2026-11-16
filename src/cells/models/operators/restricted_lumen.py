@@ -71,6 +71,7 @@ from cells.models.operators import membrane_insertion as insertion
 from cells.models.operators import membrane_state
 from cells.models.operators.contract import Operator
 from cells.numerics.extracellular_field import scatter
+from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes.electrochemistry import F, R
 
 LAW_ID = "restricted_cleft_lumen@1"
@@ -147,7 +148,9 @@ def parse_lumens(raw, base):
                 f"A lumen's onset volume must be w A_on / 2 = {expected!r} pL, not {volume!r}"
             )
         c = np.asarray(outside[source].initial_amount_fmol) / outside[source].volume_pL
-        if not abs(np.sum(z * c)) <= NEUTRALITY_RTOL * np.sum(np.abs(z) * c):
+        if not abs(
+            entity_sum(species_sum(z * c, xp=np), axis=None, xp=np)
+        ) <= NEUTRALITY_RTOL * entity_sum(species_sum(np.abs(z) * c, xp=np), axis=None, xp=np):
             raise ConfigError(
                 "A lumen's source must be electroneutral: its background charge cannot enter "
                 "the lumen with its fluid"
@@ -265,8 +268,8 @@ def fill_energy(amounts, volume, bath, dv, p, *, xp):
     c1 = (n + cb * dv) / v1
     e = dv * (c - cb) / (v1 * c1)
     eb = v * (cb - c) / (v1 * c1)
-    heat = rt * xp.sum(c1 * (v * mixing(e, xp=xp) + dv * mixing(eb, xp=xp)), axis=0)
-    fluid = -rt * xp.sum(cb, axis=0) * dv
+    heat = rt * species_sum(c1 * (v * mixing(e, xp=xp) + dv * mixing(eb, xp=xp)), xp=xp)
+    fluid = -rt * species_sum(cb, xp=xp) * dv
     return xp.where(lumen, heat, 0.0), xp.where(lumen, fluid, 0.0)
 
 
@@ -295,7 +298,7 @@ def filled(state, p, *, xp=jnp, view=None):
     dn = adapter.barrier(bath * dv, xp=xp)
     mu = potentials(p, xp=xp)
     supplied = scatter(dn, dn, (p.lumen_source,), xp=xp)  # At the source baths.
-    work = 1e-3 * xp.sum(mu * supplied, axis=0)  # As @3 books its own supply.
+    work = 1e-3 * species_sum(mu * supplied, xp=xp)  # As @3 books its own supply.
     amounts = p.extracellular_amount_reference + state.extracellular_amount_increment
     heat, fluid = fill_energy(amounts, lumen_volume(state, p, xp=xp), bath, dv, p, xp=xp)
     new = state._replace(
@@ -313,9 +316,10 @@ def filled(state, p, *, xp=jnp, view=None):
     _, end, _ = tissue.capacitor_change(adapter.inner_state(new), q, xp=xp)
     electrode = xp.where(p.reservoir, end[n:] - start[n:], 0.0)
     clamp = 1e12 * p.boundary_V * electrode
-    count = xp.maximum(xp.sum(lumen), 1)
-    booked = 1e-3 * xp.sum(xp.abs(mu[:, p.lumen_source]) * dn, axis=0)  # Each lumen's supply work.
-    magnitude = booked + xp.abs(fluid) + heat + xp.sum(xp.abs(clamp)) / count
+    count = xp.maximum(entity_sum(lumen, axis=None, xp=xp), 1)
+    # Each lumen's supply work.
+    booked = 1e-3 * species_sum(xp.abs(mu[:, p.lumen_source]) * dn, xp=xp)
+    magnitude = booked + xp.abs(fluid) + heat + entity_sum(xp.abs(clamp), axis=None, xp=xp) / count
     new = new._replace(
         electrode_charge_transferred_C=new.electrode_charge_transferred_C + electrode,
         electrode_work_pJ=new.electrode_work_pJ + clamp,
@@ -348,9 +352,16 @@ def filled_to_area(state, p, reference, *, xp):
 def dilution(row, p, *, xp):
     """Water's dilution term at the lumens' volumes, -RT N ln(V / V_on), pJ: @3's chemical term
     on the declared volume plus this is the physical free energy (osmotic_water.water_ledgers)."""
-    total = xp.sum(p.extracellular_amount_reference + row.extracellular_amount_increment, axis=0)
+    total = species_sum(
+        p.extracellular_amount_reference + row.extracellular_amount_increment, xp=xp
+    )
     ratio = xp.where(p.lumen_node, row.lumen_volume_increment_pL / p.extracellular_volume, 0.0)
-    return -1e-3 * R * p.temperature * xp.sum(xp.where(p.lumen_node, total * xp.log1p(ratio), 0.0))
+    return (
+        -1e-3
+        * R
+        * p.temperature
+        * entity_sum(xp.where(p.lumen_node, total * xp.log1p(ratio), 0.0), axis=None, xp=xp)
+    )
 
 
 def energy_magnitude(row, p, *, xp):
@@ -361,7 +372,11 @@ def energy_magnitude(row, p, *, xp):
     d = xp.where(grown, row.extracellular_amount_increment, 0.0)
     v0 = xp.where(grown, p.extracellular_volume, 1.0)
     rt = 1e-3 * R * p.temperature
-    chemical = rt * xp.sum(xp.abs(d * (xp.log(a / v0) - 1)) + xp.abs((a + d) * xp.log1p(d / a)))
+    chemical = rt * entity_sum(
+        species_sum(xp.abs(d * (xp.log(a / v0) - 1)) + xp.abs((a + d) * xp.log1p(d / a)), xp=xp),
+        axis=None,
+        xp=xp,
+    )
     return chemical + xp.abs(dilution(row, p, xp=xp))
 
 
@@ -470,8 +485,8 @@ class RestrictedCleftLumen(Operator):
         result["energy"] = (
             result["energy"]
             + dilution(row, p, xp=xp)
-            + xp.sum(row.lumen_fill_dissipated_energy_pJ)
-            - xp.sum(row.lumen_fluid_work_pJ)
+            + entity_sum(row.lumen_fill_dissipated_energy_pJ, axis=None, xp=xp)
+            - entity_sum(row.lumen_fluid_work_pJ, axis=None, xp=xp)
         )
         return result, self.own_ledgers(row, p, xp=xp)
 
@@ -485,9 +500,11 @@ class RestrictedCleftLumen(Operator):
         )
         image = row.lumen_image_charge_C
         magnitudes[4] = image if magnitudes[4] is None else magnitudes[4] + image
-        charge = xp.sum(image)
+        charge = entity_sum(image, axis=None, xp=xp)
         magnitudes[5] = charge if magnitudes[5] is None else magnitudes[5] + charge
-        energy = xp.sum(row.lumen_energy_magnitude_pJ) + energy_magnitude(row, p, xp=xp)
+        energy = entity_sum(row.lumen_energy_magnitude_pJ, axis=None, xp=xp) + energy_magnitude(
+            row, p, xp=xp
+        )
         magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
         return magnitudes
 

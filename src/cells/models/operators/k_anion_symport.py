@@ -36,6 +36,7 @@ from cells.models import surface_pump_v3 as ionic
 from cells.models.operators.contract import Operator
 from cells.models.operators.osmotic_water import LAW_ID as WATER_LAW_ID
 from cells.numerics.extracellular_field import scatter
+from cells.numerics.species_sums import entity_sum
 from cells.processes import k_anion_symport as law
 
 LAW_ID = law.LAW_ID
@@ -334,7 +335,7 @@ class KAnionSymport(Operator):
         )
 
     def ledger_terms(self, result, row, p, *, xp):
-        result["energy"] += xp.sum(row.symport_dissipated_energy_pJ)
+        result["energy"] += entity_sum(row.symport_dissipated_energy_pJ, axis=None, xp=xp)
         return result, {}
 
     def magnitude_terms(self, magnitudes, row, p, *, xp):

@@ -10,7 +10,7 @@ owner's, called here and never edited:
   tableau-booked (charged), with its slope conductance in the stage rule (B7) and its flux in the
   membrane current.
 
-The declaration (model key `passive_routes`, FR-4's form in validation/compartment_ph/
+The declaration (model key `passive_routes`, FR-4's form in validation/compartment_ph_engine/
 definitions.py), each route on one host (`patch`, or `junction` for the neutral law):
 
     [{"id": "proton_leak_0", "patch": "bounding_0", "law": "proton_constant_field_leak@1",
@@ -50,7 +50,7 @@ import numpy as np
 
 from cells.core.kind_registry import BUILTIN, ConfigError, Kind
 from cells.numerics.extracellular_field import scatter
-from cells.numerics.species_sums import species_sum
+from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes import passive_permeation as passive
 from cells.processes import proton_leak as leak
 from cells.processes.electrochemistry import R
@@ -292,7 +292,7 @@ def rates(state, potentials, control, p, *, xp):
         cell=net[:, :n],
         outside=net[:, n:],
         derivatives=dict(passive_transferred=flux, passive_dissipated_energy_pJ=heat),
-        heat_pJ_s=xp.sum(heat),
+        heat_pJ_s=entity_sum(heat, axis=None, xp=xp),  # Over routes.
         work_pJ_s=xp.zeros(()),
         membrane_flux=patch_flux,
     )

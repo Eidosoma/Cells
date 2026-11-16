@@ -4,8 +4,8 @@ docs/INNER_MODEL_V4_DESIGN.md §7.4 (g) 1 and (k); docs/COMPARTMENT_PH_TRANSFER_
 closure, D176). The kernel is processes/rapid_proton_buffer.py (FR-4's owner); this module is
 the kind the core calls at its seams.
 
-The declaration (model key `stage_reads`, FR-4's form in validation/compartment_ph/definitions.py;
-version 1 admits this one read):
+The declaration (model key `stage_reads`, FR-4's form in
+validation/compartment_ph_engine/definitions.py; version 1 admits this one read):
 
     [{"read_id": "rapid_proton_buffer@1", "proton_row": "H",
       "buffers": {"cell_0": ["B_c"], "lumen": ["B_L"]},

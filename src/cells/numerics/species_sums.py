@@ -17,8 +17,12 @@ on the host and the device.
 
 The caller forms the terms (p.valence * flux, mu * supplied); the helper takes no weights.
 
-This module imports nothing from cells.models. Today's sum sites keep their own sums until A7.
-New kind code (the seams, the stage read, the transporter) calls it from the start.
+This module imports nothing from cells.models. Since A7's sweep, every sum in @3's module, the
+operators and the kinds goes through species_sum or entity_sum (the summation SITES.md's 37
+species-axis sums, 10 full reduces and 7 former row_sum folds), and
+tests/unit/test_species_sum_sites.py refuses any other sum there and freezes the entity sums. The
+shared modules (surface_tissue, surface_pump, numerics/surface_imex and others) keep their own
+sums (the lead's manifest ruling, docs/INNER_MODEL_V4_DESIGN.md §10.6).
 """
 
 import numpy as np
@@ -36,9 +40,10 @@ def _barrier(values, xp):
 def species_sum(values, *, xp, barrier=True):
     """The serial left fold of values [S, ...] over its leading species axis, S >= 1.
 
-    barrier: put the device barrier on the input (the default). A7's sweep may pass False at
-    exact-product and materialised sites if the GPU reading rules the barrier for inexact sites
-    only (the operators stream's review, 15 November); the fold itself never changes.
+    barrier: put the device barrier on the input (the default). D182 (16 November, from the GPU
+    column) keeps it at every listed species-axis sum and full reduce. The former row_sum folds
+    pass False, as A7's tolerance rehearsal ran them (species_turnover.ROW_BARRIER); the fold
+    itself never changes.
     """
     if values.shape[0] < 1:
         raise ValueError("species_sum requires at least one species")
