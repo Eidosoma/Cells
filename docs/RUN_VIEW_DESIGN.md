@@ -215,6 +215,11 @@ reading of the worked example (its eleven items):
   running engine's revision and dirty flag, from its execution snapshot's record, where a shared
   path writes the view; unstated with the reason otherwise). A view written later by
   `write_view` therefore differs from the run's own in its source.
+- **`loop`** (optional; FR-11, [LOOPING_REPLAY_DESIGN](LOOPING_REPLAY_DESIGN.md) §3): a looping
+  package's block, written only when the run's observed rows close within its tolerance.
+- **`diagnostic` and `reference` on records:** the owner's `RECORD_DIAGNOSTICS` (a residual of
+  the step's own check) and `RECORD_REFERENCES` (stored as an increment over a fixed reference,
+  stated as a named constant of the view, or the merged view's record under door S).
 
 **The lead's rulings on these (16 November 2026):** the voltages' plus and minus are to be stated
 in the core's own @3 declarations (core-next), and until then the view's `source` citing the code

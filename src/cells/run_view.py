@@ -105,6 +105,18 @@ checkpoint or the saved run's summary) and, where a shared path writes the view 
 the running engine's ``source``: its revision and whether it was dirty, from its execution
 snapshot's own record (AGENTS.md: a run's provenance is its Git revision, dirty diff and frozen
 snapshot). From a checkout, or for a run already on disk, the source is unstated with the reason.
+
+Loops (FR-11; docs/LOOPING_REPLAY_DESIGN.md §2, §3): a looping replay package is one real run
+whose observed rows cover exactly one period of a periodic state. The caller's Loop (species,
+cell, period, tolerance) is checked before any output: refused unless the run names its engine
+source (a shared path running from an execution snapshot), the totals the viewer's loop reader
+differences (LOOP_TOTALS) are recorded with their kind and sign, and it is one run, not a batch's
+world. Its closure is measured as the view is written, on the saved files (loop_closure): for
+each observed record of kind level, amount or rate, the change from the first row to the last
+over the largest magnitude the record takes. The optional top-level ``loop`` block is written
+only when the observed rows span the period and that closure is within the tolerance; otherwise
+the view says why under ``unstated``, so a run that does not close is never labelled a loop. The
+viewer reads the revision from ``run.source``, which the writer does not copy into ``run.revision``.
 """
 
 import json
@@ -149,6 +161,37 @@ TOP_KEYS = frozenset(
         "recording",
     }
 )
+# A looping replay package (FR-11; docs/LOOPING_REPLAY_DESIGN.md §2, §3): the optional block, the
+# record kinds its closure measures (cumulative totals grow by design, so the reader differences
+# them inside the loop only), and the totals the viewer's loop reader differences for its rates
+# (the visualizer's "What a species' looping run must carry": each channel population's
+# transfers, the pumps' cycles with the membrane set's rows per cycle, the membrane's own
+# transfers), each recorded with its kind and sign.
+LOOP_KEY = "loop"
+LOOP_KEYS = frozenset({"species", "cell", "period", "closes", "not_measured", "follows"})
+LOOP_KINDS = ("level", "amount", "rate")
+LOOP_TOTALS = ("channel_transferred", "pump_cycles", "membrane_transferred")
+# The observed records a loop's closure leaves out, by reason, in this order (the lead's ruling of
+# 16 November 2026); the block lists them by name.
+NOT_MEASURED = (
+    (
+        "diagnostic",
+        "diagnostics: residuals of the engine's own checks, held to their own absolute tolerances",
+    ),
+    (
+        "cumulative",
+        "cumulative totals: they grow by design, so the reader differences them inside the loop",
+    ),
+    ("unstated", "records whose kind the view leaves unstated"),
+)
+# A record its owner declares a diagnostic (RECORD_DIAGNOSTICS) says so.
+DIAGNOSTIC_NOTE = (
+    "a diagnostic: the residual of the engine's own check, held to its own absolute tolerance "
+    "there, not a quantity of the simulated world"
+)
+# The observed rows span the period exactly, up to the rounding of the times the caller gave.
+LOOP_SPAN_RTOL = 1e-9
+WORD = re.compile(r"\w[\w.-]*")
 HEAT_SUFFIX = "_dissipated_energy_pJ"
 RESETS_NOTE = (
     "Written at the events of these operators, which retire slots: a retired slot's history in "
@@ -514,12 +557,34 @@ class Recording:
 
 
 @dataclass(frozen=True)
+class Loop:
+    """A looping replay package's loop (FR-11; docs/LOOPING_REPLAY_DESIGN.md §3). The writer
+    measures its closure on the saved arrays and writes the view's loop block only when the run
+    closes within the tolerance; nothing here is declared as measured.
+
+    species: the caller's label, a word (the viewer's ids are its own); cell: a declared cell id,
+    the cell the loop shows; period: the drive's period T in s, which the observed rows span
+    exactly (the first at t0, the last at t0 + T); tolerance: the largest closure accepted;
+    follows: ({"time", "from", "to"}, ...), the cell the loop follows after a division (§6),
+    refused until the cycle's probe passes and its closure is built.
+    """
+
+    species: str
+    cell: str
+    period: float
+    tolerance: float
+    follows: tuple = ()
+
+
+@dataclass(frozen=True)
 class Request:
-    """The caller's part of a view: run labels, geometry and a recording subset."""
+    """The caller's part of a view: run labels, geometry, a recording subset and, for a looping
+    replay package, its loop."""
 
     run: dict = field(default_factory=dict)
     geometry: Geometry | None = None
     recording: Recording | None = None
+    loop: Loop | None = None
 
 
 # ------------------------------------------------------------------ helpers
@@ -528,6 +593,10 @@ class Request:
 def _refuse(problems):
     if problems:
         raise ViewRefused("The run view cannot be written: " + "; ".join(problems))
+
+
+def _unstated_order(item):
+    return (item["what"], item["id"])
 
 
 def _suffix_unit(name):
@@ -629,6 +698,8 @@ class FieldInfo:
     kind: str | None
     sign: dict | None
     writers: tuple = ()
+    diagnostic: bool = False  # Its owner's RECORD_DIAGNOSTICS.
+    reference: str | None = None  # Its owner's RECORD_REFERENCES: the reference layout field.
 
 
 class Plan:
@@ -689,6 +760,7 @@ class Plan:
         self.space = self._geometry()
         self.recording = self._recording()
         self.run = self._run()
+        self.loop = self._loop()
         _refuse(self.problems)
         try:  # The view's structure, before any output: only its time bases come later.
             validate(self.view({}, "prepared"))
@@ -1024,6 +1096,7 @@ class Plan:
         state_owner, writers, column_owner = self._owners()
         names = list(self.model.STATE_AXES)
         names += [k for k in self.model.OBSERVATION_FIELDS if k != "times" and k not in names]
+        checks = self._inner_checks(inner, names)
         out = {}
         for name in names:
             owner = state_owner.get(name) or column_owner.get(name)
@@ -1037,8 +1110,36 @@ class Plan:
                 info = self._operator_field(name, axes, operators[owner])
             if info is None:
                 continue
-            out[name] = FieldInfo(**info, writers=writers.get(name, ()))
+            # A diagnostic and an increment's reference are their owner's to declare.
+            if owner == "inner":
+                diagnostics, references = checks
+            else:
+                op = operators[owner]
+                diagnostics, references = op.RECORD_DIAGNOSTICS, op.RECORD_REFERENCES
+            out[name] = FieldInfo(
+                **info,
+                writers=writers.get(name, ()),
+                diagnostic=name in diagnostics,
+                reference=references.get(name),
+            )
         return out
+
+    def _inner_checks(self, inner, names):
+        """The inner model's RECORD_DIAGNOSTICS and RECORD_REFERENCES (the contract's forms; none
+        when it declares none), checked against its own fields and bound layout."""
+        diagnostics = tuple(getattr(inner, "RECORD_DIAGNOSTICS", ()))
+        references = dict(getattr(inner, "RECORD_REFERENCES", {}))
+        unknown = sorted(set(diagnostics) - set(names))
+        if unknown:
+            self.problems.append(f"the inner model declares diagnostics it lacks: {unknown}")
+        layout = set(getattr(self.layout, "_fields", ()))
+        for name, reference in references.items():
+            if name not in self.model.STATE_AXES or (layout and reference not in layout):
+                self.problems.append(
+                    f"the inner model's reference of {name} is not a state field's reference "
+                    f"layout field ({reference!r})"
+                )
+        return frozenset(diagnostics), references
 
     def _inner_field(self, name, axes, owner, declared):
         entry = self.inner_table.get(name)
@@ -1232,7 +1333,41 @@ class Plan:
                     "row where the composition changes another view field)",
                 }
             )
+        # The fixed reference of each field stored as an increment over it (RECORD_REFERENCES),
+        # where no view field states it already (a view field's reference is the constant above,
+        # or its merged view record where door S changes it).
+        for name, info in self.fields.items():
+            reference = info.reference
+            if reference is None or reference in VIEW_FIELD_AXES or any(
+                c["id"] == reference for c in out
+            ):
+                continue
+            value = _layout_value(layout, reference)
+            shape = tuple(len(self.sets[s]["ids"]) for s in info.axes)
+            if value.shape != shape:
+                self.problems.append(
+                    f"the reference {reference} of {name}: shape {value.shape}, its sets {shape}"
+                )
+                continue
+            out.append(
+                {
+                    "id": reference,
+                    "unit": info.unit,
+                    "axes": list(info.axes),
+                    "values": _finite_list(value, f"constant {reference}", self.problems),
+                    "from": "the definition (the bound layout)",
+                    "says": f"the fixed reference that {name} is stored over: its quantity is "
+                    "this plus the record",
+                }
+            )
         return out
+
+    def _reference_of(self, reference):
+        """Where a record's fixed reference is stated: a constant, or the merged view record
+        where door S changes it (a run already on disk saves none: its field only)."""
+        if reference in self.changes:
+            return {"record": VIEW_PREFIX + reference} if self.recompute else {"field": reference}
+        return {"constant": reference}
 
     # -------------------------------------------------------------- events
 
@@ -1457,6 +1592,93 @@ class Plan:
             **({"source": self.source} if self.source else {}),
         }
 
+    # -------------------------------------------------------------- the loop (FR-11)
+
+    def _loop(self):
+        """The caller's loop, checked before any output (refused with nothing written): its
+        labels well formed, the run's engine source stated, and the totals the viewer's loop
+        reader differences recorded with their kind and sign. Its closure is measured as the
+        view is written (close_loop)."""
+        loop = self.request.loop
+        if loop is None:
+            return None
+        problems = self.problems
+        if not isinstance(loop, Loop):
+            problems.append("loop: a run_view.Loop")
+            return None
+        if not (isinstance(loop.species, str) and WORD.fullmatch(loop.species)):
+            problems.append("loop: species is a word (the caller's label)")
+        if loop.cell is None or loop.cell not in self.sets["cell"]["ids"]:
+            problems.append(f"loop: cell {loop.cell!r} is not a declared cell")
+        for what in ("period", "tolerance"):
+            value = getattr(loop, what)
+            if (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+                or value <= 0
+            ):
+                problems.append(f"loop: {what} is a finite number above zero")
+        if loop.follows:
+            problems.append(
+                "loop: follows (a loop across a division) waits for the cycle's probe "
+                "(docs/LOOPING_REPLAY_DESIGN.md §6): its closure is not built yet"
+            )
+        if self.source is None:
+            problems.append(
+                "loop: a looping package names its engine source, so it is written only by a "
+                "shared path running from an execution snapshot (run.source)"
+            )
+        kept = self.request.recording.fields if self.request.recording else None
+        for name in LOOP_TOTALS:
+            info = self.fields.get(name)
+            if info is None or info.kind != "cumulative" or info.sign is None:
+                problems.append(f"loop: {name} is not a total with its kind and sign here")
+            elif kept is not None and name not in kept:
+                problems.append(f"loop: the recording subset leaves out {name}")
+        return loop
+
+    def close_loop(self, view, directory):
+        """The loop block, from the closure measured on the run's saved files (loop_closure):
+        added to `view` when the observed rows span the period and the run closes within the
+        tolerance; otherwise left out, with the reason under unstated, so a run that does not
+        close is never labelled a loop."""
+        loop, reason = self.loop, None
+        try:
+            closure = loop_closure(view, directory)
+        except ViewInvalid as exc:
+            reason = str(exc)
+        else:
+            span = closure["end"] - closure["start"]
+            if not math.isclose(span, loop.period, rel_tol=LOOP_SPAN_RTOL, abs_tol=0.0):
+                reason = (
+                    f"the observed rows span {span!r} s from {closure['start']!r} s, not the "
+                    f"period {float(loop.period)!r} s"
+                )
+            elif closure["within"] > loop.tolerance:
+                reason = (
+                    f"the last observed row meets the first within {closure['within']!r}, above "
+                    f"the tolerance {float(loop.tolerance)!r} (largest in {closure['record']})"
+                )
+        if reason is not None:
+            unstated = [*view["unstated"], {"id": LOOP_KEY, "what": "loop", "why": reason}]
+            view["unstated"] = sorted(unstated, key=_unstated_order)
+            return view
+        view[LOOP_KEY] = {
+            "species": loop.species,
+            "cell": loop.cell,
+            "period": float(loop.period),
+            "closes": {
+                "within": closure["within"],
+                "says": f"the last observed row meets the first within {closure['within']:.2g} "
+                f"relative (largest in {closure['record']})",
+                "tolerance": float(loop.tolerance),
+                "zero": closure["zero"],
+            },
+            "not_measured": closure["not_measured"],
+        }
+        return view
+
     # -------------------------------------------------------------- the recording subset
 
     def keeper(self):
@@ -1554,6 +1776,10 @@ class Plan:
                     record["kind"] = info.kind
                 if info.sign is not None:  # A flow's sign, or a difference's ends.
                     record["difference" if "plus" in info.sign else "sign"] = info.sign
+                if info.diagnostic:  # RECORD_DIAGNOSTICS: held to the engine's own check.
+                    record["diagnostic"] = DIAGNOSTIC_NOTE
+                if info.reference is not None:  # RECORD_REFERENCES: its quantity is the sum.
+                    record["reference"] = self._reference_of(info.reference)
                 by = [law for law in info.writers if law in self.retiring]
                 resets = bool(by) and info.owner == self.inner_id and info.kind == "cumulative"
                 if resets:  # A retired slot's history moves out at its retirement.
@@ -1611,7 +1837,7 @@ class Plan:
             "records": records,
             "events": self.events,
             "constants": self.constants,
-            "unstated": sorted(unstated, key=lambda u: (u["what"], u["id"])),
+            "unstated": sorted(unstated, key=_unstated_order),
             "recording": {"mode": mode, "subset": self.recording},
         }
 
@@ -1620,8 +1846,11 @@ class Plan:
         checked first; with files, also against the files it names, which lie in `directory`.
 
         The shared paths check the structure only: their view is written after the payload and
-        before the manifest, and everything else was checked before any output (prepare)."""
+        before the manifest, and everything else was checked before any output (prepare). A
+        loop's closure is measured here, on the saved files (close_loop)."""
         value = self.view(bases, mode, end)
+        if self.loop is not None:
+            self.close_loop(value, Path(directory))
         validate(value, directory if files else None)
         folder = Path(out or directory)
         folder.mkdir(parents=True, exist_ok=True)  # A batch world without chunks has no folder.
@@ -1698,15 +1927,115 @@ def requests_for(view, world_ids):
     if view is None:
         return {}
     if isinstance(view, Request):
-        return dict.fromkeys(world_ids, view)
+        view = dict.fromkeys(world_ids, view)
     if not isinstance(view, dict) or set(view) != set(world_ids):
         raise ViewRefused("A batch's view requests name every world once: " + str(list(world_ids)))
+    if any(isinstance(r, Request) and r.loop is not None for r in view.values()):
+        raise ViewRefused("A looping replay package is one run, not a batch's world")
     return dict(view)
 
 
 def dumps(value):
     """The view's bytes: sorted keys, no NaN, a final newline (deterministic)."""
     return json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n"
+
+
+def loop_selection(view):
+    """The observed records a loop's closure measures, and those it leaves out by reason
+    (NOT_MEASURED): ([record], [{"why", "records": [record id]}]), the groups in NOT_MEASURED's
+    order and only those that hold a record."""
+    measured, left = [], {key: [] for key, _ in NOT_MEASURED}
+    for record in view["records"]:
+        if record["base"] != "observation":
+            continue
+        if "diagnostic" in record:
+            left["diagnostic"].append(record["id"])
+        elif record.get("kind") == "cumulative":
+            left["cumulative"].append(record["id"])
+        elif record.get("kind") in LOOP_KINDS:
+            measured.append(record)
+        else:
+            left["unstated"].append(record["id"])
+    groups = [{"why": why, "records": left[key]} for key, why in NOT_MEASURED if left[key]]
+    return measured, groups
+
+
+def loop_closure(view, directory):
+    """The seam of a run's observed rows (FR-11; docs/LOOPING_REPLAY_DESIGN.md §2), measured on
+    the files the view names, one at a time: for every record loop_selection measures, the
+    largest change between its first row and its last over the largest magnitude it takes on
+    any row. A record identically zero over the loop is reported in "zero", never divided by.
+    Returns {"within": the largest ratio, "record": the record attaining it, "zero",
+    "not_measured" (loop_selection's groups), "start", "end": the first and last observed
+    times}; ViewInvalid when there is nothing to measure."""
+    bases = {b["id"]: b for b in view["time"]["bases"]}
+    if "observation" not in bases:
+        raise ViewInvalid("the run saved no observed rows, so no loop closure is measured")
+    base = bases["observation"]
+    records, not_measured = loop_selection(view)
+    if not records:
+        raise ViewInvalid(f"no observed record of kind {', '.join(LOOP_KINDS)} to measure")
+    constants = {c["id"]: c for c in view.get("constants") or []}
+    by_id = {r["id"]: r for r in view["records"]}
+    sets = {s["id"]: s for s in view["sets"]}
+
+    def quantity(record, saved):
+        """The record's saved values, plus its fixed reference where it is stored as an increment
+        over one (RECORD_REFERENCES): the constant, at the recorded elements, or the merged
+        view's rows (door S)."""
+        values = np.asarray(saved[record["array"]], dtype=float)
+        reference = record.get("reference")
+        if reference is None:
+            return values
+        if reference.get("constant") in constants:
+            fixed = np.asarray(constants[reference["constant"]]["values"], dtype=float)
+            for axis, set_id in enumerate(record["axes"][1:]):
+                if "recorded" in sets[set_id]:
+                    fixed = np.take(fixed, sets[set_id]["recorded"], axis=axis)
+            return values + fixed
+        if reference.get("record") in by_id:
+            return values + np.asarray(saved[by_id[reference["record"]]["array"]], dtype=float)
+        raise ViewInvalid(f"record {record['id']}: its reference is not saved, so not measured")
+
+    first, last, scale, start, end = {}, {}, {}, None, None
+    for part in base["files"]:
+        with np.load(Path(directory) / part["file"], allow_pickle=False) as saved:
+            times = np.asarray(saved[base["array"]], dtype=float)
+            if not len(times):
+                continue
+            start = float(times[0]) if start is None else start
+            end = float(times[-1])
+            for record in records:
+                values = quantity(record, saved)
+                key = record["id"]
+                first.setdefault(key, values[0])
+                last[key] = values[-1]
+                top = np.max(np.abs(values), initial=0.0)  # NaN propagates.
+                scale[key] = float(np.max([scale.get(key, 0.0), top]))
+    if start is None:
+        raise ViewInvalid("the run saved no observed rows, so no loop closure is measured")
+    within, worst, zero = 0.0, None, []
+    for record in records:
+        key = record["id"]
+        change = float(np.max(np.abs(last[key] - first[key]), initial=0.0))
+        if not (math.isfinite(change) and math.isfinite(scale[key])):
+            raise ViewInvalid(f"record {key} is not finite on its observed rows")
+        if scale[key] == 0.0:  # Identically zero: it meets itself, stated rather than divided.
+            zero.append(key)
+            continue
+        ratio = change / scale[key]
+        if worst is None or ratio > within:
+            within, worst = ratio, key
+    if worst is None:
+        raise ViewInvalid("every measured record is identically zero over the loop")
+    return {
+        "within": within,
+        "record": worst,
+        "zero": zero,
+        "not_measured": not_measured,
+        "start": start,
+        "end": end,
+    }
 
 
 # ------------------------------------------------------------------ the shared paths' parts
@@ -1810,7 +2139,11 @@ def validate(view, directory=None):
     problems = []
     if not _check(isinstance(view, dict), problems, "a view is a JSON object"):
         raise ViewInvalid("; ".join(problems))
-    _check(set(view) == TOP_KEYS, problems, f"top-level keys are {sorted(TOP_KEYS)}")
+    _check(
+        TOP_KEYS <= set(view) <= TOP_KEYS | {LOOP_KEY},
+        problems,
+        f"top-level keys are {sorted(TOP_KEYS)}, and optionally {LOOP_KEY}",
+    )
     _check(view.get("format") == FORMAT, problems, f"format is {FORMAT}")
     run = view.get("run") or {}
     _check(isinstance(run.get("model"), str), problems, "run names its model")
@@ -1998,6 +2331,27 @@ def validate(view, directory=None):
         )
         if "kind" in record:
             _check(record["kind"] in KINDS, problems, f"record {rid}: kind is one of {KINDS}")
+        if "diagnostic" in record:
+            _check(
+                isinstance(record["diagnostic"], str) and record["diagnostic"],
+                problems,
+                f"record {rid}: a diagnostic says what it is",
+            )
+        if "reference" in record:
+            reference = record["reference"]
+            constants = {c.get("id") for c in view.get("constants") or []}
+            ids = {r.get("id") for r in view.get("records") or []}
+            _check(
+                isinstance(reference, dict)
+                and len(reference) == 1
+                and (
+                    reference.get("constant") in constants
+                    or reference.get("record") in ids
+                    or isinstance(reference.get("field"), str)
+                ),
+                problems,
+                f"record {rid}: its reference is a constant, a record or a field of the view",
+            )
         if "resets" in record:
             resets = record["resets"]
             _check(
@@ -2054,10 +2408,89 @@ def validate(view, directory=None):
         )
     for item in view.get("unstated") or []:
         _check(set(item) == {"id", "what", "why"}, problems, "an unstated item has id, what, why")
+    if LOOP_KEY in view:
+        _validate_loop(view[LOOP_KEY], run, sets, bases, set(record_ids), problems)
     if directory is not None and not problems:
         _validate_files(view, Path(directory), sets, sizes, problems)
     if problems:
         raise ViewInvalid("Invalid run view: " + "; ".join(problems))
+
+
+def _positive(value):
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and math.isfinite(value)
+        and value > 0
+    )
+
+
+def _validate_loop(loop, run, sets, bases, record_ids, problems):
+    """A loop block's shape (FR-11): the caller's species word and declared cell, the period,
+    the closure within its tolerance with what it says and the records identically zero, the
+    records it leaves out by reason, any cells followed, and the run's engine source and observed
+    rows, which a loop needs."""
+    cells = [c for c in (sets.get("cell") or {}).get("ids") or [] if c is not None]
+    closes = loop.get("closes") if isinstance(loop, dict) else None
+    _check(
+        isinstance(loop, dict)
+        and {"species", "cell", "period", "closes", "not_measured"} <= set(loop) <= LOOP_KEYS
+        and isinstance(loop["species"], str)
+        and WORD.fullmatch(loop["species"]) is not None
+        and loop["cell"] in cells
+        and _positive(loop["period"])
+        and isinstance(closes, dict)
+        and set(closes) == {"within", "says", "tolerance", "zero"}
+        and isinstance(closes["within"], (int, float))
+        and math.isfinite(closes["within"])
+        and 0 <= closes["within"]
+        and _positive(closes["tolerance"])
+        and closes["within"] <= closes["tolerance"]
+        and isinstance(closes["says"], str)
+        and closes["says"]
+        and isinstance(closes["zero"], list)
+        and all(r in record_ids for r in closes["zero"]),
+        problems,
+        "loop: a species word, a declared cell, a period, and a closure within its tolerance that "
+        "says what it measures and names the records identically zero",
+    )
+    left = loop.get("not_measured") if isinstance(loop, dict) else None
+    _check(
+        isinstance(left, list)
+        and all(
+            isinstance(group, dict)
+            and set(group) == {"why", "records"}
+            and isinstance(group["why"], str)
+            and group["why"]
+            and isinstance(group["records"], list)
+            and group["records"]
+            and all(r in record_ids for r in group["records"])
+            for group in left
+        ),
+        problems,
+        "loop: the records left out of its closure, by name, each group with its reason",
+    )
+    follows = loop.get("follows", []) if isinstance(loop, dict) else []
+    _check(
+        isinstance(follows, list)
+        and all(
+            isinstance(f, dict)
+            and set(f) == {"time", "from", "to"}
+            and isinstance(f["time"], (int, float))
+            and math.isfinite(f["time"])
+            and f["from"] in cells
+            and f["to"] in cells
+            and f["from"] != f["to"]
+            for f in follows
+        ),
+        problems,
+        "loop: each cell followed has a time and two declared cells",
+    )
+    _check(
+        "source" in run and "observation" in bases,
+        problems,
+        "loop: the run names its engine source and saves its observed rows",
+    )
 
 
 def _validate_geometry(set_id, s, sets, sizes, space, problems):
@@ -2188,3 +2621,19 @@ def _validate_files(view, directory, sets, sizes, problems):
                         f"record {record['id']}: zero or more and never falling ({name})",
                     )
                     last_rows[record["id"]] = value[-1:].copy()
+    if LOOP_KEY in view and not problems:  # The stated closure is the one its files give.
+        loop = view[LOOP_KEY]
+        try:
+            closure = loop_closure(view, directory)
+        except ViewInvalid as exc:
+            problems.append(f"loop: {exc}")
+            return
+        span = closure["end"] - closure["start"]
+        _check(
+            closure["within"] == loop["closes"]["within"]
+            and closure["zero"] == loop["closes"]["zero"]
+            and closure["not_measured"] == loop["not_measured"]
+            and math.isclose(span, loop["period"], rel_tol=LOOP_SPAN_RTOL, abs_tol=0.0),
+            problems,
+            "loop: its closure is the one measured on its files, over exactly one period",
+        )

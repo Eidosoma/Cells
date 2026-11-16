@@ -50,11 +50,26 @@ response repeats. From the checkpoint at the end of period k it writes one more 
 `io.write_run` (or `window_io.write_windowed_run`) with `view=`. Checkpoint continuity (D153)
 already supports that continuation. The first observed row is at t0 and the last at t0 + T.
 
-**The closure (`closes.within`)** is measured by the writer on the saved arrays, never declared:
-- **Which records:** every record of kind `level`, `amount` or `rate`. Cumulative totals are left
-  out, because they grow by design; the reader differences them inside the loop only.
-- **The measure:** for each record, |x(t0 + T) − x(t0)| / max over the loop of |x|, with a declared
-  floor where a record is identically zero.
+**The closure (`closes.within`)** is measured by the writer on the saved arrays, never declared
+(the two rules below are the lead's ruling of 16 November 2026, §9 ruling 7):
+- **Which records:** every observed record of kind `level`, `amount` or `rate`, less the
+  diagnostics: rates and amounts at the same phase of a periodic state return to their values.
+  Two groups are left out, and the block names their records under `not_measured`, each group
+  with its reason:
+  - cumulative totals, which grow by design (the reader differences them inside the loop only);
+  - diagnostics, the residuals of the step's own checks (in @3: `charge_residual_C`,
+    `component_current_residual_A`, `energy_balance_pJ_s`), which sit at rounding level and are
+    held to their own absolute tolerances. Each owner declares its own (the operator contract's
+    `RECORD_DIAGNOSTICS`, which the inner model declares in the same form).
+- **The measure, per record:** |x(t0 + T) − x(t0)| / max over the loop of |x|. No per-unit
+  scale: it would hide a small species' failure to close behind a large species' magnitude (Ca²⁺
+  against K⁺, both in fmol).
+  - A record stored as an increment over a fixed reference (`amount_increment` over
+    `amount_reference`; the contract's `RECORD_REFERENCES`, {increment field: reference layout
+    field}) is measured as reference + increment, against that amount's own largest magnitude.
+    The reference comes from the bound layout (a constant of the view), or from its merged view
+    record where door S changes it.
+  - A record identically zero over the loop is named in `closes.zero`, never divided by.
 - **What is stated:** `within` is the largest of these. `says` is a sentence the page may show,
   naming the record that attains it, for example "the last record meets the first within 3e-7
   (largest in observed_membrane_voltage_V)".
@@ -70,7 +85,8 @@ already supports that continuation. The first observed row is at t0 and the last
   - `follows` is for a cycle (§6): `({"time", "from", "to"},)`, the cell the loop follows after a
     division. The visualizer's schema would need to accept this field.
 - **The `loop` block in the view:** an optional top-level key, `{"species", "cell", "period",
-  "closes": {"within", "says", "tolerance"}, "follows"?}`.
+  "closes": {"within", "says", "tolerance", "zero"}, "not_measured": [{"why", "records"}],
+  "follows"?}` (`zero` and `not_measured` from ruling 7).
 - **The writer's checks before it writes the block:**
   - the observation base starts at t0 and ends at t0 + T exactly;
   - `within` ≤ tolerance;
@@ -82,6 +98,25 @@ already supports that continuation. The first observed row is at t0 and the last
   `run.source.revision`. One of the two must change (§8, question 2).
 - **The reader's check** validates the block's shape. Nothing else in the engine changes: no
   program, binding, definition field or checkpoint.
+
+**As built (16 November 2026, run-view-d154).**
+- `run_view.Loop` sits in `Request.loop`. These are refused before any output, with nothing
+  written:
+  - a species that is not a word, or a cell that is not declared;
+  - a period or tolerance that is not finite and above zero;
+  - any `follows` (the cycle's, after its probe), or a batch's world;
+  - a run that names no engine source;
+  - a recording subset that leaves out `LOOP_TOTALS`.
+- `loop_closure` measures the closure on the saved files, one at a time, as the view is written.
+  The block is written only when the observed rows span the period (1e-9 relative) and `within`
+  is at most the tolerance. Otherwise it is left out, and the view says why under `unstated`.
+- The reader's check measures the closure again from the files.
+- Records state `diagnostic` (their owner's `RECORD_DIAGNOSTICS`) and `reference` (a constant of
+  the view, or the merged view's record). An increment's fixed reference that is not already a
+  view field is a named constant of the view.
+- @3's own `RECORD_DIAGNOSTICS` and `RECORD_REFERENCES` are the core owner's, in its view
+  declarations. Until they reach this branch, the tests plant them on a fixture inner model.
+- The driver and the planarian builder are in `validation/replay/` (§4).
 
 ## 4. The interim planarian loop (first)
 
@@ -220,6 +255,16 @@ Every package run is a development run from a snapshot, written with its source 
 5. **The cycle: the probe first,** with nothing built until it passes.
 6. **`validation/replay/`** holds the drivers and builders; outputs go under
    `/mnt/workspaces/Cells/replay-<date>/`.
+7. **The closure's records and measure (later the same day):**
+   - **The measure stays per record.** There is no per-unit scale.
+   - **What is measured:** records of kind level, amount and rate, less the declared diagnostics.
+   - **What is left out:** cumulative records and diagnostics. The block names them under
+     `not_measured`, with the reason.
+   - **Increments:** a field stored over a fixed reference is measured as reference + increment.
+   - **Zero records:** a record identically zero is reported, not divided by.
+   - **The two declarations are general:** `RECORD_DIAGNOSTICS` and `RECORD_REFERENCES`, in the
+     operator contract. The core owner declares @3's (and any kind's) in its view declarations on
+     core-next. The run view's owner adds the contract's names and the writer's reading of them.
 
 **Order (as amended by D183):** after run-view-d154's tier rows, its cut-off I/O tests and a
 tier-1 gate (at the CPU release), the loop block and the planarian loop first, then the cycle's

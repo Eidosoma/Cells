@@ -138,7 +138,14 @@ Declarations (class attributes):
     confirmed it, ``source`` where it was read);
   - ``RECORD_LAYERS`` ({field: layer id}): the layer, one of its VIEW_LAYERS, of an own field
     or of a view field it provides or closes (door S's merged view, a record of the view);
-    needed only with more than one layer.
+    needed only with more than one layer;
+  - ``RECORD_DIAGNOSTICS`` (own fields): the residuals of the step's own checks, held to their
+    own absolute tolerances there, not quantities of the simulated world (a looping package's
+    closure leaves them out; docs/LOOPING_REPLAY_DESIGN.md §2);
+  - ``RECORD_REFERENCES`` ({own state field: own layout field}): a field stored as an increment
+    over a fixed reference, whose quantity is reference + increment (a loop's closure measures
+    that sum, the reference from the bound layout or from its merged view where door S changes
+    it). The inner model declares both in the same forms, read by getattr.
   None of them changes a program, a binding or a checkpoint.
 
 Methods take the composite's full state, control and layout NamedTuples, whose
@@ -266,6 +273,8 @@ class Operator:
     RECORD_KINDS = MappingProxyType({})
     ORIENTATION = MappingProxyType({})
     RECORD_LAYERS = MappingProxyType({})
+    RECORD_DIAGNOSTICS = ()
+    RECORD_REFERENCES = MappingProxyType({})
     # A declaration with no part and no field (module docstring; check_declarations).
     DECLARATION_ONLY = False
 
@@ -711,6 +720,21 @@ def _check_records(operator):
     for field, layer in operator.RECORD_LAYERS.items():
         if layer not in layers:
             raise ValueError(f"{name}: RECORD_LAYERS gives {field} a layer not of its VIEW_LAYERS")
+    diagnostics = operator.RECORD_DIAGNOSTICS
+    if not (isinstance(diagnostics, tuple) and len(set(diagnostics)) == len(diagnostics)):
+        raise ValueError(f"{name}: RECORD_DIAGNOSTICS is a tuple of distinct field names")
+    unknown = sorted(set(diagnostics) - own)
+    if unknown:
+        raise ValueError(f"{name}: RECORD_DIAGNOSTICS names fields not its own: {unknown}")
+    references = operator.RECORD_REFERENCES
+    if not hasattr(references, "items"):
+        raise ValueError(f"{name}: RECORD_REFERENCES maps its own fields")
+    for field, reference in references.items():
+        if field not in operator.STATE_AXES or reference not in operator.LAYOUT_FIELDS:
+            raise ValueError(
+                f"{name}: RECORD_REFERENCES maps an own state field to an own layout field, not "
+                f"{field} to {reference!r}"
+            )
 
 
 def _check_kinds(operator):

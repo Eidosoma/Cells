@@ -159,6 +159,31 @@ def test_the_run_view_record_declarations_are_checked(declared, message):
         check_declarations(operator(**OWN, VIEW_LAYERS=(LAYER,), **declared))
 
 
+@pytest.mark.parametrize(
+    "declared, message",
+    [
+        (dict(RECORD_DIAGNOSTICS=["rate_fmol_s"]), "a tuple of distinct field names"),
+        (dict(RECORD_DIAGNOSTICS=("rate_fmol_s", "rate_fmol_s")), "a tuple of distinct"),
+        (dict(RECORD_DIAGNOSTICS=("other_C",)), "RECORD_DIAGNOSTICS names fields not its own"),
+        (dict(RECORD_REFERENCES=[("moved_fmol", "moved_reference")]), "maps its own fields"),
+        (dict(RECORD_REFERENCES={"rate_fmol_s": "moved_reference"}), "an own state field to"),
+        (dict(RECORD_REFERENCES={"moved_fmol": "amount_reference"}), "an own layout field"),
+    ],
+)
+def test_diagnostics_and_references_are_checked(declared, message):
+    """RECORD_DIAGNOSTICS (own fields: the step's own check residuals) and RECORD_REFERENCES (an
+    own state field stored as an increment over an own layout field), checked at registration
+    (the lead's ruling on a loop's closure, 16 November 2026)."""
+    own = dict(OWN, LAYOUT_FIELDS=("moved_reference",))
+    references = {"moved_fmol": "moved_reference"}
+    check_declarations(
+        operator(**own, RECORD_DIAGNOSTICS=("rate_fmol_s",), RECORD_REFERENCES=references)
+    )
+    with pytest.raises(ValueError, match=message):
+        check_declarations(operator(**own, **declared))
+    assert Operator.RECORD_DIAGNOSTICS == () and dict(Operator.RECORD_REFERENCES) == {}
+
+
 def test_record_layers_may_name_the_view_fields_it_changes():
     second = dict(LAYER, id="volumes")
     check_declarations(
