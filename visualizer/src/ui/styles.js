@@ -57,7 +57,10 @@ canvas { display: block; width: 100%; height: 100%; outline-offset: -4px; }
 .pill-button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 
 /* ---------------------------------------------------------------- cards */
-.card { background: color-mix(in srgb, var(--bg-raised) 94%, transparent); box-shadow: 0 0 0 1px var(--line), 0 10px 30px -18px rgb(0 0 0 / .45); border-radius: 12px; backdrop-filter: blur(8px); }
+/* A card has no backdrop blur: over a picture that is drawn anew every frame the blur is made anew every frame too. Measured on the
+   project's graphics card (16 November 2026), it halved the frames a second while a card lay over the moving picture, for a backdrop
+   that showed through by 6%. The card is a little more opaque instead. */
+.card { background: color-mix(in srgb, var(--bg-raised) 96%, transparent); box-shadow: 0 0 0 1px var(--line), 0 10px 30px -18px rgb(0 0 0 / .45); border-radius: 12px; }
 /* A card or list that scrolls inside itself shows that it does: a shade along an edge that has more beyond it.
    The covers scroll with the content and hide the shade where nothing is beyond (no script, both themes). */
 cells-legend.card, .view.card, .panel-body, .tl-speeds, .index-list, .species-list {
