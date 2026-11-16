@@ -1,0 +1,27 @@
+// The nucleus, the ER, the Golgi, the vesicles and the ribosomes (cell_structures.js, called
+// as it is, from its own stream of chance). It hands on what it built, for the probes.
+//
+// A part module of the cell's builder (parts/index.js), moved unchanged from buildCell in
+// cell_parts.js. It draws through the lens's context, from the layout (cell_layout.js).
+// It draws from a stream of chance of its own, so it moves no other part.
+
+import { CUT } from "../cell_layout.js";
+import { seeded, instanced, dots } from "./geometry.js";
+import { buildStructures } from "../cell_structures.js";
+
+export default {
+  kind: "structures",
+  draws: ["nucleus", "chromatin", "er", "golgi", "vesicles", "ribosomes"],
+  build(env) {
+    const { ctx, handles } = env;
+    const { mode, real, style, has, parts, organelle, frame, outline, inside, inCytoplasm, NUCLEUS, ER_FACING, GOLGI, coreAt, coreRadius, coreReach } = env.layout;
+    // The middle of what regulation acts on (the nucleus, or the free chromosome) is the layout's `core`.
+    const structures = buildStructures({
+      ctx, mode, real, style, frame, parts, has, organelle, cut: CUT, outline, inside, inCytoplasm, instanced, dots,
+      nucleusAt: parts.nucleus ? NUCLEUS : null, erFacing: ER_FACING, golgiAt: GOLGI, core: { at: coreAt, radius: coreRadius, reach: coreReach },
+      random: seeded(real ? 3103 : 3101),
+    });
+    handles.structures = structures.drawn; // what the panel says was drawn of each, by part
+    return { structures };
+  },
+};

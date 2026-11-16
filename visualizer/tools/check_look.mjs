@@ -421,6 +421,54 @@ try {
     s = await state();
     check("and it takes a press there", s.choice === "plain" && s.box?.join() === "Look: Rich | Plain*", JSON.stringify([s.choice, s.box]));
     await press(button("Look", "Rich"), "Rich, on a phone");
+    // The scale rail folds behind one button on a phone, so that the top of the view is not crowded: a real press
+    // opens its levels, and a real press on one goes there and folds it again.
+    const railState = () =>
+      evaluate(`(() => {
+        const root = ${V}.shadowRoot, box = (el) => { const r = el?.getBoundingClientRect(); return r && r.width ? [r.left, r.top, r.right, r.bottom].map(Math.round) : null; };
+        const toggle = root.querySelector(".rail-toggle");
+        return { toggle: box(toggle), rail: box(root.querySelector(".rail")), card: box(root.querySelector(".view.card")), bar: box(root.querySelector(".bar .switch")), expanded: toggle?.getAttribute("aria-expanded") ?? null, active: ${V}.current.activeStop, says: toggle?.textContent ?? null, level: root.querySelector('.rail button[aria-pressed="true"]')?.textContent ?? null,
+          stops: [...root.querySelectorAll(".rail button")].map((b) => [b.dataset.stop, Math.round(b.getBoundingClientRect().height)]) };
+      })()`);
+    let rail = await railState();
+    check("on a phone the scale rail stands folded behind one button under the bar, at least 44 px tall, naming the level shown, clear of the view's card", Boolean(rail.toggle) && rail.rail === null && rail.toggle[1] >= (rail.bar?.[3] ?? 56) && rail.toggle[3] - rail.toggle[1] >= 44 && apart(rail.toggle, rail.card) && Boolean(rail.level) && (rail.says || "").endsWith(rail.level), JSON.stringify(rail));
+    await press(`(root) => root.querySelector(".rail-toggle")`, "the rail's button");
+    rail = await railState();
+    check("a real press opens it under its button: every level a button at least 44 px tall, within the screen", rail.expanded === "true" && Boolean(rail.rail) && rail.rail[1] >= rail.toggle[3] && rail.rail[3] <= phone.height && rail.stops.length >= 2 && rail.stops.every(([, height]) => height >= 44), JSON.stringify(rail));
+    await press(`(root) => root.querySelector('.rail button[data-stop="tissue"]')`, "the rail's tissue level");
+    await rest();
+    rail = await railState();
+    check("a real press on a level goes there and folds the rail again", rail.active === "tissue" && rail.rail === null && rail.expanded === "false", JSON.stringify(rail));
+    await evaluate(`${V}.current.goToScale("cell", true)`);
+    await rest();
+    // With a part's panel open (a sheet along the bottom of a phone) the view's card folds behind one button under the
+    // bar, and the look's switch stands on the sheet's top edge: a real press on each still reaches its switch.
+    await evaluate(`${V}.select("cap.pumps")`);
+    await sleep(800);
+    const folded = () =>
+      evaluate(`(() => {
+        const root = ${V}.shadowRoot, box = (el) => { const r = el?.getBoundingClientRect(); return r && r.width ? [r.left, r.top, r.right, r.bottom].map(Math.round) : null; };
+        const said = [...root.querySelectorAll(".label-example")].some((el) => !el.classList.contains("is-off"));
+        return { toggle: box(root.querySelector(".view-toggle")), card: box(root.querySelector(".view.card")), panel: box(root.querySelector("cells-panel")), look: box(root.querySelector(".look-switch")), colour: ${V}.current.colourBy, selected: ${V}.state.selected,
+          flux: ${V}.current.flux?.tokens.length > 0, said, notice: box(root.querySelector(".view-notice")) ? root.querySelector(".view-notice").textContent : null };
+      })()`);
+    let fold = await folded();
+    check("on a phone with a panel open the view's card folds behind a button at least 44 px tall under the bar, and the look's switch stands on the panel's edge", Boolean(fold.toggle) && fold.card === null && fold.toggle[3] - fold.toggle[1] >= 44 && Boolean(fold.look) && Boolean(fold.panel) && fold.look[3] <= fold.panel[1], JSON.stringify(fold));
+    await press(`(root) => root.querySelector(".view-toggle")`, "the folded card's button");
+    await press(button("Colour", "Status"), "Colour: Status, over the panel");
+    fold = await folded();
+    check("a real press opens the card over the picture, and a real press on Colour: Status takes it, the part still chosen", Boolean(fold.card) && fold.colour === "status" && fold.selected === "cap.pumps", JSON.stringify(fold));
+    // The part's flux shows: where the opened card leaves the picture's statement no room, the card carries its notice (rule 11).
+    check("while the part's flux shows, the words \"Illustration: not a run\" stay in sight: on the picture, or in the opened card", !fold.flux || fold.said || fold.notice === "Illustration: not a run", JSON.stringify(fold));
+    await press(button("Colour", "Biology"), "Colour: Biology, over the panel");
+    await press(button("Look", "Plain"), "Plain, on the panel's edge");
+    s = await state();
+    check("and the look's switch on the panel's edge takes a press", s.choice === "plain", JSON.stringify([s.choice, s.box]));
+    await press(button("Look", "Rich"), "Rich, on the panel's edge");
+    await evaluate(`${V}.select(null)`);
+    await rest();
+    fold = await folded();
+    check("letting go of the part folds nothing away: the card stands as before, and its button is gone", Boolean(fold.card) && fold.toggle === null && fold.colour === "biology", JSON.stringify(fold));
     await evaluate(`${S}.look.held = true`);
     await shot("views-phone");
     await page("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: HEIGHT, deviceScaleFactor: 1, mobile: false });

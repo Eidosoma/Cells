@@ -6,7 +6,7 @@
 // Its place in the data. A packaged replay (schema/RUN_VIEW.md) says that it is a loop in
 // its view, in the shape the engine's run-view writer gives it (docs/LOOPING_REPLAY_DESIGN.md
 // on the engine's side, proposed 16 November 2026):
-//   view.loop = { species, cell, period, closes: { within, says, tolerance }, follows? }
+//   view.loop = { species, cell, period, closes: { within, says, tolerance, zero? }, not_measured?, follows? }
 //     species   the id of the species whose cell the run is
 //     cell      the id of that cell in the run's set of cells
 //     period    the loop's length in the run's time; it must agree with the records' span
@@ -15,6 +15,9 @@
 //               measured it, `tolerance`, the one its caller declared (the writer refuses a
 //               block above it, and so does the reader), and `says`, the sentence the page
 //               may show. A run that does not say so is not played.
+//     not_measured  the records the run's closure leaves out, by reason ([{ why, records }]: the running totals,
+//               which grow by design); `closes.zero` the records identically zero over the loop. Carried, and said
+//               with the closure: a record not measured is never read as one that meets itself.
 //     follows   for a cell cycle: [{ time, from, to }], the cell the loop follows from that
 //               time on, after a division. Carried and said on the page; the hand-over itself
 //               is not drawn yet, and the streams are read for the loop's first cell.
@@ -128,6 +131,10 @@ export function readLoop(run, speciesId) {
       run, species: speciesId, name: run.id, label: run.info?.label || null, models, revision, dirty: run.info?.source?.dirty ?? null,
       cell, membrane: own.length ? own[0] : null, start: run.start, length: said.period,
       closes: { within: closes.within, tolerance: closes.tolerance, says: closes.says.trim() }, follows,
+      // What the run's closure leaves out, by its reason, and the records identically zero over the loop, as the run
+      // states them: a record not measured is not one that meets itself, and the page says how many there are.
+      notMeasured: (Array.isArray(said.not_measured) ? said.not_measured : []).filter((group) => typeof group?.why === "string" && Array.isArray(group.records) && group.records.length).map((group) => ({ why: group.why.trim(), records: [...group.records] })),
+      zero: Array.isArray(closes.zero) ? [...closes.zero] : [],
     },
   };
 }
@@ -269,9 +276,15 @@ export function engineWords(loop) {
   return `Made by the engine at revision ${loop.revision}${tree}`;
 }
 
-/** How closely the loop closes, as the run measured it and against the tolerance its caller declared. */
+/**
+ * How closely the loop closes, as the run measured it and against the tolerance its caller declared; and, where the run
+ * says its closure leaves records out (running totals grow by design) or finds some identically zero, how many, in its
+ * own words.
+ */
 export function closesWords(loop) {
-  return `Its last record meets its first within ${figure(loop.closes.within)} (tolerance ${figure(loop.closes.tolerance)})`;
+  const are = (count) => `${count} ${count === 1 ? "is" : "are"}`;
+  const rest = [...(loop.notMeasured || []).map((group) => `${are(group.records.length)} not measured (${group.why})`), ...(loop.zero?.length ? [`${are(loop.zero.length)} identically zero over the loop`] : [])];
+  return `Its last record meets its first within ${figure(loop.closes.within)} (tolerance ${figure(loop.closes.tolerance)})${rest.length ? `, in the records it measures; of its records, ${rest.join("; ")}` : ""}`;
 }
 
 /** A small relative figure, for the page. */

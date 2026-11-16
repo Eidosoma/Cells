@@ -13,7 +13,7 @@ import * as THREE from "three";
 import { buildCell, buildTissue } from "../src/lenses/cell_parts.js";
 import { APPENDAGES, ORGANELLES, MOST, middle, words, vacuoleOf } from "../src/lenses/cell_scenery.js";
 import { cellFrame, packing, REF } from "../src/lenses/shapes.js";
-import { describeScenery } from "../src/lenses/cell.js";
+import { describeScenery, CellLens } from "../src/lenses/cell.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const json = (file) => JSON.parse(readFileSync(path.join(ROOT, file), "utf8"));
@@ -48,6 +48,26 @@ function built(file, mode = "schematic") {
   return { handles, added: [...a.added, ...b.added], chosen: a.added.filter((entry) => entry.pick), frame: cellFrame(levels.cell.shape, 0), levels };
 }
 const boxOf = (geometry) => new THREE.Box3().setFromBufferAttribute(geometry.attributes.position);
+/** The clear shells outside the cell membrane (a wall, an outer membrane), innermost first: drawn as scenery round the cell's own middle. */
+const shellsOf = (added) => added.filter((entry) => entry.tag === "scenery" && entry.item.isMesh && entry.item.renderOrder === 7 && entry.item.position.lengthSq() === 0).map((entry) => entry.item).sort((a, b) => boxOf(a.geometry).max.x - boxOf(b.geometry).max.x);
+/**
+ * How far outside the cell membrane a shell's surface stands: the nearest and the farthest of its vertices.
+ * Of a flat-sided cell, the upright part between its rounded edges, at the corners and along the sides: where a
+ * cell's edges are rounded more than its corners, as the plant cell's are, the cell's own `inside` is not a
+ * distance near the corners of its faces.
+ */
+function gapsOf(shell, frame) {
+  const position = shell.geometry.attributes.position, point = new THREE.Vector3();
+  let near = Infinity, far = -Infinity;
+  for (let index = 0; index < position.count; index++) {
+    point.fromBufferAttribute(position, index);
+    if (!frame.round && Math.abs(point.y) > frame.top - frame.bevel + 1e-9) continue;
+    const gap = -frame.inside(point);
+    near = Math.min(near, gap);
+    far = Math.max(far, gap);
+  }
+  return [near, far];
+}
 
 test("a number or a range of two: its middle, and its words", () => {
   assert.equal(middle([5, 10]), 7.5);
@@ -96,10 +116,54 @@ test("E. coli's flagella and fimbriae are drawn from the species' own words, in 
   fimbriae.getMatrixAt(0, copy);
   at.setFromMatrixPosition(copy);
   // The wall of a cell with two membranes lies between them, so the second membrane is the outermost shell.
-  assert.ok(handles.shells.wall > 1 && handles.shells.outer > handles.shells.wall, JSON.stringify(handles.shells));
-  assert.ok(Math.abs(frame.inside(at.clone().multiplyScalar(1 / handles.shells.outer))) < 0.05, "a fimbria starts at the outer membrane's shell");
+  assert.ok(handles.shells.wallGap > 0 && handles.shells.outerGap > handles.shells.wallGap, JSON.stringify(handles.shells));
+  assert.ok(Math.abs(frame.inside(at) + handles.shells.outerGap) < 0.02, "a fimbria starts on the outer membrane's shell");
+  // The foot of each flagellum passes through the whole envelope, which is as wide wherever it stands.
+  for (const { item } of chosen.filter((entry) => entry.pick === "scenery:appendage:0:base")) assert.ok(Math.abs(item.geometry.parameters.height - (handles.shells.outerGap + 0.03 / frame.u)) < 1e-9, "through the shells");
   // All of it is neutral glass: scenery, with no status.
   for (const { item } of chosen) assert.ok(item.material.userData.options.opacity <= 0.9 && item.material.userData.options.hue === undefined, "neutral glass, not a part's own colour");
+});
+
+test("each shell stands at one distance outside the cell membrane all round, the wall between a cell's two membranes", () => {
+  // E. coli: its wall and its outer membrane stand as far out at the poles as along the sides, where they stood before (17.5 and 37.5 nm).
+  const ecoli = built(species("ecoli"));
+  const side = ecoli.handles.frame.equator.apothem, u = ecoli.handles.frame.u;
+  const [wall, outer] = shellsOf(ecoli.added);
+  assert.ok(wall && outer, "two shells round a cell with two membranes and a wall");
+  for (const [shell, gap, share] of [[wall, ecoli.handles.shells.wallGap, 0.035], [outer, ecoli.handles.shells.outerGap, 0.075]]) {
+    const [near, far] = gapsOf(shell, ecoli.handles.frame);
+    assert.ok(far - near < 1e-3 * gap && Math.abs(near - gap) < 1e-3 * gap, `one distance all round (${near} to ${far}, ${gap})`);
+    assert.ok(Math.abs(gap - side * share) < 1e-12, "the distance it had along the sides");
+  }
+  assert.deepEqual([ecoli.handles.shells.wallGap, ecoli.handles.shells.outerGap].map((gap) => Math.round(gap * u * 10000) / 10), [17.5, 37.5]);
+  // Thale cress: its wall, at a corner as at a side, in both size modes.
+  const file = species("thalecress");
+  for (const mode of ["schematic", "real"]) {
+    const { added, handles } = built(file, mode);
+    const shells = shellsOf(added);
+    assert.equal(shells.length, 1, `${mode}: one shell, the wall`);
+    const [near, far] = gapsOf(shells[0], handles.frame);
+    assert.ok(far - near < 1e-3 * handles.shells.wallGap && Math.abs(near - handles.shells.wallGap) < 1e-3 * handles.shells.wallGap, `${mode}: one distance all round (${near} to ${far})`);
+    assert.equal(handles.shells.outerGap, 0, "no second membrane");
+    if (mode === "schematic") assert.ok(Math.abs(handles.shells.wallGap - handles.frame.equator.apothem * 0.045) < 1e-12, "the distance it had along the sides");
+  }
+  // A cell with neither: no shell at all.
+  for (const id of ["syn3a", "human"]) {
+    const { added, handles } = built(species(id));
+    assert.deepEqual([shellsOf(added).length, handles.shells.wallGap, handles.shells.outerGap], [0, 0, 0], id);
+  }
+});
+
+test("the scale bar says small parts are enlarged for as long as they are drawn so: a single cell at any distance", () => {
+  const info = (u, distance, ranges, sizeMode = "schematic") => CellLens.prototype.scaleInfo.call({ stage: { rig: { distance } }, u, sizeMode, ranges });
+  const single = { cell: {} }; // a cell that gives way to no larger level
+  const layered = { cell: { out: [120, 200] }, tissue: { in: [120, 200], out: [900, 1600] } };
+  assert.equal(info(0.0545, 12, single).note, "small parts enlarged", "E. coli 12 µm away, past 190 of its units");
+  assert.equal(info(0.0545, 0.5, single).note, "Close-up not to scale");
+  assert.equal(info(0.0545, 12, single, "real").note, null, "to scale it says nothing of enlarging");
+  assert.equal(info(1, 150, layered).note, "small parts enlarged");
+  assert.equal(info(1, 195, layered).note, null, "a cell that gives way to its tissue: past 190 units the note goes, as before");
+  assert.equal(info(1, 1000, layered).note, "the outline is a placeholder");
 });
 
 test("a species without such parts is built with none of them", () => {
@@ -179,10 +243,11 @@ test("a plant cell: a vacuole of its share, chloroplasts of the number and size 
     const nucleus = handles.probes.nucleus;
     assert.ok(Math.hypot(nucleus.x, nucleus.z) > frame.equator.widest * 0.3, "the nucleus is out at the side");
   }
-  // The wall: to scale it stands as far outside the membrane as it is thick.
-  const { added, frame } = built(file, "real");
-  const grown = added.filter((entry) => entry.tag === "scenery" && entry.item.isMesh && entry.item.scale.x > 1.0001 && entry.item.scale.x < 1.03).map((entry) => entry.item.scale.x);
-  assert.ok(grown.some((scale) => Math.abs((scale - 1) * frame.equator.widest * frame.u * 1000 - parts.wall_nm) < 1), `a shell ${parts.wall_nm} nm outside the membrane (${grown.join(", ")})`);
+  // The wall: to scale it stands as far outside the membrane as it is thick, at its sides and at its corners alike.
+  const { added, handles } = built(file, "real");
+  const [wall] = shellsOf(added);
+  const [near, far] = gapsOf(wall, handles.frame);
+  assert.ok(Math.abs(near * handles.frame.u * 1000 - parts.wall_nm) < 0.5 && Math.abs(far * handles.frame.u * 1000 - parts.wall_nm) < 0.5, `a shell ${parts.wall_nm} nm outside the membrane all round (${[near, far].map((gap) => gap * handles.frame.u * 1000)})`);
 });
 
 test("a layer is packed as the cell's sides ask: fours in squares, the rest in sixes, exactly as before", () => {

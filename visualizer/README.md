@@ -245,7 +245,9 @@ must bve configurable as well based on our different species as we add them".
   seen before, goes to the user first.
 - **Rough edges:** the human heart and body are quick placeholders; M. pneumoniae is drawn
   as a plain rod, since the shape list cannot yet narrow one end for its attachment
-  organelle; a cell under 2 µm across has one size mode.
+  organelle; a cell under 2 µm across has one size mode for now (a second, to scale, is
+  planned); to scale, thale cress's wall reaches past its neighbours' membranes, because
+  the neighbouring cells are drawn closer than two walls would let them stand.
 
 ## Experiment replays
 
@@ -285,9 +287,11 @@ only when it is shown:
   threshold at the first record, and the replay says so.
 - **Held back:** the W1 heredity pilot adapts (two runs), but the view draws every event
   as a replacement and the pilot's events are a cue in many cells at once.
-- **Runs written by the engine's own run-view writer** (on its branch, not on main yet)
-  are kept small under `tests/engine-views/`, made by `tools/make_engine_view_fixture.sh`;
-  the adapter's tests read them.
+- **Runs written by the engine's own run-view writer** (on its development branch, not
+  on main yet) are kept small under `tests/engine-views/`: three unit-test worlds made by
+  `tools/make_engine_view_fixture.sh`, and the engine's first looping run, an interim
+  planarian loop copied from the engine's lead. The adapter's tests read them; none is on
+  the page.
 - **Speed.** The timeline's speed lists the steps a run is offered, each in words. Every
   run is offered slowed a million, a thousand or four times, true speed, and four times
   faster; 15, 60 and 240 times faster are offered where the run still lasts five seconds
@@ -351,7 +355,9 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
   and a sheet's transfers until a saved run of a sheet carries those totals.
 - **Flux in the Cell view** (published 16 November 2026). A Flux switch in the Cell
   view's legend, off as the page opens; a part shows its flux alone when the visitor
-  chooses it; beads with bloom. No species has a looping run of its own yet, so what
+  chooses it; beads with bloom. No species has a looping run on the page yet (the
+  engine's first, an interim planarian loop of 16 November 2026, is read by the tests
+  and waits for its writer to land on main), so what
   shows is illustration, marked "Illustration: not a run", of the form "direction only":
   pumps and secreted signals go the way the engine's own laws say (cited in
   `data/layers/flux.json`), channels, junctions and water are drawn both ways with none
@@ -407,6 +413,25 @@ In "To scale" the close-up of the membrane is to scale as well: a bilayer about 
 thick, a channel about 9 nm across, and a 10 nm scale bar. For comparison, the cells of
 the E07 sheet are about 11 µm across by their declared volume (0.75 pL).
 
+A single cell under 2 µm across (today the three bacteria) is drawn in one size mode for
+now: the schematic layout, made for a cell about 20 µm across and scaled down to the
+cell's own size. What that does to each part:
+
+- **Flagella and fimbriae** are drawn at the sizes the species' file gives with its
+  sources, and **ribosomes** at a textbook 20 nm across, the picture's choice.
+- **Membranes and membrane proteins** are enlarged by how small the cell is: in E. coli
+  (1 µm across) the membrane about 6 times and its proteins about 5 times, in Syn3A
+  (0.4 µm) about twice, in M. pneumoniae (0.2 µm) near their own size.
+- **A wall or an outer membrane** stands at one distance outside the cell membrane all
+  round: in E. coli 17.5 nm and 37.5 nm, the picture's choice. In thale cress to scale
+  the wall stands the 150 nm its file gives.
+- **The free chromosome** is one closed thread whose width, length and winding are the
+  picture's choice. Its panel says how thick and how long the thread is drawn, and what
+  share that is of the length its base pairs would make (2 to 4%, at a textbook 0.34 nm
+  a base pair).
+- **The scale bar** keeps the words "small parts enlarged" at every distance, since such
+  a cell is never drawn to scale.
+
 ## Run it
 
 ```bash
@@ -452,6 +477,22 @@ worker threads to the first processors by number, whatever the run is allowed, s
 lock looks at every thread of what a run started once a second and puts a process with a
 thread elsewhere back. (A scope bound to a processor would hold them at once; it needs
 the cpuset controller, which a user's session is not given on this machine.)
+
+**On the graphics card, where it is free.** The tools ask Chrome for the software
+renderer. A run may draw on the machine's graphics card instead by starting Chrome
+through `tools/chrome_gpu.sh`, which no tool needs changing for:
+`CHROME=$PWD/tools/chrome_gpu.sh npm run check:all` (add `CELLS_GPU_LOG=FILE` and each
+browser writes there which renderer it took). The engine's work on the card comes first,
+by the rule its lead gave on 16 November 2026: each browser holds the engine's own lock
+file shared for as long as it lives, so an engine job waits for the browsers to end and
+none starts while a job holds the card; none starts while the engine's reservation flag
+exists or another process is on the card. In each of those cases the wrapper starts
+Chrome on the software renderer, as it was asked to. Measured that day on one clean copy
+under the same load, two Cell-view scenarios took 310 s and 403 s in software and 175 s
+and 157 s on the card, with the same checks passing. A run's record says which renderer
+it used, and one gate or one before-and-after pair of pictures never mixes the two. The
+software renderer stays the reference for the gates until a full suite on the card has
+matched it scenario by scenario.
 
 ## How it is built
 
@@ -652,7 +693,24 @@ Ideas kept for after the basics (the user, 14 November 2026):
   run view once replays exist.
 - Statuses are as of the date in the top bar; the map does not update itself.
 - Screenshots use software WebGL; performance on real hardware is not measured.
-- On a phone the top of the cell view is crowded: the view switches and the scale rail both sit there.
+- On a phone the scale rail folds behind one button under the bar, and while a panel is
+  open the view's card folds behind another; the legend's title and the look's switch then
+  stand on the panel's top edge. The open legend is tall there and scrolls; a card that
+  scrolls inside itself shows a shade along the edge that has more beyond it.
+- On a phone every control is at least 44 px in its smaller dimension in the states that
+  were measured (16 November 2026): the Cell view at rest and with its legend, rail, card
+  or a panel open; a replay with its speed list and a cell's panel; the atlas's card. Not
+  measured: links inside a panel's text, the List, the Engine view, and the atlas's shelves
+  with a family open. The names on the picture are smaller (about 18 px); the List gives
+  every part as a row to press.
+- A name on the picture is not drawn where a card lies over it or where the window's edge
+  would cut it, so a small window shows fewer names than a large one, and the List has
+  them all. The chosen part's name is always drawn, and may stand over a card in a wide
+  window; in a replay on a phone with a cell chosen it can stand under the timeline.
+- On a phone the closed choosers of the experiment and the run show only the start of a
+  long name (a press opens the list with every name whole); an opened run card over a
+  panel covers the replay's statement of what a bead stands for until it is closed; and
+  in Syn3A's shelves the caveat lies over the name of the set-apart group.
 - Established (slate) and landed (blue) differ mainly in saturation. The four status hues
   pass the colour-blindness checks on both backgrounds; slate is a neutral and is not part
   of that check, so the panel and the list always name the status in words.

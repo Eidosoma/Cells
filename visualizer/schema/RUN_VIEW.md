@@ -129,14 +129,20 @@ derived from the saved junction topology. Adapters read saved files only.
 ## The engine's view
 
 The engine's run-view writer (`cells.run_view@1`: one `view.json` beside a run's files)
-**is not on main yet.** It lives on the branch `run-view-d154`, read here at `fd008813`
-(16 November 2026: `src/cells/run_view.py`, and `docs/RUN_VIEW_DESIGN.md` §3, §4 and §9 on
-that branch). It was first shown on 15 November 2026, on a worked example made from the
-development run of one cell that secretes a species, and its format grew on 16 November.
-The adapter reads both shapes. Each addition of 16 November is read only where a view gives
-its key, so a view of the 15 November shape is packaged exactly as before. Two small runs
-that the writer wrote at `fd008813` are kept as fixtures (`tests/engine-views/`, made again
-by `tools/make_engine_view_fixture.sh`). The writer conforms to most of this note. Where it
+**is not on main yet.** It lives on a development branch, `run-view-d154`, and reaches main
+by a merge that keeps the branch's revisions, so the revisions cited here stay as they are
+(16 November 2026: `src/cells/run_view.py`, and `docs/RUN_VIEW_DESIGN.md` §3, §4 and §9 and
+`docs/LOOPING_REPLAY_DESIGN.md` §2 and §3 on that branch). The adapter reads the writer at
+`fd008813` and at `d7a11d5b`, whose writer is the same as the branch's tip at `5dbad635`:
+`d7a11d5b` added the loop block and a record's `diagnostic` and `reference` (below). It was
+first shown on 15 November 2026, on a worked example made from the development run of one
+cell that secretes a species, and its format grew on 16 November. The adapter reads every
+shape. Each addition is read only where a view gives its key, so a view of the 15 November
+shape is packaged exactly as before. Kept as fixtures (`tests/engine-views/`): three small
+runs that the writer wrote at `fd008813` (made again by
+`tools/make_engine_view_fixture.sh`), and the interim planarian loop, a development run with
+no verdict that the writer at `d7a11d5b` wrote from an execution snapshot (copied from the
+engine's lead's folder; not published). The writer conforms to most of this note. Where it
 differs, by design, the viewer reads what the writer gives:
 
 - **Two time bases.** `time` is `{"unit": "s", "bases": [...]}`, each base
@@ -172,7 +178,8 @@ differs, by design, the viewer reads what the writer gives:
   record the page's `sign`: the view's `says`, its `source` or `confirmed` (whichever the
   view gives) as written, and `high`, the end the page calls the higher, from the role
   `plus` (`inside` and `outside` as they are; a link's `sender` as `first`, its `receiver`
-  as `second`; no kept view has a junction yet, so those two are not exercised on a run).
+  as `second`: on the interim planarian loop's twelve junctions the saved voltage is the
+  sender's potential less the receiver's at every row, bit for bit).
   Where a role has no such word the record gets no sign, and the page draws no direction
   for it. A record with both `sign` and `difference`, or a difference that does not name
   two roles of its set, is refused.
@@ -223,7 +230,9 @@ differs, by design, the viewer reads what the writer gives:
   is the species whose identity an operator declares. Either way the derivation says that
   this is the viewer's reading.
 - **Events name entities by id** (`"at": {"cell": "cell_0"}`), and a cell's birth and its
-  retirement are events.
+  retirement are events. A replay runs over its records: an event the run states outside
+  their span (a looping run keeps only its last period) is not carried as an event, and the
+  derivation says how many there are and when, the first and the last.
 - **The run** (16 November). `run.id` is the caller's label for the run: the derivation
   names it, and the catalogue keeps its own ids. `run.end` (`{"status", "time", "step"}`) is
   how the run ended: the package's `stop` is its status, `run.end` is carried, and a view
@@ -237,22 +246,61 @@ differs, by design, the viewer reads what the writer gives:
   (the engine ran from a checkout or an export, not an execution snapshot, or the view was
   written later for a run on disk); a caller's `run.revision` is then carried as that
   label, and the derivation says that it is not the engine's own record of its source.
-- **No positions without a builder.** `space` is null and each set's `geometry` is null
-  where the caller gave no geometry, and `unstated` says so.
-- **The loop block is designed, not built** (FR-11, `docs/LOOPING_REPLAY_DESIGN.md` on the
-  branch, ruled by the lead on 16 November 2026). The writer at `fd008813` writes no `loop`,
-  and its own check refuses a top-level key it does not know. Where a view gives `loop`
-  (`{"species", "cell", "period", "closes": {"within", "tolerance", "says"}, "follows"?}`),
-  the adapter checks it and carries it as `view.loop`, the shape the page's loop reader
-  takes (below): its cell must be the run's, `within` no more than `tolerance`, `period` the
-  span of the replay's records as the run saved them, and each step of `follows` a time
-  inside the records with cells of the run. Otherwise the view is refused.
-- **Not read yet.** A recording subset (`recording.subset`, with each set's `recorded`
-  entities) is refused; FR-11's looping packages will record one, so they are refused until
-  the adapter reads it. A builder's geometry (`space`, and `points`, `spheres` or `polygons`
-  on cells and outside nodes) is not read: the cells are laid out by the adapter, and the
-  derivation says so. The caller's labels `experiment`, `arm` and `seed` are not read: the
-  catalogue names the run.
+- **A builder's geometry.** `space` is null and each set's `geometry` is null where the
+  caller gave no geometry, and `unstated` says so. Where the caller gave it, `space` is
+  `{"unit", "dimensions", "representation", "source"}` (a builder's layout is
+  `prescribed`) and the cells carry `points`, `spheres` or `polygons`. The adapter reads the
+  cells' `polygons` in two dimensions: the picture stands each cell where the run puts it, in
+  um, with corners that coincide (within a billionth of the drawing's extent) given one index
+  so that the page finds the edge two cells share, and the derivation gives the largest
+  distance so joined. The adapter's own layout of the cells is then not used, and it lays
+  out no tiles of its own for the outside nodes beside them. Where the view gives no
+  geometry, or another kind, the adapter lays the cells out itself and says so.
+- **A recorded subset** (`recording.subset`, `{"fields", "elements", "every"}`, the run's own
+  statement of what it saved; `recording.mode` says which bases it saved, `"observations"`
+  for the observed rows only). `fields` are the writer's names of the fields kept (a merged
+  view by its `view_<field>`), and every record of the view is of one of them; a set whose
+  elements were kept gives `recorded`, the indices of those entities in its `ids`, and its
+  arrays hold only their columns, in that order; the observed rows are one in every `every`,
+  from the first. The adapter packages what was recorded: the replay's records are the rows
+  kept, and a field saved once for each species is packaged for the recorded species only (the
+  species set stays whole). Of the fields the page has a name for that the run could have
+  recorded (not a ledger of an operator its composition lacks, nor a field over a set it has
+  no entity of: of those, nothing is said, as for a full recording), each that the subset does
+  not list is named in the derivation and listed in the package's `unstated` with the reason
+  ("The run's recording subset does not list it"); nothing is packaged for it and nothing
+  stands in for it, so a layer that needs it says the run did not save it. Refused: a subset
+  that does not give its fields, elements and cadence; a record of a field the subset does not
+  keep; a `recorded` that is not the elements the subset names, or one without them; and, for
+  now, a subset of the entities of any set but the species (the page draws every entity of a
+  set it shows).
+- **A record's `diagnostic` and `reference`** (from `d7a11d5b`). `diagnostic` says, in words,
+  that the record is the residual of the engine's own check, held to its own tolerance, and
+  not a quantity of the simulated world: carried as written. `reference` (`{"constant"}`,
+  `{"record"}` or `{"field"}`: one id) says that the record is stored as an increment over a
+  fixed reference, so its quantity is the reference plus the record: the page does not add
+  it, so such a record is not packaged, and the derivation names it.
+- **The loop block** (FR-11, `docs/LOOPING_REPLAY_DESIGN.md` on the branch, ruled by the lead
+  on 16 November 2026), written from `d7a11d5b` on: `loop: {"species", "cell", "period",
+  "closes": {"within", "tolerance", "says", "zero"}, "not_measured": [{"why", "records"}],
+  "follows"?}`. The writer measures the closure on the saved files, as the largest change
+  from the first observed row to the last over the record's own largest magnitude, for every
+  observed record of kind level, amount or rate; it writes the block only when the observed
+  rows span the period and the closure is within the tolerance, and only for a run that
+  names its engine source (otherwise `unstated` has an item `loop` with the reason).
+  `closes.zero` names the records identically zero over the loop, which are not divided by;
+  `not_measured` names the records the closure leaves out, by reason (the running totals,
+  which grow by design; diagnostics; records of no stated kind). The adapter checks the
+  block (its cell the run's, `within` no more than `tolerance`, `period` the span of the
+  replay's records as the run saved them, the records it names the view's, each step of
+  `follows` a time inside the records with cells of the run) and carries it as `view.loop`,
+  `zero` and `not_measured` with it, as written; otherwise the view is refused. A record not
+  measured is never read as one that meets itself. The writer at `fd008813` writes no
+  `loop`, and its check there refuses a top-level key it does not know.
+- **Not read yet.** A subset of the entities of a set other than the species is refused. A
+  builder's `points` or `spheres`, three dimensions, and the outside nodes' geometry are not
+  read. The caller's labels `experiment`, `arm` and `seed` are not read: the catalogue names
+  the run.
 
 ## Packaged for the viewer: `cells.visualizer.replay@1`
 
@@ -407,23 +455,30 @@ Rules that tighten the run view above:
   rule 6): no record then names a model as its owner, `run.engine_models` is empty, and
   the page keeps the words of `says` on the picture and in the legend.
 - **`view.loop`** (optional): `{"species": id, "cell": id, "period": seconds, "closes":
-  {"within": number, "tolerance": number, "says": text}, "follows": [{"time": seconds,
-  "from": id, "to": id}]}`, as the engine's run-view writer gives it (its design of 16
-  November 2026 for FR-11, ruled by the lead that day; nothing built). The run is one period of a looping run
-  of one cell of that species (`schema/QUANTITY_LAYERS.md`, rule 7). `species` is the
-  species' id in `data/species/`; `cell` the cell's id in the run's set of cells;
-  `period` the loop's length in the run's time, equal to the span of its records, which
-  run from the loop's start to its closing record. `closes.within` is the largest
-  relative difference of any level between the last record and the first, as the writer
-  measured it; `closes.tolerance` the tolerance its caller declared (`within` is never
-  above it); `closes.says` the sentence the page may show. `follows` (optional, for a
-  cell cycle) names the cell the loop follows from a time on, after a division: the page
-  says so, and reads the loop's first cell. The run names its engine models and its
-  revision: `run.revision`, which the adapter fills from `run.source.revision` where the
-  view states the engine's source (`run.source` is then carried, with whether its tree
-  was clean, and the page says so of a loop). A run with `example` is never a loop. The
-  writer at `fd008813` writes no loop block yet, and no packaged run carries the field:
-  the engine's side is to make such runs.
+  {"within": number, "tolerance": number, "says": text, "zero": [record ids]},
+  "not_measured": [{"why": text, "records": [record ids]}], "follows": [{"time": seconds,
+  "from": id, "to": id}]}`, as the engine's run-view writer gives it (FR-11, ruled by the
+  lead on 16 November 2026; written on the development branch from `d7a11d5b` on, not yet
+  on main). The run is one period of a looping run of one cell of that species
+  (`schema/QUANTITY_LAYERS.md`, rule 7). `species` is the species' id in `data/species/`;
+  `cell` the cell's id in the run's set of cells; `period` the loop's length in the run's
+  time, equal to the span of its records, which run from the loop's start to its closing
+  record. `closes.within` is the largest relative change from the first record to the last
+  of any record of kind level, amount or rate, as the writer measured it on the saved files;
+  `closes.tolerance` the tolerance its caller declared (`within` is never above it);
+  `closes.says` the sentence the page may show; `closes.zero` (optional) the records
+  identically zero over the loop. `not_measured` (optional) names the records the closure
+  leaves out, each group with the run's reason: the running totals, which grow by design,
+  and which a reader differences inside the loop only. The page says how many were not
+  measured, with that reason, beside the closure, and never reads one as meeting itself.
+  `follows` (optional, for a cell cycle) names the cell the loop follows from a time on,
+  after a division: the page says so, and reads the loop's first cell (the writer refuses
+  it until the cycle is built). The run names its engine models and its revision:
+  `run.revision`, which the adapter fills from `run.source.revision` (`run.source` is
+  carried, with whether its tree was clean, and the page says so of a loop); the writer
+  writes a loop only for a run that names its engine source. A run with `example` is never a
+  loop. The first real one is the interim planarian loop, a development run with no verdict
+  (`tests/engine-views/loop-d7a11d5b/`, not published).
 - **`view.constants[]`** (optional) are named constants of the run's definition: values
   that a derivation of a quantity layer may read in place of a saved record
   (`schema/QUANTITY_LAYERS.md`, rule 1). `[{"id", "label", "unit", "set", "axes",
@@ -636,9 +691,17 @@ those words.
   observed row) of `volume`, `extracellular_volume`, `membrane_area` and
   `membrane_capacitance` are records under the field's name; the others are named in the
   derivation and not packaged.
-- **Refused:** a view that records a subset (`recording.subset`), which the adapter does
-  not read yet; a view whose files, arrays, rows or shapes are not as it says; an example
-  (`example.json`) with a view beside it.
+- **A recorded subset** (`recording.subset`) is read: the rows the run kept, the fields it
+  lists, and of a field with a row for each species the species it kept. A field the
+  page would otherwise look for and the run could have recorded gets no record and is
+  named as not recorded, in the run's own words; nothing stands in for it, and a total
+  the run calls not measured is never read as nought.
+- **Events** are kept where they lie within the records; those the run states outside its
+  recorded period (a loop records one period of a longer run) are counted in the
+  derivation with their times, and not shown.
+- **Refused:** a view whose files, arrays, rows or shapes are not as it says; a recorded
+  subset that contradicts itself, or that keeps only some entities of a set other than
+  the species; an example (`example.json`) with a view beside it.
 
 **What an experiment found** is two separate facts, both curated from the record, each
 with the record's own line and a source. The viewer shows them and derives neither.

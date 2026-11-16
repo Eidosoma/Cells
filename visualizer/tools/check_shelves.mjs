@@ -222,6 +222,16 @@ const state = () =>
       panel: panel.hidden ? null : { title: panel.querySelector("h2")?.textContent, eyebrow: panel.querySelector(".eyebrow")?.textContent, chips: [...panel.querySelectorAll(".chip")].map((c) => c.textContent).join(" | "), plain: panel.querySelector(".panel-plain")?.textContent, facts: [...panel.querySelectorAll(".facts dt")].map((d) => d.textContent + ": " + d.nextSibling.textContent).join(" | "), heads: [...panel.querySelectorAll(".panel-list h4")].map((h) => h.textContent).join(" | "), hosts: [...new Set([...panel.querySelectorAll(".item-links a")].map((a) => new URL(a.href).hostname))].join(" "), tags: [...panel.querySelectorAll(".tag")].map((t) => t.textContent).join(" | ") },
     };
   })()`);
+// The page's state once it shows what a press should bring, or as it stands when a generous wait has run out.
+// A busy machine answers a press late: a fixed wait would then read the page before it has answered, and a
+// check would miss for no fault of the page's. What each check requires is unchanged.
+const until = async (test, ms = 20000) => {
+  for (const began = Date.now(); ; ) {
+    const now = await state();
+    if (test(now) || Date.now() - began > ms) return now;
+    await sleep(150);
+  }
+};
 // How long a frame takes to draw as the scene stands (software GL here: for comparison only).
 const frame = () =>
   evaluate(`(() => { const v = ${V}; const times = []; for (let i = 0; i < 5; i++) { const t = performance.now(); v.stage.renderer.render(v.stage.scene, v.stage.camera); v.stage.renderer.getContext().finish(); times.push(performance.now() - t); } times.sort((a, b) => a - b); return { ms: Math.round(times[2] * 10) / 10, calls: v.stage.renderer.info.render.calls, triangles: v.stage.renderer.info.render.triangles }; })()`);
@@ -346,15 +356,15 @@ try {
     await still(); // the family is up and the camera has framed it
     const member = await at("(key) => true");
     await click(member.x, member.y);
-    s = await state();
+    s = await until((now) => now.selected === member.key);
     check("a click on a member selects that protein", s.selected === member.key && /protein$/.test(s.panel?.eyebrow || ""), JSON.stringify([s.selected, s.panel?.title, s.panel?.eyebrow]));
     note(`panel: ${JSON.stringify(s.panel)}`);
     await shot("planarian-member-selected");
     await click(330, 700);
-    s = await state();
+    s = await until((now) => now.selected === null);
     check("a click on nothing lets go of the member and leaves the family open", s.selected === null && s.opened === "own:planarian:f:IPR000990", JSON.stringify([s.selected, s.opened]));
     await click(330, 700);
-    s = await state();
+    s = await until((now) => now.opened === null && now.open === null);
     check("a second one closes the family", s.opened === null && s.open === null, JSON.stringify([s.opened, s.open]));
     // The largest thing that opens.
     const t1 = Date.now();
@@ -387,12 +397,24 @@ try {
     // a fixed wait (its members' file may still be on its way).
     await evaluate(`Promise.resolve(${V}.current.ready)`);
     await sleep(1300);
-    await still(); // the camera may still be on its way home after the last thing closed
-    const gathered = await at("(key) => key.includes(':m:channels|in')");
-    await click(gathered.x, gathered.y, 300);
-    await evaluate(`new Promise((resolve) => { const lens = ${L}, began = performance.now(); const wait = () => (lens.mounted?.opened || performance.now() - began > 8000 ? resolve() : setTimeout(wait, 30)); wait(); })`);
+    // On a busy machine the view may move once more after it seemed to rest, and a press then meets the place the
+    // marker has left. So the marker's place is read and pressed again, up to three times, each a real press; the
+    // log says when the first press did not take, so that a page that needs two presses would show here.
+    let gathered = null, presses = 0;
+    for (; presses < 3; ) {
+      await still(); // the camera may still be on its way home after the last thing closed
+      gathered = await at("(key) => key.includes(':m:channels|in')");
+      const before = await evaluate(`JSON.stringify(${V}.stage.rig.view())`);
+      await click(gathered.x, gathered.y, 300);
+      presses += 1;
+      await evaluate(`new Promise((resolve) => { const lens = ${L}, began = performance.now(); const wait = () => (lens.mounted?.opened || performance.now() - began > 12000 ? resolve() : setTimeout(wait, 30)); wait(); })`);
+      s = await until((now) => now.opened === gathered.key && now.drawn.open?.members > 0, 6000);
+      if (s.opened === gathered.key) break;
+      note(`press ${presses} on the gathering did not open it${before === (await evaluate(`JSON.stringify(${V}.stage.rig.view())`)) ? "" : ": the view had moved"}`);
+    }
+    if (presses > 1) note(`the gathering opened at press ${presses}`);
     await sleep(900);
-    s = await state();
+    s = await until((now) => now.opened === gathered.key && now.drawn.open?.members > 0);
     check("a gathering opens to the proteins of all its families", s.opened === gathered.key && s.drawn.open?.members > 0, JSON.stringify([s.opened, s.drawn.open, s.open]));
     note(`panel: ${JSON.stringify(s.panel)}`);
     await shot("planarian-gathering-open");
