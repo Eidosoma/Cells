@@ -168,7 +168,9 @@ TOP_KEYS = frozenset(
 # transfers, the pumps' cycles with the membrane set's rows per cycle, the membrane's own
 # transfers), each recorded with its kind and sign.
 LOOP_KEY = "loop"
-LOOP_KEYS = frozenset({"species", "cell", "period", "closes", "not_measured", "follows"})
+LOOP_KEYS = frozenset(
+    {"species", "cell_type", "cell", "period", "closes", "not_measured", "follows"}
+)
 LOOP_KINDS = ("level", "amount", "rate")
 LOOP_TOTALS = ("channel_transferred", "pump_cycles", "membrane_transferred")
 # The observed records a loop's closure leaves out, by reason, in this order (the lead's ruling of
@@ -566,7 +568,9 @@ class Loop:
     the cell the loop shows; period: the drive's period T in s, which the observed rows span
     exactly (the first at t0, the last at t0 + T); tolerance: the largest closure accepted;
     follows: ({"time", "from", "to"}, ...), the cell the loop follows after a division (§6),
-    refused until the cycle's probe passes and its closure is built.
+    refused until the cycle's probe passes and its closure is built; cell_type: the caller's
+    label (a word) for which of the species' cell types the loop is of, None for the species'
+    default cell (the visualizer's cell-type design).
     """
 
     species: str
@@ -574,6 +578,7 @@ class Loop:
     period: float
     tolerance: float
     follows: tuple = ()
+    cell_type: str | None = None
 
 
 @dataclass(frozen=True)
@@ -1608,6 +1613,10 @@ class Plan:
             return None
         if not (isinstance(loop.species, str) and WORD.fullmatch(loop.species)):
             problems.append("loop: species is a word (the caller's label)")
+        if loop.cell_type is not None and not (
+            isinstance(loop.cell_type, str) and WORD.fullmatch(loop.cell_type)
+        ):
+            problems.append("loop: cell_type is a word (the caller's label), or None")
         if loop.cell is None or loop.cell not in self.sets["cell"]["ids"]:
             problems.append(f"loop: cell {loop.cell!r} is not a declared cell")
         for what in ("period", "tolerance"):
@@ -1666,6 +1675,7 @@ class Plan:
             return view
         view[LOOP_KEY] = {
             "species": loop.species,
+            **({"cell_type": loop.cell_type} if loop.cell_type is not None else {}),
             "cell": loop.cell,
             "period": float(loop.period),
             "closes": {
@@ -2437,6 +2447,10 @@ def _validate_loop(loop, run, sets, bases, record_ids, problems):
         and {"species", "cell", "period", "closes", "not_measured"} <= set(loop) <= LOOP_KEYS
         and isinstance(loop["species"], str)
         and WORD.fullmatch(loop["species"]) is not None
+        and (
+            "cell_type" not in loop
+            or (isinstance(loop["cell_type"], str) and WORD.fullmatch(loop["cell_type"]))
+        )
         and loop["cell"] in cells
         and _positive(loop["period"])
         and isinstance(closes, dict)

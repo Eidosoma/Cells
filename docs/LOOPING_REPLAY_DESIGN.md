@@ -81,12 +81,16 @@ already supports that continuation. The first observed row is at t0 and the last
 - **`run_view.Loop(species, cell, period, tolerance, follows=())` in the Request.**
   - `species` is the caller's label: the viewer's ids are its own, and the engine checks only that
     it is a non-empty word.
+  - `cell_type`, optional (the visualizer's cell-type design, 16 November): the caller's label
+    for which of the species' cell types the loop is of, a word like `species`. When it is
+    absent, the loop is of the species' default cell.
   - `cell` is a declared cell id.
   - `follows` is for a cycle (§6): `({"time", "from", "to"},)`, the cell the loop follows after a
     division. The visualizer's schema would need to accept this field.
-- **The `loop` block in the view:** an optional top-level key, `{"species", "cell", "period",
-  "closes": {"within", "says", "tolerance", "zero"}, "not_measured": [{"why", "records"}],
-  "follows"?}` (`zero` and `not_measured` from ruling 7).
+- **The `loop` block in the view:** an optional top-level key, `{"species", "cell_type"?,
+  "cell", "period", "closes": {"within", "says", "tolerance", "zero"}, "not_measured":
+  [{"why", "records"}], "follows"?}` (`zero` and `not_measured` from ruling 7; `cell_type`
+  only when the caller gives one).
 - **The writer's checks before it writes the block:**
   - the observation base starts at t0 and ends at t0 + T exactly;
   - `within` ≤ tolerance;

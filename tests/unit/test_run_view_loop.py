@@ -1,9 +1,9 @@
 """The run view's loop block (FR-11; docs/LOOPING_REPLAY_DESIGN.md §2, §3; cells/run_view.py).
 
-* Refused before any output: a species that is not a word, a cell the definition does not
-  declare, a period or tolerance not above zero, follows (the cycle's, after its probe), a run
-  without its engine source, a recording subset that leaves out a total the loop reader
-  differences, a batch's world.
+* Refused before any output: a species or cell type that is not a word, a cell the definition
+  does not declare, a period or tolerance not above zero, follows (the cycle's, after its probe),
+  a run without its engine source, a recording subset that leaves out a total the loop reader
+  differences, a batch's world. A cell type, when given, stands beside the species in the block.
 * The declarations a closure reads (the operator contract's RECORD_DIAGNOSTICS and
   RECORD_REFERENCES): a diagnostic's records say so, and a field stored as an increment over a
   fixed reference names it (a constant of the view, or the merged view's record under door S).
@@ -134,6 +134,8 @@ def prepared():
         (dict(tolerance=-1.0), "tolerance is a finite number above zero"),
         (dict(tolerance=True), "tolerance is a finite number above zero"),
         (dict(follows=({"time": 0.002, "from": "cell_0", "to": "cell_0"},)), "follows"),
+        (dict(cell_type="two words"), "cell_type is a word"),
+        (dict(cell_type=""), "cell_type is a word"),
     ],
 )
 def test_bad_loops_are_refused_before_any_output(prepared, monkeypatch, loop, message):
@@ -341,6 +343,11 @@ def test_a_loop_that_closes_is_written_with_its_measured_closure(result, monkeyp
     assert "loop" not in {u["id"] for u in view["unstated"]}
     assert view["run"]["source"] == SOURCE and "revision" not in view["run"]
     run_view.validate(view, tmp_path / "a")  # The reader's check measures it again.
+    # A cell type: the caller's label beside the species (absent above: the default cell).
+    write_run(tmp_path / "typed", result, view=request(cell_type="resting"))
+    typed = load(tmp_path / "typed")
+    run_view.validate(typed, tmp_path / "typed")
+    assert typed[run_view.LOOP_KEY] == dict(loop, cell_type="resting")
     view[run_view.LOOP_KEY]["closes"]["within"] = within / 2
     with pytest.raises(run_view.ViewInvalid, match="the one measured on its files"):
         run_view.validate(view, tmp_path / "a")
