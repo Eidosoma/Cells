@@ -92,7 +92,8 @@
   "/mnt/workspaces/Cells/independent-references-20261115-01/compartment-k2b-tiers/run/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dev-427e4a05/tiers-measure/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/tiers-50e25cec/measure/measured.json",
-  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/core-fr45/tiers-a45af8e6/measured.json"
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/core-fr45/tiers-a45af8e6/measured.json",
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/core-fr45/tiers-8435dceb/measured.json"
  ],
  "measured_provenance": [
   {
@@ -758,6 +759,14 @@
    "root": "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/core-fr45/snapshot-a45af8e6",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-15T23:47:15+00:00"
+  },
+  {
+   "git_revision": "8435dcebd457ab578f6374413dd08bda71067601",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/core-fr45/snapshot-8435dceb",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-16T00:50:37+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1906,7 +1915,7 @@
    },
    {
     "file": "tests/unit/test_fr45_damage_and_worlds.py",
-    "seconds": 2.17,
+    "seconds": 3.12,
     "exit_code": 0,
     "counts": {
      "passed": 18
@@ -1930,7 +1939,7 @@
    },
    {
     "file": "tests/unit/test_fr45_qualification.py",
-    "seconds": 6.14,
+    "seconds": 6.23,
     "exit_code": 0,
     "counts": {
      "passed": 32
@@ -4161,7 +4170,7 @@
    },
    {
     "file": "tests/unit/test_fr45_reference_stage.py",
-    "seconds": 28.91,
+    "seconds": 42.96,
     "exit_code": 0,
     "counts": {
      "passed": 4
@@ -4169,7 +4178,7 @@
    },
    {
     "file": "tests/unit/test_fr4_world_engine.py",
-    "seconds": 55.56,
+    "seconds": 73.72,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -4177,7 +4186,7 @@
    },
    {
     "file": "tests/unit/test_fr4_world_engine_k2.py",
-    "seconds": 52.96,
+    "seconds": 53.95,
     "exit_code": 0,
     "counts": {
      "passed": 1
