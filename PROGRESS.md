@@ -77,6 +77,39 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **D172's round landed on main (16 November 2026, about 17:40 UTC).** Main ab267c39 merges candidate
+  c1 = integration-d172 3c10b833 and is tagged `d172-landed-2026-11-16`.
+  - **What lands:**
+    - the inner model's declared laws, and dispatch per declared structure (`resolved_pump_tissue@3`);
+    - the kind interface, with three built-in kinds (passive routes, a rapid proton buffer, the
+      transporter);
+    - the operators, with door S's scoped composition;
+    - the species registry;
+    - FR-1's compartments;
+    - A7's fixed summation order (D182).
+  - **The gates** (records in [RUN-c1.md](/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/RUN-c1.md)):
+    - **results:** c0 bitwise on 113 of 113 worlds; c1 within A7's frozen tolerance file, with
+      every physical field bitwise;
+    - **crossrev:** c1 against c0, with constants and bindings identical in all eight sets;
+    - **tiers 1+2:** 492 files, none changed;
+    - **G2:** all 23 steps pass;
+    - **the L4 block,** attempt 2: 103 pass, 0 fail, 28 report. W1, W2 and G2-Q1's Q1–Q7 pass, and
+      all ten parity cases pass. The six cases judged in both attempts are identical;
+    - **tier 3:** 229 files. 187 pass. All 42 non-passing files are classified
+      ([table](/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-table.md)), and none is the round's or A7's:
+      - 23 pre-existing failures;
+      - 16 pre-existing timeouts, whose roughly 280 tail tests never ran in either tree;
+      - 2 stale tests from the round, fixed in the next commit with their masked checks
+        verified;
+      - 1 that passes when run alone.
+  - **Privacy:** clean across the tree, the full history and the 157 commit messages. The merge
+    differs from c1 only in docs, `visualizer/` and the root Markdown files.
+  - **Open after the landing,** for D187's audit:
+    - six pre-existing engine-side findings: the [anchor] refusal missing in surface_kinetic and
+      surface_tissue, the cotransport/water energy failure, surface_excision's NumericalError, the
+      fixed_step tracing trio, a behavioural assertion, and a missing MODEL_ID;
+    - the never-run tails.
+
 - **The visualizer merged into main twice, and the README brought to 16 November (16 November
   2026, the user's requests).** All three merges touch only `visualizer/` and `README.md`. No
   engine code reads `visualizer/`.
