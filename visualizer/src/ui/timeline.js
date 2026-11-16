@@ -13,10 +13,13 @@
 // Keys, with the slider in focus: Left and Right step one saved record, Page Up and
 // Page Down jump to the next event, Home and End go to the ends, Space plays or pauses,
 // < and > take the next slower or faster speed.
+//
+// A run may count its time in steps of its own (its time base, src/replay/player.js): the speeds,
+// their words and the read-out are then the base's, and a run that names none keeps seconds.
 
 import { h, svg } from "./dom.js";
 import { clock, duration } from "../replay/format.js";
-import { SPEEDS, speedWords } from "../replay/player.js";
+import { SPEEDS, SECONDS } from "../replay/player.js";
 
 const PLAY = "M7 4.5v15l12-7.5z", PAUSE = "M6.5 4.5h4v15h-4zM13.5 4.5h4v15h-4z";
 
@@ -116,7 +119,7 @@ class CellsTimeline extends HTMLElement {
     this.icon.setAttribute("d", player.playing ? PAUSE : PLAY);
     this.playButton.setAttribute("aria-label", player.playing ? "Pause" : player.atEnd ? "Play again from the start" : "Play");
     this.playButton.title = this.playButton.getAttribute("aria-label");
-    const words = speedWords(player.speed);
+    const words = (player.base || SECONDS).words(player.speed);
     this.speedButton.textContent = words.short;
     this.speedButton.setAttribute("aria-label", `Speed: ${words.says}. Press to choose another.`);
     this.speedButton.title = words.says;
@@ -129,7 +132,7 @@ class CellsTimeline extends HTMLElement {
     const player = this.player;
     this.speedList.replaceChildren(
       ...SPEEDS.map((speed) => {
-        const words = speedWords(speed);
+        const words = (player.base || SECONDS).words(speed);
         return h(
           "button",
           { class: "tl-speed-step", type: "button", "aria-pressed": String(speed === player.speed), dataset: { speed: String(speed) }, onclick: () => (player.setSpeed(speed), this.showSpeeds(false), this.speedButton.focus()) },
@@ -209,13 +212,15 @@ class CellsTimeline extends HTMLElement {
       this.rest.textContent = "";
       return;
     }
-    const total = duration(player.end - player.start);
-    this.now.textContent = clock(player.time);
+    const base = player.base || SECONDS;
+    const total = base.length ? base.length(player.end - player.start) : duration(player.end - player.start);
+    const now = base.clock ? base.clock(player.time) : clock(player.time);
+    this.now.textContent = now;
     const parts = [` of ${total}`];
     if (run.events.length) parts.push(`${this.eventWord} ${run.eventsBy(player.time)} of ${run.events.length}`);
     if (!run.isValid(player.index)) parts.push("this record is not valid in the run");
     this.rest.textContent = parts.join(" · ");
-    this.range.setAttribute("aria-valuetext", `${clock(player.time)} of ${total}`);
+    this.range.setAttribute("aria-valuetext", `${now} of ${total}`);
   }
 
   /** One step faster (1) or slower (-1) along the speeds the run is offered. */
