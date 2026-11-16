@@ -33,7 +33,9 @@ bitwise the development world's over 900 s) or on the development world without 
 device (judged runs: the protocols' execution path) or on the windowed runner checking them on the
 host (development's default); ENGINE_READOUTS is what it returns per record. What is not wired yet
 is a stand-in (STAND_INS), each blocking only its own parts (STAND_IN_PARTS): every entry refuses
-those parts before anything is written, and a judged run is refused while any stand-in remains.
+those parts before anything is written, and a judged run of a protocol is refused while a stand-in
+blocks any of that protocol's parts (`blocking_stand_ins`), so FR-4's judged run does not wait for
+FR-5's parts; each run records the stand-ins that block its protocol, which the judge refuses.
 
 Modes:
   python -m validation.tissue.compartment_ph_qualification dev fr4|fr5 OUT_DIR PART [PART ...]
@@ -42,13 +44,13 @@ Modes:
       [PART ...] [--start START_JSON]   (the vector path, the declared world)
 A judged run is refused, before anything is computed or written, unless the protocol is registered
 (its status and its registration record), the source is a clean execution snapshot, no stand-in
-remains, FR-5's start extract was written by the engine from this same snapshot, and OUT_DIR is
-new (D150's and MG0c's guard). `--quick` (development only) runs every part to QUICK_END_S, so a
-check reaches the code under test in minutes (AGENTS.md's 30-minute rule); the judge refuses quick
-results. A judged run takes the protocols' execution path, `vector` (the lead's ruling, a dated
-pre-run correction of 15 November 2026): every accepted row checked on the device in a vector
-window (engine_records.run), and refuses any other; a development run takes `host` (every accepted
-row checked on the host) unless `--path` names one.
+blocks any of the protocol's parts, FR-5's start extract was written by the engine from this same
+snapshot, and OUT_DIR is new (D150's and MG0c's guard). `--quick` (development only) runs every
+part to QUICK_END_S, so a check reaches the code under test in minutes (AGENTS.md's 30-minute
+rule); the judge refuses quick results. A judged run takes the protocols' execution path,
+`vector` (the lead's ruling, a dated pre-run correction of 15 November 2026): every accepted row
+checked on the device in a vector window (engine_records.run), and refuses any other; a
+development run takes `host` (every accepted row checked on the host) unless `--path` names one.
 """
 
 import argparse
@@ -113,17 +115,18 @@ PARTS = {
 }
 ENGINE_PARTS = {*FR4_RUNGS, *FR4_CONTROLS, "start", *FR5_RUNGS, *FR5_CONTROL_PARTS}
 
-# What remains a stand-in on this branch, and why, and the parts each one blocks. Empty once
-# everything is wired.
-STAND_INS = {
-    "start_checkpoint": "FR-5's start part (the engine's snapshot and the start extract) is not "
-                        "wired yet",
-    "fr5_kinds": "FR-5's damage state and its routes' factors are not in the engine yet",
-}
-STAND_IN_PARTS = {
-    "start_checkpoint": {"start"},
-    "fr5_kinds": {*FR5_RUNGS, *FR5_CONTROL_PARTS},
-}
+# What remains a stand-in on this branch, and why, and the parts each one blocks. Empty: every
+# part is wired. The last, fr5_kinds (FR-5's rungs and controls), went on 16 November 2026 with the
+# core's raw-sum bound (cells.passive_routes@1, §7.5 amended, 0649f00e), after which arm R runs
+# its release burst without refusal (fr5_quick_check, nothing relaxed).
+STAND_INS = {}
+STAND_IN_PARTS = {}
+
+
+def blocking_stand_ins(which):
+    """The stand-ins that block any of protocol `which`'s parts ("fr4" or "fr5"), sorted: a judged
+    run of that protocol is refused while this is not empty, and every run records it."""
+    return sorted(name for name in STAND_INS if STAND_IN_PARTS[name] & set(PARTS[which]))
 
 # The readouts the engine path returns per record (the judge reads these names), for the core:
 ENGINE_READOUTS = dict(
@@ -169,10 +172,6 @@ ENGINE_READOUTS = dict(
 )
 
 
-class NotWired(RuntimeError):
-    """The engine path is a stand-in on this branch."""
-
-
 def engine_run(definition, *, planted=None, checkpoint_dir=None, path=HOST_PATH,
                world=DEVELOPMENT_WORLD):
     """The engine part's record for one definition (ENGINE_READOUTS at every record, keyed by
@@ -181,18 +180,17 @@ def engine_run(definition, *, planted=None, checkpoint_dir=None, path=HOST_PATH,
     backend in float64, every accepted row checked on the host (`path` "host", development) or
     on the device in a vector window ("vector", the protocols' execution path). `planted`
     names a planted law registered only inside its block (K2). With `checkpoint_dir` (FR-5's
-    start part) it is to write the engine's snapshot there at the end (cells.io.write_snapshot)
-    and return, under `extract`, definitions.start_extract(producer="engine", ...) of that state,
-    a stand-in (STAND_INS)."""
+    start part) a completed run also writes the engine's snapshot there at the end
+    (cells.io.write_snapshot) and returns FR-5's start under `start_nodes` and `start_readouts`,
+    which fr5_start makes the start extract (definitions.start_extract, producer "engine")."""
     from validation.compartment_ph_engine import engine_records
     from validation.compartment_ph_engine import planted as plants
 
-    if checkpoint_dir is not None:
-        raise NotWired(STAND_INS["start_checkpoint"])
     if planted is not None:  # K2's reversed pump, registered only inside its block.
         registry = plants.registry(plants.PLANTED[planted]())
-        return engine_records.run(definition, registry=registry, path=path, world=world)
-    return engine_records.run(definition, path=path, world=world)
+        return engine_records.run(definition, registry=registry, path=path, world=world,
+                                  checkpoint_dir=checkpoint_dir)
+    return engine_records.run(definition, path=path, world=world, checkpoint_dir=checkpoint_dir)
 
 
 def engine_part(definition, context, *, planted=None, checkpoint_dir=None):
@@ -234,16 +232,24 @@ def fr4_reference(name, context):
 
 
 def fr5_start(name, context):
-    """FR-4's declared world to the checkpoint time, then the snapshot and the extract."""
+    """FR-4's declared world to the checkpoint time, then the engine's snapshot and the start
+    extract (OUT_DIR/start.json) every other FR-5 part reads. A run the engine refuses writes
+    neither: its record carries the refusal, and FR-5's other parts have no start."""
     del name
     end = QUICK_END_S if context["quick"] else stage.START_TIME_S
     definition = defs.fr4_world(replace(World(), end_s=end), dt_s=FR4_DECLARED_DT)
-    record = engine_part(definition, context,
-                         checkpoint_dir=context["out_dir"] / "engine_snapshot")
-    extract = record.pop("extract")
+    snapshot = context["out_dir"] / "engine_snapshot"
+    record = engine_part(definition, context, checkpoint_dir=snapshot)
+    nodes, readouts = record.pop("start_nodes", None), record.pop("start_readouts", None)
+    if nodes is None:
+        return record
+    extract = defs.start_extract(
+        producer="engine", nodes=nodes, readouts=readouts, time_s=record["record_s"][-1],
+        dt_s=FR4_DECLARED_DT, source=snapshot_identity(), engine_snapshot=str(snapshot),
+        world=f"fr4_world(replace(World(), end_s={end!r}))")
     path = context["out_dir"] / "start.json"
-    path.write_text(json.dumps(extract, indent=1, allow_nan=False) + "\n")
-    record["extract_sha256"] = defs.start_sha256(extract)
+    path.write_text(json.dumps(plain(extract), indent=1, allow_nan=False) + "\n")
+    record["extract_sha256"] = defs.start_sha256(plain(extract))
     return record
 
 
@@ -309,7 +315,8 @@ def snapshot_identity(root=ROOT):
 
 
 def judged_run_refusal(protocol, root=ROOT):
-    """Why a judged run may not start (None: it may): MG0c's and D150's guard, and the stand-ins."""
+    """Why a judged run may not start (None: it may): MG0c's and D150's guard, and the stand-ins
+    that block this protocol's parts."""
     status = protocol.get("status")
     if not (isinstance(status, str) and status.lower().startswith("registered")):
         return "the protocol is not registered (its status does not begin 'registered')"
@@ -323,8 +330,11 @@ def judged_run_refusal(protocol, root=ROOT):
     clean = snapshot.get("patch_sha256") == hashlib.sha256(b"").hexdigest()
     if snapshot.get("status") != "complete" or not clean:
         return "the execution snapshot is incomplete or carries uncommitted changes"
-    if STAND_INS:
-        return f"stand-ins remain on this branch ({sorted(STAND_INS)}): the engine is not wired"
+    which = next((k for k, v in IDS.items() if v == protocol.get("id")), None)
+    blocking = sorted(STAND_INS) if which is None else blocking_stand_ins(which)
+    if blocking:
+        return (f"stand-ins remain on this branch for this protocol's parts ({blocking}): the "
+                "engine is not wired")
     return None
 
 
@@ -383,7 +393,7 @@ def run(which, requested, out_dir, *, status, extract=None, quick=False, path=HO
     out_dir.mkdir(parents=True)
     results = dict(status=status, protocol_id=IDS[which], source=snapshot_identity(),
                    requested_parts=list(requested), complete=False, quick=quick, path=path,
-                   world=world, stand_ins=sorted(STAND_INS), parts={})
+                   world=world, stand_ins=blocking_stand_ins(which), parts={})
     context = dict(quick=quick, start=extract, out_dir=out_dir, path=path, world=world)
     for name in [p for p in PARTS[which] if p in requested]:
         started = time.perf_counter()

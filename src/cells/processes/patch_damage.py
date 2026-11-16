@@ -21,7 +21,6 @@ Pure functions in the xp style of processes/.
 import jax.numpy as jnp
 
 LAW_ID = "bounding_patch_damage@1"
-SERIES_BELOW = 1e-8  # (a + b) h below which (1 - exp(-x)) / x takes its series
 
 
 def rates(damage, injury_rate_per_s, resealing_rate_per_s, injury, resealing, *, xp=jnp):
@@ -33,16 +32,19 @@ def rates(damage, injury_rate_per_s, resealing_rate_per_s, injury, resealing, *,
 
 def exact_step(damage, injury_rate_per_s, resealing_rate_per_s, injury, resealing, step_s,
                *, xp=jnp):
-    """d after one step at constant schedules, exactly: d_eq + (d - d_eq) exp(-(a + b) h)."""
+    """d after one step at constant schedules, exactly: d_eq + (d - d_eq) exp(-(a + b) h).
+
+    Evaluated in that form, the equilibrium plus the decaying offset: for d >= d_eq both terms
+    are nonnegative, and for d < d_eq a nonnegative product is taken from d_eq <= 1, so the result
+    stays in [0, 1] at any step without cancellation (the form d + (a - (a + b) d) h phi(x) lost
+    one rounding below 0 at large x with a = 0, d near 1). Where a + b = 0, d is unchanged
+    exactly (d_eq is then d and the decay 1)."""
     a = injury_rate_per_s * injury
     b = resealing_rate_per_s * resealing
     total = a + b
-    x = total * step_s
-    small = x < SERIES_BELOW
-    safe_x = xp.where(small, 1.0, x)
-    # d(h) = d + (a - total d) h phi(x), phi(x) = (1 - exp(-x))/x, which is exact and avoids a/0.
-    phi = xp.where(small, 1.0 - x / 2.0, -xp.expm1(-safe_x) / safe_x)
-    return damage + (a - total * damage) * step_s * phi
+    opening = total > 0
+    equilibrium = xp.where(opening, a / xp.where(opening, total, 1.0), damage)
+    return equilibrium + (damage - equilibrium) * xp.exp(-total * step_s)
 
 
 def domain_valid(damage, injury_rate_per_s, resealing_rate_per_s, injury, resealing, *, xp=jnp):
