@@ -1,7 +1,8 @@
 # Architecture
 
 Implementation context reviewed: **2026-10-11**. The [modular core](#the-modular-core-d172-d174)
-section, added on 15 November 2026 (D172, D174), takes precedence where older sections differ.
+section, added on 15 November 2026 (D172, D174) and refreshed after D172's round landed on 16
+November, takes precedence where older sections differ.
 Cells uses Python for definitions,
 orchestration and checks, and JAX array kernels for supported CPU/GPU execution.
 [Progress](../PROGRESS.md) owns the current qualification record; this document
@@ -29,7 +30,9 @@ original version-specific milestones without acting as a current task board.
 Added 15 November 2026. D172 settled the direction: one active inner model, made modular in place.
 An external architecture review then set the boundary and acceptance below, and the lead adopted
 it after reviewing it with the advisor (D174). A second review of this section clarified it the
-same day. Every statement carries a status:
+same day. D172's round landed on main on 16 November 2026 (merge ab267c39, tag
+`d172-landed-2026-11-16`), and the statuses below are refreshed against it. Every statement carries
+a status:
 - **holds today**, meaning in code read or in a landed test;
 - **target**, meaning decided but not yet met, in D172's restructure round or in a later accepted
   milestone, as marked;
@@ -46,11 +49,11 @@ Where older sections of this document differ, this section applies.
 
 | Part | Responsibility | Where it lives today |
 | --- | --- | --- |
-| Physical state and entities | The authoritative amounts, volumes, membrane properties, populations, contacts and identities | @3's state, plus fields owned by operators (`ENTITY_WRITES`) |
-| Mechanism declarations | Each law's inputs, the quantities it changes, its conservation and energy role, its domain of validity | The operator contract (`contract.py`). @3's own five channel laws are a closed table, not declarations |
+| Physical state and entities | The authoritative amounts, volumes, membrane properties, populations, contacts and identities | @3's state, plus fields owned by operators (`ENTITY_WRITES`) and by declared kinds |
+| Mechanism declarations | Each law's inputs, the quantities it changes, its conservation and energy role, its domain of validity | The operator contract (`contract.py`). Since the landing, @3's laws are frozen declarations (`models/inner_laws.py`), with one implementation built per declared structure, and kinds register through the build-scoped kind registry (`core/kind_registry.py`; the built-in kinds are in `models/inner_kinds/`) |
 | Numerical plan | Evaluation order, explicit or implicit treatment, splitting, event boundaries, error checks | @3's IMEX and RK4 steps, the operators' split parts, `StepChecks`, schedules |
 | Biological definitions | Organism, strain, conditions, parameter values, evidence references | World builders and fixtures. No organism definition yet; the [Syn3A note](SYN3A_MINIMAL_CELL_TRACK.md) proposes one |
-| Execution and outputs | Binding, device windows, checkpoints, observations, the shared run view | The runner, batch and window paths; D153's checkpoints; D154's run view, still in design |
+| Execution and outputs | Binding, device windows, checkpoints, observations, the shared run view | The runner, batch and window paths; D153's checkpoints; D154's run view, whose interface in the operator contract (`VIEW_LAYERS`, `view_events`) is on main, while the operators' declarations and the writer are on a development branch |
 
 - **Arrays in the loop.** The composite builder assembles these parts into one bound array program.
   Python objects and modular interfaces belong to definition, validation and binding, and the
@@ -75,13 +78,19 @@ Where older sections of this document differ, this section applies.
   - Host work: parsing, admission checks, assembly, binding, window dispatch, requested output
     processing.
 - **What the restructure must show:**
-  - **Undeclared mechanisms are absent from the traced program. Target.**
-    - Today @3 traces all three gated channel laws for every population, and the law table's length
-      is a literal in every program (the inner-model probe, 14 November).
-    - So per-law dispatch is required. It means build-time selection of the declared kernels; a
-      runtime switch over the whole catalogue would still trace absent mechanisms.
-    - If it moves results at rounding, the restructure round re-runs every registered protocol.
-  - **Executable reuse and device-resident checks. Target; implementation audit pending.**
+  - **Undeclared mechanisms are absent from the traced program. Holds today for @3's laws, since
+    the landing.**
+    - Before it, @3 traced all three gated channel laws for every population, and the law table's
+      length was a literal in every program (the inner-model probe, 14 November).
+    - So per-law dispatch was required: build-time selection of the declared kernels, since a
+      runtime switch over the whole catalogue would still trace absent mechanisms. It landed with
+      the round, as one implementation per declared structure, and a landed test shows that an
+      undeclared law traces no kernel (`tests/unit/test_inner_laws.py`).
+    - It moved no result: the integrated candidate before A7 was bitwise on all 113 worlds of the
+      results gate. A7's summation order then moved ledger and diagnostic arrays at rounding, so
+      the round re-ran the registered protocols (G2), with E07-v1's re-run held (D181).
+  - **Executable reuse and device-resident checks. Reuse holds today, in a landed test;
+    device-resident checks are a target.**
     - For a fixed law set, numerical plan, compatible array shapes, dtypes and device placement,
       parameter-only changes reuse the executable.
     - Production state advancement, step checks and refusal handling remain inside device windows.
@@ -91,8 +100,13 @@ Where older sections of this document differ, this section applies.
       compiled scan. Executables are reused by step and check function, rows, array structure,
       shapes, dtypes and placement (`vector_windows.compile_window`). So parameter values passed as
       arrays reuse the executable, but constants baked into a model's functions do not.
+    - **Holds today, since the landing:** the key also carries the declared structure. A landed test
+      shows a parameter-only change compiling nothing and matching a fresh compile bitwise, while a
+      world of another structure compiles its own (`tests/unit/test_inner_executable_reuse.py`).
     - **The audit** lists the exceptions: constants baked into programs, and checks or refusals run
-      on the host per row in production paths.
+      on the host per row in production paths. Its two inventories are in the inner-model note
+      (§5.1, §5.2), and moving the host-side window checks into device windows is queued in the
+      current plan.
   - **Adding a mechanism adds no per-cell Python dispatch and no CPU solver to the production loop.
     Target.**
   - **Compile time, host and device memory, and end-to-end time are measured on representative
@@ -100,33 +114,40 @@ Where older sections of this document differ, this section applies.
 - **Methods may differ.** Mechanisms may use different qualified numerical methods. Stiff chemistry
   and fast electrical propagation need not share an update method.
 - **Three capabilities are reported separately:** ensemble throughput, interacting-world size and
-  biological duration. One does not establish another. The L4 evidence stays scoped, with Q7's
-  nondeterminism open, and GH200 numbers come when available. **Holds today,** as a reporting rule.
+  biological duration. One does not establish another. The L4 evidence stays scoped: Q7 passed only
+  in the declared deterministic mode (D181), and GH200 numbers come when available. **Holds
+  today,** as a reporting rule.
 
 ### Scoped composition (door S)
 
-- **Holds today: one provider per field.**
-  - The adapter's view (`pump_composite_adapter.view`) applies each provider by replacing the whole
+- **Before the landing: one provider per field.**
+  - The adapter's view (`pump_composite_adapter.view`) applied each provider by replacing the whole
     field.
-  - A provider such as the bath schedule returns its own values on its slots and the bound values
+  - A provider such as the bath schedule returned its own values on its slots and the bound values
     elsewhere.
-  - So a nominal refusal in the composition matrix means the slots are disjoint. It does not mean
-    the pair is safe to admit under today's adapter.
-- **Target: what each mechanism declares.**
-  - The fields and entity slots it reads, and whether it reads reference values or the current
-    composed view.
-  - The slots it changes, and whether its contribution adds, multiplies or replaces.
+  - So a nominal refusal in the composition matrix meant that the slots were disjoint. It did not
+    mean the pair was safe to admit under that adapter.
+- **Holds today, since the landing: what each mechanism declares** (`models/operators/contract.py`).
+  - The fields and entity slots it reads, and whether it reads reference values, a fixed declared
+    value or the current composed view (`SCOPED_READS`).
+  - The slots it changes, and whether its contribution adds, multiplies or replaces; a closer's is
+    `and` (`VIEW_CHANGES`).
   - The stage at which it is evaluated.
 
-  The composite then applies scoped changes to the accumulated current view.
-- **Acceptance:**
-  - two independent providers on disjoint slots compose correctly in either declaration order;
-  - overlap is refused unless an explicit combination rule applies;
+  The composite admits each pair per slot and merges each change onto the accumulated current view
+  on its slots (`pump_composite_adapter.view`). In the round, closers change whole masks, and the
+  one pair newly admitted is the bath schedule beside D152's reactions; the other pairs keep their
+  refusals.
+- **Acceptance, met in landed tests** (`tests/unit/test_door_s.py`):
+  - two independent providers on disjoint slots compose to the same bits in either declaration
+    order;
+  - overlap is refused unless both changes commute (add, multiply, `and`);
   - readers see the merged values at their declared stage.
 
-  The integration case is the bath → uptake → compartment → reaction chain.
+  The integration case, the bath → uptake → compartment → reaction chain, runs with every ledger
+  closing (`tests/unit/test_delivery_world.py`). It is guarded, not numerically qualified.
 - **Door S changes scope.** As accepted in D169 it covered admission only. It now includes the
-  runtime merge, and it joins D172's round (D174).
+  runtime merge, and it landed with D172's round (D174).
 
 ### Ownership, geometry and solver invalidation
 
@@ -137,13 +158,14 @@ Where older sections of this document differ, this section applies.
 
   An occupancy change has only the numerical effects its physics requires. FR-3's separate owner,
   which avoids the field refresh and its 64-node cap, stays as accepted.
-- **Compartment identity is a host-side map. Target.**
+- **Compartment identity is a host-side map. Partly holds today.**
   - The map holds the compartment ID, owner, role, storage slot and oriented membrane endpoints. It
     is independent of today's storage as an outside node.
   - Sensing and transfer laws address a species in a named compartment, so one law serves
-    cytosolic, lysosomal and mitochondrial cases.
+    cytosolic, lysosomal and mitochondrial cases. **Target:** such laws come with FR-4 and FR-5.
   - The accepted FR-1 design names each compartment's node, bounding patch and owner. Its operator
-    (`cell_owned_compartments@1`, milestone 1) is on main since 15 November.
+    (`cell_owned_compartments@1`, milestone 1) is on main since 15 November, and it writes the map
+    (`compartments.identity_map`).
 - **Acceptance:**
   - an occupancy-only world with fixed field inputs avoids the field refresh;
   - a capacitance-changing world triggers it;
@@ -156,11 +178,12 @@ Where older sections of this document differ, this section applies.
 - **One authoritative account per physical quantity. Target.** Free and bound ligand may live in
   different arrays, but they resolve to one species identity and one conserved total.
 - **Species identity and the background and trace policy are consolidated at the definition
-  boundary. Target.** New laws then add no pairwise identity checks between operators. Today the
-  coupling operator checks species identity against D150's and D152's declarations
-  (`species_regulated_availability.py`), and FR-3's accepted design proposes extending that
-  pattern.
-- **Fuel: the requirement is fixed, the representation is open.**
+  boundary. Holds today, since the landing.** New laws then add no pairwise identity checks between
+  operators. The species registry (`core/species_registry.py`) is one authority for each species'
+  identity, standard potential and background, and a landed test refuses any pairwise identity
+  check left in `src` (`tests/unit/test_species_registry.py`). Before the landing, the coupling
+  operator checked species identity against D150's and D152's declarations.
+- **Fuel: the requirement is fixed, and the representation is decided (D176).**
   - **The requirement:** reactions can make and spend fuel; pumps draw from those same amounts;
     each standard chemical potential has one authority; water and division get explicit interfaces
     later.
@@ -191,9 +214,15 @@ Where older sections of this document differ, this section applies.
   - In a held-bath system, the total balance includes the declared reservoir work.
   - Its composition with water is qualified separately, using the same amounts and current volumes.
 
-  A new generic passive law is expected in D172's round, reusing the common inventory, geometry and
-  numerical machinery. First it is checked which admissible topology is closed for the test species,
+  A new generic passive law was expected in D172's round, reusing the common inventory, geometry and
+  numerical machinery. First it was checked which admissible topology is closed for the test species,
   since FR-1's compartments sit in worlds with a held bath.
+- **The law landed with the round:** `passive_neutral_permeation@1`, a law of the passive-routes
+  kind (`cells.passive_routes@1`, `models/inner_kinds/passive_routes.py`). It is implemented and
+  guarded. On a closed pair, FR-1's face-free world, it relaxes as the independent closed form
+  says, conserves material, and books as heat the engine's own free-energy decrease, to rounding
+  (`tests/unit/test_passive_routes_kind.py`). It is not numerically qualified, and its composition
+  with water is still a target.
 - **The reuse rule.** A law is reused only where its physical contract, its energy role included,
   matches.
 
@@ -244,8 +273,9 @@ require:
 - **One representation of a pathway per scope. Target.** "What is represented" is a declared key
   that admission compares, so a lumped reaction and its detailed network cannot both produce the
   same flux on the same nodes. Nothing refuses that today.
-- **A small declaration, only on laws that stand in for something. Target, reserved in D172's law
-  design.** It has four optional fields:
+- **A small declaration, only on laws that stand in for something. Target; its fields are reserved,
+  unused, in the landed law declarations (`ChannelLaw` in `models/inner_laws.py`).** It has four
+  optional fields:
   - **what it represents:** the key above, and the reference it was reduced from;
   - **what it preserves:** retained state and history;
   - **what can be asked of it:** supported interventions, controls and observations, with others
@@ -302,9 +332,9 @@ note.
 | Case | What it exercises | Status |
 | --- | --- | --- |
 | Inventory → regulation → electrical response | Shared amounts, control routing, temporal coupling | Numerically qualified (15 November): Track R's judged protocol passed, with A4 and A5 against independent references. CPU only |
-| Bath dose → uptake → compartment retention or reaction | Scoped views, compartment identity, material accounting | Target, needing door S |
+| Bath dose → uptake → compartment retention or reaction | Scoped views, compartment identity, material accounting | Guarded since the landing: door S's integration world runs with every ledger closing (`tests/unit/test_delivery_world.py`). Not numerically qualified |
 | Reaction → finite fuel → pump | Chemistry and electrics sharing one energy budget | Target. The representation is decided (F2, D176); this is D176's finite-fuel case. Its single regeneration reaction is also the reduced closure of the first [levels-of-detail](#levels-of-detail) case |
-| Neutral solute and water in a vesicle | Reuse across biological settings, changing concentration and volume | Target, needing the passive law. Syn3A's probe P0 checks capability |
+| Neutral solute and water in a vesicle | Reuse across biological settings, changing concentration and volume | Target. The passive law landed with the round; its composition with water does not exist yet. Syn3A's probe P0 checks capability |
 
 - **Organism data stays apart from engine mechanisms. Target.** The organism and evidence structure
   lands with its first consuming milestone, with its observation model and calibrated nuisance
@@ -312,22 +342,41 @@ note.
 - **Biological claims keep their kinds apart. Rule.** A protein-free vesicle test, numerical
   verification, calibration and a held-out living-cell prediction are different claims.
   Continuum, lumped-population and individual-compartment interpretations are declared.
-- **The results gate for D172. Target.** It names the required scientific cases and checks that
-  they actually execute, plus the agreed planted-change test.
-  - **Holds today, with a gap:** the tier gate compares exit codes and failed and error counts only.
-  - A read-only check of the 14 November landing gates found no lost tests at count level.
-  - The tier record's counts are stale for about a dozen files that gained tests
-    ([comparison](/mnt/workspaces/Cells/external-review-20261114/gate-count-comparison.json)).
+- **The results gate for D172.** It names the required scientific cases and checks that they
+  actually execute, plus the agreed planted-change test. **What PROGRESS records as passed at the
+  landing (16 November):** G1, with the candidate bitwise on 113 of 113 worlds before A7 and within
+  A7's frozen tolerance file after it, every physical field bitwise; crossrev; tiers 1 and 2 with no
+  changed outcome, and tier 3 with every non-passing file classified; G2's registered protocols; and
+  the L4 block. PROGRESS records no run of the planted changes (G3) or of the measurements (G4);
+  the comparison's own planted-difference self-test is a landed unit test
+  (`tests/unit/test_results_baseline.py`).
+  - **Holds today, since the round:** the tier gate counts a file as changed when its exit code or
+    its failed or error count differs from its row, when its passed count falls below the row's, or
+    when its skipped count rises above it. A passed count above the row's is listed for
+    re-measurement (`scripts/test_tiers.py`).
+  - Before that change, on 14 November, a read-only check of the landing gates found no lost tests
+    at count level, and the tier record's counts stale for about a dozen files that had gained
+    tests ([comparison](/mnt/workspaces/Cells/external-review-20261114/gate-count-comparison.json)).
+- **Regression after the landing (D187). Rule.** Crossrev and the results gate carry regression
+  only for what their worlds exercise, and each landed feature adds one world to their sets. A new
+  test needs a planted error it must catch. Old regression tests that do not earn their cost are
+  retired after D187's audit, with the retire list going to the user first; the science keeps its
+  independent references, planted controls, conservation checks and one judged run per claim.
 - **The shared run view. Target.** It exposes the same entity identities, units, events, model
   scope and representation, and the viewer consumes them without reconstructing meaning from driver
-  conventions. D154's note is under review.
+  conventions. D154's note is proposed; the operator contract's view interface is on main, and the
+  operators' declarations and the writer are on a development branch.
 
 ### Order
 
 - **The qualification boundaries stay as agreed** for MG0c, Track R and Track E. D172's interfaces
   above are finalized during that work.
-- **Then the single restructure round** lands at a quiet point, with main tagged just before, frozen
-  evidence and the results gate.
+- **Then the single restructure round.** It landed on 16 November (tag `d172-landed-2026-11-16`),
+  with main tagged before it (`d172-base-2026-11-15`), frozen evidence and the results gate.
+- **Next, the source tree takes the modular layout (D188).** It is decided and not yet done. After
+  core-next lands, a probe and then two scripted moves put the older families in
+  `src/cells/legacy/` and the modular parts in their own folders. The source paths named in this
+  document are today's.
 - **The accepted feature work continues in its order:** compartments, occupancy and delivery. Their
   real interactions exercise these contracts. The minimal-cell track supplies consumers and
   measured-data tests without displacing FR-4 and FR-5.
@@ -336,8 +385,9 @@ note.
 
 ## External modules (proposed)
 
-*Proposed on 15 November 2026 in [MODULE_SYSTEM_DESIGN.md](MODULE_SYSTEM_DESIGN.md), and not yet
-adopted. It uses the modular core's status words: holds today, target and open.*
+*Proposed on 15 November 2026 in [MODULE_SYSTEM_DESIGN.md](MODULE_SYSTEM_DESIGN.md). The user made
+its five open decisions on 16 November (D185), and its stage 1 starts after D172's landing. It uses
+the modular core's status words: holds today, target and open.*
 
 **The target.** Cells stays MIT and aims at broad adoption.
 - Independently maintained packages use, extend and compose Cells, and the project extends
@@ -369,11 +419,13 @@ adopted. It uses the modular core's status words: holds today, target and open.*
 and the definition parser are module-level tables. Any package can already ship definitions and
 builders that use built-in IDs.
 
-**Target, in D172's round** ([INNER_MODEL_V4_DESIGN.md](INNER_MODEL_V4_DESIGN.md) §7.4 (j)–(k)).
+**Holds today, since D172's round** ([INNER_MODEL_V4_DESIGN.md](INNER_MODEL_V4_DESIGN.md) §7.4
+(j)–(k); `core/kind_registry.py`, with the built-in kinds in `models/inner_kinds/`).
 - **The seams:**
   - kinds register through a build-scoped registry, and built-in kinds use the same call;
   - IDs are namespaced, and the canonical order is the sorted namespaced ID;
-  - a registered but undeclared kind changes nothing.
+  - a registered but undeclared kind changes nothing (`tests/unit/test_kind_types.py`; a planted
+    kind registered from outside `src/cells` runs every seam in `tests/unit/test_kind_seams.py`).
 - **Version 1 for kinds:**
   - their ledger terms fold into today's ledgers by role;
   - their state is observed;
@@ -397,12 +449,28 @@ builders that use built-in IDs.
 Duplicate, missing and incompatible components are refused clearly, and unused modules change
 nothing.
 
-**Open, for the user:**
-- provenance for out-of-tree modules;
-- D144, now that physics can live in modules;
-- qualification of outside modules, through a conformance kit shipped with Cells;
-- where the example package lives;
-- what a module PR looks like.
+**Decided by the user on 16 November 2026 (D185):**
+- **A module PR:** in-tree contributed modules first, each in its own folder and namespace, with an
+  MIT licence and a named owner, gated by the conformance kit and the tiers. Out-of-tree modules,
+  listed by a docs PR with their conformance record, may follow.
+- **Qualifying outside modules:** a conformance kit shipped in Cells, which the contributor runs
+  before opening the PR. In the lead's reading, recorded in D185, a pass means the kit's checks
+  passed; the science still needs a registered protocol.
+- **D144 with modules:** new physics goes into `src/cells` as modules of its structure (laws, kinds
+  and operators, each declared and registered), and `validation/` still holds no physics.
+- **The example:** in this repository, as a separately installable folder installed as a wheel in
+  tier 2. It doubles as the template contributors copy.
+- **Provenance:** development runs record each outside module's identity, computed at run time;
+  registered and judged runs also freeze its files beside the snapshot (AGENTS.md).
+
+D185 adds a declarations manifest, a JSON list of every registered law, operator and kind, and a
+contributor guide with a pull-request template. **Target:** none of stage 1 is built yet; the kit,
+the example module, the manifest and the guide come with it.
+
+**Open:**
+- whether the project lists the modules that pass;
+- provenance for in-tree contributed modules, settled in stage 1's design;
+- automatic checks on GitHub for outside pull requests, to be asked separately.
 
 **Not designed:** nested compositions beyond templates, external numerical methods and backends,
 and switching levels of detail at run time.
@@ -816,7 +884,8 @@ is insufficient for memory experiments.
   - each layer's representation: simulated, modelled in aggregate, or prescribed;
   - the scale.
 - It is kept out of the definition, so definitions, bindings and crossrev are unaffected.
-- Its exact form follows a short design note.
+- Its exact form is in the design note, [RUN_VIEW_DESIGN.md](RUN_VIEW_DESIGN.md) (proposed). The
+  writer is built on a development branch.
 
 ## Technical references
 

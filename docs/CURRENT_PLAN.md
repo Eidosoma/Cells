@@ -1,7 +1,8 @@
 # Current plan (adopted 12 November 2026)
 
 Status: **adopted 12 November 2026 ([D145](DECISIONS.md#d145-the-current-plan-is-adopted-with-the-l4-now-and-gh200-next-week)).**
-GH200 access is expected by the end of next week, and the L4 is used fully meanwhile. The
+GH200 access was expected, at adoption, by the end of the week of 16 November, and the L4 is used
+fully meanwhile. The
 open choices were taken as the lead and the advisor suggested (D145). Of the two tooling items,
 checkpoint continuity was approved and landed (D153). The public validation package still
 needs the user's explicit approval. The status and working order at 14 November are in the
@@ -33,29 +34,31 @@ experiment).
 
 | Item | Level today |
 | --- | --- |
-| The composite: @3 plus operators, the ownership and energy-role contract, bound step checks | Guarded. Numerically qualified on CPU through frozen-model guards. GPU agreement by tolerance on the L4 (14 November): W1 and W2 pass, and G2-Q1 passes Q1–Q6; Q7, which is bitwise, fails because of the L4's own nondeterminism at 825 nodes and stays open (PROGRESS). Judged in E07-v1 (`resolved_pump_replacement@1`) |
+| The composite: @3 plus operators, the ownership and energy-role contract, bound step checks | Guarded. Numerically qualified on CPU through frozen-model guards. GPU agreement by tolerance on the L4 (14 November): W1 and W2 pass, and G2-Q1 passes Q1–Q6; Q7, which is bitwise, failed there because of the L4's own run-to-run nondeterminism at 825 nodes. Judged again alone under the deterministic flag (16 November), Q7 passed, in that declared mode only (D181), and the landing's L4 block passed under the flag (PROGRESS). Judged in E07-v1 (`resolved_pump_replacement@1`) |
 | Water plus replacement@2 with the entity volume ledger | Implemented and guarded; not qualified on the heredity sheet |
 | Lifecycle operators: S2 membrane state, S3 insertion and lumen, Rm1 injection, S5a partition and bridge closure | Numerically qualified, against independent references for S5a. Division is prescribed; nothing yet judges endogenous proliferation |
 | Secreted-species transport (D150 v1) | **Numerically qualified** (14 November): the held sphere with decay, the faces with exact radial conductances and turnover's clearance. Exchange, production and the occupant rule are guarded only, through the Q5 tests |
 | Reactions on the shared inventory (D152 v1) | **Numerically qualified** within MG0c's scope (15 November): the judged run of `mg0c-turing-v1` passed 55 of 55, with the guards and every kept control. CPU only |
 | Checkpoint continuity (D153) | Implemented and guarded for CPU vector windows and on the GPU (the extension landed on 14 November) |
 | Phase markers | Start, completion and failure records implemented (`core/phases.py`'s `Recorder`, 15 November) |
-| Run-view output (D154) | Design note proposed (15 November, [RUN_VIEW_DESIGN](RUN_VIEW_DESIGN.md)); its code joins D172's round |
+| Run-view output (D154) | Design note proposed (15 November, [RUN_VIEW_DESIGN](RUN_VIEW_DESIGN.md)). The operator contract's view interface landed with D172's round (16 November); the operators' declarations and the writer are built on branch `run-view-d154` and merge after their own gate (working order, item 2.3) |
 | Coupling out of the inventory (D155, scoped by D156) | **Numerically qualified** (15 November): the judged protocol passed, with second order against independent references for reciprocal feedback (A4) and a species setting a channel (A5). CPU only, within its scope line |
-| Excitable tissue (D155) | Design accepted narrowly, for M1 and M2 on @3 (D170). The generic cell is 0.01 F/m² (candidate A), on post-hoc probe evidence; the junction floor is provisional until M1's sheet runs. The human law set is brought forward as its own lane (D183, 16 November). Its design note is proposed on a branch, and its choices are recorded in D184: O'Hara–Rudy 2011's endocardial cell, with the whole-cell comparison approved. Engine work starts after the landing |
-| Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestones 1 and 2, FR-1's milestone 1 and FR-3's milestone 1 landed (15 November). FR-4 and FR-5's design note is proposed |
+| Excitable tissue (D155) | Design accepted narrowly, for M1 and M2 on @3 (D170). The generic cell is 0.01 F/m² (candidate A), on post-hoc probe evidence; the junction floor is provisional until M1's sheet runs. The human law set is brought forward as its own lane (D183, 16 November). Its [design note](HUMAN_CARDIAC_LAWS_DESIGN.md) is proposed and on main since 16 November, and its choices are recorded in D184: O'Hara–Rudy 2011's endocardial cell, with the whole-cell comparison approved. Engine work starts after the landing |
+| Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestones 1 and 2, FR-1's milestone 1 and FR-3's milestone 1 landed (15 November). FR-4 and FR-5's design note is proposed. FR-4's kinds (the transporter with its proton pump, the rapid proton buffer and the passive routes with the proton leak) landed with D172's round (16 November), for development, not judged |
 | The D172 restructure (one modular inner model, `resolved_pump_tissue@3`) | **Landed on 16 November** (tag `d172-landed-2026-11-16`, merge ab267c39 of candidate 3c10b833). It passed the results gate, crossrev, tiers 1–3 (every non-passing tier-3 file classified, none the round's), G2 and the L4 block; the records are in PROGRESS. The lanes built on it (core-next, FR-4/FR-5, the run view, windows, the packed planner) merge next, each after its own gate |
 | Field-solver interface | Designed; code waits for the GH200 numbers |
 | One production execution path, compile policy, registry | Not started. D147's policy for composite definitions landed on 14 November |
 
-**The working order** (updated 15 November 2026; seven agents, D171):
-1. **Now: D172's round to its integrated landing.**
-   - **Critical path:** schema A with the kind seams (the core), then FR-4's transporter kind (the
-     FR-4/FR-5 owner), then A7's summation order (the left fold, D176), then the end game: the
-     results gate, crossrev, tiers, the affected protocols and the flagged L4 block (D181).
-   - **In parallel:** B4's stage read and the passive law's insertion point (the core); the adapter
-     and the families' refusals (the integration owner); O3's run-view declarations (the operators).
-2. **Next, after the landing, in order:**
+**The working order** (updated 16 November 2026; seven agents, D171):
+1. **Done, 16 November: D172's round, landed** (merge ab267c39, tag `d172-landed-2026-11-16`;
+   PROGRESS).
+   - **Its critical path was:** schema A with the kind seams (the core), then FR-4's transporter
+     kind (the FR-4/FR-5 owner), then A7's summation order (the left fold, D176), then the end game:
+     the results gate, crossrev, tiers, the affected protocols and the flagged L4 block (D181).
+   - **In parallel it carried:** B4's stage read and the passive law's insertion point (the core);
+     the adapter and the families' refusals (the integration owner); O3's run-view declarations
+     (the operators).
+2. **Now, after the landing, in order:**
    1. FR-4 and FR-5: registration, rehearsal and judged runs on the landed core.
    2. The finite-fuel case (D176 item 2) against its independent reference.
    3. The run-view writer (D154). It is built on branch `run-view-d154` (01fa27d9, from
@@ -72,7 +75,8 @@ experiment).
         instead of the adapter's tables (MASK_FIELDS, PADDED_FIELDS), a stopgap named in the code
         until then;
       - the visualizer's reading of the worked example: its eleven items, in
-        `visualizer/docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` on the visualizer branch at d818cb34.
+        [`visualizer/docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md`](../visualizer/docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md),
+        written on the visualizer branch at d818cb34 and on main since the visualizer's merges.
         Items 1 and 10 are answered from the engine's code. `exchange_moved_fmol` is cumulative and
         positive outward. The saved `membrane_transferred` holds the passive routes only.
       FR-11's interim planarian loop comes after these. Its design is
@@ -82,8 +86,9 @@ experiment).
       - the human loop: a paced human ventricular cell on Track E's human law set, brought
         forward by D183 (16 November) in place of a generic stand-in. It waits for those laws;
       - the minimal cells' cycle after an admission probe. Its run must carry what the viewer's loop
-      reader requires: the visualizer's "What a species' looping run must carry", on its branch at
-      cf11924a.
+      reader requires: the visualizer's "What a species' looping run must carry", written on its
+      branch at cf11924a and on main since its merges
+      ([note](../visualizer/docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md#what-a-species-looping-run-must-carry-16-november-2026)).
       - a `loop` block in the view: the species, the cell, and the run's own closure statement
         (`within`, `says`);
       - the engine's models and its revision, since the reader refuses a loop run that names no
@@ -155,7 +160,7 @@ experiment).
      composite refuses an operator that writes an exact-booked route's row (fail-closed, version 1);
    - ledger lists read from the implementation object;
    - moving the host-side window checks, 91% of long-run time, into device windows;
-   - the summation tree, if species counts go well past 16.
+   - the summation tree, if species counts go well past 150 (D182).
 4. **After GH200:** the sparse field solver, the parked D148 rounds, and the conduction workloads
    in the measurement plan.
 5. **Held:**
@@ -228,7 +233,7 @@ The ownership contract to make explicit, consolidating the division design's ent
 Numerical work and biological model discrimination can proceed in parallel. Shared-state
 interfaces have one owner, the lead.
 
-### Gate: today's commitments (unchanged)
+### Gate: the commitments of 12 November (unchanged)
 
 - **Landing order:**
   1. the composite (water@1, water@2 and replacement@1 re-expressed under frozen guards);
@@ -244,8 +249,8 @@ interfaces have one owner, the lead.
   ([arms](../validation/division/j1_diagnostic_arms.json)). Check C1 and J2 stay held.
 - **Running jobs continue:** the W1 water sheet arms and the turnover pre-screen
   (`resolved_pump_replacement@1` over `@3`, without water).
-- **Test tiers are re-measured** only on idle cores. Last night's timings were taken
-  under contention.
+- **Test tiers are re-measured** only on idle cores. The timings of the night of 11 November
+  were taken under contention.
 
 ### Gate: execution
 
@@ -407,7 +412,7 @@ capped unit (`scripts/run_detached.sh`).
 
 | Objective | Gate | Cost or feasibility |
 | --- | --- | --- |
-| A landed, reusable composite physiology model | Composition | Guards done on CPU; GPU agreement pending |
+| A landed, reusable composite physiology model | Composition | Guards done on CPU; L4 agreement by tolerance passed (W1, W2 and G2-Q1, Q7 in the flagged mode); GH200 pending |
 | A dependable execution path with measured GH200 costs | Execution, compute limits | GH200 access needed |
 | General division operations, with a clear line between prescribed and state-triggered division | Lifecycle | S2–S5, about 10–11 agent-days by the division plan's own estimate |
 | A repeated-turnover experiment with a defensible positive or negative result | Coupled renewal | The 127-cell sheet on CPU; the full tissue only with GH200 or a long-time method (E07 tier 1 is 4,100–7,200 L4 GPU-hours) |
@@ -432,8 +437,8 @@ that.
 
 **Taken:**
 - The plan is adopted.
-- GH200 (JUPITER) work waits for access, expected by the end of next week. The L4 is used
-  fully meanwhile.
+- GH200 (JUPITER) work waits for access, expected at adoption by the end of the week of 16
+  November. The L4 is used fully meanwhile.
 - The suggested choices, as listed in D145:
   - C1 stays held.
   - The single-world size is set from the L4 profile and the GH200 numbers.
