@@ -80,6 +80,29 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **core-fixes merged into main (16 November 2026, late evening).** It fixes two of the test
+  audit's findings ([evidence](/mnt/workspaces/Cells/core-fixes-20261116/)).
+  - **F1, a real validation gap since 88866b60** (9 November, gauge option 2). A definition with a
+    charged floating or gauge component was accepted at parse.
+    - Runs refused it late, at step 0. The stationary analysis was fail-open: it reported 6.13e-7 V
+      for a planted 1e-17 C.
+    - The fix: a host-only neutrality check at the initial capacitor solve, refusing with
+      ConfigError. It changes no program.
+    - No registered world is affected. Of the 116, 7 have a representative, and every residual is
+      exactly 0 C, so today's W1/W2 results stand.
+    - It also closes F3: test_surface_excision goes from 40 of 43 to 43 of 43.
+  - **F6, a crash since 9b6e85ed:** `schedule.py`'s UnboundLocalError for spatial_calcium@2–@5. The
+    four files go from 44 failed and 45 errors to all passing, and move to tier 3 for their run
+    time.
+  - **Also:**
+    - the kinds world set in `composite_crossrev` (D187 rule 2);
+    - the design for allocation-independent linear algebra, proposed, which awaits the user.
+  - **Checks:**
+    - crossrev, 8 sets plus the kinds pair, identical;
+    - G1: 113 of 113, bitwise;
+    - tiers 1+2: 507 files, none changed;
+    - quick checks on the merged heads, FR-5's charged starts included: none failed.
+
 - **The run-view writer merged into main (16 November 2026, evening): run-view-d154,
   `cells.run_view@1`.** ([handoff](/mnt/workspaces/Cells/run-view-20261115-01/HANDOFF.md).)
   - **What it adds:**
