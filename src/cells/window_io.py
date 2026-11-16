@@ -41,6 +41,8 @@ def _write_window_chunk(directory, window, policy, window_index):
             np.savez(handle, **arrays)
         checksum = _sha256(path)
         payload_bytes = path.stat().st_size
+    # A window checked on the device (WindowPolicy row_checks="device") records who decided it.
+    checked = getattr(window, "row_checks", None)
     return {
         "kind": "window",
         "index": window_index,
@@ -52,6 +54,7 @@ def _write_window_chunk(directory, window, policy, window_index):
         "observation_records": observed,
         "validated_observations": len(window.observations.times),
         "diagnostics": window.diagnostics,
+        **({} if checked is None else {"row_checks": checked.to_dict()}),
         "path": filename,
         "sha256": checksum,
     }, payload_bytes

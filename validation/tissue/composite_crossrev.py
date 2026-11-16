@@ -11,6 +11,10 @@ frozen-format definitions:
   (NAME.KIND.consts.json). jaxpr text does not print a closed-over array's values: two
   programs that differ only in such a constant print identically, so the constants are
   compared separately. The device row checks close over the model's check constants.
+  From 16 November 2026 the device row checks are also traced with margins=True
+  (device_checks_margins), the program a scalar window runs under WindowPolicy
+  row_checks="device" (docs/WINDOW_DEVICE_CHECKS_DESIGN.md §9.6). An older revision has
+  no such text; compare reads only its first argument's files, so give the older side first.
   Identical text and constants mean identical compiled programs for every world of
   those shapes and static choices; the step size is a traced input, so it covers every dt;
 * bindings: every initial state, layout and control array (at every schedule time), and
@@ -329,10 +333,14 @@ def _traced(spec, model, arrays):
     def checks(s, q):
         return model.device_checks(s, s, q, constants, 3)
 
+    def checks_margins(s, q):  # The scalar windows' device checks (WindowPolicy row_checks).
+        return model.device_checks(s, s, q, constants, 3, margins=True)
+
     return dict(
         checked_step=jax.make_jaxpr(step)(s, dt, c, p),
         rhs=jax.make_jaxpr(rhs)(s, c, p),
         device_checks=jax.make_jaxpr(checks)(s, p),
+        device_checks_margins=jax.make_jaxpr(checks_margins)(s, p),
     )
 
 

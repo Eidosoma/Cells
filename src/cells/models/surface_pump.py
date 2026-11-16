@@ -800,10 +800,11 @@ def device_balances(state, p):
     return result
 
 
-def device_checks(previous, row, p, constants, steps):
+def device_checks(previous, row, p, constants, steps, *, margins=False):
     """check_values' tests for one accepted row on the device: (failed, diagnostics).
 
     steps is the row's accepted-step count, the host check's value for that row.
+    margins=True also returns each ledger's ratio to its bound (row_checks).
     """
     from cells.models.surface_pump_checks import row_checks
 
@@ -818,6 +819,7 @@ def device_checks(previous, row, p, constants, steps):
         limits=ledger_limits,
         magnitudes=pump_magnitudes,
         dissipation=DISSIPATION_FIELDS,
+        margins=margins,
     )
 
 

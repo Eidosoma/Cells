@@ -6,9 +6,17 @@ from time import perf_counter
 
 import numpy as np
 
+from cells.core import row_checks
+from cells.core.devices import execution_device
 from cells.core.grid import EventGrid, checked_grid
 from cells.core.resources import trace_bytes
-from cells.core.runner import _run_segment, _WindowExecution, takes_steps, validate_checkpoint
+from cells.core.runner import (
+    CheckedRunResult,
+    _run_segment,
+    _WindowExecution,
+    takes_steps,
+    validate_checkpoint,
+)
 from cells.core.specs import ConfigError, SimulationSpec, _integer, _number, parse_spec
 from cells.core.state import Checkpoint, initialise
 from cells.models.registry import get_model
@@ -16,8 +24,18 @@ from cells.models.registry import get_model
 
 @dataclass(frozen=True)
 class WindowPolicy:
+    """How a windowed run is cut, recorded and checked.
+
+    row_checks is the scalar windowed path's choice of where every accepted row is checked:
+    "host" (the default: the model's check_values) or "device" (core/row_checks.py: the
+    model's compiled device checks, with windows near a bound decided by the host). It is an
+    execution choice, so a restart may change it. Only "device" is written by to_dict(), so
+    every earlier policy record keeps its bytes. The batch and vector paths refuse "device".
+    """
+
     window_steps: int = 256
     recording: str = "observations"
+    row_checks: str = "host"
 
     def __post_init__(self):
         _integer(self.window_steps, "window_steps")
@@ -27,9 +45,14 @@ class WindowPolicy:
             "checkpoints",
         ):
             raise ConfigError("recording must be full, observations or checkpoints")
+        if type(self.row_checks) is not str or self.row_checks not in row_checks.MODES:
+            raise ConfigError("row_checks must be host or device")
 
     def to_dict(self):
-        return {"window_steps": self.window_steps, "recording": self.recording}
+        out = {"window_steps": self.window_steps, "recording": self.recording}
+        if self.row_checks != "host":
+            out["row_checks"] = self.row_checks
+        return out
 
 
 DEFAULT_POLICY = WindowPolicy()
@@ -51,6 +74,8 @@ def _plan_windows_metadata(spec, policy=DEFAULT_POLICY, checkpoint=None):
     if type(policy) is not WindowPolicy:
         raise ConfigError("Expected a WindowPolicy")
     policy = WindowPolicy(**policy.to_dict())
+    if policy.row_checks == "device":
+        row_checks.admit(spec)
     grid = EventGrid(spec)
     if checkpoint is not None and type(checkpoint) is not Checkpoint:
         raise ConfigError("Expected a complete Checkpoint")
@@ -139,6 +164,10 @@ def _iter_windows(plan, checkpoint):
         if spec.execution.jit and remaining
         else None
     )
+    if execution is not None and plan.policy.row_checks == "device":
+        execution.row_checks = row_checks.DeviceRowChecks.build(
+            spec, checkpoint, execution_device(spec.execution.backend)
+        )
     for times in plan.grid.windows(plan.start_step, plan.policy.window_steps):
         stop = bisect_right(requested, float(times[-1]))
         result = _run_segment(
@@ -206,8 +235,12 @@ def _consume_windows(plan, checkpoint, sink, *, started, preparation_seconds):
     diagnostics, timings = {}, {}
     peak_history = peak_observations = observation_count = window_count = 0
     sink_seconds = 0.0
+    device = plan.policy.row_checks == "device"
+    report = row_checks.new_report() if device else None
     for window in _iter_windows(plan, checkpoint):
         merge_diagnostics(diagnostics, window.diagnostics)
+        if device and isinstance(window, CheckedRunResult):
+            row_checks.merge_outcomes(report, window.row_checks)
         for name, value in window.timings.items():
             timings[name] = timings.get(name, 0.0) + value
         peak_history = max(
@@ -228,6 +261,7 @@ def _consume_windows(plan, checkpoint, sink, *, started, preparation_seconds):
         "sink_seconds": sink_seconds,
         "total_run_seconds": perf_counter() - started,
     }
+    checked = {} if report is None else {"row_checks": report}
     return WindowedResult(
         plan.spec,
         plan.policy,
@@ -245,7 +279,8 @@ def _consume_windows(plan, checkpoint, sink, *, started, preparation_seconds):
             "validated_observations": observation_count,
             "executed_steps": final.step_index - plan.start_step,
             "resident_off_nominal_events": len(plan.grid.extras),
-        },
+        }
+        | checked,
     )
 
 
