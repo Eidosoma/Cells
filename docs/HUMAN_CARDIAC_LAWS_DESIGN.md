@@ -1,15 +1,26 @@
 # Human cardiac laws: design (proposed)
 
-**Status: PROPOSED, 16 November 2026, for the user's choices.** Design only: no engine code is
-written until the user chooses (D142, D183). Written on branch `cardiac-laws` from 3c10b833,
-integration-d172's landing candidate.
+**Status: PROPOSED, 16 November 2026; its choices for the user decided by D184 the same day.**
+The user delegated the choices to the lead with the advisor and gave the go (D184, on main at
+98c49993). Decided:
+- the source is O'Hara–Rudy 2011's endocardial cell; the endocardial cell comes first;
+  Hodgkin–Huxley sodium gates; 310 K;
+- D138's and D151's approval for arms (A), (B) and (C) of §5.2, for O'Hara–Rudy 2011 only;
+- D167's expectation for the human set: new channel laws, with the catalogue's laws kept as parity
+  references (§9.2's question 12);
+- FR-11's human loop: no generic stand-in.
+
+The questions for the lead and the core owner (§9.2) are ruled after the landing. Design only: no
+engine code yet. Written on branch `cardiac-laws` from 3c10b833, integration-d172's landing
+candidate; the note reaches main after D172's landing.
 
 **The decision it serves: D183** (16 November 2026; on main at e9f19dff). The user: "let's bring
 the human cardiac laws forward". Track E's human ventricular law set
 ([EXCITABLE_TISSUE_DESIGN.md](EXCITABLE_TISSUE_DESIGN.md) §3.3 and §7, and M4 and M5 of §11) starts
 now as its own lane on the inner model that D172 lands. FR-11's human loop becomes a paced human
-ventricular cell on this law set, with no generic stand-in, and waits for it. The planarian loop
-stays first. D183 asks this note for options on the source of equations and parameters, the cell
+ventricular cell on this law set, with no generic stand-in, and waits for it. D184 corrects D183's
+record: "no generic stand-in" was the lead's reading of the user's answer, which the delegation
+keeps. The planarian loop stays first. D183 asks this note for options on the source of equations and parameters, the cell
 types, the sodium current's form, the temperature and the verification, and for the D138 question.
 
 **What stays as it was (D183):**
@@ -40,7 +51,8 @@ D172's one modular inner model, as declared laws and kinds. The paced cell runs
 
 ## 0. The choices, in plain terms
 
-1. **The source: O'Hara–Rudy 2011's endocardial cell (ORd), recommended** (§4.1). It has no Markov
+1. **The source: O'Hara–Rudy 2011's endocardial cell (ORd), recommended and decided (D184)**
+   (§4.1). It has no Markov
    form, its equations and tables are open (CC BY), its errors are documented, and it publishes
    its steady state. ToR-ORd (2019) is the better-calibrated successor, but it needs a Markov IKr,
    ionic-strength activities and Cl⁻ currents, and its paper and code differ in documented places.
@@ -57,17 +69,18 @@ D172's one modular inner model, as declared laws and kinds. The paced cell runs
    formula is screened first. ORd's departures are listed in one closed table (§3.9): six definite
    (IKs per ion, the exchanger's own fluxes booked, two pump completions, a Fickian SR leak, exact
    constants) and three conditional on screens. TP06 needs more, one of which changes the model
-   itself. Separately, the engine must book channel heat so that a current crossing its reversal
-   within a step is not refused (§3.8): ORd's rest lies 0.17 mV below E_K, and the exchanger
-   reverses every beat.
+   itself. Separately, reading the code shows that the engine's heat booking would refuse a
+   current crossing its reversal within a step (§3.8; not yet run, so H1's first probe tests it).
+   ORd's rest lies 0.17 mV below E_K, and the exchanger reverses every beat.
 5. **The engine's route** (§4.5): extend @3's channel-law declaration with per-law gates, domains
    and reads, a declared linear driving force (most cardiac currents are G(V − E)), and kinetic
    coefficients as cited data, so cell types and re-fits are parameter sets, not laws.
-6. **Cell types, INa and temperature** (§4.2–§4.4): the endocardial cell first; Hodgkin–Huxley
-   sodium gates; 310 K.
+6. **Cell types, INa and temperature** (§4.2–§4.4), decided (D184): the endocardial cell first;
+   Hodgkin–Huxley sodium gates; 310 K.
 7. **Verification** (§5): each law under voltage clamp against an independent reference (no
-   approval needed), then a whole-cell comparison against the published model, **for which §9.1
-   asks the user's approval (D138, D151)**. External tools run out of process: Myokit is BSD
+   approval needed), then a whole-cell comparison against the published model, **approved by D184
+   for O'Hara–Rudy 2011 only (D138, D151; §9.1)**. The references go to fresh agents that read
+   neither the engine nor the authors' code. External tools run out of process: Myokit is BSD
    3-Clause, desktop OpenCOR and ToR-ORd's code are GPL 3.0, and no licence read has a
    non-commercial clause (§5.3).
 8. **FR-11's human loop** (§7): the paced cell at 1 Hz with a K⁺-only carrier. The slow ion
@@ -75,7 +88,8 @@ D172's one modular inner model, as declared laws and kinds. The paced cell runs
    on the step. A single cell needs no junction law.
 9. **Effort** (§8, **S**): about 33–48 agent-days for H1–H3, about 20–30 working days elapsed with
    three owners. Tissue (H4) is a milestone of its own, after `junction_ungated@1`, and it is where
-   ORd's known weakness lies: its conduction is slow in tissue (§4.1).
+   ORd's known weakness lies: at a common coupling it conducts the slowest of six human models,
+   though its own strand gives 45 cm/s at 1 Hz (§4.1).
 
 ## 1. What the engine has, and what a human ventricular cell needs
 
@@ -198,12 +212,12 @@ source's exchanger.
 
 | Part | ORd and ToR-ORd | TP06 | In the inner model (proposed) |
 | --- | --- | --- | --- |
-| Pools | Bulk, subspace, network SR, junctional SR: 0.68, 0.02, 0.0552 and 0.0048 of the cell's volume [full] | Cytoplasm, subspace, SR [full: AM]; the volumes as the authors' code corrects them [code] | Pools at the cell's potential (§3.2) |
+| Pools | Bulk, subspace, network SR, junctional SR: 0.68, 0.02, 0.0552 and 0.0048 of the cell's volume [full] | Cytoplasm, subspace, SR [full: AM]; the volumes as the authors' 2006 code corrects them [code: its `Main.cc`] | Pools at the cell's potential (§3.2) |
 | Buffering | Rapid buffering: CMDN and TRPN in the bulk, BSR and BSL in the subspace, CSQN in the junctional SR [full] | Rapid buffering, one lumped buffer each in the cytoplasm, SR and subspace [full: AM] | A rapid Ca²⁺ buffer read, B4's sibling (§3.3) |
 | Uptake and leak | One-way saturating uptake with a CaMKII form; a leak in proportion to network SR Ca²⁺ [full] | Uptake V_maxup/(1 + K_up²/Ca_i²); a Fickian leak V_leak(Ca_SR − Ca_i) [full: AM] | A pump between pools on held fuel; the leak as a route between pools (§3.4) |
 | Release | A flux state relaxing to a target in proportion to −I_CaL, with a CaMKII copy [full] | V_rel·O·(Ca_SR − Ca_ss), with O from one state driven by subspace Ca²⁺ and the SR's load [full: AM] | A release law with its own state (§3.5) |
 | Transfer and diffusion between pools | Network to junctional SR (100 ms); subspace to bulk for Ca²⁺ (0.2 ms), Na⁺ and K⁺ (2.0 ms) [full] | Subspace to cytoplasm, V_xfer(Ca_ss − Ca_i) [full: AM] | `constant_field@1` at zero voltage between pools (§3.2) |
-| Na⁺/Ca²⁺ exchange | A cycle after Kang and Hilgemann, 80% facing the bulk and 20% the subspace [full] | A saturating formula with a factor α = 2.5 on one direction, facing the bulk [code; full: AM Table 1] | A fuel-free exchanger law (§3.6) |
+| Na⁺/Ca²⁺ exchange | A cycle after Kang and Hilgemann, 80% facing the bulk and 20% the subspace [full] | A saturating formula with a factor α = 2.5 on one direction, facing the bulk [code: TP06's CellML, the model repository's e/80d; full: AM Table 1 and §2.1.1] | A fuel-free exchanger law (§3.6) |
 | Sarcolemmal Ca²⁺ pump | One-way saturating [full] | One-way saturating, G_pCa 0.1238, K 0.0005 mM [full: AM] | `ca_atp_mass_action_positive@1`, moved (in @3 already) |
 | CaMKII | One trapped state; six targets [full] | None | A source kind through the routing door (§3.7) |
 
@@ -212,7 +226,7 @@ source's exchanger.
 The source models give the dyadic subspace and the SR no membrane potential of their own: every
 pool of a cell shares the cell's voltage, and only the plasma membrane is a capacitor. ORd's 41
 states and TP06's 19 (V, Ca_i, Ca_SR, Ca_ss, Na_i, K_i, twelve gates and R̄) each hold one membrane
-voltage [full; code]. Three representations were weighed (**S**):
+voltage [full; code: TP06's 2006 code]. Three representations were weighed (**S**):
 
 - **(a) Pools at the cell's potential. Recommended.**
   - A cell declares pools, each with its volume and its own species rows. The field solve gives
@@ -390,7 +404,8 @@ before it becomes a law (**S**):
   own hydrolysis free energy (ORd's Na⁺/K⁺ pump) is checked against the registry's fuel potentials
   (§2's INaK row).
 
-**A law that dissipates at every state can still be refused: the booking.**
+**A law that dissipates at every state can still be refused: the booking.** This finding is read
+in the code (**S**). No run has shown it; the probe below tests it first.
 - **How the heat is booked.** `imex_step` books a channel population's heat with the tableau's
   explicit weights, like every route except the junctions under `trapezoid_nonnegative@1`
   (`surface_pump_v3.imex_step`). ARS(2,2,2)'s weights are (δ, 1 − δ) with δ < 0, and the code's own
@@ -410,6 +425,15 @@ before it becomes a law (**S**):
     cell did not meet it: its after-hyperpolarization, −87.6 mV (EXCITABLE_TISSUE_DESIGN §1.2),
     stays above its E_K, −88.3 mV at the equations appendix's K⁺ concentrations (**S**), and its
     Na⁺ currents stay below E_Na.
+- **The probe, an H1 prerequisite.** One channel population whose current crosses its reversal
+  within a step under ARS(2,2,2), on @3 as it stands: for example a cell's K⁺ leak while an
+  injected current step drives the voltage through E_K.
+  - **Expected:** the dissipation check refuses the step.
+  - **Why (S):** ARS(2,2,2) has γ = 1 − 1/√2 and δ = 1 − 1/(2γ) ≈ −0.707. Its booked increment is
+    dt·[δ·q(0) + (1 − δ)·q(γ·dt)], with q a population's power. That is negative when q(γ·dt) is
+    below −δ/(1 − δ) ≈ 0.41 of q(0): a fall of more than about 59% in a step.
+  - **Recorded:** the step, both powers and the refusal. If the step is not refused, the seam's
+    need is revisited before H1 builds it.
 - **So H1 needs a channel-heat booking that cannot be negative:** the junctions'
   `trapezoid_nonnegative@1`, which averages the step's start and end powers (each ≥ 0 for a
   single-ion route), extended to channel populations, and a booking of the same kind for the new
@@ -451,20 +475,21 @@ printed.
 Read on 16 November 2026 by two web-search subagents (Sources): ORd's paper, Text S1 and reader
 comments, ToR-ORd's article XML with its appendix and the authors' repository at 11e463d, and
 TP06's accepted manuscript as its author hosts it (tbb.bio.uu.nl, dated 6 March 2006) with the
-authors' C++ code. Tags as in the header.
+authors' 2006 C++ code and TP06's CellML. TP06's [code] tags below mean that 2006 code or that
+CellML; nothing here rests on the authors' 2004 code (Sources). Tags as in the header.
 
 | | **ORd 2011, endocardial** | **ToR-ORd 2019** | **TP06 (2006)** |
 | --- | --- | --- | --- |
-| State variables | 41 (31 without CaMKII) [full] | 43 [code]; 45 in the dynamic-chloride version | 19 [code; and Elshrif & Cherry 2014 (sec)] |
+| State variables | 41 (31 without CaMKII) [full] | 43 [code]; 45 in the dynamic-chloride version | 19 [code: the 2006 code's `Variables.h`; and Elshrif & Cherry 2014 (sec)] |
 | Pools | Bulk, subspace, network SR, junctional SR | The same | Cytoplasm, subspace, SR |
 | Markov forms | None, by design: "Exclusion of Markov models" [full] | **IKr is a Markov model** (Lu and Vandenberg's five states) [full; code] | The release: a four-state scheme reduced to one state [full: AM] |
 | CaMKII | Yes, on six currents and fluxes | Yes | No |
 | Formulas needing a change or a domain in Cells (§3.8) | IKs booked to K⁺ with a mixed reversal; the exchanger's 3:1 booking of a cycle with a Na⁺ leak (to be screened); ICaL's and ICab's asymmetric Ca²⁺ activity (a state-dependent window) | ORd's, with activity coefficients computed from each side's ionic strength (Davies equation) in ICaL and ICab, a narrower window | IKs as ORd's (p_KNa 0.03); INaCa's α = 2.5, whose zero lies 24.5 mV (**S**) off the 3:1 equilibrium; ICaL's −15 mV shift and 0.25 internal factor, which move its zero 33.5 mV (**S**) above E_Ca |
 | Laws to write (§2's count) | 8 channel laws, 2 transporter cycles, the release, the buffer read and CaMKII; 4 laws moved, and the constant-field route on a new host | ORd's, with a Markov IKr, a Grandi-type INa, an instantaneous IK1, two Cl⁻ currents and Cl⁻ as a channel ion | About 11, simpler, without CaMKII |
 | Single cell at 1 Hz, as reported | APD 273 ms against "∼275 ms" in human endocardial preparations; maximum dV/dt 254 V/s against 234 ± 28 measured [full] | Ca²⁺ transient 312 nM; 54 of 62 drugs' risk correct [full] | Epicardial: APD90 306 ms, maximum dV/dt 289 V/s, rest −85.8 mV [full: AM]; 304.3 ms and 368.4 V/s by Elshrif & Cherry 2014 [sec], not reconciled |
-| In tissue | Weak. Tissue upstroke 83.9 V/s and a maximum conduction velocity of 37.8 cm/s, "unphysiologically slow" (Elshrif & Cherry 2014) [full]. Remedies: O'Hara's own suggestion of the 2004 ten Tusscher INa (PLOS reader comment, 5 October 2012) [sec]; Passini et al. 2016's refit of h∞ = j∞ (its two constants, 82.9 and 6.09 mV, to 78.5 and 6.22 mV), which keeps CaMKII [full] | A Grandi-type INa for "conduction velocity and excitability"; fibre velocity 65 cm/s [full] | Tissue upstroke 266.3 V/s [sec: Elshrif & Cherry 2014]; the cell of the N-version benchmark, epicardial [sec: openCARP's benchmark example] |
-| Equations, openly | Paper and 44-page Text S1, CC BY; PLOS's 2011 correction; reader comments report two INaK errors [full] | Paper CC BY 4.0. Documented paper/code differences: P_Nab (1.9238·10⁻⁸ printed, 1.9239·10⁻⁹ in code), the SR transfer time (60 ms in code, unprinted), INa's printed equation without (V − E_Na), and the activity's logarithm base (fixed only in alternative files, 2021) [full; code] | Ten of its currents are "unchanged" from TNNP04 (2004), whose printed equations could not be read openly; TP06 itself only as the accepted manuscript. The authors' code corrects printed table values it calls typos (volumes, V_rel, k₄) [code] |
-| Published model files | The authors' Matlab and C++ (BSD-style notice); a CellML 1.0 encoding (terms unspecified) | The authors' Matlab and CellML (GPL 3.0); one encoding also in the repository under CC BY 3.0; three versions (2019, dynamic chloride 2020, the 2021 fix) | The authors' C++; CellML (terms unspecified); an epicardial file in Chaste's BSD 3-Clause repository, which states no model licence of its own |
+| In tissue | Slow at a common coupling: in Elshrif & Cherry's cable, the endocardial cell's maximum velocity is 38.2 cm/s (37.8 epicardial) and its tissue upstroke 83.9 V/s (81.6 epicardial), "unphysiologically slow" against 62.2–74.6 cm/s for five other human models under the same settings (Elshrif & Cherry 2014, Table 2) [full]. In ORd's own strand: 45 cm/s at 1 Hz and 70 cm/s from quiescence [full]. The two are reconciled below. Remedies: O'Hara's own suggestion of the 2004 ten Tusscher INa (PLOS reader comment, 5 October 2012) [sec]; Passini et al. 2016's refit of h∞ = j∞ (its two constants, 82.9 and 6.09 mV, to 78.5 and 6.22 mV), which keeps CaMKII [full] | A Grandi-type INa for "conduction velocity and excitability"; fibre velocity 65 cm/s [full] | Tissue upstroke 266.3 V/s [sec: Elshrif & Cherry 2014]; the cell of the N-version benchmark, epicardial [sec: openCARP's benchmark example] |
+| Equations, openly | Paper and 44-page Text S1, CC BY; PLOS's 2011 correction; reader comments report two INaK errors [full] | Paper CC BY 4.0. Documented paper/code differences: P_Nab (1.9238·10⁻⁸ printed, 1.9239·10⁻⁹ in code), the SR transfer time (60 ms in code, unprinted), INa's printed equation without (V − E_Na), and the activity's logarithm base (fixed only in alternative files, 2021) [full; code] | Ten of its currents are "unchanged" from TNNP04 (2004), whose printed equations could not be read openly; TP06 itself only as the accepted manuscript. The authors' 2006 code corrects printed table values it calls typos (volumes, V_rel, k₄) [code: its `Main.cc`] |
+| Published model files | The authors' Matlab and C++ (BSD-style notice); a CellML 1.0 encoding (terms unspecified) | The authors' Matlab and CellML (GPL 3.0); one encoding also in the repository under CC BY 3.0; three versions (2019, dynamic chloride 2020, the 2021 fix) | The authors' 2006 C++ code; CellML (terms unspecified); an epicardial file in Chaste's BSD 3-Clause repository, which states no model licence of its own |
 | Effort for H1–H3 (**S**, §8) | About 33–48 agent-days | About 41–59 | About 28–41, plus the papers |
 
 **Recommended: ORd's endocardial cell (O'Hara et al. 2011).**
@@ -482,7 +507,52 @@ authors' C++ code. Tags as in the header.
 - **Its weakness is conduction,** which matters for Track E's tissue milestone (H4), not for
   FR-11's single cell. The published remedies are a parameter set on the same INa form (Passini
   et al. 2016) or another INa form (TNNP04's, as O'Hara suggested; ToR-ORd's). H4 chooses, with
-  its own evidence.
+  its own evidence. The remedies come from other papers, so D184's approval does not cover them.
+
+**The conduction figures, reconciled (for H4).** Read from the open copies of the two papers, and
+Decker et al. 2009's open article page:
+- **ORd's own: 45 cm/s at 1 Hz, and 70 cm/s from quiescence** [full: the Results' "Fast Na⁺
+  current"; Text S1's "APD Rate Dependence in Homogeneous Multicellular Fiber"].
+  - The tissue: a 100-cell homogeneous endocardial strand on "the conduction equations of Decker
+    et al. (-200 µA/µF, 1 ms stimulus delivered to fiber end, zero flux boundary conditions)".
+  - ORd's sodium conductance was set to give it: "We determined appropriate channel conductance at
+    37°C based on conduction velocity, and maximum dVm/dt." So 45 cm/s is a calibration target,
+    matched to dog experiments; 70 cm/s matches in vivo human measurements (ORd's refs 48 and 49).
+  - Decker et al.'s own strand, of 96 cells, used a gap-junction conductance of 2.5 µS (Decker et
+    al. 2009, Methods [full]). ORd's text does not restate it, and Decker's other strand settings
+    are in a supplement not read.
+- **Elshrif & Cherry's: 38.2 cm/s for the endocardial cell (37.8 epicardial), the largest value
+  of the conduction-velocity restitution** [full: Methods and Table 2].
+  - The tissue: a continuous monodomain cable, 1.5 cm long, with one diffusion coefficient for
+    every model compared, 0.001171 cm²/ms.
+  - The numerics: a spatial step of 0.015 cm; a time step of 0.02 ms, with ORd's Ca²⁺ equations
+    split at 0.001 ms; Rush–Larsen gates; no-flux ends.
+  - The protocol: paced for 30 s at a cycle length of 1000 ms from the published initial
+    conditions, with the velocity measured between two adjacent cells mid-cable.
+- **Why they differ: mainly the coupling (S).**
+  - In the continuum limit of a chain of cells, D = g_j L²/C. For ORd's cell (L = 0.01 cm,
+    C = 153.4 pF), Elshrif & Cherry's D corresponds to g_j ≈ 1.8 µS, and Decker's 2.5 µS to
+    D ≈ 0.00163 cm²/ms.
+  - Velocity scales as √D in a continuum, and 38.2 × √(0.00163/0.001171) = 45.1 cm/s, which is
+    ORd's own value at 1 Hz.
+  - So the two agree once the coupling is matched, if ORd's strand used Decker's 2.5 µS. The
+    discretizations also differ (discrete cells against a 0.015 cm grid), so this is an estimate,
+    not a computed reconciliation.
+  - What Elshrif & Cherry show is relative: at a common coupling, ORd's cell conducts the slowest
+    of six human models. Its sodium current needs more coupling to reach a given velocity.
+- **H4's targets (recommended):**
+  - **Judged, as verification:** ORd's own strand at its own coupling, 45 cm/s at 1 Hz and
+    70 cm/s from quiescence, once Decker's supplement confirms the coupling and cell spacing.
+    Cells' tissue is a discrete chain of cells joined by junctions, as that strand is, so the
+    comparison is like for like. D184 approved the single-cell comparison only, so this strand
+    comparison is put to the user with H4.
+  - **Reported, not judged:** velocity against coupling over a range that includes Elshrif &
+    Cherry's D (about 1.8 µS at ORd's cell size), and the human values: 70 cm/s in vivo (ORd's
+    ref 49) and Kaese and Verheule's 80 cm/s (EXCITABLE_TISSUE_DESIGN §13).
+  - **The junction step bound at these couplings (S):** at 2.5 µS, Σg_j/C is 32,600/s in a chain
+    (a bound of 15 µs) and 97,800/s at a hexagon's interior (5.1 µs). At 1.8 µS it is 23,400/s
+    (21 µs) and 70,200/s (7.1 µs). So §4.2's condition holds at the 5 µs step in chains, and only
+    just in a sheet at 2.5 µS.
 
 **Why not the others now.**
 - **ToR-ORd** is the better-calibrated successor (Ca²⁺ transient, drug block, conduction), but it
@@ -585,8 +655,8 @@ G·(V − E) (§2). Two ways to carry them:
 Single cited laws need no approval (EXCITABLE_TISSUE_DESIGN §11). Each law and flux is checked on
 its own before any whole cell runs.
 - **The reference.** One fresh agent writes it from the source paper's equations and tables, and
-  never reads the engine or the driver, as Track E's references were written (D170). It runs out
-  of process and saves its outputs. It computes each current's density, or each flux, under the
+  reads neither the engine, the driver nor the authors' code, as Track E's references were written
+  (D170). It runs out of process and saves its outputs. It computes each current's density, or each flux, under the
   source's own clamp protocols, at a grid of held concentrations:
   - steady-state activation and inactivation, time constants and recovery from inactivation, and
     the I–V relation, for each channel law;
@@ -619,20 +689,27 @@ needs the user's approval per paper. The proposal, for ORd's endocardial cell:
   §3's calcium handling, and `electrode_current_injection@1` carrying K⁺. One endocardial cell in a
   held bath at Na_o 140, Ca_o 1.8 and K_o 5.4 mM, at 310 K, paced at 1 Hz with ORd's stimulus. It
   starts from ORd's published steady state and is paced to its own periodic state (§7). CPU.
+- **Who writes the references.** This note's author has read the engine, so it writes neither R1
+  nor R2. Both go to fresh agents, when a slot frees.
 - **R1, an independent whole-cell reference.** A fresh agent writes it from the paper and Text S1,
-  with PLOS's correction, and never reads the engine. It runs out of process with its own stiff
-  integrator at tight tolerances, with its own convergence check. It has two arms:
+  with PLOS's correction, and reads neither the engine nor the authors' code (D184). It runs out
+  of process with its own stiff integrator at tight tolerances, with its own convergence check. It
+  has two arms:
   - **R1-published:** the equations as printed;
   - **R1-declared:** the same, with §3.9's departures, one switch each.
-- **R2, the published model itself, unmodified, run out of process.** Myokit 1.40 (BSD 3-Clause),
-  in its own environment, on the Physiome Model Repository's CellML 1.0 encoding of ORd (terms
-  unspecified, so used by reference only and never committed), or the authors' own C++ code (its
-  BSD-style notice), compiled and run out of process, if it can be fetched without an account
-  (a subagent could not reach its Box share without JavaScript). Myokit's own curated encoding
-  (`myokit/models`, `ohara-2011.mmt`, version 20240904) states no licence either, and its README
-  asks users to cite the original papers [code]. Every encoding read starts from rounded values
-  (V −87 mV, K_i 145 mM [code]), so R2 starts from Text S1's published steady state. Only saved
-  outputs enter the evidence.
+- **R2, the published model itself, unmodified, run out of process** (route B, as D184 rules it).
+  - **One plain attempt at the authors' own code** (C++, under its BSD-style notice), compiled and
+    run out of process. A subagent could not reach its Box share without JavaScript on
+    16 November.
+  - **Any wall ends the attempt:** an account, JavaScript or a guard. The lane then stops trying
+    and uses Myokit 1.40 (BSD 3-Clause), in its own environment, on the Physiome Model Repository's
+    CellML 1.0 encoding of ORd. Its terms are unspecified, so it is used by reference only and
+    never committed. No workaround.
+  - Myokit's own curated encoding (`myokit/models`, `ohara-2011.mmt`, version 20240904) states no
+    licence either, and its README asks users to cite the original papers [code].
+  - Every encoding read starts from rounded values (V −87 mV, K_i 145 mM [code]), so R2 starts
+    from Text S1's published steady state.
+  - Only saved outputs enter the evidence.
 
 **What is compared, over one beat of the periodic state at 1 Hz:**
 1. V(t), with APD30, APD50 and APD90, the peak, the resting potential and the largest dV/dt;
@@ -701,7 +778,8 @@ FR-11's loop.
 | --- | --- | --- |
 | D172's landing: one modular inner model | Everything | Landing candidate 3c10b833 |
 | The channel-law seams (§1, §4.5): Ca²⁺ and Cl⁻ as permeant ions; per-law gate counts, domains, reads, openings and driving form; kinetic coefficients as data; routes that face a pool | H1 | New; the core owner's |
-| A channel-heat booking that cannot book a negative increment (§3.8) | H1, for any human cell: ORd's rest lies below E_K, and the exchanger reverses every beat | New; the core owner's |
+| The booking probe (§3.8): one channel population crossing its reversal within a step under ARS(2,2,2), expected to be refused | H1, before the booking seam | A short probe on @3 as it stands |
+| A channel-heat booking that cannot book a negative increment (§3.8) | H1, for any human cell: ORd's rest lies below E_K, and the exchanger reverses every beat | New; the core owner's, if the probe confirms the need |
 | Calcium handling (§3): pools at the cell's potential (opening subspace calcium, INNER_MODEL_V4_DESIGN §13.1); the rapid Ca²⁺ buffer read (B4's closure generalised, or a sibling kind); pumps between pools and a fuel-free exchanger; the release law, with its read of the L-type current; CaMKII through the routing door into channel availability | H2 | D167's move, with new laws; the lead's rulings on the openings |
 | The source paper's equations and tables | H1's and H2's component references | ORd: open (the paper and its 44-page Text S1, CC BY), read on 16 November, with PLOS's 2011 correction. ToR-ORd: open (CC BY 4.0). TP06 and TNNP04: not openly readable; the user could supply them (§4.1) |
 | D155's paper's Supplementary Tables 1–2 | Not this lane. They map the paper's transcript changes to availabilities for Track E's perturbation (M4's mouse comparison) | Requested under D155 |
@@ -714,8 +792,10 @@ FR-11's loop.
 ## 7. FR-11's human loop: a paced cell at 1 Hz
 
 D183 makes FR-11's human loop a paced human ventricular cell on this law set, with no generic
-stand-in (LOOPING_REPLAY_DESIGN §5 on run-view-d154, amended at fd008813). The planarian loop
-stays first.
+stand-in (LOOPING_REPLAY_DESIGN §5 on run-view-d154, amended at fd008813). D184 keeps it: that
+was the lead's reading of the user's answer, kept under the user's delegation. The viewer has no
+human loop until the cell is ready (H3, §8); a labelled interim generic cell remains a one-line
+amendment. The planarian loop stays first.
 
 - **Engine models:** `resolved_pump_composite@1` over `resolved_pump_tissue@3` with the chosen
   law set and calcium handling, and `electrode_current_injection@1` as the pacing train. The cell
@@ -725,9 +805,10 @@ stays first.
   A_cap and 1 µF/cm², **S**). It is periodic, as FR-11's loops require.
 - **The carrier is K⁺ alone.** The electrode declares `carriers: {"K": 1.0}`.
   - ORd: "For charge conservation sake, stimulus has K⁺ identity as described by Hund et al."
-    [full]. TP06's code books its stimulus to K⁺ too [code]. Hund et al. (2001): "When ions
-    carried by the stimulus current are taken into account, the algebraic and differential
-    methods yield identical results and neither shows drift in computed parameters" [abs].
+    [full]. TP06 books its stimulus to K⁺ too [code: TP06's CellML and the 2006 code]. Hund et
+    al. (2001): "When ions carried by the stimulus current are taken into account, the
+    algebraic and differential methods yield identical results and neither shows drift in
+    computed parameters" [abs].
   - The operator's default carriers are 3 M KCl (K⁺ 0.4912, Cl⁻ 0.5088,
     `current_injection.DEFAULT_CARRIERS`). ORd and TP06 have no Cl⁻ route, so injected Cl⁻ would
     accumulate beat by beat, and the cell would have no periodic state to close a loop on.
@@ -777,7 +858,7 @@ about 1, the stage-read slot 1–1.5, the transporter kind 2.5–3.5, the passiv
 | Milestone | Engine models | Content | Effort |
 | --- | --- | --- | --- |
 | H0 (this note) | None | The options and the D138 question | Done |
-| H1: the channel-law seams and the membrane laws | `resolved_pump_tissue@3` with the new laws declared | The core owner's seams (§4.5 (a)–(c)) and the non-negative channel-heat booking (§3.8); the eight channel laws of §2, each tested at prescribed voltage and concentrations (the L-type law's Ca²⁺-dependent inactivation at a prescribed subspace Ca²⁺, then in the model with H2); the moved leaks; each with its component reference (§5.1), admissibility screen and planted control; crossrev identity for every existing world | Seams about 6.5–8.5, the booking about 1 more; laws about 4–6; references about 3–4 (a fresh agent, in parallel) |
+| H1: the channel-law seams and the membrane laws | `resolved_pump_tissue@3` with the new laws declared | The booking probe first, then the core owner's seams (§4.5 (a)–(c)) and the non-negative channel-heat booking (§3.8); the eight channel laws of §2, each tested at prescribed voltage and concentrations (the L-type law's Ca²⁺-dependent inactivation at a prescribed subspace Ca²⁺, then in the model with H2); the moved leaks; each with its component reference (§5.1), admissibility screen and planted control; crossrev identity for every existing world | Seams about 6.5–8.5, the booking about 1 more; laws about 4–6; references about 3–4 (a fresh agent, in parallel) |
 | H2: calcium handling, D167's move | @3 with pools, the Ca²⁺ buffer read, the transporter kind's exchanger and pumps, the release law and CaMKII | §3: pools at the cell's potential (the core owner's); the buffer read; uptake, leak, exchange, release; the L-type current with Ca²⁺-dependent inactivation; their component references | About 14–20, of which the core owner's pools 3–5 |
 | H3: the paced human cell | `resolved_pump_composite@1` over @3, with `electrode_current_injection@1` | The human ventricular cell's definition as cited parameter sets in `validation/` (no species-specific code in `src/cells`, D144); the periodic state at 1 Hz; FR-11's loop (§7); the whole-cell comparison if the user approves it (§5.2) | About 5–9, and CPU minutes to days for pacing, depending on the step (§7) |
 | H4: human tissue (Track E's human arm) | As H3, with `junction_ungated@1` and the junction-implicit solver or §4.2's condition | Conduction on chains and sheets of human cells; the N-version benchmark only with its own approval (EXCITABLE_TISSUE_DESIGN §6's R-benchmark) | A milestone of its own, after Track E's M2 and M3 |
@@ -798,16 +879,24 @@ about 1, the stage-read slot 1–1.5, the transporter kind 2.5–3.5, the passiv
 
 ## 9. Questions
 
-### 9.1 For the user
+### 9.1 For the user: decided by D184
+
+The user delegated these decisions to the lead with the advisor, and gave the go ("on the other
+decisions get adviser with you then its go from me"). D184 records them on main at 98c49993. Each
+question is kept as it was put, with its decision.
 
 1. **The source model.** O'Hara–Rudy 2011's endocardial cell (recommended), ToR-ORd 2019, or ten
    Tusscher–Panfilov 2006 (§4.1)? If TP06: can you supply its paper and TNNP04's (2004), since
    neither is openly readable and we fetch nothing that needs your identity?
+   - **Decided: O'Hara–Rudy 2011's endocardial cell.**
 2. **Cell types.** The endocardial cell first, with epicardial and M cells later as parameter sets
    when tissue needs them (recommended, §4.2)?
+   - **Decided: as recommended.**
 3. **The sodium current's form.** Hodgkin–Huxley gates, as all three sources write it
    (recommended), with a Markov form later as a general kind (§4.3)?
+   - **Decided: as recommended.**
 4. **Temperature.** 310 K, the sources' own (recommended, §4.4)?
+   - **Decided: 310 K.**
 5. **The D138 question, for O'Hara–Rudy 2011's endocardial cell (§5.2).** Do you approve:
    - **(A)** an independent whole-cell reference of the model, written from the paper and Text S1
      by an agent who never reads the engine, run out of process, in two arms: as published, and
@@ -824,8 +913,26 @@ about 1, the stage-read slot 1–1.5, the transporter kind 2.5–3.5, the passiv
    Answer yes to all three; yes to A and C without B (the comparison then rests on R1 alone,
    checked against the paper's printed values); or no (the lane stops at the component references
    of §5.1, which need no approval).
+   - **Decided: (A), (B) and (C) approved, for O'Hara–Rudy 2011 only.** H4's conduction remedies
+     come from other papers and are not covered.
+   - **(A)'s author reads neither the engine nor the authors' code.** This note's author has read
+     the engine, so R1 and R2 go to fresh agents when a slot frees (§5.2).
+   - **(B) is one plain attempt at the authors' own code.** Any wall (an account, JavaScript, a
+     guard) ends it, and the lane uses Myokit with the model repository's CellML encoding, by
+     reference. No workaround.
+**Also decided by D184:**
+- **D167's expectation for the human set** (§9.2, question 12). The human set's channel laws are
+  new, the catalogue's laws stay as D167's parity references, and the mouse's expectation is
+  unchanged.
+- **FR-11's human loop,** as D183 records it: no generic stand-in. The viewer has no human loop
+  until the human cell is ready, about 20–30 working days after the landing by §8's estimate. A
+  labelled interim generic cell remains a one-line amendment.
 
 ### 9.2 For the lead, with the core owner
+
+Not covered by D184's delegation: these are ruled after the landing. Opening subspace calcium,
+which the inner-model note closes in version 1, goes to the user if it changes an approved
+closure. Question 12 is decided (D184; §9.1).
 
 6. **Open subspace calcium,** closed in version 1 (INNER_MODEL_V4_DESIGN §13.1): pools at the
    cell's potential (§3.2 (a), recommended), for the core owner to design?
@@ -846,7 +953,7 @@ about 1, the stage-read slot 1–1.5, the transporter kind 2.5–3.5, the passiv
     a human set built on new laws changes that expectation for the human, not the mouse. Accept?
 13. **The non-negative channel-heat booking** (§3.8): the junctions' `trapezoid_nonnegative@1`
     extended to channel populations, and a matching booking for the new kinds' routes, as an H1
-    seam for the core owner?
+    seam for the core owner, after the probe confirms the need?
 
 ## Sources
 
@@ -857,7 +964,18 @@ checks, of the cardiac conduction and action-potential citations, are recorded i
 EXCITABLE_TISSUE_DESIGN §7.3 and §13 (14 November). Access as tagged in the text: ORd's paper and
 Text S1 [full]; ToR-ORd's article XML with Appendix 1 and its peer review [full], and its code at
 11e463d [code]; TP06 as the authors' accepted manuscript (6 March 2006, hosted by the author)
-[full: AM], with the authors' C++ code [code]; TNNP04 not read.
+[full: AM], with the authors' 2006 C++ code and TP06's CellML [code]; the 2004 paper (TNNP04) not
+read. For §4.1's conduction figures, the ORd and Elshrif & Cherry copies those subagents saved
+were read again, and Decker et al. 2009's open article page once (PMC2670702).
+
+**The authors' 2004 code: fetched, then discarded unused.** The TP06 subagent fetched the authors'
+2004 (TNNP04) C++ code after the worktree guard had refused the command. It did so by splitting
+the command's text. The authors' page offers the code publicly, with no licence stated. Under D184
+the code and its index page were deleted on 16 November, unused. No statement in this note rests
+on them. Three facts in the subagent's report rested on them alone, and none had entered the
+note: TNNP04's state count in that code; that code's L-type current formula; and that code's half
+of a statement about how K_o enters IK1, whose 2006 half stands. A copy of the paywalled 2004 paper
+was separately blocked by the permission classifier and never obtained.
 
 **Models and their corrections.**
 - O'Hara T., Virág L., Varró A., Rudy Y. (2011). Simulation of the undiseased human cardiac
@@ -875,6 +993,10 @@ Text S1 [full]; ToR-ORd's article XML with Appendix 1 and its peer review [full]
 **On their use and successors.**
 - Elshrif M. M., Cherry E. M. (2014). PLoS One 9:e84401.
 - Passini E. et al. (2016). J Mol Cell Cardiol 96:72–81.
+- Decker K. F., Heijman J., Silva J. R., Hund T. J., Rudy Y. (2009). Properties and ionic
+  mechanisms of action potential adaptation, restitution, and accommodation in canine epicardium.
+  Am J Physiol Heart Circ Physiol 296:H1017–H1026 (PMC2670702; its Methods read, its supplement
+  not), the strand equations ORd used.
 - Paci M. et al. (2015). Br J Pharmacol 172:5147 (ORd's peak and rest, via EXCITABLE_TISSUE_DESIGN
   §7.3).
 - Hund T. J., Kucera J. P., Otani N. F., Rudy Y. (2001). Ionic charge conservation and long-term
