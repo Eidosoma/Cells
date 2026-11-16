@@ -415,8 +415,10 @@ The preview server sends a content policy close to the artifact frame's, so a lo
 would be blocked when published is reported in the terminal while developing.
 
 Every check that starts Chrome takes one lock (`tools/lib/browser_lock.mjs`), so only one
-browser runs at a time, on one processor (`CELLS_BROWSER_CPU`, 3 unless set), with its
-profile on disk and not in memory-backed `/tmp`. Chrome's software renderer pins its own
+browser runs at a time, on the processors set aside for browser runs (`CELLS_BROWSER_CPU`,
+a list as `taskset` takes one; cores 12 to 15 with both their threads, `12-15,28-31`,
+unless set), with its profile on disk and not in memory-backed `/tmp`. Chrome's software
+renderer pins its own
 worker threads to the first processors by number, whatever the run is allowed, so the
 lock looks at every thread of what a run started once a second and puts a process with a
 thread elsewhere back. (A scope bound to a processor would hold them at once; it needs

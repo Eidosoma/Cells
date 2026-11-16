@@ -23,15 +23,18 @@ const gone = (folder) => {
   } catch {}
 };
 const STALE_MS = 3 * 60 * 1000; // a holder refreshes the lock every 30 s; older than this, it is gone
+/** The processors set aside for browser runs on the project's machine, unless CELLS_BROWSER_CPU names others. */
+export const BROWSER_CPUS = "12-15,28-31";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // ---------------------------------------------------------------- keeping a run on its processor
 //
 // The affinity a run is given is inherited by the Chrome it starts, but it is no fence: a
 // process may move its own threads. Chrome's software renderer does. It counts the processors
-// it is allowed (one) and pins its worker threads to that many processors counted from nought,
+// it is allowed and pins its worker threads to that many processors counted from nought,
 // so with the run on processor 3 its eight threads sat on processor 0, where an engine job
-// ran (seen on 16 November 2026). A scope bound to a processor would hold them, but this
+// ran (seen on 16 November 2026); allowed eight, it would take processors 0 to 7. A scope
+// bound to the run's processors would hold them, but this
 // user's session is given no cpuset controller. So, while a run holds the lock, every thread
 // of what it started is looked at once a second, and a process with a thread elsewhere is
 // put back.
@@ -135,19 +138,21 @@ export async function acquireBrowser({ wait = 20 * 60 * 1000 } = {}) {
       await sleep(1000 + Math.random() * 1000);
     }
   }
-  // A browser run draws in software and can take a whole processor or more, and the engine's
-  // own jobs share this machine. So the run and the Chrome it starts keep to one processor
-  // (CELLS_BROWSER_CPU, 3 by default; "any" leaves them free), at the usual priority (the
-  // user, 15 November 2026: more priority again, but still just on one). CELLS_BROWSER_NICE
-  // lowers the priority when the engine's jobs must come first (19 is the lowest). Both are
-  // inherited by what the run starts.
+  // A browser run draws in software and can take several processors, and the engine's own
+  // jobs share this machine. So the run and the Chrome it starts keep to the processors set
+  // aside for them (CELLS_BROWSER_CPU, a list as taskset takes one; "any" leaves them free),
+  // at the usual priority. Since the machine grew to 16 cores on 16 November 2026 those are
+  // cores 12 to 15 with both their threads, processors 12-15 and 28-31 (the user: "you can
+  // use 4 cores and 8 CPUs"); the engine's jobs have the rest. CELLS_BROWSER_NICE lowers the
+  // priority when the engine's jobs must come first (19 is the lowest). Both are inherited
+  // by what the run starts.
   const nice = Number(process.env.CELLS_BROWSER_NICE || 0);
   if (nice > 0) {
     try {
       os.setPriority(Math.min(19, nice));
     } catch {}
   }
-  const cpu = process.env.CELLS_BROWSER_CPU || "3";
+  const cpu = process.env.CELLS_BROWSER_CPU || BROWSER_CPUS;
   let keep = null;
   if (cpu !== "any") {
     try {
