@@ -464,14 +464,17 @@ What the viewer's reader has to take, when it lands:
   clean, from the execution snapshot (item 11).
 - Geometry stays the caller's input (item 9).
 
-**The loop block** (FR-11, `docs/LOOPING_REPLAY_DESIGN.md` on the same branch; proposed,
-nothing built): `loop: {"species", "cell", "period", "closes": {"within", "says",
+**The loop block** (FR-11, `docs/LOOPING_REPLAY_DESIGN.md` on the same branch; ruled by
+the lead on 16 November 2026, with the human loop amended by D183 the same day; nothing
+built): `loop: {"species", "cell", "period", "closes": {"within", "says",
 "tolerance"}, "follows"?}`. The writer measures `within` on the saved arrays and refuses a
 block without `run.source`. The revision is read from `run.source.revision`, the one
 source of truth; the viewer's packaged replay fills its own `run.revision` from it.
 `follows` is for a cell cycle: the cell the loop follows after a division. The order of
-the loops: a planarian patch loop first, then a paced generic excitable cell labelled
-"not a human cardiomyocyte model", then the minimal cells' cycle.
+the loops: a planarian patch loop first; then the human loop, which by D183 is a paced
+human ventricular cell built on the human cardiac law set that the user brought forward,
+with no generic stand-in, and which waits for those laws; then the minimal cells' cycle,
+after its probe.
 
 The viewer's side of this is not done yet: the page's loop reader is being brought to the
 block's shape, and the adapter's reading of a view takes the additions when the writer is
