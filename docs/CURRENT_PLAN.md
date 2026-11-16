@@ -42,7 +42,7 @@ experiment).
 | Phase markers | Start, completion and failure records implemented (`core/phases.py`'s `Recorder`, 15 November) |
 | Run-view output (D154) | Design note proposed (15 November, [RUN_VIEW_DESIGN](RUN_VIEW_DESIGN.md)); its code joins D172's round |
 | Coupling out of the inventory (D155, scoped by D156) | **Numerically qualified** (15 November): the judged protocol passed, with second order against independent references for reciprocal feedback (A4) and a species setting a channel (A5). CPU only, within its scope line |
-| Excitable tissue (D155) | Design accepted narrowly, for M1 and M2 on @3 (D170). The generic cell is 0.01 F/m² (candidate A), on post-hoc probe evidence; the junction floor is provisional until M1's sheet runs |
+| Excitable tissue (D155) | Design accepted narrowly, for M1 and M2 on @3 (D170). The generic cell is 0.01 F/m² (candidate A), on post-hoc probe evidence; the junction floor is provisional until M1's sheet runs. The human law set is brought forward as its own lane (D183, 16 November); its design note with options for the user comes first |
 | Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestones 1 and 2, FR-1's milestone 1 and FR-3's milestone 1 landed (15 November). FR-4 and FR-5's design note is proposed |
 | The D172 restructure (one modular inner model, `resolved_pump_tissue@3`) | **In implementation** (D176). It runs on the integration branch `integration-d172` from tag `d172-base-2026-11-15`, with one integrated acceptance gate and landing; the [note](INNER_MODEL_V4_DESIGN.md) is the design. On the branch by the evening of 15 November: door S, the species registry, per-law dispatch with the padding fill, the registry hook and B7, all bitwise against the tag's records. The kind interface (§7.4 (k)) and schema A's first stage are committed on the core's branch. The integrated landing is estimated at about 25 November (§15.6). The end game is staged and rehearsed (D181). FR-4 and FR-5 are the priority consumers |
 | Field-solver interface | Designed; code waits for the GH200 numbers |
@@ -79,8 +79,8 @@ experiment).
       `docs/LOOPING_REPLAY_DESIGN.md` on run-view-d154 (49848ce0; ruled 16 November):
       - a loop block whose closure the writer measures;
       - the planarian patch driven by a subthreshold current train;
-      - a paced generic excitable cell labelled "not a human cardiomyocyte model". The cardiac
-        channel laws are Track E's M4/M5, not FR-11's;
+      - the human loop: a paced human ventricular cell on Track E's human law set, brought
+        forward by D183 (16 November) in place of a generic stand-in. It waits for those laws;
       - the minimal cells' cycle after an admission probe. Its run must carry what the viewer's loop
       reader requires: the visualizer's "What a species' looping run must carry", on its branch at
       cf11924a.
