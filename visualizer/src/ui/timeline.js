@@ -3,14 +3,20 @@
 // record, and the read-out gives the time in plain units.
 //
 // It is bound to a Player (src/replay/player.js) and only moves the playhead: what the
-// run looked like at that time is drawn by the lens.
+// run looked like at that time is drawn by the lens. The playhead is the replay's one
+// clock: the beads of a layer that moves keep its time, so its speed is theirs.
+//
+// The speed: a button that says the speed shown ("60×", "1/1,000×") opens the steps the
+// run is offered, slower and faster than true speed, each with what one second of watching
+// is in the run. A step pressed is taken and the list closes; Escape closes it too.
 //
 // Keys, with the slider in focus: Left and Right step one saved record, Page Up and
-// Page Down jump to the next event, Home and End go to the ends, Space plays or pauses.
+// Page Down jump to the next event, Home and End go to the ends, Space plays or pauses,
+// < and > take the next slower or faster speed.
 
 import { h, svg } from "./dom.js";
 import { clock, duration } from "../replay/format.js";
-import { SPEEDS } from "../replay/player.js";
+import { SPEEDS, speedWords } from "../replay/player.js";
 
 const PLAY = "M7 4.5v15l12-7.5z", PAUSE = "M6.5 4.5h4v15h-4zM13.5 4.5h4v15h-4z";
 
@@ -26,12 +32,24 @@ class CellsTimeline extends HTMLElement {
     this.range = h("input", { id: "cells-timeline-range", class: "tl-range", type: "range", step: "any", "aria-label": "Time in the run" });
     this.now = h("b", {});
     this.rest = h("span", {});
-    this.speedButton = h("button", { class: "tl-speed", type: "button", onclick: () => this.nextSpeed() });
+    this.speedButton = h("button", { class: "tl-speed", type: "button", "aria-haspopup": "true", "aria-expanded": "false", "aria-controls": "cells-timeline-speeds", onclick: () => this.showSpeeds(this.speedList.hidden) });
+    this.speedList = h("div", { id: "cells-timeline-speeds", class: "tl-speeds", role: "group", "aria-label": "Speed of the replay", hidden: true });
     this.append(
       this.playButton,
       h("div", { class: "tl-body" }, h("div", { class: "tl-track" }, h("div", { class: "tl-rail" }, this.fill), this.marks, this.flag, this.range), h("p", { class: "tl-read" }, this.now, this.rest)),
-      this.speedButton
+      this.speedButton,
+      this.speedList
     );
+    // The list of speeds closes with Escape, and with a press anywhere else.
+    this.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || this.speedList.hidden) return;
+      this.showSpeeds(false);
+      this.speedButton.focus();
+      event.stopPropagation();
+    });
+    this.closeSpeeds = (event) => {
+      if (!this.speedList.hidden && !event.composedPath().includes(this)) this.showSpeeds(false);
+    };
 
     // While the slider is held, the run does not play on underneath it.
     let resume = false;
@@ -53,6 +71,7 @@ class CellsTimeline extends HTMLElement {
       else if (event.key === "End") player.seek(player.end);
       else if (event.key === "PageDown" || event.key === "PageUp") this.toEvent(event.key === "PageDown" ? 1 : -1);
       else if (event.key === " " || event.key === "Enter") player.toggle();
+      else if (event.key === "<" || event.key === ">") this.stepSpeed(event.key === ">" ? 1 : -1);
       else return;
       event.preventDefault();
     });
@@ -60,6 +79,7 @@ class CellsTimeline extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this.showSpeeds(false);
     this.unbind();
   }
 
@@ -96,11 +116,41 @@ class CellsTimeline extends HTMLElement {
     this.icon.setAttribute("d", player.playing ? PAUSE : PLAY);
     this.playButton.setAttribute("aria-label", player.playing ? "Pause" : player.atEnd ? "Play again from the start" : "Play");
     this.playButton.title = this.playButton.getAttribute("aria-label");
-    this.speedButton.textContent = `${player.speed}×`;
-    const each = player.speed >= 60 ? duration(player.speed) : `${player.speed} seconds`;
-    this.speedButton.setAttribute("aria-label", `Speed: ${each} of the run each second. Press to change.`);
-    this.speedButton.title = `${each} of the run each second`;
+    const words = speedWords(player.speed);
+    this.speedButton.textContent = words.short;
+    this.speedButton.setAttribute("aria-label", `Speed: ${words.says}. Press to choose another.`);
+    this.speedButton.title = words.says;
+    this.fillSpeeds();
     this.place();
+  }
+
+  /** The steps the run is offered, slowest first, each with its words; the one in use is pressed. */
+  fillSpeeds() {
+    const player = this.player;
+    this.speedList.replaceChildren(
+      ...SPEEDS.map((speed) => {
+        const words = speedWords(speed);
+        return h(
+          "button",
+          { class: "tl-speed-step", type: "button", "aria-pressed": String(speed === player.speed), dataset: { speed: String(speed) }, onclick: () => (player.setSpeed(speed), this.showSpeeds(false), this.speedButton.focus()) },
+          h("b", {}, words.short),
+          h("span", {}, words.says.charAt(0).toLowerCase() + words.says.slice(1))
+        );
+      })
+    );
+  }
+
+  /** Open or close the list of speeds. */
+  showSpeeds(open) {
+    if (!this.built) return;
+    this.speedList.hidden = !open;
+    this.classList.toggle("is-choosing", Boolean(open)); // the list stands over the cards beside the timeline while it is open
+    this.speedButton.setAttribute("aria-expanded", String(Boolean(open)));
+    if (open) {
+      this.fillSpeeds();
+      document.addEventListener("pointerdown", this.closeSpeeds, true);
+      this.speedList.querySelector('[aria-pressed="true"]')?.focus();
+    } else document.removeEventListener("pointerdown", this.closeSpeeds, true);
   }
 
   fraction(seconds) {
@@ -159,10 +209,13 @@ class CellsTimeline extends HTMLElement {
     this.range.setAttribute("aria-valuetext", `${clock(player.time)} of ${total}`);
   }
 
-  nextSpeed() {
+  /** One step faster (1) or slower (-1) along the speeds the run is offered. */
+  stepSpeed(direction) {
     const player = this.player;
     if (!player) return;
-    player.setSpeed(SPEEDS[(SPEEDS.indexOf(player.speed) + 1) % SPEEDS.length]);
+    const at = SPEEDS.indexOf(player.speed);
+    const next = SPEEDS[Math.min(SPEEDS.length - 1, Math.max(0, (at < 0 ? SPEEDS.findIndex((speed) => speed >= player.speed) : at) + direction))];
+    if (next !== undefined) player.setSpeed(next);
   }
 
   /** Jump to the next or the previous event of the run. */

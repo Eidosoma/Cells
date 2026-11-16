@@ -534,6 +534,94 @@
         }
       },
       "readouts": {}
+    },
+    "secreted-species-dev-run": {
+      "adapter": "standard-history",
+      "development": true,
+      "label": "Secreted species (development run)",
+      "plain": "A development run with no verdict: the first run the engine made for the viewer. One passive cell makes a species S and releases it into a small space outside, which leaks through a face to a held bath; no ion moves. The values are synthetic. Written by the engine's shared output path.",
+      "sources": [
+        {
+          "path": "PROGRESS.md",
+          "where": "The coupling operator's matched-arm export ran (15 November 2026, D177): The first viewer feed"
+        },
+        {
+          "path": "validation/tissue/secreted_species_fixtures.py",
+          "where": "secreting_cell: the world"
+        },
+        {
+          "path": "tests/unit/test_secreted_species_runs.py",
+          "where": "secretion: the parameters"
+        }
+      ],
+      "outcome": {
+        "judged": false,
+        "status": "Development run, no verdict; 15 November 2026",
+        "answer": null,
+        "text": "The first viewer feed, a development run of the secreted-species world through the shared output path (15 November; development, not judged).",
+        "sources": [
+          {
+            "path": "PROGRESS.md",
+            "where": "The coupling operator's matched-arm export ran (15 November 2026, D177): The first viewer feed"
+          }
+        ]
+      },
+      "engine_entities": [
+        "op.scheduled_species_turnover@1",
+        "op.scheduled_species_exchange@1",
+        "models.composite",
+        "cap.secretion"
+      ],
+      "parameters": {
+        "execution.dt": {
+          "label": "Time step",
+          "unit": "s"
+        },
+        "model.inner_model": {
+          "label": "Inner model"
+        }
+      },
+      "readouts": {
+        "status": {
+          "label": "Status"
+        },
+        "end_time": {
+          "label": "End",
+          "unit": "s"
+        }
+      },
+      "stops": {
+        "complete": {
+          "label": "Ran to its end"
+        }
+      }
+    },
+    "example-sheet": {
+      "adapter": "standard-history",
+      "example": true,
+      "label": "Example sheet (invented numbers)",
+      "plain": "Example: invented numbers. A small sheet written by the viewer's own run-fixture tool, in the layout of the engine's shared output path, to show the layers that no saved run feeds yet: ion traffic through a membrane, what crosses the junctions, and the energy dissipated. No engine ran, and nothing here is a result.",
+      "sources": [
+        {
+          "path": "visualizer/schema/QUANTITY_LAYERS.md",
+          "where": "Rules: 6. Examples are marked and kept apart"
+        },
+        {
+          "path": "visualizer/tools/make_run_fixture.py",
+          "where": "The tool that writes the example's run folder"
+        }
+      ],
+      "engine_entities": [],
+      "stops": {
+        "example": {
+          "label": "No engine ran: the numbers are invented"
+        }
+      },
+      "records": {
+        "vm": {
+          "label": "Membrane voltage"
+        }
+      }
     }
   }
 }

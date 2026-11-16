@@ -5,6 +5,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
@@ -24,6 +25,14 @@ test("the generated scene is structurally valid", () => {
 test("the extractor placed every engine file and raised no warning", () => {
   assert.equal(scene.meta.counts.engine_files_placed, scene.meta.counts.engine_files);
   assert.deepEqual(scene.meta.warnings, []);
+});
+
+test("a cited source that is the viewer's own is a file of this folder", () => {
+  // The extractor takes such a source on this folder's word (it reaches main with the branch's next merge):
+  // a note that is cited and was never committed fails here, in a fresh checkout.
+  const own = new Set(scene.entities.flatMap((entity) => entity.sources || []).map((source) => source.path).filter((file) => file.startsWith("visualizer/")));
+  assert.ok(own.size > 0);
+  for (const file of own) assert.ok(existsSync(path.join(ROOT, file.slice("visualizer/".length))), `${file} is cited and is not in this folder`);
 });
 
 test("every status claim beyond established carries a source", () => {
@@ -54,15 +63,109 @@ test("the scene and the protein snapshot hold no machine-specific paths", () => 
 
 const units = scene.entities.filter((entity) => entity.kind === "unit");
 
-test("the protein atlas matches the inventory it was made from", () => {
+// What the overlays flag as left out of the picture for now (`left_out`): the inventory and the
+// engine keep it, the scene does not draw it. The inventory's units that are left out, and the rest.
+const leftOutUnits = snapshot.units.filter((unit) => atlasOverlay.units[unit.id]?.left_out);
+const drawnUnits = snapshot.units.filter((unit) => !atlasOverlay.units[unit.id]?.left_out);
+const leftOutCapabilities = overlay.capabilities.filter((capability) => capability.left_out);
+
+test("the protein atlas matches the inventory it was made from, less what is left out of the picture", () => {
   const stated = snapshot.inventory.counts;
-  assert.equal(units.length, stated.functional_units);
+  assert.equal(snapshot.units.length, stated.functional_units);
+  assert.equal(units.length, drawnUnits.length);
+  assert.deepEqual(units.map((unit) => unit.id).sort(), drawnUnits.map((unit) => `unit.${unit.id}`).sort());
+  assert.equal(scene.proteins.counts.units, drawnUnits.length, "the page counts the units it draws");
+  assert.equal(scene.proteins.counts.inventory_units, stated.functional_units, "and still knows how many the inventory has");
   const byMapping = Object.fromEntries(scene.proteins.mappings.map((item) => [item.id, item.count]));
   for (const mapping of atlasOverlay.mappings) {
-    assert.equal(byMapping[mapping.id], stated.functional_units_by_status[mapping.inventory], `units that are ${mapping.inventory}`);
+    const out = leftOutUnits.filter((unit) => unit.status === mapping.inventory).length;
+    assert.equal(byMapping[mapping.id], stated.functional_units_by_status[mapping.inventory] - out, `units that are ${mapping.inventory}`);
   }
+  // A record counts where a unit that is drawn has it.
+  const drawn = new Set(drawnUnits.map((unit) => unit.id));
+  const shown = snapshot.laws.filter((law) => [law.unit, ...(law.also_in || [])].some((unit) => drawn.has(unit)));
   const laws = scene.proteins.evidence.reduce((sum, item) => sum + item.count, 0);
-  assert.equal(laws, stated.records, "every law record has one kind of evidence");
+  assert.equal(laws, shown.length, "every law record of a drawn unit has one kind of evidence");
+  assert.equal(shown.length, stated.records - (snapshot.laws.length - shown.length));
+  assert.equal(scene.proteins.counts.laws, stated.laws - snapshot.laws.filter((law) => !shown.includes(law) && (law.record_type || "law") === "law").length);
+});
+
+test("what an overlay leaves out of the picture is named once in the scene, and nothing else points at it", () => {
+  const listed = scene.left_out;
+  assert.ok(Array.isArray(listed), "the scene has no list of what is left out: rebuild it");
+  // A species held back from the picture for now is named there too, and is nowhere else in the scene.
+  const held = Object.keys(overlay.species_held || {});
+  const expected = [...leftOutCapabilities.map((item) => item.id), ...leftOutUnits.map((unit) => `unit.${unit.id}`), ...held.map((id) => `species.${id}`)];
+  for (const id of held) {
+    assert.ok(!scene.species.some((item) => item.id === id), `${id} is held back, yet the scene lists it as a species`);
+    assert.ok(!scene.proteins.atlases.some((item) => item.id === id) && !scene.proteins.shelves.some((item) => item.id === id), `${id} is held back, yet the scene carries its atlas or its proteins`);
+  }
+  assert.deepEqual(listed.map((item) => item.id).sort(), [...expected].sort());
+  const ids = new Set(scene.entities.map((entity) => entity.id));
+  for (const item of listed) {
+    assert.ok(!ids.has(item.id), `${item.id} is left out, yet it is a part of the scene`);
+    assert.ok(!scene.relations.some((relation) => relation.from === item.id || relation.to === item.id), `${item.id} is left out, yet a link points at it`);
+    assert.match(item.since, /^\d{4}-\d{2}-\d{2}$/);
+    assert.ok(item.says?.trim() && item.reason?.trim() && item.label?.trim(), `${item.id} does not say what it is and why it is left out`);
+    assert.ok(!("why" in item), "the overlay's own record of why stays in the overlay");
+  }
+  // A capability that is left out names its part of the cell, so the cell view does not draw it as scenery.
+  for (const capability of leftOutCapabilities) assert.equal(listed.find((item) => item.id === capability.id).part, capability.part);
+  // No species keeps a place for it in the scene, and no district, site or kind of evidence stays that only it held.
+  for (const species of scene.species || []) for (const capability of leftOutCapabilities) assert.ok(!(capability.id in (species.cell.capabilities || {})), `${species.id} still names a place for ${capability.id}`);
+  for (const district of scene.proteins.districts) assert.ok(units.some((unit) => unit.district === district.id) || !leftOutUnits.length, `the district ${district.id} holds no unit that is drawn`);
+  for (const site of scene.proteins.sites) assert.ok(units.some((unit) => unit.site === site.id) || !leftOutUnits.length, `the site ${site.id} holds no unit that is drawn`);
+  for (const item of scene.proteins.evidence) assert.ok(item.count > 0 || !leftOutUnits.length, `the evidence ${item.id} is of no record that is drawn`);
+});
+
+test("the page says once that a unit of the inventory is not drawn, and its numbers are of what is drawn", () => {
+  const { proteins } = scene;
+  const said = /The inventory has (\d+) units\. (\w+) of them, (.+), (?:is|are) left out of the picture for now: (.+?)\./;
+  if (!leftOutUnits.length) {
+    assert.ok(!/left out of the picture/.test(JSON.stringify(proteins)), "nothing is left out, yet the atlas says something is");
+    return;
+  }
+  // The atlas's own summary, which the inventory's card shows, says it; each species' atlas says it under how it was made.
+  const [, total, , named, reason] = said.exec(proteins.summary) || [];
+  assert.equal(Number(total), snapshot.units.length, proteins.summary);
+  for (const unit of leftOutUnits) {
+    const flag = atlasOverlay.units[unit.id].left_out;
+    assert.ok(named.includes(flag.says) && reason.includes(flag.reason), `the summary does not name ${unit.id} as its flag says it`);
+  }
+  for (const atlas of proteins.atlases) {
+    assert.equal(atlas.counts.units, drawnUnits.length, `${atlas.id}: units counted`);
+    const line = (atlas.method || []).at(-1) || "";
+    assert.match(line, said, `${atlas.id} does not say that a unit is left out`);
+    assert.ok(line.endsWith(`The ${drawnUnits.length} others are shown and counted here.`), line);
+    if (atlas.findings) assert.equal(atlas.findings.reduce((sum, item) => sum + item.count, 0), drawnUnits.length, `${atlas.id}: one finding for each unit drawn`);
+  }
+});
+
+test("while the protein cage is left out, nothing outside the Engine view names a cage but the sentence that says so", () => {
+  const caged = (scene.left_out || []).filter((item) => /cage/i.test(`${item.says} ${item.label}`));
+  if (!caged.length) return; // the cage is back in the picture
+  const lensOf = new Map(scene.groups.map((group) => [group.id, group.lens]));
+  const found = [];
+  const walk = (node, where) => {
+    if (typeof node === "string") {
+      if (/\bcages?\b|capsid|\bmi3\b/i.test(node) && !/left out of the picture for now/.test(node)) found.push(`${where}: ${node.slice(0, 80)}`);
+    } else if (Array.isArray(node)) node.forEach((item, index) => walk(item, `${where}[${index}]`));
+    else if (node && typeof node === "object") for (const [key, value] of Object.entries(node)) walk(value, `${where}.${key}`);
+  };
+  for (const entity of scene.entities) if (lensOf.get(entity.group) !== "engine") walk(entity, entity.id);
+  walk(scene.proteins, "proteins");
+  walk(scene.species, "species");
+  walk(scene.model_groups, "model_groups");
+  walk(scene.representations, "representations");
+  assert.deepEqual(found, []);
+  // The engine keeps its assembly models on the map, and they say that the cage is not drawn elsewhere.
+  for (const capability of leftOutCapabilities) {
+    for (const target of capability.implemented_by || []) {
+      const part = scene.entities.find((entity) => entity.id === target);
+      assert.ok(part, `${target} is still on the Engine view`);
+      if (capability.left_out.engine_note) assert.ok(part.plain.endsWith(capability.left_out.engine_note), `${target} does not say that ${capability.id} is left out`);
+    }
+  }
 });
 
 test("every law record of the inventory is still found in the engine", () => {
@@ -173,9 +276,9 @@ test("the scene names each species' own proteins by file, with counts and source
   for (const item of shelves) {
     assert.match(item.file, /^proteins\/[a-z0-9_-]+\/shelves\.json$/);
     assert.equal(Object.values(item.counts).reduce((sum, n) => sum + n, 0), item.proteins, item.id);
-    assert.ok(item.sources.length > 0 && item.sources.every((source) => source.name && source.licence), item.id);
+    assert.ok(item.sources.length > 0 && item.sources.every((source) => source.name && source.class), item.id);
+    assert.ok(JSON.stringify(item).length < 3000, `${item.id}: a species' summary stays under 3,000 characters: its proteins and its sources in full are beside the page, not in the scene`);
   }
-  assert.ok(JSON.stringify(shelves).length < 40000, "the proteins themselves are beside the page, not in the scene");
 });
 
 test("every part belongs to a view", () => {
@@ -237,6 +340,12 @@ test("every engine part an experiment's replays point at is on the map", async (
     for (const id of experiment.engine_entities) assert.ok(ids.has(id), `${name}: ${id} is not a part of the scene`);
     assert.ok(experiment.label && experiment.plain && experiment.sources.length, `${name} needs a label, a plain line and a source`);
     assert.ok((experiment.classes || []).every((item) => item.id && item.label && item.description), `${name}: every class is described`);
+    // An example has invented numbers (schema/QUANTITY_LAYERS.md, rule 6): nothing was found, no part of the engine stands behind it, and it has no class.
+    if (experiment.example === true) {
+      assert.ok(!experiment.outcome && !experiment.classes && !experiment.development && experiment.engine_entities.length === 0, `${name}: an example has no outcome, no class and no engine part`);
+      assert.ok(/invented numbers/.test(experiment.label) && experiment.plain.startsWith("Example: invented numbers"), `${name}: an example says so in its name and in its first words`);
+      continue;
+    }
     // What an experiment found is the record's, so it must say where the record says it.
     const outcome = experiment.outcome;
     assert.ok(outcome, `${name} says nothing about what it found`);

@@ -29,11 +29,11 @@ const TOOL = path.join(ROOT, "tools", "build_syn3a_atlas.py");
 // per source, each with its MANIFEST.json).
 const EVIDENCE = process.env.SYN3A_EVIDENCE || "/mnt/workspaces/Cells/visualizer-syn3a-proteins-20261114-01";
 const DATASETS = process.env.SYN3A_DATASETS || "/mnt/datasets/Cells/syn3a";
-// The last two were added on 15 November 2026: the open reviews the lipid-anchor rule is
-// fixed from, and the terms of a rule system whose results UniProt gives out (HAMAP).
-const SOURCES_READ = ["ncbi-CP016816.2", "breuer2019-elife", "ncbi-CP016816-proteins", "uniprot-syn3a", "biopython-185-protparam", "pmc-open-syn3a-licence-pass", "pmc-open-lipoprotein-signal", "terms-upstream-tools"];
+// The last was added on 15 November 2026: the terms of a rule system whose results UniProt
+// gives out (HAMAP), as its own page states them.
+const SOURCES_READ = ["ncbi-CP016816.2", "breuer2019-elife", "ncbi-CP016816-proteins", "uniprot-syn3a", "biopython-185-protparam", "pmc-open-syn3a-licence-pass", "terms-upstream-tools"];
 // Read for their terms alone; the README's table of files does not list them.
-const TERMS_READ = [];
+const TERMS_READ = ["terms-prosite"];
 const absent = !existsSync(path.join(EVIDENCE, "requests.json"))
   ? "the request log is not on this machine (set SYN3A_EVIDENCE)"
   : [...SOURCES_READ, ...TERMS_READ].some((source) => !existsSync(path.join(DATASETS, source, "MANIFEST.json")))
@@ -74,7 +74,7 @@ const rows = table.trimEnd().split("\n").slice(1).map((line) => line.split("\t")
 
 test("the species file says what it is, as the contract sets out", () => {
   assert.equal(species.format, "cells.visualizer.species@1");
-  assert.deepEqual(Object.keys(species), ["format", "id", "label", "organism", "taxon", "plain", "order", "default", "made", "modelled", "levels", "no_further_levels", "cell", "capability_sources", "sources"]);
+  assert.deepEqual(Object.keys(species), ["format", "id", "label", "organism", "taxon", "plain", "group", "order", "default", "made", "modelled", "levels", "no_further_levels", "cell", "capability_sources", "sources"]);
   assert.equal(species.id, "syn3a");
   assert.equal(path.basename(SPECIES), `${species.id}.json`);
   assert.equal(species.label, "Syn3A");
@@ -146,7 +146,12 @@ test("each of the map's capabilities has a place or is said to be absent, with w
   const stated = species.cell.capabilities;
   for (const id of Object.keys(stated)) assert.ok(capabilities.includes(id), `${id} is not a capability of the map`);
   // Left out means it has a place as in any cell: only the cell's chemistry is left out.
-  assert.deepEqual(capabilities.filter((id) => !(id in stated)), ["cap.reactions"]);
+  // Three more are left out since 16 November 2026: the nucleus, the Golgi and the ribosomes are parts whose place
+  // the viewer reads from `cell.parts` (schema/SPECIES.md): this cell has no nucleus and no Golgi, and has ribosomes.
+  assert.deepEqual(capabilities.filter((id) => !(id in stated)).sort(), ["cap.golgi", "cap.nucleus", "cap.reactions", "cap.ribosomes"]);
+  assert.equal(species.cell.parts.nucleus, false);
+  assert.ok(!(species.cell.parts.organelles || []).includes("golgi"));
+  assert.ok(species.cell.parts.ribosomes > 0);
   for (const [id, item] of Object.entries(stated)) {
     assert.ok(["absent", "present"].includes(item.place), `${id}: ${item.place}`);
     if (item.place === "absent") assert.deepEqual(Object.keys(item), ["place", "why"], id);
@@ -354,7 +359,7 @@ test("the catalogue stays small and holds no sequence", () => {
 
 test("the README names each file the catalogue was built from, with its SHA-256", () => {
   const lines = readme.split("\n").filter((line) => /^\| .+ \| `[^`]+` \| `[^`]+` \| `[0-9a-f]{64}` \|$/.test(line));
-  assert.equal(lines.length, 18, "eighteen files, each with its dataset folder, its name and its hash");
+  assert.equal(lines.length, 15, "fifteen files, each with its dataset folder, its name and its hash");
   for (const source of SOURCES_READ) assert.ok(lines.some((line) => line.includes(`\`${source}\``)), `${source} is not named`);
 });
 
@@ -485,7 +490,7 @@ test("a side that is predicted or taken from function says so; a stated one name
 });
 
 test("the reading of the sequences fares against what is known as the files say", () => {
-  const { inside_by_class: inside, permeases, stated, lipid_anchor: anchors, membrane } = shelves.checks;
+  const { inside_by_class: inside, permeases, stated, lipoprotein_profile: profile, membrane } = shelves.checks;
   assert.equal(stated.reading_agrees, stated.proteins, "a stated place the reading disagrees with");
   assert.equal(stated.proteins, shelves.proteins.filter((row) => row[5] === "stated").length);
   assert.equal(Object.values(stated.by_evidence).reduce((sum, n) => sum + n, 0), stated.proteins);
@@ -495,19 +500,11 @@ test("the reading of the sequences fares against what is known as the files say"
   assert.ok(inside.proteins > 150, "the proteins whose class places them inside are many");
   assert.ok(inside.read_as_spanning.length <= 2, "more than two of the proteins that work inside the cell are read as membrane-spanning");
   assert.ok(inside.with_a_hydrophobic_stretch > inside.read_as_spanning.length, "the condition on charged residues does its work");
-  assert.equal(inside.with_a_hydrophobic_stretch + inside.with_an_anchor_read_and_no_such_stretch, shelves.proteins.filter((row) => row[5] === "by function").length, "each of them is placed by its function");
-  // The lipid anchors are the tool's own rule's: every one it reads is kept or set aside, and
-  // one is set aside only where a reviewed entry states the place or the class leaves no doubt.
-  assert.equal(anchors.read, anchors.kept + anchors.set_aside.length);
-  assert.equal(anchors.kept, anchors.placed_outside + anchors.placed_in);
-  assert.equal(anchors.placed_outside, shelves.counts.outside);
-  assert.equal(anchors.kept, shelves.proteins.filter((row) => row[9].lipid_anchor).length);
-  for (const name of anchors.set_aside) {
-    const row = shelves.proteins.find((line) => (line[2] || line[0]) === name);
-    assert.ok(row && ["stated", "by function"].includes(row[5]) && !row[9].lipid_anchor, `${name} is set aside and is not placed by a statement or by its function`);
-  }
-  assert.ok(said.includes(`The rule reads an anchor on ${anchors.read} proteins. ${anchors.kept} are kept: ${anchors.placed_outside} are placed outside`), "the README does not give the rule's counts");
-  assert.match(said, /\*\*The rule is strict and misses lipoproteins\.\*\*/);
+  assert.equal(inside.with_a_hydrophobic_stretch, shelves.proteins.filter((row) => row[5] === "by function").length, "each of them is placed by its function");
+  assert.equal(profile.sequences, profile.kept + profile.set_aside.length);
+  assert.equal(profile.kept, profile.placed_outside + profile.placed_in);
+  assert.equal(profile.placed_outside, shelves.counts.outside);
+  assert.equal(profile.kept, shelves.proteins.filter((row) => row[9].lipid_anchor).length);
   // Whose rules stand behind the stated places: counted, and each system is a source of the file.
   const systems = stated.by_rule_system;
   assert.equal(Object.values(systems).reduce((sum, item) => sum + item.sides, 0), shelves.proteins.filter((row) => row[5] === "stated" && row[9].evidence === "rule").length, "a stated side by a rule names no rule system");
@@ -544,38 +541,39 @@ test("the shelves name their sources with their terms, copy from none that forbi
     assert.match(source.accessed, /^\d{4}-\d{2}-\d{2}$/);
   }
   assert.equal(new Set(shelves.sources.map((source) => source.name)).size, shelves.sources.length);
-  // What the file holds comes from permissive sources. A paper under a non-commercial
+  // What the file holds was taken from permissive sources. A paper under a non-commercial
   // licence, or with no stated terms, is a pointer: it says that nothing is taken from it.
-  // A tool or rule system whose results were read in a database's entries is a source of
-  // its own, with its own terms, and `through` names the source they were read in. Here
-  // the only one is HAMAP, which is permissive: this file rests on no source of another class.
+  // A rule system of another owner whose results UniProt gives out is a source of its
+  // own, with its own terms and class, and `through` names the source of this file in
+  // whose records its results were read: PROSITE, whose lipoprotein profile's matches
+  // UniProt's archive records, and HAMAP, whose family rules stand behind stated places.
+  // By the user's ruling of 15 November 2026 a value stands on the terms of the database
+  // it was read from, and the tool behind it is named and counted.
   for (const source of shelves.sources) {
     assert.ok(CLASSES.includes(source.class), `${source.name}: ${source.class}`);
     const open = /^CC BY [24]\.0$|BSD 3-Clause|no restrictions on the use or distribution/.test(source.licence);
     if (source.class === "permissive") assert.ok(open, `${source.name}: ${source.licence}`);
-    else {
-      assert.ok(!open && /^(CC BY-NC|No open licence stated)/.test(source.licence), `${source.name}: ${source.licence}`);
-      assert.ok(!source.through, `${source.name} is ${source.class} and something was read of it through ${source.through}`);
-      assert.match(source.holds, /^Nothing is taken from it: a pointer to /, source.name);
-    }
+    else assert.ok(!open && /^(CC BY-NC|No open licence stated)/.test(source.licence), `${source.name}: ${source.licence}`);
     if (source.through) {
-      assert.equal(shelves.sources.find((item) => item.name === source.through)?.class, "permissive", `${source.name} is read through ${source.through}`);
-      assert.match(source.holds, /^Nothing was downloaded from it/, source.name);
-    }
+      const database = shelves.sources.find((item) => item.name === source.through);
+      assert.ok(database?.class === "permissive" && !database.through, `${source.name} is read through ${source.through}`);
+      assert.match(source.holds, /^Nothing was downloaded from it but its statement of terms/, source.name);
+    } else if (source.class !== "permissive") assert.match(source.holds, /^Nothing is taken from it: a pointer to /, source.name);
   }
-  assert.deepEqual(shelves.sources.filter((source) => source.class !== "permissive").map((source) => source.name), ["Kyte and Doolittle 1982", "L'Hernault and Arduengo 1992", "Chambaud and others 1999", "Thornburg and others 2022"]);
-  assert.deepEqual(shelves.sources.filter((source) => source.through).map((source) => [source.name, source.class, source.through]), [["HAMAP", "permissive", "UniProtKB"]]);
-  // The lipid anchor is the tool's own rule, fixed from open reviews; the signature it
-  // replaced is named nowhere in the files, and the archive's signatures are not read for it.
-  assert.match(shelves.marks.lipid_anchor.note, /^This tool's reading, by a rule of its own: a lipobox within the first 40 residues/);
-  assert.match(shelves.marks.lipid_anchor.note, /The rule is strict: lipoboxes of other forms have been reported \(Legood and others 2020\)/);
-  assert.equal(shelves.marks.lipid_anchor.source, "Desvaux and others 2018");
-  assert.match(shelves.side_notes.predicted, /\[LVI\]-\[ASTVI\]-\[GAS\], the form Desvaux and others 2018 state for bacteria with one membrane/);
-  assert.match(shelves.side_notes.predicted, /on average 16 to 26 residues long \(Smithers and others 2021\)/);
-  assert.match(shelves.side_notes.predicted, /The reach of 40 residues and the stretch of 10 are this tool's own choice: no source read states a limit\./);
-  assert.match(shelves.side_notes.predicted, /fixed from open descriptions before it was run and not adjusted to any protein/);
-  for (const [name, text] of [["the shelves", shelvesText], ["the README", readme]]) assert.ok(!/PROSITE|PS\d{5}|PRU\d{5}/.test(text), `${name} name PROSITE or one of its signatures`);
-  assert.match(said, /Nothing in this folder rests on a source of another class\./);
+  assert.deepEqual(shelves.sources.filter((source) => source.class !== "permissive").map((source) => source.name), ["PROSITE", "Kyte and Doolittle 1982", "L'Hernault and Arduengo 1992", "Chambaud and others 1999", "Thornburg and others 2022"]);
+  assert.deepEqual(shelves.sources.filter((source) => source.through).map((source) => [source.name, source.class, source.through]), [["PROSITE", "non-commercial", "UniParc"], ["HAMAP", "permissive", "UniProtKB"]]);
+  // What rests on PROSITE's profile is counted in its entry, and the counts are the lines'.
+  const anchored = shelves.proteins.filter((row) => row[9].lipid_anchor);
+  const prosite = shelves.sources.find((source) => source.name === "PROSITE");
+  assert.ok(prosite.holds.includes(`the mark lipid_anchor of ${anchored.length} proteins rests on those matches, ${anchored.filter((row) => row[4] === "outside").length} of them placed outside and ${anchored.filter((row) => row[4] === "in").length} in the membrane`), prosite.holds);
+  assert.equal(shelves.marks.lipid_anchor.source, "UniParc");
+  assert.match(shelves.marks.lipid_anchor.note, /a profile of PROSITE, whose own terms are non-commercial \(CC BY-NC-ND 4\.0\)/);
+  // The rule the values stand on is said with them, as the project's rule and not as law.
+  assert.match(shelves.marks.lipid_anchor.note, /By the project's rule \(the user, 15 November 2026\), a value stands on the terms of the database it was read from, and the tool behind it is named and counted\.$/);
+  assert.match(said, /\*\*The project's rule \(the user, 15 November 2026\): a value stands on the terms of the database it was read from, and the tool behind it is named and counted\.\*\*/);
+  assert.match(said, /This is the project's rule, and not a legal opinion\./);
+  assert.ok(!/not settled here/.test(said), "the README still says the question is open");
+  for (const source of shelves.sources.filter((item) => item.through)) assert.ok(readme.includes(`| ${source.name} | ${source.licence} | ${source.class} | ${source.through} | `), `the README's table does not list ${source.name}`);
   for (const mark of Object.values(shelves.marks)) {
     const source = shelves.sources.find((item) => item.name === mark.source);
     assert.equal(source.class, "permissive", `a mark rests on ${source.name}, whose terms do not allow a copy`);

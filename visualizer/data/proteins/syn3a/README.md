@@ -81,9 +81,9 @@ there is one shelf.
 
 | Side | Proteins | How it is known |
 | --- | --- | --- |
-| Outside the cell, anchored to the membrane's outer face | 5 | 5 predicted |
-| In the membrane, spanning it | 94 | 94 predicted |
-| Inside the cell, free or attached to the membrane's inner face | 352 | 6 stated, 325 predicted, 21 by function |
+| Outside the cell, anchored to the membrane's outer face | 13 | 13 predicted |
+| In the membrane, spanning it | 86 | 86 predicted |
+| Inside the cell, free or attached to the membrane's inner face | 352 | 6 stated, 326 predicted, 20 by function |
 | Not known | 4 | 4 nothing settles it |
 
 **How a side is known.**
@@ -94,33 +94,26 @@ there is one shelf.
   the statements: similarity to another protein for 1 and a family rule for 5; none rests on an experiment.
   Such an entry also says that potA is at the cell membrane as a peripheral protein, without saying
   which face. The reading places it inside, and it is marked as at the membrane.
-- **Predicted (424).** This tool's own reading of the sequence. It is
+- **Predicted (425).** This tool's own reading of the sequence. It is
   not the output of an established predictor: UniProt's archive holds family signatures on
   these sequences and no prediction of membrane-spanning stretches, and no UniProtKB entry
   of any organism with one of these sequences gives one.
+  One unreviewed entry of another organism (A0AAQ3DPT5), with the sequence of rpmF, carries
+  an automatic lipid-anchor mark from the PROSITE profile used below; it is set aside there.
   - *In the membrane:* a stretch of 19 residues whose mean hydropathy on Kyte and
     Doolittle's scale is 1.6 or more and which holds no charged residue, or
     2.2 or more with at most one. The window and the 1.6 are the usual
     reading of that scale (Paulet and others 2011 state it). The conditions on
     charged residues are this tool's, set against the checks below.
-  - *Outside:* a lipid anchor, read by a rule of this tool's own. A bacterial lipoprotein is
-    made with a signal peptide of three parts: a positively charged beginning, a
-    hydrophobic stretch, and the lipobox, whose cysteine takes the lipid; the signal
-    peptide is on average 16 to 26 residues long (Smithers and others 2021). The
-    rule takes the first cysteine that has a lipobox before it ([LVI]-[ASTVI]-[GAS], the
-    form Desvaux and others 2018 state for bacteria with one membrane), that sits
-    within the first 40 residues, and that is preceded by a stretch of 10 residues
-    with a mean hydropathy of 1.6 or more and no charged residue, with a lysine or an
-    arginine before that stretch. The reach of 40 and the stretch of 10 are this tool's own
-    choice, since no source read states a limit. The rule was fixed before it was run and
-    is not adjusted to any protein. The lipoproteins of mycoplasmas are bound to the
-    membrane and exposed on the cell's surface (Christodoulides and others 2018); that is
-    said of mycoplasmas in general and was not measured in this strain.
+  - *Outside:* the lipoprotein signature (PROSITE PS51257, as UniProt's archive
+    gives it) from the first residue to a cysteine, with a hydrophobic stretch before the
+    cysteine. The lipoproteins of mycoplasmas are bound to the membrane and exposed on the
+    cell's surface (Christodoulides and others 2018); that is said of mycoplasmas in general
+    and was not measured in this strain.
   - *Inside:* no such stretch and no lipid anchor. This includes proteins attached to the
     membrane's inner face, such as the ATP-binding parts of transporters.
-- **By function (21).** The sequence has a hydrophobic stretch, or reads as
-  carrying a lipid anchor, but the protein's class in the 2019 paper leaves no doubt that
-  it works inside the cell:
+- **By function (20).** The sequence has a hydrophobic stretch, but the
+  protein's class in the 2019 paper leaves no doubt that it works inside the cell:
   translation, transcription, the upkeep of DNA, sugar breakdown, the pentose phosphate
   pathway or nucleotide metabolism. Function is never used to place a transport protein.
 - **Not known (4).** A hydrophobic stretch that holds charged residues, in a
@@ -135,18 +128,10 @@ there is one shelf.
 - **Proteins named as membrane-spanning.** All 13 proteins that the annotation calls a
   permease are read as membrane-spanning.
 - **Stated places.** The reading agrees with all 6.
-- **Lipid anchors.** The rule reads an anchor on 7 proteins. 6 are kept: 5 are placed outside, and
-  1, with a membrane-spanning stretch after the anchor, in the membrane. Set aside, because a
-  reviewed entry states the place or the protein's class leaves no doubt that it works
-  inside the cell: 1 (rpmF). No lipid was measured on any of them, and nothing here
-  checks the rule against a measurement: it is a reading of the sequence.
-  **The rule is strict and misses lipoproteins.** Lipoboxes of other forms have been
-  reported (Legood and others 2020), and a lipoprotein with such a one is not
-  called. It is then placed like any other protein: usually in the membrane, by the
-  hydrophobic stretch of its signal, with the mark that its one stretch is at its start
-  (14 proteins carry that mark). `docs/SYN3A.md` says how the rule compares with
-  the signature it replaced.
-- **Against the literature.** Here 94 proteins span the membrane and 5 are anchored on it,
+- **The lipoprotein signature** matches 15 sequences. 14 are kept: 13 are placed outside, and
+  1, with a membrane-spanning stretch after the anchor, in the membrane. Set aside, for
+  want of a hydrophobic stretch before the cysteine: rpmF.
+- **Against the literature.** Here 86 proteins span the membrane and 13 are anchored on it,
   99 together. 89 of them were seen in the proteomics, with an estimated 7,685 of
   the 77,028 copies. The 2022 whole-cell model gives its own count of membrane
   proteins and of their copies. That paper is under a non-commercial licence, so its
@@ -168,10 +153,10 @@ class is kept with each protein for laying a district out.
 | Biosynthesis | Metabolism | 32 | 0 | 8 | 24 | 0 |
 | Central Carbon Metabolism | Metabolism | 48 | 0 | 0 | 47 | 1 |
 | Energy Metabolism | Metabolism | 4 | 0 | 0 | 4 | 0 |
-| Membrane Transport | Metabolism | 57 | 2 | 35 | 20 | 0 |
+| Membrane Transport | Metabolism | 57 | 3 | 34 | 20 | 0 |
 | Other Enzymes | Metabolism | 4 | 0 | 1 | 3 | 0 |
 | Kegg ortholog defined | Unclear | 8 | 0 | 2 | 6 | 0 |
-| No Kegg ortholog | Unclear | 83 | 3 | 39 | 38 | 3 |
+| No Kegg ortholog | Unclear | 83 | 10 | 32 | 38 | 3 |
 
 **Marks** kept with each protein: essentiality and whether it was seen (both measured),
 the estimated copies (`amount`), the three proteins added for manipulation, the finer
@@ -181,8 +166,8 @@ behind a stated side, and its assembly where the record's product name gives it 
 
 **What it does not say.** It gives no topology: not which end of a membrane protein faces
 out, and not which face a protein inside is attached to. The count of stretches can fall
-short, since a stretch that holds charged residues is not read. Of the 94 proteins placed
-in the membrane, 28 have one stretch only, and for 14 of those it is at the very start
+short, since a stretch that holds charged residues is not read. Of the 86 proteins placed
+in the membrane, 20 have one stretch only, and for 6 of those it is at the very start
 of the protein: that may be an export signal that is cut off, and the protein would then
 sit outside. They are marked. It marks no assembly beyond the three named. `unit` is
 empty throughout, because the atlas found none of the law inventory's units in this
@@ -194,23 +179,32 @@ organism.
 | --- | --- | --- |
 | [GenBank CP016816.2](https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2), read 2026-11-14 | Locus tags, gene names, products, protein identifiers, lengths | "NCBI places no restrictions on the use or distribution of the GenBank data"; submitters may claim rights in what they submitted, and this record states none |
 | [Breuer and others 2019](https://doi.org/10.7554/elife.36842), supplementary files 3 and 5, read 2026-11-14 | Origin, functional class, essentiality, detection and estimated copies | CC BY 4.0 |
-| [UniProt](https://www.uniprot.org/), release 2026_04, read 2026-11-14 | Archive identifiers, signatures, and other organisms' entries with the same sequence and the place they state | CC BY 4.0 |
+| [UniProt](https://www.uniprot.org/), release 2026_04, read 2026-11-14 | Archive identifiers, signatures, where the lipoprotein signature matches, and other organisms' entries with the same sequence and the place they state | CC BY 4.0 |
 | [InterPro](https://www.ebi.ac.uk/interpro/) | The signatures' identifiers | CC0 1.0 |
 | [Biopython 1.85](https://github.com/biopython/biopython/blob/biopython-185/Bio/SeqUtils/ProtParamData.py), read 2026-11-15 | The 20 values of Kyte and Doolittle's hydropathy scale, for `shelves.json` | Biopython License Agreement or BSD 3-Clause License |
 | [Paulet and others 2011](https://doi.org/10.1186/1471-2105-12-135), read 2026-11-15 | The usual reading of the hydropathy scale: a window of 19 residues and a mean above 1.6 | CC BY 2.0 |
 | [Christodoulides and others 2018](https://doi.org/10.3389/fmicb.2018.01682), read 2026-11-15 | That the lipoproteins of mycoplasmas are bound to the membrane and exposed on the cell's surface | CC BY 4.0 |
-| [Desvaux and others 2018](https://doi.org/10.3389/fmicb.2018.00100), read 2026-11-15 | The lipobox, as stated for bacteria with one membrane | CC BY 4.0 |
-| [Smithers and others 2021](https://doi.org/10.3389/fmicb.2021.788445), read 2026-11-15 | The three parts of a lipoprotein's signal peptide and its usual length | CC BY 4.0 |
-| [Legood and others 2020](https://doi.org/10.1111/mmi.14610), read 2026-11-15 | That lipoboxes of other forms have been reported | CC BY 4.0 |
-| [HAMAP](https://hamap.expasy.org/hamap_about.html), read 2026-11-15 | Nothing downloaded but its terms: its family rules are what reviewed UniProtKB entries state places by, and they were read in those entries | CC BY 4.0 |
 
 Every source above is permissive: its terms allow what is taken, with attribution.
 
-Nothing in this folder rests on a source of another class. The membrane-spanning
-stretches and the lipid anchors are this tool's own reading of the sequences, by rules
-fixed from open descriptions; no predictor's output and no signature of another database
-is read for them. The stated places are those of reviewed UniProtKB entries, which give
-them by HAMAP's family rules (HAMAP is distributed under CC BY 4.0) or by similarity.
+**What UniProt gives out that a rule system of another owner computed.** Two rule
+systems stand behind values of `shelves.json`. Each was read in UniProt's records and
+is named there as a source of its own, with its own terms as its own page states them.
+Nothing was downloaded from either but its page of terms, and nothing of either is
+copied.
+
+| Rule system | Its own terms | Class | Read through | What rests on it |
+| --- | --- | --- | --- | --- |
+| PROSITE | CC BY-NC-ND 4.0; commercial users are asked to pay a yearly licence fee | non-commercial | UniParc | Its lipoprotein profile is the origin of the matches that UniProt's archive records on these sequences: the mark lipid_anchor of 14 proteins rests on those matches, 13 of them placed outside and 1 in the membrane, as they were read in UniProt's archive. |
+| HAMAP | CC BY 4.0 | permissive | UniProtKB | Its family rules are what reviewed entries of other organisms give a place by: the stated side of 5 proteins and the place at the membrane of 1 rest on them, as read in UniProt's entries. |
+
+**The project's rule (the user, 15 November 2026): a value stands on the terms of the
+database it was read from, and the tool behind it is named and counted.** The matches of
+PROSITE's lipoprotein profile were read in UniProt's archive, which UniProt gives out
+under CC BY 4.0, so the 14 proteins with the mark `lipid_anchor`, 13 of them placed outside,
+stand as UniProt's archive gives them. PROSITE's own terms are non-commercial
+(CC BY-NC-ND 4.0, with a licence fee asked of commercial users), which is why it is
+named and counted here. This is the project's rule, and not a legal opinion.
 
 **Named, with nothing taken.** These are pointers: each says what is to be read there.
 Nothing in this folder rests on them.
@@ -229,9 +223,6 @@ Cite:
 - The UniProt Consortium, UniProt: the Universal Protein Knowledgebase in 2025, Nucleic Acids Res. 53:D609-D617 (2025)
 - Paulet and others (2011) Hydrophobic pulses predict transmembrane helix irregularities and channel transmembrane units. BMC Bioinformatics 12:135. doi:10.1186/1471-2105-12-135
 - Christodoulides and others (2018) The Role of Lipoproteins in Mycoplasma-Mediated Immunomodulation. Front Microbiol 9:1682. doi:10.3389/fmicb.2018.01682
-- Desvaux and others (2018) Surfaceome and Proteosurfaceome in Parietal Monoderm Bacteria: Focus on Protein Cell-Surface Display. Front Microbiol 9:100. doi:10.3389/fmicb.2018.00100
-- Smithers and others (2021) Bacterial Lipoprotein Posttranslational Modifications. New Insights and Opportunities for Antibiotic and Vaccine Development. Front Microbiol 12:788445. doi:10.3389/fmicb.2021.788445
-- Legood and others (2020) Mode of action of lipoprotein modification enzymes—Novel antibacterial targets. Mol Microbiol 115(3):356–65. doi:10.1111/mmi.14610
 
 ## The files they were built from
 
@@ -254,9 +245,6 @@ it against the SHA-256 that the folder's MANIFEST gives before reading it.
 | The open review cited for division | `pmc-open-syn3a-licence-pass` | `open_PMC9952402.xml` | `53ce5cad8c00bd3b0a1aac29e9ba85c8974850cf7b3d9ef6e73d4a95b3305e54` |
 | The open paper cited for the usual reading of the scale | `pmc-open-syn3a-licence-pass` | `open_PMC3110554.xml` | `692663dcc4ee3cb90d692dd535895679f31a1fdc795144a3c9dcf2a53759d971` |
 | The open review cited for where lipoproteins sit | `pmc-open-syn3a-licence-pass` | `open_PMC6080569.xml` | `1982e2a292e34cbf878fbce656ff7a7493522beac3d2614d0e7174624b58d906` |
-| The open review cited for the lipobox | `pmc-open-lipoprotein-signal` | `rule_open_PMC5817068.xml` | `f67f3a1a4027af4ca4324e4e5a1f3b94f0e6eaa33d1be42a809776229a3405b1` |
-| The open review cited for a lipoprotein's signal peptide | `pmc-open-lipoprotein-signal` | `rule_open_PMC8689077.xml` | `58d99ce5d8afd51bea36a883e65130841c9a209549bc01e15fe7a1bcc31f6db4` |
-| The open review cited for lipoboxes of other forms | `pmc-open-lipoprotein-signal` | `rule_open_PMC8048626.xml` | `ec5bef387092d5cc9036ede766b1bf13a2e37963bbb5ee701b596476734bab83` |
 | HAMAP's statement of its terms | `terms-upstream-tools` | `upstream_hamap_about.html` | `fa314b8f309f3de496e39fe4fbc20314df07722cbd355134b36071838a73d44d` |
 
 ## How to rebuild

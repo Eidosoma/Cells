@@ -1,9 +1,72 @@
 // The playhead of a replay: a time in the run that plays, pauses and jumps. It knows
 // nothing of drawing; the timeline, the sheet and the chart all listen to it.
 //
+// It is the replay's one clock. What moves on the picture (the beads of a layer on the
+// motion channel) moves in the run's time as the playhead does: paused, it stands; played
+// at a speed, as much of the run passes for the beads as for the playhead.
+//
 // Events: "time" when the playhead moves, "state" when playing, speed or the run changes.
 
-export const SPEEDS = [15, 60, 240]; // seconds of the run per second of watching
+/**
+ * Seconds of the run per second of watching, slowest first: the ladder every run is offered
+ * from. Below true speed a replay is slowed, so that a short run, and a bead of a fast flow,
+ * can be followed; above it, a long run is made faster.
+ */
+export const LADDER = [1e-6, 1e-3, 0.25, 1, 4, 15, 60, 240];
+/** A step faster than four times true speed is offered where the run still lasts this many seconds of watching. */
+export const SHORTEST = 5;
+
+// The speeds offered for the run shown. The list is refilled when a run is loaded, so whoever
+// reads it offers the speeds that suit the run.
+export const SPEEDS = [...LADDER];
+
+/**
+ * The speeds a run of a given length is offered, slowest first: every step below true speed,
+ * true speed, four times faster, and each faster one under which the run still lasts five
+ * seconds of watching. Every run can be slowed and made faster; a long run (39 minutes) is
+ * offered the fast steps too.
+ */
+export function speedsFor(seconds) {
+  return LADDER.filter((speed) => speed <= 4 || seconds / speed >= SHORTEST);
+}
+
+/**
+ * The speed a run opens at, always one it is offered: true speed for a run under two minutes;
+ * for a longer one a minute of the run each second, or the fastest step it is offered where
+ * that is slower (a run of two to five minutes is not offered 60 times: it would be over in
+ * under five seconds, so it opens at 15 times).
+ */
+export function openingSpeed(seconds) {
+  if (seconds < 120) return 1;
+  return Math.max(...speedsFor(seconds).filter((speed) => speed <= 60));
+}
+
+const count = (value) => Math.round(value).toLocaleString("en-US");
+
+/** A stretch of time in words, for "one second here is … of the run". */
+function span(seconds) {
+  const say = (value, unit) => {
+    const shown = Number(value.toPrecision(3));
+    return shown === 1 ? `one ${unit}` : `${shown.toLocaleString("en-US")} ${unit}s`;
+  };
+  if (seconds >= 60) return say(seconds / 60, "minute");
+  if (seconds >= 1) return say(seconds, "second");
+  if (seconds >= 1e-3) return say(seconds * 1e3, "millisecond");
+  if (seconds >= 1e-6) return say(seconds * 1e6, "microsecond");
+  return say(seconds * 1e9, "nanosecond");
+}
+
+/**
+ * How fast a replay runs, in the page's words: `short` for the timeline's button ("60×",
+ * "1/1,000×"), `phrase` for the statement on the picture ("60 times faster", "slowed 1,000
+ * times", "true speed"), and `says` in full, with what a second of watching is in the run.
+ */
+export function speedWords(speed) {
+  if (!(speed > 0) || speed === 1) return { short: "1×", phrase: "true speed", says: "True speed: one second here is one second of the run" };
+  if (speed > 1) return { short: `${count(speed)}×`, phrase: `${count(speed)} times faster`, says: `${count(speed)} times faster: one second here is ${span(speed)} of the run` };
+  const slowed = count(1 / speed);
+  return { short: `1/${slowed}×`, phrase: `slowed ${slowed} times`, says: `Slowed ${slowed} times: one second here is ${span(speed)} of the run` };
+}
 
 export class Player extends EventTarget {
   constructor() {
@@ -14,6 +77,7 @@ export class Player extends EventTarget {
     this.end = 0;
     this.playing = false;
     this.speed = 60;
+    this.chosen = false; // whether the visitor chose the speed: a chosen speed is kept from run to run where it is offered
   }
 
   /** Point the player at a run (or at none), at the run's first record. */
@@ -23,6 +87,11 @@ export class Player extends EventTarget {
     this.end = run ? run.end : 0;
     this.time = this.start;
     this.playing = false;
+    if (run) {
+      const length = this.end - this.start, speeds = speedsFor(length);
+      SPEEDS.splice(0, SPEEDS.length, ...speeds);
+      if (!this.chosen || !speeds.includes(this.speed)) this.speed = openingSpeed(length);
+    }
     this.emit("state");
     this.emit("time");
   }
@@ -70,8 +139,11 @@ export class Player extends EventTarget {
     else this.play();
   }
 
+  /** The visitor's choice of speed (seconds of the run each second of watching). */
   setSpeed(speed) {
-    if (!(speed > 0) || speed === this.speed) return;
+    if (!(speed > 0)) return;
+    this.chosen = true;
+    if (speed === this.speed) return;
     this.speed = speed;
     this.emit("state");
   }

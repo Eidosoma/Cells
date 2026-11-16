@@ -60,6 +60,9 @@ as BETSE, BITSEY, tyssue, Chaste, Morpheus, CompuCell3D, PhysiCell and cellGPU.
 - Run provenance is the Git revision, the dirty diff and the frozen snapshot. Do
   not add per-call or bytecode attestation layers, and do not embed SHA-256
   hashes of other source files as literals in new code.
+- A module installed from outside the checkout (D185) adds one item. Development
+  runs record the module's identity, computed at run time. Registered and judged
+  runs also freeze the module's files beside the snapshot.
 - If a check needs more than 30 minutes to reach the code under test, build a
   faster harness first.
 - The routine test gate is `scripts/test_tiers.py run --tiers tests/test_tiers.json

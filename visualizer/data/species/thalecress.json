@@ -1,0 +1,257 @@
+{
+ "format": "cells.visualizer.species@1",
+ "id": "thalecress",
+ "label": "Thale cress",
+ "organism": "Arabidopsis thaliana",
+ "taxon": 3702,
+ "plain": "A small flowering plant of the laboratory: 27,368 genes in UniProt's reference proteome, with one protein shown for each. Its cells have a wall, a large vacuole and chloroplasts, and membranes that an animal cell lacks.",
+ "group": "Plants",
+ "order": 70,
+ "default": false,
+ "made": "2026-11-15",
+ "modelled": {
+  "state": "generic",
+  "text": "Cells models a generic cell and a sheet of such cells, with laws that name the channels and pumps of animal cells. No plant cell is modelled, and the project's record names no model of this plant. The leaf and the rosette are placeholder outlines: nothing at those scales is simulated."
+ },
+ "levels": [
+  {
+   "id": "molecules"
+  },
+  {
+   "id": "cell",
+   "shape": {
+    "kind": "prism",
+    "sides": 4,
+    "across_um": 47,
+    "height_um": 45,
+    "corner_um": 4
+   },
+   "note": "The cell drawn is a box with a wall, for a cell of the leaf's upper layer (a palisade cell). It is 47 µm across, the width of the cylinder that one paper uses for such a cell, and 45 µm high: the picture's choice of the height at which a box of that width holds the 100 picolitres the paper gives. Its square outline is the picture's choice too. No plant cell is modelled.",
+   "notes": [
+    {
+     "text": "A leaf cell, as a box with a wall"
+    },
+    {
+     "text": "Its square outline is the picture's choice",
+     "roomy": true
+    }
+   ],
+   "sources": [
+    "tolleter2024"
+   ],
+   "fade_out_um": [
+    280,
+    440
+   ]
+  },
+  {
+   "id": "tissue",
+   "shape": {
+    "kind": "cell sheet",
+    "rings": 6,
+    "beyond": [
+     [
+      8,
+      0.34
+     ],
+     [
+      10,
+      0.2
+     ],
+     [
+      11,
+      0.1
+     ]
+    ]
+   },
+   "note": "The sheet stands for the one Cells simulates: a single layer of coupled cells. It is drawn packed in squares, as box-shaped cells stand side against side; that packing is the picture's choice, and the sheets Cells has run are joined in sixes. It stands for no particular tissue of the plant, and a plant's cells are joined by plasmodesmata, which the sheet does not model.",
+   "notes": [
+    {
+     "text": "The sheet Cells simulates: a single layer of coupled cells",
+     "short": "The simulated sheet"
+    }
+   ],
+   "fade_in_um": [
+    240,
+    440
+   ]
+  },
+  {
+   "id": "organ",
+   "label": "Leaf",
+   "shape": {
+    "kind": "outline",
+    "ref": "thalecress",
+    "parts": [
+     "leaf"
+    ],
+    "context": [
+     "other leaves"
+    ]
+   },
+   "note": "The outline drawn is one leaf of the rosette, as a placeholder. The leaf is the picture's choice of organ: it is what a visitor knows of the plant, and where its chloroplasts work. No leaf is modelled. The sheet of cells is drawn on the leaf so that the scales follow one another; it is not the leaf's tissue. The leaf is drawn 17 mm long and 9 mm wide: the picture's choice of a blade whose area is near the 121 mm² that one paper gives for its reference leaf.",
+   "sheet_mark": {
+    "band": 0.02,
+    "note": "The sheet, to scale: drawn on the leaf for the scales only"
+   },
+   "notes": [
+    {
+     "text": "A leaf: a placeholder outline"
+    },
+    {
+     "text": "The leaf's own cells are not modelled",
+     "lift": -22,
+     "roomy": true
+    }
+   ],
+   "sources": [
+    "tolleter2024"
+   ]
+  },
+  {
+   "id": "organism",
+   "label": "Whole plant",
+   "shape": {
+    "kind": "outline",
+    "ref": "thalecress"
+   },
+   "note": "The outline drawn is a rosette of 8 leaves seen from above, as a placeholder. The sheet of cells is drawn on one leaf for the scales only. The number of leaves, their lengths and the rosette's width are the picture's choice: the paper's three-week-old rosette has 29 leaves, and no measurement of a rosette's width was read for this file. The plant's stem, flowers and roots are not drawn.",
+   "sheet_mark": {
+    "band": 0.02,
+    "note": "The sheet, to scale",
+    "roomy": true
+   },
+   "notes": [
+    {
+     "text": "A rosette of leaves: a placeholder outline"
+    }
+   ],
+   "sources": [
+    "tolleter2024"
+   ]
+  }
+ ],
+ "cell": {
+  "facts": [
+   {
+    "label": "Proteins",
+    "value": "27,368 genes in UniProt's reference proteome, with 39,144 entries: 16,217 reviewed by a curator and 22,927 annotated automatically. One protein is shown for each gene",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "A leaf cell's size",
+    "value": "100 picolitres for a cell of the leaf's upper layer (a palisade cell) and 60 for one of the layer below, by one paper's atlas of the leaf, which takes the palisade cell as a cylinder of radius 23.7 µm",
+    "sources": [
+     "tolleter2024"
+    ]
+   },
+   {
+    "label": "Chloroplasts",
+    "value": "100 in a palisade cell, each of 93 femtolitres on average",
+    "sources": [
+     "tolleter2024"
+    ]
+   },
+   {
+    "label": "Vacuole",
+    "value": "the largest part of a leaf's cellular volume: 84%",
+    "sources": [
+     "tolleter2024"
+    ]
+   },
+   {
+    "label": "Wall",
+    "value": "150 nm thick on average, for the leaf's skin cells and inner cells",
+    "sources": [
+     "tolleter2024"
+    ]
+   },
+   {
+    "label": "Leaf and rosette",
+    "value": "the paper's reference leaf has a surface of 121 mm²; its three-week-old rosette has 29 leaves with 10,500 mm² of leaf in all",
+    "sources": [
+     "tolleter2024"
+    ]
+   },
+   {
+    "label": "What joins its cells",
+    "value": "plasmodesmata, channels lined by the cell membrane that cross the wall between two cells; 32 of its proteins are stated to be there",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Cells' machines",
+    "value": "of the 49 units of the law inventory, 5 have proteins of the same family in the plant; 38 were not found, the gap junctions and the sodium-potassium pump among them",
+    "sources": [
+     "uniprot"
+    ]
+   }
+  ],
+  "parts": {
+   "membranes": 1,
+   "wall": true,
+   "wall_nm": 150,
+   "nucleus": true,
+   "organelles": [
+    "er",
+    "golgi",
+    "mitochondria",
+    "chloroplasts",
+    "vacuole"
+   ],
+   "organelle_sizes": {
+    "chloroplasts": {
+     "count": 100,
+     "volume_fl": 93,
+     "across_um": 5.6,
+     "sources": [
+      "tolleter2024"
+     ]
+    },
+    "vacuole": {
+     "share": 0.84,
+     "sources": [
+      "tolleter2024"
+     ]
+    }
+   }
+  },
+  "capabilities": {
+   "cap.junctions": {
+    "place": "absent",
+    "why": "A plant's cells are not joined by gap junctions: none of its proteins carries the signature of connexins or innexins. They are joined by plasmodesmata, channels through the wall, which Cells does not model."
+   },
+   "cap.pumps": {
+    "place": "present",
+    "note": "Not the sodium-potassium pump of animal cells: none of its proteins carries the signature of that pump's own chain. Other pumps of the same wide family are found; the units that find them say which."
+   }
+  }
+ },
+ "capability_sources": {
+  "cap.junctions": [
+   "uniprot"
+  ],
+  "cap.pumps": [
+   "uniprot"
+  ]
+ },
+ "sources": {
+  "uniprot": {
+   "text": "UniProt Consortium, UniProt release 2026_04: the reference proteome UP000006548 (Arabidopsis thaliana), its entries and its gene-by-gene set, and UniProt's vocabulary of subcellular locations.",
+   "url": "https://www.uniprot.org/proteomes/UP000006548",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  },
+  "tolleter2024": {
+   "text": "Tolleter D, Smith EN, Dupont-Thibert C, Uwizeye C, Vile D, Gloaguen P, Falconet D, Finazzi G, Vandenbrouck Y, Curien G (2024) The Arabidopsis leaf quantitative atlas: a cellular and subcellular mapping through unified data integration. Quantitative plant biology 5:e2.",
+   "doi": "10.1017/qpb.2024.1",
+   "licence": "CC BY",
+   "class": "permissive",
+   "accessed": "2026-11-15"
+  }
+ }
+}

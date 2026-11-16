@@ -16,9 +16,9 @@ One data file, the scene, drawn through four lenses, in this order:
 
 | Lens | What you see |
 | --- | --- |
-| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar. **The Species switch sets the levels, the shapes and what the cell holds:** Human, Planarian, Syn3A and M. pneumoniae today. A single-celled species ends at its cell; the human's heart and body, like the planarian's brain and worm, are placeholder outlines |
-| **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER, mitochondrial and cage units inside. Each links to its engine part and out to the public atlases. A Species switch shows, for another species, the gene products that would make each machine: Human and Planarian today For Syn3A, M. pneumoniae and the planarian it also shows the species' own proteins on shelves: every protein by its side of a membrane, as families that open where there are thousands |
-| **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Shown only when replays have been made |
+| **Cell and scales** | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar. **The species list sets the levels, the shapes and what the cell holds:** Human, Planarian and Fruit fly under Animals; Syn3A, M. pneumoniae and E. coli under Bacteria; Thale cress under Plants. A single-celled species ends at its cell; the outlines of organs and bodies (the planarian's brain and worm, the human's heart and body, the fly's wing and the fly, the cress's leaf and rosette) are placeholders. The cell has a resting look, with a switch back to the plain picture |
+| **Protein atlas** | The molecular machines Cells models, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER and mitochondrial units inside. Each links to its engine part and out to the public atlases. For the species shown it gives the gene products that would make each machine (Human and Planarian today), and it shows every species' own proteins on shelves: each protein by its side of a membrane, as families that open where there are thousands |
+| **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Quantity layers draw onto it what cannot be seen: voltage as height, the drops across junctions, the push and pull on each ion, the charge on a membrane, what flows, where energy is dissipated, a secreted signal. Shown only when replays have been made |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
 
 Selecting a part that belongs to another lens takes you there: a protein unit's connection
@@ -27,13 +27,16 @@ opens the engine part that holds its law, and that part lists the units it holds
 Three things are encoded, and kept apart:
 
 - **Status**: qualified or judged, implemented and guarded, established, designed, planned,
-  failed, external reference. The first two follow the plan's four levels (D156). Built parts are solid; parts not built are sketches. In the engine
+  failed, external reference. The first two follow the plan's four levels (D156). Where
+  colour shows the kind of part, every part is drawn whole, whatever its status (the user,
+  16 November 2026: "in the default mode show it all in the coolest possible way");
+  "Colour: Status" shows what is not built as grey sketches. In the engine
   lens colour shows status too. In the cell lens colour shows the kind of part by default
   (purple nucleus, orange mitochondria), and the dot beside each name shows its status;
   the "Colour" switch turns the cell to status colours.
 - **Representation** says how the engine treats a capability: simulated, modelled in
   aggregate, prescribed, or illustration only. Shapes that stand for modelled populations
-  (channels, pumps, protein cages) are illustrations and are labelled so.
+  (channels, pumps) are illustrations and are labelled so.
 - **Size mode** (cell lens): "Schematic" enlarges parts and shows few, so each can be
   seen. "To scale" draws sizes and numbers nearer a real cell; see below.
 
@@ -42,7 +45,16 @@ Rules the map keeps, so it can be shown outside the team:
 - It states no status the record does not state. The shared-state entities and the plan's
   gates carry the plan's own words, not an inferred status.
 - Every status has a source and, where the record gives one, a date.
-- Everything drawn is bound to a part of the scene or is neutral grey illustration.
+- Everything drawn is bound to a part of the scene or is neutral grey illustration. One
+  exception, by the user's decision of 16 November 2026: chloroplasts are green, as they
+  are in life, where the cell is coloured by kind. They are still scenery, their panel
+  says so, and they are neutral where colour shows status.
+- The nucleus, the Golgi apparatus and the ribosomes are parts of the map of their own,
+  planned, by the user's decision of 16 November 2026 (`docs/CELL_STRUCTURES.md`):
+  nothing of them is in the engine, each panel says so, and none is called simulated.
+  "Regulatory circuits" is drawn at the cell's DNA, as the separate small model it is,
+  and no longer names the nucleus. Choosing a structure offers a door into the Protein
+  atlas where the species' own proteins can show its set.
 - The cell picture carries the README's caveat: capabilities vary by model, and
   whole-cell integration is ongoing. The legend's "Runs together in" filter shows which
   parts run together in one model today.
@@ -53,6 +65,13 @@ The atlas shows Cells' own law inventory (stage 2 of `docs/PROTEIN_CATALOGUE_PLA
 functional units, the 80 engine laws that act on them, and their 93 candidate gene
 products. It is not content from the Human Protein Atlas or any other public atlas. It
 links out to UniProt, the RCSB PDB, the AlphaFold DB and the Human Protein Atlas.
+
+**48 of the 49 units are drawn.** The engineered protein cage, and the capability of
+protein assembly with it, are left out of the picture for now (the user, 15 November
+2026: "leave those out of the viz for now as they are out of character with the rest
+which are all real or planned things"). A flag in each overlay does it (`left_out`), the
+page lists what is left out and why, and removing the flag puts the cage back. The
+engine parts that implement it stay on the Engine view, which maps the code.
 
 It keeps the inventory's own vocabulary, apart from the engine's statuses:
 
@@ -86,13 +105,16 @@ The user, 14 November 2026: "start an agent to create a full catalogue of Planer
 proteins - then another one to be able to switch between Human and Planerian (later
 others) atlases".
 
-A unit is a machine that a law acts on, so it has no species. The 49 units drawn, their
+A unit is a machine that a law acts on, so it has no species. The units drawn, their
 laws, their mapping and their shapes are the engine's and stay the same whichever species
 is shown. What changes is the gene products that would make each machine in that species,
 and how sure that is. Nothing here says the engine models a species' protein.
 
-- **The switch** is the page's one Species control: in the bar on a wide window, in the
-  view's card on a narrow one or when the bar is full. The page opens on the species
+- **The species list** is the page's one Species control, a drop-down in which the
+  species stand under the headings their files give (`group`: Animals, Bacteria, Plants).
+  It is
+  in the bar on a wide window, and in the view's card on a narrow one or when the bar is
+  full. The page opens on the species
   whose file says `default` (the planarian). `species=<id>` in the address sets it,
   `atlas=` is another name for it, and `finding=` sets the legend's species filter. An
   atlas that found nothing for more than a quarter of the units is drawn quietly: those
@@ -118,6 +140,9 @@ best. It has an entry for all 49 units:
 | A different family | 3 | the gap junctions: planarians build them from innexins, not connexins |
 | Nothing found | 2 | Kir2.1 and NKCC |
 | Nothing to look for | 6 | lumped properties, a default current, a configured slot and the designed cage |
+
+The cage's entry stays in the file, is held to the contract like the others, and is not
+carried into the scene while the cage is left out.
 
 It lists 204 gene products. Four are named in a publication; the other 200 are candidates
 found by a family signature, in UniProt's entries and in the gene models of one genome
@@ -157,10 +182,11 @@ must bve configurable as well based on our different species as we add them".
   with outlines for an organ or a body under `data/species/shapes/`
   (`schema/SPECIES_SHAPES.md`). The viewer holds no drawing of any species; a test checks
   that no module names one.
-- **What Cells models of a species is said on the page.** Human and Planarian are
-  `generic`: Cells models a generic cell and sheet, and the species lends names or
-  outlines. JCVI-syn3A and Mycoplasma pneumoniae are `proposed`: nothing of them is in the
-  engine, and the picture shows where Cells' capabilities would have a place in them.
+- **What Cells models of a species is said on the page.** Human, Planarian, Fruit fly and
+  Thale cress are `generic`: Cells models a generic cell and sheet, and the species lends
+  names or outlines (no plant cell is modelled, and thale cress's card says so). JCVI-syn3A, Mycoplasma pneumoniae and E. coli are `proposed`: nothing of them
+  is in the engine, and the picture shows where Cells' capabilities would have a place in
+  them.
   This is the viewer's switch; the engine has no organism switch.
 - **Each species' own proteins** stand on shelves in the protein atlas
   (`schema/SPECIES_PROTEINS.md`, `data/proteins/<species>/shelves.json`), in one format for
@@ -173,15 +199,50 @@ must bve configurable as well based on our different species as we add them".
   a family of five or more has its own marker, the smaller ones of a district and side are
   gathered in one ringed marker, and "No family assigned" stands in parts in the same way.
   A protein with a `unit` is drawn as that unit; every other is a plain marker, and the
-  page says Cells has no law for it. The card's switch moves between "Cells' 49 machines"
+  page says Cells has no law for it. The card's switch moves between "Cells' 48 machines"
   and "Its N proteins": Syn3A and M. pneumoniae open on their own proteins, the planarian
-  on the machines. Human has no catalogue yet, and its card says so.
+  on the machines.
+- **A cell with several membranes has several shelves, stacked.** The human's 20,414
+  reviewed proteins (UniProt's reference proteome) and the fruit fly's 13,814, one for
+  each gene, stand on six: the cell membrane, the endoplasmic reticulum's, the
+  mitochondrial inner membrane, the nuclear envelope, other membranes, and "a membrane,
+  not told which". E. coli's 4,403 stand on three: its inner membrane, its outer
+  membrane, and a membrane not told which; what is free in the space between the two
+  membranes stands on the inner one's shelf, on its outside. A family has one line on
+  each shelf where it has members,
+  and a protein for which no membrane is stated stands apart. "Show by" picks out a set
+  of a species' proteins: for E. coli its chemotaxis proteins, and the assemblies a
+  protein is part of (the flagellum, the chemoreceptor array, the ribosome).
+  `docs/HUMAN_PROTEOME.md`, `docs/ECOLI.md` and `docs/FRUITFLY.md` give each one's
+  method and counts.
+- **A plant cell is drawn from the same files.** Thale cress has 27,368 proteins, one for
+  each gene, on nine shelves (`docs/THALECRESS.md`): a plant cell adds the plastid
+  envelope, the thylakoid membrane and the vacuole's membrane. Its cell is a box with a
+  wall, a large vacuole that presses the other parts to the side, and chloroplasts
+  against the membrane; its sheet is packed in squares, which is the picture's choice
+  (the sheets Cells has run are joined in sixes). The vacuole, the chloroplasts and the
+  wall are scenery: nothing in the engine stands behind them.
+- **A species can be held back** by naming it under `species_held` in the map's overlay,
+  where the viewer cannot yet draw what its cell needs: its files stay and are checked,
+  and the scene carries nothing of it. Thale cress was held so until a plant cell could
+  be drawn; no species is held today.
+- **Threads and hairs are a general part** (`cell.parts.appendages` in `schema/SPECIES.md`;
+  the user, 15 November 2026: "lets draw flagella, pili as a general feature"). E. coli
+  draws 3 of its 1 to 5 flagella and 120 of its 200 to 500 pili, and the picture says how
+  many of how many. The foot of a flagellum can be chosen: it opens the Protein atlas on
+  the 34 proteins of the species' flagellum. A closer view of the motor is not built.
+  A further kind of thread or organelle is one small function in
+  `src/lenses/cell_scenery.js`.
 - **Licence classes.** Every source in a data file states its licence and its class:
   permissive, non-commercial, or no stated terms. A data file holds no value from a source
   that is not permissive (the user's rule, D173); such a source is a pointer in words.
-  `tests/licence_classes.test.mjs` holds every file under `data/` to this. One dependence
-  is named and allowed: the lipid-anchor signal that UniProt reports from PROSITE's rule,
-  whose own database is non-commercial.
+  `tests/licence_classes.test.mjs` holds every file under `data/` to this. Where an open
+  database reports a value that a restricted tool computed, the value may stay (the
+  user's ruling of 15 November 2026, D178, for every species): "a value stands on the
+  terms of the database it was read from, and the tool behind it is named and counted".
+  The test keeps the register of those tools for each species. Nothing is downloaded
+  from a restricted source itself; a source with no stated terms, or a kind of tool not
+  seen before, goes to the user first.
 - **Rough edges:** the human heart and body are quick placeholders; M. pneumoniae is drawn
   as a plain rod, since the shape list cannot yet narrow one end for its attachment
   organelle; a cell under 2 µm across has one size mode.
@@ -205,8 +266,10 @@ A replay draws what a run saved, and nothing else.
 - **The format is the viewer's side of D154.** `schema/RUN_VIEW.md` fixes it. When the
   engine writes its own view file, the adapter is replaced and the view stays.
 
-Two experiments are replayed today, 59 runs in all (34.5 MB; the largest run file is
-0.87 MB, and each is loaded only when it is shown):
+Two experiments are replayed today, 59 runs in all. A run's records for the quantity
+layers are in files of their own beside it, fetched when a layer is switched on: 295
+files and 96 MB in all, each under 1 MB (the largest is 0.89 MB), and a run is loaded
+only when it is shown:
 
 | Experiment | Runs | What the record says it found |
 | --- | --- | --- |
@@ -222,16 +285,97 @@ Two experiments are replayed today, 59 runs in all (34.5 MB; the largest run fil
   threshold at the first record, and the replay says so.
 - **Held back:** the W1 heredity pilot adapts (two runs), but the view draws every event
   as a replacement and the pilot's events are a cue in many cells at once.
+- **Runs written by the engine's own run-view writer** (on its branch, not on main yet)
+  are kept small under `tests/engine-views/`, made by `tools/make_engine_view_fixture.sh`;
+  the adapter's tests read them.
+- **Speed.** The timeline's speed lists the steps a run is offered, each in words. Every
+  run is offered slowed a million, a thousand or four times, true speed, and four times
+  faster; 15, 60 and 240 times faster are offered where the run still lasts five seconds
+  of watching. A run under two minutes opens at true speed; a longer one at 60 times, or
+  at 15 times where 60 is not offered. The beads of a layer that moves keep the replay's
+  clock: paused, they stand.
+- **A development run and an example stand apart** from the experiments, each under a
+  heading of its own: the engine's first run made for the viewer (one cell that secretes
+  a species; no verdict), and an example sheet with invented numbers for the layers that
+  no saved run feeds yet. See "Quantity layers".
 
-To make them all:
+To make them all (the second call adds the example, from the fixture the run-fixture tool
+writes):
 
 ```bash
 npm run adapt:runs -- --evidence /mnt/workspaces/Cells
+npm run adapt:runs -- --experiment example-sheet --root tests/fixtures/run-example --run invented-numbers
 ```
 
 `data/replays/selection.json` lists the runs per experiment, and
 `data/replays/overlay.json` holds each experiment's labels, plain lines and what it found,
 with the record's line and its source.
+
+## Quantity layers
+
+The user, 15 November 2026: "explore how we can visually represent "invisible" things,
+like electrostatic forces, voltage gradients … we want this modular and extendible and
+connect to the Engine"; and of the ten ideas shown: "Lets do them all except wait with 8.
+9. and 10." `schema/QUANTITY_LAYERS.md` fixes the rules, and
+`docs/INVISIBLE_QUANTITIES.md` has the ideas.
+
+- **A layer draws one quantity onto something the viewer already shows, from numbers a
+  run saved.** A layer is a few lines of data (`data/layers/layers.json`), and a mark is
+  one small module (`src/layers/marks/`). A new quantity with a known mark is data alone.
+- **Never physics of the viewer's own.** A layer's numbers are a saved record, or one of
+  four declared derivations (a difference, a rate, a charge, the two terms of the
+  electrochemical potential), each shown as worked out by the viewer, with its inputs.
+- **One layer on each visual channel,** and always a legend: the unit, the scale and
+  what stands behind the numbers.
+
+| Layer | Shows | On |
+| --- | --- | --- |
+| Membrane voltage | each cell's voltage as colour, and as height | the sheet |
+| Voltage drops | the voltage across each junction, and how far its gate is open | the sheet's junctions |
+| Push and pull on ions | for each ion, the push of its concentration difference, the pull of the voltage, and their sum | a close-up of a chosen cell's membrane |
+| Membrane charge | the charge a stated piece of membrane holds | the same close-up |
+| Transfers | what crosses each border, as beads: one bead is a stated number of molecules; the beads keep the replay's clock, which the timeline slows or makes faster, and what one bead stands for follows the speed | the sheet, or the tiles of a small world |
+| Ion traffic | beads through a cell's channel populations, its pump and the membrane itself | the close-up |
+| Energy dissipated | the rate of each dissipated-energy ledger, as a glow | borders, and spots on the cell |
+| Secreted species | the amount of the run's secreted species, as a fog | cells, and the spaces outside them |
+
+- **What a run did not save is said.** A layer that a run cannot feed is listed, switched
+  off, with the reason.
+- **A direction is declared, never guessed.** A run with the engine's own `view.json`
+  beside its files is packaged from that view alone. A run without one is packaged with
+  the viewer's table for the tissue family, whose convention the engine's side confirmed
+  on 15 November 2026. The legend says which of the two stands behind a direction.
+- **Two runs feed the newer layers today.** The engine's first development run for the
+  viewer feeds the secreted species, the transfers and the glow. An example with
+  invented numbers, marked as such on the picture and in the legend, feeds ion traffic
+  and a sheet's transfers until a saved run of a sheet carries those totals.
+- **Flux in the Cell view** (published 16 November 2026). A Flux switch in the Cell
+  view's legend, off as the page opens; a part shows its flux alone when the visitor
+  chooses it; beads with bloom. No species has a looping run of its own yet, so what
+  shows is illustration, marked "Illustration: not a run", of the form "direction only":
+  pumps and secreted signals go the way the engine's own laws say (cited in
+  `data/layers/flux.json`), channels, junctions and water are drawn both ways with none
+  claimed, and fuel draws nothing. No textbook direction is drawn. At rest nothing
+  flows. The cell's own drops, signals and close-up ions move as they always did: the
+  picture's own motion, not a measured flow, as the legend says beside the switch; they
+  hold still while any flux shows.
+- **Not built yet:** the field between cells, the tension web and the wavefront.
+  `docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` lists what the layers ask of the engine,
+  with the lead's answers.
+
+## The cell's resting look
+
+The user chose it from a page of options (`docs/FLUX_AND_LOOK.md`, 15 November 2026).
+Seven effects are on in the Cell view: studio reflections, filmic light, soft
+translucency, contact shade, surface texture, a slow drift of the crowd, and a shimmer
+on the membrane. The other three views are unchanged.
+
+- **It is decoration, and says nothing.** Nothing in it moves with a direction, it stops
+  while a layer shows motion, and it stops for a visitor who asks for reduced motion
+  (`schema/QUANTITY_LAYERS.md`, rule 12).
+- **A switch** ("Look": Rich or Plain) turns it off, and `look=plain` in the address
+  opens the page without it. A device that cannot keep the picture moving smoothly sheds
+  the costly effects in steps, and the page says which.
 
 ## Sizes in the cell view
 
@@ -246,10 +390,12 @@ indicative.
 | Nucleus | 6 µm across | the same |
 | Mitochondria | 120, about 0.6 µm wide and 1 to 3 µm long, some curved: a clear outer membrane with the inner folds showing (a real cell holds hundreds or more) | 9, about 2 µm wide, three cut open to show the folds |
 | Endoplasmic reticulum | thin sheets close together and tubules through the cell | four thick ribbons |
-| Ribosomes, vesicles | grey dots and clear bubbles: scenery, since protein synthesis and vesicles are not capabilities | grey beads and a few clear bubbles |
+| Ribosomes | free, in strings on a messenger, and on the rough endoplasmic reticulum: dots | two-subunit beads |
+| Golgi apparatus | a small stack of five or six curved cisternae, with buds at the rims | the same, enlarged |
+| Trafficking vesicles | eight: three on their way from the endoplasmic reticulum to the Golgi, four from the Golgi to the membrane, and one that meets it; their number and size are the picture's choice | the same |
 | Membrane | a fine line (5 nm is far below one pixel) | a thick beaded band |
 | Channels, pumps, junction channels | thousands of dots; shapes about 10 nm across in the close-up | a few blocks set in the membrane |
-| Protein cages, ATP, ions, small molecules | dots and haze | a few beads and clusters |
+| ATP, ions, small molecules | dots and haze | a few beads and clusters |
 | Space between cells | 40 nm wide, far below one pixel: a dotted line round the cut edge, and dots where three cells meet | a 0.9 µm gap with a few ions in it |
 | Neighbouring cells | six faint glass cells against the cell's sides, 40 nm away, standing where the sheet's own cells stand: scenery | the same, 0.9 µm away |
 | Cut-away top, and the plate under the layer | a dashed outline of the outer face that the cut removes, and a lined plate where a flatworm's skin rests on a basement membrane, which Cells does not model: scenery | the same |
@@ -272,11 +418,18 @@ npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load 
 npm test                    # scene, sources, page and allowed hosts; no browser needed
 npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas, its species sides and its links)
 npm run check:species       # real clicks on the species switch: each species' levels, cell and wording, in every view
-npm run check:shelves       # real clicks on a species' own proteins: a marker, a family opening, closing, the legend and the list (syn3a by default; planarian, nofiles)
+npm run check:shelves       # real clicks on a species' own proteins: a marker, a family opening, closing, the legend and the list (syn3a by default; planarian, nofiles, human, ecoli; stack holds any species with several shelves to its own file, SPECIES=thalecress by default)
+npm run check:layers        # real clicks on a replay's quantity layers (zero, switch, closeup; flow and example for the newer layers)
+                            # flow: RUN=secreted-species-dev-run--secreted-species-dev-run REFERENCE=tools/references/secreted-species-dev-run-0.4.json
+                            # holds the page to numbers worked out from the run's own arrays (tools/reference_flow.py); example: RUN=example-sheet--invented-numbers
+npm run check:look          # the Cell view's look: each effect, the switch, and the other views unchanged
+npm run check:flux          # flux in the Cell view: nothing flows as the page opens, a chosen part, the switch (THEME, WIDTH and HEIGHT, SPECIES, MOVING=1, ADDRESS=1 set the case)
+npm run check:all           # every real-click check once, four at a time, with a table of what passed and summary.json (--only PATTERN, --jobs N, --out DIR, --list)
 npm run serve -- --no-proteins   # the page as it is when the species' own proteins are not published beside it
 npm run shot -- --out /tmp/shot.png --query "lens=engine&select=num.imex" --theme dark
 npm run adapt:runs -- --evidence PATH   # make the replays under out/runs/ (not committed); PATH holds the evidence folders
 npm run export              # out/cells-architecture.html, the page as an artifact wants it, and the list of run files to publish beside it
+npm run stage -- --new out/publish-vN --old out/publish-vM   # the export laid out as the artifact is, and the uploads of what changed since the last publish
 ```
 
 From another machine, forward the port (`ssh -L 4173:127.0.0.1:4173 host`) or open the
@@ -285,6 +438,20 @@ opens straight from disk.
 
 The preview server sends a content policy close to the artifact frame's, so a load that
 would be blocked when published is reported in the terminal while developing.
+
+Every check that starts Chrome takes a place first (`tools/lib/browser_lock.mjs`). A place
+is a share of the processors set aside for browser runs, whole cores: `CELLS_BROWSER_CPU`
+names them (a list as `taskset` takes one; cores 12 to 15 with both their threads,
+`12-15,28-31`, unless set) and `CELLS_BROWSER_SLOTS` says how many browsers run at once
+(four unless set: one core each). A run beyond that waits its turn. Each run has its
+profile on disk and not in memory-backed `/tmp`. On the project's machine the look check
+takes 162 s on one core, 85 s on two and 49 s on four, so a suite goes fastest with four
+browsers side by side, and one check alone goes fastest with all four cores
+(`CELLS_BROWSER_SLOTS=1`). Chrome's software renderer pins its own
+worker threads to the first processors by number, whatever the run is allowed, so the
+lock looks at every thread of what a run started once a second and puts a process with a
+thread elsewhere back. (A scope bound to a processor would hold them at once; it needs
+the cpuset controller, which a user's session is not given on this machine.)
 
 ## How it is built
 
@@ -307,7 +474,11 @@ run outputs ──adapters (next)── run view ──────────�
 | `docs/` | Reviews written for the lead: `PROTEIN_ATLAS_REVIEW.md` |
 | `src/replay/`, `src/lenses/replay.js`, `src/ui/timeline.js` | Loading a replay, the Experiments view and its timeline |
 | `data/proteins/` | `inventory.snapshot.json` (generated, do not edit), `overlay.json` (districts, plain lines and the shape drawn for each kind of unit) and the sources notice |
-| `schema/RUN_VIEW.md` | Draft of what a run saves so it can be replayed (the consumer side of D154) |
+| `schema/RUN_VIEW.md` | What a run saves so it can be replayed (the consumer side of D154), and how the engine's own `view.json` is read |
+| `schema/QUANTITY_LAYERS.md`, `data/layers/`, `src/layers/` | The quantity layers: their rules, their declarations, and the code (records, derivations, one module for each mark) |
+| `schema/SPECIES*.md`, `data/species/`, `tools/lib/species.py` | What a species file holds, the shapes and parts the viewer can draw, and the reader that checks them |
+| `tools/build_*_atlas.py`, `data/proteins/<species>/` | Each species' own proteins, rebuilt from saved public downloads that stay outside git |
+| `src/core/look.js`, `passes.js`, `environment.js` | The Cell view's resting look and the finishing passes |
 | `src/scene/model.js` | The scene format's reader and its structural checks |
 | `src/core/` | Stage (renderer, camera, picking), camera control, labels, theme, status materials |
 | `src/lenses/` | `stack.js` (engine), `cell.js` and `cell_parts.js` (cell and scales), `proteins.js` and `protein_parts.js` (protein atlas) |
@@ -349,9 +520,15 @@ The visualizer session publishes its own artifacts (the user, 14 November 2026).
 2. Publish `out/cells-architecture.html` to the URL in `artifacts.json`, with the files
    listed in `out/cells-architecture.files.json` beside it: the runs (`runs/<run id>.json`)
    and the species' own proteins (`proteins/<species>/shelves.json` and the planarian's
-   `members-NN.json`). On 15 November 2026 that is 71 files: 59 runs and 12 files of
-   proteins (3.4 MB). A page published without the proteins' files draws the atlas as
-   before and says that the species' own proteins could not be loaded.
+   `members-NN.json`). On 15 November 2026 that is 378 files (115 MB): 327 files of the 61
+   runs (59 of the experiments, the development run and the example) and 51 files of
+   proteins. A publish takes at most 255 files and 64 MB, so a full
+   set goes up in several publishes to the same URL; a later publish keeps the files it
+   does not send, so only what changed needs sending. `npm run stage` lays the export out
+   as the artifact is, in a folder that is kept as the record of what was published, and
+   writes the list of each upload (`tools/stage_publish.py`). A page published without the
+   proteins' files draws the atlas as before and says that the species' own proteins could
+   not be loaded.
 
 Published pages load three.js from cdnjs, the preferred host of the artifact frame's
 allowlist; everything else is inside the page.
@@ -360,15 +537,21 @@ allowlist; everything else is inside the page.
 
 Everything that makes the page is in this folder on the branch `visualizer`, except two
 things that are remade: `node_modules/`, and the replay files under `out/runs/`, which
-stay out of git (59 runs, 34 MB).
+stay out of git (61 runs in 327 files, 96 MB).
 
 1. `npm install`
 2. `npm run adapt:runs -- --evidence /mnt/workspaces/Cells` remakes `out/runs/` from the
    frozen evidence folders that `data/replays/selection.json` names. Skip it when
    `out/runs/` is still on disk.
 3. `npm run extract -- --strict && npm test`. The extractor reads the main checkout, so
-   the map states the revision main is at.
-4. `npm run check:input` (real input in headless Chrome; several minutes)
+   the map states the revision main is at. A strict build fails where that revision is
+   on no remote branch as last fetched (a commit not yet pushed, or amended before it
+   was), so that the map never states a revision others cannot find.
+4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
+   `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look` and
+   `check:flux` once, four at a time, and writes a log for each and `summary.json`. Each
+   check says at its end whether the page's own font had arrived: with the stand-in, words
+   run longer and cards stand taller, and a miss is read against that.
 5. `npm run export`
 6. Publish `out/cells-architecture.html` with every file listed in
    `out/cells-architecture.files.json` beside it, under the same relative paths
@@ -389,15 +572,17 @@ contract under `schema/` and run the steps above before committing it.
 
 This folder lives on the branch `visualizer`, in its own worktree, by agreement with the
 lead session on 14 November 2026. The rest of the repository is read-only for this lane.
-The user merges the branch when they choose.
+The branch was merged into main that day and is merged again from time to time, so it is
+never rewritten: it is brought level with `git merge main`, and nothing is force-pushed.
 
 ## Next
 
 1. **Events that are not replacements.** The W1 pilot's cue needs its own drawing; its
    two runs already adapt.
-2. **More of each run.** The concentrations, the osmotic term and the junction gates are
-   saved but not yet shown, to keep a run under a megabyte. The pilot's 70-minute arms
-   need a smaller number type or fewer records to fit.
+2. **More of each run.** The quantity layers show the junction gates and the amounts
+   behind the push and pull on each ion, from files beside the run. The osmotic term is
+   saved and not yet shown. The pilot's 70-minute arms need a smaller number type or
+   fewer records to fit.
 3. **Other experiments**, each with its own adapter until the engine writes a view file
    per run (D154): division needs a geometry that is not a sheet and a thinning rule; the
    conduction probe needs a chain layout; the held sphere needs radial shells.

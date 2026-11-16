@@ -3,12 +3,17 @@
   "artifacts": {
     "architecture": {
       "title": "Cells Architecture Map",
-      "url": "https://claude.ai/artifact/Szv7SqgCkgtAZg4c27fwCb",
+      "url": "https://claude.ai/artifact/VmHpJQGUkAMDMDMqoJJQEB",
       "previous": [
         {
           "url": "https://claude.ai/artifact/7Pnsy6G25c2kRqgwk5TuaB",
           "until": "2026-11-14",
           "note": "An earlier link to this page, holding an older copy: its version 11, the species atlases. It is no longer updated."
+        },
+        {
+          "url": "https://claude.ai/artifact/Szv7SqgCkgtAZg4c27fwCb",
+          "until": "2026-11-16",
+          "note": "An earlier link to this page, holding its Version 16 there. It is no longer updated."
         }
       ],
       "page": "out/cells-architecture.html",
@@ -114,13 +119,55 @@
           "date": "2026-11-15",
           "engine_revision": "1bd1cfbd",
           "note": "The engine map level with main 1bd1cfbd after a pass over every entry: the modular rework of the inner model is a hub that delivers eleven designed parts, each saying what holds today and that it is not on main, and the Cell view says part by part what runs today and what the rework brings (designed 10 to 24, qualified 39 to 40). In the species' own proteins every tool behind a predicted placement is named with its own terms and counts, and Syn3A's lipid anchors come from a sequence rule of the tool's own (5 proteins outside where 13 were), pending the user's decision on values a restricted tool computed. Checked on a clean copy: 55 of 55 real-input checks and 41 of 41 species checks at e6396b3a, shelves checks 17 of 17 (Syn3A), 18 of 18 (planarian) and 6 of 6 (without the files) at b210a54a, where only the check itself differs; 226 tests (225 pass, 1 skipped). Sent with the page: the three species' shelves files; the other 68 files beside it are unchanged"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "d0c747c7",
+          "note": "Versions 11 and 12, one build sent in two uploads (the page with the species' proteins; then the replays). New: the first quantity layers on replays (voltage relief; junction drops; a quiet and a bold strength; a panel that says what stands behind a layer), each replay with a file for its junctions; the species selection as a dropdown; the human's own proteins on six stacked shelves (20,414); E. coli as a fifth species with its 4,403 proteins on two shelves; the engineered protein cage left out of the Cell view and the atlas (48 machines drawn of the inventory's 49); Syn3A's lipid anchors from UniProt again (13 proteins outside), with every tool behind a placement named and counted under the user's rule. Built from a clean copy of 1326ebbc. Real-click checks there: input 55 of 55, species 58 of 58, shelves Syn3A 17 of 17, planarian 18 of 18 (on a second run with the browser quiet; 16 of 18 on the first, a click sent while the view still moved), without files 6 of 6, layer zero 6 of 6, the layers' switch 14 of 14 once the check waits for the bar's label (13 of 14 as committed there). The human scenario gave 24 of 25 in each of three runs here, on two different steps, and 25 of 25 in the agent's own run: taken as the check pressing before the view has settled on a busy machine, not as a fault of the page; its pictures show the stack and every shelf's name as intended. 146 files beside the page (55 MB). Not in this build, though on the branch: the fruit fly, E. coli's chemotaxis set in 'show by', the close-up of a chosen cell, E. coli's appendages as data; thale cress is held back"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "c156a47d",
+          "note": "Versions 13 and 14, one build sent in two uploads (the page with the fruit fly's proteins and half of the replays; then the rest of the replays). New: the fruit fly as a sixth species, with its 13,814 proteins (one for each gene) on six stacked shelves; the Cell view's resting look (studio reflections, filmic light, soft translucency, contact shade, surface texture, a drift of the crowd, a shimmer on the membrane) with a Look switch back to the plain picture; on a replay, the close-up of a chosen cell's membrane, with the push and pull on each ion and the membrane's charge, and each replay with files for its ions' concentrations; E. coli's 'Show by', with its chemotaxis proteins and the assemblies a protein is part of. Built from a clean copy of 9ae6f867. Real-click checks there: species 60 of 60; shelves Syn3A 17 of 17, planarian 18 of 18, without files 6 of 6, human 25 of 25, E. coli 5 of 5; layers zero 7 of 7, the switch 14 of 14, the close-up 19 of 19; the look 21 of 21, its switch 19 of 19, the other views 12 of 12; input 54 of 55. The one miss was the check's own: it read a label's place while the camera still glided, with the look drawn slowly in software. With the check waiting for drawn frames and a still camera, the Cell view's part gave 11 of 11 twice, the look on. Six pictures of the build were looked at (the cell of the planarian and of the fruit fly, the fruit fly's and E. coli's proteins, a replay in the dark theme, the cell on a phone). 331 files beside the page (109 MB), of which the 244 that changed were sent. Known flaw: on a phone the look's note, the scale bar and the caveat overlap at the foot of the Cell view. Not in this build, though on the branch: quantity layers stage 3 (transfers, ion traffic, energy dissipated, the secreted species; the engine's development run and the marked example); the scene at main 2c00d08d. Flagella, pili and a plant cell's parts are drawn and not yet committed; thale cress is held back"
+        },
+        {
+          "date": "2026-11-15",
+          "engine_revision": "2c00d08d",
+          "note": "Version 15, one upload. New: thale cress as a seventh species, under a third heading (Plants), with a plant cell (a wall, a large vacuole, chloroplasts, a four-sided cell and a sheet packed in squares, said to be the picture's choice) and its 27,368 proteins on nine shelves; E. coli's flagella and pili, drawn from its file, with the foot of a flagellum opening the Protein atlas on the 34 proteins of its flagellum; quantity layers stage 3 on replays: transfers as beads across borders (one bead a stated number of molecules, at true speed with a slow-down), ion traffic through a chosen cell's channels, pump and membrane, the rate of each dissipated-energy ledger as a glow, and the secreted species as a fog; the engine's first development run for the viewer (one cell that secretes a species) under 'Development run', and an example with invented numbers under 'Example', marked on the picture and in the legend; an example's card without the tick of a finished run; the scene at main 2c00d08d. Built from a clean copy of d713144b. Real-click checks there, one run each: input 55 of 55; species 62 of 62; shelves Syn3A 17 of 17, planarian 18 of 18, without files 6 of 6, human 25 of 25, E. coli 5 of 5; layers zero 7 of 7, the switch 14 of 14, the close-up 19 of 19, flow 22 of 22 (held to numbers worked out from the run's own 64-bit arrays), the example 8 of 8; the look 21 of 21, the other views 12 of 12; the Cell view's part on E. coli 10 of 10 and on thale cress 11 of 11. The look's switch gave 18 of 19 in seven of nine runs, on the same line each time: in its window of 1040 by 640, where the page's own font had not arrived, the legend grew tall enough to lie over the view's card, so the press on 'Status' fell on the legend (seen in the page itself). That is a flaw of the page in a short window, older than this build, and not of the look; the run that waits for the font gave 19 of 19, as did one of the plain runs. The fix (the legend scrolls within the room left under the card) is on the branch and not in this build. Pictures looked at: the development run light, dark and on a phone, the example's close-up, the cell of thale cress and of E. coli, thale cress's proteins. 378 files beside the page (115 MB), of which the 47 that changed were sent. Known limits: on a phone the run's card covers part of a small world's picture; with the panel open the statement on a replay starts under the legend. Not in this build, though on the branch: flux in the Cell view (stage 4), built and not yet seen in a browser"
+        },
+        {
+          "date": "2026-11-16",
+          "engine_revision": "2c00d08d",
+          "note": "Version 16, the page alone (no file beside it changed). New: flux in the Cell view, stage 4 of the quantity layers: a Flux switch in the legend, off as the page opens; a part's flux shows when the visitor chooses the part, and the switch shows all of it; beads with bloom, the look's own motion held still while they show. No species has a looping run of its own yet, so what shows is illustration of the form 'direction only', with 'Illustration: not a run' on the picture, in the legend and in the chosen part's panel: pumps go the way the engine's own laws say (3 sodium out and 2 potassium in; 1 calcium out), drawn for the species the page shows as the generic cell; secreted signals by the exchange operator's export and import; channels, junctions and water both ways with none claimed; fuel draws nothing, with the reason. A part named in the page's address shows no flux as the page opens. At rest the cell's water drops, signals and close-up ions now stand still: they moved with a direction and had no rate behind them. Also new: the legend no longer lies over the view's card in a short window (it scrolls within the room left under the card); on a replay the statement starts clear of the legend when a panel is open, and the beads keep true time whatever the gap between frames. Built from a clean copy of ae914a2a. Real-click checks there, one run each, all passed: input 55 of 55; species 62 of 62; shelves Syn3A 17, planarian 18, without files 6, human 25, E. coli 5, and thale cress's nine shelves 5 of 5; layers zero 7, the switch 14, the close-up 19, flow 22, the example 8; the look 21, its switch 19 (with the stand-in font, where it had missed before the legend's fix), the other views 12; flux in the Cell view 26 of 26 in light, dark, at 1040 by 640, moving, on thale cress and on E. coli, 24 of 24 on a phone, and the address 5 of 5; the Cell view's part on E. coli 12 of 12, with a real press on the door from a flagellum's foot into the Protein atlas (its flagellum's proteins picked out), and on thale cress 11 of 11. Each check but the flux check now says whether the page's own font had arrived; it had not in five of the runs (thale cress's shelves, the look's three, the Cell view's part on E. coli), which passed all the same. Pictures looked at, from this build: flux on E. coli, on thale cress, in the short window, on a phone, with a part chosen and by the address; in the dark, from the layers agent's copy. 378 files beside the page (115 MB), none sent. Known limits: at 400 px the Flux switch is reachable only with no panel open; a chosen part that draws nothing, and a run's longer statement on a phone, have not been seen in a browser; with a panel open the scale bar's words can touch the caveat"
+        },
+        {
+          "date": "2026-11-16",
+          "engine_revision": "2c00d08d",
+          "note": "Versions 1 to 3 at the new link, one build sent in three uploads: the same build as Version 16 at the earlier link, byte for byte from the folder staged for it (out/publish-v16). Nothing was rebuilt and no check was run again: its checks are Version 16's, in the entry before this one. The page and all 378 files beside it were sent (115 MB): 134 files with the page, then 195, then 49. The link's own listing afterwards showed 379 files, and five of them compared by size with the ones on disk. The page was not looked at in a browser at the new link. Version numbers start again here: the next publish is this link's Version 4. Not in this build, though on the branch: a replay's own clock with slower and faster speeds, the cell's own motion back at rest, the pump's lanes in the membrane's close-up, green chloroplasts, and the engine map of 16 November 2026"
+        },
+        {
+          "date": "2026-11-16",
+          "engine_revision": "fe0ca3ab",
+          "note": "Version 4 at the new link, the page alone (none of the 378 files beside it changed). New: the nucleus, the Golgi apparatus and the ribosomes are parts of the map of their own, planned and illustration only, by the user's decision of 16 November 2026 (docs/CELL_STRUCTURES.md): nothing of them is in the engine and each panel says so; 'Regulatory circuits' is drawn at the cell's DNA, and 'Membrane trafficking' at the vesicles; where colour shows the kind of part every part is drawn whole, and 'Colour: Status' shows what is not built as grey sketches; a structure the cell does not hold is read from the species' file, and a structure has a door into the Protein atlas where the species' own proteins can show its set. A replay's beads keep the replay's own clock: paused they stand; the timeline's speed lists steps from a million times slower to 240 times faster, each in words, and a replay keeps the speed it states on a slow device. In the Cell view the cell's own drops, signals and close-up ions move again at rest, and the legend says that this motion is the picture's own. Drawn to scale, the membrane's close-up has lanes over its pump. The veil over a shelf covers the whole shelf, seen at a slant. Chloroplasts are green where colour shows the kind of part. The engine map is that of 16 November 2026 (D183 on the living-cell loops and the excitable-tissue laws), stamped main fe0ca3ab. Built from a clean copy of 5830bfdf and published after main had the note the new parts cite (main 9a15108e). Checks on that content: the strict build clean; npm test exit 0, 445 tests, 444 pass, 1 skipped; every real-click scenario once, four at a time: 29 of 31 passed, 526 of 532 checks, in 21.9 minutes while other jobs shared the processors; the two that missed (the planarian's shelves and the layers' switch, both timing waits) passed alone three times of three, 18 of 18 and 14 of 14; the Cell view's input on the planarian, E. coli and thale cress again after a check was hardened, 13 of 13 each. Pictures looked at, from that content: the cell, the Golgi and the nucleus close, in light and dark, at 1440 by 900 with the stand-in font; the replay's speed list on a phone and in a short window. Not looked at in a browser at the published link by the session; the user looked at the link's Version 3 and said it works. Known limits: no colour check stands in the tests (the Golgi's pink was measured by hand against the other colours); on a phone the Flux switch is still reachable only with no panel open, and the other small-window limits of Version 16 stand (a polish pass is in hand); E. coli's wall is still drawn outside its outer membrane in this build (fixed on the branch after it). Not in this build: the flagellar motor's closer view, flux at real-life speed with a slow-down, the Laws library"
+        },
+        {
+          "date": "2026-11-16",
+          "engine_revision": "9a15108e",
+          "note": "Version 5 at the present link, the page alone (none of the 378 files beside it changed). A correction: Versions 1 to 4 at this link, and the map as built in 5830bfdf, stated a main revision, fe0ca3ab, that exists nowhere else: the main checkout stood for a while at a commit that was amended before it was pushed, and the extractor stamped it. The engine's lead noticed it. This version states main 9a15108e, which is pushed, and a strict build now fails where main stands at a revision that is on no remote branch (06684552). The entry before this one keeps its record of fe0ca3ab as what that page stated. New: the human's text says that no human cell type, organ or body is modelled yet and that specific cell types are planned, the first a human ventricular heart cell whose laws will follow O'Hara and Rudy's model of 2011 (decisions D183 and D184; the user, 16 November 2026: 'change the text that we plan to'); the wall of a cell with two membranes lies between them (E. coli's was drawn outside its outer membrane). Built from a clean copy of 06684552. Checks since Version 4's full run of the click scenarios, each on a clean copy of the content it concerns: npm test exit 0, 445 tests, 444 pass, 1 skipped; the species check 62 of 62, the species' input 21 of 21 and the Cell view's input 13 of 13 on the text's commit; E. coli's Cell view input 13, flux 26 and shelves 5 on the wall's commit. The full set of scenarios was not run again for this version: the machine was shared with several other jobs and a run took thirty minutes for three scenarios. Not looked at in a browser at the published link by the session. Known limits as in Version 4, less E. coli's wall"
         }
       ],
       "files": "out/cells-architecture.files.json lists the files published beside the page: the runs and the species' own proteins (generated, not committed)"
     },
     "invisible_quantities": {
       "title": "Invisible Quantities",
-      "url": "https://claude.ai/artifact/RjP3pTa73yveNrNsbPzN98",
+      "url": "https://claude.ai/artifact/SxvVem9rUjyG8VrJroVcHT",
+      "previous": [
+        {
+          "url": "https://claude.ai/artifact/RjP3pTa73yveNrNsbPzN98",
+          "until": "2026-11-16",
+          "note": "An earlier link to this page, holding the same copy. It is no longer updated."
+        }
+      ],
       "page": "docs/ideas/invisible-quantities.html",
       "note": "Ideas to choose from, with a sketch each, for showing voltages, charge, fields and flows in the viewer. Nothing in it is built; every sketch is drawn in the page from invented numbers. The note beside it is docs/INVISIBLE_QUANTITIES.md.",
       "sharing": "private; the owner shares it from the page's Share menu",
@@ -128,6 +175,34 @@
         {
           "date": "2026-11-15",
           "note": "First version: ten ideas in three tiers of readiness (works on today's saved runs; the engine computes it and runs must save it; needs new output from the engine), the design options for a quantity layer, what the engine would be asked for, and the choices put to the user. Looked at in light and dark, wide and phone, before publishing"
+        },
+        {
+          "date": "2026-11-16",
+          "note": "Version 1 at the new link: the same file as the first version at the earlier link, unchanged since 15 November 2026. It was not looked at in a browser at the new link"
+        }
+      ]
+    },
+    "flux_and_look": {
+      "title": "Flux and Look",
+      "url": "https://claude.ai/artifact/PynVhKmjouFnZBdz2JzrbU",
+      "previous": [
+        {
+          "url": "https://claude.ai/artifact/SsFfRB9ZnitAWpNcUj5xYQ",
+          "until": "2026-11-16",
+          "note": "An earlier link to this page, holding the same copy. It is no longer updated."
+        }
+      ],
+      "page": "docs/ideas/flux-and-look.html",
+      "note": "Options to choose from, with four live 3D sketches from invented numbers, for a flux mode in the Cell view (off by default) and for a richer resting look. Nothing in it is built. The note beside it is docs/FLUX_AND_LOOK.md.",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-15",
+          "note": "First version: six ways to draw flux, the options for time, for switching it on and for the source of its numbers (first the engine's looping run of each species' cell), ten resting-look effects that switch on and off, what devices offer, and the choices put to the user. Its pictures were checked as stills drawn in software; the sketches were not watched moving and no frame rate was measured there"
+        },
+        {
+          "date": "2026-11-16",
+          "note": "Version 1 at the new link: the same file as the first version at the earlier link, unchanged since 15 November 2026. It was not looked at in a browser at the new link"
         }
       ]
     }
