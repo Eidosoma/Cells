@@ -26,7 +26,14 @@ from cells.core.specs import parse_spec
 from cells.io import write_run
 from cells.models import pump_composite
 from cells.models.registry import get_model
-from tests.run_view_fixtures import capture, layers, load, plant, same_as_observed
+from tests.run_view_fixtures import (
+    capture,
+    layers,
+    load,
+    plant,
+    reference_constants,
+    same_as_observed,
+)
 from validation.tissue import bath_schedule_fixtures as bfx
 from validation.tissue import secreted_species_fixtures as fx
 
@@ -63,7 +70,8 @@ def test_a_dose_is_recorded_after_the_row_at_its_time(dosed, tmp_path):
     assert record["writers"] == [BATH] and record["owner"] == BATH and record["layer"] == "bath"
     assert record["axes"] == ["time", "species", "outside"] and record["unit"] == "fmol"
     constants = {c["id"] for c in view["constants"]}
-    assert constants == set(run_view.VIEW_FIELD_AXES) - {"extracellular_amount_reference"}
+    expected = set(run_view.VIEW_FIELD_AXES) - {"extracellular_amount_reference"}
+    assert constants == expected | reference_constants()  # Also the increments' references.
     outside = [s for s in view["sets"] if s["id"] == "outside"][0]["ids"]
     bath, node = outside.index("bath"), outside.index("ecs_0")
     with np.load(tmp_path / "r" / "trajectory.npz") as saved:

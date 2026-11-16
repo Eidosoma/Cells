@@ -7,8 +7,8 @@
 * The declarations a closure reads (the operator contract's RECORD_DIAGNOSTICS and
   RECORD_REFERENCES): a diagnostic's records say so, and a field stored as an increment over a
   fixed reference names it (a constant of the view, or the merged view's record under door S).
-  Until resolved_pump_tissue@3 declares its own (the core's), the inner model's are a fixture
-  planted for the test; an operator's are planted on its class.
+  resolved_pump_tissue@3 declares its own (models/surface_pump_v3), which the tests read; an
+  operator's are planted on its class.
 * The closure (loop_closure) on saved files, read one at a time: for each observed record of kind
   level, amount or rate that is not a diagnostic, the largest change from the first row to the
   last over the record's largest magnitude, an increment measured as reference + increment. A
@@ -45,7 +45,7 @@ SOURCE = {
     "dirty": False,
     "from": "the execution snapshot's record (SNAPSHOT.json)",
 }
-# The fixture inner model's declarations (the forms resolved_pump_tissue@3 is to declare).
+# resolved_pump_tissue@3's own record roles, restated: the tests check the writer reads them.
 DIAGNOSTICS = ("charge_residual_C", "component_current_residual_A", "energy_balance_pJ_s")
 REFERENCES = {
     "amount_increment": "amount_reference",
@@ -69,12 +69,12 @@ def plant_source(patch, source=SOURCE):
 
 
 def declare(patch, spec, source=SOURCE):
-    """The engine source, and the fixture inner model's diagnostics and references, planted on
-    the object the writer reads the inner model's declarations from."""
+    """The engine source planted; the inner model's diagnostics and references are @3's own,
+    read from the object the writer reads them from."""
     plant_source(patch, source)
     inner = run_view._inner(get_model(spec.model))
-    patch.setattr(inner, "RECORD_DIAGNOSTICS", DIAGNOSTICS, raising=False)
-    patch.setattr(inner, "RECORD_REFERENCES", REFERENCES, raising=False)
+    assert tuple(inner.RECORD_DIAGNOSTICS) == DIAGNOSTICS
+    assert dict(inner.RECORD_REFERENCES) == REFERENCES
 
 
 def request(tolerance=2.0, period=PERIOD, cell="cell_0", **loop):
@@ -176,7 +176,7 @@ def test_a_batch_world_is_not_a_loop():
 
 
 def test_diagnostics_and_references_are_read_from_their_owners(prepared, monkeypatch):
-    """The inner model's (the fixture's) and an operator's RECORD_DIAGNOSTICS mark their records;
+    """The inner model's (@3's own) and an operator's RECORD_DIAGNOSTICS mark their records;
     RECORD_REFERENCES names each increment's reference, stated as a constant of the view."""
     spec, layout = prepared
     declare(monkeypatch, spec)

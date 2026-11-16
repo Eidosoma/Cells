@@ -21,13 +21,16 @@ view from write_view(directory). Without ``view=`` every path writes exactly wha
 Scope (version 1): resolved_pump_composite@1 over resolved_pump_tissue@3, and @3 alone. Other
 model families are refused.
 
-Declarations read, and their interim stand-ins
----------------------------------------------
-* The inner model's units, readout axes, kinds, orientations and layers: its own ``UNITS``,
-  ``OBSERVATION_AXES``, ``RECORD_KINDS``, ``ORIENTATION``, ``RECORD_LAYERS`` and ``VIEW_LAYERS``
-  when it declares them; until then this module's table for resolved_pump_tissue@3 (TISSUE_3),
-  pending the core owner's declaration. A field of the model that no declaration describes (a
-  kind's new field, say) is refused, never guessed.
+Declarations read
+-----------------
+* The inner model's own, read from its implementation object (or the composite's inner adapter):
+  ``UNITS``, ``OBSERVATION_AXES``, ``RECORD_KINDS``, ``ORIENTATION``, ``RECORD_LAYERS``,
+  ``VIEW_LAYERS``, ``RECORD_NOTES``, ``RECORD_DIAGNOSTICS`` and ``RECORD_REFERENCES``, each
+  structure's with its kinds' folded in (models/surface_pump_v3.view_declarations), and for its
+  kinds' axes ``VIEW_AXIS_SETS`` (an axis mapped to an existing set) and ``view_sets(spec)``
+  (their own sets, placed as an operator's are). A field that no declaration gives a unit, axes
+  and a layer (a kind's new field, say) is refused, never guessed; the writer keeps no table of
+  the inner model's fields.
 * Each operator, by the contract (models/operators/contract.py, "The run view"): ``VIEW_LAYERS``
   (None is refused), ``view_events`` (the default gives the births and retirements of
   ``living_intervals``; an override must keep them), ``view_sets(spec, declaration)`` for its own
@@ -252,8 +255,9 @@ SET_ROLES = MappingProxyType(
     }
 )
 FLOW_KEYS, DIFFERENCE_KEYS = ("from", "to"), ("plus", "minus")
-# Per-entity facts an operator's set may give (view_sets), one per id: the species each carries,
-# a word each (declared direction, kind), or the entity each acts at ({set id: entity id}).
+# Per-entity facts an operator's (or a kind's) set may give (view_sets), one per id: the species
+# each carries (a species id, or a list of them), a word each (declared direction, kind), or the
+# entity each acts at ({set id: entity id}).
 PER_ENTITY = ("carries", "direction", "kinds", "at")
 # The activity mask of each set (the adapter's MASK_FIELDS): a retirement restarts a ledger on the
 # slots where it closes.
@@ -303,170 +307,11 @@ class ViewInvalid(ConfigError):
     """A view (or its files) breaks the format: the reader-side check."""
 
 
-# ------------------------------------------------------------------ the inner model's table
+# ------------------------------------------------------------------ the inner model's sets
 
-# resolved_pump_tissue@3, until its own declarations land (the core's files; a requested seam).
-# Each readout's axes, every field's unit where its name has no suffix, every field's kind and
-# layer, and the orientations the core's owner confirmed on 15 November 2026 (the lead's
-# requirement 2). State axes are the model's own STATE_AXES.
-_CONFIRMED = "the core's owner, 15 November 2026"
-_OUTWARD = MappingProxyType(
-    {
-        "from": "inside",
-        "to": "outside",
-        "says": "a positive amount leaves the patch's cell for its outside node",
-        "confirmed": _CONFIRMED,
-    }
-)
-_CHANNEL = MappingProxyType(
-    {
-        "from": "inside",
-        "to": "outside",
-        "says": "a positive amount leaves the cell of the population's patch for that patch's "
-        "outside node; it is added unchanged into the patch's total in the material balance, the "
-        "balance's own sum, not the saved membrane_transferred (which holds the passive routes "
-        "only)",
-        "confirmed": _CONFIRMED,
-    }
-)
-_JUNCTION = MappingProxyType(
-    {
-        "from": "sender",
-        "to": "receiver",
-        "says": "a positive amount leaves the junction's sender cell for its receiver",
-        "confirmed": _CONFIRMED,
-    }
-)
-_FACE = MappingProxyType(
-    {
-        "from": "sender",
-        "to": "receiver",
-        "says": "a positive amount leaves the face's sender node for its receiver",
-        "confirmed": _CONFIRMED,
-    }
-)
-_PUMP = MappingProxyType(
-    {
-        "from": "outside",
-        "to": "inside",
-        "says": "pump cycles are inward-positive: a positive cycle moves each moved row's "
-        "per-cycle count (the membrane set's pumps, by role) from the patch's outside node into "
-        "its cell; the balance subtracts stoichiometry times cycles from the membrane total",
-        "confirmed": _CONFIRMED,
-    }
-)
-_SUPPLY = MappingProxyType(
-    {
-        "from": "exterior",
-        "to": "node",
-        "says": "a positive amount is supplied into the held outside node from beyond the world",
-        "confirmed": _CONFIRMED,
-    }
-)
-# Potential differences (plus less minus), read from the code (numerics/surface_transport.py,
-# transport: the membrane's cell potential less its outside node's; the junction's sender's less
-# its receiver's). The core's owner has not confirmed them yet: "source" says where they come from.
-_SOURCE = "read from the code: numerics/surface_transport.transport (the core's owner to confirm)"
-_MEMBRANE_VOLTAGE = MappingProxyType(
-    {
-        "plus": "inside",
-        "minus": "outside",
-        "says": "the potential of the patch's cell less that of its outside node: positive when "
-        "the cell is at the higher potential",
-        "source": _SOURCE,
-    }
-)
-_JUNCTION_VOLTAGE = MappingProxyType(
-    {
-        "plus": "sender",
-        "minus": "receiver",
-        "says": "the potential of the junction's sender cell less that of its receiver: positive "
-        "when the sender is at the higher potential",
-        "source": _SOURCE,
-    }
-)
-TISSUE_3_LAYERS = (
-    {"id": "membrane", "label": "Membrane voltage and ions", "representation": "simulated"},
-    {
-        "id": "channels",
-        "label": "Channel populations and junction gates",
-        "representation": "modelled",
-    },
-    {"id": "pumps", "label": "Pump populations", "representation": "modelled"},
-)
-# field: (readout axes or None for a state field, unit or None for the suffix rule, kind, layer,
-# sign or None).
-TISSUE_3 = MappingProxyType(
-    {
-        # State.
-        "amount_increment": (None, "fmol", "amount", "membrane", None),
-        "extracellular_amount_increment": (None, "fmol", "amount", "membrane", None),
-        "membrane_transferred": (None, "fmol", "cumulative", "membrane", _OUTWARD),
-        "junction_transferred": (None, "fmol", "cumulative", "membrane", _JUNCTION),
-        "face_transferred": (None, "fmol", "cumulative", "membrane", _FACE),
-        "reservoir_supplied": (None, "fmol", "cumulative", "membrane", _SUPPLY),
-        "membrane_dissipated_energy_pJ": (None, None, "cumulative", "membrane", None),
-        "junction_dissipated_energy_pJ": (None, None, "cumulative", "membrane", None),
-        "face_dissipated_energy_pJ": (None, None, "cumulative", "membrane", None),
-        "electrode_charge_transferred_C": (None, None, "cumulative", "membrane", None),
-        "reservoir_work_pJ": (None, None, "cumulative", "membrane", None),
-        "electrode_work_pJ": (None, None, "cumulative", "membrane", None),
-        "channel_gate": (None, "1", "level", "channels", None),
-        "channel_transferred": (None, "fmol", "cumulative", "channels", _CHANNEL),
-        "channel_dissipated_energy_pJ": (None, None, "cumulative", "channels", None),
-        "junction_gate": (None, "1", "level", "channels", None),
-        "pump_cycles": (None, "fmol", "cumulative", "pumps", _PUMP),
-        "pump_dissipated_energy_pJ": (None, None, "cumulative", "pumps", None),
-        "metabolic_work_pJ": (None, None, "cumulative", "pumps", None),
-        "calcium_pump_cycles": (None, "fmol", "cumulative", "pumps", _PUMP),
-        "calcium_pump_dissipated_energy_pJ": (None, None, "cumulative", "pumps", None),
-        "calcium_metabolic_work_pJ": (None, None, "cumulative", "pumps", None),
-        # Readouts.
-        "amount": (("species", "cell_slot"), "fmol", "amount", "membrane", None),
-        "extracellular_amount": (
-            ("species", "extracellular_slot"),
-            "fmol",
-            "amount",
-            "membrane",
-            None,
-        ),
-        "cell_potential_V": (("cell_slot",), None, "level", "membrane", None),
-        "extracellular_potential_V": (("extracellular_slot",), None, "level", "membrane", None),
-        "membrane_voltage_V": (("membrane_slot",), None, "level", "membrane", _MEMBRANE_VOLTAGE),
-        "junction_voltage_V": (("edge_slot",), None, "level", "membrane", _JUNCTION_VOLTAGE),
-        "membrane_flux_fmol_s": (("species", "membrane_slot"), None, "rate", "membrane", None),
-        "junction_flux_fmol_s": (("species", "edge_slot"), None, "rate", "membrane", None),
-        "face_flux_fmol_s": (("species", "face_slot"), None, "rate", "membrane", None),
-        "reservoir_supply_fmol_s": (
-            ("species", "extracellular_slot"),
-            None,
-            "rate",
-            "membrane",
-            None,
-        ),
-        "electrode_charge_C": (("extracellular_slot",), None, "amount", "membrane", None),
-        "electrode_current_A": (("extracellular_slot",), None, "rate", "membrane", None),
-        "reservoir_power_pJ_s": (("world",), None, "rate", "membrane", None),
-        "electrode_power_pJ_s": (("world",), None, "rate", "membrane", None),
-        "charge_residual_C": (("field_node",), None, "level", "membrane", None),
-        "component_current_residual_A": (("floating_component",), None, "rate", "membrane", None),
-        "energy_balance_pJ_s": (("world",), None, "rate", "membrane", None),
-        "membrane_availability": (("membrane_slot",), "1", "level", "membrane", None),
-        "junction_availability": (("edge_slot",), "1", "level", "channels", None),
-        "channel_flux_fmol_s": (("species", "channel_slot"), None, "rate", "channels", None),
-        "channel_targets": (("gate", "channel_slot"), "1", "level", "channels", None),
-        "channel_tau_s": (("gate", "channel_slot"), None, "level", "channels", None),
-        "pump_cycle_rate_fmol_s": (("membrane_slot",), None, "rate", "pumps", None),
-        "pump_affinity_J_mol": (("membrane_slot",), None, "level", "pumps", None),
-        "metabolic_power_pJ_s": (("membrane_slot",), None, "rate", "pumps", None),
-        "channel_availability": (("channel_slot",), "1", "level", "channels", None),
-        "pump_availability": (("membrane_slot",), "1", "level", "pumps", None),
-        "calcium_pump_cycle_rate_fmol_s": (("membrane_slot",), None, "rate", "pumps", None),
-        "calcium_pump_affinity_J_mol": (("membrane_slot",), None, "level", "pumps", None),
-        "calcium_metabolic_power_pJ_s": (("membrane_slot",), None, "rate", "pumps", None),
-        "calcium_pump_availability": (("membrane_slot",), "1", "level", "pumps", None),
-    }
-)
+# The inner model's own declarations (resolved_pump_tissue@3's view declarations, folded per
+# structure with its kinds'; models/surface_pump_v3.view_declarations) give every field's unit,
+# readout axes, kind, layer, orientation and notes; the writer keeps no table of them.
 # The inner layout's view fields that operators may provide (the composite adapter's
 # VIEW_FIELDS), each with its axes and unit, plus two no operator provides; requirement 5.
 VIEW_FIELD_AXES = MappingProxyType(
@@ -491,19 +336,6 @@ VIEW_FIELD_AXES = MappingProxyType(
         "face_active": (("face_slot",), "1"),
         "extracellular_amount_reference": (("species", "extracellular_slot"), "fmol"),
     }
-)
-# Notes a record carries (the model's own words where it states them: its summary's
-# membrane_transfer_ledger).
-TISSUE_3_NOTES = MappingProxyType(
-    {
-        "membrane_transferred": "the passive membrane routes only. A patch's total in the "
-        "material balance is the balance's own sum: this record plus channel_transferred of its "
-        "populations, less each pump's per-cycle rows times its cycles (pump_cycles); the pump is "
-        "a separate term, never in this record",
-    }
-)
-INNER_TABLES = MappingProxyType(
-    {"resolved_pump_tissue@3": (TISSUE_3, TISSUE_3_LAYERS, TISSUE_3_NOTES)}
 )
 # The inner model's axis names and the view's sets.
 AXIS_SETS = MappingProxyType(
@@ -600,6 +432,13 @@ def _refuse(problems):
         raise ViewRefused("The run view cannot be written: " + "; ".join(problems))
 
 
+def _species_of(value, species):
+    """Whether a set's `carries` entry names the model's species: one id, or a list of them."""
+    if isinstance(value, (list, tuple)):
+        return bool(value) and all(isinstance(v, str) and v in species for v in value)
+    return isinstance(value, str) and value in species
+
+
 def _unstated_order(item):
     return (item["what"], item["id"])
 
@@ -640,7 +479,7 @@ def _family(spec):
 
     composite = _composite_spec()
     if isinstance(spec.model, composite.CompositeModel):
-        if spec.model.inner_model not in INNER_TABLES:
+        if spec.model.inner_model != tissue3.MODEL_ID:
             raise ViewRefused(f"No view declarations for inner model {spec.model.inner_model}")
         return get_model(spec.model), spec.model.inner_model, composite.entries(spec)
     if isinstance(spec.model, tissue3.SurfacePumpChannelModel):
@@ -736,13 +575,15 @@ class Plan:
                 }
             )
         self.retiring = tuple(op.LAW_ID for op, _, _ in self.entries if op.RETIRES)
-        table, inner_layers, notes = INNER_TABLES[self.inner_id]
         inner = _inner(self.model)
-        self.inner_table, self.notes = table, notes
-        self.layers = [
-            dict(layer, owner=self.inner_id)
-            for layer in getattr(inner, "VIEW_LAYERS", None) or inner_layers
-        ]
+        inner_layers = getattr(inner, "VIEW_LAYERS", None)
+        if not inner_layers:
+            self.problems.append(f"{self.inner_id} declares no VIEW_LAYERS")
+        self.notes = dict(getattr(inner, "RECORD_NOTES", {}))
+        self.inner_names = frozenset(
+            (*inner.STATE_AXES, *(k for k in inner.OBSERVATION_FIELDS if k != "times"))
+        )
+        self.layers = [dict(layer, owner=self.inner_id) for layer in inner_layers or ()]
         self.operator_layers = {}
         for op, _, _ in self.entries:
             layers = op.VIEW_LAYERS
@@ -757,6 +598,7 @@ class Plan:
             self.problems.append("layer ids declared twice: " + ", ".join(duplicated))
         self.sets = self._sets(layout)
         self.axis_sets = dict(AXIS_SETS)
+        self._inner_sets(inner)
         self._operator_sets()
         self.fields = self._fields()
         self.changes = self._view_changes()
@@ -996,6 +838,34 @@ class Plan:
             },
         }
 
+    def _inner_sets(self, inner):
+        """The inner model's kinds' sets (their declarations, folded in its implementation
+        object): VIEW_AXIS_SETS maps an axis of a kind's fields to an existing set (the proton
+        buffer's node: cells, then outside nodes), and view_sets(spec) declares a kind's own
+        axes' sets, placed as an operator's are (roles, per-entity facts), owned by the inner
+        model. An axis of the inner model's fields with no set is refused."""
+        for axis, set_id in dict(getattr(inner, "VIEW_AXIS_SETS", {})).items():
+            if set_id in self.sets:
+                self.axis_sets[axis] = set_id
+            else:
+                self.problems.append(f"{self.inner_id}: axis {axis} maps to no set {set_id!r}")
+        view_sets = getattr(inner, "view_sets", None)
+        declared = view_sets(self.spec) if callable(view_sets) else {}
+        axes = {
+            axis
+            for name in self.inner_names
+            for axis in (
+                inner.STATE_AXES.get(name) or getattr(inner, "OBSERVATION_AXES", {}).get(name) or ()
+            )
+            if axis not in self.axis_sets
+        }
+        for axis in sorted(axes - set(declared)):
+            self.problems.append(f"{self.inner_id} declares no set for its axis {axis}")
+        for key in sorted(declared):
+            set_id = self._owned_set(self.inner_id, dict(declared[key]))
+            if set_id is not None and key in axes:
+                self.axis_sets[key] = set_id
+
     def _operator_sets(self):
         """Each operator's own sets, from its view_sets declaration (the contract): one for every
         axis of its own (refused without), and any further set of its entities it describes. An
@@ -1013,13 +883,14 @@ class Plan:
             for axis in sorted(own - set(declared)):
                 self.problems.append(f"{op.LAW_ID} declares no set for its axis {axis}")
             for key in sorted(declared):
-                set_id = self._operator_set(op, dict(declared[key]))
+                set_id = self._owned_set(op.LAW_ID, dict(declared[key]))
                 if set_id is not None and key in own:
                     self.axis_sets[key] = set_id
 
-    def _operator_set(self, op, entry):
-        """One declared set into self.sets (its id), or None with the problem noted."""
-        law, set_id, ids = op.LAW_ID, entry.pop("id", None), list(entry.pop("ids", ()))
+    def _owned_set(self, law, entry):
+        """One declared set into self.sets (its id), owned by `law` (an operator's, or the inner
+        model's for its kinds' sets), or None with the problem noted."""
+        set_id, ids = entry.pop("id", None), list(entry.pop("ids", ()))
         if not isinstance(set_id, str) or not set_id or set_id in self.sets:
             self.problems.append(f"{law}: set {set_id!r} is unnamed or declared twice")
             return None
@@ -1055,7 +926,9 @@ class Plan:
             values = list(entry.pop(key))
             if len(values) != len(ids):
                 self.problems.append(f"{law}: set {set_id} gives {key} once per id")
-            elif key == "carries" and any(v not in self.sets["species"]["ids"] for v in values):
+            elif key == "carries" and not all(
+                _species_of(v, self.sets["species"]["ids"]) for v in values
+            ):
                 self.problems.append(f"{law}: set {set_id} carries species the model lacks")
             elif key == "at" and not all(self._entity(v) for v in values):
                 self.problems.append(f"{law}: set {set_id} acts at entities not the definition's")
@@ -1109,7 +982,7 @@ class Plan:
                 self.problems.append(f"field {name} has no owner in the composition's field map")
                 continue
             axes = self.model.STATE_AXES.get(name)
-            if owner == "inner" or name in self.inner_table:
+            if owner == "inner" or name in self.inner_names:
                 info = self._inner_field(name, axes, owner, declared)
             else:
                 info = self._operator_field(name, axes, operators[owner])
@@ -1147,28 +1020,31 @@ class Plan:
         return frozenset(diagnostics), references
 
     def _inner_field(self, name, axes, owner, declared):
-        entry = self.inner_table.get(name)
-        if entry is None and name not in declared["units"]:
-            self.problems.append(f"no declaration describes the inner model's field {name}")
-            return None
-        readout_axes, unit, kind, layer, sign = entry or (None, None, None, None, None)
-        axes = axes if axes is not None else declared["axes"].get(name, readout_axes)
-        unit = declared["units"].get(name, unit) or _suffix_unit(name)
-        layer = declared["layers"].get(name, layer)
+        """A field of the inner model, from its own declarations only (never guessed)."""
+        axes = axes if axes is not None else declared["axes"].get(name)
+        unit = declared["units"].get(name)
+        layer = declared["layers"].get(name)
         if owner != "inner":  # A column an operator replaces (REPLACES): its owner's layer.
             ops = {op.LAW_ID: op for op, _, _ in self.entries}
             layer = self._operator_layer(ops[owner], name)
         if axes is None or unit is None or layer is None:
-            self.problems.append(f"the inner model's field {name} lacks its axes, unit or layer")
+            self.problems.append(
+                f"{self.inner_id} declares no axes, unit or layer for its field {name}"
+            )
             return None
+        kind = declared["kinds"].get(name)
+        if kind is None:
+            self.unstated.append(
+                {"id": name, "what": "kind", "why": f"{self.inner_id} declares no kind for it"}
+            )
         return self._info(
             name,
             axes,
             unit,
             layer,
             self.inner_id if owner == "inner" else owner,
-            declared["kinds"].get(name, kind),
-            declared["signs"].get(name, sign),
+            kind,
+            declared["signs"].get(name),
         )
 
     def _operator_layer(self, op, name):
@@ -1367,11 +1243,12 @@ class Plan:
             )
         return out
 
-    def _reference_of(self, reference):
+    def _reference_of(self, reference, merged):
         """Where a record's fixed reference is stated: a constant, or the merged view record
-        where door S changes it (a run already on disk saves none: its field only)."""
+        where door S changes it and the run saves it (merged); otherwise its field only, which
+        unstated explains (a run already on disk, or one with no observed rows)."""
         if reference in self.changes:
-            return {"record": VIEW_PREFIX + reference} if self.recompute else {"field": reference}
+            return {"record": VIEW_PREFIX + reference} if merged else {"field": reference}
         return {"constant": reference}
 
     # -------------------------------------------------------------- events
@@ -1789,7 +1666,9 @@ class Plan:
                 if info.diagnostic:  # RECORD_DIAGNOSTICS: held to the engine's own check.
                     record["diagnostic"] = DIAGNOSTIC_NOTE
                 if info.reference is not None:  # RECORD_REFERENCES: its quantity is the sum.
-                    record["reference"] = self._reference_of(info.reference)
+                    record["reference"] = self._reference_of(
+                        info.reference, self.recompute and "observation" in bases
+                    )
                 by = [law for law in info.writers if law in self.retiring]
                 resets = bool(by) and info.owner == self.inner_id and info.kind == "cumulative"
                 if resets:  # A retired slot's history moves out at its retirement.
@@ -2269,7 +2148,7 @@ def validate(view, directory=None):
         _validate_geometry(set_id, s, sets, sizes, space, problems)
         if "carries" in s:
             _check(
-                all(c in species for c in s["carries"]),
+                all(_species_of(c, species) for c in s["carries"]),
                 problems,
                 f"set {set_id}: carries the model's species",
             )

@@ -28,6 +28,14 @@ INJECTION = "electrode_current_injection@1"
 CARRIERS = {"K": 0.4912, "M": 0.5088}
 
 
+def reference_constants():
+    """The constants a view adds for the inner model's increments (@3's RECORD_REFERENCES)
+    whose fixed references no view field states already (run_view.VIEW_FIELD_AXES)."""
+    from cells.models import surface_pump_v3 as tissue3
+
+    return set(tissue3.RECORD_REFERENCES.values()) - set(run_view.VIEW_FIELD_AXES)
+
+
 def secretion(end=0.01, every=0.002, produce=1e-4, **world):
     """The worked example's world (a cell secretes S into a node that leaks to its bath), short:
     by default 10 steps and six observations (0 to 10 ms, every 2 ms)."""

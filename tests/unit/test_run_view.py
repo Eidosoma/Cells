@@ -44,6 +44,7 @@ from tests.run_view_fixtures import (
     declare_secretion,
     load,
     plant,
+    reference_constants,
     secretion,
 )
 
@@ -150,8 +151,10 @@ def test_write_run_writes_a_valid_deterministic_view(written, tmp_path):
     assert "the passive membrane routes only" in records["membrane_transferred"]["note"]
     assert records["face_dissipated_energy_pJ"]["monotone"] == "non-decreasing"
     assert "resets" not in records["face_dissipated_energy_pJ"]  # Nothing retires here.
-    # Nothing here changes a view field: every one is a constant, and no merged view is saved.
-    assert {c["id"] for c in view["constants"]} == set(run_view.VIEW_FIELD_AXES)
+    # Nothing here changes a view field: every one is a constant, and no merged view is saved;
+    # an increment's fixed reference that no view field states is one more (RECORD_REFERENCES).
+    constants = {c["id"] for c in view["constants"]}
+    assert constants == set(run_view.VIEW_FIELD_AXES) | reference_constants()
     with np.load(root / "a" / "trajectory.npz") as saved:
         assert not [k for k in saved.files if k.startswith(run_view.VIEW_PREFIX)]
     unstated = {(u["id"], u["what"]) for u in view["unstated"]}
@@ -513,7 +516,8 @@ def test_the_inner_model_alone_carries_its_laws_and_gate_rows():
     gated = [law for law in laws if law["gates"]]
     assert gated and all(law["gates"] == ["m", "h"] for law in gated)
     assert not any(sets["membrane"]["pumps"])  # The fixture removes the parent's pump.
-    assert {c["id"] for c in view["constants"]} == set(run_view.VIEW_FIELD_AXES)
+    constants = {c["id"] for c in view["constants"]}
+    assert constants == set(run_view.VIEW_FIELD_AXES) | reference_constants()
 
 
 def test_pumps_are_membrane_columns_with_their_rows_per_cycle():
@@ -539,17 +543,55 @@ def test_pumps_are_membrane_columns_with_their_rows_per_cycle():
 # ------------------------------------------------------------------ declarations
 
 
-def test_every_field_of_the_inner_model_is_described():
+def test_the_inner_models_own_declarations_describe_every_field(written):
+    """The writer keeps no table of the inner model's fields: every record of
+    resolved_pump_tissue@3's fields takes its unit, kind, layer and orientation (a flow's sign or
+    a difference's ends, with who confirmed it) from @3's own declarations (models/surface_pump_v3),
+    and @3's layers are its VIEW_LAYERS."""
+    _, _, root = written
+    view = load(root / "a")
+    assert not hasattr(run_view, "TISSUE_3") and not hasattr(run_view, "INNER_TABLES")
     fields = {*tissue3.STATE_AXES, *(k for k in tissue3.OBSERVATION_FIELDS if k != "times")}
-    assert set(run_view.TISSUE_3) == fields
-    layer_ids = {layer["id"] for layer in run_view.TISSUE_3_LAYERS}
-    for name, (axes, unit, kind, layer, _) in run_view.TISSUE_3.items():
-        assert (axes is None) == (name in tissue3.STATE_AXES), name
-        assert all(a in run_view.AXIS_SETS for a in axes or tissue3.STATE_AXES[name]), name
-        assert unit or run_view._suffix_unit(name), name
-        assert kind in run_view.KINDS and layer in layer_ids, name
-        if name.endswith(run_view.HEAT_SUFFIX):
-            assert kind == "cumulative"
+    records = [r for r in view["records"] if r["owner"] == tissue3.MODEL_ID]
+    assert {r["field"] for r in records} == fields
+    for record in records:
+        name = record["field"]
+        declared = (tissue3.UNITS[name], tissue3.RECORD_KINDS[name], tissue3.RECORD_LAYERS[name])
+        assert (record["unit"], record["kind"], record["layer"]) == declared, record["id"]
+        sign = tissue3.ORIENTATION.get(name)
+        key = "difference" if sign is not None and "plus" in sign else "sign"
+        assert record.get(key) == (None if sign is None else dict(sign)), record["id"]
+    layers = [x for x in view["layers"] if x["owner"] == tissue3.MODEL_ID]
+    assert [{k: x[k] for k in ("id", "label", "representation")} for x in layers] == [
+        dict(x) for x in tissue3.VIEW_LAYERS
+    ]
+
+
+def test_a_kind_worlds_sets_and_records_come_from_its_kinds(monkeypatch):
+    """A kind world (FR-4's development world without its transporter, as
+    test_inner_view_declarations' kind test; host only, no run): the passive routes' own set (their
+    view_sets: roles, carried species, law, host), the proton buffer's node axis on the view's node
+    set (VIEW_AXIS_SETS), and every field of the structure described by its kinds' declarations
+    folded into @3's."""
+    from validation.compartment_ph_engine import definitions as defs
+
+    monkeypatch.setattr(run_view, "_engine_source", lambda root=None: None)
+    raw = defs.development_world(defs.fr4_world())
+    raw["model"].pop("transporters")
+    spec = parse_spec(raw)
+    _, layout = get_model(spec.model).initial_values(spec)
+    plan = run_view.prepare(spec, layout=layout)
+    view = plan.view(run_view.single_file_bases([0.0, 1.0], [0.0, 1.0]), "write_run")
+    run_view.validate(view)
+    sets = {s["id"]: s for s in view["sets"]}
+    routes = sets["passive_route"]
+    assert routes["owner"] == tissue3.MODEL_ID and set(routes["roles"]) == {"inside", "outside"}
+    assert routes["ids"] == [r["id"] for r in raw["model"]["passive_routes"]]
+    records = {r["id"]: r for r in view["records"]}
+    moved = records["passive_transferred"]
+    assert (moved["set"], moved["kind"], moved["unit"]) == ("passive_route", "cumulative", "fmol")
+    assert (moved["sign"]["from"], moved["sign"]["to"]) == ("outside", "inside")
+    assert (records["observed_pH"]["set"], records["observed_pH"]["unit"]) == ("node", "pH")
 
 
 def test_the_injections_records_layer_and_events(monkeypatch):

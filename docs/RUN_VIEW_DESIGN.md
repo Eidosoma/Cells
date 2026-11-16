@@ -105,9 +105,13 @@ say.
 (`models/operators/contract.py`, "The run view"): `VIEW_LAYERS`, `view_events` (the default gives
 the births and retirements of `living_intervals`, each at `{"cell": id}`), `view_sets(spec,
 declaration)` for an operator's own axes, `OBSERVATION_AXES`, `UNITS`, `RECORD_KINDS`,
-`ORIENTATION` and `RECORD_LAYERS`, checked at registration against the operator's own fields. The
-inner model's own declarations come from the core's owner; until then the writer keeps its
-interim table for `resolved_pump_tissue@3`.
+`ORIENTATION` and `RECORD_LAYERS`, checked at registration against the operator's own fields
+(and `RECORD_DIAGNOSTICS` and `RECORD_REFERENCES`, for a looping package's closure). The inner
+model declares its own in the same forms: `resolved_pump_tissue@3`'s view declarations, with
+`RECORD_NOTES` and its record roles, each structure's with its kinds' folded in
+(`models/surface_pump_v3.view_declarations`; the kinds' `VIEW_AXIS_SETS` and `view_sets`). The
+writer reads them from the inner object and keeps no table of its own (the interim one went
+when they reached main, a2af3899).
 
 ## 4. The writer
 
@@ -208,7 +212,8 @@ reading of the worked example (its eleven items):
 - **`roles` on every set with ends** (`{role: what it is}`): the inner sets' from the writer, an
   operator's from its `view_sets`. A flow's `sign` names two of them as `from` and `to`; a
   difference (a voltage) gives `difference` with `plus` and `minus` instead (plus less minus).
-  The voltages' are read from the code, and say so (`source`), until the core's owner confirms.
+  The voltages' were read from the code and said so (`source`); @3's own declarations now state
+  them, `confirmed` by the core's owner.
 - **Per-entity facts on an operator's sets:** `carries` (species), `direction` and `kinds`
   (words), `at` (`{set id: entity id}`); a set may describe entities no field has as an axis
   (turnover's routes). A label such as "secreted" stays the reader's, from these facts.
