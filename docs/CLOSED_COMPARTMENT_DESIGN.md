@@ -4,9 +4,15 @@
 
 **Milestone 1 built, 14 November 2026 (§12).** The declaration, the contract's fail-closed marker and the composite's branch for declarations alone are built. S1–S3 hold on every row of every program in a live-owner world, and a planted control breaks them in each program family. S5 is identical in all four pairs, and crossrev is identical in all seven sets. S4 and P2 (on the heredity sheet) are reported. Integration grants no acceptance: C1–C13 and their references come next.
 
-**Status: proposed, 14 November 2026, for the lead's review with the advisor; revised the same day
-after that review.** No engine code was added or changed. One read-only probe ran on the engine as
-it is, as the lead directed: FR-10's probe 1, which also carried this note's D147 record and its
+**Refusals 4 and 5, later versions (status 16 November 2026):**
+- **On main,** with D172's round (ab267c39): refusal 4 version 1.1 (§3.4.1, FR-4's kinds).
+- **On branch `fr45-next`, not yet on main:**
+  - refusal 4 version 1.2 (§3.4.2, FR-5's source kinds);
+  - refusal 5 version 1.1 (§3.4.3, the charge anchor where charged routes are admitted).
+
+**As drafted (14 November 2026),** for the lead's review with the advisor and revised the same day
+after that review: no engine code was added or changed. One read-only probe ran on the engine as
+it was, as the lead directed: FR-10's probe 1, which also carried this note's D147 record and its
 loading-from-a-trace arms (§9). The other probes are requests (§9).
 
 D157 logs the request (FR-1, [FEATURE_REQUESTS.md](FEATURE_REQUESTS.md#fr-1--a-closed-internal-compartment-on-the-shared-inventory)).

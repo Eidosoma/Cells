@@ -1,7 +1,22 @@
 # Compartment pH and state-conditioned transfer: FR-4 and FR-5 (design)
 
-**Status: proposed (D142).** Written 15 November 2026 by the FR-4/FR-5 physics owner (D176), on
-branch `fr45-physics` from tag `d172-base-2026-11-15`. It is design before code.
+**Status (16 November 2026).** Written 15 November 2026 by the FR-4/FR-5 physics owner (D176), as
+design before code (D142).
+- **FR-4 is built and on main,** with D172's round (ab267c39, tag `d172-landed-2026-11-16`):
+  - its kinds, `cells.rapid_proton_buffer@1`, `cells.transporter@1` and `cells.passive_routes@1`;
+  - FR-1's refusal 4, version 1.1;
+  - its world and qualification tools (`validation/compartment_ph_engine/`,
+    `validation/tissue/compartment_ph_*.py`).
+
+  Its protocol, `fr4-acidification-v1`, is proposed. Its dt study's development reading passed on
+  16 November. Registration is the lead's.
+- **FR-5 (§16) is accepted,** and built on branch `fr45-next`, not yet on main:
+  - the two source kinds;
+  - refusal 4 version 1.2 and refusal 5 version 1.1 (CLOSED_COMPARTMENT_DESIGN §3.4.2–3.4.3);
+  - FR-5's start part.
+
+  The routing door and the kind schedules it uses are the core's (INNER_MODEL_V4_DESIGN §7.4 (l),
+  (n)).
 - **Its first readers:**
   - the references agent, who writes independent references from Appendix A without reading
     engine code;
@@ -643,12 +658,19 @@ i.
 
 ## 11. What today's code refuses, with owners
 
+The table is as written on 15 November. Its status on 16 November:
+- **Rows 1 and 2:** lifted for FR-4's kinds by refusal 4 version 1.1, on main
+  (CLOSED_COMPARTMENT_DESIGN §3.4.1).
+  - A constant-field permeability is admitted only when the world declares kinds.
+  - @3's own pumps and channels stay refused.
+  - Cl⁻ and ionic pores still wait for the implicit patch (§7.3).
+
 | # | Refused today | Where | Owner and route |
 | --- | --- | --- | --- |
 | 1 | An ion route on the bounding patch (nonzero permeability or channel) | `compartments.py`, refusal 4 | **This note's owner** (`compartments.py`). Lifted for small (K⁺-class) routes with B7 as the safety net and a world-declared dt (§7.2, step 1). For Cl⁻ and pores, lifted with the implicit patch (§7.3): this owner designs and qualifies it, and the core owner's answer on the numerical-plan slot decides who codes it |
 | 2 | A transporter (pump) on the bounding patch | `compartments.py`, refusal 4; there is no transporter kind | **This owner** (the pump law, §6, and the lifted refusal). B5's transporter kind and its insertion point in the inner step: **the core owner** (A1) |
 | 3 | ~~Reactions inside a compartment~~: **not refused** (dropped) | — | **Confirmed by a host-side parse** on the tag's snapshot (`fr45/charged_patch/refusal3_parse.py`). FR-1's world W with a neutral D152 reaction is admitted at the compartment node, and at that node with its owner. The planted held-bath site is refused with D152's message. One format rule applies: omit the `cells` key rather than give an empty list. Beside a bath dose, door S's whole-field `CONFLICTS_VIEW` is the integration owner's case (A6), not this list's |
-| 4 | Charged reactions | `species_common.parse_species` refuses nonzero valence | **This owner** (`species_reactions.py`, starting from `integration-d172` after the integration owner's declaration-only change). Version 2 admits closed charged reactions with Σ_s z_s ν_s = 0 exactly, in integers, for **slow** kinetics, and rewrites D150 §3's exact-zero charge argument. Buffering is not this route (§4) |
+| 4 | Charged reactions | `species_common.parse_species` refuses nonzero valence | **This owner** (`species_reactions.py`; not started, since no FR-4 or FR-5 world needs it). Version 2 admits closed charged reactions with Σ_s z_s ν_s = 0 exactly, in integers, for **slow** kinetics, and rewrites D150 §3's exact-zero charge argument. Buffering is not this route (§4) |
 
 Two more, which this note adds:
 - an @3 route for H at a buffered node (§4.3);
