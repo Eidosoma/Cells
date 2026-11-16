@@ -10,7 +10,10 @@ import path from "node:path";
 import * as THREE from "three";
 import { ROOT } from "../tools/lib/build_page.mjs";
 import { LAWS_FORMAT, Library, problemsOf } from "../src/lenses/laws_data.js";
-import { LawsLens, LAWS_LOOK } from "../src/lenses/laws.js";
+import { LawsLens, LAWS_LOOK, LAWS_BLOOM, MARKS } from "../src/lenses/laws.js";
+import { plaquesOf, longDate } from "../src/lenses/laws_marks.js";
+import { PER_BAND } from "../src/lenses/laws_layout.js";
+import { LAWS_CSS } from "../src/lenses/laws_styles.js";
 
 const raw = JSON.parse(readFileSync(path.join(ROOT, "data", "laws", "pieces.json"), "utf8"));
 const overlay = JSON.parse(readFileSync(path.join(ROOT, "data", "laws", "overlay.json"), "utf8"));
@@ -195,15 +198,22 @@ function lensFor({ moving = false, width = 1600, height = 1000 } = {}) {
   };
   const palette = { ghost: "#77889a", fg: "#12283a", plate: "#e3eaf1", edge: "#566878", plateEdge: "#bccad7", accent: "#1f6fd0", bg: "#eef2f6", dark: false };
   const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 5000);
-  const dressed = [];
+  const dressed = [], bloom = [], glows = new Set(), flights = [];
+  const place = (view) => {
+    camera.position.copy(view.target).add(new THREE.Vector3(Math.sin(view.azimuth) * Math.sin(view.polar), Math.cos(view.polar), Math.cos(view.azimuth) * Math.sin(view.polar)).multiplyScalar(view.distance));
+    camera.lookAt(view.target);
+    camera.updateMatrixWorld();
+  };
   const stage = {
     palette, scene: new THREE.Scene(), camera, width, height, reducedMotion: !moving, invalidate() {},
-    rig: { setView(view) { camera.position.copy(view.target).add(new THREE.Vector3(Math.sin(view.azimuth) * Math.sin(view.polar), Math.cos(view.polar), Math.cos(view.azimuth) * Math.sin(view.polar)).multiplyScalar(view.distance)); camera.lookAt(view.target); camera.updateMatrixWorld(); }, flyTo() {}, distance: 100 },
+    rig: { setView: place, flyTo: (view) => flights.push(view), distance: 100 },
     dress: (fit) => dressed.push(fit),
+    setBloom: (strength) => bloom.push(strength),
+    glow: (object, on = true) => (on ? glows.add(object) : glows.delete(object)),
   };
   const lens = new LawsLens(stage, { raw: { laws: raw } }, labels);
   lens.activate();
-  return { lens, stage, shown, dressed };
+  return { lens, stage, shown, dressed, bloom, glows, flights, place, camera };
 }
 const expectedSlots = (piece) => {
   const out = new Set();
@@ -244,7 +254,8 @@ test("a chosen piece lights exactly the slots that declare it, and draws a line 
     const lit = lens.lights();
     assert.deepEqual(new Set([...lit.cards, ...lit.blocks]), expectedSlots(piece), piece.id);
     assert.deepEqual([...lit.bars], [piece.id], `${piece.id}: only its own bar is lit`);
-    assert.equal(lens.lines.children.length, expectedSlots(piece).size, `${piece.id}: one line to each slot`);
+    assert.equal(lens.routes.length, expectedSlots(piece).size, `${piece.id}: one route to each slot`);
+    assert.ok(lens.lines.children.length <= 1, `${piece.id}: all its routes are one mesh, one draw`);
   }
 });
 
@@ -254,7 +265,7 @@ test("a chosen frame lights exactly its pieces on the wall", () => {
     lens.setSelection(`laws:${frame.id}`);
     const expected = new Set(raw.pieces.filter((piece) => piece.declared_by.some((entry) => entry.frame === frame.id)).map((piece) => piece.id));
     assert.deepEqual(lens.lights().bars, expected, frame.id);
-    assert.equal(lens.lines.children.length, frame.rows.reduce((sum, row) => sum + row.pieces.length, 0), `${frame.id}: a line from each of its slots`);
+    assert.equal(lens.routes.length, frame.rows.reduce((sum, row) => sum + row.pieces.length, 0), `${frame.id}: a route from each of its slots`);
   }
 });
 
@@ -352,22 +363,249 @@ test("the panel says a status only where the record states one, and 'no level re
 test("it asks the stage for the page's look, and hands it back as it found it", () => {
   const { lens, dressed, stage } = lensFor();
   assert.deepEqual(dressed[0], LAWS_LOOK);
-  assert.equal(lens.materials.line.toneMapped, false, "what is chosen stays out of filmic light");
-  assert.equal(lens.materials.line.userData.noContact, true, "and out of contact shade");
+  for (const name of ["line", "ring", "lit"]) {
+    assert.equal(lens.materials[name].toneMapped, false, `${name}: what is chosen stays out of filmic light`);
+    assert.equal(lens.materials[name].userData.noContact, true, `${name}: and out of contact shade`);
+  }
   lens.deactivate();
   assert.deepEqual(dressed.at(-1), { rich: false });
   assert.ok(!stage.scene.children.includes(lens.root));
 });
 
-test("with less motion asked for nothing eases: the lines stand at once", () => {
+test("only what is chosen glows: bloom is off at rest, and on only from the chosen, its slots and its routes", () => {
+  const { lens, bloom, glows } = lensFor();
+  assert.equal(bloom.at(-1), 0, "at rest nothing blooms");
+  assert.deepEqual([...glows], [lens.shine], "the one thing marked to glow is the group of what is chosen");
+  const shining = (() => {
+    const out = [];
+    lens.shine.traverse((object) => (object.isMesh || object.isLine) && out.push(object));
+    return out;
+  })();
+  assert.equal(lens.litBars.mesh.count + lens.litSlots.mesh.count, 0, "and at rest it holds nothing to draw");
+  const piece = byId.get("nak_atp_mass_action_positive@1");
+  lens.setSelection(`laws:${piece.id}`);
+  assert.equal(bloom.at(-1), LAWS_BLOOM.strength);
+  assert.equal(lens.litBars.mesh.count, 1, "the chosen bar's lit copy");
+  assert.equal(lens.litSlots.mesh.count, expectedSlots(piece).size, "a lit copy of each slot that declares it");
+  for (const object of [...shining, ...lens.lines.children]) assert.ok([lens.litBars.mesh, lens.litSlots.mesh, lens.ring].includes(object) || object.parent === lens.lines, "nothing else is in the group that glows");
+  // A design piece keeps its glass outline when chosen: no solid lit copy is drawn over it.
+  const design = raw.pieces.find((item) => item.where === "design");
+  lens.setSelection(`laws:${design.id}`);
+  assert.equal(lens.litBars.mesh.count, 0, `${design.id}: a design piece is not drawn solid when chosen`);
+  lens.setSelection(null);
+  assert.equal(bloom.at(-1), 0, "letting go turns the bloom off");
+  assert.equal(lens.litBars.mesh.count + lens.litSlots.mesh.count + lens.routes.length, 0);
+  lens.setSelection(`laws:${piece.id}`);
+  lens.deactivate();
+  assert.equal(bloom.at(-1), 0, "leaving the view turns it off");
+  assert.equal(glows.size, 0, "and unmarks what it marked");
+});
+
+test("the legend says what each visual difference stands for, and nothing else differs", () => {
+  const { lens } = lensFor();
+  const { legend } = lens.chrome();
+  const ids = new Set(legend.items.map((item) => item.id));
+  for (const item of legend.items) assert.ok(MARKS.some((mark) => mark.id === item.id && mark.label === item.label), item.id);
+  const entry = { solid: "laws-main", band: "laws-candidate", design: "laws-design" };
+  for (const form of new Set(lens.layout.bars.filter((bar) => bar.id).map((bar) => bar.form))) assert.ok(ids.has(entry[form]), `the ${form} form is in the legend`);
+  if (lens.layout.bars.some((bar) => bar.id && bar.older)) assert.ok(ids.has("laws-older"));
+  for (const id of ["laws-height", "laws-chosen", "laws-rack", "laws-slot"]) assert.ok(ids.has(id), id);
+  assert.equal(ids.has("laws-block"), lens.blocks.mesh.count > 0, "the inner model's block, where a rack holds it");
+  assert.equal(ids.has("laws-next"), lens.nextCount > 0, "the next free code's empty socket, where a row has one");
+  assert.equal(ids.has("laws-older-family"), lens.older.mesh.count > 0);
+  assert.match(legend.note.text, /stand for nothing/, "the room is said to stand for nothing");
+  if (!raw.pieces.some((piece) => piece.where === "candidate")) assert.ok(!ids.has("laws-candidate"), "a mark with nothing to show is left out");
+  // What only a search, a filter or a test of size draws is named while it is drawn.
+  assert.ok(!ids.has("laws-found") && !ids.has("laws-empty"));
+  lens.setQuery("calcium");
+  assert.ok(lens.chrome().legend.items.some((item) => item.id === "laws-found"), "a search's forward and faint are named");
+  lens.setQuery("");
+  lens.setSize(1000);
+  assert.ok(lens.chrome().legend.items.some((item) => item.id === "laws-empty"), "the empty places of a test of size are named");
+  lens.setSize(0);
+  for (const item of lens.chrome().legend.items) assert.ok(typeof item.count === "number" && item.description, `${item.id}: a count and a description for the page's legend`);
+  // The legend's own choice picks out the pieces of a mark, as a filter does; a mark of the room picks out nothing.
+  lens.setIsolate("laws-design");
+  const design = lens.wall.design;
+  assert.ok(lens.layout.bars.filter((bar) => bar.id && bar.form === "solid").every((bar) => { const at = lens.barSlot.get(bar.id)[0]; return lens.wall[at.set].target[at.index] === 0; }), "the rest stays back");
+  assert.ok(design.mesh.count > 0);
+  lens.setIsolate("laws-older");
+  const olderBar = lens.layout.bars.find((bar) => bar.id && bar.older && bar.form === "solid"), at = lens.barSlot.get(olderBar.id)[0];
+  assert.ok(lens.wall[at.set].target[at.index] > 0, "an older family's law stands forward");
+  assert.ok(lens.chrome().legend.items.some((item) => item.id === "laws-found"), "what the legend's choice fades is named while it is faded");
+  lens.setIsolate("laws-rack");
+  assert.equal(lens.isolate, null);
+  // The next free code is no dashed outline (dashed is how a status looks on the page's other views): its number is written in an empty socket.
+  assert.ok(!Object.values(lens.materials).some((material) => material.isLineDashedMaterial), "no dashed mark");
+  for (const id of [...MARKS.map((mark) => mark.id), legend.note.swatch]) assert.ok(LAWS_CSS.includes(`.swatch-${id} `), `${id}: the page's legend has a swatch for it`);
+  // The list and the panel use the same swatches as the legend, each as the wall draws the piece or the frame.
+  const used = new Set(lens.sections().flatMap((section) => section.entities.map((entity) => entity.swatch)));
+  for (const piece of raw.pieces.slice(0, 40)) for (const section of lens.describe(`laws:${piece.id}`).sections || []) for (const item of section.items || []) if (item.swatch) used.add(item.swatch);
+  for (const swatch of used) assert.ok(MARKS.some((mark) => mark.id === swatch), `${swatch}: a swatch the legend does not explain`);
+  for (const piece of raw.pieces) {
+    const entity = lens.sections().flatMap((section) => section.entities).find((item) => item.id === `laws:${piece.id}`);
+    const bar = lens.layout.bars.find((item) => item.id === piece.id);
+    assert.equal(entity.swatch, bar.form === "design" ? "laws-design" : bar.older ? "laws-older" : bar.form === "band" ? "laws-candidate" : "laws-main", piece.id);
+  }
+  // No legend word and no name in the room is a level: the levels are the panel's, with their sources.
+  const levels = new Set();
+  for (const piece of raw.pieces) for (const said of [piece.status, piece.box]) if (said) levels.add(said.level_label);
+  const plaques = plaquesOf(lens.library, lens.layout);
+  for (const text of [...legend.items.map((item) => item.label), ...plaques.map((plaque) => plaque.text)]) for (const level of levels) if (level) assert.ok(!text.includes(level), `"${text}" says a level: ${level}`);
+  // At rest each form is one colour, one size and one depth: a bar differs from another only as the legend says.
+  const colours = (set) => {
+    const out = new Set(), colour = new THREE.Color();
+    for (let index = 0; index < set.mesh.count; index++) out.add((set.mesh.getColorAt(index, colour), colour.getHexString()));
+    return out;
+  };
+  for (const name of ["solid", "band", "design"]) {
+    if (!lens.wall[name].mesh.count) continue;
+    assert.equal(colours(lens.wall[name]).size, 1, `${name}: one colour at rest`);
+    assert.ok([...lens.wall[name].offset].every((value) => value === 0), `${name}: all flush at rest`);
+  }
+  const bars = lens.layout.bars.filter((bar) => bar.id);
+  assert.equal(new Set(bars.map((bar) => `${bar.h}|${bar.d}`)).size, 1, "every bar is as tall and as deep as every other");
+  assert.equal(new Set(bars.map((bar) => `${bar.older}|${bar.w}`)).size, new Set(bars.map((bar) => bar.older)).size, "a bar is narrower only for being an older family's or in no registry");
+  // The room: one colour to each of its parts.
+  for (const [name, set] of Object.entries({ planks: lens.planks, dividers: lens.dividers, rim: lens.rim, panels: lens.panels, rails: lens.rails, sockets: lens.sockets, blocks: lens.blocks, older: lens.older })) assert.equal(colours(set).size, 1, `${name}: the room's ${name} are one colour`);
+  // The cards in the racks are coloured by where their piece stands, as the bars are.
+  const cardForms = new Map();
+  lens.cardList.forEach((card, index) => {
+    const colour = new THREE.Color();
+    lens.slots.mesh.getColorAt(index, colour);
+    cardForms.set(card.form, new Set([...(cardForms.get(card.form) || []), colour.getHexString()]));
+  });
+  for (const [form, seen] of cardForms) assert.equal(seen.size, 1, `the cards of the ${form} form are one colour`);
+});
+
+test("the room's names are written from the list: each family once, a shelf only where it holds several, and the revision read at", () => {
+  for (const size of [{}, { width: 400, height: 860 }]) {
+    const { lens } = lensFor(size);
+    lens.update(16);
+    const plaques = plaquesOf(lens.library, lens.layout);
+    const families = plaques.filter((plaque) => plaque.kind === "family");
+    for (const family of raw.families) assert.equal(families.filter((plaque) => plaque.text === family.short).length, 1, `${family.id} is named once`);
+    const shelves = plaques.filter((plaque) => plaque.kind === "shelf");
+    for (const shelf of raw.shelves) {
+      const many = raw.families.filter((family) => family.shelf === shelf.id).length > 1;
+      assert.equal(shelves.filter((plaque) => plaque.text === shelf.label).length, many ? 1 : 0, `${shelf.id}: named ${many ? "once" : "only by its family"}${lens.narrow ? " on a tall screen" : ""}`);
+    }
+    // On the wall no name is written twice (a rack's rows may share a family's word: they name the rack's rows).
+    const wall = plaques.filter((plaque) => plaque.kind === "family" || plaque.kind === "shelf");
+    for (const text of new Set(wall.map((plaque) => plaque.text))) if (wall.filter((plaque) => plaque.text === text).length > 1) assert.fail(`"${text}" is written twice on the wall`);
+    const revision = plaques.find((plaque) => plaque.kind === "revision");
+    assert.ok(revision.text.includes(`main ${raw.stamp.main.revision}`) && revision.text.includes(longDate(raw.stamp.main.date)), revision.text);
+    assert.match(longDate("2026-11-16"), /^16 November 2026$/);
+    const older = raw.frames.filter((frame) => frame.kind === "older family").length;
+    assert.ok(plaques.some((plaque) => plaque.kind === "older" && plaque.text.startsWith(`${older} older model families`)));
+    // Names of one band never run into each other: each is narrower than the step between columns (letters at most 0.62 of an em wide).
+    const heads = lens.layout.heads;
+    const step = Math.min(...heads.flatMap((head, n) => (n && heads[n - 1].band === head.band ? [head.x - heads[n - 1].x] : [])));
+    for (const plaque of families) assert.ok(plaque.text.length * plaque.h * 1.05 * 0.62 < step, `${plaque.text}: fits its column`);
+  }
+});
+
+test("the library opens on all of itself, nothing cut and the frame filled; choosing moves the camera toward it", () => {
+  const { lens, camera, place, flights, stage } = lensFor();
+  place(lens.homeView());
+  camera.updateProjectionMatrix();
+  const { bounds, wall } = lens.layout;
+  const points = [];
+  for (const x of [bounds.minX, bounds.maxX]) for (const y of [-0.3, wall.y + wall.h]) for (const z of [bounds.minZ, bounds.maxZ]) points.push(new THREE.Vector3(x, y, z).project(camera));
+  for (const point of points) assert.ok(Math.abs(point.x) <= 1 && Math.abs(point.y) <= 1, `a corner of the library is cut: ${point.x.toFixed(2)}, ${point.y.toFixed(2)}`);
+  const ys = points.map((point) => point.y), xs = points.map((point) => point.x);
+  assert.ok(Math.max(...ys) > 0.85 || (Math.max(...xs) > 0.85 && Math.min(...xs) < -0.85), "the library fills the frame: no band of it left empty");
+  assert.ok(Math.max(...ys) + Math.min(...ys) < 0.12 && Math.max(...ys) + Math.min(...ys) > -0.12, "and it is centred, with as much room above as below");
+  const home = lens.homeView();
+  lens.focus("laws:kir2p1_mh2@1");
+  const toPiece = flights.at(-1);
+  assert.ok(toPiece.distance < home.distance, "a piece: the camera comes closer");
+  lens.focus("laws:resolved_pump_tissue@3");
+  assert.ok(flights.at(-1).distance <= home.distance && flights.at(-1).target.distanceTo(home.target) > 0.5, "a frame: the camera moves toward it");
+  // The viewer sets the panel's room after it asks for the move: within the flight the move is fitted again beside the panel.
+  lens.focus("laws:kir2p1_mh2@1");
+  const asked = flights.length;
+  stage.insets = { right: 420 };
+  lens.update(16);
+  assert.equal(flights.length, asked + 1, "fitted again when the panel opens");
+  lens.update(16);
+  assert.equal(flights.length, asked + 1, "and only once");
+  stage.insets = {};
+  // Letting go ends the move: a change of the panel's room afterwards fits nothing again.
+  lens.setSelection("laws:kir2p1_mh2@1");
+  lens.focus("laws:kir2p1_mh2@1");
+  lens.setSelection(null);
+  const after = flights.length;
+  stage.insets = { right: 420 };
+  lens.update(16);
+  assert.equal(flights.length, after, "no move for a choice let go");
+  // With the panel open beside it: a rack is come up to, and every lit slot of a piece is whole beside the panel.
+  const right = 416, width = stage.width, height = stage.height;
+  stage.insets = { right };
+  lens.setSelection("laws:resolved_pump_composite@1");
+  lens.focus("laws:resolved_pump_composite@1");
+  const rack = lens.layout.frames.find((frame) => frame.id === "resolved_pump_composite@1");
+  assert.ok(flights.at(-1).distance < home.distance * 0.85 && Math.abs(flights.at(-1).target.x - rack.x) < rack.w / 2, "the camera comes up to the rack");
+  const seen = (view, items) => {
+    place(view);
+    camera.setViewOffset(width, height, right / 2, 0, width, height);
+    camera.updateProjectionMatrix();
+    camera.updateMatrixWorld();
+    for (const item of items) for (const dx of [-1, 1]) for (const dy of [-1, 1]) {
+      const point = new THREE.Vector3(item.x + (dx * item.w) / 2, item.y + (dy * item.h) / 2, item.z).project(camera);
+      const x = ((point.x + 1) / 2) * width, y = ((1 - point.y) / 2) * height;
+      assert.ok(x >= 0 && x <= width - right && y >= 0 && y <= height, `a lit slot of ${lens.selected} is cut or under the panel: ${x.toFixed(0)}, ${y.toFixed(0)}`);
+    }
+    camera.clearViewOffset();
+    camera.updateProjectionMatrix();
+  };
+  for (const id of ["nak_atp_mass_action_positive@1", "kir2p1_mh2@1"]) {
+    lens.setSelection(`laws:${id}`);
+    lens.focus(`laws:${id}`);
+    const items = lens.library.slotsOf(id).map((slot) => lens.slotItem(slot.block ? `${slot.frame}|${slot.block}` : `${slot.frame}|${slot.row}|${slot.index}`));
+    seen(flights.at(-1), items);
+  }
+  stage.insets = {};
+  lens.setSelection(null);
+  // A family chosen on the card: toward its column; let go, back to the whole library.
+  const potassium = lens.layout.heads.find((head) => head.family.id === "potassium");
+  lens.setMark("potassium");
+  assert.ok(Math.abs(flights.at(-1).target.x - potassium.x) < 2.5 && flights.at(-1).distance < home.distance, "toward the family's column");
+  lens.setMark("all");
+  assert.ok(Math.abs(flights.at(-1).distance - home.distance) < 1e-6, "and home again");
+  // An older family: toward its box on the plinth, which alone is lit.
+  const older = raw.frames.find((frame) => frame.kind === "older family");
+  lens.setSelection(`laws:${older.id}`);
+  lens.focus(`laws:${older.id}`);
+  const box = lens.older.items.find((item) => item.id === older.id);
+  assert.ok(Math.abs(flights.at(-1).target.x - box.x) < 3, "toward the older family's box");
+  assert.equal(lens.litSlots.mesh.count, 1, "its box is lit, and nothing else is");
+  // On a tall screen the library opens on its whole wall, where its size shows and its names can be read.
+  const tall = lensFor({ width: 400, height: 860 });
+  tall.lens.update(16);
+  tall.place(tall.lens.homeView());
+  tall.camera.updateProjectionMatrix();
+  const w = tall.lens.layout.wall;
+  for (const x of [w.x - w.w / 2, w.x + w.w / 2]) for (const y of [w.y, w.y + w.h]) {
+    const point = new THREE.Vector3(x, y, w.z).project(tall.camera);
+    assert.ok(Math.abs(point.x) <= 1 && Math.abs(point.y) <= 1, "the tall screen's wall is in frame");
+  }
+});
+
+test("with less motion asked for nothing eases and no light runs: the routes stand at once", () => {
   const still = lensFor({ moving: false }).lens;
   still.setSelection("laws:kv1p5_mh@1");
   assert.equal(still.growth, 1);
+  assert.equal(still.running, 0, "no light runs along the routes");
+  assert.equal(still.materials.line.uniforms.pulse.value, 0);
   assert.equal(still.update(16), false, "nothing is left to move");
   const moving = lensFor({ moving: true }).lens;
   moving.setSelection("laws:kv1p5_mh@1");
   assert.equal(moving.growth, 0);
-  assert.equal(moving.update(16), true, "the line grows toward its slot");
+  assert.equal(moving.update(16), true, "the route grows toward its slot");
+  for (let n = 0; n < 600 && moving.update(16); n++);
+  assert.equal(moving.update(16), false, "and the light runs a few times, then holds steady: motion only where it tells something");
+  assert.equal(moving.materials.line.uniforms.pulse.value, 0);
 });
 
 test("what it costs to draw, at the real size and at a thousand pieces", () => {
@@ -384,15 +622,17 @@ test("what it costs to draw, at the real size and at a thousand pieces", () => {
   assert.ok(thousand.draws <= today.draws + 1, "a thousand bars cost no more draws than the real list, but the empty slots' own set");
 });
 
-test("a tall screen stacks the wall in bands of five and the frames one above another", () => {
+test("a tall screen stacks the wall in bands that break at shelves, and the frames one above another", () => {
   const { lens } = lensFor({ width: 400, height: 860 });
   lens.update(16);
   assert.equal(lens.narrow, true);
-  const bands = new Set(lens.layout.heads.map((head) => head.band));
-  assert.equal(bands.size, Math.ceil(raw.families.length / 5));
+  const bands = new Map();
+  for (const head of lens.layout.heads) bands.set(head.band, [...(bands.get(head.band) || []), head]);
+  for (const heads of bands.values()) assert.ok(heads.length <= PER_BAND, `at most ${PER_BAND} families to a band`);
+  for (const shelf of raw.shelves) assert.equal(new Set(lens.layout.heads.filter((head) => head.shelf === shelf.id).map((head) => head.band)).size, 1, `${shelf.id} is never split across bands`);
   const [inner, composite] = lens.layout.frames;
   assert.ok(inner.y > composite.y, "the inner model stands above the composite");
-  assert.ok(lens.layout.bounds.maxX - lens.layout.bounds.minX < 12, "and the picture is narrow");
+  assert.ok(lens.layout.bounds.maxX - lens.layout.bounds.minX < 13, "and the picture is narrow");
 });
 
 test("the Library refuses a list that breaks its contract", () => {

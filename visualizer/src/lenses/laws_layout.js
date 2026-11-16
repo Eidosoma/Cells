@@ -2,6 +2,9 @@
 // family, the frames with their slot rows, and the strip of older families. Numbers only, no
 // drawing, so that the tests can hold the picture to the list without a renderer.
 
+/** On a tall screen, how many families stand side by side at most. */
+export const PER_BAND = 6;
+
 export const WIDE = {
   bar: { w: 1.3, d: 0.22, col: 1.5, gap: 0.32, height: 9, pitchMax: 0.3, z: -3, base: 7.8 },
   frames: { z: 4, height: 6.4 },
@@ -46,7 +49,7 @@ function frameBoxes(library, narrow) {
         rows.forEach((row, r) => {
           const cy = cursor - rowH * (r + 0.5);
           const slots = row.pieces.map((id, index) => ({ id, row: r, index, x: left + labelW + index * (slotW + 0.12) + slotW / 2, y: cy, w: slotW, h: slotH }));
-          const next = row.next_code !== undefined ? { x: left + labelW + row.pieces.length * (slotW + 0.12) + slotW / 2, y: cy, w: slotW, h: slotH } : null;
+          const next = row.next_code !== undefined ? { x: left + labelW + row.pieces.length * (slotW + 0.12) + slotW / 2, y: cy, w: slotW, h: slotH, code: row.next_code } : null;
           box.rows.push({ label: row.label, x: left + 0.3, y: cy, slots, next });
         });
       } else {
@@ -64,7 +67,7 @@ function frameBoxes(library, narrow) {
 
 /**
  * The whole picture's places. `size` (a test of size only) adds empty slots to the wall in
- * today's proportions; `narrow` stacks the wall in three bands of five families and the
+ * today's proportions; `narrow` stacks the wall in bands that break at shelves and the
  * frames one above another, for a tall screen.
  */
 export function layoutOf(library, { size = 0, narrow = false } = {}) {
@@ -72,8 +75,29 @@ export function layoutOf(library, { size = 0, narrow = false } = {}) {
   const frames = frameBoxes(library, narrow);
   const top = Math.max(...frames.map((frame) => frame.y + frame.h));
   const { w, d, col, gap, height, pitchMax } = WIDE.bar;
-  const perBand = narrow ? 5 : columns.length;
-  const bands = Math.ceil(columns.length / perBand);
+  // Bands: wide, one; narrow, the shelves in order, at most six families to a band, and a shelf
+  // never split across two (so a shelf's name is written once, over all its families).
+  const spots = [];
+  if (!narrow) columns.forEach((_, place) => spots.push({ band: 0, place }));
+  else {
+    const groups = [];
+    for (const column of columns) {
+      const last = groups.at(-1);
+      if (last && last.shelf === column.family.shelf) last.size += 1;
+      else groups.push({ shelf: column.family.shelf, size: 1 });
+    }
+    let band = 0, used = 0;
+    for (const group of groups) {
+      if (used && used + group.size > PER_BAND) (band += 1), (used = 0);
+      for (let k = 0; k < group.size; k++) {
+        if (used >= PER_BAND) (band += 1), (used = 0);
+        spots.push({ band, place: used++ });
+      }
+    }
+  }
+  const bands = Math.max(0, ...spots.map((spot) => spot.band)) + 1;
+  const inBand = (band) => spots.filter((spot) => spot.band === band).length;
+  const perBand = Math.max(...Array.from({ length: bands }, (_, band) => inBand(band)));
   const bandHeight = narrow ? 4.4 : height;
   const tallest = Math.max(1, ...columns.map((column) => column.pieces.length + 1));
   const pitch = Math.min(pitchMax, bandHeight / tallest);
@@ -82,23 +106,24 @@ export function layoutOf(library, { size = 0, narrow = false } = {}) {
   const z = narrow ? -1.2 : WIDE.bar.z;
   const bars = [], heads = [];
   columns.forEach((column, n) => {
-    const band = Math.floor(n / perBand), place = n % perBand;
-    const inBand = Math.min(perBand, columns.length - band * perBand);
-    const x = (place - (inBand - 1) / 2) * (col + gap);
+    const { band, place } = spots[n];
+    const x = (place - (inBand(band) - 1) / 2) * (col + gap);
     const y0 = base + (bands - 1 - band) * (bandHeight + 1.6);
     // The older families' laws stand on their own part of the shelf, above a gap, and narrower: marked as in an older family.
-    let lift = 0, before = false;
+    let lift = 0, before = false, olderFoot = null;
     column.pieces.forEach((piece, j) => {
       const older = piece?.registry === "an older family" || piece?.registry === "no registry";
       if (older && !before && j > 0) lift += pitch * 0.9;
+      if (older && !before) olderFoot = y0 + lift + j * pitch - pitch * 0.12;
       before = before || older;
       bars.push({ id: piece?.id ?? null, family: column.family.id, older, x, y: y0 + lift + j * pitch + barH / 2, z, w: older ? w * 0.7 : w, h: barH, d });
     });
-    heads.push({ family: column.family, shelf: column.family.shelf, x, y: y0 - 0.5, top: y0 + lift + column.pieces.length * pitch, band });
+    // y: where the column's name is written, on the front of the plank it stands on; foot: the plank's top.
+    heads.push({ family: column.family, shelf: column.family.shelf, x, y: y0 - 0.2, foot: y0 - 0.04, olderFoot, top: y0 + lift + column.pieces.length * pitch, band });
   });
   const wallWidth = perBand * (col + gap) - gap;
-  const wall = { x: 0, y: base - 0.9, w: wallWidth + 1.4, h: bands * (bandHeight + 1.6) + 0.2, z: z - 0.32 };
+  const wall = { x: 0, y: base - 1.35, w: wallWidth + 1.4, h: bands * (bandHeight + 1.6) + 0.65, z: z - 0.32 };
   const older = library.older.map((frame, index, all) => ({ id: frame.id, x: (index - (all.length - 1) / 2) * (narrow ? 0.09 : WIDE.older.pitch), y: WIDE.older.h / 2 - 0.05, z: WIDE.older.z }));
   const spanX = Math.max(wall.w, ...frames.map((frame) => Math.abs(frame.x) * 2 + frame.w));
-  return { bars, heads, frames, wall, older, pitch, bounds: { minX: -spanX / 2, maxX: spanX / 2, minY: -0.6, maxY: wall.y + wall.h + 1.4, minZ: z - 1, maxZ: WIDE.older.z + 1 } };
+  return { narrow, bars, heads, frames, wall, older, pitch, bounds: { minX: -spanX / 2, maxX: spanX / 2, minY: -0.6, maxY: wall.y + wall.h + 1.4, minZ: z - 1, maxZ: WIDE.older.z + 1 } };
 }

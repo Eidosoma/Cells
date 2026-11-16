@@ -250,3 +250,30 @@ branches are not in the public repository until they land.
 - What it declares is `read.fields`. What it acts on is `curated.unit`, as the inventory's.
 - Its status is `status`, or "No level recorded for this piece". A `box` is said as the box's.
 - Every count the view shows is counted from this file.
+- The revision the list was read at is written on the picture itself, on the wall's foot, with
+  the date it was committed.
+
+## What the view's marks may stand for
+
+Each visual difference in the room stands for one thing the list says, and the legend names
+each one that is drawn (`MARKS` in `src/lenses/laws.js`, with a swatch for each in
+`src/lenses/laws_styles.js`):
+
+- solid slate: on main; a dark band: on the landing candidate; a glass outline: named in a design
+  note, with no code;
+- a narrower bar higher on its shelf: an older family's law, or a named law in no registry;
+- a column's height: the family's count; a rack: a model; a card in it: a piece it declares; a
+  block across its head: the inner model it holds; an empty socket marked "free": a row's next
+  free registry code, with no piece;
+- a small box on the plinth: an older model family;
+- forward and faint: what a search or a filter finds and does not; a faint bar: an empty place,
+  in a test of size only;
+- blue light: what is chosen, the slots that declare it and the routes between. Only these are
+  marked to glow, and bloom is on only while something is chosen.
+
+Nothing else differs. The glass, rails, planks, dividers, sockets and plinth are the room. No
+mark is dashed (on the page's other views a dashed outline is how the planned status looks). The
+colours are the page's own tokens: its neutral (`--ghost`) for the pieces, its plate and edge
+for the room, and its accent for what is chosen. No status token (`--st-*`) is used. The accent
+is near the blue of the landed status, and the neutral near the grey of the established status;
+the legend names both, and a status is said only in the panel, with its source.

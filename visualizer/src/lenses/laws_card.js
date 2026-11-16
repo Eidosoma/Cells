@@ -2,7 +2,15 @@
 // "What the view may say"). The shapes are the ones every view hands to <cells-panel> and
 // <cells-index>; nothing here is new to the page.
 
-import { PREFIX, WHERE, pageId, engineId } from "./laws_data.js";
+import { PREFIX, WHERE, APART, pageId, engineId } from "./laws_data.js";
+
+/** A piece's swatch in the list and the panel: the mark it is drawn with on the wall (laws.js MARKS, laws_styles.js). */
+export function swatchOf(piece) {
+  if (!piece) return "laws-main";
+  if (piece.where === "design") return "laws-design";
+  if (APART.has(piece.registry)) return "laws-older";
+  return `laws-${piece.where}`;
+}
 
 const whereWords = (piece) => WHERE.find((item) => item.id === piece.where)?.label || piece.where;
 const list = (value) => (Array.isArray(value) ? value.join(", ") : String(value));
@@ -91,7 +99,7 @@ function describePiece(library, piece) {
   const declared = (piece.declared_by || []).map((entry) => ({
     id: pageId(entry.frame),
     label: entry.how === "direct" ? entry.frame : `${entry.frame} (through ${entry.via})`,
-    swatch: "laws-frame",
+    swatch: "laws-rack",
   }));
   const sections = [];
   if (piece.where === "design") {
@@ -132,7 +140,7 @@ function describeFrame(library, frame) {
   for (const box of frame.boxes || []) facts.push(["The Engine view's box", `${box.name} is ${box.label.toLowerCase()}${box.as_of ? `, ${box.as_of}` : ""} (${box.source.path}${box.source.where ? `: ${box.source.where}` : ""}): the box's status, not one the frame takes from its parts`]);
   const opens = (frame.rows || []).map((row) => ({
     title: row.label + (row.read && !onMain(library, row.read) ? ` (read on ${row.read.ref} ${row.read.revision}, not on main yet)` : row.curated ? " (the viewer's reading of frozen_definition)" : ""),
-    items: row.pieces.map((id) => ({ id: pageId(id), label: id, swatch: `laws-${library.piece(id)?.where || "main"}` })),
+    items: row.pieces.map((id) => ({ id: pageId(id), label: id, swatch: swatchOf(library.piece(id)) })),
     count: row.pieces.length,
   }));
   if (frame.rows?.[0]?.codes) facts.push(["Its registry codes", Object.entries(frame.rows[0].codes).map(([law, code]) => `${law} ${code}`).join(", ") + ` (${frame.rows[0].codes_read.path}, ${frame.rows[0].codes_read.name}): the inner model's own codes, not the older families' catalogue codes`]);
@@ -161,12 +169,12 @@ export function sections(library) {
     entities: library.inFamily.get(family.id).map((piece) => ({
       id: pageId(piece.id),
       label: piece.id,
-      swatch: `laws-${piece.where}`,
+      swatch: swatchOf(piece),
       keywords: [piece.curated?.unit, piece.curated?.label, piece.read?.path, family.label, whereWords(piece), piece.registry].filter(Boolean).join(" "),
     })),
   }));
-  out.push({ label: "Frames", entities: library.racks.map((frame) => ({ id: pageId(frame.id), label: frame.id, swatch: "laws-frame", keywords: [frame.kind, frame.label].filter(Boolean).join(" ") })) });
-  out.push({ label: "Older families", limit: 12, entities: library.older.map((frame) => ({ id: pageId(frame.id), label: frame.id, swatch: "laws-older", keywords: `older family ${frame.read.path}` })) });
+  out.push({ label: "Frames", entities: library.racks.map((frame) => ({ id: pageId(frame.id), label: frame.id, swatch: "laws-rack", keywords: [frame.kind, frame.label].filter(Boolean).join(" ") })) });
+  out.push({ label: "Older families", limit: 12, entities: library.older.map((frame) => ({ id: pageId(frame.id), label: frame.id, swatch: "laws-older-family", keywords: `older family ${frame.read.path}` })) });
   return out.filter((section) => section.entities.length);
 }
 
