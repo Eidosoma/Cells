@@ -23,6 +23,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, replace
 from functools import cache
+from types import MappingProxyType
 from typing import NamedTuple
 
 import numpy as np
@@ -37,6 +38,7 @@ __all__ = (
     "ConfigError",
     "Kind",
     "KindFields",
+    "KindView",
     "KindRegistry",
     "Schedule",
     "active",
@@ -309,6 +311,9 @@ class Kind:
     factor_sources: Callable | None = None
     factors: Callable | None = None
     routed_controls: Callable | None = None
+    # The run view (D154): its fields' declarations, and its own axes' sets.
+    view: object = None  # A KindView.
+    view_sets: Callable | None = None
 
     @property
     def state_fields(self):
@@ -323,6 +328,23 @@ class KindFields(NamedTuple):
     layout_fields: tuple
     control_fields: tuple
     readout_columns: tuple
+
+
+class KindView(NamedTuple):
+    """A kind's run-view declarations (docs/RUN_VIEW_DESIGN.md §3; D154), in the operator
+    contract's forms, for its state fields and readout columns: the inner model's implementation
+    object folds them in after @3's own (UNITS, OBSERVATION_AXES, RECORD_KINDS, ORIENTATION,
+    RECORD_LAYERS, VIEW_LAYERS). axis_sets maps an axis of its fields to an existing view set
+    (the buffer's "node": cells, then outside nodes); a kind's own axes get their sets from its
+    view_sets(spec, declaration) hook, {axis: {"id", "ids", "roles", per-entity facts}}."""
+
+    units: object = MappingProxyType({})  # {field: unit}
+    observation_axes: object = MappingProxyType({})  # {readout column: (axis, ...)}
+    record_kinds: object = MappingProxyType({})  # {field: level | amount | cumulative | rate}
+    orientation: object = MappingProxyType({})  # {field: {from, to, says} | {plus, minus, says}}
+    record_layers: object = MappingProxyType({})  # {field: layer id}
+    view_layers: tuple = ()  # Layers it adds: ({id, label, representation}, ...)
+    axis_sets: object = MappingProxyType({})  # {axis: existing view set id}
 
 
 @cache

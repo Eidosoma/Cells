@@ -122,6 +122,55 @@ def test_a_positive_flux_leaves_the_patchs_cell_or_the_junctions_sender():
     assert np.max(np.abs(junction)) > 0  # The junction term is exercised.
 
 
+INNER_AXES = {  # The run view's inner axis sets (cells/run_view.py, AXIS_SETS).
+    "species",
+    "cell_slot",
+    "extracellular_slot",
+    "membrane_slot",
+    "edge_slot",
+    "face_slot",
+    "channel_slot",
+    "gate",
+    "field_node",
+    "world",
+    "floating_component",
+}
+
+
+def test_a_kind_worlds_declarations_cover_its_kinds_fields():
+    """FR-4's development world with the passive routes and B4's closure (its transporter, the
+    FR lane's kind, left out until its own declarations land): the implementation object folds
+    the kinds' declarations into @3's, every field and column of the structure is declared, and
+    every axis has a view set (an inner one, a kind's axis set or a kind's own view set)."""
+    from validation.compartment_ph_engine import definitions as defs
+
+    raw = defs.development_world(defs.fr4_world())
+    raw["model"].pop("transporters")
+    spec = parse_spec(raw)
+    impl = get_model(spec.model)
+    assert [k for k, _ in impl.structure.kinds] == [
+        "cells.passive_routes@1",
+        "cells.rapid_proton_buffer@1",
+    ]
+    names = [*impl.STATE_TYPE._fields, *(f for f in impl.OBSERVATION_FIELDS if f != "times")]
+    layers = {layer["id"] for layer in impl.VIEW_LAYERS}
+    for name in names:
+        assert impl.UNITS[name] and impl.RECORD_KINDS[name] in RECORD_KINDS, name
+        assert impl.RECORD_LAYERS[name] in layers, name
+    readouts = [f for f in names if f not in impl.STATE_TYPE._fields]
+    assert set(readouts) <= set(impl.OBSERVATION_AXES)
+    sets = impl.view_sets(spec)
+    routes = sets["passive_route"]
+    assert routes["ids"] == [r["id"] for r in raw["model"]["passive_routes"]]
+    assert set(routes["roles"]) == {"inside", "outside"}
+    assert impl.ORIENTATION["passive_transferred"]["from"] == "outside"  # Inward-positive.
+    axes = {a for name in names for a in (impl.STATE_AXES.get(name) or impl.OBSERVATION_AXES[name])}
+    assert axes <= INNER_AXES | set(impl.VIEW_AXIS_SETS) | set(sets), axes - INNER_AXES
+    assert impl.VIEW_AXIS_SETS == {"node": "node"}
+    for name in v3.UNITS:  # @3's own entries are unchanged in a kind world.
+        assert impl.UNITS[name] == v3.UNITS[name]
+
+
 def test_the_passive_route_laws_declare_their_provenance():
     routes = inner_laws.ROUTE_LAWS
     assert set(routes) == {inner_laws.MEMBRANE_ROUTE_LAW_ID, inner_laws.FACE_ROUTE_LAW_ID}

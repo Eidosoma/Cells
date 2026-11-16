@@ -1946,6 +1946,42 @@ RECORD_KINDS = MappingProxyType({k: v[1] for k, v in _VIEW_TABLE.items()})
 RECORD_LAYERS = MappingProxyType({k: v[2] for k, v in _VIEW_TABLE.items()})
 OBSERVATION_AXES = MappingProxyType({k: v[3] for k, v in _VIEW_TABLE.items() if v[3] is not None})
 ORIENTATION = MappingProxyType({k: v[4] for k, v in _VIEW_TABLE.items() if v[4] is not None})
+VIEW_AXIS_SETS = MappingProxyType({})  # A kind's axis that maps to an existing view set.
+_VIEW_MAPS = ("UNITS", "OBSERVATION_AXES", "RECORD_KINDS", "ORIENTATION", "RECORD_LAYERS")
+
+
+def view_declarations(structure):
+    """The run view's declarations for a structure (D154): @3's own, then each declared kind's
+    KindView entries for the fields its structure's types hold, its layers and its axis sets.
+    A structure without kinds gets the module's own objects."""
+    kinds = _kinds(structure)
+    if not kinds:
+        names = (*_VIEW_MAPS, "VIEW_LAYERS", "VIEW_AXIS_SETS")
+        return {name: globals()[name] for name in names}
+    types = kind_types(structure)
+    present = {*types.STATE_TYPE._fields, *types.OBSERVATION_FIELDS}
+    merged = {name: dict(globals()[name]) for name in _VIEW_MAPS}
+    layers, axis_sets = list(VIEW_LAYERS), {}
+    for kind in kinds:
+        view = kind.view
+        if view is None:
+            continue
+        parts = (
+            view.units,
+            view.observation_axes,
+            view.record_kinds,
+            view.orientation,
+            view.record_layers,
+        )
+        for name, part in zip(_VIEW_MAPS, parts, strict=True):
+            merged[name] |= {k: v for k, v in part.items() if k in present}
+        known = {layer["id"] for layer in layers}
+        layers += [MappingProxyType(dict(x)) for x in view.view_layers if x["id"] not in known]
+        axis_sets |= dict(view.axis_sets)
+    out = {name: MappingProxyType(value) for name, value in merged.items()}
+    return out | dict(VIEW_LAYERS=tuple(layers), VIEW_AXIS_SETS=MappingProxyType(axis_sets))
+
+
 # Notes a record carries, in the model's own words (its summary's membrane_transfer_ledger).
 RECORD_NOTES = MappingProxyType(
     {
@@ -2307,6 +2343,18 @@ class InnerImplementation:
         self.batch_signature = structured_batch_signature
         for name, value in kind_types(structure)._asdict().items():  # Schema A (§7.4 (j)).
             setattr(self, name, value)
+        if structure.kinds:  # The run view's declarations, the kinds' folded in (D154).
+            for name, value in view_declarations(structure).items():
+                setattr(self, name, value)
+
+    def view_sets(self, spec):
+        """{axis: view set} of the declared kinds' own axes (their view_sets hooks), for the run
+        view (D154): {"id", "ids", "roles", per-entity facts}; none without kinds."""
+        out, declarations = {}, dict(getattr(spec.model, "kinds", ()))
+        for kind in _kinds(self.structure):
+            if kind.view_sets is not None:
+                out |= kind.view_sets(spec, declarations[kind_registry.qualified(kind.kind_id)])
+        return out
 
     def __getattr__(self, name):
         # Only reached for names the object does not define: this module's own.
