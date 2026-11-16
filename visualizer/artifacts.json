@@ -205,6 +205,19 @@
           "note": "Version 1 at the new link: the same file as the first version at the earlier link, unchanged since 15 November 2026. It was not looked at in a browser at the new link"
         }
       ]
+    },
+    "laws_library": {
+      "title": "Laws Library",
+      "url": "https://claude.ai/artifact/4qg4cEdawueJK9R5pBzeQ4",
+      "page": "docs/ideas/laws-library.html",
+      "note": "Options to choose from, with five live 3D sketches, for opening the Engine view's Laws shelf into a library of the engine's declared pieces, tied to the modular structure. Nothing in it is built. The sketches are drawn in the page from the list of 176 pieces read from the engine's code on 16 November 2026, with what is on main kept apart from what is on the landing candidate and on development branches. The note beside it is docs/LAWS_LIBRARY.md, which also drafts the feature request for the engine's declarations manifest.",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-16",
+          "note": "First version: five options (the racks, recommended; the stacks; the card catalogue; the plugboard; the pull-out shelf), what the Engine view holds today and where it runs out, what the engine declares, a comparison, the questions for the user and what the engine would be asked for. Checked by its author in headless Chrome drawn in software: wide and at 400 px, light and dark, with less motion and without three.js; real clicks on each sketch. No frame rate was measured, and it was not looked at in the artifact's own frame"
+        }
+      ]
     }
   }
 }
