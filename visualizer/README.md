@@ -503,12 +503,25 @@ by the rule its lead gave on 16 November 2026: each browser holds the engine's o
 file shared for as long as it lives, so an engine job waits for the browsers to end and
 none starts while a job holds the card; none starts while the engine's reservation flag
 exists or another process is on the card. In each of those cases the wrapper starts
-Chrome on the software renderer, as it was asked to. Measured that day on one clean copy
-under the same load, two Cell-view scenarios took 310 s and 403 s in software and 175 s
-and 157 s on the card, with the same checks passing. A run's record says which renderer
-it used, and one gate or one before-and-after pair of pictures never mixes the two. The
-software renderer stays the reference for the gates until a full suite on the card has
-matched it scenario by scenario.
+Chrome on the software renderer, as it was asked to. A run's record says which renderer
+it used, and one gate or one before-and-after pair of pictures never mixes the two.
+
+- **Through Vulkan, not OpenGL.** The wrapper reaches the card through ANGLE's Vulkan back
+  end. Through its OpenGL back end (`CELLS_GPU_WAY=egl`) this machine's card now and then
+  drew a wrong picture of a still page: after a frame with bloom, 18 of 40 pictures had
+  holes where small solid parts are, though what the frame draws on the way (the solids'
+  facing, the shade) was the same to the last count. Through Vulkan 40 of 40 were the
+  picture at rest, as in software. The fault is that back end's on this machine, not the
+  page's, and a check that compares pictures is not run through it.
+- **Compared with software on the whole suite** (16 November 2026, one clean copy of
+  9e3e5538): 33 scenarios and 600 checks passed in software and through Vulkan, with the
+  same count in every scenario. In software 32 scenarios passed in the full run; the
+  thirty-third timed out at opening while other jobs shared the processors, and passed
+  alone on a second run in 51 s, as it had earlier in the day. The suite took 62 minutes
+  in software, two scenarios at a time, and 2.1 minutes on the card, four at a time.
+- **From that revision a gate may run on the card through Vulkan,** and its record says
+  so. The look check compares two pictures of a still page to the last count in software,
+  and within one part in a million on a card.
 
 ## How it is built
 

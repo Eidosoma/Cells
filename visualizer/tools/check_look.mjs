@@ -320,8 +320,8 @@ try {
     check("it shines from what was marked, and from nothing else", marked > 0 && shining.light > on.light && shining.light < on.light * 1.2, `${marked} part(s) marked; ${((shining.light / on.light - 1) * 100).toFixed(3)}% more light`);
     check("and with the mark taken away the picture is as it was", same(unmarkedAgain.light, on.light) && s.bloom === 0, JSON.stringify([unmarkedAgain.light, on.light, s.bloom]));
 
-    // What a frame costs here. This server draws in software, so the numbers say what the look
-    // costs a software-drawn check, and nothing of a graphics card.
+    // What a frame costs here, said with the renderer that drew it: in software the numbers say
+    // what the look costs a software-drawn check, and nothing of a graphics card.
     const cost = { rich: await timed(), none: await timed(`s.finish.setContact(0);`) };
     await evaluate(`${S}.applyLook()`);
 
@@ -331,7 +331,7 @@ try {
     check("the two looks are two pictures", plainPicture.light !== on.light, JSON.stringify([plainPicture.light, on.light]));
     check("the labels' columns hold as many names with either look", plain.callouts === richLabels && richLabels > 0, JSON.stringify([richLabels, plain.callouts]));
     cost.plain = await timed();
-    note(`one frame drawn in software here, at ${s.width} by ${s.height}: plain ${cost.plain} ms; rich ${cost.rich} ms; rich without contact shade ${cost.none} ms`);
+    note(`one frame drawn ${exact ? "in software" : "on this machine's graphics card"} here, at ${s.width} by ${s.height}: plain ${cost.plain} ms; rich ${cost.rich} ms; rich without contact shade ${cost.none} ms`);
     await evaluate(`${V}.current.setLook("full")`);
   }
 

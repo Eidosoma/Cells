@@ -23,7 +23,14 @@
 REAL="${CELLS_CHROME_REAL:-google-chrome}"
 LOCK="${CELLS_GPU_LOCK:-/mnt/workspaces/Cells/locks/gpu.lock}"
 FLAG="${CELLS_GPU_RESERVED:-/mnt/workspaces/Cells/locks/gpu.reserved}"
-WAY="${CELLS_GPU_WAY:-egl}"   # vulkan or egl: which of ANGLE's back ends draws on the card
+# Which of ANGLE's back ends draws on the card: vulkan (the default) or egl. Through its
+# OpenGL back end (egl) this machine's card now and then drew a wrong picture of a still
+# page: after a frame with bloom, 18 of 40 pictures had holes where small solid parts are,
+# though what the frame draws on the way (the solids' facing, the shade) was the same to
+# the last count. Through Vulkan 40 of 40 were the picture at rest, as in software
+# (16 November 2026). So the fault is that back end's here, not the page's, and a check
+# that compares pictures is not run through it.
+WAY="${CELLS_GPU_WAY:-vulkan}"
 
 mode=software
 why=""
