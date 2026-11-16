@@ -47,7 +47,7 @@ experiment).
 | Feature requests (D157–D167) | FR-9's cap of 16 landed. FR-1, FR-3 and FR-10 designs accepted (D169). FR-10's milestones 1 and 2, FR-1's milestone 1 and FR-3's milestone 1 landed (15 November). FR-4 and FR-5's design note is proposed. FR-4's kinds (the transporter with its proton pump, the rapid proton buffer and the passive routes with the proton leak) landed with D172's round (16 November), for development, not judged |
 | The D172 restructure (one modular inner model, `resolved_pump_tissue@3`) | **Landed on 16 November** (tag `d172-landed-2026-11-16`, merge ab267c39 of candidate 3c10b833). It passed the results gate, crossrev, tiers 1–3 (every non-passing tier-3 file classified, none the round's), G2 and the L4 block; the records are in PROGRESS. The lanes built on it (core-next, FR-4/FR-5, the run view, windows, the packed planner) merge next, each after its own gate |
 | Field-solver interface | Designed; code waits for the GH200 numbers |
-| One production execution path, compile policy, registry | Not started. D147's policy for composite definitions landed on 14 November |
+| One production execution path, compile policy, registry | The kind and species registries landed with D172 (16 November). The model-level declarative registry and the one production path are not started. D147's policy for composite definitions landed on 14 November |
 
 **The working order** (updated 16 November 2026; seven agents, D171):
 1. **Done, 16 November: D172's round, landed** (merge ab267c39, tag `d172-landed-2026-11-16`;
@@ -59,6 +59,16 @@ experiment).
      the adapter and the families' refusals (the integration owner); O3's run-view declarations
      (the operators).
 2. **Now, after the landing, in order:**
+   0. **Merging the lanes built on the round,** each after its gate on main plus the branch:
+      core-next first, then fr45-next, run-view-d154 and windows-next-clean. Then D188's
+      source-tree restructure (step 0's legacy list and probe, then two scripted moves). Owed
+      from the landing's acceptance plan:
+      - G3's negative controls on landed main (planted changes that must fail the results
+        gate; about 1–2 CPU-hours);
+      - G4's measurements (compile time, memory and end-to-end time) on a quiet machine.
+
+      Neither was run as a separate end-game step. The per-commit contract tests ran in the
+      tiers, and the results gate's own planted-difference self-test exists.
    1. FR-4 and FR-5: registration, rehearsal and judged runs on the landed core.
    2. The finite-fuel case (D176 item 2) against its independent reference.
    3. The run-view writer (D154). It is built on branch `run-view-d154` (01fa27d9, from

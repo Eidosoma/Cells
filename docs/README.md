@@ -28,6 +28,15 @@ the [project README](../README.md) gives the short feature overview.
 | [Secreted-species transport design](SECRETED_SPECIES_TRANSPORT_DESIGN.md) | Accepted design (D150): secreted species as rows of @3's one inventory, moved by @3's faces, with turnover and exchange operators; version 1 landed on 14 November and is numerically qualified for transport, decay and clearance |
 | [Shared-inventory reactions design](SHARED_INVENTORY_REACTIONS_DESIGN.md) | Accepted 14 November 2026 (D152): local reactions on @3's species rows, with exact energy bookings and MG0c's Turing qualification; its operator, `local_species_reactions@1`, is numerically qualified within MG0c's scope (15 November, CPU only) |
 | [Feature requests](FEATURE_REQUESTS.md) | Requested engine features with priority and status. FR-1, a closed internal compartment on the shared inventory, is high priority (D157) |
+| [Closed compartment design](CLOSED_COMPARTMENT_DESIGN.md) | FR-1's cell-owned compartment and its refusals (v1.1 and v1.2 of refusals 4 and 5 on fr45-next) |
+| [Site occupancy design](SITE_OCCUPANCY_DESIGN.md) | FR-3's binding to sites (`site_occupancy@1`) |
+| [Bath schedule design](BATH_SCHEDULE_DESIGN.md) | Scheduled changes of bath composition |
+| [Inventory coupling design](INVENTORY_COUPLING_DESIGN.md) | Coupling out of the shared inventory (D155, D156) |
+| [Compartment pH and transfer design](COMPARTMENT_PH_TRANSFER_DESIGN.md) | FR-4's compartment acidification and FR-5's transfer across a damaged membrane |
+| [Excitable tissue design](EXCITABLE_TISSUE_DESIGN.md) | Track E: conduction in excitable tissue (D155, D170) |
+| [Human cardiac laws design](HUMAN_CARDIAC_LAWS_DESIGN.md) | The human ventricular law set (D183, D184): proposed, nothing built |
+| [Syn3A minimal-cell track](SYN3A_MINIMAL_CELL_TRACK.md) | JCVI-syn3A as the first whole cell: evidence audit and probes, no engine code |
+| [Packed GPU execution design](PACKED_GPU_EXECUTION_DESIGN.md) | Packing independent worlds on one GPU, and its qualification criterion |
 | [E15 pattern-recovery experiment path](EXPERIMENT_PATH_PATTERN_RECOVERY.md) | Backlog, not active (13 November 2026): the engine features needed to test which layers restore a pattern after damage rather than only generating it, and a version 0 as E07-v2 arms |
 | [Paper backlog](PAPER_BACKLOG.md) and [GRN wet-lab validations](GRN_WETLAB_VALIDATION.md) | Papers under test, and gene-network models validated against experiments (logged) |
 | [Protein catalogue plan](PROTEIN_CATALOGUE_PLAN.md) | Path to protein identities linked to atlases (UniProt, Human Protein Atlas, PDB, Reactome) |

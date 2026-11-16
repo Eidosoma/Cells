@@ -107,6 +107,11 @@ machine-readable inputs, results, checks and failures.
       - 1 that passes when run alone.
   - **Privacy:** clean across the tree, the full history and the 157 commit messages. The merge
     differs from c1 only in docs, `visualizer/` and the root Markdown files.
+  - **Not run as separate end-game steps, and owed (CURRENT_PLAN):**
+    - G3's negative controls on the final candidate. These are planted changes that must fail the
+      results gate. The round's per-commit contract tests ran in the tiers, and the results gate's
+      planted-difference self-test exists;
+    - G4's measurements of compile time, memory and end-to-end time.
   - **Open after the landing,** for D187's audit:
     - six pre-existing engine-side findings: the [anchor] refusal missing in surface_kinetic and
       surface_tissue, the cotransport/water energy failure, surface_excision's NumericalError, the
