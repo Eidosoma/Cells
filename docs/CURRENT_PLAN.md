@@ -124,8 +124,11 @@ experiment).
    - **Operator composition: operators reading each other's current state.** FR-11's cycle probe
      (16 November, `/mnt/workspaces/Cells/replay-20261116/cycle-probe-0407c088.md`) found four
      general gaps, each refused by the engine today. These are general composition features
-     (D144), for the user to schedule. The cell cycle of the minimal cells needs all four, and
-     division with water needs the first.
+     (D144). The user, 16 November: "queuing the gaps with high priority after the landing", and
+     to start the design now. A design lane (operator composition, docs only) is drafting the
+     options, reviewed with the advisor before they go to the user. The cell cycle of the minimal
+     cells needs all four, and division with water needs the first. "Four" is a lower bound until
+     the full-cycle definition's complete admission errors are collected.
      1. Production that reads the current volume (door V, D150 §5.1's fallback), and the
         partition's daughter volumes taken from the current volume beside water.
      2. Water that reads the current membrane area beside an area provider (membrane state or
