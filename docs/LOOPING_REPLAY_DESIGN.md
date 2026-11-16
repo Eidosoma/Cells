@@ -1,7 +1,7 @@
 # Looping replay packages of living cells (FR-11): design
 
-**Status: proposed, 16 November 2026, for the lead's review.** Docs only: nothing is built until the
-lead answers §8 (D142). It is the design note FR-11 asks for when the run-view writer lands
+**Status: accepted by the lead with rulings, 16 November 2026 (§9).** Docs only; building follows
+the lead's order (§9). It is the design note FR-11 asks for when the run-view writer lands
 ([FEATURE_REQUESTS](FEATURE_REQUESTS.md#fr-11--looping-replay-packages-of-living-cells-for-the-viewer)),
 on the run view's branch (D154, [RUN_VIEW_DESIGN](RUN_VIEW_DESIGN.md)).
 
@@ -145,9 +145,16 @@ already supports that continuation. The first observed row is at t0 and the last
   `isopotential_partition@1`, `ideal_osmosis_linear_compliance_water@1`,
   `scheduled_species_turnover@1`, and `membrane_entity_state@1` or
   `scheduled_membrane_insertion@2`.
+- **Expected to be refused today.** D150's operators hold the volumes and the activity masks as
+  declared (`species_common.CONFLICTS_VIEW`: `volume`, `extracellular_volume`, `active`,
+  `outside_active`, `membrane_active`; a `fixed` read in door S's terms). So turnover is refused
+  beside water (a volume provider) and beside the partition (a closer). Growth by production
+  therefore needs an engine feature first: a production law that reads the current volume, with
+  its own bookings (a `current` reader, door V; D150 §5.1's fallback). That is a general feature
+  (D144), not a driver workaround, and the cycle's estimate below is conditional on it.
 - **To check first, with a cheap host-side probe:**
-  - whether the composite admits the partition beside water and the area law (door S's
-    admissions; the padded-field rule);
+  - which compositions the composite admits: the partition beside water and the area law (door
+    S's admissions; the padded-field rule), and the refusal above, stated by the engine;
   - how many divisions one world's slots allow (one is enough for a loop).
   - An engine gap found here becomes a general feature, not a workaround in a driver.
 - **The organisms:** neither has an organism definition yet (D173). The package is "a lumped
@@ -162,8 +169,9 @@ already supports that continuation. The first observed row is at t0 and the last
 2. **The interim planarian loop** (§4): about 1 agent-day, plus the injection operator's view
    declarations from its owner.
 3. **The paced heart cell (a)** (§5): about 0.5 agent-day on the same machinery.
-4. **The minimal cell's cycle** (§6): the probe first (about 0.5 agent-day), then about 1
-   agent-day if the composite admits the composition.
+4. **The minimal cell's cycle** (§6): the probe first (about 0.5 agent-day). Then about 1
+   agent-day if the composite admits the composition, plus the growth law's own milestone if
+   the probe confirms the refusal (§6).
 
 Every package run is a development run from a snapshot, written with its source and
 `closes.within`. Each runs at most a few minutes on one CPU core.
@@ -180,3 +188,22 @@ Every package run is a development run from a snapshot, written with its source 
 5. **The cycle:** run its admission probe first (§6), with no build until it passes?
 6. **Where drivers live:** `validation/replay/` for the builders and the one generic driver,
    with run outputs under `/mnt/workspaces/Cells/replay-<date>/`?
+
+## 9. The lead's rulings (16 November 2026)
+
+1. **The loop block** is accepted, with `closes.within` measured by the writer and the three
+   refusals. The lead proposes `follows` to the visualizer as a schema addition.
+2. **One source of truth for the revision:** the viewer reads `run.source.revision`; the writer
+   does not copy it into `run.revision`.
+3. **The planarian drive is the subthreshold current train** (`electrode_current_injection@1`).
+   The run view's owner adds the injection operator's `VIEW_LAYERS` and `view_events`, as their
+   own commit with tests (no owner is active on that file this round).
+4. **The heart cell is (a) now:** D155's generic excitable cell paced at 1 Hz, labelled "not a
+   human cardiomyocyte model". **(b) is Track E's work** (cardiac channel laws as general laws with
+   provenance: the plan's M4 and M5), not FR-11's. A phenomenological model stays rejected.
+5. **The cycle: the probe first,** with nothing built until it passes.
+6. **`validation/replay/`** holds the drivers and builders; outputs go under
+   `/mnt/workspaces/Cells/replay-<date>/`.
+
+**Order:** after run-view-d154's tier rows, its cut-off I/O tests and a tier-1 gate (at the CPU
+release), the loop block and the planarian loop, then the heart cell (a), then the cycle's probe.

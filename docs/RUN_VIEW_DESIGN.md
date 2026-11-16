@@ -96,7 +96,7 @@ say.
   operator without it, so no event reaches the view without its entities.
 - **The cost:** one declaration in every registered operator's file, and `view_events` in the
   event operators'. Those files have owners (S5's, D152's, the coupling operator's, the bath
-  schedule's); the lead coordinates them (§9).
+  schedule's); the lead coordinates them (§10).
 
 **As built (16 November 2026).** The operator contract carries these declarations
 (`models/operators/contract.py`, "The run view"): `VIEW_LAYERS`, `view_events` (the default gives
@@ -215,6 +215,13 @@ reading of the worked example (its eleven items):
   running engine's revision and dirty flag, from its execution snapshot's record, where a shared
   path writes the view; unstated with the reason otherwise). A view written later by
   `write_view` therefore differs from the run's own in its source.
+
+**The lead's rulings on these (16 November 2026):** the voltages' plus and minus are to be stated
+in the core's own @3 declarations (core-next), and until then the view's `source` citing the code
+stays; no "secreted" label (the facts are stated, the label is the reader's); `run.source` from
+the execution snapshot's own record is AGENTS.md's provenance, with no source-file hashes in the
+view; `resets.mask` as worded, with a junction fixture to cover it and the junction voltage on data;
+a later `write_view` view names no engine source and says why.
 
 ## 10. For the lead
 
