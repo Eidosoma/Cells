@@ -5840,6 +5840,19 @@ in the end game.
   (`operators/summation/SITES.md`) uses the shared helper's serial left fold in declared species
   order, with an optimisation barrier at each site. That is the configuration rehearsed on all
   113 worlds.
+  - **The rehearsed list** is the 37 single species-sum sites and the 13 calls on 10 split lines,
+    where the species are folded first and the rest reduced as before.
+  - **The 7 row-sum folds** of the turnover operator keep their existing fold arithmetic, without
+    the barrier. The rehearsal never touched them, and their ledgers have no tolerance pattern.
+  - **The 122 sums over entities** go through a named helper that is the same reduction as before.
+    It exists for the static test, which refuses any summation that bypasses the helpers.
+  - **As built** (a7-summation 32d6b56f, 16 November):
+    - crossrev against its parent keeps constants and bindings identical in all eight sets, while
+      every program text differs;
+    - the results gate under the frozen tolerance file holds 113 of 113 worlds, with physical
+      fields bitwise;
+    - its saves are bitwise identical to the rehearsal's in all 113 worlds
+      (`core/c10/a7/g1-32d6b56f/`).
 - **Why barriers everywhere.** The L4 column (`operators/summation/out/gpu/NOTE.md`, 16 November)
   found:
   - the barrier costs nothing at 16 species on the 825-node world, within noise in window time
