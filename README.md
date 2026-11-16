@@ -147,9 +147,18 @@ the engine's laws act on, and each species' own proteins), **Experiments**
 (replays of saved runs) and **Engine** (the simulator's layers, mapped from the
 code).
 
-<!-- SCREENSHOT: visualizer/docs/screenshots/<name> -->
+![A replay of the judged experiment E07-v1 in the viewer: a hexagonal sheet of cells, each standing as high as its membrane voltage, with the written disc outlined, a timeline at 19 min 30 s and the record's verdict, "the disc did not renew", beside it](visualizer/docs/screenshots/replay-e07v1-voltage-as-height.webp)
 
-<!-- SCREENSHOT: visualizer/docs/screenshots/<name> (optional second) -->
+*A replay of the judged experiment E07-v1 at 19 min 30 s, after 146 of its 291 cell
+replacements. Each cell stands as high as its membrane voltage, wedges mark the voltage drops
+across junctions, and the outline is the disc written at the start. Drawn from the run's own
+saved records (run `a-donor-fast-k1-d37-s1.0`, seed 5).*
+
+![A replay of the engine's first run made for the viewer: one cell, a small outside space and a held bath, with beads crossing a border and a glow where energy is dissipated, marked as a development run that is not judged](visualizer/docs/screenshots/replay-development-run-flows.webp)
+
+*The engine's first run made for the viewer, at 0.4 s: one cell releases a species into a small
+space that leaks to a held bath. Beads show what crosses each border (one bead is 50,000
+molecules), and a glow shows where energy is dissipated. A development run with no verdict.*
 
 Every picture keeps a part's status apart from how the engine represents it:
 simulated, modelled in aggregate, prescribed, or illustration only, labelled as
@@ -172,11 +181,13 @@ record is still owed, so [Progress](PROGRESS.md) remains the record.
 membrane voltage, a timeline, events such as cell replacement, and the class
 and readouts that the experiment's own record gives. The viewer computes no
 verdict. The catalogue keeps experiments, development runs and examples apart,
-and shows whether each experiment was judged beside its answer. Made from the
-project's saved runs, it holds E07-v1's 38 judged runs (the disc did not
-renew), 21 arms of a turnover pre-screen (development, not judged), the
-engine's first run made for the viewer (synthetic values; a development run
-with no verdict) and an example sheet with invented numbers, marked as such.
+and shows whether each experiment was judged beside its answer. The project's
+own catalogue, made from saved runs that stay outside the repository, holds
+E07-v1's 38 judged runs (the disc did not renew), 21 arms of a turnover
+pre-screen (development, not judged), the engine's first run made for the viewer
+(synthetic values; a development run with no verdict) and an example sheet with
+invented numbers, marked as such. A checkout can make only the example, whose
+fixture is in the repository.
 The runs save no positions, so the sheet is laid out from its junctions, and
 the replay says so.
 
@@ -203,9 +214,10 @@ adapters and lists each derived piece.
 
 **Flux in the Cell view.** A Flux switch, off as the page opens, shows what
 flows as beads. No species has a looping run yet, so this is illustration,
-marked "Illustration: not a run", with direction only: pumps and secreted
-signals go the way the engine's laws say, channels, junctions and water are
-drawn both ways with neither claimed, and fuel draws nothing.
+marked "Illustration: not a run", with direction only. Pumps and secreted
+signals are drawn one way, as the engine's own law declarations give it, and
+only for a species shown as the generic cell; channels, junctions and water are
+drawn both ways with neither claimed; fuel draws nothing.
 
 **Looping replays per species.** The feature request asks the engine for a
 short run of one cell of each of four cell types (human, planarian, Syn3A and
@@ -214,19 +226,21 @@ not new physics: laws the engine has or gains through their own milestones, at
 a declared low level of detail, written by the run-view writer and labelled an
 illustration, never an experiment or a qualified result. The choices recorded
 with it are periodic loops (a periodic drive, one period played and its seam
-checked), a paced heart cell for human, the cell cycle in scope for Syn3A and
+checked), a paced heart cell for human (it waits for the human cardiac laws, now being
+designed), the cell cycle in scope for Syn3A and
 *M. pneumoniae*, and the planarian's loop first. Its design note is proposed,
 on a development branch. The loop reader on main already refuses a run that
 does not declare its loop and say that it closes, names no engine model or
 revision, or is an example.
 
-**Build, run and test it** with Node 20 or later, and Python 3 for the
-extractor and the reader (standard library only):
+**Build, run and test it** with Node 20 or later (tested on Node 24), and
+Python 3 for the extractor and the reader (standard library only; tested on
+3.13):
 
 ```bash
 cd visualizer
 npm install       # three.js and esbuild, both pinned
-npm run extract   # read this checkout and write the scene
+npm run extract   # read this checkout and rewrite the scene (a tracked file)
 npm run serve     # http://127.0.0.1:4173/
 npm test          # the browser-free tests
 npm run adapt:runs -- --experiment example-sheet --root tests/fixtures/run-example --run invented-numbers
