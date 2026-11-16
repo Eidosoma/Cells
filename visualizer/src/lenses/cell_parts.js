@@ -304,8 +304,12 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   // A wall, or a second membrane, lies outside the cell membrane: scenery, drawn as clear shells.
   // Where the species gives the wall's thickness and the picture is to scale, the wall stands that far out;
   // in the schematic picture it is enlarged like the other parts, so that it can be seen.
-  const wallGrow = !parts.wall ? 1 : parts.wall_nm !== undefined && real ? 1 + middle(parts.wall_nm) / 1000 / frame.u / widest : parts.membranes === 2 ? 1.075 : 1.045;
-  const shells = [...(parts.membranes === 2 ? [1.035] : []), ...(parts.wall ? [wallGrow] : [])];
+  // A cell with two membranes and a wall has its wall between them (a bacterium with an outer membrane), so the
+  // second membrane is the outermost shell. The wall was once drawn outside it, which no such cell has.
+  const two = parts.membranes === 2;
+  const wallGrow = !parts.wall ? 1 : parts.wall_nm !== undefined && real ? 1 + middle(parts.wall_nm) / 1000 / frame.u / widest : two ? 1.035 : 1.045;
+  const outerGrow = !two ? 1 : parts.wall ? Math.max(1.075, wallGrow + 0.04) : 1.035;
+  const shells = [...(parts.wall ? [wallGrow] : []), ...(two ? [outerGrow] : [])];
   for (const grow of shells) {
     const outer = new THREE.Mesh(prism, ctx.neutral({ opacity: 0.1, glass: 0.35, clip: true, side: THREE.DoubleSide }));
     outer.scale.setScalar(grow);
@@ -836,6 +840,8 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   handles.shape = { point: outline.point, depth: (point) => outline.depth(point.x, point.z) };
   // Where on the outline the parts stand that something flows through, for flux (layers/cellflux.js).
   handles.spots = { ...SPOT, junction: junction ? SPOT.junction : null, gap: style.neighbourGap };
+  // How much larger than the cell membrane each shell outside it is drawn (1 where the cell has none).
+  handles.shells = { outer: outerGrow, wall: wallGrow };
 
   // ---------------------------------------------------------------- scenery of the species' own
   // Threads and hairs that stand out from the cell, and a plant cell's vacuole and chloroplasts
@@ -845,7 +851,7 @@ export function buildCell(ctx, studsCtx, mode, cell) {
     frame, u: frame.u, real, cut: CUT, parts, vacuole, inCut,
     random: seeded(real ? 4203 : 4201),
     skinAt, solid: prism, instanced, fan,
-    shells: { outer: parts.membranes === 2 ? 1.035 : 1, wall: wallGrow },
+    shells: handles.shells,
     thinnest: 0.035, // no thread is drawn thinner than this, in the cell's frame: a cell of twenty micrometres has threads one can see
     clear: [handles.probes.uncutSide], clearBy: 1.6,
     glass: (options) => ctx.neutral(options),
