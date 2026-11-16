@@ -138,8 +138,8 @@ and how sure that is. Nothing here says the engine models a species' protein.
   A product found by its family's signature or by similarity is called a candidate,
   never an established counterpart, whatever its entry: a reviewed entry says how the
   entry was written, not that the protein does a unit's work. One found only by an
-  accessory family's signature is a candidate for no machine's own work. The card counts
-  the two facts apart.
+  accessory family's signature is a candidate for no machine's own work, and on the
+  shelves it is drawn plain, not in the unit's shape. The card counts the two facts apart.
 
 **The planarian atlas** is of *Schmidtea mediterranea*, the planarian the databases know
 best. It has an entry for all 49 units:
@@ -209,8 +209,12 @@ must bve configurable as well based on our different species as we add them".
   open (the user: "we should show them all but maybe cool expandable protein families"):
   a family of five or more has its own marker, the smaller ones of a district and side are
   gathered in one ringed marker, and "No family assigned" stands in parts in the same way.
-  A protein with a `unit` is drawn as that unit; every other is a plain marker, and the
-  page says Cells has no law for it. The card's switch moves between "Cells' 48 machines"
+  A protein with a `unit` that would make that machine is drawn as that unit. One that the
+  species' atlas lists with the unit only by the signature of a family that goes with the
+  machine, such as a beta subunit or a regulator, is a plain grey marker, and its panel
+  says how the atlas found it and that it goes with the machine (`found_by`,
+  `schema/SPECIES_PROTEINS.md`, since 16 November 2026). Every other protein is a plain
+  marker, and the page says Cells has no law for it. The card's switch moves between "Cells' 48 machines"
   and "Its N proteins": Syn3A and M. pneumoniae open on their own proteins, the planarian
   on the machines.
 - **A cell with several membranes has several shelves, stacked.** The human's 20,414
@@ -322,14 +326,18 @@ only when it is shown:
   threshold at the first record, and the replay says so.
 - **Held back:** the W1 heredity pilot adapts (two runs), but the view draws every event
   as a replacement and the pilot's events are a cue in many cells at once.
-- **Runs written by the engine's own run-view writer** (on its development branch,
-  `run-view-d154`, not on main yet) are kept small under `tests/engine-views/`, as
-  fixtures for the adapter's reading of a view: three small worlds as the writer wrote
-  them at fd008813 and five at b08af640 (made by `tools/make_engine_view_fixture.sh`,
-  which runs the writer through the engine's `scripts/run_detached.sh`), and the interim
-  planarian loop as the writers at d7a11d5b and b08af640 wrote it (copied from the
-  engine's lead; development runs with no verdict). The adapter's tests read them; none
-  is on the page, and the loop stays off it until the writer lands on main.
+- **Runs written by the engine's own run-view writer** (`cells.run_view@1`, on main since
+  050aa741, 16 November 2026) are kept small under `tests/engine-views/`, as fixtures for
+  the adapter: five small worlds written by main's writer (`run-view-050aa741/`, made by
+  `tools/make_engine_view_fixture.sh` through the engine's `scripts/run_detached.sh`),
+  three as the development branch's fd008813 wrote them (`run-view-fd008813/`), and the
+  interim planarian loop as the writers at d7a11d5b and b08af640 wrote it from execution
+  snapshots (copied from the engine's lead).
+- **The planarian loop** (`planarian-loop`) is a development run of the engine with no
+  verdict: FR-11's first looping run, one 2 s period of a subthreshold current train into
+  the centre of seven planarian heredity cells, packaged to loop. It is listed under
+  Development runs and shows no result. It is the first run on the page that the engine's
+  own writer wrote.
 - **Speed.** The timeline's speed lists the steps a run is offered, each in words. Every
   run is offered slowed a million, a thousand or four times, true speed, and four times
   faster; 15, 60 and 240 times faster are offered where the run still lasts five seconds
@@ -393,9 +401,9 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
   and a sheet's transfers until a saved run of a sheet carries those totals.
 - **Flux in the Cell view** (published 16 November 2026). A Flux switch in the Cell
   view's legend, off as the page opens; a part shows its flux alone when the visitor
-  chooses it; beads with bloom. No species has a looping run on the page yet (the
-  engine's first, an interim planarian loop of 16 November 2026, is read by the tests
-  and waits for its writer to land on main), so what
+  chooses it; beads with bloom. No species' flux in the Cell view comes from a run yet
+  (the engine's first looping run, a planarian development run, is a replay under
+  Experiments, and wiring it into the planarian's cell is under way), so what
   shows is illustration, marked "Illustration: not a run", of the form "direction only":
   pumps and secreted signals go the way the engine's own laws say (cited in
   `data/layers/flux.json`), channels, junctions and water are drawn both ways with none
@@ -536,6 +544,13 @@ it used, and one gate or one before-and-after pair of pictures never mixes the t
   facing, the shade) was the same to the last count. Through Vulkan 40 of 40 were the
   picture at rest, as in software. The fault is that back end's on this machine, not the
   page's, and a check that compares pictures is not run through it.
+- **A lost context.** Through Vulkan a fresh browser's first WebGL context is lost and
+  restored about five seconds after it starts. Until 16 November 2026 the page then came
+  back about a quarter darker, without its surroundings to reflect, and three of four
+  look checks on the card had run on that picture (they compare pictures within one page,
+  so they passed). The page now makes its surroundings again when a context comes back,
+  as it must on a phone that puts the page away, and the look check loses a context on
+  purpose to hold it, in software as on the card.
 - **Compared with software on the whole suite** (16 November 2026, one clean copy of
   9e3e5538): 33 scenarios and 600 checks passed in software and through Vulkan, with the
   same count in every scenario. In software 32 scenarios passed in the full run; the
@@ -573,6 +588,7 @@ run outputs ──adapters (next)── run view ──────────�
 | `tools/build_*_atlas.py`, `data/proteins/<species>/` | Each species' own proteins, rebuilt from saved public downloads that stay outside git |
 | `src/core/look.js`, `passes.js`, `environment.js` | The Cell view's resting look and the finishing passes |
 | `src/scene/model.js` | The scene format's reader and its structural checks |
+| `tools/build_view_page.mjs`, `src/standalone/` | A page that holds one view standing alone, for a view that is not on the map's page yet: `node tools/build_view_page.mjs <view> --out FILE`. A view needs a mount module and a page file there; the page says on itself that it is a preview |
 | `src/core/` | Stage (renderer, camera, picking), camera control, labels, theme, status materials |
 | `src/lenses/` | `stack.js` (engine), `cell.js` and `cell_parts.js` (cell and scales), `proteins.js` and `protein_parts.js` (protein atlas) |
 | `src/ui/` | `<cells-viewer>` and its parts: panel, legend, list |
@@ -642,8 +658,8 @@ stay out of git (61 runs in 327 files, 96 MB).
    was), so that the map never states a revision others cannot find.
    The map's statuses are reviewed by hand at one revision of main. Once main has moved
    past it, build against a checkout of the reviewed revision (`--repo PATH`), so that the
-   statuses and the stamp agree, until the map is reviewed again: the map of 16 November
-   2026 states main 3b7f1cff.
+   statuses and the stamp agree, until the map is reviewed again. The map was reviewed at
+   main 3b7f1cff on 16 November 2026 and again, that evening, at 050aa741, which it states.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,
    `check:flux` and `check:machine` once, four at a time, and writes a log for each and
@@ -738,13 +754,16 @@ Ideas kept for after the basics (the user, 14 November 2026):
 - A species atlas repeats a family's candidates on every unit of that family (68 innexin
   candidates on each of three units), which makes the scene about twice as large. The
   no-WebGL list has no species switch.
-- The shelves draw a protein that is listed with a unit in that unit's shape, and say it
-  would make that machine, also where the atlas calls it no candidate: a protein found
-  only by the signature of a family that goes with the machine. And the shared table of
-  families gives two signatures for the sodium channels' beta subunits, one of which
-  (IPR000920) is InterPro's "Myelin P0 protein-related": in the mouse it lists `Mpz`,
-  `Mpzl1` to `Mpzl3`, `Jaml` and `Vsig1` with the sodium channels (`docs/MOUSE.md`). Both
-  are to be mended for every species at once.
+- The shared table of families gives one signature for the sodium channels' beta
+  subunits, IPR027098 (InterPro's "Sodium channel subunit beta-1/beta-3"). IPR000920
+  ("Myelin P0 protein-related"), given beside it until 16 November 2026, swept in `Mpz`,
+  `Mpzl1` to `Mpzl3`, `Jaml` and `Vsig1` in the mouse, and is no longer used. The beta-2
+  and beta-4 subunits (`Scn2b`, `Scn4b`) carry only IPR000920 and immunoglobulin-like
+  signatures, so a search by signature cannot tell them from those relatives: they are not
+  listed, and each sodium channel unit's note names them and says why (`docs/MOUSE.md`).
+- The human's shelves take their units from the law inventory's own entries, not from a
+  species atlas, so its 27 entries that only go with a machine (beta and other auxiliary
+  subunits, regulators) are still drawn in the unit's shape and said to make it.
 - The protein atlas is as current as its inventory (12 November 2026). A law added to the
   engine since then is not in it; the extractor only checks that the recorded laws still
   exist, and the scene says that the inventory no longer covers every law. The landing of
@@ -764,11 +783,16 @@ Ideas kept for after the basics (the user, 14 November 2026):
   1400 by 900). A frame's own work, the page's handler with the card's drawing in it, took
   7.6 ms for E. coli's cell, 3.6 ms for its motor turning, and 11 ms for the planarian's
   cell in the rich look (6 ms in the plain one): room to spare at 60 frames a second.
-  Headless Chrome paced those frames at 60 a second through ANGLE's OpenGL back end and at
-  22 to 30 through its Vulkan back end, whatever the page cost, so a rate read in a check
-  is the browser's pacing, not the page's cost. Nothing is measured on a phone or a laptop;
-  `frames=1` in the address shows a small readout of the frames the visitor's own device
-  draws.
+  The frames themselves came at 60 a second through ANGLE's OpenGL back end, and at 22 to
+  30 through its Vulkan back end while a card lay over the moving picture. The cause there
+  was the cards' backdrop blur, made anew every frame for a backdrop that showed through
+  by 6%. On the Laws library's preview with its panel open, on a quiet machine, the frames
+  came 33 ms apart with the blur and 16.5 without; on the map's page, while other jobs
+  shared the processors, 33 to 48 ms with it and 19 to 44 without, lower in six of eight
+  pairs. It was removed that evening. So a frame rate read in a check says more of the
+  browser and its back end than of the page's cost; the handler's time is the page's. Nothing is
+  measured on a phone or a laptop; `frames=1` in the address shows a small readout of the
+  frames the visitor's own device draws.
 - A machine's closer view draws simple shapes from published sizes, not structures: no
   shape is taken from the Protein Data Bank yet. Of its sizes, many are the picture's
   choice (each says so), and those read from the Protein Data Bank's entries are the
