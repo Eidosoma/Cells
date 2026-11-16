@@ -1775,8 +1775,11 @@ active), with check_onsets' refusal kept.
         small pool c).
       - So version 1 fails loudly if it ever happens. If real runs show refusals, R3 is revisited
         with that evidence;
-    - **the raw-sum check, per row:** |Σ shares − ΔG_row,exact| ≤ about 16 × eps × Σ|terms|
-      (`increment_terms`, the references' rounding scale).
+    - **the raw-sum check, per row:** |Σ shares − ΔG_row,exact| ≤ 16 × eps × (own + inputs).
+      Here own is the row's own terms, |G0| + |G1| + Σ|μ̄ m|, and inputs is their inputs'
+      rounding, |μ̄| (|n0| + |n1| + |Δ0| + |Δ1| + Σ(|T0| + |T1|)). This was amended on 16
+      November 2026; the analysis is below ("The raw-sum bound's inputs"). The bound as first
+      built had own alone, so FR-5's arm R was refused at rounding.
       - At the probe's case-4 magnitudes that is about 1.3e-14 pJ. The honest sum, 7.5e-15 pJ,
         passes it, and a planted sign flip, 1.84e-3 pJ, fails it.
       - The factor is confirmed by a test at implementation;
@@ -1812,6 +1815,88 @@ active), with check_onsets' refusal kept.
   another route moves keeps the tableau's booking bitwise; binding refuses a charged species and
   a carrying host. On the device and host path a refusal is the step's (the booking's validity);
   the reason's text is the module's `NEGATIVE_SHARE`.
+- **The raw-sum bound's inputs (16 November 2026; FR-5's arm R; the lead's ruling, derived here
+  before code).**
+  - **What failed.** FR-5's arm R starts from the engine's 1800 s state (fr45-next d9323e1a,
+    `fr45/pipeline/fr5-raw-sum-diag/`). About 1 s into the injury it was refused ("trial/endpoint
+    domain failure"); every other check passed at that state.
+    - Over the release (1.9–4.0 s, 4200 steps), 459 steps exceeded the bound as built, by up to
+      2.80 times.
+    - After the burst the lumen holds about 1.5% of its X. Its stored amount is a small difference
+      of its reference (0.0654 fmol) and its increment (−0.0644 fmol), and the routes' cumulative
+      transfers are of the same size. The bound's own terms, evaluated at the small current
+      amount, fall below the rounding those inputs carry.
+  - **The analysis.** For an exact row (a species at a node) over one step, with u = eps/2:
+    1. **The amounts.** The booking forms n_k = reference + Δ_k (`_amounts`), rounded relative to
+       its result, so |n_k − (reference + Δ_k)| ≤ u|n_k|. The reference does not enter on its
+       own.
+    2. **The accumulators.** The step forms Δ_1 and each exact route's cumulative transfer T_1 by
+       adding the tableau's terms one at a time onto Δ_0 and T_0 (`surface_pump._combine`). Each
+       addition rounds to its running sum.
+       - The last stage of ARS(2,2,2) has q = 2 explicit terms; imex_euler has q = 1.
+       - Its implicit terms are exactly zero at an exact row, because exact routes alone move it,
+         and adding zero is exact.
+       - So the increment's accumulated rounding is at most q·u·max|Δ|, and each route's at most
+         q·u·max|T|.
+    3. **The terms.** Both accumulators add the same stage fluxes: the kind's node changes and its
+       transfer derivative. So their terms agree to about u·Σ|m|, the scatter over several routes
+       and the weights' products.
+    4. **The mismatch.** The recorded net transfer N = Σ ±(T_1 − T_0) and n1 − n0 therefore differ
+       by at most u(|n0| + |n1|) + q·u(max|Δ| + Σ max|T|) + c·u·Σ|m|.
+    5. **The residual.** The divided potential is exact for the stored amounts:
+       μ̄(n1 − n0) = G(n1) − G(n0). So Σ shares − ΔG = μ̄(N − (n1 − n0)) plus the evaluation
+       rounding of μ̄, G and the products. The evaluation rounding is the bound's own terms:
+       |G0| + |G1| + Σ|μ̄ m|, with the u·|n|(|ln c| + 1) of evaluating G covered by
+       |G| + |μ̄||n|.
+    6. **The bound.** |Σ shares − ΔG| ≤ 16 eps [|G0| + |G1| + Σ_i |μ̄ m_i| + |μ̄| (|n0| + |n1| +
+       |Δ0| + |Δ1| + Σ_i (|T_i,0| + |T_i,1|))], where i runs over the exact routes at the row.
+       - 16 eps = 32u, against the 1 + q ≤ 3 roundings the inputs carry. Both ends' magnitudes
+         enter, so the margin is at least 10 times. The factor is unchanged.
+       - Where the inputs are small (a fresh start), the bound is today's.
+  - **Measured on the fix's tree** (d9323e1a with the patch; `core-next-20261116/rawsum/`), over
+    FR-5's arm R release (1.9–4.0 s, 4200 steps, no factor relaxed):
+    - **Ratios:** the derived bound's largest is 0.051, with 0 steps over. The bound as built is
+      exceeded by 459 steps, by up to 2.80. The FR lane's candidate, which keeps a |reference|
+      term, also gives 0.051.
+      - The candidate is looser where the inputs dominate: 0.022 against 0.027 at the step the old
+        bound fails most.
+      - The candidate is not wrong, only not derived: the reference rounds relative to the sum it
+        forms.
+    - **The exact decomposition,** with Fractions of the stored floats:
+      - the amounts' part reaches 0.93 of u(|n0| + |n1|);
+      - the accumulation part reaches 0.89 of its q = 2 ceiling, so two roundings, not one;
+      - |μ̄| times the mismatch accounts for the residual, a median 92% of it.
+    - **The run:** arm R completes its 10 s on the host and vector paths of the development
+      world. Its records match R-transfer as with the factor relaxed: X_L within 3.8e-5 of X's
+      budget, pH within 2.9e-9.
+      - The declared world is not admitted for FR-5 at d9323e1a: FR-1's operator refuses the
+        lumen's charge anchor at binding. That is not the bound.
+  - **The teeth (accepted by the lead, 16 November 2026).**
+    - The bound scales with the stored fields' precision. The smallest unrecorded transfer it
+      refuses at a row is bound/|μ̄|, about 16 eps (|n0| + |n1| + |Δ0| + |Δ1| + Σ(|T0| + |T1|))
+      in fmol. It grows with the increments and cumulative transfers: that is the resolution limit
+      of a cumulative field, not a weakening by choice.
+    - **Its scaling.** The threshold rises in proportion to the cumulative transfer, so roughly
+      with elapsed steps. A route that carries a steady m per step has |T| ≈ K·m after K steps,
+      so the threshold relative to m is about 16 eps × 2K ≈ 7e-15 K. That is about 7e-9 of a
+      step's transfer after 10⁶ steps.
+    - **Measured today:** over FR-5's release it is a median 1.2e-15 fmol, 6.2e-10 of the step's
+      transfer.
+    - In the test's drained pair it is 2e-15 fmol, 6e-10 of the step's transfer. There the minor
+      route's planted sign flip is refused, and so are unrecorded transfers of 1e-6 and 1e-8 of
+      the step's.
+  - **What changes.**
+    - **Programs** (an intended change, accepted): every world that declares
+      `cells.passive_routes@1`, since its `book` traces the bound and exactness is a layout value.
+      That is FR-4's (the proton leak, with no exact route, where the term is masked) and FR-5's.
+      The kinds pair records +32 equations in the checked step of fr4_development, fr4_declared
+      and fr5_t_development, none removed, with rhs, device checks and bindings identical.
+    - **Unaffected:** no G1 world and no crossrev world declares a kind.
+    - **Records:** FR-4's declared world gives the same records, bit for bit.
+  - **Tests** (`tests/unit/test_passive_routes_kind.py`):
+    - 300 honest steps in the drained, large-increment pair are all admitted. At 17a3863b the
+      first of them was refused.
+    - In the same state the planted flip and the unrecorded transfers are refused.
 - **Acceptance, with its first consumer:**
   - on the closed pair each row's raw shares sum to its exact decrease within the raw-sum check,
     with the factor 16 confirmed by a test;

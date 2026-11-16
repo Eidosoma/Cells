@@ -126,6 +126,87 @@ def test_the_raw_sum_factor_holds_and_a_planted_sign_flip_fails():
     assert not within
 
 
+SLOW = P / 1000  # dt k = 1e-4: the drained node stays drained over the test's steps.
+
+
+def drained(left=0.015):
+    """FR-5's arm R regime after its burst (fr45-next d9323e1a): ecs_0 holds `left` of its
+    reference, the rest having passed into cell_0 through a major route and a minor one (1%). Its
+    stored amount is then a small difference of a large reference and increment, and each route's
+    cumulative transfer is large; the planted history is consistent (the increments are the
+    routes' transfers). Returns (spec, model, state, p, control, s, node)."""
+    raw = closed_pair(
+        routes=[route("major", SLOW), route("minor", 0.01 * SLOW)], node_mM=0.0654, pool_mM=1e-3
+    )
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    control = model.Control(*(v[0] for v in control_values(spec, [0.0])))
+    s = list(spec.model.species_ids).index(fx.SPECIES)
+    node = int(p.passive_outside[0]) - p.active.size
+    burst = (1.0 - left) * p.extracellular_amount_reference[s, node]  # fmol, ecs_0 -> cell_0.
+    share = p.passive_permeability[s] / p.passive_permeability[s].sum()
+    cell, outside = state.amount_increment.copy(), state.extracellular_amount_increment.copy()
+    cell[s, 0] += burst
+    outside[s, node] -= burst
+    moved = state.passive_transferred.copy()
+    moved[s] += burst * share
+    state = state._replace(
+        amount_increment=cell, extracellular_amount_increment=outside, passive_transferred=moved
+    )
+    return spec, model, state, p, control, s, node
+
+
+def test_the_raw_sum_bound_carries_its_inputs_rounding_after_a_burst():
+    """§7.5's raw-sum bound with its inputs' term, in FR-5's arm R regime (drained above). The
+    node's amount is reference + increment and each route's step transfer a difference of
+    cumulative fields, so an honest residual carries |mu-bar| times their rounding, far above the
+    row's own terms at its small amount. Every honest step of 300 is admitted with every exact row
+    within its bound; before the inputs' term (17a3863b) this run was refused at its first step."""
+    spec, model, state, p, control, _, _ = drained()
+    worst = 0.0
+    for step in range(300):
+        end, valid = model.imex_step(state, spec.execution.dt, control, p, xp=np)
+        residual, bound, rows = passive_routes.raw_sum_check(state, end, p)
+        worst = max(worst, float(np.max(np.where(rows, residual / bound, 0.0))))
+        assert valid, step
+        state = end
+    assert worst <= 1.0, worst
+
+
+def test_the_raw_sum_bound_keeps_its_teeth_after_a_burst():
+    """In the drained state the bound is loosest, and it still refuses: the minor route's planted
+    sign flip, and an unrecorded transfer between the pair of 1e-6 or 1e-8 of the step's recorded
+    one (a mover the booking does not see). The smallest unrecorded transfer it refuses at a row is
+    that row's bound over |mu-bar|: here about 2e-15 fmol, 6e-10 of the step's 3.3e-6 fmol; it grows
+    with the stored increments and cumulative transfers (the inputs' rounding)."""
+    spec, model, start, p, control, s, node = drained()
+    end, valid = model.imex_step(start, spec.execution.dt, control, p, xp=np)
+    assert valid
+    moved = end.passive_transferred - start.passive_transferred
+    flipped = moved.copy()
+    flipped[:, 1] = -flipped[:, 1]
+    planted = end._replace(passive_transferred=start.passive_transferred + flipped)
+    assert not passive_routes.exact_booking(start, planted, p, xp=np)[2]
+    step = abs(float(moved[s].sum()))
+    for fraction in (1e-6, 1e-8):
+        cell, outside = end.amount_increment.copy(), end.extracellular_amount_increment.copy()
+        cell[s, 0] -= fraction * step
+        outside[s, node] += fraction * step
+        unrecorded = end._replace(amount_increment=cell, extracellular_amount_increment=outside)
+        assert not passive_routes.exact_booking(start, unrecorded, p, xp=np)[2], fraction
+    _, bound, rows = passive_routes.raw_sum_check(start, end, p)
+    volume, _ = passive_routes._volumes(p, np)
+    mu = passive_routes.passive.divided_potential_RT(
+        passive_routes._amounts(start, p, np),
+        passive_routes._amounts(end, p, np),
+        volume[None, :],
+        xp=np,
+    )
+    smallest = float(np.max(np.where(rows, bound / np.abs(mu), 0.0)[s]))  # The looser row's.
+    assert smallest < 1e-14 and smallest < 1e-8 * step, (smallest, step)
+
+
 def test_a_negative_share_refuses_the_step():
     """S moved uphill, from the dilute node into the richer cell, with the transfer recorded as
     the change: the raw sums hold, the share is negative, and the booking refuses."""
