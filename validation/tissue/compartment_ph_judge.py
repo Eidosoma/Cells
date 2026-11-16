@@ -51,7 +51,7 @@ status and a registration record matching it), every results file is a complete 
 from one clean execution snapshot with no stand-in and no quick horizon, the parts are exactly
 the protocol's judged parts (each in one run), FR-5's start is one extract written by its own
 `start` part, and OUT_DIR is new. `compare` checks two runs' records bit for bit, run times
-apart (the rehearsal against the development run).
+apart (`wall_s`, `seconds` and `timings` at any depth: the rehearsal against the development run).
 """
 
 import hashlib
@@ -639,8 +639,20 @@ def refusal(protocol, results_list, out_dir):
     return None
 
 
+RUN_TIME_KEYS = ("wall_s", "seconds", "timings")  # The generator's and the references' clocks.
+
+
+def without_run_times(value):
+    """A record without its run-time leaves (RUN_TIME_KEYS, at any depth): what compare checks."""
+    if isinstance(value, dict):
+        return {k: without_run_times(v) for k, v in value.items() if k not in RUN_TIME_KEYS}
+    if isinstance(value, list):
+        return [without_run_times(v) for v in value]
+    return value
+
+
 def compare(path_a, path_b, out_json):
-    """Two runs' records bit for bit, run times apart (Track R's `differences`)."""
+    """Two runs' records bit for bit, run times apart (RUN_TIME_KEYS; Track R's `differences`)."""
     a = json.loads(Path(path_a).read_text())
     b = json.loads(Path(path_b).read_text())
     parts = {}
@@ -648,7 +660,8 @@ def compare(path_a, path_b, out_json):
         if name not in a["parts"] or name not in b["parts"]:
             parts[name] = "in one run only"
             continue
-        found = differences(a["parts"][name], b["parts"][name])
+        found = differences(without_run_times(a["parts"][name]),
+                            without_run_times(b["parts"][name]))
         parts[name] = dict(identical=not found, differences=found[:20])
     report = dict(a=str(path_a), b=str(path_b), a_source=a.get("source"),
                   b_source=b.get("source"), parts=parts)

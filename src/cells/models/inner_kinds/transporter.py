@@ -73,6 +73,7 @@ src/cells) composes from them, never from private names.
 
 import math
 from dataclasses import dataclass
+from types import MappingProxyType
 
 import numpy as np
 
@@ -81,6 +82,7 @@ from cells.core.kind_registry import (
     BUILTIN,
     ConfigError,
     Kind,
+    KindView,
     bounded_integer,
     finite_number,
     qualified,
@@ -652,6 +654,52 @@ def domain(state, p, *, xp):
     return valid & xp.all(xp.isfinite(record)) & xp.all(xp.where(fuel & held, True, record == 0))
 
 
+# The run view's declarations (D154; kind_registry.KindView, the core's 74a75241). A positive cycle
+# moves n of the role from the patch's cell to its outside node (ledger_terms: the role's rows
+# lose n x cycles at the cell and gain them at the outside node). The fuel record is left
+# unoriented on purpose: its rows change at the fuel node, not across the patch.
+_CYCLES = MappingProxyType(
+    {
+        "from": "inside",
+        "to": "outside",
+        "says": "a positive cycle moves n (the stoichiometry) of the role from the patch's cell to "
+        "its outside node; held fuel's maintenance restores its ATP "
+        "(transporter_fuel_supplied_fmol)",
+    }
+)
+VIEW = KindView(
+    units=MappingProxyType(
+        {
+            "transporter_cycles": "fmol",
+            "transporter_dissipated_energy_pJ": "pJ",
+            "transporter_metabolic_work_pJ": "pJ",
+            "transporter_fuel_supplied_fmol": "fmol",
+            "transporter_cycle_rate_fmol_s": "fmol/s",
+            "transporter_cycle_free_energy_J_mol": "J/mol",
+            "transporter_chemical_drive_J_mol": "J/mol",
+        }
+    ),
+    observation_axes=MappingProxyType({c: ("membrane_slot",) for c in READOUT_COLUMNS}),
+    record_kinds=MappingProxyType(
+        {
+            "transporter_cycles": "cumulative",
+            "transporter_dissipated_energy_pJ": "cumulative",
+            "transporter_metabolic_work_pJ": "cumulative",
+            "transporter_fuel_supplied_fmol": "cumulative",
+            "transporter_cycle_rate_fmol_s": "rate",
+            "transporter_cycle_free_energy_J_mol": "level",
+            "transporter_chemical_drive_J_mol": "level",
+        }
+    ),
+    orientation=MappingProxyType(
+        {"transporter_cycles": _CYCLES, "transporter_cycle_rate_fmol_s": _CYCLES}
+    ),
+    record_layers=MappingProxyType(
+        dict.fromkeys((*(f for f, _ in STATE_AXES), *READOUT_COLUMNS), "pumps")
+    ),
+)
+
+
 TRANSPORTER = BUILTIN.register(
     Kind(
         kind_id=KIND_ID,
@@ -674,5 +722,6 @@ TRANSPORTER = BUILTIN.register(
         readouts=readouts,
         moved_rows=moved_rows,
         check_definition=check_definition,
+        view=VIEW,
     )
 )

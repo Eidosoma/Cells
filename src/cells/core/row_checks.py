@@ -15,7 +15,8 @@ Only a window that is clean with that margin is accepted on the device's word. I
 then the device's maxima, reported and not judged (ruling 3); they agree with the host's to
 rounding, not bitwise.
 
-Qualification: CPU only. The GPU's host-against-device spread is unmeasured (design §6, E8).
+Qualification: CPU only, so a GPU backend is refused, and so is a composition with a live
+retiring operator (admit; design §9.2).
 """
 
 import inspect
@@ -45,10 +46,32 @@ def _takes_margins(checks):
         return False
 
 
+def _live_retiring(model, spec):
+    """A composition's retiring operators that are live in this definition (models/
+    pump_composite.py): its device checks then read adjusted rows."""
+    retiring = getattr(getattr(model, "composition", model), "retiring", ())
+    if not retiring:
+        return ()
+    _, p = model.initial_values(spec)
+    return tuple(op for op in retiring if not op.statically_idle(p))
+
+
 def admit(spec):
-    """Refuse device row checks for a definition they cannot serve (fail-closed)."""
+    """Refuse device row checks for a definition they cannot serve (fail-closed).
+
+    Two cases are refused because they are not yet qualified (the lead's rulings of 16 November
+    2026, D187: no claim without teeth):
+    - a GPU backend: the GPU's host-against-device spread is unmeasured;
+    - a composition with a live retiring operator: its device checks read adjusted rows, and
+      that branch's refusals have no planted test yet.
+    """
     if not spec.execution.jit:
         raise ConfigError("row_checks device requires a compiled run (execution.jit true)")
+    if spec.execution.backend != "cpu":
+        raise ConfigError(
+            "row_checks device is qualified on the CPU only; a GPU backend is refused until a "
+            "GPU measurement exists"
+        )
     model = get_model(spec.model)
     missing = [name for name in HOOKS if not hasattr(model, name)]
     if missing:
@@ -61,6 +84,11 @@ def admit(spec):
     if len(checks) < 3 or checks[0] != "domain" or checks[-1] != "dissipation":
         raise ConfigError(
             "row_checks device requires DEVICE_CHECKS (domain, ledgers..., dissipation)"
+        )
+    if _live_retiring(model, spec):
+        raise ConfigError(
+            "row_checks device is not yet qualified for a composition with a live retiring "
+            "operator: its adjusted rows' refusals have no planted test"
         )
 
 

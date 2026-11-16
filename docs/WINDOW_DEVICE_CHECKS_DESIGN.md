@@ -689,6 +689,12 @@ The lead approved step (c) after reading §1.4, under five conditions:
 
   The hook list lives in `row_checks.py`, because `windows.py` importing `vector_windows` would be
   an import cycle.
+- **Refused until qualified** (the lead's rulings after §9.7's evidence, D187: no claim without
+  teeth):
+  - **a GPU backend,** until a GPU measurement of the host-against-device spread exists;
+  - **a composition with a live retiring operator** (the division set's partition), whose device
+    checks read adjusted rows. Its refusals have no planted test yet. A planted dissipation
+    decrease in a dividing world lifts this refusal once it passes.
 - **The batch path and the vector path refuse `"device"`:**
   - the batch path checks rows on the host, and vector windows always check them on the device;
   - their records keep today's policy dictionary. That covers `batch_window_io`, cohort snapshots,
@@ -834,6 +840,8 @@ headline figures compare both modes on the same cores; the records' figures are 
   their largest ratios are 0.004 and 0.003.
   - A refusal in that branch is not exercised. §3.2's disagreement count for its adjusted rows (E8)
     was dropped.
+  - The lead's ruling: device mode is refused for such a composition (§9.2) until a planted test
+    exists.
 - **The 825-node tissue's checks cost 2.3 ms per row on the device,** against 14.1 ms on the host.
   Its step costs about 51 ms, so device checks save it about a sixth of its warm time. Their
   second compile, 14 s, offsets that over 2,000 steps.
