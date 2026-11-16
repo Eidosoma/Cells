@@ -1248,7 +1248,8 @@ canonical kind order (sorted ID) that schema A's types use:
   axes' names. Schema A appends them in canonical order;
 - `parse(entries, base)` → its declaration, from its model-key block (`entries`) and the parsed
   @2 base definition; `to_dict(declaration)` → that block; `control_values(spec, declaration,
-  times)` → {control field: [time, ...]}, constant over the run in version 1;
+  times)` → {control field: [time, ...]}, constant over the run in version 1, piecewise constant
+  on the step grid from its schedule under (l);
 - `initial(spec, declaration, layout)` → ({state field: array}, {layout field: array});
 - `structure_entry(declaration)` → its hashable, value-free part of the InnerStructure. That part
   enters the compile key, the batch signature and the cached implementation.
@@ -1381,6 +1382,120 @@ undeclared built-in changes nothing:
   - B5's transporter is FR45's, reviewed by CORE before INT merges it;
   - B4's stage read is CORE's, with FR45's closure kernel;
   - the passive law is CORE's insertion with FR45's kernel.
+
+#### (l) Time-varying kind controls: schedules on the step grid (gap 6; designed 16 November 2026, before code)
+
+**What it must do.**
+- In version 1 a kind's controls are constant over the run: `control_values(spec, declaration,
+  times)` gives one value at every time (the transporter's availability 1).
+- A kind must be able to declare piecewise-constant control schedules. FR-5 is the first consumer.
+  - Its damage state on a bounding patch (`bounding_patch_damage@1`, `processes/patch_damage.py`)
+    follows dd/dt = k_inj u_inj(t)(1 − d) − k_res u_res(t) d, with u_inj and u_res declared
+    schedules in [0, 1] (the FR-4/FR-5 note, §9).
+  - Its step, d(h) = d_eq + (d − d_eq) e^{−(a+b)h}, is exact only where the schedules are
+    constant over the step. So every breakpoint must be a step boundary, and the step's update
+    must see the step's values.
+  - FR-5's definitions already declare the form, as a pending experiment key
+    (`validation/compartment_ph_engine/definitions.py`): `damage_controls`, [{damage_id,
+    injury: [{time, value}], resealing: [{time, value}]}].
+- Today's definitions, programs and records stay as they are.
+
+**How controls work today** (the facts the design turns on):
+- Controls are host-side, right-continuous and held over each step. Every path evaluates
+  `control_values(spec, times[:-1])` at the steps' starts: the runner, the windowed and vector
+  paths, and the projective mode.
+- The step grid is `EventGrid(spec)`: the nominal i·dt grid joined with every time of
+  `spec.experiment.changes`, an off-nominal time inserted exactly. So a breakpoint is a step
+  boundary exactly when it is a change time.
+- The change records hold, at each time, every family's values. They also serve two checks:
+  - a checkpoint's event index (`event_index`);
+  - `branch_checkpoint`, which compares the records before a branch's checkpoint, so a branch
+    cannot rewrite the past schedule.
+- The vector path holds controls per segment between change times, and refuses controls that
+  vary inside one (`vector_windows.held_controls`). The scalar runner has no such check.
+- The composite's and replacement's records build on @3's (`ionic.Experiment.changes.fget`). Each
+  operator adds its `schedule_times` and its `value_at` records.
+- A kind's declaration lives in the model block, and `branch_checkpoint` refuses any change of
+  the model.
+
+**The design.**
+1. **A kind's schedule lives in the experiment, under its own keys.**
+   - A kind declares `experiment_keys`, as an operator declares `EXPERIMENT_KEYS`. Each key is
+     optional in a definition. One that the definition omits takes the kind's default, version 1's
+     constant.
+   - `parse_schedule(raw, base, declaration)` → a `Schedule` (2), with `raw` the {key: value} that
+     the definition gives, possibly none. `schedule_to_dict(schedule, declaration)` → the {key:
+     value} to write back. The kind omits its default, so a definition that omits the key keeps
+     its form and its fingerprint.
+   - @3's parse pops each declared kind's experiment keys before @2's strict parse. It refuses an
+     experiment key of a registered kind that the model does not declare. The registry refuses
+     two kinds with one experiment key, and the composite refuses an operator's key that a
+     registered kind declares.
+   - In the experiment, a branch may change a kind's future schedule, as it may any control's.
+   - Schedules are values. They enter neither `structure_entry` nor the compile key, so
+     definitions that differ only in their schedules share one implementation object and its
+     executables.
+2. **One schedule type, the core's: `kind_registry.Schedule`.**
+   - It holds named series, each right-continuous and piecewise constant from time 0: ((name,
+     ((time, value), ...)), ...). Times start at 0 and strictly increase, and values are finite.
+     `times` is the union of the breakpoints, `at(t)` gives one value per series, and
+     `values(name, times)` evaluates one series.
+   - The core checks every breakpoint against the horizon.
+   - **Why one type, not one per kind:** every control reaches the step as a number per slot, held
+     over the step. So named scalar series carry anything the control path can, and the core
+     needs no hooks for the times or the records.
+   - The parsing surface gains `parse_series(entries, name, *, value="value", unit_interval=True)`
+     → ((time, value), ...) for a list of {time, value} entries, and `series_to_dict(series, *,
+     value="value")`. FR-5's form is two such lists per population.
+3. **The breakpoints join the change times, and the records carry the values.**
+   - @3's experiment gains `kinds`: ((kind ID, Schedule), ...) for the declared kinds that
+     declare experiment keys, in canonical order. Every other definition has (), and so keeps
+     today's records, by value and by type.
+   - With a schedule, the change times are the union of today's and every schedule's
+     breakpoints. Each record is a `KindChange`: today's held values plus each schedule's `at(t)`.
+     So:
+     - each breakpoint is a step boundary, on the nominal grid or inserted exactly;
+     - the composite's and replacement's records carry it, since they build on @3's;
+     - `branch_checkpoint` refuses a branch that rewrites a kind's schedule before the checkpoint;
+     - the definition's control check, which evaluates the controls at every change time
+       (`check_definition`), holds rule (d), or the kind's `control_domain`, at every breakpoint.
+4. **The control table comes from the change records.**
+   - @3's `control_values` evaluates each kind's `control_values(spec, declaration, change times)`
+     once per record. It holds each row over the steps that record governs, by the records'
+     index: the row of the last change time at or before each time, as today's families' rows.
+   - So a kind's controls are constant between change times on every path, the scalar runner
+     included.
+   - The hook's signature is unchanged. A scheduled kind reads its schedule with
+     `kind_registry.declared_schedule(spec, kind_id)`.
+5. **The step's control reaches `book`** (a seam change, in its own commit):
+   - `book(applied, start, end, control, p, dt, *, xp)`, with `control` the step's held control,
+     constant over the step by 3 and 4;
+   - so a kind can book an exact per-step update at the step's values, FR-5's d(h);
+   - a bound term reads the schedule through `declared_schedule` where it needs it (for example
+     its largest value).
+6. **What stays unchanged.**
+   - A definition without a scheduled kind keeps the same records (values and type), grid, event
+     indices, controls and programs.
+   - Today's built-in kinds declare no experiment keys. The transporter keeps its constant
+     availability until its owner adopts (g) 2's `transporter_controls` in this form.
+
+**Acceptance (tests, with planted scheduled kinds registered from outside `src/cells`):**
+- an off-nominal breakpoint splits the grid exactly, and each step's control is the schedule's
+  value at the step's start;
+- a planted relaxation, booked per step at the step's control (FR-5's form, through
+  `patch_damage.exact_step`), matches its closed form across the breakpoints to rounding;
+- a planted constant-rate mover under a schedule moves exactly Σ rate × value × duration;
+- the definition round-trips with and without the key, and an omitted key keeps its default and
+  its fingerprint;
+- refused: an undeclared kind's key, a breakpoint past the horizon, and a value outside the
+  control domain;
+- two schedules share one implementation object and compile key;
+- `branch_checkpoint` refuses a rewritten past and admits a changed future. A restart from a
+  checkpoint across a breakpoint continues bitwise, in a fresh process as well;
+- the vector-window path and the composite path hold the same controls (FR-5's judged world runs
+  with FR-1's compartment operator);
+- crossrev against 3c10b833 identical, and a pair check on kind-declaring worlds (FR-4's
+  development and declared worlds): jaxpr text, and control bindings at every change time.
 
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 
