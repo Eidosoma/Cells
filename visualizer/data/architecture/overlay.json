@@ -370,7 +370,7 @@
       "layer": "execution",
       "status": "planned",
       "as_of": "2026-11-16",
-      "plain": "The user decided on 16 November 2026 (D188) that the engine's source takes the modular layout: each law a module of its own, grouped by mechanism (channels, junctions, pumps, routes, reactions, transport), and folders of their own for kinds, operators, models, numerics, execution, the registry, definitions and records. The older model families move into a folder of legacy code that nothing outside it imports. It is reached by two scripted moves, the older families first, each checked at every commit: the same collected tests, the compiled programs unchanged, all 113 saved worlds the same, and tiers 1 and 2 with no changed outcome. A design note and a probe come first, and the list of legacy families goes to the user. D188 lets it start once the core's next branch is on main, and the plan's order places it after the four lanes built on the round: the core's next lane, FR-4 and FR-5, the run-view writer and the windows lane, all of which merged on the evening of 16 November 2026. Files are moved, not rewritten: putting each law's declaration, mathematics and citation in one module is a separate pass. Planned; no file has moved yet.",
+      "plain": "The user decided on 16 November 2026 (D188) that the engine's source takes the modular layout: each law a module of its own, grouped by mechanism (channels, junctions, pumps, routes, reactions, transport), and folders of their own for kinds, operators, models, numerics, execution, the registry, definitions and records. The older model families move into a folder of legacy code that nothing outside it imports. It is reached by two scripted moves, the older families first, each checked at every commit: the same collected tests, the compiled programs unchanged, all 113 saved worlds the same, and tiers 1 and 2 with no changed outcome. Its first step is done: a read-only tool lists the families from the import graph, and on 16 November 2026 the user settled the list (D189). Nine families stay active, among them four that registered protocols name, whose shared code moves into the modular core; 102 become legacy. Its probe follows. The moves are the first step of the order the user set the same evening (D194), once the retire list (D189) and the single-thread pin of the linear algebra (D190) have landed; the lanes built on the round have all merged. Files are moved, not rewritten: putting each law's declaration, mathematics and citation in one module is a separate pass. Planned; no file has moved yet.",
       "sources": [
         {
           "path": "docs/DECISIONS.md",
@@ -399,7 +399,22 @@
         {
           "path": "PROGRESS.md",
           "where": "windows-next-clean merged into main (16 November 2026, evening)"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D189: The four undecided families stay active, and the firm retire list is approved"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D194: The order after 16 November"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The test audit (D187) merged into main (16 November 2026, late evening)"
         }
+      ],
+      "match": [
+        "scripts/legacy_inventory.py"
       ]
     },
     {
@@ -601,7 +616,7 @@
       "layer": "execution",
       "status": "designed",
       "as_of": "2026-11-16",
-      "plain": "Short replay packages that show each species' cell alive, in a loop, whenever no research run is being explored (the user's request, 15 November 2026). It is output, not new physics: each package is a short run of laws the engine has, at a low level of detail, and is labelled an illustration, never a result. The user chose periodic loops, with one period of a periodic drive played and its seam checked. Its design note was ruled by the lead on 16 November 2026. The first loop is on main since that evening, with the run-view writer: a seven-cell planarian patch whose centre cell receives a small current that alternates in sign each half period, so that it nets to zero, far below the voltage that would switch the cell; a development run, not judged. Over its period it closes within 2.76e-5, against a tolerance of 1e-4. For the human, a paced human ventricular cell built on the human cardiac law set, with no generic stand-in (D183, D184): it waits for those laws, about 20 to 30 working days after the landing by its design note's estimate. For the minimal cells, their cycle of growth and division, as an illustration: a probe of what the engine admits found four cases where operators must read each other's current state, which the engine refuses today.",
+      "plain": "Short replay packages that show each species' cell alive, in a loop, whenever no research run is being explored (the user's request, 15 November 2026). It is output, not new physics: each package is a short run of laws the engine has, at a low level of detail, and is labelled an illustration, never a result. The user chose periodic loops, with one period of a periodic drive played and its seam checked. Its design note was ruled by the lead on 16 November 2026. It is partly built: the first loop, the planarian's, is on main, a part of its own. Still to come: for the human, a paced human ventricular cell built on the human cardiac law set, with no generic stand-in, which waits for those laws (D183, D184); and for the minimal cells, their cycle of growth and division, as an illustration. A probe of what the engine admits for that cycle found four cases where operators must read each other's current state, which the engine refuses today.",
       "sources": [
         {
           "path": "docs/FEATURE_REQUESTS.md",
@@ -624,18 +639,50 @@
           "where": "9. The lead's rulings (16 November 2026)"
         },
         {
+          "path": "README.md",
+          "where": "Looping replay packages per species"
+        },
+        {
+          "path": "docs/LOOPING_REPLAY_DESIGN.md",
+          "where": "6. The minimal cells' cycle (Syn3A, *M. pneumoniae*)"
+        }
+      ],
+      "match": [
+        "validation/replay/cycle_probe.py"
+      ]
+    },
+    {
+      "id": "fr.loop_planarian",
+      "label": "Planarian loop (FR-11)",
+      "layer": "execution",
+      "status": "landed",
+      "as_of": "2026-11-16",
+      "match": [
+        "validation/replay/__init__.py",
+        "validation/replay/driver.py",
+        "validation/replay/planarian.py"
+      ],
+      "plain": "The first living-cell loop, on main since the evening of 16 November 2026 with the run-view writer: a builder for the planarian's loop and one driver for every package. The world is a seven-cell planarian patch whose centre cell receives a small current that alternates in sign each half period, so that it nets to zero, far below the voltage that would switch the cell. The writer's loop block measures how well one period closes. One development run of the loop was made, not judged: over its period it closes within 2.76e-5, against a tolerance of 1e-4. It is an illustration, never a result. Implemented and guarded.",
+      "sources": [
+        {
+          "path": "docs/FEATURE_REQUESTS.md",
+          "where": "FR-11"
+        },
+        {
+          "path": "README.md",
+          "where": "Looping replay packages per species"
+        },
+        {
+          "path": "docs/LOOPING_REPLAY_DESIGN.md",
+          "where": "9. The lead's rulings (16 November 2026)"
+        },
+        {
           "path": "PROGRESS.md",
           "where": "The run-view writer merged into main (16 November 2026, evening): run-view-d154"
         },
         {
           "path": "tests/unit/test_replay_packages.py"
-        },
-        {
-          "path": "validation/replay/planarian.py"
         }
-      ],
-      "match": [
-        "validation/replay/**"
       ]
     },
     {
@@ -940,6 +987,28 @@
         {
           "path": "docs/ARCHITECTURE_REVIEW_NOTES.md",
           "where": "Corrections after the second review"
+        }
+      ]
+    },
+    {
+      "id": "num.blas_pin",
+      "label": "One thread for linear algebra",
+      "layer": "numerics",
+      "status": "planned",
+      "as_of": "2026-11-16",
+      "plain": "So that a run on ordinary processors gives the same bits however many processors it is given. The core found on 16 November 2026 that a run's bits follow the number of threads its linear-algebra libraries use, which follows the processors a run is given. The user decided the same evening (D190) that the engine sets those libraries to one thread when it is imported and again when a run starts, refuses a run if any is found at more, and records each library's version and thread count in the run's manifest. Runs of large worlds on several processors give up the threaded part of the step's factorization, 21 ms of the 825-node world's 91 ms step on one processor; one-processor and GPU runs are unchanged. It lands before D188's first move. Planned; not on main.",
+      "sources": [
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D190: BLAS is pinned to one thread, in a lean form"
+        },
+        {
+          "path": "docs/ARCHITECTURE.md",
+          "where": "Allocation-independent linear algebra (proposed, 16 November 2026)"
+        },
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "D194's order"
         }
       ]
     },
@@ -1258,6 +1327,28 @@
       ]
     },
     {
+      "id": "laws.respiration",
+      "label": "Respiration and ATP synthesis",
+      "layer": "laws",
+      "status": "designed",
+      "as_of": "2026-11-16",
+      "plain": "Mitochondria that respire and make ATP, in the tissue model. The direction was decided on 16 November 2026 (D193): one law set for mitochondria and for bacteria such as E. coli and JCVI-syn3A, with every cycle in one thermodynamic form; one effective mitochondrion per cell first; isolated heart mitochondria first, then mitochondria in a heart cell. Its equations and parameters come from Beard's published model of 2005, with its 2006 correction. A probe of the stiff membrane-potential mode comes first. The user approved a comparison three ways: an independent reference, the published model run unchanged outside the engine, and a comparison over the source's steady-state and low-oxygen protocols. The laws would join the tissue model as declared kinds, with a cell-owned compartment as the matrix inside a cell. About 23 to 46 agent-days, built in step 4 of the order the user set the same evening (D194). Designed; no engine code. Today the earlier tissue families exchange ions with mitochondria passively, and respiration is not modelled.",
+      "sources": [
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D193: Mitochondria: the direction, and the comparison approved"
+        },
+        {
+          "path": "docs/MITOCHONDRIA_DESIGN.md",
+          "where": "0. The choices, in plain terms"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D194: The order after 16 November"
+        }
+      ]
+    },
+    {
       "id": "laws.regulation",
       "label": "Network regulation",
       "layer": "laws",
@@ -1477,7 +1568,7 @@
       "layer": "laws",
       "status": "designed",
       "as_of": "2026-11-16",
-      "plain": "The laws of a human heart muscle cell from the ventricle, so that the engine can run a paced human cell. The user brought them forward on 16 November 2026 (D183), as a lane of their own on the rebuilt tissue model. Their design note, on main since the same day and still proposed, sets out eight new channel laws, two new transporter cycles (the sodium–calcium exchanger and the sodium–potassium pump), a calcium release law, a rapid calcium buffer and a calcium-dependent enzyme, CaMKII, with calcium handling moved into the tissue model in pools that share the cell's potential. Each law is named by its mechanism, not by a protein. The choices were made the same day (D184): the equations and parameters of O'Hara and Rudy's 2011 model of the endocardial cell; that cell type first, and others later as sets of parameters; Hodgkin–Huxley gates for the sodium current; and 310 K. Each law would be checked under voltage clamp against an independent reference. The user approved a whole-cell comparison over one beat for that model only: against an independent reference written from the paper, judged, and against the published model, run unmodified and outside the engine, keeping only its saved outputs, reported and not judged. No engine code is written yet; the note's questions for the lead and the core owner are ruled after the landing. The human living-cell loop waits for these laws.",
+      "plain": "The laws of a human heart muscle cell from the ventricle, so that the engine can run a paced human cell. The user brought them forward on 16 November 2026 (D183), as a lane of their own on the rebuilt tissue model. Their design note, on main since the same day and still proposed, sets out eight new channel laws, two new transporter cycles (the sodium–calcium exchanger and the sodium–potassium pump), a calcium release law, a rapid calcium buffer and a calcium-dependent enzyme, CaMKII, with calcium handling moved into the tissue model in pools that share the cell's potential. Each law is named by its mechanism, not by a protein. The choices were made the same day (D184): the equations and parameters of O'Hara and Rudy's 2011 model of the endocardial cell; that cell type first, and others later as sets of parameters; Hodgkin–Huxley gates for the sodium current; and 310 K. Each law would be checked under voltage clamp against an independent reference. The user approved a whole-cell comparison over one beat for that model only: against an independent reference written from the paper, judged, and against the published model, run unmodified and outside the engine, keeping only its saved outputs, reported and not judged. No engine code is written yet. They are built in step 3 of the order the user set on 16 November 2026 (D194), after D188's moves and one pass over the core's shared seams, in parallel with operator composition and finite fuel. The human living-cell loop waits for these laws.",
       "sources": [
         {
           "path": "docs/DECISIONS.md",
@@ -1498,6 +1589,10 @@
         {
           "path": "docs/CURRENT_PLAN.md",
           "where": "Status on 14 November 2026, and the working order (D156)"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D194: The order after 16 November"
         }
       ]
     },
@@ -1749,7 +1844,7 @@
       "layer": "laws",
       "status": "designed",
       "as_of": "2026-11-16",
-      "plain": "Decided on 15 November 2026 (D176): ATP, ADP and phosphate become ordinary species of the shared inventory. Reactions make and spend them, pumps draw from the same amounts, and the standard chemical potential of each is declared in one place. In the design, finite fuel is a transporter's default, and fuel held constant is the special case: a held row of that inventory, not a parameter of a pump. Since the rework landed on 16 November 2026, the species registry holds those standard potentials, and the transporters on main read their fuel as held rows of the inventory; finite fuel is refused there until a later step. The terms finite fuel needs in the kind interface's energy accounts landed the same evening, with the core's next lane; the transporter's own change is still to come. The first case is small: one regeneration reaction and one pump share a finite amount of fuel, and show depletion, a slower pump and recovery. Its independent reference landed on main on 15 November 2026: with regeneration stopped for 200 s, ATP falls almost to nothing and the pump to about 0.2% of its rate; two seconds after regeneration resumes the pump is back within 1%, and every account closes. The engine's own case comes after FR-4 and FR-5 in the plan's order, checked against it. Where this meets explicit proton chemistry, the boundary is declared for fuel held constant: the fuel's free energy is taken at its node's reference pH, and a stage whose pH strays beyond a declared band is refused. For finite fuel at a node whose protons change it is still open, and refused. That work booked by a reaction is not fuel is still to be declared. Finite fuel runs today only in the earlier tissue families, and the tissue model's own pumps hold their fuel constant. Designed; not on main.",
+      "plain": "Decided on 15 November 2026 (D176): ATP, ADP and phosphate become ordinary species of the shared inventory. Reactions make and spend them, pumps draw from the same amounts, and the standard chemical potential of each is declared in one place. In the design, finite fuel is a transporter's default, and fuel held constant is the special case: a held row of that inventory, not a parameter of a pump. Since the rework landed on 16 November 2026, the species registry holds those standard potentials, and the transporters on main read their fuel as held rows of the inventory; finite fuel is refused there until a later step. The terms finite fuel needs in the kind interface's energy accounts landed the same evening, with the core's next lane; the transporter's own change is still to come. The first case is small: one regeneration reaction and one pump share a finite amount of fuel, and show depletion, a slower pump and recovery. Its independent reference landed on main on 15 November 2026: with regeneration stopped for 200 s, ATP falls almost to nothing and the pump to about 0.2% of its rate; two seconds after regeneration resumes the pump is back within 1%, and every account closes. The engine's own case, checked against it, is built in step 3 of the order the user set on 16 November 2026 (D194), after one pass over the core's shared seams. Where this meets explicit proton chemistry, the boundary is declared for fuel held constant: the fuel's free energy is taken at its node's reference pH, and a stage whose pH strays beyond a declared band is refused. For finite fuel at a node whose protons change it is still open, and refused. That work booked by a reaction is not fuel is still to be declared. Finite fuel runs today only in the earlier tissue families, and the tissue model's own pumps hold their fuel constant. Designed; not on main.",
       "sources": [
         {
           "path": "docs/ARCHITECTURE.md",
@@ -1785,6 +1880,10 @@
         {
           "path": "PROGRESS.md",
           "where": "core-next merged into main"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D194: The order after 16 November"
         }
       ]
     },
@@ -1955,7 +2054,7 @@
         "src/cells/models/surface_pump_v3.py",
         "src/cells/models/surface_pump_checks.py"
       ],
-      "plain": "The tissue model behind the BETSE comparisons: pumps, channels, junctions and the space between cells. It passes parity on CPU and on the GPU. Its version @3 was rebuilt in place on 16 November 2026 as the modular inner model, under its own name; before the rework landed, every registered small protocol run again on it passed, and so did its ten parity cases on the L4. An open finding of the test audit reaches it: one refusal has been missing since a change of 9 November in shared field code (D187).",
+      "plain": "The tissue model behind the BETSE comparisons: pumps, channels, junctions and the space between cells. It passes parity on CPU and on the GPU. Its version @3 was rebuilt in place on 16 November 2026 as the modular inner model, under its own name; before the rework landed, every registered small protocol run again on it passed, and so did its ten parity cases on the L4. A finding of the test audit reached it: one refusal had been missing since a change of 9 November in shared field code (D187). The core's fixes closed it on 16 November 2026, with no registered world affected.",
       "sources": [
         {
           "path": "PROGRESS.md",
@@ -1972,6 +2071,10 @@
         {
           "path": "docs/DECISIONS.md",
           "where": "D187: Testing as little as possible but enough for the science; old regression tests not kept indefinitely"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "core-fixes merged into main (16 November 2026, late evening)"
         }
       ]
     },
@@ -2113,7 +2216,7 @@
       "match": [
         "src/cells/models/surface_*.py"
       ],
-      "plain": "The older design: one module for each combination of calcium, fuel, water, repair, profiles and interventions. Kept frozen on purpose. At D172's landing on 16 November 2026, tier 3 of the tests found failures in some of these families that were there before the round, such as a missing refusal and an energy-accounting failure; they are open findings for the audit of the test suite (D187). The audit traced the missing refusal to a change of 9 November in field code these families share with the tissue model @3, so it reaches @3 too.",
+      "plain": "The older design: one module for each combination of calcium, fuel, water, repair, profiles and interventions. Kept frozen on purpose. At D172's landing on 16 November 2026, tier 3 of the tests found failures in some of these families that were there before the round, such as a missing refusal and an energy-accounting failure; they are open findings for the audit of the test suite (D187). The audit traced the missing refusal to a change of 9 November in field code these families share with the tissue model @3, so it reached @3 too. The core's fixes closed it on 16 November 2026: a definition whose floating or gauge component carries a charge is now refused when it is defined, and no registered world was affected.",
       "sources": [
         {
           "path": "docs/ARCHITECTURE_REVIEW_NOTES.md",
@@ -2129,6 +2232,10 @@
         {
           "path": "docs/DECISIONS.md",
           "where": "D187: Testing as little as possible but enough for the science; old regression tests not kept indefinitely"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "core-fixes merged into main (16 November 2026, late evening)"
         }
       ]
     },
@@ -2164,6 +2271,28 @@
       "sources": [
         {
           "path": "docs/CAPSID_ASSEMBLY.md"
+        }
+      ]
+    },
+    {
+      "id": "models.gard",
+      "label": "Catalytic assemblies (GARD)",
+      "layer": "models",
+      "status": "designed",
+      "as_of": "2026-11-16",
+      "plain": "The engine's first model family for the origin of life: assemblies that hold counts of many kinds of molecule, exchange them with a held reservoir, catalyse one another's joining and leaving through a fixed matrix, grow, split at random, and leave lineages, after the GARD model. The design was decided on 16 November 2026 (D192). Events are simulated exactly, one molecule at a time. Assemblies are abstract at first. The catalysis matrix is per-world data with about 100 kinds of molecule. Catalysis comes in two forms: the single-event form of a preprint's reconstruction of GARD, for the comparison, and a pair-consistent form, in which every transfer and its reverse see the same catalysts, as the engine's law. An independent check found that in a closed world of two kinds of molecule the preprint's single-event form generically fails a test of reversibility (a catalysis matrix of rank one is the exception), and that the pair-consistent form is exactly reversible. The original authors' own event rates are not established either way, and the preprint's driven runs are not affected (D192). The first experiment measures the difference between the two forms. The first comparison is with that preprint's reconstruction, three ways, approved by the user: an independent reference, that work's own test code run unchanged outside the engine, and a comparison of distributions on 40 fresh matrices at tolerances set in advance. It is a stochastic family, registered as modules, CPU only, about 20 to 29 agent-days, built in step 4 of the order the user set the same evening (D194). Designed; no engine code.",
+      "sources": [
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D192: GARD: the design choices, and the comparison approved"
+        },
+        {
+          "path": "docs/GARD_DESIGN.md",
+          "where": "Summary"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D194: The order after 16 November"
         }
       ]
     },
@@ -2364,13 +2493,24 @@
       "id": "op.current_reads",
       "label": "Operators reading current state",
       "layer": "operators",
-      "status": "planned",
+      "status": "designed",
       "as_of": "2026-11-16",
-      "plain": "Four general cases where one operator must read what another has just changed, each refused by the engine today: production that reads a cell's current volume, with a dividing cell's daughter volumes taken from the current volume beside water; water that reads the current membrane area beside an operator that adds membrane; turnover that reads which cells and nodes are still open beside the operators that close them; and pumps on a dividing cell, with pump capacity as state. A probe of the minimal cells' cycle for the living-cell loops found them on 16 November 2026; that cycle needs all four, and division with water needs the first. The user queued them at high priority after the landing, and a design lane, documents only, is drafting the options. Four is a lower bound until every refusal of the full cycle is collected.",
+      "plain": "Four general cases where one operator must read what another has just changed, each refused by the engine today: production that reads a cell's current volume, with a dividing cell's daughter volumes taken from the current volume beside water; water that reads the current membrane area beside an operator that adds membrane; turnover that reads which cells and nodes are still open beside the operators that close them; and pumps on a dividing cell, with pump capacity as state. A probe of the minimal cells' cycle for the living-cell loops found them on 16 November 2026; that cycle needs all four, and division with water needs the first. The user queued them at high priority after the landing, and the design was decided on 16 November 2026 (D191): one general rule. Each operator declares, for each field, whether it reads the current value or the declared one, and the composite settles each read when the model is built: the current value where some operator of the composition changes the field, the declared value otherwise. Worlds that do not compose keep their programs bit for bit. It is to be qualified numerically only, since no judged experiment needs it yet, and is built in step 3 of the order the user set the same evening (D194). Four is a lower bound until every refusal of the full cycle is collected.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
           "where": "Operator composition: operators reading each other's current state"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D191: Operator composition takes one general rule (option A)"
+        },
+        {
+          "path": "docs/OPERATOR_COMPOSITION_DESIGN.md"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D194: The order after 16 November"
         }
       ]
     },
@@ -2533,9 +2673,9 @@
       "id": "fr.internal_transfer",
       "label": "Transfer across an internal membrane (FR-5)",
       "layer": "operators",
-      "status": "designed",
+      "status": "landed",
       "as_of": "2026-11-16",
-      "plain": "A compartment's membrane that can leak and reseal, with transfer across it at a rate that reads the compartment's own state, such as its pH (feature request FR-5), the other priority user of the modular rework (D176). Its pieces are on main since the evening of 16 November 2026. Two kinds of piece, the damage of the compartment's membrane and a pH condition, act on the compartment's passive routes as factors, through a routing door the core built for any kind, and a compartment that holds charge can now resume from its own checkpoint, so FR-5's world starts from FR-4's steady state. In development runs, which are not verdicts, its declared world and its development world gave the same results bit for bit over 400 s on both of its arms, 800,000 steps each, including the burst of release after damage. Its independent references show the transfer slowing about 14-fold while the compartment is not acid enough, the leak releasing most of the compartment's cargo after damage, and the compartment acid enough again after about 330 s and 370 s. Nothing is judged. Its protocol is proposed, and its registration and judged run are the plan's next item. Its design note still places the request on its branch, so it stays marked designed here.",
+      "plain": "A compartment's membrane that can leak and reseal, with transfer across it at a rate that reads the compartment's own state, such as its pH (feature request FR-5), the other priority user of the modular rework (D176). It is built and on main since the evening of 16 November 2026, for development. Two kinds of piece, the damage of the compartment's membrane and a pH condition, act on the compartment's passive routes as factors, through a routing door the core built for any kind, and a compartment that holds charge can now resume from its own checkpoint, so FR-5's world starts from FR-4's steady state. In development runs, which are not verdicts, its declared world and its development world gave the same results bit for bit over 400 s on both of its arms, 800,000 steps each, including the burst of release after damage. Its independent references show the transfer slowing about 14-fold while the compartment is not acid enough, the leak releasing most of the compartment's cargo after damage, and the compartment acid enough again after about 330 s and 370 s. Implemented and guarded; nothing is judged. Its protocol is proposed, and its registration, rehearsal and judged run come next.",
       "sources": [
         {
           "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md"
@@ -2560,10 +2700,6 @@
           "path": "validation/compartment_ph/REFERENCES_USAGE.md"
         },
         {
-          "path": "README.md",
-          "where": "Where things stand (16 November 2026): Engine restructure"
-        },
-        {
           "path": "docs/CURRENT_PLAN.md",
           "where": "Now, after the landing, in order"
         },
@@ -2586,6 +2722,14 @@
         {
           "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
           "where": "3.4.3 Refusal 5 version 1.1: the charge anchor where charged routes are admitted"
+        },
+        {
+          "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
+          "where": "built and on main since fr45-next merged (16 November), for development, not judged"
+        },
+        {
+          "path": "README.md",
+          "where": "Engine restructure"
         }
       ],
       "match": [
@@ -3290,7 +3434,7 @@
         "validation/results_baseline.py",
         "validation/protocol_models.py"
       ],
-      "plain": "The tool behind the rework's results gate. It saves what a defined set of worlds computes at a tagged version, on the CPU, and compares a later version with it, bit for bit or within a declared tolerance; a refused run must be refused in the same way. A second tool lists the engine models that each registered protocol names, so that the protocols a change affects can be run again. Validation code with its own tests in the routine gate, on main since 15 November 2026. On 16 November 2026 the 825-node world's bits at binding were found to depend on the number of processors a run uses, so the comparison now records that number and compares runs only at equal counts; a design that removes the dependence is queued.",
+      "plain": "The tool behind the rework's results gate. It saves what a defined set of worlds computes at a tagged version, on the CPU, and compares a later version with it, bit for bit or within a declared tolerance; a refused run must be refused in the same way. A second tool lists the engine models that each registered protocol names, so that the protocols a change affects can be run again. Validation code with its own tests in the routine gate, on main since 15 November 2026. On 16 November 2026 the 825-node world's bits at binding were found to depend on the number of processors a run uses, so the comparison now records that number and compares runs only at equal counts; the user decided the same evening to remove the dependence by running the linear algebra on one thread (D190).",
       "sources": [
         {
           "path": "PROGRESS.md",
@@ -3299,6 +3443,10 @@
         {
           "path": "PROGRESS.md",
           "where": "core-next merged into main"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D190: BLAS is pinned to one thread, in a lean form"
         }
       ]
     },
@@ -3311,7 +3459,7 @@
         "tests/**",
         "scripts/test_tiers.py"
       ],
-      "plain": "The routine gate: every test file's outcome is compared with a recorded baseline before code lands. A file counts as changed when its exit code or its count of failures or errors differs, when its count of passing tests falls, or when its count of skipped tests rises. At D172's landing on 16 November 2026, tiers 1 and 2 (492 files) showed no changed outcome. Of tier 3's 229 files, 187 passed, and each of the other 42 was classified, none of them a defect of the round: 23 failures and 16 time-outs that were there before, two tests the round left stale, fixed in the next commit, and one that passes when run alone. The user's rule of the same day (D187) is to test as little as possible but enough for the science: each claim is proved once, at the cheapest level that can prove it, a new test must catch a planted error, and each landing's tier-3 table is frozen as the record the next run is compared with. An audit of the suite follows the landing: old regression tests that do not earn their cost are retired once the user has seen the list, and the tree is tagged first, so that every retired test stays recoverable.",
+      "plain": "The routine gate: every test file's outcome is compared with a recorded baseline before code lands. A file counts as changed when its exit code or its count of failures or errors differs, when its count of passing tests falls, or when its count of skipped tests rises. At D172's landing on 16 November 2026, tiers 1 and 2 (492 files) showed no changed outcome. Of tier 3's 229 files, 187 passed, and each of the other 42 was classified, none of them a defect of the round: 23 failures and 16 time-outs that were there before, two tests the round left stale, fixed in the next commit, and one that passes when run alone. The user's rule of the same day (D187) is to test as little as possible but enough for the science: each claim is proved once, at the cheapest level that can prove it, a new test must catch a planted error, and each landing's tier-3 table is frozen as the record the next run is compared with. The audit's tools merged on the evening of 16 November 2026. Tier 3's table is frozen test by test, 229 files and 7,736 tests, so that a later run of tier 3 is compared test by test instead of running old code again. The user approved the audit's firm list of tests to retire the same evening (D189), which saves about 7.5 of tier 3's 29.8 processor-hours per run; nothing is retired yet, two checks run first, and the tree is tagged before, so that every retired test stays recoverable.",
       "sources": [
         {
           "path": "AGENTS.md",
@@ -3331,6 +3479,17 @@
         {
           "path": "docs/CURRENT_PLAN.md",
           "where": "The test-suite audit (D187)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The test audit (D187) merged into main (16 November 2026, late evening)"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D189: The four undecided families stay active, and the firm retire list is approved"
+        },
+        {
+          "path": "docs/TEST_AUDIT_RETIRE_LIST.md"
         }
       ]
     },
@@ -3340,7 +3499,7 @@
       "layer": "references",
       "status": "landed",
       "as_of": "2026-11-16",
-      "plain": "How the rework was accepted, and how changes built on it are checked. A machine-readable list names every scientific result that must still hold, and the gate fails if any of them did not actually run. Every saved world is run before and after on the CPU and compared field by field (G1). Every registered protocol that uses the tissue model is run again and must keep its verdict (G2); the user held E07-v1's re-run, whose worlds the comparison covers instead (D181). The rework landed through it on 16 November 2026: all 113 saved worlds were the same bit for bit before the round's last change, and within its declared tolerance after it, and every registered small protocol run again passed. The same evening the core's next lane merged with all 113 worlds again the same bit for bit. Two parts are still owed, each shown as a part of its own: the planted changes that it must catch (G3), and the measurements of compile time, memory and run time (G4). The comparison's own planted-difference self-test is a test on main, and the routine test gate also flags a test file whose count of passing tests falls or whose count of skipped tests rises.",
+      "plain": "How the rework was accepted, and, through its comparison of saved worlds, how changes built on it are checked. A machine-readable list names every scientific result that must still hold, and the gate fails if any of them did not actually run. Every saved world is run before and after on the CPU and compared field by field (G1). At the landing, every registered protocol that uses the tissue model was also run again and had to keep its verdict (G2); the user held E07-v1's re-run, whose worlds the comparison covers instead (D181). The rework landed through it on 16 November 2026: all 113 saved worlds were the same bit for bit before the round's last change, and within its declared tolerance after it, and every registered small protocol run again passed. The comparison of saved worlds is what is in use since: it ran again at the core's next lane, at the core's fixes and on main a83d8f15, all 113 worlds the same bit for bit each time. The protocols' re-run (G2) is recorded at the landing. Two parts are still owed, each shown as a part of its own: the planted changes that it must catch (G3), and the measurements of compile time, memory and run time (G4). Both run once with tier 3 of the tests on the source tree as D188's moves leave it (D194). The comparison's own planted-difference self-test is a test on main, and the routine test gate also flags a test file whose count of passing tests falls or whose count of skipped tests rises.",
       "sources": [
         {
           "path": "docs/ARCHITECTURE.md",
@@ -3391,6 +3550,10 @@
         {
           "path": "docs/CURRENT_PLAN.md",
           "where": "Owed from the landing's acceptance plan"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D194: The order after 16 November"
         }
       ]
     },
@@ -3400,7 +3563,7 @@
       "layer": "references",
       "status": "planned",
       "as_of": "2026-11-16",
-      "plain": "Deliberate errors planted in the engine, each of which the results gate must catch: the gate's design asks for them before it counts as complete. Owed from the rework's acceptance plan: they were not run as a separate step of its end game, and are to be run on landed main, about one to two hours of processor time. Meanwhile the round's tests of each commit's contract ran in the routine tiers, and the comparison's own planted difference is a test on main. Planned.",
+      "plain": "Deliberate errors planted in the engine, each of which the results gate must catch: the gate's design asks for them before it counts as complete. Owed from the rework's acceptance plan: they were not run as a separate step of its end game. They run once, with tier 3 of the tests, on the source tree as D188's moves leave it (D194), about one to two hours of processor time. Meanwhile the round's tests of each commit's contract ran in the routine tiers, and the comparison's own planted difference is a test on main. Planned.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -3413,6 +3576,14 @@
         {
           "path": "docs/INNER_MODEL_V4_DESIGN.md",
           "where": "3. The results gate"
+        },
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "The D172 restructure"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D194: The order after 16 November"
         }
       ]
     },
@@ -3422,7 +3593,7 @@
       "layer": "references",
       "status": "planned",
       "as_of": "2026-11-16",
-      "plain": "Compile time, memory and end-to-end time of the rebuilt engine, measured on representative worlds on a quiet machine. Owed from the rework's acceptance plan: not run as a separate step of its end game, and not run since. They are also the measurements that GPU-native production asks for. Planned.",
+      "plain": "Compile time, memory and end-to-end time of the rebuilt engine, measured on representative worlds on a quiet machine. Owed from the rework's acceptance plan: not run as a separate step of its end game, and not run since. They run once, with tier 3 of the tests, on the source tree as D188's moves leave it (D194). They are also the measurements that GPU-native production asks for. Planned.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -3435,6 +3606,14 @@
         {
           "path": "docs/INNER_MODEL_V4_DESIGN.md",
           "where": "3. The results gate"
+        },
+        {
+          "path": "docs/CURRENT_PLAN.md",
+          "where": "The D172 restructure"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D194: The order after 16 November"
         }
       ]
     },
@@ -4304,7 +4483,7 @@
       "runs_in": [
         "resolved"
       ],
-      "plain": "Mitochondria exchange ions with the cytoplasm and carry their own voltage. Respiration and ATP synthesis are not modelled. This runs in the earlier tissue families only, and moves into the composite model when a use needs it (D167). Designed, not yet on main: a compartment identity that lets one law address a species in the cytosol, a lysosome or a mitochondrion alike.",
+      "plain": "Mitochondria exchange ions with the cytoplasm and carry their own voltage. Respiration and ATP synthesis are not modelled. This runs in the earlier tissue families only, and moves into the composite model when a use needs it (D167). Designed, not yet on main: a compartment identity that lets one law address a species in the cytosol, a lysosome or a mitochondrion alike; and, decided on 16 November 2026 (D193), respiration and ATP synthesis in the tissue model, one effective mitochondrion per cell first, built in step 4 of the order the user set the same evening (D194).",
       "implemented_by": [
         "laws.energy"
       ],
@@ -4320,6 +4499,14 @@
         {
           "path": "docs/ARCHITECTURE.md",
           "where": "Ownership, geometry and solver invalidation"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D193: Mitochondria: the direction, and the comparison approved"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D194: The order after 16 November"
         }
       ]
     },
@@ -5649,6 +5836,60 @@
       "to": "laws.passive_permeation",
       "kind": "extends",
       "label": "they scale its routes through the routing door"
+    },
+    {
+      "from": "fr.loop_packages",
+      "to": "fr.loop_planarian",
+      "kind": "delivers",
+      "label": "its first loop, on main"
+    },
+    {
+      "from": "fr.loop_planarian",
+      "to": "models.composite",
+      "kind": "runs",
+      "label": "the composite over the tissue model, with current injection"
+    },
+    {
+      "from": "fr.loop_planarian",
+      "to": "op.electrode_current_injection@1",
+      "kind": "runs",
+      "label": "the drive into the centre cell"
+    },
+    {
+      "from": "models.gard",
+      "to": "models.assembly",
+      "kind": "extends",
+      "label": "reuses the assembly kernels' streams, checkpoints and oracles"
+    },
+    {
+      "from": "models.gard",
+      "to": "compute.ensemble",
+      "kind": "extends",
+      "label": "runs its worlds through the ensemble queue"
+    },
+    {
+      "from": "laws.respiration",
+      "to": "laws.energy",
+      "kind": "extends",
+      "label": "adds respiration and ATP synthesis to the earlier families' passive exchange"
+    },
+    {
+      "from": "laws.respiration",
+      "to": "fr.internal_compartment",
+      "kind": "extends",
+      "label": "the matrix inside a cell is a cell-owned compartment"
+    },
+    {
+      "from": "laws.respiration",
+      "to": "laws.human_cardiac",
+      "kind": "extends",
+      "label": "then mitochondria in a heart cell (D183)"
+    },
+    {
+      "from": "num.blas_pin",
+      "to": "num.field",
+      "kind": "extends",
+      "label": "the field's factorization and solves run on one thread"
     }
   ],
   "relation_kinds": [

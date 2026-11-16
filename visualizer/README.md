@@ -659,7 +659,8 @@ stay out of git (61 runs in 327 files, 96 MB).
    The map's statuses are reviewed by hand at one revision of main. Once main has moved
    past it, build against a checkout of the reviewed revision (`--repo PATH`), so that the
    statuses and the stamp agree, until the map is reviewed again. The map was reviewed at
-   main 3b7f1cff on 16 November 2026 and again, that evening, at 050aa741, which it states.
+   main 3b7f1cff on 16 November 2026, again that evening at 050aa741, and late that evening
+   at 1d86a192, which it states.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,
    `check:flux` and `check:machine` once, four at a time, and writes a log for each and
