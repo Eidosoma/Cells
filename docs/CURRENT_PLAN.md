@@ -70,16 +70,42 @@ experiment).
         `visualizer/docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` on the visualizer branch at d818cb34.
         Items 1 and 10 are answered from the engine's code. `exchange_moved_fmol` is cumulative and
         positive outward. The saved `membrane_transferred` holds the passive routes only.
-      FR-11's interim planarian loop comes after these.
+      FR-11's interim planarian loop comes after these. Its run must carry what the viewer's loop
+      reader requires: the visualizer's "What a species' looping run must carry", on its branch at
+      cf11924a.
+      - a `loop` block in the view: the species, the cell, and the run's own closure statement
+        (`within`, `says`);
+      - the engine's models and its revision, since the reader refuses a loop run that names no
+        revision;
+      - a real run, not an example;
+      - the totals that feed the rates, each with its kind and sign.
    4. The packed GPU planner. It is built on branch `packed-gpu-planner` (cf919da3) and passes its
       CPU evidence, including a rehearsal of the staged L4 plan on the 825-node tissue.
       - Its one-time GPU qualification runs on the merged head, under the lead's rulings. Packed
         against lone is judged on every field, and the field solver is set to `auto`.
       - The core seams it asked for follow: a public window-arguments constructor, mask-and-continue
         on the device, a world ID on every vectorized refusal, and a typed memory refusal.
+      - **A development GPU run** (16 November, the planner's pre-D172 head 69a14cb5, under the
+        flag; `packed-gpu-20261115-01/dev-gpu-69a14cb5/`):
+        - packed repeats are bitwise, and the refusing world is refused on both paths;
+        - but packing alone, against the same world run alone on the GPU, moves 78 field-world
+          pairs beyond 1e-12, up to 1.6e-8 relative. They are the small extracellular, junction
+          and reservoir flux observables and running ledgers, the fields where the vector path
+          already differs from scalar on the CPU. The CPU showed packing at 3.4e-16 or less.
+        - So the ruled criterion, packed against lone within 1e-12 on every field, does not hold on
+          the GPU. It needs a basis in the field solve's conditioning before the qualification.
+        - The throughput steps also overran the 3600 s GPU budget: throughput-128 was stopped, and
+          256 was skipped.
    5. The module system's stage 1, one external law (D180), after the user's decisions in its §6.
 3. **Queued follow-ups** (each its own gated change):
    - insertion@2's gate fix, before `check_onsets` is lifted (§7.4 (j));
+   - A7's allow-list note (`tests/species_sum_entity_sums.json`) wrongly says no entry includes the
+     species axis. Three entries, partition's host-only end-of-run summary, sum mixed
+     [species, slot] and [slot] fields. Either fix the wording, or fold those fields per field;
+     G1 compares neither;
+   - a kind hook so that rows written by operators join the passive law's exact-scope fixpoint,
+     moving those routes to tableau booking. Design it with the core under D180. Until then the
+     composite refuses an operator that writes an exact-booked route's row (fail-closed, version 1);
    - ledger lists read from the implementation object;
    - moving the host-side window checks, 91% of long-run time, into device windows;
    - the summation tree, if species counts go well past 16.
