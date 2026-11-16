@@ -918,7 +918,8 @@ One owner per entity:
 - **`book`:** d's end value is replaced by the exact solution over the step,
   d_end = d_eq + (d_start − d_eq) e^(−(A+B)) with d_eq = A/(A + B) (`patch_damage.exact_step`).
   - A = dt × applied(injury hazard) and B = dt × applied(resealing hazard). Within a step a and b
-    are constant, so this is exact.
+    are constant, so this is exact. `applied` reaches a kind's own fields: `rates`' derivatives
+    enter the stage's rates by name (`surface_pump_v3._with_kind_derivatives`; read in code).
   - The applied rate is used, not the difference of the cumulative fields. That keeps A at one
     rounding of a dt; the difference would lose about |hazard|/(a dt) ulps, near 1e-11 relative
     late in a window at 0.5 ms.
@@ -959,8 +960,9 @@ the form.
   - It is written into the control every kind receives.
   - The kinds' [0, 1] rule then refuses a factor or a product outside [0, 1]; each source's
     values are checked in [0, 1] too.
-- **No ledger and no state.** With no sink declared the door is absent, so today's programs are
-  unchanged (A4).
+- **No ledger and no state.** With no sink declared the door is absent (A4). A sink's new control
+  field is another matter: a kind's control fields are static, so the field changes the structure
+  of every world that declares the sink kind, FR-4's included (question 5).
 - **Why a control slot,** rather than passing factors to the hooks: every hook keeps its
   signature, and the sink reads only its own field, so there is no cross-kind read. Scheduled
   controls (gap 6) and routed ones compose: a slot's own value may itself be a schedule.
@@ -969,6 +971,11 @@ the form.
 - **Factors:** a route's `factors` is a list of source IDs, in declared order.
 - **The slot:** the kind adds the control field `passive_multiplier` [route], 1 from
   `control_values`, and declares each factored route's slot in `routed_controls`.
+  - **This changes FR-4's structure.** `surface_pump_v3._kind_types` builds the Control type from
+    each declared kind's static `control_fields`, keyed by the kind IDs alone (read in code). So
+    FR-4's world, which declares `cells.passive_routes@1` without factors, would gain the field:
+    a new Control type and compile key. Its records would stay bitwise equal, since an opening × 1.0
+    is exact. Question 5 gives the options.
 - **Its use:** each route's opening is multiplied by it in `rates`, `stage_term` and the readouts.
 - **What does not change:** §7.5's booking, `bound_rate` (its bound holds at m ≤ 1), `moved_rows`
   and the exact scope (`_exact`). So FR-5's cargo routes are booked exactly, and the pores and the
@@ -1027,7 +1034,8 @@ FR-5's breakpoints (60 and 120 s in arm T, 100 and 160 s in arm R) lie on every 
   - a route with factor d at a held d equals a route of permeability d P, to rounding;
   - a condition's f equals `ph_condition.factor` of the closure's pH readout;
   - a factor above 1 is refused, and so is an unknown source;
-  - an undeclared kind is absent: FR-4's world is bitwise unchanged on both paths;
+  - an undeclared kind is absent, and FR-4's records are bitwise unchanged on both paths; FR-4's
+    structure and compile key are unchanged too under question 5's options (a) and (b), not (c);
   - the hooks trace on the device.
 - **Planted errors,** each of which must be caught:
   - the condition read at the cytosol instead of the lumen (the X budget against R-transfer);
@@ -1083,6 +1091,15 @@ FR-5's breakpoints (60 and 120 s in arm T, 100 and 160 s in arm R) lie on every 
 2. **`passive_routes`' sink:** the core's change, or this lane's for the core's review?
 3. **d's exactness:** the hazards through `applied` (no seam), or `control` passed to `book`?
 4. **The schedules' format** (gap 6).
+5. **The sink's control field and FR-4's structure** (§16.2, "The slot"). The options:
+   - (a) per-declaration fields: the core's types keyed by each kind's structure entry, so the
+     field exists only where a route declares factors (a core change to schema A);
+   - (b) a new version, `cells.passive_routes@2`, with `factors` and the slot, in the same module:
+     FR-4 keeps @1 and its structure, and FR-5 declares @2 for all its passive routes, the leak
+     included (recommended: no schema change, and FR-4's qualification is untouched);
+   - (c) accept the change: FR-4's records stay bitwise equal, but its Control type and compile
+     key change, after its dt study and before its judged run, so the rehearsal would no longer
+     run the dt study's program.
 
 ## Appendix A. Equations for the independent references
 
