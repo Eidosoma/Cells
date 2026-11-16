@@ -12,10 +12,29 @@ structure's kinds append their fields, is the sorted namespaced ID: total, and i
 registration, import and declaration order.
 """
 
+import importlib
 from collections.abc import Callable
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
+
+# The kind interface's parsing surface (§7.4 (k); D180's external modules): a kind's parse and
+# check_definition refuse with ConfigError and may use these public helpers, never the
+# underscored names of cells.core.specs.
+from cells.core.specs import ConfigError, bounded_integer, finite_number, require_fields
+
+__all__ = (
+    "BUILTIN",
+    "ConfigError",
+    "Kind",
+    "KindRegistry",
+    "active",
+    "bounded_integer",
+    "finite_number",
+    "qualified",
+    "require_fields",
+    "scope",
+)
 
 NAMESPACE = "cells"
 
@@ -60,12 +79,34 @@ class Kind:
       control, p, *, xp)` -> surface_pump_v3.KindRates: inward-positive node changes (cell
       [species, cell], outside [species, outside node]) into the shared inventory, the kind's own
       state derivatives {field: array}, and heat and work rates (pJ/s); `potentials` are the
-      stage's node potentials, cells then outside nodes (V).
-    - step end: `book(applied, start, end, p, dt, *, xp)` -> {own state field: new value}, after
-      the tableau's combination; `applied(name)` is the step's applied rate of a state field
-      (the tableau's weights), `start` the step's start state and `end` its end state before any
-      kind books, the same for every kind, and only the kind's own state fields may be written,
-      so bookings commute.
+      stage's node potentials, cells then outside nodes (V). `stage_check(read, cell, outside,
+      p, *, xp)` -> one bool, after every rate of the stage: `read` is the read state, `cell`
+      [species, cell] and `outside` [species, outside node] the stage's total node rates (fmol/s;
+      explicit stages without the implicit face drift); a false check refuses the step (FR-4's
+      envelope: the closure's lag at the stage's transport).
+    - step size (B7 for kinds): `stage_term(read, potentials, control, p, *, xp)` -> [cells,
+      then outside nodes] conductance (S) of the kind's charged routes at the stage's read and
+      node potentials (a pump's electrogenic slope, reversed past its head included; potentials
+      is None when membrane_rate is called without them); a patch's slope goes to both of its
+      ends (surface_pump_v3.patch_node_conductance). membrane_rate's per-stage refusal, dt x rate
+      <= EXPLICIT_STEP_BOUND, then holds at every cell and every free outside node (a face-free
+      compartment's included); `bound_rate(spec,
+      declaration)` -> 1/s, a definition-time bound term the host step checks hold to the same
+      bound (the passive law's dt L <= 1).
+    - one writer: `held_rows(declaration)` -> ((species, node ID), ...), rows the kind reads and
+      never moves (held fuel); binding refuses any inner route or other kind that moves one.
+    - per-stage diagnostics (gap 7): `stage_values(read, cell, outside, p, *, xp)` -> {own state
+      field: value} at every explicit stage of an IMEX step, with the stage_check's arguments;
+      `stage_extrema` = ((field, "max" | "min"), ...) names the reduction. The step's end state
+      holds each field's running extremum: the start's value and every stage of the step (the
+      closure's largest lag, the cytosol's smallest and largest pH). RK4 steps leave them as
+      they are.
+    - step end: `book(applied, start, end, p, dt, *, xp)` -> ({own state field: new value},
+      valid), after the tableau's combination; `applied(name)` is the step's applied rate of a
+      state field (the tableau's weights), `start` the step's start state and `end` its end
+      state before any kind books, the same for every kind, and only the kind's own state fields
+      may be written, so bookings commute. A false valid refuses the step (§7.5's negative exact
+      share).
     - checks (traced on the device at binding, with stage_read, so the device's row checks
       include them as the host's do; they branch on no value in Python): `domain(state, p, *,
       xp)` -> one bool, and-ed into domain_valid; `control_domain(control, p, *, xp)` -> one
@@ -75,8 +116,11 @@ class Kind:
       work accumulators, and the free energy the kind stores beyond the stored rows' own terms
       (its change since the start), folded into balances, device_balances and the ledger
       magnitudes by role.
-    - observation: `readouts(state, control, p, *, xp)` -> its readout columns, in order, after
-      today's (on the host).
+    - observation: `readouts(state, read, potentials, control, p, *, xp)` -> its readout columns,
+      in order, after today's (on the host): the stored state, the row's read state (free h at a
+      buffered node) and its node potentials, so a charged law can report its instantaneous rate.
+    - a kind's own domain at a stage: KindRates.valid (from `rates`, at the stage's read and
+      potentials; a charged law's V-dependent domain); false refuses the row or the step.
     """
 
     kind_id: str
@@ -93,6 +137,12 @@ class Kind:
     stage_read: Callable | None = None
     stage_rows: Callable | None = None
     rates: Callable | None = None
+    stage_check: Callable | None = None
+    stage_term: Callable | None = None
+    bound_rate: Callable | None = None
+    held_rows: Callable | None = None
+    stage_values: Callable | None = None
+    stage_extrema: tuple = ()
     book: Callable | None = None
     ledger_terms: Callable | None = None
     domain: Callable | None = None
@@ -146,11 +196,27 @@ class KindRegistry:
 
 BUILTIN = KindRegistry()
 _ACTIVE = ContextVar("cells_kind_registry", default=None)
+BUILTIN_PACKAGE = "cells.models.inner_kinds"
+_builtins_loaded = False
+
+
+def _load_builtins():
+    """Import the built-in kinds' package once (by name: the core imports no kind module), so
+    each built-in registers on BUILTIN through the call an external package uses."""
+    global _builtins_loaded
+    if not _builtins_loaded:
+        importlib.import_module(BUILTIN_PACKAGE)
+        _builtins_loaded = True
 
 
 def active():
-    """The registry of the model build in progress: BUILTIN unless scope() says otherwise."""
-    return _ACTIVE.get() or BUILTIN
+    """The registry of the model build in progress: BUILTIN, with the built-in kinds loaded,
+    unless scope() says otherwise."""
+    registry = _ACTIVE.get()
+    if registry is not None:
+        return registry
+    _load_builtins()
+    return BUILTIN
 
 
 @contextmanager

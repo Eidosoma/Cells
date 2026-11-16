@@ -385,6 +385,89 @@ def slot_mask_errors(entries, spec, p):
     return errors
 
 
+# The operators' in-step writers beside declared kinds (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)
+# gap 8, §7.5 version 1): the core's binding refuses inner movers by node (moved_nodes) and
+# leaves the operators' writers to the composite's admission. An operator's in-step process
+# (PROCESS) declares its writers by node kind (the contract's moves_in_step: (species, "cell" |
+# "outside")), so it is taken to move its species at every node of that kind. The species
+# registry's moved_in_step is not read here: it joins the inner movers by node kind, and an inner
+# route at another node would be a false refusal.
+PASSIVE_ROUTES_ID = "cells.passive_routes@1"
+
+
+def operator_writers(entries, spec):
+    """{(species, node ID): (law ID, ...)}: every row a PROCESS operator's in-step process moves
+    (entries: (operator, its declaration) pairs), each node kind expanded to the definition's
+    nodes of that kind; {} without a PROCESS operator."""
+    m = spec.model
+    nodes = dict(cell=[c.id for c in m.cells], outside=[o.id for o in m.extracellular])
+    out = {}
+    for op, declaration in entries:
+        if not op.PROCESS:
+            continue
+        for species, kind in op.moves_in_step(spec, declaration):
+            if kind not in nodes:
+                raise ConfigError(f"{op.LAW_ID}: moves_in_step gives node kinds cell or outside")
+            for node in nodes[kind]:
+                laws = out.setdefault((species, node), [])
+                if op.LAW_ID not in laws:
+                    laws.append(op.LAW_ID)
+    return {row: tuple(laws) for row, laws in out.items()}
+
+
+def _node_kind(spec, node):
+    return "cell" if node in {c.id for c in spec.model.cells} else "outside"
+
+
+def held_row_errors(entries, spec):
+    """Gap 8, the composite's part: a row a declared kind holds (held_rows: read at every stage,
+    never moved, such as held fuel) is moved by no operator's in-step process (one writer)."""
+    declared = tuple(getattr(spec.model, "kinds", ()))
+    writers = operator_writers(entries, spec) if declared else {}
+    if not writers:
+        return []
+    errors, registry = [], kind_registry.active()
+    for kind_id, declaration in declared:
+        kind = registry.lookup(kind_id)
+        if kind.held_rows is None:
+            continue
+        for species, node in kind.held_rows(declaration):
+            for law in writers.get((species, node), ()):
+                errors.append(
+                    f"Kind {kind_id} holds {species} at {node}, which {law} moves in the step (its "
+                    f"in-step process moves {species} at every {_node_kind(spec, node)} node); a "
+                    "held row is moved by nothing in the step (one writer)"
+                )
+    return errors
+
+
+def exact_row_errors(entries, spec, p):
+    """§7.5 version 1, the operators' half: a row that an exact-booked passive route moves (its
+    bound passive_exact, the kind's fixpoint over shared rows, and a nonzero permeability, as the
+    booking's own mask) is written by no operator's in-step process. Version 1 refuses such a
+    composition: the route's exact share would average over a change it did not make, and the
+    operators' writers cannot yet join the kind's scope to downgrade it to tableau booking (a
+    seam queued after the landing). A tableau-booked route's rows are not refused."""
+    routes = dict(getattr(spec.model, "kinds", ())).get(PASSIVE_ROUTES_ID)
+    writers = operator_writers(entries, spec) if routes else {}
+    if not writers:
+        return []
+    errors, exact = [], np.asarray(p.passive_exact)
+    for k, route in enumerate(routes):
+        if not (exact[k] and route.permeability > 0):
+            continue
+        for node in (route.inside, route.outside):
+            for law in writers.get((route.species, node), ()):
+                errors.append(
+                    f"{law} moves {route.species} at every {_node_kind(spec, node)} node in the "
+                    f"step (its in-step process), and the passive route {route.id} books "
+                    f"{route.species} at {node} exactly (§7.5); version 1 refuses this because it "
+                    "cannot yet downgrade the route to tableau booking where an operator writes "
+                    "its row"
+                )
+    return errors
+
+
 def structure_errors(inner, operators):
     """Contract violations of an ordered operator list on an inner model (empty: none)."""
     errors = []
@@ -1056,6 +1139,11 @@ class Composition:
         inner parser's hook sees the inner definition only, so an operator's in-step mover of a
         two-form row, or an operator that names one, is refused here (core/species_registry.py;
         D176).
+
+        Beside declared kinds, an operator's in-step process (moves_in_step) that writes a row a
+        kind holds is refused (held_row_errors, gap 8), and so is one that writes a row an
+        exact-booked passive route moves, read from the bound layout (exact_row_errors, §7.5
+        version 1).
         """
         solver = spec.execution.solver
         if solver == "rk4" and self.coupled:
@@ -1075,9 +1163,17 @@ class Composition:
                 f"structure declares {list(getattr(self.inner, 'KINDS', ()))}"
             )
         species_registry.check_definition(spec)
-        scoped = scope_errors(self.inner, [(op, d) for op, d, _ in entries(spec)], spec)
+        pairs = [(op, d) for op, d, _ in entries(spec)]
+        scoped = scope_errors(self.inner, pairs, spec)
         if scoped:
             raise ConfigError("Invalid operator composition: " + "; ".join(scoped))
+        # The operators' in-step writers beside declared kinds (held_row_errors,
+        # exact_row_errors): only with kinds and an in-step process, so no world without them
+        # makes either call.
+        writing = bool(kinds) and self.process_operator is not None
+        held = held_row_errors(pairs, spec) if writing else []
+        if held:
+            raise ConfigError("Invalid operator composition: " + "; ".join(held))
         dt, end = spec.execution.dt, spec.experiment.end_time
         for op, _, schedule in entries(spec):
             if op.EVENT and any(
@@ -1088,6 +1184,9 @@ class Composition:
                 )
         small = compact(spec)
         state, p = self.initial_values(small)
+        exact = exact_row_errors(pairs, spec, p) if writing else []
+        if exact:
+            raise ConfigError("Invalid operator composition: " + "; ".join(exact))
         if self.field_inputs:
             x = spec.execution
             self.inner.check_field_inputs(p, x.capacity + x.extracellular_capacity)

@@ -39,6 +39,11 @@ Actions:
       or a comma-separated list of the files of one run split over GPU gaps with run
       --worlds: they are merged (each world once, one backend), and A, B and D must cover
       the reference's worlds exactly
+  terms --mode flagged --part P --reference CPU --runs X Y --output FILE
+      the flagged block (the flagged-block amendment): X and its confirming repeat Y, both
+      under XLA_FLAGS=--xla_gpu_deterministic_ops=true. Backend |CPU - X| under the flag;
+      run-to-run 0 because Y must equal X in every judged quantity; a non-bitwise Y records
+      stop and exits 2 (the block stops; variant refuses those terms). Tolerances unchanged
   variant --part P --terms FILE --output DIR
       variant.json (tolerances, stop rule, report rows with every repeat's and pair's
       term, the three repeats' files) and protocol.json
@@ -68,6 +73,10 @@ if __name__ == "__main__":
 
 MARGIN = 3.0
 REPEATS = ("A", "B", "D")  # The blind L4 repeats measured before the judged run C.
+# Measurement modes: the unflagged three repeats; the flagged block (the amendment): X and its
+# confirming repeat Y under XLA_FLAGS=--xla_gpu_deterministic_ops=true, which must be bitwise.
+MODES = {"repeats": REPEATS, "flagged": ("X", "Y")}
+FLAG = "--xla_gpu_deterministic_ops=true"
 TISSUE = ROOT / "validation" / "tissue"
 FILES = dict(
     w1=("pump_water_predictions.json", "pump_water_protocol.json"),
@@ -419,29 +428,41 @@ def worst(trees):
     return max(trees)
 
 
-def measured(part, reference, *runs):
-    """The terms of the three L4 repeats A, B and D (REPEATS), in that order.
+def measured(part, reference, *runs, mode="repeats"):
+    """The terms of the L4 runs of a measurement mode (MODES), in the mode's order.
 
-    backend: the largest |reference - X| over the repeats; run_to_run: the largest
-    difference between two of them; with each repeat's backend term (backend_each) and each
-    pair's run-to-run term (run_to_run_pairs), so a variant records all three.
+    repeats (the unflagged method): the three repeats A, B and D. backend: the largest
+    |reference - X| over the repeats; run_to_run: the largest difference between two of them;
+    with each repeat's backend term (backend_each) and each pair's run-to-run term
+    (run_to_run_pairs), so a variant records all three.
+
+    flagged (the flagged-block amendment): X and its confirming repeat Y, both under
+    XLA_FLAGS=--xla_gpu_deterministic_ops=true. The backend term is |reference - X| under the
+    flag; the run-to-run term is 0 because Y must equal X exactly, every judged quantity
+    (repeat_bitwise). A non-bitwise repeat sets stop: the block stops and is diagnosed.
     """
-    if len(runs) != len(REPEATS):
+    labels = MODES[mode]
+    if len(runs) != len(labels):
+        what = "repeats" if mode == "repeats" else "runs, X and its confirming repeat Y"
         raise ValueError(
-            f"{part}: the terms take {len(REPEATS)} L4 repeats ({', '.join(REPEATS)}), "
-            f"not {len(runs)}"
+            f"{part}: the terms take {len(labels)} L4 {what} ({', '.join(labels)}), not {len(runs)}"
         )
-    each = {x: TERMS[part](reference, run) for x, run in zip(REPEATS, runs, strict=True)}
+    each = {x: TERMS[part](reference, run) for x, run in zip(labels, runs, strict=True)}
     pairs = {
         f"{x}-{y}": TERMS[part](runs[i], runs[j])
-        for (i, x), (j, y) in itertools.combinations(enumerate(REPEATS), 2)
+        for (i, x), (j, y) in itertools.combinations(enumerate(labels), 2)
     }
-    return dict(
+    out = dict(
+        mode=mode,
         backend=worst(list(each.values())),
         run_to_run=worst(list(pairs.values())),
         backend_each=each,
         run_to_run_pairs=pairs,
     )
+    if mode == "flagged":
+        bitwise = runs[0] == runs[1]  # Exact equality of every saved quantity (floats included).
+        out |= dict(repeat_bitwise=bitwise, stop=not bitwise)
+    return out
 
 
 def ratios(deviation, run_to_run, path=()):
@@ -549,14 +570,23 @@ def _fixed(rows, protocol_bounds, families, prefix):
 def variant(part, protocol, terms):
     """The variant protocol (the part's own format) and its report rows.
 
-    terms: measured()'s, or a terms file's (which also names the repeats' files). Terms of
-    fewer than the three repeats are refused.
+    terms: measured()'s, or a terms file's (which also names the repeats' files). Unflagged
+    terms of fewer than the three repeats are refused; flagged terms whose confirming repeat is
+    not bitwise are refused (the block stops).
     """
+    mode = terms.get("mode", "repeats")
+    labels = MODES.get(mode)
+    if labels is None:
+        raise ValueError(f"{part}: unknown measurement mode {mode!r}")
     each, pairs = terms.get("backend_each", {}), terms.get("run_to_run_pairs", {})
-    if sorted(each) != sorted(REPEATS) or len(pairs) != math.comb(len(REPEATS), 2):
+    if sorted(each) != sorted(labels) or len(pairs) != math.comb(len(labels), 2):
         raise ValueError(
-            f"{part}: the terms do not hold the {len(REPEATS)} repeats {', '.join(REPEATS)} "
-            "(terms from one pair are not accepted)"
+            f"{part}: the terms do not hold the {len(labels)} runs {', '.join(labels)} of the "
+            f"{mode} mode (terms from one pair are not accepted)"
+        )
+    if mode == "flagged" and not terms.get("repeat_bitwise"):
+        raise ValueError(
+            f"{part}: the flagged confirming repeat is not bitwise: the block stops (diagnose)"
         )
     out, rows, changed = copy.deepcopy(protocol), [], []
     b, r = terms["backend"], terms["run_to_run"]
@@ -612,13 +642,20 @@ def variant(part, protocol, terms):
         base=BASES[part],
         rule="max(registered, up1(3 x (registered sum + backend + run-to-run))); fixed "
         "tolerances max(registered, up1(3 x (backend + run-to-run))); registered kept "
-        "exactly when nothing is added; backend: the largest |reference - X| over the L4 "
-        "repeats A, B and D; run-to-run: the largest difference between two of them",
+        "exactly when nothing is added; "
+        + (
+            "backend: the largest |reference - X| over the L4 repeats A, B and D; "
+            "run-to-run: the largest difference between two of them"
+            if mode == "repeats"
+            else f"flagged mode (XLA_FLAGS={FLAG}): backend |reference - X| under the flag; "
+            "run-to-run 0, X's confirming repeat Y bitwise"
+        ),
+        mode=mode,
         repeats=dict(
-            labels=list(REPEATS),
+            labels=list(labels),
             reference=terms.get("reference"),
-            runs=dict(zip(REPEATS, terms["runs"], strict=True)) if "runs" in terms else None,
-            backends=dict(zip(REPEATS, terms["backends"], strict=True))
+            runs=dict(zip(labels, terms["runs"], strict=True)) if "runs" in terms else None,
+            backends=dict(zip(labels, terms["backends"], strict=True))
             if "backends" in terms
             else None,
         ),
@@ -660,7 +697,10 @@ def main(argv=None):
     two = sub.add_parser("terms")
     two.add_argument("--part", choices=tuple(RUNS), required=True)
     two.add_argument("--reference", type=files, required=True)
-    two.add_argument("--runs", type=files, nargs=len(REPEATS), required=True, help="A B D")
+    two.add_argument("--mode", choices=tuple(MODES), default="repeats")
+    two.add_argument(
+        "--runs", type=files, nargs="+", required=True, help="A B D (repeats) or X Y (flagged)"
+    )
     two.add_argument("--output", type=Path, required=True)
     three = sub.add_parser("variant")
     three.add_argument("--part", choices=tuple(RUNS), required=True)
@@ -695,16 +735,22 @@ def main(argv=None):
         reference, _ = load_runs(args.part, args.reference)
         loaded = [load_runs(args.part, paths) for paths in args.runs]
         runs = [quantities for quantities, _ in loaded]
-        same_worlds(args.part, reference, **dict(zip(REPEATS, runs, strict=True)))
+        labels = MODES[args.mode]
+        if len(runs) != len(labels):
+            parser.error(f"--mode {args.mode} takes {len(labels)} runs ({' '.join(labels)})")
+        same_worlds(args.part, reference, **dict(zip(labels, runs, strict=True)))
         record = dict(
             part=args.part,
             reference=[str(p) for p in args.reference],
-            labels=list(REPEATS),
+            labels=list(labels),
             runs=[[str(p) for p in paths] for paths in args.runs],
             backends=[backend for _, backend in loaded],
-            **measured(args.part, reference, *runs),
+            **measured(args.part, reference, *runs, mode=args.mode),
         )
         args.output.write_text(json.dumps(record, indent=1) + "\n")
+        if record.get("stop"):  # Flagged mode: the confirming repeat is not bitwise.
+            print(f"{args.part}: flagged repeat not bitwise: the block stops", file=sys.stderr)
+            return 2
     elif args.action == "deviation":
         terms = json.loads(args.terms.read_text())
         a, _ = load_runs(args.part, terms["runs"][0])

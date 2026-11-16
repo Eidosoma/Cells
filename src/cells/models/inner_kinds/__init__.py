@@ -2,5 +2,11 @@
 
 Each kind module declares a `cells.core.kind_registry.Kind` and registers it on the registry
 (BUILTIN for built-ins), exactly as an external package would; the core imports no kind module.
-None is registered yet: FR-4's stage read and transporter and the passive law join here.
+kind_registry.active() imports this package by name once, which registers the built-ins below. A
+registered kind that a definition does not declare changes nothing.
+- passive_routes: A5, the passive permeation law's insertion point with §7.5's exact booking;
+- proton_buffer: B4, FR-4's rapid-buffer closure as the stage read;
+- transporter: B5, the ATP-driven transporters (FR-4's proton pump among them).
 """
+
+from cells.models.inner_kinds import passive_routes, proton_buffer, transporter  # noqa: F401

@@ -15,7 +15,8 @@ them back). Each entry may give:
 * ``identity``: ``{catalogue: {catalogue, entry} | null, evidence}``, D150's form (parse_identity);
 * ``standard_mu_RT``: mu°/RT, dimensionless, at the model's one ``standard_concentration_mM``
   (c0, mM; D152's convention, moved to the world). A pump that books fuel in J/mol at a 1 M
-  standard state converts with dG° = RT (sum nu mu°/RT + (sum nu) ln(c0 / 1000 mM));
+  standard state converts with dG° = RT (sum nu mu°/RT + (sum nu) ln(1000 mM / c0)), since
+  mu°(1 M) = mu°(c0) + RT ln(1000 mM / c0);
 * ``protonated_standard_mu_RT``: for a row with two forms (a buffer: the row holds its total), the
   mu°/RT of the form with one more proton, at valence z + 1 (the row's ``standard_mu_RT`` is the
   base form's, at the row's valence z, so scalar readers are unaffected). With the proton row's
