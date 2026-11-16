@@ -218,6 +218,19 @@
           "note": "First version: five options (the racks, recommended; the stacks; the card catalogue; the plugboard; the pull-out shelf), what the Engine view holds today and where it runs out, what the engine declares, a comparison, the questions for the user and what the engine would be asked for. Checked by its author in headless Chrome drawn in software: wide and at 400 px, light and dark, with less motion and without three.js; real clicks on each sketch. No frame rate was measured, and it was not looked at in the artifact's own frame"
         }
       ]
+    },
+    "atlas_look": {
+      "title": "Protein Shelves in Colour",
+      "url": "https://claude.ai/artifact/J6YmuwUAnb88iKZbLLLPJH",
+      "page": "/mnt/workspaces/Cells/visualizer-atlas-look-20261116-01/atlas-look.html",
+      "note": "Options to choose from for the Protein atlas's shelves of a species' own proteins: three looks that colour each protein by the side of its own membrane, and three ways around (a trail, a search that stays in view, a small map of the stack), after a walk through today's page with real presses. Nothing in it is built. Its pictures are of today's page and of working prototypes in a scratch copy of the code. The page is not in git, because its 38 pictures make it 2.0 MB; it is kept on the workspaces disk with the copy it was pictured from. The note beside it is docs/ATLAS_LOOK.md, which carries the findings, the recommendation and the questions.",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-16",
+          "note": "First version: the walk of today's page; looks A (colour by side, recommended), B (tinted glass) and C (a calm stack with a map); the trail, the search and the map; the palettes with their numbers; eight questions. Checked before publishing: the text read, each of the 38 pictures looked at, and the page loaded in headless Chrome at 1,280, 400 and 360 pixels wide in both themes (no sideways scrolling, no picture missing)."
+        }
+      ]
     }
   }
 }
