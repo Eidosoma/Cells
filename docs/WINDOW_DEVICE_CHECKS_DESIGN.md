@@ -784,6 +784,53 @@ Under D187, each claim is proven once, at its cheapest level.
 - **E1, G1 in mode off,** belongs to the results gate at landing, if the lead runs it. Crossrev
   (C4) and the tiers cover the default path here.
 
+### 9.7 The evidence as run (16 November 2026)
+
+Every run below is from the frozen snapshot of c2aec027 (`/mnt/workspaces/Cells/windows-next-20261116/stepc/`).
+Each mode ran in its own process.
+
+**C1–C3: the unit tests.** The four new files hold 28 tests, and all pass. A mutation pairing each
+row with itself instead of its predecessor fails the boundary case.
+
+**C4: crossrev, the eight sets** (CPUs 11 and 27, `stepc/crossrev/`).
+- **c2aec027 against d6814d57: identical.** That is 219 of 219 jaxpr texts and their constants, and
+  103 of 103 bindings.
+- **Every one of the 73 worlds traces the opted-in program** (`device_checks_margins`).
+- **d6814d57 against c1** (informative): identical in seven sets. The division set's three worlds
+  differ in their step, right-hand-side and device-check texts and in their bindings. These are
+  core-next's changes, since main changed no `src` since c1.
+
+**C5: the measured speedups beside the projections** (`validation/execution/window_row_checks_runs.py`,
+`run_windowed`, on the timed lane, CPUs 4 and 5, at the records' window size and recording).
+
+| Run | Host mode | Device mode | Measured speedup | Projected (§7) |
+| --- | --- | --- | --- | --- |
+| The export, 8,000 steps | 33.2 s | 23.3 s | 1.4× (compile dominates) | — |
+| The export, 80,000 steps | 166.6 s | 34.8 s | 4.8× | — |
+| The export, 480,000 steps | 3481 s in its record; about 908 s on these cores (estimate) | 96.3 s | 36× against the record; about 9.4× on these cores | 310–370 s, about 10× |
+| FR-4's 20 s pass, 20,000 steps | 162.7 s | 44.1 s | 3.7× | 39–43 s, from 176 s |
+| FR-4's 900 s, 900,000 steps | about 6,220 s (estimate) | 453.0 s | about 13.7× | about 14× |
+| The 825-node tissue, 2,000 steps | 168.5 s (137.9 s without compile) | 161.3 s (116.4 s) | 1.05×; 1.18× without compile | at most about 1.4× (host share 28%) |
+
+- **Bitwise outputs.** Every world run in both modes has the same final-state and observation
+  digests.
+- **No handbacks.** No device run handed a window back. Largest ratios: the export 0.068 (`local`),
+  as in §1.4; FR-4 3.2e-3 (`local`); the 825-node tissue 9.8e-3 (`global_charge`).
+- **Where device mode's time goes.** Analysis (checks and observers) fell from 138.6 s to 1.3 s in
+  the export's 80,000 steps. The device checks themselves took 6.1 s over the export's 480,000
+  steps (12.7 µs per row). Over FR-4's 900,000 steps they took 88.5 s (98 µs per row): 30% of
+  its 289.9 s of steps. That is the largest remaining share, and the batched form of §9.3's
+  "later" would reduce it.
+- **The 825-node tissue's checks cost 2.3 ms per row on the device,** against 14.1 ms on the host.
+  Its step costs about 51 ms, so device checks save it about a sixth of its warm time. Their
+  second compile, 14 s, offsets that over 2,000 steps.
+- **The records' host arms were slow.** On these clean cores the host check costs 1.73 ms per row
+  for the export, against the record's 6.6 ms. The record's host times were taken on a loaded
+  machine on 15 November.
+  - So a speedup against a record overstates. The same-core figures are the ones to compare.
+  - The two "estimate" cells scale the same-core host arm's cost per row: the export's from 80,000
+    steps, FR-4's from its 20 s pass (6.58 ms per row).
+
 ## Sources
 
 - **Code** at 3c10b833:
