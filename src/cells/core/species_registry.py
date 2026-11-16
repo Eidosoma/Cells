@@ -41,6 +41,16 @@ words the pairwise checks used. So every definition without registry entries (ev
 disk) resolves from its operator blocks with the refusals it had, and a new law adds one call, never
 a pairwise check.
 
+One standard potential per species (check_potentials)
+-----------------------------------------------------
+An operator that declares its own standard potentials gives them through
+``species_potentials(declaration)`` -> ((species, mu°/RT, c0 in mM), ...) (the contract's default:
+none). check_potentials, part of check_definition, converts each to the registry's c0, mu°/RT +
+ln(c0_registry / c0), and refuses one that differs from the registry's at more than rounding
+(POTENTIAL_ULPS ulps of the magnitudes involved), naming the operator: two declarations of one
+species' potential would otherwise book the same rows at two values (F2's one authority; the
+FR-4/FR-5 note's §17, D3). A species the registry gives no potential is not compared.
+
 Moved by the step (moved_in_step)
 ---------------------------------
 For each species, the in-step movers of its cell rows and of its outside rows, derived from
@@ -61,6 +71,10 @@ from cells.core.specs import ConfigError, _fields
 EVIDENCE_KINDS = ("label_only", "expressed_isoform", "native_current", "model")
 MODEL_SOURCE = "the model's species entries"
 ROLES = ("author", "user")
+# check_potentials' rounding: a declared potential converted to the registry's c0 agrees with the
+# registry's within this many ulps of |mu°/RT| (both) + |ln(c0 ratio)|, the conversion's inputs.
+POTENTIAL_ULPS = 16
+EPS = math.ulp(1.0)
 
 
 @dataclass(frozen=True)
@@ -283,6 +297,32 @@ def check_identities(spec, law, items):
             )
 
 
+def operator_potentials(op, declaration):
+    """The standard potentials an operator declares (the contract's species_potentials: none by
+    default): ((species, mu°/RT, c0 in mM), ...)."""
+    return tuple(op.species_potentials(declaration))
+
+
+def check_potentials(spec):
+    """Refuse an operator whose standard potential of a species, converted to the registry's c0,
+    differs from the registry's at more than rounding, naming the operator."""
+    for op, declaration in _entries(spec):
+        for species, mu_RT, c0 in operator_potentials(op, declaration):
+            declared = standard_potential(spec, species)
+            if declared is None:
+                continue
+            registry_mu_RT, registry_c0 = declared
+            shift = math.log(registry_c0 / c0)
+            converted = mu_RT + shift
+            bound = POTENTIAL_ULPS * EPS * (abs(registry_mu_RT) + abs(mu_RT) + abs(shift))
+            if not abs(converted - registry_mu_RT) <= bound:
+                raise ConfigError(
+                    f"{op.LAW_ID} declares species {species!r} with mu°/RT {mu_RT!r} at {c0!r} mM, "
+                    f"{converted!r} at the registry's {registry_c0!r} mM, where the species "
+                    f"registry gives {registry_mu_RT!r}: one authority for each standard potential"
+                )
+
+
 def standard_potential(spec, species):
     """(mu°/RT, c0 in mM) of a species from the model's registry, or None when not declared."""
     model = declared(spec)
@@ -399,9 +439,10 @@ def check_two_form_rows(spec):
 
 def check_definition(spec):
     """The registry's definition-time checks, for the core's hook to call ahead of the inner
-    model's own: absent rows and backgrounds, then two-form rows."""
+    model's own: absent rows and backgrounds, two-form rows, then operators' potentials."""
     check_background(spec)
     check_two_form_rows(spec)
+    check_potentials(spec)
 
 
 # ------------------------------------------------------------------ moved by the step

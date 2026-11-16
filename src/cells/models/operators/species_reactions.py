@@ -1325,6 +1325,12 @@ class LocalSpeciesReactions(Operator):
         """The species identities it declares (core/species_registry.py, D176)."""
         return tuple(s.identity for s in declaration.species)
 
+    def species_potentials(self, declaration):
+        """Its declared mu°/RT of each reacting species at its c0 (core/species_registry.py,
+        check_potentials: the registry's, where it gives one, must agree; F2)."""
+        c0 = declaration.standard_concentration_mM
+        return tuple((s.identity.id, s.standard_mu_RT, c0) for s in declaration.species)
+
     def batch_signature(self, declaration):
         """The static network: species, stoichiometry, laws, catalysts, factor kinds and species,
         and sites; identities, moieties and every parameter are not part of it."""
