@@ -490,7 +490,7 @@ class CellsViewer extends HTMLElement {
       const width = view.across >= 1 ? `${Number(view.across.toPrecision(1))} µm` : `${Number((view.across * 1000).toPrecision(1))} nm`;
       const sized =
         sizes.length < 2
-          ? `One size mode: a cell about ${width} across is small enough for its molecules to be seen, so the picture is near scale. Membrane proteins are drawn a little enlarged; counts are indicative.`
+          ? `One size mode: the schematic layout, scaled down to a cell about ${width} across. Ribosomes and appendages are drawn at their sizes; the membrane, its proteins, ions and small molecules are drawn larger than life where each would otherwise be too small to see. Counts are indicative.`
           : view.size === "real"
             ? `Sizes and numbers nearer a real cell, about ${width} across. Dots stand for what is too small to see; counts are indicative.`
             : "Parts are enlarged and few, so each can be seen.";
