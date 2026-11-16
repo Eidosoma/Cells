@@ -51,11 +51,12 @@ which must be B4's proton_row when B4 is declared). `factors` is a list of facto
   kernel's conductance_S, max side) joins membrane_rate's per-stage refusal (stage_term).
 """
 
+from types import MappingProxyType
 from typing import NamedTuple
 
 import numpy as np
 
-from cells.core.kind_registry import BUILTIN, ConfigError, Kind, KindFields
+from cells.core.kind_registry import BUILTIN, ConfigError, Kind, KindFields, KindView
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.processes import passive_permeation as passive
@@ -517,6 +518,53 @@ def check_definition(spec):
             )
 
 
+# The run view's declarations (D154): the routes' own set (axis passive_route), with each route's
+# ends as roles, its carried species, law and host; transfers are inward-positive (rates: `flux`).
+VIEW = KindView(
+    units=MappingProxyType({"passive_transferred": "fmol", "passive_dissipated_energy_pJ": "pJ"}),
+    record_kinds=MappingProxyType(
+        {"passive_transferred": "cumulative", "passive_dissipated_energy_pJ": "cumulative"}
+    ),
+    orientation=MappingProxyType(
+        {
+            "passive_transferred": MappingProxyType(
+                {
+                    "from": "outside",
+                    "to": "inside",
+                    "says": "inward-positive: a positive amount moves from the route's outside "
+                    "end (its patch's outside node, or its junction's receiver) into its inside "
+                    "end (its patch's cell, or its junction's sender)",
+                    "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+                }
+            )
+        }
+    ),
+    record_layers=MappingProxyType(
+        {"passive_transferred": "membrane", "passive_dissipated_energy_pJ": "membrane"}
+    ),
+)
+
+
+def view_sets(spec, declaration):
+    """The view's set of the routes' axis: one entry per route, in the declaration's order."""
+    return {
+        "passive_route": {
+            "id": "passive_route",
+            "ids": [route.id for route in declaration],
+            "roles": {
+                "inside": "the route's inside end: its patch's cell, or its junction's sender",
+                "outside": "its outside end: its patch's outside node, or its junction's receiver",
+            },
+            "carries": [[route.species] for route in declaration],
+            "kinds": [route.law for route in declaration],
+            "at": [
+                {"membrane" if route.host_kind == "patch" else "junction": route.host}
+                for route in declaration
+            ],
+        }
+    }
+
+
 PASSIVE_ROUTES = BUILTIN.register(
     Kind(
         kind_id=KIND_ID,
@@ -538,5 +586,7 @@ PASSIVE_ROUTES = BUILTIN.register(
         declared_fields=declared_fields,
         control_values=control_values,
         routed_controls=routed_controls,
+        view=VIEW,
+        view_sets=view_sets,
     )
 )

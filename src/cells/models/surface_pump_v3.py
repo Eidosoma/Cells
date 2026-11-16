@@ -1788,6 +1788,210 @@ Observations = make_dataclass(
     "SurfacePumpChannelObservations", [(k, np.ndarray) for k in OBSERVATION_FIELDS], frozen=True
 )
 
+# ------------------------------------------------------------------ the run view's declarations
+# docs/RUN_VIEW_DESIGN.md §3 (D154), in the operator contract's forms: host-side metadata read
+# only by the run-view writer (cells/run_view.py), so none changes a program, a binding or a
+# checkpoint. They replace the writer's interim table for resolved_pump_tissue@3. Each state
+# field and observation column has its unit, record kind and layer; each readout its axes (the
+# state's are STATE_AXES). Orientations name the roles of the record's entity set: a flow's
+# {from, to} (which way a positive value moves) or a difference's {plus, minus} (plus less
+# minus). The core's owner confirmed them from the code (core-next, 16 November 2026):
+# numerics/surface_transport.transport takes a membrane's voltage as its cell's potential less
+# its outside node's and a junction's as its sender's less its receiver's, and its positive route
+# flux runs sender -> receiver, a membrane's cell -> outside node; surface_tissue.balances books
+# membrane_transferred out of the cell into the node, junction and face transfers out of the
+# sender into the receiver, and reservoir supply into the held node; surface_pump_v2.balances
+# subtracts stoichiometry x cycles (inward-positive per cycle) from the membrane total.
+_CONFIRMED = "the core's owner, from the code (core-next, 16 November 2026)"
+
+
+def _flow(origin, target, says):
+    return MappingProxyType({"from": origin, "to": target, "says": says, "confirmed": _CONFIRMED})
+
+
+def _difference(plus, minus, says):
+    return MappingProxyType({"plus": plus, "minus": minus, "says": says, "confirmed": _CONFIRMED})
+
+
+_OUTWARD = _flow(
+    "inside", "outside", "a positive amount leaves the patch's cell for its outside node"
+)
+_CHANNEL_OUTWARD = _flow(
+    "inside",
+    "outside",
+    "a positive amount leaves the cell of the population's patch for that patch's outside node; "
+    "the material balance adds it into the patch's total",
+)
+_SENDER_TO_RECEIVER = _flow(
+    "sender", "receiver", "a positive amount leaves the sender for the receiver"
+)
+_PUMP_INWARD = _flow(
+    "outside",
+    "inside",
+    "pump cycles are inward-positive: a positive cycle moves each moved row's per-cycle count "
+    "(the law's moves, by role, signed) from the patch's outside node into its cell",
+)
+_SUPPLY = _flow(
+    "exterior", "node", "a positive amount is supplied into the held outside node from beyond"
+)
+_MEMBRANE_VOLTAGE = _difference(
+    "inside",
+    "outside",
+    "the potential of the patch's cell less that of its outside node: positive when the cell is "
+    "at the higher potential",
+)
+_JUNCTION_VOLTAGE = _difference(
+    "sender",
+    "receiver",
+    "the potential of the junction's sender cell less that of its receiver: positive when the "
+    "sender is at the higher potential",
+)
+VIEW_LAYERS = (
+    MappingProxyType(
+        {"id": "membrane", "label": "Membrane voltage and ions", "representation": "simulated"}
+    ),
+    MappingProxyType(
+        {
+            "id": "channels",
+            "label": "Channel populations and junction gates",
+            "representation": "modelled",
+        }
+    ),
+    MappingProxyType({"id": "pumps", "label": "Pump populations", "representation": "modelled"}),
+)
+# field: (unit, record kind, layer, readout axes or None for a state field, orientation or None)
+_VIEW_TABLE = {
+    # State.
+    "amount_increment": ("fmol", "amount", "membrane", None, None),
+    "extracellular_amount_increment": ("fmol", "amount", "membrane", None, None),
+    "membrane_transferred": ("fmol", "cumulative", "membrane", None, _OUTWARD),
+    "junction_transferred": ("fmol", "cumulative", "membrane", None, _SENDER_TO_RECEIVER),
+    "face_transferred": ("fmol", "cumulative", "membrane", None, _SENDER_TO_RECEIVER),
+    "reservoir_supplied": ("fmol", "cumulative", "membrane", None, _SUPPLY),
+    "membrane_dissipated_energy_pJ": ("pJ", "cumulative", "membrane", None, None),
+    "junction_dissipated_energy_pJ": ("pJ", "cumulative", "membrane", None, None),
+    "face_dissipated_energy_pJ": ("pJ", "cumulative", "membrane", None, None),
+    "electrode_charge_transferred_C": ("C", "cumulative", "membrane", None, None),
+    "reservoir_work_pJ": ("pJ", "cumulative", "membrane", None, None),
+    "electrode_work_pJ": ("pJ", "cumulative", "membrane", None, None),
+    "channel_gate": ("1", "level", "channels", None, None),
+    "channel_transferred": ("fmol", "cumulative", "channels", None, _CHANNEL_OUTWARD),
+    "channel_dissipated_energy_pJ": ("pJ", "cumulative", "channels", None, None),
+    "junction_gate": ("1", "level", "channels", None, None),
+    "pump_cycles": ("fmol", "cumulative", "pumps", None, _PUMP_INWARD),
+    "pump_dissipated_energy_pJ": ("pJ", "cumulative", "pumps", None, None),
+    "metabolic_work_pJ": ("pJ", "cumulative", "pumps", None, None),
+    "calcium_pump_cycles": ("fmol", "cumulative", "pumps", None, _PUMP_INWARD),
+    "calcium_pump_dissipated_energy_pJ": ("pJ", "cumulative", "pumps", None, None),
+    "calcium_metabolic_work_pJ": ("pJ", "cumulative", "pumps", None, None),
+    # Readouts.
+    "amount": ("fmol", "amount", "membrane", ("species", "cell_slot"), None),
+    "extracellular_amount": ("fmol", "amount", "membrane", ("species", "extracellular_slot"), None),
+    "cell_potential_V": ("V", "level", "membrane", ("cell_slot",), None),
+    "extracellular_potential_V": ("V", "level", "membrane", ("extracellular_slot",), None),
+    "membrane_voltage_V": ("V", "level", "membrane", ("membrane_slot",), _MEMBRANE_VOLTAGE),
+    "junction_voltage_V": ("V", "level", "membrane", ("edge_slot",), _JUNCTION_VOLTAGE),
+    "membrane_flux_fmol_s": ("fmol/s", "rate", "membrane", ("species", "membrane_slot"), _OUTWARD),
+    "junction_flux_fmol_s": (
+        "fmol/s",
+        "rate",
+        "membrane",
+        ("species", "edge_slot"),
+        _SENDER_TO_RECEIVER,
+    ),
+    "face_flux_fmol_s": (
+        "fmol/s",
+        "rate",
+        "membrane",
+        ("species", "face_slot"),
+        _SENDER_TO_RECEIVER,
+    ),
+    "reservoir_supply_fmol_s": (
+        "fmol/s",
+        "rate",
+        "membrane",
+        ("species", "extracellular_slot"),
+        _SUPPLY,
+    ),
+    "electrode_charge_C": ("C", "amount", "membrane", ("extracellular_slot",), None),
+    "electrode_current_A": ("A", "rate", "membrane", ("extracellular_slot",), None),
+    "reservoir_power_pJ_s": ("pJ/s", "rate", "membrane", ("world",), None),
+    "electrode_power_pJ_s": ("pJ/s", "rate", "membrane", ("world",), None),
+    "charge_residual_C": ("C", "level", "membrane", ("field_node",), None),
+    "component_current_residual_A": ("A", "rate", "membrane", ("floating_component",), None),
+    "energy_balance_pJ_s": ("pJ/s", "rate", "membrane", ("world",), None),
+    "membrane_availability": ("1", "level", "membrane", ("membrane_slot",), None),
+    "junction_availability": ("1", "level", "channels", ("edge_slot",), None),
+    "channel_flux_fmol_s": (
+        "fmol/s",
+        "rate",
+        "channels",
+        ("species", "channel_slot"),
+        _CHANNEL_OUTWARD,
+    ),
+    "channel_targets": ("1", "level", "channels", ("gate", "channel_slot"), None),
+    "channel_tau_s": ("s", "level", "channels", ("gate", "channel_slot"), None),
+    "pump_cycle_rate_fmol_s": ("fmol/s", "rate", "pumps", ("membrane_slot",), _PUMP_INWARD),
+    "pump_affinity_J_mol": ("J/mol", "level", "pumps", ("membrane_slot",), None),
+    "metabolic_power_pJ_s": ("pJ/s", "rate", "pumps", ("membrane_slot",), None),
+    "channel_availability": ("1", "level", "channels", ("channel_slot",), None),
+    "pump_availability": ("1", "level", "pumps", ("membrane_slot",), None),
+    "calcium_pump_cycle_rate_fmol_s": ("fmol/s", "rate", "pumps", ("membrane_slot",), _PUMP_INWARD),
+    "calcium_pump_affinity_J_mol": ("J/mol", "level", "pumps", ("membrane_slot",), None),
+    "calcium_metabolic_power_pJ_s": ("pJ/s", "rate", "pumps", ("membrane_slot",), None),
+    "calcium_pump_availability": ("1", "level", "pumps", ("membrane_slot",), None),
+}
+UNITS = MappingProxyType({k: v[0] for k, v in _VIEW_TABLE.items()})
+RECORD_KINDS = MappingProxyType({k: v[1] for k, v in _VIEW_TABLE.items()})
+RECORD_LAYERS = MappingProxyType({k: v[2] for k, v in _VIEW_TABLE.items()})
+OBSERVATION_AXES = MappingProxyType({k: v[3] for k, v in _VIEW_TABLE.items() if v[3] is not None})
+ORIENTATION = MappingProxyType({k: v[4] for k, v in _VIEW_TABLE.items() if v[4] is not None})
+VIEW_AXIS_SETS = MappingProxyType({})  # A kind's axis that maps to an existing view set.
+_VIEW_MAPS = ("UNITS", "OBSERVATION_AXES", "RECORD_KINDS", "ORIENTATION", "RECORD_LAYERS")
+
+
+def view_declarations(structure):
+    """The run view's declarations for a structure (D154): @3's own, then each declared kind's
+    KindView entries for the fields its structure's types hold, its layers and its axis sets.
+    A structure without kinds gets the module's own objects."""
+    kinds = _kinds(structure)
+    if not kinds:
+        names = (*_VIEW_MAPS, "VIEW_LAYERS", "VIEW_AXIS_SETS")
+        return {name: globals()[name] for name in names}
+    types = kind_types(structure)
+    present = {*types.STATE_TYPE._fields, *types.OBSERVATION_FIELDS}
+    merged = {name: dict(globals()[name]) for name in _VIEW_MAPS}
+    layers, axis_sets = list(VIEW_LAYERS), {}
+    for kind in kinds:
+        view = kind.view
+        if view is None:
+            continue
+        parts = (
+            view.units,
+            view.observation_axes,
+            view.record_kinds,
+            view.orientation,
+            view.record_layers,
+        )
+        for name, part in zip(_VIEW_MAPS, parts, strict=True):
+            merged[name] |= {k: v for k, v in part.items() if k in present}
+        known = {layer["id"] for layer in layers}
+        layers += [MappingProxyType(dict(x)) for x in view.view_layers if x["id"] not in known]
+        axis_sets |= dict(view.axis_sets)
+    out = {name: MappingProxyType(value) for name, value in merged.items()}
+    return out | dict(VIEW_LAYERS=tuple(layers), VIEW_AXIS_SETS=MappingProxyType(axis_sets))
+
+
+# Notes a record carries, in the model's own words (its summary's membrane_transfer_ledger).
+RECORD_NOTES = MappingProxyType(
+    {
+        "membrane_transferred": "the passive membrane routes only. A patch's total in the "
+        "material balance is the balance's own sum: this record plus channel_transferred of its "
+        "populations, less each pump's per-cycle rows times its cycles (pump_cycles); the pump is "
+        "a separate term, never in this record",
+    }
+)
+
 
 def observe_history(times, history, layout, requested, spec, *, structure=None):
     from cells.core.surface_pump_v3_spec import control_values
@@ -2139,6 +2343,18 @@ class InnerImplementation:
         self.batch_signature = structured_batch_signature
         for name, value in kind_types(structure)._asdict().items():  # Schema A (§7.4 (j)).
             setattr(self, name, value)
+        if structure.kinds:  # The run view's declarations, the kinds' folded in (D154).
+            for name, value in view_declarations(structure).items():
+                setattr(self, name, value)
+
+    def view_sets(self, spec):
+        """{axis: view set} of the declared kinds' own axes (their view_sets hooks), for the run
+        view (D154): {"id", "ids", "roles", per-entity facts}; none without kinds."""
+        out, declarations = {}, dict(getattr(spec.model, "kinds", ()))
+        for kind in _kinds(self.structure):
+            if kind.view_sets is not None:
+                out |= kind.view_sets(spec, declarations[kind_registry.qualified(kind.kind_id)])
+        return out
 
     def __getattr__(self, name):
         # Only reached for names the object does not define: this module's own.
