@@ -103,6 +103,13 @@ machine-readable inputs, results, checks and failures.
     - the snapshot test, which enumerates every tracked file, on the merged tree: 24 passed
       ([log](/mnt/workspaces/Cells/visualizer-merge-20261116/source_snapshot.log)).
     - This is a smaller guard set than the 15 November merge's (68 passed).
+  - **A third visualizer merge** (visualizer c91d8cd2) brings the engine map and the
+    layers-needs note to D183, so the human loop is shown as waiting for the human cardiac
+    laws.
+    - `npm test` on two CPUs: 427 passed and 2 skipped. Both skipped tests need adapted replays,
+      which a clean checkout lacks.
+    - The earlier run's two extra skips came from pinning to one CPU: one test needs two
+      processors, and one skipped without need (now fixed).
   - **The README** (462469dd, from readme-update) has:
     - the status table as of 16 November, with the levels defined;
     - a new section, "The visualizer and its replays", with two of the screenshots;
