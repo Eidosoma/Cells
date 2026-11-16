@@ -443,3 +443,37 @@ would be refused:
 - Every rate is a mean between two records that both lie inside the loop; no difference
   is taken across its seam.
 
+### The lead's news on the format (16 November 2026)
+
+The run view's writer has moved on, on its branch (`run-view-d154`, RUN_VIEW_DESIGN §9);
+it lands on main after the modular rework. The eleven items above are answered there.
+What the viewer's reader has to take, when it lands:
+
+- **`view_<field>` records:** the merged view of each field that an operator changes, for
+  each observed row.
+- **Roles on sets,** in place of the writer's table of sign roles.
+- **`difference` beside `sign` for voltages** (plus, minus, says): the membrane's voltage is
+  the cell less its outside node; a junction's is the sender less the receiver. This
+  answers item 5.
+- **`carries`, `direction`, `kinds` and `at` on an operator's sets:** an exchange route then
+  states its species and its direction (items 1 to 3).
+- **`resets.mask`:** which entities restart at a retirement (item 7).
+- **`time.event_rows`:** a row saved at an event's time holds the state before the event
+  (item 8).
+- **`run.id`, `run.end` and `run.source`:** the engine's revision and whether its tree was
+  clean, from the execution snapshot (item 11).
+- Geometry stays the caller's input (item 9).
+
+**The loop block** (FR-11, `docs/LOOPING_REPLAY_DESIGN.md` on the same branch; proposed,
+nothing built): `loop: {"species", "cell", "period", "closes": {"within", "says",
+"tolerance"}, "follows"?}`. The writer measures `within` on the saved arrays and refuses a
+block without `run.source`. The revision is read from `run.source.revision`, the one
+source of truth; the viewer's packaged replay fills its own `run.revision` from it.
+`follows` is for a cell cycle: the cell the loop follows after a division. The order of
+the loops: a planarian patch loop first, then a paced generic excitable cell labelled
+"not a human cardiomyocyte model", then the minimal cells' cycle.
+
+The viewer's side of this is not done yet: the page's loop reader is being brought to the
+block's shape, and the adapter's reading of a view takes the additions when the writer is
+on main.
+
