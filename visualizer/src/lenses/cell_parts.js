@@ -32,7 +32,7 @@
 // are large enough to see, so the picture is already near scale.
 
 import * as THREE from "../three.js";
-import { REF, cellFrame, packing } from "./shapes.js";
+import { REF, cellFrame, packing, solidGeometry } from "./shapes.js";
 import { buildScenery, vacuoleOf, middle } from "./cell_scenery.js";
 import { buildStructures } from "./cell_structures.js";
 
@@ -306,18 +306,19 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   // in the schematic picture it is enlarged like the other parts, so that it can be seen.
   // A cell with two membranes and a wall has its wall between them (a bacterium with an outer membrane), so the
   // second membrane is the outermost shell. The wall was once drawn outside it, which no such cell has.
+  // Each shell stands at one distance outside the cell membrane all round, as an envelope does: the cell's
+  // own surface set out by that distance. It was once the cell's solid scaled about its middle, which made
+  // the space between a rod's two membranes 2.5 times as wide at its ends as along its sides. The schematic
+  // distances are those the shells had along the sides: a share of the cell's half-width, the picture's choice.
   const two = parts.membranes === 2;
-  const wallGrow = !parts.wall ? 1 : parts.wall_nm !== undefined && real ? 1 + middle(parts.wall_nm) / 1000 / frame.u / widest : two ? 1.035 : 1.045;
-  const outerGrow = !two ? 1 : parts.wall ? Math.max(1.075, wallGrow + 0.04) : 1.035;
-  const shells = [...(parts.wall ? [wallGrow] : []), ...(two ? [outerGrow] : [])];
-  for (const grow of shells) {
-    const outer = new THREE.Mesh(prism, ctx.neutral({ opacity: 0.1, glass: 0.35, clip: true, side: THREE.DoubleSide }));
-    outer.scale.setScalar(grow);
+  const side = frame.equator.apothem; // the cell's half-width at its widest girth
+  const wallGap = !parts.wall ? 0 : parts.wall_nm !== undefined && real ? middle(parts.wall_nm) / 1000 / frame.u : side * (two ? 0.035 : 0.045);
+  const outerGap = !two ? 0 : parts.wall ? Math.max(side * 0.075, wallGap + side * 0.04) : side * 0.035;
+  for (const gap of [...(parts.wall ? [wallGap] : []), ...(two ? [outerGap] : [])]) {
+    const outer = new THREE.Mesh(solidGeometry(frame.equator.inset(-gap), TOP + gap, BASE - gap, BEVEL + gap), ctx.neutral({ opacity: 0.1, glass: 0.35, clip: true, side: THREE.DoubleSide }));
     outer.renderOrder = 7;
     ctx.illustrate(outer);
-    const rim = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(outline.ring(0, CUT + 0.0002, 16)), ctx.neutralLine({ opacity: 0.55 }));
-    rim.scale.set(grow, 1, grow);
-    ctx.illustrate(rim);
+    ctx.illustrate(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(outline.ring(gap, CUT + 0.0002, 16)), ctx.neutralLine({ opacity: 0.55 })));
   }
 
   // ---------------------------------------------------------------- channels and pumps
@@ -840,8 +841,8 @@ export function buildCell(ctx, studsCtx, mode, cell) {
   handles.shape = { point: outline.point, depth: (point) => outline.depth(point.x, point.z) };
   // Where on the outline the parts stand that something flows through, for flux (layers/cellflux.js).
   handles.spots = { ...SPOT, junction: junction ? SPOT.junction : null, gap: style.neighbourGap };
-  // How much larger than the cell membrane each shell outside it is drawn (1 where the cell has none).
-  handles.shells = { outer: outerGrow, wall: wallGrow };
+  // How far outside the cell membrane each shell outside it stands, in the cell's frame (0 where the cell has none).
+  handles.shells = { outerGap, wallGap };
 
   // ---------------------------------------------------------------- scenery of the species' own
   // Threads and hairs that stand out from the cell, and a plant cell's vacuole and chloroplasts

@@ -245,7 +245,9 @@ must bve configurable as well based on our different species as we add them".
   seen before, goes to the user first.
 - **Rough edges:** the human heart and body are quick placeholders; M. pneumoniae is drawn
   as a plain rod, since the shape list cannot yet narrow one end for its attachment
-  organelle; a cell under 2 µm across has one size mode.
+  organelle; a cell under 2 µm across has one size mode for now (a second, to scale, is
+  planned); to scale, thale cress's wall reaches past its neighbours' membranes, because
+  the neighbouring cells are drawn closer than two walls would let them stand.
 
 ## Experiment replays
 
@@ -408,6 +410,25 @@ indicative.
 In "To scale" the close-up of the membrane is to scale as well: a bilayer about 4.5 nm
 thick, a channel about 9 nm across, and a 10 nm scale bar. For comparison, the cells of
 the E07 sheet are about 11 µm across by their declared volume (0.75 pL).
+
+A single cell under 2 µm across (today the three bacteria) is drawn in one size mode for
+now: the schematic layout, made for a cell about 20 µm across and scaled down to the
+cell's own size. What that does to each part:
+
+- **Flagella and fimbriae** are drawn at the sizes the species' file gives with its
+  sources, and **ribosomes** at a textbook 20 nm across, the picture's choice.
+- **Membranes and membrane proteins** are enlarged by how small the cell is: in E. coli
+  (1 µm across) the membrane about 6 times and its proteins about 5 times, in Syn3A
+  (0.4 µm) about twice, in M. pneumoniae (0.2 µm) near their own size.
+- **A wall or an outer membrane** stands at one distance outside the cell membrane all
+  round: in E. coli 17.5 nm and 37.5 nm, the picture's choice. In thale cress to scale
+  the wall stands the 150 nm its file gives.
+- **The free chromosome** is one closed thread whose width, length and winding are the
+  picture's choice. Its panel says how thick and how long the thread is drawn, and what
+  share that is of the length its base pairs would make (2 to 4%, at a textbook 0.34 nm
+  a base pair).
+- **The scale bar** keeps the words "small parts enlarged" at every distance, since such
+  a cell is never drawn to scale.
 
 ## Run it
 

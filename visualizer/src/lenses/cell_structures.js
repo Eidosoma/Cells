@@ -188,6 +188,7 @@ export function buildStructures(env) {
     out.drawn[out.nucleus.part] = out.nucleus.said;
   } else if (parts.chromosome_kbp) {
     out.chromosome = chromosome(env, random, chromatinPart);
+    out.drawn[chromatinPart] = out.chromosome.said;
   }
   if (env.organelle("er")) out.studs = reticulum(env, random);
   if (env.organelle("golgi")) {
@@ -416,14 +417,19 @@ function chromosome(env, random, partName) {
     knots.push(next);
     at = next;
   }
-  const strand = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(knots, true, "catmullrom", 0.5), turns * 5, 0.075, 5, true), thread.material({ hue: "bioNucleus", roughness: 0.35, clip: true, thin: 0.5 }));
+  const path = new THREE.CatmullRomCurve3(knots, true, "catmullrom", 0.5), width = 0.075 * 2;
+  const strand = new THREE.Mesh(new THREE.TubeGeometry(path, turns * 5, width / 2, 5, true), thread.material({ hue: "bioNucleus", roughness: 0.35, clip: true, thin: 0.5 }));
   strand.renderOrder = 2;
   thread.add(strand);
   const reach = new THREE.Mesh(new THREE.SphereGeometry(coreRadius * 0.92, 20, 14), thread.proxyMaterial());
   reach.position.copy(coreAt);
   reach.scale.set(coreReach / coreRadius, 1, 1);
   thread.add(reach);
-  return { knots };
+  // What the panel says was drawn: the thread's width and length against what the file's length in
+  // base pairs would make as DNA, by the textbook's 0.34 nm a base pair and 2 nm across.
+  const drawn = path.getLength() * frame.u, whole = parts.chromosome_kbp * 0.34;
+  const said = [["Drawn", `One closed thread ${Number((width * frame.u * 1000).toPrecision(2))} nm thick and ${Number(drawn.toPrecision(2)).toLocaleString("en-US")} µm long, in the part of the cell kept below the cut. Its ${parts.chromosome_kbp.toLocaleString("en-US")} kbp would make about ${Math.round(whole).toLocaleString("en-US")} µm of DNA 2 nm thick, at 0.34 nm a base pair (textbook figures): the thread shows about ${Math.max(1, Math.round((drawn / whole) * 100))}% of that length. Its width, its length and how it winds are the picture's choice.`]];
+  return { knots, said };
 }
 
 /**
@@ -633,7 +639,8 @@ function ribosomes(env, random, built, bound) {
   let free = [], onStrings = [], radius, polysomes = 0, anchor = null;
   if (given && !parts.nucleus) {
     // A small cell whose file counts them: each about 20 nm across, a shape of its own at this size.
-    radius = Math.min(0.46, Math.max(0.085, 0.01 / frame.u));
+    // No cap in the cell's units: in a cell as thin as 0.2 µm a cap drew them at half that size.
+    radius = Math.max(0.085, 0.01 / frame.u);
     const total = Math.round(given * 0.6); // those of the part kept below the cut; the cut takes the rest away with the top of the cell
     const strung = Math.round((total * 0.15) / 5) * 5;
     const centres = scatterIn(strung / 5, (point) => kept(point, radius * 5 + 0.3), { wide, low: frame.base, high: env.cut });
