@@ -75,7 +75,13 @@ experiment).
         `visualizer/docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` on the visualizer branch at d818cb34.
         Items 1 and 10 are answered from the engine's code. `exchange_moved_fmol` is cumulative and
         positive outward. The saved `membrane_transferred` holds the passive routes only.
-      FR-11's interim planarian loop comes after these. Its run must carry what the viewer's loop
+      FR-11's interim planarian loop comes after these. Its design is
+      `docs/LOOPING_REPLAY_DESIGN.md` on run-view-d154 (49848ce0; ruled 16 November):
+      - a loop block whose closure the writer measures;
+      - the planarian patch driven by a subthreshold current train;
+      - a paced generic excitable cell labelled "not a human cardiomyocyte model". The cardiac
+        channel laws are Track E's M4/M5, not FR-11's;
+      - the minimal cells' cycle after an admission probe. Its run must carry what the viewer's loop
       reader requires: the visualizer's "What a species' looping run must carry", on its branch at
       cf11924a.
       - a `loop` block in the view: the species, the cell, and the run's own closure statement
@@ -101,6 +107,18 @@ experiment).
           the GPU. It needs a basis in the field solve's conditioning before the qualification.
         - The throughput steps also overran the 3600 s GPU budget: throughput-128 was stopped, and
           256 was skipped.
+        - **The diagnosis** (16 November): it is rounding amplified by conditioning. Lone equals
+          scalar bitwise on the GPU, and observables are host maps of the state. The moved fields
+          are small differences of potentials, with outside potentials near 0.5 µV against cells
+          at 21 mV.
+        - **The direction ruled:**
+          - a class table, each field judged at 1e-12 of the scale it is computed from (the
+            minimal table);
+          - an empirical 1e-10 cap for the outside network's ledgers;
+          - an exact host-map check;
+          - `LOCKED_LIMIT_S = 4800`.
+          Not frozen until a held-out development pass at a batch of 128 on the merged head, and a
+          long packed-against-lone pair that settles the horizon.
    5. The module system's stage 1, one external law (D180), after the user's decisions in its §6.
 3. **Queued follow-ups** (each its own gated change):
    - insertion@2's gate fix, before `check_onsets` is lifted (§7.4 (j));
