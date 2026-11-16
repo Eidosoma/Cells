@@ -648,12 +648,25 @@ it failed open.
   a channel's gating slope neither), and the refusal's message says so. A constant-field
   permeability is admitted **only when the world declares kinds**, because only then does the
   per-stage rule hold the compartment's node; without kinds it stays refused, as in version 1.
-- **The kinds a world declares:** the known ones are admitted. cells.transporter@1's populations
-  and cells.passive_routes@1's routes (the neutral law and the proton leak) hold the node through
-  their per-node `stage_term` and their `bound_rate`. cells.rapid_proton_buffer@1 is a stage read
-  and declares no route. **Any other kind is refused** while a compartment is declared: the operator
-  cannot know whether its routes cross the bounding patch (D180's external kinds), so it fails
-  closed, as §4's admitted list does for operators.
+- **The kinds a world declares:** the known ones are admitted, each held as follows (wording
+  corrected after the core's review, 16 November 2026).
+  - **Charged routes, per stage.** cells.transporter@1's proton law and cells.passive_routes@1's
+    proton leak put their slopes at both ends of their patch through `stage_term`, so the
+    per-stage rule holds the compartment's node against them at every explicit stage. The proton
+    law also has a definition-time term (`bound_rate`, its slope bounded at saturation over the
+    node's capacitance); the leak has none and is held per stage only.
+  - **The passive neutral law, at the definition.** It moves no charge. Its definition-time
+    `bound_rate`, dt·L ≤ 1 with L = P·A·(1/V_a + 1/V_b), holds its material relaxation, the
+    compartment's own small volume included.
+  - **The transporter's neutral law: open.** It has neither term, so nothing bounds its material
+    stiffness at a small node: near its static head its flux depends on the compartment's own
+    concentration. That is a material question, like finding 3's neutral-species term (the
+    inner-model note's §13.6), not the charged door's, and it is recorded here as open. It needs a
+    measurement or a bound term before a fast neutral population sits on a bounding patch.
+  - cells.rapid_proton_buffer@1 is a stage read and declares no route.
+  - **Any other kind is refused** while a compartment is declared: the operator cannot know
+    whether its routes cross the bounding patch (D180's external kinds), so it fails closed, as
+    §4's admitted list does for operators.
 - **Only with an IMEX tableau** (the core's review of version 1.1, 16 November 2026; the lead's
   ruling). Both holds above belong to @3's IMEX step: the per-stage rule runs in `imex_step` only,
   and @3's step checks hold B7's term and the kinds' `bound_rate` for the IMEX solvers only

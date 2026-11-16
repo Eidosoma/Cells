@@ -519,6 +519,25 @@ def test_refusal_4_admits_routes_beside_a_compartment_only_with_an_imex_tableau(
         comp.parse_declaration(block, rk4)
 
 
+def test_refusal_4s_known_kinds_carry_the_terms_its_admission_names():
+    """ROUTE_KINDS' comment and §3.4.1 (wording corrected after the core's review, finding 4): each
+    known route kind puts its charged routes' slopes in the per-stage rule (stage_term) and has a
+    definition-time term (bound_rate: the proton law's, the passive neutral law's); the known read
+    kind is a stage read that moves nothing and has no rates. If a hook goes, refusal 4's
+    admission loses its premise and this fails."""
+    from cells.core import kind_registry
+
+    registry = kind_registry.active()
+    for kind_id in comp.ROUTE_KINDS:
+        kind = registry.lookup(kind_id)
+        assert kind.stage_term is not None and kind.bound_rate is not None, kind_id
+        assert kind.rates is not None and kind.moved_rows is not None, kind_id
+    for kind_id in comp.READ_KINDS:
+        kind = registry.lookup(kind_id)
+        assert kind.stage_read is not None, kind_id
+        assert kind.rates is None and kind.moved_rows is None and kind.stage_term is None, kind_id
+
+
 def test_refusal_4s_premise_the_stage_rule_holds_a_permeability_at_the_compartments_node(
     monkeypatch,
 ):

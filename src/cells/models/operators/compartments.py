@@ -19,8 +19,9 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    the known ones (ROUTE_KINDS, READ_KINDS), which fails closed; and, under an RK4 step, any
    declared kind, so that version 1's refusal stands there. That is the charged door (§3.4): a
    compartment has no face, so its charge relaxation is held only by B7's face-free term and,
-   with kinds declared, by the per-stage rule at free outside nodes, where the known kinds put
-   their routes' slopes. Both run only with an IMEX tableau;
+   with kinds declared, by the per-stage rule at free outside nodes, where the known kinds'
+   charged routes put their slopes (ROUTE_KINDS' comment names the neutral laws' terms). Both run
+   only with an IMEX tableau;
 5. a nonzero charge anchor (version 1): the content is electroneutral, so q = 0 and V_b = 0;
 6. an owner whose capacitor component (cells and outside nodes joined by membrane patches, as
    numerics/surface_field.bind joins them) holds no held bath (version 1). In such a component no
@@ -57,8 +58,13 @@ from cells.core.specs import ConfigError, _fields
 from cells.models.operators.contract import Operator
 
 LAW_ID = "cell_owned_compartments@1"
-# Refusal 4's known kinds (version 1.1, §3.4.1): kinds whose routes on a bounding patch hold the
-# compartment's node through their per-node stage_term and their bound_rate, and a stage read that
+# Refusal 4's known kinds (version 1.1, §3.4.1). Their charged routes on a bounding patch (the
+# transporter's proton law, the passive routes' proton leak) put their slopes at the compartment's
+# node through stage_term, which the per-stage rule holds; the proton law also has a
+# definition-time bound_rate, the leak none. The passive neutral law moves no charge: its
+# definition-time bound_rate (dt L <= 1, the compartment's own volume in L) holds its material
+# relaxation. The transporter's neutral law has neither term: its material stiffness at a small
+# node is an open question (§3.4.1), not the charged door's. The buffer is a stage read and
 # declares no route. Any other declared kind is refused while a compartment is declared.
 ROUTE_KINDS = ("cells.passive_routes@1", "cells.transporter@1")
 READ_KINDS = ("cells.rapid_proton_buffer@1",)
