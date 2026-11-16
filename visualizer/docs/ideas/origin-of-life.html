@@ -1,0 +1,1846 @@
+<title>Origin of Life</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a reading page in the viewer's own tokens, the fourth of a set with the earlier ideas pages.
+   What GARD is (with whose statement each part is), the toy the sketches run on and the one clock they
+   share, seven options each with a live sketch and what it would take, then the comparison, the
+   recommendation, what the engine would be asked for, the questions, the toy's run as a list, sources. */
+:root {
+  --bg: #eef2f6; --bg-raised: #ffffff; --fg: #12283a; --muted: #566878; --line: #d6dee6; --accent: #1f6fd0;
+  --stage-a: #fbfcfd; --stage-b: #e3eaf1;
+  --kind-1: #2a78d6; --kind-2: #eb6834; --kind-3: #1baf7a; --kind-other: #b0b5ba; --kind-other-2: #c3c8cd;
+  --ramp-0: #ece9fb; --ramp-1: #c8c0f3; --ramp-2: #9d90e8; --ramp-3: #6f5fd9; --ramp-4: #4a3aa7; --ramp-5: #2f237a;
+  --tail: #8a99aa; --ghost: #b8c3ce; --cursor: #12283a; --shadow: rgba(18, 40, 58, 0.3);
+  --light-sky: #ffffff; --light-ground: #8a99aa; --light-key: #ffffff;
+  --font-display: "Space Grotesk", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b151e; --bg-raised: #162432; --fg: #e6edf3; --muted: #95a6b7; --line: #283b4d; --accent: #5b9dee;
+    --stage-a: #1a3044; --stage-b: #0c1823;
+    --kind-1: #3987e5; --kind-2: #d95926; --kind-3: #199e70; --kind-other: #4f565e; --kind-other-2: #5d646b;
+    --ramp-0: #1c1a3a; --ramp-1: #2f2870; --ramp-2: #4a3db0; --ramp-3: #7566e0; --ramp-4: #a69cf0; --ramp-5: #d8d3fa;
+    --tail: #6f8297; --ghost: #3a4d61; --cursor: #e6edf3; --shadow: rgba(0, 0, 0, 0.6);
+    --light-sky: #dbe6f2; --light-ground: #24384c; --light-key: #e8eef5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b151e; --bg-raised: #162432; --fg: #e6edf3; --muted: #95a6b7; --line: #283b4d; --accent: #5b9dee;
+  --stage-a: #1a3044; --stage-b: #0c1823;
+  --kind-1: #3987e5; --kind-2: #d95926; --kind-3: #199e70; --kind-other: #4f565e; --kind-other-2: #5d646b;
+  --ramp-0: #1c1a3a; --ramp-1: #2f2870; --ramp-2: #4a3db0; --ramp-3: #7566e0; --ramp-4: #a69cf0; --ramp-5: #d8d3fa;
+  --tail: #6f8297; --ghost: #3a4d61; --cursor: #e6edf3; --shadow: rgba(0, 0, 0, 0.6);
+  --light-sky: #dbe6f2; --light-ground: #24384c; --light-key: #e8eef5;
+  color-scheme: dark;
+}
+
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 var(--font-body); -webkit-font-smoothing: antialiased; }
+.page {
+  max-width: 1080px; margin: 0 auto; padding-block: 44px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 64px;
+}
+.page > *, .section > *, figure, .cards > *, .two > *, .options > * { min-width: 0; }
+h1, h2, h3, h4, p, ul, ol, dl, dd, figure { margin: 0; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-visible, summary:focus-visible, .scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+code { font-family: var(--font-mono); font-size: 0.88em; overflow-wrap: anywhere; }
+sub, sup { line-height: 0; }
+
+.eyebrow { font: 600 12px/1.2 var(--font-mono); letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.masthead { display: grid; gap: 18px; }
+.masthead h1 { font: 600 clamp(32px, 5.4vw, 52px)/1.04 var(--font-display); letter-spacing: -0.022em; text-wrap: balance; max-width: 17ch; }
+.lede { font-size: 18px; line-height: 1.5; color: var(--muted); max-width: 66ch; }
+.lede strong { color: var(--fg); font-weight: 600; }
+.choice { max-width: 66ch; font-size: 17px; }
+.read { font: 500 12.5px/1.55 var(--font-mono); color: var(--muted); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; max-width: 84ch; background: var(--bg-raised); display: grid; gap: 4px; }
+.read b { color: var(--fg); font-weight: 600; }
+
+.section { display: grid; gap: 22px; }
+.section > header { display: grid; gap: 8px; max-width: 70ch; }
+.section h2 { font: 600 clamp(22px, 3vw, 28px)/1.2 var(--font-display); letter-spacing: -0.012em; text-wrap: balance; }
+.section > header p { color: var(--muted); }
+.section > p, .section > ul { max-width: 70ch; }
+.section h3 { font: 600 17px/1.3 var(--font-display); }
+.mark { display: inline-block; font: 600 10px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 3px 7px; margin-left: 8px; white-space: nowrap; vertical-align: 0.25em; }
+.whose { display: inline-block; font: 600 10px/1 var(--font-mono); letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 7px; white-space: nowrap; }
+
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.card { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 20px; display: grid; gap: 10px; align-content: start; }
+.card h3 { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.card p, .card li { font-size: 14.5px; color: var(--muted); }
+.card p strong, .card li strong { color: var(--fg); font-weight: 600; }
+.card ul { padding-left: 18px; display: grid; gap: 5px; }
+.card .src { font: 500 11.5px/1.45 var(--font-mono); color: var(--muted); }
+.card.not { border-style: dashed; }
+.formula { font: 500 13.5px/1.6 var(--font-mono); color: var(--fg); background: var(--bg); border-radius: 8px; padding: 8px 10px; overflow-wrap: anywhere; }
+
+/* A live sketch */
+.sketch { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: grid; }
+.sketch .bar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.sketch .stage { position: relative; background: radial-gradient(120% 90% at 50% 20%, var(--stage-a), var(--stage-b)); }
+.sketch canvas { display: block; width: 100%; max-width: 100%; touch-action: pan-y; }
+.sketch canvas.r169 { aspect-ratio: 16 / 9; }
+.sketch canvas.r21 { aspect-ratio: 2 / 1; }
+.sketch canvas.sq { aspect-ratio: 1 / 1; }
+.sketch .tag { position: absolute; left: 12px; top: 10px; font: 600 10.5px/1.25 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: color-mix(in srgb, var(--bg-raised) 82%, transparent); padding: 5px 8px; border-radius: 6px; pointer-events: none; max-width: calc(100% - 24px); }
+.sketch .hint { position: absolute; right: 12px; bottom: 10px; font: 500 11px/1.3 var(--font-mono); color: var(--muted); background: color-mix(in srgb, var(--bg-raised) 82%, transparent); padding: 5px 8px; border-radius: 6px; pointer-events: none; max-width: 60%; text-align: right; }
+.sketch .float { position: absolute; font: 600 11.5px/1.2 var(--font-body); color: var(--fg); background: color-mix(in srgb, var(--bg-raised) 85%, transparent); padding: 3px 6px; border-radius: 5px; pointer-events: none; white-space: nowrap; transform: translate(-50%, -100%); }
+.sketch .float[hidden] { display: none; }
+.sketch .fallback { padding: 44px 18px 18px; font-size: 14px; color: var(--muted); }
+.sketch.live .fallback { display: none; }
+.sketch:not(.live) canvas, .sketch:not(.live) .bar, .sketch:not(.live) .hint, .sketch:not(.live) .readout { display: none; }
+.sketch .legend { padding: 10px 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; }
+.sketch .legend span { display: inline-flex; gap: 7px; align-items: center; }
+.sketch .readout { padding: 10px 16px; border-top: 1px solid var(--line); font-size: 13.5px; min-height: 1.6em; }
+.panes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.panes > .stage + .stage { border-left: 1px solid var(--line); }
+.glyph { width: 13px; height: 13px; flex: none; display: inline-block; }
+.sw { width: 18px; height: 11px; border-radius: 2px; display: inline-block; flex: none; }
+.ramp { width: 64px; height: 11px; border-radius: 2px; display: inline-block; flex: none; background: linear-gradient(90deg, var(--ramp-0), var(--ramp-1), var(--ramp-2), var(--ramp-3), var(--ramp-4), var(--ramp-5)); }
+.group { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.group > .name { font: 600 10.5px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-right: 2px; }
+.seg { display: inline-flex; flex-wrap: wrap; padding: 3px; gap: 2px; border-radius: 12px; background: var(--bg); box-shadow: inset 0 0 0 1px var(--line); }
+.seg button { font: 500 13px/1.2 var(--font-body); color: var(--muted); background: transparent; border: 0; border-radius: 9px; padding: 7px 11px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.check { display: inline-flex; gap: 7px; align-items: center; font-size: 13px; color: var(--muted); }
+
+.idea-facts { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 10px 18px; font-size: 15px; line-height: 1.5; max-width: 900px; }
+.idea-facts dt { font: 600 11px/1.6 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-top: 2px; }
+.idea-facts dd { min-width: 0; }
+
+/* The toy and its one clock */
+.toy { border: 1px solid var(--line); border-left: 3px solid var(--fg); border-radius: 12px; background: var(--bg-raised); padding: 16px 18px; display: grid; gap: 10px; max-width: 900px; }
+.toy p { font-size: 14.5px; }
+.toy p.quiet { color: var(--muted); }
+.options { display: grid; gap: 64px; }
+.clock { position: sticky; bottom: 0; z-index: 5; margin-top: -40px; background: color-mix(in srgb, var(--bg-raised) 94%, transparent); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px 14px; align-items: center; box-shadow: 0 6px 24px -12px var(--shadow); }
+.clock .buttons { display: inline-flex; gap: 4px; }
+.clock button { font: 600 13px/1 var(--font-body); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 9px; min-width: 36px; height: 34px; padding: 0 9px; cursor: pointer; }
+.clock button.play { min-width: 66px; }
+.clock input[type="range"] { width: 100%; accent-color: var(--fg); }
+.clock select { font: 500 13px/1.2 var(--font-body); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 9px; padding: 7px 8px; }
+.clock .words { grid-column: 1 / -1; font: 500 12.5px/1.4 var(--font-mono); color: var(--muted); }
+.clock .words b { color: var(--fg); font-weight: 600; }
+
+/* The entry mock */
+.mock { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 18px; padding: 18px; }
+.list-mock { border: 1px solid var(--line); border-radius: 12px; background: var(--bg); padding: 8px; font-size: 14px; display: grid; gap: 2px; align-content: start; }
+.list-mock .h { font: 600 10.5px/1.2 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 10px 8px 4px; }
+.list-mock .it { padding: 6px 10px; border-radius: 8px; color: var(--fg); display: flex; justify-content: space-between; gap: 8px; }
+.list-mock .it small { color: var(--muted); font-size: 11.5px; }
+.list-mock .it.on { background: var(--fg); color: var(--bg); }
+.list-mock .it.on small { color: var(--bg); opacity: 0.8; }
+.entry-card { display: grid; gap: 12px; align-content: start; }
+.entry-card h4 { font: 600 20px/1.2 var(--font-display); }
+.entry-card .modelled { border: 1px dashed var(--line); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.levels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.levels > div { border: 1px solid var(--line); border-radius: 10px; padding: 10px; font-size: 13px; color: var(--muted); display: grid; gap: 4px; align-content: start; background: var(--bg); }
+.levels > div b { color: var(--fg); font: 600 13.5px/1.25 var(--font-display); }
+.levels > div.here { border-color: var(--fg); }
+.matrix-wrap { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 14px; align-items: center; }
+.matrix-wrap canvas { width: 100%; aspect-ratio: 1 / 1; border-radius: 6px; }
+.matrix-wrap p { font-size: 13.5px; color: var(--muted); }
+
+/* Tables, the list, the asks */
+.wide { overflow-x: auto; max-width: 100%; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-raised); }
+.scroll { max-height: 460px; overflow: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 14px; line-height: 1.45; }
+th, td { text-align: left; vertical-align: top; padding: 10px 13px; border-bottom: 1px solid var(--line); }
+thead th { font: 600 11px/1.4 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); position: sticky; top: 0; background: var(--bg-raised); }
+tbody th { font: 600 14px/1.4 var(--font-display); width: 150px; }
+tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+td.pick, th.pick { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.list td, .list th { padding: 6px 11px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.list tbody th { font: 500 12.5px/1.4 var(--font-mono); width: auto; }
+.list tr.now td, .list tr.now th { background: color-mix(in srgb, var(--fg) 8%, transparent); }
+pre { margin: 0; padding: 16px 18px; font: 12.5px/1.55 var(--font-mono); min-width: 640px; }
+figure figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; max-width: 70ch; }
+.wide svg { display: block; min-width: 720px; width: 100%; height: auto; color: var(--fg); }
+.asks { display: grid; gap: 12px; padding-left: 22px; max-width: 74ch; }
+.asks li { padding-left: 4px; }
+.asks li::marker { color: var(--muted); }
+.asks em { font-style: normal; color: var(--muted); }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; }
+.two h2 { font: 600 clamp(22px, 3vw, 28px)/1.2 var(--font-display); letter-spacing: -0.012em; margin-bottom: 16px; }
+.sources { font-size: 14px; color: var(--muted); display: grid; gap: 8px; padding-left: 20px; max-width: 86ch; }
+.section-list { padding-left: 20px; display: grid; gap: 8px; max-width: 72ch; }
+.section-list strong { font-weight: 600; }
+.foot { font-size: 13.5px; color: var(--muted); max-width: 78ch; }
+
+@media (max-width: 860px) {
+  .cards, .two, .panes { grid-template-columns: minmax(0, 1fr); }
+  .panes > .stage + .stage { border-left: 0; border-top: 1px solid var(--line); }
+  .page { gap: 52px; padding-block: 28px 64px; }
+  .options { gap: 52px; }
+  .sketch canvas.r169 { aspect-ratio: 4 / 3.4; }
+  .idea-facts { grid-template-columns: minmax(0, 1fr); gap: 2px 0; }
+  .idea-facts dd { margin-bottom: 10px; }
+  .mock { grid-template-columns: minmax(0, 1fr); }
+  .levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .sketch .hint { display: none; }
+  .matrix-wrap { grid-template-columns: minmax(0, 1fr); }
+  .matrix-wrap canvas { max-width: 240px; }
+  .clock { grid-template-columns: minmax(0, 1fr) auto; padding: 8px 10px; }
+  .clock .buttons { grid-column: 1 / -1; }
+  .clock button { min-width: 34px; }
+}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">Cells viewer · ideas to choose from · 16 November 2026</p>
+    <h1>Origin of life in the viewer: a GARD assembly</h1>
+    <p class="lede">GARD, short for Graded Autocatalysis Replication Domain, is a model of how a droplet of fat-like molecules could carry heredity before there were genes. The droplet takes in molecules from its surroundings, grows, splits in two, and its daughters may keep its mix of molecules. The <em>Plastic Heredity</em> preprint was built on it. This page offers ways the viewer could show a GARD assembly, from one droplet to its lineages. <strong>Nothing here is built, and nothing of GARD is in Cells' engine yet.</strong> The engine's design note for GARD is proposed, on a development branch, not on main; this page uses its names and its records. Every sketch is live and is drawn from a small toy that this page runs when it opens. The toy follows GARD's rules as the preprint and the original papers print them, with a random seed and choices of its own. It is not Cells' engine, not the preprint's code and not its runs, and nothing it shows is a finding.</p>
+    <p class="choice"><strong>The choice is what to build, and in which order.</strong> I would add a heading, "Origin of life", to the species switch, with GARD as a model system rather than an organism, and give it a view of its own. I would build that view in this order: the composition strip and the similarity at each fission, under one time control; then the assembly drawn as a micelle; then the lineage tree; then the carpet of similarities and the map of compositions. The questions for you are near the end.</p>
+    <div class="read">
+      <span><b>engine, main</b> b92b4c2b, read on 16 November 2026, and again at dced303a the same evening: GARD is named in <code>docs/SCIENTIFIC_BASIS.md</code> (the preprint's matrix and reservoir, and its definition F12) and in <code>docs/ARCHITECTURE.md</code> ("need explicit contracts if supported"); no GARD code</span>
+      <span><b>engine, gard-design</b> e75b4b1f: the engine's GARD design note, <code>docs/GARD_DESIGN.md</code>, proposed, on a development branch, not on main. This page follows its names (assembly, molecule type, reservoir, lineage, slot, fission) and its run records; everything taken from it is marked so</span>
+      <span><b>the preprint</b> <em>Plastic Heredity</em>, doi:10.5281/zenodo.22143269, read as it resolves on 16 November 2026: version 5.0, CC BY 4.0. The engine's record cites version 2.3 as its source S01; its F12 definition is the one version 5.0 prints</span>
+      <span><b>the papers</b> three open GARD papers read in full text, one read only through a summary and one not read, listed at the foot with what was read in each</span>
+    </div>
+  </header>
+
+  <section class="section" aria-labelledby="what-h">
+    <header>
+      <h2 id="what-h">What GARD is, in plain words</h2>
+      <p>Each card says whose statement it is: the preprint's, or the original model's as the GARD papers state it. The two differ in places, and the sketches keep them apart.</p>
+    </header>
+    <figure>
+      <div class="wide">
+        <svg viewBox="0 0 940 250" role="img" aria-label="The growth and fission cycle. A daughter of 40 molecules grows by single molecules joining and leaving until it holds 80; it then fissions into two of 40. One daughter carries the lineage on and grows again; the other is not followed. The preprint compares the parent just before the fission with the daughter that carries on, and calls it inheritance when the similarity H is above 0.9.">
+          <g font-family="Inter, system-ui, sans-serif" font-size="13" fill="currentColor">
+            <circle cx="90" cy="120" r="34" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.55"/>
+            <text x="90" y="116" text-anchor="middle" font-weight="600">40</text><text x="90" y="133" text-anchor="middle" font-size="11" fill-opacity="0.7">molecules</text>
+            <text x="90" y="178" text-anchor="middle" font-size="12" fill-opacity="0.75">daughter D<tspan font-size="9" dy="3">t−1</tspan></text>
+            <path d="M132 120 C 190 70, 260 70, 318 112" fill="none" stroke="currentColor" stroke-opacity="0.55" stroke-width="1.6" marker-end="url(#ol-arrow)"/>
+            <text x="225" y="62" text-anchor="middle" font-size="12" fill-opacity="0.8">grows: one molecule joins or leaves at a time</text>
+            <text x="225" y="80" text-anchor="middle" font-size="11" fill-opacity="0.6">(not tested by the preprint)</text>
+            <circle cx="372" cy="120" r="48" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.55"/>
+            <text x="372" y="116" text-anchor="middle" font-weight="600">80</text><text x="372" y="133" text-anchor="middle" font-size="11" fill-opacity="0.7">molecules</text>
+            <text x="372" y="190" text-anchor="middle" font-size="12" fill-opacity="0.75">parent P<tspan font-size="9" dy="3">t</tspan>, just before it splits</text>
+            <path d="M424 110 L 560 74" fill="none" stroke="currentColor" stroke-width="2.4" marker-end="url(#ol-arrow)"/>
+            <path d="M424 132 L 560 170" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.4" stroke-dasharray="5 5" marker-end="url(#ol-arrow)"/>
+            <text x="480" y="66" text-anchor="middle" font-size="12" font-weight="600">H(P<tspan font-size="9" dy="3">t</tspan><tspan dy="-3">, D</tspan><tspan font-size="9" dy="3">t</tspan><tspan dy="-3">) &gt; 0.9 ?</tspan></text>
+            <circle cx="598" cy="70" r="34" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-width="2"/>
+            <text x="598" y="66" text-anchor="middle" font-weight="600">40</text><text x="598" y="83" text-anchor="middle" font-size="11" fill-opacity="0.7">carries on</text>
+            <circle cx="598" cy="178" r="34" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-dasharray="4 4"/>
+            <text x="598" y="174" text-anchor="middle" fill-opacity="0.55">40</text><text x="598" y="191" text-anchor="middle" font-size="11" fill-opacity="0.55">not followed</text>
+            <path d="M636 70 C 700 40, 770 50, 820 96" fill="none" stroke="currentColor" stroke-opacity="0.55" stroke-width="1.6" marker-end="url(#ol-arrow)"/>
+            <text x="760" y="36" text-anchor="middle" font-size="12" fill-opacity="0.8">grows again into P<tspan font-size="9" dy="3">t+1</tspan></text>
+            <text x="700" y="222" font-size="12" fill-opacity="0.75">Above 0.9: inherited. At or below 0.9: a break.</text>
+            <text x="700" y="240" font-size="12" fill-opacity="0.75">F12 looks for a break, then three inherited in a row, within twelve fissions.</text>
+          </g>
+          <defs><marker id="ol-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor" fill-opacity="0.7"/></marker></defs>
+        </svg>
+      </div>
+      <figcaption>My own drawing of the cycle as the preprint defines it (its text in the section "Compositional similarity and boundary inheritance", and its Appendix F). Inheritance is tested on the fission arrow only; the growth between fissions is not tested.</figcaption>
+    </figure>
+    <div class="cards">
+      <div class="card">
+        <h3>The molecules <span class="whose">both</span></h3>
+        <p><strong>A hundred types, t000 to t099 in the engine's proposed names.</strong> They stand for amphiphiles, molecules with a water-loving head and an oily tail, as the lipids of a membrane have. The model gives a type no chemistry: it is a number, and what it does comes only from the table of catalysis below.</p>
+        <p class="src">100 types: the preprint's Appendix F, and Gross and others 2014, Markovitch and Krasnogor 2018. Amphiphiles: the 2018 review.</p>
+      </div>
+      <div class="card">
+        <h3>An assembly is a list of counts <span class="whose">both</span></h3>
+        <p><strong>How many molecules of each type it holds, and nothing else.</strong> The papers call the list its composition; the 2018 review calls it a compositional genome. The preprint starts each lineage at 40 molecules of 40 different types.</p>
+        <p class="src">The preprint, Appendix F; the 2018 review, "Compositional homeostasis" and "Compositional information".</p>
+      </div>
+      <div class="card">
+        <h3>Mutual catalysis: a fixed table <span class="whose">both</span></h3>
+        <p><strong>A table β (beta) of 100 × 100 numbers</strong> says how much a molecule of type j inside the assembly speeds the joining and the leaving of type i. Its numbers are drawn at random from a log-normal distribution, so most are tiny and a few are very large. A molecule therefore joins faster the more the molecules already inside favour it.</p>
+        <p class="formula">β<sub>ij</sub> = exp(−4 + 4Z<sub>ij</sub>), Z standard normal, diagonal kept</p>
+        <p class="formula">b<sub>i</sub> = 1 + (βx)<sub>i</sub>/N · join a<sub>i</sub><sup>+</sup> = k<sub>f</sub> ρ<sub>i</sub> N b<sub>i</sub> · leave a<sub>i</sub><sup>−</sup> = k<sub>b</sub> x<sub>i</sub> b<sub>i</sub></p>
+        <p>with k<sub>f</sub> = 10<sup>−2</sup>, k<sub>b</sub> = 10<sup>−4</sup>, and every type held at ρ<sub>i</sub> = 0.01 in a reservoir that never runs down. x<sub>i</sub> is the count of type i and N the assembly's size.</p>
+        <p class="src">The preprint, Appendix F, for all six of its versions. The same form, written as one rate equation, is in Gross and others 2014 and in Markovitch and Krasnogor 2018 (which give ln β as normal with mean −4 and standard deviation 4).</p>
+      </div>
+      <div class="card">
+        <h3>Growth and splitting <span class="whose">both</span></h3>
+        <p><strong>The assembly grows until it holds 80 molecules, then splits in two.</strong> In the preprint, one daughter carries the lineage on and the other is not followed. Its six versions differ in how the split is drawn (each molecule to either side with even odds, or exactly half), in which daughter carries on, and in how an overshoot past 80 is trimmed. The original papers run the same "single-lineage mode", splitting at a size N<sub>max</sub> into two of N<sub>max</sub>/2, and also run populations held at one size: Gross and others 2014 seed a thousand assemblies and keep their number fixed by a Moran process; the engine's note words that step as a fission that removes a member at random.</p>
+        <p class="src">The preprint, Appendix F; Gross and others 2014, Methods; Markovitch and Krasnogor 2018 (N<sub>max</sub> = 100 there, 80 in the preprint).</p>
+      </div>
+      <div class="card">
+        <h3>Similarity H <span class="whose">both</span></h3>
+        <p><strong>The cosine of the angle between two lists of counts:</strong> 1 when the two mixes are in the same proportions, whatever their sizes, and near 0 when they share little. A daughter half the size of its parent can still score 1.</p>
+        <p class="formula">H(x, y) = x · y / (‖x‖ ‖y‖)</p>
+        <p class="src">The preprint, "Compositional similarity and boundary inheritance"; the 2018 review calls it the normalised dot product.</p>
+      </div>
+      <div class="card">
+        <h3>Inheritance, the threshold, and F12 <span class="whose">the preprint's</span></h3>
+        <p><strong>At each fission the preprint compares the parent just before it splits with the daughter that carries on.</strong> H above 0.9 counts as inheritance; 0.9 or below is a break, so 0.9 itself is a break. The growth in between is not tested, and successive daughters are not compared. Its first endpoint, F12, asks of the next twelve fissions: was there a break, and, strictly after it, three inherited fissions in a row? It does not ask for a return to the old mix. A stricter event asks for eight inherited fissions whose daughters all resemble one another above 0.9 and all differ from the old parent (H at most 0.85).</p>
+        <p class="src">The preprint: "In brief", the reader's guide, the section "F12 break-and-renewal endpoint", and Figure 4's caption. The engine's record states the same definition (<code>docs/SCIENTIFIC_BASIS.md</code>, main).</p>
+      </div>
+      <div class="card">
+        <h3>Composomes and compotypes <span class="whose">the original model's</span></h3>
+        <p><strong>Some mixes reproduce themselves:</strong> as the assembly grows its proportions hold, so its daughters resemble it. The papers call such a self-preserving mix a composome: a run of assemblies, each closely like the one before it and the one after it. A group of similar composomes is a compotype, found by clustering (k-means). A lineage can sit in a composome for many generations, drift, and enter another; different tables β give one to seven. The preprint uses no composomes in its endpoints and did no clustering; it names mapping its episodes onto compotypes as a next test.</p>
+        <p class="src">Gross and others 2014, Methods (the definition quoted); the 2018 review, "Replicating composomes"; Markovitch and Krasnogor 2018 (one to six compotypes in 10,000 runs); the preprint, "Plastic heredity and the composome debate".</p>
+      </div>
+      <div class="card">
+        <h3>In the engine's design note <span class="whose">proposed</span></h3>
+        <p><strong>Proposed, on a development branch, not on main</strong> (<code>docs/GARD_DESIGN.md</code>, branch <code>gard-design</code>, e75b4b1f). Its names, which this page follows: an <em>assembly</em> holds integer counts of molecule <em>types</em> t000 to t099; it exchanges molecules with a held <em>reservoir</em>; the matrix β and the reservoir are the environment, never the assembly's state; one daughter continues the <em>lineage</em>; a population has a fixed number of <em>slots</em>.</p>
+        <p>Its laws: <code>cells.reservoir_exchange@1</code>, and the catalysis factor in two forms, <code>cells.member_catalysis_at_state@1</code> (as published) and <code>cells.member_catalysis@1</code> ("pair-consistent"). Its operators: <code>cells.size_threshold_fission@1</code> and <code>cells.daughter_continuation@1</code>. It recommends abstract assemblies first, run by exact single-molecule events, with 100 types in a dense log-normal β. H is worked out in the engine at each fission; F12, composomes and compotypes in <code>validation/gard/</code>.</p>
+        <p><strong>An open finding, under review:</strong> the note reports that the published single-event kernel is not microscopically reversible, and proposes the pair-consistent form beside it.</p>
+      </div>
+      <div class="card not">
+        <h3>What GARD does not have <span class="whose">both</span></h3>
+        <ul>
+          <li><strong>No shape, no size in space, no membrane, no place and no neighbours.</strong> The 2018 review treats the assembly as well stirred, with no structure in space.</li>
+          <li><strong>No charge, voltage or energy,</strong> and no chemistry of its molecules beyond the table β.</li>
+          <li><strong>The reservoir and the table are fixed.</strong> The assembly neither writes nor inherits them (the preprint).</li>
+          <li><strong>No clock of real life.</strong> Its time is that of its rate constants, and no measured chemistry stands behind them.</li>
+          <li><strong>Whether such assemblies can evolve is disputed.</strong> Vasas and others (2010) argued that they cannot evolve open-endedly; the GARD authors replied (2012, and the 2018 review). The preprint sets the exchange out.</li>
+        </ul>
+        <p>So any shape, place or motion in a picture of GARD is the picture's choice, and the picture says so.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="toy-h">
+    <header>
+      <h2 id="toy-h">The toy the sketches run on</h2>
+      <p>No GARD run of Cells' engine exists, so the sketches below share one small toy that this page runs once when it opens, in well under a second, and then replays under one clock.</p>
+    </header>
+    <div class="toy">
+      <p><strong>A toy in this page: not Cells' engine, not the preprint's code and not its runs.</strong> Nothing it shows is a finding about GARD.</p>
+      <p><strong>Taken from the sources:</strong> 100 types; the table drawn as β<sub>ij</sub> = exp(−4 + 4Z<sub>ij</sub>); the boost, join and leave rates and their constants; the constant reservoir; a start at 40 molecules of 40 types; growth to 80 (all from the preprint's Appendix F); one molecule joining or leaving at a time, chosen in proportion to every rate, an exact half drawn at random at the fission, and the first daughter carrying on (the preprint's version "T2-02"); H and the strict threshold of 0.9 (the preprint); a population kept at one size by a Moran process (Gross and others 2014), here a random other assembly removed when one splits, as the engine's note words it.</p>
+      <p><strong>The page's own:</strong> the random seed (16, picked because its picture shows long inherited stretches and breaks); the one table β that seed draws; 120 fissions; the waiting times of a stochastic simulation, used only to order the population's events; a population of 24 assemblies, which takes three of its fissions for each fission of the lineage so that both reach their end together.</p>
+      <p><strong>Its kernel is the published form:</strong> the catalytic factor b<sub>i</sub> is taken at the current state for a join and a leave alike, as the preprint states it (in the engine's proposed note, <code>cells.member_catalysis_at_state@1</code>). The note has an open finding on this form, under review, and proposes a pair-consistent form beside it. The toy offers only the published one.</p>
+      <p class="quiet" id="toy-status">The toy has not run: the page's script did not start. The descriptions below still hold.</p>
+    </div>
+  </section>
+
+  <div class="options" id="options">
+
+  <section class="section" id="entry" aria-labelledby="entry-h">
+    <header>
+      <h2 id="entry-h">A. The entry: a heading “Origin of life” in the species switch</h2>
+      <p>The species switch lists its entries under headings that the files give (Animals, Bacteria, Plants). GARD would stand under a new heading, as a model system and not an organism, with four levels of its own in place of molecules, cell, tissue, organ and organism.</p>
+    </header>
+    <figure class="sketch live" id="sk-entry">
+      <div class="mock">
+        <div class="list-mock" role="img" aria-label="A mock of the species list open: Animals with Human, Planarian and Fruit fly; Bacteria with Syn3A, M. pneumoniae and E. coli; Plants with Thale cress; and a new heading, Origin of life, with GARD assembly chosen, marked as a model and not an organism.">
+          <div class="h">Animals</div><div class="it">Human</div><div class="it">Planarian</div><div class="it">Fruit fly</div>
+          <div class="h">Bacteria</div><div class="it">Syn3A</div><div class="it">M. pneumoniae</div><div class="it">E. coli</div>
+          <div class="h">Plants</div><div class="it">Thale cress</div>
+          <div class="h">Origin of life</div><div class="it on">GARD assembly <small>a model, not an organism</small></div>
+        </div>
+        <div class="entry-card">
+          <h4>GARD assembly</h4>
+          <p>A droplet of fat-like molecules that grows by taking molecules in, splits in two, and may pass its mix of molecules to its daughters. A model of how heredity could begin before genes; it is not an organism and has no cells.</p>
+          <div class="modelled"><strong>What Cells models of it: nothing yet.</strong> A design is proposed, on a development branch, not on main (16 November 2026): assemblies of 100 molecule types with no shape, run by exact single-molecule events. The engine's record names GARD as the model the <em>Plastic Heredity</em> preprint was built on.</div>
+          <div class="levels" aria-label="The entry's four levels">
+            <div><b>Molecules</b>The hundred types, t000 to t099, and the table of how each speeds the others.</div>
+            <div class="here"><b>One assembly</b>The droplet growing molecule by molecule, and splitting.</div>
+            <div><b>Population</b>Many assemblies at once, held at one size.</div>
+            <div><b>Lineages</b>Generations across fissions, and where inheritance held.</div>
+          </div>
+          <div class="matrix-wrap">
+            <canvas id="beta" width="200" height="200" role="img" aria-label="The toy's own table of catalysis, 100 by 100 cells, stronger in colour where a type speeds another more. Most cells are pale; a few are dark."></canvas>
+            <p><strong>At the molecules level:</strong> the table β, 100 rows by 100 columns, stronger in colour where molecule type j (across) speeds type i (down) more, on a logarithmic scale. This one is the toy's, drawn from the cited distribution. In a built view it would be the run's own constant.</p>
+          </div>
+        </div>
+      </div>
+      <div class="legend"><span><i class="ramp"></i>β, from about 0.0001 (faint) to 1,000 and more (strong), log scale</span></div>
+    </figure>
+    <dl class="idea-facts">
+      <dt>You see and do</dt><dd>The species list gains the heading "Origin of life" and one entry, "GARD assembly", with a small line saying it is a model and not an organism. Choosing it puts the four levels on the scale rail: Molecules, One assembly, Population, Lineages. The card says what Cells models of it in the record's own words: nothing today. Nothing of the Cell view (membranes, organelles, the Protein atlas's doors) appears, because GARD has none of them.</dd>
+      <dt>Told apart from a species</dt><dd>Its own heading; its own levels; no taxon and no organism name; a card that begins "a model of how heredity could begin"; and, in the switch, the small line "a model, not an organism". The Protein atlas has nothing for it and says so.</dd>
+      <dt>Where it fits</dt><dd>Three ways. <strong>(i) A species file with a new group:</strong> the heading would cost nothing (the switch reads its headings from the files), but the species contract requires a <code>cell</code> level and an organism, and its levels come from a fixed list (<code>tools/lib/species.py</code>, <code>src/lenses/cell.js</code>); GARD would be drawn as a cell, which it is not. <strong>(ii) A new kind of entry beside species (my pick):</strong> a file under its own contract that shares the species file's identity, sources, licence classes and "what Cells models" blocks, and has its own fixed list of levels (molecules, assembly, population, lineage); the switch learns a second kind of entry, and choosing it opens a view of its own. <strong>(iii) Experiments only:</strong> GARD runs listed in the Experiments view, with nothing in the switch; cheapest, but it hides what the user asked to see. A cell type does not fit: a cell type belongs to a species and is a cell.</dd>
+      <dt>From the engine</dt><dd>Nothing to show the entry: it is the viewer's own data. Its "what Cells models" line follows the record. I would call it <code>proposed</code> now that the engine's GARD design note is a tracked file on a development branch (16 November 2026); that is a choice, since the cell types' decision waited for a note on main before calling a cell type designed. <code>modelled</code> only when the record says a registered GARD model exists.</dd>
+      <dt>Cost</dt><dd>Small to medium, about 2 to 3 agent-days (my estimate): the new contract and its reader, a second level list, the switch showing a second kind of entry, and an empty view that says what each level will show.</dd>
+      <dt>Phone, keys, less motion, no 3D</dt><dd>It is the switch the page already has, so it works as the switch does today; the levels are a list.</dd>
+    </dl>
+  </section>
+
+  <section class="section" id="assembly" aria-labelledby="assembly-h">
+    <header>
+      <h2 id="assembly-h">B. One assembly, growing and splitting<span class="mark">My pick: the micelle</span></h2>
+      <p>One bead for each molecule, so the count is exact; everything else is the picture's choice, since GARD gives an assembly no shape. Three ways to draw it: a micelle, as the GARD papers' own figures sketch one; a loose cluster that claims no structure; and a vesicle, shown here to say why I would not use it.</p>
+    </header>
+    <figure class="sketch" id="sk-assembly">
+      <div class="bar">
+        <div class="group" role="group" aria-label="Shape drawn"><span class="name">Shape</span><div class="seg" data-shape><button type="button" data-value="micelle" aria-pressed="true">Micelle</button><button type="button" data-value="cluster" aria-pressed="false">Cluster</button><button type="button" data-value="vesicle" aria-pressed="false">Vesicle</button></div></div>
+      </div>
+      <div class="stage">
+        <canvas class="r169" tabindex="0" role="img" aria-label="Live sketch of the toy's assembly: one bead for each molecule, the three leading types in colour and shape, the rest grey. It grows as molecules join and leave, then fissions into two; one daughter stays and the other drifts away, not followed."></canvas>
+        <span class="tag">Toy in this page · not Cells' engine · the shape is the picture's choice</span>
+        <span class="float" data-float="a" hidden>carries on</span><span class="float" data-float="b" hidden>not followed</span>
+        <span class="hint">Drag to turn · arrows step a fission</span>
+        <div class="fallback"><p>The sketch draws when the page's script runs. It shows the toy's assembly as one bead for each molecule, growing from 40 to 80 and splitting in two.</p></div>
+      </div>
+      <div class="readout" data-readout aria-live="off"></div>
+      <div class="legend" data-kinds></div>
+    </figure>
+    <dl class="idea-facts">
+      <dt>You see and do</dt><dd>The assembly, bead by bead. A molecule that joins flies in from the reservoir and takes its place; one that leaves flies out. At 80 the assembly pulls apart into two of 40, split as the run says; the one that carries on stays in the middle, and the other drifts off, labelled "not followed". Drag to turn it. The three types that lead in the run wear a colour and a shape; the other 97 are grey. Choosing a bead names its type.</dd>
+      <dt>The three shapes</dt><dd><strong>Micelle (my pick):</strong> heads out, tails in, on a ball whose surface grows with the count. The GARD papers sketch their assembly so (the 2018 review's first figure draws a small micelle), and the size fits: the review says that with a hundred types, composomes appear only in assemblies the size of micelles. <strong>Cluster:</strong> beads loosely packed, no heads or tails; it claims the least, and it is the stand-in on a phone and with less motion. <strong>Vesicle:</strong> a closed double layer. Eighty molecules cannot make one: the 2018 review puts a small vesicle 0.2 µm across at about a million molecules, and says GARD at such counts has not been explored. So the vesicle looks sparse here, and the picture would mislead.</dd>
+      <dt>From the engine</dt><dd>In the engine's note (proposed, on a development branch, not on main): the counts, <code>assembly_count</code>, an <code>amount</code> on [row, species, assembly], saved by default at each fission's two rows only: the parent just before it and the daughter just after (<code>time.event_rows</code>). So by default a run gives each daughter and each grown parent, and not the molecules in between. <strong>Drawing each molecule as it arrives needs the note's event trace</strong> (time, type, ±1; about 62 entries per fission), saved only on request, or rows at a declared cadence: a question for the lead. Without either, the picture steps from the daughter to the grown parent and says that the growth between was not saved. The split comes from the fission table: <code>fission_split</code> (the first daughter's counts; the other is the parent less these) and <code>fission_followed</code>. No geometry: the note recommends abstract assemblies with no volume, area or charge, so on my reading the view's <code>space</code> would be null (the note does not say so in these words). If the engine later binds the same laws to vesicles in the physical world (the note's option B), the shape becomes the run's, and the picture follows it.</dd>
+      <dt>One and thousands</dt><dd>One assembly is at most 80 beads (100 in the original papers). A population of thousands is drawn as small balls, one per assembly, sized by its count and marked by its leading type; the beads appear only for the one chosen.</dd>
+      <dt>Cost</dt><dd>Medium, about 2 to 3 agent-days: bead layout and relaxation, the fission, the flights, picking, and the three shapes.</dd>
+      <dt>Phone, keys, less motion, no 3D</dt><dd>On a phone the cluster is drawn by default and no tails. The arrow keys step one fission back or forth. With less motion asked for, nothing flies and nothing turns by itself: beads appear and vanish in place, and a fission is shown in two states. Without 3D, a drawn still of the same beads stands in, and the list at the foot of the page gives each fission's counts.</dd>
+    </dl>
+  </section>
+
+  <section class="section" id="composition" aria-labelledby="composition-h">
+    <header>
+      <h2 id="composition-h">C. Its composition: the strip, the wheel and the tape</h2>
+      <p>The list of counts drawn as shares: the 2018 review's "compositional genome". The types keep their places (t000 to t099, in order) so that a change of mix reads as a change of widths, not as a reshuffle.</p>
+    </header>
+    <figure class="sketch" id="sk-composition">
+      <div class="bar">
+        <div class="group" role="group" aria-label="How the composition is drawn"><span class="name">Draw as</span><div class="seg" data-mode><button type="button" data-value="strip" aria-pressed="true">Strip</button><button type="button" data-value="wheel" aria-pressed="false">Wheel</button><button type="button" data-value="tape" aria-pressed="false">Tape</button></div></div>
+      </div>
+      <div class="stage">
+        <canvas class="r21" tabindex="0" role="img" aria-label="Live sketch of the toy's composition. Strip: a bar of the types' shares in order, as long as the assembly is large, splitting into two at 80. Wheel: the same shares round a ring. Tape: every fission's composition side by side, types down, stronger in colour for more molecules."></canvas>
+        <span class="tag">Toy in this page · not Cells' engine</span>
+        <div class="fallback"><p>The sketch draws when the page's script runs: the toy's composition as a strip of shares, a wheel, or a tape of every fission.</p></div>
+      </div>
+      <div class="readout" data-readout aria-live="off"></div>
+      <div class="legend" data-kinds></div>
+    </figure>
+    <dl class="idea-facts">
+      <dt>You see and do</dt><dd><strong>Strip:</strong> one bar, as long as the assembly is large (full at 80), cut into the types it holds, in order; at the fission it parts into two bars of half the length, one carrying on and one not followed. <strong>Wheel:</strong> the same shares round a ring, with the count in the middle; it reads best at a glance and on a phone. <strong>Tape:</strong> each fission's grown composition as a column, types from t000 at the top to t099 at the bottom, stronger in colour for more molecules, in the form Markovitch and Krasnogor (2018) use for their "GARD tapes"; long runs of the same mix show as level bands. Choose a part to name its type and count.</dd>
+      <dt>From the engine</dt><dd>In the engine's note (proposed, on a development branch, not on main): the strip and the wheel read <code>assembly_count</code> at the row shown; the tape reads it at each fission's parent row. Shares are counts over the size, a division the viewer states. The list's joins and leaves for each fission are differences of the run's <code>joined_total</code> and <code>left_total</code> (<code>cumulative</code> since the lineage began) between two fission rows.</dd>
+      <dt>One and thousands</dt><dd>One strip per assembly. For a population, strips stack into a tape of assemblies at one time, sorted by similarity to a chosen one, or the population's mean strip with its spread.</dd>
+      <dt>Cost</dt><dd>Small, about 1 to 1.5 agent-days; plain 2D drawing.</dd>
+      <dt>Phone, keys, less motion, no 3D</dt><dd>2D, so it needs no 3D. On a phone the wheel is the default. With less motion, widths jump rather than ease. As a list: the types and counts at each fission, in the table at the foot of the page.</dd>
+    </dl>
+  </section>
+
+  <section class="section" id="similarity" aria-labelledby="similarity-h">
+    <header>
+      <h2 id="similarity-h">D. Similarity: at each fission, and the carpet over time</h2>
+      <p>Two different comparisons, kept apart. On the left, the preprint's: the parent just before it splits against the daughter that carries on, where its threshold of 0.9 belongs. On the right, the original papers' carpet: every grown composition against every other, at the same point of each cycle, with no threshold of its own.</p>
+    </header>
+    <figure class="sketch" id="sk-similarity">
+      <div class="bar">
+        <div class="group" role="group" aria-label="Compared with"><span class="name">Left: compares</span><div class="seg" data-compare><button type="button" data-value="parent" aria-pressed="true">Parent → carried on</button><button type="button" data-value="other" aria-pressed="false">Parent → other daughter</button><button type="button" data-value="past" aria-pressed="false">Birth → grown</button></div></div>
+        <label class="check"><input type="checkbox" data-contour> Carpet: ring pairs above 0.9 (the picture's choice)</label>
+      </div>
+      <div class="panes">
+        <div class="stage"><canvas class="sq" data-line tabindex="0" role="img" aria-label="Live sketch: the similarity H at each fission of the toy's lineage, as dots along the fissions, with a dashed line at 0.9. Filled dots are inherited, rings are breaks."></canvas><span class="tag">Toy · at each fission</span></div>
+        <div class="stage"><canvas class="sq" data-carpet tabindex="0" role="img" aria-label="Live sketch: the carpet, a square of the similarity between every pair of grown compositions of the toy's lineage, fission against fission; stronger in colour where they are more alike. Strong squares along the diagonal are stretches where the mix held."></canvas><span class="tag">Toy · every pair of fissions</span></div>
+      </div>
+      <div class="readout" data-readout aria-live="off"></div>
+      <div class="legend"><span><svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="currentColor"/></svg>inherited: H above 0.9</span><span><svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>a break: 0.9 or below</span><span><i class="ramp"></i>carpet: H from 0.2 (faint) to 1 (strong)</span></div>
+    </figure>
+    <dl class="idea-facts">
+      <dt>You see and do</dt><dd><strong>Left:</strong> H at each fission, a dot for each, with the 0.9 line; inherited fissions are filled dots and breaks are rings, so the two differ by shape as well as by place. Switch to the parent against the daughter that is not followed (the run's record holds both), or to the assembly's own birth against itself grown (the growth F12 does not test); for those the 0.9 line is not drawn, since F12 applies it to the followed daughter alone. <strong>Right:</strong> the carpet, fission against fission, as the 2018 review's figure 3d draws it over 2,000 cycles: strong squares along the diagonal are stretches where the mix held; a strong patch away from it is a mix that came back. Ringing the pairs above 0.9 is the picture's choice, offered to read the squares, and is off at first. Choose a dot or a cell to read its value.</dd>
+      <dt>From the engine</dt><dd><strong>Left:</strong> the run's own <code>boundary_similarity</code> (proposed, on a development branch, not on main): a <code>level</code> on the fission table, [fission, 2], the parent against each daughter, so it gives both "carried on" and "other daughter". The 0.9 line and the inheritance marks come from the analysis, not the run: in the note, F12 and its strict threshold live in <code>validation/gard/</code>, so the replay would read them from that analysis's saved output. "Birth → grown" and the carpet are worked out by the page from two saved compositions. <strong>I recommend reading the run's level wherever the run has one, and working out only the rest:</strong> the inheritance verdict rests on the run's own number; a value of exactly 0.9 is a break, and a copy rounded for drawing must never decide it; and the note already makes H from the two rows equal to <code>fission_similarity</code> a check, which the viewer would repeat at every fission. Working H out is a fifth declared derivation beside the four the layer contract allows today (<code>schema/QUANTITY_LAYERS.md</code>, rule 1), so that contract changes.</dd>
+      <dt>One and thousands</dt><dd>The line is one lineage. The carpet of 120 fissions is 14,400 cells; of 2,000 cycles, four million, drawn as an image. For a population: the spread of H at the fissions in each stretch of time, and a carpet of assemblies at one time, sorted.</dd>
+      <dt>Cost</dt><dd>Small to medium, about 1 to 1.5 agent-days.</dd>
+      <dt>Phone, keys, less motion, no 3D</dt><dd>2D. On a phone the two stack. The arrow keys move the clock; with less motion nothing eases. As a list: the H column of the table at the foot of the page.</dd>
+    </dl>
+  </section>
+
+  <section class="section" id="map" aria-labelledby="map-h">
+    <header>
+      <h2 id="map-h">E. Composomes: a map of compositions that a lineage visits and leaves</h2>
+      <p>Each grown composition becomes a point in a map, and the lineage leaves a trail. Where it stays, points crowd; where it breaks away, the trail jumps. Which crowds are composomes the page does not say: that is for a run or its analysis to state, by a named method.</p>
+    </header>
+    <figure class="sketch" id="sk-map">
+      <div class="bar">
+        <div class="group" role="group" aria-label="What the map holds"><span class="name">Show</span><div class="seg" data-who><button type="button" data-value="lineage" aria-pressed="true">One lineage</button><button type="button" data-value="population" aria-pressed="false">A population of 24</button></div></div>
+      </div>
+      <div class="stage">
+        <canvas class="r169" tabindex="0" role="img" aria-label="Live sketch: a three-dimensional map of the toy's grown compositions, one point per fission, joined in order by a trail, solid where the fission was inherited and dashed where it broke. Arrows show the directions of the three leading types."></canvas>
+        <span class="tag">Toy · the map's axes are worked out by this page</span>
+        <span class="hint">Drag to turn · choose a point</span>
+        <div class="fallback"><p>The sketch draws when the page's script runs: a map of the toy's compositions, one point for each fission, joined by the lineage's trail.</p></div>
+      </div>
+      <div class="readout" data-readout aria-live="off"></div>
+      <div class="legend"><span><svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="2"/></svg>inherited fission</span><span><svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2"/></svg>a break</span><span>Arrows: the direction in which each leading type grows</span><span>Population: each living assembly as born, a second shape</span></div>
+    </figure>
+    <dl class="idea-facts">
+      <dt>You see and do</dt><dd>A map turned in 3D: each point is one grown composition; the trail joins them in order, solid across an inherited fission and dashed across a break; the point of the moment is ringed, and the growing assembly moves between points as molecules join. Arrows show which way each leading type lies, so a crowd can be read as "mostly type 74". Switch to the population to see its 24 assemblies as a cloud. Choose a point to go to that fission.</dd>
+      <dt>How the map is made</dt><dd>The axes are the three directions along which the lineage's compositions differ most (principal components), worked out by this page from the counts: a layout, the picture's choice, like the hexagonal layout of a replayed sheet. The 2018 review draws its lineage so, in its figure 2b. The page runs no clustering and draws no composome: a crowd is where the lineage stayed, and nothing more.</dd>
+      <dt>From the engine</dt><dd>In the engine's note (proposed, on a development branch, not on main): <code>assembly_count</code> at each fission's parent row. Composomes and compotypes come from the analysis in <code>validation/gard/</code> (the note's first experiment registers its clustering in advance). Only where that analysis saves an assignment, with its method and settings, does the map name and ring a composome.</dd>
+      <dt>One and thousands</dt><dd>It holds thousands best of all: a cloud of points, dense where assemblies crowd. A population of 1,000 over 50,000 fissions (the size Gross and others use) would be drawn as density, with one lineage's trail picked out.</dd>
+      <dt>Cost</dt><dd>Medium, about 1.5 to 2 agent-days: the projection, the trail, picking, the cloud.</dd>
+      <dt>Phone, keys, less motion, no 3D</dt><dd>On a phone the map is drawn flat, the first two axes only. With less motion it does not turn by itself. Without 3D, a flat drawing of the first two axes stands in. As a list it has no good form; the table's H column says where the lineage broke away.</dd>
+    </dl>
+  </section>
+
+  <section class="section" id="lineages" aria-labelledby="lineages-h">
+    <header>
+      <h2 id="lineages-h">F. Lineages: a tree across fissions</h2>
+      <p>Every fission makes two branches. Each branch is marked by whether the daughter kept its parent's mix above the threshold: solid if it did, dashed if it broke.</p>
+    </header>
+    <figure class="sketch" id="sk-tree">
+      <div class="bar">
+        <div class="group" role="group" aria-label="Which tree"><span class="name">Tree of</span><div class="seg" data-tree><button type="button" data-value="lineage" aria-pressed="true">One lineage</button><button type="button" data-value="population" aria-pressed="false">A population of 24</button></div></div>
+      </div>
+      <div class="stage">
+        <canvas class="r21" tabindex="0" role="img" aria-label="Live sketch of the toy's lineages. One lineage: a spine of the daughters that carry on, with each fission's other daughter as a short stub ending in a cross. A population: a branching tree over time, the ancestry of the assemblies alive now in bold, the rest faint, each branch solid where inherited and dashed where it broke."></canvas>
+        <span class="tag">Toy in this page · not Cells' engine</span>
+        <div class="fallback"><p>The sketch draws when the page's script runs: the toy's lineage as a spine with stubs, or its population as a tree.</p></div>
+      </div>
+      <div class="readout" data-readout aria-live="off"></div>
+      <div class="legend"><span><svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="2"/></svg>inherited</span><span><svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2"/></svg>a break</span><span><svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3 L11 11 M11 3 L3 11" stroke="currentColor" stroke-width="1.6"/></svg>not followed, or removed</span></div>
+    </figure>
+    <dl class="idea-facts">
+      <dt>You see and do</dt><dd><strong>One lineage:</strong> the preprint's mode. The daughters that carry on form a spine across the fissions; each fission's other daughter is a short stub ending in a cross, "not followed". Breaks show as dashed spine. <strong>A population:</strong> the original papers' mode, held at one size. The tree branches at every fission; when one assembly splits, a random other is removed, so most branches end in a cross. The ancestry of the assemblies alive at the clock's time is bold, the rest faint. Choose a branch to read its H.</dd>
+      <dt>From the engine</dt><dd>The fission table (proposed, on a development branch, not on main): <code>fission_time</code>, <code>fission_slot</code>, <code>fission_parent</code>, <code>fission_daughters</code>, <code>fission_followed</code>, <code>fission_split</code>, <code>fission_similarity</code>; and its events: <code>fission</code> at the slot, <code>retirement</code> of the parent, <code>birth</code> of the daughter that carries on, while the other daughter is born and retired at the same time. The slot keeps its place and changes its occupant (<code>occupant</code>, <code>generation</code>), as cell replacement does today. In population mode, which the note leaves for later (<code>cells.population_replacement@1</code>, a Moran step), a fission writes its two daughters into the parent's slot and the removed member's slot: the 24 lanes drawn here are those slots. The note asks the run view's owner to take these events from the run's fission table, not from a schedule.</dd>
+      <dt>One and thousands</dt><dd>One lineage is a line. A population of thousands is drawn as the ancestry of the living alone (most branches end within a few fissions), with the rest folded into counts along it.</dd>
+      <dt>Cost</dt><dd>Medium, about 2 to 3 agent-days: the tree's layout, pruning, picking, and following a branch through time.</dd>
+      <dt>Phone, keys, less motion, no 3D</dt><dd>2D. On a phone the population tree shows the ancestry of the living only. With less motion it grows in steps. As a list: the fissions in order, each with its parent, its two daughters and its H.</dd>
+    </dl>
+  </section>
+
+  <section class="section" id="time" aria-labelledby="time-h">
+    <header>
+      <h2 id="time-h">G. Time: one control for all of it</h2>
+      <p>Every sketch on this page follows the one clock at the foot of the screen, as the user asked of the Cell view: one control, the same as the replay's, slower and faster.</p>
+    </header>
+    <dl class="idea-facts">
+      <dt>You see and do</dt><dd>Play and pause, a step back or forward of one fission, a slider across the fissions, and a speed. Every view of the run moves together: the beads, the strip, the dots, the carpet, the map and the tree.</dd>
+      <dt>What its speed counts</dt><dd>Fissions for each second of watching, from a quarter to eight, and "molecule by molecule" at the slow end, eight joins or leaves a second. GARD has no clock of real life (its rate constants stand on no measured chemistry), so "true speed" and "slowed a thousand times" are not offered: the control states the run's own clock, and the run's view says what that clock is.</dd>
+      <dt>From the engine</dt><dd>In the engine's note (proposed, on a development branch, not on main): time is nominal, and its natural clock is the fission count (its §1.7): the <code>fission</code> time base has two rows per fission, with an optional <code>cadence</code> base. Molecule by molecule needs the event trace, on request (see B).</dd>
+      <dt>Cost</dt><dd>Small, about half a day to a day: the replay's timeline with a second ladder of speeds, read from the run.</dd>
+      <dt>Phone, keys, less motion</dt><dd>It sits at the foot of the screen while the sketches are in view, on two lines on a phone. With less motion asked for, the page does not start playing by itself, and every step is a jump.</dd>
+    </dl>
+  </section>
+
+  <div class="clock" id="clock" role="group" aria-label="The toy's clock: every sketch on this page follows it">
+    <div class="buttons">
+      <button type="button" data-act="start" aria-label="Back to the first fission" title="Back to the start"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 3v10M13 3 6 8l7 5z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
+      <button type="button" data-act="back" aria-label="One fission back" title="One fission back"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M11 3 4 8l7 5z" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></button>
+      <button type="button" class="play" data-act="play" aria-label="Play">Play</button>
+      <button type="button" data-act="fwd" aria-label="One fission on" title="One fission on"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M5 3l7 5-7 5z" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></button>
+    </div>
+    <input type="range" min="0" max="120" step="0.01" value="36" aria-label="Fission of the toy's lineage" data-pos>
+    <select data-speed aria-label="Speed of the clock">
+      <option value="m">molecule by molecule</option>
+      <option value="0.25">¼ fission a second</option>
+      <option value="0.5">½ fission a second</option>
+      <option value="1" selected>1 fission a second</option>
+      <option value="2">2 fissions a second</option>
+      <option value="4">4 fissions a second</option>
+      <option value="8">8 fissions a second</option>
+    </select>
+    <div class="words" data-words>The clock starts when the page's script runs.</div>
+  </div>
+
+  </div>
+
+  <section class="section" aria-labelledby="compare-h">
+    <header>
+      <h2 id="compare-h">The options side by side</h2>
+    </header>
+    <div class="wide">
+      <table>
+        <thead><tr><th>Option</th><th>Reads (the engine's note, proposed)</th><th>Cost (my estimate)</th><th>One and thousands</th><th>Phone and less motion</th><th>Without 3D</th></tr></thead>
+        <tbody>
+          <tr><th>A. Entry</th><td>None: the viewer's data</td><td>2–3 days</td><td>—</td><td>As the switch today</td><td>A list</td></tr>
+          <tr><th class="pick">B. One assembly</th><td><code>assembly_count</code>, <code>fission_split</code>; the event trace to draw each molecule</td><td>2–3 days</td><td>Beads for one; balls for many</td><td>Cluster, no flights</td><td>A drawn still</td></tr>
+          <tr><th class="pick">C. Composition</th><td><code>assembly_count</code>; <code>joined_total</code>, <code>left_total</code></td><td>1–1.5 days</td><td>Stacked strips</td><td>Wheel; jumps</td><td>2D already</td></tr>
+          <tr><th class="pick">D. Similarity</th><td><code>boundary_similarity</code>; the analysis's marks; counts for the rest</td><td>1–1.5 days</td><td>Spread of H; sorted carpet</td><td>Stacked; jumps</td><td>2D already</td></tr>
+          <tr><th>E. Map</th><td><code>assembly_count</code>; the analysis's compotypes</td><td>1.5–2 days</td><td>Best of all: a cloud</td><td>Flat; no turning</td><td>Flat drawing</td></tr>
+          <tr><th>F. Lineages</th><td>The fission table and its events; <code>occupant</code>, <code>generation</code></td><td>2–3 days</td><td>Ancestry of the living</td><td>Ancestry only; steps</td><td>2D already</td></tr>
+          <tr><th class="pick">G. Time</th><td>The <code>fission</code> time base</td><td>½–1 day</td><td>The same</td><td>Two lines; no autoplay</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="rec-h">
+    <header>
+      <h2 id="rec-h">Recommendation</h2>
+    </header>
+    <ol class="section-list">
+      <li><strong>The entry first</strong> (A), as a new kind of entry beside species, so that "Origin of life" stands in the switch with an honest card while the engine designs GARD. Its view says, at each level, what it will show and that nothing is in the engine yet.</li>
+      <li><strong>Then the core of a run</strong>, on the first engine run of GARD: the composition strip (C), the similarity at each fission (D, left) and the one clock (G). They are 2D, cheap, true to the preprint's own measure, and they work on a phone and as a list.</li>
+      <li><strong>Then the assembly as a micelle</strong> (B), the picture that draws the eye, with the cluster as its plain form.</li>
+      <li><strong>Then the tree</strong> (F) for one lineage, and for a population once the engine has one.</li>
+      <li><strong>Then the carpet and the map</strong> (D, right; E), when runs are long enough to show stretches and returns, and the map's composomes only where a run names them.</li>
+      <li><strong>The toy stays on this page.</strong> The built viewer runs no GARD of its own: it draws saved runs, and tests use a small fixture of invented numbers, marked so, in the way the example sheet is today.</li>
+    </ol>
+    <p>All of it: about 10 to 14 agent-days (my estimate), of which the entry and the core are about 4 to 6, and the adapter for the engine's GARD runs 1 to 2 more once the engine's view of one exists.</p>
+  </section>
+
+  <section class="section" aria-labelledby="engine-h">
+    <header>
+      <h2 id="engine-h">What a run would save, and what each sketch reads</h2>
+      <p>From the engine's GARD design note, chiefly its section 5 (with sections 1.2, 1.6 and 4.3 for the environment and the analysis): proposed, on a development branch, not on main. Its records are in the terms of the run view; the viewer would read what the writer gives. The last column is mine.</p>
+    </header>
+    <div class="wide">
+      <table>
+        <thead><tr><th>Record</th><th>Kind, axes</th><th>Saved</th><th>Read by</th></tr></thead>
+        <tbody>
+          <tr><th><code>assembly_count</code></th><td><code>amount</code>, [row, species, assembly], molecules</td><td>At each fission's two rows; at cadence rows if declared</td><td>B, C, D (carpet, birth → grown), E</td></tr>
+          <tr><th><code>joined_total</code>, <code>left_total</code></th><td><code>cumulative</code> since the lineage began</td><td>Yes</td><td>C's list: joins and leaves per fission</td></tr>
+          <tr><th><code>discarded_total</code></th><td><code>cumulative</code>: material leaving with daughters not followed</td><td>Yes</td><td>B's "not followed", as a count</td></tr>
+          <tr><th><code>boundary_similarity</code></th><td><code>level</code>, [fission, 2]: the parent against each daughter</td><td>Yes</td><td>D, left; the list</td></tr>
+          <tr><th>The fission table</th><td><code>fission_time</code>, <code>_slot</code>, <code>_parent</code>, <code>_daughters</code>, <code>_followed</code>, <code>_split</code>, <code>_similarity</code></td><td>Yes</td><td>B's split; F</td></tr>
+          <tr><th>Events</th><td><code>fission</code>, <code>retirement</code>, <code>birth</code>; <code>time.event_rows</code> gives the parent before the split</td><td>Yes</td><td>F; the clock's steps</td></tr>
+          <tr><th><code>occupant</code>, <code>generation</code></th><td><code>level</code>, [row, assembly]</td><td>Yes</td><td>F</td></tr>
+          <tr><th>The event trace</th><td>A diagnostic table: time, type, ±1; about 62 per fission</td><td>On request only</td><td>B and C, molecule by molecule</td></tr>
+          <tr><th><code>join_rate</code>, <code>leave_rate</code>, <code>catalytic_factor</code></th><td><code>rate</code>, <code>level</code></td><td>On request only</td><td>None of these sketches</td></tr>
+          <tr><th><code>exchange_heat_kT</code>, <code>fission_work_kT</code></th><td><code>cumulative</code>; the heat is declared non-monotone</td><td>Yes</td><td>None yet: the viewer's energy layer could show the cost of each fission</td></tr>
+          <tr><th>β, ρ</th><td>The environment: arrays beside the definition, never state</td><td>Yes</td><td>A's molecules level</td></tr>
+          <tr><th>Inheritance, F12, compotypes</th><td>Analysis in <code>validation/gard/</code>, not the run</td><td>By the analysis</td><td>D's marks, E's composomes</td></tr>
+          <tr><th>Shape, place</th><td>None: abstract assemblies, no volume, area or charge (§1.2)</td><td>—</td><td><code>space</code> null, on my reading; the picture's shape is its own</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>What the page needs beyond the defaults:</strong> the event trace, or cadence rows, to draw molecules arriving (B, C); and the analysis's inheritance marks, F12 windows and compotype assignment saved where the viewer can read them beside the run. Both are questions for the lead.</p>
+    <p><strong>What the viewer would work out itself, and say so:</strong> shares (a count over the size); the other daughter's counts as the parent less <code>fission_split</code>, as the note defines them; joins and leaves per fission as differences of the totals; H between any two saved compositions, as a fifth declared derivation (a change to the layer contract, with a check against the run's own H at every fission); and the map's layout. <strong>Never the viewer's:</strong> the rates, which molecule joins next, the inheritance verdict, F12, and composome clustering.</p>
+    <p><strong>Where the run view does not fit yet,</strong> by the note's own list for the view's owner: fission events must come from the run's fission table, not from a schedule; the fission table should be named as an event record, since 100 fissions over 10,000 lanes are a million events; the time unit is nominal, not seconds; and the writer's first version accepts no family but the existing composite.</p>
+    <p><strong>Sizes.</strong> A lineage of 100 fissions at two rows each is 200 × 100 counts, about 40 kB as 16-bit integers, with the fission table beside it; the event trace adds about 6,200 entries. A population of 1,000 over 50,000 fissions would be saved in parts or thinned, and the run would say which.</p>
+  </section>
+
+  <div class="two">
+    <section aria-labelledby="ask-user-h">
+      <h2 id="ask-user-h">Questions for you</h2>
+      <ol class="asks">
+        <li>Should GARD stand in the species switch under a new heading "Origin of life", as a model system and not a species? <em>I recommend yes, as a new kind of entry with its own four levels.</em></li>
+        <li>Which shape should the assembly have: micelle, cluster or vesicle? <em>I recommend the micelle, labelled as the picture's choice, with the cluster on a phone and with less motion.</em></li>
+        <li>Should a GARD run play in the entry's own view, or in the Experiments view? <em>I recommend the entry's own view, with the Experiments view listing GARD runs and opening them there.</em></li>
+        <li>Should the time control count fissions rather than seconds? <em>I recommend fissions per second of watching, with molecule by molecule at the slow end and no "true speed"; the engine's note also takes the fission count as GARD's clock.</em></li>
+        <li>Should the 0.9 line be drawn only on the parent-to-followed-daughter comparison, as the analysis defines it? <em>I recommend yes; elsewhere a threshold is the picture's choice and is said to be.</em></li>
+        <li>Should composomes be named only where a run or its analysis names them? <em>I recommend yes: the map shows where a lineage stays and names nothing itself.</em></li>
+        <li>Should this page's toy ever enter the built viewer? <em>I recommend no: the viewer draws the engine's runs, and its tests use a marked fixture of invented numbers.</em></li>
+        <li>Should one lineage come first and populations later? <em>I recommend yes: it is the preprint's mode and the engine's first, and a population comes later in the engine too.</em></li>
+        <li>When the engine runs both forms of its kernel side by side, should the viewer show a matching pair of runs under one clock? <em>I recommend yes, each labelled with the law it ran, and nothing said of which is right.</em></li>
+      </ol>
+    </section>
+    <section aria-labelledby="ask-lead-h">
+      <h2 id="ask-lead-h">Questions for the engine's lead</h2>
+      <ol class="asks">
+        <li>Will a run made to be shown save the event trace for one lineage, or rows at a cadence, so that the assembly can be drawn molecule by molecule?</li>
+        <li>Will the analysis in <code>validation/gard/</code> save its inheritance marks, F12 windows and compotype assignment where the viewer can read them beside the run, under which names, with its threshold stated?</li>
+        <li>Will the fission table be named in the run's view as an event record, so that the viewer reads fissions from it?</li>
+        <li>Which word will the time base state for nominal time?</li>
+        <li>May the viewer's energy layer draw <code>exchange_heat_kT</code>, which can fall at a single event, and <code>fission_work_kT</code>, for each fission, and with which words for their signs?</li>
+        <li>When both kernel forms run, will each run's view name the law it ran?</li>
+      </ol>
+    </section>
+  </div>
+
+  <section class="section" aria-labelledby="list-h">
+    <header>
+      <h2 id="list-h">The toy's lineage as a list</h2>
+      <p>The same run as the sketches, for reading without 3D or by a screen reader. The row of the clock's fission is marked. Counts are of the three leading types in the grown parent.</p>
+    </header>
+    <div class="wide scroll" tabindex="0" role="region" aria-label="The toy's lineage, fission by fission">
+      <table class="list" id="list-table">
+        <thead><tr><th>Fission</th><th>Joins / leaves</th><th data-k="0">Type</th><th data-k="1">Type</th><th data-k="2">Type</th><th>Types held</th><th>H, parent to the daughter carried on</th><th>Above 0.9</th><th>H, parent to the other daughter</th></tr></thead>
+        <tbody><tr><td colspan="9">The list is made by the page's script, which has not run.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="src-h">
+    <header>
+      <h2 id="src-h">Sources, and where each was read</h2>
+      <p>Numbers are taken with a citation. No text, figure or data file of any source is copied into this page; every drawing is the page's own.</p>
+    </header>
+    <ol class="sources">
+      <li>Cells, <code>docs/GARD_DESIGN.md</code>, the engine's GARD design note: proposed, on a development branch, not on main (branch <code>gard-design</code>, e75b4b1f, 16 November 2026). Read: its summary, sections 1 (the model in the engine's terms), 2.2 and 2.3 (the open finding on the kernel), 4 (its options), 5 (run records and the run view) and 8 (its first experiment). Nothing of it is built.</li>
+      <li><em>Plastic heredity: Predicting and steering how inheritance breaks, returns, and persists</em>, preprint, version 5.0, doi:10.5281/zenodo.22143269 (CC BY 4.0). Read: "In brief", the introduction, the reader's guide, "Common experimental framework", Figure 4's caption, "Plastic heredity and the composome debate", and Appendix F.</li>
+      <li>Segrè, Ben-Eli and Lancet (2000) Compositional genomes: prebiotic information transfer in mutually catalytic noncovalent assemblies. PNAS 97:4112, doi:10.1073/pnas.97.8.4112. Free to read, no licence stated. Read only through a summary of its PubMed Central page (the publisher's page refused the request, and the page itself was not downloaded). Nothing on this page rests on it alone; it is to be read in full before any number of it is used.</li>
+      <li>Lancet, Zidovetzki and Markovitch (2018) Systems protobiology: origin of life in lipid catalytic networks. J R Soc Interface 15:20180159, doi:10.1098/rsif.2018.0159 (CC BY 4.0). Read: the sections from "Compositional homeostasis" to "Compositional mutations and selection", with their figure captions.</li>
+      <li>Gross, Fouxon, Lancet and Markovitch (2014) Quasispecies in population of compositional assemblies. BMC Evol Biol 14:265, doi:10.1186/s12862-014-0265-1 (CC BY 4.0). Read: "A compotype is qualitatively similar to a quasispecies" and the Methods.</li>
+      <li>Markovitch and Krasnogor (2018) Predicting species emergence in simulated complex pre-biotic networks. PLOS ONE 13:e0192871, doi:10.1371/journal.pone.0192871 (CC BY 4.0). Read: the GARD model, the simulations and "GARD tapes".</li>
+      <li>Vasas, Szathmáry and Santos (2010) Lack of evolvability in self-sustaining autocatalytic networks constraints metabolism-first scenarios for the origin of life. PNAS 107:1470, doi:10.1073/pnas.0912628107. Not read; its argument is given as the preprint states it.</li>
+    </ol>
+  </section>
+
+  <p class="foot">Made on 16 November 2026 for the Cells viewer's coordinator, to choose from; nothing in it is built. The sketches use three.js 0.170.0 from cdnjs for the two 3D drawings; the toy and the 2D drawings need nothing from outside the page, and a flat drawing stands in where 3D cannot start. Colours: three types wear colour, each with its own shape (a diamond, a square, a triangle) and its name beside it; the other 97 are grey circles. The colours were checked with a colour-vision simulation (Machado and others, 2009) against the light and the dark surface: only three hues stay apart when any two can sit side by side, which is why there are three, and the grey was chosen so that it stays apart from each of them too. Aqua on the light page, and orange and aqua on the darker stage tone, fall below 3:1 contrast with the surface, so no colour is read alone: every mark has a shape, the legends name each type, and the list below gives the counts. The ramp for counts and similarity is a single hue, faint to strong.</p>
+
+</div>
+
+<script>
+// A small GARD-like toy for the ideas page. Plain script: defines window.GARDTOY (or globalThis.GARDTOY).
+// Rules, as the sources state them:
+//  - composition: integer counts of 100 molecule kinds (preprint, Appendix F; Gross et al. 2014);
+//  - catalysis: beta_ij = exp(-4 + 4 Z_ij), Z standard normal, diagonal kept (preprint, Appendix F;
+//    Markovitch and Krasnogor 2018 give ln beta ~ normal, mean -4, sd 4);
+//  - boost b_i = 1 + (beta x)_i / N; join a+_i = kf rho_i N b_i; leave a-_i = kb x_i b_i;
+//    kf = 1e-2, kb = 1e-4, rho_i = 0.01, held constant (preprint, Appendix F);
+//  - start: 40 molecules of 40 distinct kinds; grow to 80; split (preprint, Appendix F);
+//  - one molecule event at a time, chosen in proportion to every join and leave propensity, and an
+//    exact half split drawn without replacement, the first daughter continuing (the preprint's
+//    contract T2-02); waiting times are drawn as in a stochastic simulation (Gillespie), for a clock;
+//  - the catalytic factor is the published form: b_i at the current state, for both a join and a
+//    leave (in the engine's proposed note, cells.member_catalysis_at_state@1; the note has an open
+//    finding on this form and proposes a pair-consistent one beside it);
+//  - H = cosine of two count vectors; inheritance at a fission is H(parent before fission,
+//    continued daughter) > 0.9, strictly (preprint);
+//  - a population held constant by a Moran process (Gross et al. 2014): when an assembly splits, one
+//    other, chosen at random, is removed (the rule as the engine's proposed note words it).
+// The page's own choices: the random seed, the one matrix it draws, the number of fissions, the
+// population's size. Nothing here is Cells' engine or the preprint's code or runs.
+(function (root) {
+  "use strict";
+  const NG = 100, KF = 1e-2, KB = 1e-4, RHO = 0.01, N0 = 40, NMAX = 80;
+
+  function rng(seed) { // mulberry32
+    let a = seed >>> 0;
+    return function () {
+      a = (a + 0x6d2b79f5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function normal(r) { let u = 0, v = 0; while (u === 0) u = r(); while (v === 0) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+
+  function matrix(r) {
+    const beta = new Float64Array(NG * NG);
+    for (let k = 0; k < NG * NG; k++) beta[k] = Math.exp(-4 + 4 * normal(r));
+    return beta;
+  }
+  function cosine(x, y) {
+    let d = 0, a = 0, b = 0;
+    for (let i = 0; i < x.length; i++) { d += x[i] * y[i]; a += x[i] * x[i]; b += y[i] * y[i]; }
+    return a > 0 && b > 0 ? d / Math.sqrt(a * b) : 0;
+  }
+  function start(r) {
+    const x = new Int32Array(NG), kinds = [];
+    for (let i = 0; i < NG; i++) kinds.push(i);
+    for (let k = 0; k < N0; k++) { const j = k + Math.floor(r() * (NG - k)); [kinds[k], kinds[j]] = [kinds[j], kinds[k]]; x[kinds[k]] = 1; }
+    return x;
+  }
+  /** An assembly in the toy: counts, mass and its catalysed sums (beta x), kept up to date. */
+  function assembly(beta, x) {
+    const bx = new Float64Array(NG);
+    let n = 0;
+    for (let j = 0; j < NG; j++) if (x[j]) { n += x[j]; for (let i = 0; i < NG; i++) bx[i] += beta[i * NG + j] * x[j]; }
+    return { x, bx, n, total: 0 };
+  }
+  function propensities(a, out) {
+    let total = 0;
+    for (let i = 0; i < NG; i++) {
+      const b = 1 + a.bx[i] / a.n;
+      const up = KF * RHO * a.n * b, down = KB * a.x[i] * b;
+      out[i] = up; out[NG + i] = down; total += up + down;
+    }
+    a.total = total;
+    return total;
+  }
+  function change(beta, a, i, d) {
+    a.x[i] += d; a.n += d;
+    for (let k = 0; k < NG; k++) a.bx[k] += d * beta[k * NG + i];
+  }
+  /** Exact half, drawn without replacement (multivariate hypergeometric): the first daughter's counts. */
+  function halve(r, x) {
+    const bag = [];
+    for (let i = 0; i < NG; i++) for (let c = 0; c < x[i]; c++) bag.push(i);
+    const half = Math.floor(bag.length / 2), first = new Int32Array(NG), second = new Int32Array(NG);
+    for (let k = 0; k < bag.length; k++) { const j = k + Math.floor(r() * (bag.length - k)); [bag[k], bag[j]] = [bag[j], bag[k]]; }
+    for (let k = 0; k < bag.length; k++) (k < half ? first : second)[bag[k]]++;
+    return [first, second];
+  }
+  function pick(r, p, total) {
+    let u = r() * total;
+    for (let k = 0; k < p.length; k++) { u -= p[k]; if (u <= 0) return k; }
+    return p.length - 1;
+  }
+
+  /** One lineage: grow, split, follow the first daughter. Returns every event, so a page can replay it. */
+  function lineage({ seed = 7, matrixSeed = seed, fissions = 120 } = {}) {
+    const r = rng(seed), beta = matrix(rng(matrixSeed));
+    let a = assembly(beta, start(r));
+    const p = new Float64Array(2 * NG);
+    const gens = [];
+    let clock = 0;
+    for (let g = 0; g < fissions; g++) {
+      const born = Int32Array.from(a.x), events = new Int16Array(8000), times = new Float64Array(8000);
+      let ne = 0, guard = 0;
+      while (a.n < NMAX && guard++ < 40000) {
+        const total = propensities(a, p);
+        clock += -Math.log(1 - r()) / total;
+        const k = pick(r, p, total), i = k % NG, d = k < NG ? 1 : -1;
+        if (d < 0 && a.x[i] === 0) continue;
+        if (d < 0 && a.n === 1) continue; // never empty in the toy
+        change(beta, a, i, d);
+        if (ne < events.length) { events[ne] = d > 0 ? i + 1 : -(i + 1); times[ne] = clock; ne++; }
+      }
+      const parent = Int32Array.from(a.x);
+      const [first, second] = halve(r, parent);
+      gens.push({ born, parent, daughter: first, sibling: second, events: events.slice(0, ne), times: times.slice(0, ne), end: clock,
+        h: cosine(parent, first), hOther: cosine(parent, second), hSibling: cosine(first, second), hBorn: cosine(born, parent) });
+      a = assembly(beta, Int32Array.from(first));
+    }
+    return { NG, NMAX, N0, beta, gens, seed, matrixSeed };
+  }
+
+  /** A population held at a fixed size: when one splits, one other is removed at random. */
+  function population({ seed = 11, matrixSeed = 7, size = 24, fissions = 360 } = {}) {
+    const r = rng(seed), beta = matrix(rng(matrixSeed));
+    const p = new Float64Array(2 * NG);
+    const nodes = []; // every assembly that ever lived: {id, parent, born, died, gen, h (from its parent), x0}
+    let alive = [];
+    for (let k = 0; k < size; k++) {
+      const x = start(r);
+      nodes.push({ id: k, parent: -1, born: 0, died: null, gen: 0, h: null, x0: Int32Array.from(x), end: null, fate: null });
+      alive.push({ node: k, a: assembly(beta, x) });
+    }
+    let clock = 0, split = 0;
+    const totals = new Float64Array(size);
+    while (split < fissions) {
+      let sum = 0;
+      for (let k = 0; k < alive.length; k++) { totals[k] = alive[k].a.total || propensities(alive[k].a, p); sum += totals[k]; }
+      clock += -Math.log(1 - r()) / sum;
+      const which = pick(r, totals.subarray(0, alive.length), sum);
+      const cur = alive[which];
+      propensities(cur.a, p);
+      const k = pick(r, p, cur.a.total), i = k % NG, d = k < NG ? 1 : -1;
+      if (!(d < 0 && (cur.a.x[i] === 0 || cur.a.n === 1))) change(beta, cur.a, i, d);
+      propensities(cur.a, p);
+      if (cur.a.n >= NMAX) {
+        split++;
+        const parentX = Int32Array.from(cur.a.x), [first, second] = halve(r, parentX);
+        const pn = nodes[cur.node];
+        pn.died = clock; pn.end = parentX; pn.fate = "split";
+        const kids = [first, second].map((x) => {
+          const id = nodes.length;
+          nodes.push({ id, parent: pn.id, born: clock, died: null, gen: pn.gen + 1, h: cosine(parentX, x), x0: Int32Array.from(x), end: null, fate: null });
+          const a = assembly(beta, Int32Array.from(x));
+          propensities(a, p);
+          return { node: id, a };
+        });
+        alive.splice(which, 1);
+        // Moran: one other assembly, chosen at random, is removed, so the population stays the same size.
+        const victim = Math.floor(r() * alive.length);
+        const vn = nodes[alive[victim].node];
+        vn.died = clock; vn.end = Int32Array.from(alive[victim].a.x); vn.fate = "removed";
+        pn.kids = kids.map((k) => k.node); pn.removed = vn.id;
+        alive.splice(victim, 1);
+        alive.push(...kids);
+      }
+    }
+    for (const live of alive) { nodes[live.node].end = Int32Array.from(live.a.x); }
+    return { NG, size, beta, nodes, alive: alive.map((l) => l.node), end: clock, seed, matrixSeed };
+  }
+
+  root.GARDTOY = { NG, KF, KB, RHO, N0, NMAX, rng, lineage, population, cosine };
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>
+// The page's sketches, in a classic script so that they run without the 3D library. The toy runs once,
+// here, and every sketch replays it under one clock. The 3D module, when it starts, takes over the
+// drawing of two sketches (the assembly and the map); until then, and where it cannot start, they are
+// drawn flat on their own canvases.
+(function () {
+  "use strict";
+  const T = window.GARDTOY;
+  if (!T) return;
+  const root = document.documentElement;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const ratio = () => Math.min(window.devicePixelRatio || 1, 2);
+  const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+  const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+  const fmt = (h) => h.toFixed(3);
+
+  // ------------------------------------------------------------------ colours, from the page's tokens
+  const TOK = {};
+  const NAMES = ["bg", "bg-raised", "fg", "muted", "line", "accent", "stage-a", "stage-b", "kind-1", "kind-2", "kind-3", "kind-other", "kind-other-2",
+    "ramp-0", "ramp-1", "ramp-2", "ramp-3", "ramp-4", "ramp-5", "tail", "ghost", "cursor", "light-sky", "light-ground", "light-key"];
+  let RAMP = [];
+  function hexRgb(h) { h = String(h).trim().replace("#", ""); if (h.length === 3) h = h.split("").map((c) => c + c).join(""); const n = parseInt(h, 16) || 0; return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function readTokens() {
+    const s = getComputedStyle(root);
+    for (const n of NAMES) TOK[n] = s.getPropertyValue("--" + n).trim() || "#888888";
+    RAMP = [0, 1, 2, 3, 4, 5].map((k) => hexRgb(TOK["ramp-" + k]));
+  }
+  function rampRgb(t) {
+    t = clamp(t, 0, 1);
+    const x = t * 5, k = Math.min(4, Math.floor(x)), f = x - k, a = RAMP[k], b = RAMP[k + 1];
+    return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f];
+  }
+  const rampCss = (t) => { const c = rampRgb(t); return `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`; };
+  readTokens();
+
+  // ------------------------------------------------------------------ the toy, run once
+  const t0 = performance.now();
+  const RUN = T.lineage({ seed: 16, fissions: 120 });
+  const POP = T.population({ seed: 5, matrixSeed: 16, size: 24, fissions: 360 });
+  const toyMs = performance.now() - t0;
+  const G = RUN.gens, NF = G.length, NG = T.NG;
+
+  // The three kinds that lead over the whole run wear colour and a shape; the other 97 are grey.
+  const total = new Float64Array(NG);
+  G.forEach((g) => { for (let i = 0; i < NG; i++) total[i] += g.parent[i]; });
+  const LEAD = Array.from(total, (v, i) => [v, i]).sort((a, b) => b[0] - a[0]).slice(0, 3).map((p) => p[1]);
+  const SLOT = new Int8Array(NG).fill(-1);
+  LEAD.forEach((k, s) => { SLOT[k] = s; });
+  const kindName = (i) => "t" + String(i).padStart(3, "0");
+  const kindColour = (i) => (SLOT[i] >= 0 ? TOK["kind-" + (SLOT[i] + 1)] : TOK["kind-other"]);
+  const SHAPE_WORDS = ["diamond", "square", "triangle"]; // the other 97 are circles
+
+  function glyph(ctx, slot, x, y, r, fill, stroke) {
+    ctx.beginPath();
+    if (slot === 0) { ctx.moveTo(x, y - r * 1.2); ctx.lineTo(x + r * 1.05, y); ctx.lineTo(x, y + r * 1.2); ctx.lineTo(x - r * 1.05, y); ctx.closePath(); }
+    else if (slot === 1) ctx.rect(x - r * 0.88, y - r * 0.88, r * 1.76, r * 1.76);
+    else if (slot === 2) { ctx.moveTo(x, y - r * 1.1); ctx.lineTo(x + r * 1.05, y + r * 0.8); ctx.lineTo(x - r * 1.05, y + r * 0.8); ctx.closePath(); }
+    else ctx.arc(x, y, r, 0, Math.PI * 2);
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.stroke(); }
+  }
+  function glyphSvg(slot) {
+    const shape = slot === 1 ? '<rect x="2.5" y="2.5" width="9" height="9" fill="currentColor"/>'
+      : slot === 2 ? '<path d="M7 1.8 L12.4 11.6 L1.6 11.6 Z" fill="currentColor"/>'
+      : '<path d="M7 1 L12.6 7 L7 13 L1.4 7 Z" fill="currentColor"/>';
+    return `<svg class="glyph" viewBox="0 0 14 14" aria-hidden="true" style="color:var(--kind-${slot + 1})">${shape}</svg>`;
+  }
+  function fillKindLegends() {
+    const html = LEAD.map((k, s) => `<span>${glyphSvg(s)}${kindName(k)}, ${SHAPE_WORDS[s]}</span>`).join("")
+      + `<span><i class="sw" style="background:var(--kind-other)"></i>the other 97 types</span>`;
+    document.querySelectorAll("[data-kinds]").forEach((el) => { el.innerHTML = html; });
+    document.querySelectorAll("#list-table th[data-k]").forEach((th) => { const s = Number(th.dataset.k); th.innerHTML = `${glyphSvg(s)} ${kindName(LEAD[s])}`; });
+  }
+
+  // ------------------------------------------------------------------ the clock
+  const GROW = 0.8; // the share of each split's interval spent growing; the rest is the split itself
+  const clock = { pos: 36, playing: false, speed: 1 };
+  function stateAt(pos) {
+    pos = clamp(pos, 0, NF);
+    if (pos >= NF) return { g: NF - 1, e: G[NF - 1].events.length, split: 1, phase: "split", pos };
+    const g = Math.floor(pos), f = pos - g, len = G[g].events.length;
+    if (f < GROW) return { g, e: Math.min(len, Math.floor((f / GROW) * (len + 1))), split: 0, phase: "grow", pos };
+    return { g, e: len, split: (f - GROW) / (1 - GROW), phase: "split", pos };
+  }
+  /** How many splits have happened by a state: the split of the state's own interval counts once it begins. */
+  const doneBy = (st) => (st.phase === "split" ? st.g + 1 : st.g);
+  let compKey = "", compX = null;
+  function composition(g, e) {
+    const key = g + ":" + e;
+    if (key === compKey) return compX;
+    const x = Int32Array.from(G[g].born), ev = G[g].events;
+    for (let k = 0; k < e; k++) { const v = ev[k]; x[Math.abs(v) - 1] += v > 0 ? 1 : -1; }
+    compKey = key; compX = x;
+    return x;
+  }
+  const sizeOf = (x) => { let n = 0; for (let i = 0; i < x.length; i++) n += x[i]; return n; };
+  const kindsOf = (x) => { let n = 0; for (let i = 0; i < x.length; i++) if (x[i]) n++; return n; };
+
+  const sketches = [];
+  function addSketch(s) {
+    s.visible = false; s.dirty = true;
+    if (s.observe) new IntersectionObserver((entries) => { s.visible = entries.some((e) => e.isIntersecting); s.dirty = true; }, { threshold: 0.01 }).observe(s.observe);
+    else s.visible = true;
+    sketches.push(s);
+    return s;
+  }
+  const themeHooks = [];
+  let lastSplit = -1;
+  function changed() {
+    for (const s of sketches) s.dirty = true;
+    const st = stateAt(clock.pos);
+    ui.pos.value = String(clock.pos);
+    const done = doneBy(st), x = composition(st.g, st.e);
+    let words = `<b>Fission ${Math.min(NF, done)} of ${NF}</b> · ${sizeOf(x)} molecules of ${kindsOf(x)} types`;
+    if (st.phase === "split") words += ` · at the fission: H between the parent and the daughter that carries on is ${fmt(G[st.g].h)}, ${G[st.g].h > 0.9 ? "inherited" : "a break"}`;
+    else words += " · growing";
+    if (ui.words.innerHTML !== words) ui.words.innerHTML = words;
+    ui.pos.setAttribute("aria-valuetext", `Fission ${Math.min(NF, done)} of ${NF}`);
+    ui.play.textContent = clock.playing ? "Pause" : clock.pos >= NF ? "Again" : "Play";
+    ui.play.setAttribute("aria-label", clock.playing ? "Pause" : "Play");
+    if (done !== lastSplit) { lastSplit = done; markListRow(done); }
+  }
+  function setPos(p, { play } = {}) {
+    clock.pos = clamp(p, 0, NF);
+    if (play !== undefined) clock.playing = play;
+    changed();
+  }
+
+  const ui = {};
+  function wireClock() {
+    const box = document.getElementById("clock");
+    ui.pos = box.querySelector("[data-pos]");
+    ui.words = box.querySelector("[data-words]");
+    ui.play = box.querySelector('[data-act="play"]');
+    ui.speed = box.querySelector("[data-speed]");
+    ui.pos.max = String(NF);
+    box.querySelector('[data-act="start"]').addEventListener("click", () => setPos(0, { play: false }));
+    box.querySelector('[data-act="back"]').addEventListener("click", () => step(-1));
+    box.querySelector('[data-act="fwd"]').addEventListener("click", () => step(1));
+    ui.play.addEventListener("click", () => {
+      if (clock.pos >= NF) clock.pos = 0;
+      clock.playing = !clock.playing;
+      changed();
+    });
+    ui.pos.addEventListener("input", () => setPos(Number(ui.pos.value), { play: false }));
+    ui.speed.addEventListener("change", () => { clock.speed = ui.speed.value === "m" ? "m" : Number(ui.speed.value); changed(); });
+  }
+  /** One split back or on: to the moment a split's daughter is born. */
+  function step(d) {
+    const here = clock.pos, g = Math.floor(here + 1e-9);
+    const target = d > 0 ? Math.min(NF, g + 1) : here - g > 1e-6 ? g : Math.max(0, g - 1);
+    setPos(target, { play: false });
+  }
+  function keys(el) {
+    el.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight" || event.key === "ArrowLeft") { step(event.key === "ArrowRight" ? 1 : -1); event.preventDefault(); }
+      else if (event.key === " ") { ui.play.click(); event.preventDefault(); }
+    });
+  }
+
+  // ------------------------------------------------------------------ a canvas that fits its box
+  function fit(canvas) {
+    const rect = canvas.getBoundingClientRect(), k = ratio();
+    const w = Math.max(2, Math.round(rect.width * k)), h = Math.max(2, Math.round(rect.height * k));
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+    return { w, h, k };
+  }
+  function seg(figure, attr, onChange) {
+    const buttons = figure.querySelectorAll(`[${attr}] button`);
+    buttons.forEach((b) => b.addEventListener("click", () => {
+      buttons.forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
+      onChange(b.dataset.value);
+    }));
+  }
+  function pointer(canvas, onPick, onDrag) {
+    let drag = null;
+    canvas.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, y: e.clientY, moved: false }; canvas.setPointerCapture?.(e.pointerId); });
+    canvas.addEventListener("pointermove", (e) => {
+      if (!drag) return;
+      const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
+      if (drag.moved && onDrag) { onDrag(dx, dy); drag.x = e.clientX; drag.y = e.clientY; }
+    });
+    const up = (e) => {
+      if (!drag) return;
+      const clicked = !drag.moved;
+      drag = null;
+      if (clicked && e.type === "pointerup" && onPick) {
+        const r = canvas.getBoundingClientRect();
+        onPick((e.clientX - r.left) * ratio(), (e.clientY - r.top) * ratio());
+      }
+    };
+    canvas.addEventListener("pointerup", up);
+    canvas.addEventListener("pointercancel", up);
+  }
+  function text(ctx, s, x, y, { k = 1, size = 11.5, weight = 500, colour = TOK.muted, align = "left", base = "middle" } = {}) {
+    ctx.font = `${weight} ${size * k}px Inter, system-ui, sans-serif`;
+    ctx.fillStyle = colour; ctx.textAlign = align; ctx.textBaseline = base;
+    ctx.fillText(s, x, y);
+  }
+
+  // ------------------------------------------------------------------ the assembly's beads, for both renderers
+  // One bead per molecule, each with its kind and a direction of its own. Where a bead sits is the
+  // picture's choice: on a ball (micelle), in a ball (cluster), or on one of two shells (vesicle).
+  const beadRng = T.rng(2026);
+  const asm = { mols: [], g: -1, e: 0, shape: "micelle", turn: 0.4, tilt: 0.25, splitG: -1, centres: [[0, 0, 0], [0, 0, 0]], fade: 0, phase: "grow" };
+  function randomDir() { const z = beadRng() * 2 - 1, a = beadRng() * Math.PI * 2, s = Math.sqrt(1 - z * z); return [s * Math.cos(a), z, s * Math.sin(a)]; }
+  function newMol(kind, entering) {
+    return { kind, dir: randomDir(), rad: Math.cbrt(0.15 + 0.85 * beadRng()), leaf: beadRng() < 0.55 ? 0 : 1, side: 0,
+      pos: null, t: entering && !reduced.matches ? 0 : 1, leaving: false, gone: false };
+  }
+  function rebuild(x) {
+    asm.mols = [];
+    for (let i = 0; i < NG; i++) for (let c = 0; c < x[i]; c++) asm.mols.push(newMol(i, false));
+    relax(30);
+  }
+  function relax(iterations) {
+    const groups = [[], []];
+    for (const m of asm.mols) if (!m.gone) groups[m.side].push(m);
+    for (let it = 0; it < iterations; it++) for (const grp of groups) {
+      const n = grp.length;
+      if (n < 2) continue;
+      const reach = 2.6 / Math.sqrt(n);
+      for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) {
+        const p = grp[a].dir, q = grp[b].dir;
+        const dx = p[0] - q[0], dy = p[1] - q[1], dz = p[2] - q[2], d2 = dx * dx + dy * dy + dz * dz;
+        if (d2 > reach * reach || d2 < 1e-9) continue;
+        const f = (0.035 * (reach * reach - d2)) / (reach * reach);
+        p[0] += dx * f; p[1] += dy * f; p[2] += dz * f; q[0] -= dx * f; q[1] -= dy * f; q[2] -= dz * f;
+      }
+      for (const m of grp) { const p = m.dir, l = Math.hypot(p[0], p[1], p[2]) || 1; p[0] /= l; p[1] /= l; p[2] /= l; }
+    }
+  }
+  const radius = (n) => (asm.shape === "cluster" ? 1.05 * Math.cbrt(n / 80) : 1.0 * Math.sqrt(n / 80));
+  function syncAssembly(st, dt) {
+    const fresh = st.g !== asm.g || st.e < asm.e || st.e - asm.e > 240;
+    if (asm.g === st.g - 1 && asm.phase === "split" && st.e < 240 && st.phase === "grow") {
+      // The daughter that carries on becomes the assembly; the other one is let go.
+      asm.mols = asm.mols.filter((m) => m.side === 0 && !m.gone);
+      for (const m of asm.mols) m.side = 0;
+      asm.g = st.g; asm.e = 0; asm.phase = "grow";
+      applyEvents(st);
+    } else if (fresh) {
+      asm.g = st.g; asm.e = st.e; asm.phase = "grow";
+      rebuild(composition(st.g, st.e));
+    } else applyEvents(st);
+    if (st.phase === "split" && asm.phase !== "split") {
+      // Partition the beads as the run split the counts: per kind, the first so many to the daughter.
+      const keep = Int32Array.from(G[st.g].daughter);
+      for (const m of asm.mols) { if (m.gone || m.leaving) continue; if (keep[m.kind] > 0) { keep[m.kind]--; m.side = 0; } else m.side = 1; }
+      asm.mols = asm.mols.filter((m) => !m.leaving);
+      asm.phase = "split";
+    }
+    if (st.phase === "grow" && asm.phase === "split") { for (const m of asm.mols) m.side = 0; }
+    if (st.phase === "grow") asm.phase = "grow";
+    // Where the two groups stand during a split: apart, then the daughter back to the middle.
+    const s = st.phase === "split" ? st.split : 0;
+    const d = radius(40) * 1.25, apart = smooth(0, 0.55, s), back = smooth(0.55, 1, s);
+    asm.centres = [[-d * apart * (1 - back), 0, 0], [d * apart * (1 + 1.4 * back), 0, 0]];
+    asm.fade = back;
+    asm.split = s;
+    const counts = [0, 0];
+    for (const m of asm.mols) if (!m.gone) counts[m.side]++;
+    asm.counts = counts;
+    // Ease each bead toward its place; a join flies in, a leave flies out. With less motion the
+    // layout settles once for each change and then holds still.
+    const key = `${st.g}:${st.e}:${asm.phase}:${asm.shape}`;
+    if (!reduced.matches) relax(1);
+    else if (asm.settled !== key) { relax(24); asm.settled = key; }
+    const k = reduced.matches || !dt ? 1 : 1 - Math.exp(-dt * 9);
+    let moving = false;
+    for (const m of asm.mols) {
+      const c = asm.centres[m.side], R = asm.shape === "vesicle" ? radius(counts[m.side]) * (m.leaf ? 0.72 : 1.05) : radius(counts[m.side]);
+      const reach = asm.shape === "cluster" ? R * m.rad : R;
+      const tgt = [c[0] + m.dir[0] * reach, c[1] + m.dir[1] * reach, c[2] + m.dir[2] * reach];
+      if (m.t < 1) { m.t = Math.min(1, m.t + (dt || 1) / 0.45); moving = true; }
+      const fly = m.leaving ? smooth(0, 1, m.t) : 1 - smooth(0, 1, m.t);
+      const out = [tgt[0] + m.dir[0] * fly * 1.8, tgt[1] + m.dir[1] * fly * 1.8, tgt[2] + m.dir[2] * fly * 1.8];
+      if (!m.pos) m.pos = out.slice();
+      for (let a = 0; a < 3; a++) { const delta = out[a] - m.pos[a]; if (Math.abs(delta) > 1e-4) moving = true; m.pos[a] += delta * k; }
+      m.scale = m.leaving ? 1 - smooth(0, 1, m.t) : smooth(0, 0.4, m.t) * 0.7 + 0.3 * (m.t >= 1 ? 1 : m.t);
+      if (m.leaving && m.t >= 1) m.gone = true;
+      m.tail = asm.shape === "cluster" ? null : asm.shape === "vesicle" && m.leaf ? [c[0] + m.dir[0] * (R + 0.22), c[1] + m.dir[1] * (R + 0.22), c[2] + m.dir[2] * (R + 0.22)] : [c[0] + m.dir[0] * R * 0.38, c[1] + m.dir[1] * R * 0.38, c[2] + m.dir[2] * R * 0.38];
+    }
+    asm.mols = asm.mols.filter((m) => !m.gone);
+    return moving;
+  }
+  function applyEvents(st) {
+    const ev = G[st.g].events;
+    for (let k = asm.e; k < st.e; k++) {
+      const v = ev[k], i = Math.abs(v) - 1;
+      if (v > 0) asm.mols.push(newMol(i, true));
+      else {
+        for (let j = asm.mols.length - 1; j >= 0; j--) { const m = asm.mols[j]; if (m.kind === i && !m.leaving) { m.leaving = true; m.t = reduced.matches ? 1 : 0; break; } }
+      }
+    }
+    asm.e = st.e;
+  }
+
+  // ------------------------------------------------------------------ the map's axes: principal components of the grown compositions
+  function pca(rows, k) {
+    const n = rows.length, d = NG, mean = new Float64Array(d);
+    rows.forEach((r) => { for (let i = 0; i < d; i++) mean[i] += r[i] / n; });
+    const C = new Float64Array(d * d);
+    for (const r of rows) {
+      const c = new Float64Array(d);
+      for (let i = 0; i < d; i++) c[i] = r[i] - mean[i];
+      for (let i = 0; i < d; i++) { const ci = c[i]; if (!ci) continue; for (let j = 0; j < d; j++) C[i * d + j] += ci * c[j]; }
+    }
+    const vecs = [], rnd = T.rng(99);
+    for (let v = 0; v < k; v++) {
+      let x = new Float64Array(d).map(() => rnd() - 0.5);
+      for (let it = 0; it < 300; it++) {
+        const y = new Float64Array(d);
+        for (let i = 0; i < d; i++) { let s = 0; for (let j = 0; j < d; j++) s += C[i * d + j] * x[j]; y[i] = s; }
+        for (const u of vecs) { let p = 0; for (let i = 0; i < d; i++) p += y[i] * u[i]; for (let i = 0; i < d; i++) y[i] -= p * u[i]; }
+        const l = Math.hypot(...y) || 1;
+        for (let i = 0; i < d; i++) y[i] /= l;
+        x = y;
+      }
+      vecs.push(x);
+    }
+    return { mean, vecs };
+  }
+  const MAP = (() => {
+    const rows = G.map((g) => g.parent);
+    const p = pca(rows, 3);
+    const project = (x) => { const n = sizeOf(x) || 1, out = [0, 0, 0]; for (let v = 0; v < 3; v++) { let s = 0; for (let i = 0; i < NG; i++) s += ((x[i] * 80) / n - p.mean[i]) * p.vecs[v][i]; out[v] = s; } return out; };
+    const pts = rows.map(project);
+    // Scale so that nine in ten points lie within the frame: the founder's first mixes lie far out.
+    const mags = pts.map((q) => Math.max(Math.abs(q[0]), Math.abs(q[1]), Math.abs(q[2]))).sort((a, b) => a - b);
+    const scale = 0.9 / (mags[Math.floor(mags.length * 0.9)] || 1);
+    const at = (x) => project(x).map((c) => clamp(c * scale, -1.3, 1.3));
+    return { pts: pts.map((q) => q.map((c) => clamp(c * scale, -1.3, 1.3))), at, vecs: p.vecs, turn: 0.6, tilt: 0.35 };
+  })();
+  // The population at a time of the clock: three of its splits for each split of the lineage.
+  const POPSPLITS = POP.nodes.filter((n) => n.fate === "split").map((n) => n.died).sort((a, b) => a - b);
+  function popTime(pos) {
+    const k = clamp(pos, 0, NF) * (POPSPLITS.length / NF);
+    if (k <= 0) return 0;
+    if (k >= POPSPLITS.length) return POP.end;
+    const lo = Math.floor(k), a = lo === 0 ? 0 : POPSPLITS[lo - 1], b = POPSPLITS[lo];
+    return a + (b - a) * (k - lo);
+  }
+  const aliveAt = (t) => POP.nodes.filter((n) => n.born <= t && (n.died === null || n.died > t));
+
+  // ------------------------------------------------------------------ A. the table beta at the molecules level
+  function drawBeta() {
+    const canvas = document.getElementById("beta");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d"), img = ctx.createImageData(100, 100);
+    for (let i = 0; i < NG; i++) for (let j = 0; j < NG; j++) {
+      const v = Math.log10(RUN.beta[i * NG + j]); // about -6 to +4
+      const c = rampRgb((v + 4) / 7), o = (i * 100 + j) * 4;
+      img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+    }
+    canvas.width = 100; canvas.height = 100;
+    ctx.putImageData(img, 0, 0);
+    canvas.style.imageRendering = "pixelated";
+  }
+
+  // ------------------------------------------------------------------ B. the assembly, drawn flat until 3D starts
+  function assemblySketch() {
+    const figure = document.getElementById("sk-assembly"), canvas = figure.querySelector("canvas");
+    const readout = figure.querySelector("[data-readout]");
+    let picked = null;
+    const s = addSketch({ id: "assembly", figure, canvas, observe: canvas, gl: null, animating: true });
+    seg(figure, "data-shape", (v) => { asm.shape = v; s.dirty = true; });
+    if (window.matchMedia("(max-width: 480px)").matches || reduced.matches) {
+      asm.shape = "cluster";
+      figure.querySelectorAll("[data-shape] button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.value === "cluster")));
+    }
+    keys(canvas);
+    pointer(canvas, (px, py) => {
+      const hit = s.gl ? s.gl.pick(px, py) : pick2d(px, py);
+      picked = hit;
+      s.dirty = true;
+    }, (dx, dy) => { asm.turn += dx * 0.008; asm.tilt = clamp(asm.tilt + dy * 0.006, -1.1, 1.1); s.dragged = true; s.dirty = true; });
+    let flat = [];
+    function view(p) { // the flat stand-in's projection: turn, tilt, orthographic
+      const c = Math.cos(asm.turn), sn = Math.sin(asm.turn), ct = Math.cos(asm.tilt), st = Math.sin(asm.tilt);
+      const x = p[0] * c + p[2] * sn, z0 = -p[0] * sn + p[2] * c, y = p[1] * ct - z0 * st, z = p[1] * st + z0 * ct;
+      return [x, y, z];
+    }
+    function pick2d(px, py) { let best = null, bd = 18 * ratio(); for (const f of flat) { const d = Math.hypot(f.x - px, f.y - py); if (d < bd) { bd = d; best = f.m; } } return best; }
+    s.draw = (dt) => {
+      const st = stateAt(clock.pos);
+      const moving = syncAssembly(st, dt);
+      if (!reduced.matches && !s.dragged && clock.playing) asm.turn += (dt || 0) * 0.12;
+      s.animating = moving || clock.playing;
+      const words = st.phase === "split"
+        ? `Fission ${st.g + 1}: ${asm.counts[0]} and ${asm.counts[1]} molecules; the one on the left carries on, the other is not followed.`
+        : `Fission ${st.g} done · ${asm.mols.length} molecules of ${kindsOf(composition(st.g, st.e))} types, growing toward 80.`;
+      readout.textContent = picked && asm.mols.includes(picked)
+        ? `${words} Chosen: a molecule of ${kindName(picked.kind)}, one of ${composition(st.g, st.e)[picked.kind]} of that type here.`
+        : words;
+      if (s.gl) { s.gl.draw(asm, st, picked); return; }
+      const { w, h, k } = fit(canvas), ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, w, h);
+      const unit = Math.min(w, h) * 0.3, cx = w / 2, cy = h * 0.54;
+      flat = asm.mols.map((m) => { const v = view(m.pos), tl = m.tail ? view(m.tail) : null; return { m, x: cx + v[0] * unit, y: cy - v[1] * unit, z: v[2], tx: tl && cx + tl[0] * unit, ty: tl && cy - tl[1] * unit }; });
+      flat.sort((a, b) => a.z - b.z);
+      ctx.lineWidth = 1.2 * k;
+      for (const f of flat) {
+        const fade = f.m.side === 1 ? 1 - 0.7 * asm.fade : 1;
+        ctx.globalAlpha = fade * (0.55 + 0.45 * clamp((f.z + 1.2) / 2.4, 0, 1));
+        if (f.tx !== null && f.tx !== undefined) { ctx.strokeStyle = TOK.tail; ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.lineTo(f.tx, f.ty); ctx.stroke(); }
+        const r = (6.5 + 2.5 * clamp((f.z + 1) / 2, 0, 1)) * k * (f.m.scale ?? 1);
+        glyph(ctx, SLOT[f.m.kind], f.x, f.y, Math.max(0.5, r), kindColour(f.m.kind), f.m === picked ? TOK.fg : null);
+      }
+      ctx.globalAlpha = 1;
+      if (st.phase === "split" && st.split > 0.3) {
+        text(ctx, "carries on", cx + asm.centres[0][0] * unit, cy + unit * 1.05, { k, weight: 600, colour: TOK.fg, align: "center" });
+        text(ctx, "not followed", cx + asm.centres[1][0] * unit, cy + unit * 1.05, { k, colour: TOK.muted, align: "center" });
+      }
+      text(ctx, "Flat drawing: the 3D sketch did not start", 12 * k, h - 14 * k, { k, size: 10.5 });
+    };
+    return s;
+  }
+
+  // ------------------------------------------------------------------ C. the composition
+  function compositionSketch() {
+    const figure = document.getElementById("sk-composition"), canvas = figure.querySelector("canvas");
+    const readout = figure.querySelector("[data-readout]");
+    let mode = window.matchMedia("(max-width: 480px)").matches ? "wheel" : "strip", hits = [], picked = null;
+    figure.querySelectorAll("[data-mode] button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.value === mode)));
+    const s = addSketch({ id: "composition", figure, canvas, observe: canvas });
+    seg(figure, "data-mode", (v) => { mode = v; picked = null; s.dirty = true; });
+    keys(canvas);
+    pointer(canvas, (px, py) => { picked = hits.find((h) => h.test(px, py)) || null; s.dirty = true; });
+    function others(i, x) { let n = 0; for (let j = 0; j < i; j++) if (x[j] && SLOT[j] < 0) n++; return n % 2 ? TOK["kind-other-2"] : TOK["kind-other"]; }
+    function strip(ctx, x, x0, y, len, hgt, alpha, label, k, store) {
+      const n = sizeOf(x), unit = len / 80, gap = 1.5 * k;
+      let at = x0;
+      ctx.globalAlpha = alpha;
+      for (let i = 0; i < NG; i++) {
+        if (!x[i]) continue;
+        const wdt = x[i] * unit;
+        ctx.fillStyle = SLOT[i] >= 0 ? kindColour(i) : others(i, x);
+        ctx.fillRect(at, y, Math.max(0.5, wdt - gap), hgt);
+        if (SLOT[i] >= 0 && wdt > 9 * k) glyph(ctx, SLOT[i], at + Math.min(wdt / 2, 8 * k), y - 9 * k, 4.2 * k, kindColour(i));
+        if (store) { const a = at, b = at + wdt, kind = i, c = x[i]; hits.push({ test: (px, py) => px >= a && px < b && py >= y - 14 * k && py <= y + hgt, kind, count: c, n }); }
+        if (picked && picked.kind === i && store) { ctx.strokeStyle = TOK.fg; ctx.lineWidth = 2 * k; ctx.strokeRect(at, y, Math.max(1, wdt - gap), hgt); }
+        at += wdt;
+      }
+      text(ctx, label, x0 + len * (n / 80) + 8 * k, y + hgt / 2, { k, colour: alpha < 1 ? TOK.muted : TOK.fg, weight: alpha < 1 ? 500 : 600 });
+      ctx.globalAlpha = 1;
+    }
+    function wheel(ctx, x, cx, cy, r1, r2, alpha, label, k, store) {
+      const n = sizeOf(x) || 1, gap = 0.012;
+      let a = -Math.PI / 2;
+      ctx.globalAlpha = alpha;
+      for (let i = 0; i < NG; i++) {
+        if (!x[i]) continue;
+        const span = (x[i] / n) * Math.PI * 2;
+        ctx.beginPath(); ctx.arc(cx, cy, r2, a, a + Math.max(0.002, span - gap)); ctx.arc(cx, cy, r1, a + Math.max(0.002, span - gap), a, true); ctx.closePath();
+        ctx.fillStyle = SLOT[i] >= 0 ? kindColour(i) : others(i, x);
+        ctx.fill();
+        if (picked && picked.kind === i && store) { ctx.strokeStyle = TOK.fg; ctx.lineWidth = 2 * k; ctx.stroke(); }
+        if (SLOT[i] >= 0 && span > 0.22) { const m = a + span / 2; glyph(ctx, SLOT[i], cx + Math.cos(m) * (r2 + 10 * k), cy + Math.sin(m) * (r2 + 10 * k), 4.2 * k, kindColour(i)); }
+        if (store) { const lo = a, hi = a + span, kind = i, c = x[i]; hits.push({ test: (px, py) => { const d = Math.hypot(px - cx, py - cy); let t = Math.atan2(py - cy, px - cx); while (t < lo) t += Math.PI * 2; return d >= r1 && d <= r2 + 4 && t < hi; }, kind, count: c, n }); }
+        a += span;
+      }
+      text(ctx, String(sizeOf(x)), cx, cy - 6 * k, { k, size: 18, weight: 600, colour: alpha < 1 ? TOK.muted : TOK.fg, align: "center" });
+      text(ctx, label, cx, cy + 12 * k, { k, size: 10.5, align: "center" });
+      ctx.globalAlpha = 1;
+    }
+    s.draw = () => {
+      const st = stateAt(clock.pos), x = composition(st.g, st.e);
+      const { w, h, k } = fit(canvas), ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, w, h);
+      hits = [];
+      const m = 16 * k, top = 40 * k;
+      if (mode === "strip") {
+        const len = w - 2 * m - 96 * k, hgt = Math.min(46 * k, h * 0.15), gapY = hgt + 30 * k;
+        const y0 = top + Math.max(18 * k, (h - top - 30 * k - 3 * gapY) / 2 + 10 * k);
+        if (st.phase === "split") {
+          const sp = st.split, dy = gapY * smooth(0, 0.6, sp);
+          strip(ctx, G[st.g].parent, m, y0, len, hgt, 1 - 0.65 * smooth(0, 0.6, sp), "80 · the parent", k, false);
+          strip(ctx, G[st.g].daughter, m, y0 + dy, len, hgt, 1, "carries on", k, true);
+          strip(ctx, G[st.g].sibling, m, y0 + 2 * dy, len, hgt, 1 - 0.6 * smooth(0.5, 1, sp), "not followed", k, false);
+        } else strip(ctx, x, m, y0 + gapY, len, hgt, 1, `${sizeOf(x)} molecules`, k, true);
+        text(ctx, "types in order, t000 → t099; full width = 80 molecules", m, h - 14 * k, { k, size: 10.5 });
+      } else if (mode === "wheel") {
+        const r2 = Math.min(h * 0.34, w * 0.2), r1 = r2 * 0.62, cy = h * 0.55;
+        if (st.phase === "split") {
+          const sp = smooth(0, 0.6, st.split), off = w * 0.22 * sp;
+          wheel(ctx, G[st.g].daughter, w / 2 - off, cy, r1 * (1 - 0.25 * sp), r2 * (1 - 0.25 * sp), 1, "carries on", k, true);
+          wheel(ctx, G[st.g].sibling, w / 2 + off, cy, r1 * (1 - 0.25 * sp), r2 * (1 - 0.25 * sp), 1 - 0.6 * smooth(0.5, 1, st.split), "not followed", k, false);
+        } else wheel(ctx, x, w / 2, cy, r1, r2, 1, "molecules", k, true);
+        text(ctx, "shares of the types, in order, clockwise from the top", m, h - 14 * k, { k, size: 10.5 });
+      } else {
+        const x0 = m + 34 * k, x1 = w - m, y0 = top + 4 * k, y1 = h - 30 * k;
+        const cw = (x1 - x0) / NF, rh = (y1 - y0) / NG;
+        const shown = doneBy(st), growing = st.phase === "grow" && shown < NF;
+        for (let c = 0; c < shown + (growing ? 1 : 0); c++) {
+          const col = c < shown ? G[c].parent : x;
+          for (let i = 0; i < NG; i++) {
+            if (!col[i]) continue;
+            ctx.fillStyle = rampCss(0.18 + 0.82 * Math.sqrt(col[i] / 60));
+            ctx.fillRect(x0 + c * cw, y0 + i * rh, Math.max(1, cw - (cw > 3 ? 0.5 : 0)), Math.max(1, rh));
+          }
+        }
+        for (const [s2, kind] of LEAD.entries()) glyph(ctx, s2, x0 - 10 * k, y0 + (kind + 0.5) * rh, 4 * k, kindColour(kind));
+        text(ctx, "t000", x0 - 34 * k, y0 + 4 * k, { k, size: 10 }); text(ctx, "t099", x0 - 34 * k, y1 - 4 * k, { k, size: 10 });
+        const cx = x0 + clamp(growing ? shown : shown - 1, 0, NF - 1) * cw + cw / 2;
+        ctx.strokeStyle = TOK.cursor; ctx.lineWidth = 1.5 * k; ctx.beginPath(); ctx.moveTo(cx, y0 - 4 * k); ctx.lineTo(cx, y1 + 4 * k); ctx.stroke();
+        text(ctx, "fission 0", x0, h - 14 * k, { k, size: 10.5 }); text(ctx, `fission ${NF}`, x1, h - 14 * k, { k, size: 10.5, align: "right" });
+        text(ctx, "each column: the grown assembly at a fission · types down", w / 2, h - 14 * k, { k, size: 10.5, align: "center" });
+        hits.push({ test: (px, py) => px >= x0 && px <= x1 && py >= y0 && py <= y1, tape: true, x0, y0, cw, rh });
+      }
+      const lead = LEAD.map((kind) => `${kindName(kind)}: ${x[kind]}`).join(", ");
+      if (picked && picked.tape) readout.textContent = "Each column is one grown assembly of 80 molecules, at its fission; a stronger colour means more molecules of that type.";
+      else if (picked) readout.textContent = `${kindName(picked.kind)}: ${picked.count} of ${picked.n} molecules (${Math.round((100 * picked.count) / picked.n)} %).`;
+      else readout.textContent = mode === "tape" ? `Up to fission ${Math.min(NF, doneBy(st))}. The three leading types are marked at the left.` : `${sizeOf(x)} molecules of ${kindsOf(x)} types · ${lead}. Choose a part to name it.`;
+    };
+    return s;
+  }
+
+  // ------------------------------------------------------------------ D. similarity: at each split, and the carpet
+  const HM = (() => { const m = new Float32Array(NF * NF); for (let a = 0; a < NF; a++) for (let b = a; b < NF; b++) { const h = a === b ? 1 : T.cosine(G[a].parent, G[b].parent); m[a * NF + b] = m[b * NF + a] = h; } return m; })();
+  function similaritySketch() {
+    const figure = document.getElementById("sk-similarity");
+    const line = figure.querySelector("[data-line]"), carpet = figure.querySelector("[data-carpet]");
+    const readout = figure.querySelector("[data-readout]");
+    let compare = "parent", contour = false, picked = null, linePts = [], box = null;
+    const s = addSketch({ id: "similarity", figure, canvas: line, observe: figure });
+    seg(figure, "data-compare", (v) => { compare = v; picked = null; s.dirty = true; });
+    figure.querySelector("[data-contour]").addEventListener("change", (e) => { contour = e.target.checked; s.dirty = true; });
+    keys(line); keys(carpet);
+    pointer(line, (px, py) => { let best = null, bd = 16 * ratio(); for (const p of linePts) { const d = Math.hypot(p.x - px, p.y - py); if (d < bd) { bd = d; best = p; } } picked = best ? { kind: "line", g: best.g } : null; s.dirty = true; });
+    pointer(carpet, (px, py) => { if (!box) return; const a = Math.floor((px - box.x0) / box.cs), b = Math.floor((py - box.y0) / box.cs); picked = a >= 0 && b >= 0 && a < box.n && b < box.n ? { kind: "carpet", a, b } : null; s.dirty = true; });
+    const series = { parent: (g) => G[g].h, other: (g) => G[g].hOther, past: (g) => G[g].hBorn };
+    const lowest = {};
+    for (const key of Object.keys(series)) { let lo = 1; for (let g = 0; g < NF; g++) lo = Math.min(lo, series[key](g)); lowest[key] = Math.max(0, Math.floor((lo - 0.02) * 10) / 10); }
+    let carpetImg = null, carpetFor = "";
+    s.draw = () => {
+      const st = stateAt(clock.pos), done = doneBy(st);
+      // The line: one dot per split that has happened.
+      {
+        const { w, h, k } = fit(line), ctx = line.getContext("2d");
+        ctx.clearRect(0, 0, w, h);
+        const x0 = 54 * k, x1 = w - 14 * k, y0 = 48 * k, y1 = h - 36 * k, lo = lowest[compare];
+        const X = (g) => x0 + ((g + 0.5) / NF) * (x1 - x0), Y = (v) => y1 - ((v - lo) / (1 - lo)) * (y1 - y0);
+        ctx.strokeStyle = TOK.line; ctx.lineWidth = 1 * k;
+        for (let tick = Math.round(lo * 10); tick <= 10; tick++) { const v = tick / 10; ctx.beginPath(); ctx.moveTo(x0, Y(v)); ctx.lineTo(x1, Y(v)); ctx.stroke(); text(ctx, v.toFixed(1), x0 - 6 * k, Y(v), { k, size: 10, align: "right" }); }
+        if (compare === "parent") {
+          ctx.setLineDash([5 * k, 4 * k]); ctx.strokeStyle = TOK.fg; ctx.lineWidth = 1.4 * k;
+          ctx.beginPath(); ctx.moveTo(x0, Y(0.9)); ctx.lineTo(x1, Y(0.9)); ctx.stroke(); ctx.setLineDash([]);
+          text(ctx, "0.9: above, inherited; at or below, a break", x1, Y(0.9) - 9 * k, { k, size: 10.5, colour: TOK.fg, align: "right" });
+        } else text(ctx, "no threshold: F12 tests only the followed daughter", x1, y0 - 12 * k, { k, size: 10.5, align: "right" });
+        linePts = [];
+        ctx.strokeStyle = TOK.muted; ctx.lineWidth = 1 * k; ctx.globalAlpha = 0.5; ctx.beginPath();
+        for (let g = 0; g < done; g++) { const px = X(g), py = Y(series[compare](g)); if (g === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); }
+        ctx.stroke(); ctx.globalAlpha = 1;
+        for (let g = 0; g < done; g++) {
+          const v = series[compare](g), px = X(g), py = Y(v), inh = v > 0.9;
+          linePts.push({ x: px, y: py, g });
+          ctx.beginPath(); ctx.arc(px, py, (compare === "parent" ? 3.4 : 2.6) * k, 0, Math.PI * 2);
+          if (compare !== "parent") { ctx.fillStyle = TOK.muted; ctx.fill(); }
+          else if (inh) { ctx.fillStyle = TOK.fg; ctx.fill(); }
+          else { ctx.fillStyle = TOK["bg-raised"]; ctx.fill(); ctx.strokeStyle = TOK.fg; ctx.lineWidth = 1.5 * k; ctx.stroke(); }
+          if (picked && picked.kind === "line" && picked.g === g) { ctx.strokeStyle = TOK.fg; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.arc(px, py, 7 * k, 0, Math.PI * 2); ctx.stroke(); }
+        }
+        const cx = X(Math.min(NF - 1, Math.max(0, done - 1)));
+        ctx.strokeStyle = TOK.cursor; ctx.globalAlpha = 0.35; ctx.lineWidth = 1 * k; ctx.beginPath(); ctx.moveTo(cx, y0); ctx.lineTo(cx, y1); ctx.stroke(); ctx.globalAlpha = 1;
+        text(ctx, "fission →", x1, y1 + 18 * k, { k, size: 10.5, align: "right" });
+        text(ctx, "H", 14 * k, (y0 + y1) / 2, { k, size: 12, weight: 600, colour: TOK.fg, align: "center" });
+      }
+      // The carpet: every pair of grown compositions so far.
+      {
+        const { w, h, k } = fit(carpet), ctx = carpet.getContext("2d");
+        ctx.clearRect(0, 0, w, h);
+        const size = Math.min(w - 56 * k, h - 76 * k), cs = size / NF, x0 = (w - size) / 2 + 10 * k, y0 = 48 * k;
+        box = { x0, y0, cs, n: done };
+        const key = done + ":" + root.getAttribute("data-theme") + ":" + TOK["ramp-0"];
+        if (key !== carpetFor) {
+          carpetFor = key;
+          carpetImg = document.createElement("canvas"); carpetImg.width = NF; carpetImg.height = NF;
+          const c2 = carpetImg.getContext("2d"), img = c2.createImageData(NF, NF);
+          for (let a = 0; a < done; a++) for (let b = 0; b < done; b++) {
+            const col = rampRgb((HM[a * NF + b] - 0.2) / 0.8), o = (b * NF + a) * 4;
+            img.data[o] = col[0]; img.data[o + 1] = col[1]; img.data[o + 2] = col[2]; img.data[o + 3] = 255;
+          }
+          c2.putImageData(img, 0, 0);
+        }
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(carpetImg, x0, y0, size, size);
+        ctx.strokeStyle = TOK.line; ctx.lineWidth = 1 * k; ctx.strokeRect(x0, y0, size, size);
+        if (contour) {
+          ctx.strokeStyle = TOK.fg; ctx.lineWidth = 1 * k; ctx.beginPath();
+          for (let a = 0; a < done; a++) for (let b = 0; b < done; b++) {
+            if (!(HM[a * NF + b] > 0.9)) continue;
+            const L = x0 + a * cs, Tp = y0 + b * cs;
+            if (a === 0 || !(HM[(a - 1) * NF + b] > 0.9)) { ctx.moveTo(L, Tp); ctx.lineTo(L, Tp + cs); }
+            if (a + 1 >= done || !(HM[(a + 1) * NF + b] > 0.9)) { ctx.moveTo(L + cs, Tp); ctx.lineTo(L + cs, Tp + cs); }
+            if (b === 0 || !(HM[a * NF + b - 1] > 0.9)) { ctx.moveTo(L, Tp); ctx.lineTo(L + cs, Tp); }
+            if (b + 1 >= done || !(HM[a * NF + b + 1] > 0.9)) { ctx.moveTo(L, Tp + cs); ctx.lineTo(L + cs, Tp + cs); }
+          }
+          ctx.stroke();
+        }
+        if (done > 0) {
+          const c = x0 + (done - 0.5) * cs, r = y0 + (done - 0.5) * cs;
+          ctx.strokeStyle = TOK.cursor; ctx.globalAlpha = 0.5; ctx.lineWidth = 1 * k;
+          ctx.beginPath(); ctx.moveTo(c, y0); ctx.lineTo(c, y0 + size); ctx.moveTo(x0, r); ctx.lineTo(x0 + size, r); ctx.stroke(); ctx.globalAlpha = 1;
+        }
+        if (picked && picked.kind === "carpet") { ctx.strokeStyle = TOK.fg; ctx.lineWidth = 2 * k; ctx.strokeRect(x0 + picked.a * cs - 2 * k, y0 + picked.b * cs - 2 * k, cs + 4 * k, cs + 4 * k); }
+        text(ctx, "fission →", x0 + size, y0 - 10 * k, { k, size: 10.5, align: "right" });
+        text(ctx, "0", x0, y0 - 10 * k, { k, size: 10 });
+        text(ctx, "↓", x0 - 10 * k, y0 + 10 * k, { k, size: 11, align: "center" });
+        text(ctx, "grown assemblies (80 molecules), fission against fission", w / 2, y0 + size + 18 * k, { k, size: 10.5, align: "center" });
+      }
+      if (picked && picked.kind === "line") {
+        const g = picked.g, v = series[compare](g);
+        readout.textContent = compare === "parent" ? `Fission ${g + 1}: H = ${fmt(v)} between the parent at 80 molecules and the daughter that carries on: ${v > 0.9 ? "inherited" : "a break"}.`
+          : compare === "other" ? `Fission ${g + 1}: H = ${fmt(v)} between the parent and the daughter that is not followed.`
+          : `Fission ${g + 1}: H = ${fmt(v)} between the daughter born at the fission before and the same assembly grown to 80.`;
+      } else if (picked && picked.kind === "carpet") {
+        const { a, b } = picked;
+        readout.textContent = a < done && b < done ? `Fissions ${a + 1} and ${b + 1}: H = ${fmt(HM[a * NF + b])} between the two grown assemblies.` : "That pair has not happened yet at the clock's time.";
+      } else readout.textContent = `Up to fission ${done}. Choose a dot or a cell of the carpet to read its value.`;
+    };
+    return s;
+  }
+
+  // ------------------------------------------------------------------ E. the map, drawn flat until 3D starts
+  function mapSketch() {
+    const figure = document.getElementById("sk-map"), canvas = figure.querySelector("canvas");
+    const readout = figure.querySelector("[data-readout]");
+    let who = "lineage", flat = [];
+    const s = addSketch({ id: "map", figure, canvas, observe: canvas, gl: null, animating: true });
+    seg(figure, "data-who", (v) => { who = v; s.dirty = true; });
+    keys(canvas);
+    pointer(canvas, (px, py) => {
+      const hit = s.gl ? s.gl.pick(px, py) : (() => { let best = null, bd = 14 * ratio(); for (const f of flat) { const d = Math.hypot(f.x - px, f.y - py); if (d < bd) { bd = d; best = f.g; } } return best; })();
+      if (hit !== null && hit !== undefined) setPos(hit + 1, { play: false });
+    }, (dx, dy) => { MAP.turn += dx * 0.008; MAP.tilt = clamp(MAP.tilt + dy * 0.006, -1.2, 1.2); s.dragged = true; s.dirty = true; });
+    function view(p) { const c = Math.cos(MAP.turn), sn = Math.sin(MAP.turn), ct = Math.cos(MAP.tilt), st = Math.sin(MAP.tilt); const x = p[0] * c + p[2] * sn, z0 = -p[0] * sn + p[2] * c; return [x, p[1] * ct - z0 * st, p[1] * st + z0 * ct]; }
+    s.state = () => {
+      const st = stateAt(clock.pos), done = doneBy(st);
+      const now = MAP.at(composition(st.g, st.e));
+      const t = popTime(clock.pos), pop = who === "population" ? aliveAt(t).map((n) => MAP.at(n.x0)) : [];
+      return { st, done, now, pop, who };
+    };
+    s.draw = (dt) => {
+      const S = s.state();
+      if (!reduced.matches && !s.dragged && clock.playing) MAP.turn += (dt || 0) * 0.08;
+      s.animating = clock.playing;
+      readout.textContent = S.who === "population"
+        ? `The population's ${S.pop.length} living assemblies, each as it was at its birth, on the lineage's map. Choose a point of the lineage to go to that fission.`
+        : `Fission ${S.done}: the lineage's trail so far. Choose a point to go to that fission.`;
+      if (s.gl) { s.gl.draw(S); return; }
+      const { w, h, k } = fit(canvas), ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, w, h);
+      const unit = Math.min(w, h) * 0.4, cx = w / 2, cy = h * 0.53;
+      const P = (p) => { const v = view(p); return [cx + v[0] * unit, cy - v[1] * unit]; };
+      flat = [];
+      ctx.lineWidth = 1.4 * k;
+      for (let g = 1; g < S.done; g++) {
+        const a = P(MAP.pts[g - 1]), b = P(MAP.pts[g]);
+        ctx.setLineDash(G[g - 1].h > 0.9 ? [] : [4 * k, 3 * k]); ctx.strokeStyle = TOK.muted;
+        ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      for (let g = 0; g < S.done; g++) { const a = P(MAP.pts[g]); flat.push({ x: a[0], y: a[1], g }); ctx.fillStyle = TOK.fg; ctx.globalAlpha = 0.75; ctx.beginPath(); ctx.arc(a[0], a[1], 2.6 * k, 0, Math.PI * 2); ctx.fill(); }
+      ctx.globalAlpha = 1;
+      for (const q of S.pop) { const a = P(q); ctx.strokeStyle = TOK.fg; ctx.beginPath(); ctx.arc(a[0], a[1], 3.4 * k, 0, Math.PI * 2); ctx.stroke(); }
+      const n = P(S.now); ctx.strokeStyle = TOK.fg; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.arc(n[0], n[1], 6 * k, 0, Math.PI * 2); ctx.stroke();
+      LEAD.forEach((kind, slot) => {
+        const d = [MAP.vecs[0][kind], MAP.vecs[1][kind], MAP.vecs[2][kind]], l = Math.hypot(...d) || 1, tip = P(d.map((c) => (c / l) * 0.85)), o = P([0, 0, 0]);
+        ctx.strokeStyle = kindColour(kind); ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.moveTo(o[0], o[1]); ctx.lineTo(tip[0], tip[1]); ctx.stroke();
+        glyph(ctx, slot, tip[0], tip[1], 4.5 * k, kindColour(kind));
+        text(ctx, String(kind + 1), tip[0] + 8 * k, tip[1], { k, size: 11, weight: 600, colour: TOK.fg });
+      });
+      text(ctx, "Flat drawing: the 3D sketch did not start", 12 * k, h - 14 * k, { k, size: 10.5 });
+    };
+    return s;
+  }
+
+  // ------------------------------------------------------------------ F. the lineages
+  // The population fits in 24 lanes: at a split the first daughter keeps its parent's lane and the
+  // second takes the lane of the assembly removed at that moment.
+  const LANES = (() => {
+    const lane = new Map();
+    POP.nodes.filter((n) => n.parent === -1).forEach((n, i) => lane.set(n.id, i));
+    POP.nodes.filter((n) => n.fate === "split").sort((a, b) => a.died - b.died).forEach((n) => { lane.set(n.kids[0], lane.get(n.id)); lane.set(n.kids[1], lane.get(n.removed)); });
+    return lane;
+  })();
+  function treeSketch() {
+    const figure = document.getElementById("sk-tree"), canvas = figure.querySelector("canvas");
+    const readout = figure.querySelector("[data-readout]");
+    let which = "lineage", hits = [], picked = null;
+    const s = addSketch({ id: "tree", figure, canvas, observe: canvas });
+    seg(figure, "data-tree", (v) => { which = v; picked = null; s.dirty = true; });
+    keys(canvas);
+    pointer(canvas, (px, py) => { let best = null, bd = 10 * ratio(); for (const h of hits) { const d = h.dist(px, py); if (d < bd) { bd = d; best = h; } } picked = best; s.dirty = true; });
+    function cross(ctx, x, y, r) { ctx.beginPath(); ctx.moveTo(x - r, y - r); ctx.lineTo(x + r, y + r); ctx.moveTo(x + r, y - r); ctx.lineTo(x - r, y + r); ctx.stroke(); }
+    s.draw = () => {
+      const st = stateAt(clock.pos), done = doneBy(st);
+      const { w, h, k } = fit(canvas), ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, w, h);
+      hits = [];
+      const m = 18 * k, top = 56 * k;
+      if (which === "lineage") {
+        // The spine in four rows of 30 splits, read like lines of text.
+        const ROW = 30, rows = Math.ceil(NF / ROW), lx = m + 40 * k, x1 = w - m, rh = (h - top - 34 * k) / rows, stub = Math.min(26 * k, rh * 0.3);
+        const at = (g) => { const r = Math.floor(g / ROW), c = g - r * ROW; return [lx + ((c + 0.5) / ROW) * (x1 - lx), top + (r + 0.5) * rh]; };
+        const grown = st.phase === "grow" ? clamp((clock.pos - st.g) / GROW, 0, 1) : 0;
+        for (let r = 0; r < rows; r++) text(ctx, `fission ${r * ROW + 1}`, m, top + (r + 0.5) * rh, { k, size: 10 });
+        for (let g = 0; g < done; g++) {
+          const [a, y] = at(g), inh = G[g].h > 0.9, last = (g % ROW) === ROW - 1 || g === NF - 1;
+          const b = last ? a + (x1 - lx) / ROW / 2 : at(g + 1)[0];
+          const end = g + 1 < done ? b : a + (b - a) * grown;
+          ctx.setLineDash(inh ? [] : [4 * k, 3 * k]); ctx.lineWidth = 2 * k; ctx.strokeStyle = TOK.fg;
+          ctx.beginPath(); ctx.moveTo(a, y); ctx.lineTo(Math.max(a, Math.min(b, end)), y); ctx.stroke(); ctx.setLineDash([]);
+          const dir = g % 2 ? 1 : -1;
+          ctx.strokeStyle = TOK.muted; ctx.lineWidth = 1 * k; ctx.beginPath(); ctx.moveTo(a, y); ctx.lineTo(a + 3 * k, y + dir * stub); ctx.stroke();
+          cross(ctx, a + 3 * k, y + dir * stub, 2.4 * k);
+          ctx.fillStyle = inh ? TOK.fg : TOK["bg-raised"]; ctx.strokeStyle = TOK.fg; ctx.lineWidth = 1.4 * k;
+          ctx.beginPath(); ctx.arc(a, y, 2.8 * k, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          hits.push({ dist: (px, py) => Math.hypot(px - a, py - y), g });
+          if (picked && picked.g === g) { ctx.strokeStyle = TOK.fg; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.arc(a, y, 7 * k, 0, Math.PI * 2); ctx.stroke(); }
+        }
+        if (done < NF) {
+          const [a, y] = done === 0 ? [lx, top + 0.5 * rh] : at(done - 1), next = done === 0 ? at(0)[0] : at(done)[1] === y ? at(done)[0] : a + (x1 - lx) / ROW / 2;
+          ctx.fillStyle = TOK.fg; ctx.beginPath(); ctx.arc(a + (next - a) * grown, y, 4 * k, 0, Math.PI * 2); ctx.fill();
+        }
+        text(ctx, "dot: inherited · ring: a break · ×: not followed", m, h - 16 * k, { k, size: 10.5 });
+        if (w / k > 560) text(ctx, `fission ${done} of ${NF}`, x1, h - 16 * k, { k, size: 10.5, align: "right" });
+        readout.textContent = picked ? `Fission ${picked.g + 1}: H = ${fmt(G[picked.g].h)} between the parent and the daughter that carries on: ${G[picked.g].h > 0.9 ? "inherited" : "a break"}.` : `One lineage: the preprint's mode. Up to fission ${done}. Choose a fission on the spine to read its H.`;
+      } else {
+        const t = popTime(clock.pos), x0 = m, x1 = w - m, y0 = top, y1 = h - 30 * k, lh = (y1 - y0) / POP.size;
+        const X = (tt) => x0 + (tt / POP.end) * (x1 - x0), Y = (lane) => y0 + (lane + 0.5) * lh;
+        const alive = aliveAt(t), bold = new Set();
+        for (const n of alive) { let p = n; while (p) { if (bold.has(p.id)) break; bold.add(p.id); p = p.parent >= 0 ? POP.nodes[p.parent] : null; } }
+        for (const n of POP.nodes) {
+          if (n.born > t) continue;
+          const lane = LANES.get(n.id), y = Y(lane), a = X(n.born), endT = n.died === null || n.died > t ? t : n.died, b = X(endT);
+          const thick = bold.has(n.id), inh = n.h === null || n.h > 0.9;
+          ctx.globalAlpha = thick ? 1 : 0.38; ctx.strokeStyle = thick ? TOK.fg : TOK.muted; ctx.lineWidth = (thick ? 2 : 1.1) * k;
+          ctx.setLineDash(inh ? [] : [4 * k, 3 * k]);
+          ctx.beginPath(); ctx.moveTo(a, y); ctx.lineTo(Math.max(a + 0.5, b), y); ctx.stroke(); ctx.setLineDash([]);
+          if (n.parent >= 0) { const py = Y(LANES.get(n.parent)); if (py !== y) { ctx.beginPath(); ctx.moveTo(a, py); ctx.lineTo(a, y); ctx.stroke(); } }
+          if (n.fate === "removed" && n.died <= t) { ctx.lineWidth = 1 * k; cross(ctx, b, y, 2.2 * k); }
+          hits.push({ dist: (px, py) => (px >= a - 2 && px <= b + 2 ? Math.abs(py - y) : 1e9), node: n });
+          if (picked && picked.node === n) { ctx.globalAlpha = 1; ctx.strokeStyle = TOK.fg; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.moveTo(a, y); ctx.lineTo(b, y); ctx.stroke(); }
+        }
+        ctx.globalAlpha = 1;
+        const cx = X(t); ctx.strokeStyle = TOK.cursor; ctx.globalAlpha = 0.4; ctx.lineWidth = 1 * k; ctx.beginPath(); ctx.moveTo(cx, y0); ctx.lineTo(cx, y1); ctx.stroke(); ctx.globalAlpha = 1;
+        text(ctx, "24 slots, one assembly in each at any time", x0, y0 - 12 * k, { k, size: 10.5 });
+        text(ctx, "bold: ancestry of the living · ×: removed", x0, h - 16 * k, { k, size: 10.5 });
+        const pn = picked && picked.node;
+        readout.textContent = pn ? `Assembly ${pn.id + 1}: ${pn.parent < 0 ? "one of the 24 founders" : `born at a fission of assembly ${pn.parent + 1}, H from its parent ${fmt(pn.h)}, ${pn.h > 0.9 ? "inherited" : "a break"}`}; ${pn.fate === "split" && pn.died <= t ? "it divided in turn" : pn.fate === "removed" && pn.died <= t ? "removed when another divided" : "alive at the clock's time"}.`
+          : `A population held at 24: ${alive.length} alive at the clock's time. Choose a branch to read it.`;
+      }
+    };
+    return s;
+  }
+
+  // ------------------------------------------------------------------ the list
+  function fillList() {
+    const body = document.querySelector("#list-table tbody");
+    const rows = G.map((g, i) => {
+      const ev = g.events; let joins = 0, leaves = 0;
+      for (let k = 0; k < ev.length; k++) if (ev[k] > 0) joins++; else leaves++;
+      return `<tr data-g="${i}"><th scope="row">${i + 1}</th><td>${joins} / ${leaves}</td>${LEAD.map((kind) => `<td>${g.parent[kind]}</td>`).join("")}<td>${kindsOf(g.parent)}</td><td>${fmt(g.h)}</td><td>${g.h > 0.9 ? "yes" : "no: a break"}</td><td>${fmt(g.hOther)}</td></tr>`;
+    });
+    body.innerHTML = rows.join("");
+  }
+  function markListRow(done) {
+    const prev = document.querySelector("#list-table tr.now");
+    if (prev) prev.classList.remove("now");
+    const row = document.querySelector(`#list-table tr[data-g="${Math.max(0, done - 1)}"]`);
+    if (row && done > 0) row.classList.add("now");
+  }
+
+  // ------------------------------------------------------------------ start
+  function start() {
+    fillKindLegends();
+    drawBeta();
+    fillList();
+    wireClock();
+    assemblySketch(); compositionSketch(); similaritySketch(); mapSketch(); treeSketch();
+    document.querySelectorAll(".sketch").forEach((f) => f.classList.add("live"));
+    const status = document.getElementById("toy-status");
+    if (status) status.textContent = `The toy ran when the page opened: one lineage of ${NF} fissions and a population of ${POP.size} through ${POPSPLITS.length} fissions, in ${Math.max(1, Math.round(toyMs))} ms on this device.`;
+    const retheme = () => { readTokens(); drawBeta(); for (const s of sketches) s.dirty = true; for (const f of themeHooks) f(); };
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", retheme);
+    new MutationObserver(retheme).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    new ResizeObserver(() => { for (const s of sketches) s.dirty = true; }).observe(document.body);
+    // Play by itself once the clock is in view, unless less motion is asked for.
+    if (!reduced.matches) {
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some((e) => e.isIntersecting) && !clock.started) { clock.started = true; clock.playing = true; changed(); io.disconnect(); }
+      }, { threshold: 0.5 });
+      io.observe(document.getElementById("sk-assembly"));
+    }
+    changed();
+    let last = performance.now();
+    const tick = (now) => {
+      const dt = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      if (clock.playing) {
+        const st = stateAt(clock.pos);
+        const d = clock.speed === "m" ? (st.phase === "grow" ? (dt * 8 * GROW) / (G[st.g].events.length + 1) : (dt * (1 - GROW)) / 1.2) : dt * clock.speed;
+        clock.pos = Math.min(NF, clock.pos + d);
+        if (clock.pos >= NF) clock.playing = false;
+        changed();
+      }
+      for (const s of sketches) if (s.visible && (s.dirty || s.animating)) { s.dirty = false; try { s.draw(dt); } catch (error) { console.error(error); } }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  window.ORIGIN = { T, RUN, POP, G, NF, NG, LEAD, SLOT, TOK, kindName, kindColour, stateAt, composition, clock, asm, MAP, reduced, ratio,
+    sketch: (id) => sketches.find((s) => s.id === id), onTheme: (f) => themeHooks.push(f), setPos, smooth, toyMs };
+  try { start(); window.__originStarted = true; } catch (error) { console.error(error); window.__originFailed = String(error && error.message || error); }
+})();
+</script>
+<script type="module">
+import * as THREE from "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.170.0/three.module.min.js";
+
+// The two 3D sketches: the assembly's beads and the map of compositions. The classic script owns the
+// toy, the clock and where everything is; this module only draws, on a canvas laid over the flat one.
+const O = window.ORIGIN;
+if (O) {
+  const colour = (name) => new THREE.Color(O.TOK[name] || "#888888");
+  const dummy = new THREE.Object3D();
+  const scratch = new THREE.Vector3();
+
+  /** A WebGL canvas over a sketch's flat canvas; null where no 3D context can be had. */
+  function overlay(sketch) {
+    const canvas = document.createElement("canvas");
+    canvas.setAttribute("aria-hidden", "true");
+    canvas.style.cssText = "position:absolute;left:0;top:0;width:100%;height:100%;aspect-ratio:auto;pointer-events:none;";
+    sketch.canvas.after(canvas);
+    let renderer = null;
+    try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); } catch (error) { renderer = null; }
+    if (!renderer || !renderer.getContext()) { canvas.remove(); return null; }
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    const flat = sketch.canvas.getContext("2d");
+    flat.clearRect(0, 0, sketch.canvas.width, sketch.canvas.height);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(30, 16 / 9, 0.05, 100);
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x888888, 2.1);
+    const sun = new THREE.DirectionalLight(0xffffff, 1.35);
+    sun.position.set(-3, 5, 4);
+    scene.add(hemi, sun);
+    const light = () => { hemi.color.copy(colour("light-sky")); hemi.groundColor.copy(colour("light-ground")); sun.color.copy(colour("light-key")); };
+    light();
+    O.onTheme(() => { light(); sketch.dirty = true; });
+    const fit = () => {
+      const rect = sketch.canvas.getBoundingClientRect(), k = O.ratio();
+      const w = Math.max(2, Math.round(rect.width * k)), h = Math.max(2, Math.round(rect.height * k));
+      if (canvas.width !== w || canvas.height !== h) { renderer.setPixelRatio(1); renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+      return { w, h, k };
+    };
+    const orbit = (turn, tilt, distance) => {
+      camera.position.set(distance * Math.sin(turn) * Math.cos(tilt), distance * Math.sin(tilt), distance * Math.cos(turn) * Math.cos(tilt));
+      camera.lookAt(0, 0, 0);
+      camera.updateMatrixWorld();
+    };
+    const project = (p, w, h) => { scratch.set(p[0], p[1], p[2]).project(camera); return [(scratch.x * 0.5 + 0.5) * w, (-scratch.y * 0.5 + 0.5) * h, scratch.z]; };
+    return { canvas, renderer, scene, camera, fit, orbit, project };
+  }
+  function pool(geometry, material, cap, parent) {
+    const mesh = new THREE.InstancedMesh(geometry, material, cap);
+    mesh.count = 0;
+    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(cap * 3), 3);
+    mesh.frustumCulled = false;
+    parent.add(mesh);
+    return mesh;
+  }
+  function place(mesh, i, p, s, c) {
+    dummy.position.set(p[0], p[1], p[2]);
+    dummy.scale.setScalar(Math.max(1e-3, s));
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
+    mesh.setColorAt(i, c);
+  }
+  function done(mesh, n) { mesh.count = n; mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true; }
+
+  // ---------------------------------------------------------------- the assembly
+  const A = O.sketch("assembly");
+  const ga = A && overlay(A);
+  if (ga) {
+    const CAP = 260;
+    const kinds = [new THREE.OctahedronGeometry(0.11), new THREE.BoxGeometry(0.135, 0.135, 0.135), new THREE.TetrahedronGeometry(0.12), new THREE.SphereGeometry(0.07, 14, 10)]; // the other 97 types are spheres
+    const material = new THREE.MeshStandardMaterial({ roughness: 0.42, metalness: 0 });
+    const meshes = kinds.map((g) => pool(g, material, CAP, ga.scene));
+    const tailGeometry = new THREE.BufferGeometry();
+    tailGeometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(CAP * 6), 3));
+    tailGeometry.setAttribute("color", new THREE.BufferAttribute(new Float32Array(CAP * 6), 3));
+    const tails = new THREE.LineSegments(tailGeometry, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.75 }));
+    tails.frustumCulled = false;
+    ga.scene.add(tails);
+    const floats = { a: A.figure.querySelector('[data-float="a"]'), b: A.figure.querySelector('[data-float="b"]') };
+    let shown = [];
+    const c = new THREE.Color(), stage = new THREE.Color(), tailC = new THREE.Color();
+    A.gl = {
+      draw(asm, st, picked) {
+        const { w, h, k } = ga.fit();
+        ga.orbit(asm.turn, asm.tilt, 5.4);
+        stage.copy(colour("stage-b")); tailC.copy(colour("tail"));
+        const fg = colour("fg"), lead = [colour("kind-1"), colour("kind-2"), colour("kind-3")], other = colour("kind-other");
+        const n = [0, 0, 0, 0], pos = tailGeometry.attributes.position.array, col = tailGeometry.attributes.color.array;
+        let t = 0;
+        shown = [];
+        for (const m of asm.mols) {
+          const slot = O.SLOT[m.kind] >= 0 ? O.SLOT[m.kind] : 3, i = n[slot]++;
+          if (i >= CAP) continue;
+          const fade = m.side === 1 ? 0.75 * asm.fade : 0;
+          c.copy(m === picked ? fg : slot < 3 ? lead[slot] : other).lerp(stage, fade);
+          place(meshes[slot], i, m.pos, m.scale ?? 1, c);
+          if (m.tail && t < CAP) {
+            pos.set([m.pos[0], m.pos[1], m.pos[2], m.tail[0], m.tail[1], m.tail[2]], t * 6);
+            const tc = tailC.clone().lerp(stage, fade + (1 - (m.scale ?? 1)) * 0.8);
+            col.set([tc.r, tc.g, tc.b, tc.r, tc.g, tc.b], t * 6);
+            t++;
+          }
+          shown.push({ m, p: ga.project(m.pos, w, h) });
+        }
+        meshes.forEach((mesh, s) => done(mesh, Math.min(CAP, n[s])));
+        tailGeometry.setDrawRange(0, t * 2);
+        tailGeometry.attributes.position.needsUpdate = true;
+        tailGeometry.attributes.color.needsUpdate = true;
+        ga.renderer.render(ga.scene, ga.camera);
+        // The two labels of a split, over each group.
+        const on = st.phase === "split" && st.split > 0.3;
+        for (const [key, side] of [["a", 0], ["b", 1]]) {
+          const el = floats[key];
+          if (!el) continue;
+          el.hidden = !on;
+          if (!on) continue;
+          const centre = asm.centres[side], p = ga.project([centre[0], centre[1] - 1.0 * Math.sqrt((asm.counts[side] || 40) / 80) - 0.3, centre[2]], w, h);
+          el.style.left = `${p[0] / k}px`; el.style.top = `${p[1] / k + 18}px`;
+          el.style.opacity = side === 1 ? String(1 - 0.6 * asm.fade) : "1";
+        }
+      },
+      pick(px, py) {
+        let best = null, bd = 16 * O.ratio(), bz = 9;
+        for (const s of shown) { const d = Math.hypot(s.p[0] - px, s.p[1] - py); if (d < bd || (d < bd + 2 && s.p[2] < bz)) { bd = d; bz = s.p[2]; best = s.m; } }
+        return best;
+      },
+    };
+    A.dirty = true;
+  }
+
+  // ---------------------------------------------------------------- the map
+  const M = O.sketch("map");
+  const gm = M && overlay(M);
+  if (gm) {
+    const world = new THREE.Group();
+    gm.scene.add(world);
+    const material = new THREE.MeshStandardMaterial({ roughness: 0.5, metalness: 0 });
+    const dots = pool(new THREE.SphereGeometry(0.026, 12, 8), material, 200, world);
+    const rings = pool(new THREE.OctahedronGeometry(0.05), material, 64, world); // the population's assemblies: a second shape
+    const now = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.012, 10, 28), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    world.add(now);
+    const lineGeometry = () => { const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(200 * 6), 3)); return g; };
+    const solid = new THREE.LineSegments(lineGeometry(), new THREE.LineBasicMaterial({ transparent: true, opacity: 0.7 }));
+    const dashed = new THREE.LineSegments(lineGeometry(), new THREE.LineDashedMaterial({ transparent: true, opacity: 0.8, dashSize: 0.035, gapSize: 0.03 }));
+    solid.frustumCulled = dashed.frustumCulled = false;
+    world.add(solid, dashed);
+    const frame = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(2.1, 2.1, 2.1)), new THREE.LineBasicMaterial({ transparent: true, opacity: 0.25 }));
+    world.add(frame);
+    const arrows = O.LEAD.map(() => { const a = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), 0.85, 0xffffff, 0.09, 0.055); world.add(a); return a; });
+    const labels = O.LEAD.map((kind) => { const el = document.createElement("span"); el.className = "float"; el.textContent = O.kindName(kind); M.canvas.parentElement.append(el); return el; });
+    let shown = [];
+    const c = new THREE.Color();
+    M.gl = {
+      draw(S) {
+        const { w, h, k } = gm.fit();
+        gm.orbit(O.MAP.turn, O.MAP.tilt, 5.6);
+        const fg = colour("fg"), muted = colour("muted");
+        shown = [];
+        let n = 0;
+        for (let g = 0; g < S.done && n < 200; g++, n++) { place(dots, n, O.MAP.pts[g], 1, fg); shown.push({ g, p: gm.project(O.MAP.pts[g], w, h) }); }
+        done(dots, n);
+        let r = 0;
+        for (const q of S.pop) { if (r >= 64) break; place(rings, r++, q, 1, fg); }
+        done(rings, r);
+        const ps = solid.geometry.attributes.position.array, pd = dashed.geometry.attributes.position.array;
+        let a = 0, b = 0;
+        for (let g = 1; g < S.done; g++) {
+          const p = O.MAP.pts[g - 1], q = O.MAP.pts[g];
+          if (O.G[g - 1].h > 0.9) ps.set([...p, ...q], 6 * a++); else pd.set([...p, ...q], 6 * b++);
+        }
+        solid.geometry.setDrawRange(0, a * 2); dashed.geometry.setDrawRange(0, b * 2);
+        solid.geometry.attributes.position.needsUpdate = dashed.geometry.attributes.position.needsUpdate = true;
+        dashed.computeLineDistances();
+        solid.material.color.copy(muted); dashed.material.color.copy(fg); frame.material.color.copy(muted);
+        now.position.set(S.now[0], S.now[1], S.now[2]);
+        now.quaternion.copy(gm.camera.quaternion);
+        now.material.color.copy(fg);
+        O.LEAD.forEach((kind, slot) => {
+          const d = new THREE.Vector3(O.MAP.vecs[0][kind], O.MAP.vecs[1][kind], O.MAP.vecs[2][kind]).normalize();
+          arrows[slot].setDirection(d);
+          arrows[slot].setColor(c.copy(colour("kind-" + (slot + 1))));
+          const tip = gm.project([d.x * 0.95, d.y * 0.95, d.z * 0.95], w, h);
+          labels[slot].style.left = `${tip[0] / k}px`; labels[slot].style.top = `${tip[1] / k}px`;
+        });
+        gm.renderer.render(gm.scene, gm.camera);
+      },
+      pick(px, py) {
+        let best = null, bd = 14 * O.ratio();
+        for (const s of shown) { const d = Math.hypot(s.p[0] - px, s.p[1] - py); if (d < bd) { bd = d; best = s.g; } }
+        return best;
+      },
+    };
+    M.dirty = true;
+  }
+  window.__origin3D = !!(ga || gm);
+}
+</script>

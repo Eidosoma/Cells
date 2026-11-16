@@ -231,6 +231,19 @@
           "note": "First version: the walk of today's page; looks A (colour by side, recommended), B (tinted glass) and C (a calm stack with a map); the trail, the search and the map; the palettes with their numbers; eight questions. Checked before publishing: the text read, each of the 38 pictures looked at, and the page loaded in headless Chrome at 1,280, 400 and 360 pixels wide in both themes (no sideways scrolling, no picture missing)."
         }
       ]
+    },
+    "origin_of_life": {
+      "title": "Origin of Life",
+      "url": "https://claude.ai/artifact/UCnCre28i6qEH9rTEAzeHY",
+      "page": "docs/ideas/origin-of-life.html",
+      "note": "Options to choose from for showing GARD (Graded Autocatalysis Replication Domain, a lipid-world model of how heredity could begin) in the viewer, as the first entry under a new heading, Origin of life: the entry itself, one assembly growing and splitting, its composition, similarity at each fission and over time, a map of compositions, lineages, and one time control. Nothing in it is built, and nothing of GARD is in the engine: the engine's design note is proposed, on a development branch, not on main, and the page follows its names and run records. Every sketch is drawn from a toy the page runs itself, with invented seed and choices; it is not the engine and not the preprint's runs, and nothing it shows is a finding. The note beside it is docs/ORIGIN_OF_LIFE.md.",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-16",
+          "note": "First version: options A to G with live sketches, what a run would save and what each sketch would read, nine questions for the user and six for the engine's lead. Checked before publishing: the text read; the page loaded in headless Chrome at 1,280, 400 and 360 pixels wide in light and dark (no sideways scrolling, no script error, both fonts arrived, nine canvases drawn); stills of the assembly, similarity, map and lineage sketches looked at."
+        }
+      ]
     }
   }
 }
