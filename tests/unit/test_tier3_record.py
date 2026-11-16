@@ -311,3 +311,32 @@ def test_collect_refuses_a_tree_that_moved_on_since_the_run(tool, tmp_path):
     with pytest.raises(SystemExit, match="is at b+, but the runs recorded"):
         tool.main(["collect", "--run", str(run_a), "--out", str(tmp_path / "ids.json")])
     assert not (tmp_path / "ids.json").exists()
+
+
+def test_provenance_names_a_checkout_relative_to_its_repository(tool, tmp_path, monkeypatch):
+    """No home path in a public record: a tree inside the repository is named relative to it, a
+    tree outside it (a snapshot) by its absolute path; _provenance records that name."""
+    repo = tmp_path / "repo"
+    worktree = repo / ".claude" / "worktrees" / "agent"
+    worktree.mkdir(parents=True)
+    assert tool.recorded_root(worktree, repo) == ".claude/worktrees/agent"
+    assert tool.recorded_root(repo, repo) == "."
+    snapshot = tmp_path / "snapshot"
+    assert tool.recorded_root(snapshot, repo) == str(snapshot)
+    assert tool.recorded_root(snapshot, None) == str(snapshot)
+    monkeypatch.setattr(tool, "ROOT", worktree)
+    monkeypatch.setattr(tool, "_repository", lambda: repo)
+    monkeypatch.setattr(tool, "_git", lambda *args: "a" * 40 if args[0] == "rev-parse" else "")
+    assert tool._provenance()["root"] == ".claude/worktrees/agent"
+
+
+def test_a_relative_root_is_read_against_the_repository(tool, tmp_path, monkeypatch):
+    """A run recorded with a relative root (a checkout's run) is read on its repository tree."""
+    run_a, ids_a = plant(tmp_path, "a", {FILE: (BASE, 100.0, 1, IDS)})
+    doc = json.loads((run_a / "run.json").read_text())
+    doc["provenance"]["root"] = "tree-a"
+    (run_a / "run.json").write_text(json.dumps(doc))
+    monkeypatch.setattr(tool, "_repository", lambda: tmp_path)
+    found, _ = tool.readings([run_a], [ids_a])
+    assert [t[0] for t in found[FILE]["tests"]] == IDS
+    assert found[FILE]["tests"][1][2] == ["E   AssertionError: assert 2 == 1"]
