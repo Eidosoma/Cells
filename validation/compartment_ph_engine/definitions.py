@@ -240,8 +240,13 @@ def fr5_world(damage_world, *, dt_s=None, start=None, control=None):
     t0, t1 = dw.injury_window_s
     injury = [dict(time=0.0, value=0.0)] + ([] if control == "d_equals_0" else [
         dict(time=t0, value=1.0), dict(time=t1, value=0.0)])
-    e["damage_controls"] = [dict(damage_id=DAMAGE, injury=injury,
-                                 resealing=[dict(time=0.0, value=0.0), dict(time=t1, value=1.0)])]
+    resealing = [dict(time=0.0, value=0.0), dict(time=t1, value=1.0)]
+    # A breakpoint after the horizon governs no step, and the core refuses one (§7.4 (l)): a
+    # shortened horizon (the generator's quick pass) keeps the points up to its end only.
+    end = e["end_time"]
+    e["damage_controls"] = [dict(damage_id=DAMAGE,
+                                 injury=[x for x in injury if x["time"] <= end],
+                                 resealing=[x for x in resealing if x["time"] <= end])]
     return base
 
 

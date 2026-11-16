@@ -118,9 +118,10 @@ ENGINE_PARTS = {*FR4_RUNGS, *FR4_CONTROLS, "start", *FR5_RUNGS, *FR5_CONTROL_PAR
 # What remains a stand-in on this branch, and why, and the parts each one blocks. Empty once
 # everything is wired.
 STAND_INS = {
-    "fr5_kinds": "FR-5's routing door (the core's: the routes' factors from cells.patch_damage@1 "
-                 "and cells.ph_condition@1) and the damage schedules (the core's gap 6) are not "
-                 "in the engine yet",
+    "fr5_kinds": "FR-5's engine path is wired (the source kinds, the routing door, the schedules, "
+                 "the records), but the cargo routes' exact booking (cells.passive_routes@1, "
+                 "§7.5's raw-sum check, the core's) refuses arm R after its release burst: its "
+                 "bound omits the inputs' rounding (16 November 2026, fr5_quick_check)",
 }
 STAND_IN_PARTS = {
     "fr5_kinds": {*FR5_RUNGS, *FR5_CONTROL_PARTS},

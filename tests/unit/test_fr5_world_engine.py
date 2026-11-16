@@ -71,3 +71,29 @@ def test_arm_r_runs_with_the_pores_opening_and_x_conserved():
     assert np.all(pore_h[: WINDOW[0] + 1] == 0.0) and np.all(pore_x[: WINDOW[0] + 1] == 0.0)
     assert pore_h[-1] > 0 and pore_x[-1] > 0  # Out of the acidic, loaded lumen into the cytosol.
     assert moved[-1, x, routes.index("cargo_transfer_0")] > 0
+
+
+def test_the_engine_records_give_fr5s_readouts():
+    """engine_records on arm R's short world: the judge's FR-5 series (the generator's
+    ENGINE_READOUTS: X at both nodes, d, f, each route's cumulative transfer cytosol to lumen and
+    its heat), and the cargo's route ledger: the lumen's X changes by the cargo routes'
+    transfers."""
+    from validation.compartment_ph_engine import engine_records
+
+    d = defs.fr5_world(ARM_R)
+    record = engine_records.run(short(d, d["execution"]["dt"]), path="host")
+    assert record["completed"], record["refusal"]
+    s = record["series"]
+    for name in ("X_L", "X_c", "d", "f", "moved_H_pump", "moved_H_leak", "moved_H_pore",
+                 "moved_X_transfer", "moved_X_pore", "heat_proton_leak_0_pJ",
+                 "heat_proton_pore_0_pJ", "heat_cargo_transfer_0_pJ", "heat_cargo_pore_0_pJ",
+                 "heat_bounding_0_K_pJ", "heat_pump_pJ"):
+        assert len(s[name]) == STEPS + 1, name
+    assert s["d"][0] == 0.0 and s["d"][-1] > 0 and all(0 <= f <= 1 for f in s["f"])
+    assert s["moved_X_pore"][-1] < 0 and s["moved_X_transfer"][-1] < 0  # Lumen to cytosol.
+    for k in range(STEPS + 1):  # The lumen's X changes by exactly what its routes moved.
+        change = s["X_L"][k] - s["X_L"][0]
+        moved = s["moved_X_transfer"][k] + s["moved_X_pore"][k]
+        assert abs(change - moved) <= 1e-15 * s["X_L"][0], k
+    assert all(b >= a for a, b in zip(s["heat_cargo_pore_0_pJ"], s["heat_cargo_pore_0_pJ"][1:],
+                                      strict=False))

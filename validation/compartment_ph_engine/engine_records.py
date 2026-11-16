@@ -40,6 +40,12 @@ from validation.compartment_ph_engine import definitions as defs
 
 WINDOW_STEPS = 1000  # One record per window at 1 ms.
 FR4_ROWS = ("H", "K")
+MOVED = {  # Route ID -> (series, species): its cumulative transfer, cytosol to lumen positive.
+    "proton_leak_0": ("moved_H_leak", "H"),
+    "proton_pore_0": ("moved_H_pore", "H"),
+    "cargo_transfer_0": ("moved_X_transfer", "X"),
+    "cargo_pore_0": ("moved_X_pore", "X"),
+}
 PATHS = ("host", "vector")  # Where every accepted row is checked: run()'s `path`.
 WORLDS = ("development", "declared")  # run()'s `world`: without or with FR-1's operator.
 VECTOR_WORLD_ID = 1  # The one world of a vector-window run.
@@ -61,8 +67,13 @@ class Records:
         self.cells = [c.id for c in m.cells]
         self.outside = [o.id for o in m.extracellular]
         self.bounding = [p.id for p in m.membranes].index(defs.BOUNDING)
-        routes = dict(m.kinds).get("cells.passive_routes@1", ())
-        self.routes = [r.id for r in routes]
+        kinds = dict(m.kinds)
+        routes = kinds.get("cells.passive_routes@1", ())
+        self.routes = [r.id for r in routes]  # The parsed (sorted) order: the route axis.
+        damages = [d.patch for d in kinds.get("cells.patch_damage@1", ())]
+        self.damage = defs.BOUNDING if defs.BOUNDING in damages else None
+        conditions = [c.id for c in kinds.get("cells.ph_condition@1", ())]
+        self.condition = conditions.index(defs.CONDITION) if defs.CONDITION in conditions else None
         _, self.p = model.initial_values(spec)
         from cells.core import kind_registry
 
@@ -94,7 +105,6 @@ class Records:
         fields = self.model.STATE_TYPE._fields
         state = self.model.STATE_TYPE(*(np.asarray(getattr(obs, f))[j] for f in fields))
         v3, p, b = self.v3, self.p, self.bounding
-        h = self.ids.index("H")
         row = dict(
             pH_c=float(obs.pH[j, self.cells.index(defs.CELL)]),
             pH_L=float(obs.pH[j, len(self.cells) + self.outside.index(defs.LUMEN)]),
@@ -113,10 +123,18 @@ class Records:
             for node, key in ((defs.CELL, "c"), (defs.LUMEN, "L")):
                 name = f"Heq_{key}" if species == "H" else f"{species}_{key}"
                 row[name] = self.amount(obs, j, species, node)
-        if "proton_leak_0" in self.routes:
-            k = self.routes.index("proton_leak_0")
-            row["moved_H_leak"] = -float(state.passive_transferred[h, k])  # c to L positive.
-            row["heat_proton_leak_0_pJ"] = float(state.passive_dissipated_energy_pJ[k])
+        for k, route in enumerate(self.routes):  # Every passive route's transfer, and its heat.
+            if route in MOVED:
+                name, species = MOVED[route]  # c to L positive: the routes are inward-positive.
+                row[name] = -float(state.passive_transferred[self.ids.index(species), k])
+            row[f"heat_{route}_pJ"] = float(state.passive_dissipated_energy_pJ[k])
+        if "X" in self.ids:  # FR-5: the cargo, the damage and the condition.
+            for node, key in ((defs.CELL, "c"), (defs.LUMEN, "L")):
+                row[f"X_{key}"] = self.amount(obs, j, "X", node)
+        if self.damage is not None:
+            row["d"] = float(state.patch_damage[b])
+        if self.condition is not None:
+            row["f"] = float(np.asarray(obs.ph_condition_factor)[j, self.condition])
         ledgers = v3.balances(state, p, structure=self.structure)
         heat = sum(float(np.sum(getattr(state, f))) for f in self.heat_fields)
         work = sum(float(np.sum(getattr(state, f))) for f in self.work_fields)
