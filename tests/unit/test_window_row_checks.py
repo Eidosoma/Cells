@@ -16,8 +16,11 @@ step, plus planted work or a dissipation drop at steps whose first pump availabi
 marker value. Unmarked steps add exactly zero.
 """
 
+import json
+
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from cells.core import row_checks
@@ -27,6 +30,7 @@ from cells.core.specs import parse_spec
 from cells.core.windows import WindowPolicy, iter_windows, run_windowed
 from cells.models import surface_pump
 from cells.numerics import surface_imex as imex
+from cells.window_io import write_windowed_run
 from tests.window_row_check_fixtures import assert_agreement, assert_same_windows, windows
 from validation.tissue import surface_pump_fixtures
 
@@ -140,6 +144,32 @@ def test_a_restart_in_device_mode_from_a_host_checkpoint_is_bitwise(runs):
     host = out[4, "host"]
     resumed = windows(spec, 4, "device", host[1].final)
     assert_same_windows(host[2:], resumed)
+
+
+def test_the_windowed_writer_records_device_outcomes_and_keeps_host_records(runs, tmp_path):
+    spec, _ = runs
+    for mode in ("host", "device"):
+        write_windowed_run(tmp_path / mode, spec, WindowPolicy(4, "checkpoints", mode))
+    read = lambda mode, name: json.loads((tmp_path / mode / name).read_text())  # noqa: E731
+    lines = {
+        mode: [json.loads(line) for line in (tmp_path / mode / "windows.jsonl").open()]
+        for mode in ("host", "device")
+    }
+    assert [set(line) | {"row_checks"} for line in lines["host"]] == [
+        set(line) for line in lines["device"]
+    ]
+    assert [line["row_checks"]["decided_by"] for line in lines["device"]] == ["device"] * 4
+    host, device = read("host", "manifest.json"), read("device", "manifest.json")
+    assert host["policy"] == {"window_steps": 4, "recording": "checkpoints"}
+    assert device["policy"] == host["policy"] | {"row_checks": "device"}
+    assert "row_checks" not in host["resources"]
+    assert device["resources"]["row_checks"]["windows"] == 4
+    with (
+        np.load(tmp_path / "host/checkpoint_final/state.npz") as a,
+        np.load(tmp_path / "device/checkpoint_final/state.npz") as b,
+    ):
+        assert sorted(a.files) == sorted(b.files)
+        assert all(a[k].tobytes() == b[k].tobytes() for k in a.files)
 
 
 @pytest.mark.parametrize(
