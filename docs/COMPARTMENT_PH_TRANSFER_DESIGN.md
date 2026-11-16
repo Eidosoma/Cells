@@ -17,7 +17,8 @@ design before code (D142).
 
   The routing door and the kind schedules it uses are the core's (INNER_MODEL_V4_DESIGN §7.4 (l),
   (n)).
-- **Finite fuel (§17) is accepted,** ruled by the lead on 16 November; it is built after FR-5's dt study is launched.
+- **Finite fuel (§17) is accepted,** ruled by the lead on 16 November. It is built after FR-5's
+  dt study is launched.
 - **Its first readers:**
   - the references agent, who writes independent references from Appendix A without reading
     engine code;
@@ -1294,7 +1295,15 @@ On the core's gap-2 seams (INNER_MODEL_V4_DESIGN §7.4 (m), landed):
   - The evidence includes every registered world still parsing under the check.
   - First, main is searched for any world that declares one species' potential both through
     D152's `standard_mu_RT` and through the registry, so the check cannot newly refuse an existing
-    world unannounced.
+    world unannounced. **Searched 16 November on main 7c8bfa47 (code): none.**
+    - D152's worlds are built in `tests/unit/test_species_reactions*.py`,
+      `validation/tissue/species_reactions_fixtures.py` and `_crossrev.py`, and one protocol
+      (`mg0c_turing_v1.json`). None declares the inner model's registry potentials.
+    - The registry's worlds are in `test_species_registry*.py`, `test_transporter_kind.py`,
+      `test_proton_buffer_kind.py`, `test_fr45_damage_and_worlds.py` and
+      `validation/compartment_ph_engine/definitions.py`. None declares D152's operator.
+    - No JSON world on disk declares both. The older calcium family's `standard_mu_RT` belongs to
+      its own reaction networks (`core/reaction_spec.py`), not to either.
   - The check's location waits on the core's answer (§17.7 question 2).
 - **D4:** (a) if the core confirms a seam, otherwise (b), with the item kept open. This waits on
   the core's answer (§17.7 question 1).
