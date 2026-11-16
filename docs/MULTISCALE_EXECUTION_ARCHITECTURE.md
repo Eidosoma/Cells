@@ -532,8 +532,9 @@ repeats of the 825-node tissue were bitwise (15 November), and Q7 and the landin
 L4 block were judged in that declared mode, where the run-to-run term is exactly
 zero (D181). Unflagged repeats differ by up to 1.9e-11 relative. The flag's cost
 was measured only for one world, where compiling took about 30–40% longer and the
-step time stayed within the repeats' spread; on large batches it is still to be
-measured.
+step time stayed within the repeats' spread
+([determinism test](/mnt/workspaces/Cells/composite-l4-agreement-20261114-01/determinism/l4-20261115/analysis.json));
+on large batches it is still to be measured.
 
 Stochastic assembly already derives draws from world identity, registered
 seeds and event counters, with per-cell stream identities in coupled clusters.

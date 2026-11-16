@@ -343,11 +343,13 @@ note.
   verification, calibration and a held-out living-cell prediction are different claims.
   Continuum, lumped-population and individual-compartment interpretations are declared.
 - **The results gate for D172.** It names the required scientific cases and checks that they
-  actually execute, plus the agreed planted-change test. **Passed at the landing (16 November), as
-  PROGRESS records it:** G1, with the candidate bitwise on 113 of 113 worlds before A7 and within
+  actually execute, plus the agreed planted-change test. **What PROGRESS records as passed at the
+  landing (16 November):** G1, with the candidate bitwise on 113 of 113 worlds before A7 and within
   A7's frozen tolerance file after it, every physical field bitwise; crossrev; tiers 1 and 2 with no
   changed outcome, and tier 3 with every non-passing file classified; G2's registered protocols; and
-  the L4 block.
+  the L4 block. PROGRESS records no run of the planted changes (G3) or of the measurements (G4);
+  the comparison's own planted-difference self-test is a landed unit test
+  (`tests/unit/test_results_baseline.py`).
   - **Holds today, since the round:** the tier gate counts a file as changed when its exit code or
     its failed or error count differs from its row, when its passed count falls below the row's, or
     when its skipped count rises above it. A passed count above the row's is listed for
@@ -452,8 +454,8 @@ nothing.
   MIT licence and a named owner, gated by the conformance kit and the tiers. Out-of-tree modules,
   listed by a docs PR with their conformance record, may follow.
 - **Qualifying outside modules:** a conformance kit shipped in Cells, which the contributor runs
-  before opening the PR. A pass means the kit's checks passed; the science still needs a registered
-  protocol.
+  before opening the PR. In the lead's reading, recorded in D185, a pass means the kit's checks
+  passed; the science still needs a registered protocol.
 - **D144 with modules:** new physics goes into `src/cells` as modules of its structure (laws, kinds
   and operators, each declared and registered), and `validation/` still holds no physics.
 - **The example:** in this repository, as a separately installable folder installed as a wheel in
@@ -462,7 +464,8 @@ nothing.
   registered and judged runs also freeze its files beside the snapshot (AGENTS.md).
 
 D185 adds a declarations manifest, a JSON list of every registered law, operator and kind, and a
-contributor guide with a pull-request template.
+contributor guide with a pull-request template. **Target:** none of stage 1 is built yet; the kit,
+the example module, the manifest and the guide come with it.
 
 **Open:**
 - whether the project lists the modules that pass;

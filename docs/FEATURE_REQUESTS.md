@@ -16,7 +16,7 @@ and a general feature, never one built for one study (D144).
 | [FR-9](#fr-9--raise-the-7-species-cap) | Raise the 7-species cap | Priority 2, **blocking for world design** (the request's label; logged 14 November 2026). Measured safe to 16 (the W4 probe) | **Landed** (14 November): `MAX_SPECIES` is 16, a D148 change to `species_common` with guard worlds of 8 or more species (D165) | The D148 change with a guard world of 8 or more species; the requester's species list comes with its world definition |
 | [FR-10](#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family) | A dose schedule: scheduled bath composition in the pump family | Priority 2, small (the request's label; logged 14 November 2026) | **Milestones 1 and 2 landed** (14–15 November; [note](BATH_SCHEDULE_DESIGN.md) §7–§8, D169): dose steps admitted only inside measured regions (neutral up and down, K up and Na down) | Further ions and faster faces as each is measured; its protocol |
 | [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Design proposed in [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md) (merged 15 November). Its kinds landed with D172's round (16 November), for development, not judged: the transporter with the proton pump, the rapid proton buffer, and the passive routes with the proton leak | Its registration, rehearsal and judged run on the landed core |
-| [FR-11](#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Looping replay packages of living cells for the viewer | Not stated (the user's request, logged 15 November 2026) | Logged, with the user's choices: periodic loops, a paced human heart cell (a human ventricular cell on Track E's human law set, with no generic stand-in; D183, D184), the minimal cells' cycle in scope | Its design note (`docs/LOOPING_REPLAY_DESIGN.md`, ruled 16 November) and the interim planarian loop are on branch `run-view-d154`, with one development run; they merge with the run-view writer after its gate. The human loop waits for the human cardiac laws |
+| [FR-11](#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Looping replay packages of living cells for the viewer | Not stated (the user's request, logged 15 November 2026) | Logged, with the user's choices: periodic loops, a paced human heart cell, the minimal cells' cycle in scope. The heart cell is a human ventricular cell on Track E's human law set (D183); no generic stand-in, the lead's reading kept under the user's delegation (D184) | Its design note (`docs/LOOPING_REPLAY_DESIGN.md`, ruled 16 November) and the interim planarian loop are on branch `run-view-d154`, with one development run; they merge with the run-view writer after its gate. The human loop waits for the human cardiac laws |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -617,8 +617,9 @@ explored.
 - **Next:** a design note when the run-view writer lands (D142).
 - **Since then (16 November 2026):**
   - **The human loop** is a paced human ventricular cell on Track E's human law set, O'Hara–Rudy
-    2011's endocardial cell, with no generic stand-in, and it waits for those laws (D183, D184;
-    [design note](HUMAN_CARDIAC_LAWS_DESIGN.md), proposed).
+    2011's endocardial cell, and it waits for those laws (D183, D184;
+    [design note](HUMAN_CARDIAC_LAWS_DESIGN.md), proposed). No generic stand-in is used: that was
+    the lead's reading of the user's answer, kept under the user's delegation (D184).
   - **The run-view writer** did not land with D172's round. It is built on branch `run-view-d154`
     and merges after its own gate ([current plan](CURRENT_PLAN.md)).
   - **The design note** is written there, `docs/LOOPING_REPLAY_DESIGN.md` (ruled 16 November), with

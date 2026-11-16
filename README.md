@@ -98,9 +98,10 @@ and solvers are declared modules, built only where a world declares them. A
 [design for external modules](docs/MODULE_SYSTEM_DESIGN.md) is proposed,
 so that independently maintained packages can extend Cells under the same
 contracts as built-in models. Its open choices were settled on 16 November: new
-physics enters the engine as declared modules, and contributors add a module by
-pull request, in its own namespace and checked by a conformance kit that ships
-with Cells.
+physics enters the engine as declared modules, and contributors will add a module
+by pull request, in its own namespace and checked by a conformance kit that Cells
+is to ship. The kit, the example module and the contributor guide are not built
+yet.
 
 On the molecular side, the one level we skip is protein folding itself. Beneath
 it, we aim to simulate the gene regulation that sets how much of each protein is
