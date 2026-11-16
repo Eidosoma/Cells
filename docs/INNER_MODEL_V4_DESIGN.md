@@ -1720,6 +1720,103 @@ active), with check_onsets' refusal kept.
   early and late, starts at its declared gate whatever the padding drifted to; the write is idle in
   today's worlds; the refusal stays.
 
+#### (p) Ledger lists read from the implementation object (item 5; designed 16 November 2026, before code)
+
+**What it must do.**
+- A model's ledgers are today the shared literals of @1, `surface_pump`:
+  - `LEDGERS`, ten names in `balances()` order;
+  - `LEDGER_DIAGNOSTICS`, their residual diagnostics;
+  - `ledger_limits`, their bounds;
+  - `ENERGY_RTOL`, the energy ledger's tolerance by solver.
+  `DEVICE_CHECKS` and `DEVICE_DIAGNOSTICS` are built from these lists.
+- The shared check paths read these as module globals:
+  - `surface_pump.checked_rows`, the host check of @1, @2, @3 and the composite. It reads
+    `LEDGER_DIAGNOSTICS`, `ledger_limits` and `ENERGY_RTOL`, and takes `limits[5]` for the
+    global-charge ratio.
+  - `surface_pump_checks.row_checks`, the device check, which takes `bounds[5]`.
+  - @2's and @3's `DEVICE_CHECKS = first.DEVICE_CHECKS`, and `limits=first.ledger_limits` in
+    their `device_checks`.
+  - @3's `channel_magnitudes`, which takes `first.LEDGERS.index(...)`.
+- The composite already reads `inner.LEDGERS`, `LEDGER_DIAGNOSTICS`, `ENERGY_RTOL` and
+  `ledger_limits` from its inner object. Its host check, though, calls `inner.checked_rows`, which
+  reads @1's globals, and checks its operators' ledgers after that.
+- (k) kept the literals for D176's round: reading them from the object changes @1's and @2's
+  shared check code, so it is a D148 change, made after the landing.
+- **The goal ((k)):** every model object exposes its ledger lists, and the shared paths read the
+  lists from the object they are given. A later kind with a new conserved quantity then adds a
+  ledger to its structure's object by declaration, and no check function changes.
+
+**The design.**
+1. **The ledger protocol: four names on every model object.** They are `LEDGERS`,
+   `LEDGER_DIAGNOSTICS`, `ledger_limits` and `ENERGY_RTOL`.
+   - @1's module defines them. @2's and @3's modules carry `ENERGY_RTOL` from @1 and gain the
+     other three as aliases of @1's objects.
+   - @3's `InnerImplementation` sets them from its structure (`ledger_lists(structure)`). Today
+     these are @1's own objects, so `impl.LEDGERS is surface_pump.LEDGERS`.
+   - The adapter forwards them from its implementation.
+   - The composite's object keeps its own: inner's, then its operators'.
+   - No new type is needed: the protocol is just these names, the ones the composite already
+     reads from its inner object. The two ratio diagnostics keep their ledgers by name, "energy"
+     and "global_charge".
+2. **The shared paths take the object.** The new keyword is `ledgers`:
+   `checked_rows(..., ledgers=None)` and `row_checks(..., ledgers=None)`. They read the diagnostic
+   names, the bounds function and the tolerance from it. `None` means @1's module, so every
+   caller that passes nothing makes today's call.
+   - `limits[5]` (host) and `bounds[5]` (device) become the position of "global_charge" in the
+     object's `LEDGERS`. That is a Python-level index, so no program changes.
+3. **@3 reads its own object.**
+   - `check_values` and `device_checks` pass `ledgers=` the structure's object.
+   - `channel_magnitudes` takes its indices from the structure's `LEDGERS`.
+   - `DEVICE_CHECKS` and `DEVICE_DIAGNOSTICS` become the object's attributes, built from its
+     lists: ("domain", *LEDGERS, "dissipation") and the max_ names.
+4. **The composite** passes `ledgers=self.inner` to `inner.checked_rows`, so the inner lists come
+   from its inner object, not from @1's module. Its operators' ledgers stay its own, checked after
+   as today.
+5. **Unchanged.**
+   - The lists' values and order: every object's lists are today's tuples, and the same objects.
+   - `device_check_constants`, which reads `ENERGY_RTOL[solver]` (the same table everywhere).
+   - The validation tools that read `first.LEDGERS` (@1's lists stay where they are).
+   - The in-place guard's quiet host check (`inplace_fix_guard._quiet_host_checks`) gains the
+     `ledgers` keyword.
+
+**What a later kind declares (the seam this prepares; not built in this item unless the lead
+rules otherwise).**
+- A `ledgers(declaration)` hook returns ((ledger, diagnostic), ...).
+- The kind's `ledger_terms` gives each ledger's value under its own name, beside today's roles.
+- A `ledger_bounds(row, p, tol, steps, *, xp)` hook returns their bounds.
+- The structure's object then appends these to its lists, `balances` to its values and
+  `ledger_limits` to its bounds. `checked_rows`, `row_checks`, `DEVICE_CHECKS` and the windows'
+  failure codes take them with no edit.
+- **Option A (recommended):** this item builds the protocol and the reads only. The hook follows
+  with its first consumer, a kind with a conserved quantity that is not one of today's ten.
+- **Option B:** the hook now, with a planted kind under `tests.` that declares a neutral conserved
+  quantity and its ledger. This costs about 0.5 day more, and the hook's shape would be fixed
+  before any real consumer exists.
+
+**The D148 case.** This is an in-place change to shared qualified code, `checked_rows` and
+`row_checks`. Nothing should change, so the criteria are checked as "identical":
+1. Programs: crossrev, all eight sets, and the kinds pair, against 82d3d67a's saved outputs, the
+   head after the raw-sum fix (3c10b833's differ by item 4): every jaxpr, binding and constant
+   identical.
+2. Records:
+   - `validation/tissue/inplace_fix_guard.py` dump at 82d3d67a and at the change, then
+     compare. The parts are `pump` (@1's and @2's registered worlds, RK4 and IMEX), `base`,
+     `injection`, `qualification`, `dumps` and `cohorts`. Every state field, observation, `max_`
+     diagnostic and device row-check result must be identical, the ledger diagnostics included.
+   - G1, bitwise 113 of 113 against c1's merged save.
+3. Verdicts and registered numbers: unchanged, as a consequence of 2. There is no ledger-level
+   change to list.
+4. The crossrev baseline needs no renewal, since nothing differs.
+
+**Acceptance (tests).**
+- Each model object (@1, @2, @3 with and without kinds, a composite) exposes the four names, with
+  values equal to today's tuples.
+- A planted object (test-local) with one extra ledger: `checked_rows` and `row_checks` check it
+  against its own bound, report its own diagnostic, and fail with its name. They read the object,
+  not @1's literals.
+- `ledgers=None` is today's result, bit for bit, on @1's and @3's test worlds, host and device.
+- Tiers 1+2 pass against the record.
+
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 
 - **Why.** Today a route's heat is the tableau's quadrature of its dissipation rate (Σ J Δμ̃ at the
