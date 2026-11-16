@@ -127,9 +127,19 @@ and how sure that is. Nothing here says the engine models a species' protein.
   for. A ring on the membrane marks a unit where the species differs: unbroken for a
   different family, broken for nothing found. The legend's "In this species" block
   filters by finding.
-- **Four kinds of evidence** per product: reviewed entry, named in a publication, family
-  signature, similarity search. A product found by signature or similarity is called a
-  candidate, never an established counterpart.
+- **Two facts per product, kept apart** (`schema/SPECIES_ATLAS.md`, since 16 November
+  2026):
+  - *How it was found:* by the signature of a family that makes the machine; only by the
+    signature of a family that goes with it, such as a beta subunit or a regulator; named
+    in a publication; or by a similarity search, which no species uses yet.
+  - *What its record is:* a UniProtKB entry reviewed by a curator, one annotated
+    automatically, or a gene model or a genome record's protein with no UniProtKB entry.
+
+  A product found by its family's signature or by similarity is called a candidate,
+  never an established counterpart, whatever its entry: a reviewed entry says how the
+  entry was written, not that the protein does a unit's work. One found only by an
+  accessory family's signature is a candidate for no machine's own work. The card counts
+  the two facts apart.
 
 **The planarian atlas** is of *Schmidtea mediterranea*, the planarian the databases know
 best. It has an entry for all 49 units:
@@ -144,9 +154,10 @@ best. It has an entry for all 49 units:
 The cage's entry stays in the file, is held to the contract like the others, and is not
 carried into the scene while the cage is left out.
 
-It lists 204 gene products. Four are named in a publication; the other 200 are candidates
-found by a family signature, in UniProt's entries and in the gene models of one genome
-annotation. Nothing is called an ortholog. Its sources are UniProt, WormBase ParaSite,
+It lists 204 gene products. Four are named in a publication; 168 are candidates found by
+the signature of a family that makes the machine, and 32 carry only the signature of a
+family that goes with one (beta subunits, regulators), in UniProt's entries and in the
+gene models of one genome annotation. Nothing is called an ortholog. Its sources are UniProt, WormBase ParaSite,
 InterPro, the European Nucleotide Archive and Europe PMC, each with its terms stated in
 the file. `tools/build_planarian_atlas.py` rebuilds it, byte for byte, from the responses
 saved in `/mnt/workspaces/Cells/visualizer-planarian-proteins-20261114-01`, which stay

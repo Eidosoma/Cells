@@ -321,7 +321,7 @@ def build(datasets_folder, snapshot):
         "sources": {"uniprot": {"text": f"UniProt Consortium, UniProt release {release}: the reference proteome {PROTEOME} (Drosophila melanogaster), its entries and its gene-by-gene set.", "url": f"https://www.uniprot.org/proteomes/{PROTEOME}", "licence": "CC BY 4.0", "class": "permissive", "accessed": d.day(KB, PLACES_FILE)}},
     }
     atlas = {
-        "format": "cells.visualizer.species_atlas@1",
+        "format": P.ATLAS_FORMAT,
         "species": {"id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON, "plain": f"The fruit fly of the laboratory, with {stated['genes']:,} genes in UniProt's reference proteome. This is what the family signatures of Cells' machines find among the one protein shown for each gene."},
         "made": made,
         "method": [
@@ -330,7 +330,8 @@ def build(datasets_folder, snapshot):
             "Each unit's family was taken from its own human candidates, by the same InterPro signatures that the other species' atlases ask. The build checks that the candidates carry them.",
             "Each signature was looked for among the InterPro entries UniProt gives each protein. A unit counts as found only where a protein carries the signature of a family that makes the machine itself; an accessory family alone does not make it found.",
             "Where no protein carries the family the engine's law names and proteins carry another family asked for the same machine (innexins, for gap junctions), the finding is 'different family'.",
-            "A product with a reviewed entry is listed as a reviewed entry, one with an unreviewed entry as a family signature. Either is a candidate by family: several units of one family (the Kv1 channels) list the same proteins, and nothing here says which protein does which unit's work.",
+            P.TWO_FACTS,
+            "Several units of one family (the Kv1 channels) list the same proteins, and nothing here says which protein does which unit's work.",
             "No similarity search was run, and nothing is called an ortholog.",
         ],
         "sources": [

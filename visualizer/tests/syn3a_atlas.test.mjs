@@ -45,7 +45,8 @@ const STATES = ["generic", "proposed", "modelled"];
 const CELL_KINDS = { sphere: ["across_um"], capsule: ["length_um", "across_um"], prism: ["sides", "across_um", "radius_um", "height_um", "corner_um", "edge_um"] };
 const PARTS = ["membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes"];
 const FINDINGS = ["found", "different family", "none found", "nothing to look for"];
-const EVIDENCE_WORDS = ["reviewed entry", "named in a publication", "family signature", "similarity search"];
+// The two facts of a product (schema/SPECIES_ATLAS.md, format @2): how it was found, and what its record is.
+const FOUND_BY = ["family signature", "accessory signature", "named in a publication", "similarity search"];
 const COLUMNS = ["locus_tag", "gene", "product", "length", "protein_id", "origin", "functional_class", "essentiality", "detected", "copies_per_cell", "proteomics_id", "uniparc", "uniprotkb_identical", "interpro"];
 const MACHINE = /\/home\/|\/mnt\/|\/Users\/|\/tmp\//;
 // How a source may be used (the project's rule of 15 November 2026): only a permissive one
@@ -215,7 +216,7 @@ const units = Object.entries(atlas.units);
 const products = [...units.flatMap(([id, unit]) => unit.products.map((product) => [id, product])), ...atlas.extra.map((product) => ["extra", product])];
 
 test("the atlas says what it is: format, species, date, method, and what was not copied", () => {
-  assert.equal(atlas.format, "cells.visualizer.species_atlas@1");
+  assert.equal(atlas.format, "cells.visualizer.species_atlas@2");
   assert.deepEqual(Object.keys(atlas), ["format", "species", "made", "method", "sources", "not_copied", "units", "extra"]);
   assert.equal(atlas.species.id, species.id);
   assert.equal(atlas.species.taxon, species.taxon);
@@ -277,9 +278,11 @@ test("the extra proteins are few, each says why it is there, names a known datab
       assert.ok(databases.has(key(db)), `${product.name}: ${db} is not a database the atlas names`);
       assert.ok(id && !/https?:|\//.test(id), `${product.name}: ${id}`);
     }
-    assert.ok(EVIDENCE_WORDS.includes(product.evidence), `${product.name}: ${product.evidence}`);
+    assert.ok(FOUND_BY.includes(product.found_by) && !("evidence" in product), `${product.name}: ${product.found_by}`);
+    // A protein of the genome record, with no UniProtKB entry of its own.
+    assert.equal(product.entry, "genome annotation", product.name);
     assert.ok(product.evidence_note?.trim(), `${product.name}: no evidence note`);
-    if (product.evidence === "named in a publication") {
+    if (product.found_by === "named in a publication") {
       assert.ok(product.citation?.text?.trim() && product.citation.doi, `${product.name}: no citation`);
       assert.equal(product.citation.class, "permissive", `${product.name}: named by a paper whose terms do not allow it`);
     } else {

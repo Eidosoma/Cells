@@ -65,7 +65,11 @@ ROOT = HERE.parent
 SNAPSHOT = ROOT / "data" / "proteins" / "inventory.snapshot.json"
 ATLAS = ROOT / "data" / "proteins" / "atlases" / "planarian.json"
 REFERENCE_DIR = ROOT / "data" / "proteins" / "planarian"
-ATLAS_FORMAT = "cells.visualizer.species_atlas@1"
+ATLAS_FORMAT = "cells.visualizer.species_atlas@2"
+# The two facts of a product (schema/SPECIES_ATLAS.md): how it was found, and what its record is.
+FOUND_SIGNATURE, FOUND_ACCESSORY, FOUND_NAMED = "family signature", "accessory signature", "named in a publication"
+ENTRY_REVIEWED, ENTRY_UNREVIEWED, ENTRY_MODEL = "reviewed", "unreviewed", "genome annotation"
+entry_kind = lambda entry: ENTRY_REVIEWED if entry["reviewed"] else ENTRY_UNREVIEWED
 CLIENT = "atlas-builder/1.0"
 PATHS = re.compile(r"/(?:home|mnt|Users)/")
 
@@ -886,6 +890,7 @@ class Context:
             for name in found["proteins"]:
                 self.marks[self.proteins[name]["gene"]][signature]["archive"].add(name)
         self._products = {}
+        self.found_of = {}  # a product -> how it was found, the same in every unit that lists it
         self.check_rules()
 
     # --- names and checks -------------------------------------------------------------
@@ -1016,7 +1021,7 @@ class Context:
                 held = {"source": "UniProt", "id": accession}
             product = {
                 "name": entry["name"], "gene": claim["gene"], "role": role, "ids": [{"db": "uniprot", "id": accession}] + ids, "length": entry["length"],
-                "evidence": "named in a publication", "evidence_note": f"Named {claim['gene']} in {paper['short']}{tail}.", "citation": paper["citation"],
+                "found_by": FOUND_NAMED, "entry": entry_kind(entry), "evidence_note": f"Named {claim['gene']} in {paper['short']}{tail}.", "citation": paper["citation"],
             }
             if paper["class"] != PERMISSIVE:
                 # The paper's terms do not allow a copy: the name stands in a permissive record, which is named.
@@ -1041,7 +1046,7 @@ class Context:
                 tail += ", which does not carry the signature itself"
             out.append({
                 "name": entry["name"], "gene": entry["genes"][0] if entry["genes"] else None, "role": role, "ids": [{"db": "uniprot", "id": accession}] + ids, "length": entry["length"],
-                "evidence": "reviewed entry" if entry["reviewed"] else "family signature", "evidence_note": note + tail + ".", "citation": None,
+                "found_by": FOUND_SIGNATURE, "entry": entry_kind(entry), "evidence_note": note + tail + ".", "citation": None,
             })
         models = self.models(key)
         own = set(listed) | {a for a, claim in NAMED.items() if claim["family"] == key}
@@ -1061,7 +1066,7 @@ class Context:
                 note += f"; the gene model matches the UniProtKB {'entry' if len(others) == 1 else 'entries'} {called}, which {'does' if len(others) == 1 else 'do'} not carry the signature"
             out.append({
                 "name": f"{family['name']}, gene model {gene_id}", "gene": None, "role": role, "ids": [{"db": "wormbase_parasite", "id": gene_id}], "length": len(self.proteins[name]["sequence"]),
-                "evidence": "family signature", "evidence_note": note + ".", "citation": None,
+                "found_by": FOUND_SIGNATURE, "entry": ENTRY_MODEL, "evidence_note": note + ".", "citation": None,
             })
         self._products[key, role] = out
         return out
@@ -1259,6 +1264,11 @@ def unit_entry(unit_id, c):
             identity = tuple((item["db"], item["id"]) for item in product["ids"])
             if identity not in seen:
                 seen.add(identity)
+                if key not in main and product["found_by"] == FOUND_SIGNATURE:
+                    # A family that goes with the machine and makes none by itself: no candidate for its own work.
+                    product = dict(product, found_by=FOUND_ACCESSORY)
+                if c.found_of.setdefault(identity, product["found_by"]) != product["found_by"]:
+                    raise SystemExit(f"{identity}: found by an accessory family in one unit and otherwise in another; read the units' parts again")
                 products.append(product)
     return {"finding": "different family" if spec.get("replaces") else "found", "note": note, "products": products}
 
@@ -1280,7 +1290,7 @@ def extra_products(c):
                 raise SystemExit(f"nothing ties PubMed {item['pmid']} to {accession} in {ORGANISM}")
             if item.get("title_match") and not any(plain(title).rstrip(".").lower() == paper["title"].lower() for title in entry["titles"]):
                 raise SystemExit(f"{accession} does not cite the paper titled {paper['title']!r}")
-            evidence, citation = "named in a publication", paper["citation"]
+            found_by, citation = FOUND_NAMED, paper["citation"]
             note = f"Reported in {paper['short']}"
             if item.get("record"):
                 note += f"; its sequence record {item['record']['embl']} calls it the {item['record']['words']}"
@@ -1296,13 +1306,13 @@ def extra_products(c):
                 note += f"; carries {signature} ({c.signature_name(signature)})"
         else:
             signature = next(s for s in FAMILIES[item["family"]]["signatures"] if s in entry["interpro"])
-            evidence, citation = "family signature", None
+            found_by, citation = FOUND_SIGNATURE, None
             note = f"{signature} ({c.signature_name(signature)}) on its UniProtKB entry"
             if entry["pmids"] and entry["pmids"][0] in c.papers:
                 note += f"; its sequence was reported with {c.papers[entry['pmids'][0]]['short']}"
         product = {
             "name": item.get("name") or entry["name"], "gene": item["gene"], "role": item["role"], "ids": [{"db": "uniprot", "id": accession}] + ids, "length": entry["length"],
-            "evidence": evidence, "evidence_note": note + tail + ".", "citation": citation,
+            "found_by": found_by, "entry": entry_kind(entry), "evidence_note": note + tail + ".", "citation": citation,
         }
         if citation and citation["class"] != PERMISSIVE:
             # The paper's terms do not allow a copy: the name stands in a permissive record, which is named.
@@ -1446,7 +1456,7 @@ def build_atlas(c, facts):
     counts = facts["counts"]
     others = ", ".join(f"{name} {counts[taxon]['entries']:,}" for taxon, name in sorted(OTHER_PLANARIANS.items(), key=lambda item: -counts[item[0]]["entries"]))
     units = {unit["id"]: unit_entry(unit["id"], c) for unit in c.snapshot["units"]}
-    named = len({p["ids"][0]["id"] for unit in units.values() for p in unit["products"] if p["evidence"] == "named in a publication"})
+    named = len({p["ids"][0]["id"] for unit in units.values() for p in unit["products"] if p["found_by"] == FOUND_NAMED})
     reviewed = [accession for accession, entry in c.entries.items() if entry["reviewed"]]
     in_atlas = {item["id"] for unit in units.values() for p in unit["products"] for item in p["ids"] if item["db"] == "uniprot"}
     if set(reviewed) & in_atlas:
@@ -1468,7 +1478,8 @@ def build_atlas(c, facts):
             f"Family signature: unreviewed UniProtKB entries of the species that carry the signature, and gene models that carry it. The gene models are those of one genome annotation ({WBPS_RELEASE} of WormBase ParaSite, assembly {facts['assembly']}): {len(c.genes):,} genes with a predicted protein. The ones the atlas names are listed in data/proteins/planarian/{REFERENCE_FILE}. A model carries a signature if that annotation's own InterPro matches say so, or if its predicted protein is, letter for letter, a sequence that carries it in UniProt's archive (InterPro {facts['interpro']}).",
             f"A UniProtKB sequence and a gene model are given as one product when at least {round(MATCH_SHARE * 100)}% of the sequence's {MATCH_WORD}-residue words occur in the model's predicted protein and no other gene reaches half of that share.",
             f"Where a signature found nothing, it was also asked of all {facts['archive']:,} planarian sequences in UniProt's archive, of the UniProtKB entries of all flatworms and of reviewed human entries; the unit's note gives what came back.",
-            "A product found by signature is a candidate, never an established counterpart. Counts are gene models in one haplotype of one genome assembly, not genes confirmed in the animal, and short models may be fragments.",
+            "Each product says, apart, how it was found (named in a publication, by the signature of a family that makes the machine, or only by that of a family that goes with it, such as a beta subunit or a regulator) and what its record is (a UniProtKB entry, reviewed or not, or a gene model of the genome annotation).",
+            "A product found by the signature of a family that makes the machine is a candidate, never an established counterpart; one found only by that of a family that goes with the machine is no candidate for the machine's own work. Counts are gene models in one haplotype of one genome assembly, not genes confirmed in the animal, and short models may be fragments.",
             "No similarity search against other species was run, and no product is called an ortholog.",
         ],
         "sources": sources(c, facts),
@@ -2839,7 +2850,7 @@ def summary(atlas, context):
     lines = [
         f"units by finding: {dict(sorted(findings.items()))}",
         f"product entries: {len(products)} over the units; {len(distinct)} distinct products",
-        f"distinct products by evidence: {dict(sorted(Counter(p['evidence'] for p in distinct.values()).items()))}",
+        f"distinct products by how found and record: {dict(sorted(Counter((p['found_by'], p['entry']) for p in distinct.values()).items()))}",
         f"extra: {len(atlas['extra'])}",
         f"proteins searched: {len(context.genes)} gene models + {len(context.entries)} UniProtKB entries; {len(context.matches)} entries joined to a gene model",
     ]

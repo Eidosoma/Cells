@@ -152,12 +152,15 @@ this file's own").
   human has. 446 products are listed over the units, 158 proteins in all: 155 with a
   reviewed entry and 3 with an unreviewed one (`Cacna1g`, `Cacna1i`, `Kcnmb3`). Each names
   its units on the shelves (`unit`).
-- **Every product was found by its family's signature; the mark says whether its entry is
-  curated.** The atlas's contract has four kinds of evidence, and the shared search gives a
-  product with a reviewed entry the kind "reviewed entry" and one with an unreviewed entry
-  "family signature", as for the fly. So the page's card says that 3 of the 158 products were
-  found by signature or similarity; in truth all 158 were, and 155 of them have an entry a
-  curator wrote. This is put to the user (the hand-back), since the rule is every species'.
+- **Every product was found by its family's signature, and its entry is said apart.** Until
+  16 November 2026 one word mixed how a product was found with what its entry is, so the
+  page's card said that 3 of the 158 products were found by signature or similarity, when
+  all 158 were. Each product now gives both (`found_by`, `entry`; `schema/SPECIES_ATLAS.md`),
+  and the card says: 116 found by the signature of a family that makes the machine,
+  candidates by family; 42 only by that of a family that goes with one, no candidates for
+  the machine's own work; and, apart, 155 UniProtKB entries reviewed by a curator and 3
+  annotated automatically, which says how the entries were written, not which protein does
+  a unit's work.
 - **By family, never by a look-alike symbol.** The inventory names its candidates by human
   genes. A mouse protein is listed only because its own entry carries the InterPro
   signature of the unit's family, the signature the build first checks the human candidates
@@ -168,7 +171,10 @@ this file's own").
 - **So the lists are long where the family is large:** 20 proteins for each sodium channel
   unit (ten alpha subunits and ten carriers of the beta subunits' signatures), 11 for each
   Kv1 unit with its beta subunits, 18 for each CaV2 unit with the subunits that go with it,
-  20 connexins for each gap junction. Each is a candidate by family alone.
+  20 connexins for each gap junction. The carriers of a family that makes the machine (the
+  ten alpha subunits, the Kv1 channels, the connexins) are candidates by family alone; the
+  carriers of a family that only goes with it (the beta and alpha-2/delta subunits, the
+  regulators) are named apart in each unit's note and are no candidates for its own work.
 - **A near miss, said in the unit's note: `Atp2b3`, a calcium pump of the cell membrane
   (U40).** The mouse has no reviewed entry for it. UniProt's gene-by-gene set shows it by
   the entry A0ACP0BMC4, which carries no InterPro entry yet; three other entries of the same
@@ -184,9 +190,10 @@ this file's own").
   `Scn4b`, by `Mpz`, `Mpzl1`, `Mpzl2`, `Mpzl3`, `Jaml` and `Vsig1`, so these stand under
   U01 to U04 in the role "sodium channel beta subunits". Each product's own note names the
   signature it carries, and the beta subunits are an accessory family, which makes no unit
-  found. The table is shared by every species (`tools/build_mpneumoniae_atlas.py`), so it
-  is not changed here; the fly's, the planarian's and thale cress's sides of the atlas list
-  no beta subunit at all.
+  found: these products are found by `accessory signature`, and the page calls them no
+  candidates for the machine's own work. The table is shared by every species
+  (`tools/build_mpneumoniae_atlas.py`), so it is not changed here; the fly's, the
+  planarian's and thale cress's sides of the atlas list no sodium channel beta subunit.
 
 ## Sources and terms
 

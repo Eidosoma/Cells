@@ -139,6 +139,49 @@ export function inSpecies(entity, proteins, id) {
   };
 }
 
+/** A list of clauses as a sentence's parts: "a", "a and b", "a, b and c". */
+const listed = (items) => (items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`);
+
+/**
+ * How a species' products were found, and what their records are: two sentences from the two
+ * counts the scene gives (schema/SPECIES_ATLAS.md), kept apart. How a product was found decides
+ * what it is a candidate for; how its entry was written never does. A scene made before the
+ * two facts were kept apart has neither count, and then nothing is said of either.
+ */
+export function productWords(counts, foundBy, entries) {
+  const total = counts.products;
+  if (!total || !foundBy || !entries) return "";
+  const n = (list, id) => list.find((item) => item.id === id)?.count || 0;
+  const one = (count, single, many) => (count === 1 ? single : many);
+  const found = [
+    [n(foundBy, "family signature"), (c) => `by the signature of a family that makes the machine, ${one(c, "a candidate", "candidates")} by family, not ${one(c, "an established counterpart", "established counterparts")}`],
+    [n(foundBy, "similarity search"), (c) => `by sequence similarity, ${one(c, "a candidate", "candidates")}, not ${one(c, "an established counterpart", "established counterparts")}`],
+    [n(foundBy, "accessory signature"), (c) => `only by that of a family that goes with one (a regulator, or a subunit that makes none by itself), no ${one(c, "candidate", "candidates")} for its own work`],
+    [n(foundBy, "named in a publication"), () => "named in a publication"],
+    [n(foundBy, "not stated"), () => "in a way the file does not state"],
+  ].filter(([count]) => count);
+  // The records: UniProtKB entries are named once, then counted by how they were written.
+  let entryNamed = false;
+  const uniprot = (c, how) => {
+    const noun = entryNamed ? "" : `UniProtKB ${one(c, "entry", "entries")} `;
+    entryNamed = true;
+    return `${noun}${how}`;
+  };
+  const records = [
+    [n(entries, "reviewed"), (c) => uniprot(c, "reviewed by a curator")],
+    [n(entries, "unreviewed"), (c) => uniprot(c, "annotated automatically")],
+    [n(entries, "genome annotation"), (c) => `${one(c, "a gene model or genome-record protein", "gene models or genome-record proteins")} with no UniProtKB entry`],
+    [n(entries, "not stated"), () => "not stated in the file"],
+  ].filter(([count]) => count);
+  // A kind that covers every product is said with "all"; several are counted one by one.
+  const counted = (parts) => (parts.length === 1 && parts[0][0] === total ? [`${total === 1 ? "the one" : `all ${number(total)}`} ${parts[0][1](total)}`] : parts.map(([count, said]) => `${number(count)} ${said(count)}`));
+  const reviewed = n(entries, "reviewed");
+  return [
+    `How they were found: ${counted(found).join("; ")}.`,
+    records.length ? `Their records: ${counted(records).join(", ")}${reviewed ? "; a reviewed entry says how the entry was written, not that the protein does a unit's work" : ""}.` : "",
+  ].filter(Boolean).join(" ");
+}
+
 /**
  * What the view says on a species other than the inventory's own: the species' counts, sources
  * and findings. The units and laws are named as the engine's, the same for every species, and
@@ -149,7 +192,9 @@ export function speciesWords(proteins, species) {
   const name = /^[A-Z][a-z]+$/.test(species.label) ? lower(species.label) : species.label;
   const counts = species.counts;
   const words = new Map((proteins.findings || []).map((word) => [word.id, word]));
-  const some = counts.candidates === counts.products ? (counts.products === 1 ? "The one product was" : `All ${counts.products} products were`) : `${counts.candidates} of the ${counts.products} products were`;
+  // The two facts of the products, apart. A scene made before they were has neither, and the card then says nothing of them.
+  const kept = Array.isArray(species.found_by) && Array.isArray(species.entries);
+  const said = kept ? productWords(counts, species.found_by, species.entries) : "";
   const quiet = quietAtlas(proteins, species);
   const more = (species.extra || []).length;
   return {
@@ -168,11 +213,11 @@ export function speciesWords(proteins, species) {
     card: {
       heading: `${species.label} atlas`,
       organism: species.organism,
-      stats: [[counts.with_products, `of ${counts.units} units have products`], [counts.products, "gene products"], [counts.candidates, "of them candidates"]],
+      stats: [[counts.with_products, `of ${counts.units} units have products`], [counts.products, "gene products"], ...(kept ? [[counts.candidates, "of them candidates for a machine"]] : [])],
       text: species.plain,
       check:
         `The ${counts.units} units and their laws are the engine's, the same for every species. Listed here are the ${name} gene products that would make each machine, not anything the engine models.` +
-        (counts.candidates ? ` ${some} found by signature or similarity: candidates, not established counterparts.` : "") +
+        (said ? ` ${said}` : "") +
         // Where the species has almost none of these machines, the card points at the proteins it does have.
         (quiet && more ? ` Most of these machines were not found in it. The ${more} of its own proteins that bear on the picture are listed below.` : ""),
       method: species.method,
@@ -662,7 +707,7 @@ export class ProteinLens {
     const near = several && view.focused !== undefined ? shelves.byShelf.find((entry) => entry.id === view.focused) || null : null;
     const words = shelves.sideWords(near ? near.id : undefined);
     const total = shelves.total, basis = shelves.byBasis();
-    // What holds a candidate product of a machine Cells has a law for. With one shelf, its
+    // What holds a protein listed with a machine Cells has a law for. With one shelf, its
     // families (or its proteins). With several: the families that do on any shelf, the
     // gatherings of families of one and the groups of "no family" that do, and the markers
     // that are lit for them (Shelves.lawHolders).
@@ -686,7 +731,7 @@ export class ProteinLens {
     };
     const filter = families
       ? withUnit
-        ? { title: "Cells' laws", unit: several ? "markers" : "families", items: [{ id: "units", label: "Holds parts of a machine with a law", title: "Families that hold candidate products of a unit of the law inventory. Cells has no law for any other.", count: lawMarkers }], active: view.units ? "units" : null }
+        ? { title: "Cells' laws", unit: several ? "markers" : "families", items: [{ id: "units", label: "Holds parts of a machine with a law", title: "Families that hold proteins listed with a unit of the law inventory: candidates for its machine, or parts that go with it. Cells has no law for any other.", count: lawMarkers }], active: view.units ? "units" : null }
         : null
       : {
           title: "How the side is known",
@@ -725,8 +770,8 @@ export class ProteinLens {
     const law = withUnit
       ? families
         ? several
-          ? `${[plural(lawFamilies, "family", "families"), lawLone ? `${plural(lawLone, "gathering")} of families of one` : "", lawParts ? `${plural(lawParts, "group")} of proteins with no family` : ""].filter(Boolean).join(", ").replace(/, ([^,]*)$/, " and $1")} hold candidate products of machines Cells has laws for. Cells has no law for any other protein here.`
-          : `${number(withUnit)} families hold candidate products of machines Cells has laws for: they carry the machine's shape. Cells has no law for any other protein here.`
+          ? `${[plural(lawFamilies, "family", "families"), lawLone ? `${plural(lawLone, "gathering")} of families of one` : "", lawParts ? `${plural(lawParts, "group")} of proteins with no family` : ""].filter(Boolean).join(", ").replace(/, ([^,]*)$/, " and $1")} hold proteins listed with machines Cells has laws for. Cells has no law for any other protein here.`
+          : `${number(withUnit)} families hold proteins listed with machines Cells has laws for: they carry the machine's shape. Cells has no law for any other protein here.`
         : `${number(withUnit)} of them are drawn as the machine Cells has a law for. Every other is a plain marker: Cells has no law for it.`
       : "Cells has no law for any of these proteins: every one is a plain marker.";
     const sides =

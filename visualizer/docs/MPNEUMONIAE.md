@@ -147,9 +147,10 @@ Each of the 43 notes gives the signatures asked, what the same search finds amon
 mollicutes, and that the unit's human candidates carry them. Under `extra` are nine of
 the organism's own membrane machines: four subunits of the ATP synthase, its one P-type
 ATPase, the two parts of a potassium uptake system, the glucose transporter and GlpF.
-All nine are listed as `reviewed entry`: each has a curated UniProtKB entry of this
-strain. Their notes say that the functions are assigned from sequence and were not
-measured in this organism.
+All nine are found by the family signature their sequence carries (`found_by`), and
+each has a curated UniProtKB entry of this strain (`entry`, `reviewed`); until 16 November
+2026 one word, `reviewed entry`, stood for both. Their notes say that the functions are
+assigned from sequence and were not measured in this organism.
 
 ## The catalogue
 

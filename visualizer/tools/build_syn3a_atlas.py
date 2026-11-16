@@ -57,7 +57,7 @@ ATLAS = ROOT / "data" / "proteins" / "atlases" / "syn3a.json"
 CATALOGUE_DIR = ROOT / "data" / "proteins" / "syn3a"
 CATALOGUE_FILE = "proteins.tsv"
 SPECIES_FORMAT = "cells.visualizer.species@1"
-ATLAS_FORMAT = "cells.visualizer.species_atlas@1"
+ATLAS_FORMAT = "cells.visualizer.species_atlas@2"
 CLIENT = "atlas-builder/1.0"
 PATHS = re.compile(r"/(?:home|mnt|Users|tmp)/")
 MADE = "2026-11-15"  # revised by the licence pass; first made on 14 November 2026
@@ -1084,10 +1084,12 @@ def extra_products(c):
             "ids": [{"db": "genbank", "id": protein["protein_id"]}],
             "length": len(protein["sequence"]),
         }
+        # The two facts of schema/SPECIES_ATLAS.md: how it was found, and its record, a protein of the genome record with no
+        # UniProtKB entry of its own (its sequence is in UniProt's archive, which has no reviewed or unreviewed entry).
         if item.get("words"):
-            product.update(evidence="named in a publication", evidence_note=f"Locus {item['locus']}, product \"{protein['protein']}\" in the genome record. Breuer and others 2019 name it: {item['says']}. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.", citation=cite)
+            product.update(found_by="named in a publication", entry="genome annotation", evidence_note=f"Locus {item['locus']}, product \"{protein['protein']}\" in the genome record. Breuer and others 2019 name it: {item['says']}. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.", citation=cite)
         else:
-            product.update(evidence="family signature", evidence_note=f"Locus {item['locus']}, product \"{protein['protein']}\" in the genome record. Its sequence carries {item['signature']} ({c.signature_names[item['signature']]}) in UniProt's archive. A candidate by annotation, not a measured function in this strain.", citation=None)
+            product.update(found_by="family signature", entry="genome annotation", evidence_note=f"Locus {item['locus']}, product \"{protein['protein']}\" in the genome record. Its sequence carries {item['signature']} ({c.signature_names[item['signature']]}) in UniProt's archive. A candidate by annotation, not a measured function in this strain.", citation=None)
         product["why"] = item["why"]
         out.append(product)
     return out
@@ -1888,7 +1890,7 @@ def summary(species, atlas, rows, shelves, context):
     places = Counter(item["place"] for item in species["cell"]["capabilities"].values())
     lines = [
         f"frozen annotation: GenBank {RECORD}, {context.length:,} bp; {len(context.genes)} genes, {len(rows)} protein products ({sum(row[5] == 'minimal genome' for row in rows)} kept, {sum(row[5] != 'minimal genome' for row in rows)} added), {len(context.pseudo)} pseudogenes",
-        f"units by finding: {dict(sorted(findings.items()))}; extra: {len(atlas['extra'])} ({dict(Counter(p['evidence'] for p in atlas['extra']))})",
+        f"units by finding: {dict(sorted(findings.items()))}; extra: {len(atlas['extra'])} ({dict(Counter((p['found_by'], p['entry']) for p in atlas['extra']))})",
         f"capabilities stated: {dict(sorted(places.items()))} of {len(species['cell']['capabilities'])}",
         f"catalogue: essentiality {dict(Counter(row[7] for row in rows))}; detected {sum(row[8] == 'yes' for row in rows)}; with an identical UniProtKB entry elsewhere {sum(bool(row[12]) for row in rows)}",
         "mollicute entries carrying a searched signature: " + (", ".join(f"{s} {context.mollicutes(s)}" for s in sorted({*rule_signatures(), *BACTERIAL_CHANNELS, PROTEASOME}) if context.mollicutes(s)) or "none"),

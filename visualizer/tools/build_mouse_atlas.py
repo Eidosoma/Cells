@@ -468,7 +468,7 @@ def build(datasets_folder, snapshot):
         },
     }
     atlas = {
-        "format": "cells.visualizer.species_atlas@1",
+        "format": P.ATLAS_FORMAT,
         "species": {"id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON, "plain": f"The laboratory mouse, with {stated['genes']:,} genes in UniProt's reference proteome. This is what the family signatures of Cells' machines find among the one protein shown for each gene."},
         "made": made,
         "method": [
@@ -477,7 +477,8 @@ def build(datasets_folder, snapshot):
             "Each unit's family was taken from its own human candidates, by the same InterPro signatures that the other species' atlases ask. The build checks that the candidates carry them.",
             "Each signature was looked for among the InterPro entries UniProt gives each protein. A unit counts as found only where a protein carries the signature of a family that makes the machine itself; an accessory family alone does not make it found.",
             "A mouse protein is listed because its own entry carries the family's signature, never because its gene's symbol looks like that of a human candidate.",
-            "A product with a reviewed entry is listed as a reviewed entry, one with an unreviewed entry as a family signature. Either is a candidate by family: several units of one family (the Kv1 channels) list the same proteins, and nothing here says which protein does which unit's work.",
+            P.TWO_FACTS,
+            "Several units of one family (the Kv1 channels) list the same proteins, and nothing here says which protein does which unit's work.",
             "No similarity search was run, no source of orthology was read, and nothing is called an ortholog.",
         ],
         "sources": [
@@ -497,7 +498,7 @@ def build(datasets_folder, snapshot):
         "largest_families": [[filing.names[family]["name"], n] for family, n in sorted(family_total.items(), key=lambda pair: (-pair[1], pair[0]))[:8]],
         "lines": len(lines), "distinct": distinct, "lone": lone["count"], "lone_parts": len(alone), "part_lines": len(rest), "groups": groups, "member_files": files, "places_used": len(used),
         "findings": dict(findings), "found_units": {unit: [product["gene"] for product in found["products"]] for unit, found in units.items() if found["products"]}, "beside": {gene(a): what for a, what in beside.items()},
-        "products": sum(len(found["products"]) for found in units.values()), "products_reviewed": sum(1 for found in units.values() for product in found["products"] if product["evidence"] == "reviewed entry"),
+        "products": sum(len(found["products"]) for found in units.values()), "products_reviewed": sum(1 for found in units.values() for product in found["products"] if product["entry"] == P.ENTRY_REVIEWED),
         "with_units": len(unit_ids), "entries_per_gene": dict(sorted(Counter(min(n, 6) for n in together.values()).items())),
         "tissue_on": shape["tissue_on"]["at_um"], "missed_by_marker": missed,
     }

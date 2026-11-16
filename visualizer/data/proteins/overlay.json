@@ -131,7 +131,8 @@
   ],
   "site_note": "Where the engine's law acts, read from the law's name and documents.",
   "species": {
-    "format": "cells.visualizer.species_atlas@1",
+    "format": "cells.visualizer.species_atlas@2",
+    "older_formats": ["cells.visualizer.species_atlas@1"],
     "contract": "visualizer/schema/SPECIES_ATLAS.md",
     "reference": {
       "id": "human",
@@ -195,11 +196,21 @@
       }
     ],
     "no_entry": "This atlas has no entry for this unit.",
-    "evidence": [
+    "found_by": [
       {
-        "id": "reviewed entry",
-        "label": "Reviewed entry",
-        "description": "A curated database entry for this species."
+        "id": "family signature",
+        "label": "Family signature",
+        "description": "Its own record carries the signature of a family that makes the machine. A candidate by family, not an established counterpart.",
+        "line": "Candidate by family, not an established counterpart",
+        "extra_description": "Its own record carries the signature of the family named. It matches no unit of the inventory, so it is a candidate for none.",
+        "candidate": true
+      },
+      {
+        "id": "accessory signature",
+        "label": "Accessory family",
+        "description": "Its own record carries only the signature of a family that goes with the machine: a regulator, or a subunit that makes no channel or pump by itself. Listed with the machine; no candidate for the machine's own work.",
+        "line": "Goes with the machine, no candidate for its own work",
+        "extra_description": "Its own record carries only the signature of a family that goes with a machine of the inventory, a machine no protein of this species makes. It is a candidate for no unit."
       },
       {
         "id": "named in a publication",
@@ -208,16 +219,45 @@
         "cited": true
       },
       {
-        "id": "family signature",
-        "label": "Family signature",
-        "description": "An unreviewed entry carrying the family's sequence signature. A candidate, not an established counterpart.",
-        "candidate": true
-      },
-      {
         "id": "similarity search",
         "label": "Similarity search",
         "description": "Found by sequence similarity to a named protein of another species. A candidate, not an established counterpart.",
+        "line": "Candidate by similarity, not an established counterpart",
+        "extra_description": "Found by sequence similarity to a named protein of another species. It matches no unit of the inventory, so it is a candidate for none.",
         "candidate": true
+      },
+      {
+        "id": "not stated",
+        "label": "Not stated",
+        "description": "An older file does not say how this product was found.",
+        "older": true
+      }
+    ],
+    "entry_kinds": [
+      {
+        "id": "reviewed",
+        "label": "Reviewed entry",
+        "description": "A UniProtKB entry that a curator reviewed. That says how the entry was written, not what the protein does in this species.",
+        "line": "Its UniProtKB entry was reviewed by a curator. That says how the entry was written, not what the protein does in this species."
+      },
+      {
+        "id": "unreviewed",
+        "label": "Unreviewed entry",
+        "description": "A UniProtKB entry annotated automatically, by rule systems and prediction programs.",
+        "line": "Its UniProtKB entry was annotated automatically, by rule systems and prediction programs."
+      },
+      {
+        "id": "genome annotation",
+        "label": "Genome annotation",
+        "description": "A gene model, or a protein of a genome record, annotated by its submitters, with no UniProtKB entry of its own.",
+        "line": "It is a gene model, or a protein of a genome record, with no UniProtKB entry of its own."
+      },
+      {
+        "id": "not stated",
+        "label": "Not stated",
+        "description": "An older file does not say what this product's record is.",
+        "line": "Its file does not say what its record is.",
+        "older": true
       }
     ]
   },

@@ -1,5 +1,5 @@
 {
- "format": "cells.visualizer.species_atlas@1",
+ "format": "cells.visualizer.species_atlas@2",
  "species": {
   "id": "syn3a",
   "label": "Syn3A",
@@ -327,7 +327,8 @@
     }
    ],
    "length": 525,
-   "evidence": "family signature",
+   "found_by": "family signature",
+   "entry": "genome annotation",
    "evidence_note": "Locus JCVISYN3A_0792, product \"F0F1 ATP synthase subunit alpha\" in the genome record. Its sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
    "citation": null,
    "why": "Part of the cell's F-type ATP synthase, which sits in its one membrane; four of its eight subunits are listed here. The 2019 reconstruction of the cell's metabolism has this machine push protons out of the cell; that is a model's reading, not a measurement in this strain. The law inventory has no F-type ATPase."
@@ -343,7 +344,8 @@
     }
    ],
    "length": 475,
-   "evidence": "family signature",
+   "found_by": "family signature",
+   "entry": "genome annotation",
    "evidence_note": "Locus JCVISYN3A_0790, product \"F0F1 ATP synthase subunit beta\" in the genome record. Its sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
    "citation": null,
    "why": "The other subunit of the ATP synthase's catalytic head. The 2019 paper found the genes of this machine essential."
@@ -359,7 +361,8 @@
     }
    ],
    "length": 101,
-   "evidence": "family signature",
+   "found_by": "family signature",
+   "entry": "genome annotation",
    "evidence_note": "Locus JCVISYN3A_0795, product \"F0F1 ATP synthase subunit C\" in the genome record. Its sequence carries IPR000454 (ATP synthase, F0 complex, subunit C) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
    "citation": null,
    "why": "The ring of the ATP synthase that carries protons across the membrane."
@@ -375,7 +378,8 @@
     }
    ],
    "length": 287,
-   "evidence": "family signature",
+   "found_by": "family signature",
+   "entry": "genome annotation",
    "evidence_note": "Locus JCVISYN3A_0796, product \"F0F1 ATP synthase subunit A\" in the genome record. Its sequence carries IPR000568 (ATP synthase, F0 complex, subunit A) in UniProt's archive. A candidate by annotation, not a measured function in this strain.",
    "citation": null,
    "why": "The membrane subunit of the ATP synthase beside the ring, where protons enter and leave."
@@ -391,7 +395,8 @@
     }
    ],
    "length": 942,
-   "evidence": "named in a publication",
+   "found_by": "named in a publication",
+   "entry": "genome annotation",
    "evidence_note": "Locus JCVISYN3A_0787, product \"Magnesium-translocating P-type ATPase\" in the genome record. Breuer and others 2019 name it: the annotation lists it as an importer of magnesium. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
    "citation": {
     "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
@@ -412,7 +417,8 @@
     }
    ],
    "length": 885,
-   "evidence": "named in a publication",
+   "found_by": "named in a publication",
+   "entry": "genome annotation",
    "evidence_note": "Locus JCVISYN3A_0879, product \"Magnesium transporter\" in the genome record. Breuer and others 2019 name it: a putative magnesium importer that could carry calcium as well; the paper's reconstruction uses it as the calcium importer. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
    "citation": {
     "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
@@ -433,7 +439,8 @@
     }
    ],
    "length": 533,
-   "evidence": "named in a publication",
+   "found_by": "named in a publication",
+   "entry": "genome annotation",
    "evidence_note": "Locus JCVISYN3A_0685, product \"Sodium transporter\" in the genome record. Breuer and others 2019 name it: with locus 0686, the KtrAB potassium import system; the paper's reconstruction gives it an ATP-consuming exchange of potassium for sodium. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
    "citation": {
     "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
@@ -454,7 +461,8 @@
     }
    ],
    "length": 242,
-   "evidence": "named in a publication",
+   "found_by": "named in a publication",
+   "entry": "genome annotation",
    "evidence_note": "Locus JCVISYN3A_0686, product \"Potassium transporter\" in the genome record. Breuer and others 2019 name it: with locus 0685, the KtrAB potassium import system. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
    "citation": {
     "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",
@@ -475,7 +483,8 @@
     }
    ],
    "length": 745,
-   "evidence": "named in a publication",
+   "found_by": "named in a publication",
+   "entry": "genome annotation",
    "evidence_note": "Locus JCVISYN3A_0779, product \"PTS sugar transporter\" in the genome record. Breuer and others 2019 name it: part of the glucose phosphotransferase system, the only annotated sugar importer. The role is assigned from its sequence and from related mycoplasmas, not measured in this strain.",
    "citation": {
     "text": "Breuer and others (2019) Essential metabolism for a minimal cell. eLife 8:e36842.",

@@ -96,7 +96,8 @@ test("the atlas has an entry for every unit, finds none of the animal machines, 
   const beside = atlas.extra.filter((product) => product.role === "accessory-subunit family");
   assert.deepEqual(beside.map((product) => product.gene), ["yfbK"]);
   assert.match(atlas.method.join(" "), /A unit counts as found only where a protein carries the signature of a family that makes the machine itself/);
-  for (const product of atlas.extra) assert.ok(product.why && product.evidence === "reviewed entry" && byGene.get(product.gene)?.id === product.ids[0].id, product.gene);
+  // Each extra is a reviewed entry of the catalogue, found by the signature it names: of an accessory family only where its role says so.
+  for (const product of atlas.extra) assert.ok(product.why && product.entry === "reviewed" && product.found_by === (product.role === "accessory-subunit family" ? "accessory signature" : "family signature") && !("evidence" in product) && byGene.get(product.gene)?.id === product.ids[0].id, product.gene);
   for (const source of atlas.sources) assert.equal(source.class, "permissive", source.name);
   assert.ok(!MACHINE.test(JSON.stringify(atlas)));
 });

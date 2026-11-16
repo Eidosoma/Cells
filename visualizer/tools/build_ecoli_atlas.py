@@ -452,12 +452,13 @@ def build(datasets_folder, snapshot):
     # The organism's own membrane machines that bear on what the atlas draws and match no unit.
     extra, seen_extra = [], set()
 
-    def add_extra(accession, role, signature, why):
+    def add_extra(accession, role, signature, why, found_by=P.FOUND_SIGNATURE):
         if accession in seen_extra:
             return
         seen_extra.add(accession)
         entry = entries[accession]
-        extra.append({"name": entry["name"], "gene": entry["gene"] or None, "role": role, "ids": [{"db": "uniprot", "id": accession}], "length": entry["length"], "evidence": "reviewed entry", "evidence_note": f"Its reviewed UniProtKB entry names it \"{entry['name']}\", with UniProt's level of evidence \"{EXISTENCE[entry['seen']]}\". The entry carries {signature} ({signature_name(signature)}).", "citation": None, "why": why})
+        # Found by the signature named; every entry of this catalogue is a reviewed one.
+        extra.append({"name": entry["name"], "gene": entry["gene"] or None, "role": role, "ids": [{"db": "uniprot", "id": accession}], "length": entry["length"], "found_by": found_by, "entry": P.ENTRY_REVIEWED, "evidence_note": f"Its reviewed UniProtKB entry names it \"{entry['name']}\", with UniProt's level of evidence \"{EXISTENCE[entry['seen']]}\". The entry carries {signature} ({signature_name(signature)}).", "citation": None, "why": why})
 
     for signature, what in M.BACTERIAL_CHANNELS.items():
         for accession in order(carriers.get(signature, [])):
@@ -470,7 +471,7 @@ def build(datasets_folder, snapshot):
     for accession in order(beside):
         family, asked_by = beside[accession]
         signature = next(signature for signature in family["signatures"] if accession in carriers.get(signature, []))
-        add_extra(accession, "accessory-subunit family", signature, f"Carries the family signature of {family['of']}, which go with a channel and make none by themselves. No protein of this organism carries the signature of a family that makes such a channel, so it is a candidate for no unit ({asked_by[0]} to {asked_by[-1]} asked for it).")
+        add_extra(accession, "accessory-subunit family", signature, found_by=P.FOUND_ACCESSORY, why=f"Carries the family signature of {family['of']}, which go with a channel and make none by themselves. No protein of this organism carries the signature of a family that makes such a channel, so it is a candidate for no unit ({asked_by[0]} to {asked_by[-1]} asked for it).")
 
     # --- the lines of the shelves ---------------------------------------------------------------
     lines, alone, rest = P.make_lines(entries, placed, filing, unit_ids, CELL)
@@ -732,7 +733,7 @@ def build(datasets_folder, snapshot):
     # --- the atlas file -----------------------------------------------------------------------
     findings = Counter(unit["finding"] for unit in units.values())
     atlas = {
-        "format": "cells.visualizer.species_atlas@1",
+        "format": P.ATLAS_FORMAT,
         "species": {"id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON, "plain": f"A rod-shaped bacterium of the animal gut with {len(entries):,} proteins in UniProt's reference proteome of strain K-12. The units of the law inventory are machines of animal cells; this is what the same families' signatures find in it."},
         "made": made,
         "method": [

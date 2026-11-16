@@ -345,7 +345,8 @@ test("a family's panel says what opening it shows, where its members sit, and th
   assert.equal(facts["Where its members sit"], "7 proteins spanning a membrane; 1 protein inside the cell");
   assert.match(facts["Named place"], /^plasma membrane \(an annotation carried by signatures, not a prediction for these proteins\)$/);
   assert.equal(family.chips[0].label, "Holds parts of a machine Cells has a law for");
-  assert.deepEqual(family.related, [{ title: "Holds candidate products of", ids: ["unit.U37"] }]);
+  // Proteins listed with a unit: candidates for its machine, or parts that go with it (an accessory family's carry `unit` too).
+  assert.deepEqual(family.related, [{ title: "Holds proteins listed with", ids: ["unit.U37"] }]);
   assert.deepEqual(family.sections[0].items[0].links, [{ text: "InterPro IPR000001", url: "https://www.ebi.ac.uk/interpro/entry/InterPro/IPR000001/" }]);
   assert.deepEqual([family.opens[0].title, family.opens[0].count, family.opens[0].items.length], ["Its proteins", 8, 8]);
   // A gathering lists its families, then every protein of them.

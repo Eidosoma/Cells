@@ -776,7 +776,7 @@ export class Shelves {
       label: item.label,
       eyebrow: gathered ? `${this.label} proteins` : lone ? `${this.label} proteins, each the only one of its family` : part ? `${this.label} proteins with no family` : `${this.label} protein family`,
       chips: [
-        modelled ? { label: "Holds parts of a machine Cells has a law for", swatch: "map-assigned", title: "Some of its members are candidate products of a unit of the law inventory. The law is the unit's: the engine does not model these proteins." } : { label: "No law in Cells", swatch: "own-family", title: "Cells has no law for these proteins." },
+        modelled ? { label: "Holds parts of a machine Cells has a law for", swatch: "map-assigned", title: "Some of its members are listed with a unit of the law inventory: candidates for its machine, or parts that go with it. The law is the unit's: the engine does not model these proteins." } : { label: "No law in Cells", swatch: "own-family", title: "Cells has no law for these proteins." },
         { label: loose ? "No place known" : `Most ${lower(sides[item.side].short)}`, swatch: sides[item.side].swatch, title: "A family stands on the side where most of its members sit; each member keeps its own." },
       ],
       plain: `${what} ${this.membersBasis()}`,
@@ -789,7 +789,7 @@ export class Shelves {
         links.length ? { title: "Look it up", items: [{ label: item.id, links }] } : null,
         { title: "Sources and licences", items: this.sourceItems() },
       ].filter(Boolean),
-      related: modelled ? [{ title: "Holds candidate products of", ids: item.units.map((unit) => this.units.get(unit)).filter(Boolean) }] : [],
+      related: modelled ? [{ title: "Holds proteins listed with", ids: item.units.map((unit) => this.units.get(unit)).filter(Boolean) }] : [],
       opens: [
         held.length ? { title: part ? "Its groups" : "Its families", items: held, more: item.holds.length - held.length, count: item.holds.length } : null,
         elsewhere.length ? { title: part ? "The same grouping on other shelves" : "The same family on other shelves", items: elsewhere, more: 0, count: elsewhere.length } : null,
@@ -876,7 +876,7 @@ export class Shelves {
   }
 
   /**
-   * What holds a candidate product of a machine Cells has a law for, in a catalogue that
+   * What holds a protein listed with a machine Cells has a law for, in a catalogue that
    * stands as families: the families that do (one with lines on several shelves counted
    * once), the gatherings of families of one, the groups of "no family" (counted once
    * likewise), and the markers at rest that are lit for any of them.

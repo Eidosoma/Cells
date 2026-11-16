@@ -58,7 +58,7 @@ CATALOGUE_DIR = ROOT / "data" / "proteins" / "mpneumoniae"
 CATALOGUE_FILE = "proteins.tsv"
 SHELVES_FILE = "shelves.json"
 SPECIES_FORMAT = "cells.visualizer.species@1"
-ATLAS_FORMAT = "cells.visualizer.species_atlas@1"
+ATLAS_FORMAT = "cells.visualizer.species_atlas@2"
 SHELVES_FORMAT = "cells.visualizer.species_proteins@1"
 CLIENT = "atlas-builder/1.0"
 PATHS = re.compile(r"/(?:home|mnt|Users|tmp)/")
@@ -1333,7 +1333,10 @@ def extra_products(c):
             "role": item["role"],
             "ids": [{"db": "uniprot", "id": entry["primaryAccession"]}],
             "length": len(protein["sequence"]),
-            "evidence": "reviewed entry",
+            # The two facts of schema/SPECIES_ATLAS.md: found by the signature named in EXTRA, which the build checks the sequence
+            # carries; its entry a reviewed one, as every entry of this organism read here is (the check in the build).
+            "found_by": "family signature",
+            "entry": "reviewed",
             "evidence_note": f"Locus {item['locus']}, product \"{protein['protein']}\" in the genome record. Its reviewed UniProtKB entry names it \"{entry_name(entry)}\", with UniProt's level of evidence \"{existence(entry)}\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries {item['signature']} ({c.signature_names[item['signature']]}).",
             "citation": None,
             "why": item["why"],
@@ -1864,7 +1867,7 @@ def summary(species, atlas, rows, shelves, context):
     lines = [
         f"frozen annotation: GenBank {RECORD}, {context.length:,} bp; features {dict(context.kinds)}; {len(rows)} protein products; RefSeq {REFSEQ} has {context.refseq_kinds['CDS']} coding sequences",
         f"UniProt release {context.uniprot_release}: {len(context.entries)} entries of the strain, {context.archived} archived sequences",
-        f"units by finding: {dict(sorted(findings.items()))}; extra: {len(atlas['extra'])} ({dict(Counter(p['evidence'] for p in atlas['extra']))})",
+        f"units by finding: {dict(sorted(findings.items()))}; extra: {len(atlas['extra'])} ({dict(Counter((p['found_by'], p['entry']) for p in atlas['extra']))})",
         f"capabilities stated: {dict(sorted(places.items()))} of {len(species['cell']['capabilities'])}",
         f"catalogue: essentiality {dict(Counter(row[10] for row in rows))}; relaxed {dict(Counter(row[11] for row in rows))}; existence {dict(Counter(row[8] for row in rows))}",
         f"shelves: sides {shelves['counts']}; bases {dict(Counter(row[5] for row in shelves['proteins']))}; groups {dict(Counter(row[6] for row in shelves['proteins']))}",

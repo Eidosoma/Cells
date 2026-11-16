@@ -35,7 +35,9 @@ const DRAWN = UNITS.filter((id) => !overlay.units[id]?.left_out);
 /** The line every atlas adds to how it was made, where a unit is left out. */
 const LEFT_OUT_LINE = /^The inventory has \d+ units\. \w+ of them, .+, (?:is|are) left out of the picture for now: .+\. The \d+ others are shown and counted here\.$/;
 const FINDINGS = overlay.species.findings.map((word) => word.id);
-const EVIDENCE = overlay.species.evidence.map((word) => word.id);
+// The two facts of a product, apart: how it was found, and what its record is. "not stated" is the reader's word for an older file.
+const FOUND_BY = overlay.species.found_by.filter((word) => !word.older).map((word) => word.id);
+const ENTRY_KINDS = overlay.species.entry_kinds.filter((word) => !word.older).map((word) => word.id);
 const MACHINE = /\/home\/|\/mnt\/|\/Users\/|\/tmp\//;
 
 // ---------------------------------------------------------------- a made-up species
@@ -49,22 +51,25 @@ function madeUp(change = () => {}) {
     units[id] = {
       finding: "found",
       note: null,
-      products: [{ name: `Test protein of ${id}`, gene: null, role: null, ids: [{ db: "uniprot", id: "A0A000000" }], length: 1400, evidence: "similarity search", evidence_note: "best match to the human candidate", citation: null }],
+      products: [{ name: `Test protein of ${id}`, gene: null, role: null, ids: [{ db: "uniprot", id: "A0A000000" }], length: 1400, found_by: "similarity search", entry: "unreviewed", evidence_note: "best match to the human candidate", citation: null }],
     };
   }
   units[OTHER] = {
     finding: "different family",
     note: "The test worm has no connexins; its junction channels are innexins.",
     products: [
-      { name: "Innexin", gene: "inx-1", role: "subunit", ids: [{ db: "Worm Base", id: "WB0001" }], length: 412, evidence: "named in a publication", evidence_note: null, citation: { text: "A. Author (2000). A made-up paper.", doi: "https://doi.org/10.1000/made-up", pmid: 12345 } },
-      { name: "Innexin-like", gene: null, role: null, ids: [{ db: "uniprot", id: "A0A000001" }, { db: "pdb", id: "1ABC" }], length: 398, evidence: "family signature", evidence_note: "carries the innexin signature", citation: null },
-      { name: "Curated innexin", gene: "inx-2", role: null, ids: [{ db: "uniprot", id: "P00001" }], length: 405, evidence: "reviewed entry", evidence_note: null, citation: null },
+      { name: "Innexin", gene: "inx-1", role: "subunit", ids: [{ db: "Worm Base", id: "WB0001" }], length: 412, found_by: "named in a publication", entry: "genome annotation", evidence_note: null, citation: { text: "A. Author (2000). A made-up paper.", doi: "https://doi.org/10.1000/made-up", pmid: 12345 } },
+      { name: "Innexin-like", gene: null, role: null, ids: [{ db: "uniprot", id: "A0A000001" }, { db: "pdb", id: "1ABC" }], length: 398, found_by: "family signature", entry: "unreviewed", evidence_note: "carries the innexin signature", citation: null },
+      // A reviewed entry found by the family's signature: a candidate like any other found so; its entry makes it no more of one.
+      { name: "Curated innexin", gene: "inx-2", role: null, ids: [{ db: "uniprot", id: "P00001" }], length: 405, found_by: "family signature", entry: "reviewed", evidence_note: null, citation: null },
+      // Only a family that goes with the machine: listed, and no candidate for its own work.
+      { name: "Innexin regulator", gene: "inr-1", role: "regulator", ids: [{ db: "uniprot", id: "P00003" }], length: 120, found_by: "accessory signature", entry: "reviewed", evidence_note: "carries the regulators' signature", citation: null },
     ],
   };
   units[NONE] = { finding: "none found", note: "A search by family signature found nothing.", products: [] };
   units[LUMPED] = { finding: "nothing to look for", note: "A lumped permeability.", products: [] };
   const data = {
-    format: "cells.visualizer.species_atlas@1",
+    format: "cells.visualizer.species_atlas@2",
     species: { id: "testworm", label: "Test worm", organism: "Vermis probatus", taxon: 1, plain: "A made-up animal, for the tests." },
     made: "2026-11-14",
     method: ["Made up for the tests."],
@@ -75,7 +80,7 @@ function madeUp(change = () => {}) {
     not_copied: "Nothing was read.",
     units,
     // Named with another spelling of the same database, to check that names are compared loosely.
-    extra: [{ name: "Spare protein", gene: null, role: null, ids: [{ db: "wormbase", id: "WB0002" }], length: 100, evidence: "similarity search", evidence_note: null, citation: null, why: "It bears on the picture but makes no unit." }],
+    extra: [{ name: "Spare protein", gene: null, role: null, ids: [{ db: "wormbase", id: "WB0002" }], length: 100, found_by: "similarity search", entry: "genome annotation", evidence_note: null, citation: null, why: "It bears on the picture but makes no unit." }],
   };
   change(data);
   return data;
@@ -95,7 +100,8 @@ print(json.dumps({"warnings": species.warnings, "remarks": species.remarks, "atl
 `;
 
 function read(request, overlayFile = OVERLAY) {
-  const run = spawnSync("python3", ["-c", READER, path.join(ROOT, "tools"), SNAPSHOT, overlayFile], { input: JSON.stringify(request), encoding: "utf8" });
+  // The repository's own files make a long answer: each product has a line on its record now.
+  const run = spawnSync("python3", ["-c", READER, path.join(ROOT, "tools"), SNAPSHOT, overlayFile], { input: JSON.stringify(request), encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
   assert.equal(run.status, 0, run.stderr);
   return JSON.parse(run.stdout);
 }
@@ -154,15 +160,18 @@ const builtUnflagged =
 const sound = readOne(madeUp());
 const species = sound.atlases[1];
 /** The scene's protein block, as far as the view's words need it. */
-const proteins = { stamp: { created: snapshot.inventory.created }, atlases: sound.atlases, findings: overlay.species.findings, product_evidence: overlay.species.evidence, no_entry: overlay.species.no_entry };
+const proteins = { stamp: { created: snapshot.inventory.created }, atlases: sound.atlases, findings: overlay.species.findings, product_found_by: overlay.species.found_by, product_entries: overlay.species.entry_kinds, no_entry: overlay.species.no_entry };
 const items = (unit) => sound.units[unit].testworm.items;
 
 // ---------------------------------------------------------------- the contract, at build time
 
-test("the vocabulary is the contract's: four findings and four kinds of evidence", () => {
+test("the vocabulary is the contract's: four findings, four ways a product was found and three kinds of record", () => {
   assert.equal(FINDINGS.length, 4);
-  assert.equal(EVIDENCE.length, 4);
-  for (const word of [...FINDINGS, ...EVIDENCE]) assert.ok(contract.includes(`\`${word}\``), `the contract does not have the word '${word}'`);
+  assert.deepEqual(FOUND_BY, ["family signature", "accessory signature", "named in a publication", "similarity search"]);
+  assert.deepEqual(ENTRY_KINDS, ["reviewed", "unreviewed", "genome annotation"]);
+  for (const word of [...FINDINGS, ...FOUND_BY, ...ENTRY_KINDS, "not stated"]) assert.ok(contract.includes(`\`${word}\``), `the contract does not have the word '${word}'`);
+  // The older format's four words, and how each is read, stand in the contract too.
+  for (const word of ["reviewed entry", "named in a publication", "family signature", "similarity search"]) assert.match(contract, new RegExp(`\\| \`${word}\` \\|`), word);
   assert.ok(contract.includes(overlay.species.format), "the format the builder asks for is the contract's");
 });
 
@@ -179,12 +188,14 @@ test("a species atlas counts its own units and products, a shared product once",
   const counts = species.counts;
   assert.equal(counts.units, DRAWN.length, "the units the page draws");
   assert.equal(counts.with_products, DRAWN.length - 2, "all but the unit with nothing found and the lumped one");
-  assert.equal(counts.products, 4, "the product every found unit shares is one product");
-  assert.equal(counts.candidates, 2, "the two found by signature or similarity");
+  assert.equal(counts.products, 5, "the product every found unit shares is one product");
+  assert.equal(counts.candidates, 3, "the three found by the family's signature or by similarity, the reviewed entry among them");
+  assert.equal(counts.reviewed, 2, "the two whose entry a curator reviewed, however they were found");
   assert.equal(species.findings.reduce((sum, item) => sum + item.count, 0), DRAWN.length, "every unit drawn has one finding");
   assert.deepEqual(species.findings.map((item) => item.id), FINDINGS);
   assert.deepEqual(Object.fromEntries(species.findings.map((item) => [item.id, item.count])), { found: DRAWN.length - 3, "different family": 1, "none found": 1, "nothing to look for": 1 });
-  assert.deepEqual(species.evidence.map((item) => item.count), [1, 1, 1, 1]);
+  assert.deepEqual(species.found_by.map((item) => [item.id, item.count]), [["family signature", 2], ["accessory signature", 1], ["named in a publication", 1], ["similarity search", 1]]);
+  assert.deepEqual(species.entries.map((item) => [item.id, item.count]), [["reviewed", 2], ["unreviewed", 2], ["genome annotation", 1]]);
   assert.equal(species.extra.length, 1);
   assert.equal(species.extra[0].note, "It bears on the picture but makes no unit.");
 });
@@ -205,7 +216,10 @@ const BROKEN = [
   ["a missing unit", (data) => delete data.units.U05, new RegExp(`it has no entry for 1 of the inventory's ${UNITS.length} units: U05`)],
   ["a unit the inventory does not have", (data) => (data.units.U99 = { finding: "found", products: [] }), /it names units the inventory does not have: U99/],
   ["an unknown word for a finding", (data) => (data.units.U01.finding = "present"), /U01: unknown finding 'present'/],
-  ["an unknown word for evidence", (data) => (data.units.U01.products[0].evidence = "orthology"), /U01: unknown evidence 'orthology'/],
+  ["an unknown word for how it was found", (data) => (data.units.U01.products[0].found_by = "orthology"), /U01: unknown found_by 'orthology'/],
+  ["the reader's word for an older file, in a new one", (data) => (data.units.U01.products[0].found_by = "not stated"), /U01: unknown found_by 'not stated'/],
+  ["an unknown word for its record", (data) => (data.units.U01.products[0].entry = "curated"), /U01: unknown entry 'curated'/],
+  ["the older word beside the new ones", (data) => (data.units.U01.products[0].evidence = "reviewed entry"), /U01: Test protein of U01 carries the older word 'evidence'/],
   ["a publication without its citation", (data) => (data.units[OTHER].products[0].citation = null), /U37: inx-1 is named in a publication, but has no citation/],
   ["a citation without its text", (data) => (data.units[OTHER].products[1].citation = { doi: "10.1/x" }), /the citation on Innexin-like has no text/],
   ["a database the sources do not list", (data) => (data.units.U01.products[0].ids = [{ db: "planmine", id: "x" }]), /it names the database 'planmine' \(1 times, first on U01/],
@@ -230,7 +244,7 @@ test("what was warned about is left out of the scene", () => {
   const unknown = readOne(madeUp((data) => (data.units.U01.finding = "present")));
   assert.deepEqual(unknown.units.U01.testworm, { finding: null, note: null, items: [] });
   const uncited = readOne(madeUp((data) => (data.units[OTHER].products[0].citation = null)));
-  assert.deepEqual(uncited.units[OTHER].testworm.items.map((item) => item.label), ["Innexin-like", "inx-2"]);
+  assert.deepEqual(uncited.units[OTHER].testworm.items.map((item) => item.label), ["Innexin-like", "inx-2", "inr-1"]);
 });
 
 test("a source's address is linked only if it is https", () => {
@@ -289,7 +303,7 @@ test("what is within the contract's letter but looks wrong is remarked on, not w
     madeUp((data) => {
       data.units.U01.products = [];
       data.units[NONE].note = null;
-      data.units[LUMPED].products = [{ name: "Odd one", evidence: "reviewed entry", ids: [{ db: "uniprot", id: "P00002" }] }];
+      data.units[LUMPED].products = [{ name: "Odd one", found_by: "family signature", entry: "reviewed", ids: [{ db: "uniprot", id: "P00002" }] }];
       delete data.extra[0].why;
     })
   );
@@ -301,28 +315,54 @@ test("what is within the contract's letter but looks wrong is remarked on, not w
 
 // ---------------------------------------------------------------- what the panel lists
 
-test("each product states its evidence in the contract's words", () => {
-  const labels = new Map(overlay.species.evidence.map((word) => [word.label, word]));
+test("each product states how it was found and what its record is, apart, in the contract's words", () => {
+  const labels = new Map(overlay.species.found_by.map((word) => [word.label, word]));
+  const lines = new Set(overlay.species.entry_kinds.map((word) => word.line));
   for (const unit of UNITS) {
     for (const item of items(unit)) {
       const word = labels.get(item.tag);
       assert.ok(word, `${unit}: ${item.label} carries the tag '${item.tag}'`);
       assert.equal(item.tag_title, word.description);
+      assert.equal(item.lines.filter((line) => lines.has(line)).length, 1, `${unit}: ${item.label} has one line on its record`);
     }
   }
-  assert.deepEqual(items(OTHER).map((item) => item.tag), ["Named in a publication", "Family signature", "Reviewed entry"]);
+  assert.deepEqual(items(OTHER).map((item) => item.tag), ["Named in a publication", "Family signature", "Family signature", "Accessory family"]);
+  assert.deepEqual(items(OTHER).map((item) => item.lines.find((line) => lines.has(line))), ["genome annotation", "unreviewed", "reviewed", "reviewed"].map((id) => overlay.species.entry_kinds.find((word) => word.id === id).line));
 });
 
-test("a product found by signature or similarity is called a candidate, and no other is", () => {
-  const candidate = /^Candidate, not an established counterpart/;
-  const [published, signature, reviewed] = items(OTHER);
+test("a product found by its family's signature or by similarity is called a candidate, whatever its entry; one of an accessory family is a candidate for no machine's work", () => {
+  const candidate = /^Candidate by (family|similarity), not an established counterpart/;
+  const [published, signature, reviewed, accessory] = items(OTHER);
   assert.ok(signature.lines.some((line) => candidate.test(line)), "found by signature");
+  // A reviewed entry found by signature is a candidate as much as an unreviewed one: how found decides, not the entry.
+  assert.ok(reviewed.lines.some((line) => candidate.test(line)), "a reviewed entry found by signature");
   assert.ok(items("U01")[0].lines.some((line) => candidate.test(line)), "found by similarity");
-  assert.ok(signature.lines.includes("Candidate, not an established counterpart: carries the innexin signature"), "the file's words, as written");
-  for (const item of [published, reviewed]) assert.ok(!item.lines.some((line) => /candidate/i.test(line)), `${item.label} is not a candidate`);
-  for (const word of overlay.species.evidence) {
-    assert.equal(/A candidate, not an established counterpart\.$/.test(word.description), Boolean(word.candidate), `${word.id}: the description says whether it is a candidate`);
+  assert.ok(signature.lines.includes("Candidate by family, not an established counterpart: carries the innexin signature"), "the file's words, as written");
+  assert.ok(accessory.lines.includes("Goes with the machine, no candidate for its own work: carries the regulators' signature"), "an accessory family's protein");
+  for (const item of [published, accessory]) assert.ok(!item.lines.some((line) => candidate.test(line)), `${item.label} is no candidate for the machine's work`);
+  for (const word of overlay.species.found_by) {
+    assert.equal(/candidate[^.]*, not an established counterpart\.$/i.test(word.description), Boolean(word.candidate), `${word.id}: the description says whether it is a candidate`);
   }
+  // A product under extra matches no unit: it is a candidate for none, and its words say so.
+  const spare = species.extra[0];
+  assert.ok(!spare.lines.some((line) => candidate.test(line)) && /candidate for none/.test(spare.tag_title), JSON.stringify(spare));
+});
+
+test("an older file is read as the two facts, and the side its one word does not cover is not stated", () => {
+  const older = madeUp((data) => {
+    data.format = "cells.visualizer.species_atlas@1";
+    for (const product of [...Object.values(data.units).flatMap((unit) => unit.products), ...data.extra]) {
+      product.evidence = product.entry === "reviewed" && product.found_by !== "accessory signature" ? "reviewed entry" : product.found_by === "accessory signature" ? "family signature" : product.found_by;
+      delete product.found_by;
+      delete product.entry;
+    }
+  });
+  const read_ = readOne(older);
+  assert.deepEqual(read_.warnings, []);
+  const atlas = read_.atlases[1];
+  assert.deepEqual(read_.units[OTHER].testworm.items.map((item) => item.tag), ["Named in a publication", "Family signature", "Not stated", "Family signature"]);
+  assert.deepEqual(atlas.entries.filter((item) => item.count).map((item) => [item.id, item.count]), [["reviewed", 1], ["not stated", 4]]);
+  assert.equal(atlas.counts.candidates, 3, "the older word 'family signature' read as found by signature; 'reviewed entry' says nothing of how");
 });
 
 test("links are built from ids and citations, never read from the file", () => {
@@ -382,7 +422,7 @@ test("an entry of a species' database is linked where the overlay holds a checke
 });
 
 test("under a gene's name stand the protein's name and role, unless one only repeats the other", () => {
-  const detail = (product) => readOne(madeUp((data) => (data.units[OTHER].products = [{ ids: [{ db: "uniprot", id: "P00009" }], evidence: "reviewed entry", ...product }]))).units[OTHER].testworm.items[0];
+  const detail = (product) => readOne(madeUp((data) => (data.units[OTHER].products = [{ ids: [{ db: "uniprot", id: "P00009" }], found_by: "family signature", entry: "reviewed", ...product }]))).units[OTHER].testworm.items[0];
   assert.deepEqual([detail({ gene: "inx-1", name: "Innexin", role: "innexin" }).label, detail({ gene: "inx-1", name: "Innexin", role: "innexin" }).detail], ["inx-1", "Innexin"]);
   assert.equal(detail({ gene: "scna-1", name: "Scna-1", role: "alpha" }).detail, "alpha");
   assert.equal(detail({ gene: "atp-1", name: "Pump alpha subunit", role: "alpha" }).detail, "Pump alpha subunit");
@@ -527,7 +567,7 @@ test("the species' card gives its own counts and sources, and claims nothing of 
   const said = speciesWords(proteins, species);
   assert.equal(said.card.heading, "Test worm atlas");
   assert.equal(said.card.organism, "Vermis probatus");
-  assert.deepEqual(said.card.stats.map(([value]) => value), [species.counts.with_products, 4, 2]);
+  assert.deepEqual(said.card.stats.map(([value]) => value), [species.counts.with_products, 5, 3]);
   assert.equal(said.card.text, "A made-up animal, for the tests.");
   assert.deepEqual(said.card.sources, species.sources);
   assert.equal(said.card.notCopied, "Nothing was read.");
@@ -537,7 +577,10 @@ test("the species' card gives its own counts and sources, and claims nothing of 
   if (LEFT_OUT.length) assert.match(said.card.method[1], LEFT_OUT_LINE);
   assert.match(said.card.check, /units and their laws are the engine's, the same for every species/);
   assert.match(said.card.check, /not anything the engine models/);
-  assert.match(said.card.check, /2 of the 4 products were found by signature or similarity: candidates, not established counterparts\./);
+  // How they were found, then what their records are, apart; a reviewed entry is said to be no more sure.
+  assert.match(said.card.check, /How they were found: 2 by the signature of a family that makes the machine, candidates by family, not established counterparts; 1 by sequence similarity, a candidate, not an established counterpart; 1 only by that of a family that goes with one \(a regulator, or a subunit that makes none by itself\), no candidate for its own work; 1 named in a publication\./);
+  assert.match(said.card.check, /Their records: 2 UniProtKB entries reviewed by a curator, 2 annotated automatically, 1 a gene model or genome-record protein with no UniProtKB entry; a reviewed entry says how the entry was written, not that the protein does a unit's work\./);
+  assert.ok(!/signature or similarity/.test(said.card.check), "the older sentence, which counted by entry, is gone");
   assert.match(said.caveat, /what the engine's law names, the same for every species/);
   assert.match(said.stamp, /^Test worm atlas of 14 Nov 2026 · inventory of /);
   // The findings, as the legend lists them: a sign only where the species differs.
@@ -561,12 +604,12 @@ test("the build puts every atlas in the scene and each species' side on every un
   assert.equal(code, 0, said);
   assert.deepEqual(validate(scene), []);
   assert.deepEqual(scene.meta.warnings.filter((warning) => warning.startsWith("species atlas")), []);
-  assert.match(said, /species atlas testworm of 2026-11-14: products for \d+ of \d+ units, 4 gene products, 2 of them candidates/);
+  assert.match(said, /species atlas testworm of 2026-11-14: products for \d+ of \d+ units, 5 gene products, 3 of them candidates/);
   assert.deepEqual(scene.proteins.atlases, sound.atlases, "the scene's atlases are the reader's");
   // The findings' words are the overlay's, but where something left out of the picture gives one another wording.
   const reworded = new Map(LEFT_OUT.flatMap((id) => overlay.units[id].left_out.rewords || []).filter((change) => change.in === "species.findings").map((change) => [`${change.id}/${change.field}`, change.to]));
   assert.deepEqual(scene.proteins.findings, overlay.species.findings.map((word) => Object.fromEntries(Object.entries(word).map(([field, text]) => [field, reworded.get(`${word.id}/${field}`) ?? text]))));
-  assert.deepEqual(scene.proteins.product_evidence, overlay.species.evidence);
+  assert.deepEqual([scene.proteins.product_found_by, scene.proteins.product_entries], [overlay.species.found_by, overlay.species.entry_kinds]);
   assert.equal(scene.proteins.remarks, undefined, "remarks are for the build's report, not for the page");
   const units = scene.entities.filter((entity) => entity.kind === "unit");
   assert.deepEqual(units.map((unit) => unit.id.replace("unit.", "")).sort(), [...DRAWN].sort(), "the units drawn are the inventory's, less what is left out");

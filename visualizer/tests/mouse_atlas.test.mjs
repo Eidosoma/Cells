@@ -16,6 +16,9 @@ import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { ROOT } from "../tools/lib/build_page.mjs";
+import { accessoryRoles } from "./helpers/atlas_products.mjs";
+
+const ACCESSORY = accessoryRoles();
 
 const TOOL = path.join(ROOT, "tools", "build_mouse_atlas.py");
 const FOLDER = path.join(ROOT, "data", "proteins", "mouse");
@@ -164,7 +167,10 @@ test("the atlas holds found to a family that makes the machine itself; its produ
     for (const product of unit.products) {
       const row = byId.get(product.ids[0].id);
       assert.ok(row && row.units.split(";").includes(id), `${id}: ${product.gene}`);
-      assert.equal(product.evidence, row.reviewed === "1" ? "reviewed entry" : "family signature", `${id}: ${product.gene}`);
+      // Two facts, apart: its record is its entry's, from the table; how it was found is its family's part in the machine, never its entry's.
+      assert.equal(product.entry, row.reviewed === "1" ? "reviewed" : "unreviewed", `${id}: ${product.gene}`);
+      assert.equal(product.found_by, ACCESSORY.has(product.role) ? "accessory signature" : "family signature", `${id}: ${product.gene}`);
+      assert.ok(!("evidence" in product), `${id}: ${product.gene} carries the older word`);
       // Each product is there by its own entry's signature, which its note names.
       assert.match(product.evidence_note, /UniProtKB entry carries IPR\d{6}/, `${id}: ${product.gene}`);
     }

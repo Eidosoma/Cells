@@ -438,7 +438,7 @@ def build(datasets_folder, snapshot):
         },
     }
     atlas = {
-        "format": "cells.visualizer.species_atlas@1",
+        "format": P.ATLAS_FORMAT,
         "species": {"id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON, "plain": f"A small flowering plant of the laboratory, with {stated['genes']:,} genes in UniProt's reference proteome. The units of the law inventory are machines of animal cells; this is what their family signatures find among the one protein shown for each gene."},
         "made": made,
         "method": [
@@ -447,7 +447,8 @@ def build(datasets_folder, snapshot):
             "Each unit's family was taken from its own human candidates, by the same InterPro signatures that the other species' atlases ask. The build checks that the candidates carry them.",
             "Each signature was looked for among the InterPro entries UniProt gives each protein. A unit counts as found only where a protein carries the signature of a family that makes the machine itself; an accessory family alone does not make it found.",
             "A plant has channels and pumps of families of its own, which no unit of the inventory stands for. They are not listed here: the search asks only for the families of Cells' units. 'Different family' is given only where the inventory's table names another family for the same machine, and it names none that a plant has.",
-            "A product with a reviewed entry is listed as a reviewed entry, one with an unreviewed entry as a family signature. Either is a candidate by family, and nothing here says which protein does which unit's work.",
+            P.TWO_FACTS,
+            "Nothing here says which protein does which unit's work.",
             "No similarity search was run, and nothing is called an ortholog.",
         ],
         "sources": [

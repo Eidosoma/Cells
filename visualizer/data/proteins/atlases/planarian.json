@@ -1,5 +1,5 @@
 {
- "format": "cells.visualizer.species_atlas@1",
+ "format": "cells.visualizer.species_atlas@2",
  "species": {
   "id": "planarian",
   "label": "Planarian",
@@ -17,7 +17,8 @@
   "Family signature: unreviewed UniProtKB entries of the species that carry the signature, and gene models that carry it. The gene models are those of one genome annotation (WBPS19 of WormBase ParaSite, assembly schMedS3_haplotype1): 17,294 genes with a predicted protein. The ones the atlas names are listed in data/proteins/planarian/reference_proteins.tsv. A model carries a signature if that annotation's own InterPro matches say so, or if its predicted protein is, letter for letter, a sequence that carries it in UniProt's archive (InterPro 111.0).",
   "A UniProtKB sequence and a gene model are given as one product when at least 80% of the sequence's 8-residue words occur in the model's predicted protein and no other gene reaches half of that share.",
   "Where a signature found nothing, it was also asked of all 98,660 planarian sequences in UniProt's archive, of the UniProtKB entries of all flatworms and of reviewed human entries; the unit's note gives what came back.",
-  "A product found by signature is a candidate, never an established counterpart. Counts are gene models in one haplotype of one genome assembly, not genes confirmed in the animal, and short models may be fragments.",
+  "Each product says, apart, how it was found (named in a publication, by the signature of a family that makes the machine, or only by that of a family that goes with it, such as a beta subunit or a regulator) and what its record is (a UniProtKB entry, reviewed or not, or a gene model of the genome annotation).",
+  "A product found by the signature of a family that makes the machine is a candidate, never an established counterpart; one found only by that of a family that goes with the machine is no candidate for the machine's own work. Counts are gene models in one haplotype of one genome assembly, not genes confirmed in the animal, and short models may be fragments.",
   "No similarity search against other species was run, and no product is called an ortholog."
  ],
  "sources": [
@@ -93,7 +94,8 @@
       }
      ],
      "length": 614,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named scna-1 in Cowles and others 2014; matches gene model h1SMcG0013155 (99% of its 8-residue words).",
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
@@ -117,7 +119,8 @@
       }
      ],
      "length": 91,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named scna-2 in Cowles and others 2014; matches gene model h1SMcG0014796 (100% of its 8-residue words).",
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
@@ -141,7 +144,8 @@
       }
      ],
      "length": 141,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named scna-3 in Cowles and others 2014; matches gene model h1SMcG0013155 (100% of its 8-residue words).",
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
@@ -161,7 +165,8 @@
       }
      ],
      "length": 1809,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR001696 (Voltage gated sodium channel, alpha subunit) on predicted protein h1SMcT0016828.1.",
      "citation": null
     }
@@ -186,7 +191,8 @@
       }
      ],
      "length": 614,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named scna-1 in Cowles and others 2014; matches gene model h1SMcG0013155 (99% of its 8-residue words).",
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
@@ -210,7 +216,8 @@
       }
      ],
      "length": 91,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named scna-2 in Cowles and others 2014; matches gene model h1SMcG0014796 (100% of its 8-residue words).",
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
@@ -234,7 +241,8 @@
       }
      ],
      "length": 141,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named scna-3 in Cowles and others 2014; matches gene model h1SMcG0013155 (100% of its 8-residue words).",
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
@@ -254,7 +262,8 @@
       }
      ],
      "length": 1809,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR001696 (Voltage gated sodium channel, alpha subunit) on predicted protein h1SMcT0016828.1.",
      "citation": null
     }
@@ -279,7 +288,8 @@
       }
      ],
      "length": 614,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named scna-1 in Cowles and others 2014; matches gene model h1SMcG0013155 (99% of its 8-residue words).",
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
@@ -303,7 +313,8 @@
       }
      ],
      "length": 91,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named scna-2 in Cowles and others 2014; matches gene model h1SMcG0014796 (100% of its 8-residue words).",
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
@@ -327,7 +338,8 @@
       }
      ],
      "length": 141,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named scna-3 in Cowles and others 2014; matches gene model h1SMcG0013155 (100% of its 8-residue words).",
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
@@ -347,7 +359,8 @@
       }
      ],
      "length": 1809,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR001696 (Voltage gated sodium channel, alpha subunit) on predicted protein h1SMcT0016828.1.",
      "citation": null
     }
@@ -372,7 +385,8 @@
       }
      ],
      "length": 614,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named scna-1 in Cowles and others 2014; matches gene model h1SMcG0013155 (99% of its 8-residue words).",
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
@@ -396,7 +410,8 @@
       }
      ],
      "length": 91,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named scna-2 in Cowles and others 2014; matches gene model h1SMcG0014796 (100% of its 8-residue words).",
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
@@ -420,7 +435,8 @@
       }
      ],
      "length": 141,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named scna-3 in Cowles and others 2014; matches gene model h1SMcG0013155 (100% of its 8-residue words).",
      "citation": {
       "text": "Cowles and others (2014) COE loss-of-function analysis reveals a genetic program underlying maintenance and regeneration of the nervous system in planarians. PLoS Genet 10:e1004746.",
@@ -440,7 +456,8 @@
       }
      ],
      "length": 1809,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR001696 (Voltage gated sodium channel, alpha subunit) on predicted protein h1SMcT0016828.1.",
      "citation": null
     }
@@ -461,7 +478,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0002659.1.",
      "citation": null
     },
@@ -476,7 +494,8 @@
       }
      ],
      "length": 418,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0004502.1.",
      "citation": null
     },
@@ -491,7 +510,8 @@
       }
      ],
      "length": 504,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0006398.1.",
      "citation": null
     },
@@ -506,7 +526,8 @@
       }
      ],
      "length": 505,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008120.1.",
      "citation": null
     },
@@ -521,7 +542,8 @@
       }
      ],
      "length": 523,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008230.2.",
      "citation": null
     },
@@ -536,7 +558,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008231.1.",
      "citation": null
     },
@@ -551,7 +574,8 @@
       }
      ],
      "length": 579,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0010814.1.",
      "citation": null
     },
@@ -566,7 +590,8 @@
       }
      ],
      "length": 448,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0010815.1.",
      "citation": null
     },
@@ -581,7 +606,8 @@
       }
      ],
      "length": 470,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0013213.1.",
      "citation": null
     },
@@ -596,7 +622,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0015979.1.",
      "citation": null
     },
@@ -611,7 +638,8 @@
       }
      ],
      "length": 480,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0017346.1.",
      "citation": null
     },
@@ -626,7 +654,8 @@
       }
      ],
      "length": 521,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0018120.1.",
      "citation": null
     },
@@ -641,7 +670,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0019795.1.",
      "citation": null
     },
@@ -656,7 +686,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0019797.1.",
      "citation": null
     },
@@ -671,7 +702,8 @@
       }
      ],
      "length": 351,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB) on predicted protein h1SMcT0014050.1.",
      "citation": null
     },
@@ -686,7 +718,8 @@
       }
      ],
      "length": 351,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB) on predicted protein h1SMcT0022706.2.",
      "citation": null
     }
@@ -707,7 +740,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0002659.1.",
      "citation": null
     },
@@ -722,7 +756,8 @@
       }
      ],
      "length": 418,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0004502.1.",
      "citation": null
     },
@@ -737,7 +772,8 @@
       }
      ],
      "length": 504,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0006398.1.",
      "citation": null
     },
@@ -752,7 +788,8 @@
       }
      ],
      "length": 505,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008120.1.",
      "citation": null
     },
@@ -767,7 +804,8 @@
       }
      ],
      "length": 523,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008230.2.",
      "citation": null
     },
@@ -782,7 +820,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008231.1.",
      "citation": null
     },
@@ -797,7 +836,8 @@
       }
      ],
      "length": 579,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0010814.1.",
      "citation": null
     },
@@ -812,7 +852,8 @@
       }
      ],
      "length": 448,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0010815.1.",
      "citation": null
     },
@@ -827,7 +868,8 @@
       }
      ],
      "length": 470,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0013213.1.",
      "citation": null
     },
@@ -842,7 +884,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0015979.1.",
      "citation": null
     },
@@ -857,7 +900,8 @@
       }
      ],
      "length": 480,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0017346.1.",
      "citation": null
     },
@@ -872,7 +916,8 @@
       }
      ],
      "length": 521,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0018120.1.",
      "citation": null
     },
@@ -887,7 +932,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0019795.1.",
      "citation": null
     },
@@ -902,7 +948,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0019797.1.",
      "citation": null
     },
@@ -917,7 +964,8 @@
       }
      ],
      "length": 351,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB) on predicted protein h1SMcT0014050.1.",
      "citation": null
     },
@@ -932,7 +980,8 @@
       }
      ],
      "length": 351,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB) on predicted protein h1SMcT0022706.2.",
      "citation": null
     }
@@ -953,7 +1002,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0002659.1.",
      "citation": null
     },
@@ -968,7 +1018,8 @@
       }
      ],
      "length": 418,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0004502.1.",
      "citation": null
     },
@@ -983,7 +1034,8 @@
       }
      ],
      "length": 504,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0006398.1.",
      "citation": null
     },
@@ -998,7 +1050,8 @@
       }
      ],
      "length": 505,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008120.1.",
      "citation": null
     },
@@ -1013,7 +1066,8 @@
       }
      ],
      "length": 523,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008230.2.",
      "citation": null
     },
@@ -1028,7 +1082,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008231.1.",
      "citation": null
     },
@@ -1043,7 +1098,8 @@
       }
      ],
      "length": 579,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0010814.1.",
      "citation": null
     },
@@ -1058,7 +1114,8 @@
       }
      ],
      "length": 448,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0010815.1.",
      "citation": null
     },
@@ -1073,7 +1130,8 @@
       }
      ],
      "length": 470,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0013213.1.",
      "citation": null
     },
@@ -1088,7 +1146,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0015979.1.",
      "citation": null
     },
@@ -1103,7 +1162,8 @@
       }
      ],
      "length": 480,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0017346.1.",
      "citation": null
     },
@@ -1118,7 +1178,8 @@
       }
      ],
      "length": 521,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0018120.1.",
      "citation": null
     },
@@ -1133,7 +1194,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0019795.1.",
      "citation": null
     },
@@ -1148,7 +1210,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0019797.1.",
      "citation": null
     },
@@ -1163,7 +1226,8 @@
       }
      ],
      "length": 351,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB) on predicted protein h1SMcT0014050.1.",
      "citation": null
     },
@@ -1178,7 +1242,8 @@
       }
      ],
      "length": 351,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB) on predicted protein h1SMcT0022706.2.",
      "citation": null
     }
@@ -1199,7 +1264,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0002659.1.",
      "citation": null
     },
@@ -1214,7 +1280,8 @@
       }
      ],
      "length": 418,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0004502.1.",
      "citation": null
     },
@@ -1229,7 +1296,8 @@
       }
      ],
      "length": 504,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0006398.1.",
      "citation": null
     },
@@ -1244,7 +1312,8 @@
       }
      ],
      "length": 505,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008120.1.",
      "citation": null
     },
@@ -1259,7 +1328,8 @@
       }
      ],
      "length": 523,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008230.2.",
      "citation": null
     },
@@ -1274,7 +1344,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008231.1.",
      "citation": null
     },
@@ -1289,7 +1360,8 @@
       }
      ],
      "length": 579,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0010814.1.",
      "citation": null
     },
@@ -1304,7 +1376,8 @@
       }
      ],
      "length": 448,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0010815.1.",
      "citation": null
     },
@@ -1319,7 +1392,8 @@
       }
      ],
      "length": 470,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0013213.1.",
      "citation": null
     },
@@ -1334,7 +1408,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0015979.1.",
      "citation": null
     },
@@ -1349,7 +1424,8 @@
       }
      ],
      "length": 480,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0017346.1.",
      "citation": null
     },
@@ -1364,7 +1440,8 @@
       }
      ],
      "length": 521,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0018120.1.",
      "citation": null
     },
@@ -1379,7 +1456,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0019795.1.",
      "citation": null
     },
@@ -1394,7 +1472,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0019797.1.",
      "citation": null
     },
@@ -1409,7 +1488,8 @@
       }
      ],
      "length": 351,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB) on predicted protein h1SMcT0014050.1.",
      "citation": null
     },
@@ -1424,7 +1504,8 @@
       }
      ],
      "length": 351,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB) on predicted protein h1SMcT0022706.2.",
      "citation": null
     }
@@ -1445,7 +1526,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0002659.1.",
      "citation": null
     },
@@ -1460,7 +1542,8 @@
       }
      ],
      "length": 418,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0004502.1.",
      "citation": null
     },
@@ -1475,7 +1558,8 @@
       }
      ],
      "length": 504,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0006398.1.",
      "citation": null
     },
@@ -1490,7 +1574,8 @@
       }
      ],
      "length": 505,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008120.1.",
      "citation": null
     },
@@ -1505,7 +1590,8 @@
       }
      ],
      "length": 523,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008230.2.",
      "citation": null
     },
@@ -1520,7 +1606,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008231.1.",
      "citation": null
     },
@@ -1535,7 +1622,8 @@
       }
      ],
      "length": 579,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0010814.1.",
      "citation": null
     },
@@ -1550,7 +1638,8 @@
       }
      ],
      "length": 448,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0010815.1.",
      "citation": null
     },
@@ -1565,7 +1654,8 @@
       }
      ],
      "length": 470,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0013213.1.",
      "citation": null
     },
@@ -1580,7 +1670,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0015979.1.",
      "citation": null
     },
@@ -1595,7 +1686,8 @@
       }
      ],
      "length": 480,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0017346.1.",
      "citation": null
     },
@@ -1610,7 +1702,8 @@
       }
      ],
      "length": 521,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0018120.1.",
      "citation": null
     },
@@ -1625,7 +1718,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0019795.1.",
      "citation": null
     },
@@ -1640,7 +1734,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0019797.1.",
      "citation": null
     },
@@ -1655,7 +1750,8 @@
       }
      ],
      "length": 351,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB) on predicted protein h1SMcT0014050.1.",
      "citation": null
     },
@@ -1670,7 +1766,8 @@
       }
      ],
      "length": 351,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB) on predicted protein h1SMcT0022706.2.",
      "citation": null
     }
@@ -1691,7 +1788,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0002659.1.",
      "citation": null
     },
@@ -1706,7 +1804,8 @@
       }
      ],
      "length": 418,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0004502.1.",
      "citation": null
     },
@@ -1721,7 +1820,8 @@
       }
      ],
      "length": 504,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0006398.1.",
      "citation": null
     },
@@ -1736,7 +1836,8 @@
       }
      ],
      "length": 505,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008120.1.",
      "citation": null
     },
@@ -1751,7 +1852,8 @@
       }
      ],
      "length": 523,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008230.2.",
      "citation": null
     },
@@ -1766,7 +1868,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0008231.1.",
      "citation": null
     },
@@ -1781,7 +1884,8 @@
       }
      ],
      "length": 579,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0010814.1.",
      "citation": null
     },
@@ -1796,7 +1900,8 @@
       }
      ],
      "length": 448,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0010815.1.",
      "citation": null
     },
@@ -1811,7 +1916,8 @@
       }
      ],
      "length": 470,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0013213.1.",
      "citation": null
     },
@@ -1826,7 +1932,8 @@
       }
      ],
      "length": 528,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0015979.1.",
      "citation": null
     },
@@ -1841,7 +1948,8 @@
       }
      ],
      "length": 480,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0017346.1.",
      "citation": null
     },
@@ -1856,7 +1964,8 @@
       }
      ],
      "length": 521,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0018120.1.",
      "citation": null
     },
@@ -1871,7 +1980,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0019795.1.",
      "citation": null
     },
@@ -1886,7 +1996,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003972 (Potassium channel, voltage dependent, Kv1) on predicted protein h1SMcT0019797.1.",
      "citation": null
     },
@@ -1901,7 +2012,8 @@
       }
      ],
      "length": 351,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB) on predicted protein h1SMcT0014050.1.",
      "citation": null
     },
@@ -1916,7 +2028,8 @@
       }
      ],
      "length": 351,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005983 (Potassium channel, voltage-dependent, beta subunit, KCNAB) on predicted protein h1SMcT0022706.2.",
      "citation": null
     }
@@ -1941,7 +2054,8 @@
       }
      ],
      "length": 305,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR003973 (Potassium channel, voltage dependent, Kv2) on its UniProtKB entry; its sequence was reported with Cowles and others 2014; matches gene model h1SMcG0008430 (100% of its 8-residue words), which does not carry the signature itself.",
      "citation": null
     },
@@ -1956,7 +2070,8 @@
       }
      ],
      "length": 305,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003973 (Potassium channel, voltage dependent, Kv2) on predicted protein h1SMcT0018142.2; the gene's longest predicted protein, h1SMcT0018142.1 (471 residues), does not carry it.",
      "citation": null
     }
@@ -1981,7 +2096,8 @@
       }
      ],
      "length": 305,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR003973 (Potassium channel, voltage dependent, Kv2) on its UniProtKB entry; its sequence was reported with Cowles and others 2014; matches gene model h1SMcG0008430 (100% of its 8-residue words), which does not carry the signature itself.",
      "citation": null
     },
@@ -1996,7 +2112,8 @@
       }
      ],
      "length": 305,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003973 (Potassium channel, voltage dependent, Kv2) on predicted protein h1SMcT0018142.2; the gene's longest predicted protein, h1SMcT0018142.1 (471 residues), does not carry it.",
      "citation": null
     }
@@ -2017,7 +2134,8 @@
       }
      ],
      "length": 544,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0001694.1.",
      "citation": null
     },
@@ -2032,7 +2150,8 @@
       }
      ],
      "length": 586,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004246.2.",
      "citation": null
     },
@@ -2047,7 +2166,8 @@
       }
      ],
      "length": 538,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004284.1.",
      "citation": null
     },
@@ -2062,7 +2182,8 @@
       }
      ],
      "length": 546,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004490.1.",
      "citation": null
     },
@@ -2077,7 +2198,8 @@
       }
      ],
      "length": 581,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004724.1.",
      "citation": null
     },
@@ -2092,7 +2214,8 @@
       }
      ],
      "length": 592,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0006726.1.",
      "citation": null
     },
@@ -2107,7 +2230,8 @@
       }
      ],
      "length": 591,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0006783.2.",
      "citation": null
     },
@@ -2122,7 +2246,8 @@
       }
      ],
      "length": 630,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0007446.1.",
      "citation": null
     },
@@ -2137,7 +2262,8 @@
       }
      ],
      "length": 502,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0008746.1.",
      "citation": null
     },
@@ -2152,7 +2278,8 @@
       }
      ],
      "length": 643,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011964.2.",
      "citation": null
     },
@@ -2167,7 +2294,8 @@
       }
      ],
      "length": 606,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011965.1.",
      "citation": null
     },
@@ -2182,7 +2310,8 @@
       }
      ],
      "length": 674,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011966.1.",
      "citation": null
     },
@@ -2197,7 +2326,8 @@
       }
      ],
      "length": 675,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011981.1.",
      "citation": null
     },
@@ -2212,7 +2342,8 @@
       }
      ],
      "length": 672,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011983.1.",
      "citation": null
     },
@@ -2227,7 +2358,8 @@
       }
      ],
      "length": 676,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011989.1.",
      "citation": null
     },
@@ -2242,7 +2374,8 @@
       }
      ],
      "length": 645,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0012192.2.",
      "citation": null
     },
@@ -2257,7 +2390,8 @@
       }
      ],
      "length": 527,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0013205.1.",
      "citation": null
     },
@@ -2272,7 +2406,8 @@
       }
      ],
      "length": 556,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0013828.2.",
      "citation": null
     },
@@ -2287,7 +2422,8 @@
       }
      ],
      "length": 586,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0015986.1.",
      "citation": null
     },
@@ -2302,7 +2438,8 @@
       }
      ],
      "length": 632,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0018182.2.",
      "citation": null
     },
@@ -2317,7 +2454,8 @@
       }
      ],
      "length": 654,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0018296.2.",
      "citation": null
     },
@@ -2332,7 +2470,8 @@
       }
      ],
      "length": 588,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0022141.1.",
      "citation": null
     },
@@ -2347,7 +2486,8 @@
       }
      ],
      "length": 686,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0022467.1.",
      "citation": null
     }
@@ -2368,7 +2508,8 @@
       }
      ],
      "length": 544,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0001694.1.",
      "citation": null
     },
@@ -2383,7 +2524,8 @@
       }
      ],
      "length": 586,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004246.2.",
      "citation": null
     },
@@ -2398,7 +2540,8 @@
       }
      ],
      "length": 538,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004284.1.",
      "citation": null
     },
@@ -2413,7 +2556,8 @@
       }
      ],
      "length": 546,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004490.1.",
      "citation": null
     },
@@ -2428,7 +2572,8 @@
       }
      ],
      "length": 581,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004724.1.",
      "citation": null
     },
@@ -2443,7 +2588,8 @@
       }
      ],
      "length": 592,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0006726.1.",
      "citation": null
     },
@@ -2458,7 +2604,8 @@
       }
      ],
      "length": 591,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0006783.2.",
      "citation": null
     },
@@ -2473,7 +2620,8 @@
       }
      ],
      "length": 630,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0007446.1.",
      "citation": null
     },
@@ -2488,7 +2636,8 @@
       }
      ],
      "length": 502,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0008746.1.",
      "citation": null
     },
@@ -2503,7 +2652,8 @@
       }
      ],
      "length": 643,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011964.2.",
      "citation": null
     },
@@ -2518,7 +2668,8 @@
       }
      ],
      "length": 606,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011965.1.",
      "citation": null
     },
@@ -2533,7 +2684,8 @@
       }
      ],
      "length": 674,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011966.1.",
      "citation": null
     },
@@ -2548,7 +2700,8 @@
       }
      ],
      "length": 675,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011981.1.",
      "citation": null
     },
@@ -2563,7 +2716,8 @@
       }
      ],
      "length": 672,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011983.1.",
      "citation": null
     },
@@ -2578,7 +2732,8 @@
       }
      ],
      "length": 676,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011989.1.",
      "citation": null
     },
@@ -2593,7 +2748,8 @@
       }
      ],
      "length": 645,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0012192.2.",
      "citation": null
     },
@@ -2608,7 +2764,8 @@
       }
      ],
      "length": 527,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0013205.1.",
      "citation": null
     },
@@ -2623,7 +2780,8 @@
       }
      ],
      "length": 556,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0013828.2.",
      "citation": null
     },
@@ -2638,7 +2796,8 @@
       }
      ],
      "length": 586,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0015986.1.",
      "citation": null
     },
@@ -2653,7 +2812,8 @@
       }
      ],
      "length": 632,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0018182.2.",
      "citation": null
     },
@@ -2668,7 +2828,8 @@
       }
      ],
      "length": 654,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0018296.2.",
      "citation": null
     },
@@ -2683,7 +2844,8 @@
       }
      ],
      "length": 588,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0022141.1.",
      "citation": null
     },
@@ -2698,7 +2860,8 @@
       }
      ],
      "length": 686,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0022467.1.",
      "citation": null
     }
@@ -2719,7 +2882,8 @@
       }
      ],
      "length": 544,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0001694.1.",
      "citation": null
     },
@@ -2734,7 +2898,8 @@
       }
      ],
      "length": 586,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004246.2.",
      "citation": null
     },
@@ -2749,7 +2914,8 @@
       }
      ],
      "length": 538,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004284.1.",
      "citation": null
     },
@@ -2764,7 +2930,8 @@
       }
      ],
      "length": 546,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004490.1.",
      "citation": null
     },
@@ -2779,7 +2946,8 @@
       }
      ],
      "length": 581,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004724.1.",
      "citation": null
     },
@@ -2794,7 +2962,8 @@
       }
      ],
      "length": 592,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0006726.1.",
      "citation": null
     },
@@ -2809,7 +2978,8 @@
       }
      ],
      "length": 591,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0006783.2.",
      "citation": null
     },
@@ -2824,7 +2994,8 @@
       }
      ],
      "length": 630,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0007446.1.",
      "citation": null
     },
@@ -2839,7 +3010,8 @@
       }
      ],
      "length": 502,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0008746.1.",
      "citation": null
     },
@@ -2854,7 +3026,8 @@
       }
      ],
      "length": 643,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011964.2.",
      "citation": null
     },
@@ -2869,7 +3042,8 @@
       }
      ],
      "length": 606,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011965.1.",
      "citation": null
     },
@@ -2884,7 +3058,8 @@
       }
      ],
      "length": 674,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011966.1.",
      "citation": null
     },
@@ -2899,7 +3074,8 @@
       }
      ],
      "length": 675,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011981.1.",
      "citation": null
     },
@@ -2914,7 +3090,8 @@
       }
      ],
      "length": 672,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011983.1.",
      "citation": null
     },
@@ -2929,7 +3106,8 @@
       }
      ],
      "length": 676,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011989.1.",
      "citation": null
     },
@@ -2944,7 +3122,8 @@
       }
      ],
      "length": 645,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0012192.2.",
      "citation": null
     },
@@ -2959,7 +3138,8 @@
       }
      ],
      "length": 527,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0013205.1.",
      "citation": null
     },
@@ -2974,7 +3154,8 @@
       }
      ],
      "length": 556,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0013828.2.",
      "citation": null
     },
@@ -2989,7 +3170,8 @@
       }
      ],
      "length": 586,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0015986.1.",
      "citation": null
     },
@@ -3004,7 +3186,8 @@
       }
      ],
      "length": 632,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0018182.2.",
      "citation": null
     },
@@ -3019,7 +3202,8 @@
       }
      ],
      "length": 654,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0018296.2.",
      "citation": null
     },
@@ -3034,7 +3218,8 @@
       }
      ],
      "length": 588,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0022141.1.",
      "citation": null
     },
@@ -3049,7 +3234,8 @@
       }
      ],
      "length": 686,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0022467.1.",
      "citation": null
     }
@@ -3070,7 +3256,8 @@
       }
      ],
      "length": 544,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0001694.1.",
      "citation": null
     },
@@ -3085,7 +3272,8 @@
       }
      ],
      "length": 586,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004246.2.",
      "citation": null
     },
@@ -3100,7 +3288,8 @@
       }
      ],
      "length": 538,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004284.1.",
      "citation": null
     },
@@ -3115,7 +3304,8 @@
       }
      ],
      "length": 546,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004490.1.",
      "citation": null
     },
@@ -3130,7 +3320,8 @@
       }
      ],
      "length": 581,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0004724.1.",
      "citation": null
     },
@@ -3145,7 +3336,8 @@
       }
      ],
      "length": 592,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0006726.1.",
      "citation": null
     },
@@ -3160,7 +3352,8 @@
       }
      ],
      "length": 591,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0006783.2.",
      "citation": null
     },
@@ -3175,7 +3368,8 @@
       }
      ],
      "length": 630,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0007446.1.",
      "citation": null
     },
@@ -3190,7 +3384,8 @@
       }
      ],
      "length": 502,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0008746.1.",
      "citation": null
     },
@@ -3205,7 +3400,8 @@
       }
      ],
      "length": 643,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011964.2.",
      "citation": null
     },
@@ -3220,7 +3416,8 @@
       }
      ],
      "length": 606,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011965.1.",
      "citation": null
     },
@@ -3235,7 +3432,8 @@
       }
      ],
      "length": 674,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011966.1.",
      "citation": null
     },
@@ -3250,7 +3448,8 @@
       }
      ],
      "length": 675,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011981.1.",
      "citation": null
     },
@@ -3265,7 +3464,8 @@
       }
      ],
      "length": 672,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011983.1.",
      "citation": null
     },
@@ -3280,7 +3480,8 @@
       }
      ],
      "length": 676,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0011989.1.",
      "citation": null
     },
@@ -3295,7 +3496,8 @@
       }
      ],
      "length": 645,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0012192.2.",
      "citation": null
     },
@@ -3310,7 +3512,8 @@
       }
      ],
      "length": 527,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0013205.1.",
      "citation": null
     },
@@ -3325,7 +3528,8 @@
       }
      ],
      "length": 556,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0013828.2.",
      "citation": null
     },
@@ -3340,7 +3544,8 @@
       }
      ],
      "length": 586,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0015986.1.",
      "citation": null
     },
@@ -3355,7 +3560,8 @@
       }
      ],
      "length": 632,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0018182.2.",
      "citation": null
     },
@@ -3370,7 +3576,8 @@
       }
      ],
      "length": 654,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0018296.2.",
      "citation": null
     },
@@ -3385,7 +3592,8 @@
       }
      ],
      "length": 588,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0022141.1.",
      "citation": null
     },
@@ -3400,7 +3608,8 @@
       }
      ],
      "length": 686,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003974 (Potassium channel, voltage dependent, Kv3) on predicted protein h1SMcT0022467.1.",
      "citation": null
     }
@@ -3421,7 +3630,8 @@
       }
      ],
      "length": 647,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003975 (Potassium channel, voltage dependent, Kv4) on predicted protein h1SMcT0003177.1.",
      "citation": null
     },
@@ -3436,7 +3646,8 @@
       }
      ],
      "length": 466,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003975 (Potassium channel, voltage dependent, Kv4) on predicted protein h1SMcT0003422.2.",
      "citation": null
     },
@@ -3451,7 +3662,8 @@
       }
      ],
      "length": 658,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003975 (Potassium channel, voltage dependent, Kv4) on predicted protein h1SMcT0017431.1.",
      "citation": null
     },
@@ -3466,7 +3678,8 @@
       }
      ],
      "length": 697,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003975 (Potassium channel, voltage dependent, Kv4) on predicted protein h1SMcT0021860.1.",
      "citation": null
     }
@@ -3501,7 +3714,8 @@
       }
      ],
      "length": 721,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on its UniProtKB entry; called CNG1, a cyclic-nucleotide-gated channel in Roberts-Galbraith and others 2016; matches gene model h1SMcG0005006 (94% of its 8-residue words).",
      "citation": null
     },
@@ -3516,7 +3730,8 @@
       }
      ],
      "length": 811,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0001155.2 (in UniProt's archive only).",
      "citation": null
     },
@@ -3531,7 +3746,8 @@
       }
      ],
      "length": 608,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0013969.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3546,7 +3762,8 @@
       }
      ],
      "length": 767,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0016076.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3561,7 +3778,8 @@
       }
      ],
      "length": 819,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0018006.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3576,7 +3794,8 @@
       }
      ],
      "length": 1020,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0018092.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3591,7 +3810,8 @@
       }
      ],
      "length": 863,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0020455.1 (in UniProt's archive only).",
      "citation": null
     }
@@ -3616,7 +3836,8 @@
       }
      ],
      "length": 721,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on its UniProtKB entry; called CNG1, a cyclic-nucleotide-gated channel in Roberts-Galbraith and others 2016; matches gene model h1SMcG0005006 (94% of its 8-residue words).",
      "citation": null
     },
@@ -3631,7 +3852,8 @@
       }
      ],
      "length": 811,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0001155.2 (in UniProt's archive only).",
      "citation": null
     },
@@ -3646,7 +3868,8 @@
       }
      ],
      "length": 608,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0013969.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3661,7 +3884,8 @@
       }
      ],
      "length": 767,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0016076.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3676,7 +3900,8 @@
       }
      ],
      "length": 819,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0018006.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3691,7 +3916,8 @@
       }
      ],
      "length": 1020,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0018092.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3706,7 +3932,8 @@
       }
      ],
      "length": 863,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0020455.1 (in UniProt's archive only).",
      "citation": null
     }
@@ -3731,7 +3958,8 @@
       }
      ],
      "length": 721,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on its UniProtKB entry; called CNG1, a cyclic-nucleotide-gated channel in Roberts-Galbraith and others 2016; matches gene model h1SMcG0005006 (94% of its 8-residue words).",
      "citation": null
     },
@@ -3746,7 +3974,8 @@
       }
      ],
      "length": 811,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0001155.2 (in UniProt's archive only).",
      "citation": null
     },
@@ -3761,7 +3990,8 @@
       }
      ],
      "length": 608,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0013969.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3776,7 +4006,8 @@
       }
      ],
      "length": 767,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0016076.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3791,7 +4022,8 @@
       }
      ],
      "length": 819,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0018006.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3806,7 +4038,8 @@
       }
      ],
      "length": 1020,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0018092.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3821,7 +4054,8 @@
       }
      ],
      "length": 863,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0020455.1 (in UniProt's archive only).",
      "citation": null
     }
@@ -3846,7 +4080,8 @@
       }
      ],
      "length": 721,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on its UniProtKB entry; called CNG1, a cyclic-nucleotide-gated channel in Roberts-Galbraith and others 2016; matches gene model h1SMcG0005006 (94% of its 8-residue words).",
      "citation": null
     },
@@ -3861,7 +4096,8 @@
       }
      ],
      "length": 811,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0001155.2 (in UniProt's archive only).",
      "citation": null
     },
@@ -3876,7 +4112,8 @@
       }
      ],
      "length": 608,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0013969.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3891,7 +4128,8 @@
       }
      ],
      "length": 767,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0016076.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3906,7 +4144,8 @@
       }
      ],
      "length": 819,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0018006.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3921,7 +4160,8 @@
       }
      ],
      "length": 1020,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0018092.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -3936,7 +4176,8 @@
       }
      ],
      "length": 863,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051413 (Potassium/sodium hyperpolarization-activated cyclic nucleotide-gated channel) on predicted protein h1SMcT0020455.1 (in UniProt's archive only).",
      "citation": null
     }
@@ -3957,7 +4198,8 @@
       }
      ],
      "length": 2710,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005446 (Voltage-dependent calcium channel, L-type, alpha-1 subunit) on predicted protein h1SMcT0000076.2.",
      "citation": null
     },
@@ -3972,7 +4214,8 @@
       }
      ],
      "length": 1968,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005446 (Voltage-dependent calcium channel, L-type, alpha-1 subunit) on predicted protein h1SMcT0000194.1.",
      "citation": null
     },
@@ -3987,7 +4230,8 @@
       }
      ],
      "length": 555,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0007169.1.",
      "citation": null
     },
@@ -4002,7 +4246,8 @@
       }
      ],
      "length": 654,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0012122.2.",
      "citation": null
     },
@@ -4017,7 +4262,8 @@
       }
      ],
      "length": 493,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0021519.1.",
      "citation": null
     },
@@ -4032,7 +4278,8 @@
       }
      ],
      "length": 1167,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0002720.3 (in UniProt's archive only).",
      "citation": null
     },
@@ -4047,7 +4294,8 @@
       }
      ],
      "length": 1143,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0003961.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4062,7 +4310,8 @@
       }
      ],
      "length": 1166,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0013103.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4077,7 +4326,8 @@
       }
      ],
      "length": 1349,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0013104.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4092,7 +4342,8 @@
       }
      ],
      "length": 269,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0023063.1 (in UniProt's archive only).",
      "citation": null
     }
@@ -4113,7 +4364,8 @@
       }
      ],
      "length": 2710,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005446 (Voltage-dependent calcium channel, L-type, alpha-1 subunit) on predicted protein h1SMcT0000076.2.",
      "citation": null
     },
@@ -4128,7 +4380,8 @@
       }
      ],
      "length": 1968,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005446 (Voltage-dependent calcium channel, L-type, alpha-1 subunit) on predicted protein h1SMcT0000194.1.",
      "citation": null
     },
@@ -4143,7 +4396,8 @@
       }
      ],
      "length": 555,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0007169.1.",
      "citation": null
     },
@@ -4158,7 +4412,8 @@
       }
      ],
      "length": 654,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0012122.2.",
      "citation": null
     },
@@ -4173,7 +4428,8 @@
       }
      ],
      "length": 493,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0021519.1.",
      "citation": null
     },
@@ -4188,7 +4444,8 @@
       }
      ],
      "length": 1167,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0002720.3 (in UniProt's archive only).",
      "citation": null
     },
@@ -4203,7 +4460,8 @@
       }
      ],
      "length": 1143,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0003961.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4218,7 +4476,8 @@
       }
      ],
      "length": 1166,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0013103.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4233,7 +4492,8 @@
       }
      ],
      "length": 1349,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0013104.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4248,7 +4508,8 @@
       }
      ],
      "length": 269,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0023063.1 (in UniProt's archive only).",
      "citation": null
     }
@@ -4269,7 +4530,8 @@
       }
      ],
      "length": 2710,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005446 (Voltage-dependent calcium channel, L-type, alpha-1 subunit) on predicted protein h1SMcT0000076.2.",
      "citation": null
     },
@@ -4284,7 +4546,8 @@
       }
      ],
      "length": 1968,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005446 (Voltage-dependent calcium channel, L-type, alpha-1 subunit) on predicted protein h1SMcT0000194.1.",
      "citation": null
     },
@@ -4299,7 +4562,8 @@
       }
      ],
      "length": 555,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0007169.1.",
      "citation": null
     },
@@ -4314,7 +4578,8 @@
       }
      ],
      "length": 654,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0012122.2.",
      "citation": null
     },
@@ -4329,7 +4594,8 @@
       }
      ],
      "length": 493,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0021519.1.",
      "citation": null
     },
@@ -4344,7 +4610,8 @@
       }
      ],
      "length": 1167,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0002720.3 (in UniProt's archive only).",
      "citation": null
     },
@@ -4359,7 +4626,8 @@
       }
      ],
      "length": 1143,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0003961.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4374,7 +4642,8 @@
       }
      ],
      "length": 1166,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0013103.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4389,7 +4658,8 @@
       }
      ],
      "length": 1349,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0013104.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4404,7 +4674,8 @@
       }
      ],
      "length": 269,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0023063.1 (in UniProt's archive only).",
      "citation": null
     }
@@ -4425,7 +4696,8 @@
       }
      ],
      "length": 2710,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0000076.2.",
      "citation": null
     },
@@ -4440,7 +4712,8 @@
       }
      ],
      "length": 1643,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0000188.1.",
      "citation": null
     },
@@ -4455,7 +4728,8 @@
       }
      ],
      "length": 1968,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0000194.1.",
      "citation": null
     },
@@ -4470,7 +4744,8 @@
       }
      ],
      "length": 2262,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0000709.1.",
      "citation": null
     },
@@ -4485,7 +4760,8 @@
       }
      ],
      "length": 1647,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0020674.1.",
      "citation": null
     },
@@ -4500,7 +4776,8 @@
       }
      ],
      "length": 1680,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0020675.1.",
      "citation": null
     },
@@ -4515,7 +4792,8 @@
       }
      ],
      "length": 555,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0007169.1.",
      "citation": null
     },
@@ -4530,7 +4808,8 @@
       }
      ],
      "length": 654,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0012122.2.",
      "citation": null
     },
@@ -4545,7 +4824,8 @@
       }
      ],
      "length": 493,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0021519.1.",
      "citation": null
     },
@@ -4560,7 +4840,8 @@
       }
      ],
      "length": 1167,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0002720.3 (in UniProt's archive only).",
      "citation": null
     },
@@ -4575,7 +4856,8 @@
       }
      ],
      "length": 1143,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0003961.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4590,7 +4872,8 @@
       }
      ],
      "length": 1166,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0013103.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4605,7 +4888,8 @@
       }
      ],
      "length": 1349,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0013104.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4620,7 +4904,8 @@
       }
      ],
      "length": 269,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0023063.1 (in UniProt's archive only).",
      "citation": null
     }
@@ -4641,7 +4926,8 @@
       }
      ],
      "length": 1643,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0000188.1.",
      "citation": null
     },
@@ -4656,7 +4942,8 @@
       }
      ],
      "length": 2262,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0000709.1.",
      "citation": null
     },
@@ -4671,7 +4958,8 @@
       }
      ],
      "length": 1647,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0020674.1.",
      "citation": null
     },
@@ -4686,7 +4974,8 @@
       }
      ],
      "length": 1680,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0020675.1.",
      "citation": null
     },
@@ -4701,7 +4990,8 @@
       }
      ],
      "length": 555,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0007169.1.",
      "citation": null
     },
@@ -4716,7 +5006,8 @@
       }
      ],
      "length": 654,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0012122.2.",
      "citation": null
     },
@@ -4731,7 +5022,8 @@
       }
      ],
      "length": 493,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0021519.1.",
      "citation": null
     },
@@ -4746,7 +5038,8 @@
       }
      ],
      "length": 1167,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0002720.3 (in UniProt's archive only).",
      "citation": null
     },
@@ -4761,7 +5054,8 @@
       }
      ],
      "length": 1143,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0003961.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4776,7 +5070,8 @@
       }
      ],
      "length": 1166,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0013103.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4791,7 +5086,8 @@
       }
      ],
      "length": 1349,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0013104.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4806,7 +5102,8 @@
       }
      ],
      "length": 269,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0023063.1 (in UniProt's archive only).",
      "citation": null
     }
@@ -4827,7 +5124,8 @@
       }
      ],
      "length": 1643,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0000188.1.",
      "citation": null
     },
@@ -4842,7 +5140,8 @@
       }
      ],
      "length": 2262,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0000709.1.",
      "citation": null
     },
@@ -4857,7 +5156,8 @@
       }
      ],
      "length": 1647,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0020674.1.",
      "citation": null
     },
@@ -4872,7 +5172,8 @@
       }
      ],
      "length": 1680,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0020675.1.",
      "citation": null
     },
@@ -4887,7 +5188,8 @@
       }
      ],
      "length": 555,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0007169.1.",
      "citation": null
     },
@@ -4902,7 +5204,8 @@
       }
      ],
      "length": 654,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0012122.2.",
      "citation": null
     },
@@ -4917,7 +5220,8 @@
       }
      ],
      "length": 493,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0021519.1.",
      "citation": null
     },
@@ -4932,7 +5236,8 @@
       }
      ],
      "length": 1167,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0002720.3 (in UniProt's archive only).",
      "citation": null
     },
@@ -4947,7 +5252,8 @@
       }
      ],
      "length": 1143,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0003961.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4962,7 +5268,8 @@
       }
      ],
      "length": 1166,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0013103.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4977,7 +5284,8 @@
       }
      ],
      "length": 1349,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0013104.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -4992,7 +5300,8 @@
       }
      ],
      "length": 269,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0023063.1 (in UniProt's archive only).",
      "citation": null
     }
@@ -5013,7 +5322,8 @@
       }
      ],
      "length": 1643,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0000188.1.",
      "citation": null
     },
@@ -5028,7 +5338,8 @@
       }
      ],
      "length": 2262,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0000709.1.",
      "citation": null
     },
@@ -5043,7 +5354,8 @@
       }
      ],
      "length": 1647,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0020674.1.",
      "citation": null
     },
@@ -5058,7 +5370,8 @@
       }
      ],
      "length": 1680,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR002077 (Voltage-dependent calcium channel, alpha-1 subunit) on predicted protein h1SMcT0020675.1.",
      "citation": null
     },
@@ -5073,7 +5386,8 @@
       }
      ],
      "length": 555,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0007169.1.",
      "citation": null
     },
@@ -5088,7 +5402,8 @@
       }
      ],
      "length": 654,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0012122.2.",
      "citation": null
     },
@@ -5103,7 +5418,8 @@
       }
      ],
      "length": 493,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000584 (Voltage-dependent calcium channel, L-type, beta subunit) on predicted protein h1SMcT0021519.1.",
      "citation": null
     },
@@ -5118,7 +5434,8 @@
       }
      ],
      "length": 1167,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0002720.3 (in UniProt's archive only).",
      "citation": null
     },
@@ -5133,7 +5450,8 @@
       }
      ],
      "length": 1143,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0003961.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -5148,7 +5466,8 @@
       }
      ],
      "length": 1166,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0013103.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -5163,7 +5482,8 @@
       }
      ],
      "length": 1349,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0013104.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -5178,7 +5498,8 @@
       }
      ],
      "length": 269,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR051173 (Voltage-dependent calcium channel subunit alpha-2/delta) on predicted protein h1SMcT0023063.1 (in UniProt's archive only).",
      "citation": null
     }
@@ -5199,7 +5520,8 @@
       }
      ],
      "length": 2406,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005445 (Voltage-dependent calcium channel, T-type, alpha-1 subunit) on predicted protein h1SMcT0008204.1.",
      "citation": null
     },
@@ -5214,7 +5536,8 @@
       }
      ],
      "length": 2049,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005445 (Voltage-dependent calcium channel, T-type, alpha-1 subunit) on predicted protein h1SMcT0014350.1.",
      "citation": null
     }
@@ -5235,7 +5558,8 @@
       }
      ],
      "length": 2406,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005445 (Voltage-dependent calcium channel, T-type, alpha-1 subunit) on predicted protein h1SMcT0008204.1.",
      "citation": null
     },
@@ -5250,7 +5574,8 @@
       }
      ],
      "length": 2049,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005445 (Voltage-dependent calcium channel, T-type, alpha-1 subunit) on predicted protein h1SMcT0014350.1.",
      "citation": null
     }
@@ -5271,7 +5596,8 @@
       }
      ],
      "length": 1053,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR047871 (Calcium-activated potassium channel slowpoke-like) on predicted protein h1SMcT0007076.1.",
      "citation": null
     },
@@ -5286,7 +5612,8 @@
       }
      ],
      "length": 367,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR047871 (Calcium-activated potassium channel slowpoke-like) on predicted protein h1SMcT0010768.1.",
      "citation": null
     },
@@ -5301,7 +5628,8 @@
       }
      ],
      "length": 1046,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR047871 (Calcium-activated potassium channel slowpoke-like) on predicted protein h1SMcT0010769.1.",
      "citation": null
     },
@@ -5316,7 +5644,8 @@
       }
      ],
      "length": 1017,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR047871 (Calcium-activated potassium channel slowpoke-like) on predicted protein h1SMcT0010770.1.",
      "citation": null
     },
@@ -5331,7 +5660,8 @@
       }
      ],
      "length": 1121,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR047871 (Calcium-activated potassium channel slowpoke-like) on predicted protein h1SMcT0011192.1.",
      "citation": null
     },
@@ -5346,7 +5676,8 @@
       }
      ],
      "length": 1219,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR047871 (Calcium-activated potassium channel slowpoke-like) on predicted protein h1SMcT0015707.7.",
      "citation": null
     },
@@ -5361,7 +5692,8 @@
       }
      ],
      "length": 987,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR047871 (Calcium-activated potassium channel slowpoke-like) on predicted protein h1SMcT0016465.1.",
      "citation": null
     },
@@ -5376,7 +5708,8 @@
       }
      ],
      "length": 791,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR047871 (Calcium-activated potassium channel slowpoke-like) on predicted protein h1SMcT0016626.1.",
      "citation": null
     },
@@ -5391,7 +5724,8 @@
       }
      ],
      "length": 884,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR047871 (Calcium-activated potassium channel slowpoke-like) on predicted protein h1SMcT0019680.1.",
      "citation": null
     },
@@ -5406,7 +5740,8 @@
       }
      ],
      "length": 424,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR015449 (Potassium channel, calcium-activated, SK) on predicted protein h1SMcT0004969.1.",
      "citation": null
     },
@@ -5421,7 +5756,8 @@
       }
      ],
      "length": 674,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR015449 (Potassium channel, calcium-activated, SK) on predicted protein h1SMcT0005969.1.",
      "citation": null
     },
@@ -5436,7 +5772,8 @@
       }
      ],
      "length": 642,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR015449 (Potassium channel, calcium-activated, SK) on predicted protein h1SMcT0006048.1.",
      "citation": null
     },
@@ -5451,7 +5788,8 @@
       }
      ],
      "length": 690,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR015449 (Potassium channel, calcium-activated, SK) on predicted protein h1SMcT0011537.2.",
      "citation": null
     },
@@ -5466,7 +5804,8 @@
       }
      ],
      "length": 411,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR015449 (Potassium channel, calcium-activated, SK) on predicted protein h1SMcT0011985.1.",
      "citation": null
     },
@@ -5481,7 +5820,8 @@
       }
      ],
      "length": 710,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR015449 (Potassium channel, calcium-activated, SK) on predicted protein h1SMcT0013897.2.",
      "citation": null
     },
@@ -5496,7 +5836,8 @@
       }
      ],
      "length": 472,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR015449 (Potassium channel, calcium-activated, SK) on predicted protein h1SMcT0013937.1.",
      "citation": null
     },
@@ -5511,7 +5852,8 @@
       }
      ],
      "length": 445,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR015449 (Potassium channel, calcium-activated, SK) on predicted protein h1SMcT0014223.1.",
      "citation": null
     },
@@ -5526,7 +5868,8 @@
       }
      ],
      "length": 437,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR015449 (Potassium channel, calcium-activated, SK) on predicted protein h1SMcT0016257.1.",
      "citation": null
     },
@@ -5541,7 +5884,8 @@
       }
      ],
      "length": 197,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003930 (Potassium channel, calcium-activated, BK, beta subunit) on predicted protein h1SMcT0000727.1.",
      "citation": null
     },
@@ -5556,7 +5900,8 @@
       }
      ],
      "length": 262,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003930 (Potassium channel, calcium-activated, BK, beta subunit) on predicted protein h1SMcT0001455.1.",
      "citation": null
     },
@@ -5571,7 +5916,8 @@
       }
      ],
      "length": 218,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003930 (Potassium channel, calcium-activated, BK, beta subunit) on predicted protein h1SMcT0005093.1.",
      "citation": null
     },
@@ -5586,7 +5932,8 @@
       }
      ],
      "length": 197,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003930 (Potassium channel, calcium-activated, BK, beta subunit) on predicted protein h1SMcT0008245.1.",
      "citation": null
     },
@@ -5601,7 +5948,8 @@
       }
      ],
      "length": 205,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003930 (Potassium channel, calcium-activated, BK, beta subunit) on predicted protein h1SMcT0009706.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -5616,7 +5964,8 @@
       }
      ],
      "length": 228,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR003930 (Potassium channel, calcium-activated, BK, beta subunit) on predicted protein h1SMcT0020732.1.",
      "citation": null
     }
@@ -5651,7 +6000,8 @@
       }
      ],
      "length": 437,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named smedinx-11 in Oviedo and Levin 2007; the name is tied to this entry by its sequence record DQ851133, which spells it smedxin-11; matches gene model h1SMcG0020152 (100% of its 8-residue words).",
      "citation": {
       "text": "Oviedo and Levin (2007) smedinx-11 is a planarian stem cell gap junction gene required for regeneration and homeostasis. Development 134:3121-3131.",
@@ -5679,7 +6029,8 @@
       }
      ],
      "length": 449,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR000990 (Innexin) on its UniProtKB entry; its sequence was reported with Wagner and others 2012; matches gene model h1SMcG0020292 (98% of its 8-residue words).",
      "citation": null
     },
@@ -5698,7 +6049,8 @@
       }
      ],
      "length": 412,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR000990 (Innexin) on its UniProtKB entry; its sequence was reported with Wenemoser and others 2012; matches gene model h1SMcG0002088 (86% of its 8-residue words).",
      "citation": null
     },
@@ -5713,7 +6065,8 @@
       }
      ],
      "length": 284,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000087.1.",
      "citation": null
     },
@@ -5728,7 +6081,8 @@
       }
      ],
      "length": 435,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000088.1.",
      "citation": null
     },
@@ -5743,7 +6097,8 @@
       }
      ],
      "length": 457,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000396.1.",
      "citation": null
     },
@@ -5758,7 +6113,8 @@
       }
      ],
      "length": 464,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000426.1.",
      "citation": null
     },
@@ -5773,7 +6129,8 @@
       }
      ],
      "length": 411,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000432.1.",
      "citation": null
     },
@@ -5788,7 +6145,8 @@
       }
      ],
      "length": 386,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000569.1.",
      "citation": null
     },
@@ -5803,7 +6161,8 @@
       }
      ],
      "length": 374,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000849.1.",
      "citation": null
     },
@@ -5818,7 +6177,8 @@
       }
      ],
      "length": 432,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001022.2.",
      "citation": null
     },
@@ -5833,7 +6193,8 @@
       }
      ],
      "length": 404,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001481.1.",
      "citation": null
     },
@@ -5848,7 +6209,8 @@
       }
      ],
      "length": 319,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001482.1.",
      "citation": null
     },
@@ -5863,7 +6225,8 @@
       }
      ],
      "length": 106,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001550.1.",
      "citation": null
     },
@@ -5878,7 +6241,8 @@
       }
      ],
      "length": 437,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001582.1.",
      "citation": null
     },
@@ -5893,7 +6257,8 @@
       }
      ],
      "length": 271,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001586.1.",
      "citation": null
     },
@@ -5908,7 +6273,8 @@
       }
      ],
      "length": 366,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001988.1.",
      "citation": null
     },
@@ -5923,7 +6289,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001996.1.",
      "citation": null
     },
@@ -5938,7 +6305,8 @@
       }
      ],
      "length": 488,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0002187.1.",
      "citation": null
     },
@@ -5953,7 +6321,8 @@
       }
      ],
      "length": 442,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0002457.1.",
      "citation": null
     },
@@ -5968,7 +6337,8 @@
       }
      ],
      "length": 473,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0002996.1.",
      "citation": null
     },
@@ -5983,7 +6353,8 @@
       }
      ],
      "length": 371,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0003371.1.",
      "citation": null
     },
@@ -5998,7 +6369,8 @@
       }
      ],
      "length": 433,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0003478.1.",
      "citation": null
     },
@@ -6013,7 +6385,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0003500.1.",
      "citation": null
     },
@@ -6028,7 +6401,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0003799.1.",
      "citation": null
     },
@@ -6043,7 +6417,8 @@
       }
      ],
      "length": 354,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0004632.1.",
      "citation": null
     },
@@ -6058,7 +6433,8 @@
       }
      ],
      "length": 491,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0004909.1.",
      "citation": null
     },
@@ -6073,7 +6449,8 @@
       }
      ],
      "length": 380,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0005851.1.",
      "citation": null
     },
@@ -6088,7 +6465,8 @@
       }
      ],
      "length": 397,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0005853.1.",
      "citation": null
     },
@@ -6103,7 +6481,8 @@
       }
      ],
      "length": 483,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0005984.2.",
      "citation": null
     },
@@ -6118,7 +6497,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006554.1.",
      "citation": null
     },
@@ -6133,7 +6513,8 @@
       }
      ],
      "length": 438,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006763.1.",
      "citation": null
     },
@@ -6148,7 +6529,8 @@
       }
      ],
      "length": 415,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006773.2.",
      "citation": null
     },
@@ -6163,7 +6545,8 @@
       }
      ],
      "length": 467,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006774.1.",
      "citation": null
     },
@@ -6178,7 +6561,8 @@
       }
      ],
      "length": 360,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006815.1.",
      "citation": null
     },
@@ -6193,7 +6577,8 @@
       }
      ],
      "length": 446,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007092.1.",
      "citation": null
     },
@@ -6208,7 +6593,8 @@
       }
      ],
      "length": 460,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007093.1.",
      "citation": null
     },
@@ -6223,7 +6609,8 @@
       }
      ],
      "length": 427,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007094.1.",
      "citation": null
     },
@@ -6238,7 +6625,8 @@
       }
      ],
      "length": 460,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007095.1.",
      "citation": null
     },
@@ -6253,7 +6641,8 @@
       }
      ],
      "length": 107,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007480.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -6268,7 +6657,8 @@
       }
      ],
      "length": 403,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007481.1.",
      "citation": null
     },
@@ -6283,7 +6673,8 @@
       }
      ],
      "length": 395,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007482.1.",
      "citation": null
     },
@@ -6298,7 +6689,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007556.1.",
      "citation": null
     },
@@ -6313,7 +6705,8 @@
       }
      ],
      "length": 486,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0008021.1.",
      "citation": null
     },
@@ -6328,7 +6721,8 @@
       }
      ],
      "length": 431,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0008486.1.",
      "citation": null
     },
@@ -6343,7 +6737,8 @@
       }
      ],
      "length": 412,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0008950.1.",
      "citation": null
     },
@@ -6358,7 +6753,8 @@
       }
      ],
      "length": 377,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0009704.1.",
      "citation": null
     },
@@ -6373,7 +6769,8 @@
       }
      ],
      "length": 402,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0009859.1.",
      "citation": null
     },
@@ -6388,7 +6785,8 @@
       }
      ],
      "length": 430,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0010953.1.",
      "citation": null
     },
@@ -6403,7 +6801,8 @@
       }
      ],
      "length": 400,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0011979.1.",
      "citation": null
     },
@@ -6418,7 +6817,8 @@
       }
      ],
      "length": 386,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0012399.1.",
      "citation": null
     },
@@ -6433,7 +6833,8 @@
       }
      ],
      "length": 411,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0013413.1.",
      "citation": null
     },
@@ -6448,7 +6849,8 @@
       }
      ],
      "length": 445,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0013644.1.",
      "citation": null
     },
@@ -6463,7 +6865,8 @@
       }
      ],
      "length": 432,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0013678.1.",
      "citation": null
     },
@@ -6478,7 +6881,8 @@
       }
      ],
      "length": 406,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0014013.1.",
      "citation": null
     },
@@ -6493,7 +6897,8 @@
       }
      ],
      "length": 342,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0014942.1.",
      "citation": null
     },
@@ -6508,7 +6913,8 @@
       }
      ],
      "length": 375,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0015930.1.",
      "citation": null
     },
@@ -6523,7 +6929,8 @@
       }
      ],
      "length": 448,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0016082.1.",
      "citation": null
     },
@@ -6538,7 +6945,8 @@
       }
      ],
      "length": 465,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0016375.1.",
      "citation": null
     },
@@ -6553,7 +6961,8 @@
       }
      ],
      "length": 437,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0017344.1.",
      "citation": null
     },
@@ -6568,7 +6977,8 @@
       }
      ],
      "length": 469,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0017745.2.",
      "citation": null
     },
@@ -6583,7 +6993,8 @@
       }
      ],
      "length": 423,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0018465.1.",
      "citation": null
     },
@@ -6598,7 +7009,8 @@
       }
      ],
      "length": 403,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0018693.1.",
      "citation": null
     },
@@ -6613,7 +7025,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0019013.1.",
      "citation": null
     },
@@ -6628,7 +7041,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0021740.1.",
      "citation": null
     },
@@ -6643,7 +7057,8 @@
       }
      ],
      "length": 488,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0022620.1.",
      "citation": null
     },
@@ -6658,7 +7073,8 @@
       }
      ],
      "length": 161,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0022952.1.",
      "citation": null
     },
@@ -6673,7 +7089,8 @@
       }
      ],
      "length": 278,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0023035.1.",
      "citation": null
     }
@@ -6698,7 +7115,8 @@
       }
      ],
      "length": 437,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named smedinx-11 in Oviedo and Levin 2007; the name is tied to this entry by its sequence record DQ851133, which spells it smedxin-11; matches gene model h1SMcG0020152 (100% of its 8-residue words).",
      "citation": {
       "text": "Oviedo and Levin (2007) smedinx-11 is a planarian stem cell gap junction gene required for regeneration and homeostasis. Development 134:3121-3131.",
@@ -6726,7 +7144,8 @@
       }
      ],
      "length": 449,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR000990 (Innexin) on its UniProtKB entry; its sequence was reported with Wagner and others 2012; matches gene model h1SMcG0020292 (98% of its 8-residue words).",
      "citation": null
     },
@@ -6745,7 +7164,8 @@
       }
      ],
      "length": 412,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR000990 (Innexin) on its UniProtKB entry; its sequence was reported with Wenemoser and others 2012; matches gene model h1SMcG0002088 (86% of its 8-residue words).",
      "citation": null
     },
@@ -6760,7 +7180,8 @@
       }
      ],
      "length": 284,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000087.1.",
      "citation": null
     },
@@ -6775,7 +7196,8 @@
       }
      ],
      "length": 435,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000088.1.",
      "citation": null
     },
@@ -6790,7 +7212,8 @@
       }
      ],
      "length": 457,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000396.1.",
      "citation": null
     },
@@ -6805,7 +7228,8 @@
       }
      ],
      "length": 464,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000426.1.",
      "citation": null
     },
@@ -6820,7 +7244,8 @@
       }
      ],
      "length": 411,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000432.1.",
      "citation": null
     },
@@ -6835,7 +7260,8 @@
       }
      ],
      "length": 386,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000569.1.",
      "citation": null
     },
@@ -6850,7 +7276,8 @@
       }
      ],
      "length": 374,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000849.1.",
      "citation": null
     },
@@ -6865,7 +7292,8 @@
       }
      ],
      "length": 432,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001022.2.",
      "citation": null
     },
@@ -6880,7 +7308,8 @@
       }
      ],
      "length": 404,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001481.1.",
      "citation": null
     },
@@ -6895,7 +7324,8 @@
       }
      ],
      "length": 319,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001482.1.",
      "citation": null
     },
@@ -6910,7 +7340,8 @@
       }
      ],
      "length": 106,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001550.1.",
      "citation": null
     },
@@ -6925,7 +7356,8 @@
       }
      ],
      "length": 437,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001582.1.",
      "citation": null
     },
@@ -6940,7 +7372,8 @@
       }
      ],
      "length": 271,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001586.1.",
      "citation": null
     },
@@ -6955,7 +7388,8 @@
       }
      ],
      "length": 366,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001988.1.",
      "citation": null
     },
@@ -6970,7 +7404,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001996.1.",
      "citation": null
     },
@@ -6985,7 +7420,8 @@
       }
      ],
      "length": 488,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0002187.1.",
      "citation": null
     },
@@ -7000,7 +7436,8 @@
       }
      ],
      "length": 442,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0002457.1.",
      "citation": null
     },
@@ -7015,7 +7452,8 @@
       }
      ],
      "length": 473,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0002996.1.",
      "citation": null
     },
@@ -7030,7 +7468,8 @@
       }
      ],
      "length": 371,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0003371.1.",
      "citation": null
     },
@@ -7045,7 +7484,8 @@
       }
      ],
      "length": 433,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0003478.1.",
      "citation": null
     },
@@ -7060,7 +7500,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0003500.1.",
      "citation": null
     },
@@ -7075,7 +7516,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0003799.1.",
      "citation": null
     },
@@ -7090,7 +7532,8 @@
       }
      ],
      "length": 354,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0004632.1.",
      "citation": null
     },
@@ -7105,7 +7548,8 @@
       }
      ],
      "length": 491,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0004909.1.",
      "citation": null
     },
@@ -7120,7 +7564,8 @@
       }
      ],
      "length": 380,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0005851.1.",
      "citation": null
     },
@@ -7135,7 +7580,8 @@
       }
      ],
      "length": 397,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0005853.1.",
      "citation": null
     },
@@ -7150,7 +7596,8 @@
       }
      ],
      "length": 483,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0005984.2.",
      "citation": null
     },
@@ -7165,7 +7612,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006554.1.",
      "citation": null
     },
@@ -7180,7 +7628,8 @@
       }
      ],
      "length": 438,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006763.1.",
      "citation": null
     },
@@ -7195,7 +7644,8 @@
       }
      ],
      "length": 415,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006773.2.",
      "citation": null
     },
@@ -7210,7 +7660,8 @@
       }
      ],
      "length": 467,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006774.1.",
      "citation": null
     },
@@ -7225,7 +7676,8 @@
       }
      ],
      "length": 360,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006815.1.",
      "citation": null
     },
@@ -7240,7 +7692,8 @@
       }
      ],
      "length": 446,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007092.1.",
      "citation": null
     },
@@ -7255,7 +7708,8 @@
       }
      ],
      "length": 460,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007093.1.",
      "citation": null
     },
@@ -7270,7 +7724,8 @@
       }
      ],
      "length": 427,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007094.1.",
      "citation": null
     },
@@ -7285,7 +7740,8 @@
       }
      ],
      "length": 460,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007095.1.",
      "citation": null
     },
@@ -7300,7 +7756,8 @@
       }
      ],
      "length": 107,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007480.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -7315,7 +7772,8 @@
       }
      ],
      "length": 403,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007481.1.",
      "citation": null
     },
@@ -7330,7 +7788,8 @@
       }
      ],
      "length": 395,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007482.1.",
      "citation": null
     },
@@ -7345,7 +7804,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007556.1.",
      "citation": null
     },
@@ -7360,7 +7820,8 @@
       }
      ],
      "length": 486,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0008021.1.",
      "citation": null
     },
@@ -7375,7 +7836,8 @@
       }
      ],
      "length": 431,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0008486.1.",
      "citation": null
     },
@@ -7390,7 +7852,8 @@
       }
      ],
      "length": 412,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0008950.1.",
      "citation": null
     },
@@ -7405,7 +7868,8 @@
       }
      ],
      "length": 377,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0009704.1.",
      "citation": null
     },
@@ -7420,7 +7884,8 @@
       }
      ],
      "length": 402,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0009859.1.",
      "citation": null
     },
@@ -7435,7 +7900,8 @@
       }
      ],
      "length": 430,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0010953.1.",
      "citation": null
     },
@@ -7450,7 +7916,8 @@
       }
      ],
      "length": 400,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0011979.1.",
      "citation": null
     },
@@ -7465,7 +7932,8 @@
       }
      ],
      "length": 386,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0012399.1.",
      "citation": null
     },
@@ -7480,7 +7948,8 @@
       }
      ],
      "length": 411,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0013413.1.",
      "citation": null
     },
@@ -7495,7 +7964,8 @@
       }
      ],
      "length": 445,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0013644.1.",
      "citation": null
     },
@@ -7510,7 +7980,8 @@
       }
      ],
      "length": 432,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0013678.1.",
      "citation": null
     },
@@ -7525,7 +7996,8 @@
       }
      ],
      "length": 406,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0014013.1.",
      "citation": null
     },
@@ -7540,7 +8012,8 @@
       }
      ],
      "length": 342,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0014942.1.",
      "citation": null
     },
@@ -7555,7 +8028,8 @@
       }
      ],
      "length": 375,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0015930.1.",
      "citation": null
     },
@@ -7570,7 +8044,8 @@
       }
      ],
      "length": 448,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0016082.1.",
      "citation": null
     },
@@ -7585,7 +8060,8 @@
       }
      ],
      "length": 465,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0016375.1.",
      "citation": null
     },
@@ -7600,7 +8076,8 @@
       }
      ],
      "length": 437,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0017344.1.",
      "citation": null
     },
@@ -7615,7 +8092,8 @@
       }
      ],
      "length": 469,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0017745.2.",
      "citation": null
     },
@@ -7630,7 +8108,8 @@
       }
      ],
      "length": 423,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0018465.1.",
      "citation": null
     },
@@ -7645,7 +8124,8 @@
       }
      ],
      "length": 403,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0018693.1.",
      "citation": null
     },
@@ -7660,7 +8140,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0019013.1.",
      "citation": null
     },
@@ -7675,7 +8156,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0021740.1.",
      "citation": null
     },
@@ -7690,7 +8172,8 @@
       }
      ],
      "length": 488,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0022620.1.",
      "citation": null
     },
@@ -7705,7 +8188,8 @@
       }
      ],
      "length": 161,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0022952.1.",
      "citation": null
     },
@@ -7720,7 +8204,8 @@
       }
      ],
      "length": 278,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0023035.1.",
      "citation": null
     }
@@ -7745,7 +8230,8 @@
       }
      ],
      "length": 437,
-     "evidence": "named in a publication",
+     "found_by": "named in a publication",
+     "entry": "unreviewed",
      "evidence_note": "Named smedinx-11 in Oviedo and Levin 2007; the name is tied to this entry by its sequence record DQ851133, which spells it smedxin-11; matches gene model h1SMcG0020152 (100% of its 8-residue words).",
      "citation": {
       "text": "Oviedo and Levin (2007) smedinx-11 is a planarian stem cell gap junction gene required for regeneration and homeostasis. Development 134:3121-3131.",
@@ -7773,7 +8259,8 @@
       }
      ],
      "length": 449,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR000990 (Innexin) on its UniProtKB entry; its sequence was reported with Wagner and others 2012; matches gene model h1SMcG0020292 (98% of its 8-residue words).",
      "citation": null
     },
@@ -7792,7 +8279,8 @@
       }
      ],
      "length": 412,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR000990 (Innexin) on its UniProtKB entry; its sequence was reported with Wenemoser and others 2012; matches gene model h1SMcG0002088 (86% of its 8-residue words).",
      "citation": null
     },
@@ -7807,7 +8295,8 @@
       }
      ],
      "length": 284,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000087.1.",
      "citation": null
     },
@@ -7822,7 +8311,8 @@
       }
      ],
      "length": 435,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000088.1.",
      "citation": null
     },
@@ -7837,7 +8327,8 @@
       }
      ],
      "length": 457,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000396.1.",
      "citation": null
     },
@@ -7852,7 +8343,8 @@
       }
      ],
      "length": 464,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000426.1.",
      "citation": null
     },
@@ -7867,7 +8359,8 @@
       }
      ],
      "length": 411,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000432.1.",
      "citation": null
     },
@@ -7882,7 +8375,8 @@
       }
      ],
      "length": 386,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000569.1.",
      "citation": null
     },
@@ -7897,7 +8391,8 @@
       }
      ],
      "length": 374,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0000849.1.",
      "citation": null
     },
@@ -7912,7 +8407,8 @@
       }
      ],
      "length": 432,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001022.2.",
      "citation": null
     },
@@ -7927,7 +8423,8 @@
       }
      ],
      "length": 404,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001481.1.",
      "citation": null
     },
@@ -7942,7 +8439,8 @@
       }
      ],
      "length": 319,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001482.1.",
      "citation": null
     },
@@ -7957,7 +8455,8 @@
       }
      ],
      "length": 106,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001550.1.",
      "citation": null
     },
@@ -7972,7 +8471,8 @@
       }
      ],
      "length": 437,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001582.1.",
      "citation": null
     },
@@ -7987,7 +8487,8 @@
       }
      ],
      "length": 271,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001586.1.",
      "citation": null
     },
@@ -8002,7 +8503,8 @@
       }
      ],
      "length": 366,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001988.1.",
      "citation": null
     },
@@ -8017,7 +8519,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0001996.1.",
      "citation": null
     },
@@ -8032,7 +8535,8 @@
       }
      ],
      "length": 488,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0002187.1.",
      "citation": null
     },
@@ -8047,7 +8551,8 @@
       }
      ],
      "length": 442,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0002457.1.",
      "citation": null
     },
@@ -8062,7 +8567,8 @@
       }
      ],
      "length": 473,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0002996.1.",
      "citation": null
     },
@@ -8077,7 +8583,8 @@
       }
      ],
      "length": 371,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0003371.1.",
      "citation": null
     },
@@ -8092,7 +8599,8 @@
       }
      ],
      "length": 433,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0003478.1.",
      "citation": null
     },
@@ -8107,7 +8615,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0003500.1.",
      "citation": null
     },
@@ -8122,7 +8631,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0003799.1.",
      "citation": null
     },
@@ -8137,7 +8647,8 @@
       }
      ],
      "length": 354,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0004632.1.",
      "citation": null
     },
@@ -8152,7 +8663,8 @@
       }
      ],
      "length": 491,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0004909.1.",
      "citation": null
     },
@@ -8167,7 +8679,8 @@
       }
      ],
      "length": 380,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0005851.1.",
      "citation": null
     },
@@ -8182,7 +8695,8 @@
       }
      ],
      "length": 397,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0005853.1.",
      "citation": null
     },
@@ -8197,7 +8711,8 @@
       }
      ],
      "length": 483,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0005984.2.",
      "citation": null
     },
@@ -8212,7 +8727,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006554.1.",
      "citation": null
     },
@@ -8227,7 +8743,8 @@
       }
      ],
      "length": 438,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006763.1.",
      "citation": null
     },
@@ -8242,7 +8759,8 @@
       }
      ],
      "length": 415,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006773.2.",
      "citation": null
     },
@@ -8257,7 +8775,8 @@
       }
      ],
      "length": 467,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006774.1.",
      "citation": null
     },
@@ -8272,7 +8791,8 @@
       }
      ],
      "length": 360,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0006815.1.",
      "citation": null
     },
@@ -8287,7 +8807,8 @@
       }
      ],
      "length": 446,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007092.1.",
      "citation": null
     },
@@ -8302,7 +8823,8 @@
       }
      ],
      "length": 460,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007093.1.",
      "citation": null
     },
@@ -8317,7 +8839,8 @@
       }
      ],
      "length": 427,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007094.1.",
      "citation": null
     },
@@ -8332,7 +8855,8 @@
       }
      ],
      "length": 460,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007095.1.",
      "citation": null
     },
@@ -8347,7 +8871,8 @@
       }
      ],
      "length": 107,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007480.1 (in UniProt's archive only).",
      "citation": null
     },
@@ -8362,7 +8887,8 @@
       }
      ],
      "length": 403,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007481.1.",
      "citation": null
     },
@@ -8377,7 +8903,8 @@
       }
      ],
      "length": 395,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007482.1.",
      "citation": null
     },
@@ -8392,7 +8919,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0007556.1.",
      "citation": null
     },
@@ -8407,7 +8935,8 @@
       }
      ],
      "length": 486,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0008021.1.",
      "citation": null
     },
@@ -8422,7 +8951,8 @@
       }
      ],
      "length": 431,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0008486.1.",
      "citation": null
     },
@@ -8437,7 +8967,8 @@
       }
      ],
      "length": 412,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0008950.1.",
      "citation": null
     },
@@ -8452,7 +8983,8 @@
       }
      ],
      "length": 377,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0009704.1.",
      "citation": null
     },
@@ -8467,7 +8999,8 @@
       }
      ],
      "length": 402,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0009859.1.",
      "citation": null
     },
@@ -8482,7 +9015,8 @@
       }
      ],
      "length": 430,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0010953.1.",
      "citation": null
     },
@@ -8497,7 +9031,8 @@
       }
      ],
      "length": 400,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0011979.1.",
      "citation": null
     },
@@ -8512,7 +9047,8 @@
       }
      ],
      "length": 386,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0012399.1.",
      "citation": null
     },
@@ -8527,7 +9063,8 @@
       }
      ],
      "length": 411,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0013413.1.",
      "citation": null
     },
@@ -8542,7 +9079,8 @@
       }
      ],
      "length": 445,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0013644.1.",
      "citation": null
     },
@@ -8557,7 +9095,8 @@
       }
      ],
      "length": 432,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0013678.1.",
      "citation": null
     },
@@ -8572,7 +9111,8 @@
       }
      ],
      "length": 406,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0014013.1.",
      "citation": null
     },
@@ -8587,7 +9127,8 @@
       }
      ],
      "length": 342,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0014942.1.",
      "citation": null
     },
@@ -8602,7 +9143,8 @@
       }
      ],
      "length": 375,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0015930.1.",
      "citation": null
     },
@@ -8617,7 +9159,8 @@
       }
      ],
      "length": 448,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0016082.1.",
      "citation": null
     },
@@ -8632,7 +9175,8 @@
       }
      ],
      "length": 465,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0016375.1.",
      "citation": null
     },
@@ -8647,7 +9191,8 @@
       }
      ],
      "length": 437,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0017344.1.",
      "citation": null
     },
@@ -8662,7 +9207,8 @@
       }
      ],
      "length": 469,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0017745.2.",
      "citation": null
     },
@@ -8677,7 +9223,8 @@
       }
      ],
      "length": 423,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0018465.1.",
      "citation": null
     },
@@ -8692,7 +9239,8 @@
       }
      ],
      "length": 403,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0018693.1.",
      "citation": null
     },
@@ -8707,7 +9255,8 @@
       }
      ],
      "length": 399,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0019013.1.",
      "citation": null
     },
@@ -8722,7 +9271,8 @@
       }
      ],
      "length": 414,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0021740.1.",
      "citation": null
     },
@@ -8737,7 +9287,8 @@
       }
      ],
      "length": 488,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0022620.1.",
      "citation": null
     },
@@ -8752,7 +9303,8 @@
       }
      ],
      "length": 161,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0022952.1.",
      "citation": null
     },
@@ -8767,7 +9319,8 @@
       }
      ],
      "length": 278,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000990 (Innexin) on predicted protein h1SMcT0023035.1.",
      "citation": null
     }
@@ -8788,7 +9341,8 @@
       }
      ],
      "length": 1017,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005775 (P-type ATPase subfamily IIC, subunit alpha) on predicted protein h1SMcT0008944.1.",
      "citation": null
     },
@@ -8803,7 +9357,8 @@
       }
      ],
      "length": 1007,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005775 (P-type ATPase subfamily IIC, subunit alpha) on predicted protein h1SMcT0012920.1.",
      "citation": null
     },
@@ -8818,7 +9373,8 @@
       }
      ],
      "length": 1020,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005775 (P-type ATPase subfamily IIC, subunit alpha) on predicted protein h1SMcT0013028.1.",
      "citation": null
     },
@@ -8833,7 +9389,8 @@
       }
      ],
      "length": 1017,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005775 (P-type ATPase subfamily IIC, subunit alpha) on predicted protein h1SMcT0013029.1.",
      "citation": null
     },
@@ -8848,7 +9405,8 @@
       }
      ],
      "length": 1030,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005775 (P-type ATPase subfamily IIC, subunit alpha) on predicted protein h1SMcT0016615.1.",
      "citation": null
     },
@@ -8863,7 +9421,8 @@
       }
      ],
      "length": 261,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000402 (Sodium/potassium-transporting ATPase subunit beta) on predicted protein h1SMcT0000634.1.",
      "citation": null
     },
@@ -8878,7 +9437,8 @@
       }
      ],
      "length": 306,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000402 (Sodium/potassium-transporting ATPase subunit beta) on predicted protein h1SMcT0001646.1.",
      "citation": null
     },
@@ -8893,7 +9453,8 @@
       }
      ],
      "length": 306,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000402 (Sodium/potassium-transporting ATPase subunit beta) on predicted protein h1SMcT0001647.1.",
      "citation": null
     },
@@ -8908,7 +9469,8 @@
       }
      ],
      "length": 316,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000402 (Sodium/potassium-transporting ATPase subunit beta) on predicted protein h1SMcT0001648.1.",
      "citation": null
     },
@@ -8923,7 +9485,8 @@
       }
      ],
      "length": 320,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000402 (Sodium/potassium-transporting ATPase subunit beta) on predicted protein h1SMcT0001651.1.",
      "citation": null
     },
@@ -8938,7 +9501,8 @@
       }
      ],
      "length": 291,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000402 (Sodium/potassium-transporting ATPase subunit beta) on predicted protein h1SMcT0007452.1.",
      "citation": null
     },
@@ -8953,7 +9517,8 @@
       }
      ],
      "length": 297,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000402 (Sodium/potassium-transporting ATPase subunit beta) on predicted protein h1SMcT0008945.3.",
      "citation": null
     },
@@ -8968,7 +9533,8 @@
       }
      ],
      "length": 297,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000402 (Sodium/potassium-transporting ATPase subunit beta) on predicted protein h1SMcT0010103.1.",
      "citation": null
     },
@@ -8983,7 +9549,8 @@
       }
      ],
      "length": 294,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000402 (Sodium/potassium-transporting ATPase subunit beta) on predicted protein h1SMcT0010104.3.",
      "citation": null
     },
@@ -8998,7 +9565,8 @@
       }
      ],
      "length": 301,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000402 (Sodium/potassium-transporting ATPase subunit beta) on predicted protein h1SMcT0016335.1.",
      "citation": null
     },
@@ -9013,7 +9581,8 @@
       }
      ],
      "length": 300,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000402 (Sodium/potassium-transporting ATPase subunit beta) on predicted protein h1SMcT0017114.1.",
      "citation": null
     },
@@ -9028,7 +9597,8 @@
       }
      ],
      "length": 299,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000402 (Sodium/potassium-transporting ATPase subunit beta) on predicted protein h1SMcT0017115.1.",
      "citation": null
     },
@@ -9043,7 +9613,8 @@
       }
      ],
      "length": 209,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000402 (Sodium/potassium-transporting ATPase subunit beta) on predicted protein h1SMcT0019860.1.",
      "citation": null
     }
@@ -9064,7 +9635,8 @@
       }
      ],
      "length": 1217,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR006408 (P-type ATPase, subfamily IIB) on predicted protein h1SMcT0003214.2.",
      "citation": null
     },
@@ -9079,7 +9651,8 @@
       }
      ],
      "length": 860,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR006408 (P-type ATPase, subfamily IIB) on predicted protein h1SMcT0006353.3.",
      "citation": null
     },
@@ -9094,7 +9667,8 @@
       }
      ],
      "length": 1110,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR006408 (P-type ATPase, subfamily IIB) on predicted protein h1SMcT0010517.2.",
      "citation": null
     },
@@ -9109,7 +9683,8 @@
       }
      ],
      "length": 1279,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR006408 (P-type ATPase, subfamily IIB) on predicted protein h1SMcT0014164.2.",
      "citation": null
     },
@@ -9124,7 +9699,8 @@
       }
      ],
      "length": 1185,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR006408 (P-type ATPase, subfamily IIB) on predicted protein h1SMcT0017880.1.",
      "citation": null
     },
@@ -9139,7 +9715,8 @@
       }
      ],
      "length": 1247,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR006408 (P-type ATPase, subfamily IIB) on predicted protein h1SMcT0019646.2.",
      "citation": null
     }
@@ -9160,7 +9737,8 @@
       }
      ],
      "length": 1011,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005782 (P-type ATPase, subfamily IIA, SERCA-type) on predicted protein h1SMcT0005277.1.",
      "citation": null
     },
@@ -9175,7 +9753,8 @@
       }
      ],
      "length": 1019,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005782 (P-type ATPase, subfamily IIA, SERCA-type) on predicted protein h1SMcT0018061.1.",
      "citation": null
     },
@@ -9190,7 +9769,8 @@
       }
      ],
      "length": 1029,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR005782 (P-type ATPase, subfamily IIA, SERCA-type) on predicted protein h1SMcT0020481.1.",
      "citation": null
     }
@@ -9215,7 +9795,8 @@
       }
      ],
      "length": 917,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR004836 (Sodium/calcium exchanger protein) on its UniProtKB entry; its sequence was reported with Thi-Kim Vu and others 2015; matches gene model h1SMcG0011283 (98% of its 8-residue words).",
      "citation": null
     },
@@ -9234,7 +9815,8 @@
       }
      ],
      "length": 573,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR004836 (Sodium/calcium exchanger protein) on its UniProtKB entry; its sequence was reported with Thi-Kim Vu and others 2015; matches gene model h1SMcG0009796 (93% of its 8-residue words).",
      "citation": null
     },
@@ -9253,7 +9835,8 @@
       }
      ],
      "length": 851,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR004836 (Sodium/calcium exchanger protein) on its UniProtKB entry; its sequence was reported with Thi-Kim Vu and others 2015; matches gene model h1SMcG0011221 (97% of its 8-residue words).",
      "citation": null
     },
@@ -9272,7 +9855,8 @@
       }
      ],
      "length": 865,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR004836 (Sodium/calcium exchanger protein) on its UniProtKB entry; its sequence was reported with Thi-Kim Vu and others 2015; matches gene model h1SMcG0015486 (99% of its 8-residue words).",
      "citation": null
     },
@@ -9291,7 +9875,8 @@
       }
      ],
      "length": 730,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR004836 (Sodium/calcium exchanger protein) on its UniProtKB entry; its sequence was reported with Thi-Kim Vu and others 2015; matches gene model h1SMcG0015487 (99% of its 8-residue words).",
      "citation": null
     }
@@ -9312,7 +9897,8 @@
       }
      ],
      "length": 2709,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000493 (Inositol 1,4,5-trisphosphate receptor) on predicted protein h1SMcT0004941.1.",
      "citation": null
     },
@@ -9327,7 +9913,8 @@
       }
      ],
      "length": 2679,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR000493 (Inositol 1,4,5-trisphosphate receptor) on predicted protein h1SMcT0017204.1.",
      "citation": null
     },
@@ -9342,7 +9929,8 @@
       }
      ],
      "length": 5295,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR013333 (Ryanodine receptor) on predicted protein h1SMcT0005893.1.",
      "citation": null
     }
@@ -9367,7 +9955,8 @@
       }
      ],
      "length": 1131,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "unreviewed",
      "evidence_note": "IPR000076 (K/Cl co-transporter) on its UniProtKB entry; called slc12a-4 in Thi-Kim Vu and others 2015; matches gene model h1SMcG0001288 (98% of its 8-residue words).",
      "citation": null
     }
@@ -9398,7 +9987,8 @@
       }
      ],
      "length": 292,
-     "evidence": "family signature",
+     "found_by": "family signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR039055 (MCU family) on predicted protein h1SMcT0008205.1.",
      "citation": null
     },
@@ -9413,7 +10003,8 @@
       }
      ],
      "length": 529,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR039800 (Calcium uptake protein 1/2/3) on predicted protein h1SMcT0002095.3.",
      "citation": null
     },
@@ -9428,7 +10019,8 @@
       }
      ],
      "length": 468,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR039800 (Calcium uptake protein 1/2/3) on predicted protein h1SMcT0005317.1.",
      "citation": null
     },
@@ -9443,7 +10035,8 @@
       }
      ],
      "length": 270,
-     "evidence": "family signature",
+     "found_by": "accessory signature",
+     "entry": "genome annotation",
      "evidence_note": "IPR039800 (Calcium uptake protein 1/2/3) on predicted protein h1SMcT0010573.2; the gene's longest predicted protein, h1SMcT0010573.1 (674 residues), does not carry it; the gene model matches the UniProtKB entry A0A0H3YFE4 (slc25a-9), which does not carry the signature.",
      "citation": null
     }
@@ -9476,7 +10069,8 @@
     }
    ],
    "length": 1022,
-   "evidence": "named in a publication",
+   "found_by": "named in a publication",
+   "entry": "unreviewed",
    "evidence_note": "Reported in Beane and others 2013; its sequence record JX174182 calls it the non-gastric H+,K+-ATPase alpha subunit (ATP12A); carries IPR005775 (P-type ATPase subfamily IIC, subunit alpha); matches gene model h1SMcG0015880 (100% of its 8-residue words).",
    "citation": {
     "text": "Beane and others (2013) Bioelectric signaling regulates head and organ size during planarian regeneration. Development 140:313-322.",
@@ -9505,7 +10099,8 @@
     }
    ],
    "length": 1169,
-   "evidence": "named in a publication",
+   "found_by": "named in a publication",
+   "entry": "unreviewed",
    "evidence_note": "Reported in Arenas and others 2017; matches gene model h1SMcG0019963 (98% of its 8-residue words).",
    "citation": {
     "text": "Arenas and others (2017) Activation of planarian TRPA1 by reactive oxygen species reveals a conserved mechanism for animal nociception. Nat Neurosci 20:1686-1693.",
@@ -9534,7 +10129,8 @@
     }
    ],
    "length": 202,
-   "evidence": "family signature",
+   "found_by": "family signature",
+   "entry": "unreviewed",
    "evidence_note": "IPR003280 (Two pore domain potassium channel) on its UniProtKB entry; its sequence was reported with Cowles and others 2014; matches gene model h1SMcG0004125 (99% of its 8-residue words).",
    "citation": null,
    "why": "A two-pore-domain potassium channel, the kind of protein that usually carries a potassium leak; the atlas's leak units name no protein. 15 planarian gene models carry this signature; the reference table lists them."
@@ -9550,7 +10146,8 @@
     }
    ],
    "length": 294,
-   "evidence": "family signature",
+   "found_by": "family signature",
+   "entry": "genome annotation",
    "evidence_note": "IPR000425 (Major intrinsic protein) on predicted protein h1SMcT0016310.1.",
    "citation": null,
    "why": "An aquaporin-family gene model: the kind of water channel that the lumped water-permeability unit does not represent."
@@ -9566,7 +10163,8 @@
     }
    ],
    "length": 150,
-   "evidence": "family signature",
+   "found_by": "family signature",
+   "entry": "genome annotation",
    "evidence_note": "IPR000425 (Major intrinsic protein) on predicted protein h1SMcT0018254.1.",
    "citation": null,
    "why": "An aquaporin-family gene model: the kind of water channel that the lumped water-permeability unit does not represent."
@@ -9582,7 +10180,8 @@
     }
    ],
    "length": 323,
-   "evidence": "family signature",
+   "found_by": "family signature",
+   "entry": "genome annotation",
    "evidence_note": "IPR000425 (Major intrinsic protein) on predicted protein h1SMcT0022089.1.",
    "citation": null,
    "why": "An aquaporin-family gene model: the kind of water channel that the lumped water-permeability unit does not represent."
@@ -9598,7 +10197,8 @@
     }
    ],
    "length": 292,
-   "evidence": "family signature",
+   "found_by": "family signature",
+   "entry": "genome annotation",
    "evidence_note": "IPR000425 (Major intrinsic protein) on predicted protein h1SMcT0022090.1.",
    "citation": null,
    "why": "An aquaporin-family gene model: the kind of water channel that the lumped water-permeability unit does not represent."

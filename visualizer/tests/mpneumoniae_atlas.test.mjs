@@ -40,7 +40,8 @@ const STATES = ["generic", "proposed", "modelled"];
 const CELL_KINDS = { sphere: ["across_um"], capsule: ["length_um", "across_um"], prism: ["sides", "across_um", "radius_um", "height_um", "corner_um", "edge_um"] };
 const PARTS = ["membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes"];
 const FINDINGS = ["found", "different family", "none found", "nothing to look for"];
-const EVIDENCE_WORDS = ["reviewed entry", "named in a publication", "family signature", "similarity search"];
+// The two facts of a product (schema/SPECIES_ATLAS.md, format @2): how it was found, and what its record is.
+const FOUND_BY = ["family signature", "accessory signature", "named in a publication", "similarity search"];
 const COLUMNS = ["locus_tag", "gene", "product", "length", "protein_id", "uniprotkb", "uniprotkb_name", "uniprotkb_length", "protein_existence", "functional_class", "essentiality", "essentiality_relaxed", "uniparc", "interpro"];
 const ESSENTIALITY = ["essential", "fitness", "non-essential", "non-essential (repeats)"];
 const EXISTENCE = ["evidence at protein level", "evidence at transcript level", "inferred from homology", "predicted", "uncertain"];
@@ -204,7 +205,7 @@ test("sources are keyed, each with its text, its licence, its class, where to fi
 // ---------------------------------------------------------------- its side of the atlas
 
 test("the atlas says what it is: format, species, date, method, and what was not copied", () => {
-  assert.equal(atlas.format, "cells.visualizer.species_atlas@1");
+  assert.equal(atlas.format, "cells.visualizer.species_atlas@2");
   assert.deepEqual(Object.keys(atlas), ["format", "species", "made", "method", "sources", "not_copied", "units", "extra"]);
   assert.equal(atlas.species.id, species.id);
   assert.equal(atlas.species.taxon, species.taxon);
@@ -254,12 +255,14 @@ test("the extra proteins are few, each says why it is there, names a known datab
   const known = ["uniprot", "pdb"];
   for (const product of atlas.extra) {
     assert.ok(product.why?.trim() && product.name.trim(), product.name);
-    assert.ok(EVIDENCE_WORDS.includes(product.evidence), `${product.name}: ${product.evidence}`);
+    assert.ok(FOUND_BY.includes(product.found_by) && !("evidence" in product), `${product.name}: ${product.found_by}`);
     assert.ok(product.evidence_note.trim(), product.name);
     assert.ok(product.ids.length && product.ids.every((id) => known.includes(id.db) && /^[A-Z0-9]+$/.test(id.id)), product.name);
-    assert.equal(Boolean(product.citation), product.evidence === "named in a publication", product.name);
-    // A reviewed entry is a curated one, and the note says its function was not measured here.
-    if (product.evidence === "reviewed entry") assert.match(product.evidence_note, /reviewed UniProtKB entry.*not measured in this organism/, product.name);
+    assert.equal(Boolean(product.citation), product.found_by === "named in a publication", product.name);
+    // A reviewed entry is a curated one, and the note says its function was not measured here; it was found by the signature it names.
+    assert.equal(product.entry, "reviewed", product.name);
+    assert.match(product.evidence_note, /reviewed UniProtKB entry.*not measured in this organism/, product.name);
+    if (product.found_by === "family signature") assert.match(product.evidence_note, /The sequence carries IPR\d{6}/, product.name);
     // Each is a line of the catalogue, with the same accession.
     const locus = /Locus (MPN_\d{3})/.exec(product.evidence_note)[1];
     const row = rows.find((line) => line[0] === locus);
