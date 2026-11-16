@@ -80,6 +80,24 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The run-view writer merged into main (16 November 2026, evening): run-view-d154,
+  `cells.run_view@1`.** ([handoff](/mnt/workspaces/Cells/run-view-20261115-01/HANDOFF.md).)
+  - **What it adds:**
+    - the engine's writer of `view.json`. It reads the engine's own view declarations and record
+      roles (`RECORD_DIAGNOSTICS`, `RECORD_REFERENCES`), keeps no per-model tables, and writes door
+      S's merged view;
+    - the loop block, with its closure measure: per record, over levels, amounts and rates, with
+      diagnostics and cumulatives listed as not measured;
+    - FR-11's first looping run: a planarian development run (not judged) that closes within
+      2.76e-5 against a tolerance of 1e-4, bitwise the same before and after the adoption;
+    - the cycle's admission probe, whose refusals went to the composition design;
+    - a junction fixture at division.
+  - **Gates:**
+    - tiers 1+2 on b08af640: 508 files, none changed;
+    - the re-check after windows landed: tier 1 (366 files) and seven tier-2 files, none changed;
+    - the quick check on the merged head: none changed.
+  - **Follow-up:** three format items from the visualizer's reader.
+
 - **fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core.**
   ([handoff](/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/transporter/HANDOFF.md).)
   - **What it adds:**

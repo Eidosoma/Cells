@@ -102,6 +102,8 @@
   "/mnt/workspaces/Cells/windows-next-20261116/stepc/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/windows-next-20261116/stepc/refusals/measure/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/tiers-d82e1935/measure/measured.json",
+  "/mnt/workspaces/Cells/run-view-20261115-01/rows-0407c088/measure/measured.json",
+  "/mnt/workspaces/Cells/run-view-20261115-01/rows-b08af640/measure/measured.json",
   "/mnt/workspaces/Cells/core-fixes-20261116/measure-9637cb77/measured.json",
   "/mnt/workspaces/Cells/core-fixes-20261116/measure-f6-10961572/measured.json"
  ],
@@ -841,6 +843,22 @@
    "root": "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/snapshot-all-d82e1935",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-16T19:17:54+00:00"
+  },
+  {
+   "git_revision": "0407c0880c0bafe80bfb5968b502eaf32d2dfc07",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/run-view-20261115-01/snapshot-0407c088",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-16T16:44:16+00:00"
+  },
+  {
+   "git_revision": "b08af640c3db83e891e29ade36c300d6f8e5a553",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/run-view-20261115-01/snapshot-b08af640",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-16T19:07:32+00:00"
   },
   {
    "git_revision": "9637cb7700cd22166e3a0e6e0ae323bb1dddf9d1",
@@ -1696,10 +1714,10 @@
    },
    {
     "file": "tests/unit/test_contract_additions.py",
-    "seconds": 10.13,
+    "seconds": 2.87,
     "exit_code": 0,
     "counts": {
-     "passed": 13
+     "passed": 34
     }
    },
    {
@@ -2918,6 +2936,14 @@
     }
    },
    {
+    "file": "tests/unit/test_replay_packages.py",
+    "seconds": 3.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
     "file": "tests/unit/test_restricted_lumen.py",
     "seconds": 3.43,
     "exit_code": 0,
@@ -2947,6 +2973,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_run_view_door_s.py",
+    "seconds": 17.68,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
     }
    },
    {
@@ -4618,6 +4652,38 @@
     "exit_code": 0,
     "counts": {
      "passed": 15
+    }
+   },
+   {
+    "file": "tests/unit/test_run_view.py",
+    "seconds": 51.79,
+    "exit_code": 0,
+    "counts": {
+     "passed": 43
+    }
+   },
+   {
+    "file": "tests/unit/test_run_view_division.py",
+    "seconds": 44.71,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_run_view_loop.py",
+    "seconds": 36.08,
+    "exit_code": 0,
+    "counts": {
+     "passed": 20
+    }
+   },
+   {
+    "file": "tests/unit/test_run_view_windows.py",
+    "seconds": 50.26,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
     }
    },
    {
