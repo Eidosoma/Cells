@@ -23,9 +23,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   - **Landed (16 November):** D172's single restructure round (D176), as main ab267c39, tagged
     `d172-landed-2026-11-16`, with FR-4's kinds in it. Its gates are in the run entry "D172's round
     landed on main" below.
-    The lanes built on it merge next, each after its own gate, and FR-5 follows on its own branch.
+    The lanes built on it merged the same evening, each after its own gate: core-next, windows,
+    fr45-next (FR-5's source kinds and refusals among them), the run-view writer, core-fixes and the
+    test audit. The full verification of main a83d8f15 then passed (tiers 1+2, G1 113 of 113,
+    crossrev's new record). The next steps are D194's order, starting with D188's moves.
   - **Proposed designs:** the FR-4/FR-5 physics note, the run view (D154), the module system, with
     its five decisions made (D185), and the human cardiac law set, with its choices made (D184).
+    Decided on 16 November and built in D194's order: operator composition (option A, D191), GARD
+    (D192) and mitochondria (D193).
   - **On the L4:** Q7's run-to-run nondeterminism at 825 nodes goes away under the deterministic
     flag (15 of 15 bitwise pairs, D181). Judged alone under the flag on 16 November, Q7 passed, and
     the landing's L4 block passed under it. The W1 full-tissue hold completed its 70-minute

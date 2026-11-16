@@ -4,8 +4,8 @@
 D154); revised 15 November for D174's requirement (§1).** Docs only. No engine code is added or
 changed by this note. The declarations and the writer it proposes are `src/` work: the operator
 contract's view interface (`VIEW_LAYERS`, `view_events`) reached main with D172's round on 16
-November, and the operators' declarations and the writer are built on branch `run-view-d154`,
-which merges after its own gate ([current plan](CURRENT_PLAN.md)).
+November, and the operators' declarations and the writer merged into main the same evening
+(050aa741; [current plan](CURRENT_PLAN.md)).
 
 D154 asks that every experiment can eventually be visualized, through one run-view record that
 every run writes beside its definition by one shared output path, never one per driver. The
