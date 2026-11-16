@@ -731,9 +731,13 @@ The lead approved step (c) after reading §1.4, under five conditions:
 
 - **`_segment`** launches the check program on the device-resident full-width history before slicing
   it, then transfers the history as it does today.
-- **`_analyse_segment(..., row_checks=outcome)`:**
+- **`_analyse_checked_segment`,** in device mode only:
   - a host-decided window runs today's `check_values`, raising today's exception class and message;
   - a device-decided window takes the device's maxima.
+
+  As built, `_analyse_segment` keeps its signature and behaviour, because tests wrap it with
+  seven fixed arguments. Both functions end in `_accept_segment` (the observers and the final
+  checkpoint).
 - **The per-window channel.** In device mode `_segment` returns a `CheckedRunResult(RunResult)`,
   following `ProjectiveRunResult`'s pattern. Its one field, `row_checks`, records:
   - who decided the window;
@@ -763,7 +767,7 @@ Under D187, each claim is proven once, at its cheapest level.
 
 | Condition | Evidence | Cost |
 | --- | --- | --- |
-| C1, bitwise | A unit test: one world per family runs in both modes at windows of 4 and 7 steps, with a partial last window. The families are @1, @2, @3 with kinds, a composite with an operator's own ledger, and a retiring composition. Arrays must be bitwise. It also has one restart in device mode from a host-mode checkpoint. The C5 runs compare their arrays where both modes run | Test files under the 90 s cap |
+| C1, bitwise | Unit tests, arrays bitwise in both modes. @1 runs at windows of 4 and 7 steps, with a partial last window, and restarts in device mode from a host-mode checkpoint. The water composite (an operator's own ledger) runs at 4 steps; @2 and @3 with a kind run at 5. A retiring composition (the division set's partition) has no unit test: crossrev traces its device checks with margins (C4), and the driver runs two of its worlds in both modes (§9.7). The C5 runs compare their arrays where both modes run | Test files under the 90 s cap |
 | C2, agreement | A unit test of the check program with a stub model: rows, predecessors, step counts, masking and the decision. Each device-decided window's diagnostics are compared with the host's `check_values` on the same rows, under the established criteria (2% of the smallest bound; energy at 1e-9 relative; `test_surface_pump_device_checks.py`). Faults planted at a window's first and last rows, and a dissipation decrease across a boundary, must be caught. In the long runs the host is sampled every 50th window, reported | As above |
 | C3, the band | A ledger residual is planted over the host's bound, with the device under-reading that ledger by half, so its ratio lies in (1/2, 1]. The window must be handed back and refused with the host's class and message. **Control:** with the band at 1, the same run is accepted. A residual in the band that the host accepts is handed back and the run goes on. It runs on a world with an operator's own ledger, so host- and device-decided windows pass `merge_diagnostics` together. A device failure is refused as in host mode | As above |
 | C4, crossrev | The eight sets' jaxprs and bindings at the branch head against d6814d57: identical. Crossrev also gains the `margins=True` device-check trace for every world, the opted-in program (D187 rule 2). An older side lacks it, and `compare` reads only the older side's files | About 1 CPU-hour, detached |
@@ -823,6 +827,13 @@ headline figures compare both modes on the same cores; the records' figures are 
   steps (12.7 µs per row). Over FR-4's 900,000 steps they took 88.5 s (98 µs per row): 30% of
   its 289.9 s of steps. That is the largest remaining share, and the batched form of §9.3's
   "later" would reduce it.
+- **A retiring composition** (the division set's partition, whose device checks read adjusted rows)
+  was run in both modes by the driver at windows of 2 steps, from the gate's snapshot 74ebb91b
+  (`stepc/speed/division-retiring/`). That covers `division_quartered` (6 steps, three windows) and
+  `division_bridge_quarters` (5 steps, a partial last window). Both are bitwise, with no handbacks;
+  their largest ratios are 0.004 and 0.003.
+  - A refusal in that branch is not exercised. §3.2's disagreement count for its adjusted rows (E8)
+    was dropped.
 - **The 825-node tissue's checks cost 2.3 ms per row on the device,** against 14.1 ms on the host.
   Its step costs about 51 ms, so device checks save it about a sixth of its warm time. Their
   second compile, 14 s, offsets that over 2,000 steps.
