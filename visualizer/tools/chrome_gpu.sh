@@ -32,6 +32,25 @@ FLAG="${CELLS_GPU_RESERVED:-/mnt/workspaces/Cells/locks/gpu.reserved}"
 # that compares pictures is not run through it.
 WAY="${CELLS_GPU_WAY:-vulkan}"
 
+# The first process on the card that is not one of these browsers, as "pid, name"; nothing if
+# there is none. The card names a process that is just starting or ending "[No data]" (three
+# browsers of one suite took the software renderer for that on 16 November 2026), so where the
+# name says nothing the kernel is asked: a process that is gone, or is Chrome, is no other job.
+not_a_browser() {
+  local pid name cmd
+  while IFS=, read -r pid name; do
+    pid="${pid//[[:space:]]/}"
+    [ -n "$pid" ] || continue
+    case "$name" in *[Cc]hrome*) continue ;; esac
+    cmd=$(cat "/proc/$pid/cmdline" 2>/dev/null | tr '\0' ' ')
+    [ -n "$cmd" ] || continue
+    case "$cmd" in *chrome*) continue ;; esac
+    printf '%s,%s' "$pid" "$name"
+    return 0
+  done <<< "$1"
+  return 0
+}
+
 mode=software
 why=""
 if [ "${CELLS_GPU:-auto}" = "off" ]; then
@@ -40,8 +59,8 @@ elif [ -e "$FLAG" ]; then
   why="the card is reserved ($FLAG exists)"
 elif ! others=$(nvidia-smi --query-compute-apps=pid,process_name --format=csv,noheader 2>/dev/null); then
   why="the card could not be asked (nvidia-smi failed)"
-elif [ -n "$(printf '%s\n' "$others" | grep -v -i 'chrome' | grep .)" ]; then
-  why="another process is on the card: $(printf '%s' "$others" | grep -v -i 'chrome' | head -1)"
+elif foreign=$(not_a_browser "$others") && [ -n "$foreign" ]; then
+  why="another process is on the card: $foreign"
 elif ! exec 9<"$LOCK"; then
   why="the card's lock file cannot be opened ($LOCK)"
 elif ! flock -s -n 9; then
