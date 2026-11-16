@@ -242,6 +242,10 @@
         {
           "date": "2026-11-16",
           "note": "First version: options A to G with live sketches, what a run would save and what each sketch would read, nine questions for the user and six for the engine's lead. Checked before publishing: the text read; the page loaded in headless Chrome at 1,280, 400 and 360 pixels wide in light and dark (no sideways scrolling, no script error, both fonts arrived, nine canvases drawn); stills of the assembly, similarity, map and lineage sketches looked at."
+        },
+        {
+          "date": "2026-11-16",
+          "note": "Version 2: one sentence reworded at the engine lead's request. The page said what the engine's proposed note finds about the published kernel; it now says only that the note has an open finding on the published kernel, under review, and takes no view on it, since the finding is unreviewed and concerns other authors' published model."
         }
       ]
     }

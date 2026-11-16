@@ -240,9 +240,9 @@ choice, and is labelled so.
   layout, never state); a *lineage* (its fission table and cumulative ledgers; one continuing assembly,
   or a fixed population of K slots); a *world*.
 - **Species:** a declared type family `t000` to `t{N_G−1}`, label only.
-- **Laws:** `cells.reservoir_exchange@1`; the catalysis factor as `cells.member_catalysis@1`
-  ("pair-consistent", the engine's passive form) and `cells.member_catalysis_at_state@1` (the published
-  evaluation, declared not microscopically reversible).
+- **Laws:** `cells.reservoir_exchange@1`; the catalysis factor in two forms,
+  `cells.member_catalysis_at_state@1` (the published evaluation) and `cells.member_catalysis@1` (a
+  second form, "pair-consistent", which the note proposes beside it).
 - **Operators:** `cells.size_threshold_fission@1` (split `binomial` or `exact_fraction`),
   `cells.daughter_continuation@1` (`first`, `second`, `uniform`); later `cells.population_replacement@1`
   (a Moran step) and recorded interventions.
@@ -252,9 +252,9 @@ choice, and is labelled so.
 - **Recommended:** exact single-molecule events; abstract assemblies first, declared so that vesicles
   in the physical world can bind the same laws later; dense log-normal β at 100 types; both kernel
   forms, with the published one for the reference comparison (the preprint's T2-02).
-- **An open finding, under review:** the note reports that the published single-event kernel is not
-  microscopically reversible, and proposes the pair-consistent form beside it; its first experiment
-  would measure the difference. This note takes no view on it.
+- **An open finding, under review:** the engine's note has an open finding on the published kernel,
+  under review, and proposes a second form of the law beside it; its first experiment would compare
+  the two. This note does not restate the finding and takes no view on it.
 
 ## 2. What a run would save, and what each sketch reads
 
