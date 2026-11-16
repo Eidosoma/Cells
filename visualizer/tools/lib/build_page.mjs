@@ -142,6 +142,11 @@ export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, 
     for (const run of replays.runs) {
       const text = (await readFile(path.join(runsDir, path.basename(run.file)), "utf8")).replaceAll("<", "\\u003c");
       inline += `\n<script type="application/json" data-replay="${run.id}">${text}</script>`;
+      // Its records that come in files of their own (schema/QUANTITY_LAYERS.md, rule 10) go in with it.
+      for (const part of run.parts || []) {
+        const more = (await readFile(path.join(runsDir, path.basename(part.file)), "utf8")).replaceAll("<", "\\u003c");
+        inline += `\n<script type="application/json" data-replay-part="${run.id}/${part.id}">${more}</script>`;
+      }
     }
   }
   // The same for the species' own proteins: beside the page by default, inside it for a file on disk.

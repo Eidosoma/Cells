@@ -1,0 +1,2878 @@
+{
+  "constants": [
+    {
+      "axes": [],
+      "from": "the definition (the bound layout)",
+      "id": "temperature",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "K",
+      "values": 310.0
+    },
+    {
+      "axes": [
+        "species"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "valence",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": [
+        1.0,
+        1.0,
+        -1.0,
+        -1.0
+      ]
+    },
+    {
+      "axes": [
+        "cell"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "volume",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "pL",
+      "values": [
+        0.7505222518670602,
+        0.3752611259335301,
+        0.3752611259335301
+      ]
+    },
+    {
+      "axes": [
+        "outside"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "extracellular_volume",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "pL",
+      "values": [
+        1.0
+      ]
+    },
+    {
+      "axes": [
+        "channel"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "channel_permeability",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "m/s",
+      "values": [
+        1e-08,
+        2.5e-07,
+        1e-08,
+        1e-08,
+        2.5e-07,
+        2.5e-07
+      ]
+    },
+    {
+      "axes": [
+        "species",
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "membrane_permeability",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "m/s",
+      "values": [
+        [
+          5.3333333333333356e-11,
+          5.3333333333333356e-11,
+          5.3333333333333356e-11
+        ],
+        [
+          1.333333333333334e-10,
+          1.333333333333334e-10,
+          1.333333333333334e-10
+        ],
+        [
+          1.333333333333334e-10,
+          1.333333333333334e-10,
+          1.333333333333334e-10
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "axes": [
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "pump_capacity",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "fmol/s",
+      "values": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "axes": [
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "calcium_pump_capacity",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "fmol/s",
+      "values": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "events": [
+    {
+      "at": {
+        "cell": "d1"
+      },
+      "kind": "birth",
+      "label": "d1 born",
+      "layer": "division",
+      "time": 0.002
+    },
+    {
+      "at": {
+        "cell": "d2"
+      },
+      "kind": "birth",
+      "label": "d2 born",
+      "layer": "division",
+      "time": 0.002
+    },
+    {
+      "at": {
+        "cell": "cell_0"
+      },
+      "kind": "retirement",
+      "label": "cell_0 retired",
+      "layer": "division",
+      "time": 0.002
+    }
+  ],
+  "format": "cells.run_view@1",
+  "layers": [
+    {
+      "id": "membrane",
+      "label": "Membrane voltage and ions",
+      "owner": "resolved_pump_tissue@3",
+      "representation": "simulated"
+    },
+    {
+      "id": "channels",
+      "label": "Channel populations and junction gates",
+      "owner": "resolved_pump_tissue@3",
+      "representation": "modelled"
+    },
+    {
+      "id": "pumps",
+      "label": "Pump populations",
+      "owner": "resolved_pump_tissue@3",
+      "representation": "modelled"
+    },
+    {
+      "id": "membrane_state",
+      "label": "Membrane entity state",
+      "owner": "membrane_entity_state@1",
+      "representation": "simulated"
+    },
+    {
+      "id": "division",
+      "label": "Cell division",
+      "owner": "isopotential_partition@1",
+      "representation": "prescribed"
+    }
+  ],
+  "recording": {
+    "mode": "full",
+    "subset": null
+  },
+  "records": [
+    {
+      "array": "amount_increment",
+      "axes": [
+        "time",
+        "species",
+        "cell"
+      ],
+      "base": "accepted",
+      "field": "amount_increment",
+      "id": "amount_increment",
+      "kind": "amount",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "cell",
+      "unit": "fmol",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "extracellular_amount_increment",
+      "axes": [
+        "time",
+        "species",
+        "outside"
+      ],
+      "base": "accepted",
+      "field": "extracellular_amount_increment",
+      "id": "extracellular_amount_increment",
+      "kind": "amount",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "outside",
+      "unit": "fmol"
+    },
+    {
+      "array": "membrane_transferred",
+      "axes": [
+        "time",
+        "species",
+        "membrane"
+      ],
+      "base": "accepted",
+      "field": "membrane_transferred",
+      "id": "membrane_transferred",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "membrane_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "membrane",
+      "sign": {
+        "confirmed": "the core's owner, 15 November 2026",
+        "from": "inside",
+        "says": "a positive amount leaves the patch's cell for its outside node",
+        "to": "outside"
+      },
+      "unit": "fmol",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "junction_transferred",
+      "axes": [
+        "time",
+        "species",
+        "junction"
+      ],
+      "base": "accepted",
+      "field": "junction_transferred",
+      "id": "junction_transferred",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "junction_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "junction",
+      "sign": {
+        "confirmed": "the core's owner, 15 November 2026",
+        "from": "sender",
+        "says": "a positive amount leaves the junction's sender cell for its receiver",
+        "to": "receiver"
+      },
+      "unit": "fmol",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "face_transferred",
+      "axes": [
+        "time",
+        "species",
+        "face"
+      ],
+      "base": "accepted",
+      "field": "face_transferred",
+      "id": "face_transferred",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "face",
+      "sign": {
+        "confirmed": "the core's owner, 15 November 2026",
+        "from": "sender",
+        "says": "a positive amount leaves the face's sender node for its receiver",
+        "to": "receiver"
+      },
+      "unit": "fmol"
+    },
+    {
+      "array": "reservoir_supplied",
+      "axes": [
+        "time",
+        "species",
+        "outside"
+      ],
+      "base": "accepted",
+      "field": "reservoir_supplied",
+      "id": "reservoir_supplied",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "outside",
+      "sign": {
+        "confirmed": "the core's owner, 15 November 2026",
+        "from": "exterior",
+        "says": "a positive amount is supplied into the held outside node from beyond the world",
+        "to": "node"
+      },
+      "unit": "fmol"
+    },
+    {
+      "array": "membrane_dissipated_energy_pJ",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "accepted",
+      "field": "membrane_dissipated_energy_pJ",
+      "id": "membrane_dissipated_energy_pJ",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "membrane_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "membrane",
+      "unit": "pJ",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "junction_dissipated_energy_pJ",
+      "axes": [
+        "time",
+        "junction"
+      ],
+      "base": "accepted",
+      "field": "junction_dissipated_energy_pJ",
+      "id": "junction_dissipated_energy_pJ",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "junction_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "junction",
+      "unit": "pJ",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "face_dissipated_energy_pJ",
+      "axes": [
+        "time",
+        "face"
+      ],
+      "base": "accepted",
+      "field": "face_dissipated_energy_pJ",
+      "id": "face_dissipated_energy_pJ",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "monotone": "non-decreasing",
+      "note": "A total per element: zero or more and never falling, checked at every accepted row (the engine's check, allowance 1e-12 pJ). Under an exact free-energy heat booking a route's value is an exact attribution of its row's fall in free energy between the routes that move it, and cannot be measured apart.",
+      "owner": "resolved_pump_tissue@3",
+      "set": "face",
+      "unit": "pJ"
+    },
+    {
+      "array": "electrode_charge_transferred_C",
+      "axes": [
+        "time",
+        "outside"
+      ],
+      "base": "accepted",
+      "field": "electrode_charge_transferred_C",
+      "id": "electrode_charge_transferred_C",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "outside_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "outside",
+      "unit": "C",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "reservoir_work_pJ",
+      "axes": [
+        "time",
+        "outside"
+      ],
+      "base": "accepted",
+      "field": "reservoir_work_pJ",
+      "id": "reservoir_work_pJ",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "outside",
+      "unit": "pJ"
+    },
+    {
+      "array": "electrode_work_pJ",
+      "axes": [
+        "time",
+        "outside"
+      ],
+      "base": "accepted",
+      "field": "electrode_work_pJ",
+      "id": "electrode_work_pJ",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "outside_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "outside",
+      "unit": "pJ",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "channel_gate",
+      "axes": [
+        "time",
+        "gate",
+        "channel"
+      ],
+      "base": "accepted",
+      "field": "channel_gate",
+      "id": "channel_gate",
+      "kind": "level",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "set": "channel",
+      "unit": "1",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "channel_transferred",
+      "axes": [
+        "time",
+        "species",
+        "channel"
+      ],
+      "base": "accepted",
+      "field": "channel_transferred",
+      "id": "channel_transferred",
+      "kind": "cumulative",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "channel_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "channel",
+      "sign": {
+        "confirmed": "the core's owner, 15 November 2026",
+        "from": "inside",
+        "says": "a positive amount leaves the cell of the population's patch for that patch's outside node; it is added unchanged into the patch's total in the material balance, the balance's own sum, not the saved membrane_transferred (which holds the passive routes only)",
+        "to": "outside"
+      },
+      "unit": "fmol",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "channel_dissipated_energy_pJ",
+      "axes": [
+        "time",
+        "species",
+        "channel"
+      ],
+      "base": "accepted",
+      "field": "channel_dissipated_energy_pJ",
+      "id": "channel_dissipated_energy_pJ",
+      "kind": "cumulative",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "channel_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "channel",
+      "unit": "pJ",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "junction_gate",
+      "axes": [
+        "time",
+        "junction"
+      ],
+      "base": "accepted",
+      "field": "junction_gate",
+      "id": "junction_gate",
+      "kind": "level",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "set": "junction",
+      "unit": "1",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "pump_cycles",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "accepted",
+      "field": "pump_cycles",
+      "id": "pump_cycles",
+      "kind": "cumulative",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "sign": {
+        "confirmed": "the core's owner, 15 November 2026",
+        "from": "outside",
+        "says": "pump cycles are inward-positive: a positive cycle moves each moved row's per-cycle count (the membrane set's pumps, by role) from the patch's outside node into its cell; the balance subtracts stoichiometry times cycles from the membrane total",
+        "to": "inside"
+      },
+      "unit": "fmol"
+    },
+    {
+      "array": "pump_dissipated_energy_pJ",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "accepted",
+      "field": "pump_dissipated_energy_pJ",
+      "id": "pump_dissipated_energy_pJ",
+      "kind": "cumulative",
+      "layer": "pumps",
+      "monotone": "non-decreasing",
+      "note": "A total per element: zero or more and never falling, checked at every accepted row (the engine's check, allowance 1e-12 pJ). Under an exact free-energy heat booking a route's value is an exact attribution of its row's fall in free energy between the routes that move it, and cannot be measured apart.",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "pJ"
+    },
+    {
+      "array": "metabolic_work_pJ",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "accepted",
+      "field": "metabolic_work_pJ",
+      "id": "metabolic_work_pJ",
+      "kind": "cumulative",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "pJ"
+    },
+    {
+      "array": "calcium_pump_cycles",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "accepted",
+      "field": "calcium_pump_cycles",
+      "id": "calcium_pump_cycles",
+      "kind": "cumulative",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "sign": {
+        "confirmed": "the core's owner, 15 November 2026",
+        "from": "outside",
+        "says": "pump cycles are inward-positive: a positive cycle moves each moved row's per-cycle count (the membrane set's pumps, by role) from the patch's outside node into its cell; the balance subtracts stoichiometry times cycles from the membrane total",
+        "to": "inside"
+      },
+      "unit": "fmol"
+    },
+    {
+      "array": "calcium_pump_dissipated_energy_pJ",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "accepted",
+      "field": "calcium_pump_dissipated_energy_pJ",
+      "id": "calcium_pump_dissipated_energy_pJ",
+      "kind": "cumulative",
+      "layer": "pumps",
+      "monotone": "non-decreasing",
+      "note": "A total per element: zero or more and never falling, checked at every accepted row (the engine's check, allowance 1e-12 pJ). Under an exact free-energy heat booking a route's value is an exact attribution of its row's fall in free energy between the routes that move it, and cannot be measured apart.",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "pJ"
+    },
+    {
+      "array": "calcium_metabolic_work_pJ",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "accepted",
+      "field": "calcium_metabolic_work_pJ",
+      "id": "calcium_metabolic_work_pJ",
+      "kind": "cumulative",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "pJ"
+    },
+    {
+      "array": "membrane_area_increment_m2",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "accepted",
+      "field": "membrane_area_increment_m2",
+      "id": "membrane_area_increment_m2",
+      "layer": "membrane_state",
+      "owner": "membrane_entity_state@1",
+      "set": "membrane",
+      "unit": "m2",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "membrane_capacitance_increment_F",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "accepted",
+      "field": "membrane_capacitance_increment_F",
+      "id": "membrane_capacitance_increment_F",
+      "layer": "membrane_state",
+      "owner": "membrane_entity_state@1",
+      "set": "membrane",
+      "unit": "F",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "population_abundance_increment",
+      "axes": [
+        "time",
+        "channel"
+      ],
+      "base": "accepted",
+      "field": "population_abundance_increment",
+      "id": "population_abundance_increment",
+      "layer": "membrane_state",
+      "owner": "membrane_entity_state@1",
+      "set": "channel",
+      "unit": "1",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "division_applied",
+      "axes": [
+        "time",
+        "division"
+      ],
+      "base": "accepted",
+      "field": "division_applied",
+      "id": "division_applied",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "division",
+      "unit": "1"
+    },
+    {
+      "array": "partition_moved_fmol",
+      "axes": [
+        "time",
+        "species",
+        "cell"
+      ],
+      "base": "accepted",
+      "field": "partition_moved_fmol",
+      "id": "partition_moved_fmol",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "cell",
+      "unit": "fmol"
+    },
+    {
+      "array": "partition_area_moved_m2",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "accepted",
+      "field": "partition_area_moved_m2",
+      "id": "partition_area_moved_m2",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "membrane",
+      "unit": "m2"
+    },
+    {
+      "array": "partition_capacitance_moved_F",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "accepted",
+      "field": "partition_capacitance_moved_F",
+      "id": "partition_capacitance_moved_F",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "membrane",
+      "unit": "F"
+    },
+    {
+      "array": "partition_units_moved",
+      "axes": [
+        "time",
+        "channel"
+      ],
+      "base": "accepted",
+      "field": "partition_units_moved",
+      "id": "partition_units_moved",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "channel",
+      "unit": "1"
+    },
+    {
+      "array": "partition_retired_membrane_transferred_fmol",
+      "axes": [
+        "time",
+        "species",
+        "membrane"
+      ],
+      "base": "accepted",
+      "field": "partition_retired_membrane_transferred_fmol",
+      "id": "partition_retired_membrane_transferred_fmol",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "membrane",
+      "unit": "fmol"
+    },
+    {
+      "array": "partition_retired_membrane_heat_pJ",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "accepted",
+      "field": "partition_retired_membrane_heat_pJ",
+      "id": "partition_retired_membrane_heat_pJ",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "membrane",
+      "unit": "pJ"
+    },
+    {
+      "array": "partition_retired_junction_transferred_fmol",
+      "axes": [
+        "time",
+        "species",
+        "junction"
+      ],
+      "base": "accepted",
+      "field": "partition_retired_junction_transferred_fmol",
+      "id": "partition_retired_junction_transferred_fmol",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "junction",
+      "unit": "fmol"
+    },
+    {
+      "array": "partition_retired_junction_heat_pJ",
+      "axes": [
+        "time",
+        "junction"
+      ],
+      "base": "accepted",
+      "field": "partition_retired_junction_heat_pJ",
+      "id": "partition_retired_junction_heat_pJ",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "junction",
+      "unit": "pJ"
+    },
+    {
+      "array": "partition_retired_channel_transferred_fmol",
+      "axes": [
+        "time",
+        "species",
+        "channel"
+      ],
+      "base": "accepted",
+      "field": "partition_retired_channel_transferred_fmol",
+      "id": "partition_retired_channel_transferred_fmol",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "channel",
+      "unit": "fmol"
+    },
+    {
+      "array": "partition_retired_channel_heat_pJ",
+      "axes": [
+        "time",
+        "species",
+        "channel"
+      ],
+      "base": "accepted",
+      "field": "partition_retired_channel_heat_pJ",
+      "id": "partition_retired_channel_heat_pJ",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "channel",
+      "unit": "pJ"
+    },
+    {
+      "array": "partition_image_charge_C",
+      "axes": [
+        "time",
+        "outside"
+      ],
+      "base": "accepted",
+      "field": "partition_image_charge_C",
+      "id": "partition_image_charge_C",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "outside",
+      "unit": "C"
+    },
+    {
+      "array": "partition_work_pJ",
+      "axes": [
+        "time",
+        "cell"
+      ],
+      "base": "accepted",
+      "field": "partition_work_pJ",
+      "id": "partition_work_pJ",
+      "kind": "cumulative",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "cell",
+      "unit": "pJ"
+    },
+    {
+      "array": "partition_energy_magnitude_pJ",
+      "axes": [
+        "time",
+        "cell"
+      ],
+      "base": "accepted",
+      "field": "partition_energy_magnitude_pJ",
+      "id": "partition_energy_magnitude_pJ",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "cell",
+      "unit": "pJ"
+    },
+    {
+      "array": "observed_amount_increment",
+      "axes": [
+        "time",
+        "species",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "amount_increment",
+      "id": "observed_amount_increment",
+      "kind": "amount",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "cell",
+      "unit": "fmol",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "observed_extracellular_amount_increment",
+      "axes": [
+        "time",
+        "species",
+        "outside"
+      ],
+      "base": "observation",
+      "field": "extracellular_amount_increment",
+      "id": "observed_extracellular_amount_increment",
+      "kind": "amount",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "outside",
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_membrane_transferred",
+      "axes": [
+        "time",
+        "species",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "membrane_transferred",
+      "id": "observed_membrane_transferred",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "membrane_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "membrane",
+      "sign": {
+        "confirmed": "the core's owner, 15 November 2026",
+        "from": "inside",
+        "says": "a positive amount leaves the patch's cell for its outside node",
+        "to": "outside"
+      },
+      "unit": "fmol",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "observed_junction_transferred",
+      "axes": [
+        "time",
+        "species",
+        "junction"
+      ],
+      "base": "observation",
+      "field": "junction_transferred",
+      "id": "observed_junction_transferred",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "junction_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "junction",
+      "sign": {
+        "confirmed": "the core's owner, 15 November 2026",
+        "from": "sender",
+        "says": "a positive amount leaves the junction's sender cell for its receiver",
+        "to": "receiver"
+      },
+      "unit": "fmol",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "observed_face_transferred",
+      "axes": [
+        "time",
+        "species",
+        "face"
+      ],
+      "base": "observation",
+      "field": "face_transferred",
+      "id": "observed_face_transferred",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "face",
+      "sign": {
+        "confirmed": "the core's owner, 15 November 2026",
+        "from": "sender",
+        "says": "a positive amount leaves the face's sender node for its receiver",
+        "to": "receiver"
+      },
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_reservoir_supplied",
+      "axes": [
+        "time",
+        "species",
+        "outside"
+      ],
+      "base": "observation",
+      "field": "reservoir_supplied",
+      "id": "observed_reservoir_supplied",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "outside",
+      "sign": {
+        "confirmed": "the core's owner, 15 November 2026",
+        "from": "exterior",
+        "says": "a positive amount is supplied into the held outside node from beyond the world",
+        "to": "node"
+      },
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_membrane_dissipated_energy_pJ",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "membrane_dissipated_energy_pJ",
+      "id": "observed_membrane_dissipated_energy_pJ",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "membrane_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "membrane",
+      "unit": "pJ",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "observed_junction_dissipated_energy_pJ",
+      "axes": [
+        "time",
+        "junction"
+      ],
+      "base": "observation",
+      "field": "junction_dissipated_energy_pJ",
+      "id": "observed_junction_dissipated_energy_pJ",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "junction_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "junction",
+      "unit": "pJ",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "observed_face_dissipated_energy_pJ",
+      "axes": [
+        "time",
+        "face"
+      ],
+      "base": "observation",
+      "field": "face_dissipated_energy_pJ",
+      "id": "observed_face_dissipated_energy_pJ",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "monotone": "non-decreasing",
+      "note": "A total per element: zero or more and never falling, checked at every accepted row (the engine's check, allowance 1e-12 pJ). Under an exact free-energy heat booking a route's value is an exact attribution of its row's fall in free energy between the routes that move it, and cannot be measured apart.",
+      "owner": "resolved_pump_tissue@3",
+      "set": "face",
+      "unit": "pJ"
+    },
+    {
+      "array": "observed_electrode_charge_transferred_C",
+      "axes": [
+        "time",
+        "outside"
+      ],
+      "base": "observation",
+      "field": "electrode_charge_transferred_C",
+      "id": "observed_electrode_charge_transferred_C",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "outside_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "outside",
+      "unit": "C",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "observed_reservoir_work_pJ",
+      "axes": [
+        "time",
+        "outside"
+      ],
+      "base": "observation",
+      "field": "reservoir_work_pJ",
+      "id": "observed_reservoir_work_pJ",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "outside",
+      "unit": "pJ"
+    },
+    {
+      "array": "observed_electrode_work_pJ",
+      "axes": [
+        "time",
+        "outside"
+      ],
+      "base": "observation",
+      "field": "electrode_work_pJ",
+      "id": "observed_electrode_work_pJ",
+      "kind": "cumulative",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "outside_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "outside",
+      "unit": "pJ",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "observed_channel_gate",
+      "axes": [
+        "time",
+        "gate",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "channel_gate",
+      "id": "observed_channel_gate",
+      "kind": "level",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "set": "channel",
+      "unit": "1",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "observed_channel_transferred",
+      "axes": [
+        "time",
+        "species",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "channel_transferred",
+      "id": "observed_channel_transferred",
+      "kind": "cumulative",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "channel_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "channel",
+      "sign": {
+        "confirmed": "the core's owner, 15 November 2026",
+        "from": "inside",
+        "says": "a positive amount leaves the cell of the population's patch for that patch's outside node; it is added unchanged into the patch's total in the material balance, the balance's own sum, not the saved membrane_transferred (which holds the passive routes only)",
+        "to": "outside"
+      },
+      "unit": "fmol",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "observed_channel_dissipated_energy_pJ",
+      "axes": [
+        "time",
+        "species",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "channel_dissipated_energy_pJ",
+      "id": "observed_channel_dissipated_energy_pJ",
+      "kind": "cumulative",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "resets": {
+        "by": [
+          "isopotential_partition@1"
+        ],
+        "mask": "channel_active",
+        "says": "Written at the events of these operators, which retire slots: a retired slot's history in this ledger moves into the retiring operator's own record (the composite's checks add it back), so on that slot it restarts at zero. The slots are those its closure closes at that event, where the merged mask named by `mask` (the record view_<mask>) turns false: a retired cell, its membrane patches, the populations on them and its junctions. A difference across such an event is the operator's booking, not this ledger's flow; a heat total only grows with that record added back."
+      },
+      "set": "channel",
+      "unit": "pJ",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "observed_junction_gate",
+      "axes": [
+        "time",
+        "junction"
+      ],
+      "base": "observation",
+      "field": "junction_gate",
+      "id": "observed_junction_gate",
+      "kind": "level",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "set": "junction",
+      "unit": "1",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "observed_pump_cycles",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "pump_cycles",
+      "id": "observed_pump_cycles",
+      "kind": "cumulative",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "sign": {
+        "confirmed": "the core's owner, 15 November 2026",
+        "from": "outside",
+        "says": "pump cycles are inward-positive: a positive cycle moves each moved row's per-cycle count (the membrane set's pumps, by role) from the patch's outside node into its cell; the balance subtracts stoichiometry times cycles from the membrane total",
+        "to": "inside"
+      },
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_pump_dissipated_energy_pJ",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "pump_dissipated_energy_pJ",
+      "id": "observed_pump_dissipated_energy_pJ",
+      "kind": "cumulative",
+      "layer": "pumps",
+      "monotone": "non-decreasing",
+      "note": "A total per element: zero or more and never falling, checked at every accepted row (the engine's check, allowance 1e-12 pJ). Under an exact free-energy heat booking a route's value is an exact attribution of its row's fall in free energy between the routes that move it, and cannot be measured apart.",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "pJ"
+    },
+    {
+      "array": "observed_metabolic_work_pJ",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "metabolic_work_pJ",
+      "id": "observed_metabolic_work_pJ",
+      "kind": "cumulative",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "pJ"
+    },
+    {
+      "array": "observed_calcium_pump_cycles",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "calcium_pump_cycles",
+      "id": "observed_calcium_pump_cycles",
+      "kind": "cumulative",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "sign": {
+        "confirmed": "the core's owner, 15 November 2026",
+        "from": "outside",
+        "says": "pump cycles are inward-positive: a positive cycle moves each moved row's per-cycle count (the membrane set's pumps, by role) from the patch's outside node into its cell; the balance subtracts stoichiometry times cycles from the membrane total",
+        "to": "inside"
+      },
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_calcium_pump_dissipated_energy_pJ",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "calcium_pump_dissipated_energy_pJ",
+      "id": "observed_calcium_pump_dissipated_energy_pJ",
+      "kind": "cumulative",
+      "layer": "pumps",
+      "monotone": "non-decreasing",
+      "note": "A total per element: zero or more and never falling, checked at every accepted row (the engine's check, allowance 1e-12 pJ). Under an exact free-energy heat booking a route's value is an exact attribution of its row's fall in free energy between the routes that move it, and cannot be measured apart.",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "pJ"
+    },
+    {
+      "array": "observed_calcium_metabolic_work_pJ",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "calcium_metabolic_work_pJ",
+      "id": "observed_calcium_metabolic_work_pJ",
+      "kind": "cumulative",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "pJ"
+    },
+    {
+      "array": "observed_amount",
+      "axes": [
+        "time",
+        "species",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "amount",
+      "id": "observed_amount",
+      "kind": "amount",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "cell",
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_extracellular_amount",
+      "axes": [
+        "time",
+        "species",
+        "outside"
+      ],
+      "base": "observation",
+      "field": "extracellular_amount",
+      "id": "observed_extracellular_amount",
+      "kind": "amount",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "outside",
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_cell_potential_V",
+      "axes": [
+        "time",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "cell_potential_V",
+      "id": "observed_cell_potential_V",
+      "kind": "level",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "cell",
+      "unit": "V"
+    },
+    {
+      "array": "observed_extracellular_potential_V",
+      "axes": [
+        "time",
+        "outside"
+      ],
+      "base": "observation",
+      "field": "extracellular_potential_V",
+      "id": "observed_extracellular_potential_V",
+      "kind": "level",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "outside",
+      "unit": "V"
+    },
+    {
+      "array": "observed_membrane_voltage_V",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "difference": {
+        "minus": "outside",
+        "plus": "inside",
+        "says": "the potential of the patch's cell less that of its outside node: positive when the cell is at the higher potential",
+        "source": "read from the code: numerics/surface_transport.transport (the core's owner to confirm)"
+      },
+      "field": "membrane_voltage_V",
+      "id": "observed_membrane_voltage_V",
+      "kind": "level",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "V"
+    },
+    {
+      "array": "observed_junction_voltage_V",
+      "axes": [
+        "time",
+        "junction"
+      ],
+      "base": "observation",
+      "difference": {
+        "minus": "receiver",
+        "plus": "sender",
+        "says": "the potential of the junction's sender cell less that of its receiver: positive when the sender is at the higher potential",
+        "source": "read from the code: numerics/surface_transport.transport (the core's owner to confirm)"
+      },
+      "field": "junction_voltage_V",
+      "id": "observed_junction_voltage_V",
+      "kind": "level",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "junction",
+      "unit": "V"
+    },
+    {
+      "array": "observed_membrane_flux_fmol_s",
+      "axes": [
+        "time",
+        "species",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "membrane_flux_fmol_s",
+      "id": "observed_membrane_flux_fmol_s",
+      "kind": "rate",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "fmol/s"
+    },
+    {
+      "array": "observed_junction_flux_fmol_s",
+      "axes": [
+        "time",
+        "species",
+        "junction"
+      ],
+      "base": "observation",
+      "field": "junction_flux_fmol_s",
+      "id": "observed_junction_flux_fmol_s",
+      "kind": "rate",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "junction",
+      "unit": "fmol/s"
+    },
+    {
+      "array": "observed_face_flux_fmol_s",
+      "axes": [
+        "time",
+        "species",
+        "face"
+      ],
+      "base": "observation",
+      "field": "face_flux_fmol_s",
+      "id": "observed_face_flux_fmol_s",
+      "kind": "rate",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "face",
+      "unit": "fmol/s"
+    },
+    {
+      "array": "observed_reservoir_supply_fmol_s",
+      "axes": [
+        "time",
+        "species",
+        "outside"
+      ],
+      "base": "observation",
+      "field": "reservoir_supply_fmol_s",
+      "id": "observed_reservoir_supply_fmol_s",
+      "kind": "rate",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "outside",
+      "unit": "fmol/s"
+    },
+    {
+      "array": "observed_electrode_charge_C",
+      "axes": [
+        "time",
+        "outside"
+      ],
+      "base": "observation",
+      "field": "electrode_charge_C",
+      "id": "observed_electrode_charge_C",
+      "kind": "amount",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "outside",
+      "unit": "C"
+    },
+    {
+      "array": "observed_electrode_current_A",
+      "axes": [
+        "time",
+        "outside"
+      ],
+      "base": "observation",
+      "field": "electrode_current_A",
+      "id": "observed_electrode_current_A",
+      "kind": "rate",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "outside",
+      "unit": "A"
+    },
+    {
+      "array": "observed_reservoir_power_pJ_s",
+      "axes": [
+        "time",
+        "world"
+      ],
+      "base": "observation",
+      "field": "reservoir_power_pJ_s",
+      "id": "observed_reservoir_power_pJ_s",
+      "kind": "rate",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "world",
+      "unit": "pJ/s"
+    },
+    {
+      "array": "observed_electrode_power_pJ_s",
+      "axes": [
+        "time",
+        "world"
+      ],
+      "base": "observation",
+      "field": "electrode_power_pJ_s",
+      "id": "observed_electrode_power_pJ_s",
+      "kind": "rate",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "world",
+      "unit": "pJ/s"
+    },
+    {
+      "array": "observed_charge_residual_C",
+      "axes": [
+        "time",
+        "node"
+      ],
+      "base": "observation",
+      "field": "charge_residual_C",
+      "id": "observed_charge_residual_C",
+      "kind": "level",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "node",
+      "unit": "C"
+    },
+    {
+      "array": "observed_component_current_residual_A",
+      "axes": [
+        "time",
+        "floating_component"
+      ],
+      "base": "observation",
+      "field": "component_current_residual_A",
+      "id": "observed_component_current_residual_A",
+      "kind": "rate",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "floating_component",
+      "unit": "A"
+    },
+    {
+      "array": "observed_energy_balance_pJ_s",
+      "axes": [
+        "time",
+        "world"
+      ],
+      "base": "observation",
+      "field": "energy_balance_pJ_s",
+      "id": "observed_energy_balance_pJ_s",
+      "kind": "rate",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "world",
+      "unit": "pJ/s"
+    },
+    {
+      "array": "observed_membrane_availability",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "membrane_availability",
+      "id": "observed_membrane_availability",
+      "kind": "level",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "1"
+    },
+    {
+      "array": "observed_junction_availability",
+      "axes": [
+        "time",
+        "junction"
+      ],
+      "base": "observation",
+      "field": "junction_availability",
+      "id": "observed_junction_availability",
+      "kind": "level",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "set": "junction",
+      "unit": "1"
+    },
+    {
+      "array": "observed_channel_flux_fmol_s",
+      "axes": [
+        "time",
+        "species",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "channel_flux_fmol_s",
+      "id": "observed_channel_flux_fmol_s",
+      "kind": "rate",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "set": "channel",
+      "unit": "fmol/s"
+    },
+    {
+      "array": "observed_channel_targets",
+      "axes": [
+        "time",
+        "gate",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "channel_targets",
+      "id": "observed_channel_targets",
+      "kind": "level",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "set": "channel",
+      "unit": "1"
+    },
+    {
+      "array": "observed_channel_tau_s",
+      "axes": [
+        "time",
+        "gate",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "channel_tau_s",
+      "id": "observed_channel_tau_s",
+      "kind": "level",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "set": "channel",
+      "unit": "s"
+    },
+    {
+      "array": "observed_pump_cycle_rate_fmol_s",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "pump_cycle_rate_fmol_s",
+      "id": "observed_pump_cycle_rate_fmol_s",
+      "kind": "rate",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "fmol/s"
+    },
+    {
+      "array": "observed_pump_affinity_J_mol",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "pump_affinity_J_mol",
+      "id": "observed_pump_affinity_J_mol",
+      "kind": "level",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "J/mol"
+    },
+    {
+      "array": "observed_metabolic_power_pJ_s",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "metabolic_power_pJ_s",
+      "id": "observed_metabolic_power_pJ_s",
+      "kind": "rate",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "pJ/s"
+    },
+    {
+      "array": "observed_channel_availability",
+      "axes": [
+        "time",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "channel_availability",
+      "id": "observed_channel_availability",
+      "kind": "level",
+      "layer": "channels",
+      "owner": "resolved_pump_tissue@3",
+      "set": "channel",
+      "unit": "1"
+    },
+    {
+      "array": "observed_pump_availability",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "pump_availability",
+      "id": "observed_pump_availability",
+      "kind": "level",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "1"
+    },
+    {
+      "array": "observed_calcium_pump_cycle_rate_fmol_s",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "calcium_pump_cycle_rate_fmol_s",
+      "id": "observed_calcium_pump_cycle_rate_fmol_s",
+      "kind": "rate",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "fmol/s"
+    },
+    {
+      "array": "observed_calcium_pump_affinity_J_mol",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "calcium_pump_affinity_J_mol",
+      "id": "observed_calcium_pump_affinity_J_mol",
+      "kind": "level",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "J/mol"
+    },
+    {
+      "array": "observed_calcium_metabolic_power_pJ_s",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "calcium_metabolic_power_pJ_s",
+      "id": "observed_calcium_metabolic_power_pJ_s",
+      "kind": "rate",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "pJ/s"
+    },
+    {
+      "array": "observed_calcium_pump_availability",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "calcium_pump_availability",
+      "id": "observed_calcium_pump_availability",
+      "kind": "level",
+      "layer": "pumps",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "1"
+    },
+    {
+      "array": "observed_membrane_area_increment_m2",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "membrane_area_increment_m2",
+      "id": "observed_membrane_area_increment_m2",
+      "layer": "membrane_state",
+      "owner": "membrane_entity_state@1",
+      "set": "membrane",
+      "unit": "m2",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "observed_membrane_capacitance_increment_F",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "membrane_capacitance_increment_F",
+      "id": "observed_membrane_capacitance_increment_F",
+      "layer": "membrane_state",
+      "owner": "membrane_entity_state@1",
+      "set": "membrane",
+      "unit": "F",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "observed_population_abundance_increment",
+      "axes": [
+        "time",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "population_abundance_increment",
+      "id": "observed_population_abundance_increment",
+      "layer": "membrane_state",
+      "owner": "membrane_entity_state@1",
+      "set": "channel",
+      "unit": "1",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "observed_membrane_area_m2",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "membrane_area_m2",
+      "id": "observed_membrane_area_m2",
+      "layer": "membrane_state",
+      "owner": "membrane_entity_state@1",
+      "set": "membrane",
+      "unit": "m2"
+    },
+    {
+      "array": "observed_membrane_capacitance_F",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "membrane_capacitance_F",
+      "id": "observed_membrane_capacitance_F",
+      "layer": "membrane_state",
+      "owner": "membrane_entity_state@1",
+      "set": "membrane",
+      "unit": "F"
+    },
+    {
+      "array": "observed_population_units",
+      "axes": [
+        "time",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "population_units",
+      "id": "observed_population_units",
+      "layer": "membrane_state",
+      "owner": "membrane_entity_state@1",
+      "set": "channel",
+      "unit": "1"
+    },
+    {
+      "array": "observed_division_applied",
+      "axes": [
+        "time",
+        "division"
+      ],
+      "base": "observation",
+      "field": "division_applied",
+      "id": "observed_division_applied",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "division",
+      "unit": "1"
+    },
+    {
+      "array": "observed_partition_moved_fmol",
+      "axes": [
+        "time",
+        "species",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "partition_moved_fmol",
+      "id": "observed_partition_moved_fmol",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "cell",
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_partition_area_moved_m2",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "partition_area_moved_m2",
+      "id": "observed_partition_area_moved_m2",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "membrane",
+      "unit": "m2"
+    },
+    {
+      "array": "observed_partition_capacitance_moved_F",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "partition_capacitance_moved_F",
+      "id": "observed_partition_capacitance_moved_F",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "membrane",
+      "unit": "F"
+    },
+    {
+      "array": "observed_partition_units_moved",
+      "axes": [
+        "time",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "partition_units_moved",
+      "id": "observed_partition_units_moved",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "channel",
+      "unit": "1"
+    },
+    {
+      "array": "observed_partition_retired_membrane_transferred_fmol",
+      "axes": [
+        "time",
+        "species",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "partition_retired_membrane_transferred_fmol",
+      "id": "observed_partition_retired_membrane_transferred_fmol",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "membrane",
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_partition_retired_membrane_heat_pJ",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "partition_retired_membrane_heat_pJ",
+      "id": "observed_partition_retired_membrane_heat_pJ",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "membrane",
+      "unit": "pJ"
+    },
+    {
+      "array": "observed_partition_retired_junction_transferred_fmol",
+      "axes": [
+        "time",
+        "species",
+        "junction"
+      ],
+      "base": "observation",
+      "field": "partition_retired_junction_transferred_fmol",
+      "id": "observed_partition_retired_junction_transferred_fmol",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "junction",
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_partition_retired_junction_heat_pJ",
+      "axes": [
+        "time",
+        "junction"
+      ],
+      "base": "observation",
+      "field": "partition_retired_junction_heat_pJ",
+      "id": "observed_partition_retired_junction_heat_pJ",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "junction",
+      "unit": "pJ"
+    },
+    {
+      "array": "observed_partition_retired_channel_transferred_fmol",
+      "axes": [
+        "time",
+        "species",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "partition_retired_channel_transferred_fmol",
+      "id": "observed_partition_retired_channel_transferred_fmol",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "channel",
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_partition_retired_channel_heat_pJ",
+      "axes": [
+        "time",
+        "species",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "partition_retired_channel_heat_pJ",
+      "id": "observed_partition_retired_channel_heat_pJ",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "channel",
+      "unit": "pJ"
+    },
+    {
+      "array": "observed_partition_image_charge_C",
+      "axes": [
+        "time",
+        "outside"
+      ],
+      "base": "observation",
+      "field": "partition_image_charge_C",
+      "id": "observed_partition_image_charge_C",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "outside",
+      "unit": "C"
+    },
+    {
+      "array": "observed_partition_work_pJ",
+      "axes": [
+        "time",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "partition_work_pJ",
+      "id": "observed_partition_work_pJ",
+      "kind": "cumulative",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "cell",
+      "unit": "pJ"
+    },
+    {
+      "array": "observed_partition_energy_magnitude_pJ",
+      "axes": [
+        "time",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "partition_energy_magnitude_pJ",
+      "id": "observed_partition_energy_magnitude_pJ",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "cell",
+      "unit": "pJ"
+    },
+    {
+      "array": "observed_partition_slot_phase",
+      "axes": [
+        "time",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "partition_slot_phase",
+      "id": "observed_partition_slot_phase",
+      "layer": "division",
+      "owner": "isopotential_partition@1",
+      "set": "cell",
+      "unit": "1"
+    },
+    {
+      "array": "view_membrane_area",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "membrane_area",
+      "id": "view_membrane_area",
+      "kind": "level",
+      "layer": "membrane_state",
+      "note": "Door S's merged view at the observe stage: the bound value with each change merged in declared order and closures applied, as the host observer formed it for this row's saved readouts (pump_composite.observe_history); re-formed at write time by the composite's own view function on the observed state, bitwise the same. Not the device step's own formation.",
+      "owner": "membrane_entity_state@1",
+      "set": "membrane",
+      "unit": "m2",
+      "writers": [
+        "membrane_entity_state@1"
+      ]
+    },
+    {
+      "array": "view_membrane_capacitance",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "membrane_capacitance",
+      "id": "view_membrane_capacitance",
+      "kind": "level",
+      "layer": "membrane_state",
+      "note": "Door S's merged view at the observe stage: the bound value with each change merged in declared order and closures applied, as the host observer formed it for this row's saved readouts (pump_composite.observe_history); re-formed at write time by the composite's own view function on the observed state, bitwise the same. Not the device step's own formation.",
+      "owner": "membrane_entity_state@1",
+      "set": "membrane",
+      "unit": "F",
+      "writers": [
+        "membrane_entity_state@1"
+      ]
+    },
+    {
+      "array": "view_initial_cell_charge_C",
+      "axes": [
+        "time",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "initial_cell_charge_C",
+      "id": "view_initial_cell_charge_C",
+      "kind": "level",
+      "layer": "division",
+      "note": "Door S's merged view at the observe stage: the bound value with each change merged in declared order and closures applied, as the host observer formed it for this row's saved readouts (pump_composite.observe_history); re-formed at write time by the composite's own view function on the observed state, bitwise the same. Not the device step's own formation.",
+      "owner": "isopotential_partition@1",
+      "set": "cell",
+      "unit": "C",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "view_channel_abundance",
+      "axes": [
+        "time",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "channel_abundance",
+      "id": "view_channel_abundance",
+      "kind": "level",
+      "layer": "membrane_state",
+      "note": "Door S's merged view at the observe stage: the bound value with each change merged in declared order and closures applied, as the host observer formed it for this row's saved readouts (pump_composite.observe_history); re-formed at write time by the composite's own view function on the observed state, bitwise the same. Not the device step's own formation.",
+      "owner": "membrane_entity_state@1",
+      "set": "channel",
+      "unit": "1",
+      "writers": [
+        "membrane_entity_state@1"
+      ]
+    },
+    {
+      "array": "view_active",
+      "axes": [
+        "time",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "active",
+      "id": "view_active",
+      "kind": "level",
+      "layer": "division",
+      "note": "Door S's merged view at the observe stage: the bound value with each change merged in declared order and closures applied, as the host observer formed it for this row's saved readouts (pump_composite.observe_history); re-formed at write time by the composite's own view function on the observed state, bitwise the same. Not the device step's own formation.",
+      "owner": "isopotential_partition@1",
+      "set": "cell",
+      "unit": "1",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "view_outside_active",
+      "axes": [
+        "time",
+        "outside"
+      ],
+      "base": "observation",
+      "field": "outside_active",
+      "id": "view_outside_active",
+      "kind": "level",
+      "layer": "division",
+      "note": "Door S's merged view at the observe stage: the bound value with each change merged in declared order and closures applied, as the host observer formed it for this row's saved readouts (pump_composite.observe_history); re-formed at write time by the composite's own view function on the observed state, bitwise the same. Not the device step's own formation.",
+      "owner": "isopotential_partition@1",
+      "set": "outside",
+      "unit": "1",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "view_membrane_active",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "field": "membrane_active",
+      "id": "view_membrane_active",
+      "kind": "level",
+      "layer": "division",
+      "note": "Door S's merged view at the observe stage: the bound value with each change merged in declared order and closures applied, as the host observer formed it for this row's saved readouts (pump_composite.observe_history); re-formed at write time by the composite's own view function on the observed state, bitwise the same. Not the device step's own formation.",
+      "owner": "isopotential_partition@1",
+      "set": "membrane",
+      "unit": "1",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "view_channel_active",
+      "axes": [
+        "time",
+        "channel"
+      ],
+      "base": "observation",
+      "field": "channel_active",
+      "id": "view_channel_active",
+      "kind": "level",
+      "layer": "division",
+      "note": "Door S's merged view at the observe stage: the bound value with each change merged in declared order and closures applied, as the host observer formed it for this row's saved readouts (pump_composite.observe_history); re-formed at write time by the composite's own view function on the observed state, bitwise the same. Not the device step's own formation.",
+      "owner": "isopotential_partition@1",
+      "set": "channel",
+      "unit": "1",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "view_junction_active",
+      "axes": [
+        "time",
+        "junction"
+      ],
+      "base": "observation",
+      "field": "junction_active",
+      "id": "view_junction_active",
+      "kind": "level",
+      "layer": "division",
+      "note": "Door S's merged view at the observe stage: the bound value with each change merged in declared order and closures applied, as the host observer formed it for this row's saved readouts (pump_composite.observe_history); re-formed at write time by the composite's own view function on the observed state, bitwise the same. Not the device step's own formation.",
+      "owner": "isopotential_partition@1",
+      "set": "junction",
+      "unit": "1",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "view_face_active",
+      "axes": [
+        "time",
+        "face"
+      ],
+      "base": "observation",
+      "field": "face_active",
+      "id": "view_face_active",
+      "kind": "level",
+      "layer": "division",
+      "note": "Door S's merged view at the observe stage: the bound value with each change merged in declared order and closures applied, as the host observer formed it for this row's saved readouts (pump_composite.observe_history); re-formed at write time by the composite's own view function on the observed state, bitwise the same. Not the device step's own formation.",
+      "owner": "isopotential_partition@1",
+      "set": "face",
+      "unit": "1",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    },
+    {
+      "array": "view_extracellular_amount_reference",
+      "axes": [
+        "time",
+        "species",
+        "outside"
+      ],
+      "base": "observation",
+      "field": "extracellular_amount_reference",
+      "id": "view_extracellular_amount_reference",
+      "kind": "level",
+      "layer": "division",
+      "note": "Door S's merged view at the observe stage: the bound value with each change merged in declared order and closures applied, as the host observer formed it for this row's saved readouts (pump_composite.observe_history); re-formed at write time by the composite's own view function on the observed state, bitwise the same. Not the device step's own formation.",
+      "owner": "isopotential_partition@1",
+      "set": "outside",
+      "unit": "fmol",
+      "writers": [
+        "isopotential_partition@1"
+      ]
+    }
+  ],
+  "run": {
+    "composition": {
+      "inner_model": "resolved_pump_tissue@3",
+      "model": "resolved_pump_composite@1",
+      "operators": [
+        "membrane_entity_state@1",
+        "isopotential_partition@1"
+      ]
+    },
+    "definition_sha256": "009f46f1efd5508412b95ab59e3dfe7328191e6028a6b8d53133f1c443a06554",
+    "end": {
+      "status": "complete",
+      "step": 4,
+      "time": 0.004
+    },
+    "engine_models": [
+      "resolved_pump_composite@1",
+      "resolved_pump_tissue@3",
+      "membrane_entity_state@1",
+      "isopotential_partition@1"
+    ],
+    "id": "division-short",
+    "label": "the visualizer's fixture of the run view's writer: S5's partition world",
+    "model": "resolved_pump_composite@1",
+    "scale": "cell"
+  },
+  "sets": [
+    {
+      "id": "species",
+      "ids": [
+        "Na",
+        "K",
+        "M",
+        "P"
+      ],
+      "scale": "molecule",
+      "species": [
+        {
+          "identity": null
+        },
+        {
+          "identity": null
+        },
+        {
+          "identity": null
+        },
+        {
+          "identity": null
+        }
+      ],
+      "valence": [
+        1,
+        1,
+        -1,
+        -1
+      ]
+    },
+    {
+      "geometry": null,
+      "id": "cell",
+      "ids": [
+        "cell_0",
+        "d1",
+        "d2"
+      ],
+      "lifetimes": [
+        [
+          null,
+          0.002
+        ],
+        [
+          0.002,
+          null
+        ],
+        [
+          0.002,
+          null
+        ]
+      ],
+      "scale": "cell"
+    },
+    {
+      "geometry": null,
+      "holds": "outside node",
+      "id": "outside",
+      "ids": [
+        "bath_0"
+      ],
+      "reservoir": [
+        true
+      ],
+      "roles": {
+        "exterior": "beyond the world (a held node's reservoir)",
+        "node": "the node"
+      },
+      "scale": "cell"
+    },
+    {
+      "calcium_pumps": [
+        null,
+        null,
+        null
+      ],
+      "geometry": {
+        "index": [
+          0,
+          1,
+          2
+        ],
+        "kind": "on",
+        "set": "cell"
+      },
+      "holds": "membrane patch",
+      "id": "membrane",
+      "ids": [
+        "membrane_0",
+        "membrane_0_d1",
+        "membrane_0_d2"
+      ],
+      "laws": [
+        {
+          "law_id": "constant_field@1"
+        },
+        {
+          "law_id": "constant_field@1"
+        },
+        {
+          "law_id": "constant_field@1"
+        }
+      ],
+      "outside": {
+        "index": [
+          0,
+          0,
+          0
+        ],
+        "set": "outside"
+      },
+      "pumps": [
+        null,
+        null,
+        null
+      ],
+      "pumps_are": "columns of this set (version 1)",
+      "roles": {
+        "inside": "the patch's cell",
+        "outside": "the patch's outside node (the set's outside index)"
+      },
+      "scale": "cell"
+    },
+    {
+      "geometry": {
+        "between": "cell",
+        "ends": [],
+        "kind": "links"
+      },
+      "id": "junction",
+      "ids": [],
+      "laws": [],
+      "roles": {
+        "receiver": "its second cell (ends[1])",
+        "sender": "the junction's first cell (ends[0])"
+      },
+      "scale": "cell"
+    },
+    {
+      "geometry": {
+        "between": "outside",
+        "ends": [],
+        "kind": "links"
+      },
+      "holds": "face",
+      "id": "face",
+      "ids": [],
+      "laws": [],
+      "roles": {
+        "receiver": "its second outside node (ends[1])",
+        "sender": "the face's first outside node (ends[0])"
+      },
+      "scale": "cell"
+    },
+    {
+      "geometry": {
+        "index": [
+          0,
+          0,
+          1,
+          2,
+          1,
+          2
+        ],
+        "kind": "on",
+        "set": "membrane"
+      },
+      "holds": "channel population",
+      "id": "channel",
+      "ids": [
+        "kir_0",
+        "nav_0",
+        "kir_0_d1",
+        "kir_0_d2",
+        "nav_0_d1",
+        "nav_0_d2"
+      ],
+      "laws": [
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "kir2p1_mh2@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "nav1p2_m3h_regularized@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "kir2p1_mh2@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "kir2p1_mh2@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "nav1p2_m3h_regularized@1",
+          "provenance": "parity"
+        },
+        {
+          "gates": [
+            "m",
+            "h"
+          ],
+          "law_id": "nav1p2_m3h_regularized@1",
+          "provenance": "parity"
+        }
+      ],
+      "roles": {
+        "inside": "the cell of the population's patch",
+        "outside": "that patch's outside node"
+      },
+      "scale": "cell"
+    },
+    {
+      "holds": "channel gate row",
+      "id": "gate",
+      "ids": [
+        "gate_0",
+        "gate_1"
+      ],
+      "says": "row i of a population's gates is gates[i] of its law (the channel set)",
+      "scale": "molecule"
+    },
+    {
+      "composed_of": [
+        "cell",
+        "outside"
+      ],
+      "holds": "field node",
+      "id": "node",
+      "ids": [
+        "cell_0",
+        "d1",
+        "d2",
+        "bath_0"
+      ],
+      "scale": "cell"
+    },
+    {
+      "id": "world",
+      "ids": [
+        "world"
+      ],
+      "scale": "cell"
+    },
+    {
+      "holds": "floating capacitor component",
+      "id": "floating_component",
+      "ids": [],
+      "members": [],
+      "scale": "cell"
+    },
+    {
+      "holds": "division",
+      "id": "division",
+      "ids": [
+        "first"
+      ],
+      "owner": "isopotential_partition@1",
+      "scale": "cell"
+    }
+  ],
+  "space": null,
+  "time": {
+    "bases": [
+      {
+        "array": "accepted_times",
+        "files": [
+          {
+            "file": "chunks/window-00000000.npz",
+            "rows": [
+              0,
+              3
+            ]
+          },
+          {
+            "file": "chunks/window-00000001.npz",
+            "rows": [
+              3,
+              5
+            ]
+          }
+        ],
+        "id": "accepted",
+        "says": "the state's accepted rows"
+      },
+      {
+        "array": "observation_times",
+        "files": [
+          {
+            "file": "chunks/window-00000000.npz",
+            "rows": [
+              0,
+              3
+            ]
+          },
+          {
+            "file": "chunks/window-00000001.npz",
+            "rows": [
+              3,
+              5
+            ]
+          }
+        ],
+        "id": "observation",
+        "says": "the observed rows"
+      }
+    ],
+    "event_rows": "Every event here is an operator's event map, which acts at the start of the step that leaves the event's time: the row saved at that time holds the state before the event, the next row the state after it.",
+    "unit": "s"
+  },
+  "unstated": [
+    {
+      "id": "source",
+      "what": "engine source",
+      "why": "the engine runs from a checkout, not an execution snapshot: its revision is the caller's label, if given"
+    },
+    {
+      "id": "geometry",
+      "what": "geometry",
+      "why": "the caller gave no builder geometry: no coordinates, and no space"
+    },
+    {
+      "id": "division_applied",
+      "what": "kind",
+      "why": "isopotential_partition@1 declares no kind for it"
+    },
+    {
+      "id": "membrane_area_increment_m2",
+      "what": "kind",
+      "why": "membrane_entity_state@1 declares no kind for it"
+    },
+    {
+      "id": "membrane_area_m2",
+      "what": "kind",
+      "why": "membrane_entity_state@1 declares no kind for it"
+    },
+    {
+      "id": "membrane_capacitance_F",
+      "what": "kind",
+      "why": "membrane_entity_state@1 declares no kind for it"
+    },
+    {
+      "id": "membrane_capacitance_increment_F",
+      "what": "kind",
+      "why": "membrane_entity_state@1 declares no kind for it"
+    },
+    {
+      "id": "partition_area_moved_m2",
+      "what": "kind",
+      "why": "isopotential_partition@1 declares no kind for it"
+    },
+    {
+      "id": "partition_capacitance_moved_F",
+      "what": "kind",
+      "why": "isopotential_partition@1 declares no kind for it"
+    },
+    {
+      "id": "partition_energy_magnitude_pJ",
+      "what": "kind",
+      "why": "isopotential_partition@1 declares no kind for it"
+    },
+    {
+      "id": "partition_image_charge_C",
+      "what": "kind",
+      "why": "isopotential_partition@1 declares no kind for it"
+    },
+    {
+      "id": "partition_moved_fmol",
+      "what": "kind",
+      "why": "isopotential_partition@1 declares no kind for it"
+    },
+    {
+      "id": "partition_retired_channel_heat_pJ",
+      "what": "kind",
+      "why": "isopotential_partition@1 declares no kind for it"
+    },
+    {
+      "id": "partition_retired_channel_transferred_fmol",
+      "what": "kind",
+      "why": "isopotential_partition@1 declares no kind for it"
+    },
+    {
+      "id": "partition_retired_junction_heat_pJ",
+      "what": "kind",
+      "why": "isopotential_partition@1 declares no kind for it"
+    },
+    {
+      "id": "partition_retired_junction_transferred_fmol",
+      "what": "kind",
+      "why": "isopotential_partition@1 declares no kind for it"
+    },
+    {
+      "id": "partition_retired_membrane_heat_pJ",
+      "what": "kind",
+      "why": "isopotential_partition@1 declares no kind for it"
+    },
+    {
+      "id": "partition_retired_membrane_transferred_fmol",
+      "what": "kind",
+      "why": "isopotential_partition@1 declares no kind for it"
+    },
+    {
+      "id": "partition_slot_phase",
+      "what": "kind",
+      "why": "isopotential_partition@1 declares no kind for it"
+    },
+    {
+      "id": "partition_units_moved",
+      "what": "kind",
+      "why": "isopotential_partition@1 declares no kind for it"
+    },
+    {
+      "id": "population_abundance_increment",
+      "what": "kind",
+      "why": "membrane_entity_state@1 declares no kind for it"
+    },
+    {
+      "id": "population_units",
+      "what": "kind",
+      "why": "membrane_entity_state@1 declares no kind for it"
+    }
+  ]
+}

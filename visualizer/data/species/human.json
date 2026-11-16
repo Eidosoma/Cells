@@ -5,12 +5,13 @@
  "organism": "Homo sapiens",
  "taxon": 9606,
  "plain": "The law inventory names its candidate proteins by their human genes, so the human side of the protein atlas is the inventory's own.",
+ "group": "Animals",
  "order": 10,
  "default": false,
  "made": "2026-11-15",
  "modelled": {
   "state": "generic",
-  "text": "Cells models a generic cell and a sheet of such cells, with laws whose candidate proteins are named by their human genes. No human cell type, organ or body is modelled: the heart and the body are placeholder outlines."
+  "text": "Cells models a generic cell and a sheet of such cells, with laws whose candidate proteins are named by their human genes. No human cell type, organ or body is modelled yet. Specific cell types are planned: the first is a human ventricular heart cell, whose laws will follow O'Hara and Rudy's model of 2011 (the endocardial cell). That choice is made and nothing of it is built yet (decisions D183 and D184, 16 November 2026). The heart and the body are placeholder outlines."
  },
  "levels": [
   {

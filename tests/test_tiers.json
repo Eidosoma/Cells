@@ -97,6 +97,8 @@
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/tier-gate/tiers-207a86c9/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/compartment/tiers-7eb1f5be/measured.json",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/a7/tiers-f991fce1/measured.json",
+  "/mnt/workspaces/Cells/core-next-20261116/measure-82d3d67a/measured.json",
+  "/mnt/workspaces/Cells/core-next-20261116/measure-19d850bc/measured.json",
   "/mnt/workspaces/Cells/run-view-20261115-01/rows-0407c088/measure/measured.json"
  ],
  "measured_provenance": [
@@ -795,6 +797,22 @@
    "root": "/mnt/workspaces/Cells/d172-restructure-20261115-01/integration/a7/snapshot-f991fce1",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-16T05:31:51+00:00"
+  },
+  {
+   "git_revision": "82d3d67ae79dd4e65aa66cda086b78914a362c96",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-next-20261116/snapshot-full-82d3d67a",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-16T16:41:19+00:00"
+  },
+  {
+   "git_revision": "19d850bc390f10e065b9d7e0b5cbce81d23e5bb5",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-next-20261116/snapshot-full-19d850bc",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-16T17:13:46+00:00"
   },
   {
    "git_revision": "0407c0880c0bafe80bfb5968b502eaf32d2dfc07",
@@ -2121,6 +2139,22 @@
     }
    },
    {
+    "file": "tests/unit/test_inner_view_declarations.py",
+    "seconds": 4.18,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_insertion_gate_at_opening.py",
+    "seconds": 3.02,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
     "file": "tests/unit/test_ionic_plan_admission.py",
     "seconds": 4.44,
     "exit_code": 0,
@@ -2217,6 +2251,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 13
+    }
+   },
+   {
+    "file": "tests/unit/test_kind_schedules.py",
+    "seconds": 3.48,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    },
    {
@@ -4310,6 +4352,62 @@
     }
    },
    {
+    "file": "tests/unit/test_kind_book_control.py",
+    "seconds": 31.37,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_kind_routing.py",
+    "seconds": 20.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_kind_routing_paths.py",
+    "seconds": 70.06,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_kind_schedules_runs.py",
+    "seconds": 48.28,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_kind_schedules_runs_paths.py",
+    "seconds": 57.01,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_kind_stored_rate.py",
+    "seconds": 43.32,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_ledger_lists.py",
+    "seconds": 38.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
     "file": "tests/unit/test_local_channel_design.py",
     "seconds": 33.26,
     "exit_code": 0,
@@ -4408,10 +4506,10 @@
    },
    {
     "file": "tests/unit/test_passive_routes_kind.py",
-    "seconds": 42.87,
+    "seconds": 52.73,
     "exit_code": 0,
     "counts": {
-     "passed": 7
+     "passed": 9
     }
    },
    {

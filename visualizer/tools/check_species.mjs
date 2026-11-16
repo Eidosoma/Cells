@@ -8,6 +8,7 @@
 //   WIDTH=1400 node tools/check_species.mjs     another window width (1280 by default)
 //   NOFONTS=1 node tools/check_species.mjs      with the web fonts blocked, as on a slow network
 //   EXPECT=card node tools/check_species.mjs    where the switch is expected to stand (bar by default)
+//   PICTURES=DIR node tools/check_species.mjs   pictures of the species dropdown into DIR, and no checks
 //
 // One browser at a time: it takes the lock in tools/lib/browser_lock.mjs, whose profile
 // folder is on disk and removed afterwards.
@@ -97,11 +98,58 @@ const press = async (selector) => {
   if (!at) throw new Error(`nothing matches ${selector}`);
   await click(at.x, at.y);
 };
-const pressSpecies = async (id) => {
-  const at = await evaluate(`(() => { const el = [...${V}.shadowRoot.querySelectorAll('[data-species="${id}"]')].find((b) => b.offsetParent); if (!el) return null; el.scrollIntoView({ block: "nearest" }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
-  if (!at) throw new Error(`no button for the species ${id}`);
-  await click(at.x, at.y);
+// The species switch is a dropdown. Where its pill stands, and whether its list is open.
+const pill = () => evaluate(`(() => { const el = [...${V}.shadowRoot.querySelectorAll(".species-pick")].find((b) => b.offsetParent); if (!el) return null; el.scrollIntoView({ block: "nearest" }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, expanded: el.getAttribute("aria-expanded") }; })()`);
+// What the open list shows: its rows as a visitor reads them, and where it lies in the window.
+const list = () =>
+  evaluate(`(() => {
+    const root = ${V}.shadowRoot, box = root.querySelector(".species-list"), button = [...root.querySelectorAll(".species-pick")].find((b) => b.offsetParent);
+    if (!box || box.hidden) return { open: false, expanded: button?.getAttribute("aria-expanded") ?? null };
+    const r = box.getBoundingClientRect(), b = button.getBoundingClientRect();
+    return {
+      open: true,
+      expanded: button.getAttribute("aria-expanded"),
+      roles: [button.getAttribute("role"), button.getAttribute("aria-haspopup"), button.getAttribute("aria-controls"), box.getAttribute("role"), box.id].join(" "),
+      active: button.getAttribute("aria-activedescendant"),
+      marked: [...box.querySelectorAll(".is-active")].map((row) => row.id).join(" "),
+      rows: [...box.querySelectorAll('[role="option"]')].map((row) => ({ id: row.dataset.species, selected: row.getAttribute("aria-selected"), name: row.querySelector(".species-option-name")?.textContent ?? null, organism: row.querySelector(".species-option-organism")?.textContent ?? null, italic: getComputedStyle(row.querySelector(".species-option-organism") || row).fontStyle, state: row.querySelector(".species-option-state")?.textContent ?? null, label: row.getAttribute("aria-label"), group: row.closest('[role="group"]')?.querySelector(".species-group-name")?.textContent ?? "" })),
+      inside: r.left >= -0.5 && r.right <= innerWidth + 0.5 && r.top >= -0.5 && r.bottom <= innerHeight + 0.5,
+      under: r.top >= b.bottom - 0.5 && r.top <= b.bottom + 12,
+      box: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)],
+    };
+  })()`);
+// Wait until the list is open or closed, as asked (at most three seconds).
+const settled = async (open) => {
+  for (let tries = 0; tries < 30; tries++) {
+    if ((await list()).open === open) return true;
+    await sleep(100);
+  }
+  return false;
 };
+const openList = async () => {
+  if ((await list()).open) return;
+  const at = await pill();
+  if (!at) throw new Error("the species switch is not shown");
+  await click(at.x, at.y);
+  if (!(await settled(true))) throw new Error("the list of species did not open");
+};
+const rowAt = (id) => evaluate(`(() => { const el = ${V}.shadowRoot.querySelector('.species-list [data-species="${id}"]'); if (!el || !el.offsetParent) return null; el.scrollIntoView({ block: "nearest" }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+const pressSpecies = async (id) => {
+  await openList();
+  const at = await rowAt(id);
+  if (!at) throw new Error(`no row for the species ${id}`);
+  await click(at.x, at.y);
+  if (!(await settled(false))) throw new Error("the list of species did not close");
+  await sleep(150);
+};
+const keyCodes = { Enter: [13, "\r"], Escape: [27], ArrowDown: [40], ArrowUp: [38], Home: [36], End: [35], Tab: [9], " ": [32, " "] };
+const key = async (name) => {
+  const [code, text] = keyCodes[name] || [name.toUpperCase().charCodeAt(0), name];
+  await page("Input.dispatchKeyEvent", { type: text ? "keyDown" : "rawKeyDown", key: name, code: name.length === 1 ? (name === " " ? "Space" : `Key${name.toUpperCase()}`) : name, windowsVirtualKeyCode: code, ...(text ? { text } : {}) });
+  await page("Input.dispatchKeyEvent", { type: "keyUp", key: name, code: name.length === 1 ? (name === " " ? "Space" : `Key${name.toUpperCase()}`) : name, windowsVirtualKeyCode: code });
+  await sleep(180);
+};
+const focused = () => evaluate(`(() => { const el = ${V}.shadowRoot.activeElement; return el ? (el.classList.contains("species-pick") ? "pill" : el.tagName.toLowerCase()) : null; })()`);
 // Where the switch is expected at this width: the bar (the default) or the card.
 const EXPECT = process.env.EXPECT || "bar";
 // What the page shows of its species: the switch, the rail, the cell's parts, the atlas.
@@ -116,8 +164,13 @@ const state = () =>
       species: v.state.species,
       attribute: v.dataset.species,
       atlasAttribute: v.dataset.atlas,
-      inBar: [...root.querySelectorAll(".species [data-species]")].filter(shown).map((b) => b.dataset.species + (b.getAttribute("aria-pressed") === "true" ? "*" : "")).join(" "),
-      inCard: [...root.querySelectorAll(".view [data-species]")].filter(shown).map((b) => b.dataset.species + (b.getAttribute("aria-pressed") === "true" ? "*" : "")).join(" "),
+      // The dropdown's pill, where it stands, with the species it names (starred, as the pressed button was).
+      inBar: [...root.querySelectorAll(".species .species-pick")].filter(shown).map((b) => b.dataset.speciesPick + "*").join(" "),
+      inCard: [...root.querySelectorAll(".view .species-pick")].filter(shown).map((b) => b.dataset.speciesPick + "*").join(" "),
+      pillText: [...root.querySelectorAll(".species-pick")].filter(shown).map((b) => [...b.querySelectorAll(".species-pick-name > span")].filter((span) => span.getAttribute("aria-hidden") !== "true").map((span) => span.textContent).join("|"))[0] ?? null,
+      pillLabel: [...root.querySelectorAll(".species-pick")].filter(shown).map((b) => b.getAttribute("aria-label"))[0] ?? null,
+      pills: [...root.querySelectorAll(".species-pick")].filter(shown).length,
+      oldButtons: root.querySelectorAll(".seg [data-species]").length,
       state: [...root.querySelectorAll(".species-state")].filter(shown).map((b) => b.textContent)[0] ?? null,
       rail: [...root.querySelectorAll(".rail button")].map((b) => b.dataset.stop + (b.getAttribute("aria-pressed") === "true" ? "*" : "")).join(" "),
       railNote: text(".rail-note"),
@@ -154,6 +207,49 @@ const wheelOut = async (steps) => {
   await sleep(500);
 };
 
+// PICTURES=DIR writes pictures of the dropdown into DIR and runs no checks: closed, open, a row
+// under the pointer, and on a phone, in light and dark. One short hold of the browser.
+if (process.env.PICTURES) {
+  const { mkdir, writeFile } = await import("node:fs/promises");
+  const dir = process.env.PICTURES;
+  await mkdir(dir, { recursive: true });
+  // A picture is taken with the page's own fonts in place, where the network gives them.
+  const shot = async (name) => {
+    await evaluate(`Promise.race([document.fonts.ready, new Promise((resolve) => setTimeout(resolve, 8000))]).then(() => document.fonts.status)`);
+    await sleep(300);
+    await writeFile(`${dir}/${name}.png`, Buffer.from((await page("Page.captureScreenshot", { format: "png" })).data, "base64"));
+  };
+  try {
+    for (const theme of ["light", "dark"]) {
+      await size(WIDTH, 800);
+      await open(`lens=cell&theme=${theme}`);
+      await shot(`dropdown-closed-${theme}`);
+      await openList();
+      await shot(`dropdown-open-${theme}`);
+      const other = await evaluate(`${V}.speciesShown.rows.find((row) => row.id !== ${V}.speciesShown.active).id`);
+      const at = await rowAt(other);
+      await mouse("mouseMoved", at.x, at.y, { button: "none", buttons: 0 });
+      await sleep(250);
+      await shot(`dropdown-row-under-pointer-${theme}`);
+      await size(400, 800);
+      await open(`lens=cell&theme=${theme}`);
+      await shot(`dropdown-phone-closed-${theme}`);
+      await openList();
+      await shot(`dropdown-phone-open-${theme}`);
+    }
+    await size(WIDTH, 800);
+    await open("lens=proteins&species=syn3a");
+    await openList();
+    await shot("dropdown-open-in-atlas-light");
+  } finally {
+    socket.close();
+    { const closed = new Promise((resolve) => chrome.once("close", resolve)); chrome.kill(); await Promise.race([closed, new Promise((resolve) => setTimeout(resolve, 4000))]); if (chrome.exitCode === null && chrome.signalCode === null) chrome.kill("SIGKILL"); await Promise.race([closed, new Promise((resolve) => setTimeout(resolve, 2000))]); }
+    server.close();
+    release();
+  }
+  process.exit(0);
+}
+
 try {
   await open("lens=cell");
   let s = await state();
@@ -162,6 +258,47 @@ try {
   check("planarian: five levels on the rail, both size modes, every capability of a cell drawn", s.rail === "molecule cell* tissue organ organism" && s.modes === "schematic real" && s.absent === "" && s.railNote === null, JSON.stringify([s.rail, s.modes, s.absent, s.railNote]));
   check("the bar stays on one line", s.barRows === 1, String(s.barRows));
   const planarian = s;
+
+  // The switch is a dropdown: one pill that names the species in view, and a list of the page's own.
+  const scene = await evaluate(`${V}.model.raw.species.map((item) => ({ id: item.id, label: item.label, organism: item.organism, state: item.modelled.state, group: item.group || "" }))`);
+  const WORDS = { generic: "Generic cell", proposed: "Proposed, not modelled", modelled: "Modelled" };
+  let l = await list();
+  check("the switch is one pill that names the species in view, with its list closed", s.pills === 1 && s.oldButtons === 0 && s.pillText === "Planarian" && s.pillLabel === "Species: Planarian" && l.open === false && l.expanded === "false", JSON.stringify([s.pills, s.oldButtons, s.pillText, s.pillLabel, l]));
+  await openList();
+  l = await list();
+  check("a press opens the list under the pill, inside the window", l.open && l.expanded === "true" && l.inside && l.under, JSON.stringify([l.open, l.expanded, l.inside, l.under, l.box]));
+  check("it is announced as a combobox that owns a listbox, with the species in view its selected and active row", l.roles === "combobox listbox species-list listbox species-list" && l.active === "species-option-planarian" && l.marked === "species-option-planarian" && l.rows.filter((row) => row.selected === "true").map((row) => row.id).join() === "planarian", JSON.stringify([l.roles, l.active, l.marked]));
+  check("a row for every species of the scene: its name, its organism in italics, and what Cells models of it", l.rows.length === scene.length && scene.every((item) => { const row = l.rows.find((r) => r.id === item.id); return row && row.name === item.label && row.organism === item.organism && row.italic === "italic" && row.state === WORDS[item.state] && row.label === [item.label, item.organism, WORDS[item.state]].join(", "); }), JSON.stringify(l.rows.map((row) => [row.id, row.name, row.organism, row.italic, row.state])));
+  const headings = [...new Set(scene.map((item) => item.group).filter(Boolean))];
+  check("the rows stand under the headings the species' files give, each heading once", JSON.stringify(l.rows.map((row) => row.group)) === JSON.stringify([...headings.flatMap((group) => scene.filter((item) => item.group === group)), ...scene.filter((item) => !item.group)].map((item) => item.group)) && headings.length > 0, JSON.stringify([headings, l.rows.map((row) => `${row.id}:${row.group}`)]));
+  // A row under the pointer becomes the active one, and nothing is chosen yet.
+  const other = scene.find((item) => item.id !== "planarian");
+  const hover = await rowAt(other.id);
+  await mouse("mouseMoved", hover.x, hover.y, { button: "none", buttons: 0 });
+  await sleep(200);
+  l = await list();
+  s = await state();
+  check("the row under the pointer is the active one, and nothing is chosen yet", l.active === `species-option-${other.id}` && l.marked === `species-option-${other.id}` && s.species === "planarian", JSON.stringify([l.active, l.marked, s.species]));
+  // A press beside the list, inside the window, closes it and changes nothing.
+  const beside = l.box[1] + l.box[3] + 70 < 790 ? [Math.min(WIDTH - 12, l.box[0] + l.box[2] / 2), l.box[1] + l.box[3] + 70] : [Math.max(12, l.box[0] - 40), l.box[1] + l.box[3] / 2];
+  await click(beside[0], beside[1]);
+  l = await list();
+  s = await state();
+  check("a press beside the list closes it and does nothing else: no species chosen, no part picked", l.open === false && l.expanded === "false" && s.species === "planarian" && s.selected === null, JSON.stringify([l, s.species, s.selected]));
+  // Escape closes the list and nothing else: what is selected stays selected. (On a narrow
+  // window a selection's sheet covers the card that holds the switch, so nothing is selected there.)
+  const kept = /\*/.test(s.inBar) ? "cap.membrane" : null;
+  if (kept) {
+    await evaluate(`${V}.select("${kept}")`);
+    await sleep(200);
+  }
+  await openList();
+  await key("Escape");
+  l = await list();
+  s = await state();
+  check("Escape closes the list and nothing else: the selection stays, and the focus is back on the pill", l.open === false && s.selected === kept && (await focused()) === "pill", JSON.stringify([l.open, s.selected, await focused()]));
+  await evaluate(`${V}.select(null)`);
+  await sleep(200);
 
   await pressSpecies("syn3a");
   s = await state();
@@ -271,28 +408,70 @@ try {
   s = await state();
   check("an unknown species in the address is ignored", s.species === "planarian", String(s.species));
 
-  // The keyboard.
-  await evaluate(`[...${V}.shadowRoot.querySelectorAll('[data-species="human"]')].find((b) => b.offsetParent).focus()`);
-  await page("Input.dispatchKeyEvent", { type: "keyDown", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13, text: "\r" });
-  await page("Input.dispatchKeyEvent", { type: "keyUp", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 });
-  await sleep(400);
+  // The keyboard: open, move, choose, close, and a letter to go to a species by its name.
+  const order = (await evaluate(`${V}.speciesShown.rows.map((row) => row.id)`));
+  const here = order.indexOf("planarian");
+  await evaluate(`[...${V}.shadowRoot.querySelectorAll(".species-pick")].find((b) => b.offsetParent).focus()`);
+  await key("ArrowDown");
+  let k = await list();
+  check("from the keyboard: the down arrow opens the list on the species in view", k.open && k.active === "species-option-planarian" && (await focused()) === "pill", JSON.stringify([k.open, k.active, await focused()]));
+  await key("ArrowDown");
+  k = await list();
+  check("the arrows move the active row, which the pill names to a screen reader", k.active === `species-option-${order[here + 1]}` && k.marked === k.active, JSON.stringify([k.active, k.marked]));
+  await key("End");
+  k = await list();
+  const last = k.active;
+  await key("Home");
+  k = await list();
+  check("Home and End go to the first and the last row", last === `species-option-${order.at(-1)}` && k.active === `species-option-${order[0]}`, JSON.stringify([last, k.active]));
+  await key("s");
+  k = await list();
+  const byS = order.find((id) => /^s/i.test(scene.find((item) => item.id === id).label));
+  check("a letter goes to the species whose name begins with it", k.active === `species-option-${byS}`, JSON.stringify([k.active, byS]));
+  await key("Enter");
   s = await state();
-  const focus = await evaluate(`${V}.shadowRoot.activeElement?.dataset?.species ?? null`);
-  check("the switch works from the keyboard, and the focus stays on the button pressed", s.species === "human" && focus === "human", JSON.stringify([s.species, focus]));
+  k = await list();
+  check("Enter chooses the active row: the species changes, the list closes, and the focus stays on the pill", s.species === byS && k.open === false && (await focused()) === "pill" && s.pillLabel === `Species: ${scene.find((item) => item.id === byS).label}`, JSON.stringify([s.species, k.open, await focused(), s.pillLabel]));
+  await key("h");
+  k = await list();
+  check("a letter typed on the closed pill opens the list at that species", k.open && k.active === "species-option-human", JSON.stringify([k.open, k.active]));
+  await key(" ");
+  s = await state();
+  check("the space bar chooses as Enter does", s.species === "human" && (await list()).open === false, JSON.stringify([s.species]));
+  await key("Enter");
+  await key("Tab");
+  s = await state();
+  check("Tab closes the list and chooses nothing", (await list()).open === false && s.species === "human", JSON.stringify([s.species]));
 
   // A narrow window: the switch stands in the card.
   await size(400, 800);
   await open("lens=cell");
   s = await state();
   check("on a phone the switch stands in the card", s.inBar === "" && /planarian\*/.test(s.inCard), JSON.stringify([s.inBar, s.inCard]));
-  await press('.view [data-species="syn3a"]');
+  const fits = await evaluate(`(() => { const root = ${V}.shadowRoot, card = root.querySelector(".view").getBoundingClientRect(); return [...root.querySelectorAll(".view .species-pick")].every((b) => { const r = b.getBoundingClientRect(); return r.left >= card.left - 0.5 && r.right <= card.right + 0.5; }); })()`);
+  // A touch on the pill opens the list; a touch on a row chooses it.
+  const touch = async (x, y) => {
+    await page("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
+    await page("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await sleep(350);
+  };
+  const where = await pill();
+  await touch(where.x, where.y);
+  await settled(true);
+  const phone = await list();
+  check("on a phone a touch opens the list, within the window, every row whole", phone.open && phone.inside && phone.under && phone.rows.length === scene.length, JSON.stringify([phone.open, phone.inside, phone.under, phone.box]));
+  const row = await rowAt("syn3a");
+  await touch(row.x, row.y);
+  await settled(false);
   s = await state();
-  const fits = await evaluate(`(() => { const root = ${V}.shadowRoot, card = root.querySelector(".view").getBoundingClientRect(); return [...root.querySelectorAll(".view [data-species]")].every((b) => { const r = b.getBoundingClientRect(); return r.left >= card.left - 0.5 && r.right <= card.right + 0.5; }); })()`);
-  check("and it works there, inside the card", s.species === "syn3a" && s.rail === "molecule cell*" && fits, JSON.stringify([s.species, s.rail, fits]));
+  check("and a touch on a row chooses it, inside the card", s.species === "syn3a" && s.rail === "molecule cell*" && fits && (await list()).open === false, JSON.stringify([s.species, s.rail, fits]));
 } catch (error) {
   check("the run completed", false, error.stack || error.message);
 } finally {
   for (const line of pageLog) console.log(line);
+  // Whether the page's own font had arrived by the end: with the stand-in, words run longer and cards stand
+  // taller, and a miss is read against that.
+  console.log(`note  the page's own font: ${await evaluate(`document.fonts.status === "loaded" && ["Inter", "Space Grotesk"].every((family) => [...document.fonts].some((face) => face.family.includes(family) && face.status === "loaded")) ? "arrived" : "not arrived: the stand-in was shown, whose words run longer"`).catch(() => "not known")}`);
   check("no script errors or blocked loads were reported by the page", pageLog.length === 0, `${pageLog.length} messages`);
   socket.close();
   { const closed = new Promise((resolve) => chrome.once("close", resolve)); chrome.kill(); await Promise.race([closed, new Promise((resolve) => setTimeout(resolve, 4000))]); if (chrome.exitCode === null && chrome.signalCode === null) chrome.kill("SIGKILL"); await Promise.race([closed, new Promise((resolve) => setTimeout(resolve, 2000))]); }

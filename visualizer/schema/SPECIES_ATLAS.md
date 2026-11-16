@@ -62,7 +62,10 @@ design (`docs/PROTEIN_CATALOGUE_PLAN.md`, stage 3) has not begun and belongs to 
   (`data/proteins/inventory.snapshot.json`), keyed by the inventory's unit id. A unit with
   nothing found still has an entry that says so.
 - **`finding`** is one of:
-  - `found`: gene products of the same family as the unit's candidates were found;
+  - `found`: gene products of the same family as the unit's candidates were found. It asks for a
+    family that makes the machine itself: a protein that carries only the signature of an
+    accessory family (a regulator, a subunit that forms no channel or pump by itself)
+    does not make a unit found, and the note names it;
   - `different family`: the species builds this machine from another protein family
     (the note names both);
   - `none found`: the search found nothing; the note says what was searched;
@@ -103,3 +106,46 @@ design (`docs/PROTEIN_CATALOGUE_PLAN.md`, stage 3) has not begun and belongs to 
 The builder puts each species atlas into the scene's `proteins.atlases`, the human one
 made from the inventory snapshot's own products, and gives every unit its products per
 species. The view switches between them; the units drawn do not change.
+
+## A unit left out of the picture
+
+A unit of the inventory may be left out of the picture for now, by a flag on it in the
+atlas's overlay (`data/proteins/overlay.json`, `units.<id>.left_out`). Decided by the user
+on 15 November 2026 for the engineered protein cage (U48): the atlas is a picture of a
+cell's machines, and a designed protein is not one of them.
+
+```json
+"left_out": {
+  "since": "2026-11-15",
+  "says": "an engineered protein cage",
+  "reason": "it is a designed protein, not a part of a cell",
+  "why": "the fuller record, for whoever maintains the overlay; never shown",
+  "empties": {"district": "assembly", "site": "cytoplasm", "evidence": "designed protein"},
+  "rewords": [{"in": "species.findings", "id": "nothing to look for", "field": "description", "to": "…"}]
+}
+```
+
+- **The inventory keeps the unit, and so does every species' file.** `units` still has
+  one entry for each unit of the inventory, the one left out included; the builder reads
+  and checks it like any other. Nothing is deleted anywhere.
+- **The scene does not draw it.** The unit is no part of the scene and no link points at
+  it. A district, a site and a kind of evidence that only it holds go with it; `empties`
+  says which, for the reader, and the builder warns if that is not what happened.
+- **Counts on the page are of what is drawn.** `proteins.counts.units` and every atlas's
+  `counts.units`, `with_products` and `findings` leave the unit out;
+  `proteins.counts.inventory_units` still gives the inventory's number. The stamp's check
+  of the law records is the inventory's and covers them all.
+- **The page says so, once in each place a count stands.** The atlas's `summary` ends
+  with a sentence made from the flag ("The inventory has 49 units. One of them, an
+  engineered protein cage, is left out of the picture for now: it is a designed protein,
+  not a part of a cell."), and each atlas's `method` ends with the same, adding how many
+  are shown and counted. `says` is how the page names the thing and `reason` its short
+  reason; both are needed, with `since`, a date.
+- **Wordings.** `rewords` gives the text that stands in, while the flag is there, for a
+  text of the overlay that names the thing (`to` null takes the text away). The overlay's
+  own text is not edited, so nothing has to be put back by hand.
+- **The scene names what is left out in one list,** `left_out` at its top: `id`, `kind`,
+  `label`, `since`, `says` and `reason`, for units and for capabilities of the cell map
+  alike (`schema/SPECIES.md`).
+- **Removing the flag brings everything back** as it was: the unit, its links, its
+  district, the counts and the texts. A test builds the scene both ways.

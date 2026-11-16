@@ -1,0 +1,1624 @@
+<title>Flux and Look</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: a reading page in the viewer's own tokens. Five choices, each a section with one live
+   3D sketch (controls above, what it says below) and a short table of what each option costs;
+   then the devices, what is asked of the reader, and the sources. */
+:root {
+  --bg: #eef2f6; --bg-raised: #ffffff; --fg: #12283a; --muted: #566878; --line: #d6dee6; --accent: #1f6fd0;
+  --stage-a: #fbfcfd; --stage-b: #e3eaf1;
+  --glass: #2fb3a3; --protein: #3f86e0; --pump: #6877e6; --nucleus: #8d68d6; --er: #b59ae8; --mito: #f0874a; --cyto: #7fa9d6; --ghost: #77889a;
+  --ion-na: #eb6834; --ion-k: #2a78d6; --ion-cl: #1baf7a;
+  --pick: #1f6fd0;
+  --is-dark: 0;
+  --font-display: "Space Grotesk", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b151e; --bg-raised: #162432; --fg: #e6edf3; --muted: #95a6b7; --line: #283b4d; --accent: #5b9dee;
+    --stage-a: #1a3044; --stage-b: #0c1823;
+    --glass: #2aa596; --protein: #4a90ea; --pump: #7482ee; --nucleus: #8a66d8; --er: #a88ce0; --mito: #ea7d3f; --cyto: #5f93c8; --ghost: #8496a8;
+    --ion-na: #d95926; --ion-k: #3987e5; --ion-cl: #199e70;
+    --pick: #5b9dee;
+    --is-dark: 1;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b151e; --bg-raised: #162432; --fg: #e6edf3; --muted: #95a6b7; --line: #283b4d; --accent: #5b9dee;
+  --stage-a: #1a3044; --stage-b: #0c1823;
+  --glass: #2aa596; --protein: #4a90ea; --pump: #7482ee; --nucleus: #8a66d8; --er: #a88ce0; --mito: #ea7d3f; --cyto: #5f93c8; --ghost: #8496a8;
+  --ion-na: #d95926; --ion-k: #3987e5; --ion-cl: #199e70;
+  --pick: #5b9dee;
+  --is-dark: 1;
+  color-scheme: dark;
+}
+
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 var(--font-body); -webkit-font-smoothing: antialiased; }
+.page {
+  max-width: 1040px; margin: 0 auto; padding-block: 44px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 64px;
+}
+.page > *, .section > *, figure, .cards > *, .two > * { min-width: 0; }
+h1, h2, h3, p, ul, ol, dl, dd, figure { margin: 0; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible, input:focus-visible, canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+code { font-family: var(--font-mono); font-size: 0.9em; }
+
+.eyebrow { font: 600 12px/1.2 var(--font-mono); letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.masthead { display: grid; gap: 18px; }
+.masthead h1 { font: 600 clamp(32px, 5.4vw, 52px)/1.04 var(--font-display); letter-spacing: -0.022em; text-wrap: balance; max-width: 17ch; }
+.lede { font-size: 18px; line-height: 1.5; color: var(--muted); max-width: 62ch; }
+.lede strong { color: var(--fg); font-weight: 600; }
+.choices { display: grid; gap: 6px; padding: 0; list-style: none; max-width: 66ch; counter-reset: choice; }
+.choices li { position: relative; padding-left: 30px; }
+.choices li::before { counter-increment: choice; content: counter(choice); position: absolute; left: 0; top: 0.28em; font: 600 12px/1.5 var(--font-mono); color: var(--muted); }
+.choices a { font-weight: 600; color: var(--fg); }
+.choices span { color: var(--muted); }
+.device { font: 500 12.5px/1.5 var(--font-mono); color: var(--muted); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; max-width: 72ch; background: var(--bg-raised); }
+.device b { color: var(--fg); font-weight: 600; }
+
+.section { display: grid; gap: 22px; }
+.section > header { display: grid; gap: 8px; max-width: 68ch; }
+.section h2 { font: 600 clamp(22px, 3vw, 28px)/1.2 var(--font-display); letter-spacing: -0.012em; text-wrap: balance; }
+.section h2 .num { font: 600 13px/1 var(--font-mono); color: var(--muted); margin-right: 10px; vertical-align: 0.2em; }
+.section > header p { color: var(--muted); }
+.section > p, .section > ul { max-width: 68ch; }
+.section h3 { font: 600 17px/1.3 var(--font-display); }
+.pickline { border-left: 3px solid var(--pick); padding: 2px 0 2px 14px; max-width: 68ch; }
+.pickline b { font-weight: 600; }
+
+/* A live sketch: controls, the picture, what it says. */
+.sketch { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: grid; }
+.sketch .bar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.sketch .stage { position: relative; background: radial-gradient(120% 90% at 50% 20%, var(--stage-a), var(--stage-b)); }
+.sketch canvas { display: block; width: 100%; aspect-ratio: 16 / 9.5; max-width: 100%; touch-action: pan-y; cursor: grab; }
+.sketch .tag { position: absolute; left: 12px; top: 10px; font: 600 10.5px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: color-mix(in srgb, var(--bg-raised) 78%, transparent); padding: 5px 8px; border-radius: 6px; pointer-events: none; }
+.sketch .meter { position: absolute; right: 12px; top: 10px; font: 500 11px/1 var(--font-mono); color: var(--muted); background: color-mix(in srgb, var(--bg-raised) 78%, transparent); padding: 5px 8px; border-radius: 6px; pointer-events: none; font-variant-numeric: tabular-nums; }
+.sketch .failed { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); font-size: 14.5px; }
+.sketch .says { padding: 12px 16px 14px; margin: 0; max-width: none; border-top: 1px solid var(--line); font-size: 14.5px; line-height: 1.5; color: var(--fg); display: grid; gap: 4px; }
+.sketch .says .legend { font-weight: 500; }
+.sketch .says .small { color: var(--muted); font-size: 13.5px; }
+.group { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.group > .name { font: 600 10.5px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-right: 2px; }
+.seg { display: inline-flex; flex-wrap: wrap; padding: 3px; gap: 2px; border-radius: 12px; background: var(--bg); box-shadow: inset 0 0 0 1px var(--line); }
+.seg button, .chip, .plain {
+  font: 500 13px/1.2 var(--font-body); color: var(--muted); background: transparent; border: 0; border-radius: 9px; padding: 7px 11px; cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.chip { box-shadow: inset 0 0 0 1px var(--line); background: var(--bg); }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); box-shadow: none; }
+.plain { box-shadow: inset 0 0 0 1px var(--line); background: var(--bg-raised); color: var(--fg); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.slider { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+.slider input { width: min(260px, 44vw); accent-color: var(--accent); }
+.bar .push { margin-left: auto; }
+
+/* Tables and cards */
+.wide { overflow-x: auto; max-width: 100%; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-raised); }
+table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 14.5px; line-height: 1.45; }
+th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+thead th { font: 600 11px/1.4 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+tbody th { font: 600 14.5px/1.4 var(--font-display); width: 168px; }
+tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+tr.pick th, tr.pick td { background: color-mix(in srgb, var(--pick) 8%, transparent); }
+.mark { display: inline-block; font: 600 10px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--pick); border: 1px solid var(--pick); border-radius: 999px; padding: 3px 7px; margin-left: 6px; vertical-align: 0.15em; white-space: nowrap; }
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.card { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 20px; display: grid; gap: 10px; align-content: start; }
+.card.pick { border-color: var(--pick); }
+.card p { font-size: 14.5px; color: var(--muted); }
+.card p strong { color: var(--fg); font-weight: 600; }
+.badge { font: 500 12px/1.45 var(--font-mono); color: var(--fg); background: var(--bg); border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px; }
+.badge i { font-style: normal; color: var(--muted); }
+figure figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; max-width: 68ch; }
+.wide svg { display: block; min-width: 720px; width: 100%; height: auto; color: var(--fg); }
+blockquote { margin: 0; padding: 14px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-raised); font-size: 14.5px; line-height: 1.5; max-width: 76ch; display: grid; gap: 10px; }
+blockquote p b { font-weight: 600; }
+.asks { display: grid; gap: 12px; padding-left: 22px; max-width: 72ch; }
+.asks li { padding-left: 4px; }
+.asks li::marker { font: 600 13px var(--font-mono); color: var(--muted); }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; }
+.sources { font-size: 14px; color: var(--muted); display: grid; gap: 8px; padding-left: 20px; max-width: 80ch; }
+.foot { font-size: 13.5px; color: var(--muted); max-width: 72ch; }
+
+@media (max-width: 860px) {
+  .cards, .two { grid-template-columns: minmax(0, 1fr); }
+  .page { gap: 52px; padding-block: 28px 64px; }
+  .sketch canvas { aspect-ratio: 4 / 3.4; }
+  .bar .push { margin-left: 0; }
+}
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">Cells viewer · ideas to choose from · 15 November 2026</p>
+    <h1>Flux in the cell, and a better look at rest</h1>
+    <p class="lede">Options for a flux mode in the 3D Cell view, off by default, and for a richer look when nothing flows. Every sketch is live: it is drawn on your device, from invented numbers, and shows its own frame rate. <strong>Nothing here is built.</strong></p>
+    <ol class="choices">
+      <li><a href="#style">How flux is drawn</a> <span>six styles in one sketch. I would take beads, with trails for the bold strength.</span></li>
+      <li><a href="#time">How time is treated</a> <span>a bead that stands for many ions, and a slow-motion factor you set.</span></li>
+      <li><a href="#switch">How flux is switched on</a> <span>nothing moves at rest; a part's flux shows when you select it.</span></li>
+      <li><a href="#source">Where the numbers come from</a> <span>first, the looping run the engine makes of each species' cell.</span></li>
+      <li><a href="#look">The resting look</a> <span>ten effects to switch on and off. Five cost little and add most.</span></li>
+    </ol>
+    <p class="device" id="device">This device: checking what it can draw…</p>
+  </header>
+
+  <section class="section" id="style" aria-labelledby="style-h">
+    <header>
+      <h2 id="style-h"><span class="num">1</span>How flux is drawn</h2>
+      <p>A piece of membrane with a sodium channel, a potassium channel, a chloride channel in balance, and a pump that carries three sodium out for two potassium in. Switch between six ways of showing what passes. Drag to turn.</p>
+    </header>
+
+    <figure class="sketch" id="sk-style">
+      <div class="bar">
+        <div class="group" role="group" aria-label="Style">
+          <span class="name">Style</span>
+          <div class="seg" data-set="style">
+            <button type="button" data-value="beads" aria-pressed="true">Beads</button>
+            <button type="button" data-value="trails" aria-pressed="false">Trails</button>
+            <button type="button" data-value="ribbons" aria-pressed="false">Ribbons</button>
+            <button type="button" data-value="pulses" aria-pressed="false">Pulses</button>
+            <button type="button" data-value="swarm" aria-pressed="false">Swarm</button>
+            <button type="button" data-value="light" aria-pressed="false">Light</button>
+          </div>
+        </div>
+        <button type="button" class="chip" data-toggle="bloom" aria-pressed="false">Bloom</button>
+        <button type="button" class="plain push" data-pause>Pause</button>
+      </div>
+      <div class="stage">
+        <canvas tabindex="0" role="img" aria-label="Live sketch: a slab of glass membrane seen at a slant, with three channels and a pump through it. Tokens of sodium move inward, potassium outward, and the pump carries sodium out and potassium in."></canvas>
+        <span class="tag">Sketch · invented numbers</span>
+        <span class="meter fps">starting…</span>
+      </div>
+      <figcaption class="says">
+        <span class="legend" data-says aria-live="polite">Beads: each bead is a token for a stated number of ions.</span>
+        <span class="small">Sodium 18 million ions a second in, potassium 12 million out, the pump 6 million cycles a second. Invented, in a plausible range for one small cell.</span>
+      </figcaption>
+    </figure>
+
+    <div class="wide">
+      <table>
+        <thead><tr><th scope="col">Style</th><th scope="col">Reads well</th><th scope="col">Fails</th><th scope="col">Cost to draw</th></tr></thead>
+        <tbody>
+          <tr class="pick"><th scope="row">Beads <span class="mark">My pick</span></th><td>You can count them, so the legend can say what one stands for. Direction is plain. Works in a still picture.</td><td>Hundreds of channels at once become a hail. Needs one stream per kind of channel, not per channel.</td><td>Light. A few hundred instanced spheres.</td></tr>
+          <tr class="pick"><th scope="row">Trails <span class="mark">Bold strength</span></th><td>Beads with a tail: direction shows even at a glance, and it is the most striking with bloom.</td><td>A tail's length reads as speed, which the engine does not have. Keep every tail the same length.</td><td>Light to moderate. About six times the instances, plus bloom.</td></tr>
+          <tr><th scope="row">Ribbons</th><td>Width is the rate, as in a flow chart. Calm, and exact at a distance.</td><td>Looks like a pipe of fluid. The moving stripes carry direction only; their speed means nothing and may be read as if it did.</td><td>Light. One tube per stream.</td></tr>
+          <tr><th scope="row">Pulses</th><td>Many channels at once without clutter: each one blinks at its own rate.</td><td>Two blink rates are hard to compare. Blinking tires. Needs a still form for reduced motion.</td><td>Light.</td></tr>
+          <tr><th scope="row">Swarm</th><td>The truest picture: ions jostle at random on both sides, most never cross, and a few drift through. Looks alive.</td><td>The net rate is hard to read off. Thousands of dots everywhere would swamp the cell. Best for one channel in close-up.</td><td>Moderate. Thousands of points moved on the graphics card.</td></tr>
+          <tr><th scope="row">Light</th><td>No tokens at all: the channel itself carries a travelling band of light, brighter for more. Beautiful on glass.</td><td>Brightness is a weak measure. It takes the glow that the energy layer needs, and the two cannot show together.</td><td>Light, plus bloom.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="pickline"><b>My pick:</b> beads as the quiet strength, trails with bloom as the bold one, and the swarm kept for a close-up of one selected channel. Pulses are the fallback when the whole cell is in view and for visitors who ask for less motion.</p>
+  </section>
+
+  <section class="section" id="time" aria-labelledby="time-h">
+    <header>
+      <h2 id="time-h"><span class="num">2</span>How time is treated</h2>
+      <p>One kind of channel passes millions of ions a second. No picture shows that one by one at true speed. There are two honest knobs: what one bead stands for, and how much time is slowed. Beads a second on the screen are the ions a second, divided by the ions in a bead and by the slow-down.</p>
+    </header>
+
+    <figure class="sketch" id="sk-time">
+      <div class="bar">
+        <label class="slider" for="slow">Slow-down <input id="slow" type="range" min="0" max="7" step="0.25" value="0" aria-describedby="time-says"></label>
+        <div class="group" role="group" aria-label="What the rate changes">
+          <span class="name">Rate sets</span>
+          <div class="seg" data-set="mapping">
+            <button type="button" data-value="count" aria-pressed="true">How many</button>
+            <button type="button" data-value="speed" aria-pressed="false">How fast</button>
+          </div>
+        </div>
+        <div class="group" role="group" aria-label="Play">
+          <span class="name">Play</span>
+          <div class="seg" data-set="play">
+            <button type="button" data-value="steady" aria-pressed="true">Steady</button>
+            <button type="button" data-value="loop" aria-pressed="false">A loop</button>
+            <button type="button" data-value="pulse" aria-pressed="false">On demand</button>
+          </div>
+        </div>
+        <button type="button" class="plain" data-burst hidden>Send a pulse</button>
+        <button type="button" class="plain push" data-pause>Pause</button>
+      </div>
+      <div class="stage">
+        <canvas tabindex="0" role="img" aria-label="Live sketch: the same piece of membrane, with beads through its channels and pump. The slow-down slider changes what one bead stands for."></canvas>
+        <span class="tag">Sketch · invented numbers</span>
+        <span class="meter fps">starting…</span>
+      </div>
+      <figcaption class="says">
+        <span class="legend" id="time-says" data-says aria-live="polite">1 bead = 2 million ions. Shown at true speed.</span>
+        <span class="small" data-more>More beads means more ions a second. Every bead travels at the same speed, which stands for nothing.</span>
+      </figcaption>
+    </figure>
+
+    <div class="wide">
+      <table>
+        <thead><tr><th scope="col">Option</th><th scope="col">What you see</th><th scope="col">What the legend must say</th><th scope="col">Risk</th></tr></thead>
+        <tbody>
+          <tr class="pick"><th scope="row">A token <span class="mark">My pick</span></th><td>True speed. Each bead stands for many ions.</td><td>"1 bead = 2 million ions."</td><td>None, if the number is always on the picture.</td></tr>
+          <tr class="pick"><th scope="row">Slow motion you set <span class="mark">With it</span></th><td>Drag the slider: time stretches and a bead stands for fewer ions. Near a million times slower, one bead is one ion.</td><td>"1 second here is 1 microsecond in the cell", beside the token.</td><td>At strong slow-down the cell's own state hardly changes, so a slow change in the run looks frozen. That is true, and worth saying.</td></tr>
+          <tr><th scope="row">A loop</th><td>A short stretch of the run, played again and again, with a bar that shows where in the loop you are.</td><td>The loop's length in the cell's time, and the time it takes to play.</td><td>The seam: the end must meet the start, or everything jumps. See choice 4.</td></tr>
+          <tr><th scope="row">On demand</th><td>Nothing moves until you ask. Then a part shows its flux for a few seconds.</td><td>The same token, on the pulse.</td><td>A pulse can be taken for an event in the cell. It is only the viewer showing a steady rate for a moment.</td></tr>
+          <tr class="pick"><th scope="row">The rate sets how many <span class="mark">My pick</span></th><td>More beads for more flux, all at one speed.</td><td>"Speed stands for nothing."</td><td>Dense streams when rates differ a thousandfold: the token then needs steps.</td></tr>
+          <tr><th scope="row">The rate sets how fast</th><td>Evenly spaced beads that run faster for more flux.</td><td>"Faster means more ions a second."</td><td>Speeds are hard to compare, and a fast bead looks like a fast ion. The engine has no speed of an ion.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="pickline"><b>My pick:</b> a token at true speed when flux mode opens, a slow-down slider beside it, and the rate setting how many beads pass. A loop is the natural clock once the engine's looping runs exist.</p>
+  </section>
+
+  <section class="section" id="switch" aria-labelledby="switch-h">
+    <header>
+      <h2 id="switch-h"><span class="num">3</span>How flux is switched on</h2>
+      <p>You asked that flux is not shown by default. A small cell, cut open, with sodium channels, potassium channels and pumps in its wall. Try the four ways of bringing flux in. Click a channel in the picture, or use the buttons.</p>
+    </header>
+
+    <figure class="sketch" id="sk-switch">
+      <div class="bar">
+        <div class="group" role="group" aria-label="How flux is switched on">
+          <span class="name">Flux</span>
+          <div class="seg" data-set="mode">
+            <button type="button" data-value="off" aria-pressed="false">Off</button>
+            <button type="button" data-value="select" aria-pressed="true">On selection</button>
+            <button type="button" data-value="burst" aria-pressed="false">A burst on click</button>
+            <button type="button" data-value="all" aria-pressed="false">Flux mode</button>
+          </div>
+        </div>
+        <div class="group" role="group" aria-label="Select a part">
+          <span class="name">Part</span>
+          <div class="chips" data-set="part">
+            <button type="button" class="chip" data-value="na" aria-pressed="false">Sodium channels</button>
+            <button type="button" class="chip" data-value="k" aria-pressed="false">Potassium channels</button>
+            <button type="button" class="chip" data-value="pump" aria-pressed="false">Pumps</button>
+          </div>
+        </div>
+        <button type="button" class="plain push" data-pause>Pause</button>
+      </div>
+      <div class="stage">
+        <canvas tabindex="0" role="img" aria-label="Live sketch: a six-sided cell of glass, cut open from above, with a nucleus, mitochondria and folded sheets inside, and channels and pumps in its wall. Tokens cross the wall only for the part that is selected."></canvas>
+        <span class="tag">Sketch · invented numbers</span>
+        <span class="meter fps">starting…</span>
+      </div>
+      <figcaption class="says">
+        <span class="legend" data-says aria-live="polite">Nothing is selected, so nothing moves.</span>
+        <span class="small">In the viewer, a part is selected by its label or by clicking it, as today.</span>
+      </figcaption>
+    </figure>
+
+    <div class="wide">
+      <table>
+        <thead><tr><th scope="col">Way in</th><th scope="col">Before</th><th scope="col">After</th><th scope="col">Good and bad</th></tr></thead>
+        <tbody>
+          <tr class="pick"><th scope="row">On selection <span class="mark">My pick</span></th><td>The resting cell. Nothing moves.</td><td>Select the ion channels, and only they show what passes. The panel gives the numbers.</td><td>Calm, and found by doing what a visitor already does. Shows one part at a time.</td></tr>
+          <tr class="pick"><th scope="row">Flux mode <span class="mark">With it</span></th><td>A switch on the card, off when the page opens.</td><td>Every part the run has a rate for shows its flux, with one legend.</td><td>The full picture, and the busiest. Needs the token to be chosen for the whole cell.</td></tr>
+          <tr><th scope="row">A burst on click</th><td>The resting cell.</td><td>A few seconds of flux at the clicked part, then rest again.</td><td>Playful and quiet. May be read as something the cell did.</td></tr>
+          <tr><th scope="row">On hover</th><td>The resting cell.</td><td>Flux under the pointer.</td><td>No hover on a phone, and movement under a passing pointer distracts. I would not.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="pickline"><b>My pick:</b> at rest nothing moves; selecting a part shows that part's flux; a Flux switch on the card shows all of it. Decorative motion stops while flux shows, so only data moves.</p>
+  </section>
+
+  <section class="section" id="source" aria-labelledby="source-h">
+    <header>
+      <h2 id="source-h"><span class="num">4</span>Where the numbers come from</h2>
+      <p>The viewer's rule is that something moves only where a rate stands behind it, and that a layer fed by a run is drawn where the run is shown. The Cell view of a species is not a run today. Three honest ways to put flux there, in the order I would take them.</p>
+    </header>
+
+    <div class="cards">
+      <div class="card pick">
+        <h3>The cell's own looping run <span class="mark">First</span></h3>
+        <p>You have asked the engine for looping replay packages of each species' cell, as the lead reports, with a first loop of the planarian's cell before the engine's rework is done. <strong>The Cell view then shows that run:</strong> engine numbers, for that cell.</p>
+        <p class="badge">Planarian cell <i>·</i> the engine's looping run <i>(its name)</i> <i>·</i> a loop of 2.0 s of the cell's time <i>·</i> slowed 3 times <i>·</i> 1 bead = 2 million ions</p>
+        <p>Needs: the loop, with the records below. Nothing in the contract forbids it once its rule 7 says so.</p>
+      </div>
+      <div class="card">
+        <h3>Typical values, as illustration</h3>
+        <p>For a species or a part with no loop yet: numbers from a cited source, not from a run. This is the allowance you gave earlier, that the viewer may draw illustrative machinery driven by aggregate values if it says so.</p>
+        <p class="badge">Illustration: not a run <i>·</i> typical values for an animal cell <i>(source)</i> <i>·</i> 1 bead = 2 million ions</p>
+        <p>Needs: a source per number, and a new rule in the contract. Never on when the page opens.</p>
+      </div>
+      <div class="card">
+        <h3>Direction only</h3>
+        <p>Which way each ion goes, and more or less of it in three steps, with no number at all. Sodium in, potassium out, the pump three for two.</p>
+        <p class="badge">Illustration: direction only <i>·</i> the number of beads stands for no rate</p>
+        <p>Needs: the same new rule. The weakest of the three, and the easiest to mistake for data.</p>
+      </div>
+    </div>
+
+    <h3>One loop, as the Cell view would read it</h3>
+    <figure>
+      <div class="wide">
+        <svg viewBox="0 0 800 250" role="img" aria-label="A loop of six records. A running total climbs through the loop and would jump back at the seam. The amount moved in each interval repeats cleanly. Every interval lies between two records inside the loop, the last record equals the first, and no difference is taken across the seam.">
+          <defs>
+            <marker id="fl-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="currentColor"/></marker>
+          </defs>
+          <g font-family="Inter, system-ui, sans-serif" font-size="12.5" fill="currentColor">
+            <!-- the time line -->
+            <line x1="120" y1="200" x2="680" y2="200" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.4"/>
+            <g stroke="currentColor" stroke-width="1.4">
+              <line x1="120" y1="194" x2="120" y2="206"/><line x1="232" y1="194" x2="232" y2="206"/><line x1="344" y1="194" x2="344" y2="206"/>
+              <line x1="456" y1="194" x2="456" y2="206"/><line x1="568" y1="194" x2="568" y2="206"/><line x1="680" y1="194" x2="680" y2="206"/>
+            </g>
+            <text x="120" y="224" text-anchor="middle" fill-opacity="0.72">record 0</text>
+            <text x="232" y="224" text-anchor="middle" fill-opacity="0.72">1</text>
+            <text x="344" y="224" text-anchor="middle" fill-opacity="0.72">2</text>
+            <text x="456" y="224" text-anchor="middle" fill-opacity="0.72">3</text>
+            <text x="568" y="224" text-anchor="middle" fill-opacity="0.72">4</text>
+            <text x="680" y="224" text-anchor="middle" fill-opacity="0.72">5 = record 0 again</text>
+            <!-- the running total -->
+            <polyline points="120,150 232,138 344,112 456,96 568,84 680,72" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.6"/>
+            <line x1="680" y1="72" x2="680" y2="150" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.6" stroke-dasharray="4 4"/>
+            <text x="20" y="100" fill-opacity="0.72">Running total</text>
+            <text x="20" y="116" fill-opacity="0.72">(never loops)</text>
+            <text x="692" y="116" fill-opacity="0.72">would jump</text>
+            <text x="692" y="132" fill-opacity="0.72">at the seam</text>
+            <!-- the amount moved in each interval -->
+            <g fill="var(--accent)" fill-opacity="0.75">
+              <rect x="150" y="176" width="52" height="12" rx="3"/><rect x="262" y="162" width="52" height="26" rx="3"/><rect x="374" y="172" width="52" height="16" rx="3"/>
+              <rect x="486" y="176" width="52" height="12" rx="3"/><rect x="598" y="176" width="52" height="12" rx="3"/>
+            </g>
+            <text x="20" y="176" fill-opacity="0.72">Moved in each</text>
+            <text x="20" y="192" fill-opacity="0.72">interval (loops)</text>
+            <!-- the return -->
+            <path d="M680 46 C 680 28, 120 28, 120 46" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#fl-arrow)"/>
+            <text x="400" y="50" text-anchor="middle" fill-opacity="0.72">the state at the end equals the state at the start</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>What a loop must carry for flux to run without a jump. Each rate is the amount moved between two records that both lie inside the loop. So the loop gives the amount moved in each interval, or its running totals with the closing record, and the viewer never takes a difference across the seam.</figcaption>
+    </figure>
+
+    <div class="wide">
+      <table>
+        <thead><tr><th scope="col">Style</th><th scope="col">Records the loop must carry</th><th scope="col">How often</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Beads, trails, pulses</th><td>The amount of each ion moved through each kind of channel and through the membrane in each interval; pump cycles in each interval, with what one cycle moves; which way is positive.</td><td>Enough intervals to follow how the rates change: a few dozen in a loop.</td></tr>
+          <tr><th scope="row">Ribbons, light</th><td>The same. They draw the rate itself, so a jump in rate between two intervals shows as a step.</td><td>As above; more where the rates change fast.</td></tr>
+          <tr><th scope="row">Swarm</th><td>The same, with the amount of each ion on each side of the membrane, so the crowd on each side is as dense as the run says.</td><td>As above.</td></tr>
+          <tr><th scope="row">Any of them</th><td>The loop's length in the cell's time; that its end equals its start, and how closely; the run's name, model and revision for the label.</td><td>Once.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The change the contract would need</h3>
+    <blockquote>
+      <p><b>Rule 7, replaced.</b> Drawn where the run is shown; in the Cell view only from that cell's own run. A layer fed by a run is drawn in that run's replay: on the sheet, or on a close-up of one chosen cell's membrane, named with the run, the cell and the time. In the Cell view of a species it is drawn only from that species' own looping run, a run the engine made of that one cell and packaged to loop. The picture then names the run, says that it loops, and gives the loop's length in the cell's time and how much it is slowed. A species with no such run shows no run-fed layer in its Cell view.</p>
+      <p><b>Rule 3, one sentence more.</b> A layer on the motion channel states its time on the picture: true speed, how much it is slowed, or the loop it plays; and what one token stands for.</p>
+      <p><b>A new rule, only if you allow illustration.</b> Illustration in the Cell view is a class of its own, off when the page opens. Where a species has no looping run, flux may be shown in its Cell view only as illustration, in one of two declared forms: typical values, from a cited source and not from a run; or direction only, where the count of tokens stands for no number. It carries "Illustration: not a run" on the picture and in the legend for as long as it is shown, never shares a picture with a run-fed layer, and is not offered for a part the species' file says it lacks.</p>
+      <p><b>A new rule for decoration.</b> Motion that is not a layer has no net direction, stops while any layer on the motion channel shows, and stops for a visitor who asks for reduced motion.</p>
+    </blockquote>
+  </section>
+
+  <section class="section" id="look" aria-labelledby="look-h">
+    <header>
+      <h2 id="look-h"><span class="num">5</span>The resting look</h2>
+      <p>The approved look stays: glass, natural colours, labels on leader lines. Ten effects could deepen it. Switch each one on and off, alone or together, and watch the frame rate on your device. "As today" is close to what the Cell view does now.</p>
+    </header>
+
+    <figure class="sketch" id="sk-look">
+      <div class="bar">
+        <div class="group" role="group" aria-label="Sets of effects">
+          <span class="name">Set</span>
+          <div class="seg" data-set="preset">
+            <button type="button" data-value="today" aria-pressed="false">As today</button>
+            <button type="button" data-value="picks" aria-pressed="true">My first picks</button>
+            <button type="button" data-value="all" aria-pressed="false">Everything</button>
+          </div>
+        </div>
+        <button type="button" class="plain push" data-pause>Pause</button>
+      </div>
+      <div class="bar">
+        <div class="chips" data-set="look" role="group" aria-label="Effects">
+          <button type="button" class="chip" data-value="env" aria-pressed="false">Studio reflections</button>
+          <button type="button" class="chip" data-value="tone" aria-pressed="false">Filmic light</button>
+          <button type="button" class="chip" data-value="trans" aria-pressed="false">Soft translucency</button>
+          <button type="button" class="chip" data-value="occ" aria-pressed="false">Contact shade</button>
+          <button type="button" class="chip" data-value="bump" aria-pressed="false">Surface texture</button>
+          <button type="button" class="chip" data-value="glass" aria-pressed="false">Glass with depth</button>
+          <button type="button" class="chip" data-value="depth" aria-pressed="false">Depth haze</button>
+          <button type="button" class="chip" data-value="drift" aria-pressed="false">Crowd drift</button>
+          <button type="button" class="chip" data-value="shimmer" aria-pressed="false">Membrane shimmer</button>
+          <button type="button" class="chip" data-value="bloom" aria-pressed="false">Bloom</button>
+        </div>
+      </div>
+      <div class="stage">
+        <canvas tabindex="0" role="img" aria-label="Live sketch: the same glass cell with its nucleus, mitochondria and folded sheets. Each effect that is switched on changes how its surfaces, light and small motion look."></canvas>
+        <span class="tag">Sketch · scenery, no data</span>
+        <span class="meter fps">starting…</span>
+      </div>
+      <figcaption class="says">
+        <span class="legend" data-says aria-live="polite">Five effects on.</span>
+        <span class="small">Two cost more in the real viewer than here: contact shade is faked in this sketch with soft shadows, and glass with depth has an easier scene to bend than the real cell.</span>
+      </figcaption>
+    </figure>
+
+    <div class="wide">
+      <table>
+        <thead><tr><th scope="col">Effect</th><th scope="col">What it adds</th><th scope="col">Cost on the graphics card</th><th scope="col">How it could mislead</th><th scope="col">On a weaker device</th></tr></thead>
+        <tbody>
+          <tr class="pick"><th scope="row">Studio reflections <span class="mark">First</span></th><td>Glass and wet surfaces catch soft lights instead of a pale dome. The largest gain for the least.</td><td>None per frame: the surroundings are prepared once.</td><td>A bright reflection can look like a mark. Keep the lights soft and large.</td><td>Unchanged.</td></tr>
+          <tr class="pick"><th scope="row">Filmic light <span class="mark">First</span></th><td>Highlights roll off instead of clipping; colours gain depth.</td><td>Close to none.</td><td>It shifts colours a little. Data marks and status colours must be left out of it.</td><td>Unchanged.</td></tr>
+          <tr class="pick"><th scope="row">Soft translucency <span class="mark">First</span></th><td>Organelles glow faintly at their thin edges, as soft matter does. Less plastic.</td><td>A few lines in the surface shader.</td><td>Little.</td><td>Unchanged.</td></tr>
+          <tr class="pick"><th scope="row">Contact shade <span class="mark">First</span></th><td>Soft darkening where parts meet and under them. The inside of the cell gains depth.</td><td>One or two extra passes over the screen at half size. Glass cannot take part: only solid parts.</td><td>Darkness could be read as density. Keep it gentle.</td><td>Half size, or off.</td></tr>
+          <tr><th scope="row">Surface texture</th><td>The folds of a mitochondrion, grain on the sheets of the ER, pores on the nucleus.</td><td>A noise function in the shader, or small generated textures.</td><td>Detail that no data stands behind. It stays scenery, as the page already says of such parts.</td><td>Unchanged.</td></tr>
+          <tr><th scope="row">Glass with depth</th><td>The membrane bends what lies behind it and tints with its thickness.</td><td>The scene is drawn a second time for the glass. Glass does not see other glass, so nested shells need care.</td><td>Bending moves things from where they are, which hurts reading a labelled picture. At the scale of molecules light does not do this at all.</td><td>Fall back to today's glass.</td></tr>
+          <tr><th scope="row">Depth haze</th><td>Far parts fade toward the page's colour, so near parts stand out.</td><td>None.</td><td>Faded could be read as planned or absent. Keep status in the dot beside the name.</td><td>Unchanged.</td></tr>
+          <tr class="pick"><th scope="row">Crowd drift <span class="mark">First</span></th><td>The cytosol's crowd jostles slowly at random. The cell looks alive.</td><td>None to speak of: the points move in the shader.</td><td>Motion could be read as flux. It has no net direction, and it stops while flux shows.</td><td>Unchanged.</td></tr>
+          <tr><th scope="row">Membrane shimmer</th><td>The membrane reads as a fluid sheet, not a hard shell.</td><td>A few lines in the shader.</td><td>A travelling ripple would look like a voltage wave. No waves: only a still, slow flicker.</td><td>Unchanged.</td></tr>
+          <tr><th scope="row">Bloom</th><td>Bright edges and highlights glow.</td><td>Several blur passes at reduced size.</td><td>Glow is a channel for data: the energy layer and the flux styles use it. At rest I would leave it off, so that switching flux on makes the cell light up.</td><td>Off.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="pickline"><b>My pick:</b> studio reflections, filmic light, soft translucency, contact shade and a drifting crowd first. They keep the look, add depth and life, and cost little. Bloom is kept for flux. Glass that bends light is the one I would leave out.</p>
+  </section>
+
+  <section class="section" id="devices" aria-labelledby="devices-h">
+    <header>
+      <h2 id="devices-h">Devices and what the build needs</h2>
+      <p>You said computers and phones with good graphics cards. Everything above runs on WebGL 2, which is what the viewer uses today. The line at the top of this page says what your device offers inside this frame.</p>
+    </header>
+    <div class="wide">
+      <table>
+        <thead><tr><th scope="col">Question</th><th scope="col">What I could verify</th><th scope="col">What it means here</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Where WebGPU runs</th><td>Chrome and Edge on Windows, macOS and ChromeOS since version 113, and on Android 12 and later with Qualcomm or ARM graphics since 121. Safari on macOS, iOS and iPadOS 26. Firefox on Windows since 141 and on Apple-silicon Macs since 145. Linux, Firefox on Android and Intel Macs under Firefox were still in progress in November 2025.</td><td>Most good phones and computers, not all. WebGL 2 stays the floor.</td></tr>
+          <tr><th scope="row">What three.js offers</th><td>Its WebGPU renderer falls back to WebGL 2 by itself. At the viewer's version, 0.170.0, that renderer is a file of its own on the same script host the page already uses.</td><td>It can be loaded in a published page. The viewer's materials would have to be rewritten for it, since its present shader hooks do not carry over.</td></tr>
+          <tr><th scope="row">What WebGPU would add</th><td>Computing on the graphics card as a first-class step, for hundreds of thousands of particles, and one shader language for both renderers.</td><td>A swarm for the whole cell, and heavier passes. Nothing in my first picks needs it.</td></tr>
+          <tr><th scope="row">Inside a published page</th><td>Not verified from here. The line at the top of this page tests it on your device, in this frame.</td><td>If it says WebGPU is not offered, the question is closed for now.</td></tr>
+          <tr><th scope="row">What the build needs</th><td>The finishing passes are add-on modules of three.js under the same licence. The page is built into one file, so they would be bundled into it. Particles moved on the graphics card need float textures, which WebGL 2 on a good card has.</td><td>No new script host, and no second library.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The frame rates on this page are your device's. The pictures I checked were drawn in software on a server, which says nothing about a graphics card, so I report no costs in numbers.</p>
+  </section>
+
+  <div class="two">
+    <section aria-labelledby="you-h" class="section">
+      <h2 id="you-h">What is asked of you</h2>
+      <ol class="asks">
+        <li><strong>Which style?</strong> I would build beads, with trails as the bold strength, and keep the swarm for one channel in close-up.</li>
+        <li><strong>How is time shown when flux opens?</strong> I would open at true speed with a token, and put the slow-down slider beside it.</li>
+        <li><strong>How does flux come in?</strong> I would show a part's flux when it is selected, and add a Flux switch for all of it.</li>
+        <li><strong>May the Cell view show illustration</strong> where a species has no looping run yet, marked as such? If not, flux waits for each species' loop.</li>
+        <li><strong>Which resting effects?</strong> I would start with five: studio reflections, filmic light, soft translucency, contact shade, crowd drift.</li>
+        <li><strong>May anything move at rest?</strong> The drifting crowd and the shimmer are decoration. They stop for reduced motion and while flux shows. Say if you would rather have a still cell.</li>
+      </ol>
+    </section>
+    <section aria-labelledby="eng-h" class="section">
+      <h2 id="eng-h">What the engine would be asked for</h2>
+      <ol class="asks">
+        <li><strong>A loop that closes:</strong> its last record equals its first, with how closely, and the amounts moved in each interval, so nothing is differenced across the seam.</li>
+        <li><strong>Enough intervals</strong> in a loop to follow how the rates change.</li>
+        <li><strong>For each kind of channel,</strong> how many channels it stands for and how open they are, so a stream can be spread over the forms drawn.</li>
+        <li><strong>Water, secreted signals and fuel</strong> as amounts moved, if they are to flow too: the note to the lead asks only for ions and energy.</li>
+        <li><strong>The run's own name</strong> for the label: which model, which revision, which cell.</li>
+      </ol>
+      <p class="foot">These add to the nine requests in the note to the lead. They are requests, and the lead decides.</p>
+    </section>
+  </div>
+
+  <section class="section" aria-labelledby="src-h">
+    <header><h2 id="src-h">What others do, in brief</h2><p>The note beside this page says what each source gave. These are the pages it rests on.</p></header>
+    <ul class="sources">
+      <li>Truth in molecular motion: molecules move at random, most never cross a barrier, and light effects such as refraction do not happen at their scale. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11371733/">Jantzen, McGill and Jenkinson 2024, twelve principles for molecular animation</a>.</li>
+      <li>How viewers take in animated and still pictures of the same process: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10627439/">Pokojná and others 2023</a>. Animations that made cells look alive: <a href="https://www.wehi.edu.au/wehi-tv/">WEHI.TV</a>.</li>
+      <li>Whole cells of molecules in real time: <a href="https://www.cg.tuwien.ac.at/cellview">cellVIEW</a> in a games engine, and in the browser the <a href="https://molstar.org/me/">Mol* Mesoscale Explorer</a>. A readable look without photorealism: <a href="https://ccsb.scripps.edu/illustrate/">Goodsell's Illustrate</a>.</li>
+      <li>Particles moved on the graphics card: <a href="https://nullprogram.com/blog/2014/06/29/">Wellons 2014</a>; a million of them as a wind map: <a href="https://github.com/mapbox/webgl-wind">webgl-wind</a>; the same idea in three.js: <a href="https://github.com/mrdoob/three.js/blob/r170/examples/jsm/misc/GPUComputationRenderer.js">GPUComputationRenderer</a>.</li>
+      <li>Glass in real time: <a href="https://github.com/mrdoob/three.js/blob/r170/docs/api/en/materials/MeshPhysicalMaterial.html">three.js physical material</a> and <a href="https://github.com/pmndrs/drei/blob/master/docs/shaders/mesh-transmission-material.mdx">drei's transmission material</a>. Cheap translucency: <a href="https://colinbarrebrisebois.com/2011/03/07/gdc-2011-approximating-translucency-for-a-fast-cheap-and-convincing-subsurface-scattering-look/">Barré-Brisebois and Bouchard 2011</a>. Contact shade at half size: <a href="https://github.com/N8python/n8ao">N8AO</a>.</li>
+      <li>Where WebGPU runs: <a href="https://web.dev/blog/webgpu-supported-major-browsers">web.dev, November 2025</a>. Its renderer in three.js: <a href="https://threejs.org/docs/pages/WebGPURenderer.html">three.js documentation</a>. Asking for less motion: <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion">MDN</a>.</li>
+    </ul>
+  </section>
+
+  <p class="foot">Every sketch is drawn in this page from invented numbers. None is engine data, and none is part of the viewer. The note with the full reasoning is <code>visualizer/docs/FLUX_AND_LOOK.md</code>.</p>
+</div>
+
+<script>
+// If the 3D library does not arrive, say so in each sketch instead of leaving it blank.
+window.setTimeout(function () {
+  if (window.__fluxStarted) return;
+  document.querySelectorAll(".sketch .stage").forEach(function (stage) {
+    if (stage.querySelector(".failed")) return;
+    var note = document.createElement("p");
+    note.className = "failed";
+    note.textContent = "The sketch could not start: the 3D library did not load, or this device offers no WebGL 2.";
+    stage.appendChild(note);
+    var meter = stage.querySelector(".meter");
+    if (meter) meter.textContent = "not running";
+  });
+}, 6000);
+</script>
+<script type="module">
+import * as THREE from "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.170.0/three.module.min.js";
+
+// ------------------------------------------------------------------ small helpers
+const root = document.documentElement;
+const token = (name) => getComputedStyle(root).getPropertyValue(name).trim() || "#888888";
+const colour = (name) => new THREE.Color(token(name));
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+const ratio = () => Math.min(window.devicePixelRatio || 1, 2);
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+const nice = (x) => { const k = 10 ** Math.floor(Math.log10(x)); const m = x / k; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * k; };
+const trim = (x) => (Math.round(x * 10) / 10).toString();
+const count = (n) => (n >= 1e9 ? `${trim(n / 1e9)} billion` : n >= 1e6 ? `${trim(n / 1e6)} million` : Math.round(n).toLocaleString("en-US"));
+const span = (seconds) => {
+  if (seconds >= 1) return `${trim(seconds)} second${seconds === 1 ? "" : "s"}`;
+  if (seconds >= 1e-3) return `${trim(seconds * 1e3)} millisecond${trim(seconds * 1e3) === "1" ? "" : "s"}`;
+  if (seconds >= 1e-6) return `${trim(seconds * 1e6)} microsecond${trim(seconds * 1e6) === "1" ? "" : "s"}`;
+  return `${trim(seconds * 1e9)} nanoseconds`;
+};
+
+// ------------------------------------------------------------------ one renderer for every sketch
+const glCanvas = document.createElement("canvas");
+let renderer = null;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, alpha: false, powerPreference: "high-performance" });
+  renderer.setPixelRatio(1);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+} catch (error) {
+  renderer = null;
+}
+
+const fullscreen = { scene: new THREE.Scene(), camera: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), mesh: new THREE.Mesh(new THREE.PlaneGeometry(2, 2)) };
+fullscreen.scene.add(fullscreen.mesh);
+const SCREEN_VERTEX = "varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }";
+const bloomPass = {
+  bright: new THREE.ShaderMaterial({
+    uniforms: { tMap: { value: null }, uFloor: { value: 0.82 } }, vertexShader: SCREEN_VERTEX, depthTest: false, depthWrite: false,
+    fragmentShader: "uniform sampler2D tMap; uniform float uFloor; varying vec2 vUv; void main() { vec4 c = texture2D(tMap, vUv); float l = max(c.r, max(c.g, c.b)); gl_FragColor = vec4(c.rgb * smoothstep(uFloor, uFloor + 0.5, l), 1.0); }",
+  }),
+  blur: new THREE.ShaderMaterial({
+    uniforms: { tMap: { value: null }, uStep: { value: new THREE.Vector2() } }, vertexShader: SCREEN_VERTEX, depthTest: false, depthWrite: false,
+    fragmentShader: "uniform sampler2D tMap; uniform vec2 uStep; varying vec2 vUv; void main() { vec3 c = texture2D(tMap, vUv).rgb * 0.227027; c += (texture2D(tMap, vUv + uStep * 1.3846).rgb + texture2D(tMap, vUv - uStep * 1.3846).rgb) * 0.316216; c += (texture2D(tMap, vUv + uStep * 3.2308).rgb + texture2D(tMap, vUv - uStep * 3.2308).rgb) * 0.070270; gl_FragColor = vec4(c, 1.0); }",
+  }),
+  join: new THREE.ShaderMaterial({
+    uniforms: { tScene: { value: null }, tGlow: { value: null }, uStrength: { value: 1.1 } }, vertexShader: SCREEN_VERTEX, depthTest: false, depthWrite: false,
+    fragmentShader: "uniform sampler2D tScene; uniform sampler2D tGlow; uniform float uStrength; varying vec2 vUv; void main() { gl_FragColor = vec4(texture2D(tScene, vUv).rgb + texture2D(tGlow, vUv).rgb * uStrength, 1.0);\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}",
+  }),
+};
+const targets = new Map();
+function targetsFor(w, h) {
+  const key = `${w}x${h}`;
+  if (!targets.has(key)) {
+    for (const [old, set] of targets) { if (targets.size > 2) { Object.values(set).forEach((t) => t.dispose()); targets.delete(old); } }
+    const type = renderer.extensions.has("EXT_color_buffer_float") || renderer.extensions.has("EXT_color_buffer_half_float") ? THREE.HalfFloatType : THREE.UnsignedByteType;
+    const small = { type, depthBuffer: false };
+    targets.set(key, {
+      scene: new THREE.WebGLRenderTarget(w, h, { type, samples: 4 }),
+      a: new THREE.WebGLRenderTarget(Math.max(2, w >> 2), Math.max(2, h >> 2), small),
+      b: new THREE.WebGLRenderTarget(Math.max(2, w >> 2), Math.max(2, h >> 2), small),
+    });
+  }
+  return targets.get(key);
+}
+function screenPass(material, target) {
+  fullscreen.mesh.material = material;
+  renderer.setRenderTarget(target);
+  renderer.render(fullscreen.scene, fullscreen.camera);
+}
+function render(sketch) {
+  const { w, h } = sketch;
+  if (glCanvas.width < w || glCanvas.height < h) renderer.setSize(Math.max(glCanvas.width, w), Math.max(glCanvas.height, h), false);
+  renderer.toneMapping = sketch.tone ? THREE.NeutralToneMapping : THREE.NoToneMapping;
+  renderer.toneMappingExposure = 1;
+  const toScreen = () => {
+    renderer.setRenderTarget(null);
+    renderer.setViewport(0, 0, w, h);
+    renderer.setScissor(0, 0, w, h);
+    renderer.setScissorTest(true);
+  };
+  if (sketch.bloom) {
+    const set = targetsFor(w, h);
+    renderer.setRenderTarget(set.scene);
+    renderer.render(sketch.scene, sketch.camera);
+    bloomPass.bright.uniforms.tMap.value = set.scene.texture;
+    bloomPass.bright.uniforms.uFloor.value = sketch.bloomFloor ?? 0.82;
+    screenPass(bloomPass.bright, set.a);
+    for (const reach of [1, 2.2]) {
+      bloomPass.blur.uniforms.tMap.value = set.a.texture;
+      bloomPass.blur.uniforms.uStep.value.set(reach / set.a.width, 0);
+      screenPass(bloomPass.blur, set.b);
+      bloomPass.blur.uniforms.tMap.value = set.b.texture;
+      bloomPass.blur.uniforms.uStep.value.set(0, reach / set.a.height);
+      screenPass(bloomPass.blur, set.a);
+    }
+    bloomPass.join.uniforms.tScene.value = set.scene.texture;
+    bloomPass.join.uniforms.tGlow.value = set.a.texture;
+    bloomPass.join.uniforms.uStrength.value = sketch.bloomStrength ?? 1.1;
+    fullscreen.mesh.material = bloomPass.join;
+    toScreen();
+    renderer.render(fullscreen.scene, fullscreen.camera);
+  } else {
+    toScreen();
+    renderer.render(sketch.scene, sketch.camera);
+  }
+  // The shared canvas holds the picture in its lower left corner: copy it to the sketch's own.
+  sketch.ctx.drawImage(glCanvas, 0, glCanvas.height - h, w, h, 0, 0, w, h);
+}
+
+// ------------------------------------------------------------------ what every sketch shares
+const sketches = [];
+const scratch = new THREE.Vector3();
+function backdrop() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 64; canvas.height = 64;
+  const context = canvas.getContext("2d");
+  const fill = context.createRadialGradient(32, 12, 2, 32, 30, 58);
+  fill.addColorStop(0, token("--stage-a"));
+  fill.addColorStop(1, token("--stage-b"));
+  context.fillStyle = fill;
+  context.fillRect(0, 0, 64, 64);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+function makeSketch(id, build) {
+  const figure = document.getElementById(id);
+  const canvas = figure.querySelector("canvas");
+  const sketch = {
+    id, figure, canvas, ctx: canvas.getContext("2d"), w: 2, h: 2, clock: 0, turn: 0, sway: 0, drag: null, visible: false, dirty: true,
+    paused: reduced.matches, bloom: false, tone: false, labels: [], fps: figure.querySelector(".fps"), says: figure.querySelector("[data-says]"),
+    scene: new THREE.Scene(), world: new THREE.Group(), camera: new THREE.PerspectiveCamera(32, 1.6, 0.1, 120),
+  };
+  sketch.scene.add(sketch.world);
+  build(sketch);
+  sketch.resize = () => {
+    const box = canvas.getBoundingClientRect();
+    const w = Math.max(2, Math.round(box.width * ratio())), h = Math.max(2, Math.round(box.height * ratio()));
+    if (w === sketch.w && h === sketch.h) return;
+    sketch.w = canvas.width = w;
+    sketch.h = canvas.height = h;
+    sketch.camera.aspect = w / h;
+    sketch.frame?.(w / h);
+    sketch.camera.updateProjectionMatrix();
+    sketch.dirty = true;
+  };
+  sketch.retheme = () => {
+    sketch.scene.background?.dispose?.();
+    sketch.scene.background = backdrop();
+    sketch.theme();
+    sketch.dirty = true;
+  };
+  // Buttons that hold one value of a set, and switches that are on or off.
+  figure.querySelectorAll("[data-set]").forEach((group) => {
+    group.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-value]");
+      if (!button) return;
+      sketch.choose?.(group.dataset.set, button.dataset.value, button, group);
+      sketch.dirty = true;
+    });
+  });
+  figure.querySelectorAll("[data-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const on = button.getAttribute("aria-pressed") !== "true";
+      button.setAttribute("aria-pressed", String(on));
+      sketch.toggle?.(button.dataset.toggle, on);
+      sketch.dirty = true;
+    });
+  });
+  const pause = figure.querySelector("[data-pause]");
+  const showPause = () => { pause.textContent = sketch.paused ? "Play" : "Pause"; };
+  pause.addEventListener("click", () => { sketch.paused = !sketch.paused; showPause(); sketch.dirty = true; });
+  showPause();
+  // A drag turns the scene; a press that does not move is a click on the picture.
+  canvas.addEventListener("pointerdown", (event) => {
+    sketch.drag = { x: event.clientX, y: event.clientY, turn: sketch.turn, moved: false };
+    canvas.setPointerCapture?.(event.pointerId);
+  });
+  canvas.addEventListener("pointermove", (event) => {
+    if (!sketch.drag) return;
+    const dx = event.clientX - sketch.drag.x;
+    if (Math.abs(dx) > 4) sketch.drag.moved = true;
+    if (sketch.drag.moved) { sketch.turn = sketch.drag.turn + dx * 0.008; sketch.dirty = true; }
+  });
+  const letGo = (event) => {
+    if (!sketch.drag) return;
+    const clicked = !sketch.drag.moved;
+    sketch.drag = null;
+    if (clicked && event.type === "pointerup") {
+      const box = canvas.getBoundingClientRect();
+      sketch.click?.(((event.clientX - box.left) / box.width) * 2 - 1, -((event.clientY - box.top) / box.height) * 2 + 1);
+      sketch.dirty = true;
+    }
+  };
+  canvas.addEventListener("pointerup", letGo);
+  canvas.addEventListener("pointercancel", letGo);
+  canvas.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") { sketch.turn += event.key === "ArrowLeft" ? -0.12 : 0.12; sketch.dirty = true; event.preventDefault(); }
+  });
+  new ResizeObserver(() => sketch.resize()).observe(canvas);
+  new IntersectionObserver((entries) => { sketch.visible = entries[0].isIntersecting; sketch.dirty = true; }, { threshold: 0.05 }).observe(canvas);
+  sketches.push(sketch);
+  return sketch;
+}
+/** Names on the picture, in the page's own text colours, each with an optional leader line. */
+function drawLabels(sketch) {
+  const { ctx, w, h } = sketch, k = ratio();
+  const ink = token("--fg"), soft = token("--muted"), paper = token("--bg-raised");
+  ctx.textBaseline = "middle";
+  for (const label of sketch.labels) {
+    if (label.hidden) continue;
+    scratch.copy(label.at);
+    sketch.world.localToWorld(scratch);
+    scratch.project(sketch.camera);
+    if (scratch.z > 1) continue;
+    const x = (scratch.x * 0.5 + 0.5) * w, y = (-scratch.y * 0.5 + 0.5) * h;
+    const narrow = w / k < 520;
+    const text = (narrow && label.short) || label.text;
+    const reach = narrow ? 0.62 : 1;
+    let tx = x + (label.dx || 0) * k * reach;
+    const ty = y + (label.dy || 0) * k;
+    ctx.font = `${label.strong ? 600 : 500} ${(label.size || 12) * k}px Inter, system-ui, sans-serif`;
+    ctx.textAlign = label.align || "center";
+    // A name never runs off the picture: it is moved in from the edge it would cross.
+    const width = ctx.measureText(text).width;
+    const left = ctx.textAlign === "left" ? tx : ctx.textAlign === "right" ? tx - width : tx - width / 2;
+    tx += clamp(left, 6 * k, Math.max(6 * k, w - width - 6 * k)) - left;
+    if (label.dx || label.dy) {
+      ctx.strokeStyle = soft; ctx.globalAlpha = 0.7; ctx.lineWidth = k;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(tx, ty - (label.dy < 0 ? -8 * k : 8 * k)); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = paper; ctx.strokeStyle = ink; ctx.lineWidth = 1.2 * k;
+      ctx.beginPath(); ctx.arc(x, y, 2.6 * k, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
+    ctx.lineJoin = "round"; ctx.lineWidth = 4 * k; ctx.strokeStyle = paper; ctx.globalAlpha = 0.85;
+    ctx.strokeText(text, tx, ty);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = label.soft ? soft : ink;
+    ctx.fillText(text, tx, ty);
+  }
+}
+function draw(sketch, dt) {
+  sketch.sway = reduced.matches || sketch.drag ? sketch.sway : Math.sin(sketch.clock * 0.28) * 0.1;
+  sketch.world.rotation.y = sketch.turn + sketch.sway;
+  sketch.update(dt);
+  sketch.world.updateMatrixWorld(true);
+  render(sketch);
+  drawLabels(sketch);
+  sketch.after?.();
+}
+
+// ------------------------------------------------------------------ tokens that stream along a path
+/** Births of tokens on one stream: `rate` tokens a second while `on`; each lives `travel` seconds. */
+function stream() { return { births: [], owed: 0, next: 0, phase: 0 }; }
+function feed(flow, rate, dt, clock, travel, on) {
+  if (on && rate > 0) {
+    flow.owed += rate * dt;
+    while (flow.owed >= 1) { flow.owed -= 1; flow.births.push({ at: clock - flow.owed / rate, id: flow.next++ }); if (flow.births.length > 260) flow.births.shift(); }
+  }
+  while (flow.births.length && clock - flow.births[0].at > travel) flow.births.shift();
+}
+
+// ------------------------------------------------------------------ sketch A: a piece of membrane
+const RATES = { na: 18e6, k: 12e6, cycles: 6e6 }; // ions a second, invented
+const TRAVEL = 3.2; // seconds a token takes to cross the picture
+function buildPatch(sketch, options) {
+  const { scene, world, camera } = sketch;
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8899aa, 2.0));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.5);
+  sun.position.set(-6, 12, 9);
+  scene.add(sun);
+  sketch.frame = (aspect) => { const far = aspect < 1.35 ? 31 : 24; camera.position.set(0, far * 0.27, far); camera.lookAt(0, -0.1, 0); };
+  sketch.frame(1.6);
+
+  const glass = new THREE.MeshStandardMaterial({ transparent: true, opacity: 0.32, roughness: 0.22, metalness: 0, depthWrite: false });
+  const slab = new THREE.Mesh(new THREE.BoxGeometry(16, 1.4, 8), glass);
+  slab.renderOrder = 2;
+  const edge = new THREE.LineSegments(new THREE.EdgesGeometry(slab.geometry), new THREE.LineBasicMaterial({ transparent: true, opacity: 0.7 }));
+  world.add(slab, edge);
+
+  const paths = [
+    { id: "na", ion: "na", x: -5.2, z: 0.5, down: true, rate: RATES.na, name: "Sodium channel", note: "in" },
+    { id: "k", ion: "k", x: -1.7, z: -0.6, down: false, rate: RATES.k, name: "Potassium channel", note: "out" },
+    { id: "cl", ion: "cl", x: 1.8, z: 0.6, down: true, rate: 0, name: "Chloride channel", note: "in balance" },
+    { id: "pna", ion: "na", x: 5.0, z: -0.2, down: false, rate: 3 * RATES.cycles, pump: true },
+    { id: "pk", ion: "k", x: 5.9, z: -0.2, down: true, rate: 2 * RATES.cycles, pump: true },
+  ];
+  for (const path of paths) path.flow = stream();
+  const place = (path, u, id, out) => {
+    const y = (path.down ? 1 : -1) * lerp(4.3, -4.3, u);
+    const wide = smooth(0.9, 3.4, Math.abs(y)) * 1.5;
+    return out.set(path.x + (hash(id * 3.1 + 1) - 0.5) * 2 * wide, y, path.z + (hash(id * 7.7 + 2) - 0.5) * 2 * wide);
+  };
+  const ends = (u) => smooth(0, 0.07, u) * (1 - smooth(0.93, 1, u));
+
+  // The channels and the pump: forms of clear protein, as in the atlas.
+  const protein = new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0 });
+  const proteinClear = new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0, transparent: true, opacity: 0.4, side: THREE.DoubleSide, depthWrite: false });
+  const pumpBody = new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0, transparent: true, opacity: 0.6, depthWrite: false });
+  const rims = [];
+  for (const path of paths.filter((item) => !item.pump)) {
+    const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 1.9, 28, 1, true), proteinClear);
+    tube.position.set(path.x, 0, path.z);
+    tube.renderOrder = 3;
+    world.add(tube);
+    for (const y of [0.95, -0.95]) {
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.13, 10, 30), protein.clone());
+      rim.rotation.x = Math.PI / 2;
+      rim.position.set(path.x, y, path.z);
+      rim.userData.path = path;
+      rims.push(rim);
+      world.add(rim);
+    }
+  }
+  const lobes = [];
+  for (const offset of [-0.45, 0.45]) {
+    const lobe = new THREE.Mesh(new THREE.SphereGeometry(0.78, 24, 18), pumpBody);
+    lobe.scale.set(1, 1.55, 1);
+    lobe.position.set(5.45 + offset, 0, -0.2);
+    lobe.renderOrder = 3;
+    lobes.push(lobe);
+    world.add(lobe);
+  }
+
+  // Beads, and the tails of trails: one instanced mesh.
+  const beadMaterial = new THREE.MeshBasicMaterial({ toneMapped: false });
+  const beads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.17, 14, 10), beadMaterial, 2400);
+  beads.frustumCulled = false;
+  beads.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  world.add(beads);
+  const tint = {}, matrix = new THREE.Matrix4(), spot = new THREE.Vector3(), size = new THREE.Vector3(), turn = new THREE.Quaternion();
+
+  // Ribbons: a tube per stream, as wide as its rate, with stripes that move its way.
+  const ribbons = new THREE.Group();
+  const stripes = (ion) => new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    uniforms: { uColor: { value: new THREE.Color() }, uPhase: { value: 0 }, uLevel: { value: 1 }, uBands: { value: 7 }, uSoft: { value: 0 } },
+    vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+    fragmentShader: "uniform vec3 uColor; uniform float uPhase; uniform float uLevel; uniform float uBands; uniform float uSoft; varying vec2 vUv; void main() { float f = fract(vUv.x * uBands - uPhase); float band = mix(smoothstep(0.42, 0.5, abs(f - 0.5)), pow(0.5 + 0.5 * cos(6.2831853 * f), 3.0), uSoft); float fade = smoothstep(0.0, 0.08, vUv.x) * (1.0 - smoothstep(0.92, 1.0, vUv.x)); gl_FragColor = vec4(uColor * (1.0 + uSoft * band * 0.9), fade * uLevel * mix(mix(0.4, 0.1, uSoft), 0.95, band));\n#include <colorspace_fragment>\n}",
+    userData: { ion },
+  });
+  for (const path of paths.filter((item) => item.rate)) {
+    const from = new THREE.Vector3(path.x, path.down ? 4.3 : -4.3, path.z), to = new THREE.Vector3(path.x, path.down ? -4.3 : 4.3, path.z);
+    const radius = 0.11 + 0.26 * Math.sqrt(path.rate / RATES.na);
+    const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(from, to), 1, radius, 16, false), stripes(path.ion));
+    tube.userData.path = path;
+    const tip = new THREE.Mesh(new THREE.ConeGeometry(radius * 2.1, radius * 4.4, 18), new THREE.MeshBasicMaterial({ toneMapped: false }));
+    tip.position.copy(to);
+    if (path.down) tip.rotation.x = Math.PI;
+    tip.userData.ion = path.ion;
+    ribbons.add(tube, tip);
+  }
+  world.add(ribbons);
+
+  // Pulses: three rings on each stream, passing at its rate.
+  const pulses = new THREE.Group();
+  for (const path of paths.filter((item) => item.rate)) {
+    for (let index = 0; index < 3; index++) {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.07, 8, 30), new THREE.MeshBasicMaterial({ transparent: true, toneMapped: false, depthWrite: false }));
+      ring.rotation.x = Math.PI / 2;
+      ring.userData = { path, index };
+      pulses.add(ring);
+    }
+  }
+  world.add(pulses);
+
+  // Light: a column of travelling bands through each channel, brighter for more.
+  const lights = new THREE.Group();
+  for (const path of paths.filter((item) => item.rate)) {
+    const material = stripes(path.ion);
+    material.uniforms.uBands.value = 2.5;
+    material.uniforms.uSoft.value = 1;
+    const column = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.46, 7.4, 22, 1, true), material);
+    // A cylinder's texture runs round it: turn the lookup so the bands run along its length.
+    material.vertexShader = "varying vec2 vUv; void main() { vUv = uv.yx; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }";
+    column.position.set(path.x, 0, path.z);
+    column.userData.path = path;
+    column.renderOrder = 4;
+    lights.add(column);
+  }
+  world.add(lights);
+
+  // Swarm: ions jostling on both sides, a few of them drifting through. Moved in the vertex shader.
+  const SWARM = 5200;
+  const home = new Float32Array(SWARM * 3), seed = new Float32Array(SWARM * 4), kind = new Float32Array(SWARM), ion = new Float32Array(SWARM);
+  const flowing = paths.filter((item) => item.rate);
+  let cursor = 0;
+  flowing.forEach((path, slot) => {
+    const crossers = Math.round(46 * path.rate / RATES.na);
+    for (let index = 0; index < crossers && cursor < SWARM; index++, cursor++) {
+      kind[cursor] = slot;
+      ion[cursor] = path.ion === "na" ? 0 : 1;
+    }
+  });
+  const crossing = cursor;
+  for (let index = 0; index < SWARM; index++) {
+    for (let part = 0; part < 4; part++) seed[index * 4 + part] = hash(index * 4.7 + part * 13.3 + 0.5);
+    if (index < crossing) continue;
+    kind[index] = -1;
+    const above = hash(index * 2.3 + 9) < 0.5;
+    const pick = hash(index * 5.9 + 4);
+    // Invented shares: sodium and chloride crowd the outside, potassium the inside.
+    ion[index] = above ? (pick < 0.6 ? 0 : pick < 0.93 ? 2 : 1) : (pick < 0.72 ? 1 : pick < 0.86 ? 0 : 2);
+    home[index * 3] = (hash(index * 1.1 + 1) - 0.5) * 15.4;
+    home[index * 3 + 1] = (above ? 1 : -1) * (1.05 + hash(index * 3.3 + 2) * 3.1);
+    home[index * 3 + 2] = (hash(index * 9.1 + 3) - 0.5) * 7.4;
+  }
+  const swarmGeometry = new THREE.BufferGeometry();
+  swarmGeometry.setAttribute("position", new THREE.BufferAttribute(home, 3));
+  swarmGeometry.setAttribute("aSeed", new THREE.BufferAttribute(seed, 4));
+  swarmGeometry.setAttribute("aKind", new THREE.BufferAttribute(kind, 1));
+  swarmGeometry.setAttribute("aIon", new THREE.BufferAttribute(ion, 1));
+  const swarmMaterial = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false,
+    uniforms: {
+      uTime: { value: 0 }, uSize: { value: 60 }, uTint: { value: [new THREE.Color(), new THREE.Color(), new THREE.Color()] },
+      uPath: { value: flowing.map((path) => new THREE.Vector3(path.x, path.z, path.down ? 1 : -1)) },
+    },
+    vertexShader: `
+      attribute vec4 aSeed; attribute float aKind; attribute float aIon;
+      uniform float uTime; uniform float uSize; uniform vec3 uTint[3]; uniform vec3 uPath[${flowing.length}];
+      varying vec3 vTint; varying float vAlpha;
+      void main() {
+        vec3 jostle = vec3(sin(uTime * 1.3 + aSeed.x * 40.0) + sin(uTime * 2.3 + aSeed.y * 71.0),
+                           sin(uTime * 1.7 + aSeed.z * 53.0) + sin(uTime * 2.9 + aSeed.w * 91.0),
+                           sin(uTime * 1.1 + aSeed.y * 33.0) + sin(uTime * 2.6 + aSeed.x * 67.0)) * 0.2;
+        vec3 p = position + jostle;
+        vAlpha = 0.9;
+        if (aKind > -0.5) {
+          vec3 path = uPath[int(aKind + 0.5)];
+          float u = fract(aSeed.w + uTime / 5.0);
+          float y = mix(4.3, -4.3, u) * path.z;
+          float wide = smoothstep(0.9, 3.4, abs(y)) * 1.5;
+          p = vec3(path.x + (aSeed.x - 0.5) * 2.0 * wide, y, path.y + (aSeed.y - 0.5) * 2.0 * wide) + jostle * (0.3 + 0.7 * wide / 1.5);
+          vAlpha = smoothstep(0.0, 0.06, u) * (1.0 - smoothstep(0.94, 1.0, u));
+        }
+        vec4 seen = modelViewMatrix * vec4(p, 1.0);
+        gl_Position = projectionMatrix * seen;
+        gl_PointSize = uSize / -seen.z;
+        vTint = uTint[int(aIon + 0.5)];
+      }`,
+    fragmentShader: "varying vec3 vTint; varying float vAlpha; void main() { float d = length(gl_PointCoord - 0.5); if (d > 0.5) discard; gl_FragColor = vec4(vTint, vAlpha * smoothstep(0.5, 0.3, d));\n#include <colorspace_fragment>\n}",
+  });
+  const swarm = new THREE.Points(swarmGeometry, swarmMaterial);
+  swarm.frustumCulled = false;
+  world.add(swarm);
+
+  sketch.labels = [
+    { text: "outside the cell", short: "outside", at: new THREE.Vector3(-7.6, 3.3, 3.6), align: "left", soft: true, size: 11.5 },
+    { text: "inside", at: new THREE.Vector3(-7.6, -3.1, 3.6), align: "left", soft: true, size: 11.5 },
+    { text: "Na+ in", at: new THREE.Vector3(-5.2, 0.95, 0.5), dy: -34, strong: true },
+    { text: "K+ out", at: new THREE.Vector3(-1.7, 0.95, -0.6), dy: -34, strong: true },
+    { text: "Cl− in balance", short: "Cl−", at: new THREE.Vector3(1.8, 0.95, 0.6), dy: -34 },
+    { text: "Pump: 3 Na+ out, 2 K+ in", short: "Pump", at: new THREE.Vector3(5.45, 1.2, -0.2), dy: -34 },
+  ];
+
+  const state = sketch.state = { style: options.style || "beads", mapping: "count", play: "steady", slow: 0, burst: -1, loopAt: 0 };
+  sketch.timing = () => {
+    const slowed = 10 ** state.slow; // seconds on the screen for one second in the cell
+    const ions = Math.max(1, nice(RATES.na / (slowed * 9)));
+    return { slowed, ions, tokens: (rate) => rate / (slowed * ions) };
+  };
+  const LOOP = 6;
+  const envelope = (path) => {
+    if (state.play !== "loop") return 1;
+    const u = (sketch.clock % LOOP) / LOOP;
+    const open = Math.exp(-(((u - 0.35) / 0.13) ** 2));
+    return path.id === "na" ? 0.25 + 1.5 * open : path.id === "k" ? 0.4 + 1.1 * Math.exp(-(((u - 0.5) / 0.16) ** 2)) : 1;
+  };
+
+  // The picture opens in mid-flow, so that its first still frame already shows what passes.
+  sketch.clock = 20;
+  for (let step = 0, pace = sketch.timing(); step < 240; step++) {
+    for (const path of paths) if (path.rate) feed(path.flow, pace.tokens(path.rate), TRAVEL / 240, 20 - TRAVEL + ((step + 1) * TRAVEL) / 240, TRAVEL, true);
+  }
+
+  sketch.theme = () => {
+    tint.na = colour("--ion-na"); tint.k = colour("--ion-k"); tint.cl = colour("--ion-cl");
+    glass.color.copy(colour("--glass"));
+    edge.material.color.copy(colour("--glass"));
+    protein.color.copy(colour("--protein")); proteinClear.color.copy(colour("--protein")); pumpBody.color.copy(colour("--pump"));
+    for (const rim of rims) rim.material.color.copy(colour("--protein"));
+    ribbons.children.forEach((item) => (item.material.uniforms ? item.material.uniforms.uColor.value.copy(tint[item.material.userData.ion]) : item.material.color.copy(tint[item.userData.ion])));
+    pulses.children.forEach((ring) => ring.material.color.copy(tint[ring.userData.path.ion]));
+    lights.children.forEach((column) => column.material.uniforms.uColor.value.copy(tint[column.material.userData.ion]));
+    swarmMaterial.uniforms.uTint.value[0].copy(tint.na); swarmMaterial.uniforms.uTint.value[1].copy(tint.k); swarmMaterial.uniforms.uTint.value[2].copy(tint.cl);
+  };
+
+  sketch.update = (dt) => {
+    const { style } = state, time = sketch.timing();
+    const lit = sketch.bloom ? 1.75 : 1; // brighter than white counts as light for the bloom
+    const emitting = state.play !== "pulse" || sketch.clock < state.burst;
+    beads.visible = style === "beads" || style === "trails";
+    ribbons.visible = style === "ribbons";
+    pulses.visible = style === "pulses";
+    lights.visible = style === "light";
+    swarm.visible = style === "swarm";
+    let used = 0;
+    const put = (path, u, id, scale) => {
+      place(path, u, id, spot);
+      size.setScalar(scale * ends(u));
+      matrix.compose(spot, turn, size);
+      beads.setMatrixAt(used, matrix);
+      beads.setColorAt(used, scratchColour.copy(tint[path.ion]).multiplyScalar(lit));
+      used++;
+    };
+    for (const path of paths) {
+      if (!path.rate) continue;
+      const rate = time.tokens(path.rate) * envelope(path);
+      if (beads.visible) {
+        const tail = style === "trails" ? 6 : 0;
+        if (state.mapping === "count") {
+          feed(path.flow, rate, dt, sketch.clock, TRAVEL, emitting);
+          for (const birth of path.flow.births) {
+            const u = (sketch.clock - birth.at) / TRAVEL;
+            if (used + tail + 1 >= 2400) break;
+            put(path, u, birth.id, 1);
+            for (let lag = 1; lag <= tail; lag++) if (u - lag * 0.013 > 0) put(path, u - lag * 0.013, birth.id, 1 - lag / (tail + 1));
+          }
+        } else {
+          const fixed = 7;
+          if (emitting) path.flow.phase = (path.flow.phase + (dt * rate) / fixed) % 1;
+          for (let index = 0; index < fixed && emitting; index++) {
+            const u = (path.flow.phase + index / fixed) % 1;
+            put(path, u, index + 0.5, 1);
+            for (let lag = 1; lag <= tail; lag++) if (u - lag * 0.013 > 0) put(path, u - lag * 0.013, index + 0.5, 1 - lag / (tail + 1));
+          }
+        }
+      }
+    }
+    beads.count = used;
+    beads.instanceMatrix.needsUpdate = true;
+    if (beads.instanceColor) beads.instanceColor.needsUpdate = true;
+    ribbons.children.forEach((item) => { if (item.material.uniforms) item.material.uniforms.uPhase.value = sketch.clock * 0.9; });
+    pulses.children.forEach((ring) => {
+      const { path, index } = ring.userData;
+      const u = (sketch.clock * (0.16 + 0.34 * path.rate / RATES.na) + index / 3) % 1;
+      place(path, u, 0.5, spot);
+      ring.position.set(path.x, spot.y, path.z);
+      const wide = 0.7 + smooth(0.9, 3.4, Math.abs(spot.y)) * 1.6;
+      ring.scale.set(wide, wide, 1);
+      ring.material.opacity = ends(u) * 0.95;
+      ring.material.color.copy(tint[path.ion]).multiplyScalar(lit);
+    });
+    lights.children.forEach((column) => {
+      const path = column.userData.path;
+      column.material.uniforms.uPhase.value = (path.down ? -1 : 1) * sketch.clock * 0.55;
+      column.material.uniforms.uLevel.value = (0.45 + 0.55 * path.rate / RATES.na) * (sketch.bloom ? 1.25 : 1);
+    });
+    for (const rim of rims) {
+      const path = rim.userData.path;
+      rim.material.emissive.copy(style === "light" && path.rate ? tint[path.ion] : black).multiplyScalar(0.55 * lit);
+    }
+    swarmMaterial.uniforms.uTime.value = sketch.clock;
+    swarmMaterial.uniforms.uSize.value = sketch.h * 0.17;
+  };
+
+  // The loop's bar and the on-demand pulse are drawn or timed over the picture.
+  sketch.after = () => {
+    if (state.play !== "loop") return;
+    const { ctx, w, h } = sketch, k = ratio();
+    const left = 16 * k, right = w - 16 * k, y = h - 14 * k, u = (sketch.clock % LOOP) / LOOP;
+    ctx.lineCap = "round"; ctx.lineWidth = 3 * k;
+    ctx.strokeStyle = token("--line"); ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+    ctx.strokeStyle = token("--fg"); ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(lerp(left, right, u), y); ctx.stroke();
+  };
+}
+const scratchColour = new THREE.Color(), black = new THREE.Color(0, 0, 0);
+
+// ------------------------------------------------------------------ sketch B: a small cell, cut open
+/** Adds to a standard material the terms the look options switch: rim, translucency, shade, texture. */
+function enrich(material, shared, stripe = 0) {
+  material.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, shared, { uStripe: { value: stripe } });
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", "#include <common>\nvarying vec3 vObject;")
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvObject = position;");
+    shader.fragmentShader = shader.fragmentShader
+      .replace("#include <common>", `#include <common>
+        varying vec3 vObject; uniform mat3 normalMatrix; uniform float uRim; uniform float uTrans; uniform float uOcc; uniform float uBump; uniform float uStripe; uniform vec3 uBack;
+        float grainHash(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
+        float grain(vec3 p) { vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+          return mix(mix(mix(grainHash(i), grainHash(i + vec3(1, 0, 0)), f.x), mix(grainHash(i + vec3(0, 1, 0)), grainHash(i + vec3(1, 1, 0)), f.x), f.y),
+                     mix(mix(grainHash(i + vec3(0, 0, 1)), grainHash(i + vec3(1, 0, 1)), f.x), mix(grainHash(i + vec3(0, 1, 1)), grainHash(i + vec3(1, 1, 1)), f.x), f.y), f.z); }
+        float relief(vec3 p) { return grain(p * 11.0) * (1.0 - 0.7 * uStripe) + uStripe * 0.6 * sin(p.y * 15.0); }`)
+      .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
+        if (uBump > 0.0) {
+          float here = relief(vObject);
+          vec3 slope = vec3(relief(vObject + vec3(0.03, 0.0, 0.0)) - here, relief(vObject + vec3(0.0, 0.03, 0.0)) - here, relief(vObject + vec3(0.0, 0.0, 0.03)) - here) / 0.03;
+          normal = normalize(normal - uBump * 0.035 * (normalMatrix * slope));
+        }`)
+      .replace("#include <opaque_fragment>", `
+        vec3 toEye = normalize(vViewPosition);
+        float edge = pow(1.0 - clamp(abs(dot(toEye, normal)), 0.0, 1.0), 2.4);
+        outgoingLight += uRim * edge;
+        float through = pow(clamp(dot(toEye, -normalize(uBack + normal * 0.4)), 0.0, 1.0), 2.5);
+        outgoingLight += uTrans * diffuseColor.rgb * (0.5 * through + 0.16 * edge);
+        vec3 up = inverseTransformDirection(normal, viewMatrix);
+        outgoingLight *= 1.0 - uOcc * 0.55 * smoothstep(0.4, -0.9, up.y);
+        #include <opaque_fragment>`);
+  };
+  material.customProgramCacheKey = () => `flux-look-${stripe}`;
+  return material;
+}
+function buildCell(sketch, options) {
+  const { scene, world, camera } = sketch;
+  const sky = new THREE.HemisphereLight(0xffffff, 0x8899aa, 1.9);
+  const sun = new THREE.DirectionalLight(0xffffff, 1.5);
+  sun.position.set(-7, 12, 8);
+  scene.add(sky, sun);
+  sketch.frame = (aspect) => { const far = aspect < 1.35 ? 23 : 16.5; camera.position.set(0, far * 0.72, far); camera.lookAt(0, 1.5, 0); };
+  sketch.frame(1.6);
+  const R = 5, H = 4.4, APOTHEM = R * Math.cos(Math.PI / 6);
+  const shared = { uRim: { value: 0.32 }, uTrans: { value: 0 }, uOcc: { value: 0 }, uBump: { value: 0 }, uBack: { value: new THREE.Vector3(0, 0, -1) } };
+  const wave = { uShimmer: { value: 0 }, uClock: { value: 0 } };
+  const ripple = (material) => {
+    material.onBeforeCompile = (shader) => {
+      Object.assign(shader.uniforms, wave);
+      shader.vertexShader = shader.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vSheet;").replace("#include <begin_vertex>", "#include <begin_vertex>\nvSheet = position;");
+      shader.fragmentShader = shader.fragmentShader
+        .replace("#include <common>", "#include <common>\nvarying vec3 vSheet; uniform float uShimmer; uniform float uClock;")
+        .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
+          if (uShimmer > 0.0) {
+            vec3 q = vSheet * 1.3;
+            vec3 flick = vec3(sin(q.y * 2.1 + sin(uClock * 0.7 + q.x * 1.7)), sin(q.x * 1.9 + sin(uClock * 0.9 + q.z * 2.1)), sin(q.z * 2.3 + sin(uClock * 0.8 + q.y * 1.9)));
+            normal = normalize(normal + uShimmer * 0.055 * flick);
+          }`);
+    };
+    material.customProgramCacheKey = () => "flux-look-sheet";
+    return material;
+  };
+
+  // The membrane: six flat walls of glass, a floor, and the rim where it was cut.
+  const wallShape = new THREE.CylinderGeometry(R, R, H, 6, 1, true).toNonIndexed();
+  wallShape.computeVertexNormals();
+  const glassToday = ripple(new THREE.MeshStandardMaterial({ transparent: true, opacity: 0.3, roughness: 0.22, metalness: 0, side: THREE.DoubleSide, depthWrite: false }));
+  const glassDeep = ripple(new THREE.MeshPhysicalMaterial({ transmission: 1, thickness: 0.9, ior: 1.22, roughness: 0.12, metalness: 0, attenuationDistance: 3.2, side: THREE.DoubleSide, envMapIntensity: 1.1 }));
+  const walls = new THREE.Mesh(wallShape, glassToday);
+  walls.position.y = H / 2;
+  walls.renderOrder = 5;
+  const floor = new THREE.Mesh(new THREE.CylinderGeometry(R, R, 0.06, 6), new THREE.MeshStandardMaterial({ transparent: true, opacity: 0.42, roughness: 0.3, metalness: 0, depthWrite: false }));
+  floor.position.y = -0.03;
+  const corner = (index, y) => new THREE.Vector3(Math.sin((index * Math.PI) / 3) * R, y, Math.cos((index * Math.PI) / 3) * R);
+  const rimLine = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints([0, 1, 2, 3, 4, 5].map((index) => corner(index, H))), new THREE.LineBasicMaterial());
+  const footLine = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints([0, 1, 2, 3, 4, 5].map((index) => corner(index, 0))), new THREE.LineBasicMaterial({ transparent: true, opacity: 0.55 }));
+  world.add(floor, walls, rimLine, footLine);
+
+  // What is inside: a nucleus, three mitochondria, sheets of the ER, a Golgi stack, and the crowd.
+  const solid = (name, stripe = 0) => enrich(new THREE.MeshStandardMaterial({ roughness: 0.42, metalness: 0 }), shared, stripe);
+  const parts = { nucleus: solid("nucleus"), core: solid("core"), mito: solid("mito", 1), er: solid("er"), golgi: solid("golgi") };
+  parts.er.side = THREE.DoubleSide;
+  parts.golgi.side = THREE.DoubleSide;
+  const nucleus = new THREE.Mesh(new THREE.SphereGeometry(1.55, 48, 32), parts.nucleus);
+  nucleus.position.set(-0.7, 1.75, 0.2);
+  const core = new THREE.Mesh(new THREE.SphereGeometry(0.55, 24, 16), parts.core);
+  core.position.set(-0.25, 2.75, 0.75);
+  world.add(nucleus, core);
+  const mitochondria = [[2.5, 0.75, 1.3, 0.5], [1.9, 0.7, -2.2, -0.9], [-2.9, 0.7, -1.9, 1.3]].map(([x, y, z, spin]) => {
+    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.46, 1.35, 8, 20), parts.mito);
+    body.position.set(x, y, z);
+    body.rotation.set(Math.PI / 2, 0, spin);
+    world.add(body);
+    return body;
+  });
+  for (const [radius, start, length, lift] of [[2.35, 0.5, 1.9, 1.5], [2.75, 0.75, 1.5, 1.3], [3.15, 1.0, 1.15, 1.1]]) {
+    const sheet = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, lift * 1.5, 36, 1, true, start, length), parts.er);
+    sheet.position.set(-0.7, lift * 0.78, 0.2);
+    world.add(sheet);
+  }
+  for (let index = 0; index < 4; index++) {
+    const arc = new THREE.Mesh(new THREE.TorusGeometry(0.75 + index * 0.2, 0.07, 8, 26, Math.PI * 0.9), parts.golgi);
+    arc.scale.set(1, 1, 3.4);
+    arc.position.set(0.7, 0.55, 2.9);
+    arc.rotation.set(Math.PI / 2, 0, 2.4);
+    world.add(arc);
+  }
+  const blobs = new THREE.Group();
+  const blobTexture = (() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 64;
+    const context = canvas.getContext("2d");
+    const fill = context.createRadialGradient(32, 32, 2, 32, 32, 31);
+    fill.addColorStop(0, "rgba(0,0,0,0.55)");
+    fill.addColorStop(1, "rgba(0,0,0,0)");
+    context.fillStyle = fill;
+    context.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(canvas);
+  })();
+  const blobMaterial = new THREE.MeshBasicMaterial({ map: blobTexture, transparent: true, depthWrite: false, toneMapped: false, opacity: 0.6 });
+  for (const [x, z, wide, deep] of [[-0.7, 0.2, 4.0, 4.0], [2.5, 1.3, 2.9, 1.8], [1.9, -2.2, 2.9, 1.8], [-2.9, -1.9, 2.9, 1.8], [0.7, 2.9, 2.6, 1.4]]) {
+    const blob = new THREE.Mesh(new THREE.PlaneGeometry(wide, deep), blobMaterial);
+    blob.rotation.x = -Math.PI / 2;
+    blob.position.set(x, 0.02, z);
+    blobs.add(blob);
+  }
+  blobs.renderOrder = 1;
+  world.add(blobs);
+
+  const CROWD = 2600;
+  const crowdAt = new Float32Array(CROWD * 3), crowdSeed = new Float32Array(CROWD * 3);
+  for (let index = 0, placed = 0; placed < CROWD; index++) {
+    const x = (hash(index * 1.7 + 1) - 0.5) * 2 * R, z = (hash(index * 3.9 + 2) - 0.5) * 2 * R, y = 0.2 + hash(index * 6.1 + 3) * (H - 0.9);
+    // Inside the six walls, and not in the nucleus.
+    const angle = Math.atan2(x, z), sector = ((angle % (Math.PI / 3)) + Math.PI / 3) % (Math.PI / 3) - Math.PI / 6;
+    if (Math.hypot(x, z) * Math.cos(sector) > APOTHEM - 0.35) continue;
+    if (Math.hypot(x + 0.7, y - 1.75, z - 0.2) < 1.75) continue;
+    crowdAt.set([x, y, z], placed * 3);
+    crowdSeed.set([hash(index + 0.1), hash(index + 0.2), hash(index + 0.3)], placed * 3);
+    placed++;
+  }
+  const crowdGeometry = new THREE.BufferGeometry();
+  crowdGeometry.setAttribute("position", new THREE.BufferAttribute(crowdAt, 3));
+  crowdGeometry.setAttribute("aSeed", new THREE.BufferAttribute(crowdSeed, 3));
+  const crowdMaterial = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false,
+    uniforms: { uClock: { value: 0 }, uDrift: { value: 0 }, uSize: { value: 40 }, uColor: { value: new THREE.Color() } },
+    vertexShader: `attribute vec3 aSeed; uniform float uClock; uniform float uDrift; uniform float uSize;
+      void main() {
+        vec3 jostle = vec3(sin(uClock * 0.9 + aSeed.x * 50.0) + sin(uClock * 1.7 + aSeed.y * 31.0), sin(uClock * 1.1 + aSeed.y * 47.0) + sin(uClock * 1.9 + aSeed.z * 29.0), sin(uClock * 0.8 + aSeed.z * 43.0) + sin(uClock * 1.6 + aSeed.x * 37.0));
+        vec4 seen = modelViewMatrix * vec4(position + jostle * uDrift, 1.0);
+        gl_Position = projectionMatrix * seen;
+        gl_PointSize = uSize / -seen.z;
+      }`,
+    fragmentShader: "uniform vec3 uColor; void main() { float d = length(gl_PointCoord - 0.5); if (d > 0.5) discard; gl_FragColor = vec4(uColor, 0.6 * smoothstep(0.5, 0.25, d));\n#include <colorspace_fragment>\n}",
+  });
+  const crowd = new THREE.Points(crowdGeometry, crowdMaterial);
+  crowd.frustumCulled = false;
+  crowd.renderOrder = 3;
+  world.add(crowd);
+
+  // Channels and pumps in the wall, on the four faces turned toward the viewer.
+  const kinds = {
+    na: { name: "Sodium channels", ion: "na", inward: true, rate: RATES.na, spots: [] },
+    k: { name: "Potassium channels", ion: "k", inward: false, rate: RATES.k, spots: [] },
+    pump: { name: "Pumps", rate: RATES.cycles, spots: [] },
+  };
+  const proteinSolid = new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0 });
+  const pumpSolid = new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0 });
+  const picks = [];
+  const order = ["na", "k", "pump", "k", "na", "pump", "na", "k", "pump", "na", "k", "pump"];
+  [330, 30, 90, 270].forEach((degrees, face) => {
+    const angle = (degrees * Math.PI) / 180, normal = new THREE.Vector3(Math.sin(angle), 0, Math.cos(angle)), along = new THREE.Vector3(Math.cos(angle), 0, -Math.sin(angle));
+    for (let index = 0; index < 3; index++) {
+      const kind = order[face * 3 + index];
+      const at = normal.clone().multiplyScalar(APOTHEM).addScaledVector(along, (index - 1) * 1.45).setY(1.25 + ((index + face) % 2) * 1.5);
+      const form = new THREE.Group();
+      if (kind === "pump") {
+        for (const side of [-0.2, 0.2]) {
+          const lobe = new THREE.Mesh(new THREE.SphereGeometry(0.27, 16, 12), pumpSolid);
+          lobe.position.x = side;
+          lobe.scale.set(1, 1, 1.5);
+          form.add(lobe);
+        }
+      } else {
+        form.add(new THREE.Mesh(new THREE.TorusGeometry(0.27, 0.1, 10, 22), proteinSolid));
+      }
+      form.position.copy(at);
+      form.lookAt(at.clone().add(normal));
+      world.add(form);
+      const target = new THREE.Mesh(new THREE.SphereGeometry(0.75, 8, 6), new THREE.MeshBasicMaterial({ visible: false }));
+      target.position.copy(at);
+      target.userData.kind = kind;
+      world.add(target);
+      picks.push(target);
+      kinds[kind].spots.push({ at, normal, flows: [stream(), stream()] });
+    }
+  });
+  const beadMaterial = new THREE.MeshBasicMaterial({ toneMapped: false });
+  const beads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.12, 12, 8), beadMaterial, 1500);
+  beads.frustumCulled = false;
+  beads.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  beads.renderOrder = 6;
+  world.add(beads);
+  const ring = new THREE.Group();
+  const ringMaterial = new THREE.MeshBasicMaterial({ toneMapped: false });
+  world.add(ring);
+
+  const labelAt = (kind, index) => kinds[kind].spots[index].at.clone().addScaledVector(kinds[kind].spots[index].normal, 0.2);
+  const flux = options.flux;
+  sketch.labels = flux
+    ? [
+        { text: "Sodium channels", at: labelAt("na", 1), dx: -54, dy: 54, key: "na" },
+        { text: "Potassium channels", at: labelAt("k", 1), dx: 30, dy: 58, key: "k" },
+        { text: "Pumps", at: labelAt("pump", 1), dx: 64, dy: 34, key: "pump" },
+      ]
+    : [
+        { text: "Nucleus", at: new THREE.Vector3(-0.7, 3.3, 0.2), dx: -70, dy: -44 },
+        { text: "Mitochondrion", at: new THREE.Vector3(2.5, 1.2, 1.3), dx: 96, dy: -8, align: "left" },
+        { text: "ER", at: new THREE.Vector3(1.9, 2.2, 1.1), dx: 84, dy: -66 },
+        { text: "Membrane", at: new THREE.Vector3(-4.33, 3.2, 2.5), dx: -40, dy: -40 },
+      ];
+
+  const environments = {};
+  const surroundings = (studio) => {
+    const room = new THREE.Scene();
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(60, 32, 16), new THREE.MeshBasicMaterial({ side: THREE.BackSide, vertexColors: true }));
+    const at = dome.geometry.attributes.position, shades = [];
+    for (let index = 0; index < at.count; index++) {
+      const t = at.getY(index) / 120 + 0.5;
+      if (studio) shades.push(0.1 + 0.42 * t, 0.13 + 0.42 * t, 0.2 + 0.44 * t);
+      else shades.push(0.32 + 0.7 * t, 0.36 + 0.68 * t, 0.42 + 0.64 * t);
+    }
+    dome.geometry.setAttribute("color", new THREE.Float32BufferAttribute(shades, 3));
+    room.add(dome);
+    const panels = studio
+      ? [[-26, 30, 24, 34, [5.2, 4.9, 4.4]], [34, 16, -8, 26, [1.6, 2.1, 3.0]], [0, 46, -6, 30, [2.4, 2.4, 2.4]], [-10, -8, -40, 40, [1.1, 0.9, 1.5]]]
+      : [[-22, 34, 26, 30, [3, 3, 3]], [30, 20, -14, 20, [1.5, 1.5, 1.5]]];
+    for (const [x, y, z, size, power] of panels) {
+      const panel = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshBasicMaterial({ color: new THREE.Color(...power), side: THREE.DoubleSide }));
+      panel.position.set(x, y, z);
+      panel.lookAt(0, 0, 0);
+      room.add(panel);
+    }
+    const maker = new THREE.PMREMGenerator(renderer);
+    const texture = maker.fromScene(room, 0.035).texture;
+    maker.dispose();
+    return texture;
+  };
+
+  const look = sketch.look = { env: false, tone: false, trans: false, occ: false, bump: false, glass: false, depth: false, drift: false, shimmer: false, bloom: false };
+  const state = sketch.state = { mode: "select", part: null, bursts: {} };
+  sketch.applyLook = () => {
+    try {
+      const which = look.env ? "studio" : "plain";
+      environments[which] ||= surroundings(look.env);
+      scene.environment = environments[which];
+    } catch (error) { scene.environment = null; }
+    scene.environmentIntensity = look.env ? 0.8 : 0.55;
+    sketch.tone = look.tone;
+    sketch.bloom = look.bloom;
+    sketch.bloomFloor = 1.0;
+    sketch.bloomStrength = 0.5;
+    shared.uTrans.value = look.trans ? 1 : 0;
+    shared.uOcc.value = look.occ ? 1 : 0;
+    shared.uBump.value = look.bump ? 1 : 0;
+    blobs.visible = look.occ;
+    walls.material = look.glass ? glassDeep : glassToday;
+    scene.fog = look.depth ? new THREE.Fog(colour("--stage-b"), 17, 31) : null;
+    crowdMaterial.uniforms.uDrift.value = look.drift ? 0.085 : 0;
+    wave.uShimmer.value = look.shimmer ? 1 : 0;
+    sun.intensity = look.tone ? 1.75 : 1.5;
+  };
+
+  sketch.theme = () => {
+    const membrane = colour("--glass");
+    glassToday.color.copy(membrane);
+    glassDeep.color.set(0xffffff);
+    glassDeep.attenuationColor.copy(membrane);
+    floor.material.color.copy(membrane);
+    rimLine.material.color.copy(membrane);
+    footLine.material.color.copy(membrane);
+    parts.nucleus.color.copy(colour("--nucleus"));
+    parts.core.color.copy(colour("--nucleus")).multiplyScalar(0.62);
+    parts.mito.color.copy(colour("--mito"));
+    parts.er.color.copy(colour("--er"));
+    parts.golgi.color.copy(colour("--ghost"));
+    crowdMaterial.uniforms.uColor.value.copy(colour("--cyto"));
+    proteinSolid.color.copy(colour("--protein"));
+    pumpSolid.color.copy(colour("--pump"));
+    ringMaterial.color.copy(colour("--fg"));
+    if (scene.fog) scene.fog.color.copy(colour("--stage-b"));
+    sketch.tint = { na: colour("--ion-na"), k: colour("--ion-k") };
+  };
+
+  const matrix = new THREE.Matrix4(), spot = new THREE.Vector3(), size = new THREE.Vector3(), turn = new THREE.Quaternion();
+  const backLight = new THREE.Vector3();
+  const running = (kind) => flux && (state.mode === "all" || (state.mode === "select" && state.part === kind) || (state.mode === "burst" && sketch.clock < (state.bursts[kind] ?? -1)));
+  sketch.update = (dt) => {
+    wave.uClock.value = sketch.clock;
+    crowdMaterial.uniforms.uClock.value = sketch.clock;
+    crowdMaterial.uniforms.uSize.value = sketch.h * 0.085;
+    // Light from behind and below, in the eye's frame, for the translucency.
+    backLight.set(0.25, -0.5, -1).normalize().transformDirection(camera.matrixWorldInverse);
+    shared.uBack.value.copy(backLight);
+    let used = 0;
+    if (flux) {
+      const ions = nice(RATES.na / (kinds.na.spots.length * 4.5)); // one token for the whole cell; the channels of a kind share its rate
+      const put = (from, to, u, tint) => {
+        spot.lerpVectors(from, to, u);
+        size.setScalar(smooth(0, 0.1, u) * (1 - smooth(0.9, 1, u)));
+        matrix.compose(spot, turn, size);
+        beads.setMatrixAt(used, matrix);
+        beads.setColorAt(used, tint);
+        used++;
+      };
+      const outer = new THREE.Vector3(), inner = new THREE.Vector3();
+      for (const [key, kind] of Object.entries(kinds)) {
+        const on = running(key);
+        for (const place of kind.spots) {
+          outer.copy(place.at).addScaledVector(place.normal, 1.5);
+          inner.copy(place.at).addScaledVector(place.normal, -1.5);
+          const streams = key === "pump"
+            ? [{ flow: place.flows[0], rate: (3 * kind.rate) / kind.spots.length, inward: false, tint: sketch.tint.na, shift: -0.2 }, { flow: place.flows[1], rate: (2 * kind.rate) / kind.spots.length, inward: true, tint: sketch.tint.k, shift: 0.2 }]
+            : [{ flow: place.flows[0], rate: kind.rate / kind.spots.length, inward: kind.inward, tint: sketch.tint[kind.ion], shift: 0 }];
+          for (const item of streams) {
+            if (on && !item.flow.live) for (let step = 0; step < 60; step++) feed(item.flow, item.rate / ions, 2.2 / 60, sketch.clock - 2.2 + ((step + 1) * 2.2) / 60, 2.2, true);
+            if (!on && sketch.paused) item.flow.births.length = 0;
+            item.flow.live = on;
+            feed(item.flow, item.rate / ions, dt, sketch.clock, 2.2, on);
+            for (const birth of item.flow.births) {
+              if (used >= 1500) break;
+              const u = (sketch.clock - birth.at) / 2.2;
+              const from = item.inward ? outer : inner, to = item.inward ? inner : outer;
+              put(from, to, u, item.tint);
+              const offset = (hash(birth.id * 3.7 + 1) - 0.5) * 0.5 * Math.abs(u - 0.5) * 2 + item.shift;
+              beads.getMatrixAt(used - 1, matrix);
+              matrix.elements[13] += offset;
+              beads.setMatrixAt(used - 1, matrix);
+            }
+          }
+        }
+      }
+    }
+    beads.count = used;
+    beads.instanceMatrix.needsUpdate = true;
+    if (beads.instanceColor) beads.instanceColor.needsUpdate = true;
+    for (const label of sketch.labels) if (label.key) label.strong = state.part === label.key || (state.mode === "burst" && sketch.clock < (state.bursts[label.key] ?? -1));
+  };
+  if (flux) {
+    const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2();
+    sketch.click = (x, y) => {
+      pointer.set(x, y);
+      raycaster.setFromCamera(pointer, camera);
+      const hit = raycaster.intersectObjects(picks, false)[0];
+      sketch.pick(hit ? hit.object.userData.kind : null);
+    };
+  }
+  sketch.kinds = kinds;
+}
+
+// ------------------------------------------------------------------ the four sketches
+function press(group, value) {
+  group.querySelectorAll("button[data-value]").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.value === value)));
+}
+const STYLE_SAYS = {
+  beads: "Beads: each bead is a token for a stated number of ions. More beads, more ions a second.",
+  trails: "Trails: the same beads, each with a tail of one length. Switch Bloom on for the bold look.",
+  ribbons: "Ribbons: a ribbon's width is its rate. The stripes show which way; their speed stands for nothing.",
+  pulses: "Pulses: rings pass through each channel, more often for a larger rate.",
+  swarm: "Swarm: ions jostle at random on both sides. Most never cross; a few drift through, more for a larger rate.",
+  light: "Light: a band of light travels through each channel, brighter for a larger rate. Switch Bloom on to see it glow.",
+};
+
+function start() {
+  const styles = makeSketch("sk-style", (sketch) => {
+    buildPatch(sketch, { style: "beads" });
+    sketch.choose = (set, value, button, group) => {
+      press(group, value);
+      sketch.state.style = value;
+      sketch.says.textContent = STYLE_SAYS[value];
+      sketch.bloomFloor = 0.86;
+      sketch.bloomStrength = 1.2;
+    };
+    sketch.toggle = (name, on) => { sketch.bloom = on; };
+  });
+
+  const time = makeSketch("sk-time", (sketch) => {
+    buildPatch(sketch, { style: "beads" });
+    const more = sketch.figure.querySelector("[data-more]"), burst = sketch.figure.querySelector("[data-burst]"), slider = sketch.figure.querySelector("#slow");
+    const tell = () => {
+      const { slowed, ions } = sketch.timing();
+      const pace = slowed === 1 ? "Shown at true speed." : `1 second here is ${span(1 / slowed)} in the cell: slowed ${count(slowed)} times.`;
+      const play = sketch.state.play === "loop" ? ` A loop of ${span(6 / slowed)} of the cell's time, played in 6 seconds.` : sketch.state.play === "pulse" ? " Nothing moves until a pulse is sent." : "";
+      sketch.says.textContent = `1 bead = ${ions === 1 ? "1 ion" : `${count(ions)} ions`}. ${pace}${play}`;
+      more.textContent = sketch.state.mapping === "count"
+        ? "More beads means more ions a second. Every bead travels at the same speed, which stands for nothing."
+        : "Faster beads means more ions a second. A fast bead is easy to take for a fast ion, which the engine does not have.";
+    };
+    slider.addEventListener("input", () => { sketch.state.slow = Number(slider.value); tell(); sketch.dirty = true; });
+    burst.addEventListener("click", () => { sketch.state.burst = sketch.clock + 2.6; if (sketch.paused) sketch.figure.querySelector("[data-pause]").click(); });
+    sketch.choose = (set, value, button, group) => {
+      press(group, value);
+      sketch.state[set] = value;
+      if (set === "play") burst.hidden = value !== "pulse";
+      tell();
+    };
+    tell();
+  });
+
+  const cell = makeSketch("sk-switch", (sketch) => {
+    buildCell(sketch, { flux: true });
+    const parts = sketch.figure.querySelector('[data-set="part"]');
+    const tell = () => {
+      const { mode, part } = sketch.state, kinds = sketch.kinds;
+      const one = (key) => (key === "pump" ? "Pumps: 6 million cycles a second, 3 sodium out and 2 potassium in each." : key === "na" ? "Sodium channels: 18 million ions a second, inward." : "Potassium channels: 12 million ions a second, outward.");
+      const token = " 1 bead = 1 million ions, at true speed.";
+      sketch.says.textContent =
+        mode === "off" ? "Flux is off. Nothing moves, whatever is selected."
+        : mode === "all" ? `Flux mode: every part with a rate shows it.${token}`
+        : mode === "burst" ? (part ? `${one(part)} Shown for a few seconds.${token}` : "Click a channel or a pump for a few seconds of its flux.")
+        : part ? `${one(part)}${token}` : "Nothing is selected, so nothing moves.";
+      parts.querySelectorAll("button").forEach((button) => button.setAttribute("aria-pressed", String(mode !== "all" && mode !== "off" && button.dataset.value === part)));
+      void kinds;
+    };
+    sketch.pick = (kind) => {
+      sketch.state.part = kind;
+      if (kind && sketch.state.mode === "burst") sketch.state.bursts[kind] = sketch.clock + 2.6;
+      tell();
+    };
+    sketch.choose = (set, value, button, group) => {
+      if (set === "mode") { press(group, value); sketch.state.mode = value; sketch.state.bursts = {}; tell(); }
+      else sketch.pick(sketch.state.part === value && sketch.state.mode === "select" ? null : value);
+    };
+    sketch.applyLook();
+    tell();
+  });
+
+  const PRESETS = { today: [], picks: ["env", "tone", "trans", "occ", "drift"], all: ["env", "tone", "trans", "occ", "bump", "glass", "depth", "drift", "shimmer", "bloom"] };
+  const NAMES = { env: "studio reflections", tone: "filmic light", trans: "soft translucency", occ: "contact shade", bump: "surface texture", glass: "glass with depth", depth: "depth haze", drift: "crowd drift", shimmer: "membrane shimmer", bloom: "bloom" };
+  const look = makeSketch("sk-look", (sketch) => {
+    buildCell(sketch, { flux: false });
+    const chips = sketch.figure.querySelector('[data-set="look"]'), presets = sketch.figure.querySelector('[data-set="preset"]');
+    const show = () => {
+      chips.querySelectorAll("button").forEach((button) => button.setAttribute("aria-pressed", String(sketch.look[button.dataset.value])));
+      const on = Object.keys(NAMES).filter((key) => sketch.look[key]);
+      const match = Object.entries(PRESETS).find(([, list]) => list.length === on.length && list.every((key) => sketch.look[key]));
+      press(presets, match ? match[0] : "");
+      sketch.says.textContent = on.length ? `On: ${on.map((key) => NAMES[key]).join(", ")}.` : "As today: glass, a soft rim of light, and a pale dome to reflect.";
+      sketch.applyLook();
+      sketch.theme();
+    };
+    sketch.choose = (set, value) => {
+      if (set === "preset") for (const key of Object.keys(NAMES)) sketch.look[key] = PRESETS[value].includes(key);
+      else sketch.look[value] = !sketch.look[value];
+      show();
+    };
+    for (const key of PRESETS.picks) sketch.look[key] = true;
+    sketch.ready = show;
+  });
+
+  for (const sketch of sketches) { sketch.retheme(); sketch.resize(); }
+  look.ready();
+  const retheme = () => { for (const sketch of sketches) sketch.retheme(); };
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", retheme);
+  new MutationObserver(retheme).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+  reduced.addEventListener("change", () => { for (const sketch of sketches) { sketch.paused = reduced.matches; sketch.figure.querySelector("[data-pause]").textContent = sketch.paused ? "Play" : "Pause"; sketch.dirty = true; } });
+
+  // One still frame of every sketch at once, so the page is complete before anything is scrolled to.
+  for (const sketch of sketches) { draw(sketch, 0); sketch.dirty = false; }
+  window.__fluxStarted = true;
+
+  let last = performance.now(), frames = 0, since = last;
+  const tick = (now) => {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    for (const sketch of sketches) {
+      if (!sketch.visible) continue;
+      if (!sketch.paused) { sketch.clock += dt; sketch.dirty = true; }
+      if (sketch.dirty) { draw(sketch, sketch.paused ? 0 : dt); sketch.dirty = false; }
+    }
+    frames++;
+    if (now - since > 600) {
+      const rate = Math.round((frames * 1000) / (now - since));
+      frames = 0; since = now;
+      for (const sketch of sketches) sketch.fps.textContent = !sketch.visible ? "off screen" : sketch.paused ? "paused" : `${rate} frames a second`;
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+// ------------------------------------------------------------------ what this device offers
+async function probe() {
+  const line = document.getElementById("device");
+  const facts = [];
+  if (renderer) {
+    const floats = renderer.extensions.has("EXT_color_buffer_float") || renderer.extensions.has("EXT_color_buffer_half_float");
+    facts.push("<b>WebGL 2</b> yes", `float textures ${floats ? "yes" : "no"}`);
+  } else facts.push("<b>WebGL 2</b> no: the sketches cannot run");
+  const rest = [`<b>reduced motion</b> ${reduced.matches ? "asked for: sketches start paused" : "not asked for"}`, `screen ${trim(window.devicePixelRatio || 1)} pixels to a point`];
+  const say = (gpu) => { line.innerHTML = `This device, in this frame: ${[...facts, `<b>WebGPU</b> ${gpu}`, ...rest].join(" · ")}`; };
+  if (!navigator.gpu) return say("not offered in this frame");
+  say("offered; asking for an adapter…");
+  try {
+    const slow = new Promise((resolve) => setTimeout(() => resolve("slow"), 2500));
+    const adapter = await Promise.race([navigator.gpu.requestAdapter(), slow]);
+    say(adapter === "slow" ? "offered, but no adapter answered in time" : adapter ? "offered, with an adapter" : "offered, but no adapter");
+  } catch (error) {
+    say("offered, but refused");
+  }
+}
+
+if (renderer) {
+  try { start(); } catch (error) { console.error(error); window.__fluxFailed = String(error && error.message ? error.message : error); }
+}
+probe();
+</script>

@@ -5874,6 +5874,241 @@ in the end game.
   3 min of L4 time) settle it in a later gap.
 - **The tree** stays the option if species counts go well past 150.
 
+## D183: The human cardiac law set is brought forward
+
+2026-11-16. The user was asked whether FR-11's human loop should start as a paced generic excitable
+cell, labelled "not a human cardiomyocyte model", while Track E's human cardiac laws waited for its
+milestones M4 and M5. The user decided: "let's bring the human cardiac laws forward", noting that the
+machine now has more CPUs.
+- **What moves.** Track E's human ventricular law set ([excitable tissue design](EXCITABLE_TISSUE_DESIGN.md)
+  §3.3, §7, and M4 and M5 in §11) starts now as its own lane on the inner model that D172 lands,
+  instead of waiting for M1–M3. M1–M3 on the generic cell are unchanged.
+- **FR-11's human loop** becomes a paced human ventricular cell built on that law set, with no
+  generic stand-in, and it waits for those laws. *Correction (D184):* "no generic stand-in" was the
+  lead's reading of the user's answer; D184 keeps it under the user's delegation. The planarian loop stays first. This replaces the
+  generic paced cell in the FR-11 design that the lead ruled earlier the same day.
+- **Design first (D142).** The lane's first deliverable is a design note with options for the
+  user. It covers:
+  - the source of equations and parameters: O'Hara–Rudy 2011, its ToR-ORd successor, or ten
+    Tusscher–Panfilov 2006;
+  - the cell types, the form of the sodium current, and the temperature;
+  - the verification.
+
+  No engine code is written until the user chooses. The prerequisites stay as Track E lists them:
+  calcium handling moved under D167, the ungated junction law, and the step condition of §4.2.
+- **Unchanged:**
+  - each law is general and named by its mechanism, not by a protein or for one experiment (D144);
+  - a whole-cell action-potential comparison against a published model needs the user's approval
+    (D138, D151), and the note asks for it;
+  - external simulators run only out of process against saved outputs, and every parameter is
+    cited.
+
+## D184: The human cardiac law set's choices, and the whole-cell comparison approved for O'Hara–Rudy 2011
+
+2026-11-16. The lane's design note put its choices to the user. It is
+`docs/HUMAN_CARDIAC_LAWS_DESIGN.md`, proposed, on branch `cardiac-laws`, and reaches main after D172's
+landing. The user answered: "on the other decisions get adviser with you then its go from me".
+So the user approved the lead's recommendations as presented, after the advisor's review:
+1. **The source:** O'Hara–Rudy 2011's endocardial cell (ORd).
+   - Its equations and tables are open (CC BY), with a published correction and documented errors,
+     and its steady state is published.
+   - It has no Markov form.
+   - Its known weakness, slow conduction in tissue, matters only for the tissue milestone.
+2. **Cell types:** the endocardial cell first; epicardial and M cells later as parameter sets.
+3. **The sodium current:** Hodgkin–Huxley gates, with a Markov form later as a general kind.
+4. **Temperature:** 310 K.
+5. **D138 and D151's approval, for O'Hara–Rudy 2011 only.** H4's conduction remedies, which come from
+   other papers, are not covered.
+   - **(A) An independent whole-cell reference,** written from the paper, Text S1 and PLOS's
+     correction by an agent who reads neither the engine nor the authors' code. It has two arms: as
+     published, and with the note's listed departures. Any later departure is reported to the user
+     before the judged run.
+   - **(B) The published model, run unmodified and out of process,** keeping only saved outputs.
+     - One plain attempt is made at the authors' own code (BSD-style notice).
+     - If that meets any wall (an account, JavaScript, a guard), the lane stops trying and uses
+       Myokit (BSD 3-Clause) in its own environment, with the model repository's CellML encoding,
+       used by reference and never committed. No workaround.
+   - **(C) The comparison over one beat at 1 Hz:**
+     - the engine against the declared arm, judged at tolerances registered before the run;
+     - the two references against each other, judged;
+     - the engine against the published model, reported and not judged, with each difference
+       attributed to a declared change.
+6. **D167's expectation, for the human set only.** No catalogue channel law can carry ORd's gating, so
+   the human set's channel laws are new. The catalogue's laws stay as D167's parity references, and
+   the mouse's expectation is unchanged.
+7. **FR-11's human loop stays as D183 records it:** no generic stand-in. The viewer has no human loop
+   until the human cell is ready, about 20–30 working days after the landing by the note's estimate.
+   - A labelled interim generic cell remains a one-line amendment.
+   - This corrects D183's record: "no generic stand-in" was the lead's reading of the user's answer,
+     and this delegation keeps it.
+
+**The 2004 model code.**
+- **What happened:** a research subagent of the lane downloaded the authors' 2004 (TNNP04) C++ code
+  after the worktree guard had refused the command. Their page offers the code publicly, with no
+  licence stated. The permission classifier separately blocked a copy of the
+  paywalled 2004 paper, which was never obtained. The user was told.
+- **Under this delegation:** every statement in the note that can be traced to that code is
+  removed, then the files are deleted, and the note's sources record that the code was fetched and
+  discarded.
+- **From now on,** every brief says that when a guard, classifier or permission check refuses an
+  action, the agent stops and reports. It never rephrases or reroutes the action, and the same
+  applies to the subagents it starts.
+
+**Not covered by this delegation:**
+- the note's questions for the lead and the core owner (§9.2), ruled after the landing. Opening
+  subspace calcium, closed in version 1 by the inner-model note, goes to the user if it changes an
+  approved closure;
+- the landing itself, which keeps its own heads-up.
+
+## D185: The module system's five decisions, and contributions by pull request
+
+2026-11-16. The user's direction: "yes modular and easy for others to add PRs with new modules / laws".
+The lead listed the five defaults of the [module design](MODULE_SYSTEM_DESIGN.md)'s §6, with two
+additions, and asked the user to confirm them. The user replied: "sounds good".
+1. **A module PR (§6.5): in-tree contributed modules first.**
+   - Each module has its own folder and namespace, an MIT licence and a named owner, and is gated
+     by the conformance kit and the tiers.
+   - Core physics PRs continue under D142, D144 and the full tier gate.
+   - Out-of-tree modules, listed by a docs PR with their conformance record, may follow.
+2. **Qualifying outside modules (§6.3): a conformance kit shipped in Cells.**
+   - The contributor runs it before opening the PR. It runs the declaration and error checks, I1–I4,
+     ledger closure with planted controls, executable reuse, a fresh-process restart, CPU/GPU
+     agreement and the matrix report, and it scans for reference-simulator imports.
+   - It records both identities and each claim separately.
+   - *The lead's reading:* a pass means the kit's checks passed. It does not qualify the science,
+     which still needs a registered protocol.
+   - Still open from §6.3: whether the project lists the modules that pass.
+3. **D144 with modules (§6.2): new physics goes into `src/cells`, as modules.**
+   - The default confirmed first was (b), "modules incubate". The user then said: "So yes new
+     physics go into src/cells but we have a modular architecture there right?"
+   - So AGENTS.md's rule stands. Physics enters `src/cells` as modules of its structure (laws, kinds
+     and operators, each declared and registered), under D144.
+   - A contributed module is a PR that adds its pieces inside `src/cells`, in their own namespace.
+   - Packages outside the repository can still extend Cells through the same registry. The
+     project's own experiments run on physics in `src/cells`.
+   - `validation/` still holds no physics.
+4. **The example (§6.4): in this repository.**
+   - It is a separately installable folder (for example `examples/modules/cells-example-law/`),
+     installed as a wheel in tier 2, with a test that it imports only Cells' public interface.
+   - It doubles as the template contributors copy.
+5. **Provenance (§6.1): identity for development runs, frozen files for registered and judged runs.**
+   - Development runs record each outside module's identity (§2.5), computed at run time.
+   - Registered and judged runs also freeze the module's files beside Cells' snapshot, so the freeze
+     tool takes a root outside the checkout.
+   - There is no attestation layer.
+   - AGENTS.md's provenance rule is amended to say so. Provenance for in-tree contributed modules,
+     which are installed as packages, is settled in stage 1's design.
+
+**The two additions:**
+- **A declarations manifest.** The engine writes a JSON list of every registered law, operator and kind,
+  with its ID, what it reads and writes, what it conserves, and its units and signs. Contributed modules
+  then appear in the docs and in the viewer's laws library without hand edits.
+- **A contributor guide and a pull-request template.** They say how to add a law or a module: name it by
+  mechanism, cite its source, test it, and run it through the kit.
+
+**Asked separately later:** automatic checks on GitHub for outside pull requests, because that changes the
+public repository's setup.
+
+**When:** stage 1 (one external law, registered explicitly) starts after D172's landing. The manifest and
+the guide follow with it.
+
+## D186: Numbers from open papers may be used with a citation, even when no licence is stated
+
+2026-11-16. The user told the visualizer session: "you can use any numbers from open papers even if no
+licence is decrlared". The user then confirmed it to the lead: "yes on the licence ruling". The lead
+adopts the visualizer session's reading for the whole project:
+- **What it covers:** numbers taken from an open paper and entered with a citation, such as parameter
+  values and measured quantities, in the engine, in `validation/` and in the visualizer.
+- **What it does not cover:** copying a paper's text, figures or data files into the repository.
+- **Unchanged:** data under a non-commercial licence is used for analysis only and never committed
+  (D173's rule for datasets).
+- **It widens D178 in kind.** D178 lets membrane-placement predictions read from UniProt and WormBase
+  ParaSite stay. D186 lets cited numbers from open papers stay when no licence is stated.
+
+## D187: Testing as little as possible but enough for the science; old regression tests not kept indefinitely
+
+2026-11-16. The user said: "we like to design for as little testing as possible but still enough no
+compromizes on quality of science". The user then approved the lead's plan, which was reviewed with
+the advisor: "sounds good lets go on those test plans and not keep endless old regression tests
+also".
+
+**The rules** (the lead's proposal, approved):
+1. **Prove each claim once, at the cheapest level that can prove it,** such as a law against its
+   reference at the kernel. Add one composed-world check per claim about composition, because the
+   raw-sum bound and the cycle refusals of 16 November showed up only in composed worlds.
+2. **Crossrev and the results gate carry regression only for what their worlds exercise.** Each
+   landed feature adds one world to the baseline and crossrev sets, starting with the kinds set.
+3. **New tests need teeth:** a planted error they must catch. The 90 s split rule applies to them,
+   and a test that cannot fail is removed.
+4. **Gate once per merge,** on main plus the branch. While building, run targeted files.
+5. **Make long checks faster rather than skip them,** for example with device checks and faster
+   harnesses.
+6. **The science is never thinned.** Each claim keeps its independent reference, its planted
+   control, its conservation checks and one registered judged run. No tolerance is loosened to save
+   time.
+
+**Tier 3:** each landing's final table is frozen, per test ID with its normalized error. The next run
+is compared against it, instead of re-running old code to learn what was already failing.
+
+**The audit,** after D172's landing (about 1–2 agent-days for the triage). D172's tier-3 table is the
+inventory, sorted into three classes:
+- **Harness limits:** fix the harness, or retire the test.
+- **Stale tests:** fix with the reason the file changed, or retire. A stale pin is never fixed by
+  updating the hash alone.
+- **Possibly real defects in older code:** these are open findings, each with its own plan item.
+  Examples are the missing refusal for a 73 µs observation time, the cotransport energy failure, the
+  excision charge failure and the fixed-step tracing errors.
+
+**Old regression tests that do not earn their cost are retired, not kept indefinitely.**
+- This includes tests of frozen older families.
+- The tree is tagged before any removal, so every retired test stays recoverable, and the frozen
+  evidence is kept.
+- The retire list goes to the user in one batch before the removal commit lands.
+- AGENTS.md is unchanged.
+
+## D188: The engine's source tree takes the modular layout by two scripted moves; older families go to src/cells/legacy/
+
+2026-11-16. The user asked whether `src/cells` should be cleaned up "according to our framing so maybe
+laws folder with sub folders". The user then chose: "I'm leaning towards 3. but if we can go as quick
+as possible to 2. and just move files to src/legacy then that is good". The user confirmed the plan,
+reviewed with the advisor: "sounds good and yes src/cells/legacy".
+
+**The target layout** (option 2):
+- `laws/`, one module per law, grouped by mechanism: `channels/`, `junctions/`, `pumps/`, `routes/`,
+  `reactions/`, `transport/`;
+- `kinds/`, `operators/`, `models/`, `numerics/`, `execution/`, `registry/`, `definitions/` and
+  `records/`;
+- `legacy/`, for the older model families.
+
+**How it is reached:** a design note and probe (step 0), then two scripted moves.
+- **Step 0.**
+  - Derive the legacy list from the import graph of the active entry points, and from each
+    family's consumers in the record. The list goes to the user, and it is built together with
+    D187's audit inventory.
+  - Run a probe in a scratch copy: move one family and one shared kernel, then check crossrev, the
+    kinds pair, a continuity resume and test collection.
+- **Move 1:** the older families go to `src/cells/legacy/`. Nothing outside `legacy/` imports from
+  it, and the model registry's dispatch chain is refactored to keep it that way.
+- **Move 2:** the modular parts go into the target folders.
+
+**Each move** is one move map plus one import rewriter.
+- A verifier checks that every changed pin equals the rewriter applied to its old content.
+- **Gates per commit:**
+  - the same collected test IDs;
+  - crossrev and the kinds pair identical;
+  - G1 at 113 of 113;
+  - tiers 1+2 with 0 changed.
+- Tier 3 runs once, on the final tree, against the frozen table (D187).
+- Test file paths do not move.
+- Open branches apply the same script to their heads before merging.
+
+**Refactors are separate.** These belong to the core-seams pass:
+- putting each law's declaration, math and citation in one module, and the law template;
+- the stable import surface for contributed modules (D185);
+- how a moved law names its frozen original.
+
+**It starts** after core-next lands on main.
+
 ## Implementation choices and remaining work
 
 | ID | Choice | When to resolve | Evidence needed |

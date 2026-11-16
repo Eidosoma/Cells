@@ -300,9 +300,9 @@ holds no value and no statement from a source of the last two classes; such a so
 named as a pointer, with what is to be read there. A note may cite a single value from
 one, with its class beside it.
 
-**Nothing in the data files is taken from such a source.** But the shelves rest on
+**Nothing in the data files is taken from such a source.** The shelves do rest on
 results that UniProt gives out and that tools and rule systems of other owners computed:
-those are set out after the table. On 15 November 2026 every source was classed, in the
+those are set out after the table, with the project's rule on them. On 15 November 2026 every source was classed, in the
 files themselves (`class`), and what had rested on a paper that is not permissive was
 moved or taken out:
 
@@ -345,15 +345,15 @@ is a published method; UniProt's page names no program for it. The 27 placements
 likeness alone are the curators' own.
 
 **Two kinds of terms.** PROSITE's terms are of the database itself, of which its rules
-are part, and they reach a commercial user by whatever way the database is read. The
-licences of TMHMM, SignalP and TargetP and the terms of Phobius are of the programs:
-they say who may run them and say nothing of predictions made with them, and it was
-UniProt that ran them. These are not the same kind of dependence, and the counts above
-keep them apart.
+are part, and its page says that commercial users pay a licence fee "irrespective of the
+method by which they access the database". The licences of TMHMM, SignalP and TargetP and
+the terms of Phobius are of the programs: they say who may run them and say nothing of
+predictions made with them, and it was UniProt that ran them. These are not the same
+kind of dependence, and the counts above keep them apart.
 
-**The tool's own lipid-anchor rule was measured here and not adopted.** The rule that
-now reads Syn3A's lipid anchors (`docs/SYN3A.md`) was run once, unchanged, on the 688
-sequences, and compared with UniProt's own lipoprotein annotation of the same proteins.
+**A lipid-anchor rule of the tool's own was measured here and not adopted.** A rule on
+the sequence alone, which for part of 15 November 2026 read Syn3A's lipid anchors
+(`docs/SYN3A.md`), was run once, unchanged, on the 688 sequences, and compared with UniProt's own lipoprotein annotation of the same proteins.
 The bar was set beforehand: adopt it if the two agree on nine in ten of the proteins
 either calls. This is analysis; the protein-by-protein comparison is kept outside the
 repository.
@@ -370,12 +370,29 @@ repository.
 That is below nine in ten, so nothing in M. pneumoniae's placements was changed. Had it
 been adopted, 11 of the 13 would have lost their place outside (the other 2 are placed
 there on a curator's word), and PROSITE would still stand behind the 6 placements by its
-other three rules.
+other three rules. The gap is not explained and the rule was not tuned. With the ruling
+below there is no need for it: it is in no build, and the rest of what was tried is in
+the analysis folder `visualizer-prediction-sources-20261115-01` of the project's
+workspace.
 
-**Not settled, and the user's to decide:** whether placements that rest on PROSITE's
-rules, or on the academic programs, may stay in a commercial project. Until then every
-one of them is counted in the file and in this note, and is said to be predicted
-wherever it is shown.
+**The project's rule (the user, 15 November 2026): a value stands on the terms of the
+database it was read from, and the tool behind it is named and counted.** The
+coordinating session asked the user whether placement values read from open databases
+may stay, with every tool named and counted; the user answered "yes". Every placement
+here was read in UniProt's entries, which UniProt gives out under CC BY 4.0, so each
+stands as UniProt gives it, and none was changed.
+
+- What was found for the ruling in the saved pages: the programs' licences cover running
+  the program, and it was UniProt that ran them and publishes the results under its own
+  terms; PROSITE belongs to the SIB Swiss Institute of Bioinformatics, which is one of the
+  three institutes that make UniProt (UniProt's own "About" page, saved with the human
+  data's downloads under `terms-uniprot-consortium`).
+- It is the user's ruling for this project, not a legal opinion. Nothing here says what
+  any of these terms allow in law.
+- Every tool stays named in the file with its own terms and its count, each such
+  placement is said to be predicted wherever it is shown, and the licence test keeps a
+  register of them (`tests/licence_classes.test.mjs`), so that a new one is noticed and
+  put to the user.
 
 **Values cited in this note only,** each from a source that is not permissive, with its
 class beside it where it stands: the gene counts 677 (Himmelreich and others 1996, no

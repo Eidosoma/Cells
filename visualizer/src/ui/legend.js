@@ -17,9 +17,19 @@ class CellsLegend extends HTMLElement {
    * note     { swatch, text } or null
    * scale    { label, unit, gradient, ticks: [{ at, text }], marks: [{ at, text }], steps: [{ colour, text }] } or null
    * keys     [{ key, text }]: other marks drawn in the scene, each with a small picture
+   * layers   { title, rows: [{ channel, label, options: [{ id, label, on, off, busy, title }], problem }],
+   *            cannot: [{ id, label, why }], strength: { options: [{ id, label, on }] }, keys: [{ key, text, chips }], hint, details,
+   *            time: { label, options: [{ id, label, title, on }] }, example } or null:
+   *          the switch for quantity layers (schema/QUANTITY_LAYERS.md): one layer on each channel, the signs
+   *          the layers add to the scene (a key may list `chips`, [{ colour, label }]: each ion's colour beside its name),
+   *          a hint on how to see a layer that waits for a cell to be chosen, and the id of the panel that says
+   *          what stands behind them; `time` is the slow-down of a layer that moves (true speed, or slowed), and
+   *          `example` the words an example run keeps in the legend ("Example: invented numbers"), or an illustration in the
+   *          Cell view ("Illustration: not a run"); `compact` the one line under which a view with little room keeps the
+   *          signs, the `cannot` entries and the door to the panel (the Cell view's flux), with the channel's name beside its options
    * folded   the keys and the note start closed (a short window)
    */
-  render({ title, items = [], isolate, open, filter, findings, note, scale, keys, folded = false }) {
+  render({ title, items = [], isolate, open, filter, findings, note, scale, keys, layers, folded = false }) {
     this.replaceChildren();
     const rows = items.map((item) =>
       h(
@@ -37,6 +47,7 @@ class CellsLegend extends HTMLElement {
       )
     );
     const body = h("div", { class: "legend-body" }, scale ? this.scale(scale) : null, rows);
+    if (layers?.rows?.length || layers?.cannot?.length) body.append(this.layers(layers));
     const lines = (keys || []).map((item) => h("p", { class: "legend-key" }, h("span", { class: `key key-${item.key}`, "aria-hidden": "true" }), item.text));
     // On a short window the marks fold away, so the card above the legend has room.
     if (lines.length && folded) body.append(h("details", { class: "legend-keys" }, h("summary", {}, "Marks on the sheet"), lines));
@@ -114,6 +125,77 @@ CellsLegend.prototype.scale = function (scale) {
   const ticks = h("div", { class: "ramp-ticks" }, scale.ticks.map((tick) => h("span", { style: `left:${(tick.at * 100).toFixed(2)}%` }, tick.text)));
   const marks = (scale.marks || []).map((mark) => h("p", { class: "legend-key" }, h("span", { class: "key key-mark", "aria-hidden": "true" }), mark.text));
   return [head, ramp, ticks, marks];
+};
+
+/**
+ * The switch for quantity layers: for each visual channel, the layers the run can feed
+ * and which one holds it; how strongly the marks are drawn; the layers the run cannot
+ * feed, each with the reason; and what stands behind the numbers of those that are on.
+ */
+CellsLegend.prototype.layers = function ({ title, rows = [], cannot = [], compact = null, strength, keys = [], hint = null, details = null, time = null, example = null }) {
+  const short = (label) => label.replace(/^Membrane /, "").replace(/^./, (letter) => letter.toUpperCase());
+  const segment = (options, press) =>
+    h(
+      "span",
+      // Each option is as wide as its own words, and what room is left is shared: a long name is not cut while "Off" has room to spare.
+      { class: "seg layer-seg", style: `grid-template-columns: repeat(${options.length}, minmax(0, auto))` },
+      options.map((option) => h("button", { type: "button", "aria-pressed": String(Boolean(option.on)), "aria-busy": option.busy ? "true" : null, title: option.title || null, dataset: { layer: option.id ?? "" }, onclick: () => press(option) }, option.busy ? "Fetching…" : short(option.label)))
+    );
+  // A run that offers many channels has each channel's name beside its options, on one line, so that the legend stays short.
+  const block = h("div", { class: rows.length >= 5 || compact ? "legend-layers is-dense" : "legend-layers" }, h("p", { class: "legend-title" }, title || "Layers"));
+  // A run whose numbers are invented says so for as long as it is shown (rule 6). In a view with little room the
+  // switch comes first, so that it is in reach where the legend is capped and scrolls; the notice stands under it.
+  const notice = example ? h("p", { class: "layer-example", role: "status" }, example) : null;
+  if (notice && !compact) block.append(notice);
+  for (const row of rows) {
+    block.append(
+      h(
+        "div",
+        { class: "layer-row", role: "group", "aria-label": row.label, dataset: { channel: row.channel } },
+        h("span", { class: "layer-channel" }, row.label),
+        // "Off" lets go of the layer that holds the channel; another option takes the channel for its layer.
+        segment(row.options, (option) => (option.id ? !option.on && emit(this, "cells-layer", { id: option.id, on: true }) : option.off && emit(this, "cells-layer", { id: option.off, on: false })))
+      )
+    );
+    if (row.problem) block.append(h("p", { class: "layer-problem", role: "status" }, row.problem));
+  }
+  if (strength && rows.length) {
+    block.append(h("div", { class: "layer-row", role: "group", "aria-label": "How strongly the layers are drawn", dataset: { channel: "strength" } }, h("span", { class: "layer-channel" }, "Drawn"), segment(strength.options, (option) => !option.on && emit(this, "cells-strength", option.id))));
+  }
+  if (notice && compact) block.append(notice);
+  // The time a layer that moves keeps: true speed as it opens, with a slow-down beside it (rule 3).
+  if (time) block.append(h("div", { class: "layer-row", role: "group", "aria-label": "How fast the beads' time runs", dataset: { channel: "time" } }, h("span", { class: "layer-channel" }, time.label), segment(time.options, (option) => !option.on && emit(this, "cells-slow", option.id))));
+  // A layer that is on and waits for a cell to be chosen says how it is seen.
+  if (hint) block.append(h("p", { class: "layer-hint", role: "status" }, hint));
+  const lacking = cannot.map((item) => h("p", { class: "layer-cannot", dataset: { layer: item.id } }, h("span", { class: "layer-cannot-name" }, short(item.label)), " ", item.why));
+  // The signs the layers add to the scene stay with the switch, each with what it stands for.
+  // A colour that stands for an ion is shown beside the ion's name; the words keep the page's own colours.
+  const chips = (list) => h("span", { class: "key-chips" }, list.map((chip) => h("span", { class: "key-chip" }, h("i", { style: `background:${chip.colour}`, "aria-hidden": "true" }), chip.label)));
+  const signs = keys.map((item) => h("p", { class: item.chips ? "legend-key legend-key-chips" : "legend-key" }, item.chips ? null : h("span", { class: `key key-${item.key}`, "aria-hidden": "true" }), item.chips ? h("span", {}, chips(item.chips), item.text) : item.text));
+  // A view with little room for its legend (the Cell view, whose card stands above it) keeps the signs, what is not
+  // drawn and the door to the panel under one line, named by `compact`; once opened it stays open.
+  if (compact) {
+    const door = details ? h("p", { class: "layer-more" }, h("button", { class: "link-button layer-details", type: "button", onclick: () => emit(this, "cells-select", { id: details }) }, "What stands behind them")) : null;
+    const inside = [...signs, ...lacking, door].filter(Boolean);
+    if (inside.length) {
+      const fold = h("details", { class: "legend-keys layer-keys", open: this.layerKeysOpen === true, ontoggle: () => (this.layerKeysOpen = fold.open) }, h("summary", {}, compact), inside);
+      block.append(fold);
+    }
+    return block;
+  }
+  // Many layers a run cannot feed fold away under one line that says how many; inside, each is named with its reason. Once opened they stay open.
+  if (lacking.length > 2) {
+    const fold = h("details", { class: "legend-keys layer-cannots", open: this.cannotOpen === true, ontoggle: () => (this.cannotOpen = fold.open) }, h("summary", {}, `${lacking.length} layers this run cannot feed`), lacking);
+    block.append(fold);
+  } else block.append(...lacking);
+  // Many signs fold away under one line, so that the card above the legend keeps its room; once opened they stay open.
+  if (signs.length > 3) {
+    const fold = h("details", { class: "legend-keys layer-keys", open: this.layerKeysOpen === true, ontoggle: () => (this.layerKeysOpen = fold.open) }, h("summary", {}, "What the layers' signs mean"), signs);
+    block.append(fold);
+  } else block.append(...signs);
+  // What stands behind the layers' numbers is said in the panel, where there is room for it.
+  if (details) block.append(h("p", { class: "layer-more" }, h("button", { class: "link-button layer-details", type: "button", onclick: () => emit(this, "cells-select", { id: details }) }, "What stands behind them")));
+  return block;
 };
 
 customElements.define("cells-legend", CellsLegend);

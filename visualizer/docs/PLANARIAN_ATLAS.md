@@ -320,7 +320,7 @@ and others 2025, all rights reserved).
 
 **What the two databases give out that others computed.** The helices and signal
 peptides behind the sides were predicted by programs that WormBase ParaSite and UniProt
-ran. Neither database's terms speak for those programs:
+ran. Each database says this of what it gives out:
 
 - WormBase ParaSite's disclaimer, after "Ensembl imposes no restrictions on access to, or
   use of, the data provided", goes on: "Some of the data and software included in the
@@ -355,15 +355,39 @@ today; an older version may have been given out on other words.
 **Two kinds of terms.** The licences of TMHMM and SignalP and the terms of Phobius are of
 the programs: they say who may run them and say nothing of predictions made with them,
 and it was the two databases that ran them. PROSITE's terms are of the database itself,
-of which its rules are part, and they reach a commercial user by whatever way the
-database is read. These are not the same kind of dependence.
+of which its rules are part, and its page says that commercial users pay a licence fee
+"irrespective of the method by which they access the database". These are not the same
+kind of dependence.
 
-**Not settled, and the user's to decide:** whether sides that rest on the academic
-programs, or on PROSITE's rules, may stay in a commercial project. Until then every one
-of them is counted in the file and in this note, and is said to be predicted wherever it
-is shown. The families and districts do not rest on these programs: they come from
-InterPro (CC0) and the Gene Ontology (CC BY 4.0). InterPro's entries do gather the
-signatures of member databases, PROSITE among them; that was not looked into here.
+**The project's rule (the user, 15 November 2026): a value stands on the terms of the
+database it was read from, and the tool behind it is named and counted.** The
+coordinating session asked the user whether placement values read from open databases
+may stay, with every tool named and counted; the user answered "yes". Every side here
+was read in WormBase ParaSite's or UniProt's records, which the two databases give out
+under their own open terms, so each stands as its database gives it, and none was
+changed.
+
+- What was found for the ruling in the saved pages: the programs' licences cover running
+  the program, and it was the databases that ran them and publish the results under their
+  own terms; PROSITE belongs to the SIB Swiss Institute of Bioinformatics, which is one of
+  the three institutes that make UniProt (UniProt's own "About" page, saved with the
+  human data's downloads under `terms-uniprot-consortium`); and InterPro's licence page
+  says of its scanning software: "The included scanning tools and signature collections
+  may be under different license terms. You do not need a special license for commercial
+  use but please cite the resource and relevant individual member databases".
+- It is the user's ruling for this project, not a legal opinion. Nothing here says what
+  any of these terms allow in law.
+- Every tool stays named in the file with its own terms and its count, each such side is
+  said to be predicted wherever it is shown, and the licence test keeps a register of
+  them (`tests/licence_classes.test.mjs`), so that a new one is noticed and put to the
+  user.
+
+The families and districts do not rest on these programs: they come from InterPro (CC0)
+and the Gene Ontology (CC BY 4.0). InterPro's entries do gather the signatures of member
+databases, PROSITE among them; its licence page, quoted above, is what was read of that.
+By the same rule the families stand on InterPro's terms, since they were read in its
+records. The member databases behind each InterPro entry are not named or counted in the
+files: that was not looked into.
 
 ## What a whole-proteome catalogue would take
 

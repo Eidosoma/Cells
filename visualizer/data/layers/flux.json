@@ -1,0 +1,173 @@
+{
+  "format": "cells.visualizer.flux@1",
+  "contract": "visualizer/schema/QUANTITY_LAYERS.md",
+  "note": "What may flow in the Cell view of a species, and on what basis each direction is drawn (rules 3, 7, 11 and 12, and the section \"Flux in the Cell view\"). A species' cell has one source at a time: its own looping run, or, where it has none, illustration. The two never share a picture. Every direction drawn names its basis: a run's own signs, or a law of the engine cited here by its id and where it was read. Where neither gives a direction, both ways are drawn and none is claimed, or nothing is drawn and the reason is given.",
+  "colours": "A bead of sodium or of potassium wears that ion's own colour (data/layers/ions.json, rule 8). Every other bead wears the one neutral tone of that file: only three colours were validated together, so no hue of the cell picture stands beside them.",
+  "engine": {
+    "branch": "main",
+    "revision": "34253235",
+    "read": "2026-11-16",
+    "says": "Each law cited here was read in the engine's source at this revision. The viewer keeps the words and does not read the engine: when a law changes, this file is brought up to date by hand."
+  },
+  "illustration": {
+    "notice": "Illustration: not a run",
+    "forms": {
+      "direction only": {
+        "offered": true,
+        "says": "Direction only: the number of beads and their pace stand for no number"
+      },
+      "typical values": {
+        "offered": false,
+        "says": "Typical values from a cited source, not from a run",
+        "entries": [],
+        "needs": "Each number needs a source whose licence allows the number to be kept here. None is entered yet, so this form is not offered."
+      }
+    },
+    "speaks_for": "A law of the engine speaks for the engine's generic cell. It is drawn on a species only where the page shows that species as the generic cell, or as modelled, and the species' file has no words of its own on the part. For a species that is only proposed nothing is in the engine, and where a species' file says how its own part differs, the engine's law claims nothing about it."
+  },
+  "laws": {
+    "sodium-potassium pump": {
+      "id": "nak_atp_mass_action_positive@1",
+      "path": "src/cells/processes/kinetic_pump.py",
+      "declares": "SODIUM_PER_CYCLE = -3 and POTASSIUM_PER_CYCLE = 2, counted positive into the cell (\"3 Na out / 2 K in\")",
+      "limit": "The law's cycles are signed. The direction drawn is that of a forward cycle, which spends fuel; whether a pump runs forward at a given moment is a run's to say."
+    },
+    "calcium pump": {
+      "id": "ca_atp_mass_action_positive@1",
+      "path": "src/cells/processes/calcium_atpase.py",
+      "declares": "CALCIUM_PER_CYCLE = -1, counted positive into the cell (\"Positive cycles move one divalent Ca from the cytosol to the outside\")",
+      "limit": "The law's cycles are signed. The direction drawn is that of a forward cycle, which spends fuel; whether a pump runs forward at a given moment is a run's to say."
+    },
+    "exchange routes": {
+      "id": "scheduled_species_exchange@1",
+      "path": "src/cells/models/operators/species_exchange.py",
+      "declares": "DIRECTIONS = (\"export\", \"import\"): \"export (secretion, cell to node) or import (uptake, node to cell)\"",
+      "limit": "Which routes a cell has, and how much each carries, is a world's declaration and a run's result."
+    }
+  },
+  "kinds": [
+    {
+      "id": "channels",
+      "part": "channels",
+      "label": "Ions through the channels",
+      "token": "ion",
+      "stream": "channel",
+      "groups": [
+        {
+          "id": "ions",
+          "label": "Ions",
+          "lanes": [
+            { "id": "in", "label": "into the cell", "way": "in" },
+            { "id": "out", "label": "out of the cell", "way": "out" }
+          ],
+          "says": "Both ways are drawn, and neither is claimed to carry more. Which way more ions go through a channel depends on the cell's voltage and on the concentrations on its two sides, which only a run knows."
+        }
+      ]
+    },
+    {
+      "id": "pumps",
+      "part": "pumps",
+      "label": "Ions through the pumps",
+      "token": "ion",
+      "stream": "pump",
+      "groups": [
+        {
+          "id": "sodium-potassium",
+          "label": "Sodium–potassium pump",
+          "law": "sodium-potassium pump",
+          "without": "nothing",
+          "spots": [0, 1],
+          "lanes": [
+            { "id": "sodium", "label": "sodium, out of the cell", "species": "Na", "way": "out", "count": 3 },
+            { "id": "potassium", "label": "potassium, into the cell", "species": "K", "way": "in", "count": 2 }
+          ],
+          "says": "One forward cycle of the sodium–potassium pump carries 3 sodium out of the cell and 2 potassium in. The two lanes show as many beads as each other: the three and the two stand here in words."
+        },
+        {
+          "id": "calcium",
+          "label": "Calcium pump",
+          "law": "calcium pump",
+          "without": "nothing",
+          "spots": [2],
+          "lanes": [
+            { "id": "calcium", "label": "calcium, out of the cell", "species": "Ca", "way": "out", "count": 1 }
+          ],
+          "says": "One forward cycle of the plasma-membrane calcium pump carries 1 calcium out of the cell. Which of the pumps drawn stands for it is the picture's choice."
+        }
+      ]
+    },
+    {
+      "id": "junctions",
+      "part": "junctions",
+      "label": "Exchange with neighbours",
+      "token": "ion",
+      "stream": "junction",
+      "groups": [
+        {
+          "id": "ions",
+          "label": "Ions",
+          "lanes": [
+            { "id": "in", "label": "from the neighbour", "way": "in" },
+            { "id": "out", "label": "to the neighbour", "way": "out" }
+          ],
+          "says": "Both ways are drawn, and neither is claimed to carry more. Which way more ions go through a junction depends on the voltages and the concentrations of the two cells it joins, which only a run knows."
+        }
+      ]
+    },
+    {
+      "id": "water",
+      "part": "water",
+      "label": "Water",
+      "token": "molecule of water",
+      "groups": [
+        {
+          "id": "water",
+          "label": "Water",
+          "lanes": [
+            { "id": "in", "label": "into the cell", "way": "in" },
+            { "id": "out", "label": "out of the cell", "way": "out" }
+          ],
+          "says": "Both ways are drawn, and neither is claimed to carry more. Water follows osmotic pressure: which way more of it goes depends on what is dissolved on the two sides of the membrane, which only a run knows."
+        }
+      ]
+    },
+    {
+      "id": "secretion",
+      "part": "secretion",
+      "label": "Secreted signals",
+      "token": "molecule",
+      "stream": "route",
+      "groups": [
+        {
+          "id": "signals",
+          "label": "Signals",
+          "law": "exchange routes",
+          "without": "both",
+          "lanes": [
+            { "id": "released", "label": "released, out of the cell", "way": "out" },
+            { "id": "taken-up", "label": "taken up, into the cell", "way": "in" }
+          ],
+          "says": "An export route carries a molecule out of the cell and an import route carries one into it. Which routes a cell has, and how much each carries, only a run says: neither lane is claimed to carry more.",
+          "unclaimed": "Both ways are drawn, and neither is claimed to carry more: no law of the engine speaks for what this species releases and takes up."
+        }
+      ]
+    },
+    {
+      "id": "fuel",
+      "part": "atp",
+      "label": "Fuel (ATP)",
+      "token": "molecule",
+      "groups": [],
+      "nothing": "Nothing is drawn for fuel. In the engine fuel is an amount that the pumps draw on where they stand; no law of the engine says where fuel travels in the cell, so a moving bead would claim a path that no law has."
+    },
+    {
+      "id": "membrane",
+      "part": "membrane",
+      "label": "Ions through the membrane itself",
+      "token": "ion",
+      "stream": "membrane",
+      "only": "run",
+      "groups": []
+    }
+  ]
+}

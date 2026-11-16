@@ -2,8 +2,10 @@
 
 **Status: proposed, 14 November 2026, for the lead's review (the architecture block's item 4,
 D154); revised 15 November for D174's requirement (§1).** Docs only. No engine code is added or
-changed by this note; the declarations and the writer it proposes are `src/` work that waits for
-the lead's word.
+changed by this note. The declarations and the writer it proposes are `src/` work: the operator
+contract's view interface (`VIEW_LAYERS`, `view_events`) reached main with D172's round on 16
+November, and the operators' declarations and the writer are built on branch `run-view-d154`,
+which merges after its own gate ([current plan](CURRENT_PLAN.md)).
 
 D154 asks that every experiment can eventually be visualized, through one run-view record that
 every run writes beside its definition by one shared output path, never one per driver. The
@@ -12,7 +14,8 @@ It is not fields in the definition, so definitions, bindings and crossrev stay u
 viewer is a read-only consumer.
 
 **The consumer's draft.** The visualizer drafted the schema it reads, `cells.run_view@1`
-(`visualizer/schema/RUN_VIEW.md` on branch `visualizer`, read here as a reference only). This
+(`visualizer/schema/RUN_VIEW.md`, on main since the visualizer's merges, read here as a reference
+only). This
 note keeps its file and field names and answers its four open points (§6). Its packaged replay
 (`cells.visualizer.replay@1`: base64 payloads, catalogue, curated outcomes) stays the viewer's own.
 

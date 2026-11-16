@@ -132,6 +132,11 @@ FLOOR_LAYOUT_TYPE = NamedTuple(  # Declared field solver surface_field.FLOOR_SOL
 )
 ENERGY_RTOL = first.ENERGY_RTOL
 EXPLICIT_STEP_BOUND = first.EXPLICIT_STEP_BOUND
+# The ledger protocol (docs/INNER_MODEL_V4_DESIGN.md §7.4 (p)): @1's lists, which the shared
+# check paths read from the model object (ledger_lists: per structure).
+LEDGERS = first.LEDGERS
+LEDGER_DIAGNOSTICS = first.LEDGER_DIAGNOSTICS
+ledger_limits = first.ledger_limits
 GATE_INTEGRATOR_ID = gates.LAW_ID
 VOLTAGE_DOMAIN_V = voltage_gates.VOLTAGE_DOMAIN_V
 # RK4 reference steps keep the resolved channel family's qualified bounds
@@ -372,7 +377,10 @@ class KindRates(NamedTuple):
     None; it joins the patches' total flux and membrane current (observations, not ledgers: its
     moves are already in cell and outside). valid: its own domain at the stage's read and
     potentials (a charged law's V-dependent domain, such as |dG_cyc/RT| <= 80); false refuses the
-    row or the step."""
+    row or the step. stored_pJ_s (§7.4 (m), gap 2): the rate (pJ/s) of the free energy the kind
+    stores beyond the stored rows' own terms (its ledger_terms' stored_pJ), less the part its stage
+    read carries (the chemical rate is taken at the read's concentrations, so B4's closure term is
+    carried and B4 gives none), or None; it joins the stage energy-rate observation by role."""
 
     cell: object
     outside: object
@@ -381,14 +389,86 @@ class KindRates(NamedTuple):
     work_pJ_s: object
     membrane_flux: object = None
     valid: object = True
+    stored_pJ_s: object = None
 
 
 def _kinds(structure):
-    """The declared kinds' declarations, in hook order; none for today's structures."""
+    """The declared kinds' declarations, in hook order, each bound to its structure entry's
+    fields (§7.4 (n) 5); none for today's structures."""
     if structure is None or not structure.kinds:
         return ()
-    registry = kind_registry.active()
-    return tuple(registry.lookup(kind_id) for kind_id in hook_order(structure))
+    registry, entries = kind_registry.active(), dict(structure.kinds)
+    return tuple(
+        kind_registry.bound(registry.lookup(kind_id), entries[kind_id])
+        for kind_id in hook_order(structure)
+    )
+
+
+def _route(structure, kinds, read, control, p, *, xp):
+    """§7.4 (n), the routing door, at one stage: (the control with each routed slot set to its
+    held value x its sources' factors, a left fold in declared order; valid: every factor finite
+    and in [0, 1]). The factors are the sources' at the stage's read state. Static: without
+    routes the control is returned as it is, and no factor is evaluated."""
+    if structure is None or not structure.routes:
+        return control, True
+    by_id = {kind_registry.qualified(kind.kind_id): kind for kind in kinds}
+    sources = sorted({kind_id for *_, named in structure.routes for kind_id, _ in named})
+    values, valid = {}, True
+    for kind_id in sources:
+        factors = by_id[kind_id].factors(read, p, xp=xp)
+        valid = valid & xp.all(xp.isfinite(factors) & (factors >= 0) & (factors <= 1))
+        values[kind_id] = factors
+    fields = {}
+    for _, name, slot, named in structure.routes:
+        held = fields.get(name, getattr(control, name))
+        value = held[slot]
+        for kind_id, position in named:  # The left fold, in declared order.
+            value = value * values[kind_id][position]
+        if xp is np:
+            held = np.array(held, dtype=np.float64, copy=True)
+            held[slot] = value
+        else:
+            held = held.at[slot].set(value)
+        fields[name] = held
+    return control._replace(**fields), valid
+
+
+def _routes(model):
+    """§7.4 (n): the routing door's table for a parsed model block, resolved at binding: ((sink
+    kind ID, control field, slot, ((source kind ID, position), ...)), ...) in canonical kind
+    order; () without a sink. Refused: an unknown source ID, one that two kinds expose, a field
+    that is not the sink's own control field, and a slot routed twice."""
+    registry, declared = kind_registry.active(), getattr(model, "kinds", ())
+    sources = {}
+    for kind_id, declaration in declared:
+        kind = registry.lookup(kind_id)
+        if kind.factor_sources is None:
+            continue
+        for position, source in enumerate(kind.factor_sources(declaration)):
+            if source in sources:
+                raise ConfigError(
+                    f"Factor source {source!r} is exposed by {sources[source][0]} and {kind_id}"
+                )
+            sources[source] = (kind_id, position)
+    routes, taken = [], set()
+    for kind_id, declaration in declared:
+        kind = registry.lookup(kind_id)
+        if kind.routed_controls is None:
+            continue
+        entry = kind.structure_entry(declaration) if kind.structure_entry else ()
+        own = kind_registry.bound(kind, entry).control_fields
+        for name, slot, named in kind.routed_controls(declaration):
+            where = f"Kind {kind_id}'s routed control {name}[{slot}]"
+            if name not in own:
+                raise ConfigError(f"{where}: a sink routes its own control fields only")
+            if (name, slot) in taken:
+                raise ConfigError(f"{where} is routed twice")
+            taken.add((name, slot))
+            unknown = [source for source in named if source not in sources]
+            if unknown:
+                raise ConfigError(f"{where} names unknown factor sources {unknown}")
+            routes.append((kind_id, name, slot, tuple(sources[source] for source in named)))
+    return tuple(routes)
 
 
 def _stage_read(state, p, kinds, *, xp):
@@ -452,15 +532,17 @@ def _with_kind_derivatives(base, rates, structure, state, *, xp):
     )
 
 
-def _kind_bookings(kinds, applied, start, end, p, dt, *, xp):
+def _kind_bookings(kinds, applied, start, end, control, p, dt, *, xp):
     """Every kind's book hook on the same end state (before any kind books), each writing only its
-    own state fields, so bookings commute and their order cannot matter (§7.4 (k)). Returns
-    ({field: value}, valid): a booking may refuse the step (§7.5's negative exact share)."""
+    own state fields, so bookings commute and their order cannot matter (§7.4 (k)). Each receives
+    the step's held control (§7.4 (l) 5: constant over the step), so a kind can book an exact
+    per-step update at the step's values. Returns ({field: value}, valid): a booking may refuse
+    the step (§7.5's negative exact share)."""
     booked, valid = {}, True
     for kind in kinds:
         if kind.book is None:
             continue
-        values, ok = kind.book(applied, start, end, p, dt, xp=xp)
+        values, ok = kind.book(applied, start, end, control, p, dt, xp=xp)
         foreign = set(values) - set(kind.state_fields)
         if foreign:
             raise ValueError(
@@ -525,6 +607,9 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
 
     kinds = _kinds(structure)
     read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
+    if kinds and structure.routes:  # §7.4 (n): the routing door, after the read (static).
+        control, routed = _route(structure, kinds, read, control, p, xp=xp)
+        read_valid = read_valid & routed
     v = _field_values(  # §7.4 (k): the rates read `read`; the field solve the stored charges.
         state,
         read,
@@ -654,6 +739,9 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     )
     for kr in kind_rates:
         energy = energy - entity_sum(kr.work_pJ_s, axis=None, xp=xp)
+    for kr in kind_rates:  # §7.4 (m), gap 2: a kind's stored free energy, by role (static).
+        if kr.stored_pJ_s is not None:
+            energy = energy + entity_sum(kr.stored_pJ_s, axis=None, xp=xp)
     result = STATE_TYPE(
         cell,
         outside,
@@ -828,6 +916,9 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
     s, n = tissue.field_layout(p).surface, p.active.size
     kinds = _kinds(structure)
     read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
+    if kinds and structure.routes:  # §7.4 (n): the routing door, after the read (static).
+        control, routed = _route(structure, kinds, read, control, p, xp=xp)
+        read_valid = read_valid & routed
     ci, co = physical_amounts(read, p)
     ci = xp.where(p.active, ci / p.volume, 1.0)
     co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
@@ -1124,7 +1215,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         extrema = _stage_extrema(kinds, state, explicit_states, explicit, p, xp=xp)
         stage = stage._replace(**extrema)
     if kinds:  # §7.4 (k), book: a kind's bookings from the step's applied rates.
-        booked, ok = _kind_bookings(kinds, applied, state, stage, p, dt, xp=xp)
+        booked, ok = _kind_bookings(kinds, applied, state, stage, control, p, dt, xp=xp)
         stage, valid = stage._replace(**booked), valid & ok
     valid &= domain_valid(stage, p, p.active, xp=xp, structure=structure)
     for value in stage:
@@ -1222,6 +1313,7 @@ def check_definition(spec, *, structure=None):
     control_type = kind_types(structure).Control if structure is not None else Control
     if kinds:
         _check_device_hooks(kinds, state, p, control_type(*(v[0] for v in controls)))
+        _check_routes(spec, structure, kinds, state, p, control_type(*(v[0] for v in controls)))
     with np.errstate(all="ignore"):
         for i in range(len(controls.membrane)):
             if not control_domain_valid(
@@ -1313,7 +1405,7 @@ def _check_held_rows(spec, kinds):
                 )
 
 
-LEDGER_TERM_KEYS = ("cell", "outside", "heat_pJ", "work_pJ", "stored_pJ")
+LEDGER_TERM_KEYS = ("cell", "outside", "produced", "heat_pJ", "work_pJ", "stored_pJ")
 
 
 def _check_device_hooks(kinds, state, p, control):
@@ -1338,6 +1430,7 @@ def _check_device_hooks(kinds, state, p, control):
     shapes = dict(
         cell=np.shape(state.amount_increment),
         outside=np.shape(state.extracellular_amount_increment),
+        produced=np.shape(state.amount_increment)[:1],
     )
     tree = jax.tree.structure(state)
     for kind in kinds:
@@ -1364,6 +1457,32 @@ def _check_device_hooks(kinds, state, p, control):
             for key, shape in shapes.items():
                 if key in terms and tuple(terms[key].shape) != shape:
                     refuse(kind, "ledger_terms", f"returns {key} of shape {terms[key].shape}")
+
+
+def _check_routes(spec, structure, kinds, state, p, control):
+    """§7.4 (n): every source's factors are [len(sources)] numbers on the device (traced once on the
+    initial state), and every routed slot lies inside its control field."""
+    declarations = dict(spec.model.kinds)
+    for kind in kinds:
+        if kind.factor_sources is None:
+            continue
+        kind_id = kind_registry.qualified(kind.kind_id)
+        count = len(kind.factor_sources(declarations[kind_id]))
+        try:
+            factors = jax.eval_shape(partial(kind.factors, xp=jnp), state, p)
+        except jax.errors.JAXTypeError as error:
+            raise ConfigError(f"Kind {kind_id}'s factors hook does not trace: {error}") from error
+        if factors.shape != (count,) or not jnp.issubdtype(factors.dtype, jnp.floating):
+            raise ConfigError(
+                f"Kind {kind_id}'s factors must be {count} floats, not {factors.shape} "
+                f"{factors.dtype}"
+            )
+    for kind_id, name, slot, _ in structure.routes:
+        size = np.shape(getattr(control, name))[-1]
+        if not 0 <= slot < size:
+            raise ConfigError(
+                f"Kind {kind_id}'s routed control {name}[{slot}] is outside [0, {size})"
+            )
 
 
 def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None):
@@ -1404,7 +1523,8 @@ def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None)
     # nodes), at the read amounts and the stage's potentials; and the free outside nodes' rows
     # too (a face-free compartment's small capacitance), with @3's own patch terms there.
     read, _ = _stage_read(state, p, kinds, xp=xp)
-    nodes = xp.zeros(n + p.outside_active.size)
+    control, _ = _route(structure, kinds, read, control, p, xp=xp)  # §7.4 (n); its validity is
+    nodes = xp.zeros(n + p.outside_active.size)  # the stage's (explicit_rates, readouts).
     for kind in kinds:
         if kind.stage_term is not None:
             nodes = nodes + kind.stage_term(read, potentials, control, p, xp=xp)
@@ -1536,7 +1656,9 @@ def _fold_kind_ledgers(result, state, p, kinds, *, xp):
     inward-positive node transfers close the material ledgers (they are in the amounts, rule
     (c)); its heat and work accumulators join the energy ledger as dissipation and work; its
     stored term (free energy it holds beyond the stored rows' own terms, since the start: FR-4's
-    buffer term, finite fuel's standard term) joins the stored energy."""
+    buffer term, finite fuel's standard term) joins the stored energy. Its net production per
+    species (`produced`, a reaction's record: finite fuel's ATP -> ADP + Pi) joins the global
+    material ledger, which otherwise holds every kind to transfers (§7.4 (m))."""
     for kind in kinds:
         if kind.ledger_terms is None:
             continue
@@ -1545,6 +1667,8 @@ def _fold_kind_ledgers(result, state, p, kinds, *, xp):
             result["local"] = result["local"] - terms["cell"]
         if "outside" in terms:
             result["outside"] = result["outside"] - terms["outside"]
+        if "produced" in terms:
+            result["total"] = result["total"] - terms["produced"]
         if "heat_pJ" in terms:
             result["energy"] = result["energy"] + entity_sum(terms["heat_pJ"], axis=None, xp=xp)
         if "work_pJ" in terms:
@@ -1576,8 +1700,9 @@ def channel_magnitudes(row, p, *, xp=np, structure=None):
         if kind.ledger_terms is None:
             continue
         terms = kind.ledger_terms(row, p, xp=xp)
-        for key, ledger in (("cell", "local"), ("outside", "outside")):
-            index = first.LEDGERS.index(ledger)
+        names = ledger_lists(structure).LEDGERS
+        for key, ledger in (("cell", "local"), ("outside", "outside"), ("produced", "total")):
+            index = names.index(ledger)
             if key in terms and magnitudes[index] is not None:
                 magnitudes[index] = magnitudes[index] + xp.abs(terms[key])
         # The energy ledger's bound scales with the flows, which take every *_dissipated_energy_pJ
@@ -1603,6 +1728,7 @@ def check_values(state, spec, steps=None, *, structure=None):
         else channel_magnitudes,
         dissipation=dissipation_fields(structure),
         steps=steps,
+        ledgers=ledger_lists(structure),
     )
 
 
@@ -1626,6 +1752,19 @@ DEVICE_CHECKS = first.DEVICE_CHECKS
 DEVICE_DIAGNOSTICS = first.DEVICE_DIAGNOSTICS
 device_failure_message = first.device_failure_message
 device_check_constants = first.device_check_constants
+LEDGER_NAMES = ("LEDGERS", "LEDGER_DIAGNOSTICS", "ledger_limits", "ENERGY_RTOL")
+
+
+@cache
+def ledger_lists(structure):
+    """The ledger protocol of a structure (docs/INNER_MODEL_V4_DESIGN.md §7.4 (p)): LEDGERS,
+    LEDGER_DIAGNOSTICS, ledger_limits and ENERGY_RTOL, which the shared check paths read
+    (surface_pump.checked_rows, surface_pump_checks.row_checks), with DEVICE_CHECKS and
+    DEVICE_DIAGNOSTICS built from them. Every structure has today's: @1's own objects. A kind
+    that declares a ledger of its own will append to them here (the hook, ledgers(declaration),
+    follows its first consumer; §7.4 (p)). None is the module's."""
+    names = LEDGER_NAMES + ("DEVICE_CHECKS", "DEVICE_DIAGNOSTICS")
+    return SimpleNamespace(**{name: getattr(first, name) for name in names})
 
 
 def device_balances(state, p, *, structure=None):
@@ -1656,17 +1795,250 @@ def device_checks(previous, row, p, constants, steps, *, structure=None):
         steps,
         domain_valid=domain_valid if structure is None else _bound_checks(structure).domain_valid,
         balances=partial(device_balances, structure=structure) if kinds else device_balances,
-        limits=first.ledger_limits,
+        limits=ledger_lists(structure).ledger_limits,
         magnitudes=partial(channel_magnitudes, structure=structure)
         if kinds
         else channel_magnitudes,
         dissipation=dissipation_fields(structure),
+        ledgers=ledger_lists(structure),
     )
 
 
 OBSERVATION_FIELDS = second.OBSERVATION_FIELDS
 Observations = make_dataclass(
     "SurfacePumpChannelObservations", [(k, np.ndarray) for k in OBSERVATION_FIELDS], frozen=True
+)
+
+# ------------------------------------------------------------------ the run view's declarations
+# docs/RUN_VIEW_DESIGN.md §3 (D154), in the operator contract's forms: host-side metadata read
+# only by the run-view writer (cells/run_view.py), so none changes a program, a binding or a
+# checkpoint. They replace the writer's interim table for resolved_pump_tissue@3. Each state
+# field and observation column has its unit, record kind and layer; each readout its axes (the
+# state's are STATE_AXES). Orientations name the roles of the record's entity set: a flow's
+# {from, to} (which way a positive value moves) or a difference's {plus, minus} (plus less
+# minus). The core's owner confirmed them from the code (core-next, 16 November 2026):
+# numerics/surface_transport.transport takes a membrane's voltage as its cell's potential less
+# its outside node's and a junction's as its sender's less its receiver's, and its positive route
+# flux runs sender -> receiver, a membrane's cell -> outside node; surface_tissue.balances books
+# membrane_transferred out of the cell into the node, junction and face transfers out of the
+# sender into the receiver, and reservoir supply into the held node; surface_pump_v2.balances
+# subtracts stoichiometry x cycles (inward-positive per cycle) from the membrane total.
+_CONFIRMED = "the core's owner, from the code (core-next, 16 November 2026)"
+
+
+def _flow(origin, target, says):
+    return MappingProxyType({"from": origin, "to": target, "says": says, "confirmed": _CONFIRMED})
+
+
+def _difference(plus, minus, says):
+    return MappingProxyType({"plus": plus, "minus": minus, "says": says, "confirmed": _CONFIRMED})
+
+
+_OUTWARD = _flow(
+    "inside", "outside", "a positive amount leaves the patch's cell for its outside node"
+)
+_CHANNEL_OUTWARD = _flow(
+    "inside",
+    "outside",
+    "a positive amount leaves the cell of the population's patch for that patch's outside node; "
+    "the material balance adds it into the patch's total",
+)
+_SENDER_TO_RECEIVER = _flow(
+    "sender", "receiver", "a positive amount leaves the sender for the receiver"
+)
+_PUMP_INWARD = _flow(
+    "outside",
+    "inside",
+    "pump cycles are inward-positive: a positive cycle moves each moved row's per-cycle count "
+    "(the law's moves, by role, signed) from the patch's outside node into its cell",
+)
+_SUPPLY = _flow(
+    "exterior", "node", "a positive amount is supplied into the held outside node from beyond"
+)
+_MEMBRANE_VOLTAGE = _difference(
+    "inside",
+    "outside",
+    "the potential of the patch's cell less that of its outside node: positive when the cell is "
+    "at the higher potential",
+)
+_JUNCTION_VOLTAGE = _difference(
+    "sender",
+    "receiver",
+    "the potential of the junction's sender cell less that of its receiver: positive when the "
+    "sender is at the higher potential",
+)
+VIEW_LAYERS = (
+    MappingProxyType(
+        {"id": "membrane", "label": "Membrane voltage and ions", "representation": "simulated"}
+    ),
+    MappingProxyType(
+        {
+            "id": "channels",
+            "label": "Channel populations and junction gates",
+            "representation": "modelled",
+        }
+    ),
+    MappingProxyType({"id": "pumps", "label": "Pump populations", "representation": "modelled"}),
+)
+# field: (unit, record kind, layer, readout axes or None for a state field, orientation or None)
+_VIEW_TABLE = {
+    # State.
+    "amount_increment": ("fmol", "amount", "membrane", None, None),
+    "extracellular_amount_increment": ("fmol", "amount", "membrane", None, None),
+    "membrane_transferred": ("fmol", "cumulative", "membrane", None, _OUTWARD),
+    "junction_transferred": ("fmol", "cumulative", "membrane", None, _SENDER_TO_RECEIVER),
+    "face_transferred": ("fmol", "cumulative", "membrane", None, _SENDER_TO_RECEIVER),
+    "reservoir_supplied": ("fmol", "cumulative", "membrane", None, _SUPPLY),
+    "membrane_dissipated_energy_pJ": ("pJ", "cumulative", "membrane", None, None),
+    "junction_dissipated_energy_pJ": ("pJ", "cumulative", "membrane", None, None),
+    "face_dissipated_energy_pJ": ("pJ", "cumulative", "membrane", None, None),
+    "electrode_charge_transferred_C": ("C", "cumulative", "membrane", None, None),
+    "reservoir_work_pJ": ("pJ", "cumulative", "membrane", None, None),
+    "electrode_work_pJ": ("pJ", "cumulative", "membrane", None, None),
+    "channel_gate": ("1", "level", "channels", None, None),
+    "channel_transferred": ("fmol", "cumulative", "channels", None, _CHANNEL_OUTWARD),
+    "channel_dissipated_energy_pJ": ("pJ", "cumulative", "channels", None, None),
+    "junction_gate": ("1", "level", "channels", None, None),
+    "pump_cycles": ("fmol", "cumulative", "pumps", None, _PUMP_INWARD),
+    "pump_dissipated_energy_pJ": ("pJ", "cumulative", "pumps", None, None),
+    "metabolic_work_pJ": ("pJ", "cumulative", "pumps", None, None),
+    "calcium_pump_cycles": ("fmol", "cumulative", "pumps", None, _PUMP_INWARD),
+    "calcium_pump_dissipated_energy_pJ": ("pJ", "cumulative", "pumps", None, None),
+    "calcium_metabolic_work_pJ": ("pJ", "cumulative", "pumps", None, None),
+    # Readouts.
+    "amount": ("fmol", "amount", "membrane", ("species", "cell_slot"), None),
+    "extracellular_amount": ("fmol", "amount", "membrane", ("species", "extracellular_slot"), None),
+    "cell_potential_V": ("V", "level", "membrane", ("cell_slot",), None),
+    "extracellular_potential_V": ("V", "level", "membrane", ("extracellular_slot",), None),
+    "membrane_voltage_V": ("V", "level", "membrane", ("membrane_slot",), _MEMBRANE_VOLTAGE),
+    "junction_voltage_V": ("V", "level", "membrane", ("edge_slot",), _JUNCTION_VOLTAGE),
+    "membrane_flux_fmol_s": ("fmol/s", "rate", "membrane", ("species", "membrane_slot"), _OUTWARD),
+    "junction_flux_fmol_s": (
+        "fmol/s",
+        "rate",
+        "membrane",
+        ("species", "edge_slot"),
+        _SENDER_TO_RECEIVER,
+    ),
+    "face_flux_fmol_s": (
+        "fmol/s",
+        "rate",
+        "membrane",
+        ("species", "face_slot"),
+        _SENDER_TO_RECEIVER,
+    ),
+    "reservoir_supply_fmol_s": (
+        "fmol/s",
+        "rate",
+        "membrane",
+        ("species", "extracellular_slot"),
+        _SUPPLY,
+    ),
+    "electrode_charge_C": ("C", "amount", "membrane", ("extracellular_slot",), None),
+    "electrode_current_A": ("A", "rate", "membrane", ("extracellular_slot",), None),
+    "reservoir_power_pJ_s": ("pJ/s", "rate", "membrane", ("world",), None),
+    "electrode_power_pJ_s": ("pJ/s", "rate", "membrane", ("world",), None),
+    "charge_residual_C": ("C", "level", "membrane", ("field_node",), None),
+    "component_current_residual_A": ("A", "rate", "membrane", ("floating_component",), None),
+    "energy_balance_pJ_s": ("pJ/s", "rate", "membrane", ("world",), None),
+    "membrane_availability": ("1", "level", "membrane", ("membrane_slot",), None),
+    "junction_availability": ("1", "level", "channels", ("edge_slot",), None),
+    "channel_flux_fmol_s": (
+        "fmol/s",
+        "rate",
+        "channels",
+        ("species", "channel_slot"),
+        _CHANNEL_OUTWARD,
+    ),
+    "channel_targets": ("1", "level", "channels", ("gate", "channel_slot"), None),
+    "channel_tau_s": ("s", "level", "channels", ("gate", "channel_slot"), None),
+    "pump_cycle_rate_fmol_s": ("fmol/s", "rate", "pumps", ("membrane_slot",), _PUMP_INWARD),
+    "pump_affinity_J_mol": ("J/mol", "level", "pumps", ("membrane_slot",), None),
+    "metabolic_power_pJ_s": ("pJ/s", "rate", "pumps", ("membrane_slot",), None),
+    "channel_availability": ("1", "level", "channels", ("channel_slot",), None),
+    "pump_availability": ("1", "level", "pumps", ("membrane_slot",), None),
+    "calcium_pump_cycle_rate_fmol_s": ("fmol/s", "rate", "pumps", ("membrane_slot",), _PUMP_INWARD),
+    "calcium_pump_affinity_J_mol": ("J/mol", "level", "pumps", ("membrane_slot",), None),
+    "calcium_metabolic_power_pJ_s": ("pJ/s", "rate", "pumps", ("membrane_slot",), None),
+    "calcium_pump_availability": ("1", "level", "pumps", ("membrane_slot",), None),
+}
+UNITS = MappingProxyType({k: v[0] for k, v in _VIEW_TABLE.items()})
+RECORD_KINDS = MappingProxyType({k: v[1] for k, v in _VIEW_TABLE.items()})
+RECORD_LAYERS = MappingProxyType({k: v[2] for k, v in _VIEW_TABLE.items()})
+OBSERVATION_AXES = MappingProxyType({k: v[3] for k, v in _VIEW_TABLE.items() if v[3] is not None})
+ORIENTATION = MappingProxyType({k: v[4] for k, v in _VIEW_TABLE.items() if v[4] is not None})
+VIEW_AXIS_SETS = MappingProxyType({})  # A kind's axis that maps to an existing view set.
+# Records that are residuals of the step's own balances, each with its own tolerance, apart from
+# the physical records (the run view's loop closure measure, FR-11): the field solve's charge
+# residual (CHARGE_ATOL_C + CHARGE_RTOL x scale) and the floating components' current residual
+# (the Newton target or the attainable floor), both held by the step, and the stage energy-rate
+# balance, zero to rounding (§7.4 (m)).
+RECORD_DIAGNOSTICS = ("charge_residual_C", "component_current_residual_A", "energy_balance_pJ_s")
+# {increment field: its reference layout field}: a stored amount is reference + increment.
+RECORD_REFERENCES = MappingProxyType(
+    {
+        "amount_increment": "amount_reference",
+        "extracellular_amount_increment": "extracellular_amount_reference",
+    }
+)
+_VIEW_MAPS = ("UNITS", "OBSERVATION_AXES", "RECORD_KINDS", "ORIENTATION", "RECORD_LAYERS")
+_RECORD_ROLES = ("RECORD_DIAGNOSTICS", "RECORD_REFERENCES")
+
+
+def view_declarations(structure):
+    """The run view's declarations for a structure (D154): @3's own, then each declared kind's
+    KindView entries for the fields its structure's types hold, its layers and its axis sets, its
+    residual records (RECORD_DIAGNOSTICS) and its increments' references (RECORD_REFERENCES,
+    where the reference is a field of the structure's layout). A structure without kinds gets the
+    module's own objects."""
+    kinds = _kinds(structure)
+    if not kinds:
+        names = (*_VIEW_MAPS, "VIEW_LAYERS", "VIEW_AXIS_SETS", *_RECORD_ROLES)
+        return {name: globals()[name] for name in names}
+    types = kind_types(structure)
+    present = {*types.STATE_TYPE._fields, *types.OBSERVATION_FIELDS}
+    merged = {name: dict(globals()[name]) for name in _VIEW_MAPS}
+    layers, axis_sets = list(VIEW_LAYERS), {}
+    diagnostics, references = list(RECORD_DIAGNOSTICS), dict(RECORD_REFERENCES)
+    for kind in kinds:
+        view = kind.view
+        if view is None:
+            continue
+        parts = (
+            view.units,
+            view.observation_axes,
+            view.record_kinds,
+            view.orientation,
+            view.record_layers,
+        )
+        for name, part in zip(_VIEW_MAPS, parts, strict=True):
+            merged[name] |= {k: v for k, v in part.items() if k in present}
+        known = {layer["id"] for layer in layers}
+        layers += [MappingProxyType(dict(x)) for x in view.view_layers if x["id"] not in known]
+        axis_sets |= dict(view.axis_sets)
+        diagnostics += [k for k in view.record_diagnostics if k in present and k not in diagnostics]
+        references |= {
+            k: v
+            for k, v in view.record_references.items()
+            if k in present and v in types.LAYOUT_TYPE._fields
+        }
+    out = {name: MappingProxyType(value) for name, value in merged.items()}
+    return out | dict(
+        VIEW_LAYERS=tuple(layers),
+        VIEW_AXIS_SETS=MappingProxyType(axis_sets),
+        RECORD_DIAGNOSTICS=tuple(diagnostics),
+        RECORD_REFERENCES=MappingProxyType(references),
+    )
+
+
+# Notes a record carries, in the model's own words (its summary's membrane_transfer_ledger).
+RECORD_NOTES = MappingProxyType(
+    {
+        "membrane_transferred": "the passive membrane routes only. A patch's total in the "
+        "material balance is the balance's own sum: this record plus channel_transferred of its "
+        "populations, less each pump's per-cycle rows times its cycles (pump_cycles); the pump is "
+        "a separate term, never in this record",
+    }
 )
 
 
@@ -1691,6 +2063,7 @@ def observe_history(times, history, layout, requested, spec, *, structure=None):
             raise NumericalError("Resolved kinetic observation domain invalid")
         v, n, r = w.field, p.active.size, w.field.rates
         read = _stage_read(state, p, kinds, xp=np)[0] if kinds else state  # Kinds' readouts.
+        routed = _route(structure, kinds, read, control, p, xp=np)[0] if kinds else control
         records.append(
             (
                 np.asarray(t),
@@ -1729,7 +2102,7 @@ def observe_history(times, history, layout, requested, spec, *, structure=None):
                     column
                     for kind in kinds
                     if kind.readouts is not None
-                    for column in kind.readouts(state, read, v.potential_V, control, p, xp=np)
+                    for column in kind.readouts(state, read, v.potential_V, routed, p, xp=np)
                 ),
             )
         )
@@ -1809,6 +2182,7 @@ def structure(model):
         junction_heat_booking=model.junction_heat_booking,
         padding_fill=_closes_slots(model),
         kinds=_kind_entries(model),
+        routes=_routes(model),
     )
 
 
@@ -1919,54 +2293,80 @@ TODAYS_TYPES = KindTypes(
 
 
 @cache
-def _kind_types(kind_ids, registry):
-    if not kind_ids:
+def _kind_types(fields, registry):
+    """fields: ((kind ID, the bound kind's KindFields), ...) in canonical order. Classes are cached
+    by field set (§7.4 (j); (n) 5): structures whose kinds carry the same fields share them, and a
+    kind bound to fields other than its static ones (a declaration-dependent variant) names its
+    extra fields in the classes' deterministic names."""
+    if not fields:
         return TODAYS_TYPES
-    kinds = [registry.lookup(kind_id) for kind_id in kind_ids]
-    label = "".join("_" + re.sub(r"\W", "_", kind_id) for kind_id in kind_ids)  # Deterministic.
+
+    def label(kind_id, own):
+        static = registry.lookup(kind_id)
+        known = {*static.state_fields, *static.layout_fields, *static.control_fields}
+        known |= set(static.readout_columns)
+        names = (
+            *(name for name, _ in own.state_axes),
+            *own.layout_fields,
+            *own.control_fields,
+            *own.readout_columns,
+        )
+        extra = "".join("_" + name for name in names if name not in known)
+        return "_" + re.sub(r"\W", "_", kind_id) + extra
+
+    suffix = "".join(label(kind_id, own) for kind_id, own in fields)  # Deterministic.
     axes = dict(STATE_AXES)
-    for kind in kinds:
-        for name, name_axes in kind.state_axes:  # Not `field`: the field-solver module's name.
+    for kind_id, own in fields:
+        for name, name_axes in own.state_axes:  # Not `field`: the field-solver module's name.
             if name in axes:
-                raise ValueError(f"Kind {kind.kind_id}'s state field {name} is already declared")
+                raise ValueError(f"Kind {kind_id}'s state field {name} is already declared")
             axes[name] = list(name_axes)
-    state = NamedTuple("SurfacePumpChannelState" + label, [(k, object) for k in axes])
-    layout_extra = [name for kind in kinds for name in kind.layout_fields]
+    state = NamedTuple("SurfacePumpChannelState" + suffix, [(k, object) for k in axes])
+    layout_extra = [name for _, own in fields for name in own.layout_fields]
     layout = NamedTuple(
-        "SurfacePumpChannelLayout" + label,
+        "SurfacePumpChannelLayout" + suffix,
         [(k, object) for k in (*LAYOUT_TYPE._fields, *layout_extra)],
     )
     floor = NamedTuple(
-        "SurfacePumpChannelFloorLayout" + label,
+        "SurfacePumpChannelFloorLayout" + suffix,
         [(k, object) for k in (*FLOOR_LAYOUT_TYPE._fields, *layout_extra)],
     )
     control = NamedTuple(
-        "SurfacePumpChannelControl" + label,
+        "SurfacePumpChannelControl" + suffix,
         [
             (k, object)
-            for k in (*Control._fields, *(f for kind in kinds for f in kind.control_fields))
+            for k in (*Control._fields, *(f for _, own in fields for f in own.control_fields))
         ],
     )
     # Rule (b): a kind's state fields are observation columns right after today's state fields
     # (the windowed runner rebuilds states from observations by name); its readouts follow
     # today's readouts.
     today_state = len(STATE_TYPE._fields) + 1
-    fields = (
+    columns = (
         *OBSERVATION_FIELDS[:today_state],
-        *(field for kind in kinds for field, _ in kind.state_axes),
+        *(name for _, own in fields for name, _ in own.state_axes),
         *OBSERVATION_FIELDS[today_state:],
-        *(column for kind in kinds for column in kind.readout_columns),
+        *(column for _, own in fields for column in own.readout_columns),
     )
     observations = make_dataclass(
-        "SurfacePumpChannelObservations" + label, [(k, np.ndarray) for k in fields], frozen=True
+        "SurfacePumpChannelObservations" + suffix, [(k, np.ndarray) for k in columns], frozen=True
     )
-    return KindTypes(axes, state, layout, floor, control, fields, observations)
+    return KindTypes(axes, state, layout, floor, control, columns, observations)
 
 
 def kind_types(structure):
     """The structure's types: today's own objects when it declares no kind (§7.4 (j), schema A),
-    else classes cached by the set of declared kinds, in canonical order."""
-    return _kind_types(tuple(kind_id for kind_id, _ in structure.kinds), kind_registry.active())
+    else classes cached by its kinds' fields, each kind bound to its structure entry ((n) 5), in
+    canonical order."""
+    registry = kind_registry.active()
+    fields = []
+    for kind_id, entry in structure.kinds:
+        kind = kind_registry.bound(registry.lookup(kind_id), entry)
+        own = kind_registry.KindFields(
+            kind.state_axes, kind.layout_fields, kind.control_fields, kind.readout_columns
+        )
+        fields.append((kind_id, own))
+    return _kind_types(tuple(fields), registry)
 
 
 class InnerImplementation:
@@ -1992,6 +2392,20 @@ class InnerImplementation:
         self.batch_signature = structured_batch_signature
         for name, value in kind_types(structure)._asdict().items():  # Schema A (§7.4 (j)).
             setattr(self, name, value)
+        for name, value in vars(ledger_lists(structure)).items():  # The ledger protocol, (p).
+            setattr(self, name, value)
+        if structure.kinds:  # The run view's declarations, the kinds' folded in (D154).
+            for name, value in view_declarations(structure).items():
+                setattr(self, name, value)
+
+    def view_sets(self, spec):
+        """{axis: view set} of the declared kinds' own axes (their view_sets hooks), for the run
+        view (D154): {"id", "ids", "roles", per-entity facts}; none without kinds."""
+        out, declarations = {}, dict(getattr(spec.model, "kinds", ()))
+        for kind in _kinds(self.structure):
+            if kind.view_sets is not None:
+                out |= kind.view_sets(spec, declarations[kind_registry.qualified(kind.kind_id)])
+        return out
 
     def __getattr__(self, name):
         # Only reached for names the object does not define: this module's own.

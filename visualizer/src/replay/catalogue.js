@@ -74,7 +74,11 @@ export class Catalogue {
       if (!groups.has(run.experiment)) groups.set(run.experiment, []);
       groups.get(run.experiment).push(this.describe(run.id));
     }
-    return [...groups].map(([id, entities]) => ({ label: this.experiments.get(id)?.label || id, entities }));
+    // The experiments first, then the development runs, then the examples, each named as what it is:
+    // a development run is no experiment, and an example's numbers are invented.
+    const rank = (id) => (this.experiments.get(id)?.example ? 2 : this.experiments.get(id)?.development ? 1 : 0);
+    const named = (id) => `${["", "Development run: ", "Example: "][rank(id)]}${this.experiments.get(id)?.label || id}`;
+    return [...groups].sort(([a], [b]) => rank(a) - rank(b)).map(([id, entities]) => ({ label: named(id), entities }));
   }
 
   entities() {
@@ -129,8 +133,9 @@ export class Catalogue {
         })
         .filter(Boolean);
       if (readouts.length) sections.push({ title: "What the run recorded", items: readouts });
+      // A record that is another one's array, declared over another set, is listed once.
       const records = [...loaded.records.values()]
-        .filter((record) => record.set)
+        .filter((record) => record.set && !record.same_as)
         .map((record) => ({
           label: experiment.records?.[record.id]?.label || record.label || record.id,
           detail: [record.unit && record.unit !== "1" ? `saved in ${record.unit}` : null, record.quantised ? "kept coarsely, for drawing only" : null].filter(Boolean).join(" · ") || null,
