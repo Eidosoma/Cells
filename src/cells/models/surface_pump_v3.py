@@ -388,11 +388,82 @@ class KindRates(NamedTuple):
 
 
 def _kinds(structure):
-    """The declared kinds' declarations, in hook order; none for today's structures."""
+    """The declared kinds' declarations, in hook order, each bound to its structure entry's
+    fields (§7.4 (n) 5); none for today's structures."""
     if structure is None or not structure.kinds:
         return ()
-    registry = kind_registry.active()
-    return tuple(registry.lookup(kind_id) for kind_id in hook_order(structure))
+    registry, entries = kind_registry.active(), dict(structure.kinds)
+    return tuple(
+        kind_registry.bound(registry.lookup(kind_id), entries[kind_id])
+        for kind_id in hook_order(structure)
+    )
+
+
+def _route(structure, kinds, read, control, p, *, xp):
+    """§7.4 (n), the routing door, at one stage: (the control with each routed slot set to its
+    held value x its sources' factors, a left fold in declared order; valid: every factor finite
+    and in [0, 1]). The factors are the sources' at the stage's read state. Static: without
+    routes the control is returned as it is, and no factor is evaluated."""
+    if structure is None or not structure.routes:
+        return control, True
+    by_id = {kind_registry.qualified(kind.kind_id): kind for kind in kinds}
+    sources = sorted({kind_id for *_, named in structure.routes for kind_id, _ in named})
+    values, valid = {}, True
+    for kind_id in sources:
+        factors = by_id[kind_id].factors(read, p, xp=xp)
+        valid = valid & xp.all(xp.isfinite(factors) & (factors >= 0) & (factors <= 1))
+        values[kind_id] = factors
+    fields = {}
+    for _, name, slot, named in structure.routes:
+        held = fields.get(name, getattr(control, name))
+        value = held[slot]
+        for kind_id, position in named:  # The left fold, in declared order.
+            value = value * values[kind_id][position]
+        if xp is np:
+            held = np.array(held, dtype=np.float64, copy=True)
+            held[slot] = value
+        else:
+            held = held.at[slot].set(value)
+        fields[name] = held
+    return control._replace(**fields), valid
+
+
+def _routes(model):
+    """§7.4 (n): the routing door's table for a parsed model block, resolved at binding: ((sink
+    kind ID, control field, slot, ((source kind ID, position), ...)), ...) in canonical kind
+    order; () without a sink. Refused: an unknown source ID, one that two kinds expose, a field
+    that is not the sink's own control field, and a slot routed twice."""
+    registry, declared = kind_registry.active(), getattr(model, "kinds", ())
+    sources = {}
+    for kind_id, declaration in declared:
+        kind = registry.lookup(kind_id)
+        if kind.factor_sources is None:
+            continue
+        for position, source in enumerate(kind.factor_sources(declaration)):
+            if source in sources:
+                raise ConfigError(
+                    f"Factor source {source!r} is exposed by {sources[source][0]} and {kind_id}"
+                )
+            sources[source] = (kind_id, position)
+    routes, taken = [], set()
+    for kind_id, declaration in declared:
+        kind = registry.lookup(kind_id)
+        if kind.routed_controls is None:
+            continue
+        entry = kind.structure_entry(declaration) if kind.structure_entry else ()
+        own = kind_registry.bound(kind, entry).control_fields
+        for name, slot, named in kind.routed_controls(declaration):
+            where = f"Kind {kind_id}'s routed control {name}[{slot}]"
+            if name not in own:
+                raise ConfigError(f"{where}: a sink routes its own control fields only")
+            if (name, slot) in taken:
+                raise ConfigError(f"{where} is routed twice")
+            taken.add((name, slot))
+            unknown = [source for source in named if source not in sources]
+            if unknown:
+                raise ConfigError(f"{where} names unknown factor sources {unknown}")
+            routes.append((kind_id, name, slot, tuple(sources[source] for source in named)))
+    return tuple(routes)
 
 
 def _stage_read(state, p, kinds, *, xp):
@@ -531,6 +602,9 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
 
     kinds = _kinds(structure)
     read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
+    if kinds and structure.routes:  # §7.4 (n): the routing door, after the read (static).
+        control, routed = _route(structure, kinds, read, control, p, xp=xp)
+        read_valid = read_valid & routed
     v = _field_values(  # §7.4 (k): the rates read `read`; the field solve the stored charges.
         state,
         read,
@@ -837,6 +911,9 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
     s, n = tissue.field_layout(p).surface, p.active.size
     kinds = _kinds(structure)
     read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
+    if kinds and structure.routes:  # §7.4 (n): the routing door, after the read (static).
+        control, routed = _route(structure, kinds, read, control, p, xp=xp)
+        read_valid = read_valid & routed
     ci, co = physical_amounts(read, p)
     ci = xp.where(p.active, ci / p.volume, 1.0)
     co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
@@ -1231,6 +1308,7 @@ def check_definition(spec, *, structure=None):
     control_type = kind_types(structure).Control if structure is not None else Control
     if kinds:
         _check_device_hooks(kinds, state, p, control_type(*(v[0] for v in controls)))
+        _check_routes(spec, structure, kinds, state, p, control_type(*(v[0] for v in controls)))
     with np.errstate(all="ignore"):
         for i in range(len(controls.membrane)):
             if not control_domain_valid(
@@ -1376,6 +1454,32 @@ def _check_device_hooks(kinds, state, p, control):
                     refuse(kind, "ledger_terms", f"returns {key} of shape {terms[key].shape}")
 
 
+def _check_routes(spec, structure, kinds, state, p, control):
+    """§7.4 (n): every source's factors are [len(sources)] numbers on the device (traced once on the
+    initial state), and every routed slot lies inside its control field."""
+    declarations = dict(spec.model.kinds)
+    for kind in kinds:
+        if kind.factor_sources is None:
+            continue
+        kind_id = kind_registry.qualified(kind.kind_id)
+        count = len(kind.factor_sources(declarations[kind_id]))
+        try:
+            factors = jax.eval_shape(partial(kind.factors, xp=jnp), state, p)
+        except jax.errors.JAXTypeError as error:
+            raise ConfigError(f"Kind {kind_id}'s factors hook does not trace: {error}") from error
+        if factors.shape != (count,) or not jnp.issubdtype(factors.dtype, jnp.floating):
+            raise ConfigError(
+                f"Kind {kind_id}'s factors must be {count} floats, not {factors.shape} "
+                f"{factors.dtype}"
+            )
+    for kind_id, name, slot, _ in structure.routes:
+        size = np.shape(getattr(control, name))[-1]
+        if not 0 <= slot < size:
+            raise ConfigError(
+                f"Kind {kind_id}'s routed control {name}[{slot}] is outside [0, {size})"
+            )
+
+
 def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None):
     """Gershgorin rate (1/s) of membrane charge relaxation at a stage's actual openings.
 
@@ -1414,7 +1518,8 @@ def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None)
     # nodes), at the read amounts and the stage's potentials; and the free outside nodes' rows
     # too (a face-free compartment's small capacitance), with @3's own patch terms there.
     read, _ = _stage_read(state, p, kinds, xp=xp)
-    nodes = xp.zeros(n + p.outside_active.size)
+    control, _ = _route(structure, kinds, read, control, p, xp=xp)  # §7.4 (n); its validity is
+    nodes = xp.zeros(n + p.outside_active.size)  # the stage's (explicit_rates, readouts).
     for kind in kinds:
         if kind.stage_term is not None:
             nodes = nodes + kind.stage_term(read, potentials, control, p, xp=xp)
@@ -1705,6 +1810,7 @@ def observe_history(times, history, layout, requested, spec, *, structure=None):
             raise NumericalError("Resolved kinetic observation domain invalid")
         v, n, r = w.field, p.active.size, w.field.rates
         read = _stage_read(state, p, kinds, xp=np)[0] if kinds else state  # Kinds' readouts.
+        routed = _route(structure, kinds, read, control, p, xp=np)[0] if kinds else control
         records.append(
             (
                 np.asarray(t),
@@ -1743,7 +1849,7 @@ def observe_history(times, history, layout, requested, spec, *, structure=None):
                     column
                     for kind in kinds
                     if kind.readouts is not None
-                    for column in kind.readouts(state, read, v.potential_V, control, p, xp=np)
+                    for column in kind.readouts(state, read, v.potential_V, routed, p, xp=np)
                 ),
             )
         )
@@ -1823,6 +1929,7 @@ def structure(model):
         junction_heat_booking=model.junction_heat_booking,
         padding_fill=_closes_slots(model),
         kinds=_kind_entries(model),
+        routes=_routes(model),
     )
 
 
@@ -1933,54 +2040,80 @@ TODAYS_TYPES = KindTypes(
 
 
 @cache
-def _kind_types(kind_ids, registry):
-    if not kind_ids:
+def _kind_types(fields, registry):
+    """fields: ((kind ID, the bound kind's KindFields), ...) in canonical order. Classes are cached
+    by field set (§7.4 (j); (n) 5): structures whose kinds carry the same fields share them, and a
+    kind bound to fields other than its static ones (a declaration-dependent variant) names its
+    extra fields in the classes' deterministic names."""
+    if not fields:
         return TODAYS_TYPES
-    kinds = [registry.lookup(kind_id) for kind_id in kind_ids]
-    label = "".join("_" + re.sub(r"\W", "_", kind_id) for kind_id in kind_ids)  # Deterministic.
+
+    def label(kind_id, own):
+        static = registry.lookup(kind_id)
+        known = {*static.state_fields, *static.layout_fields, *static.control_fields}
+        known |= set(static.readout_columns)
+        names = (
+            *(name for name, _ in own.state_axes),
+            *own.layout_fields,
+            *own.control_fields,
+            *own.readout_columns,
+        )
+        extra = "".join("_" + name for name in names if name not in known)
+        return "_" + re.sub(r"\W", "_", kind_id) + extra
+
+    suffix = "".join(label(kind_id, own) for kind_id, own in fields)  # Deterministic.
     axes = dict(STATE_AXES)
-    for kind in kinds:
-        for name, name_axes in kind.state_axes:  # Not `field`: the field-solver module's name.
+    for kind_id, own in fields:
+        for name, name_axes in own.state_axes:  # Not `field`: the field-solver module's name.
             if name in axes:
-                raise ValueError(f"Kind {kind.kind_id}'s state field {name} is already declared")
+                raise ValueError(f"Kind {kind_id}'s state field {name} is already declared")
             axes[name] = list(name_axes)
-    state = NamedTuple("SurfacePumpChannelState" + label, [(k, object) for k in axes])
-    layout_extra = [name for kind in kinds for name in kind.layout_fields]
+    state = NamedTuple("SurfacePumpChannelState" + suffix, [(k, object) for k in axes])
+    layout_extra = [name for _, own in fields for name in own.layout_fields]
     layout = NamedTuple(
-        "SurfacePumpChannelLayout" + label,
+        "SurfacePumpChannelLayout" + suffix,
         [(k, object) for k in (*LAYOUT_TYPE._fields, *layout_extra)],
     )
     floor = NamedTuple(
-        "SurfacePumpChannelFloorLayout" + label,
+        "SurfacePumpChannelFloorLayout" + suffix,
         [(k, object) for k in (*FLOOR_LAYOUT_TYPE._fields, *layout_extra)],
     )
     control = NamedTuple(
-        "SurfacePumpChannelControl" + label,
+        "SurfacePumpChannelControl" + suffix,
         [
             (k, object)
-            for k in (*Control._fields, *(f for kind in kinds for f in kind.control_fields))
+            for k in (*Control._fields, *(f for _, own in fields for f in own.control_fields))
         ],
     )
     # Rule (b): a kind's state fields are observation columns right after today's state fields
     # (the windowed runner rebuilds states from observations by name); its readouts follow
     # today's readouts.
     today_state = len(STATE_TYPE._fields) + 1
-    fields = (
+    columns = (
         *OBSERVATION_FIELDS[:today_state],
-        *(field for kind in kinds for field, _ in kind.state_axes),
+        *(name for _, own in fields for name, _ in own.state_axes),
         *OBSERVATION_FIELDS[today_state:],
-        *(column for kind in kinds for column in kind.readout_columns),
+        *(column for _, own in fields for column in own.readout_columns),
     )
     observations = make_dataclass(
-        "SurfacePumpChannelObservations" + label, [(k, np.ndarray) for k in fields], frozen=True
+        "SurfacePumpChannelObservations" + suffix, [(k, np.ndarray) for k in columns], frozen=True
     )
-    return KindTypes(axes, state, layout, floor, control, fields, observations)
+    return KindTypes(axes, state, layout, floor, control, columns, observations)
 
 
 def kind_types(structure):
     """The structure's types: today's own objects when it declares no kind (§7.4 (j), schema A),
-    else classes cached by the set of declared kinds, in canonical order."""
-    return _kind_types(tuple(kind_id for kind_id, _ in structure.kinds), kind_registry.active())
+    else classes cached by its kinds' fields, each kind bound to its structure entry ((n) 5), in
+    canonical order."""
+    registry = kind_registry.active()
+    fields = []
+    for kind_id, entry in structure.kinds:
+        kind = kind_registry.bound(registry.lookup(kind_id), entry)
+        own = kind_registry.KindFields(
+            kind.state_axes, kind.layout_fields, kind.control_fields, kind.readout_columns
+        )
+        fields.append((kind_id, own))
+    return _kind_types(tuple(fields), registry)
 
 
 class InnerImplementation:

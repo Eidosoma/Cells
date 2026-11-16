@@ -379,10 +379,11 @@ def control_values(spec, times):
     # schedule breakpoints are change times (Experiment.kinds).
     from cells.models import surface_pump_v3 as inner
 
-    control = inner.kind_types(inner.structure(spec.model)).Control
-    registry, extra = kind_registry.active(), {}
-    for kind_id, declaration in spec.model.kinds:
-        kind = registry.lookup(kind_id)
+    structure = inner.structure(spec.model)
+    control = inner.kind_types(structure).Control
+    registry, entries, extra = kind_registry.active(), dict(structure.kinds), {}
+    for kind_id, declaration in spec.model.kinds:  # Each bound to its entry's fields ((n) 5).
+        kind = kind_registry.bound(registry.lookup(kind_id), entries[kind_id])
         if kind.control_fields:
             held = kind.control_values(spec, declaration, clock)
             extra |= {name: np.asarray(value)[indices] for name, value in held.items()}

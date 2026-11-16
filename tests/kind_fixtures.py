@@ -687,3 +687,91 @@ def declare_conversion(raw, *, rate, substrate_mu_RT, product_mu_RT, substrate="
         product_mu_RT=product_mu_RT,
     )
     return raw
+
+
+# ------------------------------------------------------------ the routing door's planted kinds
+# docs/INNER_MODEL_V4_DESIGN.md §7.4 (n). `tests.factor@1` is a factor source: constant factors
+# per declared source ID (model key `test_factors`: [{"id", "value"}, ...]), from its layout, so a
+# test can set a stage's factor through the layout. `tests.sink@1` is a sink: its control
+# `sink_gain` [2] is held at declared values, and the declared slots are routed through named
+# sources; its readout column reports the control it receives at the observed row, and its book
+# records the control it receives (SEEN).
+
+FACTOR_ID = "tests.factor@1"
+FACTOR_KEY = "test_factors"
+SINK_ID = "tests.sink@1"
+SINK_KEY = "test_sink"
+SEEN = []
+
+
+def _factor_parse(entries, base):
+    if not isinstance(entries, list) or not entries:
+        raise ConfigError("test_factors is a nonempty list of {id, value}")
+    out = []
+    for entry in entries:
+        if set(entry) != {"id", "value"}:
+            raise ConfigError("test_factors entries declare id and value")
+        out.append((str(entry["id"]), float(entry["value"])))
+    return tuple(out)
+
+
+def factor_source(kind_id=FACTOR_ID, model_key=FACTOR_KEY):
+    """A planted factor source (another ID and key give a second source kind)."""
+    return Kind(
+        kind_id=kind_id,
+        model_key=model_key,
+        layout_fields=(f"{model_key}_values",),
+        parse=_factor_parse,
+        to_dict=lambda declaration: [dict(id=i, value=v) for i, v in declaration],
+        structure_entry=lambda declaration: (),
+        initial=lambda spec, declaration, layout: (
+            {},
+            {f"{model_key}_values": np.asarray([v for _, v in declaration])},
+        ),
+        factor_sources=lambda declaration: tuple(i for i, _ in declaration),
+        factors=_spy("factors", lambda read, p, *, xp: getattr(p, f"{model_key}_values")),
+    )
+
+
+def _sink_parse(entries, base):
+    if set(entries) != {"held", "routes", "field"} or len(entries["held"]) != 2:
+        raise ConfigError("test_sink declares held [2], routes [[slot, [ids]], ...] and field")
+    routes = tuple((int(slot), tuple(ids)) for slot, ids in entries["routes"])
+    return (tuple(float(v) for v in entries["held"]), routes, str(entries["field"]))
+
+
+def _sink_book(applied, start, end, control, p, dt, *, xp):
+    SEEN.append(control)
+    return {}, True
+
+
+SINK = Kind(
+    kind_id=SINK_ID,
+    model_key=SINK_KEY,
+    control_fields=("sink_gain",),
+    readout_columns=("sink_gain_column",),
+    parse=_sink_parse,
+    to_dict=lambda d: dict(held=list(d[0]), routes=[[s, list(i)] for s, i in d[1]], field=d[2]),
+    structure_entry=lambda declaration: (),
+    initial=lambda spec, declaration, layout: ({}, {}),
+    control_values=lambda spec, declaration, times: dict(
+        sink_gain=np.tile(np.asarray(declaration[0]), (len(times), 1))
+    ),
+    routed_controls=lambda declaration: tuple(
+        (declaration[2], slot, ids) for slot, ids in declaration[1]
+    ),
+    readouts=lambda state, read, potentials, control, p, *, xp: (control.sink_gain,),
+    book=_sink_book,
+)
+
+
+def declare_routing(raw, *, factors, held=(1.0, 1.0), routes=(), field="sink_gain", key=FACTOR_KEY):
+    """raw with planted factors {id: value} (under `key`) and, given routes ((slot, (ids, ...)),
+    ...), the planted sink."""
+    raw = copy.deepcopy(raw)
+    raw["model"][key] = [dict(id=i, value=v) for i, v in factors.items()]
+    if routes:
+        raw["model"][SINK_KEY] = dict(
+            held=list(held), routes=[[slot, list(ids)] for slot, ids in routes], field=field
+        )
+    return raw

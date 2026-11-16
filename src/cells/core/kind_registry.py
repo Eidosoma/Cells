@@ -21,7 +21,9 @@ import math
 from collections.abc import Callable
 from contextlib import contextmanager
 from contextvars import ContextVar
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from functools import cache
+from typing import NamedTuple
 
 import numpy as np
 
@@ -34,9 +36,11 @@ __all__ = (
     "BUILTIN",
     "ConfigError",
     "Kind",
+    "KindFields",
     "KindRegistry",
     "Schedule",
     "active",
+    "bound",
     "bounded_integer",
     "declared_schedule",
     "finite_number",
@@ -197,6 +201,18 @@ class Kind:
       @3 evaluates `control_values` once per change record, at the change times, and holds each
       row over the steps that record governs, so a kind's controls are constant between change
       times on every path; a scheduled kind reads its schedule with declared_schedule(spec, ID).
+    - fields per declaration (§7.4 (n) 5): `declared_fields(entry)` -> KindFields(state_axes,
+      layout_fields, control_fields, readout_columns) for its structure entry, in place of the
+      static ones; the core binds each declared kind to its entry (`bound`) wherever it resolves a
+      structure's kinds, so a field exists only where the declaration needs it.
+    - the routing door (§7.4 (n)): a source declares `factor_sources(declaration)` -> (source ID,
+      ...) and `factors(read, p, *, xp)` -> [len(sources)] values at the stage (from its own
+      fields and the stage's read state); a sink declares `routed_controls(declaration)` ->
+      ((control field, slot, (source ID, ...)), ...) on its own control fields. Binding resolves
+      every source ID (the structure's `routes`); at every stage, after the stage read and before
+      any kind's rates, stage_term or readouts, each routed slot becomes its held value x its
+      sources' values, a left fold in declared order. A factor outside [0, 1] or not finite
+      refuses the row or the step; `book` receives the held control.
     - stage: `stage_read(state, p, *, xp)` -> (the state whose amount fields hold the amounts
       every rate of the stage reads, valid), composed in hook order; a failed read refuses the
       step, and domain_valid evaluates the reads at every checked state (the step's end
@@ -288,11 +304,45 @@ class Kind:
     experiment_keys: tuple = ()
     parse_schedule: Callable | None = None
     schedule_to_dict: Callable | None = None
+    # §7.4 (n): fields that depend on the declaration, and the routing door.
+    declared_fields: Callable | None = None
+    factor_sources: Callable | None = None
+    factors: Callable | None = None
+    routed_controls: Callable | None = None
 
     @property
     def state_fields(self):
         """The kind's own state field names, in declared order."""
         return tuple(field for field, _ in self.state_axes)
+
+
+class KindFields(NamedTuple):
+    """A kind's fields for one structure entry (§7.4 (n) 5): its declared_fields(entry)."""
+
+    state_axes: tuple  # ((field, (axis, ...)), ...)
+    layout_fields: tuple
+    control_fields: tuple
+    readout_columns: tuple
+
+
+@cache
+def bound(kind, entry):
+    """The kind with the fields of one declaration's structure entry (§7.4 (n) 5): its
+    declared_fields(entry) in place of its static fields, or the kind itself when it declares
+    none. Cached, so each (kind, entry) gives one object; the bound kind is not bound again."""
+    if kind.declared_fields is None:
+        return kind
+    fields = kind.declared_fields(entry)
+    if type(fields) is not KindFields:
+        raise ValueError(f"Kind {kind.kind_id}'s declared_fields must return a KindFields")
+    return replace(
+        kind,
+        state_axes=tuple(fields.state_axes),
+        layout_fields=tuple(fields.layout_fields),
+        control_fields=tuple(fields.control_fields),
+        readout_columns=tuple(fields.readout_columns),
+        declared_fields=None,
+    )
 
 
 class KindRegistry:

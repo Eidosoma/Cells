@@ -1640,6 +1640,20 @@ follow a schedule ((l)).
   - `passive_multiplier` exists only where a route declares factors;
 - crossrev is identical.
 
+**As built (core-next; the API accepted by the lead, 16 November 2026):**
+- **The registry:** `KindFields`, `bound(kind, entry)` (cached, one object per kind and entry) and
+  the hooks `declared_fields`, `factor_sources`, `factors` and `routed_controls`.
+- **The structure:** `InnerStructure.routes`.
+- **@3's door:** `surface_pump_v3._route`.
+  - It runs in `readouts`, `explicit_rates` and `membrane_rate`, and on the kinds' readouts in
+    `observe_history`.
+  - It is gated on `structure.routes`. The FR-4 pair check showed why: an absent door's
+    `valid & True` alone changed FR-4's jaxpr text.
+- **The checks at binding:** `_routes` (sources, ownership, slots routed twice) and
+  `_check_routes` (factors traced as [len(sources)] floats, slots inside their field).
+- **The sink:** `cells.passive_routes@1`'s entry is `Factored(laws)` only where a route declares
+  factors; otherwise it is today's tuple of laws.
+
 ### 7.5 Exact heat booking: one declared booking, designed once (the lead's ruling, 15 November)
 
 - **Why.** Today a route's heat is the tableau's quadrature of its dissipation rate (Σ J Δμ̃ at the
