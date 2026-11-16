@@ -151,8 +151,9 @@ code).
 
 *A replay of the judged experiment E07-v1 at 19 min 30 s, after 146 of its 291 cell
 replacements. Each cell stands as high as its membrane voltage, wedges mark the voltage drops
-across junctions, and the outline is the disc written at the start. Drawn from the run's own
-saved records (run `a-donor-fast-k1-d37-s1.0`, seed 5).*
+across junctions, and the outline is the disc written at the start. The voltages are the run's
+own saved records (run `a-donor-fast-k1-d37-s1.0`, seed 5); the junction drops are worked out by
+the viewer from them.*
 
 ![A replay of the engine's first run made for the viewer: one cell, a small outside space and a held bath, with beads crossing a border and a glow where energy is dissipated, marked as a development run that is not judged](visualizer/docs/screenshots/replay-development-run-flows.webp)
 
@@ -175,7 +176,7 @@ record is still owed, so [Progress](PROGRESS.md) remains the record.
 | The loop reader, for a species' looping run | `visualizer/src/layers/loop.js` | On main, tested on a fixture; no species has a looping run yet |
 | The run view's design | [`docs/RUN_VIEW_DESIGN.md`](docs/RUN_VIEW_DESIGN.md) | On main, proposed |
 | The engine's run-view writer | `src/cells/run_view.py`, on a development branch | Not on main. Shown on a worked example (the secreted-species development run); it merges after the restructure lands |
-| Looping replay packages per species | [Feature request FR-11](docs/FEATURE_REQUESTS.md#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Logged. Its design note is proposed, on a development branch; nothing is built |
+| Looping replay packages per species | [Feature request FR-11](docs/FEATURE_REQUESTS.md#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Logged. Its design note is on a development branch, not yet on main; nothing is built |
 
 **Replays** draw what a run saved and nothing else: the sheet coloured by
 membrane voltage, a timeline, events such as cell replacement, and the class
@@ -228,8 +229,8 @@ illustration, never an experiment or a qualified result. The choices recorded
 with it are periodic loops (a periodic drive, one period played and its seam
 checked), a paced heart cell for human (it waits for the human cardiac laws, now being
 designed), the cell cycle in scope for Syn3A and
-*M. pneumoniae*, and the planarian's loop first. Its design note is proposed,
-on a development branch. The loop reader on main already refuses a run that
+*M. pneumoniae*, and the planarian's loop first. Its design note is on a
+development branch, not yet on main. The loop reader on main already refuses a run that
 does not declare its loop and say that it closes, names no engine model or
 revision, or is an example.
 

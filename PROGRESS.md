@@ -79,7 +79,7 @@ machine-readable inputs, results, checks and failures.
 
 - **The visualizer merged into main twice, and the README brought to 16 November (16 November
   2026, the user's requests).** All three merges touch only `visualizer/` and `README.md`. No
-  engine code or test reads `visualizer/`.
+  engine code reads `visualizer/`.
   - **df5b5cb3** (visualizer 39a20f75) adds:
     - the fruit fly and thale cress;
     - flagella and pili;
@@ -99,7 +99,10 @@ machine-readable inputs, results, checks and failures.
       0 failed;
     - the BETSE-boundary guard and the D131 source-order guards on the merged tree: 5 passed and
       46 skipped, the skips all D131's
-      ([log](/mnt/workspaces/Cells/visualizer-merge-20261116/guards.log)).
+      ([log](/mnt/workspaces/Cells/visualizer-merge-20261116/guards.log));
+    - the snapshot test, which enumerates every tracked file, on the merged tree: 24 passed
+      ([log](/mnt/workspaces/Cells/visualizer-merge-20261116/source_snapshot.log)).
+    - This is a smaller guard set than the 15 November merge's (68 passed).
   - **The README** (462469dd, from readme-update) has:
     - the status table as of 16 November, with the levels defined;
     - a new section, "The visualizer and its replays", with two of the screenshots;
