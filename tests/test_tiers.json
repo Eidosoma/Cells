@@ -109,7 +109,8 @@
   "/mnt/workspaces/Cells/test-audit-20261116-01/measure-2570fd4d/run/measured.json",
   "/mnt/workspaces/Cells/test-audit-20261116-01/retire-fa19d80c/measure-6ac27c38/measured.json",
   "/mnt/workspaces/Cells/test-audit-20261116-01/retire-fa19d80c/measure-c385bce6/measured.json",
-  "/mnt/workspaces/Cells/test-audit-20261116-01/retire-fa19d80c/measure-9c5b34e2/measured.json"
+  "/mnt/workspaces/Cells/test-audit-20261116-01/retire-fa19d80c/measure-9c5b34e2/measured.json",
+  "/mnt/workspaces/Cells/test-audit-20261116-01/retire-fa19d80c/measure-restore/measured.json"
  ],
  "measured_provenance": [
   {
@@ -907,6 +908,13 @@
    "root": ".claude/worktrees/agent-a02ed0aeacaf26235",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-16T23:32:44+00:00"
+  },
+  {
+   "git_revision": "351d7b6bc892feae6f3b7b8f8607e4c2dc8329c6",
+   "dirty": false,
+   "root": ".claude/worktrees/agent-a02ed0aeacaf26235",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-16T23:54:31+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3515,6 +3523,14 @@
     "counts": {
      "failed": 1,
      "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_voltage_gated_artifact_audit.py",
+    "seconds": 0.57,
+    "exit_code": 0,
+    "counts": {
+     "skipped": 7
     }
    },
    {
