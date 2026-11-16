@@ -21,6 +21,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { Run, validateReplay } from "../src/replay/run.js";
+import { layersFor, readDeclarations } from "../src/layers/layers.js";
+import { MARKS } from "../src/layers/marks/index.js";
+import { readLoop } from "../src/layers/loop.js";
+import declaredLayers from "../data/layers/layers.json" with { type: "json" };
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const TOOL = path.join(ROOT, "tools", "adapt_run.py");
@@ -1191,6 +1195,242 @@ test("no machine path, host name or traceback is written for any experiment", ()
     const text = JSON.stringify(name === "index.json" ? data : data.view ?? { ...data, payload: null });
     assert.ok(!PATHS.test(text), `${name} carries a machine path`);
     for (const word of ["fixture-host", "nobody", "nowhere", "Traceback"]) assert.ok(!text.includes(word), `${name} carries "${word}"`);
+  }
+});
+
+// ---------------------------------------------------------------- views written by the engine's own writer
+//
+// tests/engine-views/run-view-fd008813 holds two small runs that the engine's run-view writer wrote on its branch
+// (run-view-d154 at fd008813; tools/make_engine_view_fixture.sh makes them again): the short secretion world through
+// io.write_run, and S5's partition world, a division, through the windowed path. They are the writer's output, kept
+// apart from the fixtures the run-fixture tool writes. A test that needs a view the writer does not give (a source, a
+// loop, a contradiction) changes a copy, and says so.
+
+const WRITER = path.join(ROOT, "tests", "engine-views", "run-view-fd008813");
+const VIEWS = "engine-views";
+const VIEW_ARGS = ["--overlay", path.join(scratch, "views-overlay.json"), "--selection", path.join(scratch, "views-selection.json")];
+writeFileSync(VIEW_ARGS[1], JSON.stringify({ format: "cells.visualizer.replay_overlay@1", experiments: { [VIEWS]: { adapter: "standard-history", development: true, label: "The run view's writer (test fixture)", plain: "Two unit-test worlds the engine's run-view writer wrote on its branch.", sources: [], engine_entities: [], outcome: { judged: false, status: "A development run: not judged" }, parameters: {}, readouts: {} } } }));
+writeFileSync(VIEW_ARGS[3], JSON.stringify({ [VIEWS]: { evidence_folder: path.basename(WRITER), runs: ["secretion", "division"] } }));
+const viewsOut = path.join(scratch, "views-out");
+const viewsDone = tool("--experiment", VIEWS, "--root", WRITER, ...VIEW_ARGS, "--out", viewsOut);
+assert.equal(viewsDone.status, 0, `the adapter failed on the writer's views:\n${viewsDone.stderr}`);
+const { layers: LAYERS } = readDeclarations(declaredLayers, MARKS);
+const writtenView = (world) => readJson(path.join(WRITER, world, "view.json"));
+
+/** A packaged run opened with every one of its parts attached, as the page has it once each is fetched. */
+function openWhole(folder, id) {
+  const opened = open(folder, id);
+  for (const part of opened.view.parts || []) {
+    const held = readJson(path.join(folder, path.basename(part.file)));
+    opened.run.attach(part.id, Uint8Array.from(Buffer.from(held.payload.data, "base64")).buffer);
+  }
+  return opened;
+}
+
+/** The secretion world (or another) with its view changed in a copy, adapted; [result, output folder, run id]. */
+function changedView(label, change, world = "secretion") {
+  const copy = path.join(scratch, `writer-${label}`);
+  cpSync(WRITER, copy, { recursive: true });
+  const file = path.join(copy, world, "view.json");
+  const view = readJson(file);
+  change(view, path.join(copy, world));
+  writeFileSync(file, JSON.stringify(view));
+  const target = path.join(scratch, `writer-${label}-out`);
+  return [tool("--experiment", VIEWS, "--root", copy, "--run", world, ...VIEW_ARGS, "--out", target), target, `${VIEWS}--${world}`];
+}
+
+test("the kept views are the writer's own, of the revision their note names", () => {
+  const note = readFileSync(path.join(WRITER, "README.md"), "utf8");
+  assert.match(note, /branch run-view-d154, fd008813/);
+  assert.match(note, /fd00881394d10fd33c05e47e17c88838fcf2b7c7/);
+  // The writer learns its source only from an execution snapshot, which an export is not: the one revision in the views is a planted label.
+  assert.match(note, /is a caller's label \*\*planted\*\* by the script;\s+it is not the engine's own word for its source/);
+  assert.deepEqual([writtenView("secretion").run.revision, writtenView("division").run.revision], ["fd008813", undefined]);
+  for (const world of ["secretion", "division"]) {
+    const view = writtenView(world);
+    assert.equal(view.run.source, undefined, `${world}: no engine source`);
+    assert.equal(view.format, "cells.run_view@1");
+    assert.deepEqual(Object.keys(view).sort(), ["constants", "events", "format", "layers", "recording", "records", "run", "sets", "space", "time", "unstated"], `${world}: the writer's top-level keys, and no loop block (not built at this revision)`);
+    assert.deepEqual(view.unstated.find((item) => item.id === "source")?.what, "engine source", `${world}: run from an export, the writer states no engine source and says why`);
+  }
+  const size = (folder) => readdirSync(folder, { withFileTypes: true }).reduce((total, item) => total + (item.isDirectory() ? size(path.join(folder, item.name)) : statSync(path.join(folder, item.name)).size), 0);
+  assert.ok(size(WRITER) < 500_000, `the kept views are ${size(WRITER)} bytes`);
+  assert.ok(!PATHS.test(readdirSync(WRITER, { recursive: true }).filter((name) => /\.(json|jsonl|md)$/.test(name)).map((name) => readFileSync(path.join(WRITER, name), "utf8")).join("\n")), "no kept text file names a machine path");
+});
+
+test("a view from the engine's writer: a voltage's difference is the run's own sign, and the layers that need it are offered", () => {
+  const { view, file, record, run } = openWhole(viewsOut, `${VIEWS}--secretion`);
+  assert.deepEqual(validateReplay(file), []);
+  const stated = writtenView("secretion").records.find((item) => item.id === "observed_membrane_voltage_V").difference;
+  assert.deepEqual([stated.plus, stated.minus], ["inside", "outside"]);
+  // The difference is carried as written; the page's sign says which side is the higher, in the view's own words and with their source.
+  assert.deepEqual(record("membrane_voltage_V").difference, stated);
+  assert.deepEqual(record("membrane_voltage_V").sign, { says: stated.says, high: "inside", source: stated.source });
+  for (const item of view.records) assert.equal(item.sign?.by, undefined, `${item.id}: no reading of the adapter's`);
+  assert.ok(view.derivation.some((line) => line.startsWith("Which way membrane_voltage_V is positive is the run's own statement (its difference, plus less minus by the roles of its set)") && line.includes(stated.source)));
+  // The committed adapter read the same view with no sign for the voltage, and these two layers were not offered.
+  const offered = Object.fromEntries(layersFor(run, LAYERS, MARKS).map((offer) => [offer.layer.id, offer.ok]));
+  assert.deepEqual([offered["ion-push-pull"], offered["membrane-charge"], offered.transfers], [true, true, true]);
+  // The roles of each set, with what each is, come with it; a flow's sign names two of them.
+  const sets = Object.fromEntries(view.sets.map((item) => [item.id, item]));
+  assert.deepEqual(sets.membrane.roles, writtenView("secretion").sets.find((item) => item.id === "membrane").roles);
+  assert.ok(sets.membrane.roles[record("membrane_transferred.S").sign.from] && sets.membrane.roles[record("membrane_transferred.S").sign.to]);
+  assert.equal(sets.cell.roles, undefined, "a set that states no roles gets none");
+  // Changed copies: the higher end is read from the role `plus`, whichever it is; a role the page has no word for gives no sign.
+  const [swapped, swappedOut, id] = changedView("difference-swapped", (view) => {
+    const difference = view.records.find((item) => item.id === "observed_membrane_voltage_V").difference;
+    [difference.plus, difference.minus] = [difference.minus, difference.plus];
+  });
+  assert.equal(swapped.status, 0, swapped.stderr);
+  assert.equal(open(swappedOut, id).record("membrane_voltage_V").sign.high, "outside");
+  const [wordless, wordlessOut] = changedView("difference-wordless", (view) => {
+    view.sets.find((item) => item.id === "membrane").roles.lumen = "a planted role, with no word of the page's";
+    view.records.find((item) => item.id === "observed_membrane_voltage_V").difference.plus = "lumen";
+  });
+  assert.equal(wordless.status, 0, wordless.stderr);
+  const unread = open(wordlessOut, id);
+  assert.deepEqual([unread.record("membrane_voltage_V").difference.plus, unread.record("membrane_voltage_V").sign], ["lumen", undefined]);
+  assert.ok(unread.view.derivation.includes("The view states which way membrane_voltage_V is positive between roles the page has no word for: the difference is carried as written, with no sign, and the page draws no direction for it."));
+});
+
+test("a view from the engine's writer: each route's species, direction and kind are the run's, and the secreted species rests on them", () => {
+  const { view, record } = open(viewsOut, `${VIEWS}--secretion`);
+  const sets = Object.fromEntries(view.sets.map((item) => [item.id, item]));
+  // The exchange routes: the species each carries is the set's species (what the page reads for a route), with its declared direction.
+  assert.deepEqual([sets.exchange_route.ids, sets.exchange_route.species, sets.exchange_route.direction, sets.exchange_route.holds], [["secrete", "sink"], ["S", "S"], ["export", "import"], "exchange route"]);
+  assert.deepEqual(record("exchange_moved_fmol").sign, writtenView("secretion").records.find((item) => item.id === "observed_exchange_moved_fmol").sign, "the route's total has the sign its operator declares");
+  // Turnover's routes lie on no record's axis, and are carried for what the view states of them: where each acts, and its kind.
+  assert.deepEqual([sets.turnover_route.species, sets.turnover_route.kinds, sets.turnover_route.at], [["S", "S"], ["production", "clearance"], [{ cell: "cell_0" }, { outside: "ecs_0" }]]);
+  assert.ok(view.derivation.includes("What the run's operators state of each of their entities is carried as the view gives it (turnover_route: produce (production) carries S at cell_0; clear (clearance) carries S at ecs_0 | exchange_route: secrete (export) carries S; sink (import) carries S); a route's species is the one the view says it carries."));
+  // "Secreted" stays the viewer's word, now resting on what the view states of each route.
+  assert.deepEqual(sets.species.secreted, ["S"]);
+  assert.ok(view.derivation.some((line) => /^The species that the run's operators carry, make or clear \(S, by what the view states of each of their entities: turnover_route, exchange_route\) is taken as the species the run secretes: the view states which species each entity carries, and does not itself call any species secreted\.$/.test(line)));
+});
+
+test("a view from the engine's writer: its revision, how it ended and which row an event's time holds are the run's own words", () => {
+  const { view } = open(viewsOut, `${VIEWS}--secretion`);
+  const written = writtenView("secretion");
+  // Run from an export, the writer states no engine source: the revision given is the caller's label, and said to be.
+  assert.equal(view.run.revision, written.run.revision);
+  assert.equal(view.run.source, undefined);
+  assert.ok(view.derivation.includes(`The view does not state the engine's own source (${written.unstated.find((item) => item.id === "source").why}). The revision given, fd008813, is the caller's label for the run (run.revision), not the engine's own record of its source.`));
+  assert.deepEqual([view.run.end, view.run.stop], [written.run.end, "complete"]);
+  assert.ok(view.derivation.includes("How the run ended is the run's own statement (run.end): 'complete' at 0.01 s, at step 10."));
+  assert.equal(view.time.event_rows, written.time.event_rows);
+  assert.ok(view.derivation.some((line) => line.endsWith(`(time.event_rows), carried as written: ${written.time.event_rows}`)));
+  // The division world gives no caller's label either: no revision at all.
+  const division = open(viewsOut, `${VIEWS}--division`).view;
+  assert.equal(division.run.revision, null);
+  assert.ok(division.derivation.some((line) => /^The view does not state the engine's own source \(.*\)\. No revision is given\.$/.test(line)));
+});
+
+test("a view from the engine's writer: a division's events, the slots that restart, and the merged views its operators change", () => {
+  const { view, file, record, run } = openWhole(viewsOut, `${VIEWS}--division`);
+  assert.deepEqual(validateReplay(file), []);
+  const written = writtenView("division");
+  assert.deepEqual(view.events.map((event) => [event.time, event.kind, event.at]), [[0.002, "birth", { set: "cell", index: 1 }], [0.002, "birth", { set: "cell", index: 2 }], [0.002, "retirement", { set: "cell", index: 0 }]]);
+  assert.deepEqual(view.sets.find((item) => item.id === "cell").lifetimes, [[null, 0.002], [0.002, null], [0.002, null]]);
+  // Which slots restart is the run's own statement: the mask of the record's set (resets.mask), carried with the rest of resets.
+  const heat = record("membrane_dissipated_energy_pJ");
+  assert.deepEqual(heat.resets, written.records.find((item) => item.id === "observed_membrane_dissipated_energy_pJ").resets);
+  assert.equal(heat.resets.mask, "membrane_active");
+  assert.ok(view.derivation.some((line) => line.startsWith("Which slots restart when an operator retires one is the run's own statement") && line.includes("membrane_dissipated_energy_pJ: membrane_active")));
+  // What the composition changes is a merged view at each observed row: the two a layer reads are packaged under the field's own name.
+  const area = record("membrane_area");
+  assert.deepEqual([area.array, area.base, area.kind, area.set, area.unit, area.owner], ["view_membrane_area", "observation", "level", "membrane", "m2", "membrane_entity_state@1"]);
+  assert.ok(!view.constants.some((item) => item.id === "membrane_area"), "a field the composition changes is no constant");
+  assert.ok(view.derivation.includes("Changed by the run's operators, and so saved as the merged view at each observed row (the arrays view_<field>), not as constants: membrane_area, membrane_capacitance, packaged under the field's own name."));
+  assert.ok(view.derivation.some((line) => line.startsWith("The view saves the merged view of 9 more field(s) that the run's operators change, which no layer of the page reads; they are not packaged: active, ")));
+  const offered = Object.fromEntries(layersFor(run, LAYERS, MARKS).map((offer) => [offer.layer.id, offer.ok]));
+  assert.equal(offered["membrane-charge"], true, "the membrane's charge is read from the merged area and capacitance");
+});
+
+test("the engine's own source: the replay's revision is filled from it, and a dirty tree is carried and said", () => {
+  // A changed copy: the writer states a source only from an execution snapshot, which the kept views were not run from.
+  const source = { revision: "fd00881394d10fd33c05e47e17c88838fcf2b7c7", dirty: true, from: "the execution snapshot's record (SNAPSHOT.json)" };
+  const [result, target, id] = changedView("source", (view) => {
+    view.run.source = source;
+    view.unstated = view.unstated.filter((item) => item.id !== "source");
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const { view, run } = open(target, id);
+  assert.deepEqual([view.run.revision, view.run.source], [source.revision, source]);
+  assert.ok(view.derivation.includes(`The engine's revision is the run's own record of its source (run.source, from ${source.from}): ${source.revision}; its tree was dirty when the run was made, so the revision alone does not give the source that ran: the difference is in the run's frozen snapshot, which the view does not carry.`));
+  assert.equal(run.info.source.dirty, true);
+  // A caller's label that is the same revision, shorter, is no contradiction; another revision is.
+  const [other] = changedView("two-revisions", (view) => {
+    view.run.source = source;
+    view.run.revision = "0123abcd";
+    view.unstated = view.unstated.filter((item) => item.id !== "source");
+  });
+  assert.notEqual(other.status, 0);
+  assert.match(other.stderr, /its view names two revisions for the run: 0123abcd as the caller's label \(run\.revision\) and fd00881394d10fd33c05e47e17c88838fcf2b7c7 as the engine's own source \(run\.source\)/);
+});
+
+test("a loop block is carried in the shape the page's loop reader takes", () => {
+  // The writer at fd008813 builds no loop block (FR-11's design): a changed copy gives one in the designed shape. The
+  // writer refuses a loop without the engine's source, so the copy is given one too, planted for this test: the kept
+  // views state none (their revision is a caller's label, which the loop reader must not take as the engine's).
+  const closes = { within: 3e-7, tolerance: 1e-4, says: "the last record meets the first within 3e-7" };
+  const planted = { revision: "0000000000000000000000000000000000000000", dirty: false, from: "planted by this test" };
+  const asLoop = (loop) => (view) => {
+    view.loop = loop;
+    delete view.run.revision;
+    view.run.source = planted;
+    view.unstated = view.unstated.filter((item) => item.id !== "source");
+  };
+  const [result, target, id] = changedView("loop", asLoop({ species: "planarian", cell: "cell_0", period: 0.01, closes, follows: [] }));
+  assert.equal(result.status, 0, result.stderr);
+  const { view, run } = open(target, id);
+  assert.deepEqual(view.loop, { species: "planarian", cell: "cell_0", period: 0.01, closes, follows: [] });
+  const read = readLoop(run, "planarian");
+  assert.equal(read.ok, true, read.why);
+  assert.deepEqual([read.loop.cell, read.loop.revision, read.loop.closes, read.loop.length], [0, planted.revision, closes, 0.01]);
+  // With only the kept view's caller's label, the adapter says that it is no record of the engine's source.
+  const [labelled, labelledOut, labelledId] = changedView("loop-label", (view) => (view.loop = { species: "planarian", cell: "cell_0", period: 0.01, closes }));
+  assert.equal(labelled.status, 0, labelled.stderr);
+  assert.ok(open(labelledOut, labelledId).view.derivation.some((line) => line.includes("is the caller's label for the run (run.revision), not the engine's own record of its source")));
+  // Refused, each with what and where.
+  for (const [label, loop, message] of [
+    ["loop-open", { species: "planarian", cell: "cell_0", period: 0.01, closes: { ...closes, within: 2e-4 } }, /its view's loop says its last record meets its first within 0\.0002, above its own tolerance of 0\.0001/],
+    ["loop-period", { species: "planarian", cell: "cell_0", period: 0.02, closes }, /its view's loop gives a period of 0\.02 s, and its records span 0\.01 s: they must be the same/],
+    ["loop-cell", { species: "planarian", cell: "cell_9", period: 0.01, closes }, /its view's loop is of a cell the run does not have \(cell_9\)/],
+    ["loop-follows", { species: "planarian", cell: "cell_0", period: 0.01, closes, follows: [{ time: 0.005, from: "cell_0", to: "d1" }] }, /its view's loop follows a cell the run does not have/],
+    ["loop-shape", { species: "planarian", cell: "cell_0", closes }, /its view's loop does not give its species, cell, period and closure/],
+  ]) {
+    const [refused, out] = changedView(label, asLoop(loop));
+    assert.notEqual(refused.status, 0, label);
+    assert.match(refused.stderr, message, label);
+    assert.ok(!existsSync(path.join(out, "index.json")), `${label}: nothing is catalogued`);
+  }
+});
+
+test("a view of the writer's shape that contradicts itself, or that the page could not honour, is refused with what and where", () => {
+  const record = (view, id) => view.records.find((item) => item.id === id);
+  const set = (view, id) => view.sets.find((item) => item.id === id);
+  for (const [label, change, message, world] of [
+    ["sign-and-difference", (view) => (record(view, "observed_membrane_voltage_V").sign = { from: "inside", to: "outside", says: "s" }), /its view's record observed_membrane_voltage_V gives both a sign \(a flow's ends\) and a difference/],
+    ["sign-roles", (view) => (record(view, "observed_membrane_transferred").sign.to = "receiver"), /its view's record observed_membrane_transferred names, as the ends its sign goes from and to, what are not two roles of its set membrane/],
+    ["difference-roles", (view) => (record(view, "observed_membrane_voltage_V").difference.minus = "inside"), /its view's record observed_membrane_voltage_V gives a difference whose plus and minus are not two roles of its set membrane/],
+    ["difference-without-roles", (view) => delete set(view, "membrane").roles, /gives a difference whose plus and minus are not two roles of its set membrane/],
+    ["roles", (view) => (set(view, "membrane").roles = { inside: "" }), /its view gives the set membrane roles that do not each say what the role is/],
+    ["carries-count", (view) => set(view, "exchange_route").carries.pop(), /its view gives the set exchange_route 'carries' that is not one value for each of its entities/],
+    ["carries-species", (view) => (set(view, "exchange_route").carries[0] = "Xe"), /its view says an entity of exchange_route carries a species that is not among the run's species/],
+    ["at", (view) => (set(view, "turnover_route").at[0] = { cell: "cell_9" }), /its view says an entity of turnover_route acts at an entity that is not one of the view's/],
+    ["direction", (view) => (set(view, "exchange_route").direction[1] = 7), /its view gives the set exchange_route 'direction' that is not a word for each of its entities/],
+    ["source", (view) => (view.run.source = { revision: "fd008813", dirty: "no", from: "x" }), /its view's run\.source does not give the engine's revision, whether its tree was dirty, and where that is recorded/],
+    ["source-unstated", (view) => (view.run.source = { revision: "fd008813", dirty: false, from: "x" }), /its view states the engine's source \(run\.source\) and also lists it as unstated/],
+    ["end", (view) => (view.run.end = { status: "complete", time: 0.01 }), /its view's run\.end does not give the run's status, its end time and its step/],
+    ["end-status", (view) => (view.run.end.status = "refused"), /its view says the run ended 'refused' \(run\.end\), and its summary\.json says 'complete'/],
+    ["end-time", (view) => (view.run.end.time = 0.005), /its view says the run ended at 0\.005 s \(run\.end\), before its last record at 0\.01 s/],
+    ["event-rows", (view) => (view.time.event_rows = ""), /its view's time\.event_rows does not say in words which state a record at an event's time holds/],
+    ["mask", (view) => (record(view, "observed_membrane_dissipated_energy_pJ").resets.mask = null), /its view's record observed_membrane_dissipated_energy_pJ says it restarts at a retirement, and names no mask/, "division"],
+    ["constant-and-view", (view) => view.constants.push({ id: "membrane_area", axes: ["membrane"], unit: "m2", values: [1e-10, 1e-10, 1e-10], from: "the definition (the bound layout)", says: "said" }), /its view states membrane_area both as a constant of the definition and as the merged view the composition changes \(view_<field>\)/, "division"],
+  ]) {
+    const [result, target] = changedView(`bad-${label}`, change, world);
+    assert.notEqual(result.status, 0, label);
+    assert.match(result.stderr, message, label);
+    assert.ok(!existsSync(path.join(target, "index.json")), `${label}: nothing is catalogued`);
   }
 });
 

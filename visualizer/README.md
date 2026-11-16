@@ -27,7 +27,10 @@ opens the engine part that holds its law, and that part lists the units it holds
 Three things are encoded, and kept apart:
 
 - **Status**: qualified or judged, implemented and guarded, established, designed, planned,
-  failed, external reference. The first two follow the plan's four levels (D156). Built parts are solid; parts not built are sketches. In the engine
+  failed, external reference. The first two follow the plan's four levels (D156). Where
+  colour shows the kind of part, every part is drawn whole, whatever its status (the user,
+  16 November 2026: "in the default mode show it all in the coolest possible way");
+  "Colour: Status" shows what is not built as grey sketches. In the engine
   lens colour shows status too. In the cell lens colour shows the kind of part by default
   (purple nucleus, orange mitochondria), and the dot beside each name shows its status;
   the "Colour" switch turns the cell to status colours.
@@ -46,6 +49,12 @@ Rules the map keeps, so it can be shown outside the team:
   exception, by the user's decision of 16 November 2026: chloroplasts are green, as they
   are in life, where the cell is coloured by kind. They are still scenery, their panel
   says so, and they are neutral where colour shows status.
+- The nucleus, the Golgi apparatus and the ribosomes are parts of the map of their own,
+  planned, by the user's decision of 16 November 2026 (`docs/CELL_STRUCTURES.md`):
+  nothing of them is in the engine, each panel says so, and none is called simulated.
+  "Regulatory circuits" is drawn at the cell's DNA, as the separate small model it is,
+  and no longer names the nucleus. Choosing a structure offers a door into the Protein
+  atlas where the species' own proteins can show its set.
 - The cell picture carries the README's caveat: capabilities vary by model, and
   whole-cell integration is ongoing. The legend's "Runs together in" filter shows which
   parts run together in one model today.
@@ -276,6 +285,15 @@ only when it is shown:
   threshold at the first record, and the replay says so.
 - **Held back:** the W1 heredity pilot adapts (two runs), but the view draws every event
   as a replacement and the pilot's events are a cue in many cells at once.
+- **Runs written by the engine's own run-view writer** (on its branch, not on main yet)
+  are kept small under `tests/engine-views/`, made by `tools/make_engine_view_fixture.sh`;
+  the adapter's tests read them.
+- **Speed.** The timeline's speed lists the steps a run is offered, each in words. Every
+  run is offered slowed a million, a thousand or four times, true speed, and four times
+  faster; 15, 60 and 240 times faster are offered where the run still lasts five seconds
+  of watching. A run under two minutes opens at true speed; a longer one at 60 times, or
+  at 15 times where 60 is not offered. The beads of a layer that moves keep the replay's
+  clock: paused, they stand.
 - **A development run and an example stand apart** from the experiments, each under a
   heading of its own: the engine's first run made for the viewer (one cell that secretes
   a species; no verdict), and an example sheet with invented numbers for the layers that
@@ -316,7 +334,7 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
 | Voltage drops | the voltage across each junction, and how far its gate is open | the sheet's junctions |
 | Push and pull on ions | for each ion, the push of its concentration difference, the pull of the voltage, and their sum | a close-up of a chosen cell's membrane |
 | Membrane charge | the charge a stated piece of membrane holds | the same close-up |
-| Transfers | what crosses each border, as beads: one bead is a stated number of molecules, at true speed, with a slow-down beside it | the sheet, or the tiles of a small world |
+| Transfers | what crosses each border, as beads: one bead is a stated number of molecules; the beads keep the replay's clock, which the timeline slows or makes faster, and what one bead stands for follows the speed | the sheet, or the tiles of a small world |
 | Ion traffic | beads through a cell's channel populations, its pump and the membrane itself | the close-up |
 | Energy dissipated | the rate of each dissipated-energy ledger, as a glow | borders, and spots on the cell |
 | Secreted species | the amount of the run's secreted species, as a fog | cells, and the spaces outside them |
@@ -338,8 +356,9 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
   pumps and secreted signals go the way the engine's own laws say (cited in
   `data/layers/flux.json`), channels, junctions and water are drawn both ways with none
   claimed, and fuel draws nothing. No textbook direction is drawn. At rest nothing
-  flows: the cell's own drops and signals stand still, and only the crowd's drift and
-  the membrane's shimmer move.
+  flows. The cell's own drops, signals and close-up ions move as they always did: the
+  picture's own motion, not a measured flow, as the legend says beside the switch; they
+  hold still while any flux shows.
 - **Not built yet:** the field between cells, the tension web and the wavefront.
   `docs/ENGINE_NEEDS_FOR_QUANTITY_LAYERS.md` lists what the layers ask of the engine,
   with the lead's answers.
@@ -371,7 +390,9 @@ indicative.
 | Nucleus | 6 µm across | the same |
 | Mitochondria | 120, about 0.6 µm wide and 1 to 3 µm long, some curved: a clear outer membrane with the inner folds showing (a real cell holds hundreds or more) | 9, about 2 µm wide, three cut open to show the folds |
 | Endoplasmic reticulum | thin sheets close together and tubules through the cell | four thick ribbons |
-| Ribosomes, vesicles | grey dots and clear bubbles: scenery, since protein synthesis and vesicles are not capabilities | grey beads and a few clear bubbles |
+| Ribosomes | free, in strings on a messenger, and on the rough endoplasmic reticulum: dots | two-subunit beads |
+| Golgi apparatus | a small stack of five or six curved cisternae, with buds at the rims | the same, enlarged |
+| Trafficking vesicles | eight: three on their way from the endoplasmic reticulum to the Golgi, four from the Golgi to the membrane, and one that meets it; their number and size are the picture's choice | the same |
 | Membrane | a fine line (5 nm is far below one pixel) | a thick beaded band |
 | Channels, pumps, junction channels | thousands of dots; shapes about 10 nm across in the close-up | a few blocks set in the membrane |
 | ATP, ions, small molecules | dots and haze | a few beads and clusters |

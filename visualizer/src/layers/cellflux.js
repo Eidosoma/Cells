@@ -6,6 +6,11 @@
 // bloom, ./marks/tokens.js), on the cell picture's own geometry. While any of it shows,
 // the look's own motion is held still (rule 12) and the bloom is on.
 //
+// At rest the cell's own drops, signals and close-up ions move (the user, 16 November
+// 2026: "bring motion back"). That motion is the picture's own and no measured flow, and
+// the legend says so beside the switch. While any flux shows they hold still where they
+// stood, and those of the part whose flux shows give way to its beads (`flowing`, `takes`).
+//
 // Where the flux comes from is one of two declared classes, never both in one picture:
 //   the species' own looping run (./loop.js, rule 7): true speed, with what one bead
 //     stands for and a slow-down; the picture names the run, says that it loops and gives
@@ -21,7 +26,7 @@
 
 import * as THREE from "../three.js";
 import { readFlux, planFor, shownKinds, shownWithheld, illustrationWords, citation, PACE } from "./flux.js";
-import { readLoop, loopAt, loopStreams, loopToken, loopRates, planFromLoop, loopWords } from "./loop.js";
+import { readLoop, loopAt, loopStreams, loopToken, loopRates, planFromLoop, loopWords, closesWords, engineWords } from "./loop.js";
 import { Tokens } from "./marks/tokens.js";
 import { fitOnRow } from "./statement.js";
 import { SLOWS, statementOf, tokenWords, timeWords, STILL_WORDS, HEAD_WORDS } from "./marks/beads.js";
@@ -36,6 +41,8 @@ export const FLUX_PANEL = "flux:all";
 export const FLUX_SWITCH = "flux";
 /** How strongly the beads bloom (core/look.js: stage.setBloom). */
 export const BLOOM = 0.6;
+/** What the legend says, beside the switch, of the motion the cell's own tokens have at rest. */
+export const REST_WORDS = "What moves at rest is the picture's own, not a measured flow.";
 /** The statement on the picture, in pixels: where its top may lie at the highest (under the top bar), the gap between its notice and its lines, and the room kept round it. */
 export const STATEMENT = { top: 64, gap: 6, margin: 6 };
 
@@ -51,6 +58,24 @@ export const SIZES = {
   schematic: { bead: 0.15, pitch: 0.46, reach: 1.15, over: { channels: 0.46, membrane: 0.46, pumps: 0.68, junctions: 0.46, water: 0.4, secretion: 0.2 }, bridge: 0.92 },
   real: { bead: 0.09, pitch: 0.27, reach: 0.7, over: { channels: 0.14, membrane: 0.14, pumps: 0.14, junctions: 0.14, water: 0.16, secretion: 0.1 }, bridge: 0.27 },
 };
+
+/**
+ * The pump of the membrane's close-up, drawn to scale (lenses/cell_parts.js, buildMolecules):
+ * it stands `beside` nanometres along the membrane from the close-up's channel, its lobes up
+ * to about 5 nm above the cut. Its lanes run `over` nanometres above the cut, clear of the
+ * lobes, from `reach` nanometres outside the membrane to as far inside, `pitch` apart.
+ */
+export const CLOSE_PUMP = { beside: 24, over: 5.5, reach: 11, pitch: 1.4 };
+
+/**
+ * Where the close-up's pump stands, in the cell's frame: the builder's own handle for it where
+ * it gives one (`pumpAt`), else the place the builder stands it at, along the membrane from the
+ * channel (`sideways` points the other way along it), raised to where its lanes run.
+ */
+export function closePump(molecule, sideways, nm) {
+  const at = molecule.pumpAt ? molecule.pumpAt.clone() : molecule.centre.clone().addScaledVector(sideways, -CLOSE_PUMP.beside * nm);
+  return at.setY(molecule.centre.y + CLOSE_PUMP.over * nm);
+}
 
 /**
  * Where a kind of flux has a place on the cell as drawn: its seats. `cell` are the
@@ -245,6 +270,11 @@ export class CellFlux {
     return this.taken.has(part);
   }
 
+  /** Whether any flux shows now: the picture's own tokens of the cell then hold still where they stood. */
+  get flowing() {
+    return this.tokens.length > 0;
+  }
+
   /** Whether nothing may move: the visitor asks for less motion, or the picture is a still one. */
   still() {
     const { stage } = this.lens;
@@ -315,16 +345,28 @@ export class CellFlux {
         lanes.push(...arrange(kind, seatsOf(kind.id, this.cell, lens.sizeMode), { every: !run, pitch: kind.id === "junctions" ? size.bridge : size.pitch }).map(laid));
       }
       // Drawn to scale, the cell's own lanes are far too large beside one channel: they fade with the
-      // membrane's dots as the camera comes close, and lanes of the channel's own size take their place there.
+      // membrane's dots as the camera comes close, and lanes of the close-up's own size take their place there:
+      // through its channel, and over the pump beside it.
       const real = lens.sizeMode === "real";
       draw(lanes, size.bead, zone, real);
       const molecule = this.cell?.molecule, close = lens.zones.find((item) => item.name === "molecules" && item.mode === lens.sizeMode);
-      const through = showing.kinds.find((kind) => kind.id === "channels");
-      if (real && close && through && molecule?.pored) {
+      if (real && close && molecule) {
         const nm = 0.001 / this.cell.frame.u;
         const sideways = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), molecule.outward).normalize();
-        const seat = { inward: (lateral = 0) => (share) => molecule.ionPath(share).addScaledVector(sideways, lateral) };
-        draw(arrange(through, [seat], { every: !run, pitch: 0.7 * nm }).map(laid), 0.3 * nm, close, false);
+        const near = [];
+        const through = showing.kinds.find((kind) => kind.id === "channels");
+        if (through && molecule.pored) {
+          const seat = { inward: (lateral = 0) => (share) => molecule.ionPath(share).addScaledVector(sideways, lateral) };
+          near.push(...arrange(through, [seat], { every: !run, pitch: 0.7 * nm }).map(laid));
+        }
+        // The close-up has one pump: an illustration's sodium–potassium lanes stand there (the calcium pump's are on the cell's third pump).
+        const pumping = showing.kinds.find((kind) => kind.id === "pumps");
+        if (pumping) {
+          const at = closePump(molecule, sideways, nm);
+          const seat = { inward: (lateral = 0) => (share) => at.clone().addScaledVector(molecule.outward, (CLOSE_PUMP.reach - share * 2 * CLOSE_PUMP.reach) * nm).addScaledVector(sideways, lateral) };
+          near.push(...arrange(pumping, [seat], { every: !run, pitch: CLOSE_PUMP.pitch * nm }).map(laid));
+        }
+        draw(near, 0.3 * nm, close, false);
       }
     }
     this.taken = new Set(this.tokens.length ? showing.kinds.map((kind) => kind.part) : []);
@@ -435,7 +477,7 @@ export class CellFlux {
     }
     const loop = this.loop, at = loopAt(loop, this.elapsed);
     const what = this.showing().kinds[0]?.token || "ion";
-    const lines = [loopWords(loop, this.species.label, clock), statementOf({ token: loopToken(loop.busiest, this.slow), what, slow: this.slow, interval: at.interval, clock, still })].join("\n");
+    const lines = [loopWords(loop, this.species.label, clock), statementOf({ token: loopToken(loop.busiest, this.slow), what, speed: 1 / this.slow, interval: at.interval, clock, still })].join("\n");
     return { notice: null, ways: [lines, lines.replace(/ · /g, "\n")] };
   }
 
@@ -543,7 +585,7 @@ export class CellFlux {
       if (run) {
         const loop = this.loop, what = showing.kinds[0]?.token || "ion";
         keys.push({ key: "bead", text: `${tokenWords(loopToken(loop.busiest, this.slow), what)}. More beads a second means more of them a second; how fast a bead travels stands for nothing` });
-        keys.push({ key: "time", text: `${timeWords(this.slow)}. The run loops: ${clock(loop.length)} of the cell's time, then again from its start${still ? `. ${STILL_WORDS}` : ""}` });
+        keys.push({ key: "time", text: `${timeWords(1 / this.slow)}. The run loops: ${clock(loop.length)} of the cell's time, then again from its start${still ? `. ${STILL_WORDS}` : ""}` });
         keys.push({ key: "way", text: "A bead goes the way its total grew over the interval shown, by the run's own signs" });
         keys.push({ key: "head", text: HEAD_WORDS });
       } else {
@@ -555,7 +597,8 @@ export class CellFlux {
       }
       keys.push({ key: "pump", text: "Where a lane runs is the picture's choice: the engine has no place for a single channel or pump" });
     }
-    const time = run && flowing ? { label: "Speed", options: SLOWS.map((value) => ({ id: value, label: value === 1 ? "True" : `1/${value.toLocaleString("en-US")}`, title: timeWords(value), on: this.slow === value })) } : null;
+    // The Cell view has no timeline: a looping run is slowed from the legend, in the same words as a replay's speed.
+    const time = run && flowing ? { label: "Speed", options: SLOWS.map((value) => ({ id: value, label: value === 1 ? "True" : `1/${value.toLocaleString("en-US")}`, title: timeWords(1 / value), on: this.slow === value })) } : null;
     const cannot = showing.withheld.map((item) => ({ id: item.id, label: item.label, why: item.why }));
     return {
       title: "Flux",
@@ -563,7 +606,9 @@ export class CellFlux {
       example: flowing && !run ? flux.illustration.notice : null,
       rows: [{ channel: "motion", label: "Show", options: [{ label: "Off", off: FLUX_SWITCH, on: !this.on }, { id: FLUX_SWITCH, label: "All", on: this.on, title: "Show all that flows in this cell" }] }],
       time,
-      hint: flowing || cannot.length ? null : "Or choose a part to see its flux.",
+      // While nothing flows the cell's own drops, signals and ions move (a chosen part that draws nothing included): the
+      // picture's own motion, which the page says is no measured flow, wherever motion is allowed.
+      hint: flowing ? null : [cannot.length ? null : "Or choose a part to see its flux.", still ? null : REST_WORDS].filter(Boolean).join(" ") || null,
       keys,
       cannot,
       // The view's card stands just above the legend: the signs, what is not drawn and the door to the panel keep to one line.
@@ -601,7 +646,7 @@ export class CellFlux {
       eyebrow: "Flux",
       chips: [{ label: run ? "From the looping run" : flux.illustration.notice, title: run ? "The species' own run, made by the engine and packaged to loop" : "Nothing here is a number from a run" }],
       plain: run
-        ? `${loopWords(this.loop, name, clock)}. ${this.loop.closes.says}`
+        ? `${loopWords(this.loop, name, clock)}. ${this.loop.closes.says.replace(/\.?$/, ".")} ${closesWords(this.loop)}. ${engineWords(this.loop)}.${this.loop.follows.length ? " Where the loop follows a daughter cell, the beads are still read for its first cell: the hand-over is not drawn yet." : ""}`
         : `${flux.illustration.notice}. ${name} has no looping run of its own cell, so what flows is shown as illustration. ${forms["direction only"].says}.`,
       note: run ? "Every rate is a mean between two records that both lie inside the loop: no difference is taken across the seam." : flux.illustration.speaks_for,
       sections: [

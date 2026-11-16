@@ -290,20 +290,27 @@ test("crowd drift: bounded, with no net direction, and out of contact shade", ()
 });
 
 test("the cell's parts ask for the look where the user chose it, and for nothing where no data would excuse it", () => {
-  const parts = read("src/lenses/cell_parts.js");
+  const parts = read("src/lenses/cell_parts.js"), structures = read("src/lenses/cell_structures.js");
   const asks = (pattern) => assert.match(parts, pattern);
   asks(/membrane\.material\(\{ hue: "bioMembrane", opacity: style\.shellOpacity,[^}]*shimmer: true \}\)/); // the membrane shimmers
-  asks(/nucleus\.material\(\{ hue: "bioNucleus", opacity: 0\.78,[^}]*texture: "pores" \}\)/); // pores on the nucleus
-  asks(/er\.material\(\{ hue: "bioEr",[^}]*texture: "grain" \}\)/); // grain on the ER's sheets
+  assert.match(structures, /envelope\.material\(\{ hue: "bioNucleus", opacity: 0\.74,[^}]*texture: "pores" \}\)/); // pores on the nucleus
+  assert.match(structures, /er\.material\(\{ hue: "bioEr",[^}]*texture: "grain" \}\)/); // grain on the ER's sheets
   assert.equal((parts.match(/texture: "folds"/g) || []).length, 1, "folds on a mitochondrion left whole");
   // One cut open shows its shelves themselves; its shell stays out of contact shade, so the rim keeps its light.
   asks(/const outer = mitochondria\.material\(\{ hue: "bioMito", clip: true, side: THREE\.DoubleSide,[^}]*contact: false \}\)/);
   assert.match(read("src/lenses/cell.js"), /if \(!contact\) material\.userData\.noContact = true;/);
   asks(/chemistry\.material\(\{ hue: "bioCyto", shade: -0\.3, drift: [0-9.]+ \}\)/); // the cytosol's crowd drifts
   asks(/chemistry\.points\(\{ hue: "bioCyto",[^}]*drift: [0-9.]+ \}\)/);
-  // A sketch (a planned part) and a data mark get none of it.
-  for (const planned of ["golgi.material", "genome.material", "machine.material"]) {
-    for (const use of parts.match(new RegExp(`${planned.replace(".", "\\.")}\\([^)]*\\)`, "g")) || []) assert.ok(!/thin|texture|shimmer|drift/.test(use), `${use}: a sketch stays a sketch`);
+  // A planned part is drawn whole where colour shows the kind of part, with the look, and is a sketch where colour
+  // shows status (the user, 16 November 2026): each of its materials has a twin, a wire mesh, that colour() swaps in.
+  const lens = read("src/lenses/cell.js");
+  assert.match(lens, /get sketching\(\) \{\s*return this\.status === "planned" && this\.lens\.colourBy === "status";/);
+  assert.match(lens, /if \(!sketch && this\.status === "planned"\) \{\s*\/\/[^\n]*\n\s*const twin = new THREE\.MeshBasicMaterial\(\{ wireframe: true,/);
+  assert.match(lens, /this\.group\.userData\.seeThrough = sketching;/, "picked through only while it is a sketch");
+  assert.match(structures, /golgi\.material\(\{ hue: "bioGolgi",[^}]*texture: "grain" \}\)/, "the Golgi, planned, takes the look like any part");
+  // A sketch asked for in so many words, and a data mark, get none of it.
+  for (const source of [parts, structures]) {
+    for (const [use] of source.matchAll(/\.material\(\{[^}]*\b(?:line|wire): true[^}]*\}\)/g)) assert.ok(!/thin|texture|shimmer|drift/.test(use), `${use}: a sketch stays a sketch`);
   }
   // What drifts is the crowd, never what enters or leaves the cell.
   for (const flowing of ["water.material", "secretion.material", "outside.material", "medium.material", "fuel.points", "fuel.material"]) {

@@ -25,6 +25,7 @@ import { R, CUT, buildCell, buildMolecules, buildTissue } from "./cell_parts.js"
 import { REF, cellAcross } from "./shapes.js";
 import { buildOutline } from "./outline_parts.js";
 import { middle, words } from "./cell_scenery.js";
+import { structureAbsence, structureDoors } from "./cell_structures.js";
 import { CellFlux, FLUX_SWITCH } from "../layers/cellflux.js";
 
 const smooth = (a, b, x) => {
@@ -136,9 +137,16 @@ class Part {
     this.group = new THREE.Group();
     if (entity) this.group.userData.pick = entity.id;
     else this.group.userData.unpickable = true;
-    this.group.userData.seeThrough = this.status === "planned";
+    // A planned part is drawn whole where colour shows the kind of part, and as a sketch where it
+    // shows status (the user, 16 November 2026): see colour(). Picked through only as a sketch.
+    this.group.userData.seeThrough = false;
     zone.root.add(this.group);
     zone.parts.push(this);
+  }
+
+  /** Whether this part is drawn as a sketch now: a planned part, where colour shows status. */
+  get sketching() {
+    return this.status === "planned" && this.lens.colourBy === "status";
   }
 
   add(...objects) {
@@ -147,8 +155,9 @@ class Part {
 
   /**
    * A material for this part. hue names its biology colour (used with "Colour: Biology");
-   * shade lightens (+) or darkens (-). A planned part is a sketch whatever is asked for:
-   * thin outlines (line) or a wire mesh (wire). rim and alphaRim give solid parts a soft lit edge.
+   * shade lightens (+) or darkens (-). A planned part is drawn whole with "Colour: Biology"
+   * and is a sketch with "Colour: Status": its material has a twin, a wire mesh, which takes
+   * its place there (colour()). line or wire ask for a sketch in both. rim and alphaRim give solid parts a soft lit edge.
    * For the resting look (core/look.js): thin is how much light the part lets through,
    * texture a surface texture ("grain", "folds" with its long way as axis, "pores"),
    * shimmer marks a membrane, and drift is how far a crowd of copies jostles about.
@@ -156,13 +165,12 @@ class Part {
    * would otherwise go dark like a pit).
    */
   material({ hue = null, opacity = 1, wire = false, line = false, shade = 0, emissive = 0, roughness = 0.42, flat = false, side = THREE.FrontSide, clip = false, depthWrite, rim = 0.3, alphaRim = 0, thin = 0, texture = null, axis = null, shimmer = false, drift = 0, contact = true } = {}) {
-    const sketch = wire || line || this.status === "planned";
+    const sketch = wire || line;
     let material;
     if (sketch) {
       material = new THREE.MeshBasicMaterial({ wireframe: !line, transparent: true, opacity: line ? 0.9 : 0.6, depthWrite: false });
       opacity = material.opacity;
     } else {
-      if (this.status === "designed") opacity *= 0.45;
       material = new THREE.MeshStandardMaterial({ roughness, metalness: 0, flatShading: flat, side, transparent: opacity < 1, opacity, depthWrite: depthWrite ?? opacity === 1 });
       const numbers = this.lens.stage.numbers;
       if (thin || texture || shimmer) enrich(material, numbers, { rim, alphaRim, thin, texture, axis, shimmer, unit: this.zone.root.scale.x });
@@ -171,20 +179,28 @@ class Part {
       if (!contact) material.userData.noContact = true;
     }
     if (clip) material.clippingPlanes = this.zone.cutPlanes;
-    return this.register(material, { base: opacity, hue, shade, emissive, sketch });
+    this.register(material, { base: opacity, full: opacity, hue, shade, emissive, sketch });
+    if (!sketch && this.status === "planned") {
+      // Its sketch, for "Colour: Status": a grey wire mesh, swapped in for it by colour().
+      const twin = new THREE.MeshBasicMaterial({ wireframe: true, transparent: true, opacity: 0.6, depthWrite: false, side });
+      if (clip) twin.clippingPlanes = this.zone.cutPlanes;
+      this.register(twin, { base: 0.6, full: 0.6, hue: null, shade: 0, emissive: 0, sketch: true, twinOf: material });
+      material.userData.twin = twin;
+    }
+    return material;
   }
 
   /** Dots, for what is too small to draw as shapes. size is in screen pixels. */
   points({ hue = null, shade = 0, size = 1.6, opacity = 0.9, drift = 0 } = {}) {
     const material = new THREE.PointsMaterial({ size, sizeAttenuation: false, map: dotTexture(), alphaTest: 0.35, transparent: true, opacity, depthWrite: false });
     if (drift) jostle(material, this.lens.stage.numbers, { reach: drift });
-    return this.register(material, { base: opacity, hue, shade, emissive: 0, sketch: this.status === "planned", dust: true });
+    return this.register(material, { base: opacity, full: opacity, hue, shade, emissive: 0, sketch: false, dust: true });
   }
 
-  /** Thin lines: outlines of a planned part, or fine structure of a built one. */
+  /** Thin lines: fine structure of a part, or a sketch where no hue is given. */
   lineMaterial({ hue = null, opacity = 0.8 } = {}) {
     const material = new THREE.LineBasicMaterial({ transparent: true, opacity, depthWrite: false });
-    return this.register(material, { base: opacity, hue, shade: 0, emissive: 0, sketch: this.status === "planned" || !hue });
+    return this.register(material, { base: opacity, full: opacity, hue, shade: 0, emissive: 0, sketch: !hue });
   }
 
   /** Draws nothing, but can be clicked: the body of a part that is drawn only as outlines. */
@@ -204,9 +220,29 @@ class Part {
 
   colour(palette) {
     const byBiology = this.lens.colourBy === "biology";
+    // A planned part: whole, or its sketch. Each mesh wears the one of its two materials that fits.
+    const sketching = this.sketching;
+    this.group.userData.seeThrough = sketching;
+    if (this.status === "planned") {
+      this.group.traverse((object) => {
+        const worn = object.material;
+        if (sketching && worn?.userData?.twin) object.material = worn.userData.twin;
+        else if (!sketching && worn?.userData?.twinOf) object.material = worn.userData.twinOf;
+      });
+    }
     for (const material of this.materials) {
       const data = material.userData;
-      const name = data.sketch ? "ghost" : byBiology && data.hue ? data.hue : statusToken(this.status);
+      // Dots and lines of a planned part turn grey where it is a sketch; a designed part is faint where colour shows status.
+      const sketch = data.sketch || (sketching && !data.twinOf && !data.twin);
+      if (material.isPointsMaterial || material.isLineBasicMaterial) {
+        const toneMapped = !sketch && !(data.emissive > 0);
+        if (material.toneMapped !== toneMapped) {
+          material.toneMapped = toneMapped;
+          material.needsUpdate = true;
+        }
+      }
+      data.base = data.full * (!byBiology && this.status === "designed" && !data.sketch ? 0.45 : 1);
+      const name = sketch ? "ghost" : byBiology && data.hue ? data.hue : statusToken(this.status);
       const colour = new THREE.Color(palette[name] || palette.ghost);
       if (data.shade > 0) colour.lerp(WHITE, data.shade);
       else if (data.shade < 0) colour.lerp(BLACK, -data.shade);
@@ -319,6 +355,8 @@ export class CellLens {
       if (said[entity.id]?.place === "absent") this.absent.set(entity.id, said[entity.id].why);
       else if (entity.scale !== "cell" && !this.levels[entity.scale]) this.absent.set(entity.id, further);
     }
+    // Drawn at a structure the cell does not hold (a nucleus, a Golgi), where its file says nothing of it: cell_structures.js.
+    for (const [id, why] of structureAbsence(this.model.ofKind("capability"), species)) if (!this.absent.has(id)) this.absent.set(id, why);
     for (const { id, entity } of LEVELS) if (!this.levels[id]) this.absent.set(entity, further);
   }
 
@@ -365,6 +403,8 @@ export class CellLens {
         return this.bind(entity && this.absent.has(entity.id) ? null : entity, zone, anchor, entity ? null : name);
       },
       scale: (id, anchor) => this.bind(this.model.get(id), zone, anchor, id),
+      // Whether the scene has a capability drawn at this part (a scene made before a part was added has none).
+      known: (name) => this.capabilityByPart.has(name),
       neutral: (options = {}) => {
         const material = new THREE.MeshStandardMaterial({ roughness: 0.6, metalness: 0, transparent: true, side: options.side ?? THREE.FrontSide, depthWrite: options.depthWrite ?? false });
         // Scenery takes the resting look as parts do: light through what is thin, a texture where one is asked for.
@@ -616,7 +656,22 @@ export class CellLens {
     }
     const said = this.species.cell.capabilities?.[entity.id];
     // With what flows through the part, and on what basis it is drawn (layers/cellflux.js).
-    return this.flux.inPanel(said?.note ? { ...entity, note: [entity.note, `${this.species.label}: ${said.note}`].filter(Boolean).join(" ") } : entity);
+    return this.flux.inPanel(this.structural(said?.note ? { ...entity, note: [entity.note, `${this.species.label}: ${said.note}`].filter(Boolean).join(" ") } : entity));
+  }
+
+  /**
+   * A part with what the picture drew of it, where the picture chose a size or a number
+   * (cell_structures.js), and a door into the Protein atlas where the species' own proteins
+   * can show its set: a shelf of its membrane, or a set its marks name.
+   */
+  structural(entity) {
+    if (entity?.kind !== "capability") return entity;
+    const summary = (this.model.raw.proteins?.shelves || []).find((item) => item.id === this.species.id) || null;
+    const doors = structureDoors(entity, this.species, summary);
+    const drawn = this.cells?.[this.sizeMode]?.structures?.[entity.part];
+    if (!doors.length && !drawn) return entity;
+    const sections = drawn ? [...(entity.sections || []), { title: "As drawn", items: drawn.map(([label, text]) => ({ label, lines: [text] })) }] : entity.sections;
+    return { ...entity, doors: [...(entity.doors || []), ...doors], ...(sections ? { sections } : {}) };
   }
 
   sections() {
@@ -826,7 +881,7 @@ export class CellLens {
           id: part.entity.id,
           text: isScale ? this.inSpecies(part.entity).label : part.entity.label,
           anchor: part.anchor,
-          priority: isScale ? 300 : this.model.isBuilt(part.entity) ? 40 : 50,
+          priority: isScale ? 300 : (part.priority ?? (this.model.isBuilt(part.entity) ? 40 : 50)), // a builder may let a name give way (cell_structures.js)
           kind: isScale ? "scale" : "part",
           lift: isScale ? 4 : 9,
           swatch: isScale ? undefined : part.entity.status || "unstated",
@@ -1040,23 +1095,28 @@ export class CellLens {
       return changed;
     }
     this.clock += dt / 1000;
-    this.animate(this.clock);
+    // The cell's own tokens keep a clock of their own: it runs at rest, and holds while any flux shows or the picture
+    // is a still one, so that nothing jumps when a part is chosen and they move on from where they stood.
+    this.resting ??= 0.35;
+    if (!this.flux.flowing && !this.flux.still()) this.resting += dt / 1000;
+    this.animate(this.clock, this.resting);
     return true;
   }
 
   /**
    * The drops where water crosses, the signals that leave and the ions in the close-up's channel
-   * are the bodies of their parts. They once moved, each with a direction; at rest nothing flows
-   * (schema/QUANTITY_LAYERS.md, rule 12: a token that moves with a direction is data), so they
-   * stand where they stood for a visitor who asked for less motion. While the flux of their part
-   * shows they give way to its beads (layers/cellflux.js), which are a layer's: drawn out of the
-   * look, marked to glow, and holding the look's own motion still. Only the cages turn here, in
-   * place. The look's motion is not here: the crowd's drift and the membrane's shimmer live in
-   * the materials (core/materials.js) and have no direction.
+   * are the bodies of their parts, and at rest they move as they always did (the user, 16
+   * November 2026: "bring motion back"). Their motion is the picture's own, not a measured
+   * flow, and the Flux legend says so (layers/cellflux.js). They stand where they stood for a
+   * visitor who asked for less motion, and hold still while any flux shows; while the flux of
+   * their part shows they give way to its beads, which are a layer's: drawn out of the look,
+   * marked to glow, and holding the look's own motion still. The cages turn in place. The look's
+   * motion is not here: the crowd's drift and the membrane's shimmer live in the materials
+   * (core/materials.js) and have no direction.
    */
-  animate(time) {
+  animate(time, resting = time) {
     const cell = this.cells[this.sizeMode];
-    const rest = 0.35, water = !this.flux.takes("water"), leaving = !this.flux.takes("secretion"), crossing = !this.flux.takes("channels");
+    const rest = resting, water = !this.flux.takes("water"), leaving = !this.flux.takes("secretion"), crossing = !this.flux.takes("channels");
     for (const stream of cell.streams) {
       stream.drops.forEach((drop, index) => {
         drop.visible = water;

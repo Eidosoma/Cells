@@ -326,4 +326,8 @@ stacked in the page. Fixed on 15 November 2026, before the human data was made.
 
 The shelves are large, so they are not part of the scene. Each species' file is published
 beside the page and fetched when its species is shown, as replays are. The scene carries
-only, for each species, the file's name, its counts and its sources.
+only, for each species, the file's name, its counts, its sources and its `sets`: for each
+mark whose values are listed (at most eight, and not yes or no; of a catalogue in
+families only the marks its highlights name), those values. With them a page can offer a
+door to a set before the species' file is in: the Cell view's ribosomes open the atlas
+on the proteins a mark names as the ribosome's.

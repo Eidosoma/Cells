@@ -148,7 +148,12 @@ test("each of the map's capabilities has a place or is said to be absent, with w
   const absentOnes = Object.entries(stated).filter(([, item]) => item.place === "absent").map(([id]) => id).sort();
   assert.deepEqual(absentOnes, ["cap.calcium", "cap.channels", "cap.grn", "cap.junctions", "cap.mechanics", "cap.mitochondria", "cap.replacement", "cap.sheet", "cap.trafficking"]);
   // Left out, a capability has a place: only cell chemistry is.
-  assert.deepEqual(capabilities.filter((id) => !(id in stated)), ["cap.reactions"]);
+  // Three more are left out since 16 November 2026: the nucleus, the Golgi and the ribosomes are parts whose place
+  // the viewer reads from `cell.parts` (schema/SPECIES.md): this cell has no nucleus and no Golgi, and has ribosomes.
+  assert.deepEqual(capabilities.filter((id) => !(id in stated)).sort(), ["cap.golgi", "cap.nucleus", "cap.reactions", "cap.ribosomes"]);
+  assert.equal(species.cell.parts.nucleus, false);
+  assert.ok(!(species.cell.parts.organelles || []).includes("golgi"));
+  assert.ok(species.cell.parts.ribosomes > 0);
   // Where a placement is judgement and not a source's word, the note says so.
   assert.match(stated["cap.repair"].note, /No source read for this file/);
   assert.match(stated["cap.membrane"].note, /In a model of its metabolism published in 2020 the ATP synthase runs in reverse.*that is the model's result, and no source read for this file measured the voltage/);

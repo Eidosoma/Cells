@@ -146,7 +146,12 @@ test("each of the map's capabilities has a place or is said to be absent, with w
   const stated = species.cell.capabilities;
   for (const id of Object.keys(stated)) assert.ok(capabilities.includes(id), `${id} is not a capability of the map`);
   // Left out means it has a place as in any cell: only the cell's chemistry is left out.
-  assert.deepEqual(capabilities.filter((id) => !(id in stated)), ["cap.reactions"]);
+  // Three more are left out since 16 November 2026: the nucleus, the Golgi and the ribosomes are parts whose place
+  // the viewer reads from `cell.parts` (schema/SPECIES.md): this cell has no nucleus and no Golgi, and has ribosomes.
+  assert.deepEqual(capabilities.filter((id) => !(id in stated)).sort(), ["cap.golgi", "cap.nucleus", "cap.reactions", "cap.ribosomes"]);
+  assert.equal(species.cell.parts.nucleus, false);
+  assert.ok(!(species.cell.parts.organelles || []).includes("golgi"));
+  assert.ok(species.cell.parts.ribosomes > 0);
   for (const [id, item] of Object.entries(stated)) {
     assert.ok(["absent", "present"].includes(item.place), `${id}: ${item.place}`);
     if (item.place === "absent") assert.deepEqual(Object.keys(item), ["place", "why"], id);

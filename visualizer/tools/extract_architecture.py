@@ -68,6 +68,16 @@ def git(repo, *arguments):
     return done.stdout if done.returncode == 0 else ""
 
 
+def own_file(path):
+    """Whether a cited path is a file of the viewer's own folder, the one this tool runs from."""
+    prefix = "visualizer/"
+    if not path.startswith(prefix):
+        return False
+    home = HERE.parent.resolve()
+    target = (home / path[len(prefix):]).resolve()
+    return home in target.parents and target.is_file()
+
+
 def find_repo(explicit):
     """The checkout to read: --repo, else the nearest tree that holds src/cells."""
     if explicit:
@@ -162,6 +172,7 @@ class Build:
         self.package = Package(repo / "src" / "cells", "cells")
         self.evaluator = Evaluator(self.package)
         self.files = [line for line in git(repo, "ls-files").splitlines() if line]
+        self.ahead = []  # cited sources that are the viewer's own files and not yet tracked in the checkout read
         self.git = lambda *arguments: git(repo, *arguments)
         self.owner = {}  # repo-relative path -> entity id
         self.statuses = {status["id"] for status in overlay["statuses"]}
@@ -604,10 +615,18 @@ class Build:
             self.link(source, target, kind, label)
         coverage = self.coverage()
         tracked = set(self.files)
+        # A source under visualizer/ is one of the viewer's own notes. It lives in the folder this tool runs from
+        # and reaches the checkout read here with the branch's next merge, so it is looked for in this folder too.
+        # One found only here is named in a remark: its link on the page opens once that checkout has it.
         for entity in self.entities.values():
             for source in entity.get("sources", []):
-                if source["path"] not in tracked:
-                    self.warnings.append(f"{entity['id']}: cited source {source['path']} is not a tracked file")
+                if source["path"] in tracked:
+                    continue
+                if own_file(source["path"]):
+                    if source["path"] not in self.ahead:
+                        self.ahead.append(source["path"])
+                    continue
+                self.warnings.append(f"{entity['id']}: cited source {source['path']} is not a tracked file")
         relations = []
         for relation in self.relations.values():
             labels = relation.pop("labels")
@@ -681,6 +700,7 @@ def main():
         build.proteins["stamp"]["checked_at"] = revision
         remarks = build.proteins.pop("remarks", [])  # on the species atlases; reported below, not written
     remarks += noted
+    remarks += [f"cited source {path} is the viewer's own and not yet in the checkout read: its link on the page opens once the branch is merged there" for path in build.ahead]
     # Only tracked files are read, so an untracked file does not make the reading dirty.
     dirty = bool(git(repo, "status", "--porcelain", "--untracked-files=no", "--", "src", "docs", "PROGRESS.md").strip())
     scene = {

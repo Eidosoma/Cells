@@ -5,8 +5,8 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-16",
-  "generated_at": "2026-11-16T13:15:31Z",
-  "revision": "20107cd2",
+  "generated_at": "2026-11-16T14:19:35Z",
+  "revision": "fe0ca3ab",
   "revision_date": "2026-11-16",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
@@ -14,14 +14,14 @@
   "counts": {
    "engine_files": 506,
    "engine_files_placed": 506,
-   "parts": 239,
+   "parts": 242,
    "relations": 909,
    "by_kind": {
     "operator": 19,
     "component": 133,
     "state": 6,
     "gate": 8,
-    "capability": 20,
+    "capability": 23,
     "scale": 5,
     "unit": 48
    },
@@ -29,7 +29,7 @@
     "qualified": 40,
     "landed": 19,
     "established": 59,
-    "planned": 25,
+    "planned": 28,
     "designed": 26,
     "failed": 1,
     "external": 4,
@@ -67,7 +67,7 @@
    "id": "planned",
    "label": "Planned",
    "built": false,
-   "description": "Named in the plan or roadmap; not started."
+   "description": "Named in the plan or roadmap, or decided by the user; not started."
   },
   {
    "id": "failed",
@@ -375,7 +375,7 @@
      "covers_all": true
     }
    },
-   "checked_at": "20107cd2"
+   "checked_at": "fe0ca3ab"
   },
   "counts": {
    "units": 48,
@@ -2163,6 +2163,15 @@
      }
     ],
     "no_shelf": 2123,
+    "sets": {
+     "complex": [
+      "flagellum",
+      "chemoreceptor array",
+      "ribosome",
+      "RNA polymerase",
+      "ATP synthase"
+     ]
+    },
     "sources": [
      {
       "name": "UniProt",
@@ -2552,6 +2561,28 @@
      "inside": 234,
      "not known": 290
     },
+    "sets": {
+     "essential": [
+      "essential",
+      "fitness",
+      "non-essential",
+      "non-essential (repeats)"
+     ],
+     "evidence": [
+      "experiment",
+      "curator",
+      "similarity",
+      "rule"
+     ],
+     "where": [
+      "attachment organelle",
+      "at the membrane"
+     ],
+     "also": [
+      "outside",
+      "inside"
+     ]
+    },
     "sources": [
      {
       "name": "GenBank",
@@ -2692,6 +2723,27 @@
      "in": 86,
      "inside": 352,
      "not known": 4
+    },
+    "sets": {
+     "essential": [
+      "essential",
+      "quasi-essential",
+      "non-essential"
+     ],
+     "complex": [
+      "ribosome",
+      "ATP synthase",
+      "RNA polymerase"
+     ],
+     "evidence": [
+      "experiment",
+      "curator",
+      "similarity",
+      "rule"
+     ],
+     "where": [
+      "at the membrane"
+     ]
     },
     "sources": [
      {
@@ -20352,6 +20404,24 @@
    ]
   },
   {
+   "id": "cap.nucleus",
+   "label": "Nucleus",
+   "kind": "capability",
+   "group": "biology",
+   "status": "planned",
+   "as_of": "2026-11-16",
+   "representation": "illustration",
+   "part": "nucleus",
+   "scale": "cell",
+   "plain": "The nucleus holds the cell's DNA inside a double membrane, the nuclear envelope, whose pores let molecules in and out; the nucleolus inside it is where ribosomes are put together. Nothing of it is in the engine yet: it is planned. The user decided on 16 November 2026 that Cells will model the nucleus to some extent, not down to the folding of proteins.",
+   "sources": [
+    {
+     "path": "visualizer/docs/CELL_STRUCTURES.md",
+     "where": "What each status rests on: Nucleus"
+    }
+   ]
+  },
+  {
    "id": "cap.circuits",
    "label": "Regulatory circuits",
    "kind": "capability",
@@ -20361,9 +20431,9 @@
    "runs_in": [
     "separate"
    ],
-   "part": "nucleus",
+   "part": "chromatin",
    "scale": "cell",
-   "plain": "Small gene circuits that switch a cell between states, alone or in a two-cell model.",
+   "plain": "Small gene circuits that switch a cell between states, alone or in a bounded two-cell model of regulation and ions. A separate small model: it runs on its own, apart from the tissue models, and does not model the nucleus. It is drawn at the cell's DNA, where such circuits act.",
    "sources": [
     {
      "path": "README.md",
@@ -20393,13 +20463,53 @@
    ]
   },
   {
+   "id": "cap.golgi",
+   "label": "Golgi apparatus",
+   "kind": "capability",
+   "group": "biology",
+   "status": "planned",
+   "as_of": "2026-11-16",
+   "representation": "illustration",
+   "part": "golgi",
+   "scale": "cell",
+   "plain": "The Golgi apparatus is a stack of flattened sacs where new proteins made at the endoplasmic reticulum are modified, sorted and packed into vesicles. Nothing of it is in the engine yet: it is planned. The user decided on 16 November 2026 that Cells will model the Golgi to some extent, not down to the folding of proteins. The roadmap's trafficking item leaves the Golgi's own structure out of its scope.",
+   "sources": [
+    {
+     "path": "visualizer/docs/CELL_STRUCTURES.md",
+     "where": "What each status rests on: Golgi apparatus"
+    },
+    {
+     "path": "docs/ROADMAP.md",
+     "where": "Current development priorities, item 9"
+    }
+   ]
+  },
+  {
+   "id": "cap.ribosomes",
+   "label": "Ribosomes",
+   "kind": "capability",
+   "group": "biology",
+   "status": "planned",
+   "as_of": "2026-11-16",
+   "representation": "illustration",
+   "part": "ribosomes",
+   "scale": "cell",
+   "plain": "Ribosomes are the machines that make proteins, reading a messenger RNA. They lie free in the cytoplasm, often several on one messenger, and on the rough endoplasmic reticulum. Nothing of them is in the engine yet: they are planned. The user decided on 16 November 2026 that Cells will model ribosomes to some extent, not down to the folding of proteins.",
+   "sources": [
+    {
+     "path": "visualizer/docs/CELL_STRUCTURES.md",
+     "where": "What each status rests on: Ribosomes"
+    }
+   ]
+  },
+  {
    "id": "cap.trafficking",
-   "label": "Golgi and trafficking",
+   "label": "Membrane trafficking",
    "kind": "capability",
    "group": "biology",
    "status": "planned",
    "representation": "illustration",
-   "part": "golgi",
+   "part": "vesicles",
    "scale": "cell",
    "plain": "New proteins would pass from the ER through the Golgi to the membrane or out of the cell. Planned, not started. Its pool of vesicles is the kind of closed compartment that feature request FR-1 asks for, whose first milestone, the declaration of a compartment a cell owns, landed on 15 November 2026.",
    "sources": [

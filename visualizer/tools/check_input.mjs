@@ -483,11 +483,24 @@ try {
   await open(cellView);
   await settled();
   const nucleus = await screen(probe("nucleus"));
-  await click(nucleus.x, nucleus.y); // through the sketched gene-network cage around it
+  await click(nucleus.x, nucleus.y); // through the gene network's open cage around it
   // A cell without a nucleus has a free chromosome under the cut face of its cytoplasm: a click over it
   // meets the cytoplasm first, and the chromosome is chosen by its name (the label checks below).
-  if (await evaluate(`Boolean(${VIEWER}.current.species.cell.parts.nucleus ?? true)`)) check("cell: clicking the nucleus selects regulatory circuits", (await selected()) === "cap.circuits", String(await selected()));
-  else check("cell: a click over the free chromosome meets the cytoplasm that lies over it, or the chromosome", ["cap.reactions", "cap.circuits"].includes(await selected()), String(await selected()));
+  // What is drawn at the nucleus and at its chromatin is the scene's to say: since 16 November 2026 the nucleus is a
+  // part of its own and the regulatory circuits sit at the chromatin; a scene made before draws the circuits at the nucleus.
+  const atNucleus = await evaluate(`${VIEWER}.current.capabilityByPart.get("nucleus")?.id ?? null`);
+  const atChromatin = await evaluate(`(${VIEWER}.current.capabilityByPart.get("chromatin") || ${VIEWER}.current.capabilityByPart.get("nucleus"))?.id ?? null`);
+  // The scene of today names both, so that "what the scene draws there" cannot pass on a part that went missing.
+  if (await evaluate(`Boolean(${VIEWER}.model.get("cap.nucleus"))`)) check("cell: the scene draws the nucleus at the nucleus and the regulatory circuits at the chromatin", atNucleus === "cap.nucleus" && atChromatin === "cap.circuits", JSON.stringify([atNucleus, atChromatin]));
+  if (await evaluate(`Boolean(${VIEWER}.current.species.cell.parts.nucleus ?? true)`)) {
+    check(`cell: clicking the nucleus selects what the scene draws there (${atNucleus})`, (await selected()) === atNucleus, String(await selected()));
+    await clear();
+    if (await evaluate(`Boolean(${VIEWER}.current.probes.chromatin)`)) {
+      const inside = await screen(probe("chromatin"));
+      await click(inside.x, inside.y);
+      check(`cell: clicking into the opened nucleus reaches the chromatin, and what is drawn there (${atChromatin})`, (await selected()) === atChromatin, String(await selected()));
+    }
+  } else check("cell: a click over the free chromosome meets the cytoplasm that lies over it, or the chromosome", ["cap.reactions", atChromatin].includes(await selected()), String(await selected()));
   await clear();
 
   // Above the cut the membrane is clipped; a click there must not select it.
@@ -525,7 +538,7 @@ try {
   check("switch: Sizes to To scale shows the to-scale cell and hides the schematic one", real.mode === "real" && real.shown.includes("cell:real") && !real.shown.includes("cell:schematic"), real.shown);
   const nucleusToScale = await screen(probe("nucleus"));
   await click(nucleusToScale.x, nucleusToScale.y);
-  check("switch: the to-scale nucleus can be clicked", (await selected()) === "cap.circuits", String(await selected()));
+  check("switch: the to-scale nucleus can be clicked", (await selected()) === atNucleus, String(await selected()));
   await clear();
   await press("Schematic");
   } else {

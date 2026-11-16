@@ -769,6 +769,19 @@ def _shelves_summary(name, data, size, problems):
                     break
         summary["shelves"] = [{"id": shelf["id"], "label": shelf["label"], "proteins": sum(on_shelf[shelf["id"]].values()), "counts": {side: on_shelf[shelf["id"]][side] for side in SHELF_SIDES}} for shelf in shelves]
         summary["no_shelf"] = sum(on_shelf[None].values())
+    # The sets the file's marks can pick out (a mark whose values are listed), with their values: what a page can
+    # offer a door to before the file is in (the Cell view's ribosomes, where a mark names the ribosome).
+    # Of a catalogue in families, only the marks its highlights name; booleans and long lists are left out, to keep it short.
+    marks, highlights = data.get("marks") or {}, data.get("highlights") if isinstance(data.get("highlights"), dict) else {}
+    at_mark = (highlights.get("columns") or ["mark"]).index("mark") if "mark" in (highlights.get("columns") or ["mark"]) else 0
+    named = set(marks) if isinstance(listed, list) else {row[at_mark] for row in highlights.get("rows") or [] if isinstance(row, list) and len(row) > at_mark}
+    sets = {
+        key: [str(value) for value in mark["values"]]
+        for key, mark in marks.items()
+        if key in named and isinstance(mark, dict) and isinstance(mark.get("values"), list) and 0 < len(mark["values"]) <= 8 and not all(isinstance(value, bool) for value in mark["values"])
+    }
+    if sets:
+        summary["sets"] = sets
     # Of each source the scene keeps its name, how it may be used and what it came through: what a page can
     # say before the species' file is in. Its licence in full, what it holds, its address and how it is cited
     # stay in that file, which the page fetches when the species is shown (most of a summary was these).

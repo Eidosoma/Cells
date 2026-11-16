@@ -8,7 +8,7 @@ const TOKENS = [
   "st-failed", "st-external", "st-unstated",
   "kind-requires", "kind-writes", "kind-conflicts", "kind-runs", "kind-extends",
   "bio-membrane", "bio-cyto", "bio-nucleus", "bio-er", "bio-ribosome", "bio-mito", "bio-protein", "bio-pump",
-  "bio-fuel", "bio-water", "bio-signal", "bio-ion", "bio-wound", "bio-cell", "bio-chloroplast",
+  "bio-fuel", "bio-water", "bio-signal", "bio-ion", "bio-wound", "bio-cell", "bio-chloroplast", "bio-golgi",
   "atlas-generic",
   "seq-0", "seq-1", "seq-2", "seq-3", "seq-4",
 ];

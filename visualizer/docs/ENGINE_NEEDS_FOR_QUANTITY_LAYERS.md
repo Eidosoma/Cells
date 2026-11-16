@@ -476,7 +476,27 @@ human ventricular cell built on the human cardiac law set that the user brought 
 with no generic stand-in, and which waits for those laws; then the minimal cells' cycle,
 after its probe.
 
-The viewer's side of this is not done yet: the page's loop reader is being brought to the
-block's shape, and the adapter's reading of a view takes the additions when the writer is
-on main.
+**The viewer's side, done on 16 November 2026.** The adapter reads a view as the writer
+gives it on `run-view-d154` at `fd008813`, and still reads the shape of 15 November
+(`schema/RUN_VIEW.md`, "The engine's view"; two small runs written by that writer are kept
+under `tests/engine-views/`, made by `tools/make_engine_view_fixture.sh`). The page's loop
+reader takes the block's shape. Reading the branch's code corrected three things in the
+list above:
+
+- a voltage's `difference` stands in place of its `sign`, not beside it;
+- `run.source` also carries `from`, and the writer states a source only from an execution
+  snapshot's record: a run from a checkout or an export states none, and its view lists
+  the engine's source as unstated;
+- the loop block is designed and not in the writer: the writer's own check refuses a
+  top-level key it does not know.
+
+Also read now, and not in the list: turnover and exchange declare their own kinds and
+signs, so under a view the sign of what an exchange route moved is the run's own and no
+longer the viewer's reading.
+
+**Still to close on the viewer's side:** a view that records a subset
+(`recording.subset`) is refused, and FR-11's looping packages record one, so the adapter
+must read `recorded` before the first loop package arrives; the builder's geometry is not
+read; the page does not yet use `time.event_rows` or `resets.mask`, and takes no rate in
+either interval an event bounds, which is the careful reading.
 
